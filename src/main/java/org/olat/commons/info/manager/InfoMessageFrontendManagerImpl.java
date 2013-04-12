@@ -34,6 +34,7 @@ import org.olat.commons.info.model.InfoMessage;
 import org.olat.commons.info.notification.InfoSubscriptionManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
@@ -50,18 +51,11 @@ import org.olat.core.util.mail.MailContextImpl;
  * Initial Date:  28 juil. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class InfoMessageFrontendManagerImpl extends InfoMessageFrontendManager {
+public class InfoMessageFrontendManagerImpl extends BasicManager implements InfoMessageFrontendManager {
 	
 	private CoordinatorManager coordinatorManager;
 	private InfoMessageManager infoMessageManager;
 	private InfoSubscriptionManager infoSubscriptionManager;
-	
-	/**
-	 * [used by Spring]
-	 */
-	private InfoMessageFrontendManagerImpl() {
-		INSTANCE = this;
-	}
 
 	/**
 	 * [used by Spring]
@@ -98,12 +92,12 @@ public class InfoMessageFrontendManagerImpl extends InfoMessageFrontendManager {
 	}
 
 	@Override
-	public boolean sendInfoMessage(InfoMessage infoMessage, MailFormatter mailFormatter, Locale locale, List<Identity> tos) {
+	public boolean sendInfoMessage(InfoMessage infoMessage, MailFormatter mailFormatter, Locale locale, Identity from, List<Identity> tos) {
 		infoMessageManager.saveInfoMessage(infoMessage);
 		
 		boolean send = false;
 		if(tos != null && !tos.isEmpty()) {
-			Emailer mailer = new Emailer(locale);
+			Emailer mailer = new Emailer(from, false);
 			Set<Long> identityKeySet = new HashSet<Long>();
 			ContactList contactList = new ContactList("Infos");
 			for(Identity to:tos) {

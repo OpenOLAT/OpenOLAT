@@ -430,7 +430,7 @@ create table if not exists o_checklist (
    checklist_id bigint not null,
    version mediumint unsigned not null,
    lastmodified datetime not null,
-   title varchar(255) not null,
+   title varchar(255),
    description longtext,
    primary key (checklist_id)
 );
@@ -440,7 +440,7 @@ create table if not exists o_checkpoint (
    checkpoint_id bigint not null,
    version mediumint unsigned not null,
    lastmodified datetime not null,
-   title varchar(255) not null,
+   title varchar(255),
    description longtext,
    modestring varchar(64) not null,
    checklist_fk bigint,

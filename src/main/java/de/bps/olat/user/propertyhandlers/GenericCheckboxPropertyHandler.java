@@ -88,7 +88,7 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
  * 
  * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
  */
-	public boolean isValid(FormItem formItem, Map formContext) {
+	public boolean isValid(FormItem formItem, Map<String, String> formContext) {
 		return true;
 	}
 

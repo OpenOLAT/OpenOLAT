@@ -36,7 +36,7 @@ CREATE TABLE o_property (
   floatvalue float,
   longvalue number(20),
   stringvalue varchar2(255 char),
-  textvalue varchar2(4000),
+  textvalue CLOB,
   PRIMARY KEY (id)
 );
 
@@ -148,6 +148,8 @@ CREATE TABLE o_qtiresultset (
   ispassed number,
   score float,
   duration number(20),
+  issuspended number,
+  fullyassessed number,
   PRIMARY KEY (resultset_id)
 );
 
@@ -330,7 +332,7 @@ CREATE TABLE o_message (
   lastmodified date,
   creationdate date,
   title varchar2(100 char),
-  body varchar2(4000),
+  body CLOB,
   parent_id number(20),
   topthread_id number(20),
   creator_id number(20) NOT NULL,
@@ -402,10 +404,10 @@ CREATE TABLE o_bs_policy (
   oresource_id number(20) NOT NULL,
   group_id number(20) NOT NULL,
   permission varchar2(16 char) NOT NULL,
-  apply_from date,
-  apply_to date,
-  CONSTRAINT u_o_bs_policy UNIQUE (oresource_id, group_id, permission),
-  PRIMARY KEY (id)
+  apply_from date default null,
+  apply_to date default null,
+  PRIMARY KEY (id),
+  CONSTRAINT u_o_bs_policy UNIQUE (oresource_id, group_id, permission)
 );
 
 --
@@ -623,7 +625,7 @@ CREATE TABLE o_checklist (
   checklist_id number(20) NOT NULL,
   version number(20) NOT NULL,
   lastmodified date NOT NULL,
-  title varchar2(255 char) NOT NULL,
+  title varchar2(255 char),
   description varchar2(4000),
   PRIMARY KEY (checklist_id)
 );
@@ -636,7 +638,7 @@ CREATE TABLE o_checkpoint (
   checkpoint_id number(20) NOT NULL,
   version number(20) NOT NULL,
   lastmodified date NOT NULL,
-  title varchar2(255 char) NOT NULL,
+  title varchar2(255 char),
   description varchar2(4000),
   modestring varchar2(64 char) NOT NULL,
   checklist_fk number(20),
@@ -677,7 +679,7 @@ CREATE TABLE o_projectbroker_project (
   project_id number(20) NOT NULL,
   version number(20) NOT NULL,
   creationdate date,
-  title varchar2(100 char),
+  title varchar2(150 char),
   description varchar2(4000),
   state varchar2(20 char),
   maxMembers number(11),
@@ -2060,6 +2062,7 @@ create index idx_omroom_residname on o_om_room_reference (resourcetypename,resou
 
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
 
+insert into o_stat_lastupdated (until_datetime, lastupdated) values (to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'));
 insert into hibernate_unique_key values ( 0 );
 commit
 /

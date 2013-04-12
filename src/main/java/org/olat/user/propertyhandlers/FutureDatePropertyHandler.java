@@ -41,7 +41,8 @@ public class FutureDatePropertyHandler extends DatePropertyHandler {
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem,
 	 *      java.util.Map)
 	 */
-	public boolean isValid(FormItem formItem, Map formContext) {
+	@Override
+	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
 		boolean isValidDate = super.isValid(formItem, formContext);
 		if (!isValidDate)
 			return false;

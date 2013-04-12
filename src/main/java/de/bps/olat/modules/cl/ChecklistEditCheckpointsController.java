@@ -111,7 +111,8 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 	
 	private void addNewFormCheckpoint(int index, Checkpoint checkpoint) {
 		// add checkpoint title
-		TextElement title = uifactory.addTextElement("title" + counter, null, -1, checkpoint.getTitle(), titleContainer);
+		String pointTitle = checkpoint.getTitle() == null ? "" : checkpoint.getTitle();
+		TextElement title = uifactory.addTextElement("title" + counter, null, -1, pointTitle, titleContainer);
 		title.showError(false);//TODO:SK:2009-11-20:PB:should be default -> check layout in velocity.
 		title.setDisplaySize(20);
 		title.setMandatory(true);

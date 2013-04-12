@@ -142,7 +142,7 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
 	 */
 	
-	public boolean isValid(FormItem formItem, Map formContext) {
+	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
 		if (formItem.isMandatory()) {
 			org.olat.core.gui.components.form.flexible.elements.SingleSelection sse = (org.olat.core.gui.components.form.flexible.elements.SingleSelection) formItem;
 			// when mandatory, the - must not be selected

@@ -111,7 +111,7 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 	}
 
 	@Override
-	public boolean isValid(FormItem formItem, Map formContext) {
+	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
 		// always valid, no check
 		return true;
 	}

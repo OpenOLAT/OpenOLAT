@@ -102,6 +102,8 @@ create table o_qtiresultset (
    assessmentid int8 not null,
    repositoryref_fk int8 not null,
    ispassed bool,
+   issuspended bool default false,
+   fullyassessed bool default false,
    score float(24),
    duration int8,
    primary key (resultset_id)
@@ -426,7 +428,7 @@ create table o_checklist (
    checklist_id int8 not null,
    version int4 not null,
    lastmodified timestamp not null,
-   title varchar(255) not null,
+   title varchar(255),
    description text,
    primary key (checklist_id)
 );
@@ -435,7 +437,7 @@ create table o_checkpoint (
    checkpoint_id int8 not null,
    version int4 not null,
    lastmodified timestamp not null,
-   title varchar(255) not null,
+   title varchar(255),
    description text,
    modestring varchar(64) not null,
    checklist_fk int8,
@@ -464,7 +466,7 @@ create table o_projectbroker_project (
    project_id int8 not null,
    version int4 not null,
    creationdate timestamp,
-   title varchar(100),
+   title varchar(150),
    description text,
    state varchar(20),
    maxMembers integer,

@@ -98,7 +98,7 @@ public class XingPropertyHandler extends Generic127CharTextPropertyHandler {
 	 *      java.util.Map)
 	 */
 	@Override
-	public boolean isValid(FormItem formItem, Map formContext) {
+	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
 		TextElement textElement = (TextElement) formItem;
 		if (StringHelper.containsNonWhitespace(textElement.getValue())) {
 			return textElement.getValue().length() <= XING_NAME_MAX_LENGTH;

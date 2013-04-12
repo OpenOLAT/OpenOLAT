@@ -75,7 +75,7 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
 	 */
 	@Override
-	public boolean isValid(FormItem formItem, Map formContext) {
+	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
 		// check parent rules first: check if mandatory and empty
 		if (! super.isValid(formItem, formContext)) {
 			return false;

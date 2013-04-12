@@ -41,6 +41,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.info.manager.InfoMessageFrontendManager;
 import org.olat.commons.info.model.InfoMessage;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -124,18 +125,18 @@ public class InfoMessagesWebService {
 			}
 		}
 		
-		InfoMessageFrontendManager messageManager = InfoMessageFrontendManager.getInstance();
+		InfoMessageFrontendManager messageManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);;
 		InfoMessage msg = messageManager.createInfoMessage(ores, resSubPath, businessPath, author);
 		msg.setTitle(title);
 		msg.setMessage(message);
-		messageManager.sendInfoMessage(msg, null, ureq.getLocale(), Collections.<Identity>emptyList());
+		messageManager.sendInfoMessage(msg, null, ureq.getLocale(), ureq.getIdentity(), Collections.<Identity>emptyList());
 		InfoMessageVO infoVO = new InfoMessageVO(msg);
 		return Response.ok(infoVO).build();
 	}
 	
 	@Path("{infoMessageKey}")
 	public InfoMessageWebService getInfoMessageWebservice(@PathParam("infoMessageKey") Long infoMessageKey) {
-		InfoMessageFrontendManager messageManager = InfoMessageFrontendManager.getInstance();
+		InfoMessageFrontendManager messageManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
 		InfoMessage msg = messageManager.loadInfoMessage(infoMessageKey);
 		return new InfoMessageWebService(msg);
 	}

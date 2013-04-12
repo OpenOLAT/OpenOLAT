@@ -27,7 +27,6 @@ import java.util.Locale;
 import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.resource.OresHelper;
 
 /**
@@ -38,19 +37,15 @@ import org.olat.core.util.resource.OresHelper;
  * Initial Date:  28 jul. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public abstract class InfoMessageFrontendManager extends BasicManager {
-	
-	protected static InfoMessageFrontendManager INSTANCE;
-	
+public interface InfoMessageFrontendManager {
+
 	public static  final OLATResourceable oresFrontend = OresHelper.lookupType(InfoMessageFrontendManager.class);
 	
-	public static InfoMessageFrontendManager getInstance() {
-		return INSTANCE;
-	}
+
 	
-	public abstract InfoMessage loadInfoMessage(Long key);
+	public InfoMessage loadInfoMessage(Long key);
 	
-	public abstract InfoMessage createInfoMessage(OLATResourceable ores, String subPath, String businessPath, Identity author);
+	public InfoMessage createInfoMessage(OLATResourceable ores, String subPath, String businessPath, Identity author);
 	
 	/**
 	 * Publish the info message. Save it and send the email if there are some tos
@@ -60,16 +55,16 @@ public abstract class InfoMessageFrontendManager extends BasicManager {
 	 * @param tos The list of recipients of the mail
 	 * @return
 	 */
-	public abstract boolean sendInfoMessage(InfoMessage msgs, MailFormatter mailFormatter, Locale locale, List<Identity> tos);
+	public boolean sendInfoMessage(InfoMessage msgs, MailFormatter mailFormatter, Locale locale, Identity from, List<Identity> tos);
 	
-	public abstract void deleteInfoMessage(InfoMessage infoMessage);
+	public void deleteInfoMessage(InfoMessage infoMessage);
 	
-	public abstract List<InfoMessage> loadInfoMessageByResource(OLATResourceable ores, String subPath, String businessPath,
+	public List<InfoMessage> loadInfoMessageByResource(OLATResourceable ores, String subPath, String businessPath,
 			Date after, Date before, int firstResult, int maxReturn);
 	
-	public abstract int countInfoMessageByResource(OLATResourceable ores, String subPath, String businessPath,
+	public int countInfoMessageByResource(OLATResourceable ores, String subPath, String businessPath,
 			Date after, Date before);
 	
-	public abstract List<Identity> getInfoSubscribers(OLATResourceable resource, String subPath);
+	public List<Identity> getInfoSubscribers(OLATResourceable resource, String subPath);
 
 }

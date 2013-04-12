@@ -10,7 +10,7 @@
 		<property  name="version" column="version" type="int" not-null="true" access="field"/>		
 		<property  name="lastModified" column="lastmodified" type="timestamp" not-null="true"/>
 		
-	  	<property name="title" unique="false" not-null="true" length="255" />
+	  	<property name="title" unique="false" length="255" />
     	<property name="description" type="string">
 			<column name="description" length="16777210" unique="false" not-null="false" />
     	</property>

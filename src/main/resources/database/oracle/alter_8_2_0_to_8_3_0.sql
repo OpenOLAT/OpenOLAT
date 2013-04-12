@@ -1,5 +1,5 @@
 alter table o_ac_reservation add expirationdate date;
-alter table o_ac_reservation add reservationtype varchar(32);
+alter table o_ac_reservation add reservationtype varchar2(32 char);
 
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_identity foreign key (fk_identity) references o_bs_identity (id);
@@ -56,9 +56,9 @@ create table o_om_room_reference (
    lastmodified date,
    creationdate date,
    businessgroup number(20),
-   resourcetypename varchar(50),
+   resourcetypename varchar2(50 char),
    resourcetypeid number(20),
-   ressubpath varchar(255),
+   ressubpath varchar2(255 char),
    roomId number(20),
    config clob,
    primary key (id)

@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityShort;
@@ -135,28 +137,37 @@ public class UserManagerImpl extends UserManager {
 		if (!MailHelper.isValidEmailAddress(email)) {
 			throw new AssertException("Identity cannot be searched by email, if email is not valid. Used address: " + email);
 		}
-		
-		DB db = DBFactory.getInstance();
+
 		StringBuilder sb = new StringBuilder("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
 			.append(" inner join identity.user user ")
 			.append(" where ");
 		
+		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
 		//search email
 		StringBuilder emailSb = new StringBuilder(sb);
-		emailSb.append(" user.properties['").append(UserConstants.EMAIL).append("'] =:email");
-		DBQuery emailQuery = db.createQuery(emailSb.toString());
-		emailQuery.setString("email", email);
-		List<Identity> identities = emailQuery.list();
+		if(mysql) {
+			emailSb.append(" user.properties['").append(UserConstants.EMAIL).append("'] =:email");
+		} else {
+			emailSb.append(" lower(user.properties['").append(UserConstants.EMAIL).append("']) = lower(:email)");
+		}
+
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
+				.createQuery(emailSb.toString(), Identity.class)
+				.setParameter("email", email).getResultList();
 		if (identities.size() > 1) {
 			throw new AssertException("more than one identity found with email::" + email);
 		}
 
 		//search institutional email
 		StringBuilder institutionalSb = new StringBuilder(sb);
-		institutionalSb.append(" user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("'] =:email");
-		DBQuery institutionalQuery = db.createQuery(institutionalSb.toString());
-		institutionalQuery.setString("email", email);
-		List<Identity> instIdentities = institutionalQuery.list();
+		if(mysql) {
+			institutionalSb.append(" user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("'] =:email");
+		} else {
+			institutionalSb.append(" lower(user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("']) = lower(:email)");
+		}
+		List<Identity> instIdentities = dbInstance.getCurrentEntityManager()
+				.createQuery(institutionalSb.toString(), Identity.class)
+				.setParameter("email", email).getResultList();
 		if (instIdentities.size() > 1) {
 			throw new AssertException("more than one identity found with institutional-email::" + email);
 		}
@@ -188,31 +199,40 @@ public class UserManagerImpl extends UserManager {
 		if(emails.isEmpty()) {
 			return Collections.emptyList();
 		}
-
-		DB db = DBFactory.getInstance();
 		StringBuilder sb = new StringBuilder("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
 			.append(" inner join identity.user user ")
 			.append(" where ");
 		
+		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
 		//search email
 		StringBuilder emailSb = new StringBuilder(sb);
-		emailSb.append(" user.properties['").append(UserConstants.EMAIL).append("']  in (:emails) ");
-		DBQuery emailQuery = db.createQuery(emailSb.toString());
-		emailQuery.setParameterList("emails", emails);
-		List<Identity> identities = emailQuery.list();
+		if(mysql) {
+			emailSb.append(" user.properties['").append(UserConstants.EMAIL).append("']  in (:emails) ");
+		} else {
+			emailSb.append(" lower(user.properties['").append(UserConstants.EMAIL).append("']) = lower(:email)");
+		}
+
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
+				.createQuery(emailSb.toString(), Identity.class)
+				.setParameter("emails", emails).getResultList();
 
 		//search institutional email
 		StringBuilder institutionalSb = new StringBuilder(sb);
-		institutionalSb.append(" user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("'] in (:emails) ");
+		if(mysql) {
+			institutionalSb.append(" user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("'] in (:emails) ");
+		} else {
+			institutionalSb.append(" lower(user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("']) = lower(:email)");
+		}
 		if(!identities.isEmpty()) {
 			institutionalSb.append(" and identity not in (:identities) ");
 		}
-		DBQuery institutionalQuery = db.createQuery(institutionalSb.toString());
-		institutionalQuery.setParameterList("emails", emails);
+		TypedQuery<Identity> institutionalQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(institutionalSb.toString(), Identity.class)
+				.setParameter("emails", emails);
 		if(!identities.isEmpty()) {
-			institutionalQuery.setParameterList("identities", identities);
+			institutionalQuery.setParameter("identities", identities);
 		}
-		List<Identity> instIdentities = institutionalQuery.list();
+		List<Identity> instIdentities = institutionalQuery.getResultList();
 		identities.addAll(instIdentities);
 		return identities;
 	}
@@ -237,28 +257,36 @@ public class UserManagerImpl extends UserManager {
 	}
 	
 	public boolean userExist(String email) {
-		DB db = DBFactory.getInstance();
 		StringBuilder sb = new StringBuilder("select distinct count(user) from ").append(UserImpl.class.getName()).append(" user where ");
-		
+		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
 		//search email
 		StringBuilder emailSb = new StringBuilder(sb);
-		emailSb.append(" user.properties['").append(UserConstants.EMAIL).append("'] =:email");
-		DBQuery emailQuery = db.createQuery(emailSb.toString());
-		emailQuery.setString("email", email);
-		Number count = (Number)emailQuery.uniqueResult();
+		if(mysql) {
+			emailSb.append(" user.properties['").append(UserConstants.EMAIL).append("'] =:email");
+		} else {
+			emailSb.append(" lower(user.properties['").append(UserConstants.EMAIL).append("']) = lower(:email)");
+		}
+		
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(emailSb.toString(), Number.class)
+				.setParameter("email", email)
+				.getSingleResult();
 		if(count.intValue() > 0) {
 			return true;
 		}
+		
 		//search institutional email
 		StringBuilder institutionalSb = new StringBuilder(sb);
-		institutionalSb.append(" user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("'] =:email");
-		DBQuery institutionalQuery = db.createQuery(institutionalSb.toString());
-		institutionalQuery.setString("email", email);
-		count = (Number)institutionalQuery.uniqueResult();
-		if(count.intValue() > 0) {
-			return true;
+		if(mysql) {
+			institutionalSb.append(" user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("'] =:email");
+		} else {
+			institutionalSb.append(" lower(user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("']) = lower(:email)");
 		}
-		return false;
+		count = dbInstance.getCurrentEntityManager()
+				.createQuery(institutionalSb.toString(), Number.class)
+				.setParameter("email", email)
+				.getSingleResult();
+		return count.intValue() > 0;
 	}
 
 	/**

@@ -425,8 +425,13 @@ public class MetaInfoFormController extends FormBasicController {
 			}
 		}
 				
-		if(isFileRenamed()) {			
-			valid = FileUtils.validateFilename(this.getFilename());
+		if(isFileRenamed()) {
+			//check if filetype is directory
+			if (meta.isDirectory()) {
+				valid &= true;
+			} else {
+				valid &= FileUtils.validateFilename(getFilename());
+			}
 			if(!valid) {
 				filename.setErrorKey("file.name.notvalid", new String[0]);
 			}			

@@ -27,6 +27,7 @@ import java.util.Locale;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.commons.info.manager.InfoMessageFrontendManager;
 import org.olat.commons.info.model.InfoMessage;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
@@ -34,7 +35,6 @@ import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -97,7 +97,8 @@ public class InfoPeekViewController extends BasicController {
 				null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new InfoNodeRenderer()));
 		
 		String resSubPath = this.courseNode.getIdent();
-		List<InfoMessage> infos = InfoMessageFrontendManager.getInstance().loadInfoMessageByResource(ores, resSubPath, null, null, null, 0, 5);
+		InfoMessageFrontendManager infoService = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
+		List<InfoMessage> infos = infoService.loadInfoMessageByResource(ores, resSubPath, null, null, null, 0, 5);
 
 		InfosTableModel model = new InfosTableModel(infos);
 		tableController.setTableDataModel(model);
@@ -114,7 +115,7 @@ public class InfoPeekViewController extends BasicController {
 		//
 	}
 	
-	private class InfosTableModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
+	private class InfosTableModel extends BaseTableDataModelWithoutFilter<InfosTableModel> {
 		private final List<InfoMessage> infos;
 		
 		public InfosTableModel(List<InfoMessage> infos) {

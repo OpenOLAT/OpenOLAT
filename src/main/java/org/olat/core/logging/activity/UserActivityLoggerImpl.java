@@ -667,7 +667,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			if (errorMsg!=null) {
 				// we found an inconsistency
 				// lets make this a warn
-				log_.warn("LoggingAction reported an inconsistency: "+loggingAction.getActionVerb()+" "+loggingAction.getActionObject()+", action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug()+
+				log_.warn("LoggingAction reported an inconsistency (" + errorMsg + ") while logging: "+loggingAction.getActionVerb()+" "+loggingAction.getActionObject()+", action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug()+
 						", expected: "+loggingAction.getTypeListDefinition().toString()+
 						", actual: "+convertLoggingResourceableListToString(resourceInfos), new Exception("OLAT-4653"));
 			}

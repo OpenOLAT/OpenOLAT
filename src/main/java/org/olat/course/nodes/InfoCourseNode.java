@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.commons.info.manager.InfoMessageFrontendManager;
 import org.olat.commons.info.model.InfoMessage;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
@@ -224,10 +225,10 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 	public void cleanupOnDelete(ICourse course) {
 		// delete infoMessages and subscriptions (OLAT-6171)
 		String resSubpath = getIdent();
-		List<InfoMessage>  messages = InfoMessageFrontendManager.getInstance().loadInfoMessageByResource(course, resSubpath, null, null, null, 0, 0);
-		InfoMessageFrontendManager infoMessageManager = InfoMessageFrontendManager.getInstance();
+		InfoMessageFrontendManager infoService = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
+		List<InfoMessage>  messages = infoService.loadInfoMessageByResource(course, resSubpath, null, null, null, 0, 0);
 		for (InfoMessage im : messages) {
-			infoMessageManager.deleteInfoMessage(im);
+			infoService.deleteInfoMessage(im);
 		}
 		
 		final SubscriptionContext subscriptionContext = CourseModule.createTechnicalSubscriptionContext(course.getCourseEnvironment(), this);

@@ -1,124 +1,123 @@
 -- onyx
-alter table o_qtiresultset add column issuspended bool default false;
-alter table o_qtiresultset add column fullyassessed bool default false;
+ALTER TABLE o_qtiresultset ADD (issuspended NUMBER);
+ALTER TABLE o_qtiresultset ADD (fullyassessed NUMBER);
 
-alter table o_checklist alter column title drop not null;
-alter table o_checkpoint alter column title drop not null;
-
+alter table o_checklist modify (title null);
+alter table o_checkpoint modify (title null);
 
 -- question item
 create table o_qp_pool (
-   id int8 not null,
-   creationdate timestamp not null,
-   lastmodified timestamp not null,
-   q_name varchar(255) not null,
-   q_public boolean default false,
-   fk_ownergroup int8,
+   id number(20) not null,
+   creationdate date not null,
+   lastmodified date not null,
+   q_name varchar2(255 char) not null,
+   q_public number default 0,
+   fk_ownergroup number(20),
    primary key (id)
 );
 
 create table o_qp_taxonomy_level (
-   id int8 not null,
-   creationdate timestamp not null,
-   lastmodified timestamp not null,
-   q_field varchar(255) not null,
-   q_mat_path_ids varchar(1024),
-   q_mat_path_names varchar(2048),
-   fk_parent_field int8,
+   id number(20) not null,
+   creationdate date not null,
+   lastmodified date not null,
+   q_field varchar2(255 char) not null,
+   q_mat_path_ids varchar2(1024 char),
+   q_mat_path_names varchar2(2048 char),
+   fk_parent_field number(20),
    primary key (id)
 );
 
 create table o_qp_item (
-   id int8 not null,
-   q_identifier varchar(36) not null,
-   q_master_identifier varchar(36),
-   q_title varchar(1024) not null,
-   q_description varchar(2048),
-   q_keywords varchar(1024),
-   q_coverage varchar(1024),
-   q_additional_informations varchar(256),
-   q_language varchar(16),
-   fk_edu_context bigint,
-   q_educational_learningtime varchar(32),
-   fk_type bigint,
+   id number(20) not null,
+   q_identifier varchar2(36 char) not null,
+   q_master_identifier varchar2(36 char),
+   q_title varchar2(1024 char) not null,
+   q_description varchar2(2048 char),
+   q_keywords varchar2(1024 char),
+   q_coverage varchar2(1024 char),
+   q_additional_informations varchar2(256 char),
+   q_language varchar2(16 char),
+   fk_edu_context number(20),
+   q_educational_learningtime varchar2(32 char),
+   fk_type number(20),
    q_difficulty decimal(10,9),
    q_stdev_difficulty decimal(10,9),
    q_differentiation decimal(10,9),
-   q_num_of_answers_alt int8 not null default 0,
-   q_usage int8 not null default 0,
-   q_assessment_type varchar(64),
-   q_status varchar(32) not null,
-   q_version varchar(50),
-   fk_license int8,
-   q_editor varchar(256),
-   q_editor_version varchar(256),
-   q_format varchar(32) not null,
-   creationdate timestamp not null,
-   lastmodified timestamp not null,
-   q_dir varchar(32),
-   q_root_filename varchar(255),
-   fk_taxonomy_level int8,
-   fk_ownergroup int8 not null,
+   q_num_of_answers_alt number(20) default 0 not null,
+   q_usage number(20) default 0 not null,
+   q_assessment_type varchar2(64 char),
+   q_status varchar2(32 char) not null,
+   q_version varchar2(50 char),
+   fk_license number(20),
+   q_editor varchar2(256 char),
+   q_editor_version varchar2(256 char),
+   q_format varchar2(32 char) not null,
+   creationdate date not null,
+   lastmodified date not null,
+   q_dir varchar2(32 char),
+   q_root_filename varchar2(255 char),
+   fk_taxonomy_level number(20),
+   fk_ownergroup number(20) not null,
    primary key (id)
 );
 
 create table o_qp_pool_2_item (
-   id int8 not null,
-   creationdate timestamp not null,
-   q_editable boolean default false,
-   fk_pool_id int8 not null,
-   fk_item_id int8 not null,
+   id number(20) not null,
+   creationdate date not null,
+   q_editable number default 0,
+   fk_pool_id number(20) not null,
+   fk_item_id number(20) not null,
    primary key (id)
 );
 
 create table o_qp_share_item (
-   id int8 not null,
-   creationdate timestamp not null,
-   q_editable boolean default false,
-   fk_resource_id int8 not null,
-   fk_item_id int8 not null,
+   id number(20) not null,
+   creationdate date not null,
+   q_editable number default 0,
+   fk_resource_id number(20) not null,
+   fk_item_id number(20) not null,
    primary key (id)
 );
 
 create table o_qp_item_collection (
-   id int8 not null,
-   creationdate timestamp not null,
-   lastmodified timestamp not null,
-   q_name varchar(256),
-   fk_owner_id int8 not null,
+   id number(20) not null,
+   creationdate date not null,
+   lastmodified date not null,
+   q_name varchar2(256 char),
+   fk_owner_id number(20) not null,
    primary key (id)
 );
 
 create table o_qp_collection_2_item (
-   id int8 not null,
-   creationdate timestamp not null,
-   fk_collection_id int8 not null,
-   fk_item_id int8 not null,
+   id number(20) not null,
+   creationdate date not null,
+   fk_collection_id number(20) not null,
+   fk_item_id number(20) not null,
    primary key (id)
 );
 
 create table o_qp_edu_context (
-   id int8 not null,
-   creationdate timestamp not null,
-   q_level varchar(256) not null,
-   q_deletable boolean default false,
+   id number(20) not null,
+   creationdate date not null,
+   q_level varchar2(256 char) not null,
+   q_deletable number default 0,
    primary key (id)
 );
 
 create table o_qp_item_type (
-   id int8 not null,
-   creationdate timestamp not null,
-   q_type varchar(256) not null,
-   q_deletable boolean default false,
+   id number(20) not null,
+   creationdate date not null,
+   q_type varchar2(256 char) not null,
+   q_deletable number default 0,
    primary key (id)
 );
 
 create table o_qp_license (
-   id bigint not null,
-   creationdate timestamp not null,
-   q_license varchar(256) not null,
-   q_text varchar(2048),
-   q_deletable boolean default false,
+   id number(20) not null,
+   creationdate date not null,
+   q_license varchar2(256 char) not null,
+   q_text varchar2(2048 char),
+   q_deletable number default 0,
    primary key (id)
 );
 
@@ -144,13 +143,13 @@ create or replace view o_qp_item_v as (
       item.q_format as item_format,
       item.creationdate as item_creationdate,
       item.lastmodified as item_lastmodified,
-      (select avg(rating.rating) from o_userrating as rating
+      (select avg(rating.rating) from o_userrating rating
          where rating.resid=item.id and rating.resname='QuestionItem' and rating.ressubpath is null
       ) as item_rating
-   from o_qp_item as item
-   left join o_qp_taxonomy_level as taxlevel on (item.fk_taxonomy_level = taxlevel.id)
-   left join o_qp_item_type as itemtype on (item.fk_type = itemtype.id)
-   left join o_qp_edu_context as educontext on (item.fk_edu_context = educontext.id)
+   from o_qp_item item
+   left join o_qp_taxonomy_level taxlevel on (item.fk_taxonomy_level = taxlevel.id)
+   left join o_qp_item_type itemtype on (item.fk_type = itemtype.id)
+   left join o_qp_edu_context educontext on (item.fk_edu_context = educontext.id)
 );
 
 create or replace view o_qp_item_author_v as (
@@ -174,15 +173,15 @@ create or replace view o_qp_item_author_v as (
       item.q_format as item_format,
       item.creationdate as item_creationdate,
       item.lastmodified as item_lastmodified,
-      (select avg(rating.rating) from o_userrating as rating
+      (select avg(rating.rating) from o_userrating rating
          where rating.resid=item.id and rating.resname='QuestionItem' and rating.ressubpath is null
       ) as item_rating
-   from o_qp_item as item
-   inner join o_bs_secgroup as ownergroup on (ownergroup.id = item.fk_ownergroup)
-   inner join o_bs_membership as ownership on (ownergroup.id = ownership.secgroup_id) 
-   left join o_qp_taxonomy_level as taxlevel on (item.fk_taxonomy_level = taxlevel.id)
-   left join o_qp_item_type as itemtype on (item.fk_type = itemtype.id)
-   left join o_qp_edu_context as educontext on (item.fk_edu_context = educontext.id)
+   from o_qp_item item
+   inner join o_bs_secgroup ownergroup on (ownergroup.id = item.fk_ownergroup)
+   inner join o_bs_membership ownership on (ownergroup.id = ownership.secgroup_id) 
+   left join o_qp_taxonomy_level taxlevel on (item.fk_taxonomy_level = taxlevel.id)
+   left join o_qp_item_type itemtype on (item.fk_type = itemtype.id)
+   left join o_qp_edu_context educontext on (item.fk_edu_context = educontext.id)
 );
 
 create or replace view o_qp_item_pool_v as (
@@ -207,14 +206,14 @@ create or replace view o_qp_item_pool_v as (
       item.q_format as item_format,
       item.creationdate as item_creationdate,
       item.lastmodified as item_lastmodified,
-      (select avg(rating.rating) from o_userrating as rating
+      (select avg(rating.rating) from o_userrating rating
          where rating.resid=item.id and rating.resname='QuestionItem' and rating.ressubpath is null
       ) as item_rating
-   from o_qp_item as item
-   inner join o_qp_pool_2_item as pool2item on (pool2item.fk_item_id = item.id)
-   left join o_qp_taxonomy_level as taxlevel on (item.fk_taxonomy_level = taxlevel.id)
-   left join o_qp_item_type as itemtype on (item.fk_type = itemtype.id)
-   left join o_qp_edu_context as educontext on (item.fk_edu_context = educontext.id)
+   from o_qp_item item
+   inner join o_qp_pool_2_item pool2item on (pool2item.fk_item_id = item.id)
+   left join o_qp_taxonomy_level taxlevel on (item.fk_taxonomy_level = taxlevel.id)
+   left join o_qp_item_type itemtype on (item.fk_type = itemtype.id)
+   left join o_qp_edu_context educontext on (item.fk_edu_context = educontext.id)
 );
 
 create or replace view o_qp_item_shared_v as (
@@ -239,18 +238,15 @@ create or replace view o_qp_item_shared_v as (
       item.q_format as item_format,
       item.creationdate as item_creationdate,
       item.lastmodified as item_lastmodified,
-      (select avg(rating.rating) from o_userrating as rating
+      (select avg(rating.rating) from o_userrating rating
          where rating.resid=item.id and rating.resname='QuestionItem' and rating.ressubpath is null
       ) as item_rating
-   from o_qp_item as item
-   inner join o_qp_share_item as shareditem on (shareditem.fk_item_id = item.id)
-   left join o_qp_taxonomy_level as taxlevel on (item.fk_taxonomy_level = taxlevel.id)
-   left join o_qp_item_type as itemtype on (item.fk_type = itemtype.id)
-   left join o_qp_edu_context as educontext on (item.fk_edu_context = educontext.id)
+   from o_qp_item item
+   inner join o_qp_share_item shareditem on (shareditem.fk_item_id = item.id)
+   left join o_qp_taxonomy_level taxlevel on (item.fk_taxonomy_level = taxlevel.id)
+   left join o_qp_item_type itemtype on (item.fk_type = itemtype.id)
+   left join o_qp_edu_context educontext on (item.fk_edu_context = educontext.id)
 );
-
-
-
 
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);
 
@@ -275,5 +271,3 @@ alter table o_qp_item add constraint idx_qp_item_type_id foreign key (fk_type) r
 alter table o_qp_item add constraint idx_qp_item_license_id foreign key (fk_license) references o_qp_license(id);
 
 alter table o_qp_taxonomy_level add constraint idx_qp_field_2_parent_id foreign key (fk_parent_field) references o_qp_taxonomy_level(id);
-
-alter table o_qp_item_type add constraint cst_unique_item_type unique (q_type);

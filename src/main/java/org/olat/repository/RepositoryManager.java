@@ -1230,17 +1230,19 @@ public class RepositoryManager extends BasicManager {
 				" org.olat.repository.RepositoryEntry v " +
 				" inner join fetch v.olatResource as res  ");
 		} 
-
+		boolean mysql = dbInstance.getDbVendor().equals("mysql");
 		boolean isFirstOfWhereClause = false;
   	query.append("where v.access != 0 "); // access == 0 means invalid repo-entry (not complete created)    
 		if (var_author) { // fuzzy author search
 			author = author.replace('*','%');
 			author = '%' + author + '%';
 			if (!isFirstOfWhereClause) query.append(" and ");
-			query.append("sgmsi.securityGroup = v.ownerGroup and "+
-			"sgmsi.identity = identity and "+
-			"identity.user = user and "+
-			"(user.properties['firstName'] like :author or user.properties['lastName'] like :author or identity.name like :author)");
+			query.append("sgmsi.securityGroup = v.ownerGroup and sgmsi.identity = identity and identity.user = user and ");
+			if(mysql) {
+				query.append("(user.properties['firstName'] like :author or user.properties['lastName'] like :author or identity.name like :author)");
+			} else {
+				query.append("(lower(user.properties['firstName']) like lower(:author) or lower(user.properties['lastName']) like lower(:author) or lower(identity.name) like lower(:author))");
+			}
 			isFirstOfWhereClause = false;
 		}
 
@@ -1248,7 +1250,11 @@ public class RepositoryManager extends BasicManager {
 			displayName = displayName.replace('*','%');
 			displayName = '%' + displayName + '%';
 			if (!isFirstOfWhereClause) query.append(" and ");
-			query.append("v.displayname like :displayname");
+			if(mysql) {
+				query.append("v.displayname like :displayname");	
+			} else {
+				query.append("lower(v.displayname) like lower(:displayname)");
+			}
 			isFirstOfWhereClause = false;
 		}
 
@@ -1256,7 +1262,11 @@ public class RepositoryManager extends BasicManager {
 			desc = desc.replace('*','%');
 			desc = '%' + desc + '%';
 			if (!isFirstOfWhereClause) query.append(" and ");
-			query.append("v.description like :desc");
+			if(mysql) {
+				query.append("v.description like :desc");
+			} else {
+				query.append("lower(v.description) like lower(:desc)");
+			}
 			isFirstOfWhereClause = false;
 		}
 

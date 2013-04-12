@@ -37,7 +37,8 @@ import org.olat.core.id.ModifiedInfo;
  * @author bja <bja@bps-system.de>
  */
 public class Checkpoint extends PersistentObject implements ModifiedInfo, Serializable {
-	
+
+	private static final long serialVersionUID = 6963103659557231124L;
 	private String title;
 	private String description;
 	private String mode;

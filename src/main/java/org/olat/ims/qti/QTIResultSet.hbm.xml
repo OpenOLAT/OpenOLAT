@@ -45,6 +45,10 @@
 			<column name="duration" not-null="false"/> 
     </property>
 
+    <property name="fullyAssessed" column="fullyassessed" not-null="false"/>
+    
+    <property name="suspended" column="issuspended" not-null="false"/>
+
   </class>  
 </hibernate-mapping>
 

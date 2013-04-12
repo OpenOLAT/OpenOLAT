@@ -39,6 +39,7 @@ import org.olat.core.id.ModifiedInfo;
  */
 public class Checklist extends PersistentObject implements ModifiedInfo, Serializable {
 
+	private static final long serialVersionUID = -723324838609424892L;
 	private String title;
 	private String description;
 	private Date lastMofified;
@@ -80,7 +81,7 @@ public class Checklist extends PersistentObject implements ModifiedInfo, Seriali
 	/**
 	 * @return Returns the checkpoints sorted.
 	 */
-	public List<Checkpoint> getCheckpointsSorted(Comparator comparator) {
+	public List<Checkpoint> getCheckpointsSorted(Comparator<Checkpoint> comparator) {
 		Collections.sort(checkpoints, comparator);
 		return checkpoints;
 	}

@@ -59,6 +59,11 @@ public class ToggleBoxController extends BasicController {
 	}
 
 	public ToggleBoxController(UserRequest ureq, WindowControl wControl, String key, String titleOpen, String titleClose, Component componentToToggle) {
+		this(ureq, wControl, key, titleOpen, titleClose, componentToToggle, true);
+	}
+
+	public ToggleBoxController(UserRequest ureq, WindowControl wControl, String key, String titleOpen, String titleClose, Component componentToToggle,
+			boolean defaultToggleStatus) {
 		super(ureq, wControl);
 
 		this.key = key;
@@ -69,7 +74,7 @@ public class ToggleBoxController extends BasicController {
 		toggleButton = LinkFactory.createCustomLink("toggle", "toggle", "", Link.NONTRANSLATED, mainVC, this);
 
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
-		toggleStatus = (Boolean) prefs.get(this.getClass(), key, Boolean.TRUE);
+		toggleStatus = (Boolean) prefs.get(this.getClass(), key, defaultToggleStatus);
 		mainVC.put("cmpToToggle", componentToToggle);
 
 		hideButton = LinkFactory.createLink("hide", mainVC, this);

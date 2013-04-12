@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member.wizard;
+package org.olat.admin.securitygroup.gui.multi;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -26,28 +26,29 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.group.BusinessGroup;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.course.member.wizard.ImportMemberMailController;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ImportMember_1a_LoginListStep extends BasicStep {
-	
-	public ImportMember_1a_LoginListStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group) {
+public class UsersToGroupWizardStep02 extends BasicStep {
+
+	public UsersToGroupWizardStep02(UserRequest ureq, MailTemplate addUserMailDefaultTempl, boolean mandatoryEmail) {
 		super(ureq);
-		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, repoEntry, group));
-		setI18nTitleAndDescr("import.import.title", "import.import.title");
+		setNextStep(NOSTEP);
+		setI18nTitleAndDescr("import.title.email", "import.title.email");
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, true, false);
+		return new PrevNextFinishConfig(true, false, true);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new ImportMemberByUsernamesController(ureq, wControl, form, runContext, false);
+		return new ImportMemberMailController(ureq, wControl, null, form, runContext);
 	}
 }

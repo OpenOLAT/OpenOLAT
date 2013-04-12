@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member.wizard;
+package org.olat.admin.securitygroup.gui.multi;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -26,28 +26,44 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.group.BusinessGroup;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.course.member.wizard.ImportMemberOverviewIdentitiesController;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ImportMember_1a_LoginListStep extends BasicStep {
+public class UsersToGroupWizardStep01 extends BasicStep {
 	
-	public ImportMember_1a_LoginListStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group) {
+	private final boolean mandatoryEmail;
+	private final MailTemplate mailDefaultTemplate;
+
+	public UsersToGroupWizardStep01(UserRequest ureq, MailTemplate mailDefaultTemplate, boolean mandatoryEmail) {
 		super(ureq);
-		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, repoEntry, group));
-		setI18nTitleAndDescr("import.import.title", "import.import.title");
+		this.mandatoryEmail = mandatoryEmail;
+		this.mailDefaultTemplate = mailDefaultTemplate;
+		
+		setI18nTitleAndDescr("import.title.select", null);
+		
+		if(mailDefaultTemplate == null) {
+			setNextStep(BasicStep.NOSTEP);
+		} else {
+			setNextStep(new UsersToGroupWizardStep02(ureq, mailDefaultTemplate, mandatoryEmail));
+		}
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, true, false);
+		if(mailDefaultTemplate == null) {
+			return new PrevNextFinishConfig(true, false, true);
+		} else {
+			return new PrevNextFinishConfig(true, true, !mandatoryEmail);
+		}
 	}
 
 	@Override
-	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new ImportMemberByUsernamesController(ureq, wControl, form, runContext, false);
+	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext stepsRunContext, Form form) {
+		return new ImportMemberOverviewIdentitiesController(ureq, wControl, form, stepsRunContext);
 	}
 }

@@ -95,7 +95,9 @@ public class ChecklistDisplayController extends BasicController {
 	private void displayChecklist(UserRequest ureq, WindowControl wControl) {
 		// add title
 		VelocityContainer displayChecklistVC = this.createVelocityContainer("display");
-		displayChecklistVC.contextPut("checklistTitle", this.checklist.getTitle());
+		
+		String title = checklist.getTitle() == null ? "" : checklist.getTitle();
+		displayChecklistVC.contextPut("checklistTitle", title);
 		// add edit and manage button
 		if((canEdit | canManage) && course != null) {
 			displayChecklistVC.contextPut("showAuthorBtns", Boolean.TRUE);
@@ -167,9 +169,12 @@ public class ChecklistDisplayController extends BasicController {
 				checkpoint.setSelectionFor(ureq.getIdentity(), selection.get(i));
 				manager.updateCheckpoint(checkpoint);
 				// do logging
+				String listTitle = checklist.getTitle() == null ? "" : checklist.getTitle();
+				String pointTitle = checkpoint.getTitle() == null ? "" : checkpoint.getTitle();
+				
 				ThreadLocalUserActivityLogger.log(CourseLoggingAction.CHECKLIST_ELEMENT_CHECKPOINT_UPDATED, getClass(), 
-						LoggingResourceable.wrapNonOlatResource(StringResourceableType.checklist, Long.toString(checklist.getKey()), checklist.getTitle()),
-						LoggingResourceable.wrapNonOlatResource(StringResourceableType.checkpoint, Long.toString(checkpoint.getKey()), checkpoint.getTitle()));
+						LoggingResourceable.wrapNonOlatResource(StringResourceableType.checklist, Long.toString(checklist.getKey()), listTitle),
+						LoggingResourceable.wrapNonOlatResource(StringResourceableType.checkpoint, Long.toString(checkpoint.getKey()), pointTitle));
 			}
 		}
 		initTable(ureq);

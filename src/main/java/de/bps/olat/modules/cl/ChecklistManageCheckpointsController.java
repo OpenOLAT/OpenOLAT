@@ -174,8 +174,9 @@ public class ChecklistManageCheckpointsController extends BasicController {
 	
 	private void displayChecklist(UserRequest ureq, boolean isAdmin) {
 		// add title
-		VelocityContainer displayChecklistVC = this.createVelocityContainer("manage");
-		displayChecklistVC.contextPut("checklistTitle", this.checklist.getTitle());
+		VelocityContainer displayChecklistVC = createVelocityContainer("manage");
+		String listTitle = checklist.getTitle() == null ? "" : checklist.getTitle();
+		displayChecklistVC.contextPut("checklistTitle", listTitle);
 		
 		// group choice
 		removeAsListenerAndDispose(groupForm);
@@ -227,7 +228,8 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		manageChecklistTable.addColumnDescriptor(new DefaultColumnDescriptor("cl.table.identity", 0, DETAILS_ACTION, ureq.getLocale()));
 		int i = 1;
 		for( Checkpoint checkpoint : checklist.getCheckpoints() ) {
-			manageChecklistTable.addColumnDescriptor(new ChecklistMultiSelectColumnDescriptor(checkpoint.getTitle(), i));
+			String pointTitle = checkpoint.getTitle() == null ? "" : checkpoint.getTitle();
+			manageChecklistTable.addColumnDescriptor(new ChecklistMultiSelectColumnDescriptor(pointTitle, i));
 			i++;
 		}
 		manageChecklistTable.addColumnDescriptor(new BooleanColumnDescriptor("cl.edit.title", i, EDIT_ACTION, translate(EDIT_ACTION), ""));
@@ -289,7 +291,8 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		// additional informations
 		sb.append(translate("cl.course.title")).append('\t').append(this.course.getCourseTitle());
 		sb.append('\n');
-		sb.append(translate("cl.title")).append('\t').append(this.checklist.getTitle());
+		String listTitle = checklist.getTitle() == null ? "" : checklist.getTitle();
+		sb.append(translate("cl.title")).append('\t').append(listTitle);
 		sb.append('\n').append('\n');
 		// header
 		for (int c = 0; c < (cdcnt-1); c++) { // skip last column (action)

@@ -1,3 +1,10 @@
+-- onyx
+alter table o_qtiresultset add column issuspended bit default 0;
+alter table o_qtiresultset add column fullyassessed bit default 0;
+
+alter table o_checklist modify column title varchar(255);
+alter table o_checkpoint modify column title varchar(255);
+
 -- question item
 create table if not exists o_qp_pool (
    id bigint not null,

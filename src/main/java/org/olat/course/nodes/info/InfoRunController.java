@@ -123,7 +123,7 @@ public class InfoRunController extends BasicController {
 		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(canAdd, canAdmin);
 		
 		infoDisplayController = new InfoDisplayController(ureq, wControl, config, secCallback, infoResourceable, resSubPath, businessPath);
-		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, InfoMessageFrontendManager.getInstance()));
+		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, CoreSpringFactory.getImpl(InfoMessageFrontendManager.class)));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(course.getCourseEnvironment().getCourseGroupManager().getCourseResource(),
 				RepositoryManager.getInstance(), CoreSpringFactory.getImpl(BusinessGroupService.class)));
 		MailFormatter mailFormatter = new SendMailFormatterForCourse(course.getCourseTitle(), businessPath, getTranslator());

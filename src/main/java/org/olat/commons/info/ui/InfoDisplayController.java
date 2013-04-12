@@ -30,6 +30,7 @@ import java.util.Set;
 import org.olat.commons.info.manager.InfoMessageFrontendManager;
 import org.olat.commons.info.manager.MailFormatter;
 import org.olat.commons.info.model.InfoMessage;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.date.DateComponentFactory;
 import org.olat.core.gui.components.date.DateElement;
@@ -114,7 +115,7 @@ public class InfoDisplayController extends FormBasicController {
 		this.resSubPath = resSubPath;
 		this.businessPath = businessPath;
 		
-		infoMessageManager = InfoMessageFrontendManager.getInstance();
+		infoMessageManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
 		maxResults = maxResultsConfig = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_LENGTH, 10);
 		duration = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_DURATION, 90);
 		
@@ -419,7 +420,7 @@ public class InfoDisplayController extends FormBasicController {
 				}
 			}
 			
-			infoMessageManager.sendInfoMessage(msg, sendMailFormatter, ureq.getLocale(), identities);
+			infoMessageManager.sendInfoMessage(msg, sendMailFormatter, ureq.getLocale(), ureq.getIdentity(), identities);
 			
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.INFO_MESSAGE_CREATED, getClass(),
 					LoggingResourceable.wrap(msg.getOLATResourceable(), OlatResourceableType.infoMessage));

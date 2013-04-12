@@ -154,7 +154,7 @@ public interface UserPropertyHandler extends ItemValidatorProvider {
 	 * @return true: the entered value is ok; false: the entered value is not
 	 *         accepted (Validation error)
 	 */
-	public boolean isValid(FormItem formItem, Map formContext);
+	public boolean isValid(FormItem formItem, Map<String,String> formContext);
 
 	/**
 	 * Checks if the given value is a valid value for this property (e.g. syntax

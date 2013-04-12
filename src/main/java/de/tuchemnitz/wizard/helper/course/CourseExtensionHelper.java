@@ -118,7 +118,7 @@ public class CourseExtensionHelper {
 	 * @param longTitle long title for node
 	 * @return created course node
 	 */
-	private static final CourseNode createNode(ICourse course, final String shortTitle, final String longTitle, final String type) {
+	public static final CourseNode createNode(ICourse course, final String shortTitle, final String longTitle, final String type) {
 		// create a node with default data
 		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode node = nodeConfig.getInstance();

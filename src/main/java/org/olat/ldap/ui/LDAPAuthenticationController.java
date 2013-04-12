@@ -150,6 +150,19 @@ protected void event(UserRequest ureq, Component source, Event event) {
 
 			authenticatedIdentity= authenticate(login, pass, ldapError);
 
+			if(!ldapError.isEmpty()) {
+				final String errStr = ldapError.get();
+				if ("login.notauthenticated".equals(errStr)) {
+					// user exists in LDAP, authentication was ok, but user
+					// has not got the OLAT service or has not been created by now
+					getWindowControl().setError(translate("login.notauthenticated"));
+					return;                                
+				} else {
+					// tell about the error again
+					ldapError.insert(errStr);
+				}
+			}
+
 			if (authenticatedIdentity != null) {
 				provider = LDAPAuthenticationController.PROVIDER_LDAP;
 			} else {

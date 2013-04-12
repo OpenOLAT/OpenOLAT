@@ -368,12 +368,13 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return List of catalog entries
 	 */
 	public List<CatalogEntry> getCatalogCategoriesFor(RepositoryEntry repoEntry) {
-		String sqlQuery = "select distinct parent from org.olat.catalog.CatalogEntryImpl as parent "
-			+ ", org.olat.catalog.CatalogEntryImpl as cei "
-			+ ", org.olat.repository.RepositoryEntry as re "
-			+ " where cei.repositoryEntry = re "
-			+ " and re.key= :reKey "
-			+ " and cei.parent = parent ";
+		String sqlQuery = "from org.olat.catalog.CatalogEntryImpl where id in "
+				+ " (select distinct parent.id from org.olat.catalog.CatalogEntryImpl as parent " 
+					+ ", org.olat.catalog.CatalogEntryImpl as cei "
+					+ ", org.olat.repository.RepositoryEntry as re " 
+					+ " where cei.repositoryEntry = re " 
+					+ " and re.key= :reKey " 
+					+ " and cei.parent = parent)";
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sqlQuery, CatalogEntry.class)

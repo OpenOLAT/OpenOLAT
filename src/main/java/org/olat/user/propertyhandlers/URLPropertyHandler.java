@@ -74,7 +74,7 @@ public class URLPropertyHandler extends Generic127CharTextPropertyHandler {
 	}
 
 	@Override
-	public boolean isValid(FormItem formItem, Map formContext) {
+	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
 		// check parent rules first: check if mandatory and empty
 		if ( ! super.isValid(formItem, formContext)) return false;
 		org.olat.core.gui.components.form.flexible.elements.TextElement uiEl = (org.olat.core.gui.components.form.flexible.elements.TextElement) formItem;

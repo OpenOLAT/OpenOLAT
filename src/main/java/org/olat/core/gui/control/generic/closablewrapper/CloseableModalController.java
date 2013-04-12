@@ -122,6 +122,13 @@ public class CloseableModalController extends DefaultController {
 		setInitialComponent(myContent);
 	}
 	
+	public void setCustomCSS(String className){
+		myContent.contextPut("cssClass", className);
+	}
+	
+	public void setCustomWindowCSS(String cssClass){
+		myContent.contextPut("windowCssClass", cssClass);
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,

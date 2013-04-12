@@ -205,9 +205,12 @@
 	            <prop key="hibernate.c3p0.autoCommitOnClose">false</prop>
 	            <!-- Number of connection acquired when pool is exhausted -->
 	            <prop key="hibernate.c3p0.acquire_increment">2</prop>
-	             <!-- Idle time (in sec) before pooled connection is validated -->
-	             <prop key="hibernate.c3p0.idle_test_period">500</prop>
-	
+	            <!-- Idle time (in sec) before pooled connection is validated -->
+	            <prop key="hibernate.c3p0.idle_test_period">500</prop>
+	            <!-- for debug purposes -->
+	            <prop key="hibernate.c3p0.debugUnreturnedConnectionStackTraces">${db.hibernate.c3p0.debugUnreturnedConnectionStackTraces}</prop>
+            	<prop key="hibernate.c3p0.unreturnedConnectionTimeout">${db.hibernate.c3p0.unreturnedConnectionTimeout}</prop>
+
 	            <!--  OLAT-5528: under heavy load situations threads have been seen to deadlock on acquire/release of a connection.
 	                             increasing number of helper threads from 3 to 10 plus limiting the max time for administrative tasks to 2min
 	                             is expected to allow these situations to resolve themselves -->

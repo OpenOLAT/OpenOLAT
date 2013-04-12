@@ -67,12 +67,12 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
 import org.olat.user.ChangePasswordController;
 import org.olat.user.PersonalSettingsController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <h3>Description:</h3>
@@ -240,7 +240,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		//guest(=anonymous) have a guest policy
 		createAndPersistPolicyIfNotExists(guestGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY);
 	}
-
+	
 	/**
 	 * @see org.olat.basesecurity.Manager#getPoliciesOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
 	 */
@@ -302,6 +302,25 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			query.setParameter("secGroupKey", secGroup.getKey());
 		}
 		return query.getResultList();
+	}
+	
+	@Override
+	public List<Identity> getIdentitiesWithPermissionWithOlatResourceableType(
+			String permission, String olatResourceableTypeName) {
+		// if the olatResourceable is not persisted as OLATResource, then the answer
+		// is false, therefore we can use the query assuming there is an OLATResource
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct im from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi,")
+		  .append(IdentityImpl.class.getName()).append(" as im,")
+		  .append(PolicyImpl.class.getName()).append(" as poi,")
+		  .append(OLATResourceImpl.class.getName()).append(" as ori ")
+		  .append("where im=sgmsi.identity and sgmsi.securityGroup=poi.securityGroup ")
+		  .append(" and poi.permission=:permission and poi.olatResource=ori and ori.resName=:resName");
+
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Identity.class)
+				.setParameter("permission", permission)
+				.setParameter("resName", olatResourceableTypeName)
+				.getResultList();
 	}
 	
 	@Override
@@ -1105,7 +1124,27 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		}
 		return identities.get(0);
 	}
-	
+
+	/**
+	 * Custom search operation by BiWa
+	 * find identity by student/institution number 
+	 * @return
+	 */
+	@Override
+	public Identity findIdentityByNumber(String identityNumber) {
+		//default initializations
+		Map<String, String> userPropertiesSearch = new HashMap<String, String>();
+		// institutional identifier
+		userPropertiesSearch.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, identityNumber);
+		List<Identity> identities = getIdentitiesByPowerSearch(null, userPropertiesSearch, true, null, null, null, null, null, null, null, null);
+
+		//check for unique search result
+		if(identities.size() == 1) {
+			return identities.get(0);
+		}
+		return null;
+	}
+
 	@Override
 	public List<Identity> findIdentitiesByName(Collection<String> identityNames) {
 		if (identityNames == null || identityNames.isEmpty()) return Collections.emptyList();

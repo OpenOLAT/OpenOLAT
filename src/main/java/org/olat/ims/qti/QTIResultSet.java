@@ -37,6 +37,7 @@ import org.olat.core.id.Identity;
  */
 public class QTIResultSet extends PersistentObject { 
 
+	private static final long serialVersionUID = -521297938539309016L;
 	private long olatResource;
 	private String olatResourceDetail;
 	private long repositoryRef;
@@ -50,6 +51,8 @@ public class QTIResultSet extends PersistentObject {
 	private float score;
 	private Long duration;
 	private Date lastModified;
+	private Boolean fullyAssessed;
+	private Boolean suspended;
 
 
 	public QTIResultSet() {
@@ -199,5 +202,38 @@ public class QTIResultSet extends PersistentObject {
     public void setDuration(Long duration) {
         this.duration = duration;
     }
+
+	public Boolean getFullyAssessed() {
+		return fullyAssessed;
+	}
+
+	public void setFullyAssessed(Boolean fullyAssessed) {
+		this.fullyAssessed = fullyAssessed;
+	}
+
+	public boolean getSuspended() {
+		return suspended != null ? suspended : false;
+	}
+
+	public void setSuspended(Boolean suspended) {
+		this.suspended = suspended;
+	}
+
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 87221 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof QTIResultSet) {
+			QTIResultSet set = (QTIResultSet)obj;
+			return getKey() != null && getKey().equals(set.getKey());
+		}
+		return false;
+	}
 }
 

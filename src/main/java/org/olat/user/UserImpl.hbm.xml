@@ -12,7 +12,7 @@
 	<property  name="creationDate" column="creationdate" type="timestamp" />   
 
 	<component name="preferences" class="org.olat.user.PreferencesImpl">
-	    <property name="language" unique="false" not-null="false" length="10"/>
+	    <property name="language" unique="false" not-null="false" length="30"/>
 	    <property name="fontsize" unique="false" not-null="false" length="10"/>
 	    <property name="notificationInterval">
 	    	<column name="notification_interval" unique="false" not-null="false" length="16"/>

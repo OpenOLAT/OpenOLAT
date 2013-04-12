@@ -100,9 +100,9 @@ public class IdentityAssessmentEditController extends BasicController {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.mayEdit = mayEdit;
-		this.main = new Panel("main");
-		this.assessedUserCourseEnvironment = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-		this.ores = course;
+		main = new Panel("main");
+		assessedUserCourseEnvironment = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+		this.ores = OresHelper.clone(course);
 		this.headers = headers;
 		doIdentityAssessmentOverview(ureq, true);		
 		putInitialPanel(main);
@@ -162,6 +162,7 @@ public class IdentityAssessmentEditController extends BasicController {
 			}
 		}
 		if (initTable) {
+			assessedUserCourseEnvironment.getScoreAccounting().evaluateAll();
 			assessmentOverviewCtr = new IdentityAssessmentOverviewController(ureq, getWindowControl(), 
 					assessedUserCourseEnvironment, mayEdit, false, true);			
 			listenTo(assessmentOverviewCtr);

@@ -39,7 +39,7 @@ import java.util.Comparator;
  * Initial Date:  11.03.2010 <br>
  * @author thomasw
  */
-public class CheckpointComparator implements Comparator {
+public class CheckpointComparator implements Comparator<Checkpoint> {
 
 	/**
 	 * indicate the attribute to be compared:
@@ -60,9 +60,7 @@ public class CheckpointComparator implements Comparator {
 	}
 	
 	@Override
-	public int compare(Object arg0, Object arg1) {
-		Checkpoint cp1 = (Checkpoint) arg0;
-		Checkpoint cp2 = (Checkpoint) arg1;
+	public int compare(Checkpoint cp1, Checkpoint cp2) {
 		String comp1 = "", comp2 = "";
 		Collator collator = Collator.getInstance();
 		switch (checkpointAttribute) {
@@ -79,6 +77,11 @@ public class CheckpointComparator implements Comparator {
 				comp2 = cp2.getMode();
 				break;	
 		}
+		
+		if(comp1 == null && comp2 == null) return 0;
+		if(comp1 == null) return asc ? -1 : 1;
+		if(comp2 == null) return asc ? 1 : -1;
+
 		if (asc) {
 			return collator.compare(comp1, comp2);
 		} else {

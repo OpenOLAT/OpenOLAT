@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member.wizard;
+package org.olat.admin.securitygroup.gui.multi;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -26,19 +26,27 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.group.BusinessGroup;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.course.member.wizard.ImportMemberByUsernamesController;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ImportMember_1a_LoginListStep extends BasicStep {
+public class UsersToGroupWizardStep00 extends BasicStep {
 	
-	public ImportMember_1a_LoginListStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group) {
+
+	/**
+	 * the email step only appears if you give a mail template
+	 * @param ureq
+	 * @param mailDefaultTempl
+	 * @param mandatoryEmail
+	 */
+	public UsersToGroupWizardStep00(UserRequest ureq, MailTemplate mailDefaultTemplate, boolean mandatoryEmail) {
 		super(ureq);
-		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, repoEntry, group));
-		setI18nTitleAndDescr("import.import.title", "import.import.title");
+		setI18nTitleAndDescr("import.title", null);
+		setNextStep(new UsersToGroupWizardStep01(ureq, mailDefaultTemplate, mandatoryEmail));
 	}
 
 	@Override
@@ -47,7 +55,7 @@ public class ImportMember_1a_LoginListStep extends BasicStep {
 	}
 
 	@Override
-	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new ImportMemberByUsernamesController(ureq, wControl, form, runContext, false);
+	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext stepsRunContext, Form form) {
+		return new ImportMemberByUsernamesController(ureq, wControl, form, stepsRunContext, true);
 	}
 }

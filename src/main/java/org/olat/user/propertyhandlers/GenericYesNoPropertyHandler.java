@@ -87,7 +87,7 @@ public class GenericYesNoPropertyHandler extends AbstractUserPropertyHandler {
 	}
 
 	@Override
-	public boolean isValid(FormItem formItem, Map formContext) {
+	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
 		// the formItem is always valid. if no radio-button is selected, the
 		// value is just "NO"
 		// this is also ok if item is mandatory...

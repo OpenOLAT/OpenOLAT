@@ -229,7 +229,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 			Extension anExt = extm.getExtension(i);
 			// check for sites
 			ActionExtension ae = (ActionExtension) anExt.getExtensionFor(extensionPointMenu.getName(), ureq);
-			if (ae != null) {
+			if (ae != null && anExt.isEnabled()) {
 				gtn = new GenericTreeNode();
 				String menuText = ae.getActionText(locale);
 				gtn.setTitle(menuText);

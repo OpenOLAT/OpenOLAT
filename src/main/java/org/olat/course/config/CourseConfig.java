@@ -55,6 +55,8 @@ import java.util.Map;
  * @author patrick
  */
 public class CourseConfig implements Serializable, Cloneable {
+
+	private static final long serialVersionUID = -1158707796830204185L;
 	/**
 	 * <code>VALUE_EMPTY_CSS_FILEREF</code> is the <i>filename </i>
 	 */
@@ -87,11 +89,11 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * efficency statement
 	 */
-	transient public static final Object KEY_EFFICENCY_ENABLED = "KEY_EFFICENCY_ENABLED";
+	transient public static final String KEY_EFFICENCY_ENABLED = "KEY_EFFICENCY_ENABLED";
 	/**
 	 * course calendar
 	 */
-	transient public static final Object KEY_CALENDAR_ENABLED = "KEY_CALENDAR_ENABLED";
+	transient public static final String KEY_CALENDAR_ENABLED = "KEY_CALENDAR_ENABLED";
 	/**
 	 * course glossary
 	 */
@@ -115,7 +117,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * holds the configuration
 	 */
-	private Map configuration = new Hashtable();
+	private Map<String,Object> configuration = new Hashtable<String,Object>();
 
 	CourseConfig() {
 	// empty, for XSTream

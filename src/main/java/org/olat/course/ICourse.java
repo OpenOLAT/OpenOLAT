@@ -30,6 +30,7 @@ import java.io.File;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -103,5 +104,9 @@ public interface ICourse extends OLATResourceable {
 	 * is true
 	 */
 	public boolean hasAssessableNodes();
-	
+
+	/**
+	 * @return The course configuration
+	 */
+	public CourseConfig getCourseConfig();
 }

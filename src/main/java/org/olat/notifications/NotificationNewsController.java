@@ -101,7 +101,7 @@ class NotificationNewsController extends BasicController implements
 				new Date());
 		dateChooserCtr.setSubscribers(subs);
 		listenTo(dateChooserCtr);
-		newsVC.put("dateChosserCtr", dateChooserCtr.getInitialComponent());
+		newsVC.put("dateChooserCtr", dateChooserCtr.getInitialComponent());
 		// Add email link
 		emailLink = LinkFactory.createButton("emailLink", newsVC, this);
 		//
@@ -116,7 +116,7 @@ class NotificationNewsController extends BasicController implements
 			return Collections.emptyList();//compare date is mandatory
 		}
 		List<String> notiTypes = new ArrayList<String>();
-		if (StringHelper.containsNonWhitespace(newsType)) {
+		if (StringHelper.containsNonWhitespace(newsType) && !newsType.equals("all")) {
 			notiTypes.add(newsType);
 		}
 

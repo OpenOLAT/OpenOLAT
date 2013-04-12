@@ -49,6 +49,7 @@ import org.olat.user.UserManager;
  * @author twuersch
  */
 public class MSNPropertyHandler extends Generic127CharTextPropertyHandler {
+	private static final OLog log = Tracing.createLoggerFor(MSNPropertyHandler.class);
 
 	public static final int MSN_NAME_MAX_LENGTH = 64;
 	
@@ -111,12 +112,10 @@ public class MSNPropertyHandler extends Generic127CharTextPropertyHandler {
 	/**
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
 	 */
-	@SuppressWarnings({"unchecked"})
 	@Override
-	public boolean isValid(FormItem formItem, Map formContext) {
+	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
 		boolean result;
 		TextElement textElement = (TextElement)formItem;
-		OLog log = Tracing.createLoggerFor(this.getClass());
 		if (StringHelper.containsNonWhitespace(textElement.getValue())) {
 			
 			// Use an HttpClient to fetch a profile information page from MSN.
@@ -156,7 +155,6 @@ public class MSNPropertyHandler extends Generic127CharTextPropertyHandler {
 		} else {
 			result = true;
 		}
-		log = null;
 		return result;
 	}
 }
