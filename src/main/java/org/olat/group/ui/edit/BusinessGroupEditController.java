@@ -264,6 +264,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent
 						.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, currBusinessGroup, null);
+				fireEvent(ureq, event);
 			}
 		} else if (source == alreadyLockedDialogController) {
 			//closed dialog box either by clicking ok, or closing the box
