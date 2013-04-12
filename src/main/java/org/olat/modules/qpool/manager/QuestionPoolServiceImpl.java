@@ -573,6 +573,14 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
+	public boolean deleteEducationalContext(QEducationalContext context) {
+		if(qEduContextDao.isEducationalContextInUse(context)) {
+			return false;
+		}
+		return qEduContextDao.delete(context);
+	}
+
+	@Override
 	public QLicense createLicense(String licenseKey) {
 		return qpoolLicenseDao.create(licenseKey, true);
 	}

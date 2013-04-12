@@ -127,6 +127,11 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
+	public boolean isTypeEditable() {
+		return true;
+	}
+
+	@Override
 	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		QTI12EditorController previewCtrl = new QTI12EditorController(ureq, wControl, item);
 		return previewCtrl;

@@ -84,4 +84,13 @@ public class QEducationalContextDAO {
 				.createNamedQuery("loadQEduContexts", QEducationalContext.class)
 				.getResultList();
 	}
+	
+	public boolean isEducationalContextInUse(QEducationalContext context) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(item) from questionitem item where item.educationalContext.key=:contextKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("contextKey", context.getKey())
+				.getSingleResult().intValue() > 0;
+	}
 }

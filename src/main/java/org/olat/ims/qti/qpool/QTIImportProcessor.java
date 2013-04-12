@@ -171,7 +171,10 @@ class QTIImportProcessor {
 		//language from default
 		poolItem.setLanguage(defaultLocale.getLanguage());
 		//question type first
-		processItemQuestionType(poolItem, ident, itemEl);
+		boolean ooFormat = processItemQuestionType(poolItem, ident, itemEl);
+		if(ooFormat) {
+			poolItem.setEditor("OpenOLAT");
+		}
 		//if question type not found, can be overridden by the metadatas
 		processItemMetadata(poolItem, itemEl);
 		questionItemDao.persist(owner, poolItem);
@@ -428,20 +431,27 @@ class QTIImportProcessor {
 		}
 	}
 	
-	private void processItemQuestionType(QuestionItemImpl poolItem, String ident, Element itemEl) {
+	private boolean processItemQuestionType(QuestionItemImpl poolItem, String ident, Element itemEl) {
+		boolean openolatFormat = false;
+		
 		//question type: mc, sc...
 		QuestionType type = null;
 		//test with openolat ident 
 		if (ident != null && ident.startsWith(ItemParser.ITEM_PREFIX_SCQ)) {
 			type = QuestionType.SC;
+			openolatFormat = true;
 		} else if(ident != null && ident.startsWith(ItemParser.ITEM_PREFIX_MCQ)) {
 			type = QuestionType.MC;
+			openolatFormat = true;
 		} else if(ident != null && ident.startsWith(ItemParser.ITEM_PREFIX_FIB)) {
 			type = QuestionType.FIB;
+			openolatFormat = true;
 		} else if(ident != null && ident.startsWith(ItemParser.ITEM_PREFIX_ESSAY)) {
 			type = QuestionType.ESSAY;
+			openolatFormat = true;
 		} else if(ident != null && ident.startsWith(ItemParser.ITEM_PREFIX_KPRIM)) {
-			type = QuestionType.KPRIM;		
+			type = QuestionType.KPRIM;	
+			openolatFormat = true;
 		} else if(itemEl.selectNodes("//render_choice").size() == 1) {
 			Element lidEl = (Element)itemEl.selectSingleNode("//response_lid");
 			String rcardinality = getAttributeValue(lidEl, "rcardinality");
@@ -457,6 +467,8 @@ class QTIImportProcessor {
 			QItemType itemType = qItemTypeDao.loadByType(type.name());
 			poolItem.setType(itemType);
 		}
+		
+		return openolatFormat;
 	}
 	
 	private String getAttributeValue(Element el, String attrName) {

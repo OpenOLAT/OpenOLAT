@@ -77,6 +77,11 @@ public class TextQPoolServiceProvider extends AbstractQPoolServiceProvider {
 	}
 
 	@Override
+	public boolean isTypeEditable() {
+		return false;
+	}
+
+	@Override
 	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item);
 		return txtController;

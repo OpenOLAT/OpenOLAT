@@ -79,6 +79,11 @@ public class FileQPoolServiceProvider extends AbstractQPoolServiceProvider {
 	}
 
 	@Override
+	public boolean isTypeEditable() {
+		return false;
+	}
+
+	@Override
 	public Controller getEditableController(UserRequest ureq,	WindowControl wControl, QuestionItem item) {
 		FilePreviewController fileController = new FilePreviewController(ureq, wControl, item);
 		return fileController;

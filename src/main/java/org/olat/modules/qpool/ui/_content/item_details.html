@@ -1,4 +1,6 @@
-<div class="o_sel_qpool_edit_content">$r.render("edit")</div>
+#if($r.available("edit"))
+	<div class="o_sel_qpool_edit_content">$r.render("edit")</div>
+#end
 $r.render("type_specifics")
 <hr/>
 $r.render("metadatas")

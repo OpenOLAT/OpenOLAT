@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -67,7 +68,7 @@ import org.olat.modules.qpool.ui.datasource.SharedItemsSource;
 public class QuestionPoolMainEditorController extends BasicController implements Activateable2, StackedControllerAware {
 
 	private final MenuTree menuTree;
-	private GenericTreeNode sharesNode, myNode, poolNode;
+	private GenericTreeNode sharesNode, myNode;
 	
 	private final Panel content;
 	private StackedController stackPanel;
@@ -106,6 +107,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		menuTree.setDropSiblingEnabled(false);
 		menuTree.addListener(this);
 		menuTree.setRootVisible(false);
+		//open the nodes shared and my at start
+		List<String> openNodeIds = new ArrayList<String>(2);
+		openNodeIds.add(myNode.getIdent());
+		openNodeIds.add(sharesNode.getIdent());
+		menuTree.setOpenNodeIds(openNodeIds);
 		
 		content = new Panel("list");
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, content, "qpool");				
@@ -179,7 +185,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				menuTree.setDirty(true);
 			}	else if(QPoolEvent.POOL_CREATED.equals(event.getCommand())
 					|| QPoolEvent.POOL_DELETED.equals(event.getCommand())) {
-				buildPoolSubTreeModel(poolNode);
+				buildShareSubTreeModel(sharesNode);
 				menuTree.setDirty(true);
 			}
 		}
@@ -338,15 +344,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		rootNode.addChild(myNode);
 		buildMySubTreeModel(myNode);
 
-
-		//pools
-		poolNode = new GenericTreeNode(translate("menu.pools"), "menu.pools.alt");
-		poolNode.setCssClass("o_sel_qpool_pools");
-		rootNode.addChild(poolNode);
-		
-		buildPoolSubTreeModel(poolNode);
-		
-		//shares
+		//pools + shares
 		sharesNode = new GenericTreeNode(translate("menu.share"), "menu.share");
 		sharesNode.setCssClass("o_sel_qpool_shares");
 		rootNode.addChild(sharesNode);	
@@ -361,68 +359,64 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		return gtm;
 	}
 	
-	private void buildPoolSubTreeModel(GenericTreeNode poolNode) {
-		poolNode.removeAllChildren();
+	private void buildShareSubTreeModel(GenericTreeNode parentNode) {
+		parentNode.removeAllChildren();
 		
 		List<Pool> pools = qpoolService.getPools(getIdentity(), roles);
 		for(Pool pool:pools) {
 			GenericTreeNode node = new GenericTreeNode(pool.getName(), pool);
 			node.setIconCssClass("o_sel_qpool_pool");
-			poolNode.addChild(node);
+			parentNode.addChild(node);
 		}
-	}
-	
-	private void buildAdminSubTreeModel(GenericTreeNode adminNode) {
-		adminNode.removeAllChildren();
-		
-		GenericTreeNode node = new GenericTreeNode(translate("menu.admin.studyfields"), "menu.admin.studyfields");
-		node.setIconCssClass("o_sel_qpool_study_fields");
-		adminNode.addChild(node);
-		
-		node = new GenericTreeNode(translate("menu.admin.pools"), "menu.admin.pools");
-		node.setIconCssClass("o_sel_qpool_admin_pools");
-		adminNode.addChild(node);
-		
-		node = new GenericTreeNode(translate("menu.admin.types"), "menu.admin.types");
-		node.setIconCssClass("o_sel_qpool_admin_types");
-		adminNode.addChild(node);
-		
-		node = new GenericTreeNode(translate("menu.admin.levels"), "menu.admin.levels");
-		node.setIconCssClass("o_sel_qpool_admin_levels");
-		adminNode.addChild(node);
-
-		node = new GenericTreeNode(translate("menu.admin.licenses"), "menu.admin.licenses");
-		node.setIconCssClass("o_sel_qpool_admin_licenses");
-		adminNode.addChild(node);
-	}
-	
-	private void buildMySubTreeModel(GenericTreeNode myNode) {
-		myNode.removeAllChildren();
-		
-		GenericTreeNode node = new GenericTreeNode(translate("menu.database.my"), "menu.database.my");
-		node.setIconCssClass("o_sel_qpool_my_items");
-		myNode.addChild(node);
-		
-		node = new GenericTreeNode(translate("menu.database.favorit"), "menu.database.favorit");
-		node.setIconCssClass("o_sel_qpool_favorits");
-		myNode.addChild(node);
-		
-		List<QuestionItemCollection> collections = qpoolService.getCollections(getIdentity());
-		for(QuestionItemCollection coll: collections) {
-			node = new GenericTreeNode(coll.getName(), coll);
-			node.setIconCssClass("o_sel_qpool_collection");
-			myNode.addChild(node);
-		}
-	}
-	
-	private void buildShareSubTreeModel(GenericTreeNode sharesNode) {
-		sharesNode.removeAllChildren();
 
 		List<BusinessGroup> groups = qpoolService.getResourcesWithSharedItems(getIdentity());
 		for(BusinessGroup group:groups) {
 			GenericTreeNode node = new GenericTreeNode(group.getName(), group);
 			node.setIconCssClass("o_sel_qpool_share");
-			sharesNode.addChild(node);
+			parentNode.addChild(node);
+		}
+	}
+	
+	private void buildAdminSubTreeModel(GenericTreeNode parentNode) {
+		parentNode.removeAllChildren();
+		
+		GenericTreeNode node = new GenericTreeNode(translate("menu.admin.studyfields"), "menu.admin.studyfields");
+		node.setIconCssClass("o_sel_qpool_study_fields");
+		parentNode.addChild(node);
+		
+		node = new GenericTreeNode(translate("menu.admin.pools"), "menu.admin.pools");
+		node.setIconCssClass("o_sel_qpool_admin_pools");
+		parentNode.addChild(node);
+		
+		node = new GenericTreeNode(translate("menu.admin.types"), "menu.admin.types");
+		node.setIconCssClass("o_sel_qpool_admin_types");
+		parentNode.addChild(node);
+		
+		node = new GenericTreeNode(translate("menu.admin.levels"), "menu.admin.levels");
+		node.setIconCssClass("o_sel_qpool_admin_levels");
+		parentNode.addChild(node);
+
+		node = new GenericTreeNode(translate("menu.admin.licenses"), "menu.admin.licenses");
+		node.setIconCssClass("o_sel_qpool_admin_licenses");
+		parentNode.addChild(node);
+	}
+	
+	private void buildMySubTreeModel(GenericTreeNode parentNode) {
+		parentNode.removeAllChildren();
+		
+		GenericTreeNode node = new GenericTreeNode(translate("menu.database.my"), "menu.database.my");
+		node.setIconCssClass("o_sel_qpool_my_items");
+		parentNode.addChild(node);
+		
+		node = new GenericTreeNode(translate("menu.database.favorit"), "menu.database.favorit");
+		node.setIconCssClass("o_sel_qpool_favorits");
+		parentNode.addChild(node);
+		
+		List<QuestionItemCollection> collections = qpoolService.getCollections(getIdentity());
+		for(QuestionItemCollection coll: collections) {
+			node = new GenericTreeNode(coll.getName(), coll);
+			node.setIconCssClass("o_sel_qpool_collection");
+			parentNode.addChild(node);
 		}
 	}
 }

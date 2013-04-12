@@ -60,7 +60,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 	
 	private Link deleteItem, shareItem, exportItem, editItem;
 
-	private Controller editCtrl;
+	private Controller previewCtrl;
 	private CloseableModalController cmc;
 	private final VelocityContainer mainVC;
 	private DialogBoxController confirmDeleteBox;
@@ -69,6 +69,8 @@ public class QuestionItemDetailsController extends BasicController implements St
 	private final UserCommentsAndRatingsController commentsAndRatingCtr;
 	private StackedController stackPanel;
 
+	private final boolean canEditContent;
+	
 	private final QuestionPoolModule poolModule;
 	private final QPoolService qpoolService;
 	
@@ -80,16 +82,17 @@ public class QuestionItemDetailsController extends BasicController implements St
 		
 		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
 		if(spi == null) {
-			editCtrl = new QuestionItemRawController(ureq, wControl);
+			previewCtrl = new QuestionItemRawController(ureq, wControl);
 		} else {
-			editCtrl = spi.getPreviewController(ureq, getWindowControl(), item);
-			if(editCtrl == null) {
-				editCtrl = new QuestionItemRawController(ureq, wControl);
+			previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item);
+			if(previewCtrl == null) {
+				previewCtrl = new QuestionItemRawController(ureq, wControl);
 			}
 		}
-		listenTo(editCtrl);
+		listenTo(previewCtrl);
 		
 		boolean canEdit = editable || qpoolService.isAuthor(item, getIdentity());
+		canEditContent = canEdit && (spi != null && spi.isTypeEditable());
 		metadatasCtrl = new MetadatasController(ureq, wControl, item, canEdit);
 		listenTo(metadatasCtrl);
 		
@@ -102,14 +105,16 @@ public class QuestionItemDetailsController extends BasicController implements St
 		listenTo(commentsAndRatingCtr);
 
 		mainVC = createVelocityContainer("item_details");
-		editItem = LinkFactory.createButton("edit", mainVC, this);
-		editItem.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		if(canEditContent) {
+			editItem = LinkFactory.createButton("edit", mainVC, this);
+			editItem.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		}
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
 		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
 		deleteItem.setVisible(canEdit);
 		exportItem = LinkFactory.createButton("export.item", mainVC, this);
 		
-		mainVC.put("type_specifics", editCtrl.getInitialComponent());
+		mainVC.put("type_specifics", previewCtrl.getInitialComponent());
 		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
 		mainVC.put("comments", commentsAndRatingCtr.getInitialComponent());
 		putInitialPanel(mainVC);
@@ -134,7 +139,9 @@ public class QuestionItemDetailsController extends BasicController implements St
 		} else if(source == exportItem) {
 			doExport(ureq, metadatasCtrl.getItem());
 		} else if(source == editItem) {
-			doEdit(ureq, metadatasCtrl.getItem());
+			if(canEditContent) {
+				doEdit(ureq, metadatasCtrl.getItem());
+			}
 		}
 	}
 	

@@ -166,6 +166,8 @@ public interface QPoolService {
 	
 	public QEducationalContext getEducationlContextByLevel(String level);
 	
+	public boolean deleteEducationalContext(QEducationalContext context);
+	
 	//licenses administration
 	public QLicense createLicense(String licenseKey);
 	

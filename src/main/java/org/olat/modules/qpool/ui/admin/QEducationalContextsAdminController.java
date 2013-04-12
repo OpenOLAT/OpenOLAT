@@ -183,8 +183,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		String referencePrefs = (String)guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_REFERENCE_LANG, referenceLangs.get(0));
 		I18nManager i18nMgr = I18nManager.getInstance();
 		Locale referenceLocale = i18nMgr.getLocaleOrNull(referencePrefs);
-		
-		
+
 		i18nItemEditCtr = new TranslationToolI18nItemEditCrumbController(ureq, getWindowControl(), i18nItems, referenceLocale, true);
 		listenTo(i18nItemEditCtr);
 		
@@ -205,8 +204,12 @@ public class QEducationalContextsAdminController extends FormBasicController {
 	}
 	
 	private void doDelete(UserRequest ureq, QEducationalContext level) {
-		//qpoolService.deletePool(pool);
-		reloadModel();
+		if(qpoolService.deleteEducationalContext(level)) {
+			reloadModel();
+			showInfo("educational.context.deleted");
+		} else {
+			showError("educational.context.notdeleted");
+		}
 	}
 	
 	private void doEdit(UserRequest ureq, QEducationalContext level) {

@@ -73,6 +73,13 @@ public interface QPoolSPI {
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item);
 
 	/**
+	 * Is OpenOLAT able to edit this content?
+	 * 
+	 * @return If the service provider can deliver a controller to edit the content
+	 */
+	public boolean isTypeEditable();
+	
+	/**
 	 * 
 	 * @param ureq
 	 * @param wControl
