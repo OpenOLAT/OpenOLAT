@@ -499,7 +499,7 @@ public class ServletUtil {
 			// buffer size: assume average length of a char in bytes is max 2
 			int encLen = result.length();
 			Reader reader = result.getReader();
-			//response.setContentLength(encLen);
+			//response.setContentLength(encLen); set the number of characters, must be number of bytes
 			
 			PrintWriter os = response.getWriter();
 			IOUtils.copy(reader, os);
