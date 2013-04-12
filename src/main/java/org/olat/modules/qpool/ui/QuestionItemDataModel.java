@@ -74,6 +74,11 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 	}
 
 	@Override
+	public boolean isRowLoaded(int row) {
+		return rows != null && row < rows.size();
+	}
+
+	@Override
 	public ItemRow getObject(int row) {
 		return rows.get(row);
 	}

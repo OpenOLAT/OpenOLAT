@@ -282,14 +282,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	protected void doSearch(UserRequest ureq, String search) {
 		if(dataSource != null) {
-			resetInternComponts();
+			resetInternComponents();
 			dataSource.search(search, null, 0, getPageSize());
 		}
 	}
 	
 	protected void doResetSearch(UserRequest ureq) {
 		if(dataSource != null) {
-			resetInternComponts();
+			resetInternComponents();
 			dataSource.load(0, getPageSize());
 		}
 	}
@@ -341,11 +341,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void reset() {
-		resetInternComponts();
+		resetInternComponents();
 		reloadData();
 	}
 	
-	private void resetInternComponts() {
+	private void resetInternComponents() {
 		rowCount = -1;
 		component.setDirty(true);
 		multiSelectedIndex = null;

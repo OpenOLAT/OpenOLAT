@@ -279,10 +279,14 @@ public class QEducationalContextsAdminController extends FormBasicController {
 			return new LevelDataModel(columnModel);
 		}
 
-
 		@Override
 		public int getRowCount() {
 			return levels == null ? 0 : levels.size();
+		}
+		
+		@Override
+		public boolean isRowLoaded(int row) {
+			return levels != null && row < levels.size();
 		}
 
 		@Override

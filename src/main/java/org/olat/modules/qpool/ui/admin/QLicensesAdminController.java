@@ -245,6 +245,11 @@ public class QLicensesAdminController extends FormBasicController {
 		}
 
 		@Override
+		public boolean isRowLoaded(int row) {
+			return licenses != null && row < licenses.size();
+		}
+
+		@Override
 		public Object getValueAt(int row, int col) {
 			QLicense type = getObject(row);
 			switch(Cols.values()[col]) {

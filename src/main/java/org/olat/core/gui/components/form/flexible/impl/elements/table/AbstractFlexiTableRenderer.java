@@ -133,7 +133,9 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 
 		String rowIdPrefix = "row_" + id + "-";
 		for (int i = firstRow; i < lastRow; i++) {
-			renderRow(renderer, target, ftC, rowIdPrefix,	i, rows, ubu, translator, renderResult);
+			if(dataModel.isRowLoaded(i)) {
+				renderRow(renderer, target, ftC, rowIdPrefix,	i, rows, ubu, translator, renderResult);
+			}
 		}				
 		// end of table table
 		target.append("</tbody>");

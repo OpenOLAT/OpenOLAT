@@ -77,6 +77,7 @@ public class QuestionsController extends BasicController implements StackedContr
 		mainVC.put("items", listCtrl.getInitialComponent());
 		mainVC.put("details", detailsCtrl.getInitialComponent());
 		mainVC.put("preview", previewCtrl.getInitialComponent());
+		mainVC.contextPut("tableId", listCtrl.getTableFormDispatchId());
 		
 		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
 		deleteItem.setEnabled(false);

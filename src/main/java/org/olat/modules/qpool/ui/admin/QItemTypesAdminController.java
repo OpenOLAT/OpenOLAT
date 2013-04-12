@@ -279,10 +279,14 @@ public class QItemTypesAdminController extends FormBasicController {
 			return new QItemTypeDataModel(columnModel);
 		}
 
-
 		@Override
 		public int getRowCount() {
 			return types == null ? 0 : types.size();
+		}
+
+		@Override
+		public boolean isRowLoaded(int row) {
+			return types != null && row < types.size();
 		}
 
 		@Override

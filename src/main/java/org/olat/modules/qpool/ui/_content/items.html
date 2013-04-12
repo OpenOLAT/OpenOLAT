@@ -16,11 +16,29 @@ jQuery(function() {
 	var headerHeight = jQuery('#b_header').height() + jQuery('#b_nav_main').height();
 	var footerHeight = jQuery('#b_footer').height() + jQuery('#qbuttons').height();
 	var maxHeight = winHeight - headerHeight - footerHeight - 50;
+
 	jQuery('#qpoolcontainer').width(width).height(maxHeight).layout({
 		north: { size: '50%' },
 		center: { size: '50%' },
+		north__onresize: function (pane, ui) {
+			var paneHeight = ui.height();
+			jQuery('#$tableId').each(function(index, el) {
+				var table = jQuery(el).dataTable();
+				var oSettings = table.fnSettings();
+				oSettings.oScroll.sY = (paneHeight - 130) + "px";
+				table.fnDraw();
+			});
+		},
 		west: { size: '50%' },
 		south: {}
+	});
+	
+	jQuery('#$tableId').each(function(index, el) {
+		var paneHeight = jQuery('#qitems').height();
+		var table = jQuery(el).dataTable();
+		var oSettings = table.fnSettings();
+		oSettings.oScroll.sY = (paneHeight - 130) + "px";
+		table.fnDraw();
 	});
 });
 </script>

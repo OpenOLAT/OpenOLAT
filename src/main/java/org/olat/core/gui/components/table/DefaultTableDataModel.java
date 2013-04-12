@@ -60,6 +60,11 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	public int getRowCount() {
 		return objects == null ? 0 : objects.size();
 	}
+	
+	public boolean isRowLoaded(int row) {
+		if(objects == null) return false;
+		return row < objects.size();
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)

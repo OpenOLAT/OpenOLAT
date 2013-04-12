@@ -266,6 +266,11 @@ public class PoolsAdminController extends FormBasicController {
 		public int getRowCount() {
 			return rows == null ? 0 : rows.size();
 		}
+		
+		@Override
+		public boolean isRowLoaded(int row) {
+			return rows != null && row < rows.size();
+		}
 	
 		@Override
 		public Pool getObject(int row) {

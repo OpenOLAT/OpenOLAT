@@ -143,6 +143,10 @@ public class QuestionListController extends FormBasicController implements Stack
 		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
 		deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
 	}
+	
+	protected String getTableFormDispatchId() {
+		return itemsTable == null ? null : itemsTable.getFormDispatchId();
+	}
 
 	@Override
 	public void setStackedController(StackedController stackPanel) {

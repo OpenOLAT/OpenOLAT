@@ -53,6 +53,11 @@ public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel {
 	public int getRowCount() {
 		return tableModel.getRowCount();
 	}
+	
+	@Override
+	public boolean isRowLoaded(int row) {
+		return row < tableModel.getRowCount();
+	}
 
 	public T getObject(int row) {
 		return tableModel.getObject(row);
