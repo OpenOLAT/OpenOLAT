@@ -11,4 +11,11 @@
     <bean id="searchQueue" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
 		<property name="jndiName"><value>${search.broker.jndi}</value></property>
 	</bean>
+	
+	<bean id="indexConnectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+        <property name="jndiName"><value>${jms.broker.jndi}</value></property>
+    </bean>
+    <bean id="indexQueue" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName"><value>${index.broker.jndi}</value></property>
+	</bean>
 </beans>
