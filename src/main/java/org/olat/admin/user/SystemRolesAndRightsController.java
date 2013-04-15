@@ -60,11 +60,8 @@ import org.olat.core.util.Util;
  * There should be no need to use it anywhere else.
  */
 public class SystemRolesAndRightsController extends BasicController {
-	private static final String PACKAGE = Util.getPackageName(SystemRolesAndRightsController.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
 	
-	private VelocityContainer main;
-	private PackageTranslator translator;
+	private final VelocityContainer main;
 	private SystemRolesAndRightsForm sysRightsForm;
 	private Identity identity;
 	
@@ -75,9 +72,8 @@ public class SystemRolesAndRightsController extends BasicController {
 	 * @param identity identity to be edited
 	 */
 	public SystemRolesAndRightsController(WindowControl wControl, UserRequest ureq, Identity identity){
-		super(ureq, wControl);		
-		translator = new PackageTranslator(PACKAGE, ureq.getLocale());
-		main = new VelocityContainer("sysRolesVC", VELOCITY_ROOT + "/usysRoles.html", translator, null);
+		super(ureq, wControl);
+		main = createVelocityContainer("usysRoles");
 		this.identity = identity;
 		putInitialPanel(main);
 		createForm(ureq, identity);
@@ -148,6 +144,14 @@ public class SystemRolesAndRightsController extends BasicController {
 			boolean hasBeenGroupManager = secMgr.isIdentityInSecurityGroup(myIdentity, groupManagerGroup);
 			boolean isGroupManager = form.isGroupmanager();
 			updateSecurityGroup(myIdentity, secMgr, groupManagerGroup, hasBeenGroupManager, isGroupManager);
+		}
+		// pool manager
+		Boolean canPoolmanagerByConfig =BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS;	
+		if (canPoolmanagerByConfig.booleanValue() || iAmOlatAdmin) {
+			SecurityGroup poolManagerGroup = secMgr.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
+			boolean hasBeenPoolManager = secMgr.isIdentityInSecurityGroup(myIdentity, poolManagerGroup);
+			boolean isPoolManager = form.isPoolmanager();
+			updateSecurityGroup(myIdentity, secMgr, poolManagerGroup, hasBeenPoolManager, isPoolManager);
 		}
 		// author
 		Boolean canAuthorByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS;	

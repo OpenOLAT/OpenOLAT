@@ -26,8 +26,8 @@ import org.apache.lucene.index.IndexWriter;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QuestionItemDocumentFactory;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.search.service.SearchResourceContext;
@@ -67,10 +67,10 @@ public class QuestionItemIndexer implements LifeIndexer {
 			writer = indexWriter.getAndLockWriter();
 			
 			int counter = 0;
-			List<QuestionItem> items;
+			List<QuestionItemFull> items;
 			do {
 				items = qpoolService.getAllItems(counter, BATCH_SIZE);
-				for(QuestionItem item:items) {
+				for(QuestionItemFull item:items) {
 					Document doc = docFactory.createDocument(ctxt, item);
 					indexWriter.addDocument(doc, writer);
 				}

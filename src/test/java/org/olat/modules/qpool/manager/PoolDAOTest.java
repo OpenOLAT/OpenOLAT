@@ -139,6 +139,83 @@ public class PoolDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void removeItemFromPool() {
+		//create a pool
+		String name = "NGC-" + UUID.randomUUID().toString();
+		Pool pool = poolDao.createPool(null, name, true);
+		Assert.assertNotNull(pool);
+		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		Assert.assertNotNull(item);
+		dbInstance.commitAndCloseSession();
+		
+		//get pools
+		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
+		dbInstance.commit();
+		
+		//check
+		int numOfItems = poolDao.getNumOfItemsInPool(pool);
+		Assert.assertEquals(1, numOfItems);
+		
+		//remove
+		poolDao.removeFromPool(Collections.<QuestionItemShort>singletonList(item), pool);
+		dbInstance.commit();
+		
+		//check empty pool
+		int numOfStayingItems = poolDao.getNumOfItemsInPool(pool);
+		Assert.assertEquals(0, numOfStayingItems);
+		
+		//but item exists
+		QuestionItem reloadedItem = questionItemDao.loadById(item.getKey());
+		Assert.assertNotNull(reloadedItem);
+	}
+	
+	@Test
+	public void removeItemFromPool_paranoid() {
+		//create a pool
+		String name1 = "NGC-" + UUID.randomUUID().toString();
+		Pool pool1 = poolDao.createPool(null, name1, true);
+		String name2 = "NGC-" + UUID.randomUUID().toString();
+		Pool pool2 = poolDao.createPool(null, name2, true);
+		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		QuestionItem item1 = questionItemDao.createAndPersist(null, "Cluster of stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item2 = questionItemDao.createAndPersist(null, "Nebula", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+
+		poolDao.addItemToPool(item1, Collections.singletonList(pool1), false);
+		poolDao.addItemToPool(item1, Collections.singletonList(pool2), false);
+		poolDao.addItemToPool(item2, Collections.singletonList(pool1), false);
+		poolDao.addItemToPool(item2, Collections.singletonList(pool2), false);
+		dbInstance.commit();
+		
+		//check
+		int numOfItems_1 = poolDao.getNumOfItemsInPool(pool1);
+		Assert.assertEquals(2, numOfItems_1);
+		int numOfItems_2 = poolDao.getNumOfItemsInPool(pool2);
+		Assert.assertEquals(2, numOfItems_2);
+		
+		//remove
+		poolDao.removeFromPool(Collections.<QuestionItemShort>singletonList(item1), pool2);
+		dbInstance.commit();
+		
+		//check empty pool
+		int numOfStayingItems_1 = poolDao.getNumOfItemsInPool(pool1);
+		Assert.assertEquals(2, numOfStayingItems_1);
+		int numOfStayingItems_2 = poolDao.getNumOfItemsInPool(pool2);
+		Assert.assertEquals(1, numOfStayingItems_2);
+		
+		//check content
+		List<QuestionItemView> items_1 = poolDao.getItemsOfPool(pool1, null, 0, -1);
+		Assert.assertEquals(2, items_1.size());
+		List<QuestionItemView> items_2 = poolDao.getItemsOfPool(pool2, null, 0, -1);
+		Assert.assertEquals(1, items_2.size());
+		Assert.assertEquals(item2.getKey(), items_2.get(0).getKey());
+		
+		//but item exists
+		QuestionItem reloadedItem = questionItemDao.loadById(item1.getKey());
+		Assert.assertNotNull(reloadedItem);
+	}
+	
+	@Test
 	public void getItemsOfPool() {
 		//create a pool
 		String name = "NGC-" + UUID.randomUUID().toString();
@@ -179,7 +256,7 @@ public class PoolDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void removeItemFromPool() {
+	public void removeItemFromPools() {
 		//create a pool with an item
 		String name = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, name, true);
@@ -192,7 +269,7 @@ public class PoolDAOTest extends OlatTestCase {
 		List<QuestionItemView> items = poolDao.getItemsOfPool(pool, null, 0 , -1);
 		Assert.assertEquals(1, items.size());
 		List<QuestionItemShort> toDelete = Collections.<QuestionItemShort>singletonList(items.get(0));
-		int count = poolDao.deleteFromPools(toDelete);
+		int count = poolDao.removeFromPools(toDelete);
 		Assert.assertEquals(1, count);
 		dbInstance.commitAndCloseSession();
 		

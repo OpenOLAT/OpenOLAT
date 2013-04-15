@@ -112,7 +112,7 @@ public class ShareItemOptionController extends FormBasicController {
 			qpoolService.shareItemsWithGroups(items, groups, editable);
 		}
 		if(pools != null && !pools.isEmpty()) {
-			qpoolService.shareItemsInPools(items, pools, editable);
+			qpoolService.addItemsInPools(items, pools, editable);
 		}
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_SHARED));
 	}

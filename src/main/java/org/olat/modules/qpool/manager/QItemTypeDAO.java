@@ -53,7 +53,7 @@ public class QItemTypeDAO implements ApplicationListener<ContextRefreshedEvent> 
 		List<QItemType> types = getItemTypes();
 		Set<String> typeKeys = new HashSet<String>();
 		for(QItemType type:types) {
-			typeKeys.add(type.getType());
+			typeKeys.add(type.getType().toLowerCase());
 		}
 		for(QuestionType defaultType:QuestionType.values()) {
 			if(!typeKeys.contains(defaultType.name().toLowerCase())) {

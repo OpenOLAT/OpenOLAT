@@ -119,6 +119,8 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		DBFactory.getInstance(false).intermediateCommit();
 		initSysGroupGroupmanagers();
 		DBFactory.getInstance(false).intermediateCommit();
+		initSysGroupPoolsmanagers();
+		DBFactory.getInstance(false).intermediateCommit();
 		initSysGroupUsermanagers();
 		DBFactory.getInstance(false).intermediateCommit();
 		initSysGroupUsers();
@@ -159,6 +161,9 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		// and to all courses
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ADMIN, Constants.ORESOURCE_COURSES);
 
+		// and to pool admiistration
+		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ADMIN, Constants.ORESOURCE_POOLS);
+
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(SysinfoController.class));
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(UserAdminController.class));
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(UserChangePasswordController.class));
@@ -190,6 +195,17 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			olatGroupmanagerGroup = createAndPersistNamedSecurityGroup(Constants.GROUP_GROUPMANAGERS);
 		//gropumanagers have a groupmanager policy and access permissions to groupmanaging tools
 		createAndPersistPolicyIfNotExists(olatGroupmanagerGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GROUPMANAGER);
+	}
+	
+	/**
+	 * Users with access to group context management (groupmanagement that can be used in multiple courses
+	 */
+	private void initSysGroupPoolsmanagers() {
+		SecurityGroup secGroup = findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
+		if (secGroup == null) 
+			secGroup = createAndPersistNamedSecurityGroup(Constants.GROUP_POOL_MANAGER);
+		//pools managers have a goupmanager policy and access permissions to groupmanaging tools
+		createAndPersistPolicyIfNotExists(secGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_POOLS);
 	}
 
 	/**
@@ -384,8 +400,9 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		boolean isGuestOnly = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY);
 		boolean isInstitutionalResourceManager = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE,
 				Constants.ORESOURCE_INSTORESMANAGER);
+		boolean isPoolAdmin = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_POOLS);
 		boolean isInvitee = isIdentityInvited(identity);
-		Roles roles = new Roles(isAdmin, isUserManager, isGroupManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, isInvitee);
+		Roles roles = new Roles(isAdmin, isUserManager, isGroupManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, isPoolAdmin, isInvitee);
 		return roles;
 	}
 
@@ -426,6 +443,12 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		boolean institutionalResourceManager = roles.isInstitutionalResourceManager()
 				&& !roles.isGuestOnly() && !roles.isInvitee();
 		updateRolesInSecurityGroup(identity, institutionalResourceManagerGroup, hasBeenInstitutionalResourceManager, institutionalResourceManager);
+
+		// institutional resource manager
+		SecurityGroup poolManagerGroup = findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
+		boolean hasBeenPoolManager = isIdentityInSecurityGroup(identity, poolManagerGroup);
+		boolean poolManager = roles.isPoolAdmin()	&& !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(identity, poolManagerGroup, hasBeenPoolManager, poolManager);
 
 		// system administrator
 		SecurityGroup adminGroup = findSecurityGroupByName(Constants.GROUP_ADMIN);

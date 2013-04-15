@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
@@ -47,6 +48,21 @@ public class MarkedItemsSource implements QuestionItemsSource {
 		this.me = me;
 		this.roles = roles;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+	}
+
+	@Override
+	public String getName() {
+		return "Fav";
+	}
+
+	@Override
+	public boolean isRemoveEnabled() {
+		return false;
+	}
+
+	@Override
+	public void removeFromSource(List<QuestionItemShort> items) {
+		//
 	}
 
 	@Override

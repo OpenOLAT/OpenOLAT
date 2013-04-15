@@ -10,9 +10,16 @@
 #if($guiMessage.hasWarn())
 <script type="text/javascript">
 /* <![CDATA[ */
-	setTimeout(function(){ showMessageBox("warn", "$r.translate("warn.header")",  "$r.get("guiMessage").renderWarn()"); }, 100);
-	##auto hide box
-	setTimeout(function(){ Ext.MessageBox.hide(); }, 8000);
+	setTimeout(function(){
+		var dialog = showMessageBox('warn', '$r.translate("warn.header")',  '$r.get("guiMessage").renderWarn()');
+		setTimeout(function(){
+			try {
+				jQuery(dialog).dialog('destroy').remove();
+			} catch(e) {
+				//possible if the user has closed the window
+			}
+		}, 8000);
+	}, 100);
 /* ]]> */
 </script>
 #end

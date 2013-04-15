@@ -21,27 +21,26 @@ package org.olat.modules.qpool.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.persistence.ResultInfos;
-import org.olat.core.commons.persistence.SortKey;
-import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionItemView;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.qpool.Pool;
 
 /**
  * 
- * Initial date: 12.02.2013<br>
+ * Initial date: 15.04.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemsSource {
-	
-	public String getName();
-	
-	public boolean isRemoveEnabled();
-	
-	public void removeFromSource(List<QuestionItemShort> items);
-	
-	public int getNumOfItems();
-	
-	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
+public class QPoolSelectionEvent extends Event {
 
+	private static final long serialVersionUID = -4256533448173369433L;
+	private final List<Pool> pools;
+	
+	public QPoolSelectionEvent(List<Pool> pools) {
+		super("qpool.selection.pools");
+		this.pools = pools;
+	}
+
+	public List<Pool> getPools() {
+		return pools;
+	}
 }

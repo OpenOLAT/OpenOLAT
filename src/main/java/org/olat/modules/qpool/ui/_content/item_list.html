@@ -1,12 +1,29 @@
 $r.render("items")
 <div class="b_clearfix o_qpool_button_bar_box">
 	<div class="o_qpool_button_bar">
-	$r.render("create.list")
-	$r.render("export.item")
-	$r.render("share.item")
-	$r.render("copy")
-	$r.render("import.item")
-	$r.render("author.item")
-	$r.render("delete.item")
+	#if($r.available("create.list"))
+		$r.render("create.list")
+	#end
+	#if($r.available("export.item"))
+		$r.render("export.item")
+	#end
+	#if($r.available("share.item"))
+		$r.render("share.item")
+	#end
+	#if($r.available("unshare.item"))
+		$r.render("unshare.item")
+	#end
+	#if($r.available("copy"))
+		$r.render("copy")
+	#end
+	#if($r.available("import.item"))
+		$r.render("import.item")
+	#end
+	#if($r.available("author.item"))
+		$r.render("author.item")
+	#end
+	#if($r.available("delete.item"))
+		$r.render("delete.item")
+	#end
 	</div>
 </div>

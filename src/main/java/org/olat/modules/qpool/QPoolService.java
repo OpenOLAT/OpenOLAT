@@ -64,7 +64,7 @@ public interface QPoolService {
 	
 	public QuestionItem loadItemById(Long key);
 	
-	public List<QuestionItem> getAllItems(int firstResult, int maxResults);
+	public List<QuestionItemFull> getAllItems(int firstResult, int maxResults);
 	
 	public QuestionItem updateItem(QuestionItem item);
 	
@@ -106,7 +106,9 @@ public interface QPoolService {
 	
 	public ResultInfos<QuestionItemView> getItemsOfPool(Pool pool, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
-	public void shareItemsInPools(List<QuestionItemShort> items, List<Pool> pools, boolean editable);
+	public void addItemsInPools(List<QuestionItemShort> items, List<Pool> pools, boolean editable);
+	
+	public void removeItemsInPool(List<QuestionItemShort> items, Pool pool);
 	
 	
 	//favorit
@@ -119,6 +121,8 @@ public interface QPoolService {
 	//share
 	public void shareItemsWithGroups(List<QuestionItemShort> items, List<BusinessGroup> groups, boolean editable);
 	
+	public void removeItemsFromResource(List<QuestionItemShort> items, OLATResource resource);
+	
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity);
 	
 	public int countSharedItemByResource(OLATResource resource);
@@ -129,6 +133,8 @@ public interface QPoolService {
 	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItemShort> initialItems);
 	
 	public void addItemToCollection(QuestionItemShort item, QuestionItemCollection collection);
+	
+	public void removeItemsFromCollection(List<QuestionItemShort> items, QuestionItemCollection collection);
 	
 	public List<QuestionItemCollection> getCollections(Identity owner);
 	

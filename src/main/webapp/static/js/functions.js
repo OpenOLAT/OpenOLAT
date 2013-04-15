@@ -1040,7 +1040,8 @@ function showInfoBox(title, content){
 */
 function showMessageBox(type, title, message, buttonCallback){
 	if(type == 'info'){
-		showInfoBox(title, message)
+		showInfoBox(title, message);
+		return null;
 	} else {
 		var prefix;
 		if("warn" == type) {
@@ -1050,12 +1051,19 @@ function showMessageBox(type, title, message, buttonCallback){
 		} else {
 			prefix = '<div><div>';
 		}
-		jQuery(prefix + '<p>' + message + '</p></div></div>').dialog({
+		return jQuery(prefix + '<p>' + message + '</p></div></div>').dialog({
 			height: 170,
 			width: 400,
 			modal: true,
 			title: title,
-			resizable:false
+			resizable:false,
+			close: function(event, ui) {
+				try {
+					jQuery(this).dialog('destroy').remove()
+				} catch(e) {
+					//possible if the user has closed the window
+				}
+			}
 		}).dialog('open');
 	}
 }
@@ -1215,7 +1223,7 @@ function b_briefcase_toggleCheck(ref, checked) {
  */
 function b_doPrint() {
 	// When we have an iframe, issue print command on iframe directly
-	var iframes =  $$('div.b_iframe_wrapper iframe');
+	var iframes =  jQuery('div.b_iframe_wrapper iframe');
 	if (iframes.length > 0) {
 		try {
 			var iframe = iframes[0];

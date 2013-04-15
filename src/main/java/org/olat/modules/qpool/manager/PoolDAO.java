@@ -72,7 +72,9 @@ public class PoolDAO {
 		return pool;
 	}
 	
-	public int deleteFromPools(List<QuestionItemShort> items) {
+	public int removeFromPools(List<QuestionItemShort> items) {
+		if(items == null || items.isEmpty()) return 0;
+		
 		List<Long> keys = new ArrayList<Long>();
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
@@ -83,6 +85,23 @@ public class PoolDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("itemKeys", keys)
+				.executeUpdate();
+	}
+	
+	public int removeFromPool(List<QuestionItemShort> items, Pool pool) {
+		if(items == null || items.isEmpty()) return 0;
+		
+		List<Long> keys = new ArrayList<Long>();
+		for(QuestionItemShort item:items) {
+			keys.add(item.getKey());
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from qpool2item pool2item where pool2item.item.key in (:itemKeys) and pool2item.pool.key=:poolKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("itemKeys", keys)
+				.setParameter("poolKey", pool.getKey())
 				.executeUpdate();
 	}
 	

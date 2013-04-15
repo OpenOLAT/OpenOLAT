@@ -78,7 +78,7 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("				zIndex: 10000,\n")
       .append("				cursorAt: {left: 0, top: 0},\n")
       .append("				accept: function(event,ui){ return true; },\n")
-      .append("				helper: function(event) {\n")
+      .append("				helper: function(event,ui,zt) {\n")
       .append("				  return jQuery(\"<div class='ui-widget-header'>I'm a custom helper</div>\").appendTo('body').css('zIndex',5).show();\n")
       .append("				}\n")
       .append("			});\n")

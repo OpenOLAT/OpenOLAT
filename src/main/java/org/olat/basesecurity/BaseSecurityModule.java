@@ -51,6 +51,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private static final String CONFIG_USERMANAGER_ACCESS_TO_PROP = "sysGroupUsermanager.accessToProperties";
 	private static final String CONFIG_USERMANAGER_ACCESS_TO_POLICIES = "sysGroupUsermanager.accessToPolicies";
 	private static final String CONFIG_USERMANAGER_ACCESS_TO_AUTH = "sysGroupUsermanager.accessToAuthentications";
+	private static final String CONFIG_USERMANAGER_CAN_MANAGE_POOLMANAGERS = "sysGroupUsermanager.canManagePoolmanagers";
 	private static final String CONFIG_USERMANAGER_CAN_MANAGE_GROUPMANAGERS = "sysGroupUsermanager.canManageGroupmanagers";
 	private static final String CONFIG_USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER = "sysGroupUsermanager.canManageInstitutionalResourceManager";
 	private static final String CONFIG_USERMANAGER_CAN_MANAGE_AUTHORS = "sysGroupUsermanager.canManageAuthors";
@@ -85,6 +86,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public static Boolean USERMANAGER_ACCESS_TO_PROP = false;
 	public static Boolean USERMANAGER_ACCESS_TO_POLICIES = false;
 	public static Boolean USERMANAGER_ACCESS_TO_AUTH = false;
+	public static Boolean USERMANAGER_CAN_MANAGE_POOLMANAGERS = true;
 	public static Boolean USERMANAGER_CAN_MANAGE_GROUPMANAGERS = true;
 	public static Boolean USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER = true;
 	public static Boolean USERMANAGER_CAN_MANAGE_AUTHORS = true;
@@ -142,6 +144,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		USERMANAGER_ACCESS_TO_AUTH = getBooleanConfigParameter(CONFIG_USERMANAGER_ACCESS_TO_AUTH, USERMANAGER_ACCESS_TO_AUTH);
 		
 		USERMANAGER_CAN_MANAGE_GROUPMANAGERS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_GROUPMANAGERS, USERMANAGER_CAN_MANAGE_GROUPMANAGERS);
+		USERMANAGER_CAN_MANAGE_POOLMANAGERS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_POOLMANAGERS, USERMANAGER_CAN_MANAGE_POOLMANAGERS);
 		USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER, USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER);
 		USERMANAGER_CAN_MANAGE_AUTHORS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_AUTHORS, USERMANAGER_CAN_MANAGE_AUTHORS);
 		USERMANAGER_CAN_MANAGE_GUESTS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_GUESTS, USERMANAGER_CAN_MANAGE_GUESTS);

@@ -163,7 +163,26 @@ public class CollectionDAO {
 				.getResultList();
 	}
 	
+	public int removeItemFromCollection(List<QuestionItemShort> items, QuestionItemCollection collection) {
+		if(items == null || items.isEmpty()) return 0;//noting to do
+		
+		List<Long> keys = new ArrayList<Long>();
+		for(QuestionItemShort item:items) {
+			keys.add(item.getKey());
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from qcollection2item coll2item where coll2item.item.key in (:itemKeys) and coll2item.collection.key=:collectionKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("itemKeys", keys)
+				.setParameter("collectionKey", collection.getKey())
+				.executeUpdate();
+	}
+	
 	public int deleteItemFromCollections(List<QuestionItemShort> items) {
+		if(items == null || items.isEmpty()) return 0;//noting to do
+		
 		List<Long> keys = new ArrayList<Long>();
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());

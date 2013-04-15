@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
@@ -43,14 +44,31 @@ public class SharedItemsSource implements QuestionItemsSource {
 	
 	private final Roles roles;
 	private final Identity identity;
+	private final String sourceName;
 	private final OLATResource resource;
 	private final QPoolService qpoolService;
 	
 	public SharedItemsSource(BusinessGroup group, Identity identity, Roles roles) {
 		this.roles = roles;
 		this.identity = identity;
+		this.sourceName = group.getName();
 		this.resource = group.getResource();
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+	}
+
+	@Override
+	public String getName() {
+		return sourceName;
+	}
+
+	@Override
+	public boolean isRemoveEnabled() {
+		return true;
+	}
+
+	@Override
+	public void removeFromSource(List<QuestionItemShort> items) {
+		qpoolService.removeItemsFromResource(items, resource);
 	}
 
 	@Override

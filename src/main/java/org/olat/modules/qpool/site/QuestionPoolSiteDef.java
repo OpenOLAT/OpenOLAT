@@ -40,7 +40,7 @@ public class QuestionPoolSiteDef extends AbstractSiteDefinition implements SiteD
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
 		if(ureq.getUserSession() != null && ureq.getUserSession().getRoles() != null
-				&& ureq.getUserSession().getRoles().isAuthor()) {
+				&& (ureq.getUserSession().getRoles().isAuthor() || ureq.getUserSession().getRoles().isPoolAdmin())) {
 			SiteInstance si = new QuestionPoolSite(ureq.getLocale());
 			return si;
 		}

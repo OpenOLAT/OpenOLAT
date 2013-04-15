@@ -32,10 +32,13 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.Pool;
-import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemFull;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.resource.OLATResource;
+import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,20 +58,22 @@ public class QuestionItemDocumentFactory {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private QuestionPoolModule qpoolModule;
+	@Autowired
 	private QuestionItemDAO questionItemDao;
 	@Autowired
 	private QPoolService qpoolService;
 
 
 	public Document createDocument(SearchResourceContext searchResourceContext, Long itemKey) {
-		QuestionItem item = questionItemDao.loadById(itemKey);
+		QuestionItemFull item = questionItemDao.loadById(itemKey);
 		if(item != null) {
 			return createDocument(searchResourceContext, item);
 		}
 		return null;
 	}
 
-	public Document createDocument(SearchResourceContext searchResourceContext, QuestionItem item) {
+	public Document createDocument(SearchResourceContext searchResourceContext, QuestionItemFull item) {
 		OlatDocument oDocument = new OlatDocument();
 		oDocument.setId(item.getKey());
 		oDocument.setCreatedDate(item.getCreationDate());
@@ -80,7 +85,7 @@ public class QuestionItemDocumentFactory {
 		oDocument.setCssIcon("o_qitem_icon");
 		oDocument.setParentContextType(searchResourceContext.getParentContextType());
 		oDocument.setParentContextName(searchResourceContext.getParentContextName());
-		oDocument.setContent(item.getDescription());
+
 		//author
 		StringBuilder authorSb = new StringBuilder();
 		List<Identity> owners = qpoolService.getAuthors(item);
@@ -95,6 +100,18 @@ public class QuestionItemDocumentFactory {
 		
 		//add specific fields
 		Document document = oDocument.getLuceneDocument();
+		
+		//content
+		QPoolSPI provider = qpoolModule.getQuestionPoolProvider(item.getFormat());
+		if(provider != null) {
+			String content = provider.extractTextContent(item);
+			if(content != null) {
+				addStringField(document, AbstractOlatDocument.CONTENT_FIELD_NAME, content, 0.8f);
+			}
+		}
+		if(item.getDescription() != null) {
+			addStringField(document, AbstractOlatDocument.CONTENT_FIELD_NAME, item.getDescription(), 1.0f);
+		}
 		
 		//general fields
 		addStringField(document, QItemDocument.IDENTIFIER_FIELD, item.getIdentifier(), 1.0f);

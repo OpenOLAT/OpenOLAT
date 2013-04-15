@@ -20,6 +20,7 @@
 package org.olat.ims.qti.qpool;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +30,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.ims.qti.QTI12EditorController;
@@ -45,6 +50,9 @@ import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * 
@@ -54,6 +62,8 @@ import org.springframework.stereotype.Service;
  */
 @Service("qtiPoolServiceProvider")
 public class QTIQPoolServiceProvider implements QPoolSPI {
+	
+	private static final OLog log = Tracing.createLoggerFor(QTIQPoolServiceProvider.class);
 
 	@Autowired
 	private FileStorage qpoolFileStorage;
@@ -87,6 +97,33 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	public boolean isCompatible(String filename, VFSLeaf file) {
 		boolean ok = new ItemFileResourceValidator().validate(filename, file);
 		return ok;
+	}
+
+	@Override
+	public String extractTextContent(QuestionItemFull item) {
+		String content = null;
+		if(item.getRootFilename() != null) {
+			String dir = item.getDirectory();
+			VFSContainer container = qpoolFileStorage.getContainer(dir);
+			VFSItem file = container.resolve(item.getRootFilename());
+			if(file instanceof VFSLeaf) {
+				VFSLeaf leaf = (VFSLeaf)file;
+				InputStream is = leaf.getInputStream();
+				QTI12SAXHandler handler = new QTI12SAXHandler();
+				try {
+					XMLReader parser = XMLReaderFactory.createXMLReader();
+					parser.setContentHandler(handler);
+					parser.setFeature("http://xml.org/sax/features/validation", false);
+					parser.parse(new InputSource(is));
+				} catch (Exception e) {
+					log.error("", e);
+				} finally {
+					FileUtils.closeSafely(is);
+				}
+				return handler.toString();
+			}
+		}
+		return content;
 	}
 
 	@Override

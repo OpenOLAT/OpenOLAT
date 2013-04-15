@@ -67,14 +67,15 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	private SingleSelection statusRE;
 	
 	private Identity identity;
-	private boolean iAmOlatAdmin, isAdmin, isUserManager, isAuthor, isGroupManager, isGuestOnly, isInstitutionalResourceManager;
-	private boolean canGuestsByConfig, canAuthorsByConfig, canGroupmanagersByConfig, canInstitutionalResourceManagerByConfig;
+	private boolean iAmOlatAdmin, isAdmin, isUserManager, isAuthor, isGroupManager, isPoolManager, isGuestOnly, isInstitutionalResourceManager;
+	private boolean canGuestsByConfig, canAuthorsByConfig, canGroupmanagersByConfig, canPoolmanagersByConfig, canInstitutionalResourceManagerByConfig;
 
 	private List <String> statusKeys, statusValues;
 	private List <String> roleKeys, roleValues;
 	
 	private static final String KUSER   = "isUserManager";
 	private static final String KGROUP  = "isGroupManager";
+	private static final String KPOOL   = "isPoolManager";
 	private static final String KAUTHOR = "isAuthor";
 	private static final String KADMIN  = "isAdmin";
 	private static final String KRESMAN = "isInstitutionalResourcemanager";
@@ -99,6 +100,9 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	
 		SecurityGroup groupmanagerGroup = secMgr.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS);
 		isGroupManager = secMgr.isIdentityInSecurityGroup(identity, groupmanagerGroup);
+		
+		SecurityGroup poolmanagerGroup = secMgr.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
+		isPoolManager = secMgr.isIdentityInSecurityGroup(identity, poolmanagerGroup);
 
 		SecurityGroup isAnonymous = secMgr.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 		isGuestOnly = secMgr.isIdentityInSecurityGroup(identity, isAnonymous);
@@ -127,7 +131,9 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 
 		canGuestsByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS;	
 		canAuthorsByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS;
-		canGroupmanagersByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS;			
+
+		canPoolmanagersByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS;		
+		canGroupmanagersByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS;
 		canInstitutionalResourceManagerByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER;
 
 		if (iAmOlatAdmin) {
@@ -138,6 +144,11 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		if (iAmOlatAdmin || canGroupmanagersByConfig) {
 			roleKeys.add(KGROUP);
 			roleValues.add(translate("rightsForm.isGroupmanager"));
+		}
+
+		if (iAmOlatAdmin || canPoolmanagersByConfig) {
+			roleKeys.add(KPOOL);
+			roleValues.add(translate("rightsForm.isPoolmanager"));
 		}
 
 		if (iAmOlatAdmin || canAuthorsByConfig) {
@@ -171,6 +182,7 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		setAuthor(isAuthor);
 		setAdmin(isAdmin);
 		setInstitutionalResourceManager(isInstitutionalResourceManager);
+		setPoolmanager(isPoolManager);
 		
 		setStatus(identity.getStatus());
 		
@@ -208,6 +220,14 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 
 	private void setGroupmanager(boolean isGroupmanager) {
 		setRole(KGROUP, isGroupmanager);
+	}
+	
+	protected boolean isPoolmanager() {
+		return getRole(KPOOL);
+	}
+
+	private void setPoolmanager(boolean isPoolmanager) {
+		setRole(KPOOL, isPoolmanager);
 	}
 
 	protected boolean isUsermanager() {

@@ -46,6 +46,13 @@ public interface QPoolSPI {
 	
 	public boolean isCompatible(String filename, VFSLeaf file);
 	
+	/**
+	 * Extract text for indexing
+	 * @param item
+	 * @return
+	 */
+	public String extractTextContent(QuestionItemFull item);
+	
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file);
 	
 	/**

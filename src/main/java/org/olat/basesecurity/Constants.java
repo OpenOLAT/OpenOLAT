@@ -28,6 +28,7 @@ package org.olat.basesecurity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
+import org.olat.modules.qpool.Pool;
 
 /**
  * Description: <br>
@@ -64,6 +65,11 @@ public class Constants {
 	 * chars!
 	 */
 	public static final String GROUP_GROUPMANAGERS = "groupmanagers";
+	/**
+	 * <code>GROUP_POOL_MANAGER</code> predefined groups length restricted to 16
+	 * chars!
+	 */
+	public static final String GROUP_POOL_MANAGER = "poolsmanager";
 	/**
 	 * <code>GROUP_ANONYMOUS</code> predefined groups length restricted to 16
 	 * chars!
@@ -186,6 +192,12 @@ public class Constants {
 	 * resourceable TYPE for all courses <code>ORESOURCE_COURSES</code>
 	 */
 	public static final OLATResourceable ORESOURCE_COURSES = OresHelper.lookupType(CourseModule.class);
+	
+
+	/**
+	 * resourceable TYPE for all courses <code>ORESOURCE_COURSES</code>
+	 */
+	public static final OLATResourceable ORESOURCE_POOLS = OresHelper.lookupType(Pool.class);
 
 	/**
 	 * resourceable TYPE for olat users (everybody but guests)

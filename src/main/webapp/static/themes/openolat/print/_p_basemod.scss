@@ -84,6 +84,29 @@
 				 div.b_tabbedpane_tabs {display: none;}
 			}
 		}
+		
+		
+		/* calendar */
+		.o_cal_toptoolbar.b_clearfix { display: none; } /* hide top toolbar */
+		.o_cal_wv { display: none; } /* hide grid calendar */
+		.o_cal_wv_print { display: block; } /* display the print view */
+		#o_cal_config .b_float_right { display: none; } /* hide buttons */
+		#o_cal_config_below_cal_container .b_subcolumns { display: none; } /* hide date navigation and search link */
+		.o_cal_wv_print ul { list-style-type: none; margin-left: 0; }
+		.o_cal_event { clear:left; margin: 0.2em 0; }
+		.o_cal_wv_list * { float: left; width: 100%; } /* float all elements in order to fully include floating children */
+		.o_cal_event span { padding: 0 0.4em; display:block; }
+		.o_cal_date { font-weight: bold; }
+		.o_cal_time { width: 25%; } 
+		.o_cal_subject { width: 40%; border-left-style: solid; border-left-width: thick; }
+		.o_cal_subject p { padding:0 0.4em; margin:0;  }
+		.o_cal_location { float: right; width: 34%; } /* Since subject has a 1px border, decrease the width of location by 1% */
+		.o_cal_config_scrollwrapper { width: auto; height: auto; overflow: visible; overflow-x: visible; }
+		.o_cal_config_calendar { border-width: 0; border-left-style: solid; border-left-width: thick; float: none; display: block;}
+		#o_cal_config_below_cal_container { border: none; background: none; overflow: visible; }
+		#o_cal_config_below_cal_container * { background: none; color: black; }
+		#o_cal_config_below_cal_container fieldset { border: none; }
+		#o_cal_config_below_cal_container fieldset legend { font-weight: bold; }
 }
 
 

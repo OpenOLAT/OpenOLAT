@@ -32,6 +32,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexableField;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -44,6 +46,11 @@ import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
+import org.olat.modules.qpool.model.QItemType;
+import org.olat.search.model.AbstractOlatDocument;
+import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.file.DocumentAccessException;
+import org.olat.search.service.document.file.FileDocumentFactory;
 
 /**
  * 
@@ -56,6 +63,35 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	private static final OLog log = Tracing.createLoggerFor(AbstractQPoolServiceProvider.class);
 	
 	public abstract FileStorage getFileStorage();
+	
+	public abstract QItemType getDefaultType();
+	
+	@Override
+	public String extractTextContent(QuestionItemFull item) {
+		String directory = item.getDirectory();
+		VFSContainer itemDir = getFileStorage().getContainer(directory);
+		VFSItem file = itemDir.resolve(item.getRootFilename());
+		if(file instanceof VFSLeaf) {
+			FileDocumentFactory docFactory = CoreSpringFactory.getImpl(FileDocumentFactory.class);
+			SearchResourceContext ctxt = new SearchResourceContext();
+			ctxt.setBusinessControlFor(item);
+			try {
+				String content = null;
+				Document doc = docFactory.createDocument(ctxt, (VFSLeaf)file);
+				for(IndexableField field:doc.getFields()) {
+					if(AbstractOlatDocument.CONTENT_FIELD_NAME.equals(field.name())) {
+						content = field.stringValue();
+					}
+				}
+				return content;
+			} catch (IOException e) {
+				log.error("", e);
+			} catch (DocumentAccessException e) {
+				log.warn("", e);
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file) {
@@ -87,8 +123,9 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 		}
 		
 		String language = defaultLocale.getLanguage();
+		QItemType type = getDefaultType();
 		return CoreSpringFactory.getImpl(QPoolService.class)
-				.createAndPersistItem(owner, filename, getFormat(), language, null, dir, filename, null);
+				.createAndPersistItem(owner, filename, getFormat(), language, null, dir, filename, type);
 	}
 
 	@Override

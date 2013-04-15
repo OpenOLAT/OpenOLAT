@@ -45,6 +45,7 @@ import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
@@ -106,8 +107,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			return; //nothing to do
 		}
 		
-		poolDao.deleteFromPools(items);
-		questionItemDao.deleteFromShares(items);
+		poolDao.removeFromPools(items);
+		questionItemDao.removeFromShares(items);
 		collectionDao.deleteItemFromCollections(items);
 		//TODO unmark
 		questionItemDao.delete(items);
@@ -168,8 +169,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		lifeIndexer.indexDocument(QItemDocument.TYPE, mergedItem.getKey());
 		return mergedItem;
 	}
-
-
+	
 	@Override
 	public List<QuestionItem> copyItems(Identity owner, List<QuestionItemShort> itemsToCopy) {
 		List<QuestionItem> copies = new ArrayList<QuestionItem>();
@@ -274,7 +274,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public List<QuestionItem> getAllItems(int firstResult, int maxResults) {
+	public List<QuestionItemFull> getAllItems(int firstResult, int maxResults) {
 		return questionItemDao.getAllItems(firstResult, maxResults);
 	}
 
@@ -352,7 +352,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public void shareItemsInPools(List<QuestionItemShort> items, List<Pool> pools, boolean editable) {
+	public void addItemsInPools(List<QuestionItemShort> items, List<Pool> pools, boolean editable) {
 		if(items == null || items.isEmpty() || pools == null || pools.isEmpty()) {
 			return;//nothing to do
 		}
@@ -360,6 +360,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		for(QuestionItemShort item:items) {
 			poolDao.addItemToPool(item, pools, editable);
 		}
+	}
+
+	@Override
+	public void removeItemsInPool(List<QuestionItemShort> items, Pool pool) {
+		poolDao.removeFromPool(items, pool);
 	}
 
 	@Override
@@ -424,6 +429,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
+	public void removeItemsFromResource(List<QuestionItemShort> items, OLATResource resource) {
+		questionItemDao.removeFromShare(items, resource);
+	}
+
+	@Override
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity) {
 		return questionItemDao.getResourcesWithSharedItems(identity);
 	}
@@ -475,6 +485,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Override
 	public void addItemToCollection(QuestionItemShort item, QuestionItemCollection coll) {
 		collectionDao.addItemToCollection(item.getKey(), coll);
+	}
+
+	@Override
+	public void removeItemsFromCollection(List<QuestionItemShort> items, QuestionItemCollection collection) {
+		collectionDao.removeItemFromCollection(items, collection);
 	}
 
 	@Override

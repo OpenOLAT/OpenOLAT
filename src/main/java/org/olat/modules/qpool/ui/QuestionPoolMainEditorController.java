@@ -210,7 +210,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 					qpoolService.shareItemsWithGroups(Collections.singletonList(item), Collections.singletonList((BusinessGroup)userObj), false);
 					showInfo("item.shared", item.getTitle());
 				} else if(userObj instanceof Pool) {
-					qpoolService.shareItemsInPools(Collections.singletonList(item), Collections.singletonList((Pool)userObj), false);
+					qpoolService.addItemsInPools(Collections.singletonList(item), Collections.singletonList((Pool)userObj), false);
 					showInfo("item.pooled", item.getTitle());
 				} else if(userObj instanceof QuestionItemCollection) {
 					qpoolService.addItemToCollection(item, (QuestionItemCollection)userObj);
@@ -351,11 +351,12 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		buildShareSubTreeModel(sharesNode);
 		
 		//administration
-		GenericTreeNode adminNode = new GenericTreeNode(translate("menu.admin"), "menu.admin");
-		adminNode.setCssClass("o_sel_qpool_admin");
-		rootNode.addChild(adminNode);
-		buildAdminSubTreeModel(adminNode);
-
+		if(roles.isOLATAdmin() || roles.isPoolAdmin()) {
+			GenericTreeNode adminNode = new GenericTreeNode(translate("menu.admin"), "menu.admin");
+			adminNode.setCssClass("o_sel_qpool_admin");
+			rootNode.addChild(adminNode);
+			buildAdminSubTreeModel(adminNode);
+		}
 		return gtm;
 	}
 	
@@ -378,6 +379,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	}
 	
 	private void buildAdminSubTreeModel(GenericTreeNode parentNode) {
+		if(!roles.isOLATAdmin() && !roles.isPoolAdmin()) return;
 		parentNode.removeAllChildren();
 		
 		GenericTreeNode node = new GenericTreeNode(translate("menu.admin.studyfields"), "menu.admin.studyfields");

@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QItemType;
@@ -161,5 +162,68 @@ public class CollectionDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, items.size());
 		Assert.assertTrue(items.contains(coll1));
 		Assert.assertTrue(items.contains(coll2));
+	}
+
+	@Test
+	public void removeFromCollection_paranoid() {
+		//create 2 collections with 2 items
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-4-" + UUID.randomUUID().toString());
+		QuestionItemCollection coll1 = collectionDao.createCollection("NGC collection 8", id);
+		QuestionItemCollection coll2 = collectionDao.createCollection("NGC collection 9", id);
+		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 103", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 104", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		collectionDao.addItemToCollection(item1.getKey(), coll1);
+		collectionDao.addItemToCollection(item1.getKey(), coll2);
+		collectionDao.addItemToCollection(item2.getKey(), coll1);
+		collectionDao.addItemToCollection(item2.getKey(), coll2);
+		dbInstance.commit();
+		
+		//check if it's alright
+		int numOfItems_1 = collectionDao.countItemsOfCollection(coll1);
+		Assert.assertEquals(2, numOfItems_1);
+		int numOfItems_2 = collectionDao.countItemsOfCollection(coll2);
+		Assert.assertEquals(2, numOfItems_2);
+		
+		//remove
+		collectionDao.removeItemFromCollection(Collections.<QuestionItemShort>singletonList(item1), coll2);
+		dbInstance.commitAndCloseSession();
+		
+		//check if the item has been removed
+		int numOfStayingItems_1 = collectionDao.countItemsOfCollection(coll1);
+		Assert.assertEquals(2, numOfStayingItems_1);
+		int numOfStayingItems_2 = collectionDao.countItemsOfCollection(coll2);
+		Assert.assertEquals(1, numOfStayingItems_2);
+		List<QuestionItemView> items_2 = collectionDao.getItemsOfCollection(coll2, null, 0, -1);
+		Assert.assertEquals(1, items_2.size());
+		Assert.assertEquals(item2.getKey(), items_2.get(0).getKey());
+	}
+	
+	@Test
+	public void removeFromCollections() {
+		//create a collection with 2 items
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-4-" + UUID.randomUUID().toString());
+		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 10", id);
+		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 107", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 108", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		collectionDao.addItemToCollection(item1.getKey(), coll);
+		collectionDao.addItemToCollection(item2.getKey(), coll);
+		dbInstance.commit();
+		
+		//check if it's alright
+		int numOfItems = collectionDao.countItemsOfCollection(coll);
+		Assert.assertEquals(2, numOfItems);
+		
+		//remove
+		collectionDao.deleteItemFromCollections(Collections.<QuestionItemShort>singletonList(item1));
+		dbInstance.commitAndCloseSession();
+		
+		//check if the item has been removed
+		int numOfStayingItems = collectionDao.countItemsOfCollection(coll);
+		Assert.assertEquals(1, numOfStayingItems);
+		List<QuestionItemView> items_2 = collectionDao.getItemsOfCollection(coll, null, 0, -1);
+		Assert.assertEquals(1, items_2.size());
+		Assert.assertEquals(item2.getKey(), items_2.get(0).getKey());
 	}
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,7 +37,6 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPluginFactory;
 import org.olat.core.gui.control.Disposable;
-import org.olat.core.gui.media.ClasspathMediaResource;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
@@ -47,6 +47,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -784,10 +785,13 @@ public class RichTextConfiguration implements Disposable {
 	public void setLanguage(Locale loc) {
 		// tiny does not support country or vairant codes, only language code
 		String langKey = loc.getLanguage();
-		ClasspathMediaResource resource = new ClasspathMediaResource(this.getClass(), "_static/js/tinymce/langs/" + langKey + ".js");
-		if (resource.getInputStream() == null) {
-			// fallback to EN
-			langKey = "en";
+
+		String contextRoot = WebappHelper.getContextRoot();
+		if(StringHelper.containsNonWhitespace(contextRoot)) {
+			File file = new File(contextRoot, "static/js/tinymce/tinymce/langs/" + langKey + ".js");
+			if(!file.exists()) {
+				langKey = "en";
+			}
 		}
 		setQuotedConfigValue(LANGUAGE, langKey);
 	}

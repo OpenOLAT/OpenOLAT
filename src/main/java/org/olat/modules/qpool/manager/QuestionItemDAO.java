@@ -221,7 +221,7 @@ public class QuestionItemDAO {
 		return query.getResultList();
 	}
 	
-	public List<QuestionItem> getAllItems(int firstResult, int maxResults) {
+	public List<QuestionItemFull> getAllItems(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
@@ -230,8 +230,8 @@ public class QuestionItemDAO {
 		  .append(" left join fetch item.educationalContext educationalContext")
 		  .append(" order by item.key");
 
-		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItem.class);
+		TypedQuery<QuestionItemFull> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemFull.class);
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -462,7 +462,7 @@ public class QuestionItemDAO {
 		return query.getResultList();
 	}
 	
-	public int deleteFromShares(List<QuestionItemShort> items) {
+	public int removeFromShares(List<QuestionItemShort> items) {
 		List<Long> keys = new ArrayList<Long>();
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
@@ -472,6 +472,20 @@ public class QuestionItemDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("itemKeys", keys)
+				.executeUpdate();
+	}
+	
+	public int removeFromShare(List<QuestionItemShort> items, OLATResource resource) {
+		List<Long> keys = new ArrayList<Long>();
+		for(QuestionItemShort item:items) {
+			keys.add(item.getKey());
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from qshareitem share where share.item.key in (:itemKeys) and share.resource.key=:resourceKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("itemKeys", keys)
+				.setParameter("resourceKey", resource.getKey())
 				.executeUpdate();
 	}
 }

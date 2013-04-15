@@ -49,6 +49,7 @@ import org.olat.core.gui.components.stack.StackedControllerAware;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -63,6 +64,7 @@ import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
+import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -78,7 +80,7 @@ import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
  */
 public class QuestionListController extends FormBasicController implements StackedControllerAware, ItemRowsSource {
 
-	private FormLink createList, exportItem, shareItem, copyItem, deleteItem, authorItem, importItem;
+	private FormLink createList, exportItem, shareItem, unshareItem, copyItem, deleteItem, authorItem, importItem;
 	
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
@@ -87,12 +89,16 @@ public class QuestionListController extends FormBasicController implements Stack
 	private CloseableModalController cmc;
 	private DialogBoxController confirmCopyBox;
 	private DialogBoxController confirmDeleteBox;
+	private DialogBoxController confirmRemoveBox;
 	private ShareItemOptionController shareItemsCtrl;
+	private PoolsController selectPoolCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private CreateCollectionController createCollectionCtrl;
 	private StepsMainRunController exportWizard;
 	private StepsMainRunController importAuthorsWizard;
 	private ImportController importItemCtrl;
+	private ShareTargetController shareTargetCtrl;
+	private CloseableCalloutWindowController shareCalloutCtrl;
 	
 	private final MarkManager markManager;
 	private final QPoolService qpoolService;
@@ -138,6 +144,10 @@ public class QuestionListController extends FormBasicController implements Stack
 		createList = uifactory.addFormLink("create.list", formLayout, Link.BUTTON);
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
 		shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
+		if(source.isRemoveEnabled()) {
+			unshareItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);
+		}
+		
 		copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
 		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
 		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
@@ -179,11 +189,17 @@ public class QuestionListController extends FormBasicController implements Stack
 				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
 				List<QuestionItemShort> items = getShortItems(selections);
 				doExport(ureq, items);
-			}  else if(link == shareItem) {
+			} else if(link == shareItem) {
 				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
-					doSelectGroup(ureq, items);
+					doShare(ureq, items);
+				}
+			} else if(link == unshareItem) {
+				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				if(selections.size() > 0) {
+					List<QuestionItemShort> items = getShortItems(selections);
+					doConfirmRemove(ureq, items);
 				}
 			} else if(link == copyItem) {
 				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
@@ -234,7 +250,27 @@ public class QuestionListController extends FormBasicController implements Stack
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == selectGroupCtrl) {
+		if(source == shareTargetCtrl) {
+			@SuppressWarnings("unchecked")
+			List<QuestionItemShort> items = (List<QuestionItemShort>)shareTargetCtrl.getUserObject();
+			shareCalloutCtrl.deactivate();
+			if(ShareTargetController.SHARE_GROUP_CMD.equals(event.getCommand())) {
+				doSelectGroup(ureq, items);
+			} else if(ShareTargetController.SHARE_POOL_CMD.equals(event.getCommand())) {
+				doSelectPool(ureq, items);
+			}
+		} else if(source == selectPoolCtrl) {
+			cmc.deactivate();
+			if(event instanceof QPoolSelectionEvent) {
+				QPoolSelectionEvent qpe = (QPoolSelectionEvent)event;
+				List<Pool> pools = qpe.getPools();
+				if(pools.size() > 0) {
+					@SuppressWarnings("unchecked")
+					List<QuestionItemShort> items = (List<QuestionItemShort>)selectPoolCtrl.getUserObject();
+					doShareItemsToGroups(ureq, items, null, pools);
+				}
+			}	
+		} else if(source == selectGroupCtrl) {
 			cmc.deactivate();
 			if(event instanceof BusinessGroupSelectionEvent) {
 				BusinessGroupSelectionEvent bge = (BusinessGroupSelectionEvent)event;
@@ -242,7 +278,7 @@ public class QuestionListController extends FormBasicController implements Stack
 				if(groups.size() > 0) {
 					@SuppressWarnings("unchecked")
 					List<QuestionItemShort> items = (List<QuestionItemShort>)selectGroupCtrl.getUserObject();
-					doShareItems(ureq, items, groups);
+					doShareItemsToGroups(ureq, items, groups, null);
 				}
 			}
 		} else if(source == shareItemsCtrl) {
@@ -289,6 +325,12 @@ public class QuestionListController extends FormBasicController implements Stack
 				@SuppressWarnings("unchecked")
 				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmDeleteBox.getUserObject();
 				doDelete(ureq, items);
+			}
+		} else if(source == confirmRemoveBox) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				@SuppressWarnings("unchecked")
+				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmRemoveBox.getUserObject();
+				doRemove(ureq, items);
 			}
 		} else if(source == cmc) {
 			cleanUp();
@@ -428,6 +470,31 @@ public class QuestionListController extends FormBasicController implements Stack
 		showInfo("item.deleted");
 	}
 	
+	protected void doShare(UserRequest ureq, List<QuestionItemShort> items) {
+		String title = translate("filter.view");
+		removeAsListenerAndDispose(shareTargetCtrl);
+		shareTargetCtrl = new ShareTargetController(ureq, getWindowControl());
+		shareTargetCtrl.setUserObject(items);
+		listenTo(shareTargetCtrl);
+		
+		removeAsListenerAndDispose(shareCalloutCtrl);
+		shareCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), shareTargetCtrl.getInitialComponent(), shareItem, title, true, null);
+		listenTo(shareCalloutCtrl);
+		shareCalloutCtrl.activate();	
+	}
+	
+	private void doConfirmRemove(UserRequest ureq, List<QuestionItemShort> items) {
+		String text = translate("confirm.unshare", new String[]{ source.getName() });
+		confirmRemoveBox = activateYesNoDialog(ureq, null, text, confirmRemoveBox);
+		confirmRemoveBox.setUserObject(items);
+	}
+	
+	protected void doRemove(UserRequest ureq, List<QuestionItemShort> items) {
+		source.removeFromSource(items);
+		itemsTable.reset();
+		showInfo("item.deleted");
+	}
+	
 	protected void doSelectGroup(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(selectGroupCtrl);
 		selectGroupCtrl = new SelectBusinessGroupController(ureq, getWindowControl());
@@ -440,6 +507,18 @@ public class QuestionListController extends FormBasicController implements Stack
 		listenTo(cmc);
 	}
 	
+	protected void doSelectPool(UserRequest ureq, List<QuestionItemShort> items) {
+		removeAsListenerAndDispose(selectPoolCtrl);
+		selectPoolCtrl = new PoolsController(ureq, getWindowControl());
+		selectPoolCtrl.setUserObject(items);
+		listenTo(selectPoolCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				selectPoolCtrl.getInitialComponent(), true, translate("select.pool"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
 	protected void doConfirmCopy(UserRequest ureq, List<QuestionItemShort> items) {
 		String title = translate("copy");
 		String text = translate("copy.confirmation");
@@ -454,9 +533,9 @@ public class QuestionListController extends FormBasicController implements Stack
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
 	}
 	
-	private void doShareItems(UserRequest ureq, List<QuestionItemShort> items, List<BusinessGroup> groups) {
+	private void doShareItemsToGroups(UserRequest ureq, List<QuestionItemShort> items, List<BusinessGroup> groups, List<Pool> pools) {
 		removeAsListenerAndDispose(shareItemsCtrl);
-		shareItemsCtrl = new ShareItemOptionController(ureq, getWindowControl(), items, groups, null);
+		shareItemsCtrl = new ShareItemOptionController(ureq, getWindowControl(), items, groups, pools);
 		listenTo(shareItemsCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

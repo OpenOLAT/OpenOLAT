@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
@@ -50,6 +51,21 @@ public class PooledItemsSource implements QuestionItemsSource {
 		this.roles = roles;
 		this.identity = identity;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+	}
+
+	@Override
+	public String getName() {
+		return pool.getName();
+	}
+
+	@Override
+	public boolean isRemoveEnabled() {
+		return true;
+	}
+
+	@Override
+	public void removeFromSource(List<QuestionItemShort> items) {
+		qpoolService.removeItemsInPool(items, pool);
 	}
 
 	@Override

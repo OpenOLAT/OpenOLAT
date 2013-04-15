@@ -17,31 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.ims.qti.qpool;
 
-import java.util.List;
-
-import org.olat.core.commons.persistence.ResultInfos;
-import org.olat.core.commons.persistence.SortKey;
-import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionItemView;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * 
- * Initial date: 12.02.2013<br>
+ * Simple XML text extractor for QTI 1.2 files
+ * 
+ * Initial date: 15.04.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemsSource {
+public class QTI12SAXHandler extends DefaultHandler {
 	
-	public String getName();
-	
-	public boolean isRemoveEnabled();
-	
-	public void removeFromSource(List<QuestionItemShort> items);
-	
-	public int getNumOfItems();
-	
-	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
+	private final StringBuilder sb = new StringBuilder(16000);
 
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		sb.append(new String(ch, start, length));
+	}
+
+	@Override
+	public String toString() {
+		return sb.toString();
+	}
 }

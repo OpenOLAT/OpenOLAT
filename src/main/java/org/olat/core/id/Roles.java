@@ -40,6 +40,7 @@ public class Roles implements Serializable {
 	private boolean isAuthor;
 	private boolean isGuestOnly;
 	private boolean isInstitutionalResourceManager;
+	private boolean isPoolAdmin;
 	private boolean isInvitee;
 
 	/**
@@ -50,13 +51,20 @@ public class Roles implements Serializable {
 	 * @param isGuestOnly
 	 * @param isUniCourseManager
 	 */
-	public Roles(boolean isOLATAdmin, boolean isUserManager, boolean isGroupManager, boolean isAuthor, boolean isGuestOnly, boolean isInstitutionalResourceManager, boolean isInvitee) {
+	public Roles(boolean isOLATAdmin, boolean isUserManager, boolean isGroupManager, boolean isAuthor, boolean isGuestOnly,
+			boolean isInstitutionalResourceManager, boolean isInvitee) {
+		this(isOLATAdmin, isGroupManager, isUserManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, false, isInvitee);
+	}
+	
+	public Roles(boolean isOLATAdmin, boolean isUserManager, boolean isGroupManager, boolean isAuthor, boolean isGuestOnly,
+			boolean isInstitutionalResourceManager, boolean isPoolAdmin, boolean isInvitee) {
 		this.isOLATAdmin = isOLATAdmin;
 		this.isGroupManager = isGroupManager;
 		this.isUserManager = isUserManager;
 		this.isAuthor = isAuthor;
 		this.isGuestOnly = isGuestOnly;
 		this.isInstitutionalResourceManager = isInstitutionalResourceManager;
+		this.isPoolAdmin = isPoolAdmin;
 		this.isInvitee = isInvitee;
 	}
 
@@ -100,6 +108,13 @@ public class Roles implements Serializable {
 	 */
 	public boolean isInstitutionalResourceManager() {
 		return isInstitutionalResourceManager;
+	}
+	
+	/**
+	 * @return boolean
+	 */
+	public boolean isPoolAdmin() {
+		return isPoolAdmin;
 	}
 	
 	/**

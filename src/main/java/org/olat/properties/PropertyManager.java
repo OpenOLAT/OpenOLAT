@@ -33,7 +33,6 @@ import java.util.List;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import org.hibernate.Hibernate;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
