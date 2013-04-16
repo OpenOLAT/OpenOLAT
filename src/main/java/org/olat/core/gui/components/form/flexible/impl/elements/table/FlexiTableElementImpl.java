@@ -108,6 +108,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			searchFieldEl.showLabel(false);
 			searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
 			searchButton.setTranslator(translator);
+			searchButton.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only o_fulltext_search_button");
 			
 			components.put("rSearch", searchFieldEl);
 			components.put("rSearchB", searchButton);

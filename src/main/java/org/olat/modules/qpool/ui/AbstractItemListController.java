@@ -89,9 +89,9 @@ public abstract class AbstractItemListController extends FormBasicController imp
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.key.i18nKey(), Cols.key.ordinal(), true, "key"));
 		//columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.identifier.i18nKey(), Cols.identifier.ordinal(), true, "identifier"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title.i18nKey(), Cols.title.ordinal(), true, "title"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyLevel.i18nKey(), Cols.taxnonomyLevel.ordinal(), true, "taxonomyLevel.field"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.difficulty.i18nKey(), Cols.difficulty.ordinal(), true, "point"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type.i18nKey(), Cols.type.ordinal(), true, "type"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyLevel.i18nKey(), Cols.taxnonomyLevel.ordinal(), true, "taxonomyLevel"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.difficulty.i18nKey(), Cols.difficulty.ordinal(), true, "difficulty"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type.i18nKey(), Cols.type.ordinal(), true, "itemType"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format.i18nKey(), Cols.format.ordinal(), true, "format"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.rating.i18nKey(), Cols.rating.ordinal(), true, "rating"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(), true, "status"));
