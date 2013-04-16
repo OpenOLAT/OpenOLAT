@@ -19,10 +19,6 @@
  */
 package org.olat.ims.qti;
 
-import java.io.InputStream;
-
-import org.dom4j.Document;
-import org.dom4j.Element;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -36,12 +32,10 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.editor.ItemPreviewController;
+import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Item;
-import org.olat.ims.qti.editor.beecom.parser.ParserManager;
-import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 /**
@@ -70,7 +64,7 @@ public class QTI12PreviewController extends BasicController {
 		if(leaf == null) {
 			//no data to preview
 		} else {
-			Item item = readItemXml(leaf);
+			Item item = QTIEditHelper.readItemXml(leaf);
 			if(item != null) {
 				Translator translator = Util.createPackageTranslator(QTIEditorPackage.class, getLocale());
 				VFSContainer directory = qpoolService.getRootDirectory(qitem);
@@ -87,25 +81,6 @@ public class QTI12PreviewController extends BasicController {
 		
 		mainVC.put("preview", mainPanel);
 		putInitialPanel(mainVC);
-	}
-	
-	private Item readItemXml(VFSLeaf leaf) {
-		Document doc = null;
-		try {
-			InputStream is = leaf.getInputStream();
-			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
-			doc = xmlParser.parse(is, false);
-			
-			Element item = (Element)doc.selectSingleNode("questestinterop/item");
-		  ParserManager parser = new ParserManager();
-		  Item qtiItem = (Item)parser.parse(item);
-
-			is.close();
-			return qtiItem;
-		} catch (Exception e) {
-			logError("", e);
-			return null;
-		}
 	}
 	
 	@Override

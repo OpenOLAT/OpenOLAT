@@ -63,6 +63,7 @@ public class SelectionTree extends Component {
 	private boolean showCancelButton = true;
 	private boolean showAltTextAsHoverOnTitle = false;	
 	private boolean escapeHtml = true;
+	private Object userObject;
 	
 
 	/**
@@ -71,8 +72,15 @@ public class SelectionTree extends Component {
 	public SelectionTree(String name, Translator translator ) {
 		super(name, new PackageTranslator(PACKAGE, translator.getLocale(), translator));		
 	}
+	
+	public Object getUserObject() {
+		return userObject;
+	}
 
-		
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
+
 	protected void doDispatchRequest(UserRequest ureq) {
 		selectedNodeId = null;
 		selectedNodeIds = new ArrayList<String>();

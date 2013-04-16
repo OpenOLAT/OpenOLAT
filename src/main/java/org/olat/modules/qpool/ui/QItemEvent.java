@@ -19,6 +19,9 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.gui.control.Event;
 import org.olat.modules.qpool.QuestionItemView;
 
@@ -32,13 +35,28 @@ public class QItemEvent extends Event {
 
 	private static final long serialVersionUID = 1868410260121125418L;
 	private final QuestionItemView item;
+	private final List<QuestionItemView> itemList;
 
 	public QItemEvent(String cmd, QuestionItemView item) {
 		super(cmd);
 		this.item = item;
+		itemList = null;
+	}
+	
+	public QItemEvent(String cmd, List<QuestionItemView> itemList) {
+		super(cmd);
+		item = null;
+		this.itemList = itemList;
 	}
 
 	public QuestionItemView getItem() {
 		return item;
+	}
+	
+	public List<QuestionItemView> getItemList() {
+		if(itemList == null) {
+			return Collections.singletonList(item);
+		}
+		return itemList;
 	}
 }

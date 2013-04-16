@@ -217,6 +217,19 @@ create or replace view o_qp_item_pool_v as (
    left join o_qp_edu_context as educontext on (item.fk_edu_context = educontext.id)
 );
 
+create or replace view o_qp_pool_2_item_short_v as (
+   select
+      pool2item.id as item_to_pool_id,
+      pool2item.creationdate as item_to_pool_creationdate,
+      item.id as item_id,
+      pool2item.q_editable as item_editable,
+      pool2item.fk_pool_id as item_pool,
+      pool.q_name as item_pool_name
+   from o_qp_item as item
+   inner join o_qp_pool_2_item as pool2item on (pool2item.fk_item_id = item.id)
+   inner join o_qp_pool as pool on (pool2item.fk_pool_id = pool.id)
+);
+
 create or replace view o_qp_item_shared_v as (
    select
       item.id as item_id,
@@ -249,7 +262,18 @@ create or replace view o_qp_item_shared_v as (
    left join o_qp_edu_context as educontext on (item.fk_edu_context = educontext.id)
 );
 
-
+create or replace view o_qp_share_2_item_short_v as (
+   select
+      shareditem.id as item_to_share_id,
+      shareditem.creationdate as item_to_share_creationdate,
+      item.id as item_id,
+      shareditem.q_editable as item_editable,
+      shareditem.fk_resource_id as resource_id,
+      bgroup.groupname as resource_name
+   from o_qp_item as item
+   inner join o_qp_share_item as shareditem on (shareditem.fk_item_id = item.id)
+   inner join o_gp_business as bgroup on (shareditem.fk_resource_id = bgroup.fk_resource)
+);
 
 
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

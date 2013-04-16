@@ -1,3 +1,11 @@
+#if($r.available("delete.collection") || $r.available("rename.collection"))
+	<div id="qtoolbar" class="b_clearfix o_qpool_button_bar_box">
+		<div class="o_qpool_toolbar">
+			$r.render("rename.collection")
+			$r.render("delete.collection")
+		</div>
+	</div>
+#end
 <div id="qpoolcontainer">
 	<div id="qitems" class="pane ui-layout-north">$r.render("items")</div>
 	<div id="qdetails" class="pane ui-layout-center">$r.render("details")</div>

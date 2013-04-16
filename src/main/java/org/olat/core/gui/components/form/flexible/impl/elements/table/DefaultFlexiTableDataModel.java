@@ -1,0 +1,83 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.gui.components.table.TableDataModel;
+
+/**
+ * 
+ * Don't forget to implement the getObject(int row, int col) method :-)
+ * 
+ * Initial date: 16.04.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ * @param <U>
+ */
+public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataModel, TableDataModel<U> {
+	private List<U> rows;
+	private FlexiTableColumnModel columnModel;
+	
+	public DefaultFlexiTableDataModel(FlexiTableColumnModel columnModel) {
+		rows = new ArrayList<U>();
+		this.columnModel = columnModel;
+	}
+	
+	@Override
+	public int getColumnCount() {
+		return columnModel.getColumnCount();
+	}
+	@Override
+	public U getObject(int row) {
+		return rows.get(row);
+	}
+	@Override
+	public void setObjects(List<U> objects) {
+		this.rows = objects;
+	}
+	
+	@Override
+	public abstract DefaultFlexiTableDataModel<U> createCopyWithEmptyList();
+	
+	@Override
+	public int getRowCount() {
+		return rows == null ? 0 : rows.size();
+	}
+	
+	@Override
+	public boolean isRowLoaded(int row) {
+		return rows == null ? false : (row >= 0 && row < rows.size());
+	}
+	
+	@Override
+	public abstract Object getValueAt(int row, int col);
+	
+	@Override
+	public FlexiTableColumnModel getTableColumnModel() {
+		return columnModel;
+	}
+	
+	@Override
+	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
+		this.columnModel = tableColumnModel;
+	}
+}

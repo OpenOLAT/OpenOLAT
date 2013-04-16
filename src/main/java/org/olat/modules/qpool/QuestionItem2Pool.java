@@ -19,19 +19,20 @@
  */
 package org.olat.modules.qpool;
 
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
+
 /**
  * 
- * Initial date: 20.02.2013<br>
+ * Initial date: 16.04.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum QuestionType {
-
-	MC,
-	FIB,
-	SC,
-	KPRIM,
-	ESSAY,
-	UNKOWN
-
+public interface QuestionItem2Pool extends CreateInfo, Persistable {
+	
+	public boolean isEditable();
+	
+	public Long getPoolKey();
+	
+	public String getPoolName();
 }

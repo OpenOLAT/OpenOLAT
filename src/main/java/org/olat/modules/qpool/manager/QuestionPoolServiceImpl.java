@@ -44,6 +44,8 @@ import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItem2Pool;
+import org.olat.modules.qpool.QuestionItem2Resource;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -241,39 +243,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public int countItems(Identity author) {
-		return questionItemDao.countItems(author);
-	}
-
-	@Override
-	public ResultInfos<QuestionItemView> getItems(Identity author, SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
-		if(searchParams != null && StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
-			try {
-				String queryString = searchParams.getSearchString();
-				List<String> condQueries = new ArrayList<String>();
-				condQueries.add(QItemDocument.OWNER_FIELD + ":" + author.getKey());
-				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), firstResult, 10000, orderBy);
-
-				int initialResultsSize = results.size();
-				if(results.isEmpty()) {
-					return new DefaultResultInfos<QuestionItemView>();
-				} else if(results.size() > maxResults) {
-					results = results.subList(0, Math.min(results.size(), maxResults * 2));
-				}
-				List<QuestionItemView> items = questionItemDao.getItems(author, results, firstResult, maxResults, orderBy);
-				return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), firstResult + initialResultsSize, items);
-			} catch (Exception e) {
-				log.error("", e);
-			}
-			return new DefaultResultInfos<QuestionItemView>();
-		} else {
-			List<QuestionItemView> items = questionItemDao.getItems(author, null, firstResult, maxResults, orderBy);
-			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
-		}
-	}
-
-	@Override
 	public List<QuestionItemFull> getAllItems(int firstResult, int maxResults) {
 		return questionItemDao.getAllItems(firstResult, maxResults);
 	}
@@ -284,6 +253,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			return poolDao.getPools(0, -1);
 		}
 		return poolDao.getPools(identity, 0, -1);
+	}
+
+	@Override
+	public List<QuestionItem2Pool> getPoolInfosByItem(QuestionItemShort item) {
+		return poolDao.getQuestionItem2Pool(item);
 	}
 
 	@Override
@@ -317,41 +291,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public int getNumOfItemsInPool(Pool pool) {
-		return poolDao.getNumOfItemsInPool(pool);
-	}
-
-	@Override
-	public ResultInfos<QuestionItemView> getItemsOfPool(Pool pool, SearchQuestionItemParams searchParams,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		
-		if(searchParams != null && StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
-			try {
-				String queryString = searchParams.getSearchString();
-				List<String> condQueries = new ArrayList<String>();
-				condQueries.add("pool:" + pool.getKey());
-				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), firstResult, 10000, orderBy);
-
-				int initialResultsSize = results.size();
-				if(results.isEmpty()) {
-					return new DefaultResultInfos<QuestionItemView>();
-				} else if(results.size() > maxResults) {
-					results = results.subList(0, Math.min(results.size(), maxResults * 2));
-				}
-				List<QuestionItemView> items = poolDao.getItemsOfPool(pool, results, 0, maxResults, orderBy);
-				return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), firstResult + initialResultsSize, items);
-			} catch (Exception e) {
-				log.error("", e);
-			}
-			return new DefaultResultInfos<QuestionItemView>();
-		} else {
-			List<QuestionItemView> items = poolDao.getItemsOfPool(pool, null, firstResult, maxResults, orderBy);
-			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
-		}
-	}
-
-	@Override
 	public void addItemsInPools(List<QuestionItemShort> items, List<Pool> pools, boolean editable) {
 		if(items == null || items.isEmpty() || pools == null || pools.isEmpty()) {
 			return;//nothing to do
@@ -368,18 +307,100 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public int getNumOfFavoritItems(Identity identity) {
-		return questionItemDao.getNumOfFavoritItems(identity);
+	public int countItems(SearchQuestionItemParams searchParams) {
+		if(searchParams.isFavoritOnly()) {
+			return questionItemDao.countFavoritItems(searchParams);
+		} else if(searchParams.getPoolKey() != null) {
+			return poolDao.countItemsInPool(searchParams);
+		} else if(searchParams.getAuthor() != null) {
+			return questionItemDao.countItemsByAuthor(searchParams);
+		}
+		return 0;
 	}
 
 	@Override
-	public ResultInfos<QuestionItemView> getFavoritItems(Identity identity, SearchQuestionItemParams searchParams,
+	public ResultInfos<QuestionItemView> getItems(SearchQuestionItemParams searchParams,
 			int firstResult, int maxResults, SortKey... orderBy) {
-		
-		if(searchParams != null && StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+		if(searchParams.isFavoritOnly()) {
+			return searchFavorits(searchParams, firstResult, maxResults, orderBy);
+		} else if(searchParams.getAuthor() != null) {
+			return searchByAuthor(searchParams, firstResult, maxResults, orderBy);
+		} else if(searchParams.getPoolKey() != null) {
+			return getItemsByPool(searchParams, firstResult, maxResults, orderBy);
+		}
+		return new DefaultResultInfos<QuestionItemView>();
+	}
+
+	private ResultInfos<QuestionItemView> getItemsByPool(SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
+		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			try {
+				String queryString = searchParams.getSearchString();
+				List<String> condQueries = new ArrayList<String>();
+				condQueries.add("pool:" + searchParams.getPoolKey());
+				List<Long> results = searchClient.doSearch(queryString, condQueries,
+						searchParams.getIdentity(), searchParams.getRoles(), firstResult, 10000, orderBy);
+
+				int initialResultsSize = results.size();
+				if(results.isEmpty()) {
+					return new DefaultResultInfos<QuestionItemView>();
+				} else if(results.size() > maxResults) {
+					results = results.subList(0, Math.min(results.size(), maxResults * 2));
+				}
+				List<QuestionItemView> items = poolDao.getItemsOfPool(searchParams, results, 0, maxResults, orderBy);
+				return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), firstResult + initialResultsSize, items);
+			} catch (Exception e) {
+				log.error("", e);
+			}
+			return new DefaultResultInfos<QuestionItemView>();
+		} else {
+			List<QuestionItemView> items = poolDao.getItemsOfPool(searchParams, null, firstResult, maxResults, orderBy);
+			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
+		}
+	}
+
+	private ResultInfos<QuestionItemView> searchByAuthor( SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
+		Identity author = searchParams.getAuthor();
+		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			try {
+				String queryString = searchParams.getSearchString();
+				List<String> condQueries = new ArrayList<String>();
+				condQueries.add(QItemDocument.OWNER_FIELD + ":" + author.getKey());
+				List<Long> results = searchClient.doSearch(queryString, condQueries,
+						searchParams.getIdentity(), searchParams.getRoles(), firstResult, 10000, orderBy);
+
+				int initialResultsSize = results.size();
+				if(results.isEmpty()) {
+					return new DefaultResultInfos<QuestionItemView>();
+				} else if(results.size() > maxResults) {
+					results = results.subList(0, Math.min(results.size(), maxResults * 2));
+				}
+				List<QuestionItemView> items = questionItemDao.getItemsByAuthor(searchParams, results, firstResult, maxResults, orderBy);
+				return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), firstResult + initialResultsSize, items);
+			} catch (Exception e) {
+				log.error("", e);
+			}
+			return new DefaultResultInfos<QuestionItemView>();
+		} else {
+			List<QuestionItemView> items = questionItemDao.getItemsByAuthor(searchParams, null, firstResult, maxResults, orderBy);
+			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
+		}
+	}
+	
+	
+	/**
+	 * Do limit the search to favorit with the optimized view
+	 * @param searchParams
+	 * @param firstResult
+	 * @param maxResults
+	 * @param orderBy
+	 * @return
+	 */
+	private ResultInfos<QuestionItemView> searchFavorits(SearchQuestionItemParams searchParams,
+			int firstResult, int maxResults, SortKey... orderBy) {
+		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
 			try {
 				//filter with all favorits
-				List<Long> favoritKeys = questionItemDao.getFavoritKeys(identity);
+				List<Long> favoritKeys = questionItemDao.getFavoritKeys(searchParams.getIdentity());
 
 				String queryString = searchParams.getSearchString();
 				List<String> condQueries = new ArrayList<String>();
@@ -390,14 +411,14 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				if(results.isEmpty()) {
 					return new DefaultResultInfos<QuestionItemView>();
 				}
-				List<QuestionItemView> items = questionItemDao.getFavoritItems(identity, results, firstResult, maxResults, orderBy);
+				List<QuestionItemView> items = questionItemDao.getFavoritItems(searchParams, results, firstResult, maxResults, orderBy);
 				return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), firstResult + results.size(), items);
 			} catch (Exception e) {
 				log.error("", e);
 			}
 			return new DefaultResultInfos<QuestionItemView>();
 		} else {
-			List<QuestionItemView> items = questionItemDao.getFavoritItems(identity, null, firstResult, maxResults, orderBy);
+			List<QuestionItemView> items = questionItemDao.getFavoritItems(searchParams, null, firstResult, maxResults, orderBy);
 			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
 		}
 	}
@@ -474,12 +495,27 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
+	public List<QuestionItem2Resource> getSharedResourceInfosByItem(QuestionItem item) {
+		return questionItemDao.getSharedResourceInfos(item);
+	}
+
+	@Override
 	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItemShort> initialItems) {
 		QuestionItemCollection coll = collectionDao.createCollection(collectionName, owner);
 		for(QuestionItemShort item:initialItems) {
 			collectionDao.addItemToCollection(item.getKey(), coll);
 		}
 		return coll;
+	}
+
+	@Override
+	public QuestionItemCollection renameCollection(QuestionItemCollection coll,	String name) {
+		return collectionDao.mergeCollection(coll, name);
+	}
+
+	@Override
+	public void deleteCollection(QuestionItemCollection coll) {
+		collectionDao.deleteCollection(coll);
 	}
 
 	@Override

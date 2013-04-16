@@ -38,6 +38,7 @@ import org.olat.modules.qpool.ui.edit.QuestionMetadataController;
 import org.olat.modules.qpool.ui.edit.QuestionMetadataEditController;
 import org.olat.modules.qpool.ui.edit.RightsMetadataController;
 import org.olat.modules.qpool.ui.edit.RightsMetadataEditController;
+import org.olat.modules.qpool.ui.edit.SharingController;
 import org.olat.modules.qpool.ui.edit.TechnicalMetadataController;
 import org.olat.modules.qpool.ui.edit.TechnicalMetadataEditController;
 
@@ -50,6 +51,7 @@ import org.olat.modules.qpool.ui.edit.TechnicalMetadataEditController;
 public class MetadatasController extends BasicController {
 
 	private final VelocityContainer mainVC;
+	private final SharingController sharingCtrl;
 	private final GeneralMetadataController generalCtrl;
 	private final EducationalMetadataController educationalCtrl;
 	private final QuestionMetadataController questionCtrl;
@@ -84,6 +86,8 @@ public class MetadatasController extends BasicController {
 		listenTo(technicalCtrl);
 		rightsCtrl = new RightsMetadataController(ureq, wControl, item, canEdit);
 		listenTo(rightsCtrl);
+		sharingCtrl = new SharingController(ureq, wControl, item);
+		listenTo(sharingCtrl);
 
 		mainVC = createVelocityContainer("item_metadatas");
 		mainVC.put("details_general", generalCtrl.getInitialComponent());
@@ -92,6 +96,7 @@ public class MetadatasController extends BasicController {
 		mainVC.put("details_lifecycle", lifecycleCtrl.getInitialComponent());
 		mainVC.put("details_technical", technicalCtrl.getInitialComponent());
 		mainVC.put("details_rights", rightsCtrl.getInitialComponent());
+		mainVC.put("details_sharing", sharingCtrl.getInitialComponent());
 		putInitialPanel(mainVC);
 	}
 

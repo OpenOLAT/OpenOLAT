@@ -24,6 +24,9 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QPoolService;
@@ -38,21 +41,38 @@ import org.olat.modules.qpool.ui.QuestionItemsSource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MarkedItemsSource implements QuestionItemsSource {
-	
-	private final Roles roles;
-	private final Identity me;
+public class DefaultItemsSource implements QuestionItemsSource {
+
+	private final String name;
 	private final QPoolService qpoolService;
+	private final SearchQuestionItemParams defaultParams;
 	
-	public MarkedItemsSource(Identity me, Roles roles) {
-		this.me = me;
-		this.roles = roles;
+	public DefaultItemsSource(Identity me, Roles roles, String name) {
+		this.name = name;
+		defaultParams = new SearchQuestionItemParams(me, roles);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+	}
+	
+	public Identity getMe() {
+		return defaultParams.getIdentity();
+	}
+	
+	public Roles getRoles() {
+		return defaultParams.getRoles();
+	}
+
+	public SearchQuestionItemParams getDefaultParams() {
+		return defaultParams;
 	}
 
 	@Override
 	public String getName() {
-		return "Fav";
+		return name;
+	}
+
+	@Override
+	public Controller getSourceController(UserRequest ureq, WindowControl wControl) {
+		return null;
 	}
 
 	@Override
@@ -67,13 +87,17 @@ public class MarkedItemsSource implements QuestionItemsSource {
 
 	@Override
 	public int getNumOfItems() {
-		return qpoolService.getNumOfFavoritItems(me);
+		return qpoolService.countItems(defaultParams);
 	}
 
 	@Override
 	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		SearchQuestionItemParams params = new SearchQuestionItemParams(me, roles);
+		SearchQuestionItemParams params = defaultParams.clone();
 		params.setSearchString(query);
-		return qpoolService.getFavoritItems(me, params, firstResult, maxResults, orderBy);
+		return doSearch(params, firstResult, maxResults, orderBy);
+	}
+	
+	protected ResultInfos<QuestionItemView> doSearch(SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy) {
+		return qpoolService.getItems(params, firstResult, maxResults, orderBy);
 	}
 }

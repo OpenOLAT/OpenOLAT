@@ -25,6 +25,7 @@
 
 package org.olat.ims.qti.editor;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,10 +33,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceResponse;
@@ -56,11 +62,14 @@ import org.olat.ims.qti.editor.beecom.objects.Response;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.resources.IMSEntityResolver;
 
 /**
  * @author rkulow
  */
 public class QTIEditHelper {
+	
+	private static final OLog log = Tracing.createLoggerFor(QTIEditHelper.class);
 
 	private static String EDITOR_IDENT = "QTIEDIT";
 	private static String ITEM_TYPE_SC = "SCQ";
@@ -909,5 +918,24 @@ public class QTIEditHelper {
   			item.delete();
   		}
   	}
+	}
+  
+	public static Item readItemXml(VFSLeaf leaf) {
+		Document doc = null;
+		try {
+			InputStream is = leaf.getInputStream();
+			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+			doc = xmlParser.parse(is, false);
+			
+			Element item = (Element)doc.selectSingleNode("questestinterop/item");
+		  ParserManager parser = new ParserManager();
+		  Item qtiItem = (Item)parser.parse(item);
+
+			is.close();
+			return qtiItem;
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
 	}
 }

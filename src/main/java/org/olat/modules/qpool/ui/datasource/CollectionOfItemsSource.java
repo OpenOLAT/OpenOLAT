@@ -24,6 +24,9 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QPoolService;
@@ -56,6 +59,15 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	@Override
 	public String getName() {
 		return collection.getName();
+	}
+
+	public QuestionItemCollection getCollection() {
+		return collection;
+	}
+
+	@Override
+	public Controller getSourceController(UserRequest ureq, WindowControl wControl) {
+		return null;
 	}
 
 	@Override

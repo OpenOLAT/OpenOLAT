@@ -1,0 +1,20 @@
+<div class="b_form b_form_vertical b_clearfix">
+	<fieldset><legend>$r.translate("sharing")</legend>
+	#if($showPoolInfos) 
+		<span>$r.translate("menu.pools")</span>
+		$r.render("pools")
+	#end
+	
+	#if($showAuthors)
+		<span>$r.translate("sharing.authors")</span>
+		$r.render("authors")
+	#end
+	
+	#if($showShares)
+		<span>$r.translate("sharing.shares")</span>
+		$r.render("shares")
+	#end
+	
+	
+	</fieldset>
+</div>

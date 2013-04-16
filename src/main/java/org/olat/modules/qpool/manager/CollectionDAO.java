@@ -62,11 +62,17 @@ public class CollectionDAO {
 		return collection;
 	}
 	
-	public QuestionItemCollection loadCollectionById(Long key) {
+	public QuestionItemCollection mergeCollection(QuestionItemCollection collection, String newName) {
+		ItemCollectionImpl coll = loadCollectionById(collection.getKey());
+		coll.setName(newName);
+		return dbInstance.getCurrentEntityManager().merge(coll);
+	}
+	
+	public ItemCollectionImpl loadCollectionById(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select coll from qcollection coll where coll.key=:key");
-		List<QuestionItemCollection> items = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItemCollection.class)
+		List<ItemCollectionImpl> items = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), ItemCollectionImpl.class)
 				.setParameter("key", key)
 				.getResultList();
 		if(items.isEmpty()) {
@@ -194,5 +200,18 @@ public class CollectionDAO {
 				.createQuery(sb.toString())
 				.setParameter("itemKeys", keys)
 				.executeUpdate();
+	}
+	
+	public int deleteCollection(QuestionItemCollection collection) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from qcollection2item coll2item where coll2item.collection.key in (:collectionKey)");
+		int count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("collectionKey", collection.getKey())
+				.executeUpdate();
+		
+		QuestionItemCollection coll = dbInstance.getCurrentEntityManager().getReference(ItemCollectionImpl.class, collection.getKey());
+		dbInstance.getCurrentEntityManager().remove(coll);
+		return 1 + count;
 	}
 }

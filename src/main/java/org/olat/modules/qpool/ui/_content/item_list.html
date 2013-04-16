@@ -25,5 +25,8 @@ $r.render("items")
 	#if($r.available("delete.item"))
 		$r.render("delete.item")
 	#end
+	#if($r.available("select"))
+		$r.render("select")
+	#end
 	</div>
 </div>

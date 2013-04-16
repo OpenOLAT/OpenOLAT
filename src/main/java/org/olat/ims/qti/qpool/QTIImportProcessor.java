@@ -177,6 +177,10 @@ class QTIImportProcessor {
 		}
 		//if question type not found, can be overridden by the metadatas
 		processItemMetadata(poolItem, itemEl);
+		if(poolItem.getType() == null) {
+			QItemType defType = qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
+			poolItem.setType(defType);
+		}
 		questionItemDao.persist(owner, poolItem);
 		return poolItem;
 	}

@@ -98,10 +98,12 @@
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>
 		<class>org.olat.modules.qpool.model.PoolItemView</class>
+		<class>org.olat.modules.qpool.model.PoolItemShortView</class>
 		<class>org.olat.modules.qpool.model.AuthorItemView</class>
 		<class>org.olat.modules.qpool.model.ItemView</class>
 		<class>org.olat.modules.qpool.model.QuestionItemImpl</class>
 		<class>org.olat.modules.qpool.model.SharedItemView</class>
+		<class>org.olat.modules.qpool.model.BusinessGroupToItemView</class>
 		<class>org.olat.modules.qpool.model.ResourceShareImpl</class>
 		<class>org.olat.modules.qpool.model.TaxonomyLevelImpl</class>
 		<class>org.olat.modules.qpool.model.ResourceShareImpl</class>

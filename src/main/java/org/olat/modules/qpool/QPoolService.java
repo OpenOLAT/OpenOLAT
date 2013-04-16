@@ -70,6 +70,11 @@ public interface QPoolService {
 	
 	public void deleteItems(List<QuestionItemShort> items);
 	
+	public int countItems(SearchQuestionItemParams params);
+	
+	public ResultInfos<QuestionItemView> getItems(SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
+	
+	
 	
 	//manage authors
 	public boolean isAuthor(QuestionItem item, Identity identity);
@@ -80,10 +85,6 @@ public interface QPoolService {
 	
 	public void removeAuthors(List<Identity> authors, List<QuestionItemShort> items);
 	
-	public int countItems(Identity author);
-
-	public ResultInfos<QuestionItemView> getItems(Identity author, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
-
 	//import / export
 	public void exportItem(QuestionItemShort item, ZipOutputStream zout);
 	
@@ -102,21 +103,11 @@ public interface QPoolService {
 	
 	public void removeOwners(List<Identity> owners, List<Pool> pools);
 	
-	public int getNumOfItemsInPool(Pool pool);
-	
-	public ResultInfos<QuestionItemView> getItemsOfPool(Pool pool, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
-	
 	public void addItemsInPools(List<QuestionItemShort> items, List<Pool> pools, boolean editable);
 	
 	public void removeItemsInPool(List<QuestionItemShort> items, Pool pool);
 	
-	
-	//favorit
-	public int getNumOfFavoritItems(Identity identity);
-	
-	public ResultInfos<QuestionItemView> getFavoritItems(Identity identity, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
-	
-	
+	public List<QuestionItem2Pool> getPoolInfosByItem(QuestionItemShort item);
 	
 	//share
 	public void shareItemsWithGroups(List<QuestionItemShort> items, List<BusinessGroup> groups, boolean editable);
@@ -129,12 +120,18 @@ public interface QPoolService {
 	
 	public ResultInfos<QuestionItemView> getSharedItemByResource(OLATResource resource, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
+	public List<QuestionItem2Resource> getSharedResourceInfosByItem(QuestionItem item);
+	
 	//list
 	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItemShort> initialItems);
 	
 	public void addItemToCollection(QuestionItemShort item, QuestionItemCollection collection);
 	
 	public void removeItemsFromCollection(List<QuestionItemShort> items, QuestionItemCollection collection);
+
+	public QuestionItemCollection renameCollection(QuestionItemCollection coll, String name);
+	
+	public void deleteCollection(QuestionItemCollection coll);
 	
 	public List<QuestionItemCollection> getCollections(Identity owner);
 	

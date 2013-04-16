@@ -65,7 +65,7 @@ public class QuestionsController extends BasicController implements StackedContr
 		super(ureq, wControl);
 		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-		
+
 		listCtrl = new QuestionListController(ureq, wControl, source);
 		listenTo(listCtrl);
 		detailsCtrl = new QuestionItemSummaryController(ureq, wControl);
@@ -74,6 +74,7 @@ public class QuestionsController extends BasicController implements StackedContr
 		listenTo(previewCtrl);
 		
 		mainVC = createVelocityContainer("items");
+
 		mainVC.put("items", listCtrl.getInitialComponent());
 		mainVC.put("details", detailsCtrl.getInitialComponent());
 		mainVC.put("preview", previewCtrl.getInitialComponent());
@@ -88,7 +89,12 @@ public class QuestionsController extends BasicController implements StackedContr
 		JSAndCSSComponent jsAndCssComp = new JSAndCSSComponent("layouting", js, null);
 		mainVC.put("layout", jsAndCssComp);
 		
+		initVelocityContainer(mainVC);
 		putInitialPanel(mainVC);
+	}
+	
+	protected void initVelocityContainer(VelocityContainer mainVc) {
+		//
 	}
 	
 	@Override

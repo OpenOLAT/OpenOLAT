@@ -20,29 +20,16 @@
 package org.olat.modules.qpool.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.persistence.DefaultResultInfos;
-import org.olat.core.commons.persistence.ResultInfos;
-import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerAware;
@@ -58,7 +45,6 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -68,8 +54,6 @@ import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionItemView;
-import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
 import org.olat.modules.qpool.ui.wizard.Export_1_TypeStep;
 import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
 
@@ -78,12 +62,10 @@ import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
  * Initial date: 22.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class QuestionListController extends FormBasicController implements StackedControllerAware, ItemRowsSource {
+public class QuestionListController extends AbstractItemListController implements StackedControllerAware, ItemRowsSource {
 
 	private FormLink createList, exportItem, shareItem, unshareItem, copyItem, deleteItem, authorItem, importItem;
 	
-	private FlexiTableElement itemsTable;
-	private QuestionItemDataModel model;
 	private StackedController stackPanel;
 	
 	private CloseableModalController cmc;
@@ -100,51 +82,22 @@ public class QuestionListController extends FormBasicController implements Stack
 	private ShareTargetController shareTargetCtrl;
 	private CloseableCalloutWindowController shareCalloutCtrl;
 	
-	private final MarkManager markManager;
 	private final QPoolService qpoolService;
 	
-	private QuestionItemsSource source;
-	
 	public QuestionListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
-		super(ureq, wControl, "item_list");
+		super(ureq, wControl, source);
 
-		this.source = source;
-		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		initForm(ureq);
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//add the table
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.key.i18nKey(), Cols.key.ordinal(), true, "key"));
-		//columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.identifier.i18nKey(), Cols.identifier.ordinal(), true, "identifier"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title.i18nKey(), Cols.title.ordinal(), true, "title"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyLevel.i18nKey(), Cols.taxnonomyLevel.ordinal(), true, "taxonomyLevel.field"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.difficulty.i18nKey(), Cols.difficulty.ordinal(), true, "point"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type.i18nKey(), Cols.type.ordinal(), true, "type"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format.i18nKey(), Cols.format.ordinal(), true, "format"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.rating.i18nKey(), Cols.rating.ordinal(), true, "rating"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(), true, "status"));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select-item"));
-		
-		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
-		itemsTable = uifactory.addTableElement(ureq, "items", model, model, 20, true, getTranslator(), formLayout);
-		itemsTable.setMultiSelect(true);
-		itemsTable.setRendererType(FlexiTableRendererType.dataTables);
-		
+	protected void initButtons(FormItemContainer formLayout) {
 		createList = uifactory.addFormLink("create.list", formLayout, Link.BUTTON);
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
 		shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
-		if(source.isRemoveEnabled()) {
+		if(getSource().isRemoveEnabled()) {
 			unshareItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);
 		}
 		
@@ -153,28 +106,10 @@ public class QuestionListController extends FormBasicController implements Stack
 		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
 		deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
 	}
-	
-	protected String getTableFormDispatchId() {
-		return itemsTable == null ? null : itemsTable.getFormDispatchId();
-	}
 
 	@Override
 	public void setStackedController(StackedController stackPanel) {
 		this.stackPanel = stackPanel;
-	}
-	
-	public void reset() {
-		itemsTable.reset();
-	}
-	
-	public void updateSource(QuestionItemsSource source) {
-		this.source = source;
-		itemsTable.reset();
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
 	}
 
 	@Override
@@ -182,67 +117,45 @@ public class QuestionListController extends FormBasicController implements Stack
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if(link == createList) {
-				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				List<QuestionItemShort> items = getShortItems(selections);
 				doAskCollectionName(ureq, items);
 			} else if(link == exportItem) {
-				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				List<QuestionItemShort> items = getShortItems(selections);
 				doExport(ureq, items);
 			} else if(link == shareItem) {
-				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doShare(ureq, items);
 				}
 			} else if(link == unshareItem) {
-				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doConfirmRemove(ureq, items);
 				}
 			} else if(link == copyItem) {
-				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doConfirmCopy(ureq, items);
 				}
 			} else if(link == deleteItem) {
-				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doConfirmDelete(ureq, items);
 				}
 			} else if(link == authorItem) {
-				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doChooseAuthoren(ureq, items);
 				}
 			} else if(link == importItem) {
 				doOpenImport(ureq);
-			} else if("select".equals(link.getCmd())) {
-				ItemRow row = (ItemRow)link.getUserObject();
-				doSelect(ureq, row);
-			} else if("mark".equals(link.getCmd())) {
-				ItemRow row = (ItemRow)link.getUserObject();
-				if(doMark(ureq, row)) {
-					link.setCustomEnabledLinkCSS("b_mark_set");
-				} else {
-					link.setCustomEnabledLinkCSS("b_mark_not_set");
-				}
-				link.getComponent().setDirty(true);
-			}
-		} else if(source == itemsTable) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				if("rSelect".equals(se.getCommand())) {
-					ItemRow row = model.getObject(se.getIndex());
-					fireEvent(ureq, new QItemEvent(se.getCommand(), row));
-				} else if("select-item".equals(se.getCommand())) {
-					ItemRow row = model.getObject(se.getIndex());
-					doSelect(ureq, row);
-				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -310,7 +223,7 @@ public class QuestionListController extends FormBasicController implements Stack
 			}
 		} else if(source == importItemCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				itemsTable.reset();
+				getItemsTable().reset();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -347,25 +260,6 @@ public class QuestionListController extends FormBasicController implements Stack
 		importItemCtrl = null;
 		selectGroupCtrl = null;
 		createCollectionCtrl = null;
-	}
-	
-	public List<QuestionItemShort> getShortItems(Set<Integer> index) {
-		List<QuestionItemShort> items = new ArrayList<QuestionItemShort>();
-		for(Integer i:index) {
-			ItemRow row = model.getObject(i.intValue());
-			if(row != null) {
-				items.add(row);
-			}
-		}
-		return items;
-	}
-
-	public QuestionItemShort getQuestionItemAt(int index) {
-		ItemRow row = model.getObject(index);
-		if(row != null) {
-			return qpoolService.loadItemById(row.getKey());
-		}
-		return null;
 	}
 	
 	private void doOpenImport(UserRequest ureq) {
@@ -466,7 +360,7 @@ public class QuestionListController extends FormBasicController implements Stack
 	
 	private void doDelete(UserRequest ureq, List<QuestionItemShort> items) {
 		qpoolService.deleteItems(items);
-		itemsTable.reset();
+		getItemsTable().reset();
 		showInfo("item.deleted");
 	}
 	
@@ -484,14 +378,14 @@ public class QuestionListController extends FormBasicController implements Stack
 	}
 	
 	private void doConfirmRemove(UserRequest ureq, List<QuestionItemShort> items) {
-		String text = translate("confirm.unshare", new String[]{ source.getName() });
+		String text = translate("confirm.unshare", new String[]{ getSource().getName() });
 		confirmRemoveBox = activateYesNoDialog(ureq, null, text, confirmRemoveBox);
 		confirmRemoveBox.setUserObject(items);
 	}
 	
 	protected void doRemove(UserRequest ureq, List<QuestionItemShort> items) {
-		source.removeFromSource(items);
-		itemsTable.reset();
+		getSource().removeFromSource(items);
+		getItemsTable().reset();
 		showInfo("item.deleted");
 	}
 	
@@ -528,7 +422,7 @@ public class QuestionListController extends FormBasicController implements Stack
 	
 	protected void doCopy(UserRequest ureq, List<QuestionItemShort> items) {
 		List<QuestionItem> copies = qpoolService.copyItems(getIdentity(), items);
-		itemsTable.reset();
+		getItemsTable().reset();
 		showInfo("item.copied", Integer.toString(copies.size()));
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
 	}
@@ -550,44 +444,5 @@ public class QuestionListController extends FormBasicController implements Stack
 		detailsCtrl.setStackedController(stackPanel);
 		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), detailsCtrl);
 		stackPanel.pushController(item.getTitle(), mainCtrl);
-	}
-	
-	protected boolean doMark(UserRequest ureq, OLATResourceable item) {
-		if(markManager.isMarked(item, getIdentity(), null)) {
-			markManager.deleteMark(item);
-			return false;
-		} else {
-			String businessPath = "[QuestionItem:" + item.getResourceableId() + "]";
-			markManager.setMark(item, getIdentity(), null, businessPath);
-			return true;
-		}
-	}
-
-	@Override
-	public int getRowCount() {
-		return source.getNumOfItems();
-	}
-
-	@Override
-	public ResultInfos<ItemRow> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		Set<Long> marks = markManager.getMarkResourceIds(getIdentity(), "QuestionItem", Collections.<String>emptyList());
-
-		ResultInfos<QuestionItemView> items = source.getItems(query, condQueries, firstResult, maxResults, orderBy);
-		List<ItemRow> rows = new ArrayList<ItemRow>(items.getObjects().size());
-		for(QuestionItemView item:items.getObjects()) {
-			ItemRow row = forgeRow(item, marks);
-			rows.add(row);
-		}
-		return new DefaultResultInfos<ItemRow>(items.getNextFirstResult(), items.getCorrectedRowCount(), rows);
-	}
-	
-	protected ItemRow forgeRow(QuestionItemView item, Set<Long> markedQuestionKeys) {
-		boolean marked = markedQuestionKeys.contains(item.getKey());
-		ItemRow row = new ItemRow(item);
-		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;&nbsp;&nbsp;&nbsp;", null, null, Link.NONTRANSLATED);
-		markLink.setCustomEnabledLinkCSS(marked ? "b_mark_set" : "b_mark_not_set");
-		markLink.setUserObject(row);
-		row.setMarkLink(markLink);
-		return row;
 	}
 }

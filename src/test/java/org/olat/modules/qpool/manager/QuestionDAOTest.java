@@ -36,6 +36,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItem2Resource;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
@@ -46,6 +47,7 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -221,11 +223,14 @@ public class QuestionDAOTest extends OlatTestCase {
 		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
 		dbInstance.commitAndCloseSession();
 		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		params.setAuthor(id);
+		
 		//count the items of the author
 		int numOfItems = questionDao.countItems(id);
 		Assert.assertEquals(2, numOfItems);
 		//retrieve the items of the author
-		List<QuestionItemView> items = questionDao.getItems(id, null, 0, -1);
+		List<QuestionItemView> items = questionDao.getItemsByAuthor(params, null, 0, -1);
 		List<Long> itemKeys = new ArrayList<Long>();
 		for(QuestionItemView item:items) {
 			itemKeys.add(item.getKey());
@@ -236,7 +241,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertTrue(itemKeys.contains(item2.getKey()));
 		
 		//limit the list
-		List<QuestionItemView> limitedItems = questionDao.getItems(id, Collections.singletonList(item1.getKey()), 0, -1);
+		List<QuestionItemView> limitedItems = questionDao.getItemsByAuthor(params, Collections.singletonList(item1.getKey()), 0, -1);
 		Assert.assertNotNull(limitedItems);
 		Assert.assertEquals(1, limitedItems.size());
 		Assert.assertEquals(item1.getKey(), limitedItems.get(0).getKey());
@@ -265,7 +270,8 @@ public class QuestionDAOTest extends OlatTestCase {
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();
 		
-		List<QuestionItemView> favorits = questionDao.getFavoritItems(id, null, 0, -1);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		List<QuestionItemView> favorits = questionDao.getFavoritItems(params, null, 0, -1);
 		List<Long> favoritKeys = new ArrayList<Long>();
 		for(QuestionItemView favorit:favorits) {
 			favoritKeys.add(favorit.getKey());
@@ -277,7 +283,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertFalse(favoritKeys.contains(item3.getKey()));
 		
 		//limit to the first favorit
-		List<QuestionItemView> limitedFavorits = questionDao.getFavoritItems(id, Collections.singletonList(item1.getKey()), 0, -1);
+		List<QuestionItemView> limitedFavorits = questionDao.getFavoritItems(params, Collections.singletonList(item1.getKey()), 0, -1);
 		Assert.assertNotNull(limitedFavorits);
 		Assert.assertEquals(1, limitedFavorits.size());
 		Assert.assertEquals(item1.getKey(), limitedFavorits.get(0).getKey());
@@ -420,6 +426,24 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(shared);
 		Assert.assertEquals(1, shared.size());
 		Assert.assertTrue(shared.contains(group));
+	}
+	
+	@Test
+	public void shareInfos_byItems() {
+		//create a group to share 2 items
+		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-item-" + UUID.randomUUID().toString());
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "gdap", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(id, "gdaq", "gdao-desc", -1, -1, false, false, false, false, false);
+		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-Dup-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		questionDao.share(item, group1.getResource());
+		questionDao.share(item, group2.getResource());
+		dbInstance.commit();
+
+		//retrieve them
+		List<QuestionItem2Resource> shared = questionDao.getSharedResourceInfos(item);
+		Assert.assertNotNull(shared);
+		Assert.assertEquals(2, shared.size());
 	}
 	
 	@Test

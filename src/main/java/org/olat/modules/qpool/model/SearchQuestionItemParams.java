@@ -31,7 +31,10 @@ import org.olat.core.id.Roles;
 public class SearchQuestionItemParams {
 	
 	private Long poolKey;
+	private String format;
 	private String searchString;
+	private boolean favoritOnly;
+	private Identity author;
 	
 	private final Identity identity;
 	private final Roles roles;
@@ -49,6 +52,30 @@ public class SearchQuestionItemParams {
 		this.poolKey = poolKey;
 	}
 
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
+	}
+
+	public boolean isFavoritOnly() {
+		return favoritOnly;
+	}
+
+	public void setFavoritOnly(boolean favoritOnly) {
+		this.favoritOnly = favoritOnly;
+	}
+
+	public Identity getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(Identity author) {
+		this.author = author;
+	}
+
 	public String getSearchString() {
 		return searchString;
 	}
@@ -64,6 +91,15 @@ public class SearchQuestionItemParams {
 	public Roles getRoles() {
 		return roles;
 	}
-
-
+	
+	@Override
+	public SearchQuestionItemParams clone() {
+		SearchQuestionItemParams clone = new SearchQuestionItemParams(identity, roles);
+		clone.poolKey = poolKey;
+		clone.format = format;
+		clone.searchString = searchString;
+		clone.favoritOnly = favoritOnly;
+		clone.author = author;
+		return clone;
+	}
 }

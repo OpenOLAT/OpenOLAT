@@ -37,8 +37,10 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItem2Resource;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
@@ -47,6 +49,7 @@ import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.ResourceShareImpl;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -198,19 +201,40 @@ public class QuestionItemDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItemView> getItems(Identity me, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
+	public int countItemsByAuthor(SearchQuestionItemParams params) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(item) from qauthoritem item where item.authorKey=:identityKey");
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			sb.append(" and item.format=:format");
+		}
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", params.getAuthor().getKey());
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			query.setParameter("format", params.getFormat());
+		}
+		return query.getSingleResult().intValue();
+	}
+	
+	public List<QuestionItemView> getItemsByAuthor(SearchQuestionItemParams params, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qauthoritem item where item.authorKey=:identityKey");
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");
 		}
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			sb.append(" and item.format=:format");
+		}
 		PersistenceHelper.appendGroupBy(sb, "item", orderBy);
 
 		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItemView.class)
-				.setParameter("identityKey", me.getKey());
+				.setParameter("identityKey", params.getAuthor().getKey());
 		if(inKeys != null && !inKeys.isEmpty()) {
 			query.setParameter("itemKeys", inKeys);
+		}
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			query.setParameter("format", params.getFormat());
 		}
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
@@ -302,17 +326,23 @@ public class QuestionItemDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public int getNumOfFavoritItems(Identity identity) {
+	public int countFavoritItems(SearchQuestionItemParams params) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(item) from questionitem item")
 		  .append(" where item.key in (")
 		  .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark where mark.creator.key=:identityKey and mark.resName='QuestionItem'")
 		  .append(" )");
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			sb.append(" and item.format=:format");
+		}
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
-				.setParameter("identityKey", identity.getKey())
-				.getSingleResult().intValue();
+				.setParameter("identityKey", params.getIdentity().getKey());
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			query.setParameter("format", params.getFormat());
+		}
+		return query.getSingleResult().intValue();
 	}
 	
 	public List<Long> getFavoritKeys(Identity identity) {
@@ -325,7 +355,7 @@ public class QuestionItemDAO {
 		return query.getResultList();
 	}
 	
-	public List<QuestionItemView> getFavoritItems(Identity identity, List<Long> inKeys,
+	public List<QuestionItemView> getFavoritItems(SearchQuestionItemParams params, List<Long> inKeys,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qitemview item")
@@ -335,13 +365,20 @@ public class QuestionItemDAO {
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");
 		}
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			sb.append(" and item.format=:format");
+		}
+		
 		PersistenceHelper.appendGroupBy(sb, "item", orderBy);
 
 		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItemView.class)
-				.setParameter("identityKey", identity.getKey());
+				.setParameter("identityKey", params.getIdentity().getKey());
 		if(inKeys != null && !inKeys.isEmpty()) {
 			query.setParameter("itemKeys", inKeys);
+		}
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			query.setParameter("format", params.getFormat());
 		}
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
@@ -460,6 +497,17 @@ public class QuestionItemDAO {
 				.createQuery(sb.toString(), OLATResource.class)
 				.setParameter("itemKey", item.getKey());
 		return query.getResultList();
+	}
+	
+	public List<QuestionItem2Resource> getSharedResourceInfos(QuestionItem item) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select share from qshare2itemshort share")
+		  .append(" where share.itemKey=:itemKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItem2Resource.class)
+				.setParameter("itemKey", item.getKey())
+				.getResultList();
 	}
 	
 	public int removeFromShares(List<QuestionItemShort> items) {

@@ -72,6 +72,7 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("		'iDisplayLength': 20,\n")
       .append("		'iDeferLoading': ").append(rows).append(",\n")
       .append("		'sAjaxSource': '").append(ftE.getMapperUrl()).append("',\n")
+      .append("   'asStripeClasses': ['','b_table_odd'],\n")
       .append("		'fnRowCallback': function( nRow, aData, iDisplayIndex ) {\n")
       .append("			jQuery(nRow).draggable({ \n")
       .append("				containment: '#b_main',\n")

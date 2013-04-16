@@ -49,6 +49,7 @@ import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
 
 
@@ -135,7 +136,7 @@ public class QTITestHandler extends QTIHandler {
 		
 		//check if we can edit in restricted mode -> only typos 
 		ReferenceManager refM = ReferenceManager.getInstance();
-		List referencees = refM.getReferencesTo(res);
+		List<ReferenceImpl> referencees = refM.getReferencesTo(res);
 		//String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
 		//boolean restrictedEdit = referencesSummary != null;
 		QTIEditorMainController editor =  new QTIEditorMainController(referencees,ureq, wControl, fr);

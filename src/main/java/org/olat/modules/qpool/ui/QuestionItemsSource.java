@@ -23,6 +23,9 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 
@@ -35,6 +38,8 @@ import org.olat.modules.qpool.QuestionItemView;
 public interface QuestionItemsSource {
 	
 	public String getName();
+	
+	public Controller getSourceController(UserRequest ureq, WindowControl wControl);
 	
 	public boolean isRemoveEnabled();
 	

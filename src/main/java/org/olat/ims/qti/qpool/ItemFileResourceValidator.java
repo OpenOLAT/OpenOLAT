@@ -55,6 +55,8 @@ public class ItemFileResourceValidator {
 	private static final OLog log = Tracing.createLoggerFor(ItemFileResourceValidator.class);
 
 	public boolean validate(String filename, File file) {
+		if(file == null || !file.exists()) return false;
+		
 		InputStream in = null;
 		try {
 			in = new FileInputStream(file);
@@ -67,6 +69,8 @@ public class ItemFileResourceValidator {
 	}
 
 	public boolean validate(String filename, VFSLeaf file) {
+		if(file == null || !file.exists()) return false;
+		
 		InputStream in = null;
 		try {
 			in = file.getInputStream();

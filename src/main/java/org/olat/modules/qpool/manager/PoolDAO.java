@@ -34,10 +34,12 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItem2Pool;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.PoolToItem;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -202,16 +204,16 @@ public class PoolDAO {
 		return count.intValue() > 0;
 	}
 	
-	public int getNumOfItemsInPool(Pool pool) {
+	public int countItemsInPool(SearchQuestionItemParams params) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(pool2item.item) from qpool2item pool2item where pool2item.pool.key=:poolKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
-				.setParameter("poolKey", pool.getKey())
+				.setParameter("poolKey", params.getPoolKey())
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItemView> getItemsOfPool(Pool pool, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItemView> getItemsOfPool(SearchQuestionItemParams params, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qpoolitem item where item.poolKey=:poolKey");
 		if(inKeys != null && inKeys.size() > 0) {
@@ -221,7 +223,7 @@ public class PoolDAO {
 		
 		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItemView.class)
-				.setParameter("poolKey", pool.getKey());
+				.setParameter("poolKey", params.getPoolKey());
 		if(inKeys != null && inKeys.size() > 0) {
 			query.setParameter("inKeys", inKeys);
 		}
@@ -232,5 +234,15 @@ public class PoolDAO {
 			query.setMaxResults(maxResults);
 		}
 		return query.getResultList();
+	}
+	
+	public List<QuestionItem2Pool> getQuestionItem2Pool(QuestionItemShort item) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select item from qpool2itemshort item where item.itemKey=:itemKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItem2Pool.class)
+				.setParameter("itemKey", item.getKey())
+				.getResultList();
 	}
 }
