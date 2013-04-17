@@ -80,7 +80,10 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 
 	@Override
 	public ItemRow getObject(int row) {
-		return rows.get(row);
+		if(isRowLoaded(row)) {
+			return rows.get(row);
+		}
+		return null;
 	}
 
 	@Override
@@ -158,6 +161,10 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 	@Override
 	public Object getValueAt(int row, int col) {
 		ItemRow item = getObject(row);
+		if(item == null) {
+			return null;//don't break here
+		}
+		
 		switch(Cols.values()[col]) {
 			case key: return item.getKey();
 			case identifier: return item.getIdentifier();

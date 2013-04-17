@@ -26,9 +26,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
+import org.dom4j.Document;
+import org.dom4j.Element;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -40,7 +44,11 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.ims.qti.QTI12EditorController;
 import org.olat.ims.qti.QTI12PreviewController;
 import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti.editor.QTIEditHelper;
+import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -48,6 +56,7 @@ import org.olat.modules.qpool.manager.FileStorage;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
@@ -89,6 +98,14 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
+	public List<String> getTestExportFormats() {
+		List<String> formats = new ArrayList<String>(2);
+		formats.add(QPoolService.ZIP_EXPORT_FORMAT);
+		formats.add(QTIConstants.QTI_12_FORMAT);
+		return formats;
+	}
+
+	@Override
 	public boolean isCompatible(String filename, File file) {
 		boolean ok = new ItemFileResourceValidator().validate(filename, file);
 		return ok;
@@ -113,6 +130,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 				try {
 					XMLReader parser = XMLReaderFactory.createXMLReader();
 					parser.setContentHandler(handler);
+					parser.setEntityResolver(new IMSEntityResolver());
 					parser.setFeature("http://xml.org/sax/features/validation", false);
 					parser.parse(new InputSource(is));
 				} catch (Exception e) {
@@ -132,6 +150,32 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 				questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		return processor.process();
 	}
+	
+	public void importBeecomItem(Identity owner, Item item, Locale defaultLocale) {
+		QTIImportProcessor processor = new QTIImportProcessor(owner, defaultLocale,
+				questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
+		
+		String editor = null;
+		String editorVersion = null;
+		if(!item.isAlient()) {
+			editor = "OpenOLAT";
+			editorVersion = Settings.getVersion();
+		}
+		
+		Document doc = QTIEditHelper.itemToXml(item);
+		Element itemEl = (Element)doc.selectSingleNode("questestinterop/item");
+		QuestionItemImpl qitem = processor.processItem(itemEl, "", null, editor, editorVersion);
+		//save to file System
+		
+		VFSContainer baseDir = qpoolFileStorage.getContainer(qitem.getDirectory());
+		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
+		QTIEditHelper.serialiazeDoc(doc, leaf);
+	}
+
+	@Override
+	public MediaResource exportTest(List<QuestionItemShort> items, String format) {
+		return new QTIExportTestResource("UTF-8", items, this);
+	}
 
 	@Override
 	public void exportItem(QuestionItemFull item, ZipOutputStream zout) {
@@ -139,7 +183,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		processor.process(item, zout);
 	}
 	
-	public void assembleTest(List<QuestionItemShort> items) {
+	public void assembleTest(List<QuestionItemShort> items, ZipOutputStream zout) {
 		List<Long> itemKeys = new ArrayList<Long>();
 		for(QuestionItemShort item:items) {
 			itemKeys.add(item.getKey());
@@ -147,7 +191,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
 		QTIExportProcessor processor = new QTIExportProcessor(qpoolFileStorage);
-		processor.assembleTest(fullItems);	
+		processor.assembleTest(fullItems, zout);	
 	}
 
 	@Override

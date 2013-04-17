@@ -45,10 +45,11 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
-import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.manager.ExportQItemResource;
 
 /**
  * 
@@ -60,6 +61,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 	
 	private Link deleteItem, shareItem, exportItem, editItem;
 
+	private Controller editCtrl;
 	private Controller previewCtrl;
 	private CloseableModalController cmc;
 	private final VelocityContainer mainVC;
@@ -166,6 +168,10 @@ public class QuestionItemDetailsController extends BasicController implements St
 			}
 		} else if(source == cmc) {
 			cleanUp();
+		} else if(source == editCtrl) {
+			if(event == Event.CHANGED_EVENT) {
+				doContentChanged();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -178,11 +184,18 @@ public class QuestionItemDetailsController extends BasicController implements St
 	}
 	
 	private void doEdit(UserRequest ureq, QuestionItem item) {
+		removeAsListenerAndDispose(editCtrl);
+		
 		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
-		Controller editCtrl = spi.getEditableController(ureq, getWindowControl(), item);
+		editCtrl = spi.getEditableController(ureq, getWindowControl(), item);
+		listenTo(editCtrl);
 		
 		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), editCtrl);
 		stackPanel.pushController("Edition", mainCtrl);
+	}
+	
+	private void doContentChanged() {
+		metadatasCtrl.updateVersionNumber();
 	}
 	
 	private void doSelectGroup(UserRequest ureq, QuestionItem item) {
@@ -214,7 +227,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 	}
 	
 	private void doExport(UserRequest ureq, QuestionItemShort item) {
-		QPoolExportResource mr = new QPoolExportResource("UTF-8", item);
+		ExportQItemResource mr = new ExportQItemResource("UTF-8", item);
 		ureq.getDispatchResult().setResultingMediaResource(mr);
 	}
 }

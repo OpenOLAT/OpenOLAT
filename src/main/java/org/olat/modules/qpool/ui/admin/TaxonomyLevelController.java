@@ -1,0 +1,150 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.qpool.ui.admin;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.Util;
+import org.olat.modules.qpool.TaxonomyLevel;
+import org.olat.modules.qpool.ui.MetadatasController;
+
+/**
+ * 
+ * Initial date: 17.04.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class TaxonomyLevelController extends FormBasicController {
+
+	private FormLink editButton, deleteButton;
+	private StaticTextElement pathEl, fieldEl;
+	private CloseableModalController cmc;
+	private TaxonomyLevelEditController editCtrl;
+	
+	private TaxonomyLevel taxonomyLevel;
+	
+	public TaxonomyLevelController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		initForm(ureq);
+		//make it invisible, no level to show
+		flc.setVisible(false);
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		pathEl = uifactory.addStaticTextElement("parentLine", "classification.taxonomy.parents", "", formLayout);
+		fieldEl = uifactory.addStaticTextElement("taxonomylevel", "classification.taxonomy.level", "", formLayout);
+
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setRootForm(mainForm);
+		formLayout.add(buttonsCont);
+		editButton = uifactory.addFormLink("edit", buttonsCont, Link.BUTTON);
+		//TODO define behavior of the delete (cascade, reattach...)
+		//deleteButton = uifactory.addFormLink("delete", buttonsCont, Link.BUTTON);
+	}
+	
+	public TaxonomyLevel getTaxonomyLevel() {
+		return taxonomyLevel;
+	}
+	
+	public void setTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
+		this.taxonomyLevel = taxonomyLevel;
+		
+		flc.setVisible(taxonomyLevel != null);
+		if(taxonomyLevel != null) {
+			String parentLine = null;
+			if(this.taxonomyLevel != null) {
+				parentLine = taxonomyLevel.getMaterializedPathNames();
+			} else {
+				parentLine = "/";
+			}
+			pathEl.setValue(parentLine);
+			fieldEl.setValue(taxonomyLevel.getField());
+		}
+	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(editButton == source) {
+			doEditLevel(ureq);
+		} else if(deleteButton == source) {
+			
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(editCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				setTaxonomyLevel(editCtrl.getTaxonomyLevel());
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(editCtrl);
+		removeAsListenerAndDispose(cmc);
+		editCtrl = null;
+		cmc = null;
+	}
+
+	private void doEditLevel(UserRequest ureq) {
+		if(taxonomyLevel == null) return;
+		
+		TaxonomyLevel parentLevel = taxonomyLevel.getParentField();
+		removeAsListenerAndDispose(editCtrl);
+		editCtrl = new TaxonomyLevelEditController(ureq, getWindowControl(), parentLevel, taxonomyLevel);
+		listenTo(editCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				editCtrl.getInitialComponent(), true, translate("edit.pool"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+}

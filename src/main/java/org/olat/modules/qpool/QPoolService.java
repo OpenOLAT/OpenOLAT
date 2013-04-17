@@ -26,6 +26,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSContainer;
@@ -45,6 +46,7 @@ import org.olat.resource.OLATResource;
  */
 public interface QPoolService {
 	
+	public static final String ZIP_EXPORT_FORMAT = "Zip";
 
 	
 	/**
@@ -86,6 +88,8 @@ public interface QPoolService {
 	public void removeAuthors(List<Identity> authors, List<QuestionItemShort> items);
 	
 	//import / export
+	public MediaResource export(List<QuestionItemShort> items, String format);
+	
 	public void exportItem(QuestionItemShort item, ZipOutputStream zout);
 	
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file);
@@ -141,7 +145,11 @@ public interface QPoolService {
 
 	
 	//study field admin
-	public List<TaxonomyLevel> getStudyFields();
+	public List<TaxonomyLevel> getTaxonomyLevels();
+	
+	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parent, String field);
+	
+	public TaxonomyLevel updateTaxonomyLevel(String newField, TaxonomyLevel level);
 	
 	
 	//pool administration

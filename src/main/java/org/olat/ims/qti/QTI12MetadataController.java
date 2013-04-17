@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -34,6 +36,7 @@ import org.olat.ims.qti.editor.beecom.objects.ChoiceResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Material;
 import org.olat.ims.qti.editor.beecom.objects.Question;
+import org.olat.ims.qti.editor.beecom.objects.Response;
 
 /**
  * 
@@ -86,6 +89,27 @@ public class QTI12MetadataController extends FormBasicController  {
 					uifactory.addStaticTextElement("score.min", minVal, rightSettingsCont);
 					uifactory.addStaticTextElement("score.max", maxVal, rightSettingsCont);
 				} 
+			}
+			
+			//correct responses
+			List<Response> responses = question.getResponses();
+			if(responses != null && responses.size() > 0) {
+				FormLayoutContainer correctResponsesCont = FormLayoutContainer.createVerticalFormLayout("correctResponses", getTranslator());
+				correctResponsesCont.setRootForm(mainForm);
+				correctResponsesCont.setLabel("ans.correct", null);
+				leftSettingsCont.add(correctResponsesCont);
+
+				int count = 0;
+				for(Response response:responses) {
+					boolean correct = response.isCorrect();
+					if(correct && response.getContent() != null) {
+						String responseSummary = response.getContent().renderAsText();
+						if(responseSummary.length() > 128) {
+							responseSummary = responseSummary.substring(0, 125) + "...";
+						}
+						uifactory.addStaticTextElement("item_correct_response_" + count++, null, responseSummary, correctResponsesCont);
+					}
+				}
 			}
 		}
 		

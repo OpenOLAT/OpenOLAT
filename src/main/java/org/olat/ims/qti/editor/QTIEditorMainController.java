@@ -104,6 +104,7 @@ import org.olat.ims.qti.editor.tree.QTIEditorTreeModel;
 import org.olat.ims.qti.editor.tree.SectionNode;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIEditorResolver;
+import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.iq.IQDisplayController;
 import org.olat.modules.iq.IQManager;
@@ -153,6 +154,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private static final String CMD_TOOLS_ADD_KPRIM = CMD_TOOLS_ADD_PREFIX + "kprim";
 	private static final String CMD_TOOLS_ADD_SECTION = CMD_TOOLS_ADD_PREFIX + "section";
 	private static final String CMD_TOOLS_ADD_QPOOL = "cmd.import.qpool";
+	private static final String CMD_TOOLS_EXPORT_QPOOL = "cmd.export.qpool";
 
 	private static final String CMD_EXIT_SAVE = "exit.save";
 	private static final String CMD_EXIT_DISCARD = "exit.discard";
@@ -231,11 +233,13 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private Set<String> deletableMediaFiles;
 
 	private final QPoolService qpoolService;
+	private final QTIQPoolServiceProvider qtiQpoolServiceProvider;
 	
 	public QTIEditorMainController(List<ReferenceImpl> referencees, UserRequest ureq, WindowControl wControl, FileResource fileResource) {
 		super(ureq, wControl);
 		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		qtiQpoolServiceProvider = (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
 
 		for(Iterator<ReferenceImpl> iter = referencees.iterator(); iter.hasNext(); ) {
 			ReferenceImpl ref = iter.next();
@@ -689,6 +693,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				
 			} else if (CMD_TOOLS_ADD_QPOOL.equals(cmd)) {
 				doSelectQItem(ureq);
+			} else if (CMD_TOOLS_EXPORT_QPOOL.equals(cmd)) {
+				doExportQItem(ureq);
 			} else if (cmd.startsWith(CMD_TOOLS_ADD_PREFIX)) { // add new object
 				// fetch new object
 				GenericQtiNode insertObject = null;
@@ -919,6 +925,19 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		cmc.activate();
 		listenTo(cmc);
 	}
+	
+	private void doExportQItem(UserRequest ureq) {
+		GenericQtiNode selectedNode = menuTreeModel.getQtiNode(menuTree.getSelectedNodeId());
+		if(selectedNode instanceof ItemNode) {
+			ItemNode itemNode = (ItemNode)selectedNode;
+			QTIObject qtiObject = itemNode.getUnderlyingQTIObject();
+			if(qtiObject instanceof Item) {
+				Item item = (Item)qtiObject;
+				qtiQpoolServiceProvider.importBeecomItem(getIdentity(), item, getLocale());
+				showInfo("export.qpool.successful");
+			}	
+		}
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
@@ -936,11 +955,12 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		// tools
 		tc.addHeader(translate("tools.tools.header"));
 		tc.addLink(CMD_TOOLS_PREVIEW, translate("tools.tools.preview"), CMD_TOOLS_PREVIEW, "b_toolbox_preview");
+		tc.addLink(CMD_TOOLS_EXPORT_QPOOL, translate("tools.export.qpool"), CMD_TOOLS_EXPORT_QPOOL, "o_mi_qpool_export");
 		tc.addLink(CMD_TOOLS_CLOSE_EDITOR, translate("tools.tools.closeeditor"), null, "b_toolbox_close");
 		// if (!restrictedEdit) {
 		tc.addHeader(translate("tools.add.header"));
 		// adds within the qti document level
-		tc.addLink(CMD_TOOLS_ADD_QPOOL, translate("tools.import.qpool"), CMD_TOOLS_ADD_QPOOL, "o_mi_qpool");
+		tc.addLink(CMD_TOOLS_ADD_QPOOL, translate("tools.import.qpool"), CMD_TOOLS_ADD_QPOOL, "o_mi_qpool_import");
 		tc.addLink(CMD_TOOLS_ADD_SECTION, translate("tools.add.section"), CMD_TOOLS_ADD_SECTION, "o_mi_qtisection");
 		// adds within a section
 		tc.addLink(CMD_TOOLS_ADD_SINGLECHOICE, translate("tools.add.singlechoice"), CMD_TOOLS_ADD_SINGLECHOICE, "o_mi_qtisc");

@@ -6,7 +6,7 @@ Widgets: remove accordion, progressbar, slider, spinner, tabs
 Effects: need only Effects Core and Pulsate Effect
 Theme: Smoothness
 
-The js.plugins.min.js is build with:
+The js.plugins.min.js and js.plugins.min.css are build with:
   mvn -Pcompressjs verify 
 It contains the following minified javascripts:
   functions.js
@@ -14,3 +14,10 @@ It contains the following minified javascripts:
   jquery.oolog.js
   jquery.translator.js
   jquery.periodic.js
+  
+and minified css:
+  jquery.tagit.min.css
+  layout-default-latest.min.css
+  fullcalendar.min.css
+  
+

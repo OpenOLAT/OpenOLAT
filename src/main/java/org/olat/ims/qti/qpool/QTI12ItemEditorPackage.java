@@ -19,19 +19,11 @@
  */
 package org.olat.ims.qti.qpool;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
-import org.dom4j.Document;
-import org.dom4j.DocumentFactory;
-import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
+import org.olat.core.gui.control.Event;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
@@ -43,27 +35,22 @@ import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
  *
  */
 public class QTI12ItemEditorPackage implements QTIEditorPackage {
-	
-	private static final OLog log = Tracing.createLoggerFor(QTI12ItemEditorPackage.class);
-	
+
 	private Item item;
 	private VFSLeaf itemLeaf;
 	private final String mediaUrl;
 	private final QTIDocument document;
 	private final VFSContainer directory;
+	private final GenericEventListener listener;
 	
-	private static OutputFormat outformat;
-	static {
-		outformat = OutputFormat.createPrettyPrint();
-		outformat.setEncoding("UTF-8");
-	}
-	
-	public QTI12ItemEditorPackage(Item item, QTIDocument document, String mediaUrl, VFSLeaf itemLeaf, VFSContainer directory) {
+	public QTI12ItemEditorPackage(Item item, QTIDocument document, String mediaUrl, VFSLeaf itemLeaf,
+			VFSContainer directory, GenericEventListener listener) {
 		this.item = item;
 		this.document = document;
 		this.directory = directory;
 		this.mediaUrl = mediaUrl;
 		this.itemLeaf = itemLeaf;
+		this.listener = listener;
 	}
 
 	@Override
@@ -83,19 +70,9 @@ public class QTI12ItemEditorPackage implements QTIEditorPackage {
 
 	@Override
 	public void serializeQTIDocument() {
-		try {
-			OutputStream out = itemLeaf.getOutputStream(false);
-			XMLWriter writer = new XMLWriter(out, outformat);
-			DocumentFactory df = DocumentFactory.getInstance();
-			Document doc = df.createDocument();
-			doc.addDocType(QTIConstants.XML_DOCUMENT_ROOT, null, QTIConstants.XML_DOCUMENT_DTD);
-			Element questestinteropEl = df.createElement(QTIDocument.DOCUMENT_ROOT);
-			doc.setRootElement(questestinteropEl);
-			item.addToElement(questestinteropEl);
-			writer.write(doc);
-			writer.close();
-		} catch (IOException e) {
-			log.error("", e);
+		QTIEditHelper.serialiazeItem(item, itemLeaf);
+		if(listener != null) {
+			listener.event(Event.CHANGED_EVENT);
 		}
 	}
 }

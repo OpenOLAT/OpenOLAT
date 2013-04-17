@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -44,12 +43,11 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
-import org.olat.ims.qti.QTIConstants;
-import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -297,21 +295,14 @@ public class QuestionListController extends AbstractItemListController implement
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				String format = (String)runContext.get("format");
 				@SuppressWarnings("unchecked")
-				List<QuestionItemShort> items = (List<QuestionItemShort>)runContext.get("items");
-				List<QuestionItemShort> qti12Items = new ArrayList<QuestionItemShort>();
-				for(QuestionItemShort item:items) {
-					if(QTIConstants.QTI_12_FORMAT.equals(item.getFormat())) {
-						qti12Items.add(item);
-					}
+				List<QuestionItemShort> items = (List<QuestionItemShort>)runContext.get("itemsToExport");
+
+				MediaResource mr = qpoolService.export(items, format);
+				if(mr != null) {
+					ureq.getDispatchResult().setResultingMediaResource(mr);
 				}
-				
-				QTIQPoolServiceProvider qtiProvider = CoreSpringFactory.getImpl(QTIQPoolServiceProvider.class);
-				qtiProvider.assembleTest(qti12Items);
-				/*
-				QPoolExportResource mr = new QPoolExportResource("UTF-8", item);
-				ureq.getDispatchResult().setResultingMediaResource(mr);
-				*/
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.modules.qpool.manager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,14 +40,14 @@ import org.olat.modules.qpool.QPoolService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QPoolExportResource  implements MediaResource {
+public class ExportQItemResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(QPoolExportResource.class);
+	private static final OLog log = Tracing.createLoggerFor(ExportQItemResource.class);
 	
 	private String encoding;
 	private final QuestionItemShort item;
 	
-	public QPoolExportResource(String encoding, QuestionItemShort item) {
+	public ExportQItemResource(String encoding, QuestionItemShort item) {
 		this.encoding = encoding;
 		this.item = item;
 	}

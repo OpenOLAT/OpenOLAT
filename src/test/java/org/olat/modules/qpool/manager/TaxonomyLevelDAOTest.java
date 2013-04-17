@@ -20,12 +20,17 @@
 package org.olat.modules.qpool.manager;
 
 import java.util.List;
+import java.util.Locale;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.ims.qti.QTIConstants;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.TaxonomyLevel;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.TaxonomyLevelImpl;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +45,10 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QItemTypeDAO qItemTypeDao;
+	@Autowired
+	private QuestionItemDAO questionDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	
@@ -170,5 +179,20 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		Assert.assertEquals("/Animals", reloadedDogs.getMaterializedPathNames());
 		TaxonomyLevel reloadedHuskies = taxonomyLevelDao.loadLevelById(huskies.getKey());
 		Assert.assertEquals("/Animals/Dogs", reloadedHuskies.getMaterializedPathNames());	
+	}
+	
+	@Test
+	public void countItemUsing_TaxonomyLevel() {
+		TaxonomyLevel level = taxonomyLevelDao.createAndPersist(null, "I'm in use");
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		QuestionItem item1 = questionDao.createAndPersist(null, "Nebula", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), level, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "Cluster", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), level, null, null, fibType);
+		Assert.assertNotNull(item1);
+		Assert.assertNotNull(item2);
+		dbInstance.commitAndCloseSession();
+		
+		//check count
+		int numOfItems = taxonomyLevelDao.countItemUsing(level);
+		Assert.assertEquals(2, numOfItems);
 	}
 }

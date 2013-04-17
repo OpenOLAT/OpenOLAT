@@ -48,7 +48,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
-import org.olat.modules.qpool.ui.TaxonomyTreeModel;
+import org.olat.modules.qpool.ui.admin.TaxonomyTreeModel;
 
 /**
  * 

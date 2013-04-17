@@ -53,6 +53,7 @@ import org.olat.modules.qpool.ui.admin.PoolsAdminController;
 import org.olat.modules.qpool.ui.admin.QEducationalContextsAdminController;
 import org.olat.modules.qpool.ui.admin.QItemTypesAdminController;
 import org.olat.modules.qpool.ui.admin.QLicensesAdminController;
+import org.olat.modules.qpool.ui.admin.TaxonomyAdminController;
 import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
 import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
 import org.olat.modules.qpool.ui.datasource.SharedItemsSource;

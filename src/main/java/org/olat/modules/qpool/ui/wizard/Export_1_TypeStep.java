@@ -55,7 +55,7 @@ public class Export_1_TypeStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		runContext.put("items", items);
-		ExportTypeController controller = new ExportTypeController(ureq, wControl, form, runContext);
+		ExportTypeController controller = new ExportTypeController(ureq, wControl, form, runContext, items);
 		return controller;
 	}
 }

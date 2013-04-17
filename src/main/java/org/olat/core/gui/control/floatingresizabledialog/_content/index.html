@@ -53,9 +53,7 @@
 		})#end;
 		
 		//override the default z-index of jQuery UI dialog
-		var zindex = o_info.zseed;
-		o_info.zseed = zindex + 5;
-		jQuery('#${panelName}').dialog("widget").css('z-index', zindex);
+		jQuery('#${panelName}').dialog("widget").css('z-index', 10000);
 	});
 /* ]]> */
 </script>

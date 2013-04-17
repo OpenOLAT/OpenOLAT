@@ -19,13 +19,11 @@
  */
 package org.olat.ims.qti.qpool;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.dom4j.Document;
@@ -68,7 +66,7 @@ public class QTIExportProcessor {
 		ZipUtil.addToZip(container, "", zout);
 	}
 	
-	public void assembleTest(List<QuestionItemFull> fullItems) {
+	public void assembleTest(List<QuestionItemFull> fullItems, ZipOutputStream zout) {
 		Element sectionEl = createSectionBasedAssessment("Assessment");
 		for(QuestionItemFull fullItem:fullItems) {
 			String dir = fullItem.getDirectory();
@@ -77,7 +75,6 @@ public class QTIExportProcessor {
 			VFSItem rootItem = container.resolve(rootFilename);
 			List<String> path = new ArrayList<String>();
 			collectResource(container, "", path);
-			System.out.println(path);
 			
 			if(rootItem instanceof VFSLeaf) {
 				VFSLeaf rootLeaf = (VFSLeaf)rootItem;
@@ -89,7 +86,14 @@ public class QTIExportProcessor {
 			}
 		}
 		
-		writeDocument(sectionEl);
+		try {
+			zout.putNextEntry(new ZipEntry("qti.xml"));
+			XMLWriter xw = new XMLWriter(zout, new OutputFormat("  ", true));
+			xw.write(sectionEl.getDocument());
+			zout.closeEntry();
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 	
 	private void collectResource(VFSContainer container, String currentPath, List<String> path) {
@@ -101,19 +105,6 @@ public class QTIExportProcessor {
 			} else if(item instanceof VFSContainer) {
 				collectResource((VFSContainer)item, itemPath, path);
 			}
-		}
-	}
-	
-	private void writeDocument(Element el) {	
-		try {
-			Document doc = el.getDocument();
-			OutputStream os = new FileOutputStream(new File("/HotCoffee/test.xml"));
-			XMLWriter xw = new XMLWriter(os, new OutputFormat("  ", true));
-			xw.write(doc);
-			xw.close();
-			os.close();
-		} catch (IOException e) {
-			log.error("", e);
 		}
 	}
 	

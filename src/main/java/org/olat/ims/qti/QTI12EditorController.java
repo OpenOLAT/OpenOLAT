@@ -28,7 +28,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.util.Util;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -46,7 +48,7 @@ import org.olat.modules.qpool.QuestionItem;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI12EditorController extends BasicController {
+public class QTI12EditorController extends BasicController implements GenericEventListener {
 	
 	private final TabbedPane mainPanel;
 	private final VelocityContainer mainVC;
@@ -71,7 +73,7 @@ public class QTI12EditorController extends BasicController {
 				VFSContainer directory = qpoolService.getRootDirectory(qitem);
 				String mapperUrl = registerMapper(ureq, new VFSContainerMapper(directory));
 				QTIDocument doc = new QTIDocument();
-				QTIEditorPackage qtiPackage = new QTI12ItemEditorPackage(item, doc, mapperUrl, leaf, directory);
+				QTIEditorPackage qtiPackage = new QTI12ItemEditorPackage(item, doc, mapperUrl, leaf, directory, this);
 				previewCtrl = new ItemNodeTabbedFormController(item, qtiPackage, ureq, getWindowControl(), translator, false);
 				previewCtrl.addTabs(mainPanel);
 				listenTo(previewCtrl);
@@ -88,7 +90,16 @@ public class QTI12EditorController extends BasicController {
 	}
 
 	@Override
+	public void event(Event event) {
+		if(event == Event.CHANGED_EVENT) {
+			UserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+
 }

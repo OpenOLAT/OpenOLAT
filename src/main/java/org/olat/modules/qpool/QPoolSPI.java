@@ -27,6 +27,7 @@ import java.util.zip.ZipOutputStream;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -42,6 +43,8 @@ public interface QPoolSPI {
 	
 	public String getFormat();
 	
+	public List<String> getTestExportFormats();
+	
 	public boolean isCompatible(String filename, File file);
 	
 	public boolean isCompatible(String filename, VFSLeaf file);
@@ -54,6 +57,12 @@ public interface QPoolSPI {
 	public String extractTextContent(QuestionItemFull item);
 	
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file);
+	
+	/**
+	 * Export a test
+	 * @param items
+	 */
+	public MediaResource exportTest(List<QuestionItemShort> items, String format);
 	
 	/**
 	 * Export the item to the Zip

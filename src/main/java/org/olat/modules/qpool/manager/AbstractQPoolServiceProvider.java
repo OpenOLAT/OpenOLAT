@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
@@ -35,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -46,6 +48,7 @@ import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.SearchResourceContext;
@@ -65,7 +68,12 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	public abstract FileStorage getFileStorage();
 	
 	public abstract QItemType getDefaultType();
-	
+
+	@Override
+	public List<String> getTestExportFormats() {
+		return Collections.singletonList(QPoolService.ZIP_EXPORT_FORMAT);
+	}
+
 	@Override
 	public String extractTextContent(QuestionItemFull item) {
 		String directory = item.getDirectory();
@@ -126,6 +134,11 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 		QItemType type = getDefaultType();
 		return CoreSpringFactory.getImpl(QPoolService.class)
 				.createAndPersistItem(owner, filename, getFormat(), language, null, dir, filename, type);
+	}
+
+	@Override
+	public MediaResource exportTest(List<QuestionItemShort> items, String format) {
+		return null;
 	}
 
 	@Override

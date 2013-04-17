@@ -19,16 +19,20 @@
  */
 package org.olat.ims.qti.qpool;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipOutputStream;
 
 import junit.framework.Assert;
 
+import org.apache.commons.io.IOUtils;
 import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,6 +91,12 @@ public class QTIExportProcessorTest extends OlatTestCase {
 		//after export
 		QTIExportProcessor exportProc = new QTIExportProcessor(qpoolFileStorage);
 		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(Collections.singletonList(items.get(0).getKey()));
-		exportProc.assembleTest(fullItems);
+		
+		OutputStream out = new ByteArrayOutputStream();
+		ZipOutputStream zout = new ZipOutputStream(out);
+		exportProc.assembleTest(fullItems, zout);
+
+		IOUtils.closeQuietly(zout);
+		IOUtils.closeQuietly(out);
 	}
 }

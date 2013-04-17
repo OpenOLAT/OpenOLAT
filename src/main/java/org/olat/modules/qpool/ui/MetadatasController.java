@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.ui;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -26,7 +27,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.edit.EducationalMetadataController;
 import org.olat.modules.qpool.ui.edit.EducationalMetadataEditController;
 import org.olat.modules.qpool.ui.edit.GeneralMetadataController;
@@ -68,11 +72,13 @@ public class MetadatasController extends BasicController {
 	
 	private QuestionItem item;
 	private final boolean canEdit;
+	private final QPoolService qpoolService;
 	
 	public MetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean canEdit) {
 		super(ureq, wControl);
 		this.item = item;
 		this.canEdit = canEdit;
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
 		generalCtrl = new GeneralMetadataController(ureq, wControl, item, canEdit);
 		listenTo(generalCtrl);
@@ -234,6 +240,25 @@ public class MetadatasController extends BasicController {
 		removeAsListenerAndDispose(rightsEditCtrl);
 		rightsEditCtrl = null;
 		mainVC.put("details_rights", rightsCtrl.getInitialComponent());
+	}
+	
+	protected void updateVersionNumber() {
+		if(item instanceof QuestionItemImpl && StringHelper.containsNonWhitespace(item.getItemVersion())) {
+			String version = item.getItemVersion();
+			int lastPoint = version.lastIndexOf('.');
+			if(lastPoint > 1 && lastPoint < version.length() - 1) {
+				String prefix = version.substring(0, lastPoint);
+				String suffix = version.substring(lastPoint + 1);
+				if(StringHelper.isLong(suffix)) {
+					long lastDigit = Long.parseLong(suffix);
+					String newVersion = prefix + "." + (++lastDigit);
+					QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+					itemImpl.setItemVersion(newVersion);
+					QuestionItem mergedItem = qpoolService.updateItem(item);
+					reloadData(mergedItem);
+				}	
+			}
+		}
 	}
 	
 	private void reloadData(QuestionItem item) {

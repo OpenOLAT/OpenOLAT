@@ -46,7 +46,7 @@ public class Question {
 	private int type;
 	private String lable = null;
 	private Material question = new Material();
-	private List responses = new ArrayList(5);
+	private List<Response> responses = new ArrayList<Response>(5);
 	private String ident = null;
 	private float minValue = 0;
 	private float maxValue = 0;
@@ -276,14 +276,14 @@ public class Question {
 	/**
 	 * @return list of responses
 	 */
-	public List getResponses() {
+	public List<Response> getResponses() {
 		return responses;
 	}
 
 	/**
 	 * @param list
 	 */
-	public void setResponses(List list) {
+	public void setResponses(List<Response> list) {
 		responses = list;
 	}
 

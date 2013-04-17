@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
@@ -199,6 +200,31 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		return importedItem;
 	}
 	
+	
+	
+	@Override
+	public MediaResource export(List<QuestionItemShort> items, String format) {
+		MediaResource mr = null;
+		if(ZIP_EXPORT_FORMAT.equals(format)) {
+			//make a zip with all items
+		} else {
+			QPoolSPI selectedSp = null;
+			List<QPoolSPI> sps = qpoolModule.getQuestionPoolProviders();
+			for(QPoolSPI sp:sps) {
+				if(sp.getTestExportFormats().contains(format)) {
+					selectedSp = sp;
+					break;
+				}	
+			}
+			
+			if(selectedSp != null) {
+				mr = selectedSp.exportTest(items, format);
+			}
+		}
+
+		return mr;
+	}
+
 	@Override
 	public void exportItem(QuestionItemShort item, ZipOutputStream zout) {
 		QPoolSPI provider = qpoolModule.getQuestionPoolProvider(item.getFormat());
@@ -647,7 +673,21 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public List<TaxonomyLevel> getStudyFields() {
+	public List<TaxonomyLevel> getTaxonomyLevels() {
 		return taxonomyLevelDao.loadAllLevels();
 	}
+
+	@Override
+	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parentField, String field) {
+		return taxonomyLevelDao.createAndPersist(parentField, field);
+	}
+
+	@Override
+	public TaxonomyLevel updateTaxonomyLevel(String newField, TaxonomyLevel level) {
+		return taxonomyLevelDao.update(newField, level);
+	}
+	
+	
+	
+	
 }

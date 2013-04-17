@@ -49,11 +49,11 @@ public class TaxonomyLevelDAO {
 			newStudyField.setParentField(parentField);
 			
 			String parentPathOfKeys = parentField.getMaterializedPathKeys();
-			if(parentPathOfKeys == null) {
+			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
 				parentPathOfKeys = "";
 			}
 			String parentPathOfNames = parentField.getMaterializedPathNames();
-			if(parentPathOfNames == null) {
+			if(parentPathOfNames == null || "/".equals(parentPathOfNames)) {
 				parentPathOfNames = "";
 			}
 
@@ -86,6 +86,15 @@ public class TaxonomyLevelDAO {
 			dbInstance.getCurrentEntityManager().merge(descendant);
 		}
 		return mergedField;
+	}
+	
+	public int countItemUsing(TaxonomyLevel field) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(item) from questionitem item where item.taxonomyLevel.key=:taxonomyLevelKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("taxonomyLevelKey", field.getKey())
+				.getSingleResult().intValue();
 	}
 	
 	public List<TaxonomyLevel> getDescendants(TaxonomyLevel field) {

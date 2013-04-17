@@ -19,14 +19,23 @@
  */
 package org.olat.modules.qpool.ui.wizard;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionPoolModule;
 
 /**
  * 
@@ -36,14 +45,32 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class ExportTypeController extends StepFormBasicController {
 
-	public ExportTypeController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	private String[] formatKeys;
+	
+	private SingleSelection formatEl;
+	
+	public ExportTypeController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			StepsRunContext runContext, List<QuestionItemShort> items) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 		
+		QuestionPoolModule qpoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
+		
+		Set<String> formatSet = new HashSet<String>();
+		for(QuestionItemShort item:items) {
+			QPoolSPI sp = qpoolModule.getQuestionPoolProvider(item.getFormat());
+			if(sp != null) {
+				formatSet.addAll(sp.getTestExportFormats());	
+			}	
+		}
+
+		formatKeys = formatSet.toArray(new String[formatSet.size()]);
+		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//
+		setFormDescription("export.type.desc");
+		formatEl = uifactory.addDropdownSingleselect("export.type", "export.type", formLayout, formatKeys, formatKeys, null);
 	}
 
 	@Override
@@ -53,6 +80,9 @@ public class ExportTypeController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(formatEl.isOneSelected()) {
+			addToRunContext("format", formatEl.getSelectedKey());
+		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

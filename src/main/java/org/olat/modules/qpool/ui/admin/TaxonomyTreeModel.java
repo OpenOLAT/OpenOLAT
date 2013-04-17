@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.modules.qpool.ui.admin;
 
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +50,7 @@ public class TaxonomyTreeModel extends GenericTreeModel {
 		GenericTreeNode rootNode = new GenericTreeNode("root", "root");
 		setRootNode(rootNode);
 
-		List<TaxonomyLevel> fields = qpoolService.getStudyFields();
+		List<TaxonomyLevel> fields = qpoolService.getTaxonomyLevels();
 		Map<Long,GenericTreeNode> fieldKeyToNode = new HashMap<Long, GenericTreeNode>();
 		for(TaxonomyLevel field:fields) {
 			Long key = field.getKey();

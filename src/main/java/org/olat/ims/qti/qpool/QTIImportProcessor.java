@@ -88,6 +88,11 @@ class QTIImportProcessor {
 	private final FileStorage qpoolFileStorage;
 	private final QuestionItemDAO questionItemDao;
 	private final QEducationalContextDAO qEduContextDao;
+	
+	public QTIImportProcessor(Identity owner, Locale defaultLocale, QuestionItemDAO questionItemDao,
+			QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao, FileStorage qpoolFileStorage) {
+		this(owner, defaultLocale, null, null, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
+	}
 
 	public QTIImportProcessor(Identity owner, Locale defaultLocale, String importedFilename, File importedFile,
 			QuestionItemDAO questionItemDao, QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
@@ -145,11 +150,20 @@ class QTIImportProcessor {
 	
 	protected QuestionItemImpl processItem(DocInfos docInfos, ItemInfos itemInfos) {
 		Element itemEl = itemInfos.getItemEl();
+		String comment = itemInfos.getComment();
+		String originalFilename = null;
+		if(itemInfos.isOriginalItem()) {
+			originalFilename = docInfos.filename;
+		}
+		return processItem(itemEl, comment, originalFilename, null, null);
+	}
+	
+	protected QuestionItemImpl processItem(Element itemEl, String comment, String originalItemFilename, String editor, String editorVersion) {
 		//filename
 		String filename;
 		String ident = getAttributeValue(itemEl, "ident");
-		if(itemInfos.isOriginalItem()) {
-			filename = docInfos.filename;
+		if(originalItemFilename != null) {
+			filename = originalItemFilename;
 		} else if(StringHelper.containsNonWhitespace(ident)) {
 			filename = StringHelper.transformDisplayNameToFileSystemName(ident) + ".xml";
 		} else {
@@ -167,12 +181,15 @@ class QTIImportProcessor {
 		}
 		QuestionItemImpl poolItem = questionItemDao.create(title, QTIConstants.QTI_12_FORMAT, dir, filename);
 		//description
-		poolItem.setDescription(itemInfos.getComment());
+		poolItem.setDescription(comment);
 		//language from default
 		poolItem.setLanguage(defaultLocale.getLanguage());
 		//question type first
 		boolean ooFormat = processItemQuestionType(poolItem, ident, itemEl);
-		if(ooFormat) {
+		if(StringHelper.containsNonWhitespace(editor)) {
+			poolItem.setEditor(editor);
+			poolItem.setEditor(editorVersion);
+		} else if(ooFormat) {
 			poolItem.setEditor("OpenOLAT");
 		}
 		//if question type not found, can be overridden by the metadatas
