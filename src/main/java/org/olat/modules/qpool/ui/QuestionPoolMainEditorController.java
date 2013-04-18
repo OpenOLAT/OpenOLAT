@@ -140,7 +140,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				String dropId = e.getDroppedNodeId();
 				//drop id w_o_fi1000002357-4
 				doDrop(targetId, dropId);
-			} else {
+			} else if(menuTree.getSelectedNode() != null){
 				TreeNode node = menuTree.getSelectedNode();
 				Object uNode = node.getUserObject();
 				if("menu.admin".equals(uNode)) {
@@ -288,7 +288,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			myQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(myQuestionsCtrl);
 		} else {
-			myQuestionsCtrl.updateSource(source);
+			myQuestionsCtrl.updateSource(ureq, source);
 		}
 		currentCtrl = myQuestionsCtrl;
 		content.setContent(myQuestionsCtrl.getInitialComponent());
@@ -302,7 +302,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			markedQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(markedQuestionsCtrl);
 		} else {
-			markedQuestionsCtrl.updateSource(source);
+			markedQuestionsCtrl.updateSource(ureq, source);
 		}
 		currentCtrl = markedQuestionsCtrl;
 		content.setContent(markedQuestionsCtrl.getInitialComponent());
@@ -316,7 +316,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			selectedPoolCtrl.setStackedController(stackPanel);
 			listenTo(selectedPoolCtrl);
 		} else {
-			selectedPoolCtrl.updateSource(source);
+			selectedPoolCtrl.updateSource(ureq, source);
 		}
 		currentCtrl = selectedPoolCtrl;
 		content.setContent(selectedPoolCtrl.getInitialComponent());
@@ -328,7 +328,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			sharedItemsCtrl.setStackedController(stackPanel);
 			listenTo(sharedItemsCtrl);
 		} else {
-			sharedItemsCtrl.updateSource(new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles()));
+			sharedItemsCtrl.updateSource(ureq, new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles()));
 		}
 		currentCtrl = sharedItemsCtrl;
 		content.setContent(sharedItemsCtrl.getInitialComponent());
@@ -341,7 +341,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			collItemsCtrl.setStackedController(stackPanel);
 			listenTo(collItemsCtrl);
 		} else {
-			collItemsCtrl.updateSource(source);
+			collItemsCtrl.updateSource(ureq, source);
 		}
 		currentCtrl = collItemsCtrl;
 		content.setContent(collItemsCtrl.getInitialComponent());

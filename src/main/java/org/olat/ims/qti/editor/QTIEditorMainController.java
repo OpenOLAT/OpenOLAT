@@ -77,7 +77,7 @@ import org.olat.core.util.memento.Memento;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
-import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -110,7 +110,6 @@ import org.olat.modules.iq.IQDisplayController;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.QItemEvent;
 import org.olat.modules.qpool.ui.SelectItemController;
@@ -907,9 +906,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	}
 	
 	private GenericQtiNode doConvertItemToQtiNode(QuestionItemView qitemv) {
-		QuestionItem qitem = qpoolService.loadItemById(qitemv.getKey());
-		VFSLeaf leaf = qpoolService.getRootFile(qitem);
-		Item theItem = QTIEditHelper.readItemXml(leaf);
+		VFSContainer editorContainer = qtiPackage.getBaseDir();
+		Item theItem = qtiQpoolServiceProvider.exportToQTIEditor(qitemv, editorContainer);
 		GenericQtiNode node = new ItemNode(theItem, qtiPackage);
 		return node;
 	}
@@ -933,7 +931,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			QTIObject qtiObject = itemNode.getUnderlyingQTIObject();
 			if(qtiObject instanceof Item) {
 				Item item = (Item)qtiObject;
-				qtiQpoolServiceProvider.importBeecomItem(getIdentity(), item, getLocale());
+				VFSContainer editorContainer = qtiPackage.getBaseDir();
+				qtiQpoolServiceProvider.importBeecomItem(getIdentity(), item, editorContainer, getLocale());
 				showInfo("export.qpool.successful");
 			}	
 		}

@@ -205,8 +205,12 @@ public class QItemTypesAdminController extends FormBasicController {
 	}
 	
 	private void doDelete(UserRequest ureq, QItemType type) {
-		//qpoolService.deletePool(pool);
-		reloadModel();
+		if(qpoolService.delete(type)) {
+			reloadModel();
+			showInfo("item.type.deleted");
+		} else {
+			showError("item.type.notdeleted");
+		}
 	}
 	
 	private void doEdit(UserRequest ureq, QItemType type) {

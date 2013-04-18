@@ -21,28 +21,43 @@ package org.olat.ims.qti.qpool;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.cyberneko.html.parsers.SAXParser;
+import org.dom4j.Attribute;
+import org.dom4j.CDATA;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
+import org.dom4j.Node;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.FileStorage;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * 
@@ -60,51 +75,195 @@ public class QTIExportProcessor {
 		this.qpoolFileStorage = qpoolFileStorage;
 	}
 	
-	public void process(QuestionItemFull fullItem, ZipOutputStream zout) {
+	public void process(QuestionItemFull fullItem, ZipOutputStream zout, Set<String> names) {
 		String dir = fullItem.getDirectory();
 		VFSContainer container = qpoolFileStorage.getContainer(dir);
-		ZipUtil.addToZip(container, "", zout);
+
+		String rootDir = "qitem_" + fullItem.getKey();
+		List<VFSItem> items = container.getItems();
+		for(VFSItem item:items) {
+			ZipUtil.addToZip(item, rootDir, zout);
+		}
 	}
 	
+	/**
+	 * <li>List all items
+	 * <li>Rewrite path
+	 * <li>Assemble qti.xml
+	 * <li>Write files at new path
+	 * @param fullItems
+	 * @param zout
+	 */
 	public void assembleTest(List<QuestionItemFull> fullItems, ZipOutputStream zout) {
-		Element sectionEl = createSectionBasedAssessment("Assessment");
+		ItemsAndMaterials itemAndMaterials = new ItemsAndMaterials();
 		for(QuestionItemFull fullItem:fullItems) {
-			String dir = fullItem.getDirectory();
-			String rootFilename = fullItem.getRootFilename();
-			VFSContainer container = qpoolFileStorage.getContainer(dir);
-			VFSItem rootItem = container.resolve(rootFilename);
-			List<String> path = new ArrayList<String>();
-			collectResource(container, "", path);
-			
-			if(rootItem instanceof VFSLeaf) {
-				VFSLeaf rootLeaf = (VFSLeaf)rootItem;
-				Element el = readItemXml(rootLeaf);
-				Element cloneEl = (Element)el.clone();
-				enrichScore(cloneEl);
-				enrichWithMetadata(fullItem, cloneEl);
-				sectionEl.add(cloneEl);
-			}
+			collectMaterials(fullItem, itemAndMaterials);
 		}
 		
 		try {
+			byte[] buffer = new byte[FileUtils.BSIZE];
+			
+			//write qti.xml
+			Element sectionEl = createSectionBasedAssessment("Assessment");
+			for(Element itemEl:itemAndMaterials.getItemEls()) {
+				sectionEl.add(itemEl);
+			}
 			zout.putNextEntry(new ZipEntry("qti.xml"));
 			XMLWriter xw = new XMLWriter(zout, new OutputFormat("  ", true));
 			xw.write(sectionEl.getDocument());
 			zout.closeEntry();
+			
+			//write materials
+			for(ItemMaterial material:itemAndMaterials.getMaterials()) {
+				String exportPath = material.getExportUri();
+				zout.putNextEntry(new ZipEntry(exportPath));
+				InputStream in = material.getLeaf().getInputStream();
+				int c;
+				while ((c = in.read(buffer, 0, buffer.length)) != -1) {
+					zout.write(buffer, 0, c);
+				}
+				IOUtils.closeQuietly(in);
+				zout.closeEntry();
+			}
 		} catch (IOException e) {
 			log.error("", e);
 		}
 	}
 	
-	private void collectResource(VFSContainer container, String currentPath, List<String> path) {
-		List<VFSItem> items = container.getItems();
-		for(VFSItem item:items) {
-			String itemPath = currentPath + "/" + item.getName();
-			if(item instanceof VFSLeaf) {
-				path.add(itemPath);
-			} else if(item instanceof VFSContainer) {
-				collectResource((VFSContainer)item, itemPath, path);
+	public Element exportToQTIEditor(QuestionItemFull fullItem, VFSContainer editorContainer) {
+		ItemsAndMaterials itemAndMaterials = new ItemsAndMaterials();
+		collectMaterials(fullItem, itemAndMaterials);
+		if(itemAndMaterials.getItemEls().isEmpty()) {
+			return null;//nothing found
+		}
+		
+		Element itemEl = itemAndMaterials.getItemEls().get(0);
+		//write materials
+		for(ItemMaterial material:itemAndMaterials.getMaterials()) {
+			String exportPath = material.getExportUri();
+			VFSLeaf leaf = editorContainer.createChildLeaf(exportPath);
+			VFSManager.copyContent(material.getLeaf(), leaf);
+		}
+		return itemEl;
+	}
+	
+	protected void collectMaterials(QuestionItemFull fullItem, ItemsAndMaterials materials) {
+		String dir = fullItem.getDirectory();
+		String rootFilename = fullItem.getRootFilename();
+		VFSContainer container = qpoolFileStorage.getContainer(dir);
+		VFSItem rootItem = container.resolve(rootFilename);
+
+		if(rootItem instanceof VFSLeaf) {
+			VFSLeaf rootLeaf = (VFSLeaf)rootItem;
+			Element el = (Element)readItemXml(rootLeaf).clone();
+			Element itemEl = (Element)el.clone();
+			enrichScore(itemEl);
+			enrichWithMetadata(fullItem, itemEl);
+			collectResources(itemEl, container, materials);
+			materials.addItemEl(itemEl);
+		}
+	}
+
+	private void collectResources(Element el, VFSContainer container, ItemsAndMaterials materials) {
+		collectResourcesInMatText(el, container, materials);
+		collectResourcesInMatMedias(el, container, materials);
+	}
+	
+	/**
+	 * Collect the file and rewrite the 
+	 * @param el
+	 * @param container
+	 * @param materials
+	 * @param paths
+	 */
+	private void collectResourcesInMatText(Element el, VFSContainer container, ItemsAndMaterials materials) {
+		//mattext
+		@SuppressWarnings("unchecked")
+		List<Element> mattextList = el.selectNodes(".//mattext");
+		for(Element mat:mattextList) {
+			Attribute texttypeAttr = mat.attribute("texttype");
+			String texttype = texttypeAttr.getValue();
+			if("text/html".equals(texttype)) {
+				@SuppressWarnings("unchecked")
+				List<Node> childElList = new ArrayList<Node>(mat.content());
+				for(Node childEl:childElList) {
+					mat.remove(childEl);
+				}
+
+				for(Node childEl:childElList) {
+					if(Node.CDATA_SECTION_NODE == childEl.getNodeType()) {
+						CDATA data = (CDATA)childEl;
+						boolean changed = false;
+						String text = data.getText();
+						List<String> materialPaths = findMaterialInMatText(text);
+						for(String materialPath:materialPaths) {
+							VFSItem matVfsItem = container.resolve(materialPath);
+							if(matVfsItem instanceof VFSLeaf) {
+								String exportUri = generateExportPath(materials.getPaths(), matVfsItem);
+								materials.addMaterial(new ItemMaterial((VFSLeaf)matVfsItem, exportUri));
+								text = text.replaceAll(materialPath, exportUri);
+								changed = true;
+							}
+						}
+						if(changed) {
+							mat.addCDATA(text);
+						} else {
+							mat.add(childEl);
+						}
+					} else {
+						mat.add(childEl);
+					}
+				}
 			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void collectResourcesInMatMedias(Element el, VFSContainer container, ItemsAndMaterials materials) {
+		//matimage uri
+		List<Element> matList = new ArrayList<Element>();
+		matList.addAll(el.selectNodes(".//matimage"));
+		matList.addAll(el.selectNodes(".//mataudio"));
+		matList.addAll(el.selectNodes(".//matvideo"));
+		
+		for(Element mat:matList) {
+			Attribute uriAttr = mat.attribute("uri");
+			String uri = uriAttr.getValue();
+			
+			VFSItem matVfsItem = container.resolve(uri);
+			if(matVfsItem instanceof VFSLeaf) {
+				String exportUri = generateExportPath(materials.getPaths(), matVfsItem);
+				ItemMaterial iMat = new ItemMaterial((VFSLeaf)matVfsItem, exportUri);
+				materials.addMaterial(iMat);
+				mat.addAttribute("uri", exportUri);
+			}
+		}
+	}
+	
+	private String generateExportPath(Set<String> paths, VFSItem leaf) {
+		String filename = leaf.getName();
+		for(int count=0; paths.contains(filename) && count < 999 ; ) {
+			filename = VFSManager.appendNumberAtTheEndOfFilename(filename, count++);
+		}
+		paths.add(filename);
+		return "media/" + filename;
+	}
+	
+	/**
+	 * Parse the content and collect the images source
+	 * @param content
+	 * @param materialPath
+	 */
+	private List<String> findMaterialInMatText(String content) {
+		try {
+			SAXParser parser = new SAXParser();
+			HTMLHandler contentHandler = new HTMLHandler();
+			parser.setContentHandler(contentHandler);
+			parser.parse(new InputSource(new StringReader(content)));
+			return contentHandler.getMaterialPath();
+		} catch (Exception e) {
+			log.error("", e);
+			return Collections.emptyList();
 		}
 	}
 	
@@ -210,7 +369,7 @@ public class QTIExportProcessor {
 	private void enrichWithMetadata(QuestionItemFull fullItem, Element item) {
 		Element qtimetadata = (Element)item.selectSingleNode("./itemmetadata/qtimetadata");
 		String path = fullItem.getTaxonomicPath();
-		System.out.println(qtimetadata + " " + path);
+		System.out.println("enrichWithMetadata: " + qtimetadata + " " + path);
 	}
 	
 	private void addMetadataField(String label, String entry, Element qtimetadata) {
@@ -218,7 +377,6 @@ public class QTIExportProcessor {
 		qtimetadatafield.addElement("fieldlabel").setText(label);
 		qtimetadatafield.addElement("fieldentry").setText(entry);
 	}
-	
 	
 	/*
 	 * 
@@ -304,4 +462,67 @@ public class QTIExportProcessor {
             <qmd_topic>Migration</qmd_topic>
         </itemmetadata>
 	 */
+	
+	private static final class HTMLHandler extends DefaultHandler {
+		private final List<String> materialPath = new ArrayList<String>();
+		
+		public List<String> getMaterialPath() {
+			return materialPath;
+		}
+		
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			String elem = localName.toLowerCase();
+			if("img".equals(elem)) {
+				String imgSrc = attributes.getValue("src");
+				if(StringHelper.containsNonWhitespace(imgSrc)) {
+					materialPath.add(imgSrc);
+				}
+			}
+		}
+	}
+	
+	private static final class ItemsAndMaterials {
+		private final Set<String> paths = new HashSet<String>();
+		private final List<Element> itemEls = new ArrayList<Element>();
+		private final List<ItemMaterial> materials = new ArrayList<ItemMaterial>();
+		
+		public Set<String> getPaths() {
+			return paths;
+		}
+		
+		public List<Element> getItemEls() {
+			return itemEls;
+		}
+		
+		public void addItemEl(Element el) {
+			itemEls.add(el);
+		}
+		
+		public List<ItemMaterial> getMaterials() {
+			return materials;
+		}
+		
+		public void addMaterial(ItemMaterial material) {
+			materials.add(material);
+		}
+	}
+	
+	private static final class ItemMaterial {
+		private final VFSLeaf leaf;
+		private final String exportUri;
+		
+		public ItemMaterial(VFSLeaf leaf, String exportUri) {
+			this.leaf = leaf;
+			this.exportUri = exportUri;
+		}
+		
+		public VFSLeaf getLeaf() {
+			return leaf;
+		}
+		
+		public String getExportUri() {
+			return exportUri;
+		}
+	}
 }

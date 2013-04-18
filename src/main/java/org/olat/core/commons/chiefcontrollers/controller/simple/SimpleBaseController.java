@@ -78,7 +78,7 @@ public class SimpleBaseController extends BasicController implements Contentable
 		
 		guiMessage = new GUIMessage();
 		guimsgVc.contextPut("guiMessage", guiMessage);
-		guimsgPanel = new OncePanel("guimsgPanel");
+		guimsgPanel = new OncePanel("simpleGuimsgPanel");
 
 		mainVc.put("guimessage", guimsgPanel);	
 		

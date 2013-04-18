@@ -19,38 +19,42 @@
  */
 package org.olat.modules.qpool.manager;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.LOMDuration;
+import org.olat.modules.qpool.model.QEducationalContext;
+import org.olat.modules.qpool.model.QItemType;
+import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.springframework.stereotype.Service;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
+import org.olat.modules.qpool.model.TaxonomyLevelImpl;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
+ * 
+ * Some utilities to convert LOM specific date format
  * 
  * Initial date: 11.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service("lomConverter")
-public class LOMConverter {
+public class MetadataConverterHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(LOMConverter.class);
+	private static XStream metadatXstream = XStreamHelper.createXStreamInstance();
+	static {
+		
+		metadatXstream.alias("item", QuestionItemImpl.class);
+		metadatXstream.alias("educationalContext", QEducationalContext.class);
+		metadatXstream.alias("itemType", QItemType.class);
+		metadatXstream.alias("license", QLicense.class);
+		metadatXstream.alias("taxonomyLevel", TaxonomyLevelImpl.class);
+	}
 	
+	public static String toXml(QuestionItem item) {
+		return metadatXstream.toXML(item);
+	}
+
 	/**
 	 * P[yY][mM][dD][T[hH][nM][s[.s]S]] where:<br>
 	 * y = number of years (integer, > 0, not restricted)<br>
@@ -154,7 +158,7 @@ public class LOMConverter {
 		String intVal = durationStr.substring(0, index);
 		return Integer.parseInt(intVal);
 	}
-	
+	/*
 	protected void toLom(QuestionItemImpl item, OutputStream out) {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -179,17 +183,51 @@ public class LOMConverter {
 	protected void generalToLom(QuestionItemImpl item, Node lomEl, Document doc) {
 		Node generalEl = lomEl.appendChild(doc.createElement("general"));
 		
-		//language
-		Element languageEl = (Element)generalEl.appendChild(doc.createElement("language"));
-		languageEl.setAttribute("value", item.getLanguage());
+		//identifier
+		
+		//master identifier
+		
 		//title
 		Node titleEl = generalEl.appendChild(doc.createElement("title"));
 		stringToLom(item, item.getTitle(), titleEl, doc);
 		//description
 		Node descEl = generalEl.appendChild(doc.createElement("description"));
 		stringToLom(item, item.getDescription(), descEl, doc);
+		//keywords
 		
+		//coverage
 		
+		//additional information
+		
+		//language
+		Element languageEl = (Element)generalEl.appendChild(doc.createElement("language"));
+		languageEl.setAttribute("value", item.getLanguage());
+	}
+	
+	protected void taxonomyToLom(QuestionItemImpl item, Node lomEl, Document doc) {
+		Node generalEl = lomEl.appendChild(doc.createElement("classification"));
+		
+	}
+	
+	protected void educationalToLom(QuestionItemImpl item, Node lomEl, Document doc) {
+		Node generalEl = lomEl.appendChild(doc.createElement("educational"));
+		
+	}
+	
+	protected void lifecycleToLom(QuestionItemImpl item, Node lomEl, Document doc) {
+		Node generalEl = lomEl.appendChild(doc.createElement("lifecycle"));
+		
+		//version
+		//status
+		//urheber / contribute
+		
+	}
+	
+	protected void rightsToLom(QuestionItemImpl item, Node lomEl, Document doc) {
+		Node generalEl = lomEl.appendChild(doc.createElement("rights"));
+		
+		//copyright
+		//description
 		
 	}
 	
@@ -246,5 +284,5 @@ public class LOMConverter {
 			}
 		}
 		return val;
-	}
+	}*/
 }

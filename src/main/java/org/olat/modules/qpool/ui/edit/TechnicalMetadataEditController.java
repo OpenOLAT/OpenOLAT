@@ -64,9 +64,9 @@ public class TechnicalMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("technical");
-		
-		editorEl = uifactory.addTextElement("technical.editor", "technical.editor", 50, "", formLayout);
-		editorVersionEl = uifactory.addTextElement("technical.editorVersion", "technical.editorVersion", 50, "", formLayout);
+
+		editorEl = uifactory.addTextElement("technical.editor", "technical.editor", 50, item.getEditor(), formLayout);
+		editorVersionEl = uifactory.addTextElement("technical.editorVersion", "technical.editorVersion", 50, item.getEditorVersion(), formLayout);
 		
 		String[] formatKeys = new String[]{ QTIConstants.QTI_12_FORMAT };
 		formatEl = uifactory.addDropdownSingleselect("technical.format", "technical.format", formLayout,

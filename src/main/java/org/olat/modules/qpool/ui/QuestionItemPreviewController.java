@@ -69,25 +69,34 @@ public class QuestionItemPreviewController extends BasicController {
 		previewPanel.setContent(null);
 	}
 	
+	public void refresh(UserRequest ureq) {
+		updateItem(ureq, item);
+	}
+	
 	public void updateItem(UserRequest ureq, QuestionItem item) {
 		this.item = item;
 		removeAsListenerAndDispose(previewCtrl);
-
-		Component content;
-		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
-		if(spi == null) {
-			content = getRawContent(item);
+		if(item == null) {
+			removeAsListenerAndDispose(previewCtrl);
+			previewCtrl = null;
+			previewPanel.setContent(null);
 		} else {
-			previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item);
-			if(previewCtrl == null) {
+			Component content;
+			QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
+			if(spi == null) {
 				content = getRawContent(item);
 			} else {
-				listenTo(previewCtrl);
-				content = previewCtrl.getInitialComponent();
+				previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item);
+				if(previewCtrl == null) {
+					content = getRawContent(item);
+				} else {
+					listenTo(previewCtrl);
+					content = previewCtrl.getInitialComponent();
+				}
 			}
+			
+			previewPanel.setContent(content);
 		}
-		
-		previewPanel.setContent(content);
 	}
 	
 	private Component getRawContent(QuestionItem item) {

@@ -363,10 +363,12 @@ class QTIImportProcessor {
 		List<Element> mattextList = el.selectNodes(".//mattext");
 		for(Element mat:mattextList) {
 			Attribute texttypeAttr = mat.attribute("texttype");
-			String texttype = texttypeAttr.getValue();
-			if("text/html".equals(texttype)) {
-				String content = mat.getStringValue();
-				findMaterialInMatText(content, materialPath);
+			if(texttypeAttr != null) {
+				String texttype = texttypeAttr.getValue();
+				if("text/html".equals(texttype)) {
+					String content = mat.getStringValue();
+					findMaterialInMatText(content, materialPath);
+				}
 			}
 		}
 		//matimage uri

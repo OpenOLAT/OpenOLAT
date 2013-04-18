@@ -53,26 +53,20 @@ function b_start(){
 <script type="text/javascript" src='$r.staticLink("js/modernizr/modernizr.js")'></script>
 ## jQuery libraries
 <script type="text/javascript" src='$r.staticLink("js/jquery/jquery-1.9.1.min.js")'></script>
-<script>
-/* <![CDATA[ */ 
-     jQuery.noConflict();
-/* ]]> */
-</script>
 <script type="text/javascript" src='$r.staticLink("js/jquery/jquery-migrate-1.1.1.min.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/jquery/ui/jquery-ui-1.10.2.custom.min.js")'></script>
 
-<!-- can be compressed jquery.all.plugins.min.js -->
+## Are compressed as js/js.plugins.min.js
 ## <script type="text/javascript" src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
 ## <script type="text/javascript" src='$r.staticLink("js/jshashtable-2.1_src.js")'></script>
 ## <script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.oolog.js")'></script>
 ## <script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.translator.js")'></script>
 ## <script type="text/javascript" src='$r.staticLink("js/functions.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
-
 <script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/jsMath/easy/load.js")'></script>
 
-<!-- loaded always -->
+## Always loaded
 ## <link type="text/css" href='$r.staticLink("js/jquery/tagit/jquery.tagit.css")' rel="stylesheet"/>
 ## <link type="text/css" href='$r.staticLink("js/jquery/uilayout/layout-default-latest.css")' rel="stylesheet"/>
 ## <link type="text/css" href='$r.staticLink("js/jquery/fullcalendar/fullcalendar.css")' rel="stylesheet"/>
@@ -82,6 +76,7 @@ function b_start(){
 
 <script type="text/javascript">
 /* <![CDATA[ */ 
+  jQuery.noConflict();
 	## references to objects for later access or cleanup
 	o_info.objectMap = new Hashtable();
 	## Initialize js translator factory with the js translator mapper path
@@ -90,8 +85,6 @@ function b_start(){
 /* ]]> */
 </script>
 
-
-##
 ## LAYOUT
 ## 1) Dynamic component CSS included by components
 $r.render("jsCssRawHtmlHeader", "pre-theme")

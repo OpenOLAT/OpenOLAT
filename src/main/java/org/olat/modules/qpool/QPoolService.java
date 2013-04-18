@@ -22,6 +22,7 @@ package org.olat.modules.qpool;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.commons.persistence.ResultInfos;
@@ -90,7 +91,13 @@ public interface QPoolService {
 	//import / export
 	public MediaResource export(List<QuestionItemShort> items, String format);
 	
-	public void exportItem(QuestionItemShort item, ZipOutputStream zout);
+	/**
+	 * 
+	 * @param item
+	 * @param zout
+	 * @param names Collection of the names used in the ZIP dd
+	 */
+	public void exportItem(QuestionItemShort item, ZipOutputStream zout, Set<String> names);
 	
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file);
 	
@@ -169,6 +176,8 @@ public interface QPoolService {
 	public List<QItemType> getAllItemTypes();
 	
 	public QItemType getItemType(String type);
+	
+	public boolean delete(QItemType itemType);
 	
 	//item levels administration
 	public QEducationalContext createEducationalContext(String level);

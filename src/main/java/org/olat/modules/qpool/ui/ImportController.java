@@ -70,6 +70,18 @@ public class ImportController extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		fileEl.clearError();
+		if(fileEl.getUploadFile() == null) {
+			fileEl.setErrorKey("form.mandatory.hover", null);
+			allOk = false;
+		}
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		String filename = fileEl.getUploadFileName();
 		File file = fileEl.getUploadFile();

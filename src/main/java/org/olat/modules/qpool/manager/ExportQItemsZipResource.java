@@ -22,6 +22,7 @@ package org.olat.modules.qpool.manager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
@@ -34,24 +35,24 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QPoolService;
-import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionItemFull;
 
 /**
  * 
- * Initial date: 11.03.2013<br>
+ * Initial date: 18.04.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ExportQItemResource implements MediaResource {
+public class ExportQItemsZipResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(ExportQItemResource.class);
+	private static final OLog log = Tracing.createLoggerFor(ExportQItemsZipResource.class);
 	
 	private String encoding;
-	private final QuestionItemShort item;
+	private final List<QuestionItemFull> items;
 	
-	public ExportQItemResource(String encoding, QuestionItemShort item) {
+	public ExportQItemsZipResource(String encoding, List<QuestionItemFull> items) {
 		this.encoding = encoding;
-		this.item = item;
+		this.items = items;
 	}
 
 	@Override
@@ -82,7 +83,7 @@ public class ExportQItemResource implements MediaResource {
 			log.error("", e);
 		}
 		
-		String label = item.getTitle();
+		String label = "ExportItems";
 		String file = StringHelper.transformDisplayNameToFileSystemName(label) + ".zip";
 		hres.setHeader("Content-Disposition","attachment; filename=\"" + StringHelper.urlEncodeISO88591(file) + "\"");			
 		hres.setHeader("Content-Description",StringHelper.urlEncodeISO88591(label));
@@ -93,7 +94,9 @@ public class ExportQItemResource implements MediaResource {
 			zout.setLevel(9);
 			Set<String> names = new HashSet<String>();
 			QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-			qpoolService.exportItem(item, zout, names);
+			for(QuestionItemFull item:items) {
+				qpoolService.exportItem(item, zout, names);
+			}
 		} catch (IOException e) {
 			log.error("", e);
 		} finally {

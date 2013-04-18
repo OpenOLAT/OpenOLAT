@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
 import org.dom4j.Document;
@@ -46,6 +47,7 @@ import org.olat.ims.qti.QTI12PreviewController;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
@@ -151,7 +153,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		return processor.process();
 	}
 	
-	public void importBeecomItem(Identity owner, Item item, Locale defaultLocale) {
+	public void importBeecomItem(Identity owner, Item item, VFSContainer sourceDir, Locale defaultLocale) {
 		QTIImportProcessor processor = new QTIImportProcessor(owner, defaultLocale,
 				questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		
@@ -166,10 +168,19 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		Element itemEl = (Element)doc.selectSingleNode("questestinterop/item");
 		QuestionItemImpl qitem = processor.processItem(itemEl, "", null, editor, editorVersion);
 		//save to file System
-		
 		VFSContainer baseDir = qpoolFileStorage.getContainer(qitem.getDirectory());
 		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
 		QTIEditHelper.serialiazeDoc(doc, leaf);
+		//process amterials
+		List<String> materials = processor.getMaterials(itemEl);
+		//copy materials
+		for(String material:materials) {
+			VFSItem sourceItem = sourceDir.resolve(material);
+			if(sourceItem instanceof VFSLeaf) {
+				VFSLeaf targetItem = baseDir.createChildLeaf(material);
+				VFSManager.copyContent((VFSLeaf)sourceItem, targetItem);
+			}
+		}
 	}
 
 	@Override
@@ -178,9 +189,9 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public void exportItem(QuestionItemFull item, ZipOutputStream zout) {
+	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Set<String> names) {
 		QTIExportProcessor processor = new QTIExportProcessor(qpoolFileStorage);
-		processor.process(item, zout);
+		processor.process(item, zout, names);
 	}
 	
 	public void assembleTest(List<QuestionItemShort> items, ZipOutputStream zout) {
@@ -192,6 +203,13 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
 		QTIExportProcessor processor = new QTIExportProcessor(qpoolFileStorage);
 		processor.assembleTest(fullItems, zout);	
+	}
+	
+	public Item exportToQTIEditor(QuestionItemShort qitem, VFSContainer editorContainer) {
+		QTIExportProcessor processor = new QTIExportProcessor(qpoolFileStorage);
+		QuestionItemFull fullItem = questionItemDao.loadById(qitem.getKey());
+		Element itemEl = processor.exportToQTIEditor(fullItem, editorContainer);
+	  return (Item)new ParserManager().parse(itemEl);
 	}
 
 	@Override

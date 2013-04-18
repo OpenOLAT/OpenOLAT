@@ -64,7 +64,7 @@ public class LifecycleMetadataEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("lifecycle");
 		
-		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, "", formLayout);
+		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, item.getItemVersion(), formLayout);
 		
 		String[] statusTypeKeys = QuestionStatus.valueString();
 		String[] statusTypeValues = new String[statusTypeKeys.length];
@@ -73,6 +73,9 @@ public class LifecycleMetadataEditController extends FormBasicController {
 		}
 		statusEl = uifactory.addDropdownSingleselect("lifecycle.status", "lifecycle.status", formLayout,
 				statusTypeKeys, statusTypeValues, null);
+		if(item.getQuestionStatus() != null) {
+			statusEl.select(item.getQuestionStatus().name(), true);
+		}
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);

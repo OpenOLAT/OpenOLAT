@@ -352,6 +352,19 @@ Array.prototype.search = function(s,q){
   return false;
 }
 
+if(!Function.prototype.curry) {
+	Function.prototype.curry = function() {
+	    if (arguments.length<1) {
+	        return this; //nothing to curry with - return function
+	    }
+	    var __method = this;
+	    var args = Array.prototype.slice.call(arguments);
+	    return function() {
+	        return __method.apply(this, args.concat(Array.prototype.slice.call(arguments)));
+	    }
+	}
+}
+
 if(!Array.prototype.indexOf) {
 	Array.prototype.indexOf = function (searchElement /*, fromIndex */ ) {
 		"use strict";
@@ -1064,7 +1077,8 @@ function showMessageBox(type, title, message, buttonCallback){
 					//possible if the user has closed the window
 				}
 			}
-		}).dialog('open');
+		}).dialog('open').dialog("widget").css('z-index', 11000);
+		
 	}
 }
 

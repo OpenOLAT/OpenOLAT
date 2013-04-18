@@ -34,7 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.manager.LOMConverter;
+import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.LOMDuration;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -74,7 +74,11 @@ public class EducationalMetadataEditController extends FormBasicController {
 		int count = 0;
 		for(QEducationalContext level:levels) {
 			contextKeys[count] = level.getLevel();
-			contextValues[count++] = "item.level." + level.getLevel().toLowerCase();
+			String translation = translate("item.level." + level.getLevel().toLowerCase());
+			if(translation.length() > 128) {
+				translation = level.getLevel();
+			}
+			contextValues[count++] = translation;
 		}
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout, contextKeys, contextValues, null);
 
@@ -86,7 +90,7 @@ public class EducationalMetadataEditController extends FormBasicController {
 		learningTimeContainer.setLabel("educational.learningTime", null);
 		formLayout.add(learningTimeContainer);
 		
-		LOMDuration duration = LOMConverter.convertDuration(item.getEducationalLearningTime());
+		LOMDuration duration = MetadataConverterHelper.convertDuration(item.getEducationalLearningTime());
 		learningTimeDayElement = uifactory.addIntegerElement("learningTime.day", "", duration.getDay(), learningTimeContainer);
 		learningTimeDayElement.setDisplaySize(3);
 		learningTimeDayElement.setMandatory(true);
@@ -135,7 +139,7 @@ public class EducationalMetadataEditController extends FormBasicController {
 			int hour = learningTimeHourElement.getIntValue();
 			int minute = learningTimeMinuteElement.getIntValue();
 			int seconds = learningTimeSecondElement.getIntValue();
-			String timeStr = LOMConverter.convertDuration(day, hour, minute, seconds);
+			String timeStr = MetadataConverterHelper.convertDuration(day, hour, minute, seconds);
 			itemImpl.setEducationalLearningTime(timeStr);
 		}
 		item = qpoolService.updateItem(item);

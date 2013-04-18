@@ -21,8 +21,10 @@ package org.olat.modules.qpool.manager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -206,6 +208,9 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public MediaResource export(List<QuestionItemShort> items, String format) {
 		MediaResource mr = null;
 		if(ZIP_EXPORT_FORMAT.equals(format)) {
+			List<Long> keys = toKeys(items);
+			List<QuestionItemFull> fullItems = questionItemDao.loadByIds(keys);
+			mr = new ExportQItemsZipResource("UTF-8", fullItems);
 			//make a zip with all items
 		} else {
 			QPoolSPI selectedSp = null;
@@ -221,18 +226,32 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				mr = selectedSp.exportTest(items, format);
 			}
 		}
-
+		
 		return mr;
+	}
+	
+	private List<Long> toKeys(List<? extends QuestionItemShort> items) {
+		if(items == null || items.isEmpty()) return Collections.emptyList();
+		List<Long> keys = new ArrayList<Long>(items.size());
+		for(QuestionItemShort item:items) {
+			keys.add(item.getKey());
+		}
+		return keys;
 	}
 
 	@Override
-	public void exportItem(QuestionItemShort item, ZipOutputStream zout) {
+	public void exportItem(QuestionItemShort item, ZipOutputStream zout, Set<String> names) {
 		QPoolSPI provider = qpoolModule.getQuestionPoolProvider(item.getFormat());
 		if(provider == null) {
 			log.error("Not found provider for this format: " + item.getFormat());
 		} else {
-			QuestionItemImpl fullItem = questionItemDao.loadById(item.getKey());
-			provider.exportItem(fullItem, zout);
+			QuestionItemFull fullItem;
+			if(item instanceof QuestionItemFull) {
+				fullItem = (QuestionItemFull)item;
+			} else {
+				fullItem = questionItemDao.loadById(item.getKey());
+			}
+			provider.exportItem(fullItem, zout, names);
 		}
 	}
 
@@ -632,6 +651,14 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Override
 	public QItemType getItemType(String type) {
 		return qpoolItemTypeDao.loadByType(type);
+	}
+
+	@Override
+	public boolean delete(QItemType itemType) {
+		if(qpoolItemTypeDao.countItemUsing(itemType) == 0) {
+			return qpoolItemTypeDao.delete(itemType);
+		}
+		return false;
 	}
 
 	@Override

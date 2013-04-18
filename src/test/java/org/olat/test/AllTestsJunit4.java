@@ -122,7 +122,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti.qpool.QTIImportProcessorTest.class,
 	org.olat.ims.qti.qpool.QTIExportProcessorTest.class,
 	org.olat.modules.webFeed.FeedManagerImplTest.class,
-	org.olat.modules.qpool.manager.LOMConverterTest.class,
+	org.olat.modules.qpool.manager.MetadataConverterHelperTest.class,
 	org.olat.modules.qpool.manager.QuestionDAOTest.class,
 	org.olat.modules.qpool.manager.FileStorageTest.class,
 	org.olat.modules.qpool.manager.CollectionDAOTest.class,

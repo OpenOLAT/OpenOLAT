@@ -19,17 +19,22 @@
  */
 package org.olat.modules.qpool.manager;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Locale;
 
 import javax.xml.bind.JAXBException;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.olat.ims.qti.QTIConstants;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.LOMDuration;
-import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.qpool.model.QItemType;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -37,31 +42,21 @@ import org.olat.modules.qpool.model.QuestionItemImpl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LOMConverterTest {
-	
-	@Test
-	public void itemToLom()
-	throws IOException, URISyntaxException, JAXBException {
-		QuestionItemImpl item = new QuestionItemImpl();
-		item.setTitle("Psychologie");
-		item.setDescription("Description psychologique");
-		item.setLanguage("fr");
-		
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		new LOMConverter().toLom(item, out);
-		out.close();
-		System.out.println("LOM: " + new String(out.toByteArray()));
-	}
-	
+public class MetadataConverterHelperTest extends OlatTestCase {
+
+	@Autowired
+	private QItemTypeDAO qItemTypeDao;
+	@Autowired
+	private QuestionItemDAO questionDao;
 	
 	@Test
 	public void convertDuration_toString()
 	throws IOException, URISyntaxException, JAXBException {
 		//1h 30m
-		String duration1 = LOMConverter.convertDuration(0, 1, 30, 0);
+		String duration1 = MetadataConverterHelper.convertDuration(0, 1, 30, 0);
 		Assert.assertEquals("PT1H30M", duration1);
 		//1m 45s
-		String duration2 = LOMConverter.convertDuration(0, 0, 1, 45);
+		String duration2 = MetadataConverterHelper.convertDuration(0, 0, 1, 45);
 		Assert.assertEquals("PT1M45S", duration2);
 	}
 	
@@ -69,7 +64,7 @@ public class LOMConverterTest {
 	public void convertDuration_toDuration()
 	throws IOException, URISyntaxException, JAXBException {
 		//1h 30m
-		LOMDuration duration1 = LOMConverter.convertDuration("PT1H30M");
+		LOMDuration duration1 = MetadataConverterHelper.convertDuration("PT1H30M");
 		Assert.assertEquals(0, duration1.getYear());
 		Assert.assertEquals(0, duration1.getMonth());
 		Assert.assertEquals(0, duration1.getDay());
@@ -78,7 +73,7 @@ public class LOMConverterTest {
 		Assert.assertEquals(0, duration1.getSeconds());
 		
 		//1m 45s
-		LOMDuration duration2 = LOMConverter.convertDuration("PT1M45S");
+		LOMDuration duration2 = MetadataConverterHelper.convertDuration("PT1M45S");
 		Assert.assertEquals(0, duration2.getYear());
 		Assert.assertEquals(0, duration2.getMonth());
 		Assert.assertEquals(0, duration2.getDay());
@@ -87,12 +82,22 @@ public class LOMConverterTest {
 		Assert.assertEquals(45, duration2.getSeconds());
 
 		//2y 3 month and 4h 1minute 35s
-		LOMDuration duration3 = LOMConverter.convertDuration("P2Y3MT4H1M35S");
+		LOMDuration duration3 = MetadataConverterHelper.convertDuration("P2Y3MT4H1M35S");
 		Assert.assertEquals(2, duration3.getYear());
 		Assert.assertEquals(3, duration3.getMonth());
 		Assert.assertEquals(0, duration3.getDay());
 		Assert.assertEquals(4, duration3.getHour());
 		Assert.assertEquals(1, duration3.getMinute());
 		Assert.assertEquals(35, duration3.getSeconds());
+	}
+	
+	@Test
+	public void serializeQuestionItem() {
+		
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		QuestionItem item = questionDao.createAndPersist(null, "Stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		
+		
+		
 	}
 }

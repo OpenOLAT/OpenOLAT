@@ -22,6 +22,7 @@ package org.olat.modules.qpool;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.UserRequest;
@@ -67,9 +68,10 @@ public interface QPoolSPI {
 	/**
 	 * Export the item to the Zip
 	 * @param item
-	 * @param out
+	 * @param zout
+	 * @param names Collection of the file names used in the ZIP
 	 */
-	public void exportItem(QuestionItemFull item, ZipOutputStream out);
+	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Set<String> names);
 	
 	/**
 	 * Copy the item attachment...

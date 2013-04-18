@@ -77,7 +77,11 @@ public class EducationalMetadataController extends FormBasicController {
 		if(context == null || context.getLevel() == null) {
 			contextEl.setValue("");
 		} else {
-			contextEl.setValue(context.getLevel());
+			String translation = translate("item.level." + context.getLevel().toLowerCase());
+			if(translation.length() > 128) {
+				translation = context.getLevel();
+			}
+			contextEl.setValue(translation);
 		}
 		
 		String learningTime = item.getEducationalLearningTime() == null ? "" : item.getEducationalLearningTime();

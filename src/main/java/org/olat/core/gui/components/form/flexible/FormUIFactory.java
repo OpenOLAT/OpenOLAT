@@ -573,7 +573,8 @@ public class FormUIFactory {
 	 */
 	public TextElement addTextElement(String name, final String i18nLabel, final int maxLen, String initialValue,
 			FormItemContainer formLayout) {
-		return addTextElement(null, name, i18nLabel, maxLen, initialValue, formLayout);
+		String val = initialValue == null ? "" : initialValue;
+		return addTextElement(null, name, i18nLabel, maxLen, val, formLayout);
 	}
 	
 	/**
@@ -587,7 +588,8 @@ public class FormUIFactory {
 	 */
 	public TextElement addTextElement(String id, String name, final String i18nLabel, final int maxLen, String initialValue,
 			FormItemContainer formLayout) {
-		TextElement te = new TextElementImpl(id, name, initialValue);
+		String val = initialValue == null ? "" : initialValue;
+		TextElement te = new TextElementImpl(id, name, val);
 		te.setNotLongerThanCheck(maxLen, "text.element.error.notlongerthan");
 		setLabelIfNotNull(i18nLabel, te);
 		te.setMaxLength(maxLen);

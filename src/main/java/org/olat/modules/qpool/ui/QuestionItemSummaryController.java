@@ -78,29 +78,41 @@ public class QuestionItemSummaryController extends FormBasicController {
 		return item;
 	}
 	
+	public void refresh() {
+		updateItem(item, canEdit);
+	}
+	
 	public void updateItem(QuestionItem item, boolean canEdit) {
 		this.item = item;
-
-		keyEl.setValue(item.getKey().toString());
-		identifierEl.setValue(item.getIdentifier());
-		subjectEl.setValue(item.getTitle());
-		String keywords = item.getKeywords();
-		keywordsEl.setValue(keywords == null ? "" : keywords);
-		String taxonPath = item.getTaxonomicPath();
-		studyFieldEl.setValue(taxonPath == null ? "" : taxonPath);
-		
-		int usage = item.getUsage();
-		String usageStr = "";
-		if(usage >= 0) {
-			usageStr = Integer.toString(usage);
-		}
-		usageEl.setValue(usageStr);
-		
-		String description = item.getDescription();
-		if(StringHelper.containsNonWhitespace(description)) {
-			descriptionEl.setValue(description);
-		} else {
+		if(item == null) {
+			identifierEl.setValue("");
+			subjectEl.setValue("");
+			keywordsEl.setValue("" );
+			studyFieldEl.setValue("");
+			usageEl.setValue("");
 			descriptionEl.setValue("");
+		} else {
+			keyEl.setValue(item.getKey().toString());
+			identifierEl.setValue(item.getIdentifier());
+			subjectEl.setValue(item.getTitle());
+			String keywords = item.getKeywords();
+			keywordsEl.setValue(keywords == null ? "" : keywords);
+			String taxonPath = item.getTaxonomicPath();
+			studyFieldEl.setValue(taxonPath == null ? "" : taxonPath);
+			
+			int usage = item.getUsage();
+			String usageStr = "";
+			if(usage >= 0) {
+				usageStr = Integer.toString(usage);
+			}
+			usageEl.setValue(usageStr);
+			
+			String description = item.getDescription();
+			if(StringHelper.containsNonWhitespace(description)) {
+				descriptionEl.setValue(description);
+			} else {
+				descriptionEl.setValue("");
+			}
 		}
 	}
 	

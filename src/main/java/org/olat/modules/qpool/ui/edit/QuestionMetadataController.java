@@ -85,7 +85,11 @@ public class QuestionMetadataController extends FormBasicController  {
 		if(type == null || type.getType() == null) {
 			typeEl.setValue("");
 		} else {
-			typeEl.setValue(type.getType());
+			String translation = translate("item.type." + type.getType().toLowerCase());
+			if(translation.length() > 128) {
+				translation = type.getType();
+			}
+			typeEl.setValue(translation);
 		}
 		
 		difficultyEl.setValue(toString(item.getDifficulty()));

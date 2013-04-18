@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -142,7 +143,7 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public void exportItem(QuestionItemFull item, ZipOutputStream zout) {
+	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Set<String> names) {
 		String directory = item.getDirectory();
 		VFSContainer itemDir = getFileStorage().getContainer(directory);
 		VFSItem file = itemDir.resolve(item.getRootFilename());

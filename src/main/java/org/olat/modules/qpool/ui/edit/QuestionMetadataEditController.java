@@ -73,21 +73,33 @@ public class QuestionMetadataEditController extends FormBasicController {
 		int count = 0;
 		for(QItemType type:types) {
 			typeKeys[count] = type.getType();
-			typeValues[count++] = translate("item.type." + type.getType().toLowerCase());
+			String translation = translate("item.type." + type.getType().toLowerCase());
+			if(translation.length() > 128) {
+				typeValues[count++] = typeKeys[count];
+			} else {
+				typeValues[count++] = translation;
+			}
 		}
 		typeEl = uifactory.addDropdownSingleselect("question.type", "question.type", formLayout, typeKeys, typeValues, null);
+		if(item.getType() != null) {
+			typeEl.select(item.getType().getType(), true);
+		}
 		
-		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 10, "", formLayout);
+		String difficulty = toString(item.getDifficulty());
+		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 10, difficulty, formLayout);
 		difficultyEl.setExampleKey("question.difficulty.example", null);
 		difficultyEl.setDisplaySize(4);
-		stdevDifficultyEl = uifactory.addTextElement("question.stdevDifficulty", "question.stdevDifficulty", 10, "", formLayout);
+
+		String stdevDifficulty = toString(item.getStdevDifficulty());
+		stdevDifficultyEl = uifactory.addTextElement("question.stdevDifficulty", "question.stdevDifficulty", 10, stdevDifficulty, formLayout);
 		stdevDifficultyEl.setExampleKey("question.stdevDifficulty.example", null);
 		stdevDifficultyEl.setDisplaySize(4);
-		differentiationEl = uifactory.addTextElement("question.differentiation", "question.differentiation", 10, "", formLayout);
+		String differentiation = toString(item.getDifferentiation());
+		differentiationEl = uifactory.addTextElement("question.differentiation", "question.differentiation", 10, differentiation, formLayout);
 		differentiationEl.setExampleKey("question.differentiation.example", null);
 		differentiationEl.setDisplaySize(4);
-		
-		numAnswerAltEl = uifactory.addTextElement("question.numOfAnswerAlternatives", "question.numOfAnswerAlternatives", 10, "", formLayout);
+		String numAnswerAlt = item.getNumOfAnswerAlternatives() < 0 ? "" : Integer.toString(item.getNumOfAnswerAlternatives());
+		numAnswerAltEl = uifactory.addTextElement("question.numOfAnswerAlternatives", "question.numOfAnswerAlternatives", 10, numAnswerAlt, formLayout);
 		numAnswerAltEl.setDisplaySize(4);
 		
 		uifactory.addStaticTextElement("question.usage", Integer.toString(item.getUsage()), formLayout);
@@ -98,6 +110,9 @@ public class QuestionMetadataEditController extends FormBasicController {
 		};
 		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType", formLayout,
 				assessmentTypeKeys, assessmentTypeValues, null);
+		if(StringHelper.containsNonWhitespace(item.getAssessmentType())) {
+			assessmentTypeEl.select(item.getAssessmentType(), true);
+		}
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -198,6 +213,13 @@ public class QuestionMetadataEditController extends FormBasicController {
 			return new BigDecimal(val);
 		}
 		return null;
+	}
+	
+	private String toString(BigDecimal val) {
+		if(val == null) {
+			return "";
+		}
+		return val.toPlainString();
 	}
 	
 	private int toInt(String val) {

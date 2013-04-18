@@ -95,6 +95,8 @@ public abstract class AbstractExportTestResource implements MediaResource {
 			exportTest(items, zout);
 		} catch (IOException e) {
 			log.error("", e);
+		}  catch (Exception e) {
+			log.error("", e);
 		} finally {
 			IOUtils.closeQuietly(zout);
 		}

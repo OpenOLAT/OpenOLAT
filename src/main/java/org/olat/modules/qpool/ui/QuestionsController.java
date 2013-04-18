@@ -102,8 +102,10 @@ public class QuestionsController extends BasicController implements StackedContr
 		//
 	}
 	
-	public void updateSource(QuestionItemsSource source) {
+	public void updateSource(UserRequest ureq, QuestionItemsSource source) {
 		listCtrl.updateSource(source);
+		detailsCtrl.refresh();
+		previewCtrl.refresh(ureq);
 	}
 	
 	public QuestionItemShort getQuestionAt(int index) {

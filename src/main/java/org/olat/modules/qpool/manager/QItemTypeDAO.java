@@ -94,6 +94,15 @@ public class QItemTypeDAO implements ApplicationListener<ContextRefreshedEvent> 
 		return types.get(0);
 	}
 	
+	public int countItemUsing(QItemType type) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(item) from questionitem item where item.type.key=:itemTypeKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("itemTypeKey", type.getKey())
+				.getSingleResult().intValue();
+	}
+	
 	public boolean delete(QItemType type) {
 		QItemType reloadType = loadById(type.getKey());
 		if(reloadType.isDeletable()) {
