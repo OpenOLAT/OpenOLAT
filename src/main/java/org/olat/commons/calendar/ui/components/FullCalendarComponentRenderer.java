@@ -56,7 +56,8 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
 		cal = Calendar.getInstance();
 		cal.setTime(fcC.getCurrentDate());
 		
-		sb.append("<script type='text/javascript'>")
+		sb.append("<script type='text/javascript'>\n")
+		  .append("/* <![CDATA[ */ \n")
 	    .append("jQuery(function() {\n")
       .append("	jQuery('#").append(id).append("').fullCalendar( {\n")
       .append("   header: {\n")
@@ -96,10 +97,10 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
 				sb.append("{\n")
 				  .append("   url:'").append(fcC.getMapperUrl()).append("/").append(calId).append(".json',\n")
 				  .append("   color:'").append(color).append("'\n")
-				  .append("}\n");
+				  .append("}");
 			}
 		}
-    sb.append("   ],")
+    sb.append("   ],\n")
       .append("   eventAfterRender: function(event, element, view) {\n")
       .append("     element.each(function(index, el) {\n")
       .append("       jQuery(el).attr('id', 'o_cev_' + event.id);\n")
@@ -107,24 +108,23 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
       .append("   },\n")
       .append("   viewDisplay: function(view) {\n")
       .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evChangeView',view.name,'start',view.start.getTime());")
+      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evChangeView',view.name,'start',view.start.getTime());\n")
       .append("   },\n")
       .append("	  eventDrop: function(calEvent, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view) {\n")
       .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evMove',calEvent.id,'dayDelta',dayDelta,'minuteDelta',minuteDelta,'allDay',allDay);")
+      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evMove',calEvent.id,'dayDelta',dayDelta,'minuteDelta',minuteDelta,'allDay',allDay);\n")
       .append("	  },\n")
       .append("   select: function(startDate, endDate, allDay, jsEvent, view) {\n")
       .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evAdd','new','start',startDate.getTime(),'end',endDate.getTime(),'allDay',allDay);")
+      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evAdd','new','start',startDate.getTime(),'end',endDate.getTime(),'allDay',allDay);\n")
       .append("   },\n")
       .append("   eventClick: function(calEvent, jsEvent, view) {\n")
       .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evSelect',calEvent.id,'evDomId','o_cev_' + calEvent.id);")
-      .append("   },\n")
-			.append("	  loading: function(bool) {\n")
-			.append("	  }\n")
+      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evSelect',calEvent.id,'evDomId','o_cev_' + calEvent.id);\n")
+      .append("   }\n")
       .append(" })\n")
-      .append("});")
+      .append("});\n")
+      .append("/* ]]> */\n")
       .append("</script>");
 	}
 	
