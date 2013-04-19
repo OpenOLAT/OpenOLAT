@@ -68,7 +68,7 @@ public class QTI12EditorController extends BasicController implements GenericEve
 			//no data to preview
 		} else {
 			Item item = QTIEditHelper.readItemXml(leaf);
-			if(item != null) {
+			if(item != null && !item.isAlient()) {
 				Translator translator = Util.createPackageTranslator(QTIEditorPackage.class, getLocale());
 				VFSContainer directory = qpoolService.getRootDirectory(qitem);
 				String mapperUrl = registerMapper(ureq, new VFSContainerMapper(directory));
