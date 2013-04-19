@@ -47,6 +47,8 @@ public interface QuestionItemsSource {
 	
 	public int getNumOfItems();
 	
+	public QuestionItemView getItem(Long key);
+	
 	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
 
 }

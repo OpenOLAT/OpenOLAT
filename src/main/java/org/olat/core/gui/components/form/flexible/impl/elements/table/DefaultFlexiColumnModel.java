@@ -41,6 +41,7 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	private boolean sortable;
 	private String sortedKey;
 
+	private boolean defaultVisible;
 	private int alignment;
 	private FlexiCellRenderer cellRenderer;
 
@@ -54,10 +55,14 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	}
 	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey) {
-		this(headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
+		this(true, headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
+	}
+	public DefaultFlexiColumnModel(boolean defVisible, String headerKey, int columnIndex, boolean sortable, String sortKey) {
+		this(defVisible, headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
 	}
 	
-	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey, int alignment, FlexiCellRenderer cellRenderer) {
+	public DefaultFlexiColumnModel(boolean defVisible, String headerKey, int columnIndex, boolean sortable, String sortKey, int alignment, FlexiCellRenderer cellRenderer) {
+		this.defaultVisible = defVisible;
 		this.sortable = sortable;
 		this.sortedKey = sortKey;
 		this.headerKey = headerKey;
@@ -94,6 +99,10 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	@Override
 	public boolean isSortable() {
 		return sortable;
+	}
+
+	public boolean isDefaultVisible() {
+		return defaultVisible;
 	}
 
 	@Override

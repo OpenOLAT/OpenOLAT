@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -35,8 +36,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -48,7 +52,7 @@ import org.olat.modules.qpool.QuestionItemView;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionsController extends BasicController implements StackedControllerAware {
+public class QuestionsController extends BasicController implements Activateable2, StackedControllerAware {
 	
 	private Link deleteItem, selectItem;
 	private QuestionListController listCtrl;
@@ -60,10 +64,12 @@ public class QuestionsController extends BasicController implements StackedContr
 	private DialogBoxController confirmDeleteBox;
 	
 	private final QPoolService qpoolService;
+	private QuestionItemsSource source;
 	
 	public QuestionsController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
 		super(ureq, wControl);
 		
+		this.source = source;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
 		listCtrl = new QuestionListController(ureq, wControl, source);
@@ -101,8 +107,22 @@ public class QuestionsController extends BasicController implements StackedContr
 	protected void doDispose() {
 		//
 	}
-	
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		if("QuestionItem".equals(type)) {
+			QuestionItemView item = source.getItem(entry.getOLATResourceable().getResourceableId());
+			doUpdateDetails(ureq, item);
+			doSelect(ureq, detailsCtrl.getItem(), detailsCtrl.isCanEdit());
+		}
+	}
+
 	public void updateSource(UserRequest ureq, QuestionItemsSource source) {
+		this.source = source;
 		listCtrl.updateSource(source);
 		detailsCtrl.refresh();
 		previewCtrl.refresh(ureq);
@@ -156,7 +176,8 @@ public class QuestionsController extends BasicController implements StackedContr
 	}
 	
 	protected void doSelect(UserRequest ureq, QuestionItem item, boolean editable) {
-		QuestionItemDetailsController detailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item, editable);
+		WindowControl swControl = addToHistory(ureq, item, null);
+		QuestionItemDetailsController detailsCtrl = new QuestionItemDetailsController(ureq, swControl, item, editable);
 		detailsCtrl.setStackedController(stackPanel);
 		listenTo(detailsCtrl);
 		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), detailsCtrl);

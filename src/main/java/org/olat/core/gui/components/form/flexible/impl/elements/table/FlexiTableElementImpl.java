@@ -37,6 +37,7 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
+import org.olat.core.gui.components.choice.Choice;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -47,7 +48,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
@@ -57,7 +62,8 @@ import org.olat.core.util.ValidationStatus;
  * 
  * @author Christian Guretzki
  */
-public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection, ComponentEventListener {
+public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection,
+	ControllerEventListener, ComponentEventListener {
 
 	//settings
 	private boolean multiSelect;
@@ -70,50 +76,64 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private int pageSize;
 	private boolean searchField;
 
+	private FormLink customButton;
 	private FormLink searchButton;
 	private TextElement searchFieldEl;
 	
-	private FlexiTableDataModel dataModel;
+	private final FlexiTableDataModel dataModel;
 	private FlexiTableDataSource<?> dataSource;
-	private FlexiTableComponent component;
-	private String mapperUrl;
+	private final FlexiTableComponent component;
+	private CloseableCalloutWindowController callout;
+	private final WindowControl wControl;
+	private final String mapperUrl;
 	
 	private Set<Integer> multiSelectedIndex;
+	private Set<Integer> enabledColumnIndex = new HashSet<Integer>();
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
-	public FlexiTableElementImpl(UserRequest ureq, String name, FlexiTableDataModel tableModel) {
-		this(ureq, name, null, tableModel, null, -1, false);
+	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel tableModel) {
+		this(ureq, wControl, name, null, tableModel, null, -1, false);
 	}
 	
-	public FlexiTableElementImpl(UserRequest ureq, String name, Translator translator, FlexiTableDataModel tableModel) {
-		this(ureq, name, translator, tableModel, null, -1, false);
+	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator, FlexiTableDataModel tableModel) {
+		this(ureq, wControl, name, translator, tableModel, null, -1, false);
 	}
 	
-	public FlexiTableElementImpl(UserRequest ureq, String name, Translator translator,
+	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator,
 			FlexiTableDataModel tableModel, FlexiTableDataSource<?> dataSource, int pageSize, boolean searchField) {
 		super(name);
-		
+		this.wControl = wControl;
 		this.dataModel = tableModel;
 		this.dataSource = dataSource;
 		component = new FlexiTableComponent(this, translator);
 		
-		
+		for(int i=dataModel.getTableColumnModel().getColumnCount(); i-->0; ) {
+			FlexiColumnModel col = dataModel.getTableColumnModel().getColumnModel(i);
+			if(col.isDefaultVisible()) {
+				enabledColumnIndex.add(new Integer(col.getColumnIndex()));
+			}
+		}
+
 		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
 		mapperUrl = mapper.register(ureq.getUserSession(), new FlexiTableModelMapper(component));
-		
+
+		String dispatchId = component.getDispatchID();
 		this.searchField = searchField;
 		if(searchField) {
-			String dispatchId = component.getDispatchID();
 			searchFieldEl = new TextElementImpl(dispatchId + "_searchField", "search", "");
 			searchFieldEl.showLabel(false);
+			components.put("rSearch", searchFieldEl);
 			searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
 			searchButton.setTranslator(translator);
 			searchButton.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only o_fulltext_search_button");
-			
-			components.put("rSearch", searchFieldEl);
 			components.put("rSearchB", searchButton);
 		}
 		
+		customButton = new FormLinkImpl(dispatchId + "_customButton", "rCustomButton", "search", Link.BUTTON);
+		customButton.setTranslator(translator);
+		customButton.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only b_table_prefs");
+		components.put("rCustomize", customButton);
+
 		this.pageSize = pageSize;
 		if(pageSize > 0) {
 			setPage(0);
@@ -158,6 +178,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	public FormItem getSearchButton() {
 		return searchButton;
+	}
+	
+	public FormItem getCustomButton() {
+		return customButton;
 	}
 
 	@Override
@@ -205,8 +229,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	protected void addFormItem(FormItem item) {
 		components.put(item.getName(), item);
 	}
-	
-	
 
 	@Override
 	public void doDispatchFormRequest(UserRequest ureq) {
@@ -216,12 +238,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	protected void dispatchFormRequest(UserRequest ureq) {
 		super.dispatchFormRequest(ureq);
-	}
-
-	@Override
-	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
-		//
-		System.out.println();
 	}
 	
 	/**
@@ -248,6 +264,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
 			//snap the request
 			evalSearchRequest(ureq);
+		}  else if(customButton != null
+				&& customButton.getFormDispatchId().equals(dispatchuri)) {
+			//snap the request
+			customizeCallout(ureq);
 		} else {
 			FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
 			for(int i=colModel.getColumnCount(); i-->0; ) {
@@ -260,6 +280,59 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 			}
 		}
+	}
+	
+	@Override
+	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+		if(source == callout) {
+			System.out.println("dispatchEvent (Controller): " + source);
+		}
+	}
+	
+	@Override
+	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
+		if(source instanceof Choice) {
+			Choice visibleColsChoice = (Choice)source;
+			setCustomizedColumns(visibleColsChoice);
+			callout.deactivate();
+		}
+	}
+
+	protected void customizeCallout(UserRequest ureq) {
+		Choice choice = getColumnListAndTheirVisibility();
+		callout = new CloseableCalloutWindowController(ureq, wControl, choice,
+				customButton, "Customize", true, "o_sel_flexi_custom_callout");
+		callout.activate();
+		callout.addControllerListener(this);
+	}
+	
+	protected boolean isColumnModelVisible(FlexiColumnModel col) {
+		return enabledColumnIndex.contains(col.getColumnIndex());
+	}
+	
+	protected void setCustomizedColumns(Choice visibleColsChoice) {
+		List<Integer> visibleCols = visibleColsChoice.getSelectedRows();
+		if(visibleCols.size() > 1) {
+			VisibleFlexiColumnsModel model = (VisibleFlexiColumnsModel)visibleColsChoice.getTableDataModel();
+			for(int i=model.getRowCount(); i-->0; ) {
+				FlexiColumnModel col = model.getObject(i);
+				if(visibleCols.contains(new Integer(i))) {
+					enabledColumnIndex.add(col.getColumnIndex());
+				} else {
+					enabledColumnIndex.remove(col.getColumnIndex());
+				}
+			}
+		}
+		component.setDirty(true);
+	}
+	
+	private Choice getColumnListAndTheirVisibility() {
+		Choice choice = new Choice("colchoice", getTranslator());
+		choice.setTableDataModel(new VisibleFlexiColumnsModel(dataModel.getTableColumnModel(), enabledColumnIndex, getTranslator()));
+		choice.addListener(this);
+		choice.setCancelKey("cancel");
+		choice.setSubmitKey("save");
+		return choice;
 	}
 	
 	protected void evalSearchRequest(UserRequest ureq) {
@@ -328,16 +401,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void validate(List<ValidationStatus> validationResults) {
-		//static text must not validate
-		if(searchFieldEl != null) {
-			searchFieldEl.validate(validationResults);
-		}
-		if(searchButton != null) {
-			searchButton.validate(validationResults);
-		}/*
-		if(searchPanel != null) {
-			searchPanel.validate(validationResults);
-		}*/
+		if(searchFieldEl != null) searchFieldEl.validate(validationResults);
+		if(searchButton != null) searchButton.validate(validationResults);
+		if(customButton != null) customButton.validate(validationResults);
 	}
 
 	@Override
@@ -369,12 +435,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	protected void rootFormAvailable() {
 		//root form not interesting for Static text
-		if(searchFieldEl != null && searchFieldEl.getRootForm() != getRootForm()) {
+		if(searchFieldEl != null && searchFieldEl.getRootForm() != getRootForm())
 			searchFieldEl.setRootForm(getRootForm());
-		}
-		if(searchButton != null && searchButton.getRootForm() != getRootForm()) {
+		if(searchButton != null && searchButton.getRootForm() != getRootForm())
 			searchButton.setRootForm(getRootForm());
-		}
+		if(customButton != null && customButton.getRootForm() != getRootForm())
+			customButton.setRootForm(getRootForm());
 	}
 
 	protected FlexiTableComponent getFormItemComponent() {

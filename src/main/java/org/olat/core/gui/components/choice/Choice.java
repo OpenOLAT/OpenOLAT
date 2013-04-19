@@ -65,7 +65,7 @@ public class Choice extends Component {
 	private List<Integer> selectedRows = new ArrayList<Integer>();
 	private List<Integer> removedRows = new ArrayList<Integer>();
 	private List<Integer> addedRows = new ArrayList<Integer>();
-	private TableDataModel tableDataModel;
+	private TableDataModel<?> tableDataModel;
 
 	/**
 	 * @param name of the component
@@ -186,7 +186,7 @@ public class Choice extends Component {
 	/**
 	 * @return TableDataModel
 	 */
-	public TableDataModel getTableDataModel() {
+	public TableDataModel<?> getTableDataModel() {
 		return tableDataModel;
 	}
 
@@ -198,7 +198,7 @@ public class Choice extends Component {
 	 * 
 	 * @param model
 	 */
-	public void setTableDataModel(TableDataModel model) {
+	public void setTableDataModel(TableDataModel<?> model) {
 		tableDataModel = model;
 	}
 

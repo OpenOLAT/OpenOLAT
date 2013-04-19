@@ -147,7 +147,7 @@ public class DeletStep01 extends BasicStep {
 			}
 
 			tableDataModel = new FlexiTableDataModelImpl(new IdentityFlexiTableModel(mergedDataChanges, colPos + 1), tableColumnModel);
-			uifactory.addTableElement(ureq, "newUsers", tableDataModel, formLayout);
+			uifactory.addTableElement(ureq, getWindowControl(), "newUsers", tableDataModel, formLayout);
 		}
 
 	}

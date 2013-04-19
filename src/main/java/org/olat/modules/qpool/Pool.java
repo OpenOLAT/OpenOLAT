@@ -21,13 +21,15 @@ package org.olat.modules.qpool;
 
 import java.util.Date;
 
+import org.olat.core.id.OLATResourceable;
+
 /**
  * 
  * Initial date: 22.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Pool {
+public interface Pool extends OLATResourceable {
 	
 	public Long getKey();
 	

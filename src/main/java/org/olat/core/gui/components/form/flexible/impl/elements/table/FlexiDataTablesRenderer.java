@@ -69,7 +69,7 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("		'sScrollY': '200px',\n")
       .append("		'bProcessing': true,\n")
       .append("		'bServerSide': true,\n")
-      .append("		'iDisplayLength': 20,\n")
+      .append("		'iDisplayLength': ").append(ftE.getPageSize()).append(",\n")
       .append("		'iDeferLoading': ").append(rows).append(",\n")
       .append("		'sAjaxSource': '").append(ftE.getMapperUrl()).append("',\n")
       .append("   'asStripeClasses': ['','b_table_odd'],\n")
@@ -85,13 +85,19 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("			});\n")
       .append("		},\n")
       .append("		'aoColumns': [\n");
+		int count = 0;
 		if(ftE.isMultiSelect()) {
-			target.append("			{'mData':'multiSelectCol', bSortable: false },\n");
+			target.append("			{'mData':'multiSelectCol', bSortable: false }\n");
+			count++;
 		}
 		for(int i=0; i<columnsModel.getColumnCount(); i++) {
 			FlexiColumnModel col = columnsModel.getColumnModel(i);
-			target.append("			{'mData':'").append(col.getColumnKey())
-			  .append("', bSortable: ").append(col.isSortable()).append(" },\n");
+			if(ftE.isColumnModelVisible(col)) {
+				if(count > 0) target.append(",");
+				count++;
+				target.append("			{'mData':'").append(col.getColumnKey())
+			  	.append("', bSortable: ").append(col.isSortable()).append(" }\n");
+			}
 		}
     target.append("		]\n")
       .append("	});\n")

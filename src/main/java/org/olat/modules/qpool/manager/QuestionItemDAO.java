@@ -216,7 +216,7 @@ public class QuestionItemDAO {
 		return query.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItemView> getItemsByAuthor(SearchQuestionItemParams params, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItemView> getItemsByAuthor(SearchQuestionItemParams params, Collection<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qauthoritem item where item.authorKey=:identityKey");
 		if(inKeys != null && !inKeys.isEmpty()) {
@@ -355,7 +355,7 @@ public class QuestionItemDAO {
 		return query.getResultList();
 	}
 	
-	public List<QuestionItemView> getFavoritItems(SearchQuestionItemParams params, List<Long> inKeys,
+	public List<QuestionItemView> getFavoritItems(SearchQuestionItemParams params, Collection<Long> inKeys,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qitemview item")

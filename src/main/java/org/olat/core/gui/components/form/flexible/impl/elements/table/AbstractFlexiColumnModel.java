@@ -71,6 +71,11 @@ public class AbstractFlexiColumnModel implements FlexiColumnModel {
 	}
 
 	@Override
+	public boolean isDefaultVisible() {
+		return true;
+	}
+
+	@Override
 	public String getSortKey() {
 		return null;
 	}

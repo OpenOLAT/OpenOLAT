@@ -905,22 +905,22 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public FlexiTableElement addTableElement(UserRequest ureq, String name, FlexiTableDataModel tableModel, FormItemContainer formLayout) {
-		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, name,tableModel);
+	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel tableModel, FormItemContainer formLayout) {
+		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, wControl, name,tableModel);
 		formLayout.add(fte);
 		return fte;
 	}
 	
-	public FlexiTableElement addTableElement(UserRequest ureq, String name, FlexiTableDataModel tableModel,
+	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel tableModel,
 			Translator translator, FormItemContainer formLayout) {
-		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, name, translator, tableModel);
+		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, wControl, name, translator, tableModel);
 		formLayout.add(fte);
 		return fte;
 	}
 	
-	public FlexiTableElement addTableElement(UserRequest ureq, String name, FlexiTableDataModel tableModel,
+	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel tableModel,
 			FlexiTableDataSource dataSource, int pageSize, boolean search, Translator translator, FormItemContainer formLayout) {
-		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, name, translator, tableModel, dataSource, pageSize, search);
+		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, wControl, name, translator, tableModel, dataSource, pageSize, search);
 		formLayout.add(fte);
 		return fte;
 	}

@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -124,7 +125,7 @@ public class CollectionDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItemView> getItemsOfCollection(QuestionItemCollection collection, List<Long> inKeys,
+	public List<QuestionItemView> getItemsOfCollection(QuestionItemCollection collection, Collection<Long> inKeys,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qitemview item ")

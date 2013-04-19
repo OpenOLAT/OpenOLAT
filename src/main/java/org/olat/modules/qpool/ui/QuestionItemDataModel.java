@@ -170,6 +170,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 			case identifier: return item.getIdentifier();
 			case masterIdentifier: return item.getMasterIdentifier();
 			case title: return item.getTitle();
+			case creationDate: return item.getCreationDate();
 			case taxnonomyLevel: return item.getTaxonomyLevelName();
 			case difficulty: return item.getDifficulty();
 			case type: {
@@ -200,6 +201,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 		identifier("general.identifier"),
 		masterIdentifier("general.master.identifier"),
 		title("general.title"),
+		creationDate("technical.creation"),
 		taxnonomyLevel("classification.taxonomy.level"),
 		difficulty("question.difficulty"),
 		

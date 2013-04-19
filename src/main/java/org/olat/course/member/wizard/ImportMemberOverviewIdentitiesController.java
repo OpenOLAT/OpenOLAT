@@ -111,7 +111,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
 		ImportMemberOverviewDataModel userTableModel = new ImportMemberOverviewDataModel(oks, resultingPropertyHandlers,
 				isAdministrativeUser, getLocale(), tableColumnModel);
-		uifactory.addTableElement(ureq, "users", userTableModel, myTrans, formLayout);
+		uifactory.addTableElement(ureq, getWindowControl(), "users", userTableModel, myTrans, formLayout);
 	}
 	
 	private List<Identity> loadModel(List<String> keys) {

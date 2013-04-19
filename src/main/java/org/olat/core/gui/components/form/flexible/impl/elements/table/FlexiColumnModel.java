@@ -41,6 +41,8 @@ public interface FlexiColumnModel {
 	
 	public void setSortable(boolean enable);
 	
+	public boolean isDefaultVisible();
+	
 	public String getSortKey();
 
 	public void setSortKey(String sortedKey);
@@ -57,8 +59,8 @@ public interface FlexiColumnModel {
 
 	public void setAlignment(int alignment);
 
-	public void setCellRenderer(FlexiCellRenderer cellRenderer);
-
 	public FlexiCellRenderer getCellRenderer();
+
+	public void setCellRenderer(FlexiCellRenderer cellRenderer);
 
 }

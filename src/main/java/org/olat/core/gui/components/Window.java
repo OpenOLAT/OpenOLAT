@@ -1317,7 +1317,7 @@ class ValidatingVisitor implements ComponentVisitor {
 	 */
 	public boolean visit(Component comp, UserRequest ureq) {
 		// validate only visble components
-		if (comp.isVisible()) {
+		if (comp != null && comp.isVisible()) {
 			comp.validate(ureq, validationResult);
 			return true;
 		}

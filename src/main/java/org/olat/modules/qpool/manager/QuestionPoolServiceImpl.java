@@ -399,7 +399,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			}
 			return new DefaultResultInfos<QuestionItemView>();
 		} else {
-			List<QuestionItemView> items = poolDao.getItemsOfPool(searchParams, null, firstResult, maxResults, orderBy);
+			List<QuestionItemView> items = poolDao.getItemsOfPool(searchParams, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
 			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
 		}
 	}
@@ -427,7 +427,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			}
 			return new DefaultResultInfos<QuestionItemView>();
 		} else {
-			List<QuestionItemView> items = questionItemDao.getItemsByAuthor(searchParams, null, firstResult, maxResults, orderBy);
+			List<QuestionItemView> items = questionItemDao.getItemsByAuthor(searchParams, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
 			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
 		}
 	}
@@ -464,7 +464,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			}
 			return new DefaultResultInfos<QuestionItemView>();
 		} else {
-			List<QuestionItemView> items = questionItemDao.getFavoritItems(searchParams, null, firstResult, maxResults, orderBy);
+			List<QuestionItemView> items = questionItemDao.getFavoritItems(searchParams, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
 			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
 		}
 	}
@@ -608,7 +608,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			}
 			return new DefaultResultInfos<QuestionItemView>();
 		} else {
-			List<QuestionItemView> items = collectionDao.getItemsOfCollection(collection, null, firstResult, maxResults, orderBy);
+			List<QuestionItemView> items = collectionDao.getItemsOfCollection(collection, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
 			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
 		}
 	}

@@ -78,7 +78,17 @@ public class ItemCollectionImpl implements QuestionItemCollection, Persistable {
 	public void setKey(Long key) {
 		this.key = key;
 	}
-	
+
+	@Override
+	public String getResourceableTypeName() {
+		return "QItemCollection";
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return getKey();
+	}
+
 	@Override
 	public Date getCreationDate() {
 		return creationDate;

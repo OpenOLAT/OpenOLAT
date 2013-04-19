@@ -41,9 +41,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
@@ -74,16 +77,13 @@ public class QuestionPoolMainEditorController extends BasicController implements
 
 	private QuestionsController currentCtrl;
 	private QuestionsController myQuestionsCtrl;
-	private QuestionsController sharedItemsCtrl;
-	private CollectionQuestionsController collItemsCtrl;
-	private QuestionsController selectedPoolCtrl;
 	private QuestionsController markedQuestionsCtrl;
 	
 	private PoolsAdminController poolAdminCtrl;
 	private QItemTypesAdminController typesCtrl;
 	private QEducationalContextsAdminController levelsCtrl;
 	private QLicensesAdminController licensesCtrl;
-	private TaxonomyAdminController studyFieldCtrl;
+	private TaxonomyAdminController taxonomyCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 	private QuestionPoolAdminStatisticsController adminStatisticsCtrl;
 
@@ -123,7 +123,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		this.stackPanel = stackPanel;
 		if(myQuestionsCtrl != null) myQuestionsCtrl.setStackedController(stackPanel);
 		if(markedQuestionsCtrl != null) markedQuestionsCtrl.setStackedController(stackPanel);
-		if(selectedPoolCtrl != null) selectedPoolCtrl.setStackedController(stackPanel);
+		if(currentCtrl != null) currentCtrl.setStackedController(stackPanel);
 	}
 
 	@Override
@@ -142,34 +142,38 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				doDrop(targetId, dropId);
 			} else if(menuTree.getSelectedNode() != null){
 				TreeNode node = menuTree.getSelectedNode();
-				Object uNode = node.getUserObject();
-				if("menu.admin".equals(uNode)) {
-					doSelectAdmin(ureq);
-				} else if("menu.admin.studyfields".equals(uNode)) {
-					doSelectAdminStudyFields(ureq);
-				} else if("menu.admin.pools".equals(uNode)) {
-					doSelectAdminPools(ureq);
-				} else if("menu.admin.types".equals(uNode)) {
-					doSelectAdminTypes(ureq);
-				} else if("menu.admin.levels".equals(uNode)) {
-					doSelectAdminLevels(ureq);
-				} else if("menu.admin.licenses".equals(uNode)) {
-					doSelectAdminLicenses(ureq);
-				} else if("menu.database.my".equals(uNode)) {
-					doSelectMyQuestions(ureq);
-				} else if("menu.database.favorit".equals(uNode)) {
-					doSelectMarkedQuestions(ureq);
-				} else if(uNode instanceof Pool) {
-					Pool pool = (Pool)uNode;
-					doSelect(ureq, pool);
-				} else if(uNode instanceof BusinessGroup) {
-					BusinessGroup group = (BusinessGroup)uNode;
-					doSelect(ureq, group);
-				} else if(uNode instanceof QuestionItemCollection) {
-					QuestionItemCollection coll = (QuestionItemCollection)uNode;
-					doSelect(ureq, coll);
-				}
+				doSelectControllerTreeNode(ureq, node, null, null);
 			}
+		}
+	}
+	
+	private void doSelectControllerTreeNode(UserRequest ureq, TreeNode node, List<ContextEntry> entries, StateEntry state) {
+		Object uNode = node.getUserObject();
+		if("Statistics".equals(uNode)) {
+			doSelectAdmin(ureq, entries, state);
+		} else if("Taxonomy".equals(uNode)) {
+			doSelectAdminStudyFields(ureq, entries, state);
+		} else if("Pools".equals(uNode)) {
+			doSelectAdminPools(ureq, entries, state);
+		} else if("Types".equals(uNode)) {
+			doSelectAdminTypes(ureq, entries, state);
+		} else if("EduContexts".equals(uNode)) {
+			doSelectAdminLevels(ureq, entries, state);
+		} else if("Licenses".equals(uNode)) {
+			doSelectAdminLicenses(ureq, entries, state);
+		} else if("My".equals(uNode)) {
+			doSelectMyQuestions(ureq, entries, state);
+		} else if("Marked".equals(uNode)) {
+			doSelectMarkedQuestions(ureq, entries, state);
+		} else if(uNode instanceof Pool) {
+			Pool pool = (Pool)uNode;
+			doSelectPool(ureq, pool, node, entries, state);
+		} else if(uNode instanceof BusinessGroup) {
+			BusinessGroup group = (BusinessGroup)uNode;
+			doSelectGroup(ureq, group, node, entries, state);
+		} else if(uNode instanceof QuestionItemCollection) {
+			QuestionItemCollection coll = (QuestionItemCollection)uNode;
+			doSelectCollection(ureq, coll, node, entries, state);
 		}
 	}
 
@@ -200,7 +204,21 @@ public class QuestionPoolMainEditorController extends BasicController implements
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		OLATResourceable resource = entry.getOLATResourceable();
+		TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+		TreeNode node = TreeHelper.findNodeByResourceableUserObject(resource, rootNode);
+		if(node == null) {
+			node = TreeHelper.findNodeByUserObject(resource.getResourceableTypeName(),  rootNode);
+		}
+		if(node != null) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			stackPanel.popUpToRootController(ureq);
+			doSelectControllerTreeNode(ureq, node, subEntries, entry.getTransientState());
+			menuTree.setSelectedNode(node);
+		}
 	}
 	
 	private void doDrop(String targetId, String dropId) {
@@ -226,125 +244,157 @@ public class QuestionPoolMainEditorController extends BasicController implements
 					markManager.setMark(item, getIdentity(), null, businessPath);
 				}
 			}
-			
 		} catch (Exception e) {
 			logError("Cannot drop with id: " + dropId, e);
 		}
 	}
 	
-	private void doSelectAdmin(UserRequest ureq) {
+	private void setContent(UserRequest ureq, Controller controller, List<ContextEntry> entries, StateEntry state) {
+		addToHistory(ureq, controller);
+		if(controller instanceof Activateable2) {
+			((Activateable2)controller).activate(ureq, entries, state);
+		}
+		content.setContent(controller.getInitialComponent());
+	}
+	
+	private void doSelectAdmin(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(adminStatisticsCtrl == null) {
-			adminStatisticsCtrl = new QuestionPoolAdminStatisticsController(ureq, getWindowControl());
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Statistics"), null);
+			adminStatisticsCtrl = new QuestionPoolAdminStatisticsController(ureq, swControl);
 			listenTo(adminStatisticsCtrl);
-		}
-		content.setContent(adminStatisticsCtrl.getInitialComponent());
+		} 
+		setContent(ureq, adminStatisticsCtrl, entries, state);
 	}
 	
-	private void doSelectAdminStudyFields(UserRequest ureq) {
-		if(studyFieldCtrl == null) {
-			studyFieldCtrl = new TaxonomyAdminController(ureq, getWindowControl());
-			listenTo(studyFieldCtrl);
+	private void doSelectAdminStudyFields(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(taxonomyCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Taxonomy"), null);
+			taxonomyCtrl = new TaxonomyAdminController(ureq, swControl);
+			listenTo(taxonomyCtrl);
 		}
-		content.setContent(studyFieldCtrl.getInitialComponent());
+		setContent(ureq, taxonomyCtrl, entries, state);
 	}
 	
-	private void doSelectAdminPools(UserRequest ureq) {
+	private void doSelectAdminPools(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(poolAdminCtrl == null) {
-			poolAdminCtrl = new PoolsAdminController(ureq, getWindowControl());
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Pools"), null);
+			poolAdminCtrl = new PoolsAdminController(ureq, swControl);
 			listenTo(poolAdminCtrl);
 		}
-		content.setContent(poolAdminCtrl.getInitialComponent());
+		setContent(ureq, poolAdminCtrl, entries, state);
 	}
 	
-	private void doSelectAdminTypes(UserRequest ureq) {
+	private void doSelectAdminTypes(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(typesCtrl == null) {
-			typesCtrl = new QItemTypesAdminController(ureq, getWindowControl());
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Types"), null);
+			typesCtrl = new QItemTypesAdminController(ureq, swControl);
 			listenTo(typesCtrl);
 		}
-		content.setContent(typesCtrl.getInitialComponent());
+		setContent(ureq, typesCtrl, entries, state);
 	}
 	
-	private void doSelectAdminLevels(UserRequest ureq) {
+	private void doSelectAdminLevels(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(levelsCtrl == null) {
-			levelsCtrl = new QEducationalContextsAdminController(ureq, getWindowControl());
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("EduContexts"), null);
+			levelsCtrl = new QEducationalContextsAdminController(ureq, swControl);
 			listenTo(levelsCtrl);
 		}
-		content.setContent(levelsCtrl.getInitialComponent());
+		setContent(ureq, levelsCtrl, entries, state);
 	}
 	
-	private void doSelectAdminLicenses(UserRequest ureq) {
+	private void doSelectAdminLicenses(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(licensesCtrl == null) {
-			licensesCtrl = new QLicensesAdminController(ureq, getWindowControl());
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Licenses"), null);
+			licensesCtrl = new QLicensesAdminController(ureq, swControl);
 			listenTo(licensesCtrl);
 		}
-		content.setContent(licensesCtrl.getInitialComponent());
+		setContent(ureq, licensesCtrl, entries, state);
 	}
 	
-	private void doSelectMyQuestions(UserRequest ureq) {
+	private void doSelectMyQuestions(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		DefaultItemsSource source = new DefaultItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "My"); 
 		source.getDefaultParams().setAuthor(getIdentity());
 		if(myQuestionsCtrl == null) {
-			myQuestionsCtrl = new QuestionsController(ureq, getWindowControl(), source);
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("My"), null);
+			myQuestionsCtrl = new QuestionsController(ureq, swControl, source);
 			myQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(myQuestionsCtrl);
 		} else {
 			myQuestionsCtrl.updateSource(ureq, source);
 		}
 		currentCtrl = myQuestionsCtrl;
-		content.setContent(myQuestionsCtrl.getInitialComponent());
+		setContent(ureq, myQuestionsCtrl, entries, state);
 	}
 	
-	private void doSelectMarkedQuestions(UserRequest ureq) {
+	private void doSelectMarkedQuestions(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		DefaultItemsSource source = new DefaultItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "Fav"); 
 		source.getDefaultParams().setFavoritOnly(true);
 		if(markedQuestionsCtrl == null) {
-			markedQuestionsCtrl = new QuestionsController(ureq, getWindowControl(), source);
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Marked"), null);
+			markedQuestionsCtrl = new QuestionsController(ureq, swControl, source);
 			markedQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(markedQuestionsCtrl);
 		} else {
 			markedQuestionsCtrl.updateSource(ureq, source);
 		}
+		;
 		currentCtrl = markedQuestionsCtrl;
-		content.setContent(markedQuestionsCtrl.getInitialComponent());
+		setContent(ureq, markedQuestionsCtrl, entries, state);
 	}
 	
-	private void doSelect(UserRequest ureq, Pool pool) {
+	private void doSelectPool(UserRequest ureq, Pool pool, TreeNode node, List<ContextEntry> entries, StateEntry state) {
+		ControlledTreeNode cNode = (ControlledTreeNode)node;
+		QuestionsController selectedPoolCtrl = cNode.getController();
+
 		DefaultItemsSource source = new DefaultItemsSource(getIdentity(), ureq.getUserSession().getRoles(), pool.getName());
 		source.getDefaultParams().setPoolKey(pool.getKey());
 		if(selectedPoolCtrl == null) {
-			selectedPoolCtrl = new QuestionsController(ureq, getWindowControl(), source);
+			WindowControl swControl = addToHistory(ureq, pool, null);
+			selectedPoolCtrl = new QuestionsController(ureq, swControl, source);
 			selectedPoolCtrl.setStackedController(stackPanel);
 			listenTo(selectedPoolCtrl);
+			cNode.setController(selectedPoolCtrl);
 		} else {
 			selectedPoolCtrl.updateSource(ureq, source);
 		}
 		currentCtrl = selectedPoolCtrl;
-		content.setContent(selectedPoolCtrl.getInitialComponent());
+		setContent(ureq, selectedPoolCtrl, entries, state);
 	}
 	
-	private void doSelect(UserRequest ureq, BusinessGroup group) {
+	private void doSelectGroup(UserRequest ureq, BusinessGroup group, TreeNode node, List<ContextEntry> entries, StateEntry state) {
+		ControlledTreeNode cNode = (ControlledTreeNode)node;
+		QuestionsController sharedItemsCtrl = cNode.getController();
+
 		if(sharedItemsCtrl == null) {
-			sharedItemsCtrl = new QuestionsController(ureq, getWindowControl(), new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles()));
+			WindowControl swControl = addToHistory(ureq, group, null);
+			sharedItemsCtrl = new QuestionsController(ureq, swControl, new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles()));
 			sharedItemsCtrl.setStackedController(stackPanel);
 			listenTo(sharedItemsCtrl);
+			cNode.setController(sharedItemsCtrl);
 		} else {
 			sharedItemsCtrl.updateSource(ureq, new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles()));
 		}
 		currentCtrl = sharedItemsCtrl;
-		content.setContent(sharedItemsCtrl.getInitialComponent());
+		setContent(ureq, sharedItemsCtrl, entries, state);
 	}
 	
-	private void doSelect(UserRequest ureq, QuestionItemCollection coll) {
+	private void doSelectCollection(UserRequest ureq, QuestionItemCollection coll, TreeNode node, List<ContextEntry> entries, StateEntry state) {
+		ControlledTreeNode cNode = (ControlledTreeNode)node;
+		CollectionQuestionsController collItemsCtrl = (CollectionQuestionsController)cNode.getController();
+		
 		CollectionOfItemsSource source = new CollectionOfItemsSource(coll, getIdentity(), ureq.getUserSession().getRoles());
 		if(collItemsCtrl == null) {
-			collItemsCtrl = new CollectionQuestionsController(ureq, getWindowControl(), source);
+			WindowControl swControl = addToHistory(ureq, coll, null);
+			collItemsCtrl = new CollectionQuestionsController(ureq, swControl, source);
 			collItemsCtrl.setStackedController(stackPanel);
 			listenTo(collItemsCtrl);
+			cNode.setController(collItemsCtrl);
 		} else {
 			collItemsCtrl.updateSource(ureq, source);
 		}
+		collItemsCtrl.activate(ureq, entries, state);
 		currentCtrl = collItemsCtrl;
-		content.setContent(collItemsCtrl.getInitialComponent());
+		setContent(ureq, collItemsCtrl, entries, state);
 	}
 	
 	private TreeModel buildTreeModel() {
@@ -367,7 +417,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		
 		//administration
 		if(roles.isOLATAdmin() || roles.isPoolAdmin()) {
-			GenericTreeNode adminNode = new GenericTreeNode(translate("menu.admin"), "menu.admin");
+			GenericTreeNode adminNode = new GenericTreeNode(translate("menu.admin"), "Statistics");
 			adminNode.setCssClass("o_sel_qpool_admin");
 			rootNode.addChild(adminNode);
 			buildAdminSubTreeModel(adminNode);
@@ -380,14 +430,14 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		
 		List<Pool> pools = qpoolService.getPools(getIdentity(), roles);
 		for(Pool pool:pools) {
-			GenericTreeNode node = new GenericTreeNode(pool.getName(), pool);
+			GenericTreeNode node = new ControlledTreeNode(pool.getName(), pool);
 			node.setIconCssClass("o_sel_qpool_pool");
 			parentNode.addChild(node);
 		}
 
 		List<BusinessGroup> groups = qpoolService.getResourcesWithSharedItems(getIdentity());
 		for(BusinessGroup group:groups) {
-			GenericTreeNode node = new GenericTreeNode(group.getName(), group);
+			GenericTreeNode node = new ControlledTreeNode(group.getName(), group);
 			node.setIconCssClass("o_sel_qpool_share");
 			parentNode.addChild(node);
 		}
@@ -397,23 +447,23 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		if(!roles.isOLATAdmin() && !roles.isPoolAdmin()) return;
 		parentNode.removeAllChildren();
 		
-		GenericTreeNode node = new GenericTreeNode(translate("menu.admin.studyfields"), "menu.admin.studyfields");
+		GenericTreeNode node = new GenericTreeNode(translate("menu.admin.studyfields"), "Taxonomy");
 		node.setIconCssClass("o_sel_qpool_study_fields");
 		parentNode.addChild(node);
 		
-		node = new GenericTreeNode(translate("menu.admin.pools"), "menu.admin.pools");
+		node = new GenericTreeNode(translate("menu.admin.pools"), "Pools");
 		node.setIconCssClass("o_sel_qpool_admin_pools");
 		parentNode.addChild(node);
 		
-		node = new GenericTreeNode(translate("menu.admin.types"), "menu.admin.types");
+		node = new GenericTreeNode(translate("menu.admin.types"), "Types");
 		node.setIconCssClass("o_sel_qpool_admin_types");
 		parentNode.addChild(node);
 		
-		node = new GenericTreeNode(translate("menu.admin.levels"), "menu.admin.levels");
+		node = new GenericTreeNode(translate("menu.admin.levels"), "EduContexts");
 		node.setIconCssClass("o_sel_qpool_admin_levels");
 		parentNode.addChild(node);
 
-		node = new GenericTreeNode(translate("menu.admin.licenses"), "menu.admin.licenses");
+		node = new GenericTreeNode(translate("menu.admin.licenses"), "Licenses");
 		node.setIconCssClass("o_sel_qpool_admin_licenses");
 		parentNode.addChild(node);
 	}
@@ -421,19 +471,36 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private void buildMySubTreeModel(GenericTreeNode parentNode) {
 		parentNode.removeAllChildren();
 		
-		GenericTreeNode node = new GenericTreeNode(translate("menu.database.my"), "menu.database.my");
+		GenericTreeNode node = new GenericTreeNode(translate("menu.database.my"), "My");
 		node.setIconCssClass("o_sel_qpool_my_items");
 		parentNode.addChild(node);
 		
-		node = new GenericTreeNode(translate("menu.database.favorit"), "menu.database.favorit");
+		node = new GenericTreeNode(translate("menu.database.favorit"), "Marked");
 		node.setIconCssClass("o_sel_qpool_favorits");
 		parentNode.addChild(node);
 		
 		List<QuestionItemCollection> collections = qpoolService.getCollections(getIdentity());
 		for(QuestionItemCollection coll: collections) {
-			node = new GenericTreeNode(coll.getName(), coll);
+			node = new ControlledTreeNode(coll.getName(), coll);
 			node.setIconCssClass("o_sel_qpool_collection");
 			parentNode.addChild(node);
+		}
+	}
+	
+	private static class ControlledTreeNode extends GenericTreeNode {
+		private static final long serialVersionUID = 768640290449143804L;
+		private QuestionsController controller;
+		
+		public ControlledTreeNode(String title, Object userObject) {
+			super(title, userObject);
+		}
+
+		public QuestionsController getController() {
+			return controller;
+		}
+
+		public void setController(QuestionsController controller) {
+			this.controller = controller;
 		}
 	}
 }

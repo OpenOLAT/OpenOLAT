@@ -99,7 +99,7 @@ public class QLicensesAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", Cols.deletable.ordinal(), "delete-license", delRenderer));
 
 		model = new QItemTypeDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(ureq, "licenses", model, null, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "licenses", model, null, 20, false, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		
 		createType = uifactory.addFormLink("create.license", formLayout, Link.BUTTON);

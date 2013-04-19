@@ -109,7 +109,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", Cols.deletable.ordinal(), "delete-level", delRenderer));
 
 		model = new LevelDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(ureq, "levels", model, null, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "levels", model, null, 20, false, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		
 		createType = uifactory.addFormLink("create.level", formLayout, Link.BUTTON);

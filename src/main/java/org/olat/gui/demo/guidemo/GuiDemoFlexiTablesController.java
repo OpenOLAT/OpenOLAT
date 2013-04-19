@@ -87,7 +87,7 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header7", 6));
 
 		tableDataModel = new FlexiTableDataModelImpl(new SampleFlexiTableModel(this, formLayout), tableColumnModel);
-		uifactory.addTableElement(ureq, "gui-demo", tableDataModel, formLayout);
+		uifactory.addTableElement(ureq, getWindowControl(), "gui-demo", tableDataModel, formLayout);
 		uifactory.addFormSubmitButton("ok", formLayout);
 	}
 	

@@ -64,7 +64,7 @@ public class ChoiceRenderer implements ComponentRenderer {
 
 		// Get the model object
 		Choice choice = (Choice) source;
-		TableDataModel tdm = choice.getTableDataModel();
+		TableDataModel<?> tdm = choice.getTableDataModel();
 
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		// form header
@@ -75,7 +75,7 @@ public class ChoiceRenderer implements ComponentRenderer {
 		if (iframePostEnabled) {
 			ubu.appendTarget(target);
 		}
-		target.append("/>");
+		target.append(">");
 
 		target.append("<table class=\"b_choice\">");
 		int rows = tdm.getRowCount();

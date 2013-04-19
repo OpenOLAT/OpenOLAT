@@ -93,7 +93,7 @@ public class GroupsAndRightsController extends FormBasicController {
 
 		List<BGRightsOption> groupRights = loadModel();
 		tableDataModel = new GroupsAndRightsDataModel(groupRights, tableColumnModel);
-		uifactory.addTableElement(ureq, "rightList", tableDataModel, formLayout);
+		uifactory.addTableElement(ureq, getWindowControl(), "rightList", tableDataModel, formLayout);
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);

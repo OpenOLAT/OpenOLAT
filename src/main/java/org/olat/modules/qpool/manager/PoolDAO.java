@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -213,7 +214,7 @@ public class PoolDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItemView> getItemsOfPool(SearchQuestionItemParams params, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItemView> getItemsOfPool(SearchQuestionItemParams params, Collection<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qpoolitem item where item.poolKey=:poolKey");
 		if(inKeys != null && inKeys.size() > 0) {

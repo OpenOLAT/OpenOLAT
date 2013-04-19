@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.model;
 
+import java.util.Collection;
+
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 
@@ -31,6 +33,7 @@ import org.olat.core.id.Roles;
 public class SearchQuestionItemParams {
 	
 	private Long poolKey;
+	private Collection<Long> itemKeys;
 	private String format;
 	private String searchString;
 	private boolean favoritOnly;
@@ -50,6 +53,14 @@ public class SearchQuestionItemParams {
 
 	public void setPoolKey(Long poolKey) {
 		this.poolKey = poolKey;
+	}
+
+	public Collection<Long> getItemKeys() {
+		return itemKeys;
+	}
+
+	public void setItemKeys(Collection<Long> itemKeys) {
+		this.itemKeys = itemKeys;
 	}
 
 	public String getFormat() {

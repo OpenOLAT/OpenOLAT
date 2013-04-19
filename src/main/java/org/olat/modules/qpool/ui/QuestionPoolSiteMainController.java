@@ -67,6 +67,6 @@ public class QuestionPoolSiteMainController extends MainLayoutBasicController im
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		catalogCtrl.activate(ureq, entries, state);
 	}
 }

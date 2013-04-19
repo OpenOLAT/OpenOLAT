@@ -45,13 +45,11 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 
-		if(ftE.isSearch()) {
-			renderSearchFields(renderer, sb, ftE, ubu, translator, renderResult, args);
-		}
 		
 		String id = ftC.getFormDispatchId();
-		sb.append("<div class=\"b_table_wrapper b_floatscrollbox\">")
-		  .append("<table id=\"").append(id).append("\">");
+		sb.append("<div class=\"b_table_wrapper b_floatscrollbox\">");
+		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
+		sb.append("<table id=\"").append(id).append("\">");
 		
 		//render headers
 		renderHeaders(sb, ftE, translator);
@@ -68,19 +66,20 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		}
 	}
 	
-	protected void renderSearchFields(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+	protected void renderHeaderButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-
-		FormItem searchEl = ftE.getSearchElement();
-		if(searchEl != null) {
-			Component searchC = searchEl.getComponent();
-			searchC.getHTMLRendererSingleton().render(renderer, sb, searchC, ubu, translator, renderResult, args);
+		if(ftE.isSearch()) {
+			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
+			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
 		}
-		
-		FormItem searchButton = ftE.getSearchButton();
-		if(searchButton != null) {
-			Component searchB = searchButton.getComponent();
-			searchB.getHTMLRendererSingleton().render(renderer, sb, searchB, ubu, translator, renderResult, args);
+		renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, args);
+	}
+	
+	protected void renderFormItem(Renderer renderer, StringOutput sb, FormItem item, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+		if(item != null) {
+			Component cmp = item.getComponent();
+			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
 		}
 	}
 	
@@ -99,8 +98,9 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		int cols = columnModel.getColumnCount();
 		for(int i=0; i<cols; i++) {
 			FlexiColumnModel fcm = columnModel.getColumnModel(i);
-			renderHeader(target, fcm, col, cols, translator);
-			col++;
+			if(ftE.isColumnModelVisible(fcm)) {
+				renderHeader(target, fcm, col++, cols, translator);
+			}
   	}
 		
 		target.append("</tr></thead>");
@@ -172,8 +172,9 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 				
 		for (int j = 0; j<numOfCols; j++) {
 			FlexiColumnModel fcm = columnsModel.getColumnModel(j);
-			renderCell(renderer, target, ftC, fcm, row, col, numOfCols, ubu, translator, renderResult); 
-			col++;
+			if(ftE.isColumnModelVisible(fcm)) {
+				renderCell(renderer, target, ftC, fcm, row, col++, numOfCols, ubu, translator, renderResult);
+			}
 		}
 		target.append("</tr>");
 	}

@@ -89,6 +89,16 @@ public class PoolImpl implements Pool, CreateInfo, ModifiedInfo, Persistable {
 	public void setKey(Long key) {
 		this.key = key;
 	}
+	
+	@Override
+	public String getResourceableTypeName() {
+		return "QPool";
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return getKey();
+	}
 
 	public Date getCreationDate() {
 		return creationDate;

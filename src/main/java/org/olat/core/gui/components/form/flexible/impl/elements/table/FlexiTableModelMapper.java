@@ -129,22 +129,24 @@ public class FlexiTableModelMapper implements Mapper {
 					
 					for(int j=0; j<columnsModel.getColumnCount(); j++) {
 						FlexiColumnModel col = columnsModel.getColumnModel(j);
-						int columnIndex = col.getColumnIndex();
-						Object value = columnIndex >= 0 ? dataModel.getValueAt(i, columnIndex) : null;
-
-						String val;
-						if(value instanceof FormItem) {
-							FormItem item = (FormItem)value;
-							if(ftE.getRootForm() != item.getRootForm()) {
-								item.setRootForm(ftE.getRootForm());
+						if(ftE.isColumnModelVisible(col)) {
+							int columnIndex = col.getColumnIndex();
+							Object value = columnIndex >= 0 ? dataModel.getValueAt(i, columnIndex) : null;
+	
+							String val;
+							if(value instanceof FormItem) {
+								FormItem item = (FormItem)value;
+								if(ftE.getRootForm() != item.getRootForm()) {
+									item.setRootForm(ftE.getRootForm());
+								}
+								ftE.addFormItem(item);
+								val = renderFormItem(item, request, ftE.getTranslator());
+							} else {
+								val = renderColumnRenderer(col, value, i, ftC, ubu, ftE.getTranslator());
 							}
-							ftE.addFormItem(item);
-							val = renderFormItem(item, request, ftE.getTranslator());
-						} else {
-							val = renderColumnRenderer(col, value, i, ftC, ubu, ftE.getTranslator());
+							
+							row.put(col.getColumnKey(), val);
 						}
-						
-						row.put(col.getColumnKey(), val);
 					}
 					row.put("DT_RowId", rowIdPrefix + Integer.toString(i));
 					

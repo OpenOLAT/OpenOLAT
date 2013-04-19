@@ -22,6 +22,7 @@ package org.olat.modules.qpool;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
@@ -29,7 +30,7 @@ import org.olat.core.id.ModifiedInfo;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemCollection extends CreateInfo, ModifiedInfo {
+public interface QuestionItemCollection extends CreateInfo, ModifiedInfo, OLATResourceable {
 	
 	public Long getKey();
 	

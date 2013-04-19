@@ -76,20 +76,20 @@ public class SharingController extends FormBasicController {
 		poolInfosColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("share.editable", 0));
 		poolInfosColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("pool.name", 1));
 		poolInfosModel = new PoolInfosDataModel(poolInfosColumnsModel);
-		poolInfosTable = uifactory.addTableElement(ureq, "pools", poolInfosModel, getTranslator(), formLayout);
+		poolInfosTable = uifactory.addTableElement(ureq, getWindowControl(), "pools", poolInfosModel, getTranslator(), formLayout);
 		
 		//list of authors
 		FlexiTableColumnModel authorsColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		authorsColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("sharing.author.name", 0));
 		authorsModel = new AuthorDataModel(authorsColumnsModel);
-		authorsTable = uifactory.addTableElement(ureq, "authors", authorsModel, getTranslator(), formLayout);
+		authorsTable = uifactory.addTableElement(ureq, getWindowControl(), "authors", authorsModel, getTranslator(), formLayout);
 
 		//list of groups
 		FlexiTableColumnModel sharesColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		sharesColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("share.editable", 0));
 		sharesColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("pool.name", 1));
 		sharesModel = new SharesDataModel(poolInfosColumnsModel);
-		sharesTable = uifactory.addTableElement(ureq, "shares", sharesModel, getTranslator(), formLayout);
+		sharesTable = uifactory.addTableElement(ureq, getWindowControl(), "shares", sharesModel, getTranslator(), formLayout);
 	}
 	
 	@Override

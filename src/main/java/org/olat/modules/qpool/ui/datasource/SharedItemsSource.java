@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.ui.datasource;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -82,6 +83,17 @@ public class SharedItemsSource implements QuestionItemsSource {
 	@Override
 	public int getNumOfItems() {
 		return qpoolService.countSharedItemByResource(resource);
+	}
+
+	@Override
+	public QuestionItemView getItem(Long key) {
+		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
+		params.setItemKeys(Collections.singletonList(key));
+		ResultInfos<QuestionItemView> items = qpoolService.getSharedItemByResource(resource, params, 0, 1);
+		if(items.getObjects().size() == 1) {
+			return items.getObjects().get(0);
+		}
+		return null;
 	}
 
 	@Override

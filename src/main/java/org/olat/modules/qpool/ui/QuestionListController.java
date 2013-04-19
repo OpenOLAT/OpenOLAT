@@ -130,37 +130,51 @@ public class QuestionListController extends AbstractItemListController implement
 				doAskCollectionName(ureq, items);
 			} else if(link == exportItem) {
 				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-				List<QuestionItemShort> items = getShortItems(selections);
-				doExport(ureq, items);
+				if(selections.size() > 0) {
+					List<QuestionItemShort> items = getShortItems(selections);
+					doExport(ureq, items);
+				} else {
+					showWarning("error.select.one");
+				}
 			} else if(link == shareItem) {
 				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doShare(ureq, items);
+				} else {
+					showWarning("error.select.one");
 				}
 			} else if(link == unshareItem) {
 				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doConfirmRemove(ureq, items);
+				} else {
+					showWarning("error.select.one");
 				}
 			} else if(link == copyItem) {
 				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doConfirmCopy(ureq, items);
+				} else {
+					showWarning("error.select.one");
 				}
 			} else if(link == deleteItem) {
 				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doConfirmDelete(ureq, items);
+				} else {
+					showWarning("error.select.one");
 				}
 			} else if(link == authorItem) {
 				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doChooseAuthoren(ureq, items);
+				} else {
+					showWarning("error.select.one");
 				}
 			} else if(link == importItem) {
 				doOpenImport(ureq);
@@ -318,7 +332,6 @@ public class QuestionListController extends AbstractItemListController implement
 	 */
 	private void doExport(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(exportWizard);
-
 		Step start = new Export_1_TypeStep(ureq, items);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
