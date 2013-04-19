@@ -22,6 +22,7 @@ package org.olat.ims.qti.qpool;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -46,18 +47,22 @@ import org.olat.ims.qti.QTI12EditorController;
 import org.olat.ims.qti.QTI12PreviewController;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.editor.QTIEditHelper;
+import org.olat.ims.qti.editor.QTIEditorPackageImpl;
 import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.resources.IMSEntityResolver;
+import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
-import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.manager.FileStorage;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
+import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,6 +80,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 public class QTIQPoolServiceProvider implements QPoolSPI {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTIQPoolServiceProvider.class);
+	
+	public static final String QTI_12_OO_TEST = "OpenOLAT Test";
 
 	@Autowired
 	private FileStorage qpoolFileStorage;
@@ -84,6 +91,14 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	private QuestionItemDAO questionItemDao;
 	@Autowired
 	private QEducationalContextDAO qEduContextDao;
+	
+	private static final List<ExportFormatOptions> formats = new ArrayList<ExportFormatOptions>(2);
+	static {
+		formats.add(DefaultExportFormat.ZIP_EXPORT_FORMAT);
+		formats.add(new DefaultExportFormat(QTIConstants.QTI_12_FORMAT, Outcome.download, null));
+		formats.add(new DefaultExportFormat(QTIConstants.QTI_12_FORMAT, Outcome.repository, "a.nte"));
+	}
+	
 	
 	public QTIQPoolServiceProvider() {
 		//
@@ -100,11 +115,8 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public List<String> getTestExportFormats() {
-		List<String> formats = new ArrayList<String>(2);
-		formats.add(QPoolService.ZIP_EXPORT_FORMAT);
-		formats.add(QTIConstants.QTI_12_FORMAT);
-		return formats;
+	public List<ExportFormatOptions> getTestExportFormats() {
+		return Collections.unmodifiableList(formats);
 	}
 
 	@Override
@@ -171,7 +183,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		VFSContainer baseDir = qpoolFileStorage.getContainer(qitem.getDirectory());
 		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
 		QTIEditHelper.serialiazeDoc(doc, leaf);
-		//process amterials
+		//process materials
 		List<String> materials = processor.getMaterials(itemEl);
 		//copy materials
 		for(String material:materials) {
@@ -182,10 +194,35 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 			}
 		}
 	}
+	
+	public void exportToEditorPackage(QTIEditorPackageImpl editorPackage, List<QuestionItemShort> items) {
+		VFSContainer editorContainer = editorPackage.getBaseDir();
+		List<Long> itemKeys = toKeys(items);
+		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
+		
+		Section section = (Section)editorPackage.getQTIDocument().getAssessment().getSections().get(0);
+		QTIExportProcessor processor = new QTIExportProcessor(qpoolFileStorage);
+		for(QuestionItemFull fullItem:fullItems) {
+			Element itemEl = processor.exportToQTIEditor(fullItem, editorContainer);
+			Item item = (Item)new ParserManager().parse(itemEl);
+			section.getItems().add(item);
+		}
+	}
+	
+	private List<Long> toKeys(List<? extends QuestionItemShort> items) {
+		List<Long> keys = new ArrayList<Long>(items.size());
+		for(QuestionItemShort item:items) {
+			keys.add(item.getKey());
+		}
+		return keys;
+	}
 
 	@Override
-	public MediaResource exportTest(List<QuestionItemShort> items, String format) {
-		return new QTIExportTestResource("UTF-8", items, this);
+	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format) {
+		if(QTIConstants.QTI_12_FORMAT.equals(format.getFormat())) {
+			return new QTIExportTestResource("UTF-8", items, this);
+		}
+		return null;
 	}
 
 	@Override
@@ -220,8 +257,8 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		QTI12PreviewController previewCtrl = new QTI12PreviewController(ureq, wControl, item);
+	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean summary) {
+		QTI12PreviewController previewCtrl = new QTI12PreviewController(ureq, wControl, item, summary);
 		return previewCtrl;
 	}
 

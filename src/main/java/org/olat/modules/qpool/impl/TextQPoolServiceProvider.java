@@ -81,8 +81,8 @@ public class TextQPoolServiceProvider extends AbstractQPoolServiceProvider {
 	}
 
 	@Override
-	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item);
+	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean summary) {
+		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item, summary);
 		return txtController;
 	}
 
@@ -93,7 +93,7 @@ public class TextQPoolServiceProvider extends AbstractQPoolServiceProvider {
 
 	@Override
 	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item);
+		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item, false);
 		return txtController;
 	}
 }

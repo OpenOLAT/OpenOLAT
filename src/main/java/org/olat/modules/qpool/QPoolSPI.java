@@ -44,7 +44,7 @@ public interface QPoolSPI {
 	
 	public String getFormat();
 	
-	public List<String> getTestExportFormats();
+	public List<ExportFormatOptions> getTestExportFormats();
 	
 	public boolean isCompatible(String filename, File file);
 	
@@ -63,7 +63,7 @@ public interface QPoolSPI {
 	 * Export a test
 	 * @param items
 	 */
-	public MediaResource exportTest(List<QuestionItemShort> items, String format);
+	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format);
 	
 	/**
 	 * Export the item to the Zip
@@ -88,7 +88,7 @@ public interface QPoolSPI {
 	 * @param item
 	 * @return
 	 */
-	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item);
+	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean summary);
 
 	/**
 	 * Is OpenOLAT able to edit this content?

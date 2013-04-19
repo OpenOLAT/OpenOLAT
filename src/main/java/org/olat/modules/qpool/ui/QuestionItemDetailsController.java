@@ -86,7 +86,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 		if(spi == null) {
 			previewCtrl = new QuestionItemRawController(ureq, wControl);
 		} else {
-			previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item);
+			previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item, false);
 			if(previewCtrl == null) {
 				previewCtrl = new QuestionItemRawController(ureq, wControl);
 			}

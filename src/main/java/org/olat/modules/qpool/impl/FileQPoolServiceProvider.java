@@ -83,7 +83,7 @@ public class FileQPoolServiceProvider extends AbstractQPoolServiceProvider {
 	}
 
 	@Override
-	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean summary) {
 		FilePreviewController fileController = new FilePreviewController(ureq, wControl, item);
 		return fileController;
 	}

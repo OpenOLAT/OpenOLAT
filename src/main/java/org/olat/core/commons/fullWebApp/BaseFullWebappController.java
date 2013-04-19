@@ -884,12 +884,10 @@ public class BaseFullWebappController extends BasicController implements Generic
 			Link calink = LinkFactory.createCustomLink("ca" + dtabCreateCounter, "ca" + dtabCreateCounter, "", Link.NONTRANSLATED, navVc, this);
 			calink.setCustomEnabledLinkCSS("b_nav_tab_close");
 			calink.setTitle(translate("close"));
-			calink.setTooltip(translate("close"));
 			calink.setUserObject(dt);
 			Link cplink = LinkFactory.createCustomLink("cp" + dtabCreateCounter, "cp" + dtabCreateCounter, "", Link.NONTRANSLATED, navVc, this);
 			cplink.setCustomEnabledLinkCSS("b_nav_tab_close");
 			cplink.setTitle(translate("close"));
-			cplink.setTooltip(translate("close"));
 			cplink.setUserObject(dt);
 
 			Controller dtabCtr = dt.getController();

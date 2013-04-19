@@ -165,6 +165,10 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		
 		getWindowControl().getWindowBackOffice().addCycleListener(this);
 	}
+	
+	public StepsRunContext getRunContext() {
+		return stepsContext;
+	}
 
 	/*
 	 * (non-Javadoc)

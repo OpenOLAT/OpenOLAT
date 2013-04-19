@@ -46,10 +46,7 @@ import org.olat.resource.OLATResource;
  *
  */
 public interface QPoolService {
-	
-	public static final String ZIP_EXPORT_FORMAT = "Zip";
 
-	
 	/**
 	 * Create a new item and persist it on the database
 	 * @param owner
@@ -89,7 +86,7 @@ public interface QPoolService {
 	public void removeAuthors(List<Identity> authors, List<QuestionItemShort> items);
 	
 	//import / export
-	public MediaResource export(List<QuestionItemShort> items, String format);
+	public MediaResource export(List<QuestionItemShort> items, ExportFormatOptions format);
 	
 	/**
 	 * 

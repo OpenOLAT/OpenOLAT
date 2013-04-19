@@ -45,6 +45,7 @@ public class RepositoryAddCallback {
 	private String resourceName;
 	private String displayName;
 	private String description;
+	private Object userObject;
 
 	protected RepositoryAddCallback() {
 		// only allow to be instantiated without addController by repository itself.
@@ -55,6 +56,14 @@ public class RepositoryAddCallback {
 	 */
 	protected RepositoryAddCallback(RepositoryAddController repositoryAddController) {
 		this.repositoryAddController = repositoryAddController;
+	}
+
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 
 	protected OLATResourceable getResourceable() { return resourceable; }

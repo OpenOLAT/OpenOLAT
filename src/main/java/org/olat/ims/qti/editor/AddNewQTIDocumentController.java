@@ -28,6 +28,7 @@ package org.olat.ims.qti.editor;
 import java.io.File;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -46,6 +47,8 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
+import org.olat.modules.qpool.model.QItemList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.IAddController;
@@ -60,11 +63,12 @@ public class AddNewQTIDocumentController extends DefaultController implements IA
 
 	private static final String PACKAGE_REPOSITORY = Util.getPackageName(RepositoryManager.class);
 	private static final String DUMMY_TITLE = "__DUMMYTITLE__";
-	private String type;
+	private final String type;
 	private FileResource resource;
 	private Locale locale;
 	private Translator translator;
 	private QTIEditorPackageImpl tmpPackage;
+	private final RepositoryAddCallback addCallback;
 	
 	/**
 	 * @param type
@@ -82,6 +86,7 @@ public class AddNewQTIDocumentController extends DefaultController implements IA
 		} else if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
 			resource = new SurveyFileResource();
 		}
+		this.addCallback = addCallback;
 		if (addCallback != null) {
 			addCallback.setResourceable(resource);
 			addCallback.setDisplayName(translator.translate(resource.getResourceableTypeName()));
@@ -103,6 +108,15 @@ public class AddNewQTIDocumentController extends DefaultController implements IA
 	public boolean transactionFinishBeforeCreate() {
 		File fTempQTI = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID() + ".zip");
 		tmpPackage = new QTIEditorPackageImpl(DUMMY_TITLE, type, locale);
+		if (addCallback != null) {
+			Object object = addCallback.getUserObject();
+			if(object instanceof QItemList) {
+				QItemList itemToImport = (QItemList)object;
+				QTIQPoolServiceProvider provider = (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
+				provider.exportToEditorPackage(tmpPackage, itemToImport.getItems());
+			}
+		}
+		
 		// we need to save the package in order to be able to create a file resource entry.
 		// package will be created again after changing title.
 		if (!tmpPackage.savePackageTo(fTempQTI)) return false;

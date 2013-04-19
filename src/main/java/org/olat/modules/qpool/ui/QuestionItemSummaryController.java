@@ -85,6 +85,7 @@ public class QuestionItemSummaryController extends FormBasicController {
 	public void updateItem(QuestionItem item, boolean canEdit) {
 		this.item = item;
 		if(item == null) {
+			canEdit = false;
 			identifierEl.setValue("");
 			subjectEl.setValue("");
 			keywordsEl.setValue("" );
@@ -92,6 +93,7 @@ public class QuestionItemSummaryController extends FormBasicController {
 			usageEl.setValue("");
 			descriptionEl.setValue("");
 		} else {
+			this.canEdit = canEdit;
 			keyEl.setValue(item.getKey().toString());
 			identifierEl.setValue(item.getIdentifier());
 			subjectEl.setValue(item.getTitle());

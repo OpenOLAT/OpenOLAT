@@ -19,8 +19,11 @@
  */
 package org.olat.modules.qpool.ui.wizard;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
@@ -33,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
@@ -46,6 +50,8 @@ import org.olat.modules.qpool.QuestionPoolModule;
 public class ExportTypeController extends StepFormBasicController {
 
 	private String[] formatKeys;
+	private String[] formatValues;
+	private Map<String, ExportFormatOptions> formatMap = new HashMap<String, ExportFormatOptions>();
 	
 	private SingleSelection formatEl;
 	
@@ -55,22 +61,34 @@ public class ExportTypeController extends StepFormBasicController {
 		
 		QuestionPoolModule qpoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
 		
-		Set<String> formatSet = new HashSet<String>();
+		Set<ExportFormatOptions> formatSet = new HashSet<ExportFormatOptions>();
 		for(QuestionItemShort item:items) {
 			QPoolSPI sp = qpoolModule.getQuestionPoolProvider(item.getFormat());
 			if(sp != null) {
 				formatSet.addAll(sp.getTestExportFormats());	
 			}	
 		}
+		
+		List<String> formatKeyList = new ArrayList<String>();
+		List<String> formatValueList = new ArrayList<String>();
+		for(ExportFormatOptions format:formatSet) {
+			String outcome = format.getOutcome().name();
+			String key = format.getFormat() + "__" + outcome;
+			String translation = translate("export.outcome." + outcome, new String[]{ format.getFormat() });
+			formatKeyList.add(key);
+			formatValueList.add(translation);
+			formatMap.put(key, format);
+		}
 
-		formatKeys = formatSet.toArray(new String[formatSet.size()]);
+		formatKeys = formatKeyList.toArray(new String[formatKeyList.size()]);
+		formatValues = formatValueList.toArray(new String[formatValueList.size()]);
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("export.type.desc");
-		formatEl = uifactory.addDropdownSingleselect("export.type", "export.type", formLayout, formatKeys, formatKeys, null);
+		formatEl = uifactory.addDropdownSingleselect("export.type", "export.type", formLayout, formatKeys, formatValues, null);
 	}
 
 	@Override
@@ -81,7 +99,8 @@ public class ExportTypeController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(formatEl.isOneSelected()) {
-			addToRunContext("format", formatEl.getSelectedKey());
+			ExportFormatOptions options = formatMap.get(formatEl.getSelectedKey());
+			addToRunContext("format", options);
 		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

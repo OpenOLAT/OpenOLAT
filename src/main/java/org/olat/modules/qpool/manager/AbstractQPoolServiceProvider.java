@@ -45,11 +45,13 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.SearchResourceContext;
@@ -69,10 +71,13 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	public abstract FileStorage getFileStorage();
 	
 	public abstract QItemType getDefaultType();
+	
+	private static final List<ExportFormatOptions> exportFormats
+		= Collections.singletonList(DefaultExportFormat.ZIP_EXPORT_FORMAT); 
 
 	@Override
-	public List<String> getTestExportFormats() {
-		return Collections.singletonList(QPoolService.ZIP_EXPORT_FORMAT);
+	public List<ExportFormatOptions> getTestExportFormats() {
+		return exportFormats;
 	}
 
 	@Override
@@ -138,8 +143,8 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public MediaResource exportTest(List<QuestionItemShort> items, String format) {
-		return null;
+	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format) {
+		return null;//Zip are made by qpool service
 	}
 
 	@Override

@@ -46,7 +46,7 @@ public class TextPreviewController extends BasicController {
 	private final VelocityContainer mainVC;
 	private final QPoolService qpoolService;
 	
-	public TextPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
+	public TextPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem, boolean summary) {
 		super(ureq, wControl);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		mainVC = createVelocityContainer("text_preview");
@@ -56,6 +56,9 @@ public class TextPreviewController extends BasicController {
 			//no data to preview
 		} else {
 			String txt = readSummary(leaf);
+			if(summary && txt.length() > 2000) {
+				txt = txt.substring(0, 2000);
+			}
 			mainVC.contextPut("text", txt);
 		}
 		putInitialPanel(mainVC);

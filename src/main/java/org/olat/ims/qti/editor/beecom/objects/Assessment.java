@@ -57,8 +57,8 @@ public class Assessment implements QTIObject {
 	private List assessfeedbacks = new ArrayList(); // occurs 0 to many
 	private QTIObject selection_ordering = null; //?
 	private QTIObject reference = null; //occurs 0 to 1 time
-	private List sections = new ArrayList(); // occurs 0 to 1 time ( sections and section_references)
-	private List items = new ArrayList();
+	private List<Section> sections = new ArrayList<Section>(); // occurs 0 to 1 time ( sections and section_references)
+	private List<Item> items = new ArrayList<Item>();
 	private boolean inheritControls = false;
 	
 	public Assessment() {
@@ -155,7 +155,7 @@ public class Assessment implements QTIObject {
 	 * Returns the sections.
 	 * @return List
 	 */
-	public List getSections() {
+	public List<Section> getSections() {
 		return sections;
 	}
 
@@ -163,7 +163,7 @@ public class Assessment implements QTIObject {
 	 * Sets the sections.
 	 * @param sections The sections to set
 	 */
-	public void setSections(List sections) {
+	public void setSections(List<Section> sections) {
 		this.sections = sections;
 	}
 	

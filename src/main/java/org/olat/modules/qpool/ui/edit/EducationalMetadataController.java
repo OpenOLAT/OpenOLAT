@@ -32,6 +32,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.manager.MetadataConverterHelper;
+import org.olat.modules.qpool.model.LOMDuration;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.ui.MetadatasController;
 import org.olat.modules.qpool.ui.QPoolEvent;
@@ -71,7 +73,7 @@ public class EducationalMetadataController extends FormBasicController {
 		contextEl = uifactory.addStaticTextElement("educational.context", "", metaCont);
 		learningTimeEl = uifactory.addStaticTextElement("educational.learningTime", "", metaCont);
 	}
-	
+
 	public void setItem(QuestionItem item) {
 		QEducationalContext context = item.getEducationalContext();
 		if(context == null || context.getLevel() == null) {
@@ -84,8 +86,35 @@ public class EducationalMetadataController extends FormBasicController {
 			contextEl.setValue(translation);
 		}
 		
-		String learningTime = item.getEducationalLearningTime() == null ? "" : item.getEducationalLearningTime();
+		String learningTime = durationToString(item);
 		learningTimeEl.setValue(learningTime);
+	}
+	
+	private String durationToString(QuestionItem item) {
+		if(item == null) return "";
+		String timeStr = item.getEducationalLearningTime();
+		LOMDuration duration = MetadataConverterHelper.convertDuration(timeStr);
+		
+		StringBuilder sb = new StringBuilder();
+		if(duration.getDay() > 0) {
+			sb.append(duration.getDay()).append("d ");
+		}
+		if(duration.getHour() > 0 || duration.getMinute() > 0 || duration.getSeconds() > 0) {
+			int hour = duration.getHour() < 0 ? 0 : duration.getHour();
+			sb.append(hour).append(":")
+			  .append(doubleZero(duration.getMinute())).append(":")
+			  .append(doubleZero(duration.getSeconds()));
+		}
+		return sb.toString();
+	}
+	
+	private String doubleZero(int val) {
+		if(val < 0) {
+			return "00";
+		} else if(val < 10) {
+			return "0" + val;
+		}
+		return Integer.toString(val);
 	}
 	
 	@Override

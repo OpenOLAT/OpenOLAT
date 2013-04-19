@@ -48,12 +48,19 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
+import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.model.QItemList;
 import org.olat.modules.qpool.ui.wizard.Export_1_TypeStep;
 import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.RepositoryAddController;
+import org.olat.repository.controllers.RepositoryDetailsController;
 
 /**
  * 
@@ -79,13 +86,16 @@ public class QuestionListController extends AbstractItemListController implement
 	private ImportController importItemCtrl;
 	private ShareTargetController shareTargetCtrl;
 	private CloseableCalloutWindowController shareCalloutCtrl;
+	private RepositoryAddController addController;
 	
 	private final QPoolService qpoolService;
+	private final RepositoryManager repositoryManager;
 	
 	public QuestionListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
 		super(ureq, wControl, source);
 
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		
 		initForm(ureq);
 	}
@@ -211,7 +221,11 @@ public class QuestionListController extends AbstractItemListController implement
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
 				removeAsListenerAndDispose(exportWizard);
+				StepsRunContext runContext = exportWizard.getRunContext();
 				exportWizard = null;
+				if(event == Event.CHANGED_EVENT) {
+					doExecuteExport(ureq, runContext);
+				}
 			}
 		} else if(source == importAuthorsWizard) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -243,6 +257,18 @@ public class QuestionListController extends AbstractItemListController implement
 				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmRemoveBox.getUserObject();
 				doRemove(ureq, items);
 			}
+		} else if(source == addController) {
+			if(event instanceof EntryChangedEvent) {
+				cmc.deactivate();
+				cleanUp();
+				
+				EntryChangedEvent addEvent = (EntryChangedEvent)event;
+				Long repoEntryKey = addEvent.getChangedEntryKey();
+				doExportToRepositoryEntry(ureq, repoEntryKey);
+			} else if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -251,10 +277,12 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(addController);
 		removeAsListenerAndDispose(importItemCtrl);
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(createCollectionCtrl);
 		cmc = null;
+		addController = null;
 		importItemCtrl = null;
 		selectGroupCtrl = null;
 		createCollectionCtrl = null;
@@ -295,14 +323,6 @@ public class QuestionListController extends AbstractItemListController implement
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				String format = (String)runContext.get("format");
-				@SuppressWarnings("unchecked")
-				List<QuestionItemShort> items = (List<QuestionItemShort>)runContext.get("itemsToExport");
-
-				MediaResource mr = qpoolService.export(items, format);
-				if(mr != null) {
-					ureq.getDispatchResult().setResultingMediaResource(mr);
-				}
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -311,6 +331,44 @@ public class QuestionListController extends AbstractItemListController implement
 				translate("export.item"), "o_sel_qpool_export_1_wizard");
 		listenTo(exportWizard);
 		getWindowControl().pushAsModalDialog(exportWizard.getInitialComponent());
+	}
+	
+	private void doExecuteExport(UserRequest ureq, StepsRunContext runContext) {
+		ExportFormatOptions format = (ExportFormatOptions)runContext.get("format");
+		@SuppressWarnings("unchecked")
+		List<QuestionItemShort> items = (List<QuestionItemShort>)runContext.get("itemsToExport");
+		switch(format.getOutcome()) {
+			case download: {
+				MediaResource mr = qpoolService.export(items, format);
+				if(mr != null) {
+					ureq.getDispatchResult().setResultingMediaResource(mr);
+				}
+				break;
+			}
+			case repository: {
+				doExportToRepository(ureq, items);
+				break;
+			}
+		}
+	}
+	
+	private void doExportToRepository(UserRequest ureq, List<QuestionItemShort> items) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(addController);
+		
+		addController = new RepositoryAddController(ureq, getWindowControl(), "a.nte");
+		addController.setUserObject(new QItemList(items));
+		listenTo(addController);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());
+		listenTo(cmc);
+		cmc.activate();
+	}
+	private void doExportToRepositoryEntry(UserRequest ureq, Long repoEntryKey) {
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoEntryKey, false);
+		if(re != null) {
+			//open editor
+			RepositoryDetailsController.doEdit(ureq, re);
+		}
 	}
 	
 	private void doCreateCollection(UserRequest ureq, String name, List<QuestionItemShort> items) {

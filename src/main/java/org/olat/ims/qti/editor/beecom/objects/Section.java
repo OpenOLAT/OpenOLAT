@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.dom4j.Element;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.Formatter;
 import org.olat.ims.qti.editor.QTIEditHelper;
 
 
@@ -61,7 +60,7 @@ public class Section implements QTIObject {
 	private SelectionOrdering selection_ordering = null; //?
 	private QTIObject reference = null; //occurs 0 to 1 time
 	private List sections = null; // occurs 0 to 1 time ( sections and section_references)
-	private List items = new ArrayList(); // occurs 0 to many (items and item_references)
+	private List<Item> items = new ArrayList<Item>(); // occurs 0 to many (items and item_references)
 	private boolean alienItems = false;
 	
 	public Section() {
@@ -119,7 +118,7 @@ public class Section implements QTIObject {
 
 		
 		// ITEMS
-		for(Iterator i= this.items.iterator(); i.hasNext();) {
+		for(Iterator<Item> i= this.items.iterator(); i.hasNext();) {
 			QTIObject obj = (QTIObject)i.next();
 			if(obj!=null) {
 				obj.addToElement(section);	
@@ -130,7 +129,7 @@ public class Section implements QTIObject {
 	
 	public boolean checkAlienItems() {
 		alienItems = false;
-		for (Iterator iter = items.iterator(); iter.hasNext();) {
+		for (Iterator<Item> iter = items.iterator(); iter.hasNext();) {
 			Item element = (Item) iter.next();
 			alienItems = alienItems || element.isAlient();
 		}
@@ -159,7 +158,7 @@ public class Section implements QTIObject {
 	 * Returns the items.
 	 * @return List
 	 */
-	public List getItems() {
+	public List<Item> getItems() {
 		return items;
 	}
 

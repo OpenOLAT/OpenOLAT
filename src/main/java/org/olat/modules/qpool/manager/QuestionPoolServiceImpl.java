@@ -43,6 +43,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
@@ -55,6 +56,7 @@ import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.TaxonomyLevel;
+import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemDocument;
@@ -205,9 +207,9 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	
 	
 	@Override
-	public MediaResource export(List<QuestionItemShort> items, String format) {
+	public MediaResource export(List<QuestionItemShort> items, ExportFormatOptions format) {
 		MediaResource mr = null;
-		if(ZIP_EXPORT_FORMAT.equals(format)) {
+		if(DefaultExportFormat.ZIP_EXPORT_FORMAT.equals(format)) {
 			List<Long> keys = toKeys(items);
 			List<QuestionItemFull> fullItems = questionItemDao.loadByIds(keys);
 			mr = new ExportQItemsZipResource("UTF-8", fullItems);
@@ -226,7 +228,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				mr = selectedSp.exportTest(items, format);
 			}
 		}
-		
 		return mr;
 	}
 	

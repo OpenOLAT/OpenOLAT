@@ -36,6 +36,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
@@ -49,14 +50,14 @@ import org.olat.modules.qpool.ui.MetadatasController;
  */
 public class ExportOverviewController extends StepFormBasicController {
 
-	private final String format;
+	private final ExportFormatOptions format;
 	private QItemDataModel itemsModel;
 	
 	public ExportOverviewController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, getLocale(), getTranslator()));
 
-		format = (String)runContext.get("format");
+		format = (ExportFormatOptions)runContext.get("format");
 	
 		initForm(ureq);
 		
@@ -93,10 +94,10 @@ public class ExportOverviewController extends StepFormBasicController {
 	}
 	
 	private static class QItemDataModel extends DefaultFlexiTableDataModel<QuestionItemShort> {
-		private final String format;
+		private final ExportFormatOptions format;
 		private final QuestionPoolModule qpoolModule;
 
-		public QItemDataModel(FlexiTableColumnModel columnModel, String format) {
+		public QItemDataModel(FlexiTableColumnModel columnModel, ExportFormatOptions format) {
 			super(columnModel);
 			this.format = format;
 			qpoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);

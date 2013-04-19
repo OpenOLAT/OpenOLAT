@@ -86,7 +86,7 @@ public class QuestionItemPreviewController extends BasicController {
 			if(spi == null) {
 				content = getRawContent(item);
 			} else {
-				previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item);
+				previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item, true);
 				if(previewCtrl == null) {
 					content = getRawContent(item);
 				} else {

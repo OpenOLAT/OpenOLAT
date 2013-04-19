@@ -231,13 +231,11 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private Link notEditableButton; 
 	private Set<String> deletableMediaFiles;
 
-	private final QPoolService qpoolService;
 	private final QTIQPoolServiceProvider qtiQpoolServiceProvider;
 	
 	public QTIEditorMainController(List<ReferenceImpl> referencees, UserRequest ureq, WindowControl wControl, FileResource fileResource) {
 		super(ureq, wControl);
 		
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		qtiQpoolServiceProvider = (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
 
 		for(Iterator<ReferenceImpl> iter = referencees.iterator(); iter.hasNext(); ) {

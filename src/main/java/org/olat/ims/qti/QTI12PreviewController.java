@@ -53,7 +53,7 @@ public class QTI12PreviewController extends BasicController {
 	
 	private final QPoolService qpoolService;
 
-	public QTI12PreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
+	public QTI12PreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem, boolean summary) {
 		super(ureq, wControl);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
@@ -72,10 +72,12 @@ public class QTI12PreviewController extends BasicController {
 				previewCtrl = new ItemPreviewController(wControl, item, mapperUrl, translator);
 				listenTo(previewCtrl);
 				mainPanel.setContent(previewCtrl.getInitialComponent());
-
-				metadataCtrl = new QTI12MetadataController(ureq, getWindowControl(), item);
-				listenTo(metadataCtrl);
-				mainVC.put("metadatas", metadataCtrl.getInitialComponent());
+				
+				if(!summary) {
+					metadataCtrl = new QTI12MetadataController(ureq, getWindowControl(), item);
+					listenTo(metadataCtrl);
+					mainVC.put("metadatas", metadataCtrl.getInitialComponent());
+				}
 			}
 		}
 		

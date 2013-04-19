@@ -157,7 +157,7 @@ public class QTIExportProcessor {
 			VFSLeaf rootLeaf = (VFSLeaf)rootItem;
 			Element el = (Element)readItemXml(rootLeaf).clone();
 			Element itemEl = (Element)el.clone();
-			enrichScore(itemEl);
+			//enrichScore(itemEl);
 			enrichWithMetadata(fullItem, itemEl);
 			collectResources(itemEl, container, materials);
 			materials.addItemEl(itemEl);
@@ -334,7 +334,7 @@ public class QTIExportProcessor {
 	 * @param fullItem
 	 * @param item
 	 */
-	private void enrichScore(Element item) {
+	protected void enrichScoreDontUseIt(Element item) {
 		@SuppressWarnings("unchecked")
 		List<Element> sv = item.selectNodes("./resprocessing/outcomes/decvar[@varname='SCORE']");
 		// the QTIv1.2 system relies on the SCORE variable of items

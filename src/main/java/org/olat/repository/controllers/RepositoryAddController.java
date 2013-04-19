@@ -284,6 +284,10 @@ public class RepositoryAddController extends BasicController {
 		forwardButton.setTextReasonForDisabling(translate("disabledforwardreason"));
 		putInitialPanel(repositoryadd);
 	}
+	
+	public void setUserObject(Object userObject) {
+		addCallback.setUserObject(userObject);
+	}
 
 	/**
 	 * Used by RepositoryMainController to identify which command was executed.
