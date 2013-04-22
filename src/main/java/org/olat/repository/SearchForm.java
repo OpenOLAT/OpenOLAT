@@ -217,6 +217,7 @@ public class SearchForm extends FormBasicController{
 		} else {
 			types.setVisible(typesSelection.isSelected(0));
 			types.uncheckAll();
+			flc.setDirty(true);
 		}
 	}
 	
