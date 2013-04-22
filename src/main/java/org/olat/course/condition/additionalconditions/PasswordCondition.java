@@ -34,7 +34,8 @@ public class PasswordCondition extends Condition {
 	private Long courseId;
 	private GenericCourseNode node;
 
-	
+	private String password;
+	private String answer;
 	
 	public Long getCourseId() {
 		return courseId;
@@ -50,5 +51,17 @@ public class PasswordCondition extends Condition {
 
 	public void setNode(GenericCourseNode node) {
 		this.node = node;
+	}
+	
+	public String getPassword(){
+		return this.password;
+	}
+	
+	public void setPassword(String password){
+		this.password = password;
+	}
+
+	public void setAnswer(String answer) {
+		this.answer = answer;
 	}
 }
