@@ -445,10 +445,10 @@ public class BaseFullWebappController extends BasicController implements Generic
 	private void addCustomThemeJS() {
 		Theme currentTheme = getWindowControl().getWindowBackOffice().getWindow().getGuiTheme();
 		if (currentTheme.hasCustomJS()) {
-			String fullPath = currentTheme.getFullPathToCustomJS();
-			CustomJSComponent customJS = new CustomJSComponent("customThemejs", new String[] { fullPath });
+			String relPath = currentTheme.getRelPathToCustomJS();
+			CustomJSComponent customJS = new CustomJSComponent("customThemejs", new String[] { relPath });
 			if (isLogDebugEnabled())
-				logDebug("injecting custom javascript from current OLAT-Theme", fullPath);
+				logDebug("injecting custom javascript from current OLAT-Theme", relPath);
 			mainVc.put(customJS.getComponentName(), customJS);
 		}
 	}

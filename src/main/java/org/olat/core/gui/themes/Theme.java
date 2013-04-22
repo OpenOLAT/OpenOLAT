@@ -36,6 +36,8 @@ import org.olat.core.util.WebappHelper;
 public class Theme {
 	private String identifyer;
 	private String baseURI;
+	private String relPathToThemesDir;
+	private boolean hasCustomJSFile = false;
 
 	private static String CUSTOMFILENAME = "theme.js";
 
@@ -61,7 +63,7 @@ public class Theme {
 	 * @return returns if the OLAT-Theme-Folder contains a file "theme.js"
 	 */
 	public boolean hasCustomJS() {
-		return (getCustomJSFile().exists());
+		return hasCustomJSFile;
 	}
 
 	/**
@@ -85,7 +87,7 @@ public class Theme {
 	}
 
 	/**
-	 * returns the path to the custom js <br />
+	 * returns the relative path to the custom js <br />
 	 * ( check first with <code>hasCustomJS()</code> )<br />
 	 * <p>
 	 * Example usage:<br />
@@ -96,10 +98,10 @@ public class Theme {
 	 * </p>
 	 * 
 	 * @return the path to the custom layout js ::
-	 *         /olat/raw/fx-olat7/themes/frentix/theme.js
+	 *         themes/frentix/theme.js
 	 */
-	public String getFullPathToCustomJS() {
-		return baseURI + CUSTOMFILENAME;
+	public String getRelPathToCustomJS() {
+		return relPathToThemesDir + CUSTOMFILENAME;
 	}
 
 	/**
@@ -110,9 +112,12 @@ public class Theme {
 	public void init(String themeIdentifyer) {
 		this.identifyer = themeIdentifyer;
 		// Themes are deliverd as static resources by StaticMediaDispatcher
+		this.relPathToThemesDir = "themes/" + themeIdentifyer + "/";
 		StringOutput themePath = new StringOutput();
-		StaticMediaDispatcher.renderStaticURI(themePath, "themes/" + themeIdentifyer + "/");
+		StaticMediaDispatcher.renderStaticURI(themePath, relPathToThemesDir);
 		this.baseURI = themePath.toString();
+		// Check if theme has a custom JS file to tweak UI on JS level
+		hasCustomJSFile = getCustomJSFile().exists();
 	}
 
 }
