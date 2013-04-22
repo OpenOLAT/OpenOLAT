@@ -1,7 +1,7 @@
 -- update null value of user properties
 update o_userproperty set propvalue='_' where propvalue is null;
 
-﻿-- relation groups to resources
+-- relation groups to resources
 create table o_gp_business_to_resource (
    g_id number(20) not null,
    version number(20) not null,
