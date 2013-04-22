@@ -46,7 +46,9 @@ import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.properties.Property;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.user.UserManager;
@@ -223,10 +225,18 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	private void secondaryInformations(List<RepositoryEntry> repoEntries) {
 		if(repoEntries == null || repoEntries.isEmpty()) return;
 		
-		List<OLATResourceAccess> withOffers = acService.filterRepositoryEntriesWithAC(repoEntries);
-		for(OLATResourceAccess withOffer:withOffers) {
-			repoEntriesWithOffer.put(withOffer.getResource().getKey(), withOffer);
-		}
+		//paged it
+		int count = 0;
+		int batch = 200;
+		do {
+			int toIndex = Math.min(count + batch, objects.size());
+			List<RepositoryEntry> toLoad = objects.subList(count, toIndex);
+			List<OLATResourceAccess> withOffers = acService.filterRepositoryEntriesWithAC(toLoad);
+			for(OLATResourceAccess withOffer:withOffers) {
+				repoEntriesWithOffer.put(withOffer.getResource().getKey(), withOffer);
+			}
+			count += batch;
+		} while(count < objects.size());
 		
 		Set<String> newNames = new HashSet<String>();
 		for(RepositoryEntry re:repoEntries) {
