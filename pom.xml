@@ -1488,9 +1488,9 @@
 			<version>2.0.8</version>
 		</dependency>
 		<dependency>
-			<groupId>jamwikiParser.jar</groupId>
-			<artifactId>jamwikiParser.jar</artifactId>
-			<version>jamwikiParser.jar</version>
+			<groupId>org.openolat.jamwiki</groupId>
+			<artifactId>jamwiki-core</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>jaxen</groupId>
