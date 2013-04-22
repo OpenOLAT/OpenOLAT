@@ -66,6 +66,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
@@ -1207,10 +1208,23 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		}
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.name in (:names)");
-		
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setParameterList("names", identityNames);
-		return query.list();
+
+		TypedQuery<IdentityShort> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), IdentityShort.class);
+
+		int count = 0;
+		int batch = 500;
+		List<String> names = new ArrayList<String>(identityNames);
+		List<IdentityShort> shortIdentities = new ArrayList<IdentityShort>(names.size());
+		do {
+			int toIndex = Math.min(count + batch, names.size());
+			List<String> toLoad = names.subList(count, toIndex);
+			List<IdentityShort> allProperties = query.setParameter("names", toLoad).getResultList();
+			shortIdentities.addAll(allProperties);	
+
+			count += batch;
+		} while(count < names.size());
+		return shortIdentities;
 	}
 	
 	@Override
@@ -1221,9 +1235,22 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.key in (:keys)");
 		
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setParameterList("keys", identityKeys);
-		return query.list();
+		TypedQuery<IdentityShort> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), IdentityShort.class);
+
+		int count = 0;
+		int batch = 500;
+		List<Long> names = new ArrayList<Long>(identityKeys);
+		List<IdentityShort> shortIdentities = new ArrayList<IdentityShort>(names.size());
+		do {
+			int toIndex = Math.min(count + batch, names.size());
+			List<Long> toLoad = names.subList(count, toIndex);
+			List<IdentityShort> allProperties = query.setParameter("keys", toLoad).getResultList();
+			shortIdentities.addAll(allProperties);	
+
+			count += batch;
+		} while(count < names.size());
+		return shortIdentities;
 	}
 
 	/**
