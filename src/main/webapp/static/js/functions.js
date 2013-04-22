@@ -653,26 +653,31 @@ function clearAfterAjaxIframeCall() {
 function showAjaxBusy() {
 	// release o_info.linkbusy only after a successful server response 
 	// - otherwhise the response gets overriden by next request
-	if (o_info.linkbusy) {
-		// try/catch because can fail in full page refresh situation when called before DOM is ready
-		try {
-			jQuery('#b_ajax_busy').delay(500).queue(function( nxt ) {
-				jQuery(this).addClass('b_ajax_busy');
-				jQuery('#b_body').addClass('b_ajax_busy');
-			});
-		} catch (e) {}
-	}
-	return;
+	setTimeout(function(){
+		if (o_info.linkbusy) {
+			// try/catch because can fail in full page refresh situation when called before DOM is ready
+			try {
+				jQuery('#b_ajax_busy').each(function(index, el) {
+					jQuery(el).addClass('b_ajax_busy');
+					jQuery('#b_body').addClass('b_ajax_busy');
+				});
+			} catch (e) {
+				if(console) console.log(e);
+			}
+		}
+	}, 500);
 }
 
 function removeAjaxBusy() {
 	// try/catch because can fail in full page refresh situation when called before page DOM is ready
 	try {
-		jQuery('#b_ajax_busy').delay(500).queue(function( nxt ) {
-			jQuery(this).removeClass('b_ajax_busy');
+		jQuery('#b_ajax_busy').each(function(index, el) {
+			jQuery(el).removeClass('b_ajax_busy');
 			jQuery('#b_body').removeClass('b_ajax_busy');
 		});
-	} catch (e) {/* */}
+	} catch (e) {
+		if(console) console.log(e);
+	}
 }
 
 //safari destroys new added links in htmleditor see: http://bugs.olat.org/jira/browse/OLAT-3198
