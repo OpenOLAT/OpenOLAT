@@ -82,7 +82,7 @@ public class GroupAddOverviewModel extends DefaultTableDataModel<BusinessGroup> 
 					return translator.translate("owner");
 				}
 			case 3: // send email
-				if (mailGroupIDs.contains(key)){
+				if (mailGroupIDs != null && mailGroupIDs.contains(key)){
 					return translator.translate("yes");
 				} else {
 					return translator.translate("no");

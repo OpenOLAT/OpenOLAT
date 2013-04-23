@@ -57,19 +57,17 @@ public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 				logDebug("Indexing: " + repoEntryName);
 			}
 			Feed feed = FeedManager.getInstance().getFeed(repositoryEntry.getOlatResource());
-			if(feed == null) {
-				return; //nothing to index
-			}
-
-			// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
-			if (isLogDebugEnabled()) {
-				logDebug("PublishedItems size=" + feed.getPublishedItems().size());
-			}
-			for (Item item : feed.getPublishedItems()) {
-				SearchResourceContext feedContext = new SearchResourceContext(searchResourceContext);
-				feedContext.setDocumentType(getDocumentType());
-				OlatDocument itemDoc = new FeedItemDocument(item, feedContext);
-				indexer.addDocument(itemDoc.getLuceneDocument());
+			if(feed != null) {
+				// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
+				if (isLogDebugEnabled()) {
+					logDebug("PublishedItems size=" + feed.getPublishedItems().size());
+				}
+				for (Item item : feed.getPublishedItems()) {
+					SearchResourceContext feedContext = new SearchResourceContext(searchResourceContext);
+					feedContext.setDocumentType(getDocumentType());
+					OlatDocument itemDoc = new FeedItemDocument(item, feedContext);
+					indexer.addDocument(itemDoc.getLuceneDocument());
+				}
 			}
 		} catch (NullPointerException e) {
 			logError("Error indexing feed:" + repoEntryName, e);
