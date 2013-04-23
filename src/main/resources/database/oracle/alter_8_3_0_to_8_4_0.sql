@@ -12,6 +12,7 @@ create table o_im_message (
 );
 alter table o_im_message add constraint idx_im_msg_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_msg_res_idx on o_im_message (msg_resid,msg_resname);
+create index idx_im_msg_from_idx on o_im_message(fk_from_identity_id);
 
 create table o_im_notification (
    id number(20) not null,
@@ -25,6 +26,8 @@ create table o_im_notification (
 alter table o_im_notification add constraint idx_im_not_to_toid foreign key (fk_to_identity_id) references o_bs_identity (id);
 alter table o_im_notification add constraint idx_im_not_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_chat_res_idx on o_im_notification (chat_resid,chat_resname);
+create index idx_im_chat_to_idx on o_im_notification (fk_to_identity_id);
+create index idx_im_chat_from_idx on o_im_notification (fk_from_identity_id);
 
 create table o_im_roster_entry (
    id number(20) not null,
@@ -40,6 +43,7 @@ create table o_im_roster_entry (
 );
 alter table o_im_roster_entry add constraint idx_im_rost_to_id foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_im_rost_res_idx on o_im_roster_entry (r_resid,r_resname);
+create index idx_im_rost_ident_idx on o_im_roster_entry (fk_identity_id);
 
 create table o_im_preferences (
    id number(20) not null,
@@ -50,6 +54,7 @@ create table o_im_preferences (
    primary key (id)
 );
 alter table o_im_preferences add constraint idx_im_prfs_to_id foreign key (fk_from_identity_id) references o_bs_identity (id);
+create index idx_im_prefs_ident_idx on o_im_preferences (fk_from_identity_id);
 
 create or replace view o_im_roster_entry_v as (
    select
@@ -100,6 +105,13 @@ create view o_gp_visible_owner_v as (
 
 drop view o_re_member_v;
 
+-- add missing index
+create index idx_gp_to_rsrc_resource on o_gp_business_to_resource(fk_resource);
+create index idx_gp_to_rsrc_group on o_gp_business_to_resource(fk_group);
 
+create index idx_area_resource on o_gp_bgarea (fk_resource);
+
+create index idx_repoentry_tutor on o_repositoryentry(fk_tutorgroup);
+create index idx_repoentry_parti on o_repositoryentry(fk_participantgroup);
 
 
