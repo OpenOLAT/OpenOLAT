@@ -185,7 +185,6 @@ public class CatalogController extends BasicController implements Activateable2 
 	private static final String NLS_TOOLS_ADD_CATALOG_CATEGORY = "tools.add.catalog.category";
 	private static final String NLS_TOOLS_ADD_CATALOG_LINK = "tools.add.catalog.link";
 	private static final String NLS_TOOLS_PASTESTRUCTURE = "tools.pastestructure";
-	private static final String NLS_TOOLS_ADD_BOOKMARK = "tools.add.catalog.bookmark";
 	private static final String NLS_TOOLS_MOVE_CATALOG_ENTRY = "tools.move.catalog.entry";
 	
 	// private stuff
@@ -222,16 +221,12 @@ public class CatalogController extends BasicController implements Activateable2 
 	private boolean isGuest;
 	private Link loginLink;
 	private CloseableModalController cmc;
-	private boolean canBookmark=true;
 	private Controller catEntryMoveController;
 	private RepositoryEditDescriptionController repositoryEditDescriptionController;
 
 	// locking stuff for cataloge edit operations
 	private LockResult catModificationLock;
 	public static final String LOCK_TOKEN = "catalogeditlock";
-
-	// key also needed by BookmarksPortletRunController to identify type of bookmark
-	private static final String TOOL_BOOKMARK = "tool_bookmark";
 	
 	private final MarkManager markManager;
 	
@@ -840,10 +835,6 @@ public class CatalogController extends BasicController implements Activateable2 
 			 * edit tools
 			 */
 			catalogToolC.addHeader(getTranslator().translate("tools.edit.header"));			
-			
-			catalogToolC.addLink(ACTION_ADD_BOOKMARK, translate(NLS_TOOLS_ADD_BOOKMARK), TOOL_BOOKMARK, null, "o_sel_catalog_add_bookmark", false);			// new bookmark link
-			catalogToolC.setEnabled(TOOL_BOOKMARK, canBookmark);
-			
 			if (canAdministrateCategory || canAddLinks) {
 				if (canAdministrateCategory) {
 					catalogToolC.addLink(ACTION_EDIT_CTLGCATEGORY, translate(NLS_TOOLS_EDIT_CATALOG_CATEGORY), null, null, "o_sel_catalog_edit_category", false);
@@ -1113,17 +1104,7 @@ public class CatalogController extends BasicController implements Activateable2 
 	 */
 	private void updateToolAccessRights(UserRequest ureq, CatalogEntry ce, int pos) {
 		// 1) check if user has already a bookmark for this level
-		final CatalogEntry tmp=ce;
-		//TODO bookmark
-		if (tmp != null){
-			canBookmark = false;
-			if(catalogToolC != null){
-				catalogToolC.setEnabled(TOOL_BOOKMARK, canBookmark);
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-		} else{
-			canBookmark=true;
-		}
+
 		// 2) check if insert structure must be removed or showed 
 		if (isOLATAdmin && currentCatalogEntryLevel == 0) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
