@@ -1816,6 +1816,7 @@ alter table o_qtiresult add constraint FK3563E67340EF401F foreign key (resultset
 alter table o_bs_policy add constraint FK9A1C5109F9C3F1D foreign key (oresource_id) references o_olatresource;
 alter table o_bs_policy add constraint FK9A1C5101E2E76DB foreign key (group_id) references o_bs_secgroup;
 create index name_idx6 on o_gp_bgarea (name);
+create index idx_area_resource on o_gp_bgarea (fk_resource);
 alter table o_gp_bgarea add constraint FK9EFAF698DF6BCD14 foreign key (groupcontext_fk) references o_gp_bgcontext;
 create index descritpion_idx on o_repositoryentry (description);
 create index access_idx on o_repositoryentry (accesscode);
@@ -1828,6 +1829,8 @@ alter table o_repositoryentry add constraint FK2F9C4398A1FAC766 foreign key (fk_
 create index repo_members_only_idx on o_repositoryentry (membersonly);
 alter table o_repositoryentry add constraint repo_tutor_sec_group_ctx foreign key (fk_tutorgroup) references o_bs_secgroup (id);
 alter table o_repositoryentry add constraint repo_parti_sec_group_ctx foreign key (fk_participantgroup) references o_bs_secgroup (id);
+create index idx_repoentry_tutor on o_repositoryentry(fk_tutorgroup);
+create index idx_repoentry_parti on o_repositoryentry(fk_participantgroup);
 alter table o_bookmark add constraint FK68C4E30663219E27 foreign key (owner_id) references o_bs_identity;
 alter table o_bs_membership add constraint FK7B6288B45259603C foreign key (identity_id) references o_bs_identity;
 alter table o_bs_membership add constraint FK7B6288B4B85B522C foreign key (secgroup_id) references o_bs_secgroup;
@@ -1902,12 +1905,17 @@ create index paypal_pay_s_trx_id_idx on o_ac_paypal_transaction (ipn_sender_tran
 
 alter table o_im_message add constraint idx_im_msg_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_msg_res_idx on o_im_message (msg_resid,msg_resname);
+create index idx_im_msg_from_idx on o_im_message(fk_from_identity_id);
 alter table o_im_notification add constraint idx_im_not_to_toid foreign key (fk_to_identity_id) references o_bs_identity (id);
 alter table o_im_notification add constraint idx_im_not_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_chat_res_idx on o_im_notification (chat_resid,chat_resname);
+create index idx_im_chat_to_idx on o_im_notification (fk_to_identity_id);
+create index idx_im_chat_from_idx on o_im_notification (fk_from_identity_id);
 alter table o_im_roster_entry add constraint idx_im_rost_to_id foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_im_rost_res_idx on o_im_roster_entry (r_resid,r_resname);
+create index idx_im_rost_ident_idx on o_im_roster_entry (fk_identity_id);
 alter table o_im_preferences add constraint idx_im_prfs_to_id foreign key (fk_from_identity_id) references o_bs_identity (id);
+create index idx_im_prefs_ident_idx on o_im_preferences (fk_from_identity_id);
 
 alter table o_as_eff_statement add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
