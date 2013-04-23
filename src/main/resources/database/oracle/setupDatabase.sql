@@ -1,15 +1,5 @@
 -- tables
--- 
--- Created by SQL::Translator::Producer::Oracle
--- Created on Sat Mar  6 13:48:52 2010
--- 
--- We assume that default NLS_DATE_FORMAT has been changed
--- but we set it here anyway to be self-consistent.
-ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS';
 
---
--- Table: o_forum
---;
 
 CREATE TABLE o_forum (
   forum_id number(20) NOT NULL,
@@ -18,9 +8,6 @@ CREATE TABLE o_forum (
   PRIMARY KEY (forum_id)
 );
 
---
--- Table: o_property
---;
 
 CREATE TABLE o_property (
   id number(20) NOT NULL,
@@ -40,9 +27,6 @@ CREATE TABLE o_property (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_bs_secgroup
---;
 
 CREATE TABLE o_bs_secgroup (
   id number(20) NOT NULL,
@@ -51,9 +35,6 @@ CREATE TABLE o_bs_secgroup (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_gp_business
---;
 
 CREATE TABLE o_gp_business (
   group_id number(20) NOT NULL,
@@ -80,9 +61,6 @@ CREATE TABLE o_gp_business (
   PRIMARY KEY (group_id)
 );
 
---
--- Table: o_temporarykey
---;
 
 CREATE TABLE o_temporarykey (
   reglist_id number(20) NOT NULL,
@@ -96,9 +74,6 @@ CREATE TABLE o_temporarykey (
   PRIMARY KEY (reglist_id)
 );
 
---
--- Table: o_bs_authentication
---;
 
 CREATE TABLE o_bs_authentication (
   id number(20) NOT NULL,
@@ -112,9 +87,6 @@ CREATE TABLE o_bs_authentication (
   CONSTRAINT u_o_bs_authentication UNIQUE (provider, authusername)
 );
 
---
--- Table: o_noti_pub
---;
 
 CREATE TABLE o_noti_pub (
   publisher_id number(20) NOT NULL,
@@ -131,9 +103,6 @@ CREATE TABLE o_noti_pub (
   PRIMARY KEY (publisher_id)
 );
 
---
--- Table: o_qtiresultset
---;
 
 CREATE TABLE o_qtiresultset (
   resultset_id number(20) NOT NULL,
@@ -153,9 +122,6 @@ CREATE TABLE o_qtiresultset (
   PRIMARY KEY (resultset_id)
 );
 
---
--- Table: o_bs_identity
---;
 
 CREATE TABLE o_bs_identity (
   id number(20) NOT NULL,
@@ -170,9 +136,6 @@ CREATE TABLE o_bs_identity (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_olatresource
---;
 
 CREATE TABLE o_olatresource (
   resource_id number(20) NOT NULL,
@@ -183,10 +146,6 @@ CREATE TABLE o_olatresource (
   PRIMARY KEY (resource_id),
   CONSTRAINT u_o_olatresource UNIQUE (resname, resid)
 );
-
---
--- Table: o_bs_namedgroup
---;
 
 
 CREATE TABLE o_bs_namedgroup (
@@ -199,9 +158,6 @@ CREATE TABLE o_bs_namedgroup (
   CONSTRAINT u_o_bs_namedgroup UNIQUE (groupname)
 );
 
---
--- Table: o_catentry
---;
 
 CREATE TABLE o_catentry (
   id number(20) NOT NULL,
@@ -218,9 +174,6 @@ CREATE TABLE o_catentry (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_note
---;
 
 CREATE TABLE o_note (
   note_id number(20) NOT NULL,
@@ -236,9 +189,6 @@ CREATE TABLE o_note (
   PRIMARY KEY (note_id)
 );
 
---
--- Table: o_gp_bgcontext
---;
 
 CREATE TABLE o_gp_bgcontext (
   groupcontext_id number(20) NOT NULL,
@@ -253,9 +203,6 @@ CREATE TABLE o_gp_bgcontext (
   PRIMARY KEY (groupcontext_id)
 );
 
---
--- Table: o_references
---;
 
 CREATE TABLE o_references (
   reference_id number(20) NOT NULL,
@@ -267,9 +214,6 @@ CREATE TABLE o_references (
   PRIMARY KEY (reference_id)
 );
 
---
--- Table: o_repositorymetadata
---;
 
 CREATE TABLE o_repositorymetadata (
   metadataelement_id number(20) NOT NULL,
@@ -281,15 +225,12 @@ CREATE TABLE o_repositorymetadata (
   PRIMARY KEY (fk_repositoryentry, metadataelement_id)
 );
 
---
--- Table: o_user
---;
 
 CREATE TABLE o_user (
   user_id number(20) NOT NULL,
   version number(20) NOT NULL,
   creationdate date,
-  language varchar2(10 char),
+  language varchar2(30 char),
   fontsize varchar2(10 char),
   notification_interval varchar2(16 char),
   receiverealmail varchar2(16 char),
@@ -298,9 +239,6 @@ CREATE TABLE o_user (
   PRIMARY KEY (user_id)
 );
 
---
--- Table: o_userproperty
---;
 
 CREATE TABLE o_userproperty (
   fk_user_id number(20) NOT NULL,
@@ -309,9 +247,6 @@ CREATE TABLE o_userproperty (
   PRIMARY KEY (fk_user_id, propname)
 );
 
---
--- Table: o_gp_bgcontextresource_rel
---;
 
 CREATE TABLE o_gp_bgcontextresource_rel (
   groupcontextresource_id number(20) NOT NULL,
@@ -322,9 +257,6 @@ CREATE TABLE o_gp_bgcontextresource_rel (
   PRIMARY KEY (groupcontextresource_id)
 );
 
---
--- Table: o_message
---;
 
 CREATE TABLE o_message (
   message_id number(20) NOT NULL,
@@ -344,9 +276,6 @@ CREATE TABLE o_message (
   PRIMARY KEY (message_id)
 );
 
---
--- Table: o_gp_bgtoarea_rel
---;
 
 CREATE TABLE o_gp_bgtoarea_rel (
   bgtoarea_id number(20) NOT NULL,
@@ -358,9 +287,6 @@ CREATE TABLE o_gp_bgtoarea_rel (
   CONSTRAINT u_o_gp_bgtoarea_rel UNIQUE (group_fk, area_fk)
 );
 
---
--- Table: o_noti_sub
---;
 
 CREATE TABLE o_noti_sub (
   publisher_id number(20) NOT NULL,
@@ -374,9 +300,6 @@ CREATE TABLE o_noti_sub (
   CONSTRAINT u_o_noti_sub UNIQUE (fk_publisher, fk_identity)
 );
 
---
--- Table: o_qtiresult
---;
 
 CREATE TABLE o_qtiresult (
   result_id number(20) NOT NULL,
@@ -393,9 +316,6 @@ CREATE TABLE o_qtiresult (
   PRIMARY KEY (result_id)
 );
 
---
--- Table: o_bs_policy
---;
 
 CREATE TABLE o_bs_policy (
   id number(20) NOT NULL,
@@ -404,15 +324,12 @@ CREATE TABLE o_bs_policy (
   oresource_id number(20) NOT NULL,
   group_id number(20) NOT NULL,
   permission varchar2(16 char) NOT NULL,
-  apply_from date default null,
-  apply_to date default null,
+  apply_from date DEFAULT NULL,
+  apply_to date DEFAULT NULL,
   PRIMARY KEY (id),
   CONSTRAINT u_o_bs_policy UNIQUE (oresource_id, group_id, permission)
 );
 
---
--- Table: o_gp_bgarea
---;
 
 CREATE TABLE o_gp_bgarea (
   area_id number(20) NOT NULL,
@@ -425,9 +342,6 @@ CREATE TABLE o_gp_bgarea (
   PRIMARY KEY (area_id)
 );
 
---
--- Table: o_gp_business_to_resource
---;
 
 create table o_gp_business_to_resource (
    g_id number(20) not null,
@@ -472,9 +386,6 @@ CREATE TABLE o_repositoryentry (
   PRIMARY KEY (repositoryentry_id)
 );
 
---
--- Table: o_bookmark
---;
 
 CREATE TABLE o_bookmark (
   bookmark_id number(20) NOT NULL,
@@ -490,9 +401,6 @@ CREATE TABLE o_bookmark (
   PRIMARY KEY (bookmark_id)
 );
 
---
--- Table: o_bs_membership
---;
 
 CREATE TABLE o_bs_membership (
   id number(20) NOT NULL,
@@ -505,9 +413,6 @@ CREATE TABLE o_bs_membership (
   CONSTRAINT u_o_bs_membership UNIQUE (secgroup_id, identity_id)
 );
 
---
--- Table: o_plock
---;
 
 CREATE TABLE o_plock (
   plock_id number(20) NOT NULL,
@@ -518,17 +423,11 @@ CREATE TABLE o_plock (
   PRIMARY KEY (plock_id)
 );
 
---
--- Table: hibernate_unique_key
---;
 
 CREATE TABLE hibernate_unique_key (
   next_hi number(11)
 );
 
---
--- Table: o_lifecycle
---;
 
 CREATE TABLE o_lifecycle (
   id number(20) NOT NULL,
@@ -542,9 +441,6 @@ CREATE TABLE o_lifecycle (
   PRIMARY KEY (id)
 );
 
---
--- Table: oc_lock
---;
 
 CREATE TABLE oc_lock (
   lock_id number(20) NOT NULL,
@@ -555,13 +451,7 @@ CREATE TABLE oc_lock (
   CONSTRAINT u_oc_lock UNIQUE (asset),
   PRIMARY KEY (lock_id)
 );
---create index ocl_asset_idx on oc_lock (asset);
-create index FK9E30F4B66115906D on oc_lock (identity_fk);
-alter table oc_lock  add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity (id);
 
---
--- Table: o_readmessage
---;
 
 CREATE TABLE o_readmessage (
   id number(20) NOT NULL,
@@ -573,9 +463,6 @@ CREATE TABLE o_readmessage (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_loggingtable
---;
 
 CREATE TABLE o_loggingtable (
   log_id number(20) NOT NULL,
@@ -617,9 +504,6 @@ CREATE TABLE o_loggingtable (
   PRIMARY KEY (log_id)
 );
 
---
--- Table: o_checklist
---;
 
 CREATE TABLE o_checklist (
   checklist_id number(20) NOT NULL,
@@ -630,9 +514,6 @@ CREATE TABLE o_checklist (
   PRIMARY KEY (checklist_id)
 );
 
---
--- Table: o_checkpoint
---;
 
 CREATE TABLE o_checkpoint (
   checkpoint_id number(20) NOT NULL,
@@ -644,11 +525,7 @@ CREATE TABLE o_checkpoint (
   checklist_fk number(20),
   PRIMARY KEY (checkpoint_id)
 );
-alter table o_checkpoint add constraint FK9E30F4B661159ZZZ foreign key (checklist_fk) references o_checklist (checklist_id);
 
---
--- Table: o_checkpoint_results
---;
 
 CREATE TABLE o_checkpoint_results (
   checkpoint_result_id number(20) NOT NULL,
@@ -660,9 +537,6 @@ CREATE TABLE o_checkpoint_results (
   PRIMARY KEY (checkpoint_result_id)
 );
 
---
--- Table: o_projectbroker
---;
 
 CREATE TABLE o_projectbroker (
   projectbroker_id number(20) NOT NULL,
@@ -671,9 +545,6 @@ CREATE TABLE o_projectbroker (
   PRIMARY KEY (projectbroker_id)
 );
 
---
--- Table: o_projectbroker_project
---;
 
 CREATE TABLE o_projectbroker_project (
   project_id number(20) NOT NULL,
@@ -691,9 +562,6 @@ CREATE TABLE o_projectbroker_project (
   PRIMARY KEY (project_id)
 );
 
---
--- Table: o_projectbroker_customfields
---;
 
 CREATE TABLE o_projectbroker_customfields (
   fk_project_id number(20) NOT NULL,
@@ -702,13 +570,10 @@ CREATE TABLE o_projectbroker_customfields (
   PRIMARY KEY (fk_project_id, propname)
 );
 
---
--- Table: o_usercomment
---;
 
 CREATE TABLE o_usercomment (
   comment_id number(20) NOT NULL,
-  version number(11) NOT NULL,
+  version number(20) NOT NULL,
   creationdate date,
   resname varchar2(50 char) NOT NULL,
   resid number(20) NOT NULL,
@@ -719,13 +584,10 @@ CREATE TABLE o_usercomment (
   PRIMARY KEY (comment_id)
 );
 
---
--- Table: o_userrating
---;
 
 CREATE TABLE o_userrating (
   rating_id number(20) NOT NULL,
-  version number(11) NOT NULL,
+  version number(20) NOT NULL,
   creationdate date,
   lastmodified date,
   resname varchar2(50 char) NOT NULL,
@@ -735,10 +597,6 @@ CREATE TABLE o_userrating (
   rating number(11) NOT NULL,
   PRIMARY KEY (rating_id)
 );
-
---
--- Table: o_info_message
---;
 
 CREATE TABLE o_info_message (
   info_id number(20)  NOT NULL,
@@ -755,10 +613,6 @@ CREATE TABLE o_info_message (
   fk_modifier_id number(20),
   PRIMARY KEY (info_id)
 );
-
---
--- Table: o_ep_artefact
---;
 
 create table o_ep_artefact (
   artefact_id number(20) not null,
@@ -781,10 +635,6 @@ create table o_ep_artefact (
   primary key (artefact_id)
 );
 
---
--- Table: o_ep_collect_restriction
---;
-
 create table o_ep_collect_restriction (
   collect_id number(20) not null,
   version number(20) not null,
@@ -796,10 +646,6 @@ create table o_ep_collect_restriction (
   fk_struct_el_id number(20),
   primary key (collect_id)
 );
-
---
--- Table: o_ep_struct_el
---;
 
 create table o_ep_struct_el (
   structure_id number(20) not null,
@@ -828,10 +674,6 @@ create table o_ep_struct_el (
   primary key (structure_id)  
 );
 
---
--- Table: o_ep_struct_struct_link
---;
-
 create table o_ep_struct_struct_link (
   link_id number(20) not null,
   version number(20) not null,
@@ -841,10 +683,6 @@ create table o_ep_struct_struct_link (
   fk_struct_child_id number(20) not null,
   primary key (link_id)
 );
-
---
--- Table: o_ep_struct_artefact_link
---;
 
 create table o_ep_struct_artefact_link (
   link_id number(20) not null,
@@ -858,10 +696,6 @@ create table o_ep_struct_artefact_link (
   primary key (link_id)
 );
 
---
--- Table: o_bs_invitation
---;
-
 create table o_bs_invitation (
    id number(20) not null,
    version number(20) not null,
@@ -873,10 +707,6 @@ create table o_bs_invitation (
    fk_secgroup number(20),
    primary key (id)
 );
-
---
--- Table: o_tag
---;
 
 create table o_tag (
   tag_id number(20) not null,
@@ -890,10 +720,6 @@ create table o_tag (
   fk_author_id number(20) not null,
   primary key (tag_id)
 );
-
---
--- Table: o_mail
---;
 
 create table o_mail (
   mail_id number(20) not null,
@@ -910,19 +736,11 @@ create table o_mail (
   primary key (mail_id)
 );
 
---
--- Table: o_mail_to_recipient
---;
-
 create table o_mail_to_recipient (
   pos number(20) default 0,
   fk_mail_id number(20),
   fk_recipient_id number(20)
 );
-
---
--- Table: o_mail_recipient
---; 
 
 create table o_mail_recipient (
   recipient_id number(20) NOT NULL,
@@ -937,10 +755,6 @@ create table o_mail_recipient (
   primary key (recipient_id)
 );
 
---
--- Table: o_mail_attachment
---; 
-
 create table o_mail_attachment (
   attachment_id number(20) NOT NULL,
   creationdate date,
@@ -951,10 +765,6 @@ create table o_mail_attachment (
   fk_att_mail_id number(20),
   primary key (attachment_id)
 );
-
---
--- Table: o_ac_offer
---; 
 
 create table o_ac_offer (
   offer_id number(20) NOT NULL,
@@ -975,10 +785,6 @@ create table o_ac_offer (
   primary key (offer_id)
 );
 
---
--- Table: o_ac_method
---; 
-
 create table o_ac_method (
   method_id number(20) NOT NULL,
   access_method varchar(32 char),
@@ -992,10 +798,6 @@ create table o_ac_method (
   primary key (method_id)
 );
 
---
--- Table: o_ac_offer_access
---; 
-
 create table o_ac_offer_access (
   offer_method_id number(20) NOT NULL,
   version number(20) not null,
@@ -1007,10 +809,6 @@ create table o_ac_offer_access (
   fk_method_id number(20),
   primary key (offer_method_id)
 );
-
---
--- Table: o_ac_order
---; 
 
 create table o_ac_order (
   order_id number(20) NOT NULL,
@@ -1029,10 +827,6 @@ create table o_ac_order (
   primary key (order_id)
 );
 
---
--- Table: o_ac_order_part
---; 
-
 create table o_ac_order_part (
   order_part_id number(20) NOT NULL,
   version number(20) not null,
@@ -1045,10 +839,6 @@ create table o_ac_order_part (
   fk_order_id number(20),
   primary key (order_part_id)
 );
-
---
--- Table: o_ac_order_line
---; 
 
 create table o_ac_order_line (
   order_item_id number(20) NOT NULL,
@@ -1064,10 +854,6 @@ create table o_ac_order_line (
   primary key (order_item_id)
 ); 
 
---
--- Table: o_ac_transaction
---; 
-
 create table o_ac_transaction (
   transaction_id number(20) NOT NULL,
   version number(20) not null,
@@ -1081,10 +867,6 @@ create table o_ac_transaction (
   primary key (transaction_id)
 );
 
---
--- Table: o_ac_reservation
---; 
-
 create table o_ac_reservation (
    reservation_id number(20) NOT NULL,
    creationdate date,
@@ -1096,10 +878,6 @@ create table o_ac_reservation (
    fk_resource number(20) not null,
    primary key (reservation_id)
 );
-
---
--- Table: o_ac_paypal_transaction
---; 
 
 create table o_ac_paypal_transaction (
    transaction_id number(20) not null,
@@ -1132,21 +910,13 @@ create table o_ac_paypal_transaction (
    primary key (transaction_id)
 );
 
---
--- Table: o_stat_lastupdated
---; 
-
-create table o_stat_lastupdated (
+CREATE TABLE o_stat_lastupdated (
   lastupdated date not null,
   from_datetime date not null,
   until_datetime date not null
 );
--- important: initialize with old date!
-insert into o_stat_lastupdated values(to_date('1999-01-01'), to_date('1999-01-01'), to_date('1999-01-01'));
 
---
--- Table: o_stat_dayofweek
---; 
+
 CREATE SEQUENCE sq_o_stat_dayofweek_id;
 
 CREATE TABLE o_stat_dayofweek (
@@ -1158,9 +928,6 @@ CREATE TABLE o_stat_dayofweek (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_stat_hourofday
---;
 
 CREATE SEQUENCE sq_o_stat_hourofday_id;
 
@@ -1173,9 +940,6 @@ CREATE TABLE o_stat_hourofday (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_stat_weekly
---;
 
 CREATE SEQUENCE sq_o_stat_weekly_id;
 
@@ -1188,9 +952,6 @@ CREATE TABLE o_stat_weekly (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_stat_daily
---;
 
 CREATE SEQUENCE sq_o_stat_daily_id;
 
@@ -1203,9 +964,6 @@ CREATE TABLE o_stat_daily (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_stat_homeorg
---;
 
 CREATE SEQUENCE sq_o_stat_homeorg_id;
 
@@ -1218,9 +976,6 @@ CREATE TABLE o_stat_homeorg (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_stat_orgtype
---;
 
 CREATE SEQUENCE sq_o_stat_orgtype_id;
 
@@ -1233,9 +988,6 @@ CREATE TABLE o_stat_orgtype (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_stat_studylevel
---;
 
 CREATE SEQUENCE sq_o_stat_studylevel_id;
 
@@ -1248,9 +1000,6 @@ CREATE TABLE o_stat_studylevel (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_stat_studybranch3
---;
 
 CREATE SEQUENCE sq_o_stat_studybranch3_id;
 
@@ -1263,25 +1012,19 @@ CREATE TABLE o_stat_studybranch3 (
   PRIMARY KEY (id)
 );
 
---
--- Table: o_mark
---;
 
-create table o_mark (
-  mark_id number(20) not null,
-  version number(20) not null,
+CREATE TABLE o_mark (
+  mark_id number(20) NOT NULL,
+  version number(20) NOT NULL,
   creationdate date,
-  resname varchar(50 char) not null,
-  resid number(20) not null,
-  ressubpath varchar(2048 char),
-  businesspath varchar(2048 char),
-  creator_id number(20) not null,
-  primary key (mark_id)
+  resname varchar2(50 char) NOT NULL,
+  resid number(20) NOT NULL,
+  ressubpath varchar2(2048 char),
+  businesspath varchar2(2048 char),
+  creator_id number(20) NOT NULL,
+  PRIMARY KEY (mark_id)
 );
 
---
--- Table: o_om_room_reference
---;
 
 create table o_om_room_reference (
    id number(20) not null,
@@ -1296,10 +1039,6 @@ create table o_om_room_reference (
    config clob,
    primary key (id)
 );
-
---
--- Table: o_as_eff_statement
---;
 
 create table o_as_eff_statement (
    id number(20) not null,
@@ -1321,10 +1060,6 @@ create table o_as_eff_statement (
    primary key (id)
 );
 
---
--- Table: o_as_user_course_infos
---;
-
 create table o_as_user_course_infos (
    id number(20) not null,
    version number(20) not null,
@@ -1340,10 +1075,6 @@ create table o_as_user_course_infos (
    primary key (id)
 );
 
---
--- Table: o_im_message
---;
-
 create table o_im_message (
    id number(20) not null,
    creationdate date,
@@ -1356,10 +1087,6 @@ create table o_im_message (
    primary key (id)
 );
 
---
--- Table: o_im_notification
---;
-
 create table o_im_notification (
    id number(20) not null,
    creationdate date,
@@ -1369,10 +1096,6 @@ create table o_im_notification (
    fk_from_identity_id number(20) not null,
    primary key (id)
 );
-
---
--- Table: o_im_roster_entry
---;
 
 create table o_im_roster_entry (
    id number(20) not null,
@@ -1387,10 +1110,6 @@ create table o_im_roster_entry (
    primary key (id)
 );
 
---
--- Table: o_im_preferences
---;
-
 create table o_im_preferences (
    id number(20) not null,
    creationdate date,
@@ -1399,10 +1118,6 @@ create table o_im_preferences (
    fk_from_identity_id number(20) not null,
    primary key (id)
 );
-
---
--- Table: o_mapper
---;
 
 create table o_mapper (
    id number(20) not null,
@@ -1413,11 +1128,6 @@ create table o_mapper (
    xml_config CLOB,
    primary key (id)
 );
-
---
--- Tables: question pools
---;
-
 
 create table o_qp_pool (
    id number(20) not null,
@@ -2121,6 +1831,10 @@ create index category_idx on o_property (category);
 create index name_idx1 on o_property (name);
 create index restype_idx1 on o_property (resourcetypename);
 
+
+-- foreign keys
+create index FK9E30F4B66115906D on oc_lock (identity_fk);
+alter table oc_lock  add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity (id);
 create index FKB60B1BA5190E5 on o_property (grp);
 alter table o_property  add constraint FKB60B1BA5190E5 foreign key (grp) references o_gp_business (group_id);
 create index FKB60B1BA5F7E870BE on o_property (identity);
@@ -2132,15 +1846,13 @@ create index FKCEEB8A86DF6BCD14 on o_gp_business (groupcontext_fk);
 alter table o_gp_business  add constraint FKCEEB8A86A1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup (id);
 -- create index FKCEEB8A86C06E3EF3 on o_gp_business (fk_partipiciantgroup);
 alter table o_gp_business  add constraint FKCEEB8A86C06E3EF3 foreign key (fk_partipiciantgroup) references o_bs_secgroup (id);
-
 alter table o_gp_business add constraint idx_bgp_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
-
 alter table o_gp_business_to_resource add constraint idx_bgp_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
 alter table o_gp_business_to_resource add constraint idx_bgp_to_rsrc_group foreign key (fk_group) references o_gp_business (group_id);
 
-create index  provider_idx on o_bs_authentication (provider);
-create index  credential_idx on o_bs_authentication (credential);
-create index  authusername_idx on o_bs_authentication (authusername);
+create index provider_idx on o_bs_authentication (provider);
+create index credential_idx on o_bs_authentication (credential);
+create index authusername_idx on o_bs_authentication (authusername);
 create index FKC6A5445652595FE6 on o_bs_authentication (identity_fk);
 alter table o_bs_authentication  add constraint FKC6A5445652595FE6 foreign key (identity_fk) references o_bs_identity (id);
 
@@ -2159,7 +1871,7 @@ create index FK4B04D83FD1A80C95 on o_userproperty (fk_user_id);
 alter table o_userproperty  add constraint FK4B04D83FD1A80C95 foreign key (fk_user_id) references o_user (user_id);
 
 --create index  name_idx4 on o_olatresource (resname);
---create index  id_idx on o_olatresource (resid);
+create index id_idx on o_olatresource (resid);
 --create index  groupname_idx on o_bs_namedgroup (groupname);
 create index FKBAFCBBC4B85B522C on o_bs_namedgroup (secgroup_id);
 alter table o_bs_namedgroup  add constraint FKBAFCBBC4B85B522C foreign key (secgroup_id) references o_bs_secgroup (id);
@@ -2171,12 +1883,11 @@ create index FKF4433C2CDDD69946 on o_catentry (fk_repoentry);
 alter table o_catentry  add constraint FKF4433C2CDDD69946 foreign key (fk_repoentry) references o_repositoryentry (repositoryentry_id);
 
 create index resid_idx2 on o_note (resourcetypeid);
-create index  owner_idx on o_note (owner_id);
+create index owner_idx on o_note (owner_id);
 create index restype_idx2 on o_note (resourcetypename);
--- create index FKC2D855C263219E27 on o_note (owner_id);
 alter table o_note  add constraint FKC2D855C263219E27 foreign key (owner_id) references o_bs_identity (id);
-create index  type_idx on o_gp_bgcontext (grouptype);
-create index  default_idx on o_gp_bgcontext (defaultcontext);
+create index type_idx on o_gp_bgcontext (grouptype);
+create index default_idx on o_gp_bgcontext (defaultcontext);
 create index name_idx5 on o_gp_bgcontext (name);
 -- create index FK1C154FC47E4A0638 on o_gp_bgcontext (ownergroup_fk);
 alter table o_gp_bgcontext  add constraint FK1C154FC47E4A0638 foreign key (ownergroup_fk) references o_bs_secgroup (id);
@@ -2187,7 +1898,7 @@ alter table o_references  add constraint FKE971B458CF634A89 foreign key (target_
 create index FKDB97A6493F14E3EE on o_repositorymetadata (fk_repositoryentry);
 alter table o_repositorymetadata  add constraint FKDB97A6493F14E3EE foreign key (fk_repositoryentry) references o_repositoryentry (repositoryentry_id);
 
---create index  propvalue_idx on o_userproperty (propvalue);
+create index propvalue_idx on o_userproperty (propvalue);
 create index FK9903BEAC9F9C3F1D on o_gp_bgcontextresource_rel (oresource_id);
 alter table o_gp_bgcontextresource_rel  add constraint FK9903BEAC9F9C3F1D foreign key (oresource_id) references o_olatresource (resource_id);
 create index FK9903BEACDF6BCD14 on o_gp_bgcontextresource_rel (groupcontext_fk);
@@ -2225,10 +1936,10 @@ create index idx_area_resource on o_gp_bgarea (fk_resource);
 alter table o_gp_bgarea add constraint idx_area_to_resource foreign key (fk_resource) references o_olatresource (resource_id);
 
 create index descritpion_idx on o_repositoryentry (description);
-create index  access_idx on o_repositoryentry (accesscode);
-create index  initialAuthor_idx on o_repositoryentry (initialauthor);
-create index  resource_idx on o_repositoryentry (resourcename);
-create index  displayname_idx on o_repositoryentry (displayname);
+create index access_idx on o_repositoryentry (accesscode);
+create index initialAuthor_idx on o_repositoryentry (initialauthor);
+create index resource_idx on o_repositoryentry (resourcename);
+create index displayname_idx on o_repositoryentry (displayname);
 --create index  softkey_idx on o_repositoryentry (softkey);
 
 -- create index FK2F9C439888C31018 on o_repositoryentry (fk_olatresource);
@@ -2284,9 +1995,7 @@ alter table o_ep_struct_struct_link add constraint FKF26C8375236F23X foreign key
 alter table o_ep_struct_artefact_link add constraint FKF26C8375236F24X foreign key (fk_struct_id) references o_ep_struct_el (structure_id);
 alter table o_ep_struct_artefact_link add constraint FKF26C8375236F25X foreign key (fk_artefact_id) references o_ep_artefact (artefact_id);
 alter table o_ep_struct_artefact_link add constraint FKF26C8375236F26Y foreign key (fk_auth_id) references o_bs_identity (id);
-
 alter table o_bs_invitation add constraint FKF26C8375236F27X foreign key (fk_secgroup) references o_bs_secgroup (id);
-
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);
 
 alter table o_mail_to_recipient add constraint FKF86663165A4FA5DE foreign key (fk_mail_id) references o_mail (mail_id);
