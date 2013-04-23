@@ -27,6 +27,7 @@
 package org.olat.core.util;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -264,7 +265,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	}
 
 	public List<HistoryPoint> getHistoryStack() {
-		return history;
+		return new ArrayList<HistoryPoint>(history);
 	}
 	
 	public HistoryPoint getLastHistoryPoint() {
@@ -294,10 +295,12 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			String uuid = ureq.getUuid();
 			if(!history.isEmpty()) {
 				//consolidate
-				for(Iterator<HistoryPoint> it=history.iterator(); it.hasNext(); ) {
-					HistoryPoint p = it.next();
-					if(uuid.equals(p.getUuid())) {
-						it.remove();
+				synchronized(history) {
+					for(Iterator<HistoryPoint> it=history.iterator(); it.hasNext(); ) {
+						HistoryPoint p = it.next();
+						if(uuid.equals(p.getUuid())) {
+							it.remove();
+						}
 					}
 				}
 			}
@@ -311,10 +314,12 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	
 	public void removeFromHistory(BusinessControl businessControl) {
 		String businessPath = businessControl.getAsString();
-		for(Iterator<HistoryPoint> it=history.iterator(); it.hasNext(); ) {
-			String path = it.next().getBusinessPath();
-			if(path.startsWith(businessPath)) {
-				it.remove();
+		synchronized(history) {
+			for(Iterator<HistoryPoint> it=history.iterator(); it.hasNext(); ) {
+				String path = it.next().getBusinessPath();
+				if(path.startsWith(businessPath)) {
+					it.remove();
+				}
 			}
 		}
 	}
