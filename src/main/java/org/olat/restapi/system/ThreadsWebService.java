@@ -31,8 +31,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.olat.admin.sysinfo.ThreadInfosManager;
-import org.olat.admin.sysinfo.ThreadView;
+import org.olat.admin.sysinfo.manager.ThreadInfosManager;
+import org.olat.admin.sysinfo.model.ThreadView;
 import org.olat.core.CoreSpringFactory;
 import org.olat.restapi.system.vo.ThreadVO;
 import org.olat.restapi.system.vo.ThreadVOes;
@@ -82,7 +82,7 @@ public class ThreadsWebService implements Sampler {
 	}
 	
   @Override
-	public synchronized void takeSample() {
+	public void takeSample() {
   	ThreadInfosManager manager = CoreSpringFactory.getImpl(ThreadInfosManager.class);
 		if(manager != null) {//check if the manager is loaded
 			manager.takeSample();

@@ -38,6 +38,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
@@ -94,11 +95,16 @@ public class AjaxController extends DefaultController {
 	private int pollCount = 0;
 	private long creationTime = System.currentTimeMillis();
 	private boolean ajaxEnabled;
+	
+	private final SessionStatsManager statsManager;
 
 	AjaxController(UserRequest ureq, final WindowBackOfficeImpl wboImpl, boolean ajaxEnabled, String iframeName) {
 		super(null);
 		this.wboImpl = wboImpl;
 		this.ajaxEnabled = ajaxEnabled;
+		
+		statsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
+		
 		pollPeriodContent = new VelocityContainer("jsserverpartpoll", VELOCITY_ROOT + "/pollperiod.html", null, this);
 		pollPeriodContent.contextPut("pollperiod", new Integer(pollperiod));
 		
@@ -114,6 +120,7 @@ public class AjaxController extends DefaultController {
 		m = new Mapper() {
 			public MediaResource handle(String relPath, HttpServletRequest request) {
 				pollCount++;
+				statsManager.incrementAuthenticatedPollerClick();
 				// check for dirty components now.
 				wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
 				Command updateDirtyCom = window.handleDirties();

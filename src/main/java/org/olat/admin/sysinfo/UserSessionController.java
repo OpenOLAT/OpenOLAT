@@ -28,12 +28,12 @@ package org.olat.admin.sysinfo;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.admin.sysinfo.manager.SessionStatsManager;
+import org.olat.admin.sysinfo.model.SessionsStats;
+import org.olat.admin.sysinfo.model.UserSessionView;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerAware;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
@@ -48,8 +48,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -71,12 +69,9 @@ public class UserSessionController extends BasicController implements StackedCon
 	private StackedController stackController;
 	private final UserSessionManager sessionManager;
 	private final InstantMessagingService imService;
+	private final SessionStatsManager sessionStatsManager;
 	
-	/**
-	 * Timeframe in minutes is needed to calculate the last klicks from users in OLAT. 
-	 */
-	private static final int LAST_KLICK_TIMEFRAME = 5;
-	private static final long DIFF = 1000 * 60 * LAST_KLICK_TIMEFRAME; // milliseconds of klick difference
+
 	/**
 	 * Controlls user session in admin view.
 	 * 
@@ -88,6 +83,7 @@ public class UserSessionController extends BasicController implements StackedCon
 		
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+		sessionStatsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
 		
 		myContent = createVelocityContainer("sessions");
 		
@@ -120,19 +116,29 @@ public class UserSessionController extends BasicController implements StackedCon
 	 */
 	public void reset() {
 		List<UserSession> authUserSessions = new ArrayList<UserSession>(sessionManager.getAuthenticatedUserSessions());
-		usessTableModel = new UserSessionTableModel(authUserSessions, getIdentity().getKey());
-		tableCtr.setTableDataModel(usessTableModel);
-		// view number of user - lastKlick <= LAST_KLICK_TIMEFRAME min
-		long now = System.currentTimeMillis();
-		int counter = 0;
-		for (UserSession usess : authUserSessions) {
-			long lastklick = usess.getSessionInfo() == null ? -1 : usess.getSessionInfo().getLastClickTime();
-			if ((now - lastklick) <= DIFF) {
-				counter++;
-			}
+		List<UserSessionView> authUserSessionViews = new ArrayList<UserSessionView>(authUserSessions.size());
+		for(UserSession authUserSession:authUserSessions) {
+			authUserSessionViews.add(new UserSessionView(authUserSession));
 		}
-		myContent.contextPut("scount", String.valueOf(counter));
-		myContent.contextPut("minutes", String.valueOf(LAST_KLICK_TIMEFRAME));
+		usessTableModel = new UserSessionTableModel(authUserSessionViews, getIdentity().getKey());
+		tableCtr.setTableDataModel(usessTableModel);
+		//lats 5 minutes
+		long activeSessions = sessionStatsManager.getActiveSessions(300);
+		myContent.contextPut("count5Minutes", String.valueOf(activeSessions));
+		SessionsStats stats = sessionStatsManager.getSessionsStatsLast(300);
+		myContent.contextPut("click5Minutes", String.valueOf(stats.getAuthenticatedClickCalls()));
+		myContent.contextPut("poll5Minutes", String.valueOf(stats.getAuthenticatedPollerCalls()));
+		myContent.contextPut("request5Minutes", String.valueOf(stats.getRequests()));
+		myContent.contextPut("minutes", String.valueOf(5));
+		
+		//last minute
+		activeSessions = sessionStatsManager.getActiveSessions(60);
+		myContent.contextPut("count1Minute", String.valueOf(activeSessions));
+		stats = sessionStatsManager.getSessionsStatsLast(60);
+		myContent.contextPut("click1Minute", String.valueOf(stats.getAuthenticatedClickCalls()));
+		myContent.contextPut("poll1Minute", String.valueOf(stats.getAuthenticatedPollerCalls()));
+		myContent.contextPut("request1Minute", String.valueOf(stats.getRequests()));
+		myContent.contextPut("oneMinute", "1");
 	}
 
 	/**
@@ -173,4 +179,6 @@ public class UserSessionController extends BasicController implements StackedCon
 	protected void doDispose() {
 		// DialogBoxController and TableController get disposed by BasicController
 	}
+	
+	
 }
