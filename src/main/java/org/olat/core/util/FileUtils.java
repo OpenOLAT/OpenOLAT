@@ -58,9 +58,6 @@ public class FileUtils {
 	private static final OLog log = Tracing.createLoggerFor(FileUtils.class);
 	
 	private static int buffSize = 32 * 1024;
-
-	public static final int VALIDATE_FILE = 0;
-	public static final int VALIDATE_NO_EXTENSION = 1;
 	
 	//windows: invalid characters for filenames: \ / : * ? " < > | 
 	//linux: invalid characters for file/folder names: /, but you have to escape certain chars, like ";$%&*"
@@ -788,119 +785,26 @@ public class FileUtils {
 	 * @return true if filename valid
 	 */
 	public static boolean validateFilename(String filename) {
-		return validateFilename(filename, VALIDATE_FILE);
-	}
-	
-	/**
-	 * Simple check for filename validity. It compares each character if it is accepted, forbidden or in a certain (Latin-1) range.
-	 * <p>
-	 * Characters < 33 --> control characters and space Characters > 255 --> above ASCII http://www.danshort.com/ASCIImap/ TODO: control chars from 127 - 157 should also
-	 * not be accepted TODO: how about non ascii chars in filenames, they should also work! See: OLAT-5704
-	 * 
-	 * @param filename
-	 * @return true if filename valid
-	 */
-	public static boolean validateFilename(String filename, int validateMode) {
-		if (filename==null) {
- 			return false;
- 		}
-		if(log.isDebug()) {
-			log.debug("validateFilename: " + filename);
-		}
- 		
-		if (filename.equals("..") || filename.equals(".")) {
+		if(filename==null) {
 			return false;
- 		}
-		
-		// check for a file extension if we test files - simply search for a '.' at the moment
-		if (filename.indexOf('.') < 0) {
-			// no extension
-			if((validateMode & VALIDATE_NO_EXTENSION) == 0) {
-				// but need one
-				return false;
-			}
- 		}
-		
-		/**
-		 * After talking to Lilli we get even more rigid with the file names. Not even
-		 * Umlaute allowed...
-		 */
+		}
 		Arrays.sort(FILE_NAME_FORBIDDEN_CHARS);
 		Arrays.sort(FILE_NAME_ACCEPTED_CHARS);
-		char character;
+		
 		for(int i=0; i<filename.length(); i++) {
-			character = filename.charAt(i);
-			// don't allow <control>-characters 
-			// i.e. all less than 32 (\u0020) as well as those between 127 (\u007f) and 159 (\u009f) 
+			char character = filename.charAt(i);
 			if(Arrays.binarySearch(FILE_NAME_ACCEPTED_CHARS, character)>=0) {
 				continue;
-			}
-			if (character < 32 || character >= 123 || Arrays.binarySearch(FILE_NAME_FORBIDDEN_CHARS, character) >= 0) {
- 				return false;
- 			}
-		}
- 		return true;
- 	}
-	
- 	/**
-	 * Simple check for filename validity with extended error message handling.
-	 * Method tells what error occured while checking the file name. 
-	 * It compares each character if it is accepted, forbidden or in a certain (Latin-1) range. <p>
-	 * Characters < 33 --> control characters and space
-	 * Characters > 255 --> above ASCII
-	 * http://www.danshort.com/ASCIImap/
-	 * TODO: control chars from 127 - 157 should also not be accepted
-	 * TODO: how about non ascii chars in filenames, they should also work! See: OLAT-5704
-	 * 
-	 * @param filename
-	 * @return an ErrorInfo containing whether the filename is valid or what to display
-	 */
-	public static ErrorInfo extendedValidateFilename(String filename) {
-		ErrorInfo res = new ErrorInfo().setValid(true);
-		if (filename==null) {
-			return res.setValid(false).setErrorProperty("cfile.name.noname");
-		}
-		log.info("validateFilename: " + filename);
-
-		if ( filename.equals("..") || filename.equals(".") ) {
-			return res.setErrorProperty("cfile.name.nodir");
-		}
-		
-		// check for a file extension - simply search for a '.' at the moment
-		if(filename.indexOf('.') < 0) {
-			// no extension
-			return res.setValid(false).setErrorProperty("cfile.name.noextension");
-		}
-
-		/**
-		 * After talking to Lilli we get even more rigid with the file names. Not even
-		 * Umlaute allowed...
-		 */
-		Arrays.sort(FILE_NAME_FORBIDDEN_CHARS);
-		char character;
-		char[] illegal = new char[filename.length()+1];
-		int j = 0;
-		Arrays.fill(illegal, (char)0xFF);
-		for(int i=0; i<filename.length(); i++) {
-			character = filename.charAt(i);
-			// don't allow <control>-characters 
-			// i.e. all less than 32 (\u0020) as well as those between 127 (\u007f) and 159 (\u009f) 
-			if ( character < 32 || character >= 123 || 
-				Arrays.binarySearch(FILE_NAME_FORBIDDEN_CHARS, character) >= 0 ) {
-				if(Arrays.binarySearch(illegal, character) < 0) {
-					illegal[j++] = character;
-					Arrays.sort(illegal);
-				}
-				res.setValid(false);
+			} else if(character<33 || character>255 || Arrays.binarySearch(FILE_NAME_FORBIDDEN_CHARS, character)>=0) {
+				return false;
 			}
 		}
-		if(!res.isValid()) {
-			res.setErrorProperty("cfile.name.notvalidchars");
-			res.addErrorParam(String.valueOf(illegal, 0, j));
+		//check if there are any unwanted path denominators in the name
+		if (filename.indexOf("..") > -1) {
+			return false;
 		}
-		return res;
+		return true;
 	}
-	
 	
 	public static String normalizeFilename(String name) {
 		String nameFirstPass = name.replace(" ", "_");
@@ -1046,65 +950,5 @@ public class FileUtils {
 		} else {
 			return true;
 		}
-	}
-	
-	public static class ErrorInfo {
-		private int errorCode;
-		private String[] errorParams;
-		private String errorProperty;
-		private boolean valid;
-		private int numErrorParams;
-		
-		public ErrorInfo() {
-			errorCode = Integer.MIN_VALUE;
-			errorProperty = "No error.";
-			valid = false;
-			errorParams = null;
-			numErrorParams = 0;
-		}
-
-		public int getErrorCode() {
-	    	return errorCode;
-	    }
-
-		public ErrorInfo addErrorParam(String param) {
-			if(numErrorParams == 0) {
-				errorParams = new String[1];			
-			} else {
-				// need to create a new, larger array
-				String[] tmp = new String[numErrorParams+1];
-				System.arraycopy(errorParams, 0, tmp, 0, numErrorParams);
-				errorParams = tmp;
-			}
-			errorParams[numErrorParams++] = param;
-	    	return this;
-	    }
-		
-		public String[] getErrorParams() {
-	    	return errorParams;
-	    }
-		
-		public ErrorInfo setErrorCode(int errorCode) {
-	    	this.errorCode = errorCode;
-	    	return this;
-	    }
-
-		public String getErrorProperty() {
-	    	return errorProperty;
-	    }
-
-		public ErrorInfo setErrorProperty(String errorText) {
-	    	this.errorProperty = errorText;
-	    	return this;
-	    }
-
-		public boolean isValid() {
-	    	return valid;
-	    }
-
-		public ErrorInfo setValid(boolean valid) {
-	    	this.valid = valid;
-	    	return this;
-	    }
 	}
 }

@@ -196,7 +196,7 @@ private static Map<String,String> i18nkeyMap;
 		 * @return true if valid
 		 */
 		private boolean validateFolderName(String name) {
-			return FileUtils.validateFilename(name, FileUtils.VALIDATE_NO_EXTENSION);
+			return FileUtils.validateFilename(name);
 		}		
 	}
 

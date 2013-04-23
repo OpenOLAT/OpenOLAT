@@ -66,7 +66,6 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.FileUtils.ErrorInfo;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
@@ -808,10 +807,12 @@ public class FileUploadController extends FormBasicController {
 			return false;
 		}
 
-		final ErrorInfo err = FileUtils.extendedValidateFilename(fileName);
-		if(!err.isValid()) {
-			fileEl.setErrorKey(err.getErrorProperty(), err.getErrorParams());
-		} else if (remainingQuotKB != -1 
+		boolean isFilenameValid = FileUtils.validateFilename(fileName);		
+		if(!isFilenameValid) {
+			fileEl.setErrorKey("cfile.name.notvalid", null);
+			return false;
+		}
+		if (remainingQuotKB != -1 
 			&& fileEl.getUploadFile().length() / 1024 > remainingQuotKB) {
 			
 			fileEl.clearError();
@@ -819,6 +820,6 @@ public class FileUploadController extends FormBasicController {
 			getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB+0f) / 1000, 1), supportAddr }));
 			return false;
 		}
-		return err.isValid();
+		return true;
 	}
 }

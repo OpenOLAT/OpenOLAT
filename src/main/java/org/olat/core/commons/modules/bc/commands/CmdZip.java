@@ -244,7 +244,7 @@ public class CmdZip extends BasicController implements FolderCommand {
 		 * @return true if file name valid.
 		 */
 		private boolean validateFileName(String name) {
-			return FileUtils.validateFilename(name, FileUtils.VALIDATE_NO_EXTENSION);
+			return FileUtils.validateFilename(name);
 		}			
 	}
 
