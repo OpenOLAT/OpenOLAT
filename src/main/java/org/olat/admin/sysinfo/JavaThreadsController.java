@@ -21,6 +21,8 @@ package org.olat.admin.sysinfo;
 
 import java.util.List;
 
+import org.olat.admin.sysinfo.manager.ThreadInfosManager;
+import org.olat.admin.sysinfo.model.ThreadView;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;

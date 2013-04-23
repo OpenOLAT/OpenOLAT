@@ -46,7 +46,7 @@ public class MonitoringWebService {
 	
 	private static final MemoryWebService memoryWebService = new MemoryWebService();
 	private static final ThreadsWebService threadsWebService = new ThreadsWebService();
-
+	private static final OpenOLATStatisticsWebService ooStatsWebService = new OpenOLATStatisticsWebService();
 	
 	public MonitoringWebService() {
 		//make Spring happy
@@ -64,7 +64,7 @@ public class MonitoringWebService {
 	
 	@Path("openolat")
 	public OpenOLATStatisticsWebService getSessionsWS(@Context HttpServletRequest request) {
-		return new OpenOLATStatisticsWebService();
+		return ooStatsWebService;
 	}
 	
 	@Path("memory")
@@ -136,5 +136,6 @@ public class MonitoringWebService {
 	public static void takeSample() {
 		memoryWebService.takeSample();
 		threadsWebService.takeSample();
+		ooStatsWebService.takeSample();
 	}
 }

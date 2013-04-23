@@ -25,12 +25,10 @@
 
 package org.olat.admin.sysinfo;
 
-import java.util.Date;
 import java.util.List;
 
+import org.olat.admin.sysinfo.model.UserSessionView;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.util.SessionInfo;
-import org.olat.core.util.UserSession;
 
 /**
  * Initial Date:  01.09.2004
@@ -38,14 +36,14 @@ import org.olat.core.util.UserSession;
  * @author Mike Stock
  */
 
-public class UserSessionTableModel extends DefaultTableDataModel<UserSession> {
+public class UserSessionTableModel extends DefaultTableDataModel<UserSessionView> {
 	
 	private final Long myIdentityKey;
 
 	/**
 	 * @param userSessions
 	 */
-	public UserSessionTableModel(List<UserSession> userSessions, Long myIdentityKey) {
+	public UserSessionTableModel(List<UserSessionView> userSessions, Long myIdentityKey) {
 		super(userSessions);
 		this.myIdentityKey = myIdentityKey;
 	}
@@ -61,38 +59,20 @@ public class UserSessionTableModel extends DefaultTableDataModel<UserSession> {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		UserSession usess = (UserSession)getObject(row); 
-		SessionInfo sessInfo = usess.getSessionInfo();
+		UserSessionView usess = getObject(row); 
 		if (usess.isAuthenticated()) {
 			switch (col) {
-				case 0: return sessInfo.getLastname();
-				case 1: return sessInfo.getFirstname();
-				case 2: return sessInfo.getLogin();
-				case 3: return sessInfo.getAuthProvider();
-				case 4: return sessInfo.getFromFQN();
-				case 5: try {
-					//from nano to milli!!
-					return new Date(sessInfo.getLastClickTime());
-					//return new Date(sessInfo.getSession().getLastAccessedTime());
-				} catch (Exception ise) {
-					return null; // "Invalidated"; but need to return a date or null
-				}
-				case 6: try {
-					return sessInfo.getSessionDuration()/1000;
-				}catch (Exception ise){
-					return -1;
-				}
-				case 7: 
-					if (sessInfo.isWebDAV()) {
-						return "WebDAV";
-					} else if (sessInfo.isREST()) {
-						return "REST";
-					} else {
-						return sessInfo.getWebMode();						
-					}
+				case 0: return usess.getLastname();
+				case 1: return usess.getFirstname();
+				case 2: return usess.getLogin();
+				case 3: return usess.getAuthProvider();
+				case 4: return usess.getFromFQN();
+				case 5: return usess.getLastClickTime();
+				case 6: return usess.getSessionDuration();
+				case 7: return usess.getMode();
 				case 8: {
 					//can chat?
-					return myIdentityKey.equals(usess.getIdentity().getKey())
+					return myIdentityKey.equals(usess.getIdentityKey())
 							? Boolean.FALSE : Boolean.TRUE;
 				}
 				default: return "Error";

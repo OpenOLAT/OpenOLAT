@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.admin.sysinfo;
+package org.olat.admin.sysinfo.model;
 
 
 /**

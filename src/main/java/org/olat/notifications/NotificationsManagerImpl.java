@@ -60,6 +60,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.EventFactory;
@@ -272,6 +273,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 
 	public void notifyAllSubscribersByEmail() {
 		logAudit("starting notification cronjob for email sending", null);
+		WorkThreadInformations.setLongRunningTask("sendNotifications");
 		List<Subscriber> subs = getAllValidSubscribers();
 		// ordered by identity.name!
 		
@@ -376,6 +378,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			logAudit("error sending email to the following identities: "+mailErrorLog.toString(),null);
 		}
 		logAudit("sent email to the following identities: "+mailLog.toString(), null);
+		WorkThreadInformations.unsetLongRunningTask("sendNotifications");
 	}
 	
 	private void notifySubscribersByEmail(Subscriber latestSub, List<SubscriptionItem> items, List<Subscriber> subsToUpdate, Translator translator, long start, boolean veto, StringBuilder mailLog, StringBuilder mailErrorLog) {

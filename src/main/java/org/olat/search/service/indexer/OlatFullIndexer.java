@@ -45,6 +45,7 @@ import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.commons.services.search.SearchModule;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.search.service.SearchResourceContext;
 
 /**
@@ -150,6 +151,8 @@ public class OlatFullIndexer {
 	 */
 	private void doIndex() throws InterruptedException{
 		try {
+			WorkThreadInformations.setLongRunningTask("indexer");
+			
 			File tempIndexDir = new File(tempIndexPath);
 			Directory indexPath = FSDirectory.open(new File(tempIndexDir, "main"));
 			Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
@@ -214,6 +217,7 @@ public class OlatFullIndexer {
 		} catch (IOException e) {
 			log.warn("Can not create IndexWriter, indexname=" + tempIndexPath, e);
 		} finally {
+			WorkThreadInformations.unsetLongRunningTask("indexer");
 			DBFactory.getInstance().commitAndCloseSession();
 			log.debug("doIndex: commit & close session");
 		}
