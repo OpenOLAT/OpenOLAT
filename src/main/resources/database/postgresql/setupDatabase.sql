@@ -1079,11 +1079,10 @@ create table o_mapper (
    lastmodified timestamp,
    creationdate timestamp,
    mapper_uuid varchar(64),
-   orig_session_id varchar(32),
+   orig_session_id varchar(64),
    xml_config TEXT,
    primary key (id)
 );
-create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
 
 -- question item
 create table o_qp_pool (
@@ -1778,6 +1777,7 @@ alter table o_qtiresultset add constraint FK14805D0F5259603C foreign key (identi
 create index name_idx3 on o_bs_identity (name);
 create index identstatus_idx on o_bs_identity (status);
 alter table o_bs_identity add constraint FKFF94111CD1A80C95 foreign key (fk_user_id) references o_user;
+create index FK4B04D83FD1A80C95 on o_userproperty (fk_user_id);
 alter table o_userproperty add constraint FK4B04D83FD1A80C95 foreign key (fk_user_id) references o_user;
 
 create index  name_idx4 on o_olatresource (resname);
@@ -1913,6 +1913,8 @@ alter table o_as_eff_statement add constraint eff_statement_id_cstr foreign key 
 create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
 alter table o_as_user_course_infos add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 alter table o_as_user_course_infos add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
+
+create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
 
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_identity foreign key (fk_identity) references o_bs_identity (id);

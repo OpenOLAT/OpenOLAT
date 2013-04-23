@@ -247,7 +247,7 @@ create table o_mapper (
    lastmodified date,
    creationdate date,
    mapper_uuid varchar2(64 char),
-   orig_session_id varchar2(32 char),
+   orig_session_id varchar2(64 char),
    xml_config CLOB,
    primary key (id)
 );

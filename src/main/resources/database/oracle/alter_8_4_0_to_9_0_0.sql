@@ -5,6 +5,8 @@ ALTER TABLE o_qtiresultset ADD (fullyassessed NUMBER);
 alter table o_checklist modify (title null);
 alter table o_checkpoint modify (title null);
 
+create index o_projectbroker_custflds_idx on o_projectbroker_customfields (fk_project_id);
+
 -- question item
 create table o_qp_pool (
    id number(20) not null,
