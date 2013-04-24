@@ -18,6 +18,7 @@ table {
 	 tbody{
 	 	/* olat odd rows */
 		tr.b_table_odd td {  background: #eee; }
+		tr.b_row_selected td { background: $basecolor_light; }
 	 }
 }
 	
@@ -29,7 +30,8 @@ div.b_table_wrapper {
 		margin-left: 1px;
 		border:1px solid $basegray_ultra_light;
 		tbody{
-			tr:hover td { background: $basecolor_ultra_light; ; }
+			tr:hover td { background: $basecolor_ultra_light; }
+			tr.b_row_selected:hover td { background: $basecolor; }
 		}
 	}
 	

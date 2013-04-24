@@ -216,15 +216,19 @@ public class PoolDAO {
 	
 	public List<QuestionItemView> getItemsOfPool(SearchQuestionItemParams params, Collection<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select item from qpoolitem item where item.poolKey=:poolKey");
+		sb.append("select item from qpoolitem item where item.poolKey=:poolKey")
+	    .append(" and (item.markCreatorKey=:ureqIdentityKey or item.markCreatorKey is null)");;
 		if(inKeys != null && inKeys.size() > 0) {
 			sb.append(" and item.key in (:inKeys)");
 		}
-		PersistenceHelper.appendGroupBy(sb, "item", orderBy);
+		if(!PersistenceHelper.appendGroupBy(sb, "item", orderBy)) {
+			sb.append(" order by item.key asc ");
+		}
 		
 		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItemView.class)
-				.setParameter("poolKey", params.getPoolKey());
+				.setParameter("poolKey", params.getPoolKey())
+				.setParameter("ureqIdentityKey", params.getIdentity().getKey());
 		if(inKeys != null && inKeys.size() > 0) {
 			query.setParameter("inKeys", inKeys);
 		}

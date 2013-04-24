@@ -26,8 +26,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
@@ -73,7 +76,11 @@ public class SharingController extends FormBasicController {
 		
 		//list of pools
 		FlexiTableColumnModel poolInfosColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		poolInfosColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("share.editable", 0));
+		poolInfosColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "share.editable", 0,
+			false, null, FlexiColumnModel.ALIGNMENT_LEFT, new BooleanCellRenderer(
+				new CSSIconFlexiCellRenderer("o_readwrite"),
+				new CSSIconFlexiCellRenderer("o_readonly"))
+		));
 		poolInfosColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("pool.name", 1));
 		poolInfosModel = new PoolInfosDataModel(poolInfosColumnsModel);
 		poolInfosTable = uifactory.addTableElement(ureq, getWindowControl(), "pools", poolInfosModel, getTranslator(), formLayout);
@@ -86,7 +93,11 @@ public class SharingController extends FormBasicController {
 
 		//list of groups
 		FlexiTableColumnModel sharesColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		sharesColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("share.editable", 0));
+		sharesColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "share.editable", 0,
+			false, null, FlexiColumnModel.ALIGNMENT_LEFT, new BooleanCellRenderer(
+				new CSSIconFlexiCellRenderer("o_readwrite"),
+				new CSSIconFlexiCellRenderer("o_readonly"))
+		));
 		sharesColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("pool.name", 1));
 		sharesModel = new SharesDataModel(poolInfosColumnsModel);
 		sharesTable = uifactory.addTableElement(ureq, getWindowControl(), "shares", sharesModel, getTranslator(), formLayout);

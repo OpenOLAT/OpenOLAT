@@ -55,8 +55,13 @@ abstract class AbstractItemView implements QuestionItemView, CreateInfo, Modifie
 	@Column(name="item_id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	
+	//calculated
 	@Column(name="item_rating", nullable=true, insertable=false, updatable=false)
 	private Double rating;
+	@Column(name="mark_creator", nullable=false, insertable=false, updatable=false)
+	private Long markCreatorKey;
+	@Column(name="marked", nullable=false, insertable=false, updatable=false)
+	private boolean marked;
 
 	//general
 	@Column(name="item_identifier", nullable=false, insertable=true, updatable=false)
@@ -67,6 +72,8 @@ abstract class AbstractItemView implements QuestionItemView, CreateInfo, Modifie
 	private String title;
 	@Column(name="item_language", nullable=false, insertable=true, updatable=true)
 	private String language;
+	@Column(name="item_keywords", nullable=true, insertable=true, updatable=true)
+	private String keywords;
 	
 	//classification
 	@Column(name="item_taxonomy_level", nullable=true, insertable=false, updatable=false)
@@ -129,12 +136,30 @@ abstract class AbstractItemView implements QuestionItemView, CreateInfo, Modifie
 	public void setRating(Double rating) {
 		this.rating = rating;
 	}
+	
+	public Long getMarkCreatorKey() {
+		return markCreatorKey;
+	}
 
+	public void setMarkCreatorKey(Long markCreatorKey) {
+		this.markCreatorKey = markCreatorKey;
+	}
 
+	@Override
+	public boolean isMarked() {
+		return marked;
+	}
+
+	public void setMarked(boolean marked) {
+		this.marked = marked;
+	}
+
+	@Override
 	public String getResourceableTypeName() {
 		return "QuestionItem";
 	}
 
+	@Override
 	public Long getResourceableId() {
 		return getKey();
 	}
@@ -164,6 +189,14 @@ abstract class AbstractItemView implements QuestionItemView, CreateInfo, Modifie
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getKeywords() {
+		return keywords;
+	}
+
+	public void setKeywords(String keywords) {
+		this.keywords = keywords;
 	}
 
 	@Override

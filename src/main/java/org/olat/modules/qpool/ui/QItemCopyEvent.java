@@ -17,22 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.qpool.ui;
+
+import org.olat.core.gui.control.Event;
+import org.olat.modules.qpool.QuestionItem;
 
 /**
  * 
- * Initial date: 21.03.2013<br>
+ * Initial date: 24.04.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemView extends QuestionItemShort {
-	
-	public boolean isEditable();
-	
-	public boolean isMarked();
-	
-	public Double getRating();
-	
-	
+public class QItemCopyEvent extends Event {
 
+	private static final long serialVersionUID = 1868410260121125418L;
+	private final QuestionItem item;
+
+	public QItemCopyEvent(QuestionItem item) {
+		super("copy-item");
+		this.item = item;
+	}
+
+	public QuestionItem getItem() {
+		return item;
+	}
 }

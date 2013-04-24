@@ -19,8 +19,9 @@
  */
 package org.olat.modules.qpool.ui;
 
+import static java.util.Collections.singletonList;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -41,6 +42,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
@@ -50,6 +53,7 @@ import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.ui.admin.PoolsAdminController;
@@ -86,6 +90,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private TaxonomyAdminController taxonomyCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 	private QuestionPoolAdminStatisticsController adminStatisticsCtrl;
+	private DialogBoxController copyToMyCtrl;
 
 	private final Roles roles;
 	private final MarkManager markManager;
@@ -139,7 +144,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				String targetId = e.getTargetNodeId();
 				String dropId = e.getDroppedNodeId();
 				//drop id w_o_fi1000002357-4
-				doDrop(targetId, dropId);
+				doDrop(ureq, targetId, dropId);
 			} else if(menuTree.getSelectedNode() != null){
 				TreeNode node = menuTree.getSelectedNode();
 				doSelectControllerTreeNode(ureq, node, null, null);
@@ -198,6 +203,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				buildShareSubTreeModel(sharesNode);
 				menuTree.setDirty(true);
 			}
+		} else if(copyToMyCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				QuestionItemShort item = (QuestionItemShort)copyToMyCtrl.getUserObject();
+				doCopyToMy(ureq, item);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -221,7 +231,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		}
 	}
 	
-	private void doDrop(String targetId, String dropId) {
+	private void doDrop(UserRequest ureq, String targetId, String dropId) {
 		try {
 			int lastIndex = dropId.lastIndexOf('-');
 			String rowStr = dropId.substring(lastIndex+1, dropId.length());
@@ -231,21 +241,38 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			if(node != null) {
 				Object userObj = node.getUserObject();
 				if(userObj instanceof BusinessGroup) {
-					qpoolService.shareItemsWithGroups(Collections.singletonList(item), Collections.singletonList((BusinessGroup)userObj), false);
+					qpoolService.shareItemsWithGroups(singletonList(item), singletonList((BusinessGroup)userObj), false);
 					showInfo("item.shared", item.getTitle());
 				} else if(userObj instanceof Pool) {
-					qpoolService.addItemsInPools(Collections.singletonList(item), Collections.singletonList((Pool)userObj), false);
+					qpoolService.addItemsInPools(singletonList(item), singletonList((Pool)userObj), false);
 					showInfo("item.pooled", item.getTitle());
 				} else if(userObj instanceof QuestionItemCollection) {
-					qpoolService.addItemToCollection(item, (QuestionItemCollection)userObj);
+					qpoolService.addItemToCollection(singletonList(item), singletonList((QuestionItemCollection)userObj));
 					showInfo("item.collectioned", item.getTitle());
-				} else if("menu.database.favorit".equals(userObj)) {
+				} else if("My".equals(userObj)) {
+					doCopyToMyConfirmation(ureq, item);
+				} else if("Marked".equals(userObj)) {
 					String businessPath = "[QuestionItem:" + item.getKey() + "]";
 					markManager.setMark(item, getIdentity(), null, businessPath);
 				}
 			}
 		} catch (Exception e) {
 			logError("Cannot drop with id: " + dropId, e);
+		}
+	}
+	
+	private void doCopyToMyConfirmation(UserRequest ureq, QuestionItemShort item) {
+		String title = translate("copy");
+		String text = translate("copy.confirmation");
+		copyToMyCtrl = activateYesNoDialog(ureq, title, text, copyToMyCtrl);
+		copyToMyCtrl.setUserObject(item);
+	}
+	
+	private void doCopyToMy(UserRequest ureq, QuestionItemShort item) {
+		List<QuestionItem> copiedItems = qpoolService.copyItems(getIdentity(), singletonList(item));
+		showInfo("item.copied", Integer.toString(copiedItems.size()));
+		if(myQuestionsCtrl != null) {
+			myQuestionsCtrl.updateSource(ureq);
 		}
 	}
 	

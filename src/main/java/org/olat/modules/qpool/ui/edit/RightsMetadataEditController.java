@@ -21,6 +21,7 @@ package org.olat.modules.qpool.ui.edit;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jgroups.util.UUID;
@@ -99,8 +100,15 @@ public class RightsMetadataEditController extends FormBasicController {
 		
 		managerOwners = uifactory.addFormLink("manage.owners", formLayout, Link.BUTTON_SMALL);
 
-		
-		List<QLicense> licenses = qpoolService.getAllLicenses();
+		List<QLicense> allLicenses = qpoolService.getAllLicenses();
+		List<QLicense> licenses = new ArrayList<QLicense>(allLicenses);
+		for(Iterator<QLicense> it=licenses.iterator(); it.hasNext(); ) {
+			String key = it.next().getLicenseKey();
+			if(key != null && key.startsWith("perso-")) {
+				it.remove();
+			}
+		}
+
 		keys = new String[licenses.size() + 2];
 		String[] values = new String[licenses.size() + 2];
 		keys[0] = "none";
@@ -157,7 +165,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	
 	private boolean isKey(QLicense value) {
 		for(String key:keys) {
-			if(key.equals(value)) {
+			if(key.equals(value.getLicenseKey())) {
 				return true;
 			}
 		}
@@ -243,15 +251,16 @@ public class RightsMetadataEditController extends FormBasicController {
 			if(selectedKey.equals(keys[0])) {
 				itemImpl.setLicense(null);
 			} else if(selectedKey.equals(keys[keys.length - 1])) {
-				QLicense license = qpoolService.getLicense(selectedKey);
-				itemImpl.setLicense(license);
-			} else if (itemImpl.getLicense() != null && itemImpl.getLicense().isDeletable()) {
-				String licenseText = descriptionEl.getValue();
-				itemImpl.getLicense().setLicenseText(licenseText);
+				if (itemImpl.getLicense() != null && itemImpl.getLicense().isDeletable()) {
+					String licenseText = descriptionEl.getValue();
+					itemImpl.getLicense().setLicenseText(licenseText);
+				} else {
+					String licenseText = descriptionEl.getValue();
+					QLicense license = qpoolService.createLicense("perso-" + UUID.randomUUID().toString(), licenseText);
+					itemImpl.setLicense(license);
+				}
 			} else {
-				String licenseText = descriptionEl.getValue();
-				QLicense license = qpoolService.createLicense("perso-" + UUID.randomUUID().toString());
-				license.setLicenseText(licenseText);
+				QLicense license = qpoolService.getLicense(selectedKey);
 				itemImpl.setLicense(license);
 			}
 		}

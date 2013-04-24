@@ -404,7 +404,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		}
 	}
 
-	private ResultInfos<QuestionItemView> searchByAuthor( SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
+	private ResultInfos<QuestionItemView> searchByAuthor(SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
 		Identity author = searchParams.getAuthor();
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
 			try {
@@ -528,14 +528,14 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				} else if(results.size() > maxResults) {
 					results = results.subList(0, Math.min(results.size(), maxResults * 2));
 				}
-				List<QuestionItemView> items = questionItemDao.getSharedItemByResource(resource, results, firstResult, maxResults);
+				List<QuestionItemView> items = questionItemDao.getSharedItemByResource(searchParams.getIdentity(), resource, results, firstResult, maxResults);
 				return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), firstResult + initialResultsSize, items);
 			} catch (Exception e) {
 				log.error("", e);
 			}
 			return new DefaultResultInfos<QuestionItemView>();
 		} else {
-			List<QuestionItemView> items = questionItemDao.getSharedItemByResource(resource, null, firstResult, maxResults, orderBy);
+			List<QuestionItemView> items = questionItemDao.getSharedItemByResource(searchParams.getIdentity(), resource, null, firstResult, maxResults, orderBy);
 			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
 		}
 	}
@@ -549,7 +549,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItemShort> initialItems) {
 		QuestionItemCollection coll = collectionDao.createCollection(collectionName, owner);
 		for(QuestionItemShort item:initialItems) {
-			collectionDao.addItemToCollection(item.getKey(), coll);
+			collectionDao.addItemToCollection(item.getKey(), Collections.singletonList(coll));
 		}
 		return coll;
 	}
@@ -565,8 +565,10 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public void addItemToCollection(QuestionItemShort item, QuestionItemCollection coll) {
-		collectionDao.addItemToCollection(item.getKey(), coll);
+	public void addItemToCollection(List<QuestionItemShort> items, List<QuestionItemCollection> collections) {
+		for(QuestionItemShort item:items) {
+			collectionDao.addItemToCollection(item.getKey(), collections);
+		}
 	}
 
 	@Override
@@ -601,14 +603,14 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				if(results.isEmpty()) {
 					return new DefaultResultInfos<QuestionItemView>();
 				}
-				List<QuestionItemView> items = collectionDao.getItemsOfCollection(collection, results, firstResult, maxResults, orderBy);
+				List<QuestionItemView> items = collectionDao.getItemsOfCollection(searchParams.getIdentity(), collection, results, firstResult, maxResults, orderBy);
 				return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), firstResult + results.size(), items);
 			} catch (Exception e) {
 				log.error("", e);
 			}
 			return new DefaultResultInfos<QuestionItemView>();
 		} else {
-			List<QuestionItemView> items = collectionDao.getItemsOfCollection(collection, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
+			List<QuestionItemView> items = collectionDao.getItemsOfCollection(searchParams.getIdentity(), collection, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
 			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
 		}
 	}
@@ -686,8 +688,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public QLicense createLicense(String licenseKey) {
-		return qpoolLicenseDao.create(licenseKey, true);
+	public QLicense createLicense(String licenseKey, String text) {
+		return qpoolLicenseDao.create(licenseKey, text, true);
 	}
 
 	@Override

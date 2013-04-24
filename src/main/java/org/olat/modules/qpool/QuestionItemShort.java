@@ -22,6 +22,8 @@ package org.olat.modules.qpool;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
 
 /**
@@ -30,7 +32,7 @@ import org.olat.core.id.OLATResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemShort extends OLATResourceable {
+public interface QuestionItemShort extends OLATResourceable, CreateInfo, ModifiedInfo {
 	
 	public Long getKey();
 	
@@ -42,6 +44,8 @@ public interface QuestionItemShort extends OLATResourceable {
 	public String getTitle();
 	
 	public String getLanguage();
+	
+	public String getKeywords();
 	
 	//classification
 	/**

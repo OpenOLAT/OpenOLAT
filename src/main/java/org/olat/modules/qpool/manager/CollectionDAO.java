@@ -88,17 +88,19 @@ public class CollectionDAO {
 	 * @param collection
 	 * @return true if the item is in the collection after the call
 	 */
-	public boolean addItemToCollection(Long itemKey, QuestionItemCollection collection) {
+	public boolean addItemToCollection(Long itemKey, List<QuestionItemCollection> collections) {
 		QuestionItemImpl lockedItem = questionItemDao.loadForUpdate(itemKey);
 		if(lockedItem == null) {
 			return false;
 		}
-		if(!isInCollection(collection, lockedItem)) {
-			CollectionToItem coll2Item = new CollectionToItem();
-			coll2Item.setCreationDate(new Date());
-			coll2Item.setCollection(collection);
-			coll2Item.setItem(lockedItem);
-			dbInstance.getCurrentEntityManager().persist(coll2Item);
+		for(QuestionItemCollection collection:collections) {
+			if(!isInCollection(collection, lockedItem)) {
+				CollectionToItem coll2Item = new CollectionToItem();
+				coll2Item.setCreationDate(new Date());
+				coll2Item.setCollection(collection);
+				coll2Item.setItem(lockedItem);
+				dbInstance.getCurrentEntityManager().persist(coll2Item);
+			}
 		}
 		dbInstance.commit();
 		return true;
@@ -125,19 +127,24 @@ public class CollectionDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItemView> getItemsOfCollection(QuestionItemCollection collection, Collection<Long> inKeys,
+	public List<QuestionItemView> getItemsOfCollection(Identity ureqIdentity, QuestionItemCollection collection, Collection<Long> inKeys,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qitemview item ")
-		  .append(" where item in (select coll2item.item from qcollection2item coll2item where coll2item.collection.key=:collectionKey)");
+		  .append(" where item in (select coll2item.item from qcollection2item coll2item where coll2item.collection.key=:collectionKey)")
+		  .append(" and (item.markCreatorKey=:ureqIdentityKey or item.markCreatorKey is null)")
+		  .append(" and (item.ownerKey=:ureqIdentityKey or item.ownerKey is null)");
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");
 		}
-		PersistenceHelper.appendGroupBy(sb, "coll2item.item", orderBy);
+		if(PersistenceHelper.appendGroupBy(sb, "item", orderBy)) {
+			sb.append(" order by item.key asc ");
+		}
 		
 		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItemView.class)
-				.setParameter("collectionKey", collection.getKey());
+				.setParameter("collectionKey", collection.getKey())
+				.setParameter("ureqIdentityKey", ureqIdentity.getKey());
 		if(inKeys != null && !inKeys.isEmpty()) {
 			query.setParameter("itemKeys", inKeys);
 		}

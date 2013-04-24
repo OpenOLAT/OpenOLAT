@@ -31,19 +31,19 @@ import org.olat.modules.qpool.QuestionItemView;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QItemEvent extends Event {
+public class QItemViewEvent extends Event {
 
 	private static final long serialVersionUID = 1868410260121125418L;
 	private final QuestionItemView item;
 	private final List<QuestionItemView> itemList;
 
-	public QItemEvent(String cmd, QuestionItemView item) {
+	public QItemViewEvent(String cmd, QuestionItemView item) {
 		super(cmd);
 		this.item = item;
 		itemList = null;
 	}
 	
-	public QItemEvent(String cmd, List<QuestionItemView> itemList) {
+	public QItemViewEvent(String cmd, List<QuestionItemView> itemList) {
 		super(cmd);
 		item = null;
 		this.itemList = itemList;

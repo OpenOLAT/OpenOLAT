@@ -107,7 +107,8 @@ public class PersistenceHelper {
 		return result;
 	}
 	
-	public static void appendGroupBy(StringBuilder sb, String dbRef, SortKey... orderBy) {
+	public static boolean appendGroupBy(StringBuilder sb, String dbRef, SortKey... orderBy) {
+		boolean appended = false;
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			sb.append(" order by ");
 			for(SortKey sort:orderBy) {
@@ -117,8 +118,10 @@ public class PersistenceHelper {
 				} else {
 					sb.append(" desc ");
 				}
+				appended = true;
 			}
 		}
+		return appended;
 	}
 
 	/**

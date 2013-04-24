@@ -32,7 +32,7 @@ import org.olat.core.gui.components.table.TableDataModel;
  * Table data model including column models.
  * @author Christian Guretzki
  */
-public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel {
+public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel<T> {
 	
 	private TableDataModel<T> tableModel;
 	private FlexiTableColumnModel tableColumnModel;
@@ -50,6 +50,7 @@ public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel {
 	/**
 	 * @return Number of table row.
 	 */
+	@Override
 	public int getRowCount() {
 		return tableModel.getRowCount();
 	}
@@ -59,6 +60,7 @@ public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel {
 		return row < tableModel.getRowCount();
 	}
 
+	@Override
 	public T getObject(int row) {
 		return tableModel.getObject(row);
 	}
@@ -69,6 +71,7 @@ public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel {
 	 * @param col column number [0...column]
 	 * @return Object for certain table cell
 	 */
+	@Override
 	public Object getValueAt(int row, int col) {
 		return tableModel.getValueAt(row, col);
 	}
@@ -77,6 +80,7 @@ public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel {
 	 * Return table-column-model (all columns) for this table-data-model.
 	 * @return table-column-model
 	 */
+	@Override
 	public FlexiTableColumnModel getTableColumnModel() {
 		return tableColumnModel;
 	}
@@ -84,6 +88,7 @@ public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel {
 	/**
 	 * Set table-column-model (all columns) for this table-data-model.
 	 */
+	@Override
 	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
 		this.tableColumnModel = tableColumnModel;
 	}

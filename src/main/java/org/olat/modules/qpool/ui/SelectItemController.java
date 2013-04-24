@@ -89,7 +89,7 @@ public class SelectItemController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(event instanceof QItemEvent) {
+		if(event instanceof QItemViewEvent) {
 			if("select-item".equals(event.getCommand())) {
 				fireEvent(ureq, event);
 			}	

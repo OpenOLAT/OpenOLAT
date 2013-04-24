@@ -111,7 +111,7 @@ import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemView;
-import org.olat.modules.qpool.ui.QItemEvent;
+import org.olat.modules.qpool.ui.QItemViewEvent;
 import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -837,8 +837,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			cmc.deactivate();
 			cleanUp();
 			
-			if(event instanceof QItemEvent) {
-				QItemEvent e = (QItemEvent)event;
+			if(event instanceof QItemViewEvent) {
+				QItemViewEvent e = (QItemViewEvent)event;
 				List<QuestionItemView> items = e.getItemList();
 				doSelectInsertionPoint(CMD_TOOLS_ADD_QPOOL, items);
 			}

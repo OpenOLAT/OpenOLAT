@@ -61,16 +61,17 @@ public class QLicenseDAO implements ApplicationListener<ContextRefreshedEvent> {
 		}
 		for(String defaultLicenseKey:defaultLicenses) {
 			if(!licenseKeys.contains(defaultLicenseKey)) {
-				create(defaultLicenseKey, false);
+				create(defaultLicenseKey, null, false);
 			}
 		}
 		dbInstance.commitAndCloseSession();
 	}
 	
-	public QLicense create(String licenseKey, boolean deletable) {
+	public QLicense create(String licenseKey, String text, boolean deletable) {
 		QLicense license = new QLicense();
 		license.setCreationDate(new Date());
 		license.setLicenseKey(licenseKey);
+		license.setLicenseText(text);
 		license.setDeletable(deletable);
 		dbInstance.getCurrentEntityManager().persist(license);
 		return license;

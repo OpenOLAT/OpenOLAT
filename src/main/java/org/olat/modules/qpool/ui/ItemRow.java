@@ -52,6 +52,11 @@ public class ItemRow implements QuestionItemView {
 	}
 
 	@Override
+	public boolean isMarked() {
+		return delegate.isMarked();
+	}
+
+	@Override
 	public Double getRating() {
 		return delegate.getRating();
 	}
@@ -79,6 +84,11 @@ public class ItemRow implements QuestionItemView {
 	@Override
 	public String getTitle() {
 		return delegate.getTitle();
+	}
+	
+	@Override
+	public String getKeywords() {
+		return delegate.getKeywords();
 	}
 	
 	@Override
@@ -138,6 +148,11 @@ public class ItemRow implements QuestionItemView {
 	@Override
 	public Date getLastModified() {
 		return delegate.getLastModified();
+	}
+
+	@Override
+	public void setLastModified(Date date) {
+		//not its job
 	}
 
 	@Override

@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.model;
 
 import javax.persistence.Cacheable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -36,9 +37,20 @@ public class ItemView extends AbstractItemView {
 
 	private static final long serialVersionUID = 503607331953283037L;
 	
+	@Column(name="owner_id", nullable=false, insertable=false, updatable=false)
+	private Long ownerKey;
+	
+	public Long getOwnerKey() {
+		return ownerKey;
+	}
+
+	public void setOwnerKey(Long ownerKey) {
+		this.ownerKey = ownerKey;
+	}
+
 	@Override
 	public boolean isEditable() {
-		return false;
+		return ownerKey != null;
 	}
 
 	@Override

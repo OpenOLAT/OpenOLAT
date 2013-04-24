@@ -132,6 +132,7 @@ create or replace view o_qp_item_v as (
       item.q_master_identifier as item_master_identifier,
       item.q_title as item_title,
       item.q_language as item_language,
+      item.q_keywords as item_keywords,
       taxlevel.q_field as item_taxonomy_level,
       educontext.q_level as item_edu_context,
       item.q_educational_learningtime as item_educational_learningtime,
@@ -145,13 +146,19 @@ create or replace view o_qp_item_v as (
       item.q_format as item_format,
       item.creationdate as item_creationdate,
       item.lastmodified as item_lastmodified,
+      ownership.identity_id as owner_id,
+      mark.creator_id as mark_creator,
+      (case when mark.creator_id is null then 0 else 1 end) as marked,
       (select avg(rating.rating) from o_userrating rating
          where rating.resid=item.id and rating.resname='QuestionItem' and rating.ressubpath is null
       ) as item_rating
    from o_qp_item item
+   inner join o_bs_secgroup ownergroup on (ownergroup.id = item.fk_ownergroup)
+   left join o_bs_membership ownership on (ownergroup.id = ownership.secgroup_id) 
    left join o_qp_taxonomy_level taxlevel on (item.fk_taxonomy_level = taxlevel.id)
    left join o_qp_item_type itemtype on (item.fk_type = itemtype.id)
    left join o_qp_edu_context educontext on (item.fk_edu_context = educontext.id)
+   left join o_mark mark on (mark.resid = item.id and mark.resname = 'QuestionItem')
 );
 
 create or replace view o_qp_item_author_v as (
@@ -162,6 +169,7 @@ create or replace view o_qp_item_author_v as (
       item.q_master_identifier as item_master_identifier,
       item.q_title as item_title,
       item.q_language as item_language,
+      item.q_keywords as item_keywords,
       taxlevel.q_field as item_taxonomy_level,
       educontext.q_level as item_edu_context,
       item.q_educational_learningtime as item_educational_learningtime,
@@ -175,12 +183,15 @@ create or replace view o_qp_item_author_v as (
       item.q_format as item_format,
       item.creationdate as item_creationdate,
       item.lastmodified as item_lastmodified,
+      mark.creator_id as mark_creator,
+      (case when mark.creator_id is null then 0 else 1 end) as marked,
       (select avg(rating.rating) from o_userrating rating
          where rating.resid=item.id and rating.resname='QuestionItem' and rating.ressubpath is null
       ) as item_rating
    from o_qp_item item
    inner join o_bs_secgroup ownergroup on (ownergroup.id = item.fk_ownergroup)
    inner join o_bs_membership ownership on (ownergroup.id = ownership.secgroup_id) 
+   left join o_mark mark on (mark.resid = item.id and mark.resname = 'QuestionItem')
    left join o_qp_taxonomy_level taxlevel on (item.fk_taxonomy_level = taxlevel.id)
    left join o_qp_item_type itemtype on (item.fk_type = itemtype.id)
    left join o_qp_edu_context educontext on (item.fk_edu_context = educontext.id)
@@ -195,6 +206,7 @@ create or replace view o_qp_item_pool_v as (
       item.q_master_identifier as item_master_identifier,
       item.q_title as item_title,
       item.q_language as item_language,
+      item.q_keywords as item_keywords,
       taxlevel.q_field as item_taxonomy_level,
       educontext.q_level as item_edu_context,
       item.q_educational_learningtime as item_educational_learningtime,
@@ -208,11 +220,14 @@ create or replace view o_qp_item_pool_v as (
       item.q_format as item_format,
       item.creationdate as item_creationdate,
       item.lastmodified as item_lastmodified,
+      mark.creator_id as mark_creator,
+      (case when mark.creator_id is null then 0 else 1 end) as marked,
       (select avg(rating.rating) from o_userrating rating
          where rating.resid=item.id and rating.resname='QuestionItem' and rating.ressubpath is null
       ) as item_rating
    from o_qp_item item
    inner join o_qp_pool_2_item pool2item on (pool2item.fk_item_id = item.id)
+   left join o_mark mark on (mark.resid = item.id and mark.resname = 'QuestionItem')
    left join o_qp_taxonomy_level taxlevel on (item.fk_taxonomy_level = taxlevel.id)
    left join o_qp_item_type itemtype on (item.fk_type = itemtype.id)
    left join o_qp_edu_context educontext on (item.fk_edu_context = educontext.id)
@@ -240,6 +255,7 @@ create or replace view o_qp_item_shared_v as (
       item.q_master_identifier as item_master_identifier,
       item.q_title as item_title,
       item.q_language as item_language,
+      item.q_keywords as item_keywords,
       taxlevel.q_field as item_taxonomy_level,
       educontext.q_level as item_edu_context,
       item.q_educational_learningtime as item_educational_learningtime,
@@ -253,11 +269,14 @@ create or replace view o_qp_item_shared_v as (
       item.q_format as item_format,
       item.creationdate as item_creationdate,
       item.lastmodified as item_lastmodified,
+      mark.creator_id as mark_creator,
+      (case when mark.creator_id is null then 0 else 1 end) as marked,
       (select avg(rating.rating) from o_userrating rating
          where rating.resid=item.id and rating.resname='QuestionItem' and rating.ressubpath is null
       ) as item_rating
    from o_qp_item item
    inner join o_qp_share_item shareditem on (shareditem.fk_item_id = item.id)
+   left join o_mark mark on (mark.resid = item.id and mark.resname = 'QuestionItem')
    left join o_qp_taxonomy_level taxlevel on (item.fk_taxonomy_level = taxlevel.id)
    left join o_qp_item_type itemtype on (item.fk_type = itemtype.id)
    left join o_qp_edu_context educontext on (item.fk_edu_context = educontext.id)

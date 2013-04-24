@@ -32,7 +32,6 @@ import org.olat.modules.qpool.model.QLicense;
 public interface QuestionItem extends QuestionItemShort {
 
 	//general
-	public String getKeywords();
 	
 	public String getDescription();
 	

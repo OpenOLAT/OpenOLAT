@@ -72,11 +72,14 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 		}
 	}
 	
-	
-
 	@Override
 	public void popController(Controller controller) {
-		popController(controller.getInitialComponent());
+		for(Link link:stack) {
+			Controller popCtrl = (Controller)link.getUserObject();
+			if(popCtrl == controller) {
+				popController(link);
+			}
+		}
 	}
 	
 	private Controller popController(Component source) {

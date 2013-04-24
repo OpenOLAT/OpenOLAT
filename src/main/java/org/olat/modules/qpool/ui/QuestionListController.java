@@ -69,7 +69,7 @@ import org.olat.repository.controllers.RepositoryDetailsController;
  */
 public class QuestionListController extends AbstractItemListController implements StackedControllerAware, ItemRowsSource {
 
-	private FormLink createList, exportItem, shareItem, unshareItem, copyItem, deleteItem, authorItem, importItem;
+	private FormLink list, exportItem, shareItem, unshareItem, copyItem, deleteItem, authorItem, importItem;
 	
 	private StackedController stackPanel;
 	
@@ -81,12 +81,16 @@ public class QuestionListController extends AbstractItemListController implement
 	private PoolsController selectPoolCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private CreateCollectionController createCollectionCtrl;
+	private CollectionListController chooseCollectionCtrl;
 	private StepsMainRunController exportWizard;
 	private StepsMainRunController importAuthorsWizard;
 	private ImportController importItemCtrl;
+	private CollectionTargetController listTargetCtrl;
 	private ShareTargetController shareTargetCtrl;
 	private CloseableCalloutWindowController shareCalloutCtrl;
 	private RepositoryAddController addController;
+	private QuestionItemDetailsController currentDetailsCtrl;
+	private LayoutMain3ColsController currentMainDetailsCtrl;
 	
 	private final QPoolService qpoolService;
 	private final RepositoryManager repositoryManager;
@@ -102,7 +106,7 @@ public class QuestionListController extends AbstractItemListController implement
 
 	@Override
 	protected void initButtons(FormItemContainer formLayout) {
-		createList = uifactory.addFormLink("create.list", formLayout, Link.BUTTON);
+		list = uifactory.addFormLink("create.list", formLayout, Link.BUTTON);
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
 		shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
 		if(getSource().isRemoveEnabled()) {
@@ -124,10 +128,10 @@ public class QuestionListController extends AbstractItemListController implement
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
-			if(link == createList) {
+			if(link == list) {
 				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				List<QuestionItemShort> items = getShortItems(selections);
-				doAskCollectionName(ureq, items);
+				doList(ureq, items);
 			} else if(link == exportItem) {
 				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 				if(selections.size() > 0) {
@@ -186,7 +190,6 @@ public class QuestionListController extends AbstractItemListController implement
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == shareTargetCtrl) {
-			@SuppressWarnings("unchecked")
 			List<QuestionItemShort> items = (List<QuestionItemShort>)shareTargetCtrl.getUserObject();
 			shareCalloutCtrl.deactivate();
 			if(ShareTargetController.SHARE_GROUP_CMD.equals(event.getCommand())) {
@@ -222,13 +225,23 @@ public class QuestionListController extends AbstractItemListController implement
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(source == listTargetCtrl) {
+			List<QuestionItemShort> items = (List<QuestionItemShort>)listTargetCtrl.getUserObject();
+			shareCalloutCtrl.deactivate();
+			if(CollectionTargetController.ADD_TO_LIST_POOL_CMD.equals(event.getCommand())) {
+				doChooseCollectio(ureq, items);
+			} else if(CollectionTargetController.NEW_LIST_CMD.equals(event.getCommand())) {
+				doAskCollectionName(ureq, items);
+			}
 		} else if(source == createCollectionCtrl) {
 			if(Event.DONE_EVENT == event) {
-				@SuppressWarnings("unchecked")
 				List<QuestionItemShort> items = (List<QuestionItemShort>)createCollectionCtrl.getUserObject();
 				String collectionName = createCollectionCtrl.getName();
 				doCreateCollection(ureq, collectionName, items);
 			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == chooseCollectionCtrl) {
 			cmc.deactivate();
 			cleanUp();
 		} else if(source == exportWizard) {
@@ -270,6 +283,12 @@ public class QuestionListController extends AbstractItemListController implement
 				@SuppressWarnings("unchecked")
 				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmRemoveBox.getUserObject();
 				doRemove(ureq, items);
+			}
+		} else if(source == currentDetailsCtrl) {
+			if(event instanceof QItemCopyEvent) {
+				QItemCopyEvent qce = (QItemCopyEvent)event;
+				stackPanel.popUpToRootController(ureq);
+				doSelect(ureq, qce.getItem(), true);
 			}
 		} else if(source == addController) {
 			if(event instanceof EntryChangedEvent) {
@@ -313,6 +332,19 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 	}
 	
+	protected void doList(UserRequest ureq, List<QuestionItemShort> items) {
+		String title = translate("filter.view");
+		removeAsListenerAndDispose(shareTargetCtrl);
+		listTargetCtrl = new CollectionTargetController(ureq, getWindowControl());
+		listTargetCtrl.setUserObject(items);
+		listenTo(listTargetCtrl);
+		
+		removeAsListenerAndDispose(shareCalloutCtrl);
+		shareCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), listTargetCtrl.getInitialComponent(), list, title, true, null);
+		listenTo(shareCalloutCtrl);
+		shareCalloutCtrl.activate();	
+	}
+	
 	private void doAskCollectionName(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(createCollectionCtrl);
 		createCollectionCtrl = new CreateCollectionController(ureq, getWindowControl());
@@ -321,6 +353,18 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				createCollectionCtrl.getInitialComponent(), true, translate("create.list"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doChooseCollectio(UserRequest ureq, List<QuestionItemShort> items) {
+		removeAsListenerAndDispose(chooseCollectionCtrl);
+		chooseCollectionCtrl = new CollectionListController(ureq, getWindowControl());
+		chooseCollectionCtrl.setUserObject(items);
+		listenTo(chooseCollectionCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				chooseCollectionCtrl.getInitialComponent(), true, translate("add.to.list"));
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -502,9 +546,18 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	protected void doSelect(UserRequest ureq, ItemRow row) {
 		QuestionItem item = qpoolService.loadItemById(row.getKey());
-		QuestionItemDetailsController detailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item, row.isEditable());
-		detailsCtrl.setStackedController(stackPanel);
-		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), detailsCtrl);
-		stackPanel.pushController(item.getTitle(), mainCtrl);
+		doSelect(ureq, item, row.isEditable());
+	}
+		
+	protected void doSelect(UserRequest ureq, QuestionItem item, boolean editable) {
+		removeAsListenerAndDispose(currentDetailsCtrl);
+		removeAsListenerAndDispose(currentMainDetailsCtrl);
+		
+		currentDetailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item, editable);
+		currentDetailsCtrl.setStackedController(stackPanel);
+		listenTo(currentDetailsCtrl);
+		currentMainDetailsCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), currentDetailsCtrl);
+		listenTo(currentMainDetailsCtrl);
+		stackPanel.pushController(item.getTitle(), currentMainDetailsCtrl);
 	}
 }

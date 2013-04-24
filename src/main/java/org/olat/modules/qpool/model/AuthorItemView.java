@@ -39,6 +39,7 @@ public class AuthorItemView extends AbstractItemView {
 	
 	@Column(name="item_author", nullable=false, insertable=false, updatable=false)
 	private Long authorKey;
+
 	
 	@Override
 	public boolean isEditable() {
@@ -52,7 +53,6 @@ public class AuthorItemView extends AbstractItemView {
 	public void setAuthorKey(Long authorKey) {
 		this.authorKey = authorKey;
 	}
-
 
 	@Override
 	public int hashCode() {

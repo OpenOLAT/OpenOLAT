@@ -61,7 +61,7 @@ public class ItemListController extends AbstractItemListController implements It
 			Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 			if(!selections.isEmpty()) {
 				List<QuestionItemView> items = getItemViews(selections);
-				fireEvent(ureq, new QItemEvent("select-item", items));
+				fireEvent(ureq, new QItemViewEvent("select-item", items));
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -78,7 +78,7 @@ public class ItemListController extends AbstractItemListController implements It
 
 	@Override
 	protected void doSelect(UserRequest ureq, ItemRow row) {
-		fireEvent(ureq, new QItemEvent("select-item", row));
+		fireEvent(ureq, new QItemViewEvent("select-item", row));
 	}
 
 	@Override

@@ -133,7 +133,7 @@ public interface QPoolService {
 	//list
 	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItemShort> initialItems);
 	
-	public void addItemToCollection(QuestionItemShort item, QuestionItemCollection collection);
+	public void addItemToCollection(List<QuestionItemShort> items, List<QuestionItemCollection> collections);
 	
 	public void removeItemsFromCollection(List<QuestionItemShort> items, QuestionItemCollection collection);
 
@@ -186,7 +186,7 @@ public interface QPoolService {
 	public boolean deleteEducationalContext(QEducationalContext context);
 	
 	//licenses administration
-	public QLicense createLicense(String licenseKey);
+	public QLicense createLicense(String licenseKey, String text);
 	
 	public List<QLicense> getAllLicenses();
 	

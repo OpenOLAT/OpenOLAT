@@ -57,12 +57,17 @@ import org.olat.core.util.StringHelper;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public abstract class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
+public class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
 	
+	private String cssClass;
 	private FlexiCellRenderer delegate;
 	
 	public CSSIconFlexiCellRenderer() {
 		//
+	}
+	
+	public CSSIconFlexiCellRenderer(String cssClass) {
+		this.cssClass = cssClass;
 	}
 	
 	public CSSIconFlexiCellRenderer(FlexiCellRenderer delegate) {
@@ -94,7 +99,15 @@ public abstract class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
 		target.append("</span>");			
 	}
 		
-	protected abstract String getCssClass(Object val);
-	protected abstract String getCellValue(Object val);
-	protected abstract String getHoverText(Object val, Translator translator);	
+	protected String getCssClass(Object val) {
+		return cssClass;
+	}
+	
+	protected String getCellValue(Object val) {
+		return "  ";
+	}
+	
+	protected String getHoverText(Object val, Translator translator) {
+		return null;
+	}
 }

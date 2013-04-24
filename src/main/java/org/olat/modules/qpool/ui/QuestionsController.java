@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -128,6 +127,12 @@ public class QuestionsController extends BasicController implements Activateable
 		previewCtrl.refresh(ureq);
 	}
 	
+	public void updateSource(UserRequest ureq) {
+		listCtrl.updateSource(source);
+		detailsCtrl.refresh();
+		previewCtrl.refresh(ureq);
+	}
+	
 	public QuestionItemShort getQuestionAt(int index) {
 		return listCtrl.getQuestionItemAt(index);
 	}
@@ -150,8 +155,8 @@ public class QuestionsController extends BasicController implements Activateable
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == listCtrl) {
-			if(event instanceof QItemEvent) {
-				QItemEvent se = (QItemEvent)event;
+			if(event instanceof QItemViewEvent) {
+				QItemViewEvent se = (QItemViewEvent)event;
 				QuestionItemView item = se.getItem();
 				doUpdateDetails(ureq, item);
 			} else if(event instanceof QPoolEvent) {
@@ -176,13 +181,7 @@ public class QuestionsController extends BasicController implements Activateable
 	}
 	
 	protected void doSelect(UserRequest ureq, QuestionItem item, boolean editable) {
-		WindowControl swControl = addToHistory(ureq, item, null);
-		QuestionItemDetailsController detailsCtrl = new QuestionItemDetailsController(ureq, swControl, item, editable);
-		detailsCtrl.setStackedController(stackPanel);
-		listenTo(detailsCtrl);
-		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), detailsCtrl);
-		listenTo(mainCtrl);
-		stackPanel.pushController(item.getTitle(), mainCtrl);
+		listCtrl.doSelect(ureq, item, editable);
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, QuestionItem item) {

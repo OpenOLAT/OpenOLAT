@@ -242,7 +242,7 @@ public class MetadatasController extends BasicController {
 		mainVC.put("details_rights", rightsCtrl.getInitialComponent());
 	}
 	
-	protected void updateVersionNumber() {
+	protected QuestionItem updateVersionNumber() {
 		if(item instanceof QuestionItemImpl && StringHelper.containsNonWhitespace(item.getItemVersion())) {
 			String version = item.getItemVersion();
 			int lastPoint = version.lastIndexOf('.');
@@ -259,6 +259,7 @@ public class MetadatasController extends BasicController {
 				}	
 			}
 		}
+		return item;
 	}
 	
 	private void reloadData(QuestionItem item) {

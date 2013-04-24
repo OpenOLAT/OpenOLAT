@@ -46,7 +46,7 @@ public class QLicenseDAOTest extends OlatTestCase {
 	@Test
 	public void testCreate() {
 		String licenseKey = "mit-license-" + UUID.randomUUID().toString();
-		QLicense license = qpoolLicenseDao.create(licenseKey, true);
+		QLicense license = qpoolLicenseDao.create(licenseKey, null, true);
 		dbInstance.commit();
 		//check
 		Assert.assertNotNull(license);
@@ -59,7 +59,7 @@ public class QLicenseDAOTest extends OlatTestCase {
 	@Test
 	public void testCreateAndGet() {
 		String licenseKey = "apache-license-" + UUID.randomUUID().toString();
-		QLicense license = qpoolLicenseDao.create(licenseKey, true);
+		QLicense license = qpoolLicenseDao.create(licenseKey, null, true);
 		dbInstance.commit();
 		//load it
 		QLicense reloadedLicense = qpoolLicenseDao.loadById(license.getKey());
@@ -74,7 +74,7 @@ public class QLicenseDAOTest extends OlatTestCase {
 	@Test
 	public void testCreateAndGet_byLicenseKey() {
 		String licenseKey = "apache-license-" + UUID.randomUUID().toString();
-		QLicense license = qpoolLicenseDao.create(licenseKey, true);
+		QLicense license = qpoolLicenseDao.create(licenseKey, null, true);
 		dbInstance.commit();
 		//load it
 		QLicense reloadedLicense = qpoolLicenseDao.loadByLicenseKey(licenseKey);
@@ -89,7 +89,7 @@ public class QLicenseDAOTest extends OlatTestCase {
 	@Test
 	public void testGetItemLevels() {
 		String licenseKey = "gnu-" + UUID.randomUUID().toString();
-		QLicense license = qpoolLicenseDao.create(licenseKey, true);
+		QLicense license = qpoolLicenseDao.create(licenseKey, null, true);
 		dbInstance.commit();
 		//load it
 		List<QLicense> allLicenses = qpoolLicenseDao.getLicenses();
@@ -101,7 +101,7 @@ public class QLicenseDAOTest extends OlatTestCase {
 	@Test
 	public void testDelete_deletable() {
 		String licenseKey = "gpl-" + UUID.randomUUID().toString();
-		QLicense license = qpoolLicenseDao.create(licenseKey, true);
+		QLicense license = qpoolLicenseDao.create(licenseKey, null, true);
 		dbInstance.commitAndCloseSession();
 		
 		//delete it
@@ -119,7 +119,7 @@ public class QLicenseDAOTest extends OlatTestCase {
 	@Test
 	public void testDelete_notDeletable() {
 		String licenseKey = "lgpl-" + UUID.randomUUID().toString();
-		QLicense license = qpoolLicenseDao.create(licenseKey, false);
+		QLicense license = qpoolLicenseDao.create(licenseKey, null, false);
 		dbInstance.commitAndCloseSession();
 		
 		//delete it

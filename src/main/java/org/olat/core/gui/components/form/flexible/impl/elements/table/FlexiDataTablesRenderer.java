@@ -53,15 +53,28 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
 		
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		FlexiTableDataModel dataModel = ftE.getTableDataModel();
+		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		FlexiTableColumnModel columnsModel = dataModel.getTableColumnModel();
 		
 		Form rootForm = ftE.getRootForm();
 		String id = ftC.getFormDispatchId();
 		int rows = dataModel.getRowCount();
-		
+
+		int selectPos = -1;
+		Object selectedObject = ftE.getSelectedObj();
+		if(selectedObject != null) {
+			for(int i=0; i<dataModel.getRowCount(); i++) {
+				if(dataModel.isRowLoaded(i) && selectedObject.equals(dataModel.getObject(i))) {
+					selectPos = i;
+					break;
+				}
+			}
+		}
+
 		target.append("<script type='text/javascript'>")
+		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
+		  .append(" var selectedIndex =").append(selectPos).append(";\n")
       .append("	jQuery('#").append(id).append("').dataTable( {\n")
       .append("		'bScrollInfinite': true,\n")
       .append("		'bScrollCollapse': true,\n")
@@ -73,7 +86,10 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("		'iDeferLoading': ").append(rows).append(",\n")
       .append("		'sAjaxSource': '").append(ftE.getMapperUrl()).append("',\n")
       .append("   'asStripeClasses': ['','b_table_odd'],\n")
-      .append("		'fnRowCallback': function( nRow, aData, iDisplayIndex ) {\n")
+      .append("		'fnRowCallback': function( nRow, aData, iDisplayIndex, iDisplayIndexFull) {\n")
+      .append("     if(selectedIndex == iDisplayIndexFull) {\n")
+      .append("       jQuery(nRow).addClass('b_row_selected');\n")
+      .append("     }\n")
       .append("			jQuery(nRow).draggable({ \n")
       .append("				containment: '#b_main',\n")
       .append("				zIndex: 10000,\n")
@@ -102,7 +118,7 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
     target.append("		]\n")
       .append("	});\n")
       //clic rows
-      .append("	jQuery('#").append(id).append(" tbody tr').live('click', function(event, ui) {\n")
+      .append("	jQuery('#").append(id).append(" tbody').click(function(event, ui) {\n")
       .append("   var link = false;\n")
       .append("   var rowId = null;\n")
       .append("   if(event.target.tagName == 'A' || event.target.tagName == 'INPUT') {\n")
@@ -112,6 +128,10 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("     if(el.tagName == 'A' || el.tagName == 'INPUT') {\n")
       .append("       link = true;\n")
       .append("     } else if (el.tagName == 'TR' && rowId == null) {\n")
+      .append("       jQuery('#").append(id).append(" tbody tr').each(function(index, trEl) {\n")
+      .append("         jQuery(trEl).removeClass('b_row_selected');\n")
+      .append("       });\n")
+      .append("       jQuery(el).addClass('b_row_selected');\n")
       .append("       rowId = jQuery(el).attr('id');\n")
       .append("       return false;\n")
       .append("     }\n")
@@ -122,6 +142,7 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("   };")
       .append("	});\n")
       .append("});\n")
+      .append("/* ]]> */\n")
 		  .append("</script>\n");
 	}
 }

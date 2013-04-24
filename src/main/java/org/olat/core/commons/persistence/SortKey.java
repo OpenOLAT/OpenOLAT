@@ -54,4 +54,9 @@ public class SortKey {
 	public void setKey(String key) {
 		this.key = key;
 	}
+	
+	@Override
+	public String toString() {
+		return "sort[key=" + key + ":asc=" + asc + "]";
+	}
 }

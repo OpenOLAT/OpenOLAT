@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -28,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QuestionItemShort;
 
 /**
  * 
@@ -37,7 +40,7 @@ import org.olat.core.util.StringHelper;
  */
 public class CreateCollectionController extends FormBasicController {
 
-	private Object userObject;
+	private List<QuestionItemShort> userObject;
 	private TextElement nameEl;
 	
 	public CreateCollectionController(UserRequest ureq, WindowControl wControl) {
@@ -64,11 +67,11 @@ public class CreateCollectionController extends FormBasicController {
 		// 
 	}
 	
-	public Object getUserObject() {
+	public List<QuestionItemShort> getUserObject() {
 		return userObject;
 	}
 
-	public void setUserObject(Object userObject) {
+	public void setUserObject(List<QuestionItemShort> userObject) {
 		this.userObject = userObject;
 	}
 	

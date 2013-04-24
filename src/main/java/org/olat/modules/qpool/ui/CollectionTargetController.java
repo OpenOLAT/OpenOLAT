@@ -33,23 +33,23 @@ import org.olat.modules.qpool.QuestionItemShort;
 
 /**
  * 
- * Initial date: 15.04.2013<br>
+ * Initial date: 24.04.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ShareTargetController extends BasicController {
+public class CollectionTargetController extends BasicController {
 	
-	public static final String SHARE_POOL_CMD = "qpool.share.pool";
-	public static final String SHARE_GROUP_CMD = "qpool.share.group";
+	public static final String ADD_TO_LIST_POOL_CMD = "qpool.list.add";
+	public static final String NEW_LIST_CMD = "qpool.list.new";
 
 	private List<QuestionItemShort> userObject;
-	private final Link shareGroup, sharePool;
+	private final Link newList, addToList;
 	
-	public ShareTargetController(UserRequest ureq, WindowControl wControl) {
+	public CollectionTargetController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		VelocityContainer mainVC = createVelocityContainer("share_target");
-		shareGroup = LinkFactory.createLink("share.group", mainVC, this);
-		sharePool = LinkFactory.createLink("share.pool", mainVC, this);
+		VelocityContainer mainVC = createVelocityContainer("collection_target");
+		newList = LinkFactory.createLink("create.list", mainVC, this);
+		addToList = LinkFactory.createLink("add.to.list", mainVC, this);
 		putInitialPanel(mainVC);
 	}
 	
@@ -68,10 +68,10 @@ public class ShareTargetController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(shareGroup == source) {
-			fireEvent(ureq, new Event(SHARE_GROUP_CMD));
-		} else if(sharePool == source) {
-			fireEvent(ureq, new Event(SHARE_POOL_CMD));
+		if(newList == source) {
+			fireEvent(ureq, new Event(NEW_LIST_CMD));
+		} else if(addToList == source) {
+			fireEvent(ureq, new Event(ADD_TO_LIST_POOL_CMD));
 		}
 	}
 }

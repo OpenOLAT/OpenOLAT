@@ -42,9 +42,9 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			return false;
 		} else if(droppedNode == null) {
 			Object uObject = targetNode.getUserObject();
-			if("menu.database.my".equals(uObject)) {
-				return false;
-			} else if("menu.database.favorit".equals(uObject)) {
+			if("My".equals(uObject)) {
+				return !sibling;
+			} else if("Marked".equals(uObject)) {
 				return !sibling;
 			} else if(uObject instanceof BusinessGroup
 					|| uObject instanceof QuestionItemCollection

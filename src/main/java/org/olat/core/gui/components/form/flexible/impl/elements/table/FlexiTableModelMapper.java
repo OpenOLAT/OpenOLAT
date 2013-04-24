@@ -79,14 +79,23 @@ public class FlexiTableModelMapper implements Mapper {
 		}
 
 		if(StringHelper.isLong(firstRowStr) && StringHelper.isLong(maxRowStr)) {
-			FlexiTableDataModel dataModel = ftE.getTableDataModel();
+			FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 			FlexiTableDataSource<?> dataSource = ftE.getTableDataSource();
 			FlexiTableColumnModel columnsModel = dataModel.getTableColumnModel();
 			
 			SortKey orderBy = null;
 			if(sortedColIndex >= 0 && sortedColIndex < columnsModel.getColumnCount()) {
-				FlexiColumnModel sortedColumn = columnsModel.getColumnModel(sortedColIndex);
-				orderBy = new SortKey(sortedColumn.getSortKey(), "asc".equals(sortDir));
+				int count = 0;
+				for(int i=0; i<columnsModel.getColumnCount() && count <= sortedColIndex; i++) {
+					FlexiColumnModel sortedColumn = columnsModel.getColumnModel(i);
+					if(ftE.isColumnModelVisible(sortedColumn)) {
+						if(count == sortedColIndex && StringHelper.containsNonWhitespace(sortedColumn.getSortKey())) {
+							orderBy = new SortKey(sortedColumn.getSortKey(), "asc".equals(sortDir));
+							break;
+						}
+						count++;
+					}
+				}
 			}
 
 			int rows = ftE.getTableDataModel().getRowCount();

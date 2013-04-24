@@ -90,7 +90,7 @@ public class QLicenseEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(license == null) {
-			qpoolService.createLicense(nameEl.getValue());
+			qpoolService.createLicense(nameEl.getValue(), null);
 		} else {
 			//itemType.setName(nameEl.getValue());
 			//qpoolService.updatePool(itemType);

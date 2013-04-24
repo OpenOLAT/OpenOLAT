@@ -103,7 +103,13 @@ public class RightsMetadataController extends FormBasicController  {
 		if(copyright != null) {
 			copyrightEl.select("on", true);
 			descriptionEl.setVisible(true);
-			descriptionEl.setValue(copyright.getLicenseKey());
+			
+			String licenseKey = copyright.getLicenseKey();
+			if(licenseKey != null && licenseKey.startsWith("perso-")) {
+				descriptionEl.setValue(copyright.getLicenseText());
+			} else {
+				descriptionEl.setValue(copyright.getLicenseKey());
+			}
 		} else {
 			copyrightEl.select("on", false);
 			descriptionEl.setVisible(false);

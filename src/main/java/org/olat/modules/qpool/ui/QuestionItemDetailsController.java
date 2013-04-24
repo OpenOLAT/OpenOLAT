@@ -59,7 +59,7 @@ import org.olat.modules.qpool.manager.ExportQItemResource;
  */
 public class QuestionItemDetailsController extends BasicController implements StackedControllerAware {
 	
-	private Link deleteItem, shareItem, exportItem, editItem;
+	private Link deleteItem, shareItem, exportItem, editItem, copyItem;
 
 	private Controller editCtrl;
 	private Controller previewCtrl;
@@ -82,17 +82,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 		poolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
-		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
-		if(spi == null) {
-			previewCtrl = new QuestionItemRawController(ureq, wControl);
-		} else {
-			previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item, false);
-			if(previewCtrl == null) {
-				previewCtrl = new QuestionItemRawController(ureq, wControl);
-			}
-		}
-		listenTo(previewCtrl);
-		
+		QPoolSPI spi = setPreviewController(ureq, item);
 		boolean canEdit = editable || qpoolService.isAuthor(item, getIdentity());
 		canEditContent = canEdit && (spi != null && spi.isTypeEditable());
 		metadatasCtrl = new MetadatasController(ureq, wControl, item, canEdit);
@@ -112,6 +102,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 			editItem.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
 		}
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
+		copyItem = LinkFactory.createButton("copy", mainVC, this);
 		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
 		deleteItem.setVisible(canEdit);
 		exportItem = LinkFactory.createButton("export.item", mainVC, this);
@@ -120,6 +111,20 @@ public class QuestionItemDetailsController extends BasicController implements St
 		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
 		mainVC.put("comments", commentsAndRatingCtr.getInitialComponent());
 		putInitialPanel(mainVC);
+	}
+	
+	protected QPoolSPI setPreviewController(UserRequest ureq, QuestionItem item) {
+		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
+		if(spi == null) {
+			previewCtrl = new QuestionItemRawController(ureq, getWindowControl());
+		} else {
+			previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item, false);
+			if(previewCtrl == null) {
+				previewCtrl = new QuestionItemRawController(ureq, getWindowControl());
+			}
+		}
+		listenTo(previewCtrl);
+		return spi;
 	}
 	
 	@Override
@@ -144,6 +149,8 @@ public class QuestionItemDetailsController extends BasicController implements St
 			if(canEditContent) {
 				doEdit(ureq, metadatasCtrl.getItem());
 			}
+		} else if(source == copyItem) {
+			doCopy(ureq, metadatasCtrl.getItem());
 		}
 	}
 	
@@ -170,7 +177,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 			cleanUp();
 		} else if(source == editCtrl) {
 			if(event == Event.CHANGED_EVENT) {
-				doContentChanged();
+				doContentChanged(ureq);
 			}
 		}
 		super.event(ureq, source, event);
@@ -181,6 +188,14 @@ public class QuestionItemDetailsController extends BasicController implements St
 		removeAsListenerAndDispose(selectGroupCtrl);
 		cmc = null;
 		selectGroupCtrl = null;
+	}
+	
+	private void doCopy(UserRequest ureq, QuestionItemShort item) {
+		List<QuestionItem> copies = qpoolService.copyItems(getIdentity(), Collections.singletonList(item));
+		if(copies.size() == 1) {
+			showInfo("item.copied", Integer.toString(copies.size()));
+			fireEvent(ureq, new QItemCopyEvent(copies.get(0)));
+		}
 	}
 	
 	private void doEdit(UserRequest ureq, QuestionItem item) {
@@ -194,8 +209,10 @@ public class QuestionItemDetailsController extends BasicController implements St
 		stackPanel.pushController("Edition", mainCtrl);
 	}
 	
-	private void doContentChanged() {
-		metadatasCtrl.updateVersionNumber();
+	private void doContentChanged(UserRequest ureq) {
+		QuestionItem item = metadatasCtrl.updateVersionNumber();
+		//update preview
+		setPreviewController(ureq, item);
 	}
 	
 	private void doSelectGroup(UserRequest ureq, QuestionItem item) {

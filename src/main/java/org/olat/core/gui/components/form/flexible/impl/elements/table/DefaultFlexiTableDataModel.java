@@ -33,12 +33,17 @@ import org.olat.core.gui.components.table.TableDataModel;
  *
  * @param <U>
  */
-public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataModel, TableDataModel<U> {
+public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataModel<U>, TableDataModel<U> {
 	private List<U> rows;
 	private FlexiTableColumnModel columnModel;
 	
 	public DefaultFlexiTableDataModel(FlexiTableColumnModel columnModel) {
 		rows = new ArrayList<U>();
+		this.columnModel = columnModel;
+	}
+	
+	public DefaultFlexiTableDataModel(List<U> rows, FlexiTableColumnModel columnModel) {
+		this.rows = new ArrayList<U>(rows);
 		this.columnModel = columnModel;
 	}
 	

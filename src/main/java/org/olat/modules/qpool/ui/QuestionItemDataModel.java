@@ -170,7 +170,9 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 			case identifier: return item.getIdentifier();
 			case masterIdentifier: return item.getMasterIdentifier();
 			case title: return item.getTitle();
+			case keywords: return item.getKeywords();
 			case creationDate: return item.getCreationDate();
+			case lastModified: return item.getLastModified();
 			case taxnonomyLevel: return item.getTaxonomyLevelName();
 			case difficulty: return item.getDifficulty();
 			case type: {
@@ -188,11 +190,10 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 					return "";
 				}
 				return translator.translate("lifecycle.status." + s.name());
-			} case mark: {
-				return item.getMarkLink();
-			} default: {
-				return "-";
 			}
+			case editable: return item.isEditable() ? Boolean.TRUE : Boolean.FALSE;
+			case mark: return item.getMarkLink();
+			default: return "-";
 		}
 	}
 	
@@ -201,7 +202,9 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 		identifier("general.identifier"),
 		masterIdentifier("general.master.identifier"),
 		title("general.title"),
+		keywords("general.keywords"),
 		creationDate("technical.creation"),
+		lastModified("technical.lastModified"),
 		taxnonomyLevel("classification.taxonomy.level"),
 		difficulty("question.difficulty"),
 		
@@ -209,6 +212,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 		format("technical.format"),
 		rating("rating"),
 		status("lifecycle.status"),
+		editable("editable"),
 		mark("mark");
 		
 		private final String i18nKey;

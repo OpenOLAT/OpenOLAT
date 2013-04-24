@@ -80,27 +80,28 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FormLink searchButton;
 	private TextElement searchFieldEl;
 	
-	private final FlexiTableDataModel dataModel;
+	private final FlexiTableDataModel<?> dataModel;
 	private FlexiTableDataSource<?> dataSource;
 	private final FlexiTableComponent component;
 	private CloseableCalloutWindowController callout;
 	private final WindowControl wControl;
 	private final String mapperUrl;
 	
+	private Object selectedObj;
 	private Set<Integer> multiSelectedIndex;
 	private Set<Integer> enabledColumnIndex = new HashSet<Integer>();
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
-	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel tableModel) {
+	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel) {
 		this(ureq, wControl, name, null, tableModel, null, -1, false);
 	}
 	
-	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator, FlexiTableDataModel tableModel) {
+	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
 		this(ureq, wControl, name, translator, tableModel, null, -1, false);
 	}
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator,
-			FlexiTableDataModel tableModel, FlexiTableDataSource<?> dataSource, int pageSize, boolean searchField) {
+			FlexiTableDataModel<?> tableModel, FlexiTableDataSource<?> dataSource, int pageSize, boolean searchField) {
 		super(name);
 		this.wControl = wControl;
 		this.dataModel = tableModel;
@@ -184,6 +185,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return customButton;
 	}
 
+	public Object getSelectedObj() {
+		return selectedObj;
+	}
+
+	public void setSelectedObj(Object selectedObj) {
+		this.selectedObj = selectedObj;
+	}
+
 	@Override
 	public int getPageSize() {
 		return pageSize;
@@ -258,7 +267,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			int index = selectedIndex.lastIndexOf('-');
 			if(index > 0 && index+1 < selectedIndex.length()) {
 				String pos = selectedIndex.substring(index+1);
-				doSelect(ureq, Integer.parseInt(pos));
+				int selectedPosition = Integer.parseInt(pos);
+				selectedObj = dataModel.getObject(selectedPosition);
+				doSelect(ureq, selectedPosition);
 			}
 		} else if(searchButton != null
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
@@ -465,7 +476,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return getRowCount();
 	}
 	
-	public FlexiTableDataModel getTableDataModel() {
+	public FlexiTableDataModel<?> getTableDataModel() {
 		return dataModel;
 	}
 	

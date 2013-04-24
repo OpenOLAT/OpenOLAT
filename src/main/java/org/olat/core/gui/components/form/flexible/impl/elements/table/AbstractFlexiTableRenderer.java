@@ -84,7 +84,7 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 	}
 	
 	protected void renderHeaders(StringOutput target, FlexiTableElementImpl ftE, Translator translator) {
-		FlexiTableDataModel dataModel = ftE.getTableDataModel();
+		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
 		      
 		target.append("<thead><tr>");
@@ -120,7 +120,7 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		
 		String id = ftC.getFormDispatchId();
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		FlexiTableDataModel dataModel = ftE.getTableDataModel();
+		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 
 		// build rows
 		target.append("<tbody>");
@@ -183,7 +183,7 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 			int row, int col, int numOfCols, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		FlexiTableDataModel dataModel = ftE.getTableDataModel();
+		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 
 		int alignment = fcm.getAlignment();
 		String cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "b_align_normal" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "b_align_inverse" : "b_align_center"));
