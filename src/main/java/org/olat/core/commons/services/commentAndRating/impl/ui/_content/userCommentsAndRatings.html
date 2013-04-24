@@ -1,12 +1,12 @@
 <div class="b_ratings_and_comments">
 	#if ($enableRatings)
 	<div id="b_rating_wrapper_$viewIdent" class="b_rating_wrapper">
-		#if($r.render("ratingUserC"))
+		#if($r.available("ratingUserC"))
 			<div id="b_rating_$viewIdent" style="display: none">
 			$r.render("ratingUserC")
 			</div>
 		#end
-		#if($r.render("ratingAverageC"))
+		#if($r.available("ratingAverageC"))
 			$r.render("ratingAverageC")
 		#end
 	</div>
