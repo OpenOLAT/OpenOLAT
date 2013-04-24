@@ -51,6 +51,20 @@ public class SessionsVO {
 	private int secureRestCount;
 	@XmlAttribute(name="instantMessagingCount", required=true)
 	private int instantMessagingCount;
+	@XmlAttribute(name="authenticatedClickCountLastMinute", required=true)
+	private long authenticatedClickCountLastMinute;
+	@XmlAttribute(name="authenticatedPollCountLastMinute", required=true)
+	private long authenticatedPollCountLastMinute;
+	@XmlAttribute(name="authenticatedClickCountLastFiveMinutes", required=true)
+	private long authenticatedClickCountLastFiveMinutes;
+	@XmlAttribute(name="requestLastMinute", required=true)
+	private long requestLastMinute;
+	@XmlAttribute(name="requestLastFiveMinutes", required=true)
+	private long requestLastFiveMinutes;
+	@XmlAttribute(name="authenticatedPollCountLastFiveMinutes", required=true)
+	private long authenticatedPollCountLastFiveMinutes;
+	@XmlAttribute(name="concurrentDispatchThreads", required=true)
+	private long concurrentDispatchThreads;
 	
 	public SessionsVO() {
 		//make JAXB happy
@@ -118,6 +132,62 @@ public class SessionsVO {
 
 	public void setInstantMessagingCount(int instantMessagingCount) {
 		this.instantMessagingCount = instantMessagingCount;
+	}
+
+	public long getAuthenticatedClickCountLastMinute() {
+		return authenticatedClickCountLastMinute;
+	}
+
+	public void setAuthenticatedClickCountLastMinute(long authenticatedClickCountLastMinute) {
+		this.authenticatedClickCountLastMinute = authenticatedClickCountLastMinute;
+	}
+
+	public long getAuthenticatedPollCountLastMinute() {
+		return authenticatedPollCountLastMinute;
+	}
+
+	public void setAuthenticatedPollCountLastMinute(long authenticatedPollCountLastMinute) {
+		this.authenticatedPollCountLastMinute = authenticatedPollCountLastMinute;
+	}
+
+	public long getAuthenticatedClickCountLastFiveMinutes() {
+		return authenticatedClickCountLastFiveMinutes;
+	}
+
+	public void setAuthenticatedClickCountLastFiveMinutes(long authenticatedClickCountLastFiveMinutes) {
+		this.authenticatedClickCountLastFiveMinutes = authenticatedClickCountLastFiveMinutes;
+	}
+
+	public long getAuthenticatedPollCountLastFiveMinutes() {
+		return authenticatedPollCountLastFiveMinutes;
+	}
+
+	public void setAuthenticatedPollCountLastFiveMinutes(long authenticatedPollCountLastFiveMinutes) {
+		this.authenticatedPollCountLastFiveMinutes = authenticatedPollCountLastFiveMinutes;
+	}
+
+	public long getRequestLastMinute() {
+		return requestLastMinute;
+	}
+
+	public void setRequestLastMinute(long requestLastMinute) {
+		this.requestLastMinute = requestLastMinute;
+	}
+
+	public long getRequestLastFiveMinutes() {
+		return requestLastFiveMinutes;
+	}
+
+	public void setRequestLastFiveMinutes(long requestLastFiveMinutes) {
+		this.requestLastFiveMinutes = requestLastFiveMinutes;
+	}
+
+	public long getConcurrentDispatchThreads() {
+		return concurrentDispatchThreads;
+	}
+
+	public void setConcurrentDispatchThreads(long concurrentDispatchThreads) {
+		this.concurrentDispatchThreads = concurrentDispatchThreads;
 	}
 
 	@Override

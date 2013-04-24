@@ -21,12 +21,12 @@
 package org.olat.core.util;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalImpl;
@@ -46,6 +46,19 @@ public class WorkThreadInformations {
 	private static OLog log = Tracing.createLoggerFor(WorkThreadInformations.class);
 	
 	private static final Map<String,String> works = new HashMap<String,String>();
+	private static final List<String> longRunningTasks = new ArrayList<String>();
+	
+	public synchronized static void setLongRunningTask(String taskDesc) {
+		longRunningTasks.add(taskDesc);
+	}
+	
+	public synchronized static void unsetLongRunningTask(String taskDesc) {
+		longRunningTasks.remove(taskDesc);
+	}
+	
+	public synchronized static List<String> getLongRunningTasks() {
+		return new ArrayList<String>(longRunningTasks);
+	}
 	
 	public synchronized static void set(String message) {
 		String threadName = Thread.currentThread().getName();

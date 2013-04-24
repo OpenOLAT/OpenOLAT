@@ -19,6 +19,7 @@
  */
 package org.olat.restapi.system;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,10 +30,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.olat.admin.sysinfo.manager.SessionStatsManager;
+import org.olat.admin.sysinfo.model.SessionsStats;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
@@ -41,13 +46,14 @@ import org.olat.repository.RepositoryManager;
 import org.olat.restapi.system.vo.OpenOLATStatisticsVO;
 import org.olat.restapi.system.vo.RepositoryStatisticsVO;
 import org.olat.restapi.system.vo.SessionsVO;
+import org.olat.restapi.system.vo.TasksVO;
 import org.olat.restapi.system.vo.UserStatisticsVO;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OpenOLATStatisticsWebService {
+public class OpenOLATStatisticsWebService implements Sampler {
 	
 	private final IndexerWebService indexerWebService = new IndexerWebService();
 	
@@ -141,6 +147,24 @@ public class OpenOLATStatisticsWebService {
 		return Response.ok(vo).build();
 	}
 	
+	/**
+	 * Return some statistics about long running tasks.
+	 * @response.representation.200.qname {http://www.example.com}taskVOes
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc A short summary about sessions
+   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_SESSIONVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @param request The HTTP request
+	 * @return The statistics about sessions
+	 */
+	@GET
+	@Path("tasks")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getTasks(@Context HttpServletRequest request) {
+		TasksVO vo = getTasksVO();
+		return Response.ok(vo).build();
+	}
+	
 	private UserStatisticsVO getUserStatistics() {
 		UserStatisticsVO stats = new UserStatisticsVO();
 		
@@ -164,9 +188,18 @@ public class OpenOLATStatisticsWebService {
 		return stats;
 	}
 	
+	private TasksVO getTasksVO() {
+		TasksVO tasks = new TasksVO();
+		List<String> longRunningTaskList = WorkThreadInformations.getLongRunningTasks();
+		String[] longRunningTasks = longRunningTaskList.toArray(new String[longRunningTaskList.size()]);
+		tasks.setLongRunningTasks(longRunningTasks);
+		return tasks;
+	}
+	
 	private SessionsVO getSessionsVO() {
 		SessionsVO vo = new SessionsVO();
 
+		SessionStatsManager sessionStatsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
 		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		vo.setCount(sessionManager.getUserSessionsCnt());
 
@@ -205,7 +238,25 @@ public class OpenOLATStatisticsWebService {
 		vo.setSecureRestCount(secureRestCount);
 		//Instant messaging
 		vo.setInstantMessagingCount(-1);
+
+		SessionsStats statsLastMinute = sessionStatsManager.getSessionsStatsLast(60);
+		SessionsStats statsLast5Minutes = sessionStatsManager.getSessionsStatsLast(300);
+		vo.setAuthenticatedClickCountLastMinute(statsLastMinute.getAuthenticatedClickCalls());
+		vo.setAuthenticatedClickCountLastFiveMinutes(statsLast5Minutes.getAuthenticatedPollerCalls());
+		vo.setAuthenticatedPollCountLastMinute(statsLastMinute.getAuthenticatedPollerCalls());
+		vo.setAuthenticatedPollCountLastFiveMinutes(statsLast5Minutes.getAuthenticatedPollerCalls());
+		vo.setRequestLastMinute(statsLastMinute.getRequests());
+		vo.setRequestLastFiveMinutes(statsLast5Minutes.getRequests());
+		long dispatchThreads = DispatcherAction.getConcurrentCounter();
+		vo.setConcurrentDispatchThreads(dispatchThreads);	
 		return vo;
 	}
-
+	
+  @Override
+	public void takeSample() {
+  	SessionStatsManager manager = CoreSpringFactory.getImpl(SessionStatsManager.class);
+		if(manager != null) {//check if the manager is loaded
+			manager.takeSample();
+		}
+	}
 }

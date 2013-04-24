@@ -28,6 +28,8 @@ package org.olat.core.util;
 
 import javax.servlet.http.HttpSession;
 
+import org.olat.admin.sysinfo.manager.SessionStatsManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 
@@ -245,6 +247,7 @@ public class SessionInfo {
 	 */
 	public void setLastClickTime(){ 
 		this.timestmp = System.currentTimeMillis();
+		CoreSpringFactory.getImpl(SessionStatsManager.class).incrementAuthenticatedClick();
 	}
 	/**
 	 * last time a business relevant click was made

@@ -66,6 +66,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -863,6 +864,8 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 			}
 		}
 		
+		WorkThreadInformations.setLongRunningTask("ldapSync");
+		
 		coordinator.getEventBus().fireEventToListenersOf(new LDAPEvent(LDAPEvent.SYNCHING), ldapSyncLockOres);
 		
 		LdapContext ctx = null;
@@ -901,6 +904,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 			success = false;
 			return success;
 		} finally {
+			WorkThreadInformations.unsetLongRunningTask("ldapSync");
 			freeSyncLock();
 			if(ctx != null) {
 				try {

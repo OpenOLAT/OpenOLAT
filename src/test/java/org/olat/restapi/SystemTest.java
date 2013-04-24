@@ -40,6 +40,7 @@ import org.olat.restapi.system.vo.ReleaseInfosVO;
 import org.olat.restapi.system.vo.RepositoryStatisticsVO;
 import org.olat.restapi.system.vo.RuntimeStatisticsVO;
 import org.olat.restapi.system.vo.SessionsVO;
+import org.olat.restapi.system.vo.TasksVO;
 import org.olat.restapi.system.vo.ThreadStatisticsVO;
 import org.olat.restapi.system.vo.ThreadVO;
 import org.olat.restapi.system.vo.ThreadVOes;
@@ -351,6 +352,19 @@ public class SystemTest extends OlatJerseyTestCase {
 		assertNotNull(databaseInfos.getHibernateStatistics().getQueryExecutionMaxTimeQueryString());
 		assertTrue(databaseInfos.getHibernateStatistics().getSuccessfulTransactionCount() > 0);
 		assertTrue(databaseInfos.getHibernateStatistics().getTransactionsCount() > 0);
+
+		conn.shutdown();	
+	}
+	
+	@Test
+	public void testTasks() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI tasksUri = conn.getContextURI().path("system").path("monitoring").path("openolat").path("tasks").build();
+		TasksVO infos = conn.get(tasksUri, TasksVO.class);
+		assertNotNull(infos);
+		assertNotNull(infos.getLongRunningTasks());
 
 		conn.shutdown();	
 	}
