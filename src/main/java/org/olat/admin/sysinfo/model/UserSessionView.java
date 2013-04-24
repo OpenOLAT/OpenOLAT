@@ -21,7 +21,11 @@ public class UserSessionView {
 	private long sessionDuration;
 	private String mode;
 	
+	private UserSession userSession;
+	
 	public UserSessionView(UserSession usess) {
+		userSession = usess;
+		
 		SessionInfo sessInfo = usess.getSessionInfo();
 		authenticated = usess.isAuthenticated();
 		if (authenticated) {
@@ -52,6 +56,10 @@ public class UserSessionView {
 				mode = sessInfo.getWebMode();
 			}
 		}
+	}
+	
+	public UserSession getUserSession() {
+		return userSession;
 	}
 	
 	public boolean isAuthenticated() {

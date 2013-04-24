@@ -159,12 +159,13 @@ public class UserSessionController extends BasicController implements StackedCon
 				TableEvent te = (TableEvent)event;
 				int selRow = te.getRowId();
 				// session info (we only have authenticated sessions here
-				UserSession usess = (UserSession) tableCtr.getTableDataModel().getObject(selRow);
+				UserSessionView usessw = (UserSessionView)tableCtr.getTableDataModel().getObject(selRow);
 				if("sess.chat".equals(te.getActionId())) {
-					Buddy buddy = imService.getBuddyById(usess.getIdentity().getKey());
+					Buddy buddy = imService.getBuddyById(usessw.getIdentityKey());
 					OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
 					ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 				} else if("sess.details".equals(te.getActionId())) {
+					UserSession usess = usessw.getUserSession();
 					UserSessionDetailsController detailsCtrl = new UserSessionDetailsController(ureq, getWindowControl(), usess);
 					listenTo(detailsCtrl);
 					
