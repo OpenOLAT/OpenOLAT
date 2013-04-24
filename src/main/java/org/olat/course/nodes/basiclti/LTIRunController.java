@@ -27,12 +27,15 @@ package org.olat.course.nodes.basiclti;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.imsglobal.basiclti.BasicLTIUtil;
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -53,7 +56,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.shibboleth.ShibbolethDispatcher;
 
 /**
  * Description:<br>
@@ -202,14 +207,8 @@ public class LTIRunController extends BasicController {
 		setProperty(props, "resource_link_id", courseNode.getIdent());
 		setProperty(props, "resource_link_title", courseNode.getShortTitle());
 		setProperty(props, "resource_link_description", courseNode.getLongTitle());
-		setProperty(props, "user_id", u.getKey() + "");
-		// Use the shibboleth ID as person source identificator
-		String personSourceId = (String)ureq.getUserSession().getEntry("shibuid");
-		if (!StringHelper.containsNonWhitespace(personSourceId)) {
-			// fallback to the serverDomainName:identityId
-			personSourceId = Settings.getServerconfig("server_fqdn") + ":" + ident.getKey();
-		}
-		setProperty(props, "lis_person_sourcedid", personSourceId);
+		setProperty(props, "user_id", u.getKey() + "");		
+		setProperty(props, "lis_person_sourcedid", createPersonSourceId());
 		
 		setProperty(props, "launch_presentation_locale", loc.toString());
 		setProperty(props, "launch_presentation_document_target", "iframe");
@@ -256,6 +255,40 @@ public class LTIRunController extends BasicController {
 		
 
 		return props;
+	}
+	
+	/**
+	 * Generates the LTI lis_person_sourcedid property for the current user.
+	 * Uses the Shib ID or LDAP ID if available, otherwhise a combination of
+	 * server domain name and identity key
+	 * 
+	 * @return personSourceId
+	 */
+	private String createPersonSourceId() {
+		// The person source ID is used as user identifier. The rule is as follows: 
+		// 1) if a shibboleth authentication token is availble, use the ShibbolethModule.getDefaultUIDAttribute() 
+		// 2) if a LDAP authentication token is available, use the LDAPConstants.LDAP_USER_IDENTIFYER
+		// 3) as fallback use the system URL together with the identity username
+		String personSourceId = null;
+		// Use the shibboleth ID as person source identificator
+		List<Authentication> authMethods = BaseSecurityManager.getInstance().getAuthentications(getIdentity());
+		for (Authentication method : authMethods) {
+			String provider = method.getProvider();
+			if (ShibbolethDispatcher.PROVIDER_SHIB.equals(provider)) {
+				personSourceId = method.getAuthusername();
+				// done, case 1)
+				break;
+			} else if (LDAPAuthenticationController.PROVIDER_LDAP.equals(provider)) {
+				personSourceId = method.getAuthusername();
+				// normally done, case 2). however, lets continue because we might still find a case 1)
+			}			
+			// ignore all other authentication providers
+		}
+		if (!StringHelper.containsNonWhitespace(personSourceId)) {
+			// fallback to the serverDomainName:identityId as case 3)
+			personSourceId = Settings.getServerconfig("server_fqdn") + ":" + getIdentity().getKey();
+		}
+		return personSourceId;
 	}
 
 	public static void setProperty(Properties props, String key, String value) {
