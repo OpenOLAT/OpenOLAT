@@ -50,7 +50,11 @@ public class InstantMessagingAdminController extends FormBasicController {
 
 	private MultipleSelectionElement imEnabledEl;
 	private MultipleSelectionElement imEnableGroupEl;
+	private MultipleSelectionElement imEnableGroupAnonymEl;
+	private MultipleSelectionElement imEnableGroupAnonymDefaultEl;
 	private MultipleSelectionElement imEnableCourseEl;
+	private MultipleSelectionElement imEnableCourseAnonymEl;
+	private MultipleSelectionElement imEnableCourseAnonymDefaultEl;
 	private MultipleSelectionElement imEnablePrivateEl;
 	private MultipleSelectionElement imEnableGroupPeersEl;
 	private MultipleSelectionElement imEnableOnlineStatusEl;
@@ -85,11 +89,29 @@ public class InstantMessagingAdminController extends FormBasicController {
 		imEnableGroupEl = uifactory.addCheckboxesHorizontal("im.module.enabled.group", chatOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableGroupEl.select(enabledKeys[0], imModule.isGroupEnabled());
 		imEnableGroupEl.addActionListener(listener, FormEvent.ONCHANGE);
+
+		imEnableGroupAnonymEl = uifactory.addCheckboxesHorizontal("im.module.enabled.group.anonym", chatOptionsFlc, enabledKeys, enabledValues, null);
+		imEnableGroupAnonymEl.select(enabledKeys[0], imModule.isGroupAnonymEnabled());
+		imEnableGroupAnonymEl.addActionListener(listener, FormEvent.ONCHANGE);
+
+		imEnableGroupAnonymDefaultEl = uifactory.addCheckboxesHorizontal("im.module.enabled.group.anonym.default", chatOptionsFlc, enabledKeys, enabledValues, null);
+		imEnableGroupAnonymDefaultEl.select(enabledKeys[0], imModule.isGroupAnonymDefaultEnabled());
+		imEnableGroupAnonymDefaultEl.addActionListener(listener, FormEvent.ONCHANGE);
+
+		uifactory.addSpacerElement("spacer", chatOptionsFlc, true);
 		
 		imEnableCourseEl = uifactory.addCheckboxesHorizontal("im.module.enabled.course", chatOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableCourseEl.select(enabledKeys[0], imModule.isCourseEnabled());
 		imEnableCourseEl.addActionListener(listener, FormEvent.ONCHANGE);
-		
+
+		imEnableCourseAnonymEl = uifactory.addCheckboxesHorizontal("im.module.enabled.course.anonym", chatOptionsFlc, enabledKeys, enabledValues, null);
+		imEnableCourseAnonymEl.select(enabledKeys[0], imModule.isCourseAnonymEnabled());
+		imEnableCourseAnonymEl.addActionListener(listener, FormEvent.ONCHANGE);
+
+		imEnableCourseAnonymDefaultEl = uifactory.addCheckboxesHorizontal("im.module.enabled.course.anonym.default", chatOptionsFlc, enabledKeys, enabledValues, null);
+		imEnableCourseAnonymDefaultEl.select(enabledKeys[0], imModule.isCourseAnonymDefaultEnabled());
+		imEnableCourseAnonymDefaultEl.addActionListener(listener, FormEvent.ONCHANGE);
+
 		FormLayoutContainer messageOptionsFlc = FormLayoutContainer.createDefaultFormLayout("flc_messageOptions", getTranslator());
 		formLayout.add(messageOptionsFlc);
 		
@@ -113,14 +135,30 @@ public class InstantMessagingAdminController extends FormBasicController {
 		// disable all options when the module is turned off
 		if (imEnabledEl.isSelected(0)) {
 			imEnableGroupEl.setEnabled(true);
+			imEnableGroupAnonymEl.setEnabled(true);
+			if (imEnableGroupAnonymEl.isSelected(0)) { 
+				imEnableGroupAnonymDefaultEl.setEnabled(true);
+			} else {
+				imEnableGroupAnonymDefaultEl.setEnabled(false);				
+			}
 			imEnableCourseEl.setEnabled(true);
+			imEnableCourseAnonymEl.setEnabled(true);
+			if (imEnableCourseAnonymEl.isSelected(0)) { 
+				imEnableCourseAnonymDefaultEl.setEnabled(true);
+			} else {
+				imEnableCourseAnonymDefaultEl.setEnabled(false);
+			}
 			imEnablePrivateEl.setEnabled(true);
 			imEnableGroupPeersEl.setEnabled(true);
 			imEnableOnlineStatusEl.setEnabled(true);
 		} else {
 			// everything is disabled
 			imEnableGroupEl.setEnabled(false);
+			imEnableGroupAnonymEl.setEnabled(false);
+			imEnableGroupAnonymDefaultEl.setEnabled(false);
 			imEnableCourseEl.setEnabled(false);
+			imEnableCourseAnonymEl.setEnabled(false);
+			imEnableCourseAnonymDefaultEl.setEnabled(false);
 			imEnablePrivateEl.setEnabled(false);
 			imEnableGroupPeersEl.setEnabled(false);
 			imEnableOnlineStatusEl.setEnabled(false);
@@ -137,8 +175,16 @@ public class InstantMessagingAdminController extends FormBasicController {
 			imModule.setEnabled(imEnabledEl.isSelected(0));
 		} else if(source == imEnableGroupEl) {
 			imModule.setGroupEnabled(imEnableGroupEl.isSelected(0));
+		} else if(source == imEnableGroupAnonymEl) {
+			imModule.setGroupAnonymEnabled(imEnableGroupAnonymEl.isSelected(0));
+		} else if(source == imEnableGroupAnonymDefaultEl) {
+			imModule.setGroupAnonymDefaultEnabled(imEnableGroupAnonymDefaultEl.isSelected(0));
 		} else if(source == imEnableCourseEl) {
 			imModule.setCourseEnabled(imEnableCourseEl.isSelected(0));
+		} else if(source == imEnableCourseAnonymEl) {
+			imModule.setCourseAnonymEnabled(imEnableCourseAnonymEl.isSelected(0));
+		} else if(source == imEnableCourseAnonymDefaultEl) {
+			imModule.setCourseAnonymDefaultEnabled(imEnableCourseAnonymDefaultEl.isSelected(0));
 		} else if(source == imEnablePrivateEl) {
 			imModule.setPrivateEnabled(imEnablePrivateEl.isSelected(0));
 		} else if(source == imEnableGroupPeersEl) {

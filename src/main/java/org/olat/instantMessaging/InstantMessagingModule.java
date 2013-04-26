@@ -46,14 +46,22 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 
 	private static final String CONFIG_ENABLED = "im.enabled";
 	private static final String CONFIG_GROUP_ENABLED = "im.enabled.group";
+	private static final String CONFIG_GROUP_ANONYM_ENABLED = "im.enabled.group.anonym";
+	private static final String CONFIG_GROUP_ANONYM_DEFAULT_ENABLED = "im.enabled.group.anonym.default";
 	private static final String CONFIG_COURSE_ENABLED = "im.enabled.course";
+	private static final String CONFIG_COURSE_ANONYM_ENABLED = "im.enabled.course.anonym";
+	private static final String CONFIG_COURSE_ANONYM_DEFAULT_ENABLED = "im.enabled.course.anonym.default";
 	private static final String CONFIG_PRIVATE_ENABLED = "im.enabled.private";
 	private static final String CONFIG_ONLINESTATUS_ENABLED = "im.enabled.onlinestatus";
 	private static final String CONFIG_GROUPPEERS_ENABLED = "im.enabled.grouppeers";
 
 	private boolean enabled = false;
 	private boolean groupEnabled = false;
+	private boolean groupAnonymEnabled = false;
+	private boolean groupAnonymDefaultEnabled = false;	
 	private boolean courseEnabled = false;
+	private boolean courseAnonymEnabled = false;
+	private boolean courseAnonymDefaultEnabled = false;
 	private boolean privateEnabled = false;
 	private boolean onlineStatusEnabled = false;
 	private boolean groupPeersEnabled = false;
@@ -67,9 +75,25 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			groupEnabled = "true".equals(enabledObj);
 		}
+		enabledObj = getStringPropertyValue(CONFIG_GROUP_ANONYM_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			groupAnonymEnabled = "true".equals(enabledObj);
+		}
+		enabledObj = getStringPropertyValue(CONFIG_GROUP_ANONYM_DEFAULT_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			groupAnonymDefaultEnabled = "true".equals(enabledObj);
+		}
 		enabledObj = getStringPropertyValue(CONFIG_COURSE_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			courseEnabled = "true".equals(enabledObj);
+		}
+		enabledObj = getStringPropertyValue(CONFIG_COURSE_ANONYM_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			courseAnonymEnabled = "true".equals(enabledObj);
+		}
+		enabledObj = getStringPropertyValue(CONFIG_COURSE_ANONYM_DEFAULT_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			courseAnonymDefaultEnabled = "true".equals(enabledObj);
 		}
 		enabledObj = getStringPropertyValue(CONFIG_PRIVATE_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
@@ -89,7 +113,11 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 	protected void initDefaultProperties() {
 		enabled = getBooleanConfigParameter(CONFIG_ENABLED, true);
 		groupEnabled = getBooleanConfigParameter(CONFIG_GROUP_ENABLED, true);
+		groupAnonymEnabled= getBooleanConfigParameter(CONFIG_GROUP_ANONYM_ENABLED, true);
+		groupAnonymDefaultEnabled = getBooleanConfigParameter(CONFIG_GROUP_ANONYM_DEFAULT_ENABLED, false);
 		courseEnabled = getBooleanConfigParameter(CONFIG_COURSE_ENABLED, true);
+		courseAnonymEnabled = getBooleanConfigParameter(CONFIG_COURSE_ANONYM_ENABLED, true);
+		courseAnonymDefaultEnabled = getBooleanConfigParameter(CONFIG_COURSE_ANONYM_DEFAULT_ENABLED, true);
 		privateEnabled = getBooleanConfigParameter(CONFIG_PRIVATE_ENABLED, true);
 		onlineStatusEnabled = getBooleanConfigParameter(CONFIG_ONLINESTATUS_ENABLED, true);
 		groupPeersEnabled = getBooleanConfigParameter(CONFIG_GROUPPEERS_ENABLED, true);
@@ -136,6 +164,38 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 	}
 
 	/**
+	 * Flag to enable/disable the anonymous mode in the group chat. If enabled, 
+	 * the user can toggle between his real identity and a anonymous identity during 
+	 * the chat. 
+	 * 
+	 * @return true: group chat room can be used anonymously; false: no anonym
+	 *         group chat rooms available
+	 */
+	public boolean isGroupAnonymEnabled() {
+		return groupAnonymEnabled;
+	}
+
+	public void setGroupAnonymEnabled(boolean enabled) {
+		setStringProperty(CONFIG_GROUP_ANONYM_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	/**
+	 * Flag to set the anonymous mode as the default mode when entering the
+	 * group chat. This is only used when isGroupAnonymEnabled() is set to
+	 * true.
+	 * 
+	 * @return true: group chat room entered anonym by default. false: group
+	 *         chat room entered with the real identity.
+	 */
+	public boolean isGroupAnonymDefaultEnabled() {
+		return groupAnonymDefaultEnabled;
+	}
+
+	public void setGroupAnonymDefaultEnabled(boolean enabled) {
+		setStringProperty(CONFIG_GROUP_ANONYM_DEFAULT_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	/**
 	 * Flag to enable/disable the course chat. If enabled, the course users are
 	 * allowed to chat in the course chat room. See isPrivateEnabled() to check
 	 * if users are allowed to send private messages to each others.
@@ -149,6 +209,38 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 
 	public void setCourseEnabled(boolean enabled) {
 		setStringProperty(CONFIG_COURSE_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	/**
+	 * Flag to enable/disable the anonymous mode in the course chat. If enabled,
+	 * the user can toggle between his real identity and a anonymous identity
+	 * during the chat.
+	 * 
+	 * @return true: course chat room can be used anonymously; false: no anonym
+	 *         course chat rooms available
+	 */
+	public boolean isCourseAnonymEnabled() {
+		return courseAnonymEnabled;
+	}
+
+	public void setCourseAnonymEnabled(boolean enabled) {
+		setStringProperty(CONFIG_COURSE_ANONYM_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	/**
+	 * Flag to set the anonymous mode as the default mode when entering the
+	 * course chat. This is only used when isCourseAnonymEnabled() is set to
+	 * true.
+	 * 
+	 * @return true: course chat room entered anonym by default. false: course
+	 *         chat room entered with the real identity.
+	 */
+	public boolean isCourseAnonymDefaultEnabled() {
+		return courseAnonymDefaultEnabled;
+	}
+
+	public void setCourseAnonymDefaultEnabled(boolean enabled) {
+		setStringProperty(CONFIG_COURSE_ANONYM_DEFAULT_ENABLED, Boolean.toString(enabled), true);
 	}
 
 	/**

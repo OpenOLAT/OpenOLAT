@@ -10,6 +10,7 @@
 	</bean>
 	
 	<!-- Business group admin. panel -->
+<!-- Not enabled in 8.4 release. Work in progress, will be finished in a later release
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8209" />
 		<property name="actionController">	
@@ -28,6 +29,7 @@
 			</list>
 		</property>
 	</bean>
+ -->	
 	
 	<bean id="catalogModule" class="org.olat.catalog.CatalogModule" init-method="init">
 		<property name="persistedProperties">

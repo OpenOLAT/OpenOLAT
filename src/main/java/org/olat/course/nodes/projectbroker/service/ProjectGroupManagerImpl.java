@@ -307,7 +307,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
   	 BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
   	 BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
   	 logDebug("ProjectGroup.name=" + reloadedBusinessGroup.getName() + " setMaxParticipants=" + maxMembers);
-  	 return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, null, null, reloadedBusinessGroup.getMinParticipants(),
+  	 return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, reloadedBusinessGroup.getName(), reloadedBusinessGroup.getDescription(), reloadedBusinessGroup.getMinParticipants(),
   			 maxMembers);
 	}
 
