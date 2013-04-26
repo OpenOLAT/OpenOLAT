@@ -592,9 +592,9 @@ public class Formatter {
 		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_kiss' />");
 		matcher = ohohPattern.matcher(textFragment);
 		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_ohoh' />");
-		matcher = smilePattern.matcher(textFragment); 
+		matcher = angelPattern.matcher(textFragment); // must be before smile pattern
 		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_angel' />");
-		matcher = angelPattern.matcher(textFragment);
+		matcher = smilePattern.matcher(textFragment); 
 		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_smile' />");
 		matcher = sadPattern.matcher(textFragment);
 		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_sad' />");
