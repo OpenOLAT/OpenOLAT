@@ -1,7 +1,9 @@
 <div class="o_groupchat_roster">
-	<div>$r.render("toggle")</div>
-	$r.render("nickname")
-	<hr/>
+	#if ($offerAnonymMode)
+		<div>$r.render("toggle")</div>
+		$r.render("nickname")
+		<hr/>
+	#end
 	<ul>
 	#foreach($entry in $roster.entries)
 		<li class="#if($entry.vip) o_instantmessaging_vip #end #if($entry.anonym) o_instantmessaging_anonymous #end">

@@ -46,13 +46,15 @@ public class RosterForm extends FormBasicController {
 	
 	private final Roster buddyList;
 	private final String fullName;
-	private final boolean anonym;
+	private final boolean defaultAnonym;
+	private final boolean offerAnonymMode;
 	private static final String[] anonKeys = new String[]{ "name", "anon"};
 
-	public RosterForm(UserRequest ureq, WindowControl wControl, Roster buddyList, boolean anonym) {
+	public RosterForm(UserRequest ureq, WindowControl wControl, Roster buddyList, boolean defaultAnonym, boolean offerAnonymMode) {
 		super(ureq, wControl, "roster");
 
-		this.anonym = anonym;
+		this.defaultAnonym = defaultAnonym;
+		this.offerAnonymMode = offerAnonymMode;
 		this.buddyList = buddyList;
 		fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(getIdentity().getUser());
 
@@ -61,10 +63,12 @@ public class RosterForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// for simplicity we initialize the form even when the anonymous mode is disabled
+		// and just hide the form elements in the GUI
 		String[] theValues = new String[]{ fullName, translate("anonymous") };
 		toggle = uifactory.addRadiosVertical("toggle", "toogle.anonymous", formLayout, anonKeys, theValues);
 
-		if(anonym) {
+		if(defaultAnonym) {
 			toggle.select("anon", true);
 		} else {
 			toggle.select("name", true);
@@ -77,6 +81,8 @@ public class RosterForm extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("roster", buddyList);
+			// hide the form elements in the GUI when no anonym mode is possible
+			layoutCont.contextPut("offerAnonymMode", Boolean.valueOf(offerAnonymMode));
 		}
 	}
 	

@@ -54,9 +54,12 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessagingEvent;
+import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.user.DisplayPortraitManager;
@@ -125,17 +128,29 @@ public class ChatController extends BasicController implements GenericEventListe
 		jsc = new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 2500);
 		mainVC.put("updatecontrol", jsc);
 
-		boolean anonym = "CourseModule".equals(ores.getResourceableTypeName());
-		imService.listenChat(getIdentity(), getOlatResourceable(), anonym, vip, this);
-
-
+		// configure anonym mode depending on configuration. separate configurations for course and group chats
+		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+		boolean offerAnonymMode, defaultAnonym;
+		if ("CourseModule".equals(ores.getResourceableTypeName())) {
+			offerAnonymMode = imModule.isCourseAnonymEnabled();
+			defaultAnonym = offerAnonymMode && imModule.isCourseAnonymDefaultEnabled();
+		} else if ("BusinessGroup".equals(ores.getResourceableTypeName())){
+			offerAnonymMode = imModule.isGroupAnonymEnabled();
+			defaultAnonym = offerAnonymMode && imModule.isGroupAnonymDefaultEnabled();			
+		} else {
+			offerAnonymMode = false;
+			defaultAnonym = false;
+		}
+		
+		// register to chat events for this resource
+		imService.listenChat(getIdentity(), getOlatResourceable(), defaultAnonym, vip, this);
 		
 		if(privateReceiverKey == null) {
 			buddyList = new Roster(getIdentity().getKey());
 			List<Buddy> buddies = imService.getBuddiesListenTo(getOlatResourceable());
 			buddyList.addBuddies(buddies);
-			//course started as anonym
-			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, anonym);
+			//chat started as anonymous depending on configuratino
+			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, defaultAnonym, offerAnonymMode);
 			listenTo(rosterCtrl);
 		} else {
 			buddyList = null;
