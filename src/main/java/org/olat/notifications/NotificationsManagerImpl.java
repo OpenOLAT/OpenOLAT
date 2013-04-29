@@ -613,15 +613,24 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * subidentifier.
 	 */
 	private Publisher getPublisher(String resName, Long resId, String subidentifier, boolean forUpdate) {
+
 		StringBuilder q = new StringBuilder();
 		q.append("select pub from ").append(PublisherImpl.class.getName()).append(" pub ")
-		 .append(" where pub.resName=:resName and pub.resId = :resId and pub.subidentifier = :subidentifier");
+		 .append(" where pub.resName=:resName and pub.resId = :resId");
+		if(StringHelper.containsNonWhitespace(subidentifier)) {
+			q.append(" and pub.subidentifier=:subidentifier");
+		} else {
+			q.append(" and (pub.subidentifier='' or pub.subidentifier is null)");
+		}
 		
 		TypedQuery<Publisher> query = DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(q.toString(), Publisher.class)
 				.setParameter("resName", resName)
-				.setParameter("resId", resId.longValue())
-				.setParameter("subidentifier", subidentifier);
+				.setParameter("resId", resId.longValue());
+
+		if(StringHelper.containsNonWhitespace(subidentifier)) {
+			query.setParameter("subidentifier", subidentifier);
+		}
 		if(forUpdate) {
 			query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
 		}
