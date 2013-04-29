@@ -19,6 +19,8 @@
  */
 package org.olat.commons.calendar.ui.components;
 
+import static org.apache.commons.lang.StringEscapeUtils.escapeJavaScript;
+
 import java.util.Calendar;
 
 import org.olat.core.gui.components.Component;
@@ -66,10 +68,10 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
       .append("     right: 'month,agendaWeek,agendaDay'\n")
       .append("   },\n")
       .append("   buttonText: {\n")
-      .append("     today: '").append(translator.translate("cal.thisweek")).append("',\n")
-      .append("     month: '").append(translator.translate("cal.month")).append("',\n")
-      .append("     day: '").append(translator.translate("cal.day")).append("',\n")
-      .append("     week: '").append(translator.translate("cal.week")).append("'\n")
+      .append("     today: '").append(escapeJavaScript(translator.translate("cal.thisweek"))).append("',\n")
+      .append("     month: '").append(escapeJavaScript(translator.translate("cal.month"))).append("',\n")
+      .append("     day: '").append(escapeJavaScript(translator.translate("cal.day"))).append("',\n")
+      .append("     week: '").append(escapeJavaScript(translator.translate("cal.week"))).append("'\n")
       .append("   },\n")
       .append("   monthNames: ").append(getMonthLong(translator)).append(",\n")
       .append("   monthNamesShort: ").append(getMonthShort(translator)).append(",\n")
@@ -130,59 +132,63 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
 	
 	private String getDayShort(Translator translator) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("['").append(translator.translate("day.short.so")).append("','")
-		.append(translator.translate("day.short.mo")).append("','")
-		  .append(translator.translate("day.short.di")).append("','")
-		  .append(translator.translate("day.short.mi")).append("','")
-		  .append(translator.translate("day.short.do")).append("','")
-		  .append(translator.translate("day.short.fr")).append("','")
-		  .append(translator.translate("day.short.sa")).append("']");
+		sb.append("['")
+		  .append(escapeJavaScript(translator.translate("day.short.so"))).append("','")
+		  .append(escapeJavaScript(translator.translate("day.short.mo"))).append("','")
+		  .append(escapeJavaScript(translator.translate("day.short.di"))).append("','")
+		  .append(escapeJavaScript(translator.translate("day.short.mi"))).append("','")
+		  .append(escapeJavaScript(translator.translate("day.short.do"))).append("','")
+		  .append(escapeJavaScript(translator.translate("day.short.fr"))).append("','")
+		  .append(escapeJavaScript(translator.translate("day.short.sa"))).append("']");
 		return sb.toString();
 	}
 	
 	private String getDayLong(Translator translator) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("['").append(translator.translate("cal.sun")).append("','")
-		  .append(translator.translate("cal.mon")).append("','")
-		  .append(translator.translate("cal.tue")).append("','")
-		  .append(translator.translate("cal.wed")).append("','")
-		  .append(translator.translate("cal.thu")).append("','")
-		  .append(translator.translate("cal.fri")).append("','")
-		  .append(translator.translate("cal.sat")).append("']");
+		sb.append("['")
+		  .append(escapeJavaScript(translator.translate("cal.sun"))).append("','")
+		  .append(escapeJavaScript(translator.translate("cal.mon"))).append("','")
+		  .append(escapeJavaScript(translator.translate("cal.tue"))).append("','")
+		  .append(escapeJavaScript(translator.translate("cal.wed"))).append("','")
+		  .append(escapeJavaScript(translator.translate("cal.thu"))).append("','")
+		  .append(escapeJavaScript(translator.translate("cal.fri"))).append("','")
+		  .append(escapeJavaScript(translator.translate("cal.sat"))).append("']");
 		return sb.toString();
 	}
 	
 	private String getMonthLong(Translator translator) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("['").append(translator.translate("month.long.jan")).append("','")
-	    .append(translator.translate("month.long.feb")).append("','")
-	    .append(translator.translate("month.long.mar")).append("','")
-	    .append(translator.translate("month.long.apr")).append("','")
-	    .append(translator.translate("month.long.mai")).append("','")
-	    .append(translator.translate("month.long.jun")).append("','")
-	    .append(translator.translate("month.long.jul")).append("','")
-	    .append(translator.translate("month.long.aug")).append("','")
-	    .append(translator.translate("month.long.sep")).append("','")
-	    .append(translator.translate("month.long.oct")).append("','")
-	    .append(translator.translate("month.long.nov")).append("','")
-	    .append(translator.translate("month.long.dec")).append("']");
+		sb.append("['")
+		  .append(escapeJavaScript(translator.translate("month.long.jan"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.feb"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.mar"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.apr"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.mai"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.jun"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.jul"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.aug"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.sep"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.oct"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.nov"))).append("','")
+	    .append(escapeJavaScript(translator.translate("month.long.dec"))).append("']");
 		return sb.toString();
 	}
 	
 	private String getMonthShort(Translator translator) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("['").append(translator.translate("month.short.jan")).append("','")
-      .append(translator.translate("month.short.feb")).append("','")
-      .append(translator.translate("month.short.mar")).append("','")
-      .append(translator.translate("month.short.apr")).append("','")
-      .append(translator.translate("month.short.mai")).append("','")
-      .append(translator.translate("month.short.jun")).append("','")
-      .append(translator.translate("month.short.jul")).append("','")
-      .append(translator.translate("month.short.aug")).append("','")
-      .append(translator.translate("month.short.sep")).append("','")
-      .append(translator.translate("month.short.oct")).append("','")
-      .append(translator.translate("month.short.nov")).append("','")
-      .append(translator.translate("month.short.dec")).append("']");
+		sb.append("['")
+		  .append(escapeJavaScript(translator.translate("month.short.jan"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.feb"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.mar"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.apr"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.mai"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.jun"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.jul"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.aug"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.sep"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.oct"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.nov"))).append("','")
+      .append(escapeJavaScript(translator.translate("month.short.dec"))).append("']");
 		return sb.toString();
 	}
 
