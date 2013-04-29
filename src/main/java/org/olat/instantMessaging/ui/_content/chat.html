@@ -1,3 +1,29 @@
+<script type="text/javascript">
+	/* <![CDATA[ */ 
+function resize_${panelName}() {	
+	var win = jQuery('#${panelName}');
+	jQuery('.o_instantmessaging_chat_history', win).each(function(index, el){
+		jQuery(el).height(win.height() - 100);
+		jQuery(el).scrollTop(el.scrollHeight);
+	});
+}
+function tweak_${panelName}() {
+	try {
+		resize_${panelName}();
+	} catch (e) { if(console) console.log(e) }
+}
+function focus_${panelName}() {
+	try {
+		resize_${panelName}();
+		var el = document.getElementById('o_fioinput_${panelName}');
+		if(el != null) {
+			el.focus();
+			el.focus(); //stupid IE needs an extra focus call to work
+		}
+	} catch (e) { if(console) console.log(e) }
+}
+/* ]]> */
+</script>
 <div class="o_instantmessaging_chat">
 	<div class="b_clearfix">
 		$r.render("im.today") | $r.render("im.lastweek") | $r.render("im.lastmonth")
@@ -10,33 +36,3 @@
 		$r.render("sendMessageForm")
 	</div>
 </div>
-<script type="text/javascript">
-	/* <![CDATA[ */ 
-function tweak_${panelName}() {
-	try {		
-		var win = jQuery('#${panelName}');
-		jQuery('.o_instantmessaging_chat_history', win).each(function(index, el){
-			var historyEl = jQuery(el);
-			historyEl.height(win.height() - 150);
-			historyEl.scrollTop(el.scrollHeight);
-		});
-	} catch (e) { /**/ }
-}
-function focus_${panelName}() {
-	try {
-		var win = Ext.getCmp('${panelName}');
-		var histEl = win.body.dom.getElementsByClassName('o_instantmessaging_chat_history');
-		if (histEl.length == 1) {
-			histEl[0].style.height=win.getSize().height-150 + 'px';
-			histEl[0].scrollTop = histEl[0].scrollHeight;
-		}
-
-		var el = document.getElementById('o_fioinput_${panelName}');
-		if(el != null) {
-			el.focus();
-			el.focus(); //stupid IE needs an extra focus call to work
-		}
-	} catch (e) { /**/ }
-}
-/* ]]> */
-</script>

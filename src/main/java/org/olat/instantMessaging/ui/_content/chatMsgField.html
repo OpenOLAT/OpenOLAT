@@ -41,20 +41,17 @@
 	#end
 </div>
 #if($focus)
-	<script>jQuery(function(){try{focus_${panelName}();}catch(e){}});</script>
+	<script type="text/javascript">jQuery(function(){try{focus_${panelName}();}catch(e){ if(console) console.log(e) }});</script>
 #else
-	<script>jQuery(function(){try{tweak_${panelName}();}catch(e){}});</script>
+	<script type="text/javascript">jQuery(function(){try{tweak_${panelName}();}catch(e){ if(console) console.log(e) }});</script>
 #end
 <script type="text/javascript">
 /* <![CDATA[ */
 	//setTimeout used because otherwise it would not work the first time the chatwindow is displayed
-	jQuery(function() {
-		jQuery('#$id').each(function(index, el) {
-			var chatEl = jQuery(el);
-			if(chatEl.offset().top < chatEl.height()) {
-				chatEl.scrollTop(chatEl.height() + 13);
-			}
-		})
-	});
+	setTimeout(function() {
+		try{
+			resize_${panelName}();
+		} catch(e) { console.log(e) }
+	}, 100);
 /* ]]> */ 
 </script>
