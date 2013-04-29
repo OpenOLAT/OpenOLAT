@@ -53,3 +53,18 @@
 		</div>
 	#end
 </div>
+
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+if ((window.self != window.parent) && window.parent.OPOL) {
+	// Page is loaded in an iframe within OpenOLAT because a session timeout occurred or 
+	// system has been restartet in the meantime. 
+	// Show error on main window
+	var title = "$r.escapeJavaScript($r.translate("timeout.title"))";
+	var message = "$r.escapeJavaScript($r.translate("timeout.message"))";
+	window.parent.o_afterserver();
+	window.parent.showMessageBox('error', title, message);
+}
+/* ]]> */
+</script>

@@ -22,13 +22,17 @@ package org.olat.upgrade;
 import java.io.File;
 import java.util.List;
 
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.DirectoryFilter;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ImageHelper;
@@ -38,6 +42,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResourceManager;
 import org.olat.upgrade.model.BookmarkImpl;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,6 +60,7 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 
 	private static final String TASK_BOOKMARKS = "Upgrade bookmarks";
 	private static final String TASK_AVATARS = "Upgrade avatars";
+	private static final String TASK_CHECK_MAIL_DELETED_USERS = "Check the mails of deleted users";
 	private static final int BATCH_SIZE = 20;
 	private static final String VERSION = "OLAT_8.4.0";
 	
@@ -72,6 +78,8 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 	private FolderModule folderModule; // needed to initialize FolderConfig
 	@Autowired	
 	private ImageHelper imageHelper;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 
 
 	public OLATUpgrade_8_4_0() {
@@ -102,6 +110,7 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 		
 		boolean allOk = upgradeBookmarks(upgradeManager, uhd);
 		allOk = (allOk && upgradeAvatars(upgradeManager, uhd));
+		allOk &= checkMailOfDeletedUsers(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -126,7 +135,7 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 				log.audit("Processed context: " + bookmarks.size());
 				dbInstance.intermediateCommit();
 			} while(bookmarks.size() == BATCH_SIZE);
-			uhd.setBooleanDataValue(TASK_BOOKMARKS, false);
+			uhd.setBooleanDataValue(TASK_BOOKMARKS, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return true;
@@ -200,5 +209,47 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		return success;
 	}
-
+	
+	private boolean checkMailOfDeletedUsers(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		if (!uhd.getBooleanDataValue(TASK_CHECK_MAIL_DELETED_USERS)) {
+			int counter = 0;
+			List<Identity> deletedIdentities;
+			do {
+				SearchIdentityParams params = new SearchIdentityParams();
+				params.setStatus(new Integer(Identity.STATUS_DELETED));
+				
+				deletedIdentities = securityManager.getIdentitiesByPowerSearch(params, counter, BATCH_SIZE);
+				for(Identity deletedIdentity:deletedIdentities) {
+					User deletedUser = deletedIdentity.getUser();
+					boolean changed = processDeletedIdentityEmail(deletedUser, UserConstants.EMAIL);
+					changed |= processDeletedIdentityEmail(deletedUser, UserConstants.INSTITUTIONALEMAIL);
+					if(changed) {
+						UserManager.getInstance().updateUser(deletedUser);	
+						log.audit("Update emails of deleted identity: " + deletedIdentity.getName() + " with key: " + deletedIdentity.getKey());
+					}
+				}
+				counter += deletedIdentities.size();
+				log.audit("Processed deleted identities: " + deletedIdentities.size());
+				dbInstance.intermediateCommit();
+			} while(deletedIdentities.size() == BATCH_SIZE);
+			
+			uhd.setBooleanDataValue(TASK_CHECK_MAIL_DELETED_USERS, true);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return true;
+	}
+	
+	private boolean processDeletedIdentityEmail(User deletedUser, String property) {
+		String email = deletedUser.getProperty(property, null);
+		if(StringHelper.containsNonWhitespace(email)) {
+			int indexHat = email.indexOf('@');
+			int indexMark = email.indexOf(UserDeletionManager.DELETED_USER_DELIMITER);
+			if(indexHat > 0 && (indexMark < 0 || indexMark > indexHat)) {
+				String newEmail = userDeletionManager.getBackupStringWithDate(email);
+				deletedUser.setProperty(property, newEmail);
+				return true;
+			}
+		}
+		return false;
+	}
 }

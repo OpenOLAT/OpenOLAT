@@ -424,18 +424,10 @@ public class ImportCourseController extends BasicController implements IAddContr
 					break;
 				}
 				
-				if (nodeListPos == nodeList.size() ) {
-					return true;
-				}
-				
 				myPanel.setContent(activeImportController.getInitialComponent());
 				return false;
-				
-			} else {
-				
-				if (nodeListPos == nodeList.size() ) {
-					return true;
-				}
+			} else if (nodeListPos == nodeList.size() ) {
+				return true;
 			}
 		}
 		return true;
