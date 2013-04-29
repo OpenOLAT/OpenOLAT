@@ -72,7 +72,6 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.user.ChangePasswordController;
 import org.olat.user.PersonalSettingsController;
 import org.olat.user.UserManager;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3>
@@ -84,14 +83,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Felix Jost, Florian Gnaegi
  */
 public class BaseSecurityManager extends BasicManager implements BaseSecurity {
+	private DB dbInstance;
 	private OLATResourceManager orm;
 	private String dbVendor = "";
 	private static BaseSecurityManager INSTANCE;
 	private static String GUEST_USERNAME_PREFIX = "guest_";
 	public static final OLATResourceable IDENTITY_EVENT_CHANNEL = OresHelper.lookupType(Identity.class);
-
-	@Autowired
-	private DB dbInstance;
 	
 	/**
 	 * [used by spring]
@@ -106,6 +103,22 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 */
 	public static BaseSecurity getInstance() {
 		return INSTANCE;
+	}
+	
+	/**
+	 * [used by spring]
+	 * @param orm
+	 */
+	public void setResourceManager(OLATResourceManager orm) {
+		this.orm = orm;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param dbInstance
+	 */
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
 	}
 
 	/**
@@ -1922,17 +1935,4 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		}
 		return guestIdentity;
 	}
-
-
-	/**
-	 * [used by spring]
-	 * @param orm
-	 */
-	public void setResourceManager(OLATResourceManager orm) {
-		this.orm = orm;
-	}
-
-	
-	
-	
 }

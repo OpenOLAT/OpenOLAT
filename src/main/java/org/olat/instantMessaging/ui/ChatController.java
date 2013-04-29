@@ -316,10 +316,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 	
 	private void appendToMessageHistory(InstantMessage message, boolean focus) {
-		if(message == null || message.getBody() == null) {
-			System.out.println();
-		}
-		
+		if(message == null || message.getBody() == null) return;
 		
 		String m = message.getBody().replaceAll("<br/>\n", "\r\n");
 		m = prepareMsgBody(m.replaceAll("<", "&lt;").replaceAll(">", "&gt;")).replaceAll("\r\n", "<br/>\n");

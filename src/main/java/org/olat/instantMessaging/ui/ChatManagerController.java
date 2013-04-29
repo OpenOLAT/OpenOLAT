@@ -135,7 +135,7 @@ public class ChatManagerController extends BasicController {
 		int offsetX = 100 + (chats.size() * 10);
 		int offsetY = 100 + (chats.size() * 5);
 		String roomName = translate("im.chat.with") + ": " + buddy.getName();
-		ChatController chat = new ChatController(ureq, getWindowControl(), ores, roomName, buddy.getIdentityKey(), false, 400, 300, offsetX, offsetY);
+		ChatController chat = new ChatController(ureq, getWindowControl(), ores, roomName, buddy.getIdentityKey(), false, 400, 320, offsetX, offsetY);
 		listenTo(chat);
 		container.put(chat.getOlatResourceable().getResourceableId().toString(), chat.getInitialComponent());
 		chats.put(chat.getOlatResourceable().getResourceableId(), chat);
