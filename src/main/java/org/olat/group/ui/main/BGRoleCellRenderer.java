@@ -27,6 +27,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.model.BGMembership;
 
 /**
  * 
@@ -57,6 +58,13 @@ public class BGRoleCellRenderer implements CustomCellRenderer {
 			if(membership.isWaiting()) {
 				and = and(sb, and);
 				sb.append(translator.translate("search.waiting"));
+			}
+		} else if (val instanceof BGMembership) {
+			BGMembership membership = (BGMembership)val;
+			switch(membership) {
+				case owner: sb.append(translator.translate("owned.groups")); break;
+				case participant: sb.append(translator.translate("search.attendee")); break;
+				case waiting: sb.append(translator.translate("search.waiting")); break;
 			}
 		}
 	}
