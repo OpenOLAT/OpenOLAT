@@ -33,7 +33,7 @@ public class GroupMemberView {
 	
 	private final Date addedAt;
 	private final Identity identity;
-	private final String onlineStatus;
+	private String onlineStatus;
 	
 	public GroupMemberView(Identity identity, Date addedAt, String onlineStatus) {
 		this.identity = identity;
@@ -51,5 +51,9 @@ public class GroupMemberView {
 	
 	public String getOnlineStatus() {
 		return onlineStatus;
+	}
+	
+	public void setOnlineStatus(String onlineStatus) {
+		this.onlineStatus = onlineStatus;
 	}
 }

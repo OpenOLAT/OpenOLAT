@@ -54,8 +54,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessagingEvent;

@@ -116,6 +116,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	private final RepositoryEntry repoEntry;
 	private final BusinessGroup businessGroup;
 	private final boolean isAdministrativeUser;
+	private final boolean chatEnabled;
 	
 	private final UserManager userManager;
 	
@@ -157,7 +158,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		memberViewComparator = new GroupMemberViewComparator(Collator.getInstance(getLocale()));
-
+		
+		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		mainVC = createVelocityContainer(page);
 
@@ -190,7 +192,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	
 	protected void initColumns() {
 		int offset = Cols.values().length;
-		if(imModule.isEnabled() && imModule.isPrivateEnabled()) {
+		if(chatEnabled) {
 			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.online.i18n(), Cols.online.ordinal(), TABLE_ACTION_IM, getLocale(),
 					ColumnDescriptor.ALIGNMENT_LEFT, new OnlineIconRenderer()));
 		}
@@ -565,20 +567,38 @@ public abstract class AbstractMemberListController extends BasicController imple
 			}
 		}
 		
+		
 		Long me = getIdentity().getKey();
+		Set<Long> loadStatus = new HashSet<Long>();
 		for(Identity identity:identities) {
 			MemberView member = new MemberView(identity);
-			if(identity.getKey().equals(me)) {
-				member.setOnlineStatus("me");
-			} else if(sessionManager.isOnline(identity.getKey())) {
-				member.setOnlineStatus(Presence.available.name());
-			} else {
-				member.setOnlineStatus(Presence.unavailable.name());
+			if(chatEnabled) {
+				if(identity.getKey().equals(me)) {
+					member.setOnlineStatus("me");
+				} else if(sessionManager.isOnline(identity.getKey())) {
+					loadStatus.add(identity.getKey());
+				} else {
+					member.setOnlineStatus(Presence.unavailable.name());
+				}
 			}
 			memberList.add(member);
 			keyToMemberMap.put(identity.getKey(), member);
 		}
 		
+		if(loadStatus.size() > 0) {
+			List<Long> statusToLoadList = new ArrayList<Long>(loadStatus);
+			Map<Long,String> statusMap = imService.getBuddyStatus(statusToLoadList);
+			for(Long toLoad:statusToLoadList) {
+				String status = statusMap.get(toLoad);
+				MemberView member = keyToMemberMap.get(toLoad);
+				if(status == null) {
+					member.setOnlineStatus(Presence.available.name());	
+				} else {
+					member.setOnlineStatus(status);	
+				}
+			}
+		}
+
 		for(BusinessGroupMembership membership:memberships) {
 			Long identityKey = membership.getIdentityKey();
 			MemberView memberView = keyToMemberMap.get(identityKey);

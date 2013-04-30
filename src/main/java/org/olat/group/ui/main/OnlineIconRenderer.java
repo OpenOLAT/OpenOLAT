@@ -40,9 +40,11 @@ public class OnlineIconRenderer extends CustomCssCellRenderer {
 			// don't show the users status when not configured, only an icon to start a chat/message
 			return "b_small_icon o_instantmessaging_chat_icon";
 		}
-		// standard case: available or unavailble (offline or dnd)
+		// standard case: available or unavailable (offline or dnd)
 		else if(Presence.available.name().equals(val)) {
 			return "b_small_icon o_instantmessaging_available_icon";
+		} else if(Presence.dnd.name().equals(val)) {
+			return "b_small_icon o_instantmessaging_dnd_icon";
 		} else {
 			return "b_small_icon o_instantmessaging_unavailable_icon";
 		}

@@ -27,7 +27,11 @@ package org.olat.admin.securitygroup.gui;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.olat.admin.securitygroup.gui.multi.UsersToGroupWizardController;
@@ -76,7 +80,6 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.group.ui.main.OnlineIconRenderer;
-import org.olat.group.ui.main.MemberListTableModel.Cols;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
@@ -139,6 +142,7 @@ public class GroupController extends BasicController {
 	protected static final String usageIdentifyer = IdentitiesOfGroupTableDataModel.class.getCanonicalName();
 	protected boolean isAdministrativeUser;
 	protected boolean mandatoryEmail;
+	private boolean chatEnabled;
 
 	protected BaseSecurity securityManager;
 	private UserManager userManager;
@@ -178,6 +182,7 @@ public class GroupController extends BasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 
 		// default group controller has no mail functionality
 		this.addUserMailDefaultTempl = null;
@@ -527,14 +532,7 @@ public class GroupController extends BasicController {
 		fireEvent(ureq, identitiesAddedEvent); 
 		if (!identitiesAddedEvent.getAddedIdentities().isEmpty()) {
   		// update table model
-			List<Identity> addedIdentities = identitiesAddedEvent.getAddedIdentities();
-			List<GroupMemberView> newMembers = new ArrayList<GroupMemberView>(addedIdentities.size());
-			Date currentDate = new Date();
-			for(Identity addedIdentity:addedIdentities) {
-				newMembers.add(forgeGroupMemberView(addedIdentity, currentDate));
-			}
-      identitiesTableModel.add(newMembers);
-			tableCtr.modelChanged();			
+			reloadData();			
 		}
 		// build info message for identities which could be added.
 		StringBuilder infoMessage = new StringBuilder();
@@ -568,18 +566,6 @@ public class GroupController extends BasicController {
 		if (infoMessage.length() > 0) getWindowControl().setWarning(infoMessage.toString());
 		if (errorMessage.length() > 0) getWindowControl().setError(errorMessage.toString());
 	}
-	
-	private GroupMemberView forgeGroupMemberView(Identity identity, Date addedAt) {
-		String onlineStatus;
-		if(getIdentity().equals(identity)) {
-			onlineStatus = "me";
-		} else if(sessionManager.isOnline(identity.getKey())) {
-			onlineStatus = Presence.available.name();
-		} else {
-			onlineStatus = Presence.unavailable.name();
-		}
-		return new GroupMemberView(identity, addedAt, onlineStatus);
-	}
 
 	protected void doDispose() {
     // DialogBoxController and TableController get disposed by BasicController
@@ -599,7 +585,7 @@ public class GroupController extends BasicController {
 			cd0.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
 			tableCtr.addColumnDescriptor(cd0);
 		}
-		if(imModule.isEnabled() && imModule.isPrivateEnabled()) {
+		if(chatEnabled) {
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.online", 1, COMMAND_IM, getLocale(),
 					ColumnDescriptor.ALIGNMENT_LEFT, new OnlineIconRenderer()));
 		}
@@ -640,9 +626,41 @@ public class GroupController extends BasicController {
 		// refresh view		
 		List<Object[]> combo = securityManager.getIdentitiesAndDateOfSecurityGroup(securityGroup); 
 		List<GroupMemberView> views = new ArrayList<GroupMemberView>(combo.size());
+		Map<Long,GroupMemberView> idToViews = new HashMap<Long,GroupMemberView>();
+
+		Set<Long> loadStatus = new HashSet<Long>();
 		for(Object[] co:combo) {
-			views.add(forgeGroupMemberView((Identity)co[0], (Date)co[1]));
+			Identity identity = (Identity)co[0];
+			Date addedAt = (Date)co[1];
+			String onlineStatus = null;
+			if(chatEnabled) {
+				if(getIdentity().equals(identity)) {
+					onlineStatus = "me";
+				} else if(sessionManager.isOnline(identity.getKey())) {
+					loadStatus.add(identity.getKey());
+				} else {
+					onlineStatus = Presence.unavailable.name();
+				}
+			}
+			GroupMemberView member = new GroupMemberView(identity, addedAt, onlineStatus);
+			views.add(member);
+			idToViews.put(identity.getKey(), member);
 		}
+		
+		if(loadStatus.size() > 0) {
+			List<Long> statusToLoadList = new ArrayList<Long>(loadStatus);
+			Map<Long,String> statusMap = imService.getBuddyStatus(statusToLoadList);
+			for(Long toLoad:statusToLoadList) {
+				String status = statusMap.get(toLoad);
+				GroupMemberView member = idToViews.get(toLoad);
+				if(status == null) {
+					member.setOnlineStatus(Presence.available.name());	
+				} else {
+					member.setOnlineStatus(status);	
+				}
+			}
+		}
+		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		identitiesTableModel = new IdentitiesOfGroupTableDataModel(views, getLocale(), userPropertyHandlers, isAdministrativeUser);
 		tableCtr.setTableDataModel(identitiesTableModel);

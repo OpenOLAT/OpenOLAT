@@ -21,6 +21,7 @@ package org.olat.instantMessaging;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -63,6 +64,8 @@ public interface InstantMessagingService {
 	public List<Buddy> getBuddiesListenTo(OLATResourceable chatResource);
 	
 	public BuddyStats getBuddyStats(Identity me);
+	
+	public Map<Long,String> getBuddyStatus(List<Long> identityKeys);
 	
 	/**
 	 * Enter a chat conversation
