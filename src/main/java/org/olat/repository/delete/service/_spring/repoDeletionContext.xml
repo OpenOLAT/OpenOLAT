@@ -3,11 +3,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
-	<bean id="deletionModule" class="org.olat.repository.delete.service.DeletionModule"
-		 depends-on="userManager">
+	<bean id="deletionModule" class="org.olat.repository.delete.service.DeletionModule">
 		<property name="baseSecurityManager" ref="baseSecurityManager" />
 		<property name="persistedProperties">
 			<bean class="org.olat.core.configuration.PersistedProperties"
@@ -27,7 +26,7 @@
 				archiveRootPath=${archive.dir}
 				deleteEmailResponseToUserName=administrator
 				adminUserName=${deletionModule.adminUserName}
-	                </value>
+	    </value>
 		</property>
 	</bean>
 

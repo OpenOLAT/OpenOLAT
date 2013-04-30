@@ -27,13 +27,15 @@ package org.olat.repository.delete.service;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.WebappHelper;
 
 /**
@@ -70,8 +72,12 @@ public class DeletionModule extends AbstractOLATModule {
 
 	@Override
 	protected void initDefaultProperties() {
-		// TODO Auto-generated method stub
-		
+		//
+	}
+	
+	@Override
+	protected void initFromChangedProperties() {
+		//
 	}
 
 	/**
@@ -82,9 +88,9 @@ public class DeletionModule extends AbstractOLATModule {
 		emailResponseTo = getStringConfigParameter(CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME, WebappHelper.getMailConfig("mailDeleteUser"), false);
 		
 		if (!emailResponseTo.contains("@")) {
-			Identity identity = baseSecurityManager.findIdentityByName(emailResponseTo);
-			if (identity != null) {
-				emailResponseTo = identity.getUser().getProperty(UserConstants.EMAIL, null);
+			List<IdentityShort> identities = baseSecurityManager.findShortIdentitiesByName(Collections.singletonList(emailResponseTo));
+			if (identities != null && identities.size() == 1) {
+				emailResponseTo = identities.get(0).getEmail();
 			} else {
 				logWarn("Could not find:  " + CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME + " with name: " + emailResponseTo, null);
 				emailResponseTo = WebappHelper.getMailConfig("mailFrom");
@@ -98,10 +104,12 @@ public class DeletionModule extends AbstractOLATModule {
 		} else {
 			adminUserIdentity = baseSecurityManager.findIdentityByName(DEFAULT_ADMIN_USERNAME);
 		}
-		logDebug("archiveRootPath=" + archiveRootPath);
-		logDebug("emailResponseTo=" + emailResponseTo);
-		logDebug("adminUserIdentity=" + adminUserIdentity);
 		
+		if(isLogDebugEnabled()) {
+			logDebug("archiveRootPath=" + archiveRootPath);
+			logDebug("emailResponseTo=" + emailResponseTo);
+			logDebug("adminUserIdentity=" + adminUserIdentity);
+		}
 	}
 
 	/**
@@ -127,17 +135,11 @@ public class DeletionModule extends AbstractOLATModule {
 		return adminUserIdentity;
 	}
 
-
-	@Override
-	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
-	}
-
+	/**
+	 * [used by Spring]
+	 */
 	@Override
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
 	}
-
-
 }
