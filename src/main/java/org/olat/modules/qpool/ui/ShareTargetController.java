@@ -19,8 +19,6 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -29,7 +27,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.qpool.QuestionItemShort;
 
 /**
  * 
@@ -41,7 +38,6 @@ public class ShareTargetController extends BasicController {
 	public static final String SHARE_POOL_CMD = "qpool.share.pool";
 	public static final String SHARE_GROUP_CMD = "qpool.share.group";
 
-	private List<QuestionItemShort> userObject;
 	private final Link shareGroup, sharePool;
 	
 	public ShareTargetController(UserRequest ureq, WindowControl wControl) {
@@ -51,14 +47,6 @@ public class ShareTargetController extends BasicController {
 		shareGroup = LinkFactory.createLink("share.group", mainVC, this);
 		sharePool = LinkFactory.createLink("share.pool", mainVC, this);
 		putInitialPanel(mainVC);
-	}
-	
-	public List<QuestionItemShort> getUserObject() {
-		return userObject;
-	}
-
-	public void setUserObject(List<QuestionItemShort> userObject) {
-		this.userObject = userObject;
 	}
 
 	@Override

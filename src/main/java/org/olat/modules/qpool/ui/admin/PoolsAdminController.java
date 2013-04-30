@@ -106,7 +106,8 @@ public class PoolsAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete-pool"));
 
 		model = new PoolDataModel(columnsModel, getTranslator());
-		poolTable = uifactory.addTableElement(ureq, getWindowControl(), "pools", model, null, 20, false, getTranslator(), formLayout);
+		poolTable = uifactory.addTableElement(ureq, getWindowControl(), "pools", model, getTranslator(), formLayout);
+		
 		poolTable.setRendererType(FlexiTableRendererType.classic);
 		reloadModel();
 		
@@ -241,7 +242,7 @@ public class PoolsAdminController extends FormBasicController {
 		}
 	}
 	
-	private static class PoolDataModel implements FlexiTableDataModel, TableDataModel<Pool> {
+	private static class PoolDataModel implements FlexiTableDataModel<Pool>, TableDataModel<Pool> {
 	
 		private List<Pool> rows;
 		private FlexiTableColumnModel columnModel;

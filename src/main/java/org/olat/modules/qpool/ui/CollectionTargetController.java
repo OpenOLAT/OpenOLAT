@@ -19,8 +19,6 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -29,7 +27,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.qpool.QuestionItemShort;
 
 /**
  * 
@@ -41,7 +38,6 @@ public class CollectionTargetController extends BasicController {
 	public static final String ADD_TO_LIST_POOL_CMD = "qpool.list.add";
 	public static final String NEW_LIST_CMD = "qpool.list.new";
 
-	private List<QuestionItemShort> userObject;
 	private final Link newList, addToList;
 	
 	public CollectionTargetController(UserRequest ureq, WindowControl wControl) {
@@ -51,14 +47,6 @@ public class CollectionTargetController extends BasicController {
 		newList = LinkFactory.createLink("create.list", mainVC, this);
 		addToList = LinkFactory.createLink("add.to.list", mainVC, this);
 		putInitialPanel(mainVC);
-	}
-	
-	public List<QuestionItemShort> getUserObject() {
-		return userObject;
-	}
-
-	public void setUserObject(List<QuestionItemShort> userObject) {
-		this.userObject = userObject;
 	}
 
 	@Override

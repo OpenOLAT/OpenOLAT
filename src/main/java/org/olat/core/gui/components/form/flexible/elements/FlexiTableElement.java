@@ -59,16 +59,41 @@ public interface FlexiTableElement extends FormItem {
 	 */
 	public void setMultiSelect(boolean enable);
 	
+	/**
+	 * @return true if the links select all / unselect all are enabled
+	 */
+	public boolean isSelectAllEnable();
 	
+	/**
+	 * Enable the select all /unselect all links
+	 * @param enable
+	 */
+	public void setSelectAllEnable(boolean enable);
+	
+	/**
+	 * All rows are selected
+	 * @return
+	 */
+	public boolean isAllSelectedIndex();
+	
+	/**
+	 * Set all selecteds rows
+	 * @return
+	 */
 	public Set<Integer> getMultiSelectedIndex();
 	
+	/**
+	 * 
+	 * @param index
+	 * @return true if the row is selected
+	 */
 	public boolean isMultiSelectedIndex(int index);
 	
 	/**
 	 * Is a search field enabled
 	 * @return
 	 */
-	public boolean isSearch();
+	public boolean isSearchEnabled();
 	
 	
 	/**

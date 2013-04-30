@@ -23,6 +23,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.RenderingState;
@@ -55,8 +56,10 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		renderHeaders(sb, ftE, translator);
 		//render body
 		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
+		sb.append("</table>");
 		
-		sb.append("</table></div>");
+		renderFooterButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
+		sb.append("</div>");
 		
 		//source
 		if (source.isEnabled()) {
@@ -68,7 +71,7 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 	
 	protected void renderHeaderButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		if(ftE.isSearch()) {
+		if(ftE.isSearchEnabled()) {
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
 		}
@@ -80,6 +83,29 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		if(item != null) {
 			Component cmp = item.getComponent();
 			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+		}
+	}
+	
+	protected void renderFooterButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+		
+		if(ftE.isSelectAllEnable()) {
+			String formName = ftE.getRootForm().getFormName();
+			String dispatchId = ftE.getFormDispatchId();
+
+			sb.append("<div class='b_table_footer'>");
+
+			sb.append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />&nbsp;<a id=\"")
+			  .append(dispatchId).append("\" href=\"javascript:b_table_toggleCheck('").append(formName).append("', true);")
+			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, new NameValuePair("select", "checkall")))
+			  .append("\"><span>").append(translator.translate("form.checkall")).append("</span></a>");
+
+			sb.append("&nbsp;<input type=\"checkbox\" disabled=\"disabled\" />&nbsp;<a id=\"")
+			  .append(dispatchId).append("\" href=\"javascript:b_table_toggleCheck('").append(formName).append("', false);")
+			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, new NameValuePair("select", "uncheckall")))
+			  .append("\"><span>").append(translator.translate("form.uncheckall")).append("</span></a>");
+			
+			sb.append("</div>");
 		}
 	}
 	
@@ -162,8 +188,8 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		int col = 0;
 		if(ftE.isMultiSelect()) {
 			target.append("<td class='b_first_child'>")
-			      .append("<input type='checkbox' name='ftb_ms' value='").append(rowIdPrefix).append(row).append("'");
-			if(ftE.isMultiSelectedIndex(row)) {
+			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'");
+			if(ftE.isAllSelectedIndex() || ftE.isMultiSelectedIndex(row)) {
 				target.append(" checked='checked'");
 			}   
 			target.append("/></td>");

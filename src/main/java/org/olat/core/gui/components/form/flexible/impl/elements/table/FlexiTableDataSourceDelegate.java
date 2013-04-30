@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.List;
 
@@ -26,13 +26,13 @@ import org.olat.core.commons.persistence.SortKey;
 
 /**
  * 
- * Initial date: 12.02.2013<br>
+ * Initial date: 30.04.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ItemRowsSource {
+public interface FlexiTableDataSourceDelegate<V> {
 	
 	public int getRowCount();
 	
-	public ResultInfos<ItemRow> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<V> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
 }

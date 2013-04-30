@@ -36,7 +36,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ImportAuthorOverviewDataModel extends DefaultTableDataModel<Identity> implements FlexiTableDataModel {
+public class ImportAuthorOverviewDataModel extends DefaultTableDataModel<Identity> implements FlexiTableDataModel<Identity> {
 	private final Locale locale;
 	private final boolean isAdministrativeUser;
 	private FlexiTableColumnModel columnModel;

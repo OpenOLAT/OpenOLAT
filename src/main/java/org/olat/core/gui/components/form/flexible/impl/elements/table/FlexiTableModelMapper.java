@@ -128,8 +128,8 @@ public class FlexiTableModelMapper implements Mapper {
 
 					if(ftE.isMultiSelect()) {
 						StringBuilder sb = new StringBuilder();
-						sb.append("<input type='checkbox' name='ftb_ms' value='").append(rowIdPrefix).append(i).append("'");
-						if(ftE.isMultiSelectedIndex(i)) {
+						sb.append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(i).append("'");
+						if(ftE.isAllSelectedIndex() || ftE.isMultiSelectedIndex(i)) {
 							sb.append(" checked='checked'");
 						}   
 						sb.append("/>");

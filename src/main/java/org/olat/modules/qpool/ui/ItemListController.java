@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QuestionItemView;
@@ -37,7 +38,7 @@ import org.olat.modules.qpool.QuestionItemView;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ItemListController extends AbstractItemListController implements ItemRowsSource {
+public class ItemListController extends AbstractItemListController implements FlexiTableDataSourceDelegate<ItemRow> {
 	
 	private FormLink selectLink;
 	
@@ -52,8 +53,6 @@ public class ItemListController extends AbstractItemListController implements It
 		getItemsTable().setMultiSelect(true);
 		selectLink = uifactory.addFormLink("select", formLayout, Link.BUTTON);
 	}
-	
-	
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -72,26 +71,7 @@ public class ItemListController extends AbstractItemListController implements It
 	}
 	
 	@Override
-	protected void doClick(UserRequest ureq, ItemRow row) {
-		//do nothing
-	}
-
-	@Override
 	protected void doSelect(UserRequest ureq, ItemRow row) {
 		fireEvent(ureq, new QItemViewEvent("select-item", row));
 	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	
-
-
 }

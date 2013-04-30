@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
@@ -58,7 +59,7 @@ import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
  * Initial date: 22.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public abstract class AbstractItemListController extends FormBasicController implements ItemRowsSource {
+public abstract class AbstractItemListController extends FormBasicController implements FlexiTableDataSourceDelegate<ItemRow> {
 
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
@@ -109,7 +110,8 @@ public abstract class AbstractItemListController extends FormBasicController imp
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("details", translate("details"), "select-item"));
 		
 		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
-		itemsTable = uifactory.addTableElement(ureq, getWindowControl(), "items", model, model, 50, true, getTranslator(), formLayout);
+		itemsTable = uifactory.addTableElement(ureq, getWindowControl(), "items", model, 50, true, getTranslator(), formLayout);
+		itemsTable.setSelectAllEnable(true);
 		itemsTable.setMultiSelect(true);
 		itemsTable.setRendererType(FlexiTableRendererType.dataTables);
 		
@@ -179,6 +181,12 @@ public abstract class AbstractItemListController extends FormBasicController imp
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	public List<QuestionItemShort> getSelectedShortItems() {
+		Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
+		List<QuestionItemShort> items = getShortItems(selections);
+		return items;
 	}
 
 	public List<QuestionItemShort> getShortItems(Set<Integer> index) {

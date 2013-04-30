@@ -919,8 +919,8 @@ public class FormUIFactory {
 	}
 	
 	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel tableModel,
-			FlexiTableDataSource dataSource, int pageSize, boolean search, Translator translator, FormItemContainer formLayout) {
-		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, wControl, name, translator, tableModel, dataSource, pageSize, search);
+			int pageSize, boolean search, Translator translator, FormItemContainer formLayout) {
+		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, wControl, name, translator, tableModel, pageSize, search);
 		formLayout.add(fte);
 		return fte;
 	}

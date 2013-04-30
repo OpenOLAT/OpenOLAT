@@ -20,7 +20,6 @@
 package org.olat.modules.qpool.ui;
 
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -29,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerAware;
@@ -67,7 +67,7 @@ import org.olat.repository.controllers.RepositoryDetailsController;
  * Initial date: 22.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class QuestionListController extends AbstractItemListController implements StackedControllerAware, ItemRowsSource {
+public class QuestionListController extends AbstractItemListController implements StackedControllerAware, FlexiTableDataSourceDelegate<ItemRow> {
 
 	private FormLink list, exportItem, shareItem, unshareItem, copyItem, deleteItem, authorItem, importItem;
 	
@@ -100,8 +100,6 @@ public class QuestionListController extends AbstractItemListController implement
 
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		
-		initForm(ureq);
 	}
 
 	@Override
@@ -129,53 +127,40 @@ public class QuestionListController extends AbstractItemListController implement
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if(link == list) {
-				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-				List<QuestionItemShort> items = getShortItems(selections);
-				doList(ureq, items);
+				doList(ureq);
 			} else if(link == exportItem) {
-				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-				if(selections.size() > 0) {
-					List<QuestionItemShort> items = getShortItems(selections);
+				List<QuestionItemShort> items = getSelectedShortItems();
+				if(items.size() > 0) {
 					doExport(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == shareItem) {
-				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-				if(selections.size() > 0) {
-					List<QuestionItemShort> items = getShortItems(selections);
-					doShare(ureq, items);
-				} else {
-					showWarning("error.select.one");
-				}
+				doShare(ureq);
 			} else if(link == unshareItem) {
-				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-				if(selections.size() > 0) {
-					List<QuestionItemShort> items = getShortItems(selections);
+				List<QuestionItemShort> items = getSelectedShortItems();
+				if(items.size() > 0) {
 					doConfirmRemove(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == copyItem) {
-				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-				if(selections.size() > 0) {
-					List<QuestionItemShort> items = getShortItems(selections);
+				List<QuestionItemShort> items = getSelectedShortItems();
+				if(items.size() > 0) {
 					doConfirmCopy(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == deleteItem) {
-				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-				if(selections.size() > 0) {
-					List<QuestionItemShort> items = getShortItems(selections);
+				List<QuestionItemShort> items = getSelectedShortItems();
+				if(items.size() > 0) {
 					doConfirmDelete(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == authorItem) {
-				Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-				if(selections.size() > 0) {
-					List<QuestionItemShort> items = getShortItems(selections);
+				List<QuestionItemShort> items = getSelectedShortItems();
+				if(items.size() > 0) {
 					doChooseAuthoren(ureq, items);
 				} else {
 					showWarning("error.select.one");
@@ -190,9 +175,11 @@ public class QuestionListController extends AbstractItemListController implement
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == shareTargetCtrl) {
-			List<QuestionItemShort> items = (List<QuestionItemShort>)shareTargetCtrl.getUserObject();
+			List<QuestionItemShort> items = getSelectedShortItems();
 			shareCalloutCtrl.deactivate();
-			if(ShareTargetController.SHARE_GROUP_CMD.equals(event.getCommand())) {
+			if(items.isEmpty()) {
+				showWarning("error.select.one");
+			} else if(ShareTargetController.SHARE_GROUP_CMD.equals(event.getCommand())) {
 				doSelectGroup(ureq, items);
 			} else if(ShareTargetController.SHARE_POOL_CMD.equals(event.getCommand())) {
 				doSelectPool(ureq, items);
@@ -226,10 +213,14 @@ public class QuestionListController extends AbstractItemListController implement
 			cmc.deactivate();
 			cleanUp();
 		} else if(source == listTargetCtrl) {
-			List<QuestionItemShort> items = (List<QuestionItemShort>)listTargetCtrl.getUserObject();
+			List<QuestionItemShort> items = getSelectedShortItems();
 			shareCalloutCtrl.deactivate();
 			if(CollectionTargetController.ADD_TO_LIST_POOL_CMD.equals(event.getCommand())) {
-				doChooseCollectio(ureq, items);
+				if(items.isEmpty()) {
+					showWarning("error.select.one");
+				} else {
+					doChooseCollection(ureq, items);
+				}
 			} else if(CollectionTargetController.NEW_LIST_CMD.equals(event.getCommand())) {
 				doAskCollectionName(ureq, items);
 			}
@@ -332,11 +323,10 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 	}
 	
-	protected void doList(UserRequest ureq, List<QuestionItemShort> items) {
+	protected void doList(UserRequest ureq) {
 		String title = translate("filter.view");
 		removeAsListenerAndDispose(shareTargetCtrl);
 		listTargetCtrl = new CollectionTargetController(ureq, getWindowControl());
-		listTargetCtrl.setUserObject(items);
 		listenTo(listTargetCtrl);
 		
 		removeAsListenerAndDispose(shareCalloutCtrl);
@@ -357,7 +347,7 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 	}
 	
-	private void doChooseCollectio(UserRequest ureq, List<QuestionItemShort> items) {
+	private void doChooseCollection(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(chooseCollectionCtrl);
 		chooseCollectionCtrl = new CollectionListController(ureq, getWindowControl());
 		chooseCollectionCtrl.setUserObject(items);
@@ -470,11 +460,10 @@ public class QuestionListController extends AbstractItemListController implement
 		showInfo("item.deleted");
 	}
 	
-	protected void doShare(UserRequest ureq, List<QuestionItemShort> items) {
+	protected void doShare(UserRequest ureq) {
 		String title = translate("filter.view");
 		removeAsListenerAndDispose(shareTargetCtrl);
 		shareTargetCtrl = new ShareTargetController(ureq, getWindowControl());
-		shareTargetCtrl.setUserObject(items);
 		listenTo(shareTargetCtrl);
 		
 		removeAsListenerAndDispose(shareCalloutCtrl);

@@ -157,37 +157,5 @@ ul.tagit.ui-corner-all {
 	background: $basecolor_ultra_light;
 }
 
-//overwrite datatables
-div.b_table_wrapper .dataTables_wrapper {
-
-	div.dataTables_scrollBody {
-		table.dataTable {
-			border-top: none;
-		  thead th {
-				border:none;
-			}
-		}
-	}
-
-	table.dataTable {
-		
-		thead th {
-			border-bottom: 1px solid #ccc;
-			color:$basecolor;
-		}
-	
-		tr.even td.sorting_1 {
-			background: #eee;
-		}
-		
-		tr.odd {
-			background-color: #fff;
-		
-			td.sorting_1 {
-				background: #fff;
-			}
-		}
-	}
-}
-
+//overwrite datatables -> see _tables.scss
 

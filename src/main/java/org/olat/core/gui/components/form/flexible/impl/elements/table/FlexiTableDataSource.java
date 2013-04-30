@@ -30,7 +30,7 @@ import org.olat.core.commons.persistence.SortKey;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface FlexiTableDataSource<U> {
+public interface FlexiTableDataSource<U> extends FlexiTableDataModel<U> {
 	
 	
 	/**

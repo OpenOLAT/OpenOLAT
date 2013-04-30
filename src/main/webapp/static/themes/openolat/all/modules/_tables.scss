@@ -56,7 +56,48 @@ div.b_table_wrapper {
 		margin: 1em 0;
 	}
 	
+	div.b_table_footer {
+		float:left;
+		margin: 5px 0 0 10px;
+	}
+	
+	div.dataTables_info {
+		float:left;
+		margin: 5px 0 0 0;
+	}
+	
+	.dataTables_wrapper {
+		div.dataTables_scrollBody {
+			table.dataTable {
+				border-top: none;
+			  thead th {
+					border:none;
+				}
+			}
+		}
+
+		table.dataTable {
+			thead th {
+				border-bottom: 1px solid #ccc;
+				color:$basecolor;
+			}
+		
+			tr.even td.sorting_1 {
+				background: #eee;
+			}
+			
+			tr.odd {
+				background-color: #fff;
+			
+				td.sorting_1 {
+					background: #fff;
+				}
+			}
+		}
+	}
 }
+
+
 	
 /* table paging */
 div.b_table_page { 

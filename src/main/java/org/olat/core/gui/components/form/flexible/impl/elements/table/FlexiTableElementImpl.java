@@ -75,6 +75,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private int currentFirstResult;
 	private int pageSize;
 	private boolean searchField;
+	private boolean selectAllEnabled;
 
 	private FormLink customButton;
 	private FormLink searchButton;
@@ -88,24 +89,25 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private final String mapperUrl;
 	
 	private Object selectedObj;
+	private boolean allSelectedIndex;
 	private Set<Integer> multiSelectedIndex;
 	private Set<Integer> enabledColumnIndex = new HashSet<Integer>();
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel) {
-		this(ureq, wControl, name, null, tableModel, null, -1, false);
+		this(ureq, wControl, name, null, tableModel, -1, false);
 	}
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
-		this(ureq, wControl, name, translator, tableModel, null, -1, false);
+		this(ureq, wControl, name, translator, tableModel, -1, false);
 	}
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator,
-			FlexiTableDataModel<?> tableModel, FlexiTableDataSource<?> dataSource, int pageSize, boolean searchField) {
+			FlexiTableDataModel<?> tableModel, int pageSize, boolean searchField) {
 		super(name);
 		this.wControl = wControl;
 		this.dataModel = tableModel;
-		this.dataSource = dataSource;
+		this.dataSource = (tableModel instanceof FlexiTableDataSource) ? (FlexiTableDataSource<?>)dataModel : null;
 		component = new FlexiTableComponent(this, translator);
 		
 		for(int i=dataModel.getTableColumnModel().getColumnCount(); i-->0; ) {
@@ -165,10 +167,20 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public boolean isSearch() {
+	public boolean isSearchEnabled() {
 		return searchField;
 	}
 	
+	@Override
+	public boolean isSelectAllEnable() {
+		return selectAllEnabled;
+	}
+	
+	@Override
+	public void setSelectAllEnable(boolean enable) {
+		this.selectAllEnabled = enable;
+	}
+
 	public String getSearchText() {
 		return searchFieldEl == null ? null : searchFieldEl.getValue();
 	}
@@ -254,13 +266,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		String[] selectedIndexArr = getRootForm().getRequestParameterValues("ftb_ms");
+		String[] selectedIndexArr = getRootForm().getRequestParameterValues("tb_ms");
 		if(selectedIndexArr != null) {
 			setMultiSelectIndex(selectedIndexArr);
 		}
 
 		String selectedIndex = getRootForm().getRequestParameter("rSelect");
 		String dispatchuri = getRootForm().getRequestParameter("dispatchuri");
+		String select = getRootForm().getRequestParameter("select");
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(selectedIndex)) {
@@ -273,9 +286,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			}
 		} else if(searchButton != null
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
-			//snap the request
 			evalSearchRequest(ureq);
-		}  else if(customButton != null
+		} else if(dispatchuri != null && select != null && select.equals("checkall")) {
+			doSelectAll();
+		} else if(dispatchuri != null && select != null && select.equals("uncheckall")) {
+			doUnSelectAll();
+		} else if(customButton != null
 				&& customButton.getFormDispatchId().equals(dispatchuri)) {
 			//snap the request
 			customizeCallout(ureq);
@@ -296,7 +312,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(source == callout) {
-			System.out.println("dispatchEvent (Controller): " + source);
+			//System.out.println("dispatchEvent (Controller): " + source);
 		}
 	}
 	
@@ -345,7 +361,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		choice.setSubmitKey("save");
 		return choice;
 	}
-	
+
 	protected void evalSearchRequest(UserRequest ureq) {
 		if(searchFieldEl == null) return;//this a default behavior which can occur without the search configured
 		searchFieldEl.evalFormRequest(ureq);
@@ -354,6 +370,20 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			doSearch(ureq, search);
 		} else {
 			doResetSearch(ureq);
+		}
+	}
+	
+	protected void doSelectAll() {
+		allSelectedIndex = true;
+		if(multiSelectedIndex != null) {
+			multiSelectedIndex.clear();
+		}
+	}
+	
+	protected void doUnSelectAll() {
+		allSelectedIndex = false;
+		if(multiSelectedIndex != null) {
+			multiSelectedIndex.clear();
 		}
 	}
 	
@@ -378,16 +408,34 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			dataSource.load(0, getPageSize());
 		}
 	}
-	
+
+	@Override
+	public boolean isAllSelectedIndex() {
+		return allSelectedIndex;
+	}
+
+	public void setAllSelectedIndex(boolean allSelectedIndex) {
+		this.allSelectedIndex = allSelectedIndex;
+	}
+
+	@Override
 	public Set<Integer> getMultiSelectedIndex() {
+		if(allSelectedIndex && dataSource != null) {
+			//ensure the whole data model is loaded
+			dataSource.load(0, -1);
+			Set<Integer> allIndex = new HashSet<Integer>();
+			for(int i=dataModel.getRowCount(); i-->0; ) {
+				allIndex.add(new Integer(i));
+			}
+			return allIndex;
+		}
 		return multiSelectedIndex == null ? Collections.<Integer>emptySet() : multiSelectedIndex;
 	}
-	
+
+	@Override
 	public boolean isMultiSelectedIndex(int index) {
-		if(multiSelectedIndex == null) {
-			return false;
-		}
-		return multiSelectedIndex.contains(new Integer(index));
+		return allSelectedIndex
+				|| (multiSelectedIndex != null && multiSelectedIndex.contains(new Integer(index)));
 	}
 	
 	protected void setMultiSelectIndex(String[] selections) {
@@ -445,13 +493,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	protected void rootFormAvailable() {
-		//root form not interesting for Static text
-		if(searchFieldEl != null && searchFieldEl.getRootForm() != getRootForm())
-			searchFieldEl.setRootForm(getRootForm());
-		if(searchButton != null && searchButton.getRootForm() != getRootForm())
-			searchButton.setRootForm(getRootForm());
-		if(customButton != null && customButton.getRootForm() != getRootForm())
-			customButton.setRootForm(getRootForm());
+		rootFormAvailable(searchFieldEl);
+		rootFormAvailable(searchButton);
+		rootFormAvailable(customButton);
+	}
+	
+	private final void rootFormAvailable(FormItem item) {
+		if(item != null && item.getRootForm() != getRootForm())
+			item.setRootForm(getRootForm());
 	}
 
 	protected FlexiTableComponent getFormItemComponent() {

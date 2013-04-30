@@ -19,16 +19,9 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.olat.core.commons.persistence.DefaultResultInfos;
-import org.olat.core.commons.persistence.ResultInfos;
-import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSource;
-import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.qpool.QuestionStatus;
 
@@ -38,124 +31,18 @@ import org.olat.modules.qpool.QuestionStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDataSource<ItemRow>, TableDataModel<ItemRow> {
+public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<ItemRow> {
 
-	private List<ItemRow> rows;
-	private FlexiTableColumnModel columnModel;
-	private ItemRowsSource source;
 	private final Translator translator;
 	
-	private int rowCount;
-	
-	public QuestionItemDataModel(FlexiTableColumnModel columnModel, ItemRowsSource source, Translator translator) {
-		this.columnModel = columnModel;
-		this.source = source;
+	public QuestionItemDataModel(FlexiTableColumnModel columnModel, FlexiTableDataSourceDelegate<ItemRow> source, Translator translator) {
+		super(source, columnModel);
 		this.translator = translator;
-	}
-	
-	public void setSource(ItemRowsSource source) {
-		this.source = source;
-		rows.clear();
-	}
-	
-	@Override
-	public FlexiTableColumnModel getTableColumnModel() {
-		return columnModel;
-	}
-
-	@Override
-	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-		this.columnModel = tableColumnModel;
-	}
-
-	@Override
-	public int getRowCount() {
-		return rowCount;
-	}
-
-	@Override
-	public boolean isRowLoaded(int row) {
-		return rows != null && row < rows.size();
-	}
-
-	@Override
-	public ItemRow getObject(int row) {
-		if(isRowLoaded(row)) {
-			return rows.get(row);
-		}
-		return null;
-	}
-
-	@Override
-	public void setObjects(List<ItemRow> objects) {
-		rows = new ArrayList<ItemRow>(objects);
-	}
-
-	@Override
-	public ResultInfos<ItemRow> load(int firstResult, int maxResults, SortKey... orderBy) {
-		if(rows == null) {
-			rows = new ArrayList<ItemRow>();
-		}
-		for(int i=rows.size(); i<firstResult; i++) {
-			rows.add(null);
-		}
-		
-		ResultInfos<ItemRow> newRows = source.getRows(null, null, firstResult, maxResults, orderBy);
-		if(firstResult == 0) {
-			if(newRows.getObjects().size() < maxResults) {
-				rowCount = newRows.getObjects().size();
-			} else {
-				rowCount = source.getRowCount();
-			}
-		}
-		
-		for(int i=0; i<newRows.getObjects().size(); i++) {
-			int rowIndex = i + firstResult;
-			if(rowIndex < rows.size()) {
-				rows.set(rowIndex, newRows.getObjects().get(i));
-			} else {
-				rows.add(newRows.getObjects().get(i));
-			}
-		}
-		return new DefaultResultInfos<ItemRow>(newRows.getNextFirstResult(), newRows.getCorrectedRowCount(), rows);
-	}
-	
-	@Override
-	public ResultInfos<ItemRow> search(String query, List<String> condQueries, int firstResult,
-			int maxResults, SortKey... orderBy) {
-		if(firstResult == 0) {
-			rows = new ArrayList<ItemRow>();
-		} else {
-			for(int i=rows.size(); i<firstResult; i++) {
-				rows.add(null);
-			}
-		}
-		ResultInfos<ItemRow> newRows = source.getRows(query, condQueries, firstResult, maxResults, orderBy);
-		if(newRows.getCorrectedRowCount() >= 0) {
-			rowCount = newRows.getCorrectedRowCount();
-		} else if(firstResult == 0) {
-			rowCount = source.getRowCount();
-		}
-		
-		for(int i=0; i<newRows.getObjects().size(); i++) {
-			int rowIndex = i + firstResult;
-			if(rowIndex < rows.size()) {
-				rows.set(rowIndex, newRows.getObjects().get(i));
-			} else {
-				rows.add(newRows.getObjects().get(i));
-			}
-		}
-		return new DefaultResultInfos<ItemRow>(newRows.getNextFirstResult(), newRows.getCorrectedRowCount(), rows);
-	}
-
-	@Override
-	public int getColumnCount() {
-		return columnModel.getColumnCount();
 	}
 	
 	@Override
 	public QuestionItemDataModel createCopyWithEmptyList() {
-		return new QuestionItemDataModel(columnModel, source, translator);
+		return new QuestionItemDataModel(getTableColumnModel(), getSourceDelegate(), translator);
 	}
 
 	@Override

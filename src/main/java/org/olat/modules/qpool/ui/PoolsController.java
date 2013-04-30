@@ -96,7 +96,7 @@ public class PoolsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select-pool"));
 
 		model = new PoolDataModel(columnsModel, getTranslator());
-		poolTable = uifactory.addTableElement(ureq, getWindowControl(), "pools", model, null, 20, false, getTranslator(), formLayout);
+		poolTable = uifactory.addTableElement(ureq, getWindowControl(), "pools", model, getTranslator(), formLayout);
 		poolTable.setMultiSelect(true);
 		poolTable.setRendererType(FlexiTableRendererType.classic);
 		reloadModel();
@@ -158,7 +158,7 @@ public class PoolsController extends FormBasicController {
 		}
 	}
 	
-	private static class PoolDataModel implements FlexiTableDataModel, TableDataModel<Pool> {
+	private static class PoolDataModel implements FlexiTableDataModel<Pool>, TableDataModel<Pool> {
 	
 		private List<Pool> rows;
 		private FlexiTableColumnModel columnModel;

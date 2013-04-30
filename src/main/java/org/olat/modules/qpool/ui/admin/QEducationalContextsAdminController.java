@@ -109,7 +109,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", Cols.deletable.ordinal(), "delete-level", delRenderer));
 
 		model = new LevelDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "levels", model, null, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "levels", model, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		
 		createType = uifactory.addFormLink("create.level", formLayout, Link.BUTTON);
@@ -240,7 +240,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		}
 	}
 	
-	private class LevelDataModel implements FlexiTableDataModel, TableDataModel<QEducationalContext> {
+	private class LevelDataModel implements FlexiTableDataModel<QEducationalContext>, TableDataModel<QEducationalContext> {
 
 		private FlexiTableColumnModel columnModel;
 		private List<QEducationalContext> levels;
