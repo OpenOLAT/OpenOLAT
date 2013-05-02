@@ -407,7 +407,7 @@ function b_AddOnDomReplacementFinishedCallback(funct) {
 	var debug = jQuery(document).ooLog().isDebugEnabled();
 	
 	if(debug) jQuery(document).ooLog('debug',"callback stack size: " + b_onDomReplacementFinished_callbacks.length, "functions.js ADD"); 
-	if (debug && jQuery.browser.mozilla && !jQuery.browser.webkit) {
+	if (debug && b_onDomReplacementFinished_callbacks.toSource) {
 		jQuery(document).ooLog('debug',"stack content"+b_onDomReplacementFinished_callbacks.toSource(), "functions.js ADD")
 	};
 
@@ -588,9 +588,8 @@ function o_ainvoke(r) {
 		}
 		// execute onDomReplacementFinished callback functions
 		var stacklength = b_onDomReplacementFinished_callbacks.length;
-		if (jQuery.browser.mozilla && !jQuery.browser.webkit) { 
-			if(jQuery(document).ooLog().isDebugEnabled())
-				jQuery(document).ooLog('debug',"stack content"+b_onDomReplacementFinished_callbacks.toSource(), "functions.js");
+		if (b_onDomReplacementFinished_callbacks.toSource && jQuery(document).ooLog().isDebugEnabled()) { 
+			jQuery(document).ooLog('debug',"stack content"+b_onDomReplacementFinished_callbacks.toSource(), "functions.js");
 		}
 		
 		for (mycounter = 0; stacklength > mycounter; mycounter++) {
@@ -679,10 +678,6 @@ function removeAjaxBusy() {
 		if(console) console.log(e);
 	}
 }
-
-//safari destroys new added links in htmleditor see: http://bugs.olat.org/jira/browse/OLAT-3198
-var htmlEditorEnabled = (jQuery.browser.msie || jQuery.browser.mozilla);
-var scormPlayerEnabled = (jQuery.browser.msie || jQuery.browser.mozilla || jQuery.browser.webkit);
 
 function setFormDirty(formId) {
 	// sets dirty form content flag to true and renders the submit button
@@ -924,7 +919,7 @@ function o_log(str) {
 		if (o_log_all.length == 4000) o_log_all = o_log_all +"\n... (stripped: to long)... ";
 		logc.value = o_log_all;
 	}
-	if(!jQuery.browser.IE && !jQuery.type(window.console) === "undefined"){
+	if(!jQuery.type(window.console) === "undefined"){
 		//firebug log window
 		window.console.log(str);
 	}

@@ -19,5 +19,6 @@ and minified css:
   jquery.tagit.min.css
   layout-default-latest.min.css
   fullcalendar.min.css
+  dataTables.css
   
 

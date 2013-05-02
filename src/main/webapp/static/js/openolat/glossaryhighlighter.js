@@ -254,7 +254,7 @@ function o_tm_doHighlightSingle(bodyText, glossaryMainTerm, searchTerm) {
   var occurrence = 0;
   // prevent highlighting in buggy IE when a movieplayer is used or in some TinyMCE-cases
   // see OLAT-5447 for more infos
-  if(bodyText.indexOf('BGlossarIgnore') > 0  || (jQuery.browser.msie && bodyText.indexOf('olatFlashMovieViewer') > 0)) {
+  if(bodyText.indexOf('BGlossarIgnore') > 0  || (navigator.userAgent.indexOf('MSIE') && bodyText.indexOf('olatFlashMovieViewer') > 0)) {
   	return bodyText;
   }
 

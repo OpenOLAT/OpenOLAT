@@ -173,6 +173,8 @@
 				                <include>${basedir}/target/jquery/jquery/tagit/jquery.tagit.min.css</include>
 				                <include>${basedir}/target/jquery/jquery/uilayout/layout-default-latest.min.css</include>
 				                <include>${basedir}/target/jquery/jquery/fullcalendar/fullcalendar.min.css</include>
+				                <include>${basedir}/src/main/webapp/static/js/jquery/datatables/css/jquery.dataTables.css</include>
+				                <include>${basedir}/src/main/webapp/static/yaml/core/slim_base.css</include>
 				              </includes>
 				            </aggregation>
 				          </aggregations>

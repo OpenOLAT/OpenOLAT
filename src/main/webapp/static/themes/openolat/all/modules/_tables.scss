@@ -66,7 +66,22 @@ div.b_table_wrapper {
 		margin: 5px 0 0 0;
 	}
 	
+	
+	
 	.dataTables_wrapper {
+		.paginate_enabled_previous{background:url('../openolat/images/arrow_left.png') no-repeat top left}
+		.paginate_enabled_previous:hover{background:url('../openolat/images/arrow_left.png') no-repeat top left}
+		.paginate_disabled_previous{background:url('../openolat/images/arrow_left.png') no-repeat top left}
+		.paginate_enabled_next{background:url('../openolat/images/arrow_right.png') no-repeat top right}
+		.paginate_enabled_next:hover{background:url('../openolat/images/arrow_right.png') no-repeat top right}
+		.paginate_disabled_next{background:url('../openolat/images/arrow_right.png') no-repeat top right}
+		
+		.sorting{background:url('../openolat/images/arrow-resize-090.png') no-repeat center right}
+		.sorting_asc{background:url('../openolat/images/arrow_up.png') no-repeat center right}
+		.sorting_desc{background:url('../openolat/images/arrow_down.png') no-repeat center right}
+		.sorting_asc_disabled{background:url('../openolat/images/arrow_up.png') no-repeat center right}
+		.sorting_desc_disabled{background:url('../openolat/images/arrow_down.png') no-repeat center right}
+	
 		div.dataTables_scrollBody {
 			table.dataTable {
 				border-top: none;
