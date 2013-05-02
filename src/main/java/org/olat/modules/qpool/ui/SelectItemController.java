@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
+import org.olat.modules.qpool.ui.events.QItemViewEvent;
 
 /**
  * 

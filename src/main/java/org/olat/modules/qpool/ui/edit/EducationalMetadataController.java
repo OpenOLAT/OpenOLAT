@@ -36,7 +36,7 @@ import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.LOMDuration;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.ui.MetadatasController;
-import org.olat.modules.qpool.ui.QPoolEvent;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
  * 

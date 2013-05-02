@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.modules.qpool.ui.events;
 
 import org.olat.core.gui.control.Event;
 import org.olat.modules.qpool.QuestionItem;
@@ -28,13 +28,13 @@ import org.olat.modules.qpool.QuestionItem;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QItemCopyEvent extends Event {
+public class QItemEvent extends Event {
 
 	private static final long serialVersionUID = 1868410260121125418L;
 	private final QuestionItem item;
 
-	public QItemCopyEvent(QuestionItem item) {
-		super("copy-item");
+	public QItemEvent(String cmd, QuestionItem item) {
+		super(cmd);
 		this.item = item;
 	}
 

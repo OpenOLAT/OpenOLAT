@@ -172,4 +172,27 @@ public class ItemRow implements QuestionItemView {
 	public void setMarkLink(FormLink markLink) {
 		this.markLink = markLink;
 	}
+	
+	public void setMark(boolean mark) {
+		if(markLink != null) {
+			markLink.setCustomEnabledLinkCSS(mark ? "b_mark_set" : "b_mark_not_set");
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return delegate.getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof ItemRow) {
+			ItemRow row = (ItemRow) obj;
+			return delegate.equals(row.delegate);
+		}
+		return false;
+	}
 }

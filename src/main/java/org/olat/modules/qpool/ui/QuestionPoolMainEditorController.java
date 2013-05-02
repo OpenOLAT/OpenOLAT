@@ -64,6 +64,8 @@ import org.olat.modules.qpool.ui.admin.TaxonomyAdminController;
 import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
 import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
 import org.olat.modules.qpool.ui.datasource.SharedItemsSource;
+import org.olat.modules.qpool.ui.events.QItemMarkedEvent;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
  * 
@@ -73,6 +75,8 @@ import org.olat.modules.qpool.ui.datasource.SharedItemsSource;
  */
 public class QuestionPoolMainEditorController extends BasicController implements Activateable2, StackedControllerAware {
 
+	public static final OLATResourceable QITEM_MARKED = OresHelper.createOLATResourceableType("QItemMark");
+	
 	private final MenuTree menuTree;
 	private GenericTreeNode sharesNode, myNode;
 	
@@ -254,6 +258,8 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				} else if("Marked".equals(userObj)) {
 					String businessPath = "[QuestionItem:" + item.getKey() + "]";
 					markManager.setMark(item, getIdentity(), null, businessPath);
+					QItemMarkedEvent event = new QItemMarkedEvent("marked", item.getKey(), true);
+					ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, QITEM_MARKED);
 				}
 			}
 		} catch (Exception e) {

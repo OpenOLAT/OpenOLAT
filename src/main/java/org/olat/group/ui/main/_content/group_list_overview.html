@@ -1,6 +1,11 @@
 <h4 class="b_with_small_icon_left b_group_icon">
 	$r.translate("menu.groups")
 </h4>
+<div class="o_buttons_box_right">
+	#if($r.render("available"))
+		$r.render("create")
+	#end
+</div>
 <div class="b_clearfix">
 	$r.render("segments")<br/>
 	$r.render("groupList")

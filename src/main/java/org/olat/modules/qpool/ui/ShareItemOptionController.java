@@ -34,6 +34,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
  * 

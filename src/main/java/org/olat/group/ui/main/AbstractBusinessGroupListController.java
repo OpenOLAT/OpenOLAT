@@ -179,7 +179,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	protected abstract void initButtons(UserRequest ureq);
 
 	protected void initButtons(UserRequest ureq, boolean create) {
-		if(create && canCreateBusinessGroup(ureq)) {
+		if(create && groupModule.isAllowedCreate(ureq.getUserSession().getRoles())) {
 			createButton = LinkFactory.createButton("create.group", mainVC, this);
 			createButton.setElementCssClass("o_sel_group_create");
 		}

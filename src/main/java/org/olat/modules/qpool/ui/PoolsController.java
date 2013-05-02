@@ -48,6 +48,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
 
 /**
  * 

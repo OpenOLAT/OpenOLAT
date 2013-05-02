@@ -106,4 +106,6 @@ public interface FlexiTableElement extends FormItem {
 	
 	public void setPage(int page);
 	
+	public void reloadData();
+	
 }

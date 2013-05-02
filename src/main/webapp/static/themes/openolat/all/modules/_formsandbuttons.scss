@@ -178,6 +178,14 @@ span.b_toggle_slide_legend {font-size: 90%; }
 	> span {background-image: url('../openolat/images/docs/document--pencil.png');}
 }
 
+.b_move_left_icon {
+	> span {background-image: url('../openolat/images/arrow_left_big.png');}
+}
+
+.b_move_right_icon { 
+	> span {background-image: url('../openolat/images/arrow_right_big.png');}
+}
+
 
 /** ----------------- FORMS + LOGIN  ----------------- **/
 div.o_login {

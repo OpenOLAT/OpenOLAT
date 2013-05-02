@@ -51,13 +51,19 @@ public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataMod
 	public int getColumnCount() {
 		return columnModel.getColumnCount();
 	}
+	
 	@Override
 	public U getObject(int row) {
 		return rows.get(row);
 	}
+	
+	public List<U> getObjects() {
+		return new ArrayList<U>(rows);
+	}
+	
 	@Override
 	public void setObjects(List<U> objects) {
-		this.rows = objects;
+		this.rows = new ArrayList<U>(objects);
 	}
 	
 	@Override

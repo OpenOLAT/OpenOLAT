@@ -50,6 +50,8 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.manager.ExportQItemResource;
+import org.olat.modules.qpool.ui.events.QItemEvent;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
  * 
@@ -59,7 +61,8 @@ import org.olat.modules.qpool.manager.ExportQItemResource;
  */
 public class QuestionItemDetailsController extends BasicController implements StackedControllerAware {
 	
-	private Link deleteItem, shareItem, exportItem, editItem, copyItem;
+	private Link editItem, nextItem, previousItem;
+	private Link deleteItem, shareItem, exportItem, copyItem;
 
 	private Controller editCtrl;
 	private Controller previewCtrl;
@@ -101,6 +104,11 @@ public class QuestionItemDetailsController extends BasicController implements St
 			editItem = LinkFactory.createButton("edit", mainVC, this);
 			editItem.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
 		}
+		nextItem = LinkFactory.createButton("next", mainVC, this);
+		nextItem.setCustomEnabledLinkCSS("b_link_left_icon b_move_right_icon");
+		previousItem = LinkFactory.createButton("previous", mainVC, this);
+		previousItem.setCustomEnabledLinkCSS("b_link_left_icon b_move_left_icon");
+		
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
 		copyItem = LinkFactory.createButton("copy", mainVC, this);
 		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
@@ -151,6 +159,10 @@ public class QuestionItemDetailsController extends BasicController implements St
 			}
 		} else if(source == copyItem) {
 			doCopy(ureq, metadatasCtrl.getItem());
+		} else if(source == nextItem) {
+			fireEvent(ureq, new QItemEvent("next", metadatasCtrl.getItem()));
+		} else if(source == previousItem) {
+			fireEvent(ureq, new QItemEvent("previous", metadatasCtrl.getItem()));
 		}
 	}
 	
@@ -194,7 +206,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 		List<QuestionItem> copies = qpoolService.copyItems(getIdentity(), Collections.singletonList(item));
 		if(copies.size() == 1) {
 			showInfo("item.copied", Integer.toString(copies.size()));
-			fireEvent(ureq, new QItemCopyEvent(copies.get(0)));
+			fireEvent(ureq, new QItemEvent("copy-item", copies.get(0)));
 		}
 	}
 	

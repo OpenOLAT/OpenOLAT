@@ -33,8 +33,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.ui.QPoolEvent;
 import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
  * 

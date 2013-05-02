@@ -17,30 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.modules.qpool.ui.events;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.control.Event;
-import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.QuestionItemView;
 
 /**
  * 
- * Initial date: 15.04.2013<br>
+ * Initial date: 12.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QPoolSelectionEvent extends Event {
+public class QItemViewEvent extends Event {
 
-	private static final long serialVersionUID = -4256533448173369433L;
-	private final List<Pool> pools;
+	private static final long serialVersionUID = 1868410260121125418L;
+	private final QuestionItemView item;
+	private final List<QuestionItemView> itemList;
+
+	public QItemViewEvent(String cmd, QuestionItemView item) {
+		super(cmd);
+		this.item = item;
+		itemList = null;
+	}
 	
-	public QPoolSelectionEvent(List<Pool> pools) {
-		super("qpool.selection.pools");
-		this.pools = pools;
+	public QItemViewEvent(String cmd, List<QuestionItemView> itemList) {
+		super(cmd);
+		item = null;
+		this.itemList = itemList;
 	}
 
-	public List<Pool> getPools() {
-		return pools;
+	public QuestionItemView getItem() {
+		return item;
+	}
+	
+	public List<QuestionItemView> getItemList() {
+		if(itemList == null) {
+			return Collections.singletonList(item);
+		}
+		return itemList;
 	}
 }

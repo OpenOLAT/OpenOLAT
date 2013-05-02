@@ -27,10 +27,10 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.ui.events.QItemViewEvent;
 
 /**
  * 
@@ -38,7 +38,7 @@ import org.olat.modules.qpool.QuestionItemView;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ItemListController extends AbstractItemListController implements FlexiTableDataSourceDelegate<ItemRow> {
+public class ItemListController extends AbstractItemListController {
 	
 	private FormLink selectLink;
 	

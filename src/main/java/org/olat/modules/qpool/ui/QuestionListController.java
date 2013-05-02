@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerAware;
@@ -54,6 +53,10 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QItemList;
+import org.olat.modules.qpool.ui.edit.MetadataBulkChangeController;
+import org.olat.modules.qpool.ui.events.QItemEvent;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
+import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
 import org.olat.modules.qpool.ui.wizard.Export_1_TypeStep;
 import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
 import org.olat.repository.RepositoryEntry;
@@ -67,9 +70,9 @@ import org.olat.repository.controllers.RepositoryDetailsController;
  * Initial date: 22.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class QuestionListController extends AbstractItemListController implements StackedControllerAware, FlexiTableDataSourceDelegate<ItemRow> {
+public class QuestionListController extends AbstractItemListController implements StackedControllerAware {
 
-	private FormLink list, exportItem, shareItem, unshareItem, copyItem, deleteItem, authorItem, importItem;
+	private FormLink list, exportItem, shareItem, unshareItem, copyItem, deleteItem, authorItem, importItem, bulkChange;
 	
 	private StackedController stackPanel;
 	
@@ -91,6 +94,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private RepositoryAddController addController;
 	private QuestionItemDetailsController currentDetailsCtrl;
 	private LayoutMain3ColsController currentMainDetailsCtrl;
+	private MetadataBulkChangeController bulkChangeCtrl;
 	
 	private final QPoolService qpoolService;
 	private final RepositoryManager repositoryManager;
@@ -115,6 +119,7 @@ public class QuestionListController extends AbstractItemListController implement
 		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
 		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
 		deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
+		bulkChange = uifactory.addFormLink("bulk.change", formLayout, Link.BUTTON);
 	}
 
 	@Override
@@ -167,6 +172,9 @@ public class QuestionListController extends AbstractItemListController implement
 				}
 			} else if(link == importItem) {
 				doOpenImport(ureq);
+			} else if(link == bulkChange) {
+				List<QuestionItemShort> items = getSelectedShortItems();
+				doBulkChange(ureq, items);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -257,6 +265,12 @@ public class QuestionListController extends AbstractItemListController implement
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(source == bulkChangeCtrl) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				updateRows(bulkChangeCtrl.getUpdatedItems());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == confirmCopyBox) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				@SuppressWarnings("unchecked")
@@ -276,10 +290,16 @@ public class QuestionListController extends AbstractItemListController implement
 				doRemove(ureq, items);
 			}
 		} else if(source == currentDetailsCtrl) {
-			if(event instanceof QItemCopyEvent) {
-				QItemCopyEvent qce = (QItemCopyEvent)event;
-				stackPanel.popUpToRootController(ureq);
-				doSelect(ureq, qce.getItem(), true);
+			if(event instanceof QItemEvent) {
+				QItemEvent qce = (QItemEvent)event;
+				if("copy-item".equals(qce.getCommand())) {
+					stackPanel.popUpToRootController(ureq);
+					doSelect(ureq, qce.getItem(), true);
+				} else if("previous".equals(qce.getCommand())) {
+					doPrevious(ureq, qce.getItem());
+				} else if("next".equals(qce.getCommand())) {
+					doNext(ureq, qce.getItem());
+				}
 			}
 		} else if(source == addController) {
 			if(event instanceof EntryChangedEvent) {
@@ -302,14 +322,53 @@ public class QuestionListController extends AbstractItemListController implement
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(addController);
+		removeAsListenerAndDispose(bulkChangeCtrl);
 		removeAsListenerAndDispose(importItemCtrl);
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(createCollectionCtrl);
 		cmc = null;
 		addController = null;
+		bulkChangeCtrl = null;
 		importItemCtrl = null;
 		selectGroupCtrl = null;
 		createCollectionCtrl = null;
+	}
+	
+	protected void updateRows(List<QuestionItem> items) {
+		List<Integer> rowIndex = getIndex(items);
+		getModel().reload(rowIndex);
+		getItemsTable().getComponent().setDirty(true);
+	}
+	
+	private void doNext(UserRequest ureq, QuestionItem item) {
+		ItemRow row = getRowByItemKey(item.getKey());
+		ItemRow nextRow = getModel().getNextObject(row);
+		if(nextRow != null) {
+			QuestionItem nextItem = qpoolService.loadItemById(nextRow.getKey());
+			stackPanel.popUpToRootController(ureq);
+			doSelect(ureq, nextItem, true);
+		}
+	}
+	
+	private void doPrevious(UserRequest ureq, QuestionItem item) {
+		ItemRow row = getRowByItemKey(item.getKey());
+		ItemRow previousRow = getModel().getPreviousObject(row);
+		if(previousRow != null) {
+			QuestionItem previousItem = qpoolService.loadItemById(previousRow.getKey());
+			stackPanel.popUpToRootController(ureq);
+			doSelect(ureq, previousItem, true);
+		}
+	}
+	
+	private void doBulkChange(UserRequest ureq, List<QuestionItemShort> items) {
+		removeAsListenerAndDispose(bulkChangeCtrl);
+		bulkChangeCtrl = new MetadataBulkChangeController(ureq, getWindowControl(), items);
+		listenTo(bulkChangeCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				bulkChangeCtrl.getInitialComponent(), true, translate("bulk.change"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
 	private void doOpenImport(UserRequest ureq) {

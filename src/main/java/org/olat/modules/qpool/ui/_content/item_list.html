@@ -28,5 +28,8 @@ $r.render("items")
 	#if($r.available("select"))
 		$r.render("select")
 	#end
+	#if($r.available("bulk.change"))
+		$r.render("bulk.change")
+	#end
 	</div>
 </div>

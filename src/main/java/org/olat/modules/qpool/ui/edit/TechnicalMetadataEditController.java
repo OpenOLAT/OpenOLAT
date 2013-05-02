@@ -19,6 +19,9 @@
  */
 package org.olat.modules.qpool.ui.edit;
 
+import static org.olat.modules.qpool.ui.edit.MetaUIFactory.validateElementLogic;
+import static org.olat.modules.qpool.ui.edit.MetaUIFactory.validateSelection;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,11 +33,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.QTIConstants;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
 
@@ -98,25 +100,9 @@ public class TechnicalMetadataEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		
-		editorEl.clearError();
-		String editor = editorEl.getValue();
-		if(!StringHelper.containsNonWhitespace(editor)) {
-			editorEl.setErrorKey("form.mandatory.hover", null);
-			allOk &= false;
-		}
-		editorVersionEl.clearError();
-		String editorVersion = editorVersionEl.getValue();
-		if(!StringHelper.containsNonWhitespace(editorVersion)) {
-			editorVersionEl.setErrorKey("form.mandatory.hover", null);
-			allOk &= false;
-		}
-		
-		formatEl.clearError();
-		if(!formatEl.isOneSelected()) {
-			formatEl.setErrorKey("form.mandatory.hover", null);
-			allOk &= false;
-		}
+		allOk &= validateElementLogic(editorEl, editorEl.getMaxLength(), true, true);
+		allOk &= validateElementLogic(editorVersionEl, editorVersionEl.getMaxLength(), true, true);
+		allOk &= validateSelection(formatEl, true);
 		return allOk &= super.validateFormLogic(ureq);
 	}
 

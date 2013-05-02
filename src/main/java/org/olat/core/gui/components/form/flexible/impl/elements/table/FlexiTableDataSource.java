@@ -41,6 +41,13 @@ public interface FlexiTableDataSource<U> extends FlexiTableDataModel<U> {
 	public ResultInfos<U> load(int firstResult, int maxResults, SortKey... orderBy);
 	
 	/**
+	 * Reload the rows needed for paging
+	 * @param firstResult
+	 * @param maxResults
+	 */
+	public void reload(List<Integer> rowIndex);
+	
+	/**
 	 * 
 	 * @param firstResult
 	 * @param maxResults

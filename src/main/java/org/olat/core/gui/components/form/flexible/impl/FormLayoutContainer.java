@@ -346,6 +346,15 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formLayoutContainer.remove(toBeRemoved.getLabelC());
 	}
 	
+	public void moveBefore(FormItem itemToBeMoved, FormItem itemRef) {
+		int index = formComponentsNames.indexOf(itemToBeMoved.getName());
+		int indexRef = formComponentsNames.indexOf(itemRef.getName());
+		if(index > 0 && indexRef >= 0) {
+			String toMove = formComponentsNames.remove(index);
+			formComponentsNames.add(indexRef, toMove);
+		}
+	}
+	
 	protected Component getFormItemComponent() {
 		return formLayoutContainer;
 	}

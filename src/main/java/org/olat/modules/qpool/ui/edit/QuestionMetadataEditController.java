@@ -19,8 +19,9 @@
  */
 package org.olat.modules.qpool.ui.edit;
 
+import static org.olat.modules.qpool.ui.edit.MetaUIFactory.*;
+
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -36,9 +37,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.edit.MetaUIFactory.KeyValues;
 
 /**
  * 
@@ -67,34 +68,22 @@ public class QuestionMetadataEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("question");
 
-		List<QItemType> types = qpoolService.getAllItemTypes();
-		String[] typeKeys = new String[types.size()];
-		String[] typeValues = new String[types.size()];
-		int count = 0;
-		for(QItemType type:types) {
-			typeKeys[count] = type.getType();
-			String translation = translate("item.type." + type.getType().toLowerCase());
-			if(translation.length() > 128) {
-				typeValues[count++] = typeKeys[count];
-			} else {
-				typeValues[count++] = translation;
-			}
-		}
-		typeEl = uifactory.addDropdownSingleselect("question.type", "question.type", formLayout, typeKeys, typeValues, null);
+		KeyValues typeKeys = getQItemTypeKeyValues(getTranslator(), qpoolService);
+		typeEl = uifactory.addDropdownSingleselect("question.type", "question.type", formLayout, typeKeys.getKeys(), typeKeys.getValues(), null);
 		if(item.getType() != null) {
 			typeEl.select(item.getType().getType(), true);
 		}
 		
-		String difficulty = toString(item.getDifficulty());
+		String difficulty = bigDToString(item.getDifficulty());
 		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 10, difficulty, formLayout);
 		difficultyEl.setExampleKey("question.difficulty.example", null);
 		difficultyEl.setDisplaySize(4);
 
-		String stdevDifficulty = toString(item.getStdevDifficulty());
+		String stdevDifficulty = bigDToString(item.getStdevDifficulty());
 		stdevDifficultyEl = uifactory.addTextElement("question.stdevDifficulty", "question.stdevDifficulty", 10, stdevDifficulty, formLayout);
 		stdevDifficultyEl.setExampleKey("question.stdevDifficulty.example", null);
 		stdevDifficultyEl.setDisplaySize(4);
-		String differentiation = toString(item.getDifferentiation());
+		String differentiation = bigDToString(item.getDifferentiation());
 		differentiationEl = uifactory.addTextElement("question.differentiation", "question.differentiation", 10, differentiation, formLayout);
 		differentiationEl.setExampleKey("question.differentiation.example", null);
 		differentiationEl.setDisplaySize(4);
@@ -129,53 +118,12 @@ public class QuestionMetadataEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		typeEl.clearError();
-		if(!typeEl.isOneSelected()) {
-			typeEl.setErrorKey("form.mandatory.hover", null);
-			allOk &= false;
-		}
-		
-		allOk &= validateBigDecimal(difficultyEl, 0.0d, 1.0d);
-		allOk &= validateBigDecimal(stdevDifficultyEl, 0.0d, 1.0d);
-		allOk &= validateBigDecimal(differentiationEl, -1.0d, 1.0d);
-		
-		assessmentTypeEl.clearError();
-		if(!assessmentTypeEl.isOneSelected()) {
-			assessmentTypeEl.setErrorKey("form.mandatory.hover", null);
-			allOk &= false;
-		}
+		allOk &= validateSelection(typeEl, true);
+		allOk &= validateBigDecimal(difficultyEl, 0.0d, 1.0d, true);
+		allOk &= validateBigDecimal(stdevDifficultyEl, 0.0d, 1.0d, true);
+		allOk &= validateBigDecimal(differentiationEl, -1.0d, 1.0d, true);
+		allOk &= validateSelection(assessmentTypeEl, true);
 		return allOk && super.validateFormLogic(ureq);
-	}
-	
-	/**
-	 * The value is here not mandatory!
-	 * @param el
-	 * @param min
-	 * @param max
-	 * @return
-	 */
-	protected boolean validateBigDecimal(TextElement el, double min, double max) {
-		boolean allOk = true;
-
-		el.clearError();
-		String val = el.getValue();
-		if(StringHelper.containsNonWhitespace(val)) {
-			
-			try {
-				double value = Double.parseDouble(val);
-				if(min > value) {
-					el.setErrorKey("error.wrongFloat", null);
-					allOk = false;
-				} else if(max < value) {
-					el.setErrorKey("error.wrongFloat", null);
-					allOk = false;
-				}
-			} catch (NumberFormatException e) {
-				el.setErrorKey("error.wrongFloat", null);
-				allOk = false;
-			}
-		}
-		return allOk;	
 	}
 	
 	@Override
@@ -206,26 +154,5 @@ public class QuestionMetadataEditController extends FormBasicController {
 		}
 		item = qpoolService.updateItem(item);
 		fireEvent(ureq, new QItemEdited(item));
-	}
-	
-	private BigDecimal toBigDecimal(String val) {
-		if(StringHelper.containsNonWhitespace(val)) {
-			return new BigDecimal(val);
-		}
-		return null;
-	}
-	
-	private String toString(BigDecimal val) {
-		if(val == null) {
-			return "";
-		}
-		return val.toPlainString();
-	}
-	
-	private int toInt(String val) {
-		if(StringHelper.containsNonWhitespace(val)) {
-			return Integer.parseInt(val);
-		}
-		return 1;
 	}
 }

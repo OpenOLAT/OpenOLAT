@@ -32,9 +32,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.model.BusinessGroupSelectionEvent;
+import org.olat.group.ui.NewBGController;
 
 /**
  * 
@@ -45,7 +47,7 @@ import org.olat.group.model.BusinessGroupSelectionEvent;
 public class SelectBusinessGroupController extends BasicController {
 	
 	private final Link markedGroupsLink, ownedGroupsLink, courseGroupsLink, searchOpenLink;
-	private Link adminSearchOpenLink;
+	private Link createGroup, adminSearchOpenLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 
@@ -55,12 +57,22 @@ public class SelectBusinessGroupController extends BasicController {
 	private SelectSearchBusinessGroupController searchGroupsCtrl;
 	private SelectSearchBusinessGroupController searchAdminGroupsCtrl;
 	
+	private NewBGController groupCreateController;
+	protected CloseableModalController cmc;
+	
+	private final boolean enableCreate;
 	private Object userObject;
 	
 	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
+		enableCreate = CoreSpringFactory.getImpl(BusinessGroupModule.class)
+				.isAllowedCreate(ureq.getUserSession().getRoles());
 		mainVC = createVelocityContainer("group_list_overview");
+		
+		if(enableCreate) {
+			createGroup = LinkFactory.createButton("create.group", mainVC, this);
+			mainVC.put("create", createGroup);
+		}
 		
 		boolean marked = updateMarkedGroups(ureq).updateMarkedGroups();
 		if(!marked) {
@@ -124,6 +136,8 @@ public class SelectBusinessGroupController extends BasicController {
 					updateAdminSearch(ureq);
 				}
 			}
+		} else if(createGroup == source) {
+			doCreate(ureq);
 		}
 	}
 
@@ -131,9 +145,36 @@ public class SelectBusinessGroupController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(event instanceof BusinessGroupSelectionEvent) {
 			fireEvent(ureq, event);
+		} else if(groupCreateController == source) {
+			if(event == Event.DONE_EVENT) {
+				//current identity is set as owner -> view them in coach
+				updateOwnedGroups(ureq);
+				segmentView.select(ownedGroupsLink);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
 		} else {
 			super.event(ureq, source, event);
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(groupCreateController);
+		removeAsListenerAndDispose(cmc);
+		groupCreateController = null;
+		cmc = null;
+	}
+	
+	protected void doCreate(UserRequest ureq) {				
+		removeAsListenerAndDispose(groupCreateController);
+		groupCreateController = new NewBGController(ureq, getWindowControl(), null, false, null);
+		listenTo(groupCreateController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupCreateController.getInitialComponent(), true, translate("create.form.title"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	private SelectFavoritBusinessGroupController updateMarkedGroups(UserRequest ureq) {

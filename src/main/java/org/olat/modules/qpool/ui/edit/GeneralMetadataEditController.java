@@ -19,6 +19,9 @@
  */
 package org.olat.modules.qpool.ui.edit;
 
+import static org.olat.modules.qpool.ui.edit.MetaUIFactory.validateElementLogic;
+
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,7 +43,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.qpool.QPoolService;
@@ -49,7 +51,6 @@ import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
 import org.olat.modules.qpool.ui.admin.TaxonomyTreeModel;
-
 /**
  * 
  * Initial date: 05.03.2013<br>
@@ -165,27 +166,12 @@ public class GeneralMetadataEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		allOk &= validateElementLogic(titleEl, titleEl.getMaxLength(), true);
-		allOk &= validateElementLogic(keywordsEl, keywordsEl.getMaxLength(), false);
-		allOk &= validateElementLogic(coverageEl, coverageEl.getMaxLength(), false);
-		allOk &= validateElementLogic(addInfosEl, addInfosEl.getMaxLength(), false);
-		allOk &= validateElementLogic(languageEl, languageEl.getMaxLength(), true);
+		allOk &= validateElementLogic(titleEl, titleEl.getMaxLength(), true, true);
+		allOk &= validateElementLogic(keywordsEl, keywordsEl.getMaxLength(), false, true);
+		allOk &= validateElementLogic(coverageEl, coverageEl.getMaxLength(), false, true);
+		allOk &= validateElementLogic(addInfosEl, addInfosEl.getMaxLength(), false, true);
+		allOk &= validateElementLogic(languageEl, languageEl.getMaxLength(), true, true);
 		return allOk && super.validateFormLogic(ureq);
-	}
-	
-	private boolean validateElementLogic(TextElement el, int maxLength, boolean mandatory) {
-		boolean allOk = true;
-		String value = el.getValue();
-		el.clearError();
-		if(mandatory && !StringHelper.containsNonWhitespace(value)) {
-			el.setErrorKey("form.mandatory.hover", null);
-			allOk = false;
-		} else if (value != null && value.length() > maxLength) {
-			String[] lengths = new String[]{ Integer.toString(maxLength), Integer.toString(value.length())};
-			el.setErrorKey("error.input.toolong", lengths);
-			allOk = false;
-		}
-		return allOk;
 	}
 	
 	@Override

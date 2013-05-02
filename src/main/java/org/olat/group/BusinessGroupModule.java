@@ -217,6 +217,15 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
 	}
+	
+	public boolean isAllowedCreate(Roles roles) {
+		if(roles.isOLATAdmin() || roles.isGroupManager()
+				|| (roles.isAuthor() && isAuthorAllowedCreate())
+				|| (!roles.isGuestOnly() && !roles.isInvitee() && isUserAllowedCreate())) {
+			return true;
+		}
+		return false;
+	}
 
 	public boolean isUserAllowedCreate() {
 		return userAllowedCreate;

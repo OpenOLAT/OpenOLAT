@@ -57,7 +57,7 @@ import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
-import org.olat.modules.qpool.ui.QPoolEvent;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
  * 

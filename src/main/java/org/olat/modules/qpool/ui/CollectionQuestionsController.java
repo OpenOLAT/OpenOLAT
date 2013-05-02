@@ -37,6 +37,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
  * 

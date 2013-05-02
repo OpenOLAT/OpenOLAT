@@ -36,10 +36,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -359,27 +358,10 @@ public class EditMembershipController extends FormBasicController {
 		}
 	}
 	
-	private static class EditMemberTableDataModel extends DefaultTableDataModel<MemberOption> implements FlexiTableDataModel {
-		private FlexiTableColumnModel columnModel;
-		
+	private static class EditMemberTableDataModel extends DefaultFlexiTableDataModel<MemberOption>  {
+
 		public EditMemberTableDataModel(List<MemberOption> options, FlexiTableColumnModel columnModel) {
-			super(options);
-			this.columnModel = columnModel;
-		}
-
-		@Override
-		public FlexiTableColumnModel getTableColumnModel() {
-			return columnModel;
-		}
-
-		@Override
-		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-			columnModel = tableColumnModel;
-		}
-
-		@Override
-		public int getColumnCount() {
-			return columnModel.getColumnCount();
+			super(options, columnModel);
 		}
 
 		@Override
@@ -406,7 +388,7 @@ public class EditMembershipController extends FormBasicController {
 
 		@Override
 		public EditMemberTableDataModel createCopyWithEmptyList() {
-			return new EditMemberTableDataModel(new ArrayList<MemberOption>(), columnModel);
+			return new EditMemberTableDataModel(new ArrayList<MemberOption>(), getTableColumnModel());
 		}
 	}
 	

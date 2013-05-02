@@ -21,7 +21,6 @@ package org.olat.modules.qpool.ui.edit;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.jgroups.util.UUID;
@@ -45,7 +44,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -53,6 +51,7 @@ import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.edit.MetaUIFactory.KeyValues;
 import org.olat.user.UserManager;
 
 /**
@@ -72,7 +71,6 @@ public class RightsMetadataEditController extends FormBasicController {
 	private CloseableModalController cmc;
 	private GroupController groupController;
 
-	private String[] keys;
 	private QuestionItem item;
 	private final UserManager userManager;
 	private final QPoolService qpoolService;
@@ -86,6 +84,8 @@ public class RightsMetadataEditController extends FormBasicController {
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		initForm(ureq);
 	}
+	
+	private KeyValues licenseKeys;
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -99,41 +99,23 @@ public class RightsMetadataEditController extends FormBasicController {
 		reloadAuthors();
 		
 		managerOwners = uifactory.addFormLink("manage.owners", formLayout, Link.BUTTON_SMALL);
-
-		List<QLicense> allLicenses = qpoolService.getAllLicenses();
-		List<QLicense> licenses = new ArrayList<QLicense>(allLicenses);
-		for(Iterator<QLicense> it=licenses.iterator(); it.hasNext(); ) {
-			String key = it.next().getLicenseKey();
-			if(key != null && key.startsWith("perso-")) {
-				it.remove();
-			}
-		}
-
-		keys = new String[licenses.size() + 2];
-		String[] values = new String[licenses.size() + 2];
-		keys[0] = "none";
-		values[0] = "None";
-		int count = 1;
-		for(QLicense license:licenses) {
-			keys[count] = license.getLicenseKey();
-			values[count++] = license.getLicenseKey();
-		}
-		keys[keys.length  - 1] = "free";
-		values[values.length - 1] = "Freetext";
 		
-		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright", "rights.copyright", formLayout, keys, values, null);
+		licenseKeys = MetaUIFactory.getQLicenseKeyValues(qpoolService);
+
+		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright", "rights.copyright", formLayout,
+				licenseKeys.getKeys(), licenseKeys.getValues(), null);
 		copyrightEl.addActionListener(this, FormEvent.ONCHANGE);
 		String description;
 		QLicense copyright = item.getLicense();
 		if(copyright == null) {
 			description = "";
-			copyrightEl.select(keys[0], true);
+			copyrightEl.select(licenseKeys.getFirstKey(), true);
 		} else if(isKey(copyright)) {
 			description = copyright.getLicenseText();
 			copyrightEl.select(copyright.getLicenseKey(), true);
 		} else {
 			description = copyright.getLicenseText();
-			copyrightEl.select(keys[keys.length - 1], true);
+			copyrightEl.select(licenseKeys.getLastKey(), true);
 		}
 		
 		if(description == null) {
@@ -141,7 +123,7 @@ public class RightsMetadataEditController extends FormBasicController {
 		}
 
 		descriptionEl = uifactory.addTextAreaElement("rights.description", "rights.description", 1000, 6, 40, true, description, formLayout);
-		descriptionEl.setVisible(copyrightEl.getSelectedKey().equals(keys[keys.length - 1]));
+		descriptionEl.setVisible(copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey()));
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -164,7 +146,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	}
 	
 	private boolean isKey(QLicense value) {
-		for(String key:keys) {
+		for(String key:licenseKeys.getKeys()) {
 			if(key.equals(value.getLicenseKey())) {
 				return true;
 			}
@@ -210,7 +192,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == copyrightEl) {
 			String selectedKey = copyrightEl.getSelectedKey();
-			descriptionEl.setVisible(selectedKey.equals(keys[keys.length - 1]));
+			descriptionEl.setVisible(selectedKey.equals(licenseKeys.getLastKey()));
 			flc.setDirty(true);
 		} else if(source == managerOwners) {
 			okButton.getComponent().setDirty(false);
@@ -227,19 +209,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		
-		copyrightEl.clearError();
-		descriptionEl.clearError();
-		if(!copyrightEl.isOneSelected()) {
-			copyrightEl.setErrorKey("form.mandatory.hover", null);
-			allOk &= false;
-		} else if(copyrightEl.getSelectedKey().equals(keys[keys.length - 1])) {
-			String licence = descriptionEl.getValue();
-			if(!StringHelper.containsNonWhitespace(licence)) {
-				descriptionEl.setErrorKey("form.mandatory.hover", null);
-				allOk &= false;
-			}
-		}
+		allOk &= MetaUIFactory.validateRights(copyrightEl, descriptionEl, licenseKeys, true);
 		return allOk &= super.validateFormLogic(ureq);
 	}
 
@@ -247,25 +217,30 @@ public class RightsMetadataEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
-			String selectedKey = copyrightEl.getSelectedKey();
-			if(selectedKey.equals(keys[0])) {
-				itemImpl.setLicense(null);
-			} else if(selectedKey.equals(keys[keys.length - 1])) {
-				if (itemImpl.getLicense() != null && itemImpl.getLicense().isDeletable()) {
-					String licenseText = descriptionEl.getValue();
-					itemImpl.getLicense().setLicenseText(licenseText);
-				} else {
-					String licenseText = descriptionEl.getValue();
-					QLicense license = qpoolService.createLicense("perso-" + UUID.randomUUID().toString(), licenseText);
-					itemImpl.setLicense(license);
-				}
-			} else {
-				QLicense license = qpoolService.getLicense(selectedKey);
-				itemImpl.setLicense(license);
-			}
+			formOKRights(itemImpl, copyrightEl, descriptionEl, licenseKeys, qpoolService);
 		}
 		item = qpoolService.updateItem(item);
 		fireEvent(ureq, new QItemEdited(item));
+	}
+	
+	protected static void formOKRights(QuestionItemImpl itemImpl, SingleSelection copyrightEl, TextElement descriptionEl,
+			KeyValues licenseKeys, QPoolService qpoolService) {
+		String selectedKey = copyrightEl.getSelectedKey();
+		if(selectedKey.equals(licenseKeys.getFirstKey())) {
+			itemImpl.setLicense(null);
+		} else if(selectedKey.equals(licenseKeys.getLastKey())) {
+			if (itemImpl.getLicense() != null && itemImpl.getLicense().isDeletable()) {
+				String licenseText = descriptionEl.getValue();
+				itemImpl.getLicense().setLicenseText(licenseText);
+			} else {
+				String licenseText = descriptionEl.getValue();
+				QLicense license = qpoolService.createLicense("perso-" + UUID.randomUUID().toString(), licenseText);
+				itemImpl.setLicense(license);
+			}
+		} else {
+			QLicense license = qpoolService.getLicense(selectedKey);
+			itemImpl.setLicense(license);
+		}
 	}
 	
 	private void doOpenAuthorManager(UserRequest ureq) {

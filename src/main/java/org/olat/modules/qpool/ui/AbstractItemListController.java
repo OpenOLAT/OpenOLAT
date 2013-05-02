@@ -20,6 +20,8 @@
 package org.olat.modules.qpool.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,25 +43,32 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.event.EventBus;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
+import org.olat.modules.qpool.ui.events.QItemMarkedEvent;
+import org.olat.modules.qpool.ui.events.QItemViewEvent;
 
 /**
  * 
  * Initial date: 22.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public abstract class AbstractItemListController extends FormBasicController implements FlexiTableDataSourceDelegate<ItemRow> {
+public abstract class AbstractItemListController extends FormBasicController
+	implements GenericEventListener, FlexiTableDataSourceDelegate<ItemRow> {
 
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
@@ -67,6 +76,7 @@ public abstract class AbstractItemListController extends FormBasicController imp
 	private final MarkManager markManager;
 	private final QPoolService qpoolService;
 	
+	private EventBus eventBus;
 	private QuestionItemsSource source;
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
@@ -75,13 +85,16 @@ public abstract class AbstractItemListController extends FormBasicController imp
 		this.source = source;
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+
+		eventBus = ureq.getUserSession().getSingleUserEventCenter();
+		eventBus.registerFor(this, getIdentity(), QuestionPoolMainEditorController.QITEM_MARKED);
 		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void doDispose() {
-		//
+		eventBus.deregisterFor(this, QuestionPoolMainEditorController.QITEM_MARKED);
 	}
 
 	@Override
@@ -183,6 +196,17 @@ public abstract class AbstractItemListController extends FormBasicController imp
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	@Override
+	public void event(Event event) {
+		if(event instanceof QItemMarkedEvent) {
+			QItemMarkedEvent qime = (QItemMarkedEvent)event;
+			ItemRow row = getRowByItemKey(qime.getKey());
+			if(row != null) {
+				row.setMark(qime.isMark());
+			}
+		}
+	}
+
 	public List<QuestionItemShort> getSelectedShortItems() {
 		Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
 		List<QuestionItemShort> items = getShortItems(selections);
@@ -219,6 +243,31 @@ public abstract class AbstractItemListController extends FormBasicController imp
 		return null;
 	}
 	
+	public ItemRow getRowByItemKey(Long itemKey) {
+		for(ItemRow row : model.getObjects()) {
+			if(row != null && row.getKey().equals(itemKey)) {
+				return row;
+			}
+		}
+		return null;
+	}
+	
+	public List<Integer> getIndex(Collection<QuestionItem> items) {
+		Set<Long> itemKeys = new HashSet<Long>();
+		for(QuestionItem item:items) {
+			itemKeys.add(item.getKey());
+		}
+
+		List<Integer> index = new ArrayList<Integer>(items.size());
+		for(int i=model.getObjects().size(); i-->0; ) {
+			ItemRow row = model.getObject(i);
+			if(row != null && itemKeys.contains(row.getKey())) {
+				index.add(new Integer(i));
+			}
+		}
+		return index;
+	}
+	
 	protected void doClick(UserRequest ureq, ItemRow row) {
 		fireEvent(ureq, new QItemViewEvent("rSelect", row));
 	}
@@ -239,6 +288,22 @@ public abstract class AbstractItemListController extends FormBasicController imp
 	@Override
 	public int getRowCount() {
 		return source.getNumOfItems();
+	}
+
+	@Override
+	public List<ItemRow> reload(List<ItemRow> rows) {
+		List<Long> itemToReload = new ArrayList<Long>();
+		for(ItemRow row:rows) {
+			itemToReload.add(row.getKey());
+		}
+
+		List<QuestionItemView> reloadedItems = source.getItems(itemToReload);
+		List<ItemRow> reloadedRows = new ArrayList<ItemRow>(reloadedItems.size());
+		for(QuestionItemView item:reloadedItems) {
+			ItemRow reloadedRow = forgeRow(item);
+			reloadedRows.add(reloadedRow);
+		}
+		return reloadedRows;
 	}
 
 	@Override

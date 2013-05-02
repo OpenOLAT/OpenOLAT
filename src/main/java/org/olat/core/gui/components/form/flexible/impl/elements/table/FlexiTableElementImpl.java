@@ -476,8 +476,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		component.setDirty(true);
 		multiSelectedIndex = null;
 	}
-	
-	private void reloadData() {
+
+	@Override
+	public void reloadData() {
 		if(dataSource != null) {
 			dataSource.load(0, getPageSize());//reload needed rows
 		}

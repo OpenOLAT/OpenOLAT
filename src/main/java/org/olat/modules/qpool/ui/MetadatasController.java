@@ -45,6 +45,7 @@ import org.olat.modules.qpool.ui.edit.RightsMetadataEditController;
 import org.olat.modules.qpool.ui.edit.SharingController;
 import org.olat.modules.qpool.ui.edit.TechnicalMetadataController;
 import org.olat.modules.qpool.ui.edit.TechnicalMetadataEditController;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
  * 

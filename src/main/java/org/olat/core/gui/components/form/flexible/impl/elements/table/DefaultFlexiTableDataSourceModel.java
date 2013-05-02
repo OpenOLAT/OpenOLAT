@@ -20,7 +20,9 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
@@ -64,12 +66,49 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 		return null;
 	}
 	
+	public U getPreviousObject(U refObject) {
+		int  index = getIndexOfObject(refObject);
+		U previousObject = null;
+		if(index > 0 && rows.size() > 0) {
+			if(index - 1 < 0) {
+				previousObject = rows.get(rows.size() - 1);
+			} else {
+				previousObject = rows.get(index - 1);
+			}
+		}
+		return previousObject;
+	}
+	
+	public U getNextObject(U refObject) {
+		int  index = getIndexOfObject(refObject);
+		U nextObject = null;
+		if(index >= 0 && rows.size() > 0) {
+			if((index + 1) < rows.size()) {
+				nextObject = rows.get(index + 1);
+			} else {
+				nextObject = rows.get(0);
+			}
+		}
+		return nextObject;
+	}
+	
+	public int getIndexOfObject(U object) {
+		if(object != null && rows != null) {
+			return rows.indexOf(object);
+		}
+		return -1;
+	}
+	
 	public FlexiTableDataSourceDelegate<U> getSourceDelegate() {
 		return sourceDelegate;
 	}
 	
 	public void setSource(FlexiTableDataSourceDelegate<U> sourceDelegate) {
 		this.sourceDelegate = sourceDelegate;
+	}
+	
+	public List<U> getObjects() {
+		return rows;
 	}
 	
 	@Override
@@ -92,15 +131,43 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 
 	@Override
 	public ResultInfos<U> load(final int firstResult, final int maxResults, SortKey... orderBy) {
-		return loadDatas(null, null, firstResult, maxResults, orderBy);
+		return loadDatas(null, null, false, firstResult, maxResults, orderBy);
+	}
+
+	@Override
+	public void reload(List<Integer> rowIndex) {
+		if(rowIndex == null || rowIndex.isEmpty()) return;
+		
+		List<U> rowToUpdate = new ArrayList<U>(rowIndex.size());
+		for(Integer index:rowIndex) {
+			int row = index.intValue();
+			if(isRowLoaded(row)) {
+				U object = getObject(row);
+				if(object != null) {
+					rowToUpdate.add(object);
+				}
+			}
+		}
+	
+		List<U> updatedRows = sourceDelegate.reload(rowToUpdate);
+		Map<U,U> updatedRowsMap = new HashMap<U,U>();
+		for(U updatedRow:updatedRows) {
+			updatedRowsMap.put(updatedRow, updatedRow);
+		}
+		for(int i=0; i<rows.size(); i++) {
+			U row = rows.get(i);
+			if(updatedRowsMap.containsKey(row)) {
+				rows.set(i, updatedRowsMap.get(row));
+			}
+		}
 	}
 
 	@Override
 	public ResultInfos<U> search(String query, List<String> addQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		return loadDatas(query, addQueries, firstResult, maxResults, orderBy);
+		return loadDatas(query, addQueries, false, firstResult, maxResults, orderBy);
 	}
 	
-	private ResultInfos<U> loadDatas(String query, List<String> addQueries, final int firstResult, final int maxResults, SortKey... orderBy) {
+	private ResultInfos<U> loadDatas(String query, List<String> addQueries, final boolean force, final int firstResult, final int maxResults, SortKey... orderBy) {
 		if(rows == null) {
 			rows = new ArrayList<U>();
 		}
@@ -111,7 +178,7 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 		int correctedFirstResult = firstResult;
 		int correctMaxResults = maxResults;
 		
-		if(rows.size() > 0) {
+		if(!force && rows.size() > 0) {
 			correctMaxResults = maxResults <= 0 ? rowCount : maxResults;
 			int maxRowsResults = maxResults <= 0 ? rows.size() : maxResults;
 			for(int i=firstResult; i<maxRowsResults && i<rows.size(); i++) {

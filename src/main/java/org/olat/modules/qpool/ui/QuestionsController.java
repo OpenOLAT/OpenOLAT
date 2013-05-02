@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,6 +45,8 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.ui.events.QItemViewEvent;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
  * 
@@ -114,9 +117,12 @@ public class QuestionsController extends BasicController implements Activateable
 		ContextEntry entry = entries.get(0);
 		String type = entry.getOLATResourceable().getResourceableTypeName();
 		if("QuestionItem".equals(type)) {
-			QuestionItemView item = source.getItem(entry.getOLATResourceable().getResourceableId());
-			doUpdateDetails(ureq, item);
-			doSelect(ureq, detailsCtrl.getItem(), detailsCtrl.isCanEdit());
+			Collection<Long> key = Collections.singletonList(entry.getOLATResourceable().getResourceableId());
+			List<QuestionItemView> items = source.getItems(key);
+			if(!items.isEmpty()) {
+				doUpdateDetails(ureq, items.get(0));
+				doSelect(ureq, detailsCtrl.getItem(), detailsCtrl.isCanEdit());
+			}
 		}
 	}
 
