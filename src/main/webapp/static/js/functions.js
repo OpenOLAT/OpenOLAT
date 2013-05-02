@@ -1065,8 +1065,6 @@ function showMessageBox(type, title, message, buttonCallback){
 			prefix = '<div><div>';
 		}
 		return jQuery(prefix + '<p>' + message + '</p></div></div>').dialog({
-			height: 170,
-			width: 400,
 			modal: true,
 			title: title,
 			resizable:false,
