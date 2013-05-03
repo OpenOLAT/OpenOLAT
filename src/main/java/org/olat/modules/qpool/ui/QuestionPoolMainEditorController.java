@@ -349,7 +349,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		source.getDefaultParams().setAuthor(getIdentity());
 		if(myQuestionsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("My"), null);
-			myQuestionsCtrl = new QuestionsController(ureq, swControl, source);
+			myQuestionsCtrl = new QuestionsController(ureq, swControl, source, "my");
 			myQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(myQuestionsCtrl);
 		} else {
@@ -364,7 +364,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		source.getDefaultParams().setFavoritOnly(true);
 		if(markedQuestionsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Marked"), null);
-			markedQuestionsCtrl = new QuestionsController(ureq, swControl, source);
+			markedQuestionsCtrl = new QuestionsController(ureq, swControl, source, "favorit");
 			markedQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(markedQuestionsCtrl);
 		} else {
@@ -383,7 +383,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		source.getDefaultParams().setPoolKey(pool.getKey());
 		if(selectedPoolCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, pool, null);
-			selectedPoolCtrl = new QuestionsController(ureq, swControl, source);
+			selectedPoolCtrl = new QuestionsController(ureq, swControl, source, "poll-" + pool.getKey());
 			selectedPoolCtrl.setStackedController(stackPanel);
 			listenTo(selectedPoolCtrl);
 			cNode.setController(selectedPoolCtrl);
@@ -397,15 +397,16 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private void doSelectGroup(UserRequest ureq, BusinessGroup group, TreeNode node, List<ContextEntry> entries, StateEntry state) {
 		ControlledTreeNode cNode = (ControlledTreeNode)node;
 		QuestionsController sharedItemsCtrl = cNode.getController();
+		SharedItemsSource source = new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles());
 
 		if(sharedItemsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, group, null);
-			sharedItemsCtrl = new QuestionsController(ureq, swControl, new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles()));
+			sharedItemsCtrl = new QuestionsController(ureq, swControl, source, "share-" + group.getKey());
 			sharedItemsCtrl.setStackedController(stackPanel);
 			listenTo(sharedItemsCtrl);
 			cNode.setController(sharedItemsCtrl);
 		} else {
-			sharedItemsCtrl.updateSource(ureq, new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles()));
+			sharedItemsCtrl.updateSource(ureq, source);
 		}
 		currentCtrl = sharedItemsCtrl;
 		setContent(ureq, sharedItemsCtrl, entries, state);

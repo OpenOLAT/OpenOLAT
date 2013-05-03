@@ -17,28 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui.edit;
+package org.olat.modules.qpool.ui.metadata;
 
-import org.olat.core.gui.control.Event;
-import org.olat.modules.qpool.QuestionItem;
+import java.io.Serializable;
 
 /**
  * 
- * Initial date: 05.03.2013<br>
+ * Initial date: 03.05.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QItemEdited extends Event {
+public class ExtendedSearchPref implements Serializable {
 
-	private static final long serialVersionUID = -8778970425649808840L;
-	private final QuestionItem item;
-
-	public QItemEdited(QuestionItem item) {
-		super("qitem-edited");
-		this.item = item;
+	private static final long serialVersionUID = -5102715838988265773L;
+	private String attribute;
+	private String value;
+	
+	public ExtendedSearchPref() {
+		//
 	}
 
-	public QuestionItem getItem() {
-		return item;
+	public ExtendedSearchPref(String attribute, String value) {
+		this.attribute = attribute;
+		this.value = value;
 	}
+
+	public String getAttribute() {
+		return attribute;
+	}
+
+	public void setAttribute(String attribute) {
+		this.attribute = attribute;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+	
+	
 }

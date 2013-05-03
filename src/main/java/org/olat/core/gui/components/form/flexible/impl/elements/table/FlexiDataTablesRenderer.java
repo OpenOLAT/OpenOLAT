@@ -79,7 +79,7 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("		'bScrollInfinite': true,\n")
       .append("		'bScrollCollapse': true,\n")
       .append("		'bFilter': false,\n")
-      .append("		'sScrollY': '200px',\n")
+      .append("		'sScrollY': '1px',\n")
       .append("		'bProcessing': true,\n")
       .append("		'bServerSide': true,\n")
       .append("		'iDisplayLength': ").append(ftE.getPageSize()).append(",\n")
@@ -115,7 +115,17 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
 			  	.append("', bSortable: ").append(col.isSortable()).append(" }\n");
 			}
 		}
-    target.append("		]\n")
+    target.append("		],\n")
+      .append("	  fnInitComplete: function (oSettings, json) {\n")
+      .append("     if(selectedIndex < 0) return;\n")
+      .append("     var scrollTo = 0;\n")
+      .append("     jQuery('#").append(id).append(" tbody tr').each(function(index, el) { ")
+      .append("	    	if(index < selectedIndex) {\n")
+      .append("         scrollTo += jQuery(el).outerHeight();\n")
+      .append("       }\n")
+      .append("	    });\n")
+      .append("     jQuery('#").append(id).append("').parent().scrollTop(scrollTo - 40);\n")
+      .append("	  }\n")
       .append("	});\n")
       //clic rows
       .append("	jQuery('#").append(id).append(" tbody').click(function(event, ui) {\n")

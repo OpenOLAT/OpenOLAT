@@ -56,7 +56,7 @@ public class CollectionQuestionsController extends QuestionsController {
 	private final QPoolService qpoolService;
 
 	public CollectionQuestionsController(UserRequest ureq, WindowControl wControl, CollectionOfItemsSource source) {
-		super(ureq, wControl, source);
+		super(ureq, wControl, source, "coll-" + source.getCollection().getKey());
 		this.collection = source.getCollection();
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}

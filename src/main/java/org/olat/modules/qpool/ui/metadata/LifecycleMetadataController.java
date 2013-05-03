@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui.edit;
+package org.olat.modules.qpool.ui.metadata;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -32,7 +32,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
@@ -41,16 +42,17 @@ import org.olat.modules.qpool.ui.events.QPoolEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GeneralMetadataController extends FormBasicController {
+public class LifecycleMetadataController extends FormBasicController  {
 	
 	private FormLink editLink;
-	private StaticTextElement keyEl, identifierEl, masterIdentifierEl, titleEl, keywordsEl, coverageEl, addInfosEl, languageEl, studyFieldEl;
-	
+	private StaticTextElement versionEl, statusEl;
+
 	private final boolean edit;
 	
-	public GeneralMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
+	public LifecycleMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
 		super(ureq, wControl, "view");
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
+		
 		this.edit = edit;
 		initForm(ureq);
 		setItem(item);
@@ -58,7 +60,7 @@ public class GeneralMetadataController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("general");
+		setFormTitle("lifecycle");
 		if(edit) {
 			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
 			editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
@@ -66,39 +68,20 @@ public class GeneralMetadataController extends FormBasicController {
 		
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);
-
-		keyEl = uifactory.addStaticTextElement("general.key", "", metaCont);
-		identifierEl = uifactory.addStaticTextElement("general.identifier", "", metaCont);
-		masterIdentifierEl = uifactory.addStaticTextElement("general.master.identifier", "", metaCont);
-
-		//general
-		titleEl = uifactory.addStaticTextElement("general.title", "", metaCont);
-		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", metaCont);
-		coverageEl = uifactory.addStaticTextElement("general.coverage", "", metaCont);
-		addInfosEl = uifactory.addStaticTextElement("general.additional.informations", "", metaCont);
-		languageEl = uifactory.addStaticTextElement("general.language", "", metaCont);
 		
-		//classification
-		studyFieldEl = uifactory.addStaticTextElement("classification.taxonomic.path", "", metaCont);
+		versionEl = uifactory.addStaticTextElement("lifecycle.version", "", metaCont);
+		statusEl = uifactory.addStaticTextElement("lifecycle.status", "", metaCont);
 	}
 	
 	public void setItem(QuestionItem item) {
-		keyEl.setValue(item.getKey().toString());
-		identifierEl.setValue(item.getIdentifier());
-		String masterId = item.getMasterIdentifier() == null ? "" : item.getMasterIdentifier();
-		masterIdentifierEl.setValue(masterId);
-		String title = item.getTitle() == null ? "" : item.getTitle();
-		titleEl.setValue(title);
-		String keywords = item.getKeywords() == null ? "" : item.getKeywords();
-		keywordsEl.setValue(keywords);
-		String coverage = item.getCoverage() == null ? "" : item.getCoverage();
-		coverageEl.setValue(coverage);
-		String addInfos = item.getAdditionalInformations() == null ? "" : item.getAdditionalInformations();
-		addInfosEl.setValue(addInfos);
-		String language = item.getLanguage() == null ? "" : item.getLanguage();
-		languageEl.setValue(language);
-		String studyFields = item.getTaxonomicPath();
-		studyFieldEl.setValue(studyFields == null ? "" : studyFields);
+		String version = item.getItemVersion() == null ? "" : item.getItemVersion();
+		versionEl.setValue(version);
+		if(item.getQuestionStatus() == null) {
+			statusEl.setValue("");	
+		} else {
+			QuestionStatus status = item.getQuestionStatus();
+			statusEl.setValue(translate("lifecycle.status." + status.name()));
+		}
 	}
 	
 	@Override

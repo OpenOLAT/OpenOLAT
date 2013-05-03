@@ -28,6 +28,7 @@ package org.olat.core.gui.components.form.flexible.elements;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 
 /**
@@ -94,6 +95,18 @@ public interface FlexiTableElement extends FormItem {
 	 * @return
 	 */
 	public boolean isSearchEnabled();
+	
+	/**
+	 * Enable the search field
+	 * @param enable
+	 */
+	public void setSearchEnabled(boolean enable);
+	
+	/**
+	 * 
+	 * @param callout
+	 */
+	public void setExtendedSearchCallout(ExtendedFlexiTableSearchController callout);
 	
 	
 	/**

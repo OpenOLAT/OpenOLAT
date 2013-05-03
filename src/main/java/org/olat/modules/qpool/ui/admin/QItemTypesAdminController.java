@@ -58,7 +58,7 @@ import org.olat.core.util.i18n.ui.TranslationToolI18nItemEditCrumbController;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QItemType;
-import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.metadata.MetadatasController;
 
 /**
  * 

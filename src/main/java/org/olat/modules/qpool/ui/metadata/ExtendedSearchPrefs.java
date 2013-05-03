@@ -17,58 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.search.service.indexer;
+package org.olat.modules.qpool.ui.metadata;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
- * Initial date: 04.03.2013<br>
+ * Initial date: 03.05.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class JmsIndexWork implements Serializable {
+public class ExtendedSearchPrefs implements Serializable {
 
-	private static final long serialVersionUID = 8790611181901676640L;
-	
-	public static final String INDEX = "index";
-	public static final String DELETE = "delete";
-	
-	private String indexType;
-	private Long key;
-	private String action;
-	
-	public JmsIndexWork() {
-		//
-	}
-	
-	public JmsIndexWork(String action, String indexType, Long key) {
-		this.action = action;
-		this.indexType = indexType;
-		this.key = key;
-	}
-	
-	public String getIndexType() {
-		return indexType;
-	}
-	
-	public void setIndexType(String indexType) {
-		this.indexType = indexType;
-	}
-	
-	public Long getKey() {
-		return key;
-	}
-	
-	public void setKey(Long key) {
-		this.key = key;
+	private static final long serialVersionUID = -1531232270649506181L;
+	private List<ExtendedSearchPref> condQueries = new ArrayList<ExtendedSearchPref>();
+
+	public List<ExtendedSearchPref> getCondQueries() {
+		return condQueries;
 	}
 
-	public String getAction() {
-		return action;
-	}
-
-	public void setAction(String action) {
-		this.action = action;
+	public void setCondQueries(List<ExtendedSearchPref> condQueries) {
+		this.condQueries = condQueries;
 	}
 }

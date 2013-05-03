@@ -57,7 +57,9 @@ import org.olat.core.gui.control.Event;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class ButtonClickedEvent extends Event {
-	int position;
+
+	private static final long serialVersionUID = -2308172939734041300L;
+	private int position;
 	
 	/**
 	 * Constructor

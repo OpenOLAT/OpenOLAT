@@ -17,16 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui.edit;
+package org.olat.modules.qpool.ui.metadata;
 
-import static org.olat.modules.qpool.ui.edit.MetaUIFactory.getQItemTypeKeyValues;
-import static org.olat.modules.qpool.ui.edit.MetaUIFactory.getQLicenseKeyValues;
-import static org.olat.modules.qpool.ui.edit.MetaUIFactory.toBigDecimal;
-import static org.olat.modules.qpool.ui.edit.MetaUIFactory.toInt;
-import static org.olat.modules.qpool.ui.edit.MetaUIFactory.validateBigDecimal;
-import static org.olat.modules.qpool.ui.edit.MetaUIFactory.validateElementLogic;
-import static org.olat.modules.qpool.ui.edit.MetaUIFactory.validateRights;
-import static org.olat.modules.qpool.ui.edit.MetaUIFactory.validateSelection;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.getQItemTypeKeyValues;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.getQLicenseKeyValues;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toBigDecimal;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toInt;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateBigDecimal;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateRights;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,18 +56,16 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
-import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.admin.TaxonomyTreeModel;
-import org.olat.modules.qpool.ui.edit.MetaUIFactory.KeyValues;
+import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 
 /**
  * 
@@ -115,7 +113,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	
 	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, List<QuestionItemShort> items) {
 		super(ureq, wControl, "bulk_change");
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.items = items;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
@@ -193,19 +191,9 @@ public class MetadataBulkChangeController extends FormBasicController {
 		learningTimeSecondElement = uifactory.addIntegerElement("learningTime.second", "", 0, learningTimeContainer);
 		learningTimeSecondElement.setDisplaySize(3);
 
-		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
-		String[] contextKeys = new String[ levels.size() ];
-		String[] contextValues = new String[ levels.size() ];
-		int count = 0;
-		for(QEducationalContext level:levels) {
-			contextKeys[count] = level.getLevel();
-			String translation = translate("item.level." + level.getLevel().toLowerCase());
-			if(translation.length() > 128) {
-				translation = level.getLevel();
-			}
-			contextValues[count++] = translation;
-		}
-		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", eduCont, contextKeys, contextValues, null);
+		KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
+		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", eduCont,
+				contexts.getKeys(), contexts.getValues(), null);
 		decorate(contextEl, eduCont, listener);
 	}
 	
@@ -237,13 +225,9 @@ public class MetadataBulkChangeController extends FormBasicController {
 		numAnswerAltEl.setDisplaySize(4);
 		decorate(numAnswerAltEl, questionCont, listener);
 		
-		String[] assessmentTypeKeys = new String[]{ "summative", "formative", "both"};
-		String[] assessmentTypeValues = new String[]{
-			translate("question.assessmentType.summative"), translate("question.assessmentType.formative"),
-			translate("question.assessmentType.both"),	
-		};
+		KeyValues types = MetaUIFactory.getAssessmentTypes(getTranslator());
 		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType", questionCont,
-				assessmentTypeKeys, assessmentTypeValues, null);
+				types.getKeys(), types.getValues(), null);
 		decorate(assessmentTypeEl, questionCont, listener);
 	}
 	
@@ -255,13 +239,9 @@ public class MetadataBulkChangeController extends FormBasicController {
 		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, null, lifecycleCont);
 		decorate(versionEl, lifecycleCont, listener);
 		
-		String[] statusTypeKeys = QuestionStatus.valueString();
-		String[] statusTypeValues = new String[statusTypeKeys.length];
-		for(int i=statusTypeKeys.length; i-->0; ) {
-			statusTypeValues[i] = translate("lifecycle.status." + statusTypeKeys[i]);
-		}
+		KeyValues status = MetaUIFactory.getStatus(getTranslator());
 		statusEl = uifactory.addDropdownSingleselect("lifecycle.status", "lifecycle.status", lifecycleCont,
-				statusTypeKeys, statusTypeValues, null);
+				status.getKeys(), status.getValues(), null);
 		decorate(statusEl, lifecycleCont, listener);	
 	}
 
@@ -274,9 +254,9 @@ public class MetadataBulkChangeController extends FormBasicController {
 		decorate(editorEl, technicalCont, listener);
 		editorVersionEl = uifactory.addTextElement("technical.editorVersion", "technical.editorVersion", 50, null, technicalCont);
 		decorate(editorVersionEl, technicalCont, listener);
-		String[] formatKeys = new String[]{ QTIConstants.QTI_12_FORMAT };
+		KeyValues formats = MetaUIFactory.getFormats();
 		formatEl = uifactory.addDropdownSingleselect("technical.format", "technical.format", technicalCont,
-				formatKeys, formatKeys, null);
+				formats.getKeys(), formats.getValues(), null);
 		decorate(formatEl, technicalCont, listener);
 	}
 	

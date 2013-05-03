@@ -97,6 +97,7 @@ public class SharedItemsSource implements QuestionItemsSource {
 	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setSearchString(query);
+		params.setCondQueries(condQueries);
 		return qpoolService.getSharedItemByResource(resource, params, firstResult, maxResults, orderBy);
 	}
 }

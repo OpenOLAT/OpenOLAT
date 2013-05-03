@@ -49,6 +49,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
+import org.olat.modules.qpool.ui.metadata.MetadatasController;
 
 /**
  * 

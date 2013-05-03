@@ -61,6 +61,7 @@ import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
 import org.olat.modules.qpool.ui.events.QItemMarkedEvent;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
+import org.olat.modules.qpool.ui.metadata.ExtendedSearchController;
 
 /**
  * 
@@ -73,13 +74,15 @@ public abstract class AbstractItemListController extends FormBasicController
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
 	
+	private ExtendedSearchController extendedSearchCtrl;
+	
 	private final MarkManager markManager;
 	private final QPoolService qpoolService;
 	
 	private EventBus eventBus;
 	private QuestionItemsSource source;
 	
-	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
+	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
 		super(ureq, wControl, "item_list");
 
 		this.source = source;
@@ -88,6 +91,9 @@ public abstract class AbstractItemListController extends FormBasicController
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), QuestionPoolMainEditorController.QITEM_MARKED);
+		
+		extendedSearchCtrl = new ExtendedSearchController(ureq, getWindowControl(), key);
+		listenTo(extendedSearchCtrl);
 		
 		initForm(ureq);
 	}
@@ -123,10 +129,14 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("details", translate("details"), "select-item"));
 		
 		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
-		itemsTable = uifactory.addTableElement(ureq, getWindowControl(), "items", model, 50, true, getTranslator(), formLayout);
+		itemsTable = uifactory.addTableElement(ureq, getWindowControl(), "items", model, 50, getTranslator(), formLayout);
 		itemsTable.setSelectAllEnable(true);
 		itemsTable.setMultiSelect(true);
+		itemsTable.setSearchEnabled(true);
+		itemsTable.setExtendedSearchCallout(extendedSearchCtrl);
 		itemsTable.setRendererType(FlexiTableRendererType.dataTables);
+		
+
 		
 		initButtons(formLayout);
 	}
@@ -195,7 +205,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	@Override
 	public void event(Event event) {
 		if(event instanceof QItemMarkedEvent) {

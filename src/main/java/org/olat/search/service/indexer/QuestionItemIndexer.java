@@ -57,6 +57,13 @@ public class QuestionItemIndexer implements LifeIndexer {
 	}
 
 	@Override
+	public void deleteDocument(Long key, LifeFullIndexer indexWriter) {
+		QuestionItemDocumentFactory docFactory = CoreSpringFactory.getImpl(QuestionItemDocumentFactory.class);
+		String resourceUrl = docFactory.getResourceUrl(key);
+		indexWriter.deleteDocument(resourceUrl);	
+	}
+
+	@Override
 	public void fullIndex(LifeFullIndexer indexWriter) {
 		QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		QuestionItemDocumentFactory docFactory = CoreSpringFactory.getImpl(QuestionItemDocumentFactory.class);

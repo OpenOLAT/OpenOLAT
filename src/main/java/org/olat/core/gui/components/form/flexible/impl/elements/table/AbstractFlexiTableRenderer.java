@@ -75,6 +75,9 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
 		}
+		if(ftE.getExtendedSearchButton() != null) {
+			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+		}
 		renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, args);
 	}
 	

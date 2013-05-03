@@ -1,4 +1,23 @@
-package org.olat.modules.qpool.ui.edit;
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.qpool.ui.metadata;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -9,7 +28,10 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 
@@ -20,6 +42,47 @@ import org.olat.modules.qpool.model.QLicense;
  *
  */
 public class MetaUIFactory {
+	
+	protected static KeyValues getFormats() {
+		String[] formatKeys = new String[]{ QTIConstants.QTI_12_FORMAT };
+		
+		return new KeyValues(formatKeys, formatKeys);
+	}
+
+	protected static KeyValues getAssessmentTypes(Translator translator) {
+		String[] assessmentTypeKeys = new String[]{ "summative", "formative", "both"};
+		String[] assessmentTypeValues = new String[]{
+				translator.translate("question.assessmentType.summative"),
+				translator.translate("question.assessmentType.formative"),
+				translator.translate("question.assessmentType.both"),	
+		};
+		return new KeyValues(assessmentTypeKeys, assessmentTypeValues);
+	}
+	
+	protected static KeyValues getStatus(Translator translator) {
+		String[] statusTypeKeys = QuestionStatus.valueString();
+		String[] statusTypeValues = new String[statusTypeKeys.length];
+		for(int i=statusTypeKeys.length; i-->0; ) {
+			statusTypeValues[i] = translator.translate("lifecycle.status." + statusTypeKeys[i]);
+		}
+		return new KeyValues(statusTypeKeys, statusTypeValues);
+	}
+	
+	protected static KeyValues getContextKeyValues(Translator translator, QPoolService qpoolService) {
+		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
+		String[] contextKeys = new String[ levels.size() ];
+		String[] contextValues = new String[ levels.size() ];
+		int count = 0;
+		for(QEducationalContext level:levels) {
+			contextKeys[count] = level.getLevel();
+			String translation = translator.translate("item.level." + level.getLevel().toLowerCase());
+			if(translation.length() > 128) {
+				translation = level.getLevel();
+			}
+			contextValues[count++] = translation;
+		}
+		return new KeyValues(contextKeys, contextValues);
+	}
 	
 	protected static KeyValues getQLicenseKeyValues(QPoolService qpoolService) {
 		List<QLicense> allLicenses = qpoolService.getAllLicenses();

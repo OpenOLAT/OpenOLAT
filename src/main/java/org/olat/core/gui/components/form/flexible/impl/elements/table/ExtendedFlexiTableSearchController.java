@@ -17,20 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.util.browser.arquillian;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.drone.spi.Configurator;
-import org.jboss.arquillian.drone.spi.Destructor;
-import org.jboss.arquillian.drone.spi.Instantiator;
+import java.util.List;
 
-public class DroneStudentExtension implements LoadableExtension {
+import org.olat.core.gui.control.Controller;
 
-	@Override
-	public void register(ExtensionBuilder builder) {
-		builder.service(Instantiator.class, StudentFactory.class);
-        builder.service(Destructor.class, StudentFactory.class);
-        builder.service(Configurator.class, StudentFactory.class);
-	}
+/**
+ * 
+ * Initial date: 03.05.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public interface ExtendedFlexiTableSearchController extends Controller {
+	
+	public List<String> getConditionalQueries();
 
 }

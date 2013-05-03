@@ -68,13 +68,13 @@ public class QuestionsController extends BasicController implements Activateable
 	private final QPoolService qpoolService;
 	private QuestionItemsSource source;
 	
-	public QuestionsController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
+	public QuestionsController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
 		super(ureq, wControl);
 		
 		this.source = source;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
-		listCtrl = new QuestionListController(ureq, wControl, source);
+		listCtrl = new QuestionListController(ureq, wControl, source, key);
 		listenTo(listCtrl);
 		detailsCtrl = new QuestionItemSummaryController(ureq, wControl);
 		listenTo(detailsCtrl);

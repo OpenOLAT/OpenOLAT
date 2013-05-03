@@ -245,7 +245,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 		QueueSender sender;
 		QueueSession session;
 		try {
-			JmsIndexWork workUnit = new JmsIndexWork(type, key);
+			JmsIndexWork workUnit = new JmsIndexWork(JmsIndexWork.INDEX, type, key);
 			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE );
 			ObjectMessage message = session.createObjectMessage();
 			message.setObject(workUnit);
@@ -257,14 +257,36 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			log.error("", e );
 		}
 	}
-	
+
+	@Override
+	public void deleteDocument(String type, Long key) {
+		QueueSender sender;
+		QueueSession session;
+		try {
+			JmsIndexWork workUnit = new JmsIndexWork(JmsIndexWork.DELETE, type, key);
+			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE );
+			ObjectMessage message = session.createObjectMessage();
+			message.setObject(workUnit);
+
+			sender = session.createSender(getJmsQueue());
+			sender.send( message );
+			session.close();
+		} catch (JMSException e) {
+			log.error("", e );
+		}
+	}
+
 	@Override
 	public void onMessage(Message message) {
 		if(message instanceof ObjectMessage) {
 			try {
 				ObjectMessage objMsg = (ObjectMessage)message;
 				JmsIndexWork workUnit = (JmsIndexWork)objMsg.getObject();
-				doIndex(workUnit);
+				if(JmsIndexWork.INDEX.equals(workUnit.getAction())) {
+					doIndex(workUnit);
+				} else if(JmsIndexWork.DELETE.equals(workUnit.getAction())) {
+					doDelete(workUnit);
+				}
 				message.acknowledge();
 			} catch (JMSException e) {
 				log.error("", e);
@@ -282,6 +304,16 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 		}
 	}
 	
+	private void doDelete(JmsIndexWork workUnit) {
+		if(searchService instanceof SearchServiceImpl) {
+			String type = workUnit.getIndexType();
+			List<LifeIndexer> indexers = getIndexerByType(type);
+			for(LifeIndexer indexer:indexers) {
+				indexer.deleteDocument(workUnit.getKey(), this);
+			}
+		}
+	}
+	
 	private DirectoryReader getReader() throws IOException {
 		DirectoryReader newReader = DirectoryReader.openIfChanged(reader);
 		if(newReader != null) {
@@ -289,13 +321,29 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 		}
 		return reader;
 	}
-	
+
+	@Override
 	public IndexWriter getAndLockWriter() throws IOException {
 		return permanentIndexWriter.getAndLock();
 	}
-	
+
+	@Override
 	public void releaseWriter(IndexWriter writer) {
 		permanentIndexWriter.release(writer);
+	}
+
+	@Override
+	public void deleteDocument(String resourceUrl) {
+		IndexWriter writer = null;
+		try {
+			Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
+	    writer = permanentIndexWriter.getAndLock();
+			writer.deleteDocuments(uuidTerm);
+		} catch (IOException e) {
+			log.error("", e);
+		} finally {
+			permanentIndexWriter.release(writer);
+		}
 	}
 	
 	/**

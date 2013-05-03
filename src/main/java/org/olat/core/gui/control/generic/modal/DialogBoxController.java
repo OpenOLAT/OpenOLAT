@@ -94,7 +94,7 @@ public class DialogBoxController extends BasicController {
 		// add content to velocity
 		dialogBoxVC.contextPut("text", text);
 		// add optional buttons to velocity
-		List buttons = new ArrayList();
+		List<String> buttons = new ArrayList<String>();
 		if (buttonLabels != null) {
 			for (int i = 0; i < buttonLabels.size(); i++) {
 				String buttonText = buttonLabels.get(i);

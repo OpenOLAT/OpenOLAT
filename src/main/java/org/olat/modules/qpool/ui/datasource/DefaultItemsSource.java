@@ -103,6 +103,7 @@ public class DefaultItemsSource implements QuestionItemsSource {
 	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		SearchQuestionItemParams params = defaultParams.clone();
 		params.setSearchString(query);
+		params.setCondQueries(condQueries);
 		return doSearch(params, firstResult, maxResults, orderBy);
 	}
 	

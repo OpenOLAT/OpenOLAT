@@ -19,10 +19,13 @@
  */
 package org.olat.modules.qpool.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -36,6 +39,8 @@ public class SearchQuestionItemParams {
 	private Collection<Long> itemKeys;
 	private String format;
 	private String searchString;
+	private List<String> condQueries;
+	
 	private boolean favoritOnly;
 	private Identity author;
 	
@@ -86,6 +91,11 @@ public class SearchQuestionItemParams {
 	public void setAuthor(Identity author) {
 		this.author = author;
 	}
+	
+	public boolean isFulltextSearch() {
+		return StringHelper.containsNonWhitespace(searchString) ||
+				condQueries != null && condQueries.size() > 0;
+	}
 
 	public String getSearchString() {
 		return searchString;
@@ -93,6 +103,17 @@ public class SearchQuestionItemParams {
 
 	public void setSearchString(String searchString) {
 		this.searchString = searchString;
+	}
+
+	public List<String> getCondQueries() {
+		if(condQueries == null) {
+			return new ArrayList<String>(1);
+		}
+		return new ArrayList<String>(condQueries);
+	}
+
+	public void setCondQueries(List<String> condQueries) {
+		this.condQueries = condQueries;
 	}
 
 	public Identity getIdentity() {
@@ -109,6 +130,7 @@ public class SearchQuestionItemParams {
 		clone.poolKey = poolKey;
 		clone.format = format;
 		clone.searchString = searchString;
+		clone.condQueries = getCondQueries();
 		clone.favoritOnly = favoritOnly;
 		clone.author = author;
 		return clone;

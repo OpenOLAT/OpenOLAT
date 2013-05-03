@@ -52,6 +52,7 @@ import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.manager.ExportQItemResource;
 import org.olat.modules.qpool.ui.events.QItemEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
+import org.olat.modules.qpool.ui.metadata.MetadatasController;
 
 /**
  * 

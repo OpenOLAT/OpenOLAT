@@ -130,6 +130,14 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 	}
 
 	@Override
+	public void clear() {
+		rowCount = 0;
+		if(rows != null) {
+			rows.clear();
+		}
+	}
+
+	@Override
 	public ResultInfos<U> load(final int firstResult, final int maxResults, SortKey... orderBy) {
 		return loadDatas(null, null, false, firstResult, maxResults, orderBy);
 	}
@@ -177,7 +185,7 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 
 		int correctedFirstResult = firstResult;
 		int correctMaxResults = maxResults;
-		
+
 		if(!force && rows.size() > 0) {
 			correctMaxResults = maxResults <= 0 ? rowCount : maxResults;
 			int maxRowsResults = maxResults <= 0 ? rows.size() : maxResults;

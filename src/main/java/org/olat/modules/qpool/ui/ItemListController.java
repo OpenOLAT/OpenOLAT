@@ -43,7 +43,7 @@ public class ItemListController extends AbstractItemListController {
 	private FormLink selectLink;
 	
 	public ItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
-		super(ureq, wControl, source);
+		super(ureq, wControl, source, "select");
 		
 		initForm(ureq);
 	}

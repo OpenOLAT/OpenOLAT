@@ -17,58 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.search.service.indexer;
+package org.olat.modules.qpool.ui.events;
 
-import java.io.Serializable;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.qpool.QuestionItem;
 
 /**
  * 
- * Initial date: 04.03.2013<br>
+ * Initial date: 05.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class JmsIndexWork implements Serializable {
+public class QItemEdited extends Event {
 
-	private static final long serialVersionUID = 8790611181901676640L;
-	
-	public static final String INDEX = "index";
-	public static final String DELETE = "delete";
-	
-	private String indexType;
-	private Long key;
-	private String action;
-	
-	public JmsIndexWork() {
-		//
-	}
-	
-	public JmsIndexWork(String action, String indexType, Long key) {
-		this.action = action;
-		this.indexType = indexType;
-		this.key = key;
-	}
-	
-	public String getIndexType() {
-		return indexType;
-	}
-	
-	public void setIndexType(String indexType) {
-		this.indexType = indexType;
-	}
-	
-	public Long getKey() {
-		return key;
-	}
-	
-	public void setKey(Long key) {
-		this.key = key;
+	private static final long serialVersionUID = -8778970425649808840L;
+	private final QuestionItem item;
+
+	public QItemEdited(QuestionItem item) {
+		super("qitem-edited");
+		this.item = item;
 	}
 
-	public String getAction() {
-		return action;
-	}
-
-	public void setAction(String action) {
-		this.action = action;
+	public QuestionItem getItem() {
+		return item;
 	}
 }

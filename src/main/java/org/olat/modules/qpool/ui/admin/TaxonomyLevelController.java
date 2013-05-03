@@ -34,7 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.TaxonomyLevel;
-import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.metadata.MetadatasController;
 
 /**
  * 

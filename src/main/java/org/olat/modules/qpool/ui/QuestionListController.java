@@ -53,10 +53,10 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QItemList;
-import org.olat.modules.qpool.ui.edit.MetadataBulkChangeController;
 import org.olat.modules.qpool.ui.events.QItemEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
+import org.olat.modules.qpool.ui.metadata.MetadataBulkChangeController;
 import org.olat.modules.qpool.ui.wizard.Export_1_TypeStep;
 import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
 import org.olat.repository.RepositoryEntry;
@@ -99,8 +99,8 @@ public class QuestionListController extends AbstractItemListController implement
 	private final QPoolService qpoolService;
 	private final RepositoryManager repositoryManager;
 	
-	public QuestionListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
-		super(ureq, wControl, source);
+	public QuestionListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
+		super(ureq, wControl, source, key);
 
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);

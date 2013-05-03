@@ -109,7 +109,7 @@ public class SearchServiceImpl implements SearchService {
 			AbstractOlatDocument.TITLE_FIELD_NAME, AbstractOlatDocument.DESCRIPTION_FIELD_NAME,
 			AbstractOlatDocument.CONTENT_FIELD_NAME, AbstractOlatDocument.AUTHOR_FIELD_NAME,
 			AbstractOlatDocument.DOCUMENTTYPE_FIELD_NAME, AbstractOlatDocument.FILETYPE_FIELD_NAME,
-			QItemDocument.STUDY_FIELD, QItemDocument.IDENTIFIER_FIELD,
+			QItemDocument.TAXONOMIC_PATH_FIELD, QItemDocument.IDENTIFIER_FIELD,
 			QItemDocument.MASTER_IDENTIFIER_FIELD, QItemDocument.KEYWORDS_FIELD,
 			QItemDocument.COVERAGE_FIELD, QItemDocument.ADD_INFOS_FIELD,
 			QItemDocument.LANGUAGE_FIELD, QItemDocument.EDU_CONTEXT_FIELD,

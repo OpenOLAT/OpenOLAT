@@ -41,4 +41,6 @@ public interface LifeIndexer {
 	 */
 	public void indexDocument(Long key, LifeFullIndexer indexWriter);
 	
+	public void deleteDocument(Long key, LifeFullIndexer indexWriter);
+	
 }

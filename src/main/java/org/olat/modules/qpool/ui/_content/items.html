@@ -24,6 +24,7 @@ jQuery(function() {
 	var headerHeight = jQuery('#b_header').height() + jQuery('#b_nav_main').height();
 	var footerHeight = jQuery('#b_footer').height() + jQuery('#qbuttons').height();
 	var maxHeight = winHeight - headerHeight - footerHeight - 50;
+	var panePadding = 130;
 
 	jQuery('#qpoolcontainer').width(width).height(maxHeight).layout({
 		north: { size: '50%' },
@@ -33,8 +34,8 @@ jQuery(function() {
 			jQuery('#$tableId').each(function(index, el) {
 				var table = jQuery(el).dataTable();
 				var oSettings = table.fnSettings();
-				oSettings.oScroll.sY = (paneHeight - 130) + "px";
-				table.fnDraw();
+				oSettings.oScroll.sY = (paneHeight - panePadding) + "px";
+				jQuery('div.dataTables_scrollBody', jQuery('#qitems')).height(paneHeight - panePadding);
 			});
 		},
 		west: { size: '50%' },
@@ -45,8 +46,8 @@ jQuery(function() {
 		var paneHeight = jQuery('#qitems').height();
 		var table = jQuery(el).dataTable();
 		var oSettings = table.fnSettings();
-		oSettings.oScroll.sY = (paneHeight - 130) + "px";
-		table.fnDraw();
+		oSettings.oScroll.sY = (paneHeight - panePadding) + "px";
+		jQuery('div.dataTables_scrollBody', jQuery('#qitems')).height(paneHeight - panePadding);
 	});
 });
 </script>

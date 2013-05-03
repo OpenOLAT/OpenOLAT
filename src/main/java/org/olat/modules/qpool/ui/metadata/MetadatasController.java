@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.modules.qpool.ui.metadata;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -28,23 +28,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.olat.modules.qpool.ui.edit.EducationalMetadataController;
-import org.olat.modules.qpool.ui.edit.EducationalMetadataEditController;
-import org.olat.modules.qpool.ui.edit.GeneralMetadataController;
-import org.olat.modules.qpool.ui.edit.GeneralMetadataEditController;
-import org.olat.modules.qpool.ui.edit.LifecycleMetadataController;
-import org.olat.modules.qpool.ui.edit.LifecycleMetadataEditController;
-import org.olat.modules.qpool.ui.edit.QItemEdited;
-import org.olat.modules.qpool.ui.edit.QuestionMetadataController;
-import org.olat.modules.qpool.ui.edit.QuestionMetadataEditController;
-import org.olat.modules.qpool.ui.edit.RightsMetadataController;
-import org.olat.modules.qpool.ui.edit.RightsMetadataEditController;
-import org.olat.modules.qpool.ui.edit.SharingController;
-import org.olat.modules.qpool.ui.edit.TechnicalMetadataController;
-import org.olat.modules.qpool.ui.edit.TechnicalMetadataEditController;
+import org.olat.modules.qpool.ui.QuestionsController;
+import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
@@ -77,6 +66,8 @@ public class MetadatasController extends BasicController {
 	
 	public MetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean canEdit) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
+		
 		this.item = item;
 		this.canEdit = canEdit;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
@@ -243,7 +234,7 @@ public class MetadatasController extends BasicController {
 		mainVC.put("details_rights", rightsCtrl.getInitialComponent());
 	}
 	
-	protected QuestionItem updateVersionNumber() {
+	public QuestionItem updateVersionNumber() {
 		if(item instanceof QuestionItemImpl && StringHelper.containsNonWhitespace(item.getItemVersion())) {
 			String version = item.getItemVersion();
 			int lastPoint = version.lastIndexOf('.');

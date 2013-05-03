@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui.edit;
+package org.olat.modules.qpool.ui.metadata;
 
 import java.math.BigDecimal;
 
@@ -35,7 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QItemType;
-import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
@@ -53,7 +53,7 @@ public class QuestionMetadataController extends FormBasicController  {
 	
 	public QuestionMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
 		super(ureq, wControl, "view");
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 	
 		this.edit = edit;
 		initForm(ureq);

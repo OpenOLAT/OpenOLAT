@@ -68,7 +68,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListEleme
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.TreeModel;
@@ -905,22 +904,22 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel tableModel, FormItemContainer formLayout) {
+	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel, FormItemContainer formLayout) {
 		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, wControl, name,tableModel);
 		formLayout.add(fte);
 		return fte;
 	}
 	
-	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel tableModel,
+	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel,
 			Translator translator, FormItemContainer formLayout) {
 		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, wControl, name, translator, tableModel);
 		formLayout.add(fte);
 		return fte;
 	}
 	
-	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel tableModel,
-			int pageSize, boolean search, Translator translator, FormItemContainer formLayout) {
-		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, wControl, name, translator, tableModel, pageSize, search);
+	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel,
+			int pageSize, Translator translator, FormItemContainer formLayout) {
+		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, wControl, name, translator, tableModel, pageSize);
 		formLayout.add(fte);
 		return fte;
 	}

@@ -51,7 +51,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QLicense;
-import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.metadata.MetadatasController;
 
 /**
  * 

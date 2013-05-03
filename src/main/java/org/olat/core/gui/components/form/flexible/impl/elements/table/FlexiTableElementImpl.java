@@ -74,12 +74,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private int currentPage;
 	private int currentFirstResult;
 	private int pageSize;
-	private boolean searchField;
+	private boolean searchEnabled;
 	private boolean selectAllEnabled;
 
 	private FormLink customButton;
-	private FormLink searchButton;
+	private FormLink searchButton, extendedSearchButton;
 	private TextElement searchFieldEl;
+	private ExtendedFlexiTableSearchController extendedSearchCtrl;
 	
 	private final FlexiTableDataModel<?> dataModel;
 	private FlexiTableDataSource<?> dataSource;
@@ -95,15 +96,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel) {
-		this(ureq, wControl, name, null, tableModel, -1, false);
+		this(ureq, wControl, name, null, tableModel, -1);
 	}
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
-		this(ureq, wControl, name, translator, tableModel, -1, false);
+		this(ureq, wControl, name, translator, tableModel, -1);
 	}
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator,
-			FlexiTableDataModel<?> tableModel, int pageSize, boolean searchField) {
+			FlexiTableDataModel<?> tableModel, int pageSize) {
 		super(name);
 		this.wControl = wControl;
 		this.dataModel = tableModel;
@@ -121,17 +122,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		mapperUrl = mapper.register(ureq.getUserSession(), new FlexiTableModelMapper(component));
 
 		String dispatchId = component.getDispatchID();
-		this.searchField = searchField;
-		if(searchField) {
-			searchFieldEl = new TextElementImpl(dispatchId + "_searchField", "search", "");
-			searchFieldEl.showLabel(false);
-			components.put("rSearch", searchFieldEl);
-			searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
-			searchButton.setTranslator(translator);
-			searchButton.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only o_fulltext_search_button");
-			components.put("rSearchB", searchButton);
-		}
-		
 		customButton = new FormLinkImpl(dispatchId + "_customButton", "rCustomButton", "search", Link.BUTTON);
 		customButton.setTranslator(translator);
 		customButton.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only b_table_prefs");
@@ -168,7 +158,47 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public boolean isSearchEnabled() {
-		return searchField;
+		return searchEnabled;
+	}
+	
+	public void setSearchEnabled(boolean enable) {
+		this.searchEnabled = enable;
+		if(searchEnabled) {
+			String dispatchId = component.getDispatchID();
+			searchFieldEl = new TextElementImpl(dispatchId + "_searchField", "search", "");
+			searchFieldEl.showLabel(false);
+			components.put("rSearch", searchFieldEl);
+			searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
+			searchButton.setTranslator(translator);
+			searchButton.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only o_fulltext_search_button");
+			components.put("rSearchB", searchButton);
+			rootFormAvailable(searchFieldEl);
+			rootFormAvailable(searchButton);
+		} else {
+			components.remove("rSearch");
+			components.remove("rSearchB");
+			searchFieldEl = null;
+			searchButton = null;
+		}
+	}
+	
+	public FormLink getExtendedSearchButton() {
+		return extendedSearchButton;
+	}
+	
+	@Override
+	public void setExtendedSearchCallout(ExtendedFlexiTableSearchController callout) {
+		extendedSearchCtrl = callout;
+		if(extendedSearchCtrl != null) {
+			extendedSearchCtrl.addControllerListener(this);
+			
+			String dispatchId = component.getDispatchID();
+			extendedSearchButton = new FormLinkImpl(dispatchId + "_extSearchButton", "rExtSearchButton", "extsearch", Link.BUTTON);
+			extendedSearchButton.setTranslator(translator);
+			//extendedSearchButton.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only o_fulltext_search_button");
+			components.put("rExtSearchB", extendedSearchButton);
+			rootFormAvailable(extendedSearchButton);
+		}
 	}
 	
 	@Override
@@ -287,6 +317,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(searchButton != null
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
 			evalSearchRequest(ureq);
+		}  else if(extendedSearchButton != null
+				&& extendedSearchButton.getFormDispatchId().equals(dispatchuri)) {
+			openExtendedSearch(ureq);
 		} else if(dispatchuri != null && select != null && select.equals("checkall")) {
 			doSelectAll();
 		} else if(dispatchuri != null && select != null && select.equals("uncheckall")) {
@@ -313,6 +346,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(source == callout) {
 			//System.out.println("dispatchEvent (Controller): " + source);
+		} else if(source == extendedSearchCtrl) {
+			if(event == Event.CANCELLED_EVENT) {
+				callout.deactivate();
+			} else if(event == Event.DONE_EVENT) {
+				evalExtendedSearch(ureq);
+			}
 		}
 	}
 	
@@ -323,6 +362,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			setCustomizedColumns(visibleColsChoice);
 			callout.deactivate();
 		}
+	}
+	
+	protected void openExtendedSearch(UserRequest ureq) {
+		callout = new CloseableCalloutWindowController(ureq, wControl, extendedSearchCtrl.getInitialComponent(),
+				extendedSearchButton, "Search", true, "o_sel_flexi_search_callout");
+		callout.activate();
+		callout.addControllerListener(this);
 	}
 
 	protected void customizeCallout(UserRequest ureq) {
@@ -362,12 +408,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return choice;
 	}
 
+	protected void evalExtendedSearch(UserRequest ureq) {
+		String search = null;
+		if(searchFieldEl != null) {
+			searchFieldEl.evalFormRequest(ureq);
+			search = searchFieldEl.getValue();
+		}
+		List<String> condQueries = extendedSearchCtrl.getConditionalQueries();
+		doSearch(ureq, search, condQueries);
+	}
+
 	protected void evalSearchRequest(UserRequest ureq) {
 		if(searchFieldEl == null) return;//this a default behavior which can occur without the search configured
 		searchFieldEl.evalFormRequest(ureq);
 		String search = searchFieldEl.getValue();
 		if(StringHelper.containsNonWhitespace(search)) {
-			doSearch(ureq, search);
+			doSearch(ureq, search, null);
 		} else {
 			doResetSearch(ureq);
 		}
@@ -395,16 +451,18 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		getRootForm().fireFormEvent(ureq, new SelectionEvent(action, index, this, FormEvent.ONCLICK));
 	}
 	
-	protected void doSearch(UserRequest ureq, String search) {
+	protected void doSearch(UserRequest ureq, String search, List<String> condQueries) {
 		if(dataSource != null) {
 			resetInternComponents();
-			dataSource.search(search, null, 0, getPageSize());
+			dataSource.clear();
+			dataSource.search(search, condQueries, 0, getPageSize());
 		}
 	}
 	
 	protected void doResetSearch(UserRequest ureq) {
 		if(dataSource != null) {
 			resetInternComponents();
+			dataSource.clear();
 			dataSource.load(0, getPageSize());
 		}
 	}
@@ -463,6 +521,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(searchFieldEl != null) searchFieldEl.validate(validationResults);
 		if(searchButton != null) searchButton.validate(validationResults);
 		if(customButton != null) customButton.validate(validationResults);
+		if(extendedSearchButton != null) extendedSearchButton.validate(validationResults);
 	}
 
 	@Override
@@ -497,6 +556,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		rootFormAvailable(searchFieldEl);
 		rootFormAvailable(searchButton);
 		rootFormAvailable(customButton);
+		rootFormAvailable(extendedSearchButton);
 	}
 	
 	private final void rootFormAvailable(FormItem item) {

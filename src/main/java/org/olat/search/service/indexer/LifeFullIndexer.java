@@ -47,6 +47,13 @@ public interface LifeFullIndexer {
 	public void indexDocument(String type, Long key);
 	
 	/**
+	 * Delete a document
+	 * @param type
+	 * @param key
+	 */
+	public void deleteDocument(String type, Long key);
+	
+	/**
 	 * Return the index writer, don't forget to release it.
 	 * @return
 	 * @throws IOException
@@ -71,5 +78,11 @@ public interface LifeFullIndexer {
 	 * @param writer
 	 */
 	public void addDocument(Document doc, IndexWriter writer);
+	
+	/**
+	 * 
+	 * @param resourceUrl
+	 */
+	public void deleteDocument(String resourceUrl);
 
 }

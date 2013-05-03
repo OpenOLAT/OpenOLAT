@@ -40,7 +40,7 @@ import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
-import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.metadata.MetadatasController;
 
 /**
  * 

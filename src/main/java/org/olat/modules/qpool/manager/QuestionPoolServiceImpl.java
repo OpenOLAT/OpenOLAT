@@ -38,7 +38,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -119,6 +118,10 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		collectionDao.deleteItemFromCollections(items);
 		//TODO unmark
 		questionItemDao.delete(items);
+		
+		for(QuestionItemShort item:items) {
+			lifeIndexer.deleteDocument(QItemDocument.TYPE, item.getKey());
+		}
 	}
 
 	@Override
@@ -378,10 +381,13 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	private ResultInfos<QuestionItemView> getItemsByPool(SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
-		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+		if(searchParams.isFulltextSearch()) {
 			try {
 				String queryString = searchParams.getSearchString();
 				List<String> condQueries = new ArrayList<String>();
+				if(searchParams.getCondQueries() != null) {
+					condQueries.addAll(searchParams.getCondQueries());
+				}
 				condQueries.add("pool:" + searchParams.getPoolKey());
 				List<Long> results = searchClient.doSearch(queryString, condQueries,
 						searchParams.getIdentity(), searchParams.getRoles(), firstResult, 10000, orderBy);
@@ -406,10 +412,13 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	private ResultInfos<QuestionItemView> searchByAuthor(SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
 		Identity author = searchParams.getAuthor();
-		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+		if(searchParams.isFulltextSearch()) {
 			try {
 				String queryString = searchParams.getSearchString();
 				List<String> condQueries = new ArrayList<String>();
+				if(searchParams.getCondQueries() != null) {
+					condQueries.addAll(searchParams.getCondQueries());
+				}
 				condQueries.add(QItemDocument.OWNER_FIELD + ":" + author.getKey());
 				List<Long> results = searchClient.doSearch(queryString, condQueries,
 						searchParams.getIdentity(), searchParams.getRoles(), firstResult, 10000, orderBy);
@@ -443,13 +452,16 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	 */
 	private ResultInfos<QuestionItemView> searchFavorits(SearchQuestionItemParams searchParams,
 			int firstResult, int maxResults, SortKey... orderBy) {
-		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+		if(searchParams.isFulltextSearch()) {
 			try {
 				//filter with all favorits
 				List<Long> favoritKeys = questionItemDao.getFavoritKeys(searchParams.getIdentity());
 
 				String queryString = searchParams.getSearchString();
 				List<String> condQueries = new ArrayList<String>();
+				if(searchParams.getCondQueries() != null) {
+					condQueries.addAll(searchParams.getCondQueries());
+				}
 				condQueries.add(getDbKeyConditionalQuery(favoritKeys));
 				List<Long> results = searchClient.doSearch(queryString, condQueries,
 						searchParams.getIdentity(), searchParams.getRoles(), firstResult, maxResults * 5, orderBy);
@@ -514,10 +526,13 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public ResultInfos<QuestionItemView> getSharedItemByResource(OLATResource resource, SearchQuestionItemParams searchParams,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		
-		if(searchParams != null && StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+		if(searchParams != null && searchParams.isFulltextSearch()) {
 			try {
 				String queryString = searchParams.getSearchString();
 				List<String> condQueries = new ArrayList<String>();
+				if(searchParams.getCondQueries() != null) {
+					condQueries.addAll(searchParams.getCondQueries());
+				}
 				condQueries.add(QItemDocument.SHARE_FIELD + ":" + resource.getKey());
 				List<Long> results = searchClient.doSearch(queryString, condQueries,
 						searchParams.getIdentity(), searchParams.getRoles(), firstResult, maxResults * 5, orderBy);
@@ -590,12 +605,14 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public ResultInfos<QuestionItemView> getItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams searchParams,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		
-		if(searchParams != null && StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+		if(searchParams != null && searchParams.isFulltextSearch()) {
 			try {
 				List<Long> content = collectionDao.getItemKeysOfCollection(collection);
-
 				String queryString = searchParams.getSearchString();
 				List<String> condQueries = new ArrayList<String>();
+				if(searchParams.getCondQueries() != null) {
+					condQueries.addAll(searchParams.getCondQueries());
+				}
 				condQueries.add(getDbKeyConditionalQuery(content));
 				List<Long> results = searchClient.doSearch(queryString, condQueries, searchParams.getIdentity(), searchParams.getRoles(),
 						firstResult, maxResults * 5, orderBy);
@@ -716,8 +733,4 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public TaxonomyLevel updateTaxonomyLevel(String newField, TaxonomyLevel level) {
 		return taxonomyLevelDao.update(newField, level);
 	}
-	
-	
-	
-	
 }

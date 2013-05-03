@@ -98,6 +98,7 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setSearchString(query);
+		params.setCondQueries(condQueries);
 		return qpoolService.getItemsOfCollection(collection, params, firstResult, maxResults, orderBy);
 	}
 }

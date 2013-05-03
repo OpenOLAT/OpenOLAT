@@ -64,6 +64,9 @@ public class QuestionItemDocumentFactory {
 	@Autowired
 	private QPoolService qpoolService;
 
+	public String getResourceUrl(Long itemKey) {
+		return "[QuestionItem:" + itemKey + "]";
+	}
 
 	public Document createDocument(SearchResourceContext searchResourceContext, Long itemKey) {
 		QuestionItemFull item = questionItemDao.loadById(itemKey);
@@ -80,7 +83,7 @@ public class QuestionItemDocumentFactory {
 		oDocument.setLastChange(item.getLastModified());
 		oDocument.setTitle(item.getTitle());
 		oDocument.setDescription(item.getDescription());
-		oDocument.setResourceUrl("[QuestionItem:" + item.getKey() + "]");
+		oDocument.setResourceUrl(getResourceUrl(item.getKey()));
 		oDocument.setDocumentType(QItemDocument.TYPE);
 		oDocument.setCssIcon("o_qitem_icon");
 		oDocument.setParentContextType(searchResourceContext.getParentContextType());
@@ -173,7 +176,7 @@ public class QuestionItemDocumentFactory {
 		if(StringHelper.containsNonWhitespace(path)) {
 			for(StringTokenizer tokenizer = new StringTokenizer(path, "/"); tokenizer.hasMoreTokens(); ) {
 				String nextToken = tokenizer.nextToken();
-				document.add(new TextField(QItemDocument.STUDY_FIELD, nextToken, Field.Store.NO));
+				document.add(new TextField(QItemDocument.TAXONOMIC_PATH_FIELD, nextToken, Field.Store.NO));
 			}
 		}
 		return document;

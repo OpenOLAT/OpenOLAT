@@ -142,7 +142,8 @@ div.b_msg_dialog {
 /* sticky info (admins can create stick-messages that will show for all users) */
 #b_msg_sticky { 
 	clear:both; padding: 10px 10px 10px 50px;
-	min-height: 32px; background: #FFB651 url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px; 
+	min-height: 32px;
+	background: #FFB651 url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px; 
 	border:none;
 }
 

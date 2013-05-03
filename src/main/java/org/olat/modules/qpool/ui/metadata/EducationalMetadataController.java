@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui.edit;
+package org.olat.modules.qpool.ui.metadata;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -32,8 +32,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.manager.MetadataConverterHelper;
+import org.olat.modules.qpool.model.LOMDuration;
+import org.olat.modules.qpool.model.QEducationalContext;
+import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
@@ -42,17 +44,16 @@ import org.olat.modules.qpool.ui.events.QPoolEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LifecycleMetadataController extends FormBasicController  {
+public class EducationalMetadataController extends FormBasicController {
 	
 	private FormLink editLink;
-	private StaticTextElement versionEl, statusEl;
-
-	private final boolean edit;
+	private StaticTextElement contextEl, learningTimeEl;
 	
-	public LifecycleMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
+	private final boolean edit;
+
+	public EducationalMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
 		super(ureq, wControl, "view");
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
-		
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		this.edit = edit;
 		initForm(ureq);
 		setItem(item);
@@ -60,7 +61,7 @@ public class LifecycleMetadataController extends FormBasicController  {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("lifecycle");
+		setFormTitle("educational");
 		if(edit) {
 			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
 			editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
@@ -69,19 +70,51 @@ public class LifecycleMetadataController extends FormBasicController  {
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);
 		
-		versionEl = uifactory.addStaticTextElement("lifecycle.version", "", metaCont);
-		statusEl = uifactory.addStaticTextElement("lifecycle.status", "", metaCont);
+		contextEl = uifactory.addStaticTextElement("educational.context", "", metaCont);
+		learningTimeEl = uifactory.addStaticTextElement("educational.learningTime", "", metaCont);
+	}
+
+	public void setItem(QuestionItem item) {
+		QEducationalContext context = item.getEducationalContext();
+		if(context == null || context.getLevel() == null) {
+			contextEl.setValue("");
+		} else {
+			String translation = translate("item.level." + context.getLevel().toLowerCase());
+			if(translation.length() > 128) {
+				translation = context.getLevel();
+			}
+			contextEl.setValue(translation);
+		}
+		
+		String learningTime = durationToString(item);
+		learningTimeEl.setValue(learningTime);
 	}
 	
-	public void setItem(QuestionItem item) {
-		String version = item.getItemVersion() == null ? "" : item.getItemVersion();
-		versionEl.setValue(version);
-		if(item.getQuestionStatus() == null) {
-			statusEl.setValue("");	
-		} else {
-			QuestionStatus status = item.getQuestionStatus();
-			statusEl.setValue(translate("lifecycle.status." + status.name()));
+	private String durationToString(QuestionItem item) {
+		if(item == null) return "";
+		String timeStr = item.getEducationalLearningTime();
+		LOMDuration duration = MetadataConverterHelper.convertDuration(timeStr);
+		
+		StringBuilder sb = new StringBuilder();
+		if(duration.getDay() > 0) {
+			sb.append(duration.getDay()).append("d ");
 		}
+		if(duration.getHour() > 0 || duration.getMinute() > 0 || duration.getSeconds() > 0) {
+			int hour = duration.getHour() < 0 ? 0 : duration.getHour();
+			sb.append(hour).append(":")
+			  .append(doubleZero(duration.getMinute())).append(":")
+			  .append(doubleZero(duration.getSeconds()));
+		}
+		return sb.toString();
+	}
+	
+	private String doubleZero(int val) {
+		if(val < 0) {
+			return "00";
+		} else if(val < 10) {
+			return "0" + val;
+		}
+		return Integer.toString(val);
 	}
 	
 	@Override

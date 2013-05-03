@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui.edit;
+package org.olat.modules.qpool.ui.metadata;
 
 import java.util.List;
 
@@ -41,7 +41,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Pool;
 import org.olat.modules.qpool.QuestionItem2Resource;
-import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.user.UserManager;
 
 /**
@@ -63,7 +63,7 @@ public class SharingController extends FormBasicController {
 
 	public SharingController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl, "sharing");
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);

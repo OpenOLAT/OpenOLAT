@@ -1,0 +1,11 @@
+<div class="b_clearfix"><table><tbody>
+#foreach($query in $uiQueries)
+	<tr>
+		<td>$r.render($query.attributChoice.name)</td>
+		<td>$r.render($query.parameterItem.name)</td>
+		<td>$r.render($query.addButton.component.componentName)</td>
+		<td>$r.render($query.removeButton.component.componentName)</td>
+	</tr>
+#end
+</tbody></table></div>
+$r.render("buttons")

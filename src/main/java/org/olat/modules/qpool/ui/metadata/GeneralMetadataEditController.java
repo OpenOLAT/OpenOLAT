@@ -17,10 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui.edit;
+package org.olat.modules.qpool.ui.metadata;
 
-import static org.olat.modules.qpool.ui.edit.MetaUIFactory.validateElementLogic;
-
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -49,8 +48,9 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.admin.TaxonomyTreeModel;
+import org.olat.modules.qpool.ui.events.QItemEdited;
 /**
  * 
  * Initial date: 05.03.2013<br>
@@ -74,7 +74,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 	
 	public GeneralMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);

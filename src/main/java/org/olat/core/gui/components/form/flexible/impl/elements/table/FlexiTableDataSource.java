@@ -32,6 +32,10 @@ import org.olat.core.commons.persistence.SortKey;
  */
 public interface FlexiTableDataSource<U> extends FlexiTableDataModel<U> {
 	
+	/**
+	 * Remove all elements of the model
+	 */
+	public void clear();
 	
 	/**
 	 * Load the rows needed for paging
