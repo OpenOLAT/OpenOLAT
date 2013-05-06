@@ -25,6 +25,7 @@ import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupModule;
 import org.olat.repository.site.RepositorySite;
 
@@ -38,6 +39,11 @@ import org.olat.repository.site.RepositorySite;
  * @author gnaegi
  */
 public class RepositoryModule extends AbstractOLATModule {
+	
+	
+
+	private boolean listAllCourses;
+	private boolean listAllResourceTypes;
 	
 	private BusinessGroupModule groupModule;
 	
@@ -56,6 +62,14 @@ public class RepositoryModule extends AbstractOLATModule {
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(RepositorySite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(RepositorySite.class));
 		
+		String listAllCoursesStr = getStringPropertyValue("listallcourse", true);
+		if(StringHelper.containsNonWhitespace(listAllCoursesStr)) {
+			listAllCourses = "true".equals(listAllCoursesStr);
+		}
+		String listAllResourceTypesStr = getStringPropertyValue("listallresourcetypes", true);
+		if(StringHelper.containsNonWhitespace(listAllResourceTypesStr)) {
+			listAllResourceTypes = "true".equals(listAllResourceTypesStr);
+		}
 	}
 
 	/**
@@ -71,7 +85,10 @@ public class RepositoryModule extends AbstractOLATModule {
 	 */
 	@Override
 	protected void initDefaultProperties() {
-	// nothing to init
+		String listAllCoursesStr = getStringConfigParameter("listallcourse", "true", false);
+		listAllCourses = "true".equals(listAllCoursesStr);
+		String listAllResourceTypesStr = getStringConfigParameter("listallresourcetypes", "true", false);
+		listAllResourceTypes = "true".equals(listAllResourceTypesStr);
 	}
 
 	/**
@@ -79,7 +96,7 @@ public class RepositoryModule extends AbstractOLATModule {
 	 */
 	@Override
 	protected void initFromChangedProperties() {
-	// nothing to init
+		init();
 	}
 
 	@Override
@@ -95,4 +112,19 @@ public class RepositoryModule extends AbstractOLATModule {
 		return groupModule.isMandatoryEnrolmentEmail(roles);
 	}
 
+	public boolean isListAllCourses() {
+		return listAllCourses;
+	}
+
+	public void setListAllCourses(boolean listAllCourses) {
+		setBooleanProperty("listallcourse", listAllCourses, true);
+	}
+
+	public boolean isListAllResourceTypes() {
+		return listAllResourceTypes;
+	}
+
+	public void setListAllResourceTypes(boolean listAllResourceTypes) {
+		setBooleanProperty("listallresourcetypes", listAllResourceTypes, true);
+	}
 }

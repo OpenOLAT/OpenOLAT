@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 <bean id="repositoryModule" class="org.olat.repository.RepositoryModule" depends-on="userModule">
 	<property name="groupModule" ref="businessGroupModule"/>
@@ -15,12 +15,17 @@
 	</property>
 </bean>
 
-<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="targetObject" ref="repositoryModule" />
-        <property name="targetMethod" value="init" />
-</bean>
-
-		
-<bean id="repositoryManager" class="org.olat.repository.RepositoryManager"/>
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="repositoryModule" />
+		<property name="targetMethod" value="init" />
+		<property name="arguments">
+			<value>
+				listallcourse=${repo.listallcourses.enabled}
+				listallresourcetypes=${repo.listallresourcetypes.enabled}
+			</value>
+		</property>
+	</bean>
+	
+	<bean id="repositoryManager" class="org.olat.repository.RepositoryManager"/>
 
 </beans>
