@@ -24,10 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.OlatBeanTypes;
 import org.olat.admin.SystemAdminMainController;
-import org.olat.core.CoreBeanTypes;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.extensions.Extension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -35,9 +34,14 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.portal.Portlet;
+import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Util;
+import org.olat.core.util.notifications.NotificationsHandler;
+import org.olat.course.nodes.CourseNodeConfiguration;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
@@ -66,16 +70,15 @@ public class ExtensionsAdminController extends BasicController {
 		setTranslator(Util.createPackageTranslator(SystemAdminMainController.class, ureq.getLocale(), getTranslator()));
 		content = createVelocityContainer("extensionsAdmin");
 
-		Map extensionList = new HashMap();
-		for (CoreBeanTypes coreExtensionTypes : CoreBeanTypes.values()) {
-			extensionList.put(coreExtensionTypes.name(), getBeanDefListFor(coreExtensionTypes.getExtensionTypeClass()));
-		}
-		for (OlatBeanTypes olatExtensionTypes : OlatBeanTypes.values()) {
-			extensionList.put(olatExtensionTypes.name(), getBeanDefListFor(olatExtensionTypes.getExtensionTypeClass()));
-		}
+		Map<String,Map<String, GenericBeanDefinition>> extensionList = new HashMap<String,Map<String, GenericBeanDefinition>>();
+		extensionList.put("Extension", getBeanDefListFor(Extension.class));
+		extensionList.put("Sites definitiions", getBeanDefListFor(SiteDefinition.class));
+		extensionList.put("Managers", getBeanDefListFor(BasicManager.class));
+		extensionList.put("Portlets", getBeanDefListFor(Portlet.class));
+		extensionList.put("Notification's handlers", getBeanDefListFor(NotificationsHandler.class));
+		extensionList.put("Course node configuration", getBeanDefListFor(CourseNodeConfiguration.class));
 		content.contextPut("extensionList"   ,extensionList);
-		
-		
+
 		//getOverwrittenBeans();
 
 		mainPanel.setContent(content);
@@ -83,7 +86,9 @@ public class ExtensionsAdminController extends BasicController {
 	}
 
 
-	private Map<String, GenericBeanDefinition> getBeanDefListFor(Class clazz) {
+	private Map<String, GenericBeanDefinition> getBeanDefListFor(Class<?> clazz) {
+		boolean debug = log.isDebug();
+		
 		ApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
 		XmlWebApplicationContext context = (XmlWebApplicationContext)applicationContext;
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
@@ -93,16 +98,18 @@ public class ExtensionsAdminController extends BasicController {
 		String[] beanNames = beanFactory.getBeanNamesForType(clazz);
 		for (int i = 0; i < beanNames.length; i++) {
 			try {
-				log.debug(">>> beanNames=" + beanNames[i]);
+				if(debug) log.debug(">>> beanNames=" + beanNames[i]);
 				GenericBeanDefinition beanDef = (GenericBeanDefinition)beanFactory.getBeanDefinition(beanNames[i]);
 				ConstructorArgumentValues args = beanDef.getConstructorArgumentValues();
 				List<ValueHolder> values = args.getGenericArgumentValues();
-				for (Iterator iterator = values.iterator(); iterator.hasNext();) {
-					ValueHolder valueHolder = (ValueHolder) iterator.next();
-					log.debug("valueHolder=" + valueHolder);
-					log.debug("valueHolder.getType()=" + valueHolder.getType());
-					log.debug("valueHolder.getName()=" + valueHolder.getName());
-					log.debug("valueHolder.getValue()=" + valueHolder.getValue());
+				for (Iterator<ValueHolder> iterator = values.iterator(); iterator.hasNext();) {
+					ValueHolder valueHolder = iterator.next();
+					if(debug) {
+						log.debug("valueHolder=" + valueHolder);
+						log.debug("valueHolder.getType()=" + valueHolder.getType());
+						log.debug("valueHolder.getName()=" + valueHolder.getName());
+						log.debug("valueHolder.getValue()=" + valueHolder.getValue());
+					}
 				}
 				beanDefinitionList.put(beanNames[i], beanDef);
 			} catch (NoSuchBeanDefinitionException e) {

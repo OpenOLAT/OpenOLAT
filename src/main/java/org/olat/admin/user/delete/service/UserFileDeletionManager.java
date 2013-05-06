@@ -62,8 +62,8 @@ public class UserFileDeletionManager extends BasicManager implements UserDataDel
 	 * [spring]
 	 * @param userDeletionManager
 	 */
-	private UserFileDeletionManager(UserDeletionManager userDeletionManager) {
-		userDeletionManager.registerDeletableUserData(this);
+	private UserFileDeletionManager() {
+		//
 	}
 
 	/**

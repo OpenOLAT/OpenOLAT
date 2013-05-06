@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.core.CoreBeanTypes;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -72,10 +71,9 @@ public class PortletFactory {
 	
 	private static void initPortlets() {
 		portlets = new HashMap<String, Portlet>();
-		Map<String, Object> portletMap = CoreSpringFactory.getBeansOfType(CoreBeanTypes.portlet);
-		Collection<Object> portletValues = portletMap.values();
-		for (Object object : portletValues) {
-			Portlet portlet = (Portlet) object;
+		Map<String, Portlet> portletMap = CoreSpringFactory.getBeansOfType(Portlet.class);
+		Collection<Portlet> portletValues = portletMap.values();
+		for (Portlet portlet : portletValues) {
 			log.debug("initPortlets portlet=" + portlet);
 			if (portlet.isEnabled()) {
 				portlets.put(portlet.getName(), portlet);

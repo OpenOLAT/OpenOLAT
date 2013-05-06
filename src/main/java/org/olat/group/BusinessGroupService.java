@@ -52,13 +52,6 @@ import org.olat.resource.accesscontrol.model.ResourceReservation;
 public interface BusinessGroupService {
 
 	/**
-	 * Extension-point method to register objects which have deletable group-data.
-	 * Listener will be called in method deleteBusinessGroup.
-	 * @param listener
-	 */
-	public void registerDeletableGroupDataListener(DeletableGroupData listener);
-
-	/**
 	 * Create a persistent BusinessGroup with the provided
 	 * parameters. The BusinessGroup can have a waiting-list.
 	 * @param creator

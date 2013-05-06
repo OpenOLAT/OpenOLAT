@@ -26,7 +26,6 @@ package org.olat.core.util.coordinate;
 
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -54,8 +53,8 @@ public class DBPersistentLockManager extends BasicManager implements PersistentL
 	 * [used by spring]
 	 * @param userDeletionManager
 	 */
-	private DBPersistentLockManager(UserDeletionManager userDeletionManager) {
-		userDeletionManager.registerDeletableUserData(this);
+	private DBPersistentLockManager() {
+		//
 	}
 
 	/**

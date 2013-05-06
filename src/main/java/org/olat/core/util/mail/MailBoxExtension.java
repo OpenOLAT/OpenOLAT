@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.NewControllerFactory;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -65,8 +64,8 @@ public class MailBoxExtension extends BasicManager implements MailContextResolve
 
 	private MailManager mailManager;
 	
-	public MailBoxExtension(UserDeletionManager userDeletionManager) {
-		userDeletionManager.registerDeletableUserData(this);
+	public MailBoxExtension() {
+		//
 	}
 	
 	public void init() {

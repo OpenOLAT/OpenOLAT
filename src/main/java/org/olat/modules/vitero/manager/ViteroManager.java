@@ -41,7 +41,6 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.axis2.AxisFault;
 import org.apache.commons.httpclient.ConnectTimeoutException;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
@@ -114,8 +113,6 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
-	@Autowired
 	private DB dbInstance;
 	
 	private XStream xStream;
@@ -129,8 +126,6 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		xStream = XStreamHelper.createXStreamInstance();
 		xStream.alias("vBooking", ViteroBooking.class);
 		xStream.omitField(ViteroBooking.class, "property");
-		
-		userDeletionManager.registerDeletableUserData(this);
 	}
 	
 	public void setViteroModule(ViteroModule module) {

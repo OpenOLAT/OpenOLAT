@@ -34,8 +34,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.annotation.PostConstruct;
-
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
 import org.olat.admin.user.delete.service.UserDeletionManager;
@@ -45,6 +43,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -66,7 +65,6 @@ import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupMembership;
@@ -155,18 +153,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private DB dbInstance;
-	
-	private List<DeletableGroupData> deleteListeners = new ArrayList<DeletableGroupData>();
-
-	@PostConstruct
-	public void init() {
-		userDeletionManager.registerDeletableUserData(this);
-	}
-	
-	@Override
-	public void registerDeletableGroupDataListener(DeletableGroupData listener) {
-		this.deleteListeners.add(listener);
-	}
 	
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
@@ -708,17 +694,15 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			// refresh object to avoid stale object exceptions
 			group = loadBusinessGroup(group);
 			// 0) Loop over all deletableGroupData
-			for (DeletableGroupData deleteListener : deleteListeners) {
+			Map<String,DeletableGroupData> deleteListeners = CoreSpringFactory.getBeansOfType(DeletableGroupData.class);
+			for (DeletableGroupData deleteListener : deleteListeners.values()) {
 				if(log.isDebug()) {
 					log.debug("deleteBusinessGroup: call deleteListener=" + deleteListener);
 				}
 				deleteListener.deleteGroupDataFor(group);
 			} 
 			
-			// 0) Delete from project broker 
-			ProjectBrokerManagerFactory.getProjectBrokerManager().deleteGroupDataFor(group);
 			// 1) Delete all group properties
-			
 			CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 			ct.deleteTools(group);// deletes everything concerning properties&collabTools
 			

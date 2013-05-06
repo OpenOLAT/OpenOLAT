@@ -33,7 +33,6 @@ import javax.annotation.PostConstruct;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.axis2.AxisFault;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -45,7 +44,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
@@ -111,22 +109,15 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Autowired
 	private OpenMeetingsModule openMeetingsModule;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
-	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
 	private RepositoryManager repositoryManager;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 
 	private CacheWrapper<String,Long> sessionCache;
 	private OpenMeetingsLanguages languagesMapping;
 	
 	@PostConstruct
 	public void init() {
-		userDeletionManager.registerDeletableUserData(this);
-		businessGroupService.registerDeletableGroupDataListener(this);
-		
 		languagesMapping = new OpenMeetingsLanguages();
 		languagesMapping.read();
 

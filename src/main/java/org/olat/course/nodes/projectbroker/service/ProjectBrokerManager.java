@@ -35,9 +35,8 @@ import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.DeletableGroupData;
 
-public interface ProjectBrokerManager extends DeletableGroupData{
+public interface ProjectBrokerManager {
 	public static final String CUSTOMFIELD_LIST_DELIMITER = "\n;";
 
 	/**
@@ -46,6 +45,8 @@ public interface ProjectBrokerManager extends DeletableGroupData{
 	 * @return
 	 */
 	public List<Project> getProjectListBy(Long projectBrokerId);
+
+	public List<Project> getProjectsWith(BusinessGroup group);
 	
 	
 	/**

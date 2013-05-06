@@ -45,8 +45,6 @@ import javax.persistence.TypedQuery;
 import org.apache.velocity.VelocityContext;
 import org.hibernate.FlushMode;
 import org.olat.ControllerFactory;
-import org.olat.admin.user.delete.service.UserDeletionManager;
-import org.olat.core.CoreBeanTypes;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -112,9 +110,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * [used by spring]
 	 * @param userDeletionManager
 	 */
-	private NotificationsManagerImpl(UserDeletionManager userDeletionManager) {
+	private NotificationsManagerImpl() {
 		// private since singleton
-		userDeletionManager.registerDeletableUserData(this);
 		INSTANCE = this;
 	}
 
@@ -755,10 +752,9 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			synchronized(lockObject) {
 				if (notificationHandlers == null) { // check again in synchronized-block, only one may create list
 					notificationHandlers = new HashMap<String,NotificationsHandler>();
-					Map<String, Object> notificationsHandlerMap = CoreSpringFactory.getBeansOfType(CoreBeanTypes.notificationsHandler);
-					Collection<Object> notificationsHandlerValues = notificationsHandlerMap.values();
-					for (Object object : notificationsHandlerValues) {
-						NotificationsHandler notificationsHandler = (NotificationsHandler) object;
+					Map<String, NotificationsHandler> notificationsHandlerMap = CoreSpringFactory.getBeansOfType(NotificationsHandler.class);
+					Collection<NotificationsHandler> notificationsHandlerValues = notificationsHandlerMap.values();
+					for (NotificationsHandler notificationsHandler : notificationsHandlerValues) {
 						log.debug("initNotificationUpgrades notificationsHandler=" + notificationsHandler);
 						notificationHandlers.put(notificationsHandler.getType(), notificationsHandler);
 					}

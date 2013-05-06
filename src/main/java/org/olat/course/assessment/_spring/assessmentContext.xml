@@ -21,7 +21,6 @@
 <bean id="AssessmentControllerCreatorOlat" class="org.olat.course.assessment.AssessmentControllerCreatorOlat" lazy-init="true"/>
 
 <bean id="org.olat.course.assessment.EfficiencyStatementManager" class="org.olat.course.assessment.EfficiencyStatementManager">
-	<constructor-arg index="0" ref="userDeletionManager" />
 	<property name="dbInstance" ref="database"/>
 	<property name="repositoryManager" ref="repositoryManager"/>
 </bean>

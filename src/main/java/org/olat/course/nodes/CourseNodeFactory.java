@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.OlatBeanTypes;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -93,10 +92,9 @@ public class CourseNodeFactory {
 	private synchronized Map<String,CourseNodeConfiguration> getAllCourseNodeConfigurations() {
 		if(allCourseNodeConfigurations == null) {
 			allCourseNodeConfigurations = new HashMap<String, CourseNodeConfiguration>();
-			Map<String, Object> courseNodeConfigurationMap = CoreSpringFactory.getBeansOfType(OlatBeanTypes.courseNodeConfiguration);
-			Collection<Object> courseNodeConfigurationValues = courseNodeConfigurationMap.values();
-			for (Object object : courseNodeConfigurationValues) {
-				CourseNodeConfiguration courseNodeConfiguration = (CourseNodeConfiguration)object;
+			Map<String, CourseNodeConfiguration> courseNodeConfigurationMap = CoreSpringFactory.getBeansOfType(CourseNodeConfiguration.class);
+			Collection<CourseNodeConfiguration> courseNodeConfigurationValues = courseNodeConfigurationMap.values();
+			for (CourseNodeConfiguration courseNodeConfiguration : courseNodeConfigurationValues) {
 				allCourseNodeConfigurations.put(courseNodeConfiguration.getAlias(), courseNodeConfiguration);
 			}
 		}

@@ -41,9 +41,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
-import org.olat.user.UserDataDeletable;
 
-public interface CalendarManager extends UserDataDeletable {
+public interface CalendarManager {
 
 	public static final String TYPE_USER = "user";
 	public static final String TYPE_GROUP = "group";

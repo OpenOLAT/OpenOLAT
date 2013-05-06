@@ -27,7 +27,6 @@ package org.olat.user;
 
 import java.io.File;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -54,8 +53,7 @@ public class HomePageConfigManagerImpl extends BasicManager implements HomePageC
 	 * [spring]
 	 * @param userDeletionManager
 	 */
-	private HomePageConfigManagerImpl(UserDeletionManager userDeletionManager) {
-		userDeletionManager.registerDeletableUserData(this);
+	private HomePageConfigManagerImpl() {
 		singleton = this;
 	}
 	/**

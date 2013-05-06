@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -41,7 +40,6 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -50,7 +48,6 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.user.UserDataDeletable;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -72,8 +69,7 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 	private boolean isReflexionStepEnabled;
 	private boolean isCopyrightStepEnabled;
 	
-	public PortfolioModule(BusinessGroupService businessGroupService){
-		businessGroupService.registerDeletableGroupDataListener(this);
+	public PortfolioModule(){
 		FrameworkStartupEventChannel.registerForStartupEvent(this);
 	}
 	
@@ -313,16 +309,6 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 	 */
 	public boolean isOfferPublicMapList() {
 		return offerPublicMapList;
-	}
-	
-	/**
-	 * [spring]
-	 * 
-	 * @param userDeletionManager
-	 */
-	@Autowired(required = true)
-	public void setUserDeletionManager(final UserDeletionManager userDeletionManager) {
-		userDeletionManager.registerDeletableUserData(this);
 	}
 
 	// used for user deletion

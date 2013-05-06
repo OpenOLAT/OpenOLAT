@@ -68,8 +68,7 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	/**
 	 * [spring]
 	 */
-	private DisplayPortraitManager(UserDeletionManager userDeletionManager) {
-		userDeletionManager.registerDeletableUserData(this);
+	private DisplayPortraitManager() {
 		singleton = this;
 	}
 	

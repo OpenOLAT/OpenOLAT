@@ -38,7 +38,6 @@ import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -49,7 +48,6 @@ import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
-import org.olat.core.util.resource.OLATResourceableDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -67,8 +65,6 @@ import org.olat.course.nodes.projectbroker.datamodel.ProjectImpl;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.DeletableGroupData;
 import org.olat.properties.Property;
 import org.olat.testutils.codepoints.server.Codepoint;
 
@@ -78,7 +74,7 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * @author guretzki
  */
 
-public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBrokerManager, DeletableGroupData{
+public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBrokerManager {
 
 	private static final String ATTACHEMENT_DIR_NAME = "projectbroker_attach";
 	private CacheWrapper projectCache;
@@ -86,7 +82,6 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	protected ProjectBrokerManagerImpl() {
 		// cache name should not be too long e.g. 'projectbroker' is too long, use 'pb' instead.
 		projectCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(ProjectBrokerManager.class.getSimpleName(), "pb");
-		CoreSpringFactory.getImpl(BusinessGroupService.class).registerDeletableGroupDataListener(this);
 		logDebug("ProjectBrokerManagerImpl created");
 	}
 
@@ -559,27 +554,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		return false;
 	}
 
-	//////////////////////////////////////////
-	// implements interface DeletableGroupData
-	//////////////////////////////////////////
-	public boolean deleteGroupDataFor(BusinessGroup group) {
-		logDebug("deleteAllProjectGroupEntiresFor started.. group=" + group);
-		List<Project> projectList = getProjectsWith(group);
-		if (projectList.isEmpty()) {
-			return false;
-		}
-		for (Project project : projectList) {
-			this.deleteProject(project,false, null, null); // no course-env, no course-node
-			ProjectBroker projectBroker = project.getProjectBroker();
-			OLATResourceableDeletedEvent delEv = new OLATResourceableDeletedEvent(projectBroker);
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(delEv, projectBroker);
-			logDebug("deleteProjectWith: group=" + group  + " , project=" + project);
-		}
-		return true;
-	}
-
 	@SuppressWarnings("unchecked")
-	private List<Project> getProjectsWith(BusinessGroup group) {
+	public List<Project> getProjectsWith(BusinessGroup group) {
 		List<Project> projectList = DBFactory.getInstance().find(
 				"select project from org.olat.course.nodes.projectbroker.datamodel.ProjectImpl as project" +
 				" where project.projectGroup.key = ?", group.getKey(),	StandardBasicTypes.LONG);

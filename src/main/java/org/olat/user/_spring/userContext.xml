@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
 <bean id="userModule" class="org.olat.user.UserModule" 
@@ -267,6 +267,9 @@
         </property>
 </bean>
 
+	<bean id="org.olat.core.commons.creator.UserAvatarDisplayControllerCreator"
+		class="org.olat.user.UserAvatarDisplayControllerCreatorImpl"/>
+
 	<!-- Generic regexp based email  and password checker. 
 	     If you customize this, make sure you adjusted the i18n keys                            
 	 	form.checkUsername
@@ -275,16 +278,8 @@
 	-->
 	<bean id="org.olat.user.UserNameAndPasswordSyntaxChecker" class="org.olat.user.UserNameAndPasswordSyntaxCheckerWithEmail" />
 
-<bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager">
-	<constructor-arg ref="userDeletionManager"></constructor-arg>
-</bean>
-
-<bean class="org.olat.user.DisplayPortraitManager">
-	<constructor-arg ref="userDeletionManager"></constructor-arg>
-</bean>
-
-<bean class="org.olat.user.HomePageConfigManagerImpl">
-	<constructor-arg ref="userDeletionManager"></constructor-arg>
-</bean>
+	<bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager"/>
+	<bean class="org.olat.user.DisplayPortraitManager"/>
+	<bean class="org.olat.user.HomePageConfigManagerImpl"/>
 
 </beans>

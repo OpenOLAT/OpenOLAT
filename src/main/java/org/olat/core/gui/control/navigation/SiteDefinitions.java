@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.olat.core.CoreBeanTypes;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -62,11 +61,10 @@ public class SiteDefinitions {
 	
 	private void initSiteDefinitionList() {
 		siteDefList = new ArrayList<SiteDefinition>();
-		Map sortedMap = new TreeMap(); 
-		Map<String, Object> siteDefMap = CoreSpringFactory.getBeansOfType(CoreBeanTypes.siteDefinition);
-		Collection<Object> siteDefValues = siteDefMap.values();
-		for (Object object : siteDefValues) {
-			SiteDefinition siteDefinition = (SiteDefinition) object;
+		Map<Integer,SiteDefinition> sortedMap = new TreeMap<Integer, SiteDefinition>(); 
+		Map<String, SiteDefinition> siteDefMap = CoreSpringFactory.getBeansOfType(SiteDefinition.class);
+		Collection<SiteDefinition> siteDefValues = siteDefMap.values();
+		for (SiteDefinition siteDefinition : siteDefValues) {
 			if (siteDefinition.isEnabled()) {
 				int key = siteDefinition.getOrder();
 				while (sortedMap.containsKey(key) ) {
@@ -82,8 +80,8 @@ public class SiteDefinitions {
 			}
 		}
 		
-		for (Object key : sortedMap.keySet()) {
-			siteDefList.add((SiteDefinition)sortedMap.get(key));	
+		for (Integer key : sortedMap.keySet()) {
+			siteDefList.add(sortedMap.get(key));	
 		}
 	}
 

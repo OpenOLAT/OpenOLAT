@@ -69,10 +69,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 	"classpath:/org/olat/core/_spring/mainCorecontext.xml",
 
 	"classpath:/serviceconfig/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/richTextCorecontext.xml",
-	"classpath:/serviceconfig/org/olat/core/commons/modules/glossary/_spring/glossaryCorecontext.xml",
-	"classpath:/serviceconfig/org/olat/core/commons/services/commentAndRating/_spring/commentsAndRatingCorecontext.xml",
 	"classpath:/org/olat/core/commons/services/tagging/_spring/taggingContext.xml",
-	"classpath:/serviceconfig/org/olat/core/commons/linkchooser/_spring/linkchooserCorecontext.xml",
 	"classpath:/serviceconfig/org/olat/core/_spring/mainCorecontext.xml",
 	"classpath:/org/olat/core/commons/services/_spring/servicesCorecontext.xml",
 
@@ -81,9 +78,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
   "classpath:/serviceconfig/org/olat/_spring/brasatoconfigpart.xml",
   "classpath:/serviceconfig/org/olat/_spring/olatextconfig.xml",
   "classpath:/serviceconfig/org/olat/core/commons/scheduler/_spring/olatextconfig.xml",
-  "classpath:/serviceconfig/org/olat/commons/coordinate/cluster/_spring/olatdefaultconfig.xml",
   "classpath:/serviceconfig/org/olat/notifications/_spring/olatdefaultconfig.xml",
-  "classpath:/serviceconfig/org/olat/user/_spring/olatdefaultconfig.xml",
 
 	"classpath*:**/_spring/*Context.xml"
 })

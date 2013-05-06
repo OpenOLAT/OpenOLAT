@@ -90,9 +90,8 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * [spring]
 	 * @param userDeletionManager
 	 */
-	private CatalogManager(UserDeletionManager userDeletionManager) {
+	private CatalogManager() {
 		// singleton
-		userDeletionManager.registerDeletableUserData(this);
 		catalogManager = this;
 	}
 

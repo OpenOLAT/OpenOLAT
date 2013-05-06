@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreBeanTypes;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.logging.LogDelegator;
@@ -149,16 +148,15 @@ public class ExtManager extends LogDelegator {
 		navKeyGAExtensionlookup = new HashMap<ExtensionPointKeyPair, GenericActionExtension>();
 		
 		extensions = new ArrayList<Extension>();
-		Map<String, Object> extensionMap = CoreSpringFactory.getBeansOfType(CoreBeanTypes.extension);
-		Collection<Object> extensionValues = extensionMap.values();
+		Map<String, Extension> extensionMap = CoreSpringFactory.getBeansOfType(Extension.class);
+		Collection<Extension> extensionValues = extensionMap.values();
 
 		int count_disabled = 0;
 		int count_duplid = 0;
 		int count_duplnavkey = 0;
 		
 		// first build ordered list
-		for (Object object : extensionValues) {
-			Extension extension = (Extension) object;
+		for (Extension extension : extensionValues) {
 			if (!extension.isEnabled()){
 				count_disabled++;
 				logWarn("* Disabled Extension got loaded :: " + extension + ".  Check yourself that you don't use it or that extension returns null for getExtensionFor() when disabled, resp. overwrite isEnabled().",null);

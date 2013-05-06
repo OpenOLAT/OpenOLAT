@@ -31,10 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Hibernate;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -55,8 +53,7 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	/**
 	 * Constructor for QTIResultManager.
 	 */
-	private QTIResultManager(UserDeletionManager userDeletionManager) {
-		userDeletionManager.registerDeletableUserData(this);
+	private QTIResultManager() {
 		instance = this;
 	}
 

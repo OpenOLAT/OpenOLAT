@@ -42,7 +42,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMemberView;
-import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
 import org.olat.group.manager.ContactDAO;
 import org.olat.group.model.BusinessGroupOwnerViewImpl;
@@ -60,8 +59,6 @@ import org.olat.instantMessaging.model.Presence;
 import org.olat.instantMessaging.model.RosterEntryView;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 
 /**
@@ -71,8 +68,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class InstantMessagingServiceImpl extends BasicManager implements InstantMessagingService,
-	ApplicationListener<ContextRefreshedEvent>, DeletableGroupData {
+public class InstantMessagingServiceImpl extends BasicManager implements InstantMessagingService, DeletableGroupData {
 	
 	@Autowired
 	private RosterDAO rosterDao;
@@ -93,15 +89,8 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private BusinessGroupService businessGroupService;
-	@Autowired
 	private DB dbInstance;
 
-	@Override
-	public void onApplicationEvent(ContextRefreshedEvent event) {
-		//rosterDao.clear();
-		businessGroupService.registerDeletableGroupDataListener(this);
-	}
 
 	@Override
 	public boolean deleteGroupDataFor(BusinessGroup group) {

@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -85,8 +84,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	/**
 	 * Constructor
 	 */
-	private EfficiencyStatementManager(UserDeletionManager userDeletionManager) {
-		userDeletionManager.getInstance().registerDeletableUserData(this);
+	private EfficiencyStatementManager() {
 		INSTANCE = this;
 	}
 	

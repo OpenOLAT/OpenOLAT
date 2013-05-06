@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
@@ -53,8 +52,7 @@ public class NoteManager extends BasicManager implements UserDataDeletable {
 	 * [spring]
 	 * @param userDeletionManager
 	 */
-	private NoteManager(UserDeletionManager userDeletionManager) {
-		userDeletionManager.registerDeletableUserData(this);
+	private NoteManager() {
 		instance = this;
 	}
 

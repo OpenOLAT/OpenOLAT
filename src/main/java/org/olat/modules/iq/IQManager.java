@@ -39,7 +39,6 @@ import java.util.StringTokenizer;
 import org.dom4j.Document;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DB;
@@ -101,8 +100,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	/**
 	 *  [spring]
 	 */
-	private IQManager(UserDeletionManager userDeletionManager) {
-		userDeletionManager.registerDeletableUserData(this);
+	private IQManager() {
 		INSTANCE = this;
 	}
 

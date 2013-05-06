@@ -140,7 +140,6 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		// initialize tiemzone
 		tz = ((CalendarModule)CoreSpringFactory.getBean("calendarModule")).getDefaultTimeZone();
 		calendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "calendar");
-		UserDeletionManager.getInstance().registerDeletableUserData(this);
 	}
 	
 	/**
@@ -818,11 +817,6 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 	
 	public void deleteCourseCalendar(OLATResourceable course) {
 		deleteCalendar(CalendarManager.TYPE_COURSE, course.getResourceableId().toString());
-	}
-
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		deletePersonalCalendar(identity);
-		Tracing.logDebug("Personal calendar deleted for identity=" + identity, this.getClass());
 	}
 
 	/**

@@ -25,7 +25,6 @@
 
 package org.olat.user;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
@@ -42,8 +41,7 @@ public class PersonalFolderManager extends BriefcaseWebDAVProvider implements  U
 	 * [spring only]
 	 * @param userDeletionManager
 	 */
-	private PersonalFolderManager(UserDeletionManager userDeletionManager) {
-		userDeletionManager.registerDeletableUserData(this);
+	private PersonalFolderManager() {
 		instance = this;
 	}
 

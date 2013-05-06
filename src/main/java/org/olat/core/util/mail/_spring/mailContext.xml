@@ -70,7 +70,6 @@
 	
 		<!-- Inbox in users Home -->
 	<bean id="mailBoxExtension" class="org.olat.core.util.mail.MailBoxExtension">
-		<constructor-arg index="0" ref="userDeletionManager" />
 		<property name="mailManager" ref="mailManager" />
 	</bean>
 	
