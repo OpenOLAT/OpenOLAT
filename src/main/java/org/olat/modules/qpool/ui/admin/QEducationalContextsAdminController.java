@@ -58,7 +58,7 @@ import org.olat.core.util.i18n.ui.TranslationToolI18nItemEditCrumbController;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QEducationalContext;
-import org.olat.modules.qpool.ui.metadata.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
  * 
@@ -85,7 +85,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 	public QEducationalContextsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "levels_admin");
 
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
 		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);

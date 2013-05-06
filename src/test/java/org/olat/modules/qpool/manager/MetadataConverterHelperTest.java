@@ -93,11 +93,8 @@ public class MetadataConverterHelperTest extends OlatTestCase {
 	
 	@Test
 	public void serializeQuestionItem() {
-		
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		QuestionItem item = questionDao.createAndPersist(null, "Stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
-		
-		
-		
+		Assert.assertNotNull(item);
 	}
 }

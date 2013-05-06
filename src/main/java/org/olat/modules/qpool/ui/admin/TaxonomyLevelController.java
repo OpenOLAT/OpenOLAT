@@ -34,7 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.TaxonomyLevel;
-import org.olat.modules.qpool.ui.metadata.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
  * 
@@ -53,7 +53,7 @@ public class TaxonomyLevelController extends FormBasicController {
 	
 	public TaxonomyLevelController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
 		initForm(ureq);
 		//make it invisible, no level to show
 		flc.setVisible(false);

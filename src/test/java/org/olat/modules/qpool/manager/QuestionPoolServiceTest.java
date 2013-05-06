@@ -46,6 +46,7 @@ import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QItemType;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,10 +115,12 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		Assert.assertEquals("My private collection", newColl.getName());
 		dbInstance.commit();//check if it's alright
 		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		
 		//retrieve the list of items in the collection
 		int numOfItemsInCollection = qpoolService.countItemsOfCollection(newColl);
 		Assert.assertEquals(2, numOfItemsInCollection);
-		ResultInfos<QuestionItemView> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, null, 0, -1);
+		ResultInfos<QuestionItemView> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, params, 0, -1);
 		Assert.assertNotNull(itemsOfCollection);
 		Assert.assertEquals(2, itemsOfCollection.getObjects().size());
 		List<Long> itemKeys = new ArrayList<Long>();

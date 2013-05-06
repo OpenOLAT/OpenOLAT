@@ -51,7 +51,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QLicense;
-import org.olat.modules.qpool.ui.metadata.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
  * 
@@ -77,7 +77,7 @@ public class QLicensesAdminController extends FormBasicController {
 	public QLicensesAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "licenses_admin");
 
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
 		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);

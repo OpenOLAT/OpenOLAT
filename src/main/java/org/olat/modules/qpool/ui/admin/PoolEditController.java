@@ -33,7 +33,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
-import org.olat.modules.qpool.ui.metadata.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
  * 
@@ -51,7 +51,7 @@ public class PoolEditController extends FormBasicController {
 	
 	public PoolEditController(UserRequest ureq, WindowControl wControl, Pool pool) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
 		
 		this.pool = pool;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);

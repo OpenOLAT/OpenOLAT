@@ -40,7 +40,7 @@ import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
-import org.olat.modules.qpool.ui.metadata.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
  * 
@@ -55,7 +55,7 @@ public class ExportOverviewController extends StepFormBasicController {
 	
 	public ExportOverviewController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 
 		format = (ExportFormatOptions)runContext.get("format");
 	

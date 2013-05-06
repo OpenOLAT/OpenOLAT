@@ -104,6 +104,8 @@ create table if not exists o_qtiresultset (
    assessmentid bigint not null,
    repositoryref_fk bigint not null,
    ispassed bit,
+   issuspended bit default 0,
+   fullyassessed bit default 0,
    score FLOAT(65,30),
    duration bigint,
    primary key (resultset_id)

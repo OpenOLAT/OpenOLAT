@@ -32,7 +32,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QLicense;
-import org.olat.modules.qpool.ui.metadata.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
  * 
@@ -49,7 +49,7 @@ public class QLicenseEditController extends FormBasicController {
 	
 	public QLicenseEditController(UserRequest ureq, WindowControl wControl, QLicense license) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
 		
 		this.license = license;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);

@@ -130,7 +130,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		Assert.assertEquals("This is a multiple-choice example with image content. The rendering is a standard radio button style. No response processing is incorporated.", reloadItem.getDescription());
 		//question type
 		Assert.assertNotNull(reloadItem.getType());
-		Assert.assertEquals(QuestionType.SC.name(), reloadItem.getType().getType());
+		Assert.assertEquals(QuestionType.SC.name().toLowerCase(), reloadItem.getType().getType());
 		
 		//check that the file is storead
 		VFSContainer itemDir = qpoolFileStorage.getContainer(reloadItem.getDirectory());
@@ -167,7 +167,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		//description -> qticomment
 		Assert.assertEquals("This is a standard numerical fill-in-blank (integer) example. No response processing is incorporated.", reloadItem.getDescription());
 		//question type
-		Assert.assertEquals(QuestionType.FIB.name(), reloadItem.getType().getType());
+		Assert.assertEquals(QuestionType.FIB.name().toLowerCase(), reloadItem.getType().getType());
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 			Assert.assertEquals(QTIConstants.QTI_12_FORMAT, item.getFormat());
 			QItemType itemType = item.getType();
 			Assert.assertNotNull(itemType);
-			QuestionType type = QuestionType.valueOf(itemType.getType());
+			QuestionType type = QuestionType.valueOf(itemType.getType().toUpperCase());
 			if(type != null) {
 				switch(type) {
 					case SC: sc++; break;
@@ -289,11 +289,11 @@ public class QTIImportProcessorTest extends OlatTestCase {
 			Assert.assertNotNull(itemNode);
 			
 		//check the attachments
-			if(itemFull.getType().getType().equals(QuestionType.SC.name())) {
+			if(itemFull.getType().getType().equalsIgnoreCase(QuestionType.SC.name())) {
 				Assert.assertTrue(exists(itemFull, "media/image1.gif"));
 				Assert.assertTrue(exists(itemFull, "media/image2.gif"));
 				Assert.assertFalse(exists(itemFull, "media/image3.gif"));
-			} else if(itemFull.getType().getType().equals(QuestionType.MC.name())) {
+			} else if(itemFull.getType().getType().equalsIgnoreCase(QuestionType.MC.name())) {
 				Assert.assertFalse(exists(itemFull, "media/image1.gif"));
 				Assert.assertTrue(exists(itemFull, "media/image2.gif"));
 				Assert.assertTrue(exists(itemFull, "media/image3.gif"));

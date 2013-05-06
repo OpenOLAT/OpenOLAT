@@ -178,14 +178,15 @@ public class PoolDAOTest extends OlatTestCase {
 	
 	@Test
 	public void removeItemFromPool_paranoid() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Poolman-" + UUID.randomUUID().toString());
 		//create a pool
 		String name1 = "NGC-" + UUID.randomUUID().toString();
 		Pool pool1 = poolDao.createPool(null, name1, true);
 		String name2 = "NGC-" + UUID.randomUUID().toString();
 		Pool pool2 = poolDao.createPool(null, name2, true);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item1 = questionItemDao.createAndPersist(null, "Cluster of stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
-		QuestionItem item2 = questionItemDao.createAndPersist(null, "Nebula", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item1 = questionItemDao.createAndPersist(id, "Cluster of stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item2 = questionItemDao.createAndPersist(id, "Nebula", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 
 		poolDao.addItemToPool(item1, Collections.singletonList(pool1), false);
 		poolDao.addItemToPool(item1, Collections.singletonList(pool2), false);
@@ -193,9 +194,9 @@ public class PoolDAOTest extends OlatTestCase {
 		poolDao.addItemToPool(item2, Collections.singletonList(pool2), false);
 		dbInstance.commit();
 		
-		SearchQuestionItemParams params1 = new SearchQuestionItemParams(null, null);
+		SearchQuestionItemParams params1 = new SearchQuestionItemParams(id, null);
 		params1.setPoolKey(pool1.getKey());
-		SearchQuestionItemParams params2 = new SearchQuestionItemParams(null, null);
+		SearchQuestionItemParams params2 = new SearchQuestionItemParams(id, null);
 		params2.setPoolKey(pool2.getKey());
 		
 		//check
@@ -228,15 +229,16 @@ public class PoolDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getItemsOfPool() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Poolman-" + UUID.randomUUID().toString());
 		//create a pool
 		String name = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, name, true);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionItemDao.createAndPersist(id, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
 		dbInstance.commitAndCloseSession();
 
-		SearchQuestionItemParams params = new SearchQuestionItemParams(null, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
 		params.setPoolKey(pool.getKey());
 		
 		//retrieve
@@ -291,16 +293,17 @@ public class PoolDAOTest extends OlatTestCase {
 	
 	@Test
 	public void removeItemFromPools() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Poolman-" + UUID.randomUUID().toString());
 		//create a pool with an item
 		String name = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, name, true);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionItemDao.createAndPersist(id, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
 		dbInstance.commitAndCloseSession();
 		
 
-		SearchQuestionItemParams params = new SearchQuestionItemParams(null, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
 		params.setPoolKey(pool.getKey());
 		
 		//check the pool and remove the items

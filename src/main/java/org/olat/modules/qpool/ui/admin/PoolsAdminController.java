@@ -56,8 +56,8 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.PoolImpl;
+import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
-import org.olat.modules.qpool.ui.metadata.MetadatasController;
 
 /**
  * 
@@ -83,7 +83,7 @@ public class PoolsAdminController extends FormBasicController {
 	
 	public PoolsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "pools_admin");
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
 		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);

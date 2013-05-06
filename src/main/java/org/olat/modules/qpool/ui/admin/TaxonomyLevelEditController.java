@@ -32,7 +32,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.TaxonomyLevel;
-import org.olat.modules.qpool.ui.metadata.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
  * 
@@ -50,7 +50,7 @@ public class TaxonomyLevelEditController extends FormBasicController {
 	
 	public TaxonomyLevelEditController(UserRequest ureq, WindowControl wControl, TaxonomyLevel parentLevel, TaxonomyLevel taxonomyLevel) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
 		
 		this.parentLevel = parentLevel;
 		this.taxonomyLevel = taxonomyLevel;

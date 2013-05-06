@@ -32,7 +32,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QItemType;
-import org.olat.modules.qpool.ui.metadata.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
  * 
@@ -49,7 +49,7 @@ public class QItemTypeEditController extends FormBasicController {
 	
 	public QItemTypeEditController(UserRequest ureq, WindowControl wControl, QItemType itemType) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
 		
 		this.itemType = itemType;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);

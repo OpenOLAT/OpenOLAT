@@ -35,7 +35,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.Util;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.qpool.TaxonomyLevel;
-import org.olat.modules.qpool.ui.metadata.MetadatasController;
+import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
  * 
@@ -57,7 +57,7 @@ public class TaxonomyAdminController extends BasicController {
 	
 	public TaxonomyAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
 		
 		mainVC = createVelocityContainer("admin_study_fields");
 		
