@@ -124,7 +124,7 @@ public class ImportSharedfolderReferencesController extends BasicController {
 				return;
 			}
 			removeAsListenerAndDispose(repoDetailsForm);
-			repoDetailsForm = new DetailsReadOnlyForm(ureq, getWindowControl(), importedRepositoryEntry, SharedFolderFileResource.TYPE_NAME, false);
+			repoDetailsForm = new DetailsReadOnlyForm(ureq, getWindowControl(), importedRepositoryEntry, SharedFolderFileResource.TYPE_NAME);
 			listenTo(repoDetailsForm);
 			importSharedfolderVC.put("repoDetailsForm", repoDetailsForm.getInitialComponent());
 			String VELOCITY_ROOT = Util.getPackageVelocityRoot(this.getClass());

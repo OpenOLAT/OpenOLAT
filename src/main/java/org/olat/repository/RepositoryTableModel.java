@@ -48,6 +48,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.login.LoginModule;
 import org.olat.properties.Property;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
@@ -189,7 +190,12 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 					case RepositoryEntry.ACC_OWNERS: return translator.translate("table.header.access.owner");
 					case RepositoryEntry.ACC_OWNERS_AUTHORS: return translator.translate("table.header.access.author");
 					case RepositoryEntry.ACC_USERS: return translator.translate("table.header.access.user");
-					case RepositoryEntry.ACC_USERS_GUESTS: return translator.translate("table.header.access.guest");
+					case RepositoryEntry.ACC_USERS_GUESTS: {
+						if(!LoginModule.isGuestLoginLinksEnabled()) {
+							return translator.translate("table.header.access.user");
+						}
+						return translator.translate("table.header.access.guest");
+					}
 					default:						
 						// OLAT-6272 in case of broken repo entries with no access code
 						// return error instead of nothing

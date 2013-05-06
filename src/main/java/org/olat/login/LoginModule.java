@@ -32,7 +32,6 @@ import java.util.Map;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.logging.StartupException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.login.auth.AuthenticationProvider;
@@ -57,7 +56,7 @@ public class LoginModule extends AbstractOLATModule {
 	private static int attackPreventionMaxAttempts;
 	private static int attackPreventionTimeout;
 	private static boolean guestLoginLinksEnabled;
-	private static CacheWrapper failedLoginCache;
+	private static CacheWrapper<String,Integer> failedLoginCache;
 	private static String defaultProviderName;
 	private static boolean allowLoginUsingEmail;
 	private CoordinatorManager coordinatorManager;
@@ -74,25 +73,25 @@ public class LoginModule extends AbstractOLATModule {
 	protected void initDefaultProperties() {
 		attackPreventionEnabled = getBooleanConfigParameter(CONF_ATTACK_ENABLED, true);
 		if (attackPreventionEnabled) {
-			Tracing.logInfo("Attack prevention enabled. Max number of attempts: " + attackPreventionMaxAttempts + ", timeout: " + attackPreventionTimeout + " minutes.", LoginModule.class);
+			logInfo("Attack prevention enabled. Max number of attempts: " + attackPreventionMaxAttempts + ", timeout: " + attackPreventionTimeout + " minutes.");
 		} else {
-			Tracing.logInfo("Attack prevention is disabled.", LoginModule.class);
+			logInfo("Attack prevention is disabled.");
 		}
 		attackPreventionMaxAttempts = getIntConfigParameter(CONF_ATTACK_MAXATTEMPTS, 5);
 		attackPreventionTimeout = getIntConfigParameter(CONF_ATTACK_TIMEOUTMIN, 5);
 		
 		guestLoginLinksEnabled = getBooleanConfigParameter(CONF_GUESTLINKS_ENABLED, true);
 		if (guestLoginLinksEnabled) {
-			Tracing.logInfo("Guest login links on login page enabled", LoginModule.class);
+			logInfo("Guest login links on login page enabled");
 		} else {
 			guestLoginLinksEnabled = false;
-			Tracing.logInfo("Guest login links on login page disabled or not properly configured. " , LoginModule.class);
+			logInfo("Guest login links on login page disabled or not properly configured. ");
 		}
 		invitationEnabled = getBooleanConfigParameter(CONF_INVITATION_ENABLED, true);
 		if (invitationEnabled) {
-			Tracing.logInfo("Invitation login enabled", LoginModule.class);
+			logInfo("Invitation login enabled");
 		} else {
-			Tracing.logInfo("Invitation login disabled" , LoginModule.class);
+			logInfo("Invitation login disabled");
 		}
 		
 		
@@ -115,7 +114,7 @@ public class LoginModule extends AbstractOLATModule {
 	 * @param authProviders
 	 */
 	public void setAuthenticaionProviders(Map<String, AuthenticationProvider> authProviders) {
-		this.authenticationProviders = authProviders;
+		LoginModule.authenticationProviders = authProviders;
 	}
 
 	/**
@@ -148,7 +147,7 @@ public class LoginModule extends AbstractOLATModule {
 	 */
 	public static final boolean registerFailedLoginAttempt(String login) {
 		if (!attackPreventionEnabled) return false;
-		Integer numAttempts = (Integer)failedLoginCache.get(login);
+		Integer numAttempts = failedLoginCache.get(login);
 		
 		if (numAttempts == null) { // create new entry
 			numAttempts = new Integer(1);
@@ -169,7 +168,6 @@ public class LoginModule extends AbstractOLATModule {
 	 */
 	public static final void clearFailedLoginAttempts(String login) {
 		if (!attackPreventionEnabled) return;
-		//EHCacheManager.getInstance().removeFromCache(failedLoginCache, login);
 		failedLoginCache.remove(login);
 	}
 	
@@ -180,8 +178,7 @@ public class LoginModule extends AbstractOLATModule {
 	 */
 	public static final boolean isLoginBlocked(String login) {
 		if (!attackPreventionEnabled) return false;
-		//Integer numAttempts = (Integer)EHCacheManager.getInstance().get(failedLoginCache, login);
-		Integer numAttempts = (Integer)failedLoginCache.get(login);
+		Integer numAttempts = failedLoginCache.get(login);
 		
 		if (numAttempts == null) return false;
 		else return (numAttempts.intValue() > attackPreventionMaxAttempts);
@@ -215,30 +212,27 @@ public class LoginModule extends AbstractOLATModule {
 
 	@Override
 	public void init() {
-		
 		boolean defaultProviderFound = false;
 		for (Iterator<AuthenticationProvider> iterator = authenticationProviders.values().iterator(); iterator.hasNext();) {
 			AuthenticationProvider provider = iterator.next();
 			if (provider.isDefault()) {
 				defaultProviderFound = true;
 				defaultProviderName = provider.getName();
-				Tracing.logInfo("Using default authentication provider '" + defaultProviderName + "'.", LoginModule.class);
+				logInfo("Using default authentication provider '" + defaultProviderName + "'.");
 			}
 		}
 		
 		if (!defaultProviderFound) {
 			throw new StartupException("Defined DefaultAuthProvider::" + defaultProviderName + " not existent or not enabled. Please fix.");
 		}
-				
+		
 		// configure timed cache default params: refresh 1 minute, timeout according to configuration
 		failedLoginCache = coordinatorManager.getCoordinator().getCacher().getCache(LoginModule.class.getSimpleName(), "blockafterfailedattempts");
-		
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	@Override

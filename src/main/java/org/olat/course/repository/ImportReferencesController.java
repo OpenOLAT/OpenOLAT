@@ -241,7 +241,7 @@ public class ImportReferencesController extends BasicController {
 					throw new AssertException("Declared import type is not supported.");
 			}
 			removeAsListenerAndDispose(repoDetailsForm);
-			repoDetailsForm = new DetailsReadOnlyForm(ureq, getWindowControl(), importedRepositoryEntry, typeName, false);
+			repoDetailsForm = new DetailsReadOnlyForm(ureq, getWindowControl(), importedRepositoryEntry, typeName);
 			listenTo(repoDetailsForm);
 			main.put("repoDetailsForm", repoDetailsForm.getInitialComponent());
 			main.setPage(VELOCITY_ROOT + "/import_repo_details.html");

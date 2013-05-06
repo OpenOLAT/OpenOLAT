@@ -24,6 +24,9 @@
 */
 package org.olat.course.editor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -37,9 +40,10 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
+import org.olat.login.LoginModule;
 import org.olat.repository.PropPupForm;
 import org.olat.repository.RepositoryEntry;
 
@@ -100,7 +104,7 @@ class PublishStep01 extends BasicStep {
 
 		@Override
 		protected void doDispose() {
-			// TODO Auto-generated method stub			
+			//
 		}
 
 		@Override
@@ -115,33 +119,39 @@ class PublishStep01 extends BasicStep {
 		}
 
 		@Override
-		@SuppressWarnings("unused")
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			PackageTranslator pt = (PackageTranslator) Util.createPackageTranslator(PropPupForm.class, getLocale(), getTranslator());
+			Translator pt = Util.createPackageTranslator(PropPupForm.class, getLocale(), getTranslator());
 			
 			FormItemContainer fic = FormLayoutContainer.createCustomFormLayout("access", pt, this.velocity_root+"/publish_courseaccess.html");
 			formLayout.add(fic);
-			String[] keys = new String[] {
-					"" + RepositoryEntry.ACC_OWNERS,
-					"" + RepositoryEntry.ACC_OWNERS_AUTHORS,
-					"" + RepositoryEntry.ACC_USERS,
-					"" + RepositoryEntry.ACC_USERS_GUESTS,
-					RepositoryEntry.MEMBERS_ONLY//fxdiff VCRP-1,2: access control of resources
-				};
-			String[] values = new String[] {
-				pt.translate("cif.access.owners"),
-				pt.translate("cif.access.owners_authors"),
-				pt.translate("cif.access.users"),
-				pt.translate("cif.access.users_guests"),
-				pt.translate("cif.access.membersonly"),//fxdiff VCRP-1,2: access control of resources
-			};
+
+			List<String> keyList = new ArrayList<String>();
+			keyList.add(Integer.toString(RepositoryEntry.ACC_OWNERS));
+			keyList.add(Integer.toString(RepositoryEntry.ACC_OWNERS_AUTHORS));
+			keyList.add(Integer.toString(RepositoryEntry.ACC_USERS));
+			if(LoginModule.isGuestLoginLinksEnabled()) {
+				keyList.add(Integer.toString(RepositoryEntry.ACC_USERS_GUESTS));
+			}
+			keyList.add(RepositoryEntry.MEMBERS_ONLY);
+			String[] keys = keyList.toArray(new String[keyList.size()]);
+
+			List<String> valueList = new ArrayList<String>();
+			valueList.add(pt.translate("cif.access.owners"));
+			valueList.add(pt.translate("cif.access.owners_authors"));
+			valueList.add(pt.translate("cif.access.users"));
+			if(LoginModule.isGuestLoginLinksEnabled()) {
+				valueList.add(pt.translate("cif.access.users_guests"));
+			}
+			valueList.add(pt.translate("cif.access.membersonly"));
+			String[] values = valueList.toArray(new String[valueList.size()]);
+
 			//use the addDropDownSingleselect method with null as label i18n - key, because there is no label to set. OLAT-3682
 			accessSelbox = uifactory.addDropdownSingleselect("accessBox",null, fic, keys, values, null);
-			accessSelbox.select(selectedAccess, true);
-			
+			if(!LoginModule.isGuestLoginLinksEnabled() && "4".equals(selectedAccess)) {//no guest but BARG
+				accessSelbox.select("3", true);//-> set BAR-
+			} else {
+				accessSelbox.select(selectedAccess, true);
+			}
 		}
-		
 	}
-
-	
 }

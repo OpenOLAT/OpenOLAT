@@ -25,6 +25,9 @@
 
 package org.olat.repository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
@@ -35,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.login.LoginModule;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -75,21 +79,25 @@ public class PropPupForm extends FormBasicController {
 			handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(typeName);
 		}
 		
-		keys = new String[] {
-				"" + RepositoryEntry.ACC_OWNERS,
-				"" + RepositoryEntry.ACC_OWNERS_AUTHORS,
-				"" + RepositoryEntry.ACC_USERS,
-				"" + RepositoryEntry.ACC_USERS_GUESTS,
-				RepositoryEntry.MEMBERS_ONLY//fxdiff VCRP-1,2: access control of resources
-		};
-		
-		values = new String[] {
-				translate("cif.access.owners"),
-				translate("cif.access.owners_authors"),
-				translate("cif.access.users"),
-				translate("cif.access.users_guests"),
-				translate("cif.access.membersonly"),//fxdiff VCRP-1,2: access control of resources
-		};
+		List<String> keyList = new ArrayList<String>();
+		keyList.add(Integer.toString(RepositoryEntry.ACC_OWNERS));
+		keyList.add(Integer.toString(RepositoryEntry.ACC_OWNERS_AUTHORS));
+		keyList.add(Integer.toString(RepositoryEntry.ACC_USERS));
+		if(LoginModule.isGuestLoginLinksEnabled()) {
+			keyList.add(Integer.toString(RepositoryEntry.ACC_USERS_GUESTS));
+		}
+		keyList.add(RepositoryEntry.MEMBERS_ONLY);
+		keys = keyList.toArray(new String[keyList.size()]);
+
+		List<String> valueList = new ArrayList<String>();
+		valueList.add(translate("cif.access.owners"));
+		valueList.add(translate("cif.access.owners_authors"));
+		valueList.add(translate("cif.access.users"));
+		if(LoginModule.isGuestLoginLinksEnabled()) {
+			valueList.add(translate("cif.access.users_guests"));
+		}
+		valueList.add(translate("cif.access.membersonly"));
+		values = valueList.toArray(new String[valueList.size()]);
 	
 		initForm(ureq);
 	}
@@ -148,14 +156,13 @@ public class PropPupForm extends FormBasicController {
 	 * ACC_USERS, ACC_USERS_GUESTS)
 	 */
 	public int getAccess() {
-		//fxdiff VCRP-1,2: access control of resources
 		String key = access.getSelectedKey();
 		if(RepositoryEntry.MEMBERS_ONLY.equals(key)) {
 			return RepositoryEntry.ACC_OWNERS;
 		}
 		return Integer.parseInt(key);
 	}
-	//fxdiff VCRP-1,2: access control of resources
+
 	public boolean isMembersOnly() {
 		return RepositoryEntry.MEMBERS_ONLY.equals(access.getSelectedKey());
 	}
@@ -188,11 +195,12 @@ public class PropPupForm extends FormBasicController {
 		canDownload.setVisible(handler != null && handler.supportsDownload(this.entry));
 			
 		access = uifactory.addRadiosVertical("cif_access", "cif.access", formLayout, keys, values);
-		//fxdiff VCRP-1,2: access control of resources
 		if(entry.isMembersOnly()) {
 			access.select(RepositoryEntry.MEMBERS_ONLY, true);
+		} else if(!LoginModule.isGuestLoginLinksEnabled() && entry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
+			access.select(Integer.toString(RepositoryEntry.ACC_USERS), true);
 		} else {
-			access.select("" + entry.getAccess(), true);
+			access.select(Integer.toString(entry.getAccess()), true);
 		}
 	
 		uifactory.addFormSubmitButton("submit", formLayout);

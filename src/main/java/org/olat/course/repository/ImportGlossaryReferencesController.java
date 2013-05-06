@@ -141,7 +141,7 @@ public class ImportGlossaryReferencesController extends BasicController {
 			}
 			//Translator repoTranslator = new PackageTranslator(Util.getPackageName(RepositoryManager.class), ureq.getLocale());
 			removeAsListenerAndDispose(repoDetailsForm);
-			repoDetailsForm = new DetailsReadOnlyForm(ureq, getWindowControl(), importedRepositoryEntry, GlossaryResource.TYPE_NAME, false);
+			repoDetailsForm = new DetailsReadOnlyForm(ureq, getWindowControl(), importedRepositoryEntry, GlossaryResource.TYPE_NAME);
 			listenTo(repoDetailsForm);
 			importGlossaryVC.put("repoDetailsForm", repoDetailsForm.getInitialComponent());
 			String VELOCITY_ROOT = Util.getPackageVelocityRoot(this.getClass());

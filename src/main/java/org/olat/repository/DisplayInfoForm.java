@@ -26,12 +26,16 @@
 package org.olat.repository;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.login.LoginModule;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -84,26 +88,36 @@ public class DisplayInfoForm extends FormBasicController {
 		canDownload.select("xx", entry.getCanDownload());
 		canDownload.setVisible(handler != null && handler.supportsDownload(this.entry));
 		
-		String[] keys = new String[] {
-					"" + RepositoryEntry.ACC_OWNERS,
-					"" + RepositoryEntry.ACC_OWNERS_AUTHORS,
-					"" + RepositoryEntry.ACC_USERS,
-					"" + RepositoryEntry.ACC_USERS_GUESTS,
-					RepositoryEntry.MEMBERS_ONLY//fxdiff VCRP-1,2: access control of resources
-		};
-		String[] values = new String[] {
-					translate("cif.access.owners"),
-					translate("cif.access.owners_authors"),
-					translate("cif.access.users"),
-					translate("cif.access.users_guests"),
-					translate("cif.access.membersonly")//fxdiff VCRP-1,2: access control of resources
-		};
+		List<String> keyList = new ArrayList<String>();
+		keyList.add(Integer.toString(RepositoryEntry.ACC_OWNERS));
+		keyList.add(Integer.toString(RepositoryEntry.ACC_OWNERS_AUTHORS));
+		keyList.add(Integer.toString(RepositoryEntry.ACC_USERS));
+		if(LoginModule.isGuestLoginLinksEnabled()) {
+			keyList.add(Integer.toString(RepositoryEntry.ACC_USERS_GUESTS));
+		}
+		keyList.add(RepositoryEntry.MEMBERS_ONLY);
+		String[] keys = keyList.toArray(new String[keyList.size()]);
+
+		List<String> valueList = new ArrayList<String>();
+		valueList.add(translate("cif.access.owners"));
+		valueList.add(translate("cif.access.owners_authors"));
+		valueList.add(translate("cif.access.users"));
+		if(LoginModule.isGuestLoginLinksEnabled()) {
+			valueList.add(translate("cif.access.users_guests"));
+		}
+		valueList.add(translate("cif.access.membersonly"));
+		String[] values = valueList.toArray(new String[valueList.size()]);
+		
 		access = uifactory.addRadiosVertical("cif_access", "cif.access", formLayout, keys, values);
 		//fxdiff VCRP-1,2: access control of resources
 		if(entry.isMembersOnly()) {
 			access.select(RepositoryEntry.MEMBERS_ONLY, true);
 		} else if (entry.getAccess() > 0) {
-			access.select(""+entry.getAccess(), true);
+			if(!LoginModule.isGuestLoginLinksEnabled() && entry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
+				access.select(Integer.toString(RepositoryEntry.ACC_USERS), true);
+			} else {
+				access.select(Integer.toString(entry.getAccess()), true);
+			}
 		}
 
 		flc.setEnabled(false);

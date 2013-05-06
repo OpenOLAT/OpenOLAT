@@ -25,7 +25,6 @@
 */
 package org.olat.repository.controllers;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.basesecurity.SecurityGroup;
@@ -410,9 +409,8 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 					if(changedCourseConfig.getGlossarySoftKey()==null) {
             // update references
 					  ReferenceManager refM = ReferenceManager.getInstance();
-						List repoRefs = refM.getReferences(course);
-						for (Iterator iter = repoRefs.iterator(); iter.hasNext();) {
-							ReferenceImpl ref = (ReferenceImpl) iter.next();
+						List<ReferenceImpl> repoRefs = refM.getReferences(course);
+						for (ReferenceImpl ref:repoRefs) {
 							if (ref.getUserdata().equals(GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER)) {
 								refM.delete(ref);
 								continue;
@@ -433,9 +431,9 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 				CourseConfigEvent courseConfigEvent = new CourseConfigEvent(CourseConfigEvent.CALENDAR_TYPE, course.getResourceableId());
 				eventBus.fireEventToListenersOf(courseConfigEvent, course);
 				
-				this.fireEvent(ureq, Event.DONE_EVENT);
+				fireEvent(ureq, Event.DONE_EVENT);
 			} else if(!DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {				
-				this.fireEvent(ureq, Event.DONE_EVENT);
+				fireEvent(ureq, Event.DONE_EVENT);
 			} 
 		} else if (source == this.propPupForm) { // process details form events
 			if (event == Event.CANCELLED_EVENT) {
@@ -443,9 +441,8 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 			} else if (event == Event.DONE_EVENT) {
 				repositoryEntryChanged = true;				
 				// inform user about inconsistent configuration: doesn't make sense to set a repositoryEntry canReference=true if it is only accessible to owners
-				//fxdiff VCRP-1,2: access control of resources
 				if (!repositoryEntry.getCanReference() && propPupForm.canReference() && (propPupForm.getAccess() < RepositoryEntry.ACC_OWNERS_AUTHORS && !propPupForm.isMembersOnly())) {					
-					this.showError("warn.config.reference.no.access");
+					showError("warn.config.reference.no.access");
 				}	
 				//if not a course, update the repositoryEntry NOW!
 				if(!repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
