@@ -166,7 +166,9 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 
 		for(Mark mark:items) {
 			RepositoryEntry repositoryEntry = keyToRepositoryEntryMap.get(mark.getOLATResourceable().getResourceableId());
-			convertedList.add(new Bookmark(mark, repositoryEntry));
+			if(repositoryEntry != null) {
+				convertedList.add(new Bookmark(mark, repositoryEntry));
+			}
 		}
 		return convertedList;
 	}
