@@ -31,6 +31,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -64,7 +65,17 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
 		CustomCellRenderer roleRenderer = new BGRoleCellRenderer(getLocale());
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
+		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer){
+			@Override
+			public int compareTo(final int rowa, final int rowb) {
+				Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+				Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+				if(a instanceof BusinessGroupMembership && b instanceof BusinessGroupMembership) {
+					return MEMBERSHIP_COMPARATOR.compare((BusinessGroupMembership)a, (BusinessGroupMembership)b);
+				}
+				return super.compareTo(rowa, rowb);
+			}
+		});
 		groupListCtr.addColumnDescriptor(new AccessActionColumnDescriptor(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal(), getTranslator()));
 		return 8;
 	}

@@ -53,6 +53,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.model.BGMembership;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.ui.main.BGRoleCellRenderer;
+import org.olat.group.ui.main.BusinessGroupMembershipComparator;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -67,6 +68,7 @@ public class BGUserManagementController extends BasicController {
 	protected static final String COMMAND_REMOVEUSER = "removesubjectofgroup";
 	protected static final String COMMAND_VCARD = "show.vcard";
 	protected static final String COMMAND_SELECTUSER = "select.user";
+	protected static final BusinessGroupMembershipComparator MEMBERSHIP_COMPARATOR = new BusinessGroupMembershipComparator();
 	
 	private VelocityContainer mainVC;
 	private Link addOwner, addParticipant, addToWaitingList;
@@ -94,7 +96,7 @@ public class BGUserManagementController extends BasicController {
 
 		Translator userTrans = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());;
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("resources.noresources"));
+		tableConfig.setTableEmptyMessage(translate("resources.nomembers"));
 		usersCtrl = new TableController(tableConfig, ureq, getWindowControl(), userTrans);
 		listenTo(usersCtrl);
 

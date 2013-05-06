@@ -17,43 +17,47 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.admin.securitygroup.gui;
+package org.olat.group.ui.main;
 
-import java.util.Date;
+import java.util.Comparator;
 
-import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroupMembership;
 
 /**
  * 
- * Initial date: 04.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GroupMemberView {
-	
-	private final Date addedAt;
-	private final Identity identity;
-	private String onlineStatus;
-	
-	public GroupMemberView(Identity identity, Date addedAt, String onlineStatus) {
-		this.identity = identity;
-		this.addedAt = addedAt;
-		this.onlineStatus = onlineStatus;
-	}
-	
-	public Date getAddedAt() {
-		return addedAt;
-	}
+public class BusinessGroupMembershipComparator implements Comparator<BusinessGroupMembership> {
 
-	public Identity getIdentity() {
-		return identity;
-	}
-	
-	public String getOnlineStatus() {
-		return onlineStatus;
-	}
-	
-	public void setOnlineStatus(String onlineStatus) {
-		this.onlineStatus = onlineStatus;
+	@Override
+	public int compare(BusinessGroupMembership m1, BusinessGroupMembership m2) {
+		if(m1.isOwner()) {
+			if(m2.isOwner()) {
+				return 0;
+			}
+			return 1;
+		} else if(m2.isOwner()) {
+			return -1;
+		}
+		
+		if(m1.isParticipant() || m1.isParticipant()) {
+			if(m2.isParticipant() || m2.isParticipant()) {
+				return 0;
+			}
+			return 1;
+		} else if(m2.isParticipant() || m2.isParticipant()) {
+			return -1;
+		}
+		
+		if(m1.isWaiting()) {
+			if(m2.isWaiting()) {
+				return 0;
+			}
+			return 1;
+		} else if(m2.isWaiting()) {
+			return -1;
+		}
+		return 0;
 	}
 }

@@ -219,10 +219,21 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	public Buddy getBuddyById(Long identityKey) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
 		String fullname = userManager.getUserDisplayName(identity);
-		String status = getOnlineStatus(identityKey);
+		
+		String status;
+		boolean online = isOnline(identityKey);
+		if(online) {
+			String prefStatus = prefsDao.getStatus(identityKey);
+			if(prefStatus == null) {
+				status = Presence.available.name();
+			} else {
+				status = prefStatus;
+			}
+		} else {
+			status = Presence.unavailable.name();
+		}
 		return new Buddy(identity.getKey(), identity.getName(), fullname, false, status);
 	}
-	
 
 	@Override
 	public BuddyStats getBuddyStats(Identity me) {
@@ -247,6 +258,11 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		int online = prefsDao.countAvailableBuddies(buddies);
 		stats.setOnlineBuddies(online);
 		return stats;
+	}
+
+	@Override
+	public Map<Long, String> getBuddyStatus(List<Long> identityKeys) {
+		return prefsDao.getBuddyStatus(identityKeys);
 	}
 
 	@Override

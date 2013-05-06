@@ -116,6 +116,8 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	protected static final String TABLE_ACTION_DELETE = "bgTblDelete";
 	protected static final String TABLE_ACTION_SELECT = "bgTblSelect";
 	
+	protected static final BusinessGroupMembershipComparator MEMBERSHIP_COMPARATOR = new BusinessGroupMembershipComparator();
+	
 	protected final VelocityContainer mainVC;
 
 	protected final TableController groupListCtr;
@@ -132,7 +134,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	private BusinessGroupDeleteDialogBoxController deleteDialogBox;
 	private StepsMainRunController businessGroupWizard;
 	protected CloseableModalController cmc;
-	
+
 	private final boolean admin;
 	protected final MarkManager markManager;
 	protected final BaseSecurity securityManager;

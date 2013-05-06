@@ -110,6 +110,7 @@ public class HomePageDisplayController extends BasicController {
 				imLink = LinkFactory.createCustomLink("im.link", "im.link", "im.link", Link.NONTRANSLATED, mainVC, this);
 				imLink.setCustomDisplayText(translate("im.link", new String[] {fName,lName}));
 				Buddy buddy = imService.getBuddyById(homeIdentity.getKey());
+				
 				String css = (imModule.isOnlineStatusEnabled() ? getStatusCss(buddy) : "o_instantmessaging_chat_icon");
 				imLink.setCustomEnabledLinkCSS(css);
 				imLink.setUserObject(buddy);

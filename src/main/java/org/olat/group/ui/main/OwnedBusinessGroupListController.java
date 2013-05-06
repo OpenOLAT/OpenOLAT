@@ -27,6 +27,7 @@ import org.olat.core.gui.components.table.CustomCssCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
@@ -73,7 +74,17 @@ public class OwnedBusinessGroupListController extends AbstractBusinessGroupListC
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.lastUsage.i18n(), Cols.lastUsage.ordinal(), null, getLocale()));
 		CustomCellRenderer roleRenderer = new BGRoleCellRenderer(getLocale());
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
+		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer){
+			@Override
+			public int compareTo(final int rowa, final int rowb) {
+				Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+				Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+				if(a instanceof BusinessGroupMembership && b instanceof BusinessGroupMembership) {
+					return MEMBERSHIP_COMPARATOR.compare((BusinessGroupMembership)a, (BusinessGroupMembership)b);
+				}
+				return super.compareTo(rowa, rowb);
+			}
+		});
 		groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE, translate("table.header.leave"), null));
 		groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor(Cols.allowDelete.i18n(), Cols.allowDelete.ordinal(), TABLE_ACTION_DELETE, translate("table.header.delete"), null));
 		return 12;
