@@ -61,8 +61,8 @@ public class CoachingManagerTest extends OlatTestCase {
 	
 	private static boolean isInitialized = false;
 	
-	private static int NUM_OF_COURSES = 100;
-	private static int NUM_OF_STUDENTS = 1000;
+	private static int NUM_OF_COURSES = 50;
+	private static int NUM_OF_STUDENTS = 500;
 	
 	private static Identity author;
 	private static Identity coach10, coach11, coach12, coach13;

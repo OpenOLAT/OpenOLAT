@@ -69,7 +69,6 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 	"classpath:/org/olat/core/_spring/mainCorecontext.xml",
 
 	"classpath:/serviceconfig/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/richTextCorecontext.xml",
-	"classpath:/org/olat/core/commons/services/tagging/_spring/taggingContext.xml",
 	"classpath:/serviceconfig/org/olat/core/_spring/mainCorecontext.xml",
 	"classpath:/org/olat/core/commons/services/_spring/servicesCorecontext.xml",
 

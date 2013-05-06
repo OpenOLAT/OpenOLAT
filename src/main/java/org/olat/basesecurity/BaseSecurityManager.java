@@ -415,8 +415,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				Constants.ORESOURCE_INSTORESMANAGER);
 		boolean isPoolAdmin = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_POOLS);
 		boolean isInvitee = isIdentityInvited(identity);
-		Roles roles = new Roles(isAdmin, isUserManager, isGroupManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, isPoolAdmin, isInvitee);
-		return roles;
+		return new Roles(isAdmin, isUserManager, isGroupManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, isPoolAdmin, isInvitee);
 	}
 
 	@Override

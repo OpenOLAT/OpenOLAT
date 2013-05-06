@@ -124,14 +124,21 @@ public class SearchServiceImpl implements SearchService {
 	 * [used by spring]
 	 */
 	private SearchServiceImpl(SearchModule searchModule, MainIndexer mainIndexer, JmsSearchProvider searchProvider,
-			Scheduler scheduler, LifeFullIndexer lifeIndexer) {
+			Scheduler scheduler) {
 		log.info("Start SearchServiceImpl constructor...");
 		this.scheduler = scheduler;
 		this.searchModuleConfig = searchModule;
 		this.mainIndexer = mainIndexer;
-		this.lifeIndexer = lifeIndexer;
 		analyzer = new StandardAnalyzer(SearchService.OO_LUCENE_VERSION);
 		searchProvider.setSearchService(this);
+	}
+	
+	/**
+	 * [user by Spring]
+	 * @param lifeIndexer
+	 */
+	public void setLifeIndexer(LifeFullIndexer lifeIndexer) {
+		this.lifeIndexer = lifeIndexer;
 	}
 	
 	/**

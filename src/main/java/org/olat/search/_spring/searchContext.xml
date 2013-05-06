@@ -2,7 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+                        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- SEARCH SERVICE SIDE CONFIGURATION -->
 	<!-- ================================= -->
@@ -17,7 +17,7 @@
 		<constructor-arg index="1" ref="mainIndexer" />
 		<constructor-arg index="2" ref="searchProvider" />
 		<constructor-arg index="3" ref="schedulerFactoryBean"/>
-		<constructor-arg index="4" ref="jmsIndexer"/>
+		<property name="lifeIndexer" ref="jmsIndexer"/>
 		<property name="metadataFields" ref="SearchMetadataFieldsProvider" />
 	</bean>
 

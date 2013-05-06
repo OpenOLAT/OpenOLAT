@@ -35,6 +35,7 @@ import org.olat.core.id.OLATResourceable;
  */
 public class TagImpl extends PersistentObject implements Tag {
 
+	private static final long serialVersionUID = 2272529253221047436L;
 	private String tag;
 	private String resName;
 	private Long resId;

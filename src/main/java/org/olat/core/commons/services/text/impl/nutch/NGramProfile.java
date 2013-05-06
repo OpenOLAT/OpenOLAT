@@ -647,19 +647,9 @@ public class NGramProfile {
     QuickStringBuffer() {
       this(16);
     }
-
-    QuickStringBuffer(char[] value) {
-      this.value = value;
-      count = value.length;
-    }
     
     QuickStringBuffer(int length) {
       value = new char[length];
-    }
-
-    QuickStringBuffer(String str) {
-      this(str.length() + 16);
-      append(str);
     }
 
     public int length() {
@@ -686,21 +676,6 @@ public class NGramProfile {
 
     public char charAt(int index) {
       return value[index];
-    }
-
-    QuickStringBuffer append(String str) {
-      if (str == null) {
-        str = String.valueOf(str);
-      }
-
-      int len = str.length();
-      int newcount = count + len;
-      if (newcount > value.length) {
-        expandCapacity(newcount);
-      }
-      str.getChars(0, len, value, count);
-      count = newcount;
-      return this;
     }
 
     QuickStringBuffer append(char c) {
