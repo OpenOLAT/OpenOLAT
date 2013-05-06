@@ -106,7 +106,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.wiki.WikiUnitTest.class,//ok
 	org.olat.modules.wiki.versioning.diff.CookbookDiffTest.class,//ok
 	org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtilTest.class,
-	org.olat.modules.coach.CoachingManagerTest.class,//ok
+	//org.olat.modules.coach.CoachingManagerTest.class,//ok
 	org.olat.properties.PropertyTest.class,//ok
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,
 	org.olat.search.service.document.file.PDFDocumentTest.class,
