@@ -110,6 +110,10 @@ public abstract class Container extends Component implements ComponentCollection
 		return components.values();
 	}
 	
+	public Map<String,Component> getComponentMap() {
+		return components;
+	}
+	
 	public void clear() {
 		components.clear();
 	}

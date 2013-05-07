@@ -26,6 +26,9 @@
 
 package org.olat.core.gui.render;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GlobalSettings;
@@ -42,16 +45,6 @@ import org.olat.core.util.WebappHelper;
  * @author Felix Jost
  */
 public class Renderer {
-
-	/**
-	 * <code>showDebugInfo</code>
-	 */
-	//public static boolean showDebugInfo = false;
-	/**
-	 * true: use mini style, false: use traditional style
-	 */
-	//public static boolean debugMiniStyle = true;
-	
 
 	private URLBuilder urlBuilder;
 	private Translator translator;
@@ -235,16 +228,20 @@ public class Renderer {
 				Container ccpar = cc.getParent();
 				while (ccpar != null) { // omit content pane
 					// find out name under which cc was registered in its parent - that is the relevant name, not the name of the component itself
-					for (Component chd: ccpar.getComponents()) {
+					Map<String,Component> namedChildren = ccpar.getComponentMap();
+					for (Iterator<String> it_chd = namedChildren.keySet().iterator(); it_chd.hasNext();) {
+						String chdName = it_chd.next();
+						Component chd = ccpar.getComponent(chdName);
 						if (chd == cc) {
 							// found -> append name
-							pathsb.append(chd.getComponentName()).append('!');
+							pathsb.append(chdName).append('!');
 							break;
 						}
 					}
 					cc = ccpar;
 					ccpar = cc.getParent();
 				}			
+				System.out.println(pathsb.toString());
 				cubu.setComponentPath(pathsb.toString());
 			}
 			

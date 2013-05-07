@@ -1066,7 +1066,7 @@ public class Window extends Container {
 			boolean correctFullPath = true;
 			for (int i = res.length -1; i >= 0 && correctFullPath; i--) {
 				String cname = res[i];	
-				Container co = (Container) cur; // we did not record the leaf, so we know it's a container
+				ComponentCollection co = (ComponentCollection) cur; // we did not record the leaf, so we know it's a container
 				Component c = co.getComponent(cname);
 				if (c == null) {
 					correctFullPath = false;
