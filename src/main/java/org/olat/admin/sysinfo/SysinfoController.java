@@ -32,6 +32,8 @@ import java.lang.management.MemoryMXBean;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.olat.admin.sysinfo.manager.SessionStatsManager;
+import org.olat.admin.sysinfo.model.SessionsStats;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.DispatcherAction;
@@ -58,6 +60,7 @@ import org.olat.core.util.WebappHelper;
 public class SysinfoController extends FormBasicController {
 	
 	private final BaseSecurity securityManager;
+	private final SessionStatsManager sessionStatsManager;
 	
 	/**
 	 * @param ureq
@@ -67,6 +70,7 @@ public class SysinfoController extends FormBasicController {
 		super(ureq, wControl, "sysinfo");
 		
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		sessionStatsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
 
 		initForm(ureq);
 	}
@@ -120,6 +124,30 @@ public class SysinfoController extends FormBasicController {
 		uifactory.addStaticTextElement("controllercount", "runtime.controllercount", Integer.toString(controllerCnt), runtimeCont);
 		int numOfDispatchingThreads = DispatcherAction.getConcurrentCounter();
 		uifactory.addStaticTextElement("dispatchingthreads", "runtime.dispatchingthreads", Integer.toString(numOfDispatchingThreads), runtimeCont);
+		
+		//sessions and clicks
+		String sessionAndClicksPage = velocity_root + "/session_clicks.html";
+		FormLayoutContainer sessionAndClicksCont = FormLayoutContainer.createCustomFormLayout("session_clicks", getTranslator(), sessionAndClicksPage);
+		runtimeCont.add(sessionAndClicksCont);
+		sessionAndClicksCont.setLabel("sess.and.clicks", null);
+		
+		//last 5 minutes
+		long activeSessions = sessionStatsManager.getActiveSessions(300);
+		sessionAndClicksCont.contextPut("count5Minutes", String.valueOf(activeSessions));
+		SessionsStats stats = sessionStatsManager.getSessionsStatsLast(300);
+		sessionAndClicksCont.contextPut("click5Minutes", String.valueOf(stats.getAuthenticatedClickCalls()));
+		sessionAndClicksCont.contextPut("poll5Minutes", String.valueOf(stats.getAuthenticatedPollerCalls()));
+		sessionAndClicksCont.contextPut("request5Minutes", String.valueOf(stats.getRequests()));
+		sessionAndClicksCont.contextPut("minutes", String.valueOf(5));
+		
+		//last minute
+		activeSessions = sessionStatsManager.getActiveSessions(60);
+		sessionAndClicksCont.contextPut("count1Minute", String.valueOf(activeSessions));
+		stats = sessionStatsManager.getSessionsStatsLast(60);
+		sessionAndClicksCont.contextPut("click1Minute", String.valueOf(stats.getAuthenticatedClickCalls()));
+		sessionAndClicksCont.contextPut("poll1Minute", String.valueOf(stats.getAuthenticatedPollerCalls()));
+		sessionAndClicksCont.contextPut("request1Minute", String.valueOf(stats.getRequests()));
+		sessionAndClicksCont.contextPut("oneMinute", "1");
 
 		//server informations
 		FormLayoutContainer serverCont = FormLayoutContainer.createDefaultFormLayout("server", getTranslator());

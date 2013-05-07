@@ -1,31 +1,4 @@
 <fieldset><legend>$r.translate("sess.title")</legend>
-<table>
-	<theader>
-		<tr>
-			<th>&nbsp;</th>
-			<th>$r.translate("sess.active")</th>
-			<th>$r.translate("sess.click")</th>
-			<th>$r.translate("sess.poll")</th>
-			<th>$r.translate("sess.request")</th>
-		</tr>
-	</theader>
-	<tbody>
-		<tr>
-			<td>$r.translate("sess.last.1.minute")</td>
-			<td>$count1Minute</td>
-			<td>$click1Minute</td>
-			<td>$poll1Minute</td>
-			<td>$request1Minute</td>
-		</tr>
-		<tr>
-			<td>$r.translate("sess.last.5.minutes")</td>
-			<td>$count5Minutes</td>
-			<td>$click5Minutes</td>
-			<td>$poll5Minutes</td>
-			<td>$request5Minutes</td>
-		</tr>
-	</tbody>
-</table>
+	$r.render("sessiontable")
 </fieldset>
 
-$r.render("sessiontable")

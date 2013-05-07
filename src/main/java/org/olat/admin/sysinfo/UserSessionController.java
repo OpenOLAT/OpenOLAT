@@ -28,8 +28,6 @@ package org.olat.admin.sysinfo;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.admin.sysinfo.manager.SessionStatsManager;
-import org.olat.admin.sysinfo.model.SessionsStats;
 import org.olat.admin.sysinfo.model.UserSessionView;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -69,7 +67,6 @@ public class UserSessionController extends BasicController implements StackedCon
 	private StackedController stackController;
 	private final UserSessionManager sessionManager;
 	private final InstantMessagingService imService;
-	private final SessionStatsManager sessionStatsManager;
 	
 
 	/**
@@ -83,7 +80,6 @@ public class UserSessionController extends BasicController implements StackedCon
 		
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
-		sessionStatsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
 		
 		myContent = createVelocityContainer("sessions");
 		
@@ -122,23 +118,6 @@ public class UserSessionController extends BasicController implements StackedCon
 		}
 		usessTableModel = new UserSessionTableModel(authUserSessionViews, getIdentity().getKey());
 		tableCtr.setTableDataModel(usessTableModel);
-		//lats 5 minutes
-		long activeSessions = sessionStatsManager.getActiveSessions(300);
-		myContent.contextPut("count5Minutes", String.valueOf(activeSessions));
-		SessionsStats stats = sessionStatsManager.getSessionsStatsLast(300);
-		myContent.contextPut("click5Minutes", String.valueOf(stats.getAuthenticatedClickCalls()));
-		myContent.contextPut("poll5Minutes", String.valueOf(stats.getAuthenticatedPollerCalls()));
-		myContent.contextPut("request5Minutes", String.valueOf(stats.getRequests()));
-		myContent.contextPut("minutes", String.valueOf(5));
-		
-		//last minute
-		activeSessions = sessionStatsManager.getActiveSessions(60);
-		myContent.contextPut("count1Minute", String.valueOf(activeSessions));
-		stats = sessionStatsManager.getSessionsStatsLast(60);
-		myContent.contextPut("click1Minute", String.valueOf(stats.getAuthenticatedClickCalls()));
-		myContent.contextPut("poll1Minute", String.valueOf(stats.getAuthenticatedPollerCalls()));
-		myContent.contextPut("request1Minute", String.valueOf(stats.getRequests()));
-		myContent.contextPut("oneMinute", "1");
 	}
 
 	/**
