@@ -35,7 +35,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class DateFunction extends AbstractFunction {
 
 	public static final String name = "date";
-	private Date d;
 
 	/**
 	 * Default constructor to use the current date
@@ -50,7 +49,7 @@ public class DateFunction extends AbstractFunction {
 	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
 	 */
 	public Object call(Object[] inStack) {
-		d = new Date();
+		Date d = new Date();
 		/*
 		 * argument check
 		 */
@@ -77,7 +76,6 @@ public class DateFunction extends AbstractFunction {
 	}
 
 	protected Object defaultValue() {
-		return new Double(d.getTime());
+		return new Double(new Date().getTime());
 	}
-
 }
