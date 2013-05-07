@@ -93,6 +93,7 @@ public class InfinispanCacher implements Cacher {
 			builder.locking().useLockStriping(false);
 			builder.locking().lockAcquisitionTimeout(15000);
 			builder.locking().isolationLevel(IsolationLevel.READ_COMMITTED);
+			builder.jmxStatistics().enable();
 			Configuration configurationOverride = builder.build();
 			cacheManager.defineConfiguration(cacheName, configurationOverride);
 		}
