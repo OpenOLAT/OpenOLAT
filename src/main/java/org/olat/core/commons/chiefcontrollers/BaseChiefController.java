@@ -33,6 +33,7 @@ import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
+import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
@@ -61,6 +62,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.dispatcher.AuthenticatedDispatcher;
 
 /**
  * Description: <br>
@@ -143,7 +145,9 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		mainPanel.setContent(mainvc);
 
 		WindowManager winman = Windows.getWindows(ureq).getWindowManager();
-		wbo = winman.createWindowBackOffice("basechiefwindow", this);
+		String wSettings = (String)ureq.getUserSession().removeEntryFromNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_OPTIONS);
+		WindowSettings settings = WindowSettings.parse(wSettings);
+		wbo = winman.createWindowBackOffice("basechiefwindow", this, settings);
 		Window w = wbo.getWindow();
 
 		// part that builds the css and javascript lib includes (<script

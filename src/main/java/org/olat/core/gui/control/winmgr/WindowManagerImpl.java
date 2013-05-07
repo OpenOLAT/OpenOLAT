@@ -37,6 +37,7 @@ import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
+import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -249,8 +250,8 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.WindowManager#createWindowBackOffice(java.lang.String, org.olat.core.gui.control.ChiefController)
 	 */
-	public WindowBackOffice createWindowBackOffice(String windowName, ChiefController owner) {
-		WindowBackOfficeImpl wbo = new WindowBackOfficeImpl(this, windowName, owner, wboId++);
+	public WindowBackOffice createWindowBackOffice(String windowName, ChiefController owner, WindowSettings settings) {
+		WindowBackOfficeImpl wbo = new WindowBackOfficeImpl(this, windowName, owner, wboId++, settings);
 		wbos.add(wbo);
 		return wbo;
 	}

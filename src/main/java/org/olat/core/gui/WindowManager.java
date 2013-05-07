@@ -80,7 +80,7 @@ public interface WindowManager extends Disposable {
 	 * @param owner
 	 * @return
 	 */
-	public WindowBackOffice createWindowBackOffice(String windowName, ChiefController owner);
+	public WindowBackOffice createWindowBackOffice(String windowName, ChiefController owner, WindowSettings settings);
 	
 	public void setAjaxEnabled(boolean enabled);
 	

@@ -205,7 +205,7 @@ public class RESTDispatcher implements Dispatcher {
 		boolean auth = usess.isAuthenticated();
 		if (auth) {
 			//fxdiff FXOLAT-113: business path in DMZ
-			setBusinessPathInUserSession(usess, businessPath);
+			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter("wsettings"));
 			
 			//fxdiff
 			if (Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER") == null) {
@@ -221,7 +221,7 @@ public class RESTDispatcher implements Dispatcher {
 		} else {
 			//prepare for redirect
 			//fxdiff FXOLAT-113: business path in DMZ
-			setBusinessPathInUserSession(usess, businessPath);
+			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter("wsettings"));
 			String invitationAccess = ureq.getParameter(AuthenticatedDispatcher.INVITATION);
 			if (invitationAccess != null && LoginModule.isInvitationEnabled()) {
 			// try to log in as anonymous
@@ -272,7 +272,7 @@ public class RESTDispatcher implements Dispatcher {
 	 * @param businessPath
 	 */
 	//fxdiff FXOLAT-113: business path in DMZ
-	private void setBusinessPathInUserSession(UserSession usess, String businessPath) {
+	private void setBusinessPathInUserSession(UserSession usess, String businessPath, String options) {
 		if(StringHelper.containsNonWhitespace(businessPath) && usess != null) {
 			if(businessPath.startsWith("[changepw:0]") || "[registration:0]".equals(businessPath) || "[guest:0]".equals(businessPath)
 					|| "[browsercheck:0]".equals(businessPath) || "[accessibility:0]".equals(businessPath) || "[about:0]".equals(businessPath)) {
@@ -280,6 +280,9 @@ public class RESTDispatcher implements Dispatcher {
 			} else {
 				usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH, businessPath);
 			}
+		}
+		if(StringHelper.containsNonWhitespace(options) && usess != null) {
+			usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_OPTIONS, options);
 		}
 	}
 	

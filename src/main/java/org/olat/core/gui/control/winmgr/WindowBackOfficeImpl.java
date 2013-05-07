@@ -35,6 +35,7 @@ import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
+import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.Window;
@@ -77,6 +78,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 
 	private final WindowManagerImpl winmgrImpl;
 	private Window window;
+	private WindowSettings settings;
 	private ChiefController windowOwner;
 	
 	private InterceptHandler linkedInterceptHandler;
@@ -96,13 +98,13 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	/**
 	 * 
 	 */
-	WindowBackOfficeImpl(final WindowManagerImpl winmgrImpl, String windowName, ChiefController windowOwner, int wboId) {
+	WindowBackOfficeImpl(final WindowManagerImpl winmgrImpl, String windowName, ChiefController windowOwner, int wboId, WindowSettings settings) {
 		this.winmgrImpl = winmgrImpl;
 		this.windowOwner = windowOwner;
 		this.iframeName = "oaa"+wboId;
 		window = new Window(windowName, this);
-		
-		
+		this.settings = settings;
+
 		// TODO make simpler, we do only need to support one intercept handler at a time!
 		linkedInterceptHandler = new InterceptHandler() {
 			public InterceptHandlerInstance createInterceptHandlerInstance() {
@@ -155,6 +157,14 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	 */
 	public GlobalSettings getGlobalSettings() {
 		return winmgrImpl.getGlobalSettings();
+	}
+
+	@Override
+	public WindowSettings getWindowSettings() {
+		if(settings == null) {
+			settings = new WindowSettings();
+		}
+		return settings;
 	}
 
 	/**

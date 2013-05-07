@@ -41,6 +41,7 @@ import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GUIMessage;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
+import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
@@ -363,44 +364,48 @@ public class BaseFullWebappController extends BasicController implements Generic
 				navLinkCounter++;
 			}
 		}
+		
+		WindowSettings wSettings = getWindowControl().getWindowBackOffice().getWindowSettings();
 
 		navVc.contextPut("sites", sites);
 		navVc.contextPut("dtabs", dtabs);
 		navVc.contextPut("dtabsLinkNames", dtabsLinkNames);
 		navVc.contextPut("tabhelper", this);
+		navVc.setVisible(!wSettings.isHideNavigation());
 
-		// ----------- header, optional (e.g. for logo, advertising )
+		// header, optional (e.g. for logo, advertising )
 		headerCtr = baseFullWebappControllerParts.createHeaderController(ureq, getWindowControl());
 		if (headerCtr != null) {
 			listenTo(headerCtr); // cleanup on dispose
-			mainVc.put("headerComponent", headerCtr.getInitialComponent());
+			Component headerCmp = headerCtr.getInitialComponent();
+			mainVc.put("headerComponent", headerCmp);
+			headerCmp.setVisible(!wSettings.isHideHeader());
 		}
 
-		// ----------- topnav, optional (e.g. for imprint, logout)
+		// topnav, optional (e.g. for imprint, logout)
 		topnavCtr = baseFullWebappControllerParts.createTopNavController(ureq, getWindowControl());
 		if (topnavCtr != null) {
 			listenTo(topnavCtr); // cleanup on dispose
-			mainVc.put("topnavComponent", topnavCtr.getInitialComponent());
+			Component topNavCmp = topnavCtr.getInitialComponent();
+			mainVc.put("topnavComponent", topNavCmp);
+			topNavCmp.setVisible(!wSettings.isHideHeader());
 		}
-
-		// ----------- nav, optional (e.g. site navigation with tabs)
-		// TODO fg: refactor to its own component // REVIEW:(pb) should then go also
-		// into ..Parts?!
 
 		// panel for modal overlays, placed right after the olat-header-div
 		modalPanel = new Panel("ccmodalpanel");
 		mainVc.put("modalpanel", modalPanel);
 
-		// ----------- main, mandatory (e.g. a LayoutMain3ColsController)
-		// ------------------
+		// main, mandatory (e.g. a LayoutMain3ColsController)
 		main = new Panel("main");
 		mainVc.put("main", main);
 
-		// ----------- footer, optional (e.g. for copyright, powered by)
+		// footer, optional (e.g. for copyright, powered by)
 		footerCtr = baseFullWebappControllerParts.createFooterController(ureq, getWindowControl());
 		if (footerCtr != null) {
 			listenTo(footerCtr); // cleanup on dispose
-			mainVc.put("footerComponent", footerCtr.getInitialComponent());
+			Component footerCmp = footerCtr.getInitialComponent();
+			mainVc.put("footerComponent", footerCmp);
+			footerCmp.setVisible(!wSettings.isHideFooter());
 		}
 		
 		

@@ -26,10 +26,9 @@ import java.util.Set;
 
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
@@ -137,16 +136,22 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 
 		localLayoutConfig = getGuiPrefs(ureq, defaultConfiguration);
 		
-		Link back = LinkFactory.createLink("back", layoutMainVC, this);
-		back.setCustomDisplayText("My course");
-		layoutMainVC.put("back", back);
+		WindowSettings wSettings = wControl.getWindowBackOffice().getWindowSettings();
 
-		// Push colums to velocity
+		// Push columns to velocity
 		panel1 = new Panel("panel1");
+		panel1.setVisible(!wSettings.isHideColumn1());
+		if(col1 != null) {
+			col1.setVisible(!wSettings.isHideColumn1());
+		}
 		layoutMainVC.put("col1", panel1);
 		setCol1(col1);
 
 		panel2 = new Panel("panel2");
+		panel2.setVisible(!wSettings.isHideColumn2());
+		if(col2 != null) {
+			col2.setVisible(!wSettings.isHideColumn2());
+		}
 		layoutMainVC.put("col2", panel2);
 		setCol2(col2);
 
@@ -394,8 +399,12 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		setCol(col1Component, 1);
 		panel1.setContent(col1Component);
 		// init col width
-		layoutMainVC.contextPut("col1CustomCSSStyles", "width: " + localLayoutConfig.getCol1WidthEM() + "em;");
-		layoutMainVC.contextPut("col3CustomCSSStyles1", "margin-left: " + localLayoutConfig.getCol1WidthEM() + "em;");
+		if(col1Component != null && col1Component.isVisible()) {
+			layoutMainVC.contextPut("col1CustomCSSStyles", "width: " + localLayoutConfig.getCol1WidthEM() + "em;");
+			layoutMainVC.contextPut("col3CustomCSSStyles1", "margin-left: " + localLayoutConfig.getCol1WidthEM() + "em;");
+		} else {
+			layoutMainVC.contextPut("col3CustomCSSStyles1", "margin-left:0;");
+		}
 	}
 
 	/**
@@ -404,8 +413,12 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	public void setCol2(Component col2Component) {
 		setCol(col2Component, 2);
 		panel2.setContent(col2Component);
-		layoutMainVC.contextPut("col2CustomCSSStyles", "width: " + localLayoutConfig.getCol2WidthEM() + "em;");
-		layoutMainVC.contextPut("col3CustomCSSStyles2", "margin-right: " + localLayoutConfig.getCol2WidthEM() + "em;");
+		if(col2Component != null && col2Component.isVisible()) {
+			layoutMainVC.contextPut("col2CustomCSSStyles", "width: " + localLayoutConfig.getCol2WidthEM() + "em;");
+			layoutMainVC.contextPut("col3CustomCSSStyles2", "margin-right: " + localLayoutConfig.getCol2WidthEM() + "em;");
+		} else {
+			layoutMainVC.contextPut("col3CustomCSSStyles2", "margin-right: 0;");
+		}
 	}
 
 	/**
