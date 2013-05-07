@@ -240,8 +240,7 @@ public class Renderer {
 					}
 					cc = ccpar;
 					ccpar = cc.getParent();
-				}			
-				System.out.println(pathsb.toString());
+				}
 				cubu.setComponentPath(pathsb.toString());
 			}
 			

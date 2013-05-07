@@ -150,6 +150,8 @@ public class MenuTree extends Component {
 			String compPath = ureq.getParameter("en");
 			TreeNode selTreeNode = TreeHelper.resolveTreeNode(compPath, getTreeModel());
 			selectedNodeId = selTreeNode.getIdent();
+			handleClick(ureq, "", selectedNodeId);
+			return;
 		}
 		
 		//fxdiff VCRP-9: drag and drop in menu tree
