@@ -213,7 +213,18 @@ div.fx_portlets_column_name {
 	padding: 5px 5px 0px 5px;
 	span { color:#4F576A; font-weight:bold; text-deocration:underline; }
 }
-div.fx_portlets_column_portlets { border:1px solid #eee; @include o-border-radius(4px); @include o-gradient-white(); }
+ul.fx_portlets_column_portlets {
+	border:1px solid #eee;
+	padding: 0;
+	margin: 0;
+	@include o-border-radius(4px);
+	@include o-gradient-white();
+	
+	li {
+		margin-left:0;
+	}
+}
+
 
 div.fx_available_portlets { 
 		width:28%; float:right;

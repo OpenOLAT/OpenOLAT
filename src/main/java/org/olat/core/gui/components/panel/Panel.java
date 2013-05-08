@@ -27,23 +27,12 @@
 package org.olat.core.gui.components.panel;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.Container;
-import org.olat.core.gui.control.dragdrop.DragAndDrop;
-import org.olat.core.gui.control.dragdrop.DragAndDropImpl;
-import org.olat.core.gui.control.dragdrop.DragSource;
-import org.olat.core.gui.control.dragdrop.DragSourceImpl;
-import org.olat.core.gui.control.dragdrop.Draggable;
-import org.olat.core.gui.control.dragdrop.DraggableCreator;
-import org.olat.core.gui.control.dragdrop.DropEvent;
-import org.olat.core.gui.control.dragdrop.DropTarget;
-import org.olat.core.gui.control.dragdrop.DropTargetImpl;
-import org.olat.core.gui.control.dragdrop.DroppableImpl;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -55,12 +44,9 @@ import org.olat.core.logging.AssertException;
  */
 public class Panel extends Container {
 	private static final ComponentRenderer RENDERER = new PanelRenderer();
-		
-	
+
 	private Component curContent;
 	protected final List<Component> stackList = new ArrayList<Component>(3);; // allow access to extending classes
-	
-	private DragAndDropImpl dragAndDropImpl; 
 
 	/**
 	 * @param name
@@ -77,28 +63,7 @@ public class Panel extends Container {
 	 * @param ureq
 	 */
 	protected void doDispatchRequest(UserRequest ureq) {
-		if (dragAndDropImpl != null) {
-			//fxdiff
-			// a drop is dispatched to the panel
-			DroppableImpl di = dragAndDropImpl.getDroppableImpl();
-			if (di != null) {
-				String dropid = ureq.getParameter("v");
-				for (Draggable dr:di.getAccepted()) {
-					DragSource ds = dr.find(dropid);
-					if (ds != null) {
-						// found!
-						DropTarget dt = new DropTargetImpl(this);
-						fireEvent(ureq, new DropEvent(ds, dt));
-						return;
-					}
-					
-				}
-			} else {
-				throw new AssertException("no droppable defined, but a request dispatched to the panel: ureq=" + ureq);
-			}
-		} else {
-			throw new AssertException("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
-		}
+		throw new AssertException("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
 	}
 
 	/**
@@ -178,68 +143,4 @@ public class Panel extends Container {
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
-
-	/**
-	 * @return Returns the dragAndDrop (it is created if it was null)
-	 * as usual, all methods here are not threadsafe
-	 */
-	public DragAndDrop getDragAndDrop() {
-		// a space saver, since only a few panels will support drag and drop.
-		if (dragAndDropImpl == null) {
-			dragAndDropImpl = new DragAndDropImpl(new DraggableCreator() {
-				public Draggable createDraggable() {
-					Draggable drag = new Draggable() {
-						@Override
-						public List<String> getContainerIds() {
-							return Panel.this.draggableGetContainerIds();
-						}
-
-						@Override
-						public DragSource find(String dragElementId) {
-							return Panel.this.draggableFind(dragElementId);
-						}};
-					return drag;
-				}});
-		}
-		return dragAndDropImpl;
-	}
-	
-	/**
-	 * to be accessed by the renderer only
-	 */
-	protected DragAndDropImpl doGetDragAndDrop() {
-		return dragAndDropImpl;
-	}
-
-	/**
-	 * @param dragElementId
-	 * @return
-	 */
-	protected DragSource draggableFind(String dragElementId) {
-		//fxdiff
-		Component toRender = getContent();
-		if (toRender != null) {
-			String id = "o_c" + toRender.getDispatchID();
-			if (dragElementId.equals(id)) {
-				return new DragSourceImpl(this);
-			}
-		}
-		String id = "o_c" + getDispatchID();
-		if (dragElementId.equals(id)) {
-			return new DragSourceImpl(this);
-		}
-		// else: the object dropped disappear in the meantime...? TODO:double-check
-		return null;
-	}
-
-	/**
-	 * @return
-	 */
-	protected List<String> draggableGetContainerIds() {
-		//fxdiff
-		return Collections.singletonList("o_c" + getDispatchID());
-	}
-	
-	
-
 }
