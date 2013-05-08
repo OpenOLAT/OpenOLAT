@@ -65,7 +65,6 @@ import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.repository.course.CoursesWebService;
-import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
 import org.olat.test.OlatJerseyTestCase;
@@ -207,20 +206,6 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertNotNull(re.getOlatResource());
 		assertEquals("Very small course", re.getDisplayname());
 		assertEquals(softKey, re.getSoftkey());
-	}
-	
-	@Test
-	public void testGetCourseInfos() throws IOException, URISyntaxException {
-		boolean loggedIN = conn.login("administrator", "openolat");
-		assertTrue(loggedIN);
-
-		URI uri = conn.getContextURI().path("repo").path("courses").path("infos").build();
-
-		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		HttpResponse response = conn.execute(get);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		CourseInfoVOes infos = conn.parse(response, CourseInfoVOes.class);
-		assertNotNull(infos);
 	}
 	
 	protected List<CourseVO> parseCourseArray(InputStream body) {
