@@ -987,8 +987,10 @@ public class BaseFullWebappController extends BasicController implements Generic
 				currentMsgHolder.setContent(null);
 				winnerP.setContent(guimsgPanel);
 				currentMsgHolder = winnerP;
-			} // else same place, nothing to change
-			//
+			} else {
+				currentMsgHolder = guimsgHolder;
+				currentMsgHolder.setContent(guimsgPanel);
+			}
 		} else if(event instanceof LanguageChangedEvent){
 			LanguageChangedEvent lce = (LanguageChangedEvent)event;
 			getTranslator().setLocale(lce.getNewLocale());
