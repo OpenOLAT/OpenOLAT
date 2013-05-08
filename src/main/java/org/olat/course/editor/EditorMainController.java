@@ -260,12 +260,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 			menuTree = new MenuTree("luTree");
 			menuTree.setExpandSelectedNode(false);
-			//fxdiff VCRP-9: drag and drop in menu tree
 			menuTree.setDragEnabled(true);
 			menuTree.setDropEnabled(true);
-			menuTree.setDropSiblingEnabled(true);
-			menuTree.setDragAndDropGroup("courseEditorGroup");
-						
+			menuTree.setDropSiblingEnabled(true);		
 
 			/*
 			 * create editor user course environment for enhanced syntax/semantic
