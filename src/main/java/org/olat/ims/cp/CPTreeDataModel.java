@@ -34,6 +34,7 @@ import java.util.Map;
 
 import org.dom4j.tree.DefaultElement;
 import org.json.JSONException;
+import org.olat.core.gui.components.tree.DnDTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -53,7 +54,7 @@ import org.olat.ims.cp.objects.CPOrganization;
  * 
  * @author Sergio Trentini
  */
-public class CPTreeDataModel extends GenericTreeModel {
+public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 
 	private static final long serialVersionUID = -6843143820668185636L;
 	private static final OLog log = Tracing.createLoggerFor(CPTreeDataModel.class);
@@ -203,6 +204,11 @@ public class CPTreeDataModel extends GenericTreeModel {
 		nodeList.add(child);
 	}
 	
+	@Override
+	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode, boolean sibling) {
+		return true;
+	}
+	
 /*
 	@Override
 	public List<AjaxTreeNode> getChildrenFor(String nodeId) {
@@ -251,6 +257,8 @@ public class CPTreeDataModel extends GenericTreeModel {
 		child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, "o_cp_item");
 		nodeList.add(child);
 	}*/
+
+
 
 	/**
 	 * Returns the path of the given item in the tree.

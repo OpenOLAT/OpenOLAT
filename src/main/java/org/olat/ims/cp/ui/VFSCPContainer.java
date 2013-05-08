@@ -105,7 +105,7 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 		List<VFSItem> items = new ArrayList<VFSItem>();
 		for(TreeNode node:nodes) {
 			try {
-				String nid = (String)node.getIdent();//TODO jquery .get(AjaxTreeNode.CONF_ID);
+				String nid = (String)node.getIdent();
 				String id = model.getIdentifierForNodeID(nid);
 				String filePath = cpMgm.getPageByItemId(cp, id);
 				String title = cpMgm.getItemTitle(cp, id);

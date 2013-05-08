@@ -110,12 +110,9 @@ public class MenuTree extends Component {
 	private boolean dropSiblingEnabled = false;
 	private boolean expandSelectedNode = true;
 	private boolean rootVisible = true;
-	//fxdiff VCRP-9: drag and drop in menu tree
-	private String dragAndDropGroup;
 	private String dndFeedbackUri;
 
 	private boolean dirtyForUser = false;
-
 	
 	/**
 	 * @param name
@@ -418,21 +415,6 @@ public class MenuTree extends Component {
 	public void setDropSiblingEnabled(boolean enabled) {
 		dropSiblingEnabled = enabled;
 	}
-	
-	/**
-	 * @return The group of drag and drop (cannot be null).
-	 */
-	public String getDragAndDropGroup() {
-		return dragAndDropGroup == null ? "dndGroup" : dragAndDropGroup;
-	}
-
-	/**
-	 * @param dragAndDropGroup The group of drag and drop
-	 */
-	public void setDragAndDropGroup(String dragAndDropGroup) {
-		this.dragAndDropGroup = dragAndDropGroup;
-	}
-
 	
 	/**
 	 * Expand the selected node to view its children

@@ -37,7 +37,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeDropEvent;
 import org.olat.core.gui.components.tree.TreeEvent;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -46,6 +48,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.cp.CPManager;
@@ -91,21 +94,14 @@ public class CPTreeController extends BasicController {
 		treeModel = cpMgm.getTreeDataModel(cp);
 		treeCtr = new MenuTree("cp");
 		treeCtr.setTreeModel(treeModel);
+		treeCtr.setDragEnabled(true);
+		treeCtr.setDropEnabled(true);
+		treeCtr.setDropSiblingEnabled(true);
 		treeCtr.addListener(this);
-		
-		//treeCtr.setTreeInlineEditing(true, null, null);
-		// hook into beforeclick event see treeView.html
-		//treeCtr.setBeforeNodeClickCallback("function(event){ return CPEditorBeforeTreeNodeClick(event);}");
-		
-		// do not sort jsTree (structure is given by manifest)
-		//treeCtr.setTreeSorting(false, false, false);
-		//listenTo(treeCtr);
 
 		setLinks();
 		contentVC.put("cptreecontroller.tree", treeCtr);
-		//fxdiff FXOLAT-132: alert unsaved changes in HTML editor
 		contentVC.contextPut("treeId", treeCtr.getDispatchID());
-
 		putInitialPanel(contentVC);
 	}
 
@@ -259,24 +255,6 @@ public class CPTreeController extends BasicController {
 	}
 
 	/**
-	 * Performs the node-move-actions (invokes methods of the manager...)
-	 * 
-	 * @param event
-	 * @return returns true, if move was successfull
-	 */
-	private boolean movePage(TreeEvent event) {
-		//TODO jquery
-		/*
-		CPManager cpMgm = CPManager.getInstance();
-		String movedNodeId = event.getNodeId();
-		cpMgm.moveElement(cp, movedNodeId, event.getNewParentNodeId(), event.getPosition());
-		cpMgm.writeToFile(cp);
-		selectTreeNodeById(movedNodeId);
-		*/
-		return true;
-	}
-
-	/**
 	 * selects a Tree node in the tree with given id (if found). Returns false, if
 	 * node is not found, true otherwise info: todo: implement selection of node
 	 * in js tree
@@ -300,6 +278,11 @@ public class CPTreeController extends BasicController {
 	 */
 	protected boolean selectTreeNodeByCPPage(CPPage page) {
 		currentPage = page;
+		if(currentPage != null) {
+			String identifier = currentPage.getIdentifier();
+			String nodeId = treeModel.getNodeIDForIdentifier(identifier);
+			treeCtr.setSelectedNodeId(nodeId);
+		}
 		return true;
 	}
 
@@ -368,12 +351,12 @@ public class CPTreeController extends BasicController {
 			if(event instanceof TreeEvent) {
 				TreeEvent te = (TreeEvent)event;
 				String selectedNodeID = treeModel.getIdentifierForNodeID(te.getNodeId());
-
 				currentPage = new CPPage(selectedNodeID, cp);
-				//TODO jquery TreeNodeClickedEvent clickedEvent = new TreeNodeClickedEvent(currentPage.getIdentifier());
-				//fireEvent(ureq, clickedEvent);
+				fireEvent(ureq, new TreeEvent(TreeEvent.COMMAND_TREENODE_CLICKED, selectedNodeID));
+			} else if(event instanceof TreeDropEvent) {
+				TreeDropEvent te = (TreeDropEvent)event;
+				doDrop(ureq, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild(), te.isAtTheEnd());
 			}
-
 		}
 	}
 
@@ -401,40 +384,6 @@ public class CPTreeController extends BasicController {
 			cmc = null;
 			removeAsListenerAndDispose(uploadCtr);
 			uploadCtr = null;
-		} else if (source == treeCtr) {
-			// event from extJSTree (TreeController)
-			if (event instanceof TreeEvent) {
-				/** move * */
-				/*
-				if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_DROP)) {
-					TreeEvent moveEvent = (TreeEvent) event;
-					String selectedNodeID = treeModel.getIdentifierForNodeID(moveEvent.getNodeId());
-	
-					currentPage = new CPPage(selectedNodeID, cp);
-	
-					MoveTreeNodeEvent newmoveEvent = new MoveTreeNodeEvent(treeModel.getIdentifierForNodeID(moveEvent.getNodeId()), treeModel
-							.getIdentifierForNodeID(moveEvent.getOldParentNodeId()), treeModel.getIdentifierForNodeID(moveEvent.getNewParentNodeId()),
-							moveEvent.getPosition());
-	
-					boolean success = movePage(newmoveEvent);
-					// setResult is important. If sucess is not true, the ajax tree will
-					// popup a dialog with error-msg
-					moveEvent.setResult(success, "Error", "Error while moving node");
-				} else if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
-					TreeEvent clickedEvent = (TreeEvent) event;
-					String selectedNodeID = treeModel.getIdentifierForNodeID(clickedEvent.getNodeId());
-
-					currentPage = new CPPage(selectedNodeID, cp);
-
-					clickedEvent = new TreeNodeClickedEvent(currentPage.getIdentifier());
-					fireEvent(ureq, clickedEvent);
-				}
-				 } else if (event instanceof TreeNodeModifiedEvent) {
-				//a node (name) has been modified
-				fireEvent(ureq, event);
-				}*/
-			}
-			
 		} else if (source == dialogCtr) {
 			// event from dialog (really-delete-dialog)
 			if (event != Event.CANCELLED_EVENT) {
@@ -462,6 +411,43 @@ public class CPTreeController extends BasicController {
 				}
 			}
 		}
+	}
+	
+	private void doDrop(UserRequest ureq, String droppedNodeId, String targetNodeId, boolean asChild, boolean atTheEnd) {
+		TreeNode droppedNode = treeModel.getNodeById(droppedNodeId);
+		TreeNode targetNode = treeModel.getNodeById(targetNodeId);
+
+		String droppedNodeIdent = treeModel.getIdentifierForNodeID(droppedNodeId);
+		String targetNodeIdent = treeModel.getIdentifierForNodeID(targetNodeId);
+
+		CPManager cpMgm = CPManager.getInstance();
+		if(asChild) {
+			cpMgm.moveElement(cp, droppedNodeIdent, targetNodeIdent, 0);
+			cpMgm.writeToFile(cp);
+		} else {
+			TreeNode parentTargetNode = (TreeNode)targetNode.getParent();
+			int index = TreeHelper.indexOf(targetNode, parentTargetNode);
+			boolean sibling = droppedNode.getParent().equals(parentTargetNode);
+			if(sibling) {
+				int droppedCurentIndex = TreeHelper.indexOf(targetNode, parentTargetNode);
+				if(droppedCurentIndex < index) {
+					index = index -2;
+				}
+			}
+			
+			if(index < 0) {
+				index = 0;
+			}
+			
+			String parentTargetNodeIdent = treeModel.getIdentifierForNodeID(parentTargetNode.getIdent());
+			cpMgm.moveElement(cp, droppedNodeIdent, parentTargetNodeIdent, index + 1);
+			cpMgm.writeToFile(cp);	
+		}
+		selectTreeNodeById(droppedNodeIdent);
+		
+		updateTree();
+		
+		fireEvent(ureq, new TreeEvent(TreeEvent.COMMAND_TREENODE_CLICKED, droppedNodeIdent));
 	}
 
 	/**
