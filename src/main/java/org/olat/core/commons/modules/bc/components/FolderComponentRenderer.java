@@ -94,6 +94,11 @@ public class FolderComponentRenderer implements ComponentRenderer {
 		
 		VFSContainer currentContainer = fc.getCurrentContainer();
 		boolean canWrite = currentContainer.canWrite() == VFSConstants.YES;
+		boolean canCreateFolder = true;
+		if(currentContainer.getLocalSecurityCallback() != null && !currentContainer.getLocalSecurityCallback().canCreateFolder()) {
+			canCreateFolder = false;
+		}
+		
 		boolean canDelete = false;
 		boolean canVersion = FolderConfig.versionsEnabled(fc.getCurrentContainer());
 		boolean canMail = fc.isCanMail();
@@ -167,18 +172,20 @@ public class FolderComponentRenderer implements ComponentRenderer {
 				target.append(translator.translate("ul"));			
 				target.append("</a></li>");
 	
-				// option new folder
-				target.append("<li><a class=\"b_briefcase_newfolder\" href=\"");
-				ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "cf"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-				target.append("\"");
-				if (iframePostEnabled) { // add ajax iframe target
-					StringOutput so = new StringOutput();
-					ubu.appendTarget(so);
-					target.append(so.toString());
+				if(canCreateFolder) {
+					// option new folder
+					target.append("<li><a class=\"b_briefcase_newfolder\" href=\"");
+					ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "cf"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+					target.append("\"");
+					if (iframePostEnabled) { // add ajax iframe target
+						StringOutput so = new StringOutput();
+						ubu.appendTarget(so);
+						target.append(so.toString());
+					}
+					target.append(">");
+					target.append(translator.translate("cf"));
+					target.append("</a></li>");
 				}
-				target.append(">");
-				target.append(translator.translate("cf"));
-				target.append("</a></li>");
 	
 				// option new file
 				target.append("<li><a class=\"b_briefcase_newfile\" href=\"");

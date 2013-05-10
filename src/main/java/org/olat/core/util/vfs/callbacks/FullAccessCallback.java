@@ -39,6 +39,11 @@ public class FullAccessCallback implements VFSSecurityCallback {
 		return true;
 	}
 
+	@Override
+	public boolean canCreateFolder() {
+		return true;
+	}
+
 	public boolean canDelete() {
 		return true;
 	}

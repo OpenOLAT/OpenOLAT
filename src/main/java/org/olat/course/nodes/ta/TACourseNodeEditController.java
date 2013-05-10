@@ -639,6 +639,11 @@ class TaskFolderCallback implements VFSSecurityCallback {
 		return !folderLocked;
 	}
 
+	@Override
+	public boolean canCreateFolder() {
+		return false;
+	}
+
 	/**
 	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canDelete(org.olat.modules.bc.Path)
 	 */

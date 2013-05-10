@@ -63,6 +63,11 @@ public class SharedFolderSecurityCallback implements VFSSecurityCallback {
 		return true;
 	}
 
+	@Override
+	public boolean canCreateFolder() {
+		return true;
+	}
+
 	/**
 	 * @return boolean
 	 */

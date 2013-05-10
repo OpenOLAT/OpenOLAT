@@ -51,6 +51,12 @@ public interface VFSSecurityCallback {
 	 * @return True if writing is allowed.
 	 */
 	public boolean canWrite();
+	
+	/**
+	 * 
+	 * @return True if creating new folders is allowed
+	 */
+	public boolean canCreateFolder();
 
 	/**
 	 * @return True if deleting is allowed.

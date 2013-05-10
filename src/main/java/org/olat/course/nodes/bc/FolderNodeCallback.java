@@ -88,6 +88,11 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 		return ne.isCapabilityAccessible("upload") || isOlatAdmin;
 	}
 
+	@Override
+	public boolean canCreateFolder() {
+		return canWrite();
+	}
+
 	/**
 	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canDelete(org.olat.modules.bc.Path)
 	 */

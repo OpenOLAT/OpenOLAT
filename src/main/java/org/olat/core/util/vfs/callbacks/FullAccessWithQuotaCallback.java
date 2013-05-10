@@ -51,6 +51,11 @@ public class FullAccessWithQuotaCallback implements VFSSecurityCallback {
 		return true;
 	}
 
+	@Override
+	public boolean canCreateFolder() {
+		return true;
+	}
+
 	public boolean canDelete() {
 		return true;
 	}

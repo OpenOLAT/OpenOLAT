@@ -52,6 +52,11 @@ public class ReadOnlyCallback implements VFSSecurityCallback {
 		return false;
 	}
 
+	@Override
+	public boolean canCreateFolder() {
+		return false;
+	}
+
 	/**
 	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canDelete(org.olat.modules.bc.Path)
 	 */

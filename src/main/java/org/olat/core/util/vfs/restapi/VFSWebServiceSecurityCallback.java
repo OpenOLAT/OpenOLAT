@@ -57,6 +57,11 @@ public class VFSWebServiceSecurityCallback implements VFSSecurityCallback {
 	}
 
 	@Override
+	public boolean canCreateFolder() {
+		return canWrite;
+	}
+
+	@Override
 	public boolean canDelete() {
 		return canDelete;
 	}

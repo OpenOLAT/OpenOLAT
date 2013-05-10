@@ -856,6 +856,11 @@ public class CollaborationTools implements Serializable {
 			return write;
 		}
 
+		@Override
+		public boolean canCreateFolder() {
+			return write;
+		}
+
 		public boolean canDelete() {
 			return write;
 		}

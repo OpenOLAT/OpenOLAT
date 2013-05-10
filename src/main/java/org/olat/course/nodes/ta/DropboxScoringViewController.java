@@ -373,6 +373,8 @@ class ReadOnlyAndDeleteCallback implements VFSSecurityCallback {
 	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canWrite(org.olat.modules.bc.Path)
 	 */
 	public boolean canWrite() { return false; }
+	@Override
+	public boolean canCreateFolder() { return false; }
 	/**
 	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canDelete(org.olat.modules.bc.Path)
 	 */
@@ -428,6 +430,8 @@ class ReturnboxFullAccessCallback implements VFSSecurityCallback {
 	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canWrite(org.olat.modules.bc.Path)
 	 */
 	public boolean canWrite() { return true; }
+	@Override
+	public boolean canCreateFolder() { return true; }
 	/**
 	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canDelete(org.olat.modules.bc.Path)
 	 */
