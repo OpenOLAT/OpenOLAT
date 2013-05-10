@@ -46,7 +46,6 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.i18n.I18nModule;
 
 /**
  * Description:<br>
@@ -61,7 +60,7 @@ public class DidYouKnowPortletRunController extends DefaultController {
 	private PackageTranslator trans;
 	private VelocityContainer didYouKnowVC;
 	private int currentLookupPosition = 0;
-	private List lookupList;
+	private List<String> lookupList;
 	private Link nextLink;
 	
 	/**
@@ -74,8 +73,6 @@ public class DidYouKnowPortletRunController extends DefaultController {
 		this.didYouKnowVC = new VelocityContainer("didYouKnowVC", VELOCITY_ROOT + "/didYouKnowPortlet.html", trans, this);
 		nextLink = LinkFactory.createLink("next", didYouKnowVC, this);
 		
-		// get tips boundary initialize a shuffled list of all possible tip numbers
-		int numbTips = -1;
 		// search in property file from this package for all questions
 		Properties propertiesFile = I18nManager.getInstance().getResolvedProperties(trans.getLocale(), trans.getPackageName());
 		
@@ -104,23 +101,22 @@ public class DidYouKnowPortletRunController extends DefaultController {
 				}
 			}
 		}
-		
-		Set keys =  propertiesFile.keySet();
-		for (Iterator iterator = keys.iterator(); iterator.hasNext();) {
-			String key = (String) iterator.next();
+
+		lookupList = new ArrayList<String>();
+		Set<Object> keys =  propertiesFile.keySet();
+		for (Iterator<Object> iterator = keys.iterator(); iterator.hasNext();) {
+			String key = (String)iterator.next();
 			// Questions start with 'Q-'
-			if (key.startsWith("Q-")) numbTips++;
-		}
-		lookupList = new ArrayList();
-		for (int i=0; i<numbTips; i++) {
-			lookupList.add(new Integer(i));
+			if (key.startsWith("Q-")) {
+				String id = key.substring(2, key.length());
+				lookupList.add(id);
+			}
 		}
 		Collections.shuffle(lookupList);
-		
 		// calculate the next tip number		
 		addNextQuestionToVelocity();
 		
-		setInitialComponent(this.didYouKnowVC);
+		setInitialComponent(didYouKnowVC);
 	}
 
 	/**
@@ -132,32 +128,29 @@ public class DidYouKnowPortletRunController extends DefaultController {
 		}
 	}
 
-
 	/**
-	 * Gets the question from the translation files and puhses it to velocity
+	 * Gets the question from the translation files and pushes it to velocity
 	 */
 	private void addNextQuestionToVelocity() {
 		if (lookupList.size() == 0) {
-			this.didYouKnowVC.contextPut("questionId", -1);
+			didYouKnowVC.contextPut("questionId", -1);
 		} else {
 			// reset and start from 0 when reaching the end
-			if (currentLookupPosition == lookupList.size()) {
+			if (currentLookupPosition >= lookupList.size()) {
 				currentLookupPosition = 0;
 			}
 			// get question and answer for given id
-			Integer questionId = (Integer) lookupList.get(currentLookupPosition);
-			this.didYouKnowVC.contextPut("questionId", questionId);
+			String questionId = lookupList.get(currentLookupPosition);
+			didYouKnowVC.contextPut("questionId", questionId);
 			// update position
-			currentLookupPosition ++;
+			currentLookupPosition++;
 		}
 	}
 	
-
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
 		// nothing to dispose
 	}
-
 }
