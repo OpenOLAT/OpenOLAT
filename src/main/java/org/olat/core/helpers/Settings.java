@@ -388,8 +388,8 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 		return (isSecurePortAvailable() ? "https:" : "http:");
 	}
 
-	private static boolean isSecurePortAvailable() {
-		return ! Settings.getServerconfig("server_securePort").equals("0");
+	public static boolean isSecurePortAvailable() {
+		return !Settings.getServerconfig("server_securePort").equals("0");
 	}
 
 

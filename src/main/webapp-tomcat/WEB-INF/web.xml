@@ -74,6 +74,11 @@
 	
 	<!-- 2. Filters -->
 	<filter>
+		<filter-name>OnyxHttpsFilter</filter-name>
+		<filter-class>org.olat.core.servlets.FakeHttpsFilter</filter-class>
+	</filter>
+	
+	<filter>
 		<filter-name>PaypalIPNFilter</filter-name>
 		<filter-class>org.olat.resource.accesscontrol.provider.paypal.PaypalIPNFilter</filter-class>
 	</filter>
@@ -82,6 +87,16 @@
 		<filter-name>RESTApiLoginFilter</filter-name>
 		<filter-class>org.olat.restapi.security.RestApiLoginFilter</filter-class>
 	</filter>
+	
+	<!-- Use FakeHTTPSFilter for requests to WSService and TraineeStatusService (dynamic WSDL for ONYX) -->
+	<filter-mapping>
+		<filter-name>OnyxHttpsFilter</filter-name>
+		<url-pattern>/services/ReturnWSService</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>OnyxHttpsFilter</filter-name>
+		<url-pattern>/services/TraineeStatusService</url-pattern>
+	</filter-mapping>
 	
 	<!-- The mapping to the Login filter REST API -->
 	<filter-mapping>
