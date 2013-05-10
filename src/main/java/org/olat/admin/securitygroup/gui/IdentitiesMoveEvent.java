@@ -40,6 +40,7 @@ import org.olat.core.id.Identity;
  */
 public class IdentitiesMoveEvent extends MultiIdentityChosenEvent {
 
+	private static final long serialVersionUID = -45306223838687501L;
 	private List<Identity> notMovedIdentities;
 	private List<Identity> movedIdentities;
 	

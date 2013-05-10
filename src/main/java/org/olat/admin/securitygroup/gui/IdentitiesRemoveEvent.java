@@ -40,6 +40,7 @@ import org.olat.core.id.Identity;
  */
 public class IdentitiesRemoveEvent extends Event {
 
+	private static final long serialVersionUID = -8986928822106248277L;
 	private List<Identity> removedIdentities;
 	
 	/**

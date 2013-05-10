@@ -191,6 +191,9 @@ public interface BaseSecurity {
 	 */
 	public Identity findIdentityByNumber(String identityNumber);
 	
+
+	public List<Identity> findIdentitiesByNumber(Collection<String> identityNumbers);
+	
 	/**
 	 * Find an identity by its user
 	 * @param user

@@ -48,6 +48,6 @@ public class ImportMember_1a_LoginListStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new ImportMemberByUsernamesController(ureq, wControl, form, runContext, false);
+		return new ImportMemberByUsernamesController(ureq, wControl, form, runContext);
 	}
 }

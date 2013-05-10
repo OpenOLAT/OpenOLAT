@@ -1181,6 +1181,21 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	}
 
 	@Override
+	public List<Identity> findIdentitiesByNumber(Collection<String> identityNumbers) {
+		if(identityNumbers == null || identityNumbers.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
+			.append(" inner join identity.user user ")
+			.append(" where user.properties['").append(UserConstants.INSTITUTIONALUSERIDENTIFIER).append("'] in (:idNumbers) ");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("idNumbers", identityNumbers)
+				.getResultList();
+	}
+
+	@Override
 	public List<Identity> findIdentitiesByName(Collection<String> identityNames) {
 		if (identityNames == null || identityNames.isEmpty()) return Collections.emptyList();
 

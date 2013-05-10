@@ -20,7 +20,6 @@
 package org.olat.course.member.wizard;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.admin.user.UserTableDataModel;
@@ -43,6 +42,8 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -69,13 +70,8 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 
 		oks = null;
 		if(containsRunContextKey("logins")) {
-			DataType type = (DataType)runContext.get("dataType");
-			if(type == null) {
-				type = DataType.username;
-			}
-			
 			String logins = (String)runContext.get("logins");
-			oks = loadModel(logins, type);
+			oks = loadModel(logins);
 		} else if(containsRunContextKey("keys")) {
 			@SuppressWarnings("unchecked")
 			List<String> keys = (List<String>)runContext.get("keys");
@@ -115,12 +111,9 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	}
 	
 	private List<Identity> loadModel(List<String> keys) {
-		List<Identity> existIdents = Collections.emptyList();//securityManager.getIdentitiesOfSecurityGroup(securityGroup);
-
 		List<Identity> oks = new ArrayList<Identity>();
 		List<String> isanonymous = new ArrayList<String>();
 		List<String> notfounds = new ArrayList<String>();
-		List<String> alreadyin = new ArrayList<String>();
 
 		SecurityGroup anonymousSecGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 		for (String identityKey : keys) {
@@ -129,70 +122,71 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 				notfounds.add(identityKey);
 			} else if (securityManager.isIdentityInSecurityGroup(ident, anonymousSecGroup)) {
 				isanonymous.add(identityKey);
-			} else {
-				// check if already in group
-				boolean inGroup = PersistenceHelper.containsPersistable(existIdents, ident);
-				if (inGroup) {
-					// added to warning: already in group
-					alreadyin.add(ident.getName());
-				} else {
-					// ok to add -> preview (but filter duplicate entries)
-					if (!PersistenceHelper.containsPersistable(oks, ident)) {
-						oks.add(ident);
-					}
-				}
+			} else if (!PersistenceHelper.containsPersistable(oks, ident)) {
+				oks.add(ident);
 			}
 		}
 		
 		return oks;
 	}
 	
-	private List<Identity> loadModel(String inp, DataType type) {
-		List<Identity> existIdents = Collections.emptyList();//securityManager.getIdentitiesOfSecurityGroup(securityGroup);
-
+	private List<Identity> loadModel(String inp) {
 		List<Identity> oks = new ArrayList<Identity>();
-		List<String> isanonymous = new ArrayList<String>();
-		List<String> notfounds = new ArrayList<String>();
-		List<String> alreadyin = new ArrayList<String>();
 
 		SecurityGroup anonymousSecGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 
+		List<String> identList = new ArrayList<String>();
 		String[] lines = inp.split("\r?\n");
 		for (int i = 0; i < lines.length; i++) {
 			String username = lines[i].trim();
-			if (!username.equals("")) { // skip empty lines
-				Identity ident;
-				switch(type) {
-					case email: {
-						ident = userManager.findIdentityByEmail(username);
-						break;
-					}
-					case institutionalUserIdentifier: {
-						ident = securityManager.findIdentityByNumber(username);
-						break;
-					}
-					default: {
-						ident = securityManager.findIdentityByName(username);
-					}
-				}
-
-				if (ident == null) { // not found, add to not-found-list
-					notfounds.add(username);
-				} else if (securityManager.isIdentityInSecurityGroup(ident, anonymousSecGroup)) {
-					isanonymous.add(username);
-				} else {
-					// check if already in group
-					boolean inGroup = PersistenceHelper.containsPersistable(existIdents, ident);
-					if (inGroup) {
-						// added to warning: already in group
-						alreadyin.add(ident.getName());
-					} else {
-						// ok to add -> preview (but filter duplicate entries)
-						if (!PersistenceHelper.containsPersistable(oks, ident)) {
-							oks.add(ident);
-						}
-					}
-				}
+			if(username.length() > 0) {
+				identList.add(username);
+			}
+		}
+		
+		//search by names
+		List<Identity> identities = securityManager.findIdentitiesByName(identList);
+		for(Identity identity:identities) {
+			identList.remove(identity.getName());
+			if (!PersistenceHelper.containsPersistable(oks, identity)
+					&& !securityManager.isIdentityInSecurityGroup(identity, anonymousSecGroup)) {
+				oks.add(identity);
+			}
+		}
+		
+		//search by email
+		List<String> emails = new ArrayList<String>();
+		for(String ident:identList) {
+			if(MailHelper.isValidEmailAddress(ident)) {
+				emails.add(ident);
+			}
+		}
+		List<Identity> mailIdentities = userManager.findIdentitiesByEmail(emails);
+		for(Identity identity:mailIdentities) {
+			String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
+			if(email != null) {
+				identList.remove(email);
+			}
+			String institutEmail = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+			if(institutEmail != null) {
+				identList.remove(institutEmail);
+			}
+			if (!PersistenceHelper.containsPersistable(oks, identity)
+					&& !securityManager.isIdentityInSecurityGroup(identity, anonymousSecGroup)) {
+				oks.add(identity);
+			}
+		}
+		
+		//search by institutionalUserIdentifier
+		List<Identity> institutIdentities = securityManager.findIdentitiesByNumber(identList);
+		for(Identity identity:institutIdentities) {
+			String userIdent = identity.getUser().getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
+			if(userIdent != null) {
+				identList.remove(userIdent);
+			}
+			if (!PersistenceHelper.containsPersistable(oks, identity)
+					&& !securityManager.isIdentityInSecurityGroup(identity, anonymousSecGroup)) {
+				oks.add(identity);
 			}
 		}
 		
@@ -213,11 +207,5 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	@Override
 	protected void doDispose() {
 		//
-	}
-	
-	public enum DataType {
-		username,
-		email,
-		institutionalUserIdentifier
 	}
 }

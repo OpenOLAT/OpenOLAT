@@ -20,6 +20,7 @@
 package org.olat.user;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -187,7 +188,8 @@ public class UserManagerImpl extends UserManager {
 	}
 	
 	@Override
-	public List<Identity> findIdentitiesByEmail(List<String> emails) {
+	public List<Identity> findIdentitiesByEmail(List<String> emailList) {
+		List<String> emails = new ArrayList<String>(emailList);
 		for(Iterator<String> emailIt=emails.iterator(); emailIt.hasNext(); ) {
 			String email = emailIt.next();
 			if (!MailHelper.isValidEmailAddress(email)) {
