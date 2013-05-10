@@ -254,17 +254,25 @@ protected void event(UserRequest ureq, Component source, Event event) {
 	}
 	
 	public static Identity authenticate(String username, String pwd, LDAPError ldapError) {
+		final LDAPLoginModule ldapModule = CoreSpringFactory.getImpl(LDAPLoginModule.class);
+		final LDAPLoginManager ldapManager = CoreSpringFactory.getImpl(LDAPLoginManager.class);
+		final BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		
-		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
+		//authenticate against LDAP server
 		Attributes attrs = ldapManager.bindUser(username, pwd, ldapError);
-		
 		if (ldapError.isEmpty() && attrs != null) { 
 			Identity identity = ldapManager.findIdentyByLdapAuthentication(username, ldapError);
-			if (!ldapError.isEmpty()) return null;
+			if (!ldapError.isEmpty()) {
+				return null;
+			}
 			if (identity == null) {
-				// User authenticated but not yet existing - create as new OLAT user
-				ldapManager.createAndPersistUser(attrs);
-				identity = ldapManager.findIdentyByLdapAuthentication(username, ldapError);
+				if(ldapModule.isCreateUsersOnLogin()) {
+					// User authenticated but not yet existing - create as new OLAT user
+					ldapManager.createAndPersistUser(attrs);
+					identity = ldapManager.findIdentyByLdapAuthentication(username, ldapError);
+				} else {
+					ldapError.insert("login.notauthenticated");
+				}
 			} else {
 				// User does already exist - just sync attributes
 				Map<String, String> olatProToSync = ldapManager.prepareUserPropertyForSync(attrs, identity);
@@ -274,7 +282,7 @@ protected void event(UserRequest ureq, Component source, Event event) {
 			}
 			// Add or update an OLAT authentication token for this user if configured in the module
 			if (identity != null && LDAPLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
-				BaseSecurity secMgr = BaseSecurityManager.getInstance();
+				
 				Authentication auth = secMgr.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 				if (auth == null) {
 					// Create new authentication token

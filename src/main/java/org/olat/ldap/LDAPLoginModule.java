@@ -80,6 +80,10 @@ public class LDAPLoginModule implements Initializable {
 	// List of bases where to find users
 	private static List<String> ldapBases;
 	private static Integer connectionTimeout;
+	/**
+	 * Create LDAP users on the fly when authenticated successfully
+	 */
+	private boolean createUsersOnLogin;
 	// Use a valid ldap password and save it as olat password to reduce dependency
 	// to LDAP server availability and allow WeDAV access
 	private static boolean cacheLDAPPwdAsOLATPwdOnLogin;
@@ -581,7 +585,11 @@ public class LDAPLoginModule implements Initializable {
 	public void setCacheLDAPPwdAsOLATPwdOnLogin(boolean cacheLDAPPwdAsOLATPwdOnLogin) {
 		LDAPLoginModule.cacheLDAPPwdAsOLATPwdOnLogin = cacheLDAPPwdAsOLATPwdOnLogin;
 	}
-	
+
+	public void setCreateUsersOnLogin(boolean createUsersOnLogin) {
+		this.createUsersOnLogin = createUsersOnLogin;
+	}
+
 	public void setConvertExistingLocalUsersToLDAPUsers(boolean convertExistingLocalUsersToLDAPUsers) {
 		LDAPLoginModule.convertExistingLocalUsersToLDAPUsers = convertExistingLocalUsersToLDAPUsers;
 	}
@@ -702,6 +710,10 @@ public class LDAPLoginModule implements Initializable {
 
 	public static String getLdapSyncCronSyncExpression() {
 		return ldapSyncCronSyncExpression;
+	}
+	
+	public boolean isCreateUsersOnLogin() {
+		return createUsersOnLogin;
 	}
 
 	public static boolean isCacheLDAPPwdAsOLATPwdOnLogin() {
