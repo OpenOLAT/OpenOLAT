@@ -246,7 +246,7 @@ public class MetaInfoFormController extends FormBasicController {
 
 		if (!isSubform) {
 
-			if(!meta.isDirectory()) {
+			if(meta != null && !meta.isDirectory()) {
 				Long lockedById = meta.getLockedBy();
 				//locked
 				String lockedTitle = getTranslator().translate("mf.locked");
@@ -277,21 +277,24 @@ public class MetaInfoFormController extends FormBasicController {
 			}
 			
 			// username
-			uifactory.addStaticTextElement("mf.author", meta.getHTMLFormattedAuthor(), formLayout);
+			String author = meta == null ? "" : meta.getHTMLFormattedAuthor();
+			uifactory.addStaticTextElement("mf.author", author, formLayout);
 
 			// filesize
 			uifactory.addStaticTextElement("mf.size", sizeText, formLayout);
 
 			// last modified date
-			uifactory.addStaticTextElement("mf.lastModified", StringHelper.formatLocaleDate(meta.getLastModified(), getLocale()), formLayout);
+			String lastModified = meta == null ? "" : StringHelper.formatLocaleDate(meta.getLastModified(), getLocale());
+			uifactory.addStaticTextElement("mf.lastModified", lastModified, formLayout);
 
 			// file type
 			uifactory.addStaticTextElement("mf.type", typeText, formLayout);
 
-			uifactory.addStaticTextElement("mf.downloads", String.valueOf(meta.getDownloadCount()), formLayout);
+			String downloads = meta == null ? "" : String.valueOf(meta.getDownloadCount());
+			uifactory.addStaticTextElement("mf.downloads", downloads, formLayout);
 		}
 
-		if (!isSubform && meta.isDirectory()) {
+		if (!isSubform && meta != null && meta.isDirectory()) {
 			// Don't show any meta data except title and comment if the item is
 			// a directory.
 			// Hide the metadata.
@@ -303,7 +306,9 @@ public class MetaInfoFormController extends FormBasicController {
 		if (!isSubform) {
 			final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 			formLayout.add(buttonLayout);
-			uifactory.addFormSubmitButton("submit", buttonLayout);
+			if(meta != null) {
+				uifactory.addFormSubmitButton("submit", buttonLayout);
+			}
 			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		}
 	}

@@ -36,7 +36,7 @@ public class MetaInfoFactory {
 	 * @param metaInfo
 	 */
 	private MetaInfoFactory(MetaInfo metaInfo) {
-		this.metaInfo = metaInfo;
+		MetaInfoFactory.metaInfo = metaInfo;
 	}
 
 	public static MetaInfo createMetaInfoFor(OlatRelPathImpl path) {
