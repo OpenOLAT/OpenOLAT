@@ -31,14 +31,14 @@
 	</licenses>
 	<distributionManagement>
 		<repository>
-			<id>releases</id>
+			<id>nexus.openolat</id>
 			<name>OpenOLAT Internal Nexus Release Repository</name>
-			<url>http://nexus.openolat.org/nexus/content/repositories/releases</url>
+			<url>http://nexus.openolat.org/nexus/content/repositories/openolat</url>
 		</repository>
 		<snapshotRepository>
-			<id>snapshots</id>
+			<id>nexus.openolat</id>
 			<name>OpenOLAT Internal Nexus Snapshot Repository</name>
-			<url>http://nexus.openolat.org/nexus/content/repositories/snapshots</url>
+			<url>http://nexus.openolat.org/nexus/content/repositories/openolat-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 	<issueManagement>
@@ -1158,7 +1158,23 @@
       </testResource>
     </testResources>
 		<plugins>
-
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>1.2</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>hgchangeset</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<doCheck>true</doCheck>
+					<doUpdate>true</doUpdate>
+				</configuration>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -1182,6 +1198,16 @@
 					<configuration>
 						<attachClasses>true</attachClasses>
 						<directory>src/main/java</directory>
+						<archive>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<Build-Change-Set>${changeSet}</Build-Change-Set>
+								<Build-Change-Set-Date>${changeSetDate}</Build-Change-Set-Date>
+								<Implementation-Build>${buildNumber}</Implementation-Build>
+							</manifestEntries>
+						</archive>
 					</configuration>
 				</plugin>
 

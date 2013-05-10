@@ -30,9 +30,11 @@ package org.olat.core.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
@@ -75,6 +77,10 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	private static String servletContextPath;
 	private String applicationName;
 	private String version;
+	private static String buildJdk;
+	private static String changeSet;
+	private static String changeSetDate;
+	private static String implementationVersion;
 	
 
 	/**
@@ -98,6 +104,20 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 			throw new StartupException("Error getting canonical context root.", e);
 		}
 		servletContextPath = servletContext.getContextPath();
+		
+		InputStream meta = servletContext.getResourceAsStream("META-INF/MANIFEST.MF");
+		if(meta != null) {
+			try {
+				Properties props = new Properties();
+				props.load(meta);
+				changeSet = props.getProperty("Build-Change-Set");
+				changeSetDate = props.getProperty("Build-Change-Set-Date");
+				implementationVersion = props.getProperty("Implementation-Version");
+				buildJdk = props.getProperty("Build-Jdk");
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
 
 		File fil = new File(fullPathToSrc);
 		if(fil.exists()){
@@ -416,8 +436,28 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		log.info("");
 	}
 	
+	public String getVersion() {
+		return version;
+	}
+	
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	public static String getBuildJdk() {
+		return buildJdk;
+	}
+
+	public static String getChangeSet() {
+		return changeSet;
+	}
+
+	public static String getChangeSetDate() {
+		return changeSetDate;
+	}
+
+	public static String getImplementationVersion() {
+		return implementationVersion;
 	}
 
 	@Override
