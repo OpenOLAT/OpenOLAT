@@ -30,6 +30,7 @@ import java.util.List;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
+import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.guistack.GuiStack;
@@ -67,6 +68,12 @@ public interface WindowBackOffice extends Disposable{
 	 * @return
 	 */
 	GlobalSettings getGlobalSettings();
+	
+	/**
+	 * Some settings for the current window
+	 * @return
+	 */
+	WindowSettings getWindowSettings();
 
 	/**
 	 * @param ureq

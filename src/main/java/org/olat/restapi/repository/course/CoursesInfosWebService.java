@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -82,14 +83,14 @@ import org.olat.restapi.support.vo.FolderVO;
 @Path("repo/courses/infos")
 public class CoursesInfosWebService {
 	
-	private OLog log = Tracing.createLoggerFor(CoursesInfosWebService.class);
+	private static final OLog log = Tracing.createLoggerFor(CoursesInfosWebService.class);
 	
 	/**
 	 * Get courses informations viewable by the authenticated user
 	 * @response.representation.200.qname {http://www.example.com}courseVO
 	 * @response.representation.200.mediaType application/xml, application/json, application/json;pagingspec=1.0
 	 * @response.representation.200.doc List of visible courses
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVOes}
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEINFOVOes}
 	 * @param start
 	 * @param limit
 	 * @param httpRequest The HTTP request
@@ -111,35 +112,10 @@ public class CoursesInfosWebService {
 			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params, true);
 			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
 			List<CourseInfoVO> infos = new ArrayList<CourseInfoVO>();
-			
-			
+
 			final Set<Long> forumNotified = new HashSet<Long>();
 			final Map<Long,Set<String>> courseNotified = new HashMap<Long,Set<String>>();
-			NotificationsManager man = NotificationsManager.getInstance();
-			{//collect subscriptions
-				List<String> notiTypes = new ArrayList<String>();
-				notiTypes.add("FolderModule");
-				notiTypes.add("Forum");
-				List<Subscriber> subs = man.getSubscribers(identity, notiTypes);
-				for(Subscriber sub:subs) {
-					String publisherType = sub.getPublisher().getType();
-					String resName = sub.getPublisher().getResName();
-					
-					if("CourseModule".equals(resName)) {
-						if("FolderModule".equals(publisherType)) {
-							Long courseKey = sub.getPublisher().getResId();
-							if(!courseNotified.containsKey(courseKey)) {
-								courseNotified.put(courseKey,new HashSet<String>());
-							}
-							courseNotified.get(courseKey).add(sub.getPublisher().getSubidentifier());
-						} else if ("Forum".equals(publisherType)) {
-							Long forumKey = Long.parseLong(sub.getPublisher().getData());
-							forumNotified.add(forumKey);
-						}
-					}
-				}
-			}
-
+			collectSubscriptions(identity, forumNotified, courseNotified);
 
 			for(RepositoryEntry entry:repoEntries) {
 				CourseInfoVO info = collect(identity, roles, entry, forumNotified, courseNotified);
@@ -155,6 +131,67 @@ public class CoursesInfosWebService {
 			return Response.ok(voes).build();
 		} else {
 			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+	}
+	
+	/**
+	 * Get course informations viewable by the authenticated user
+	 * @response.representation.200.qname {http://www.example.com}courseVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc Course informations
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEINFOVO}
+	 * @param courseId The course id
+	 * @param httpRequest The HTTP request
+	 * @param request The REST request
+	 * @return
+	 */
+	@GET
+	@Path("{courseId}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getCourseInfo(@PathParam("courseId") Long courseId,
+			@Context HttpServletRequest httpRequest, @Context Request request) {
+		
+		Roles roles = getRoles(httpRequest);
+		Identity identity = getIdentity(httpRequest);
+		if(identity != null && roles != null) {
+			Set<Long> forumNotified = new HashSet<Long>();
+			Map<Long,Set<String>> courseNotified = new HashMap<Long,Set<String>>();
+			collectSubscriptions(identity, forumNotified, courseNotified);
+			
+			ICourse course = CourseFactory.loadCourse(courseId);
+			RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+			
+			CourseInfoVO info = collect(identity, roles, entry, forumNotified, courseNotified);
+			return Response.ok(info).build();
+		} else {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+	}
+	
+	private void collectSubscriptions(Identity identity, Set<Long> forumNotified, Map<Long,Set<String>> courseNotified) {
+		NotificationsManager man = NotificationsManager.getInstance();
+		{//collect subscriptions
+			List<String> notiTypes = new ArrayList<String>();
+			notiTypes.add("FolderModule");
+			notiTypes.add("Forum");
+			List<Subscriber> subs = man.getSubscribers(identity, notiTypes);
+			for(Subscriber sub:subs) {
+				String publisherType = sub.getPublisher().getType();
+				String resName = sub.getPublisher().getResName();
+				
+				if("CourseModule".equals(resName)) {
+					if("FolderModule".equals(publisherType)) {
+						Long courseKey = sub.getPublisher().getResId();
+						if(!courseNotified.containsKey(courseKey)) {
+							courseNotified.put(courseKey,new HashSet<String>());
+						}
+						courseNotified.get(courseKey).add(sub.getPublisher().getSubidentifier());
+					} else if ("Forum".equals(publisherType)) {
+						Long forumKey = Long.parseLong(sub.getPublisher().getData());
+						forumNotified.add(forumKey);
+					}
+				}
+			}
 		}
 	}
 	
@@ -198,5 +235,4 @@ public class CoursesInfosWebService {
 		}
 		return info;
 	}
-
 }

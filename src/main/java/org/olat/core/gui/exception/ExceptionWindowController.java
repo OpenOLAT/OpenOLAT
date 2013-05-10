@@ -30,8 +30,8 @@ package org.olat.core.gui.exception;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.velocity.context.Context;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
@@ -57,7 +57,6 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.mail.manager.MailManager;
 
 /**
  * Description: <br>
@@ -192,7 +191,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 		msg.contextPut("supportaddress", WebappHelper.getMailConfig("mailError"));
 		msg.contextPut("time", formatter.formatDateAndTime(new Date()));
 
-		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("errormessagewindow", this);
+		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("errormessagewindow", this, new WindowSettings());
 		Window w = wbo.getWindow();
 		
 		msg.put("jsCssRawHtmlHeader", w.getJsCssRawHtmlHeader());		

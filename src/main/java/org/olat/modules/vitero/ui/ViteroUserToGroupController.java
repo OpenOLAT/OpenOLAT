@@ -103,12 +103,35 @@ public class ViteroUserToGroupController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), trans, true);
 		listenTo(tableCtr);
 		
-		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.firstName.ordinal(), UserConstants.FIRSTNAME, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.lastName.ordinal(), UserConstants.LASTNAME, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.email.ordinal(), UserConstants.EMAIL, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("user.role", Col.role.ordinal(),null, ureq.getLocale(),
-				ColumnDescriptor.ALIGNMENT_LEFT, new RoleCellRenderer(getTranslator())));
-		tableCtr.addColumnDescriptor(new SignColumnDescriptor("signin", Col.sign.ordinal(), ureq.getLocale(), getTranslator()));
+		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.firstName.ordinal(), UserConstants.FIRSTNAME, getLocale()));
+		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.lastName.ordinal(), UserConstants.LASTNAME, getLocale()));
+		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.email.ordinal(), UserConstants.EMAIL, getLocale()));
+		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("user.role", Col.role.ordinal(),null, getLocale(),
+				ColumnDescriptor.ALIGNMENT_LEFT, new RoleCellRenderer(getTranslator())){
+
+			@Override
+			public int compareTo(int rowa, int rowb) {
+				Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+				Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+				
+				String r1 = null;
+				if(a instanceof GroupRole) {
+					r1 = ((GroupRole)a).name();
+				} else if(a instanceof String) {
+					r1 = ("owner".equals(a) || "coach".equals(a)) ? GroupRole.teamleader.name() : (String)a;
+				}
+				
+				String r2 = null;
+				if(b instanceof GroupRole) {
+					r2 = ((GroupRole)b).name();
+				} else if(b instanceof String) {
+					r2 = ("owner".equals(b) || "coach".equals(b)) ? GroupRole.teamleader.name() : (String)b;
+				}
+
+				return super.compareString(r1, r2);
+			}
+		});
+		tableCtr.addColumnDescriptor(new SignColumnDescriptor("signin", Col.sign.ordinal(), getLocale(), getTranslator()));
 		
 		tableCtr.addMultiSelectAction("signin", "signin");
 		tableCtr.addMultiSelectAction("signout", "signout");

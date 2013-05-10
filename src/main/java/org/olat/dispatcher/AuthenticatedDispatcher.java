@@ -66,6 +66,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	
 	protected static final String AUTHDISPATCHER_ENTRYURL = "AuthDispatcher:entryUrl";
 	protected static final String AUTHDISPATCHER_BUSINESSPATH = "AuthDispatcher:businessPath";
+	public static final String AUTHDISPATCHER_OPTIONS = "AuthDispatcher:options";
 	
 	protected static final String QUESTIONMARK = "?";
 	protected static final String GUEST = "guest";

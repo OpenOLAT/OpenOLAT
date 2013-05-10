@@ -46,6 +46,9 @@ public class Examples {
 	public static final CourseVO SAMPLE_COURSEVO = new CourseVO();
 	public static final CourseVOes SAMPLE_COURSEVOes = new CourseVOes();
 	
+	public static final CourseInfoVO SAMPLE_COURSEINFOVO = new CourseInfoVO();
+	public static final CourseInfoVOes SAMPLE_COURSEINFOVOes = new CourseInfoVOes();
+	
 	public static final CourseNodeVO SAMPLE_COURSENODEVO = new CourseNodeVO();
 	public static final CourseNodeVOes SAMPLE_COURSENODEVOes = new CourseNodeVOes();
 
@@ -109,7 +112,15 @@ public class Examples {
   	
   	SAMPLE_COURSENODEVO.setId("id");
   	SAMPLE_COURSENODEVOes.getNodes().add(SAMPLE_COURSENODEVO);
-  	
+
+  	SAMPLE_COURSEINFOVO.setKey(777l);
+  	SAMPLE_COURSEINFOVO.setDisplayName("Demo course");
+  	SAMPLE_COURSEINFOVO.setTitle("Demo course");
+  	SAMPLE_COURSEINFOVO.setRepoEntryKey(456l);
+  	SAMPLE_COURSEINFOVO.setSoftKey("oo_98237498");
+  	SAMPLE_COURSEINFOVOes.setTotalCount(1);
+  	SAMPLE_COURSEINFOVOes.setInfos(new CourseInfoVO[]{SAMPLE_COURSEINFOVO});
+
   	SAMPLE_COURSECONFIGVO.setSharedFolderSoftKey("head_1_olat_43985684395");
   	
   	SAMPLE_FILE.setHref("href");

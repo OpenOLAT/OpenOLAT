@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,6 +39,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.table.ColumnDescriptor;
+import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
@@ -56,6 +59,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -83,6 +87,7 @@ import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.ui.NewBGController;
+import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 import org.olat.group.ui.wizard.BGConfigBusinessGroup;
 import org.olat.group.ui.wizard.BGConfigToolsStep;
 import org.olat.group.ui.wizard.BGCopyBusinessGroup;
@@ -846,5 +851,94 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		groupListModel.setEntries(items);
 		groupListCtr.modelChanged();
 		return groups;
+	}
+	
+	protected static class RoleColumnDescriptor extends CustomRenderColumnDescriptor {
+		public RoleColumnDescriptor(Locale locale) {
+			super(Cols.role.i18n(), Cols.role.ordinal(), null, locale,  ColumnDescriptor.ALIGNMENT_LEFT, new BGRoleCellRenderer(locale));
+		}
+
+		@Override
+		public int compareTo(int rowa, int rowb) {
+			Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+			Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+			if(a instanceof BusinessGroupMembership && b instanceof BusinessGroupMembership) {
+				return MEMBERSHIP_COMPARATOR.compare((BusinessGroupMembership)a, (BusinessGroupMembership)b);
+			}
+			return super.compareTo(rowa, rowb);
+		}
+	}
+	
+	protected static class MarkColumnDescriptor extends CustomRenderColumnDescriptor {
+		
+		public MarkColumnDescriptor(Controller listeningController, VelocityContainer container, Translator translator) {
+			super(Cols.mark.i18n(), Cols.resources.ordinal(), null, translator.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
+					new BGMarkCellRenderer(listeningController, container, translator));
+		}
+		
+		@Override
+		public int compareTo(int rowa, int rowb) {
+			Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+			Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+			if(a instanceof BGTableItem && b instanceof BGTableItem) {
+				BGTableItem t1 = (BGTableItem)a;
+				BGTableItem t2 = (BGTableItem)b;
+				if(t1.isMarked()) {
+					if(t2.isMarked()) {
+						return super.compareString(t1.getBusinessGroupName(), t2.getBusinessGroupName());
+					}
+					return -1;
+				} else if(t2.isMarked()) {
+					return 1;
+				}
+				return super.compareString(t1.getBusinessGroupName(), t2.getBusinessGroupName());
+			}
+			return super.compareTo(rowa, rowb);
+		}
+	}
+	
+	protected static class ResourcesColumnDescriptor extends CustomRenderColumnDescriptor {
+		
+		public ResourcesColumnDescriptor(Controller listeningController, VelocityContainer container, Translator translator) {
+			super(Cols.resources.i18n(), Cols.resources.ordinal(), null, translator.getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT,
+					new BGResourcesCellRenderer(listeningController, container, translator));
+		}
+		
+		@Override
+		public int compareTo(int rowa, int rowb) {
+			Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+			Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+			if(a instanceof BGTableItem && b instanceof BGTableItem) {
+				List<RepositoryEntryShort> r1 = ((BGTableItem)a).getRelations();
+				List<RepositoryEntryShort> r2 = ((BGTableItem)b).getRelations();
+				
+				if(r1 != null && r1.size() > 0) {
+					if(r2 != null && r2.size() > 0) {
+						return compareTo(r1, r2);
+					}
+					return 1;
+				}
+				
+				if(r2 != null && r2.size() > 0) {
+					return -1;
+				}
+			}
+			return super.compareTo(rowa, rowb);
+		}
+		
+		private int compareTo(List<RepositoryEntryShort> r1, List<RepositoryEntryShort> r2) {
+			int size = Math.min(r1.size(), r2.size());
+			
+			for(int i=0; i<size; i++) {
+				String n1 = r1.get(i).getDisplayname();
+				String n2 = r2.get(i).getDisplayname();
+				int compare = super.compareString(n1, n2);
+				if(compare != 0) {
+					return compare;
+				}
+			}
+			
+			return (r1.size() < r2.size() ? -1 : (r1.size()==r2.size() ? 0 : 1));
+		}
 	}
 }

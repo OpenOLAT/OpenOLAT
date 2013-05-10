@@ -27,6 +27,7 @@
 package org.olat.shibboleth;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
@@ -79,7 +80,7 @@ public class MessageWindowController extends DefaultChiefController {
 		//Window w = new Window("messagewindow", this, jsadder);
 		
 		Windows ws = Windows.getWindows(ureq);
-		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("messagewindow", this);
+		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("messagewindow", this, new WindowSettings());
 		Window w = wbo.getWindow();
 		
 		msg.put("jsAndCssC", w.getJsCssRawHtmlHeader());
