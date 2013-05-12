@@ -3,20 +3,25 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
+  
+  	<import resource="classpath:/org/olat/admin/jmx/_spring/jmxContext.xml"/>
+	<import resource="classpath:/org/olat/admin/registration/_spring/registrationContext.xml"/>
+	<import resource="classpath:/org/olat/admin/sysinfo/_spring/sysinfoContext.xml"/>
+	<import resource="classpath:/org/olat/admin/user/delete/service/_spring/deletionContext.xml"/>
 
-<bean id="adminModule" class="org.olat.admin.AdminModule">
-<constructor-arg index="0" ref="propertyManager" />
-<property name="persistedProperties">
-  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-    <constructor-arg index="0" ref="coordinatorManager"/>
-    <constructor-arg index="1" ref="adminModule" />
-  </bean>
-</property>	
-</bean>
+	<bean id="adminModule" class="org.olat.admin.AdminModule">
+		<constructor-arg index="0" ref="propertyManager" />
+		<property name="persistedProperties">
+			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+				<constructor-arg index="0" ref="coordinatorManager"/>
+				<constructor-arg index="1" ref="adminModule" />
+			</bean>
+		</property>	
+	</bean>
                        
-       <bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="targetObject" ref="adminModule" />
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="adminModule" />
         <property name="targetMethod" value="init" />
         <property name="arguments">
         			<!-- Important: Set tomcats policy to allow read/write access to Root and TmpDir  -->
@@ -30,6 +35,6 @@
 	                    maxNumberOfSessions=0
 	                </value>
 	     </property>
-</bean>
+	</bean>
 
 </beans>

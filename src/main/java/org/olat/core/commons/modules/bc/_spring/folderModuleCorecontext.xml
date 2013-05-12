@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 <bean id="folderModule" class="org.olat.core.commons.modules.bc.FolderModule">
 	<property name="persistedProperties">
@@ -36,5 +36,7 @@
              </value>
       </property>
 </bean>
+
+	<bean id="org.olat.core.commons.modules.bc.FilesInfoMBean" class="org.olat.core.commons.modules.bc.FilesInfoMBean" />
 
 </beans>

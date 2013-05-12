@@ -21,47 +21,7 @@
     <context-param>
             <param-name>contextConfigLocation</param-name>
             <param-value>
-                    <!-- core spring files are in the olatcore jar file and have to be written with a full path to get loaded -->
-                    <!-- TODO: if anyone finds a solution to work with wildcards and jars, go for it -->
-                    <!-- TODO:a workaround could be to reference all core spring files in one file and import the other resources with the import statement -->
-                    
-                    <!-- Note: Place threadlogCorecontext.xml as high as possible in this list to make it being loaded as early as possible. 
-                    			This is due to the fact that it can only control Loggers that have been created after it (ThreadLocalLogLevelManager) has been installed. -->
-					classpath:/org/olat/core/util/threadlog/_spring/threadlogCorecontext.xml
-
-					classpath:/org/olat/core/util/vfs/version/_spring/versioningCorecontext.xml
-					classpath:/org/olat/core/util/i18n/_spring/i18nCorecontext.xml
-					classpath:/org/olat/core/util/_spring/utilCorecontext.xml
-					classpath:/org/olat/core/util/i18n/devtools/_spring/devtoolsCorecontext.xml
-					classpath:/org/olat/core/util/event/_spring/frameworkStartedEventCorecontext.xml
-					classpath:/org/olat/core/id/context/_spring/historyCorecontext.xml
-					
-					classpath:/org/olat/core/commons/controllers/resume/_spring/resumeCorecontext.xml
-					classpath:/org/olat/core/commons/persistence/_spring/databaseCorecontext.xml
-					classpath:/org/olat/core/commons/taskExecutor/_spring/taskExecutorCorecontext.xml
-					classpath:/org/olat/core/commons/fullWebApp/util/_spring/StickyMessageCorecontext.xml
-					classpath:/org/olat/core/commons/modules/bc/_spring/folderModuleCorecontext.xml
-					classpath:/org/olat/core/commons/modules/glossary/_spring/glossaryCorecontext.xml
-					classpath:/org/olat/core/commons/contextHelp/_spring/contextHelpCorecontext.xml
-					
-					classpath:/org/olat/core/logging/_spring/loggingCorecontext.xml
-					classpath:/org/olat/core/logging/activity/_spring/activityCorecontext.xml
-					classpath:/org/olat/core/_spring/mainCorecontext.xml
-					classpath:/org/olat/core/commons/services/_spring/servicesCorecontext.xml
-					
-					classpath:/serviceconfig/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/richTextCorecontext.xml
-					classpath:/serviceconfig/org/olat/core/_spring/mainCorecontext.xml
-					
-					classpath:/serviceconfig/org/olat/core/_spring/olatcoreconfig.xml
-          classpath:/serviceconfig/org/olat/_spring/olatextconfig.xml
-          classpath:/serviceconfig/org/olat/core/commons/scheduler/_spring/olatextconfig.xml
-          classpath:/serviceconfig/brasatoconfig.xml
-          classpath:/serviceconfig/org/olat/_spring/brasatoconfigpart.xml
-          classpath:/serviceconfig/org/olat/notifications/_spring/olatdefaultconfig.xml
-                    
-                   	<!-- OLAT spring config can be loaded with wildcards as it is not packed as jars. This means you do not have to 
-                   	add your spring file here manually if it ends with *Context.xml (first letter uppercase!) -->
-                    classpath*:**/_spring/*Context.xml
+                    classpath:/org/olat/_spring/mainContext.xml
             </param-value>
     </context-param>
     

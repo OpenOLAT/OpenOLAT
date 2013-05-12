@@ -64,7 +64,7 @@ public class VCProviderFactory {
 		_registeredProviders.put(provider.getProviderId(), provider);
 	}
 	
-	public static void setRegisteredProviders(List<VCProvider> providers) {
+	public void setRegisteredProviders(List<VCProvider> providers) {
 		for(VCProvider provider : providers) {
 			registerProvider(provider);
 		}

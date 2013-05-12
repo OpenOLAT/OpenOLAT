@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
-  http://www.springframework.org/schema/context 
-  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
   
 	<!-- Configure the main url dispatcher: here: url http://host:port/webappname/ leads to http://host:port/webappname/go
 		configures DispatcherActions to be called on certain paths -->
@@ -225,15 +222,8 @@
 	<!-- blog media dispatcher -->
 	<bean id="blogMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />
 
-	<!--  gui prefs via database -->
-	<bean id="core.preferences.PreferencesStorage"
-		class="org.olat.core.util.prefs.db.DbStorage"  />
 
-	<!-- Search components -->
-	<bean id="org.olat.admin.user.UserSearchUIService"
-		class="org.olat.admin.user.UserSearchUIServiceImpl" />
-	
-	<bean id="org.olat.search.ui.SearchServiceUIFactory"
-		class="org.olat.search.ui.SearchControllerFactory" />
+
+
 
 </beans>

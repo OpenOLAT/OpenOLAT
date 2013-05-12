@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
+  
+	<import resource="classpath:/de/bps/course/assessment/_spring/assessmentContext.xml"/>
+	<import resource="classpath:/de/bps/course/nodes/cl/_spring/buildingblockContext.xml"/>
+	<import resource="classpath:/de/bps/course/nodes/den/_spring/buildingblockContext.xml"/>
+	<import resource="classpath:/de/bps/course/nodes/ll/_spring/buildingblockContext.xml"/>
+	<import resource="classpath:/de/bps/course/nodes/vc/_spring/buildingblockContext.xml"/>
+	<import resource="classpath:/de/bps/course/nodes/vc/_spring/vcContext.xml"/>
+	<import resource="classpath:/de/bps/course/nodes/vc/provider/adobe/_spring/adobeContext.xml"/>
+	<import resource="classpath:/de/bps/course/nodes/vc/provider/wimba/_spring/wimbaContext.xml"/>
+	<import resource="classpath:/de/bps/olat/user/_spring/changeEmailContext.xml"/>
+	<import resource="classpath:/de/bps/onyx/plugin/_spring/onyxContext.xml"/>
+	<import resource="classpath:/de/bps/security/_spring/sslContext.xml"/>
+	<import resource="classpath:/de/bps/webservices/_spring/webservicesContext.xml"/>
+  
+</beans>

@@ -5,6 +5,9 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+	<import resource="classpath:/org/olat/user/_spring/additionalUserContext.xml"/>
+	<import resource="classpath:/org/olat/user/propertyhandlers/_spring/userPropertiesContext.xml"/>
+	<import resource="classpath:/org/olat/user/propertyhandlers/_spring/userPropertriesHandlersContext.xml"/>
 
 <bean id="userModule" class="org.olat.user.UserModule" 
 	depends-on="org.olat.core.util.notifications.NotificationsManager, database, baseSecurityManager, triggerI18nModuleInit">
@@ -237,21 +240,21 @@
 		</property>
 	</bean>
 
-<bean id="triggerUserModuleInit" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-    <property name="targetObject" ref="userModule" />
-    <property name="targetMethod" value="init" />
-    <property name="arguments">
+	<bean id="triggerUserModuleInit" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	    <property name="targetObject" ref="userModule" />
+	    <property name="targetMethod" value="init" />
+	    <property name="arguments">
             <value>
                     generateTestUsers=${user.generateTestUsers}
                     passwordChangeAllowed=${password.change.allowed}
                     passwordChangeAllowedLDAP=${ldap.propagatePasswordChangedOnLdapServer}
                     adminUserName=administrator
             </value>
-    </property>
-</bean>
+	    </property>
+	</bean>
 
 
-<bean id="userManager" class="org.olat.user.UserManagerImpl" >
+	<bean id="userManager" class="org.olat.user.UserManagerImpl" >
 		<property name="userPropertiesConfig">
                 <ref bean="org.olat.user.UserPropertiesConfig" />
         </property>
@@ -265,7 +268,7 @@
                 <!-- Implementation to display "lastname, firstname" -->
                 <bean id="org.olat.user.UserDisplayNameCreator" class="org.olat.user.UserDisplayNameCreatorLastnameFirst" />
         </property>
-</bean>
+	</bean>
 
 	<bean id="org.olat.core.commons.creator.UserAvatarDisplayControllerCreator"
 		class="org.olat.user.UserAvatarDisplayControllerCreatorImpl"/>
@@ -281,5 +284,13 @@
 	<bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager"/>
 	<bean class="org.olat.user.DisplayPortraitManager"/>
 	<bean class="org.olat.user.HomePageConfigManagerImpl"/>
+	
+	<bean id="userDeletionManager" class="org.olat.admin.user.delete.service.UserDeletionManager">
+		<constructor-arg index="0" ref="deletionModule" />
+		<constructor-arg index="1" ref="coordinatorManager" />
+		<property name="baseSecurityManager" ref="baseSecurityManager" />
+		<property name="keepUserLoginAfterDeletion" value="${keepUserLoginAfterDeletion}" />
+		<property name="keepUserEmailAfterDeletion" value="${keepUserEmailAfterDeletion}" />
+	</bean>
 
 </beans>

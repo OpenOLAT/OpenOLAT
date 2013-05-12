@@ -4,8 +4,12 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
                         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!-- SEARCH SERVICE SIDE CONFIGURATION -->
-	<!-- ================================= -->
+	<!-- Search components -->
+	<bean id="org.olat.admin.user.UserSearchUIService"
+		class="org.olat.admin.user.UserSearchUIServiceImpl" />
+	
+	<bean id="org.olat.search.ui.SearchServiceUIFactory"
+		class="org.olat.search.ui.SearchControllerFactory" />
 
 	<bean id="searchServiceFactory" class="org.olat.search.service.SearchServiceFactory">
 	  <constructor-arg index="0" ref="org.olat.search.service.${search.service}" />

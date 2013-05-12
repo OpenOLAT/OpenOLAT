@@ -41,6 +41,7 @@ import org.olat.core.util.coordinate.LockEntry;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.coordinate.LockResultImpl;
 import org.olat.core.util.coordinate.Locker;
+import org.olat.core.util.coordinate.PersistentLockManager;
 import org.olat.core.util.coordinate.Syncer;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.EventBus;
@@ -59,13 +60,13 @@ import org.olat.resource.lock.pessimistic.PessimisticLockManager;
  */
 // Must be abstract because Spring configuration of method 'getPersistentLockManager' :
 // to avoid circular reference method lookup is used for dependecy injection of persistent lock manager
-public abstract class ClusterLocker implements Locker, GenericEventListener {
+public class ClusterLocker implements Locker, GenericEventListener {
 	private static final OLog log = Tracing.createLoggerFor(ClusterLocker.class);
 
 	private Syncer syncer;
 	private EventBus eventBus;
 	private ClusterLockManager clusterLockManager;
-	
+	private PersistentLockManager persistentLockManager;
 	/**
 	 * [used by spring]
 	 *
@@ -84,10 +85,18 @@ public abstract class ClusterLocker implements Locker, GenericEventListener {
 		eventBus.registerFor(this, null,
 				OresHelper.createOLATResourceableType(UserSession.class));
 	}
+
 	
 	//cluster:::::: on init of olat system, clear all locks?? but only the one from node in question?
-	
-	
+
+	public PersistentLockManager getPersistentLockManager() {
+		return persistentLockManager;
+	}
+
+	public void setPersistentLockManager(PersistentLockManager persistentLockManager) {
+		this.persistentLockManager = persistentLockManager;
+	}
+
 	public LockResult acquireLock(final OLATResourceable ores, final Identity requestor, final String locksubkey) {
 		final String asset = OresHelper.createStringRepresenting(ores, locksubkey);
 		

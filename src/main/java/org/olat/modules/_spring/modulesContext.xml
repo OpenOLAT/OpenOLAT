@@ -4,10 +4,19 @@
 	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/beans/spring-beans.xsd 
   http://www.springframework.org/schema/context 
-  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  http://www.springframework.org/schema/context/spring-context.xsd">
   
-<context:component-scan base-package="org.olat.modules" />
+	<context:component-scan base-package="org.olat.modules"/>
+
+	<import resource="classpath:/org/olat/modules/coach/_spring/coachContext.xml"/>
+	<import resource="classpath:/org/olat/modules/glossary/_spring/glossaryContext.xml"/>
+	<import resource="classpath:/org/olat/modules/iq/_spring/iqContext.xml"/>
+	<import resource="classpath:/org/olat/modules/openmeetings/_spring/openmeetingsContext.xml"/>
+	<import resource="classpath:/org/olat/modules/qpool/_spring/qpoolContext.xml"/>
+	<import resource="classpath:/org/olat/modules/vitero/_spring/viteroContext.xml"/>
+	<import resource="classpath:/org/olat/modules/webFeed/_spring/webFeedContext.xml"/>
+	<import resource="classpath:/org/olat/modules/wiki/_spring/wikiContext.xml"/>
 
 </beans>

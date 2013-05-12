@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- Portlets are no longer added to a list but searched on the whole classpath. This means that you can add you own portlets packed
 		as a jar file or disable existing portlets over external properties files. Every portlet instance has a field enabeld which is true by default

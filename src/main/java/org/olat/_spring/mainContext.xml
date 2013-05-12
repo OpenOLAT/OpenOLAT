@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<import resource="classpath:/org/olat/core/util/threadlog/_spring/threadlogCorecontext.xml"/>
+	<import resource="classpath:/org/olat/core/_spring/mainCorecontext.xml"/>
+	<import resource="classpath:/org/olat/commons/coordinate/cluster/_spring/coordinateContext.xml"/>
+	<import resource="classpath:/org/olat/_spring/extensionContext.xml"/>
+
+	<import resource="classpath:/de/bps/_spring/bpsContext.xml"/>
+	
+	<import resource="classpath:/org/olat/modules/_spring/modulesContext.xml"/>
+
+	<import resource="classpath:/org/olat/admin/_spring/adminContext.xml"/>
+
+	<import resource="classpath:/org/olat/basesecurity/_spring/baseSecurityContext.xml"/>
+	<import resource="classpath:/org/olat/catalog/_spring/catalogContext.xml"/>
+	<import resource="classpath:/org/olat/collaboration/_spring/collaborationToolsContext.xml"/>
+	<import resource="classpath:/org/olat/commons/calendar/_spring/calendarContext.xml"/>
+	<import resource="classpath:/org/olat/commons/info/_spring/infoMessageContext.xml"/>
+	<import resource="classpath:/org/olat/commons/servlets/_spring/staticContext.xml"/>
+
+	<import resource="classpath:/org/olat/course/_spring/courseContext.xml"/>
+
+	<import resource="classpath:/org/olat/fileresource/_spring/fileresourceContext.xml"/>
+	<import resource="classpath:/org/olat/group/_spring/businessGroupContext.xml"/>
+	<import resource="classpath:/org/olat/gui/demo/_spring/guiDemoContext.xml"/>
+	<import resource="classpath:/org/olat/home/_spring/homeContext.xml"/>
+	<import resource="classpath:/org/olat/ims/cp/_spring/cpContext.xml"/>
+	<import resource="classpath:/org/olat/ims/qti/_spring/qtiContext.xml"/>
+	<import resource="classpath:/org/olat/instantMessaging/_spring/instantMessagingContext.xml"/>
+	<import resource="classpath:/org/olat/ldap/_spring/ldapContext.xml"/>
+	<import resource="classpath:/org/olat/login/_spring/loginContext.xml"/>
+	<import resource="classpath:/org/olat/note/_spring/noteContext.xml"/>
+	<import resource="classpath:/org/olat/notifications/_spring/notificationsContext.xml"/>
+	<import resource="classpath:/org/olat/portfolio/_spring/portfolioContext.xml"/>
+	<import resource="classpath:/org/olat/properties/_spring/propertiesContext.xml"/>
+	<import resource="classpath:/org/olat/registration/_spring/registrationContext.xml"/>
+	<import resource="classpath:/org/olat/repository/_spring/repositoryContext.xml"/>
+
+	<import resource="classpath:/org/olat/resource/_spring/resourceContext.xml"/>
+
+	<import resource="classpath:/org/olat/restapi/_spring/restApiContext.xml"/>
+	<import resource="classpath:/org/olat/search/_spring/searchContext.xml"/>
+	<import resource="classpath:/org/olat/shibboleth/_spring/shibbolethContext.xml"/>
+	<import resource="classpath:/org/olat/social/_spring/socialContext.xml"/>
+	<import resource="classpath:/org/olat/upgrade/_spring/databaseUpgradeContext.xml"/>
+	<import resource="classpath:/org/olat/upgrade/_spring/upgradeContext.xml"/>
+	
+	<import resource="classpath:/org/olat/user/_spring/userContext.xml"/>
+
+</beans>

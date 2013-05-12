@@ -3,7 +3,14 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
+  
+	<bean id="webDAVManager" class="org.olat.commons.servlets.WebDAVManagerImpl" >
+		<constructor-arg ref="coordinatorManager"/>
+		<!-- set to false to disable the WebDAV support and remove the WebDAV Link from the GUI -->
+		<property name="enabled" value="${webdav.links.enabled}" />
+		<property name="sessionManager" ref="userSessionManager" />
+	</bean>  
   
 	
 	<!-- WebDAV provider factory -->

@@ -5,19 +5,7 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <!--
-		*****************************************
-		*** Define the persistent lock manager    ***
-		*****************************************
-	-->
-	<bean id="persistentLockManager" class="org.olat.core.util.coordinate.DBPersistentLockManager"/>  
-
-    <!--
-		*****************************************
-		*** Define the Notifications Manager  ***
-		*****************************************
-	-->
-	
+	<!-- List of notifications handlers -->
 	<bean id="org.olat.modules.fo.ForumNotificationsHandler" class="org.olat.modules.fo.ForumNotificationsHandler" />
 	<bean id="org.olat.course.assessment.AssessmentNotificationsHandler" class="org.olat.course.assessment.AssessmentNotificationsHandler" />
 	<bean id="org.olat.core.commons.modules.bc.FolderNotificationsHandler" class="org.olat.core.commons.modules.bc.notifications.FolderNotificationsHandler" />
@@ -54,13 +42,8 @@
 		<property name="defaultNotificationInterval">
 			<value>daily</value>
 		</property>
-	</bean>	
+	</bean>
 	
-    <!--
-		*****************************************
-		*** New user created notifications    ***
-		*****************************************
-	-->
 	<bean
 		id="org.olat.user.notification.UsersSubscriptionManager" class="org.olat.user.notification.UsersSubscriptionManagerImpl"
 		 depends-on="coordinatorManager">
@@ -69,49 +52,47 @@
 			<ref bean="coordinatorManager" />
 		</property>
 	</bean>
-      
-    <!--
-		*****************************************
-		*** Define the Quota Manager          ***
-		*****************************************
-	-->
-	<bean id="org.olat.core.util.vfs.QuotaManager" class="org.olat.admin.quota.QuotaManagerImpl"  init-method="init" >
-		<constructor-arg index="0" ref="resourceManager" />
-		<constructor-arg index="1" ref="propertyManager" />
-	</bean> 
+	
+	<!-- Notification config:
+		If you want to disable notificaition please comment out the corresponding entry in scheduler
+		spring file in serviceconfig/org/olat/core/commons/scheduler/_spring/olatextconfig.xml
+		and delete or comment this *entire* file.
+		
+		later in this file you can also adjust the time the notification is scheduled. Default 
+		is 10min after midnight.
+	 -->
 
-    <!--
-		*****************************************
-		*** IMS Content Packaging  Manager    ***
-		*****************************************
-	-->
-    <bean id="org.olat.ims.cp.CPManager" class="org.olat.ims.cp.CPManagerImpl"  /> 
-	<!-- 
-		*****************
-		*** JMX       ***
-		*****************
-	-->
-	<!--
-		Export your Beans via JMX, to enable start you JVM with "-Dcom.sun.management.jmxremote=true".
-		This only enables JMX locally and allows you to connect with the same user. To connect via remote read:
-		http://java.sun.com/javase/6/docs/technotes/guides/management/agent.html
-	-->
-	<!-- this bean must not be lazily initialized if the exporting is to happen -->
-	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false" >
-    	<property name="beans">
-			<map>
-				<entry key="org.olat.admin.jmx.datasources:name=ThreadAndControllerInfo">
-					<bean class="org.olat.admin.jmx.datasources.ThreadAndControllerInfo" />
-				</entry>
-				<entry key="org.olat.admin:name=AdminModule" value-ref="adminModule" />
-				<entry key="org.olat.core.commons.modules.bc:name=FilesInfoMBean" >
-					<ref bean="org.olat.core.commons.modules.bc.FilesInfoMBean"/>
-				</entry>
-			</map>
-		</property>
-		<property name="server" ref="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+	<bean id="sendNotificationsEmailTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	    <property name="jobDetail" ref="org.olat.notifications.job.${cluster.singleton.services}" />
+	    <!-- adjust cron style syntax for your notification needs 
+	    	"0 10 0 * *"  e.g. 10 minutes after midnight
+	    	
+	    	A "Cron-Expression" is a string comprised of 6 or 7 fields separated by white space. The 6 mandatory and 1 optional fields are as follows:
+			Field Name 	  	Allowed Values 	  	Allowed Special Characters
+			Seconds 	  	0-59 	  			, - * /
+			Minutes 	  	0-59 	  			, - * /
+			Hours 	  		0-23 	  			, - * /
+			Day-of-month 	1-31 	  			, - * ? / L W C
+			Month 	  		1-12 or JAN-DEC 	, - * /
+			Day-of-Week 	1-7 or SUN-SAT 	  	, - * ? / L C #
+			Year (Optional)	empty, 1970-2099 	, - * /
+
+			As of OLAT 6.3 it's best to let the cronjob run every two hours since users can now choose how often 
+			they will get notified. The shortest interval is set to two hours. 	    	
+	    -->
+	    <property name="cronExpression" value="${notification.cronjob.expression}" />
+
+		<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
+	    <property name="startDelay" value="300000" />
+	</bean>
+	
+	<bean id="org.olat.notifications.job.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	  <property name="jobClass" value="org.olat.notifications.EmailNotificationJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="org.olat.notifications.job.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
 	</bean>
 
-	<bean id="org.olat.core.commons.modules.bc.FilesInfoMBean" class="org.olat.core.commons.modules.bc.FilesInfoMBean" />
-    
 </beans>
