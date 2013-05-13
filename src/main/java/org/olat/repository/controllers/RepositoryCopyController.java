@@ -115,8 +115,7 @@ public class RepositoryCopyController extends BasicController {
 				// abort transaction
 				cleanup();
 				fireEvent(ureq, Event.CANCELLED_EVENT);
-				return;
-			} else if (event == Event.DONE_EVENT) {
+			} else if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				forwardButton.setEnabled(true);
 			}
 		}

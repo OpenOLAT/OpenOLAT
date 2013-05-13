@@ -610,7 +610,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				removeAsListenerAndDispose(repositoryEditPropertiesController);
 				repositoryEditPropertiesController = new RepositoryEditPropertiesController(ureq, getWindowControl(), repositoryEntry, false);
 				listenTo(repositoryEditPropertiesController);
-				doEditSettings(ureq, repositoryEditPropertiesController);
+				String title = translate("properties.for", new String[]{ repositoryEntry.getDisplayname() });
+				doEditSettings(ureq, repositoryEditPropertiesController, title);
 				
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				repositoryEditPropertiesController.activate(ureq, subEntries, entry.getTransientState());
@@ -704,7 +705,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 * @param ureq
 	 * @param contentController
 	 */
-	private void doEditSettings(UserRequest ureq, Controller contentController) {
+	private void doEditSettings(UserRequest ureq, Controller contentController, String title) {
 	  if (!isAuthor) throw new OLATSecurityException("Trying to edit properties , but user is not author: user = " + ureq.getIdentity());
 	 
 	  Component component = contentController.getInitialComponent();
@@ -712,7 +713,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	  if(component!=null) {
 	  	removeAsListenerAndDispose(settingsCloseableModalController);
 	    settingsCloseableModalController = new CloseableModalController(getWindowControl(), translate("close"),
-			  contentController.getInitialComponent());
+			  contentController.getInitialComponent(), true, title);
 	    listenTo(settingsCloseableModalController);
 	    
 	    settingsCloseableModalController.activate();
@@ -779,8 +780,10 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		  copyController = new RepositoryCopyController(ureq, getWindowControl(), repositoryEntry);
 		  listenTo(copyController);
 		  
+		  String title = translate("details.copy");
 		  removeAsListenerAndDispose(copyCloseableModalController);
-		  copyCloseableModalController = new CloseableModalController(getWindowControl(), translate("close"), copyController.getInitialComponent());
+		  copyCloseableModalController = new CloseableModalController(getWindowControl(), translate("close"), copyController.getInitialComponent(),
+		  		true, title);
 		  listenTo(copyCloseableModalController);
 		  
 		  copyCloseableModalController.activate();				  
@@ -878,7 +881,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				removeAsListenerAndDispose(repositoryEditDescriptionController);
 				repositoryEditDescriptionController = new RepositoryEditDescriptionController(ureq, getWindowControl(), repositoryEntry, false);
 				listenTo(repositoryEditDescriptionController);
-				doEditSettings(ureq, repositoryEditDescriptionController);
+				String title = translate("properties.for", new String[]{ repositoryEntry.getDisplayname() });
+				doEditSettings(ureq, repositoryEditDescriptionController, title);
 				return;
 			} else if (cmd.equals(ACTION_ADD_CATALOG)) { // start add to catalog workflow
 				doAddCatalog(ureq);
@@ -887,7 +891,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				removeAsListenerAndDispose(repositoryEditPropertiesController);
 				repositoryEditPropertiesController = new RepositoryEditPropertiesController(ureq, getWindowControl(), repositoryEntry, false);
 				listenTo(repositoryEditPropertiesController);
-				doEditSettings(ureq, repositoryEditPropertiesController);
+				String title = translate("properties.for", new String[]{ repositoryEntry.getDisplayname() });
+				doEditSettings(ureq, repositoryEditPropertiesController, title);
 				return;
 			} else if (cmd.equals(ACTION_CLOSE)) {
 				doCloseDetailView(ureq);
@@ -958,7 +963,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			removeAsListenerAndDispose(copyController);
 			copyController = null;
 		} else if (source == repositoryEditDescriptionController) {
-			if (event == Event.CHANGED_EVENT) {
+			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				// RepositoryEntry changed
 				// setEntry(repositoryEditDescriptionController.getRepositoryEntry(), ureq);
 				String displayname = repositoryEditDescriptionController.getRepositoryEntry().getDisplayname();
@@ -967,10 +972,10 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				// do not close upon save/upload image closeableModalController.deactivate();
 				updateView(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
-				settingsCloseableModalController.deactivate();
 				removeAsListenerAndDispose(repositoryEditDescriptionController);
-				this.repositoryEntry = repositoryEditDescriptionController.getRepositoryEntry();
+				repositoryEntry = repositoryEditDescriptionController.getRepositoryEntry();
 			}
+			settingsCloseableModalController.deactivate();
 		} else if (source == repositoryEditPropertiesController) {
 			if (event == Event.CHANGED_EVENT || event.getCommand().equals("courseChanged")) {
 				// RepositoryEntry changed

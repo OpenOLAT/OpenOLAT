@@ -745,13 +745,12 @@ public class CatalogController extends BasicController implements Activateable2 
 			}
 		}
 		else if (source == repositoryEditDescriptionController) {
-			if (event == Event.CHANGED_EVENT) {
+			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				linkMarkedToBeEdited.setRepositoryEntry(repositoryEditDescriptionController.getRepositoryEntry());
 				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 				cm.updateReferencedRepositoryEntry(repositoryEditDescriptionController.getRepositoryEntry());
-			} else if (event == Event.CANCELLED_EVENT) {
-				cmc.deactivate();
 			}
+			cmc.deactivate();
 		} else if (source == addEntryForm) {
 			// remove modal dialog
 			cmc.deactivate();

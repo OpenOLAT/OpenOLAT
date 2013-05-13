@@ -341,7 +341,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 			listenTo(addController);
 			
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent(),
+					true, addController.getTitle());
 			listenTo(cmc);
 			
 			cmc.activate();
@@ -352,7 +353,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 			listenTo(addController);
 			
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent(),
+					true, addController.getTitle());
 			listenTo(cmc);
 			
 			cmc.activate();

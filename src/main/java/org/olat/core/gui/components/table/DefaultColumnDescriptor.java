@@ -166,16 +166,27 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	}
 	
 	protected int compareString(final String a, final String b) {
-		return collator.compare(a, b);
+		if (a == null || b == null) {
+			return compareNullObjects(a, b);
+		}
+		return collator == null ? a.compareTo(b) : collator.compare(a, b);
 	}
 
 	protected int compareBooleans(final Boolean a, final Boolean b) {
+		if (a == null || b == null) {
+			return compareNullObjects(a, b);
+		}
+		
 		boolean ba = a.booleanValue();
 		boolean bb = b.booleanValue();
 		return ba? (bb? 0: -1):(bb? 1: 0);
 	}
 	
 	protected int compareDateAndTimestamps(Date a, Date b) {
+		if (a == null || b == null) {
+			return compareNullObjects(a, b);
+		}
+		
 		if (a instanceof Timestamp) { // a timestamp (a) cannot compare a date (b), but vice versa is ok.
 			if(b instanceof Timestamp) {
 				return ((Timestamp)a).compareTo((Timestamp)b);
