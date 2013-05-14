@@ -24,7 +24,7 @@
 * <p>
 */ 
 
-package org.olat.core.servlets;
+package org.olat.core.commons.services.webdav;
 
 
 import java.io.IOException;
@@ -55,6 +55,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.naming.resources.Resource;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.webdav.manager.VFSDirContext;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
@@ -66,8 +67,6 @@ import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.servlets.DOMWriter;
 import org.olat.core.util.servlets.RequestUtil;
-import org.olat.core.util.servlets.VFSDirContext;
-import org.olat.core.util.servlets.WebDAVProviderFactory;
 import org.olat.core.util.servlets.XMLWriter;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;

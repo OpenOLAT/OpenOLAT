@@ -21,6 +21,7 @@ package org.olat.admin.sysinfo;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
+import org.olat.core.commons.services.webdav.WebDAVManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -28,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.servlets.WebDAVManager;
 import org.olat.restapi.RestModule;
 
 /**

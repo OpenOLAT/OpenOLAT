@@ -5,7 +5,7 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
   
-	<bean id="webDAVManager" class="org.olat.commons.servlets.WebDAVManagerImpl" >
+	<bean id="webDAVManager" class="org.olat.core.commons.services.webdav.manager.WebDAVManagerImpl" >
 		<constructor-arg ref="coordinatorManager"/>
 		<!-- set to false to disable the WebDAV support and remove the WebDAV Link from the GUI -->
 		<property name="enabled" value="${webdav.links.enabled}" />
@@ -14,7 +14,7 @@
   
 	
 	<!-- WebDAV provider factory -->
-	<bean id="webdavfactory" class="org.olat.core.util.servlets.WebDAVProviderFactory" >
+	<bean id="webdavfactory" class="org.olat.core.commons.services.webdav.WebDAVProviderFactory" >
 		<property name="webdavProviderList">
 			<list>
 				<ref bean="webdav_briefcase"/>

@@ -18,7 +18,7 @@
  * <p>
  */
 
-package org.olat.login.auth;
+package org.olat.core.commons.services.webdav.manager;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;

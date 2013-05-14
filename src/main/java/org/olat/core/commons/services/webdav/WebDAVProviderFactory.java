@@ -24,7 +24,7 @@
 * <p>
 */ 
 
-package org.olat.core.util.servlets;
+package org.olat.core.commons.services.webdav;
 
 import java.util.HashMap;
 import java.util.Iterator;

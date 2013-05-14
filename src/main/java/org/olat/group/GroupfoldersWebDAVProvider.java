@@ -26,8 +26,8 @@
 package org.olat.group;
 
 import org.olat.collaboration.CollaborationManager;
+import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.Identity;
-import org.olat.core.util.servlets.WebDAVProvider;
 import org.olat.core.util.vfs.VFSContainer;
 /**
  * 

@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.commons.servlets;
+package org.olat.core.commons.services.webdav.manager;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -35,18 +35,17 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.services.webdav.SecureWebdavServlet;
+import org.olat.core.commons.services.webdav.WebDAVManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.servlets.SecureWebdavServlet;
-import org.olat.core.servlets.WebDAVManager;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.session.UserSessionManager;
-import org.olat.login.auth.WebDAVAuthManager;
 
 import com.oreilly.servlet.Base64Decoder;
 
@@ -85,7 +84,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 	}
 
 	/**
-	 * @see org.olat.commons.servlets.WebDAVManager#handleAuthentication(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 * @see org.olat.core.commons.services.webdav.WebDAVManager#handleAuthentication(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	@Override
 	protected boolean handleAuthentication(HttpServletRequest req, HttpServletResponse resp) {
@@ -99,7 +98,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 	}
 	
 	/**
-	 * @see org.olat.commons.servlets.WebDAVManager#getUserSession(javax.servlet.http.HttpServletRequest)
+	 * @see org.olat.core.commons.services.webdav.WebDAVManager#getUserSession(javax.servlet.http.HttpServletRequest)
 	 */
 	@Override
 	protected UserSession getUserSession(HttpServletRequest req) {
@@ -220,7 +219,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 	}
 	
 	/**
-	 * @see org.olat.core.servlets.WebDAVManager#isEnabled()
+	 * @see org.olat.core.commons.services.webdav.WebDAVManager#isEnabled()
 	 */
 	public boolean isEnabled() {
 		return enabled;

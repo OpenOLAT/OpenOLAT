@@ -157,7 +157,7 @@
 	<!-- WebDAV servlet -->
 	<servlet>
 		<servlet-name>webdav</servlet-name>
-		<servlet-class>org.olat.core.servlets.SecureWebdavServlet</servlet-class>
+		<servlet-class>org.olat.core.commons.services.webdav.SecureWebdavServlet</servlet-class>
 
 		<init-param>
 			<param-name>debug</param-name>

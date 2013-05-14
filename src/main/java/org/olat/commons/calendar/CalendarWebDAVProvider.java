@@ -27,8 +27,8 @@ package org.olat.commons.calendar;
 
 import java.io.File;
 
+import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.Identity;
-import org.olat.core.util.servlets.WebDAVProvider;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;

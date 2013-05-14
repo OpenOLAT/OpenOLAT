@@ -26,6 +26,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.modules.bc.FolderManager;
+import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,7 +42,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
-import org.olat.login.auth.WebDAVAuthManager;
 
 /**
  * 

@@ -24,7 +24,7 @@
 * <p>
 */ 
 
-package org.olat.core.servlets;
+package org.olat.core.commons.services.webdav;
 /*
  * ====================================================================
  *

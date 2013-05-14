@@ -26,9 +26,9 @@
 
 package org.olat.core.commons.modules.bc;
 
+import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.servlets.WebDAVProvider;
 import org.olat.core.util.vfs.VFSContainer;
 /**
  * 
@@ -42,7 +42,7 @@ public class BriefcaseWebDAVProvider  extends BasicManager implements WebDAVProv
 	}
 
 	/**
-	 * @see org.olat.commons.servlets.util.WebDAVProvider#getContainer(org.olat.core.id.Identity)
+	 * @see org.olat.core.commons.services.webdav.WebDAVProvider#getContainer(org.olat.core.id.Identity)
 	 */
 	public VFSContainer getContainer(Identity identity) {
 		// merge /public and /private
