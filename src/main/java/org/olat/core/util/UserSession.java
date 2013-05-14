@@ -103,7 +103,6 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		store = new HashMap<String,Object>(4);
 		nonClearedStore = new HashMap<String,Object>();
 		singleUserSystemBus = CoordinatorManager.getInstance().getCoordinator().createSingleUserInstance();
-		sessionInfo = null;
 		return this;
 	}
 
