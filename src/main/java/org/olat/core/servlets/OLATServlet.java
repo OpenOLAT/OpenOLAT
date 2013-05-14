@@ -96,6 +96,22 @@ public class OLATServlet extends HttpServlet {
 	public void destroy() {
 		//
 	}
+	
+	
+	/**
+	 * Filter BitKinex at the root
+	 */
+	@Override
+	public void service(HttpServletRequest req, HttpServletResponse res)
+	throws ServletException, IOException {
+		String userAgent = req.getHeader("User-Agent");
+		if(userAgent != null && userAgent.indexOf("BitKinex") >= 0) {
+			//BitKinex isn't allow to see this context
+			res.sendError(HttpServletResponse.SC_FORBIDDEN);
+		} else {
+			super.service(req, res);
+		}
+	}
 
 	/**
 	 * Called when the HTTP request method is GET. This method just calls the

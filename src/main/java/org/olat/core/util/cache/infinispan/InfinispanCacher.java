@@ -81,7 +81,7 @@ public class InfinispanCacher implements Cacher {
 			CacheConfig oConfig = configs.get(type);
 			if(oConfig != null) {
 				maxEntries = oConfig.getMaxElementsInMemory();
-				maxIdle = oConfig.getTimeToIdle();
+				maxIdle = oConfig.getTimeToIdle() * 1000;//convert seconds of ehcache to milliseconds of infinispan
 			}
 			ConfigurationBuilder builder = new ConfigurationBuilder();
 			builder.eviction().strategy(EvictionStrategy.LRU);

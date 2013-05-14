@@ -26,6 +26,8 @@
 
 package org.olat.core.util;
 
+import java.io.Serializable;
+
 import javax.servlet.http.HttpSession;
 
 import org.olat.admin.sysinfo.manager.SessionStatsManager;
@@ -38,11 +40,13 @@ import org.olat.core.gui.Windows;
  *
  * @author Mike Stock
  */
-public class SessionInfo {
+public class SessionInfo implements Serializable {
 
+	private static final long serialVersionUID = -380173272533291504L;
+	
 	private Long identityKey;
 	private String login;
-	private HttpSession session;
+	private transient HttpSession session;
 	private String firstname;
 	private String lastname;
 	private String fromIP;

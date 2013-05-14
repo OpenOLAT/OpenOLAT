@@ -75,7 +75,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 
 	// the environment (identity, locale, ..) of the identity
 	private IdentityEnvironment identityEnvironment;
-	private transient SessionInfo sessionInfo;
+	private SessionInfo sessionInfo;
 	private transient Map<String,Object> store;
 	/**
 	 * things to put into that should not be clear when signing on (e.g. remember url for a direct jump)

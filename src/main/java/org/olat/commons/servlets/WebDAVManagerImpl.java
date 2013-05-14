@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -66,7 +65,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 	private static final String BASIC_AUTH_REALM = "OLAT WebDAV Access";
 	private CoordinatorManager coordinatorManager;
 
-	private CacheWrapper timedSessionCache;
+	private CacheWrapper<String,UserSession> timedSessionCache;
 	private UserSessionManager sessionManager;
 
 	/**
@@ -88,6 +87,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 	/**
 	 * @see org.olat.commons.servlets.WebDAVManager#handleAuthentication(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
+	@Override
 	protected boolean handleAuthentication(HttpServletRequest req, HttpServletResponse resp) {
 		UserSession usess = handleBasicAuthentication(req, resp);
 		if (usess == null) return false;
@@ -101,12 +101,12 @@ public class WebDAVManagerImpl extends WebDAVManager {
 	/**
 	 * @see org.olat.commons.servlets.WebDAVManager#getUserSession(javax.servlet.http.HttpServletRequest)
 	 */
+	@Override
 	protected UserSession getUserSession(HttpServletRequest req) {
 		return (UserSession)req.getAttribute(SecureWebdavServlet.REQUEST_USERSESSION_KEY);
 	}
 	
 	private UserSession handleBasicAuthentication(HttpServletRequest request, HttpServletResponse response) {
-		
 		if (timedSessionCache == null) {
 			synchronized (this) {
 				timedSessionCache = coordinatorManager.getCoordinator().getCacher().getCache(WebDAVManager.class.getSimpleName(), "webdav");
@@ -117,7 +117,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 		String authHeader = request.getHeader("Authorization");
 		if (authHeader != null) {
 			// fetch user session from a previous authentication
-			UserSession usess = (UserSession)timedSessionCache.get(authHeader);
+			UserSession usess = timedSessionCache.get(authHeader);
 			if (usess != null && usess.isAuthenticated()) {
 				return usess;
 			}
@@ -130,12 +130,12 @@ public class WebDAVManagerImpl extends WebDAVManager {
 				if (basic.equalsIgnoreCase("Basic")) {
 					String credentials = st.nextToken();
 					usess = handleBasicAuthentication(credentials, request);
-					
 				}
 			}
 			
 			if(usess != null) {
 				timedSessionCache.put(authHeader, usess);
+				return usess;
 			}
 		}
 

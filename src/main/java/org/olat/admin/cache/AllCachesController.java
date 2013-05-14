@@ -90,7 +90,6 @@ public class AllCachesController extends BasicController {
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.disk", 1, null, getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.hitcnt", 2, null, getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.mcexp", 3, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.mcnotfound", 4, null, getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.quickcount", 5, null, getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.tti", 6, null, getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.ttl", 7, null, getLocale()));
@@ -205,7 +204,6 @@ public class AllCachesController extends BasicController {
 				case 1: return c.getCacheConfiguration().storeAsBinary().enabled() ? Boolean.TRUE:Boolean.FALSE;
 				case 2: return new Long(stats.getHits());
 				case 3: return new Long(stats.getMisses());
-				case 4: return "???";
 				case 5: return new Long(stats.getTotalNumberOfEntries());
 				case 6: return new Long(c.getCacheConfiguration().expiration().maxIdle());
 				case 7: return new Long(c.getCacheConfiguration().expiration().lifespan());
