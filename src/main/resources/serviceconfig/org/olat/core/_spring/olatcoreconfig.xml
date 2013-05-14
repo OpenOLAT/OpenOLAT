@@ -65,7 +65,6 @@
 			<entry key="AssessmentManager" value-ref="org.olat.course.assessment.NewCachePersistingAssessmentManager" />
 			<entry key="GlossaryItemManager" value-ref="org.olat.core.modules.glossary.GlossaryItemManager_glossary"/>
 			<entry key="ProjectBrokerManager" value-ref="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb"/>
-			<entry key="WebDAVManager" value-ref="org.olat.commons.servlets.WebDAVManagerImpl_webdav" />
 		</map>
 	</property>
 </bean>
@@ -113,11 +112,6 @@
 	<property name="timeToLive" value="3600" />
 	<property name="timeToIdle" value="3600" />
 	<property name="maxElementsInMemory" value="50" />								
-</bean>
-<bean id="org.olat.commons.servlets.WebDAVManagerImpl_webdav" class="org.olat.core.util.cache.CacheConfig">
-	<property name="timeToLive" value="1800" />
-	<property name="timeToIdle" value="300" />
-	<property name="maxElementsInMemory" value="200" />								
 </bean>
 <bean id="org.olat.course.assessment.NewCachePersistingAssessmentManager" class="org.olat.core.util.cache.CacheConfig">
 	<property name="timeToLive" value="0" />

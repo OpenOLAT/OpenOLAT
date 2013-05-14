@@ -72,7 +72,8 @@ public class StaticMediaDispatcher extends LogDelegator implements Dispatcher {
 	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest,
 	 *      javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
-	public void execute(HttpServletRequest request, HttpServletResponse response, @SuppressWarnings("unused") String uriPrefix) {
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
 		String pathInfo = request.getPathInfo();
 		if (pathInfo == null) {
 			// huh? What's this, send not found, don't know what to do here
@@ -91,7 +92,14 @@ public class StaticMediaDispatcher extends LogDelegator implements Dispatcher {
 		else {
 			// version provided - remove it
 			String version = Settings.getBuildIdentifier();
-			staticRelPath = pathInfo.substring(mapperPath.length() + 1 + version.length(), pathInfo.length());
+			int start = mapperPath.length() + 1 + version.length();
+			int end = pathInfo.length();
+			if(start <= end) {
+				staticRelPath = pathInfo.substring(start, end);
+			} else {
+				ServletUtil.serveResource(request, response, new NotFoundMediaResource("error"));
+				return;
+			}
 		}
 		
 		// remove any .. in the path

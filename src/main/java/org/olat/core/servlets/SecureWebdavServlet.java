@@ -57,10 +57,12 @@ import org.apache.naming.resources.Resource;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.servlets.DOMWriter;
 import org.olat.core.util.servlets.RequestUtil;
@@ -85,6 +87,9 @@ import org.xml.sax.InputSource;
 
 public class SecureWebdavServlet
     extends DefaultServlet {
+
+	private static final long serialVersionUID = -4935604508424445093L;
+	private static final OLog log = Tracing.createLoggerFor(SecureWebdavServlet.class);
 
     // -------------------------------------------------------------- Constants
 
@@ -266,36 +271,55 @@ public class SecureWebdavServlet
         return documentBuilder;
     }
 
+    /**
+     * Wrap the request around the same calls as the OLATServlet
+     */
+    protected void service(HttpServletRequest request, HttpServletResponse resp)
+        throws ServletException, IOException {
+    	try {
+    		Tracing.setUreq(request);
+    		I18nManager.attachI18nInfoToThread(request);
+    		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(request);
+    		//fxdiff FXOLAT-97: high CPU load tracker
+    		WorkThreadInformations.set("Serve request: " + request.getRequestURI());
 
+    		secureService(request, resp);
+    		
+    	} finally {
+  			//fxdiff FXOLAT-97: high CPU load tracker
+  			WorkThreadInformations.unset();
+  			ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
+  			I18nManager.remove18nInfoFromThread();
+  			Tracing.setUreq(null);
+  			DBFactory.getInstanceForClosing().closeSession();
+  		}
+    }
+    
     /**
      * Handles the special WebDAV methods.
      */
-    protected void service(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
-    	boolean success = false;
+    protected void secureService(HttpServletRequest req, HttpServletResponse resp) {
     	try {
-    		Tracing.setUreq(req);
-    		I18nManager.attachI18nInfoToThread(req);
-	        
     		String method = req.getMethod();
 	      String path = getRelativePath(req);
 	
 	      // OLAT-6294 alsways set encoding to UTF-8, overwritten later when a resource is different
 	      resp.setCharacterEncoding("UTF-8");
-
-	        if (debug > 0) {
-	            Tracing.logDebug("[" + method + "] " + path, SecureWebdavServlet.class);
-	        }
+	      if (debug > 0) {
+	      	log.debug("[" + method + "] " + path);
+	      }
 	
-					// security check; response header will be set appropriately
-					// returns false if security check failed.
+	      // security check; response header will be set appropriately
+	      // returns false if security check failed.
 	        
-	        if (webDAVManager == null) {
-	        	// is not initialized properly
-	        	return;
-	        }
-      		boolean authenticated = webDAVManager.handleAuthentication(req, resp);
-    			if (!authenticated) return;
+	      if (webDAVManager == null) {
+	      	// is not initialized properly
+	      	return;
+	      }
+	      boolean authenticated = webDAVManager.handleAuthentication(req, resp);
+	      if (!authenticated) {
+	      	return;
+	      }
 					
 	        if (method.equals(METHOD_PROPFIND)) {
 	            doPropfind(req, resp);
@@ -326,28 +350,16 @@ public class SecureWebdavServlet
 	            // DefaultServlet processing
 	            super.service(req, resp);
 	        }
-	        DBFactory.getInstance(false).commitAndCloseSession();
-	        success = true;
     	} catch (Exception e) {
-				Tracing.logError("Exception in WebDAV request", e,  SecureWebdavServlet.class);
+				log.error("Exception in WebDAV request", e);
     		throw new OLATRuntimeException(this.getClass(), "Exception in SecureWebDavServlet.", e);
     	} catch (Error er) {
-    		Tracing.logError("Error in WebDAV request", er,  SecureWebdavServlet.class);
+    		log.error("Error in WebDAV request", er);
     		throw new OLATRuntimeException(this.getClass(), "Error in SecureWebDavServlet.", er);
     	} catch (Throwable er) {
-    		Tracing.logError("Throwable in WebDAV request", er,  SecureWebdavServlet.class);
+    		log.error("Throwable in WebDAV request", er);
     		throw new OLATRuntimeException(this.getClass(), "Throwable in SecureWebDavServlet.", er);
-		} finally {
-			try {
-				if (!success) {
-					DBFactory.getInstance(false).rollbackAndCloseSession();
-				}
-			} finally {
-				I18nManager.remove18nInfoFromThread();
-				// clear user request in thread local of Tracing, as it is no longer needed
-				Tracing.setUreq(null);
-			}
-		}
+    	}
    }
 
 		/////////////////////////////////////////////
