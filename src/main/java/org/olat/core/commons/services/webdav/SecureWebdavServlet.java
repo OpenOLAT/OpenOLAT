@@ -297,71 +297,72 @@ public class SecureWebdavServlet
     /**
      * Handles the special WebDAV methods.
      */
-    protected void secureService(HttpServletRequest req, HttpServletResponse resp) {
-    	try {
-    		String method = req.getMethod();
-	      String path = getRelativePath(req);
-	
-	      // OLAT-6294 alsways set encoding to UTF-8, overwritten later when a resource is different
-	      resp.setCharacterEncoding("UTF-8");
-	      if (debug > 0) {
-	      	log.debug("[" + method + "] " + path);
-	      }
-	
-	      // security check; response header will be set appropriately
-	      // returns false if security check failed.
-	        
-	      if (webDAVManager == null) {
-	      	// is not initialized properly
-	      	return;
-	      }
-	      boolean authenticated = webDAVManager.handleAuthentication(req, resp);
-	      if (!authenticated) {
-	      	return;
-	      }
-					
-	        if (method.equals(METHOD_PROPFIND)) {
-	            doPropfind(req, resp);
-					} else if (method.equals(METHOD_PROPPATCH)) {
-							doProppatch(req, resp);
-					} else if (method.equals(METHOD_OPTIONS)) {
-							doOptions(req, resp);
-	        } else if (method.equals(METHOD_MKCOL)) {
-	            doMkcol(req, resp);
-	        } else if (method.equals(METHOD_COPY)) {
-	            doCopy(req, resp);
-	        } else if (method.equals(METHOD_MOVE)) {
-	            doMove(req, resp);
-	        } else if (method.equals(METHOD_LOCK)) {
-	            doLock(req, resp);
-	        } else if (method.equals(METHOD_UNLOCK)) {
-	            doUnlock(req, resp);
-	        } else if (method.equals(METHOD_HEAD)) {
-	        		String decodedPath = URLDecoder.decode(path, "UTF-8");
-	        		String headerCD = "attachment; filename=" + decodedPath.substring(decodedPath.lastIndexOf("/") + 1);
-	        		resp.setHeader("Content-Disposition", headerCD);
-	        		super.service(req, resp);
-	        }	else if (method.equals(METHOD_PUT)) {
-						doPut(req, resp);
-	        }	else if (method.equals(METHOD_DELETE)) {
-						doDelete(req, resp);
-	        } else {
-	            // DefaultServlet processing
-	            super.service(req, resp);
-	        }
-    	} catch (Exception e) {
-				log.error("Exception in WebDAV request", e);
-    		throw new OLATRuntimeException(this.getClass(), "Exception in SecureWebDavServlet.", e);
-    	} catch (Error er) {
-    		log.error("Error in WebDAV request", er);
-    		throw new OLATRuntimeException(this.getClass(), "Error in SecureWebDavServlet.", er);
-    	} catch (Throwable er) {
-    		log.error("Throwable in WebDAV request", er);
-    		throw new OLATRuntimeException(this.getClass(), "Throwable in SecureWebDavServlet.", er);
-    	}
+	protected void secureService(HttpServletRequest req, HttpServletResponse resp) {
+		try {
+			String method = req.getMethod();
+			String path = getRelativePath(req);
+
+			// OLAT-6294 alsways set encoding to UTF-8, overwritten later when a
+			// resource is different
+			resp.setCharacterEncoding("UTF-8");
+			if (debug > 0) {
+				log.debug("[" + method + "] " + path);
+			}
+
+			// security check; response header will be set appropriately
+			// returns false if security check failed.
+
+			if (webDAVManager == null) {
+				// is not initialized properly
+				return;
+			}
+			boolean authenticated = webDAVManager.handleAuthentication(req, resp);
+			if (!authenticated) {
+				return;
+			}
+
+			if (method.equals(METHOD_PROPFIND)) {
+				doPropfind(req, resp);
+			} else if (method.equals(METHOD_PROPPATCH)) {
+				doProppatch(req, resp);
+			} else if (method.equals(METHOD_OPTIONS)) {
+				doOptions(req, resp);
+			} else if (method.equals(METHOD_MKCOL)) {
+				doMkcol(req, resp);
+			} else if (method.equals(METHOD_COPY)) {
+				doCopy(req, resp);
+			} else if (method.equals(METHOD_MOVE)) {
+				doMove(req, resp);
+			} else if (method.equals(METHOD_LOCK)) {
+				doLock(req, resp);
+			} else if (method.equals(METHOD_UNLOCK)) {
+				doUnlock(req, resp);
+			} else if (method.equals(METHOD_HEAD)) {
+				String decodedPath = URLDecoder.decode(path, "UTF-8");
+				String headerCD = "attachment; filename=" + decodedPath.substring(decodedPath.lastIndexOf("/") + 1);
+				resp.setHeader("Content-Disposition", headerCD);
+				super.service(req, resp);
+			} else if (method.equals(METHOD_PUT)) {
+				doPut(req, resp);
+			} else if (method.equals(METHOD_DELETE)) {
+				doDelete(req, resp);
+			} else {
+				// DefaultServlet processing
+				super.service(req, resp);
+			}
+		} catch (Exception e) {
+			log.error("Exception in WebDAV request", e);
+			throw new OLATRuntimeException(this.getClass(), "Exception in SecureWebDavServlet.", e);
+		} catch (Error er) {
+			log.error("Error in WebDAV request", er);
+			throw new OLATRuntimeException(this.getClass(), "Error in SecureWebDavServlet.", er);
+		} catch (Throwable er) {
+			log.error("Throwable in WebDAV request", er);
+			throw new OLATRuntimeException(this.getClass(), "Throwable in SecureWebDavServlet.", er);
+		}
    }
 
-		/////////////////////////////////////////////
+	/////////////////////////////////////////////
     // Start of additions to Tomcat WebdavServlet
     /////////////////////////////////////////////
     
