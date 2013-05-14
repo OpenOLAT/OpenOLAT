@@ -211,7 +211,7 @@ public class UserManagerImpl extends UserManager {
 		if(mysql) {
 			emailSb.append(" user.properties['").append(UserConstants.EMAIL).append("']  in (:emails) ");
 		} else {
-			emailSb.append(" lower(user.properties['").append(UserConstants.EMAIL).append("']) = lower(:email)");
+			emailSb.append(" lower(user.properties['").append(UserConstants.EMAIL).append("']) = lower(:emails)");
 		}
 
 		List<Identity> identities = dbInstance.getCurrentEntityManager()
@@ -223,7 +223,7 @@ public class UserManagerImpl extends UserManager {
 		if(mysql) {
 			institutionalSb.append(" user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("'] in (:emails) ");
 		} else {
-			institutionalSb.append(" lower(user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("']) = lower(:email)");
+			institutionalSb.append(" lower(user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("']) = lower(:emails)");
 		}
 		if(!identities.isEmpty()) {
 			institutionalSb.append(" and identity not in (:identities) ");
