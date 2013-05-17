@@ -1,0 +1,54 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.ims.lti;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import org.olat.core.id.Identity;
+import org.olat.resource.OLATResource;
+
+/**
+ * 
+ * Initial date: 13.05.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public interface LTIManager {
+	
+	public static final String USER_PROPS_PREFIX = "$userprops_";
+	public static final int EXPIRATION_TIME = 3600 * 24 * 30 * 6;//6 months
+
+	public Map<String,String> forgeLTIProperties(Identity identity, Locale locale,
+			LTIContext context, boolean sendName, boolean sendEmail);
+	
+	public Map<String,String> sign(Map<String,String> props, String url, String oauthKey, String oauthSecret);
+	
+	
+	public LTIOutcome createOutcome(Identity identity, OLATResource resource, String resSubPath,
+			String action, String outcomeKey, String outcomeValue);
+	
+	public LTIOutcome loadOutcomeByKey(Long key);
+
+	public List<LTIOutcome> loadOutcomes(Identity identity, OLATResource resource, String resSubPath);
+	
+
+}

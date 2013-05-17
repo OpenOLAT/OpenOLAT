@@ -111,6 +111,23 @@ public class ModuleConfiguration implements Serializable {
 		Boolean set = val.equals("true")? Boolean.TRUE : Boolean.FALSE;
 		return set;
 	}
+	
+	public Float getFloatEntry(String config_key) {
+		Object val = get(config_key);
+		Float floatValue = null;
+		if (val == null) {
+			floatValue = null;
+		} else if( val instanceof Float) {
+			floatValue = (Float)val;
+		} else if( val instanceof String) {
+			try {
+				floatValue = new Float((String)val);
+			} catch(NumberFormatException e) {
+				//
+			}
+		}
+		return floatValue;
+	}
 
 	/**
 	 * 

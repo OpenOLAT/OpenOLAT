@@ -796,6 +796,22 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.ims.lti.LTIManager">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Can be used for LTI" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />	
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />	
+								<ref bean="userPropertyInstitutionalEmail" />						
+							</list>
+						</property>
+					</bean>
+				</entry>
+				
 				<!-- fxdiff: FXOLAT-227 user properties used for group-mail-function -->
 				<entry key="org.olat.group.ui.run.BusinessGroupSendToChooserForm">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">

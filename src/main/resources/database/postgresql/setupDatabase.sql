@@ -1078,6 +1078,7 @@ create table o_mapper (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
+   expirationdate timestamp,
    mapper_uuid varchar(64),
    orig_session_id varchar(64),
    xml_config TEXT,
@@ -1197,6 +1198,19 @@ create table o_qp_license (
    q_license varchar(256) not null,
    q_text varchar(2048),
    q_deletable boolean default false,
+   primary key (id)
+);
+
+create table o_lti_outcome (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   r_ressubpath varchar(2048),
+   r_action varchar(255) not null,
+   r_outcome_key varchar(255) not null,
+   r_outcome_value varchar(2048),
+   fk_resource_id int8 not null,
+   fk_identity_id int8 not null,
    primary key (id)
 );
 
@@ -1972,5 +1986,10 @@ alter table o_qp_item add constraint idx_qp_item_license_id foreign key (fk_lice
 alter table o_qp_taxonomy_level add constraint idx_qp_field_2_parent_id foreign key (fk_parent_field) references o_qp_taxonomy_level(id);
 
 alter table o_qp_item_type add constraint cst_unique_item_type unique (q_type);
+
+alter table o_lti_outcome add constraint idx_lti_outcome_ident_id foreign key (fk_identity_id) references o_bs_identity(id);
+alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
+create index idx_lti_outcome_ident_id_idx on o_lti_outcome (fk_identity_id);
+create index idx_lti_outcome_rsrc_id_idx on o_lti_outcome (fk_resource_id);
 
 insert into hibernate_unique_key values ( 0 );

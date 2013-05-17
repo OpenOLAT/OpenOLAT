@@ -103,7 +103,7 @@ public class MapperServiceImpl implements MapperService {
 		}
 		
 		if(mapper instanceof Serializable) {
-			mapperDao.persistMapper(sessionId, mapid, (Serializable)mapper);
+			mapperDao.persistMapper(sessionId, mapid, (Serializable)mapper, -1);
 		}
 		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + mapid;
 	}	
@@ -113,20 +113,25 @@ public class MapperServiceImpl implements MapperService {
 	 */
 	@Override
 	public String register(UserSession session, String mapperId, Mapper mapper) {
+		return register(session, mapperId, mapper, -1);
+	}
+
+	@Override
+	public String register(UserSession session, String mapperId, Mapper mapper, int expirationTime) {
 		String encryptedMapId = Encoder.encrypt(mapperId);
 		MapperKey mapperKey = new MapperKey(session, encryptedMapId);
 		boolean alreadyLoaded = mapperKeyToMapper.containsKey(mapperKey);
 		if(mapper instanceof Serializable) {
 			if(alreadyLoaded) {
-				if(!mapperDao.updateConfiguration(encryptedMapId, (Serializable)mapper)) {
-					mapperDao.persistMapper(null, encryptedMapId, (Serializable)mapper);
+				if(!mapperDao.updateConfiguration(encryptedMapId, (Serializable)mapper, expirationTime)) {
+					mapperDao.persistMapper(null, encryptedMapId, (Serializable)mapper, expirationTime);
 				}
 			} else {
 				PersistedMapper persistedMapper = mapperDao.loadByMapperId(encryptedMapId);
 				if(persistedMapper == null) {
-					mapperDao.persistMapper(null, encryptedMapId, (Serializable)mapper);
+					mapperDao.persistMapper(null, encryptedMapId, (Serializable)mapper, expirationTime);
 				} else {
-					mapperDao.updateConfiguration(encryptedMapId, (Serializable)mapper);
+					mapperDao.updateConfiguration(encryptedMapId, (Serializable)mapper, expirationTime);
 				}
 			}
 		}
@@ -176,7 +181,7 @@ public class MapperServiceImpl implements MapperService {
 				Mapper mapper = mapperKeyToMapper.remove(mapKey);
 				if(mapper != null) {
 					if(mapper instanceof Serializable) {
-						mapperDao.updateConfiguration(mapKey.getMapperId(), (Serializable)mapper);
+						mapperDao.updateConfiguration(mapKey.getMapperId(), (Serializable)mapper, -1);
 					}
 					mapperToMapperKey.remove(mapper);
 				}
@@ -192,7 +197,7 @@ public class MapperServiceImpl implements MapperService {
 			if(mapperKey != null) {
 				mapperKeyToMapper.remove(mapperKey);
 				if(mapper instanceof Serializable) {
-					mapperDao.updateConfiguration(mapperKey.getMapperId(), (Serializable)mapper);
+					mapperDao.updateConfiguration(mapperKey.getMapperId(), (Serializable)mapper, -1);
 				}
 			}
 		}

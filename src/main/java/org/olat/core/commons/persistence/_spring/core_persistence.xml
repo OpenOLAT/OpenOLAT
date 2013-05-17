@@ -76,7 +76,6 @@
 		<mapping-file>org/olat/portfolio/model/structel/StructureElement.hbm.xml</mapping-file>
 		<mapping-file>org/olat/portfolio/model/notification/Notifications.hbm.xml</mapping-file>
 		<mapping-file>org/olat/portfolio/model/restriction/CollectRestriction.hbm.xml</mapping-file>
-		<mapping-file>org/olat/core/dispatcher/mapper/model/PersistedMapper.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/commons/services/commentAndRating/impl/UserCommentImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/commons/services/commentAndRating/impl/UserRatingImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/commons/services/mark/impl/MarkImpl.hbm.xml</mapping-file>
@@ -88,6 +87,7 @@
 		<mapping-file>org/olat/course/db/impl/CourseDBEntryImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/coach/model/EfficiencyStatementStatEntry.hbm.xml</mapping-file>
 		
+		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
 		<class>org.olat.group.model.BusinessGroupParticipantViewImpl</class>
 		<class>org.olat.group.model.BusinessGroupOwnerViewImpl</class>
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
@@ -112,6 +112,7 @@
 		<class>org.olat.modules.qpool.model.QEducationalContext</class>
 		<class>org.olat.modules.qpool.model.QItemType</class>
 		<class>org.olat.modules.qpool.model.QLicense</class>
+		<class>org.olat.ims.lti.model.LTIOutcomeImpl</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>

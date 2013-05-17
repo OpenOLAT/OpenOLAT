@@ -1,0 +1,14 @@
+<table>
+	<tbody>
+		#foreach($nvp in $nameValuePairs)
+		<tr>
+			<td>custom_</td>
+			<td>$r.render("name_${nvp.guid}")</td>
+			<td>$r.render("typ_${nvp.guid}")</td>
+			<td>$r.render("val_${nvp.guid}")$r.render("userprops_${nvp.guid}")</td>
+			<td>$r.render("add_${nvp.guid}")</td>
+			<td>$r.render("rm_${nvp.guid}")</td>
+		</tr>
+		#end
+	</tbody>
+</table>

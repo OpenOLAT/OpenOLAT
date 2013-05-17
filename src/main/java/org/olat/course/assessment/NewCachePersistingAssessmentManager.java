@@ -363,7 +363,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 * @param score
 	 * @param coursePropManager
 	 */
-	void saveNodeScore(CourseNode courseNode, Identity identity, Identity assessedIdentity, Float score, CoursePropertyManager coursePropManager) {
+	void saveNodeScore(CourseNode courseNode, Identity assessedIdentity, Float score, CoursePropertyManager coursePropManager) {
     // olat:::: introduce a createOrUpdate method in the cpm and also if applicable in the general propertymanager
 		if (score != null) {
 			Property scoreProperty = coursePropManager.findCourseNodeProperty(courseNode, assessedIdentity, null, SCORE);
@@ -438,7 +438,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 * @param passed
 	 * @param coursePropManager
 	 */
-	void saveNodePassed(CourseNode courseNode, Identity identity, Identity assessedIdentity, Boolean passed, CoursePropertyManager coursePropManager) {		
+	void saveNodePassed(CourseNode courseNode, Identity assessedIdentity, Boolean passed, CoursePropertyManager coursePropManager) {		
 		  Property passedProperty = coursePropManager.findCourseNodeProperty(courseNode, assessedIdentity, null, PASSED);
 		  if (passedProperty == null && passed!=null) {					
 			  String pass = passed.toString();
@@ -846,8 +846,8 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 				Long attempts = null;
 				Codepoint.codepoint(NewCachePersistingAssessmentManager.class, "doInSyncUpdateUserEfficiencyStatement");
 				log.debug("codepoint reached: doInSyncUpdateUserEfficiencyStatement by identity: " + identity.getName());
-				saveNodeScore(courseNode, identity, assessedIdentity, scoreEvaluation.getScore(), cpm);
-				saveNodePassed(courseNode, identity, assessedIdentity, scoreEvaluation.getPassed(), cpm);
+				saveNodeScore(courseNode, assessedIdentity, scoreEvaluation.getScore(), cpm);
+				saveNodePassed(courseNode, assessedIdentity, scoreEvaluation.getPassed(), cpm);
 				saveAssessmentID(courseNode, assessedIdentity, scoreEvaluation.getAssessmentID(), cpm);				
 				if(incrementUserAttempts) {
 					attempts = incrementNodeAttemptsProperty(courseNode, assessedIdentity, cpm);

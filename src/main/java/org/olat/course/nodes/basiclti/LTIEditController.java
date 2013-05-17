@@ -76,7 +76,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 	private TabbedPane myTabbedPane;
 	private Controller previewLayoutCtr;
 	private Link previewButton;
-	private Controller tunnelRunCtr;
+	private Controller previewLtiCtr;
 	private final StackedController stackPanel;
 
 	/**
@@ -124,14 +124,14 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == previewButton) { // those must be links
 			
-			removeAsListenerAndDispose(tunnelRunCtr);
-			tunnelRunCtr = new LTIRunController(getWindowControl(), config, ureq, courseNode, editCourseEnv);
-			listenTo(tunnelRunCtr);
+			removeAsListenerAndDispose(previewLtiCtr);
+			previewLtiCtr = new LTIRunController(getWindowControl(), config, ureq, courseNode, editCourseEnv);
+			listenTo(previewLtiCtr);
 			
 			// preview layout: only center column (col3) used
 			removeAsListenerAndDispose(previewLayoutCtr);
 
-			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), tunnelRunCtr);
+			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewLtiCtr);
 			listenTo(previewLayoutCtr);
 			this.stackPanel.pushController(translate("preview"), previewLayoutCtr);
 		}

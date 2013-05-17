@@ -1,9 +1,11 @@
 <div class="b_iframe_wrapper">
-<iframe  id="IMSBasicLTIFrame" src="$mapperUri"  marginwidth="0"
-marginheight="0" height="400">
-<script type="text/javascript">
-## no window.onresize due to IE bug which triggers recurstion: http://snook.ca/archives/javascript/ie6_fires_onresize/
-jQuery(function() {b_resizeIframeToMainMaxHeight("IMSBasicLTIFrame");});
-</script>
-</iframe>
+	<iframe  id="IMSBasicLTIFrame" src="$mapperUri"  marginwidth="0" marginheight="0" #if($width) width="${width}px" #end height="#if($height)${height}#else{400}#{end}px" style="#if($width) width:${width}px;#end #if($height)height:${height}px;#{end}"></iframe>
 </div>
+#if(!$height)
+	<script type="text/javascript">
+	/* <![CDATA[ */ 
+		## no window.onresize due to IE bug which triggers recurstion: http://snook.ca/archives/javascript/ie6_fires_onresize/
+		jQuery(function() {b_resizeIframeToMainMaxHeight("IMSBasicLTIFrame");});
+	/* ]]> */
+	</script>
+#end

@@ -48,7 +48,7 @@ public class MapperDAOTest extends OlatTestCase {
 		String sessionId = UUID.randomUUID().toString().substring(0, 32);
 		PersistentMapper mapper = new PersistentMapper(mapperId);
 		
-		PersistedMapper pMapper = mapperDao.persistMapper(sessionId, mapperId, mapper);
+		PersistedMapper pMapper = mapperDao.persistMapper(sessionId, mapperId, mapper, -1);
 		Assert.assertNotNull(pMapper);
 		Assert.assertNotNull(pMapper.getKey());
 		Assert.assertNotNull(pMapper.getCreationDate());
@@ -64,7 +64,7 @@ public class MapperDAOTest extends OlatTestCase {
 		//create a mapper
 		String mapperId = UUID.randomUUID().toString();
 		String sessionId = UUID.randomUUID().toString().substring(0, 32);
-		PersistedMapper pMapper = mapperDao.persistMapper(sessionId, mapperId, null);
+		PersistedMapper pMapper = mapperDao.persistMapper(sessionId, mapperId, null, -1);
 		Assert.assertNotNull(pMapper);
 		dbInstance.commitAndCloseSession();
 		
@@ -84,7 +84,7 @@ public class MapperDAOTest extends OlatTestCase {
 		for(int i=0; i<10; i++) {
 			mapperIdToDelete = UUID.randomUUID().toString();
 			String sessionId = UUID.randomUUID().toString().substring(0, 32);
-			mapperDao.persistMapper(sessionId, mapperIdToDelete, null);
+			mapperDao.persistMapper(sessionId, mapperIdToDelete, null, -1);
 		}
 		dbInstance.commitAndCloseSession();
 		
@@ -94,7 +94,7 @@ public class MapperDAOTest extends OlatTestCase {
 		//create a new mapper
 		String mapperId = UUID.randomUUID().toString();
 		String sessionId = UUID.randomUUID().toString().substring(0, 32);
-		mapperDao.persistMapper(sessionId, mapperId, null);
+		mapperDao.persistMapper(sessionId, mapperId, null, -1);
 		dbInstance.commitAndCloseSession();
 		
 		//delete old mappers
@@ -108,6 +108,44 @@ public class MapperDAOTest extends OlatTestCase {
 		//try to load a deleted mapper
 		PersistedMapper deletedMapper = mapperDao.loadByMapperId(mapperIdToDelete);
 		Assert.assertNull(deletedMapper);
+	}
+	
+	@Test
+	public void testDeleteMapperByMapper_expirationDate() throws Exception {
+		//create mappers
+		String mapperIdToDeleteShortLived = UUID.randomUUID().toString();
+		String sessionId1 = UUID.randomUUID().toString().substring(0, 32);
+		mapperDao.persistMapper(sessionId1, mapperIdToDeleteShortLived, null, 1);
+		
+		String mapperIdToDeleteLongLived = UUID.randomUUID().toString();
+		String sessionId2 = UUID.randomUUID().toString().substring(0, 32);
+		mapperDao.persistMapper(sessionId2, mapperIdToDeleteLongLived, null, 10000);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		Thread.sleep(5000);
+		
+		//create a new mapper
+		String mapperId = UUID.randomUUID().toString();
+		String sessionId = UUID.randomUUID().toString().substring(0, 32);
+		mapperDao.persistMapper(sessionId, mapperId, null, -1);
+		dbInstance.commitAndCloseSession();
+		
+		//delete old mappers
+		cal.add(Calendar.SECOND, 3);
+		int numOfDeletedRow = mapperDao.deleteMapperByDate(cal.getTime());
+		Assert.assertTrue(numOfDeletedRow >= 1);
+
+		//load the last mapper
+		PersistedMapper loadedMapper = mapperDao.loadByMapperId(mapperId);
+		Assert.assertNotNull(loadedMapper);
+		//try to load the short lived mapper
+		PersistedMapper deletedMapper = mapperDao.loadByMapperId(mapperIdToDeleteShortLived);
+		Assert.assertNull(deletedMapper);
+		//try to load the long lived mapper
+		PersistedMapper survivorMapper = mapperDao.loadByMapperId(mapperIdToDeleteLongLived);
+		Assert.assertNotNull(survivorMapper);
+		
 	}
 
 }

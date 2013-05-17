@@ -66,7 +66,7 @@ public class ServletUtil {
 	public static void printOutRequestParameter(HttpServletRequest request) {
 		for(Enumeration<String> names=request.getParameterNames(); names.hasMoreElements(); ) {
 			String name = names.nextElement();
-			System.out.println(name + " :: " + request.getParameter(name));
+			log.info(name + " :: " + request.getParameter(name));
 		}
 	}
 	

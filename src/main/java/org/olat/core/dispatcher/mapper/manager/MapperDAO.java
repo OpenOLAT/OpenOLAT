@@ -20,6 +20,7 @@
 package org.olat.core.dispatcher.mapper.manager;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -43,10 +44,17 @@ public class MapperDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public PersistedMapper persistMapper(String sessionId, String mapperId, Serializable mapper) {
+	public PersistedMapper persistMapper(String sessionId, String mapperId, Serializable mapper, int expirationTime) {
 		PersistedMapper m = new PersistedMapper();
 		m.setMapperId(mapperId);
-		m.setLastModified(new Date());
+		Date currentDate = new Date();
+		m.setLastModified(currentDate);
+		if(expirationTime > 0) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(currentDate);
+			cal.add(Calendar.SECOND, expirationTime);
+			m.setExpirationDate(cal.getTime());
+		}
 		m.setOriginalSessionId(sessionId);
 		
 		String configuration = XStreamHelper.createXStreamInstance().toXML(mapper);
@@ -56,7 +64,7 @@ public class MapperDAO {
 		return m;
 	}
 	
-	public boolean updateConfiguration(String mapperId, Serializable mapper) {
+	public boolean updateConfiguration(String mapperId, Serializable mapper, int expirationTime) {
 		PersistedMapper m = loadForUpdate(mapperId);
 		if(m == null) {
 			return false;
@@ -64,18 +72,22 @@ public class MapperDAO {
 		
 		String configuration = XStreamHelper.createXStreamInstance().toXML(mapper);
 		m.setXmlConfiguration(configuration);
-		m.setLastModified(new Date());
+		Date currentDate = new Date();
+		m.setLastModified(currentDate);
+		if(expirationTime > 0) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(currentDate);
+			cal.add(Calendar.SECOND, expirationTime);
+			m.setExpirationDate(cal.getTime());
+		}
+
 		dbInstance.getCurrentEntityManager().merge(m);
 		return true;
 	}
 	
 	private PersistedMapper loadForUpdate(String mapperId) {
-		StringBuilder q = new StringBuilder();
-		q.append("select mapper from ").append(PersistedMapper.class.getName()).append(" as mapper ")
-		 .append(" where mapper.mapperId=:mapperId order by mapper.key");
-		
 		List<PersistedMapper> mappers = dbInstance.getCurrentEntityManager()
-				.createQuery(q.toString(), PersistedMapper.class)
+				.createNamedQuery("loadMapperByKeyOrdered", PersistedMapper.class)
 				.setParameter("mapperId", mapperId)
 				.setFirstResult(0)
 				.setMaxResults(1)
@@ -84,24 +96,16 @@ public class MapperDAO {
 	}
 	
 	public PersistedMapper loadByMapperId(String mapperId) {
-		StringBuilder q = new StringBuilder();
-		q.append("select mapper from ").append(PersistedMapper.class.getName()).append(" as mapper ")
-		 .append(" where mapper.mapperId=:mapperId");
-		
 		List<PersistedMapper> mappers = dbInstance.getCurrentEntityManager()
-				.createQuery(q.toString(), PersistedMapper.class)
+				.createNamedQuery("loadMapperByKey", PersistedMapper.class)
 				.setParameter("mapperId", mapperId)
 				.getResultList();
 		return mappers.isEmpty() ? null : mappers.get(0);
 	}
 	
 	public Mapper retrieveMapperById(String mapperId) {
-		StringBuilder q = new StringBuilder();
-		q.append("select mapper from ").append(PersistedMapper.class.getName()).append(" as mapper ")
-		 .append(" where mapper.mapperId=:mapperId");
-		
 		List<PersistedMapper> mappers = dbInstance.getCurrentEntityManager()
-				.createQuery(q.toString(), PersistedMapper.class)
+				.createNamedQuery("loadMapperByKey", PersistedMapper.class)
 				.setParameter("mapperId", mapperId)
 				.getResultList();
 		PersistedMapper pm = mappers.isEmpty() ? null : mappers.get(0);
@@ -119,12 +123,14 @@ public class MapperDAO {
 	
 	public int deleteMapperByDate(Date limit) {
 		StringBuilder q = new StringBuilder();
-		q.append("delete from ").append(PersistedMapper.class.getName()).append(" as mapper ")
-		 .append(" where mapper.lastModified<:limit");
+		q.append("delete from pmapper as mapper where ")
+		 .append(" (mapper.expirationDate is null and mapper.lastModified<:limit)")
+		 .append(" or (mapper.expirationDate<:now)");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString())
 				.setParameter("limit", limit, TemporalType.TIMESTAMP)
+				.setParameter("now", new Date(), TemporalType.TIMESTAMP)
 				.executeUpdate();
 	}
 }

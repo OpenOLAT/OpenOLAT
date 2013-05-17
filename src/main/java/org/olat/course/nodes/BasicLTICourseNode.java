@@ -32,30 +32,48 @@ import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.id.Identity;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.nodes.AbstractAccessableCourseNode;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.StatusDescriptionHelper;
 import org.olat.course.nodes.basiclti.LTIConfigForm;
 import org.olat.course.nodes.basiclti.LTIEditController;
 import org.olat.course.nodes.basiclti.LTIRunController;
+import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.ims.lti.ui.LTIResultDetailsController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  * @author guido
  * @author Charles Severance
  */
-public class BasicLTICourseNode extends AbstractAccessableCourseNode {
+public class BasicLTICourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
 
+	private static final long serialVersionUID = 2210572148308757127L;
 	private static final String TYPE = "lti";
+
+	public static final String CONFIG_KEY_AUTHORROLE = "authorRole";
+	public static final String CONFIG_KEY_COACHROLE = "coachRole";
+	public static final String CONFIG_KEY_PARTICIPANTROLE = "participantRole";
+	public static final String CONFIG_KEY_SCALEVALUE = "scaleFactor";
+	public static final String CONFIG_KEY_HAS_SCORE_FIELD = MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD;
+	public static final String CONFIG_KEY_HAS_PASSED_FIELD = MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD;
+	public static final String CONFIG_KEY_PASSED_CUT_VALUE = MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE;
+	public static final String CONFIG_HEIGHT = "displayHeight";
+	public static final String CONFIG_WIDTH = "displayWidth";
+	public static final String CONFIG_HEIGHT_AUTO = ScormEditController.CONFIG_HEIGHT_AUTO;
+	public static final String CONFIG_DISPLAY = "display";
+	
 	
 	// NLS support:
 	
@@ -89,10 +107,13 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
-		return new NodeRunConstructionResult(new LTIRunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv.getCourseEnvironment()));
+		LTIRunController runCtrl = new LTIRunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv);
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_lti_icon");
+		return new NodeRunConstructionResult(ctrl);
 	}
 
 	/**
@@ -101,6 +122,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, ne, null).getRunController();
 	}
@@ -108,6 +130,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
 	 */
+	@Override
 	public StatusDescription isConfigValid() {
 
 		/*
@@ -133,6 +156,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
@@ -146,6 +170,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
 	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
@@ -153,6 +178,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
 	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
@@ -165,6 +191,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
+	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
@@ -185,4 +212,177 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 		}
 	}
 
+	@Override
+	public Float getMaxScoreConfiguration() {
+		if (!hasScoreConfigured()) {
+			throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined when hasScore set to false", null);
+		}
+		ModuleConfiguration config = getModuleConfiguration();
+		Float scaleFactor = (Float) config.get(CONFIG_KEY_SCALEVALUE);
+		if(scaleFactor == null || scaleFactor.floatValue() < 0.0000001f) {
+			return new Float(1.0f);
+		}
+		return 1.0f * scaleFactor.floatValue();//LTI 1.1 return between 0.0 - 1.0
+	}
+
+	@Override
+	public Float getMinScoreConfiguration() {
+		if (!hasScoreConfigured()) { 
+			throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined when hasScore set to false", null);
+		}
+		return new Float(0.0f);
+	}
+
+	@Override
+	public Float getCutValueConfiguration() {
+		if (!hasPassedConfigured()) { 
+			throw new OLATRuntimeException(MSCourseNode.class, "getCutValue not defined when hasPassed set to false", null);
+		}
+		ModuleConfiguration config = getModuleConfiguration();
+		return config.getFloatEntry(CONFIG_KEY_PASSED_CUT_VALUE);
+	}
+
+	@Override
+	public boolean hasScoreConfigured() {
+		ModuleConfiguration config = getModuleConfiguration();
+		Boolean score = config.getBooleanEntry(CONFIG_KEY_HAS_SCORE_FIELD);
+		return (score == null) ? false : score.booleanValue();
+	}
+
+	@Override
+	public boolean hasPassedConfigured() {
+		ModuleConfiguration config = getModuleConfiguration();
+		Boolean passed = config.getBooleanEntry(CONFIG_KEY_HAS_PASSED_FIELD);
+		return (passed == null) ? false : passed.booleanValue();
+	}
+
+	@Override
+	public boolean hasCommentConfigured() {
+		return false;
+	}
+
+	@Override
+	public boolean hasAttemptsConfigured() {
+		return false;
+	}
+
+	@Override
+	public boolean hasDetails() {
+		return true;
+	}
+
+	@Override
+	public boolean hasStatusConfigured() {
+		return false;
+	}
+
+	@Override
+	public boolean isEditableConfigured() {
+		return true;
+	}
+
+	@Override
+	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
+		// read score from properties
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		Boolean passed = null;
+		Float score = null;
+		// only db lookup if configured, else return null
+		if (hasPassedConfigured()) passed = am.getNodePassed(this, mySelf);
+		if (hasScoreConfigured()) score = am.getNodeScore(this, mySelf);
+
+		ScoreEvaluation se = new ScoreEvaluation(score, passed);
+		return se;
+	}
+
+	@Override
+	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		String userCommentValue = am.getNodeComment(this, mySelf);
+		return userCommentValue;
+	}
+
+	@Override
+	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		String coachCommentValue = am.getNodeCoachComment(this, mySelf);
+		return coachCommentValue;
+	}
+
+	@Override
+	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		Integer userAttemptsValue = am.getNodeAttempts(this, mySelf);
+		return userAttemptsValue;
+	}
+
+	@Override
+	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
+		return null;
+	}
+
+	@Override
+	public String getDetailsListViewHeaderKey() {
+		return null;
+	}
+
+	@Override
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
+			StackedController stackPanel, UserCourseEnvironment userCourseEnvironment) {
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		OLATResource resource = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		return new LTIResultDetailsController(ureq, wControl, assessedIdentity, resource, getIdent());
+	}
+
+	@Override
+	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
+			Identity coachingIdentity, boolean incrementAttempts) {
+		
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation.getScore(), scoreEvaluation.getPassed()), userCourseEnvironment, incrementAttempts);
+	}
+
+	@Override
+	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if (userComment != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.saveNodeComment(this, coachingIdentity, mySelf, userComment);
+		}
+	}
+
+	@Override
+	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment);
+	}
+
+	@Override
+	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if (userAttempts != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.saveNodeAttempts(this, coachingIdentity, mySelf, userAttempts);
+		}
+	}
+
+	@Override
+	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		if (coachComment != null) {
+			am.saveNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity(), coachComment);
+		}
+	}
 }

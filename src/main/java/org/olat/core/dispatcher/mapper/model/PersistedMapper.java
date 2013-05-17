@@ -21,21 +21,79 @@ package org.olat.core.dispatcher.mapper.model;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Persistable;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PersistedMapper extends PersistentObject implements ModifiedInfo {
+@Entity(name="pmapper")
+@Table(name="o_mapper")
+@NamedQueries({
+	@NamedQuery(name="loadMapperByKeyOrdered", query="select mapper from pmapper as mapper where mapper.mapperId=:mapperId order by mapper.key"),
+	@NamedQuery(name="loadMapperByKey", query="select mapper from pmapper as mapper where mapper.mapperId=:mapperId")
+})
+public class PersistedMapper implements CreateInfo, ModifiedInfo, Persistable {
 
 	private static final long serialVersionUID = 7297417374497607347L;
 	
-	private String mapperId;
-	private String originalSessionId;
-	private String xmlConfiguration;
+	@Id
+  @GeneratedValue(generator = "system-uuid")
+  @GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="expirationdate", nullable=true, insertable=true, updatable=true)
+	private Date expirationDate;
+
+	@Column(name="mapper_uuid", nullable=true, insertable=true, updatable=false)
+	private String mapperId;
+
+	@Column(name="orig_session_id", nullable=true, insertable=true, updatable=false)
+	private String originalSessionId;
+
+	@Column(name="xml_config", nullable=true, insertable=true, updatable=true)
+	private String xmlConfiguration;
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
 	
 	@Override
 	public Date getLastModified() {
@@ -43,8 +101,16 @@ public class PersistedMapper extends PersistentObject implements ModifiedInfo {
 	}
 
 	@Override
-	public void setLastModified(Date lastModified) {
-		this.lastModified = lastModified;
+	public void setLastModified(Date date) {
+		this.lastModified = date;
+	}
+
+	public Date getExpirationDate() {
+		return expirationDate;
+	}
+
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
 	}
 
 	public String getMapperId() {
@@ -86,5 +152,10 @@ public class PersistedMapper extends PersistentObject implements ModifiedInfo {
 			return getKey() != null && getKey().equals(m.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

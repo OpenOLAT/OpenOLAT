@@ -79,6 +79,18 @@ public interface MapperService {
 	 */
 	public String register(UserSession session, String mapperId, Mapper mapper);
 	
+	/**
+	 * Same as above but with a defined expiration time
+	 * @param session
+	 * @param mapperId
+	 * @param mapper
+	 * @param expiration Expiration time in seconds
+	 * @return
+	 */
+	public String register(UserSession session, String mapperId, Mapper mapper, int expiration);
+	
+	
+	
 	public Mapper getMapperById(UserSession session, String id);
 	
 	public void cleanUp(String sessionId);

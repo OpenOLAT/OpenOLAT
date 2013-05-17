@@ -1079,6 +1079,7 @@ create table o_mapper (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
+   expirationdate datetime,
    mapper_uuid varchar(64),
    orig_session_id varchar(64),
    xml_config TEXT,
@@ -1086,7 +1087,7 @@ create table o_mapper (
 );
 
 -- question item
-create table if not exists o_qp_pool (
+create table o_qp_pool (
    id bigint not null,
    creationdate datetime not null,
    lastmodified datetime not null,
@@ -1096,7 +1097,7 @@ create table if not exists o_qp_pool (
    primary key (id)
 );
 
-create table if not exists o_qp_taxonomy_level (
+create table o_qp_taxonomy_level (
    id bigint not null,
    creationdate datetime not null,
    lastmodified datetime not null,
@@ -1107,7 +1108,7 @@ create table if not exists o_qp_taxonomy_level (
    primary key (id)
 );
 
-create table if not exists o_qp_item (
+create table o_qp_item (
    id bigint not null,
    q_identifier varchar(36) not null,
    q_master_identifier varchar(36),
@@ -1141,7 +1142,7 @@ create table if not exists o_qp_item (
    primary key (id)
 );
 
-create table if not exists o_qp_pool_2_item (
+create table o_qp_pool_2_item (
    id bigint not null,
    creationdate datetime not null,
    q_editable bit default 0,
@@ -1150,7 +1151,7 @@ create table if not exists o_qp_pool_2_item (
    primary key (id)
 );
 
-create table if not exists o_qp_share_item (
+create table o_qp_share_item (
    id bigint not null,
    creationdate datetime not null,
    q_editable bit default 0,
@@ -1159,7 +1160,7 @@ create table if not exists o_qp_share_item (
    primary key (id)
 );
 
-create table if not exists o_qp_item_collection (
+create table o_qp_item_collection (
    id bigint not null,
    creationdate datetime not null,
    lastmodified datetime not null,
@@ -1168,7 +1169,7 @@ create table if not exists o_qp_item_collection (
    primary key (id)
 );
 
-create table if not exists o_qp_collection_2_item (
+create table o_qp_collection_2_item (
    id bigint not null,
    creationdate datetime not null,
    fk_collection_id bigint not null,
@@ -1176,7 +1177,7 @@ create table if not exists o_qp_collection_2_item (
    primary key (id)
 );
 
-create table if not exists o_qp_edu_context (
+create table o_qp_edu_context (
    id bigint not null,
    creationdate datetime not null,
    q_level varchar(256) not null,
@@ -1200,6 +1201,20 @@ create table if not exists o_qp_license (
    q_deletable bit default 0,
    primary key (id)
 );
+
+create table o_lti_outcome (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   r_ressubpath varchar(2048),
+   r_action varchar(255) not null,
+   r_outcome_key varchar(255) not null,
+   r_outcome_value varchar(2048),
+   fk_resource_id bigint not null,
+   fk_identity_id bigint not null,
+   primary key (id)
+);
+
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -2034,6 +2049,8 @@ alter table o_qp_taxonomy_level add constraint idx_qp_field_2_parent_id foreign 
 
 alter table o_qp_item_type add unique (q_type(200));
 
+alter table o_lti_outcome add constraint idx_lti_outcome_ident_id foreign key (fk_identity_id) references o_bs_identity(id);
+alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
 
 insert into hibernate_unique_key values ( 0 );
 

@@ -27,19 +27,35 @@ package org.olat.course.nodes.basiclti;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.imsglobal.basiclti.BasicLTIUtil;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodes.BasicLTICourseNode;
+import org.olat.ims.lti.LTIManager;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Description:<BR/>
@@ -65,6 +81,8 @@ public class LTIConfigForm extends FormBasicController {
   public static final String CONFIG_KEY_CUSTOM = "custom";
   public static final String CONFIG_KEY_SENDNAME = "sendname";
   public static final String CONFIG_KEY_SENDEMAIL = "sendemail";
+  
+	public static final String usageIdentifyer = LTIManager.class.getCanonicalName();
 	
 	private ModuleConfiguration config;
 	
@@ -75,15 +93,55 @@ public class LTIConfigForm extends FormBasicController {
 	private SelectionElement sendName;
 	private SelectionElement sendEmail;
 	private SelectionElement doDebug;
-	
-	private TextElement tcustom;
-	
+
+	private TextElement scaleFactorEl;
+	private TextElement cutValueEl;
+	private MultipleSelectionElement isAssessableEl;
+	private MultipleSelectionElement authorRoleEl, coachRoleEl, participantRoleEl;
+	private FormLayoutContainer customParamLayout;
+	private SingleSelection displayEl, heightEl, widthEl;
+
 	private String fullURI;
-	private String customConfig;
 	private Boolean sendNameConfig;
 	private Boolean sendEmailConfig;
 	private Boolean doDebugConfig;
+	private boolean isAssessable;
 	private String key, pass;
+	
+	private List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+	
+
+	private String[] ltiRolesKeys = new String[]{
+			"Learner", "Instructor", "Administrator", "TeachingAssistant", "ContentDeveloper", "Mentor"
+	};
+	private String[] ltiRolesValues = new String[]{
+			"Learner", "Instructor", "Administrator", "TeachingAssistant", "ContentDeveloper", "Mentor"
+	};
+	
+	private String[] displayKeys = new String[]{
+			"iframe", "window"
+	};
+	private String[] displayValues;
+	
+	private String[] customTypeKeys = new String[] {
+		"free", "userprops"	
+	};
+	private String[] customTypeValues;
+	
+	private String[] heightKeys = new String[]{ BasicLTICourseNode.CONFIG_HEIGHT_AUTO, "460", "480", 
+			"500", "520", "540", "560", "580",
+			"600", "620", "640", "660", "680",
+			"700", "720", "730", "760", "780",
+			"800", "820", "840", "860", "880",
+			"900", "920", "940", "960", "980",
+			"1000", "1020", "1040", "1060", "1080",
+			"1100", "1120", "1140", "1160", "1180",
+			"1200", "1220", "1240", "1260", "1280",
+			"1300", "1320", "1340", "1360", "1380"
+	};
+	private String[] heightValues;
+	private String[] userPropKeys;
+	private String[] userPropValues;
 	
 	/**
 	 * Constructor for the tunneling configuration form
@@ -95,6 +153,38 @@ public class LTIConfigForm extends FormBasicController {
 		super(ureq, wControl);
 		this.config = config;
 		int configVersion = config.getConfigurationVersion();
+		
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		Translator userPropsTranslator = userManager.getPropertyHandlerTranslator(getTranslator());
+		
+		displayValues = new String[]{
+				translate("display.config.window.iframe"), translate("display.config.window.window")
+		};
+		
+		heightValues = new String[]{ translate("height.auto"), "460px", "480px", 
+				"500px", "520px", "540px", "560px", "580px",
+				"600px", "620px", "640px", "660px", "680px",
+				"700px", "720px", "730px", "760px", "780px",
+				"800px", "820px", "840px", "860px", "880px",
+				"900px", "920px", "940px", "960px", "980px",
+				"1000px", "1020px", "1040px", "1060px", "1080px",
+				"1100px", "1120px", "1140px", "1160px", "1180px",
+				"1200px", "1220px", "1240px", "1260px", "1280px",
+				"1300px", "1320px", "1340px", "1360px", "1380px"
+		};
+		
+		customTypeValues = new String[]{
+				translate("display.config.free"), translate("display.config.free.userprops")
+		};
+		
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, true);
+		userPropKeys = new String[userPropertyHandlers.size()];
+		userPropValues = new String[userPropertyHandlers.size()];
+		for (int i=userPropertyHandlers.size(); i-->0; ) {
+			UserPropertyHandler handler = userPropertyHandlers.get(i);
+			userPropKeys[i] = handler.getName();
+			userPropValues[i] = userPropsTranslator.translate(handler.i18nFormElementLabelKey());
+		}
 		
 		String proto = (String)config.get(CONFIGKEY_PROTO);
 		String host = (String)config.get(CONFIGKEY_HOST);
@@ -122,11 +212,12 @@ public class LTIConfigForm extends FormBasicController {
 		sendEmailConfig = config.getBooleanEntry(CONFIG_KEY_SENDEMAIL);
     if (sendEmailConfig == null) sendEmailConfig = Boolean.FALSE;
 
-		customConfig = (String) config.get(CONFIG_KEY_CUSTOM);
-    if (customConfig == null) customConfig = " ";
-
+		
 		doDebugConfig = config.getBooleanEntry(CONFIG_KEY_DEBUG);
     if (doDebugConfig == null) doDebugConfig = Boolean.FALSE;
+    
+    Boolean assessable = config.getBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+    isAssessable = assessable == null ? false : assessable.booleanValue();
 
     initForm(ureq);
 	}
@@ -138,6 +229,7 @@ public class LTIConfigForm extends FormBasicController {
 			
 		thost = uifactory.addTextElement("host", "LTConfigForm.url", 255, fullURI, formLayout);
 		thost.setExampleKey("LTConfigForm.url.example", null);
+		thost.setDisplaySize(64);
 		
 		tkey  = uifactory.addTextElement ("key","LTConfigForm.key", 255, key, formLayout);
 		tkey.setExampleKey ("LTConfigForm.key.example", null);
@@ -151,14 +243,180 @@ public class LTIConfigForm extends FormBasicController {
 		sendEmail = uifactory.addCheckboxesVertical("sendEmail", "display.config.sendEmail", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		sendEmail.select("xx", sendEmailConfig);
 		
-		tcustom = uifactory.addTextAreaElement("tcustom", "display.config.custom", -1, 6, 40, true, customConfig, formLayout);
+		String page = velocity_root + "/custom.html";
+		customParamLayout = FormLayoutContainer.createCustomFormLayout("custom_fields", getTranslator(), page);
+		customParamLayout.setRootForm(mainForm);
+		customParamLayout.setLabel("display.config.custom", null);
+		formLayout.add(customParamLayout);
+		customParamLayout.contextPut("nameValuePairs", nameValuePairs);
+		updateNameValuePair((String)config.get(CONFIG_KEY_CUSTOM));
+		if(nameValuePairs.isEmpty()) {
+			createNameValuePair("", "", -1);
+		}
 		
 		doDebug = uifactory.addCheckboxesVertical("doDebug", "display.config.doDebug", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		doDebug.select("xx", doDebugConfig);
 		
+		uifactory.addSpacerElement("display", formLayout, false);
+		
+		String display = config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
+		displayEl = uifactory.addRadiosVertical("display.window", "display.config.window", formLayout, displayKeys, displayValues);
+		for(String displayKey:displayKeys) {
+			if(displayKey.equals(display)) {
+				displayEl.select(displayKey, true);
+			}
+		}
+		
+		String height = config.getStringValue(BasicLTICourseNode.CONFIG_HEIGHT, BasicLTICourseNode.CONFIG_HEIGHT_AUTO);
+		heightEl = uifactory.addDropdownSingleselect("display.height", "display.config.height", formLayout, heightKeys, heightValues, null);
+		for(String heightKey:heightKeys) {
+			if(heightKey.equals(height)) {
+				heightEl.select(heightKey, true);
+			}
+		}
+
+		String width = config.getStringValue(BasicLTICourseNode.CONFIG_WIDTH, BasicLTICourseNode.CONFIG_HEIGHT_AUTO);
+		widthEl = uifactory.addDropdownSingleselect("display.width", "display.config.width", formLayout, heightKeys, heightValues, null);
+		for(String heightKey:heightKeys) {
+			if(heightKey.equals(width)) {
+				widthEl.select(heightKey, true);
+			}
+		}
+
+		uifactory.addSpacerElement("scoring", formLayout, false);
+		
+		//add score info
+		String[] assessableKeys = new String[]{ "on" };
+		String[] assessableValues = new String[]{ "" };
+		isAssessableEl = uifactory.addCheckboxesHorizontal("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues, null);
+		isAssessableEl.addActionListener(this, FormEvent.ONCHANGE);
+		if(isAssessable) {
+			isAssessableEl.select("on", true);
+		}
+	
+    Float scaleValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
+		String scaleFactor = scaleValue == null ? "1.0" : scaleValue.toString();
+		scaleFactorEl = uifactory.addTextElement("scale", "scaleFactor", 10, scaleFactor, formLayout);
+		scaleFactorEl.setDisplaySize(3);
+		scaleFactorEl.setVisible(isAssessable);
+		
+		Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		String cut = cutValue == null ? "" : cutValue.toString();
+		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 10, cut, formLayout);
+		cutValueEl.setDisplaySize(3);
+		cutValueEl.setVisible(isAssessable);
+		
+		uifactory.addSpacerElement("roles", formLayout, false);
+
+		authorRoleEl = uifactory.addCheckboxesHorizontal("author", "author.roles", formLayout, ltiRolesKeys, ltiRolesValues, null);
+		udpateRoles(authorRoleEl, BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, "Instructor,Administrator,TeachingAssistant,ContentDeveloper,Mentor"); 
+		coachRoleEl = uifactory.addCheckboxesHorizontal("coach", "coach.roles", formLayout, ltiRolesKeys, ltiRolesValues, null);
+		udpateRoles(coachRoleEl, BasicLTICourseNode.CONFIG_KEY_COACHROLE, "Instructor,TeachingAssistant,Mentor");
+		participantRoleEl = uifactory.addCheckboxesHorizontal("participant", "participant.roles", formLayout, ltiRolesKeys, ltiRolesValues, null);
+		udpateRoles(participantRoleEl, BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, "Learner"); 
+		
+		uifactory.addSpacerElement("buttons", formLayout, false);
 		uifactory.addFormSubmitButton("save", formLayout);
 	}
 	
+	@Override
+	protected void doDispose() {
+		//
+	}
+	
+	private void updateNameValuePair(String custom) {
+		if(StringHelper.containsNonWhitespace(custom)) {
+			String[] params = custom.split("[\n;]");
+			for (int i = 0; i < params.length; i++) {
+				String param = params[i];
+				if (StringHelper.containsNonWhitespace(param)) {
+					int pos = param.indexOf("=");
+					if (pos > 1 && pos + 1 < param.length()) {
+						String key = BasicLTIUtil.mapKeyName(param.substring(0, pos));
+						if(key != null) {
+							String value = param.substring(pos + 1).trim();
+							if (value.length() >= 1) {
+								createNameValuePair(key, value, -1);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private void createNameValuePair(String key, String value, int index) {
+		String guid = Long.toString(CodeHelper.getRAMUniqueID());
+		NameValuePair pair = new NameValuePair(guid);
+		
+		TextElement nameEl = uifactory.addTextElement("name_" + guid, null, 15, key, customParamLayout);
+		nameEl.setDisplaySize(16);
+		pair.setNameEl(nameEl);
+		
+		SingleSelection typeEl = uifactory.addDropdownSingleselect("typ_" + guid, customParamLayout, customTypeKeys, customTypeValues, null);
+		typeEl.setUserObject(pair);
+		typeEl.addActionListener(this, FormEvent.ONCHANGE);
+		pair.setCustomType(typeEl);
+		
+		boolean userprops = value != null && value.startsWith(LTIManager.USER_PROPS_PREFIX);
+		if(userprops) {
+			typeEl.select("userprops", true);
+			value = value.substring(LTIManager.USER_PROPS_PREFIX.length(), value.length());
+		} else {
+			typeEl.select("free", true);
+		}
+		
+		SingleSelection userPropsChoice = uifactory.addDropdownSingleselect("userprops_" + guid, customParamLayout, userPropKeys, userPropValues, null);
+		userPropsChoice.setUserObject(pair);
+		userPropsChoice.setVisible(userprops);
+		if(userprops) {
+			for(String userPropKey:userPropKeys) {
+				if(userPropKey.equals(value)) {
+					userPropsChoice.select(userPropKey, true);
+				}
+			}
+		}
+		pair.setUserPropsChoice(userPropsChoice);
+
+		TextElement valEl = uifactory.addTextElement("val_" + guid, null, 15, value, customParamLayout);
+		valEl.setDisplaySize(16);
+		valEl.setVisible(!userprops);
+		pair.setValueEl(valEl);
+		
+		FormLink addButton = uifactory.addFormLink("add_" + guid, "add", null, customParamLayout, Link.BUTTON_XSMALL);
+		addButton.setUserObject(pair);
+		pair.setAddButton(addButton);
+		FormLink removeButton = uifactory.addFormLink("rm_" + guid, "remove", null, customParamLayout, Link.BUTTON_XSMALL);
+		removeButton.setUserObject(pair);
+		pair.setRemoveButton(removeButton);
+		
+		if(index < 0 || index >= nameValuePairs.size()) {
+			nameValuePairs.add(pair);
+		} else {
+			nameValuePairs.add(index, pair);
+		}
+	}
+	
+	private void udpateRoles(MultipleSelectionElement roleEl, String configKey, String defaultRoles) {
+    Object configRoles = config.get(configKey);
+    String roles = defaultRoles;
+    if(configRoles instanceof String) {
+    	roles = (String)configRoles;
+    }
+    String[] roleArr = roles.split(",");
+    for(String role:roleArr) {
+    	roleEl.select(role, true);
+    }
+	}
+	
+	private String getRoles(MultipleSelectionElement roleEl) {
+		StringBuilder sb = new StringBuilder();
+		for(String key:roleEl.getSelectedKeys()) {
+			if(sb.length() > 0) sb.append(',');
+			sb.append(key);
+		}
+		return sb.toString();
+	}
 	
 	protected static StringBuilder getFullURL(String proto, String host, Integer port, String uri, String query) {
 		StringBuilder fullURL = new StringBuilder();
@@ -185,15 +443,81 @@ public class LTIConfigForm extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) { 
+		boolean allOk = true;
 		try {
 			new URL(thost.getValue());
 		} catch (MalformedURLException e) {
 			thost.setErrorKey("LTConfigForm.invalidurl", null);
-			return false;
+			allOk &= false;
 		}
-		return true;
+		allOk &= validateFloat(cutValueEl);
+		allOk &= validateFloat(scaleFactorEl);
+		return allOk & super.validateFormLogic(ureq);
 	}
 	
+	private boolean validateFloat(TextElement el) {
+		boolean allOk = true;
+		
+		el.clearError();
+		if(el.isVisible()) {
+			String value = el.getValue();
+			if(StringHelper.containsNonWhitespace(value)) {
+				try {
+					Float.parseFloat(value);
+				} catch(Exception e) {
+					el.setErrorKey("form.error.wrongFloat", null);
+					allOk = false;
+				}
+			}
+		}
+		
+		return allOk;
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == isAssessableEl) {
+			boolean assessEnabled = isAssessableEl.isAtLeastSelected(1);
+			scaleFactorEl.setVisible(assessEnabled);
+			cutValueEl.setVisible(assessEnabled);
+			flc.setDirty(true);
+		} else if(source instanceof FormLink && source.getName().startsWith("add_")) {
+			NameValuePair pair = (NameValuePair)source.getUserObject();
+			doAddNameValuePair(pair);
+		} else if(source instanceof FormLink && source.getName().startsWith("rm_")) {
+			NameValuePair pair = (NameValuePair)source.getUserObject();
+			doRemoveNameValuePair(pair);
+		} else if(source instanceof SingleSelection && source.getName().startsWith("typ_")) {
+			NameValuePair pair = (NameValuePair)source.getUserObject();
+			SingleSelection typeChoice = (SingleSelection)source;
+			if("free".equals(typeChoice.getSelectedKey())) {
+				pair.getUserPropsChoice().setVisible(false);
+				pair.getValueEl().setVisible(true);
+			} else if("userprops".equals(typeChoice.getSelectedKey())) {
+				pair.getUserPropsChoice().setVisible(true);
+				pair.getValueEl().setVisible(false);
+			}
+			customParamLayout.setDirty(true);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		fireEvent (ureq, Event.DONE_EVENT);
+	}
+	
+	private void doAddNameValuePair(NameValuePair parentPair) {
+		int index = nameValuePairs.indexOf(parentPair);
+		createNameValuePair("", "", index + 1);
+		customParamLayout.setDirty(true);
+	}
+	
+	private void doRemoveNameValuePair(NameValuePair pair) {
+		nameValuePairs.remove(pair);
+		customParamLayout.setDirty(true);
+	}
+
 	/**
 	 * @return the updated module configuration using the form data
 	 */
@@ -214,10 +538,80 @@ public class LTIConfigForm extends FormBasicController {
 		config.set(CONFIGKEY_KEY, getFormKey());
 		config.set(CONFIGKEY_PASS, tpass.getValue());
 		config.set(CONFIG_KEY_DEBUG, Boolean.toString(doDebug.isSelected(0)));
-		config.set(CONFIG_KEY_CUSTOM, tcustom.getValue());
+		config.set(CONFIG_KEY_CUSTOM, getCustomConfig());
 		config.set(CONFIG_KEY_SENDNAME, Boolean.toString(sendName.isSelected(0)));
 		config.set(CONFIG_KEY_SENDEMAIL, Boolean.toString(sendEmail.isSelected(0)));
+		
+		if(isAssessableEl.isAtLeastSelected(1)) {
+			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.TRUE);
+			
+			String scaleValue = scaleFactorEl.getValue();
+			Float scaleVal = Float.parseFloat(scaleValue);
+			if(scaleVal.floatValue() > 0.0f) {
+				config.set(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE, scaleVal);
+			} else {
+				config.remove(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
+			}
+
+			String cutValue = cutValueEl.getValue();
+			Float cutVal = (StringHelper.containsNonWhitespace(cutValue)) ? Float.parseFloat(cutValue) : null;
+			if(cutVal != null && cutVal.floatValue() > 0.0f) {
+				config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.TRUE);
+				config.set(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE, cutValue);
+			} else {
+				config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.FALSE);
+				config.remove(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+			}	
+		} else {
+			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE);
+			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.FALSE);
+			config.remove(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
+			config.remove(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		}
+
+		config.set(BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, getRoles(authorRoleEl));
+		config.set(BasicLTICourseNode.CONFIG_KEY_COACHROLE, getRoles(coachRoleEl));
+		config.set(BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, getRoles(participantRoleEl));
+		
+		if(displayEl.isOneSelected()) {
+			config.set(BasicLTICourseNode.CONFIG_DISPLAY, displayEl.getSelectedKey());
+		} else {
+			config.set(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
+		}
+		if(heightEl.isOneSelected()) {
+			config.set(BasicLTICourseNode.CONFIG_HEIGHT, heightEl.getSelectedKey());
+		}
+		if(widthEl.isOneSelected()) {
+			config.set(BasicLTICourseNode.CONFIG_WIDTH, widthEl.getSelectedKey());
+		}
 		return config;
+	}
+	
+	private String getCustomConfig() {
+		StringBuilder sb = new StringBuilder();
+		for(NameValuePair pair:nameValuePairs) {
+			String key = pair.getNameEl().getValue();
+			if(!StringHelper.containsNonWhitespace(key)
+					|| !pair.getCustomType().isOneSelected()) {
+				continue;
+			}
+			String value = null;
+			String type = pair.getCustomType().getSelectedKey();
+			if("free".equals(type)) {
+				value = pair.getValueEl().getValue();
+			} else if("userprops".equals(type)) {
+				if(pair.getUserPropsChoice().isOneSelected()) {
+					value = LTIManager.USER_PROPS_PREFIX + pair.getUserPropsChoice().getSelectedKey();
+				}
+			}
+			if(!StringHelper.containsNonWhitespace(value)) {
+				continue;
+			}
+				
+			if(sb.length() > 0) sb.append(";");
+			sb.append(key).append('=').append(value);
+		}
+		return sb.toString();
 	}
 
 	private String getFormKey() {
@@ -226,14 +620,70 @@ public class LTIConfigForm extends FormBasicController {
 		else 
 			return null;
 	}
+	
+	public static class NameValuePair {
+		private TextElement nameEl;
+		private TextElement valueEl;
+		private SingleSelection customType;
+		private SingleSelection userPropsChoice;
+		private FormLink addButton;
+		private FormLink removeButton;
+		private final String guid;
+		
+		public NameValuePair(String guid) {
+			this.guid = guid;
+		}
+		
+		public String getGuid() {
+			return guid;
+		}
 
-	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT);
-	}
+		public TextElement getNameEl() {
+			return nameEl;
+		}
+		
+		public void setNameEl(TextElement nameEl) {
+			this.nameEl = nameEl;
+		}
+		
+		public SingleSelection getCustomType() {
+			return customType;
+		}
 
-	@Override
-	protected void doDispose() {
-		//
+		public void setCustomType(SingleSelection customType) {
+			this.customType = customType;
+		}
+
+		public SingleSelection getUserPropsChoice() {
+			return userPropsChoice;
+		}
+
+		public void setUserPropsChoice(SingleSelection userPropsChoice) {
+			this.userPropsChoice = userPropsChoice;
+		}
+
+		public TextElement getValueEl() {
+			return valueEl;
+		}
+		
+		public void setValueEl(TextElement valueEl) {
+			this.valueEl = valueEl;
+		}
+
+		public FormLink getAddButton() {
+			return addButton;
+		}
+
+		public void setAddButton(FormLink addButton) {
+			this.addButton = addButton;
+		}
+
+		public FormLink getRemoveButton() {
+			return removeButton;
+		}
+
+		public void setRemoveButton(FormLink removeButton) {
+			this.removeButton = removeButton;
+		}
 	}
 }

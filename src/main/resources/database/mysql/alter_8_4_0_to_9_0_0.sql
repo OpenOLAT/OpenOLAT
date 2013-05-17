@@ -320,3 +320,26 @@ alter table o_qp_item add constraint idx_qp_item_license_id foreign key (fk_lice
 alter table o_qp_taxonomy_level add constraint idx_qp_field_2_parent_id foreign key (fk_parent_field) references o_qp_taxonomy_level(id);
 
 alter table o_qp_item_type add unique (q_type(200));
+
+
+-- lti
+create table o_lti_outcome (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   r_ressubpath varchar(2048),
+   r_action varchar(255) not null,
+   r_outcome_key varchar(255) not null,
+   r_outcome_value varchar(2048),
+   fk_resource_id bigint not null,
+   fk_identity_id bigint not null,
+   primary key (id)
+);
+
+alter table o_lti_outcome add constraint idx_lti_outcome_ident_id foreign key (fk_identity_id) references o_bs_identity(id);
+alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
+
+-- mapper
+alter table o_mapper add column expirationdate datetime;
+
+
