@@ -385,8 +385,8 @@ public class ConditionInterpreter {
 			// if not null then: ok = evaluateCondition(Expression cachedExpression)
 			ok = doEvaluateCondition(condition);
 		} catch (ParseException e) {
-			log.info("ParseException in evaluateCondition:" + e);
-			throw new AssertException("parse error in:: " + condition + " exception=" + e.getMessage());
+			log.error("ParseException in evaluateCondition:" + condition, e);
+			ok = false;
 		}
 		return ok;
 	}
