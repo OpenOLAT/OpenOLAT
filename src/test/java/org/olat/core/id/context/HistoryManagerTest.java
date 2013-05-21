@@ -83,4 +83,19 @@ public class HistoryManagerTest extends OlatTestCase {
 		HistoryPoint history = historyManager.readHistory(resumeXml);
 		Assert.assertNotNull(history);
 	}
+	
+	/**
+	 * Test the compatibility with version 8.3
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testRead_v83() throws IOException, URISyntaxException {
+		URL xmlUrl = HistoryManagerTest.class.getResource("resume_ver83.xml");
+		assertNotNull(xmlUrl);
+		File resumeXml = new File(xmlUrl.toURI());
+		HistoryPoint history = historyManager.readHistory(resumeXml);
+		Assert.assertNotNull(history);
+	}
+	
 }

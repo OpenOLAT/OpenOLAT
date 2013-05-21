@@ -53,6 +53,8 @@ public class HistoryManager extends BasicManager {
 		historyReadStream.omitField(BusinessGroup.class, "groupContext");
 		historyReadStream.omitField(BusinessGroupImpl.class, "groupContext");
 		historyReadStream.alias("org.olat.core.util.resource.OresHelper$1", Resourceable.class);
+		historyReadStream.alias("org.olat.core.util.resource.OresHelper$2", Resourceable.class);
+		historyReadStream.alias("org.olat.core.util.resource.OresHelper$3", Resourceable.class);
 		historyReadStream.aliasAttribute(Resourceable.class, "resourceableTypeName", "val_-type");
 		historyReadStream.aliasAttribute(Resourceable.class, "resourceableTypeName", "val$type");
 		historyReadStream.aliasAttribute(Resourceable.class, "resourceableId", "val_-key");

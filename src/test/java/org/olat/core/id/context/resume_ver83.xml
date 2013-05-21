@@ -1,0 +1,18 @@
+<org.olat.core.id.context.HistoryPointImpl>
+  <uuid>8568</uuid>
+  <businessPath>[RepositoryEntry:4718607][CourseNode:84791741596431]</businessPath>
+  <entries>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.core.util.resource.OresHelper$3">
+        <val_-type>RepositoryEntry</val_-type>
+        <val_-key>4718607</val_-key>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.core.util.resource.OresHelper$1">
+        <val_-type>CourseNode</val_-type>
+        <val_-key>84791741596431</val_-key>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+  </entries>
+</org.olat.core.id.context.HistoryPointImpl>
