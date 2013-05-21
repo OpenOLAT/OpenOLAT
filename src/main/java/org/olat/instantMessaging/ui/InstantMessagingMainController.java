@@ -336,7 +336,9 @@ public class InstantMessagingMainController extends BasicController implements G
 			inAssessment = true;
 			main.contextPut("inAssessment", true);
 			chatMgrCtrl.closeAllChats();
-			rosterPanelCtr.executeCloseCommand();
+			if(rosterPanelCtr != null) {
+				rosterPanelCtr.executeCloseCommand();
+			}
 		} else if(event.getEventType().equals(AssessmentEvent.TYPE.STOPPED)) {
 			OLATResourceable a = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 			if (singleUserEventCenter.getListeningIdentityCntFor(a) < 1) {
