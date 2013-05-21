@@ -52,6 +52,7 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
 		Form rootForm = fcE.getRootForm();
 		String id = "o_c" + fcC.getDispatchID();
 		String formId = fcE.getFormDispatchId();
+		String printId = "fc_p" + fcC.getDispatchID();
 		
 		Calendar cal = Calendar.getInstance(fcC.getTranslator().getLocale());
 		int firstDay = cal.getFirstDayOfWeek() - 1;
@@ -63,7 +64,7 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
 	    .append("jQuery(function() {\n")
       .append("	jQuery('#").append(id).append("').fullCalendar( {\n")
       .append("   header: {\n")
-      .append("     left: 'prev,next today',\n")
+      .append("     left: 'prev,print,next today',\n")
       .append("     center: 'title',\n")
       .append("     right: 'month,agendaWeek,agendaDay'\n")
       .append("   },\n")
@@ -71,7 +72,8 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
       .append("     today: '").append(escapeJavaScript(translator.translate("cal.thisweek"))).append("',\n")
       .append("     month: '").append(escapeJavaScript(translator.translate("cal.month"))).append("',\n")
       .append("     day: '").append(escapeJavaScript(translator.translate("cal.day"))).append("',\n")
-      .append("     week: '").append(escapeJavaScript(translator.translate("cal.week"))).append("'\n")
+      .append("     week: '").append(escapeJavaScript(translator.translate("cal.week"))).append("',\n")
+      .append("     print: '").append(escapeJavaScript(translator.translate("print"))).append("'\n")
       .append("   },\n")
       .append("   monthNames: ").append(getMonthLong(translator)).append(",\n")
       .append("   monthNamesShort: ").append(getMonthShort(translator)).append(",\n")
@@ -124,7 +126,13 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
       .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
       .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evSelect',calEvent.id,'evDomId','o_cev_' + calEvent.id);\n")
       .append("   }\n")
-      .append(" })\n")
+      .append(" });\n")
+      .append(" jQuery('.fc-header-left').append('<span class=\"fc-header-space\"></span><span id=\"").append(printId).append("\" class=\"fc-button fc-button-print fc-state-default fc-corner-left fc-corner-right\"><span>")
+                 .append(translator.translate("print")).append("</span></span>');\n")
+      .append(" jQuery('.fc-button-print').click(function () {\n")
+      .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
+      .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'print','print');\n")
+      .append(" });\n")
       .append("});\n")
       .append("/* ]]> */\n")
       .append("</script>");

@@ -47,6 +47,7 @@ import org.olat.commons.calendar.ui.events.KalendarGUIAddEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUIEditEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUIImportEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUIMoveEvent;
+import org.olat.commons.calendar.ui.events.KalendarGUIPrintEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUISelectEvent;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
 import org.olat.core.CoreSpringFactory;
@@ -68,6 +69,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -112,6 +114,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private GotoDateCalendarsForm gotoDateForm;
 	private SubscriptionContext subsContext;
 	private ContextualSubscriptionController csc;
+	
+	private CalendarPrintController printCtrl;
 	private CalendarDetailsController eventDetailsCtr;
 	private CloseableCalloutWindowController eventCalloutCtr;
 	
@@ -170,6 +174,9 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		this(ureq, wControl, calendarWrappers, new ArrayList<KalendarRenderWrapper>(), caller, calendarSubscription, eventAlwaysVisible);
 	}
 	
+	private CalendarPrintMapper printMapper;
+	private String printUrl;
+	
 	/**
 	 * Display week view of calendar. Add the calendars to be displayed via
 	 * addKalendarWrapper(KalendarRenderWrapper kalendarWrapper) method.
@@ -193,6 +200,10 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		this.importedCalendarWrappers = importedCalendarWrappers;
 		this.calendarSubscription = calendarSubscription;
 		this.caller = caller;
+		
+		String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
+		printMapper = new CalendarPrintMapper(themeBaseUri, getTranslator());
+		printUrl = registerMapper(ureq, printMapper);
 
 		initForm(ureq);
 		
@@ -389,6 +400,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				flc.contextPut("isSubscribed", new Boolean(calendarSubscription.isSubscribed()));
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
 			}
+		} else if (event instanceof KalendarGUIPrintEvent) {
+			KalendarGUIPrintEvent printEvent = (KalendarGUIPrintEvent)event;
+			if(printEvent.getFrom() != null && printEvent.getTo() != null) {
+				doPrint(ureq, printEvent.getFrom(), printEvent.getTo());
+			} else if(printEvent.getTargetDomId() != null) {
+				doPrintEventCallout(ureq, printEvent.getTargetDomId());
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -439,6 +457,14 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				KalendarGUIEditEvent editEvent = (KalendarGUIEditEvent)event;
 				pushEditEventController(ureq, editEvent.getKalendarEvent(), editEvent.getKalendarRenderWrapper());
 			}
+		} else if(source == printCtrl) {
+			if (event instanceof KalendarGUIPrintEvent) {
+				KalendarGUIPrintEvent printEvent = (KalendarGUIPrintEvent)event;
+				if(printEvent.getFrom() != null && printEvent.getTo() != null) {
+					doPrint(ureq, printEvent.getFrom(), printEvent.getTo());
+				}
+			}
+			eventCalloutCtr.deactivate();
 		} else if (source == importCalendarController) {
 			cmc.deactivate();
 		} else if(source == cmc && event == CloseableModalController.CLOSE_MODAL_EVENT){
@@ -534,6 +560,30 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				weeklyCalendar.setFocusDate(gotoDate);
 			}
 		}
+	}
+	
+	private void doPrint(UserRequest ureq, Date from, Date to) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("window.open('" + printUrl + "/print.html', '_print','height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location= no,scrollbars=1');");
+		printMapper.setFrom(from);
+		printMapper.setTo(to);
+		printMapper.setCalendarWrappers(calendarWrappers);
+		printMapper.setImportedCalendarWrappers(importedCalendarWrappers);
+		getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(sb.toString()));
+	}
+	
+	private void doPrintEventCallout(UserRequest ureq, String targetDomId) {
+		removeAsListenerAndDispose(eventCalloutCtr);
+		removeAsListenerAndDispose(printCtrl);
+		
+		printCtrl = new CalendarPrintController(ureq, getWindowControl());
+		listenTo(printCtrl);
+		
+		Component eventCmp = printCtrl.getInitialComponent();
+		eventCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), eventCmp, targetDomId,
+				translate("print"), true, "b_cal_event_callout");
+		listenTo(eventCalloutCtr);
+		eventCalloutCtr.activate();
 	}
 	
 	private void doOpenEventCallout(UserRequest ureq, KalendarEvent calEvent, KalendarRenderWrapper calWrapper, String targetDomId) {
@@ -687,5 +737,4 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			}
 		}
 	}
-
 }

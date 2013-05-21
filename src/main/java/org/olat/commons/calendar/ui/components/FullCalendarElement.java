@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUIAddEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUIMoveEvent;
+import org.olat.commons.calendar.ui.events.KalendarGUIPrintEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUISelectEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
@@ -84,10 +85,14 @@ public class FullCalendarElement extends FormItemImpl {
 		String addEventMarker = getRootForm().getRequestParameter("evAdd");
 		String movedEventId = getRootForm().getRequestParameter("evMove");
 		String changeViewName = getRootForm().getRequestParameter("evChangeView");
+		String print = getRootForm().getRequestParameter("print");
 		
 		String dispatchuri = getRootForm().getRequestParameter("dispatchuri");
 		if("undefined".equals(dispatchuri)) {
 			//to nothing
+		} else if(StringHelper.containsNonWhitespace(print)) {
+			String targetDomId = "fc_p" + component.getDispatchID();
+			getRootForm().fireFormEvent(ureq, new KalendarGUIPrintEvent(targetDomId));
 		} else if(StringHelper.containsNonWhitespace(selectedEventId)) {
 			String targetDomId = getRootForm().getRequestParameter("evDomId");
 			doSelect(ureq, selectedEventId, targetDomId);

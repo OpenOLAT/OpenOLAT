@@ -41,7 +41,6 @@ import net.fortuna.ical4j.model.DateList;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Recur;
 import net.fortuna.ical4j.model.TimeZone;
-import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.WeekDayList;
 import net.fortuna.ical4j.model.property.ExDate;
 import net.fortuna.ical4j.model.property.RRule;
@@ -101,14 +100,14 @@ public class CalendarUtils {
 	 * @param subject
 	 * @return
 	 */
-	public static List findEvents(Kalendar calendar, String subject, String location, Date beginPeriod, Date endPeriod, boolean publicOnly) {
-		List results = new ArrayList();
-		Collection events = calendar.getEvents();
+	public static List<KalendarEvent> findEvents(Kalendar calendar, String subject, String location, Date beginPeriod, Date endPeriod, boolean publicOnly) {
+		List<KalendarEvent> results = new ArrayList<KalendarEvent>();
+		Collection<KalendarEvent> events = calendar.getEvents();
 		String regExSubject = subject.replace("*", ".*");
 		String regExLocation  = location.replace("*", ".*");
 		regExSubject = ".*" + regExSubject + ".*";
 		regExLocation = ".*" + regExLocation + ".*";
-		for (Iterator iter = events.iterator(); iter.hasNext();) {
+		for (Iterator<KalendarEvent> iter = events.iterator(); iter.hasNext();) {
 			KalendarEvent event = (KalendarEvent) iter.next();
 			if (publicOnly && event.getClassification() != KalendarEvent.CLASS_PUBLIC) continue;
 			if (beginPeriod != null && event.getBegin().before(beginPeriod)) continue;
@@ -151,11 +150,11 @@ public class CalendarUtils {
 		return results;
 	}
 	
-	public static List listEventsForPeriod(Kalendar calendar, Date periodStart, Date periodEnd) {
-		List periodEvents = new ArrayList();
-		Collection events = calendar.getEvents();
-		for (Iterator iter = events.iterator(); iter.hasNext();) {
-			KalendarEvent event = (KalendarEvent) iter.next();
+	public static List<KalendarEvent> listEventsForPeriod(Kalendar calendar, Date periodStart, Date periodEnd) {
+		List<KalendarEvent> periodEvents = new ArrayList<KalendarEvent>();
+		Collection<KalendarEvent> events = calendar.getEvents();
+		for (Iterator<KalendarEvent> iter = events.iterator(); iter.hasNext();) {
+			KalendarEvent event = iter.next();
 			CalendarManager cm = CalendarManagerFactory.getInstance().getCalendarManager();
 			List<KalendarRecurEvent> lstEvnt = cm.getRecurringDatesInPeriod(periodStart, periodEnd, event);
 			for ( KalendarRecurEvent recurEvent : lstEvnt ) {
@@ -320,5 +319,17 @@ public class CalendarUtils {
 		} catch (ParseException e) {
 			return null;
 		}
+	}
+	
+	public static Date removeTime(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.HOUR_OF_DAY, 0);  
+		cal.set(Calendar.MINUTE, 0);  
+		cal.set(Calendar.SECOND, 0);  
+		cal.set(Calendar.MILLISECOND, 0);  
+		return cal.getTime();
+		
+		
 	}
 }

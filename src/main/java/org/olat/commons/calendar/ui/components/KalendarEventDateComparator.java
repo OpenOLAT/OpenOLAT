@@ -29,21 +29,22 @@ import java.util.Comparator;
 import java.util.Date;
 
 
-class KalendarEventDateComparator implements Comparator {
+public class KalendarEventDateComparator implements Comparator<KalendarEventRenderWrapper> {
 	
 	private static final KalendarEventDateComparator INSTANCE = new KalendarEventDateComparator();
 	
-	private KalendarEventDateComparator() {
-		// singleton
+	public KalendarEventDateComparator() {
+		//
 	}
 	
 	public static KalendarEventDateComparator getInstance() {
 		return INSTANCE;
 	}
 
-	public int compare(Object event0, Object event1) {
-		Date startEvent0 = ((KalendarEventRenderWrapper)event0).getEvent().getBegin();
-		Date startEvent1 = ((KalendarEventRenderWrapper)event1).getEvent().getBegin();
+	@Override
+	public int compare(KalendarEventRenderWrapper event0, KalendarEventRenderWrapper event1) {
+		Date startEvent0 = event0.getEvent().getBegin();
+		Date startEvent1 = event1.getEvent().getBegin();
 		return startEvent0.compareTo(startEvent1);
 	}
 }

@@ -121,13 +121,13 @@ public class SearchAllCalendarsController extends BasicController {
 					KalendarRenderWrapper	kalendarWrapper = (KalendarRenderWrapper)iter.next();
 					// for locally read-only calendars: search only public events, for imported calendar search in private and public events 
 					boolean searchPublicEventsOnly = (kalendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY) && !kalendarWrapper.isImported();
-					List matchingEvents = CalendarUtils.findEvents(kalendarWrapper.getKalendar(), subject, location, beginPeriod, endPeriod, searchPublicEventsOnly);
+					List<KalendarEvent> matchingEvents = CalendarUtils.findEvents(kalendarWrapper.getKalendar(), subject, location, beginPeriod, endPeriod, searchPublicEventsOnly);
 					if (matchingEvents.size() == 0) continue;
 					GenericTreeNode calendarNode = new GenericTreeNode("<i>" + translate("cal.form.calendarname") + ": " + kalendarWrapper.getKalendarConfig().getDisplayName() + "</i>", null);
 					calendarNode.setAccessible(false);
 					rootNode.addChild(calendarNode);
-					for (Iterator Iter_matching = matchingEvents.iterator(); Iter_matching.hasNext();) {
-						KalendarEvent matchingEvent = (KalendarEvent) Iter_matching.next();
+					for (Iterator<KalendarEvent> Iter_matching = matchingEvents.iterator(); Iter_matching.hasNext();) {
+						KalendarEvent matchingEvent = Iter_matching.next();
 						StringBuilder display = new StringBuilder();
 						String truncatedSubject = matchingEvent.getSubject();
 						if (truncatedSubject.length() > CalendarManager.MAX_SUBJECT_DISPLAY_LENGTH)
