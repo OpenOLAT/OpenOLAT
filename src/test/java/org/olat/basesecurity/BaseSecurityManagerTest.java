@@ -831,4 +831,15 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(permissions.contains("test.gpor-1_2"));
 		Assert.assertFalse(permissions.contains("test.gpor-1_3"));
 	}
+	
+	@Test
+	public void findCredentials() {
+		//create a user with the default provider
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("find-cred-" + UUID.randomUUID().toString());
+		
+		dbInstance.commitAndCloseSession();
+		
+		String credential = securityManager.findCredentials(id, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Assert.assertNotNull(credential);	
+	}
 }

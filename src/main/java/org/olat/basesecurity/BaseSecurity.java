@@ -288,6 +288,14 @@ public interface BaseSecurity {
 	 *         found
 	 */
 	public Authentication findAuthentication(Identity identity, String provider);
+	
+	/**
+	 * Return the credential or null
+	 * @param identity
+	 * @param provider
+	 * @return
+	 */
+	public String findCredentials(Identity identity, String provider);
 
 	//fxdiff: FXOLAT-219 decrease the load for synching groups
 	public boolean hasAuthentication(Long identityKey, String provider);
@@ -604,6 +612,14 @@ public interface BaseSecurity {
 	 * @return
 	 */
 	public boolean isIdentityVisible(String identityName);
+
+	/**
+	 * Check if identity is visible. Deleted or login-denied users are not visible.
+	 * @param identity
+	 * @return
+	 */
+	public boolean isIdentityVisible(Identity identity);
+	
 	
 	/**
 	 * Get all SecurtityGroups an Identity is in

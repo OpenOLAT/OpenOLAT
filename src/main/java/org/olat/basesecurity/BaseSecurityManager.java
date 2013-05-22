@@ -72,7 +72,6 @@ import org.olat.user.ChangePasswordController;
 import org.olat.user.PersonalSettingsController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <h3>Description:</h3>
@@ -1303,6 +1302,26 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	}
 	
 	@Override
+	public String findCredentials(Identity identity, String provider) {
+		if (identity==null) {
+			throw new IllegalArgumentException("identity must not be null");
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth.credential from ").append(AuthenticationImpl.class.getName())
+		  .append(" as auth where auth.identity.key=:identityKey and auth.provider=:provider");
+		
+		List<String> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("provider", provider)
+				.getResultList();
+		if (results == null || results.size() == 0) return null;
+		if (results.size() > 1) throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
+		return results.get(0);
+	}
+
+	@Override
 	//fxdiff: FXOLAT-219 decrease the load for synching groups
 	public boolean hasAuthentication(Long identityKey, String provider) {
 		if (identityKey == null || !StringHelper.containsNonWhitespace(provider)) return false;
@@ -1712,6 +1731,13 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return (cntL.longValue() > 0);
 	}
 
+	@Override
+	public boolean isIdentityVisible(Identity identity) {
+		if(identity == null) return false;
+		Integer status = identity.getStatus();
+		return (status != null && status.intValue() < Identity.STATUS_VISIBLE_LIMIT);
+	}
+
 	private boolean checkAnd(StringBuilder sb, boolean needsAnd) {
 		if (needsAnd) 	sb.append(" and ");
 		return true;
@@ -1758,7 +1784,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 */
 	@Override
 	public Identity saveIdentityStatus(Identity identity, Integer status) {
-		Identity reloadedIdentity = loadForUpdate(identity.getKey()); 
+		Identity reloadedIdentity = loadForUpdate(identity); 
 		reloadedIdentity.setStatus(status);
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
 		dbInstance.commit();
@@ -1767,7 +1793,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	
 	@Override
 	public Identity setIdentityLastLogin(Identity identity) {
-		Identity reloadedIdentity = loadForUpdate(identity.getKey()); 
+		Identity reloadedIdentity = loadForUpdate(identity); 
 		reloadedIdentity.setLastLogin(new Date());
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
 		dbInstance.commit();
@@ -1779,22 +1805,22 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @param identityKey
 	 * @return
 	 */
-	private IdentityImpl loadForUpdate(Long identityKey) {
+	private IdentityImpl loadForUpdate(Identity identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select id from ").append(IdentityImpl.class.getName()).append(" as id")
 		  .append(" inner join fetch id.user user ")
 		  .append(" where id.key=:identityKey");
 		
-		List<IdentityImpl> identity = dbInstance.getCurrentEntityManager()
+		dbInstance.getCurrentEntityManager().detach(identity);
+		List<IdentityImpl> identities = dbInstance.getCurrentEntityManager()
 	  		.createQuery(sb.toString(), IdentityImpl.class)
-	  		.setParameter("identityKey", identityKey)
+	  		.setParameter("identityKey", identity.getKey())
 	  		.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 	  		.getResultList();
-		
-		if(identity.isEmpty()) {
+		if(identities.isEmpty()) {
 			return null;
 		}
-		return identity.get(0);
+		return identities.get(0);
 	}
 
 	@Override

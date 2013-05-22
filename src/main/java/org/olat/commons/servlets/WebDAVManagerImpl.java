@@ -155,7 +155,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 		return null;
 	}
 	
-	private UserSession handleBasicAuthentication(String credentials, HttpServletRequest request) {
+	protected UserSession handleBasicAuthentication(String credentials, HttpServletRequest request) {
 		// This example uses sun.misc.* classes.
 		// You will need to provide your own
 		// if you are not comfortable with that.

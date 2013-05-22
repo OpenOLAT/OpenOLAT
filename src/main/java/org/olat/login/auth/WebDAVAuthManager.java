@@ -21,6 +21,7 @@
 package org.olat.login.auth;
 
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -87,15 +88,21 @@ public class WebDAVAuthManager {
 	 * @return Identity if authentication was successful, null otherwise.
 	 */
 	public static Identity authenticate(String login, String pass) {
-		Identity ident = BaseSecurityManager.getInstance().findIdentityByName(login);
-		if (ident == null) return null;
-		boolean visible = BaseSecurityManager.getInstance().isIdentityVisible(login);
-		if (!visible) return null;
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		
+		Identity ident = securityManager.findIdentityByName(login);
+		if (ident == null) return null;
+		boolean visible = securityManager.isIdentityVisible(ident);
+		if (!visible) {
+			return null;
+		}
+
 		//find WEBDAV authentication provider
-		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(ident, PROVIDER_WEBDAV);
-		if (auth != null && auth.getCredential().equals(Encoder.encrypt(pass)))	return ident;
+		String auth = securityManager.findCredentials(ident, PROVIDER_WEBDAV);
+		if (auth != null && auth.equals(Encoder.encrypt(pass)))	{
+			return ident;
+		}
 		//fallback to OLAT authentication provider 
-		return OLATAuthenticationController.authenticate(login, pass);
+		return OLATAuthenticationController.authenticate(ident, login, pass);
 	}
 }

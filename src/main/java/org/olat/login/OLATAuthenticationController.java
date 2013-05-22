@@ -285,11 +285,18 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	 * @deprecated should not be part of the controller
 	 */
 	public static Identity authenticate(String login, String pass) {
-		
 		if (pass == null) return null; // do never accept empty passwords
-		
 		Identity ident = BaseSecurityManager.getInstance().findIdentityByName(login);
-		
+		return authenticate(ident, login, pass);
+	}
+	
+	/**
+	 * @param login
+	 * @param pass
+	 * @return Identity if authentication was successfull, null otherwise.
+	 * @deprecated should not be part of the controller
+	 */
+	public static Identity authenticate(Identity ident, String login, String pass) {
 		// check for email instead of username if ident is null
 		if (ident == null && LoginModule.allowLoginUsingEmail()) {
 			if (MailHelper.isValidEmailAddress(login)){
@@ -306,10 +313,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		}
 		
 		// find OLAT authentication provider
-		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(
-				ident, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-		
-		if (auth != null && auth.getCredential().equals(Encoder.encrypt(pass)))	return ident;
+		String auth = BaseSecurityManager.getInstance().findCredentials(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		if (auth != null && auth.equals(Encoder.encrypt(pass)))	return ident;
 		
 		Tracing.createLoggerFor(OLATAuthenticationController.class).audit(
 				"Error authenticating user "+login+" via provider OLAT",
