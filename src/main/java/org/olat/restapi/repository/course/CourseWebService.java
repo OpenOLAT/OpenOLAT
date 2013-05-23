@@ -62,6 +62,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.xml.XStreamHelper;
@@ -637,6 +638,94 @@ public class CourseWebService {
 		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
 		List<Identity> authors = Collections.singletonList(author);
 		rm.removeOwners(identity, authors, repositoryEntry);
+		
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Add a coach to the course
+   * @response.representation.200.doc The user is a coach of the course
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or the user not found
+	 * @param courseId The course resourceable's id
+	 * @param identityKey The user identifier
+	 * @param httpRequest The HTTP request
+	 * @return It returns 200  if the user is added as coach of the course
+	 */
+	@PUT
+	@Path("tutors/{identityKey}")
+	public Response addCoach(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey,
+			@Context HttpServletRequest httpRequest) {
+		if(!isAuthor(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		OLATResourceable course = getCourseOLATResource(courseId);
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}  else if (!isAuthorEditor(course, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		Identity tutor = securityManager.loadIdentityByKey(identityKey, false);
+		if(tutor == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		Identity identity = getIdentity(httpRequest);
+		UserRequest ureq = getUserRequest(httpRequest);
+		
+		//add the author as owner of the course
+		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
+		List<Identity> tutors = Collections.singletonList(tutor);
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(tutors);
+		rm.addTutors(identity, ureq.getUserSession().getRoles(), iae, repositoryEntry, new MailPackage(false));
+		
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Add an participant to the course
+   * @response.representation.200.doc The user is a participant of the course
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or the user not found
+	 * @param courseId The course resourceable's id
+	 * @param identityKey The user identifier
+	 * @param httpRequest The HTTP request
+	 * @return It returns 200  if the user is added as owner and author of the course
+	 */
+	@PUT
+	@Path("participants/{identityKey}")
+	public Response addParticipant(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey,
+			@Context HttpServletRequest httpRequest) {
+		if(!isAuthor(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		OLATResourceable course = getCourseOLATResource(courseId);
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}  else if (!isAuthorEditor(course, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		Identity participant = securityManager.loadIdentityByKey(identityKey, false);
+		if(participant == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		Identity identity = getIdentity(httpRequest);
+		UserRequest ureq = getUserRequest(httpRequest);
+		
+		//add the author as owner of the course
+		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
+		List<Identity> participants = Collections.singletonList(participant);
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(participants);
+		rm.addParticipants(identity, ureq.getUserSession().getRoles(), iae, repositoryEntry, new MailPackage(false));
 		
 		return Response.ok().build();
 	}

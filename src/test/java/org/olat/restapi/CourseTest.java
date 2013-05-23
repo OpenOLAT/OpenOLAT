@@ -219,6 +219,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
 
 		//is auth0 author
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
@@ -316,6 +317,44 @@ public class CourseTest extends OlatJerseyTestCase {
 		assertFalse(securityManager.isIdentityInSecurityGroup(auth1, ownerGroup));
 		assertFalse(securityManager.isIdentityInSecurityGroup(auth2, ownerGroup));
 		DBFactory.getInstance().intermediateCommit();
+	}
+	
+	@Test
+	public void testAddCoach() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/tutors/" + auth1.getKey()).build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		//is auth0 coach/tutor
+		RepositoryManager rm = RepositoryManager.getInstance();
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course1, true);
+		SecurityGroup tutorGroup = repositoryEntry.getTutorGroup();
+		boolean isTutor = securityManager.isIdentityInSecurityGroup(auth1, tutorGroup);
+		DBFactory.getInstance().intermediateCommit();
+		assertTrue(isTutor);
+	}
+	
+	@Test
+	public void testAddParticipant() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/participants/" + auth2.getKey()).build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		//is auth2 participant
+		RepositoryManager rm = RepositoryManager.getInstance();
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course1, true);
+		SecurityGroup participant = repositoryEntry.getParticipantGroup();
+		boolean isParticipant = securityManager.isIdentityInSecurityGroup(auth2, participant);
+		DBFactory.getInstance().intermediateCommit();
+		assertTrue(isParticipant);
 	}
 	
 	protected List<UserVO> parseUserArray(InputStream body) {
