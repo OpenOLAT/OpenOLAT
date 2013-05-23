@@ -211,15 +211,22 @@ public class CourseGroupWebService {
 
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
     BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
-
-		String name = group.getName();
-		String desc = group.getDescription();
-		Integer min = normalize(group.getMinParticipants());
-		Integer max = normalize(group.getMaxParticipants());
-		
 		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(course, false);
-		BusinessGroup bg = bgm.createBusinessGroup(ureq.getIdentity(), name, desc, min, max, false, false, courseRe);
-		GroupVO savedVO = ObjectFactory.get(bg);
+    
+		BusinessGroup bg;
+    if(group.getKey() != null && group.getKey() > 0) {
+    	//group already exists
+    	bg = bgm.loadBusinessGroup(group.getKey());
+    	bgm.addResourceTo(bg, courseRe);
+    } else {
+    	String name = group.getName();
+  		String desc = group.getDescription();
+  		Integer min = normalize(group.getMinParticipants());
+  		Integer max = normalize(group.getMaxParticipants());
+  		
+  		bg = bgm.createBusinessGroup(ureq.getIdentity(), name, desc, min, max, false, false, courseRe);
+    }
+    GroupVO savedVO = ObjectFactory.get(bg);
 		return Response.ok(savedVO).build();
 	}
 	
