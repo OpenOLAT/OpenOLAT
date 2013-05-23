@@ -593,6 +593,21 @@
 				<regexp name="percentage" />
 			</regexp-list>
 		</property>
+		
+		<property name="float" default="none"
+			description="">
+
+			<category-list>
+				<category value="visual" />
+			</category-list>
+
+			<literal-list>
+				<literal value="left" />
+				<literal value="right" />
+				<literal value="none" />
+				<literal value="inherit" />
+			</literal-list>
+		</property>
 
 		<property name="text-decoration" default="none"
 			description="">
