@@ -1,8 +1,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
-		<script type="text/javascript" src="prototype.js"></script>
+		<script type="text/javascript" src="../../../../jquery/jquery-1.9.1.min.js"></script>
 		<script type="text/javascript" src="../../../tinymce/tiny_mce_popup.js"></script>
+		<script type="text/javascript" src="prototype.js"></script>
 		<script type="text/javascript">
 			// Load the OLAT translator
 			function findMainWindow(win) {
@@ -13,7 +14,7 @@
 			var mainWin = findMainWindow(tinyMCEPopup.getWin());
 			var translator;
 			if (mainWin) {
-				translator = jQuery(document).ooTranslator().getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmatheditor')	
+				translator = mainWin.o_info.oo_translator.getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmatheditor')	
 			} else {
 				// implement dummy-translator
 				translator = {	translate : function(key) { return key; } }
