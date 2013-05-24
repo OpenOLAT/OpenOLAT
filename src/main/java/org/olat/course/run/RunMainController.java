@@ -123,6 +123,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.RepositoryDetailsController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -675,21 +676,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 			}
 		} else if (cmd.equals(COMMAND_EDIT)) {
-			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-				Controller ec = CourseFactory.createEditorController(ureq, getWindowControl(), all, course);
-				//user activity logger which was initialized with course run
-				if(ec != null){
-					//we are in editing mode
-					currentToolCtr = ec;
-					listenTo(currentToolCtr);
-					isInEditor = true;
-					all.pushController(translate("command.openeditor"), currentToolCtr);
-				}
-			} else throw new OLATSecurityException("wanted to activate editor, but no according right");
-
+			doEdit(ureq) ;
 		} else if (cmd.equals("unifiedusermngt")) {
 			launchMembersManagement(ureq);
-			
 		} else if (cmd.equals("statistic")) {
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
 				currentToolCtr = new StatisticMainController(ureq, getWindowControl(), course);
@@ -819,6 +808,20 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			pbw.open(ureq);
 			//
 		} 
+	}
+	
+	private void doEdit(UserRequest ureq) {
+		if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
+			Controller ec = CourseFactory.createEditorController(ureq, getWindowControl(), all, course);
+			//user activity logger which was initialized with course run
+			if(ec != null){
+				//we are in editing mode
+				currentToolCtr = ec;
+				listenTo(currentToolCtr);
+				isInEditor = true;
+				all.pushController(translate("command.openeditor"), currentToolCtr);
+			}
+		} else throw new OLATSecurityException("wanted to activate editor, but no according right");
 	}
 	
 	private MembersManagementMainController launchMembersManagement(UserRequest ureq) {
@@ -1249,6 +1252,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} catch (OLATSecurityException e) {
 				//the wrong link to the wrong person
 			}
+		} else if(RepositoryDetailsController.ACTIVATE_EDITOR.equals(type)) {
+			doEdit(ureq);
 		}
 	}
 

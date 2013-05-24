@@ -144,7 +144,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class CourseFactory extends BasicManager {
 		
-	private static CacheWrapper loadedCourses;
+	private static CacheWrapper<Long,PersistingCourseImpl> loadedCourses;
 	private static ConcurrentHashMap<Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap<Long, ModifyCourseEvent>();
 
 	public static final String COURSE_EDITOR_LOCK = "courseEditLock";
@@ -184,14 +184,14 @@ public class CourseFactory extends BasicManager {
 	 */
 	public static MainLayoutController createLaunchController(UserRequest ureq, WindowControl wControl, final OLATResourceable olatResource) {
 		ICourse course = loadCourse(olatResource);
-		boolean isDebug = Tracing.isDebugEnabled(CourseFactory.class);
+		boolean isDebug = log.isDebug();
 		long startT = 0;
 		if(isDebug){
 			startT = System.currentTimeMillis();
 		}
 		MainLayoutController launchC = new RunMainController(ureq, wControl, course, true, true);
 		if(isDebug){
-			Tracing.logDebug("Runview for [["+course.getCourseTitle()+"]] took [ms]"+(System.currentTimeMillis() - startT), CourseFactory.class);
+			log.debug("Runview for [["+course.getCourseTitle()+"]] took [ms]"+(System.currentTimeMillis() - startT));
 		}
 		
 		return launchC;
@@ -312,7 +312,7 @@ public class CourseFactory extends BasicManager {
 	 * @return the PersistingCourseImpl instance for the input key.
 	 */
 	static PersistingCourseImpl getCourseFromCache(Long resourceableId) {	//o_clusterOK by:ld    
-		return (PersistingCourseImpl)loadedCourses.get(String.valueOf(resourceableId.longValue()));
+		return loadedCourses.get(resourceableId);
 	}
 
 	/**
@@ -321,8 +321,8 @@ public class CourseFactory extends BasicManager {
 	 * @param course
 	 */
 	static void putCourseInCache(Long resourceableId, PersistingCourseImpl course) { //o_clusterOK by:ld    
-		loadedCourses.put(String.valueOf(resourceableId.longValue()), course);
-		Tracing.logDebug("putCourseInCache ", CourseFactory.class);
+		loadedCourses.put(resourceableId, course);
+		log.debug("putCourseInCache ");
 	}
 			
 	/**
@@ -330,8 +330,8 @@ public class CourseFactory extends BasicManager {
 	 * @param resourceableId
 	 */
 	private static void removeFromCache(Long resourceableId) { //o_clusterOK by: ld
-		loadedCourses.remove(String.valueOf(resourceableId.longValue()));	
-		Tracing.logDebug("removeFromCache ", CourseFactory.class);
+		loadedCourses.remove(resourceableId);	
+		log.debug("removeFromCache");
 	}
 	
 	/**
@@ -340,8 +340,8 @@ public class CourseFactory extends BasicManager {
 	 * @param course
 	 */
 	private static void updateCourseInCache(Long resourceableId, PersistingCourseImpl course) { //o_clusterOK by:ld    
-		loadedCourses.update(String.valueOf(resourceableId.longValue()), course);				
-		Tracing.logDebug("updateCourseInCache ", CourseFactory.class);
+		loadedCourses.update(resourceableId, course);				
+		log.debug("updateCourseInCache");
 	}
 
 	/**
@@ -590,7 +590,7 @@ public class CourseFactory extends BasicManager {
 		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, exportedCourseZIPFile);
 		// course is now also in course cache!
 		if (course == null) {
-			Tracing.logError("Error deploying course from ZIP: " + exportedCourseZIPFile.getAbsolutePath(), CourseFactory.class);
+			log.error("Error deploying course from ZIP: " + exportedCourseZIPFile.getAbsolutePath());
 			return null;
 		}
 		File courseExportData = course.getCourseExportDataDir().getBasefile();
@@ -603,7 +603,7 @@ public class CourseFactory extends BasicManager {
 		}
 		RepositoryEntry existingEntry = repositoryManager.lookupRepositoryEntryBySoftkey(softKey, false);
 		if (existingEntry != null) {
-			Tracing.logInfo("RepositoryEntry with softkey " + softKey + " already exists. Course will not be deployed.", CourseFactory.class);
+			log.info("RepositoryEntry with softkey " + softKey + " already exists. Course will not be deployed.");
 			//seem to be a problem
 			UserCourseInformationsManager userCourseInformationsManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
 			userCourseInformationsManager.deleteUserCourseInformations(existingEntry);
@@ -678,7 +678,7 @@ public class CourseFactory extends BasicManager {
 		closeCourseEditSession(course.getResourceableId(), true);
 		// cleanup export data
 		FileUtils.deleteDirsAndFiles(courseExportData, true, true);
-		Tracing.logInfo("Successfully deployed course " + re.getDisplayname() + " from ZIP: " + exportedCourseZIPFile.getAbsolutePath(), CourseFactory.class);
+		log.info("Successfully deployed course " + re.getDisplayname() + " from ZIP: " + exportedCourseZIPFile.getAbsolutePath());
 		return re;
 	}
 	
@@ -1267,7 +1267,7 @@ class NodeDeletionVisitor implements Visitor {
  * @author Lavinia Dumitrescu
  */
 class ModifyCourseEvent extends MultiUserEvent {
-
+	private static final long serialVersionUID = -2940724437608086461L;
 	private final Long courseId;
 	/**
 	 * @param command
@@ -1280,6 +1280,4 @@ class ModifyCourseEvent extends MultiUserEvent {
 	public Long getCourseId() {
 		return courseId;
 	}
-
-	
 }

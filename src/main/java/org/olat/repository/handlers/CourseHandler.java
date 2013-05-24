@@ -164,8 +164,10 @@ public class CourseHandler implements RepositoryHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		//throw new AssertException("a course is not directly editable!!! (reason: lock is never released), res-id:"+res.getResourceableId());
-		return CourseFactory.createEditorController(ureq, wControl, null, res);
+		//run + activate
+		MainLayoutController courseCtrl = CourseFactory.createLaunchController(ureq, wControl, res);
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, courseCtrl);
+		return wrapper;
 	}
 
 	/**

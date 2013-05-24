@@ -572,11 +572,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			if (cmd.equals(ACTION_DETAILSEDIT)) {
 				// detailsForm.setDisplayOnly(false);
 				main.contextPut("enableEdit", Boolean.valueOf(false)); // disable edit
-				// button
-				return;
 			} else if (cmd.equals(ACTION_CLOSE)) { // close details
 				doCloseDetailView(ureq);
-				return;
 			} else if (cmd.equals(ACTION_LAUNCH)) { // launch resource
 
 			}
