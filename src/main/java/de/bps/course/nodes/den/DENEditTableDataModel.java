@@ -28,9 +28,8 @@ import java.util.List;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Formatter;
 
-public class DENEditTableDataModel extends DefaultTableDataModel {
+public class DENEditTableDataModel extends DefaultTableDataModel<KalendarEvent> {
 	
 	public static final String CHANGE_ACTION = "denDateChange";
 	public static final String DELETE_ACTION = "denDateDelete";
@@ -41,7 +40,7 @@ public class DENEditTableDataModel extends DefaultTableDataModel {
 	private Translator translator;
 	private DENManager denManager;
 	
-	public DENEditTableDataModel(List objects, Translator translator) {
+	public DENEditTableDataModel(List<KalendarEvent> objects, Translator translator) {
 		super(objects);
 		
 		this.translator = translator;
@@ -55,15 +54,13 @@ public class DENEditTableDataModel extends DefaultTableDataModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		KalendarEvent event = (KalendarEvent)objects.get(row);
+		KalendarEvent event = getObject(row);
 		
 		switch (col) {
 			case 0: return denManager.format(event.getSubject());
 			case 1:
 				//begin
-				Formatter formatter = Formatter.getInstance(translator.getLocale());
-				String formattedDate = formatter.formatDateAndTime(event.getBegin());
-				return denManager.format(formattedDate);
+				return event.getBegin();
 			case 2:
 				//duration
 				Date begin = event.getBegin();
@@ -78,19 +75,6 @@ public class DENEditTableDataModel extends DefaultTableDataModel {
 			case 5: return event.getNumParticipants();
 		default:	return "error";
 		}
-	}
-
-	public KalendarEvent getDENEventObject(int row) {
-		return (KalendarEvent)objects.get(row);
-	}
-	
-	public void setEntry(int row, KalendarEvent event) {
-		objects.remove(row);
-		objects.add(row, event);
-	}
-	
-	public KalendarEvent getEntryAt(int row) {
-		return (KalendarEvent)objects.get(row);
 	}
 	
 	public void removeEntries(BitSet choosenEntries) {

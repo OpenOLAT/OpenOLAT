@@ -29,9 +29,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.Formatter;
 
-public class DENListTableDataModel extends DefaultTableDataModel {
+public class DENListTableDataModel extends DefaultTableDataModel<KalendarEvent> {
 	
 	public static final String CHANGE_ACTION = "denPartsChange";
 	public static final String MAIL_ACTION = "denSendMail";
@@ -42,7 +41,7 @@ public class DENListTableDataModel extends DefaultTableDataModel {
 	private DENManager denManager;
 	private Translator translator;
 
-	public DENListTableDataModel(List objects, Translator translator) {
+	public DENListTableDataModel(List<KalendarEvent> objects, Translator translator) {
 		super(objects);
 		denManager = DENManager.getInstance();
 		this.translator = translator;
@@ -55,7 +54,7 @@ public class DENListTableDataModel extends DefaultTableDataModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		KalendarEvent event = (KalendarEvent)objects.get(row);
+		KalendarEvent event = getObject(row);
 		
 		switch (col) {
 		case 0:
@@ -63,9 +62,7 @@ public class DENListTableDataModel extends DefaultTableDataModel {
 			return denManager.format(event.getSubject());
 		case 1:
 			//begin
-			Formatter formatter = Formatter.getInstance(translator.getLocale());
-			String formattedDate = formatter.formatDateAndTime(event.getBegin());
-			return denManager.format(formattedDate);
+			return event.getBegin();
 		case 2:
 			//duration
 			Date begin = event.getBegin();

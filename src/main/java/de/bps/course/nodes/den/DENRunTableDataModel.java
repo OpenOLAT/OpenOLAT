@@ -27,7 +27,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Formatter;
 
 import de.bps.course.nodes.DENCourseNode;
 
@@ -35,7 +34,7 @@ import de.bps.course.nodes.DENCourseNode;
  * TableDataModel for run view of date enrollment
  * @author skoeber
  */
-public class DENRunTableDataModel extends DefaultTableDataModel {
+public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> {
 	
 	public static final String CMD_ENROLL_IN_DATE = "cmd.enroll.in.date";
 	public static final String CMD_ENROLLED_CANCEL = "cmd.enrolled.cancel";
@@ -55,7 +54,7 @@ public class DENRunTableDataModel extends DefaultTableDataModel {
 	 * @param ureq
 	 * @param DENCourseNode courseNode
 	 */
-	public DENRunTableDataModel(List objects, UserRequest ureq, DENCourseNode courseNode, Boolean cancelEnrollEnabled, Translator translator) {
+	public DENRunTableDataModel(List<KalendarEvent> objects, UserRequest ureq, DENCourseNode courseNode, Boolean cancelEnrollEnabled, Translator translator) {
 		super(objects);
 		denManager = DENManager.getInstance();
 		identity = ureq.getIdentity();
@@ -71,16 +70,14 @@ public class DENRunTableDataModel extends DefaultTableDataModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		KalendarEvent event = (KalendarEvent)objects.get(row);
+		KalendarEvent event = getObject(row);
 		
 		switch (col) {
 		case 0:
 			//subject
 			return denManager.format(event.getSubject());
 		case 1:
-			Formatter formatter = Formatter.getInstance(translator.getLocale());
-			String formattedDate = formatter.formatDateAndTime(event.getBegin());
-			return denManager.format(formattedDate);
+			return event.getBegin();
 		case 2:
 			Date begin = event.getBegin();
 			Date end = event.getEnd();
@@ -127,13 +124,5 @@ public class DENRunTableDataModel extends DefaultTableDataModel {
 
 		default: return "error";
 		}
-	}
-	
-	public KalendarEvent getEntryAt(int row) {
-		return (KalendarEvent)objects.get(row);
-	}
-
-	public void setEntries(List newEntries) {
-		this.objects = newEntries;
 	}
 }
