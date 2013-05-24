@@ -20,8 +20,6 @@
 
 package org.olat.commons.info.ui;
 
-import java.text.DateFormat;
-
 import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
@@ -40,11 +38,11 @@ import org.olat.core.util.StringHelper;
  */
 public class InfoDisplayHelper {
 	
-	private final DateFormat formatter;
+	private final Formatter formatter;
 	private final Translator translator;
 	
 	public InfoDisplayHelper(Translator translator) {
-		this.formatter = DateFormat.getDateInstance(DateFormat.MEDIUM, translator.getLocale());
+		this.formatter = Formatter.getInstance(translator.getLocale());
 		this.translator = translator;
 	}
 
@@ -58,7 +56,7 @@ public class InfoDisplayHelper {
 	
 	public String getInfos(InfoMessage info) {
 		String formattedName = getAuthor(info);
-		String creationDate = formatter.format(info.getCreationDate());
+		String creationDate = formatter.formatDateAndTime(info.getCreationDate());
 		String msgAddInfos = translator.translate("display.info", new String[]{formattedName, creationDate});
 		return msgAddInfos;
 	}
@@ -73,7 +71,7 @@ public class InfoDisplayHelper {
 		User user = info.getModifier().getUser();
 		String formattedName = user.getProperty(UserConstants.FIRSTNAME, null)
 			+ " " + user.getProperty(UserConstants.LASTNAME, null);
-		String creationDate = formatter.format(info.getModificationDate());
+		String creationDate = formatter.formatDateAndTime(info.getModificationDate());
 		String msgAddInfos = translator.translate("display.modifier", new String[]{formattedName, creationDate});
 		return msgAddInfos;
 	}

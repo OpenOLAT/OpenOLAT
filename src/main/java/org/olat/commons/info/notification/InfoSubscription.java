@@ -74,6 +74,7 @@ public class InfoSubscription {
 	}
 	
 	private List<String> getSubscribedInfos() {
+		@SuppressWarnings("unchecked")
 		List<String> infoSubscriptions = (List<String>)preferences.get(InfoSubscription.class, KEY_SUBSCRIPTION);
 		if (infoSubscriptions == null) {
 			infoSubscriptions = new ArrayList<String>();
@@ -82,6 +83,7 @@ public class InfoSubscription {
 	}
 	
 	private List<String> getUnsubscribedInfos() {
+		@SuppressWarnings("unchecked")
 		List<String> infoSubscriptions = (List<String>)preferences.get(InfoSubscription.class, KEY_UN_SUBSCRIPTION);
 		if (infoSubscriptions == null) {
 			infoSubscriptions = new ArrayList<String>();
