@@ -1245,7 +1245,7 @@ create table o_qp_license (
    primary key (id)
 );
 
-create table if not exists o_lti_outcome (
+create table o_lti_outcome (
    id number(20) not null,
    creationdate date not null,
    lastmodified date not null,

@@ -321,7 +321,7 @@ alter table o_qp_item add constraint idx_qp_item_license_id foreign key (fk_lice
 alter table o_qp_taxonomy_level add constraint idx_qp_field_2_parent_id foreign key (fk_parent_field) references o_qp_taxonomy_level(id);
 
 -- lti
-create table if not exists o_lti_outcome (
+create table o_lti_outcome (
    id number(20) not null,
    creationdate date not null,
    lastmodified date not null,
