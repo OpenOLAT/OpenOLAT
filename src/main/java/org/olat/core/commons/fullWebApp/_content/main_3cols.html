@@ -1,7 +1,6 @@
 <div id="b_main" class="$mainCssClasses">
-	## begin: #col1 - first float column
-	#if($existsCol1 && $r.visible("col1"))	
-	<div id="b_col1" style="$!col1CustomCSSStyles">
+#if($existsCol1 && $r.visible("col1"))
+	<div id="b_col1" class="split-pane" style="$!col1CustomCSSStyles">
 		<div id="b_col1_content" class="b_clearfix"> 
 			<a name="b_col1"></a>
 			<div class="b_floatbox">
@@ -9,11 +8,10 @@
 			</div>
 		</div>
 	</div>
-	#end
-	## end: #col1 
-	## begin: #col2 second float column
-	#if($existsCol2 && $r.visible("col2"))	
-	<div id="b_col2" style="$!col2CustomCSSStyles">
+	<div class="split-pane-divider" id="my-divider"></div>
+#end
+#if($existsCol2 && $r.visible("col2"))	
+	<div id="b_col2" class="split-pane" style="$!col2CustomCSSStyles">
 		<div id="b_col2_content" class="b_clearfix"> 
 			<a name="b_col2"></a>
 			<div class="b_floatbox">
@@ -21,11 +19,9 @@
 			</div>
 		</div>
 	</div>
-	#end
-	## end: #col2 
-	## begin: #col3 static column 
-	#if($existsCol3 && $r.visible("col3"))	
-	<div id="b_col3" style="$!col3CustomCSSStyles1 $!col3CustomCSSStyles2">
+#end
+#if($existsCol3 && $r.visible("col3"))	
+	<div id="b_col3" class="split-pane" style="$!col3CustomCSSStyles1 $!col3CustomCSSStyles2">
 		<div id="b_col3_content" class="b_clearfix">
 			## skip anchor: content
 			<a id="b_content" name="content"></a> 
@@ -37,149 +33,73 @@
 		## IE column clearing
 		<div id="b_ie_clearing">&nbsp;</div>
 	</div>
-	#end
-	## end: #col3
+#end
 </div>
 #if(($existsCol1 && $r.visible("col1")) || ($existsCol2 && $r.visible("col2")))
 <script type="text/javascript">
-/* <![CDATA[ */ 
-	## remove event handlers and alike from existing resizers first and clean them up
-	if (!(jQuery.type(B_ResizableColumns) === "undefined")) {
-		B_ResizableColumns.destroy.bind(B_ResizableColumns)(); 
-		B_ResizableColumns = null;
-	}
-	
-	var B_ResizableColumns = {	
-		## The two resizabe columns
-		_res_col1 : null, 
-		## The object that contains the resizable columns and all the associated code
-		_res_col2 : null,
-		## true when the on-dom-replacement callback has already been added for this render cycle
-		_onDomReplacementCallbackAdded : false,
-		
-		## init method to initialize the column resizer objects
-	    init : function() {
-				#if($existsCol1 && $r.visible("col1"))
-					if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','B_ResizableColumns.init called','main_3cols.html');
-					
-		    	var col1Elem = jQuery('#b_col1');
-		    	var col1WidthStyle = col1Elem.css('width');
-					col1Elem.resizable({ handles: "e" });
-					col1Elem.on('resize', onResizeCol1);
-					## reset style to original EM value from class name			
-					col1Elem.css('width', col1WidthStyle); 
-					//col1Elem.clip();
-					col1Elem = null;
-				#end
-				#if($existsCol2 && $r.visible("col2"))	
-					var col2Elem = jQuery('#b_col2');
-					var col2WidthStyle = col2Elem.width();
-					col2Elem.resizable({ handles: "w" });
-					col2Elem.on('resize', onResizeCol2);					
-					## reset style to original EM value from class name	
-					col2Elem.css('width', col2WidthStyle); 
-					col2Elem = null;
-				#end
-				## Add click listener on body for DOM replacement callback to adjust content height after each click
-				jQuery('#b_body').click(B_ResizableColumns.setOnDomReplacementFinishedCallback);
-				## Adjust resizers height at the end
-				B_ResizableColumns.adjustHeight();
-				body = null;
-	    },
-	    
-		adjustHeight : function(){
-			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','B_ResizableColumns.adjustHeight called', "main_3cols.html");	
-			try {
-				## Reset col height first
-				#if($existsCol1 && $r.visible("col1"))	
-					var col1Elem = jQuery('#b_col1_content');
-					col1Elem.height('auto');
-					col1Elem = null;
-				#end
-				#if($existsCol2 && $r.visible("col2"))	
-					var col2Elem = jQuery('#b_col2_content');
-					col2Elem.height('auto');
-					col2Elem = null
-				#end
-				## Calculate new col height
-				var contentHeight = OPOL.getMainColumnsMaxHeight();
-				## Set new col height
-				#if($existsCol1 && $r.visible("col1"))	
-					var col1Elem = jQuery('#b_col1_content');
-					col1Elem.height(contentHeight);
-					col1Elem = null;
-				#end
-				#if($existsCol2 && $r.visible("col2"))	
-					var col2Elem = jQuery('#b_col2_content');
-					col2Elem.height(contentHeight);
-					col2Elem = null;
-				#end
-			} catch (e) {
-				if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Exception while adjusting height with exception::' + e, "main_3cols.html");				
-			}
-			## clear on dom replacement callback
-			this._onDomReplacementCallbackAdded = false;
-		},
-
-		setOnDomReplacementFinishedCallback : function() {
-			try {
-				if (!this._onDomReplacementCallbackAdded) {				
-					this._onDomReplacementCallbackAdded = true;
-					## recalculate resizers height again when clicked to adjust column height, set callback to dom replacement mechanism
-					b_AddOnDomReplacementFinishedCallback( B_ResizableColumns.adjustHeight.bind(B_ResizableColumns) );
-				}
-			} catch(e) {
-				jQuery(document).ooLog('error','Exception while adjusting height with exception::' + e, "main_3cols.html");				
-			}
-		},
-
-		destroy : function() {
-			## cleanup event listeners, to prevent issues in IE
-			try {
-				if (this._res_col1 != null) {
-					if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','destroying _res_col1 resizer', "main_3cols.html");	
-					this._res_col1.purgeListeners();
-					this._res_col1.destroy(); 
-					this._res_col1 = null;
-				}
-				if (this._res_col2 != null) {
-					if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','destroying _res_col2 resizer', "main_3cols.html");	
-					this._res_col2.purgeListeners();
-					this._res_col2.destroy(); 
-					this._res_col2 = null;
-				}		
-				## Remove click listener on body for the scope of B_ResizableColumns to prevent memory leaks
-		      	jQuery('#b_body').off('click', B_ResizableColumns.setOnDomReplacementFinishedCallback);
-			} catch (e) {
-				if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Exception while destroying ResizeableColumns::' + e, "main_3cols.html");				
-			}
+/* <![CDATA[ */
+jQuery().ready(function() {
+	function adjustHeight() {
+		try {
+			// Reset col height first
+			jQuery('#b_col1_content').height('auto');
+			jQuery('#b_col2_content').height('auto');
+			// Calculate new col height
+			var contentHeight = OPOL.getMainColumnsMaxHeight();
+			jQuery('#b_col1_content').height(contentHeight);
+			jQuery('#b_col2_content').height(contentHeight);
+		} catch (e) {
+			if(console)	console.log(e);			
 		}
 	};
+	adjustHeight();
 	
-	## callback resize _res_col1
-	function onResizeCol1() {
-		## calculate menu column width change
-		var newWidth = jQuery('#b_col1').width(); 
-		var newEmWidth = Math.round(newWidth / o_info.emPxFactor);
-		jQuery('#b_col1').width(newEmWidth + "em");	
-		jQuery('#b_col3').css("margin-left", newEmWidth + "em");	
-		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','col1 width::' + newWidth + " EM::" + newEmWidth + " factor::" + o_info.emPxFactor, "main_3cols.html");	
-		## save new width on server
-		jQuery.post('$r.commandURI("saveCol1Width")' + newEmWidth);
-	}
-	
-	## callback resize _res_col2
-	function onResizeCol2() {
-		var newWidth = jQuery('#b_col2').width(); 
-		var newEmWidth = Math.round(newWidth / o_info.emPxFactor);
-		jQuery('#b_col2').width(newEmWidth + "em");	
-		jQuery('#b_col3').css("margin-right", newEmWidth + "em");	
-		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','col2 width::' + newWidth + " EM::" + newEmWidth + " factor::" + o_info.emPxFactor, "main_3cols.html");
-		## save new width on server
-		jQuery.post('$r.commandURI("saveCol2Width")' + newEmWidth);
-	}
-	## initialize everything now
-	jQuery(document).ready(B_ResizableColumns.init, B_ResizableColumns, true);
+	// Main vertical splitter, anchored to the browser window
+	jQuery("#b_col1").resizable({
+        handles: 'e',
+        containment: '#b_main',
+	    grid: [1, 10000],
+	    stop: function() {
+			var newEmWidth = Math.round(jQuery('#b_col1').width() / o_info.emPxFactor);
+			jQuery.post('$r.commandURI("saveCol1Width")' + newEmWidth);
+	    }
+	}).bind( "resize", resize_right);
+
+	function resize_right(event, ui) {
+	    var width = ui.size.width;
+	    var leftWidth = jQuery("#b_col2").width();
+        var contWidth = jQuery('#b_main').width() - leftWidth;
+	    var middleWidth = jQuery("#b_col3").width();
+	    if(middleWidth > contWidth) {
+	    	jQuery('#b_col1').css('width', width);
+	    }
+	    jQuery('#b_col3').css('width', (contWidth - width));
+	    jQuery('#b_col3').css('margin-left', width);
+	};
+
+#if($existsCol2 && $r.visible("col2"))		
+	jQuery("#b_col3").resizable({
+        handles: 'e',
+        containment: '#b_main',
+	    grid: [1, 10000],
+	    stop: function() {
+			var newEmWidth = Math.round(jQuery('#b_col2').width() / o_info.emPxFactor);
+			jQuery.post('$r.commandURI("saveCol2Width")' + newEmWidth);
+	    }
+	}).bind( "resize", resize_left);
+
+	function resize_left(event, ui) {
+	    var width = ui.size.width;
+	    var rightWidth = jQuery("#b_col1").width();
+        var contWidth = jQuery('#b_main').width() - rightWidth;
+	    if(width > contWidth) {
+	    	width = contWidth;
+	    	jQuery('#b_col3').css('width', width);
+	    }
+	    jQuery('#b_col2').css('width', (contWidth - width));
+	};
+#end
+});
 /* ]]> */
 </script>
 #end
