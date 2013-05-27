@@ -89,6 +89,11 @@
 	</filter>
 	
 	<filter>
+		<filter-name>CrossOriginFilter</filter-name>
+		<filter-class>org.olat.core.servlets.CrossOriginFilter</filter-class>
+	</filter>
+	
+	<filter>
 		<filter-name>RESTApiLoginFilter</filter-name>
 		<filter-class>org.olat.restapi.security.RestApiLoginFilter</filter-class>
 	</filter>
@@ -108,6 +113,11 @@
 	<filter-mapping>
 		<filter-name>PaypalIPNFilter</filter-name>
 		<url-pattern>/paypal/*</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>CrossOriginFilter</filter-name>
+		<url-pattern>/restapi/*</url-pattern>
 	</filter-mapping>
 	
 	<filter-mapping>

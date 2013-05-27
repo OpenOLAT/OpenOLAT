@@ -86,6 +86,7 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	private static Date buildDate;
 	private static String repoRevision;
 	private static String patchRepoRevision;
+	private static String crossOriginFilter;
 	
 	/**
 	 * [used by spring]
@@ -445,6 +446,14 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	 */
 	public static String getServerContextPathURI() {
 		return createServerURI() + WebappHelper.getServletContextPath();
+	}
+	
+	public static String getCrossOriginFilter() {
+		return crossOriginFilter;
+	}
+	
+	public void setCrossOriginFilter(String crossOriginFilter) {
+		Settings.crossOriginFilter = crossOriginFilter;
 	}
 	
 	/**

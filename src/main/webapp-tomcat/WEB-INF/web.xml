@@ -84,6 +84,11 @@
 	</filter>
 	
 	<filter>
+		<filter-name>CrossOriginFilter</filter-name>
+		<filter-class>org.olat.core.servlets.CrossOriginFilter</filter-class>
+	</filter>
+	
+	<filter>
 		<filter-name>RESTApiLoginFilter</filter-name>
 		<filter-class>org.olat.restapi.security.RestApiLoginFilter</filter-class>
 	</filter>
@@ -95,10 +100,14 @@
 	</filter-mapping>
 	
 	<filter-mapping>
+		<filter-name>CrossOriginFilter</filter-name>
+		<url-pattern>/restapi/*</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
 		<filter-name>RESTApiLoginFilter</filter-name>
 		<url-pattern>/restapi/*</url-pattern>
 	</filter-mapping>
-
 	
 	<!-- 3. Listeners -->
     <!-- triggers the above spring files to be processed by the spring framework  -->
