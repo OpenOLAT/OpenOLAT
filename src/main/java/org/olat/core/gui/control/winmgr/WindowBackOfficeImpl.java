@@ -191,7 +191,6 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		Writer w = null;
 		try {
 			boolean acceptJson = false;
-			w = response.getWriter();
 			for(Enumeration<String> headers=request.getHeaders("Accept"); headers.hasMoreElements(); ) {
 				String accept = headers.nextElement();
 				if(accept.contains("application/json")) {
@@ -199,11 +198,16 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 				}
 			}
 			
+			//first set the headers with the content-type
+			//and after get the writer with the encoding
+			//fixed by the content-type
 			if(acceptJson) {
 				ServletUtil.setJSONResourceHeaders(response);
+				w = response.getWriter();
 				ajaxC.pushJSONAndClear(w);
 			} else {
 				ServletUtil.setStringResourceHeaders(response);
+				w = response.getWriter();
 				ajaxC.pushResource(w, true);
 			}
 		} catch (IOException e) {
