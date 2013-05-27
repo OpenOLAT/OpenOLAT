@@ -35,6 +35,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
@@ -76,7 +77,6 @@ public class FeedViewHelper {
 	// Per default show the first page
 	private int page = 0;
 	private List<Item> cachedItems;
-	private FeedSecurityCallback callback;
 	//
 	private FeedManager feedManager = FeedManager.getInstance();
 
@@ -94,7 +94,6 @@ public class FeedViewHelper {
 		this.locale = translator.getLocale();
 		this.courseId = courseId;
 		this.nodeId = nodeId;
-		this.callback = callback;
 		this.cachedItems = feed.getFilteredItems(callback, identity);
 		this.setURIs();
 	}
@@ -424,6 +423,7 @@ public class FeedViewHelper {
 				itemDescription = mediaUrlFilter.filter(itemDescription);
 			}
 		}
+		itemDescription = Formatter.formatLatexFormulas(itemDescription);
 		return itemDescription;
 	}
 	

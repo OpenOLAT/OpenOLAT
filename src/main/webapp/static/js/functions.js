@@ -206,18 +206,22 @@ var BFormatter = {
 	formatLatexFormulas : function(domId) {
 		try {
 			if (jsMath) { // only when js math available
-				if (jsMath.loaded) { 
-					jsMath.ProcessBeforeShowing.curry(domId).delay(0.01);					
+				if (jsMath.loaded) {
+					setTimeout(function() {
+						jQuery('#' + domId).each(function(index, el){
+							jsMath.ProcessBeforeShowing(el);
+						});
+					}, 10);					
 				} else { // not yet loaded (autoload), load first
 					jsMath.Autoload.LoadJsMath();
 					// retry formatting when ready (recursively until loaded)
-					BFormatter.formatLatexFormulas.delay(0.1);
+					setTimeout(function() {
+						BFormatter.formatLatexFormulas(domId);
+					}, 100);
 				}
-			} else {
-				if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','BFormatter::formatLatexFormulas: can not format latex formulas, jsMath not installed. Check your logfile', "functions.js::BFormatter::formatLatexFormulas");
 			}
 		} catch(e) {
-			if (o_info.debug) o_log("error in BFormatter.formatLatexFormulas: "+showerror(e));
+			if (console) console.log("error in BFormatter.formatLatexFormulas: ", e);
 		}
 	}
 };

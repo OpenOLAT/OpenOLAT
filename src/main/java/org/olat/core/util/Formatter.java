@@ -497,7 +497,7 @@ public class Formatter {
 			sb.append("<").append(elem).append(" id=\"").append(domid).append("\">");
 			sb.append(htmlFragment);
 			sb.append("</").append(elem).append(">");
-			sb.append("<script type='text/javascript'>/* <![CDATA[ */ BFormatter.formatLatexFormulas('").append(domid).append("');/* ]]> */</script>");
+			sb.append("\n<script type='text/javascript'>\n/* <![CDATA[ */\n setTimeout(function() { BFormatter.formatLatexFormulas('").append(domid).append("');}, 100);\n/* ]]> */\n</script>");
 			return sb.toString();
 		}			
 		return htmlFragment;
