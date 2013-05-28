@@ -758,7 +758,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 				
 				EntityTransaction trx = getCurrentEntityManager().getTransaction();
 				if(trx != null) {
-					logWarn("Commit commit", new Exception());
 					trx.commit();
 				}
 
