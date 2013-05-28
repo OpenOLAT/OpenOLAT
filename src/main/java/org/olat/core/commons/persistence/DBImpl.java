@@ -36,6 +36,7 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.RollbackException;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -275,27 +276,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
     	logWarn("beginTransaction bulk-change, too many db access for one transaction, could be a performance problem (add closeSession/createSession in loop) logObject=" + logObject, null);
     	getData().resetAccessCounter();
     }
-    
-    EntityTransaction transaction = em.getTransaction();
-    if(transaction == null) {
-    	logError("Call beginTransaction but transaction is null", null);
-    } else if (transaction.isActive() && transaction.getRollbackOnly()) {
-    	logError("Call beginTransaction but transaction is already rollbacked", null);
-    } else if (!transaction.isActive()) {
-    	logError("Call beginTransaction but transaction is already completed", null);
-    }
   }
-  /*
-	private void createSession2() {
-		ThreadLocalData data = getData();
-		if (data == null) {
-			if (isLogDebugEnabled()) logDebug("createSession start...", null);
-			data.resetAccessCounter();
-			data.resetCommitCounter();
-		}
-		setInitialized(true);
-		if (isLogDebugEnabled()) logDebug("createSession end...", null);
-	}*/
 
 	/**
 	 * Close the database session.
@@ -317,15 +298,14 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		if(s != null) {
 			EntityTransaction trx = s.getTransaction();
 			if(trx.isActive()) {
-				if(trx.getRollbackOnly()) {
+				try {
+					trx.commit();
+				} catch (RollbackException ex) {
+					//possible if trx setRollbackonly
+					logWarn("Close session with transaction set with setRollbackOnly", ex);
+				} catch (Exception e) {
+					logError("", e);
 					trx.rollback();
-				} else {
-					try {
-						trx.commit();
-					} catch (Exception e) {
-						logError("", e);
-						trx.rollback();
-					}
 				}
 			}
 	
@@ -778,10 +758,16 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 				
 				EntityTransaction trx = getCurrentEntityManager().getTransaction();
 				if(trx != null) {
+					logWarn("Commit commit", new Exception());
 					trx.commit();
 				}
 
 				if (isLogDebugEnabled()) logDebug("Commit DONE hasTransaction()=" + hasTransaction(), null);
+			} else if(hasTransaction() && isError()) {
+				EntityTransaction trx = getCurrentEntityManager().getTransaction();
+				if(trx != null && trx.isActive()) {
+					throw new DBRuntimeException("Try to commit a transaction in error status");
+				}
 			} else {
 				if (isLogDebugEnabled()) logDebug("Call commit without starting transaction", null );
 			}
@@ -800,8 +786,16 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 					txManager.rollback(status);
 					
 					EntityTransaction trx = getCurrentEntityManager().getTransaction();
-					if(trx != null) {
-						trx.rollback();
+					if(trx != null && trx.isActive()) {
+						if(trx.getRollbackOnly()) {
+							try {
+								trx.commit();
+							} catch (RollbackException e1) {
+								//we wait for this exception
+							}
+						} else {
+							trx.rollback();
+						}
 					}
 				}
 			} catch (Error er) {
@@ -829,8 +823,16 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			txManager.rollback(status);
 			
 			EntityTransaction trx = getCurrentEntityManager().getTransaction();
-			if(trx != null) {
-				trx.rollback();
+			if(trx != null && trx.isActive()) {
+				if(trx.getRollbackOnly()) {
+					try {
+						trx.commit();
+					} catch (RollbackException e) {
+						//we wait for this exception
+					}
+				} else {
+					trx.rollback();
+				}
 			}
 
 		} catch (Exception ex) {
