@@ -89,7 +89,7 @@ public class MapperServiceImpl implements MapperService {
 		MapperKey mapperKey = new MapperKey(session, mapid);
 		mapperKeyToMapper.put(mapperKey, mapper);
 		mapperToMapperKey.put(mapper, mapperKey);
-		if(session.getSessionInfo() == null) {
+		if(session == null || session.getSessionInfo() == null) {
 			return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + mapid;
 		}
 		

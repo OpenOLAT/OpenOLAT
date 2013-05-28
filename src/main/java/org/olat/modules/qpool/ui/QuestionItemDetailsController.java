@@ -133,6 +133,9 @@ public class QuestionItemDetailsController extends BasicController implements St
 			}
 		}
 		listenTo(previewCtrl);
+		if(mainVC != null) {
+			mainVC.put("type_specifics", previewCtrl.getInitialComponent());
+		}
 		return spi;
 	}
 	
