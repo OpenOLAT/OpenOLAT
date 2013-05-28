@@ -48,7 +48,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
-import org.olat.modules.qpool.manager.FileStorage;
+import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
@@ -72,7 +72,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private FileStorage qpoolFileStorage;
+	private QPoolFileStorage qpoolFileStorage;
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired

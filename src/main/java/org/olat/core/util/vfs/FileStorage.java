@@ -17,38 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.manager;
+package org.olat.core.util.vfs;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.qpool.QuestionPoolModule;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * 
- * 
- * 
- * Initial date: 07.03.2013<br>
+ * Initial date: 28.05.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service("qpoolFileStorage")
 public class FileStorage {
 	
 	private static final OLog log = Tracing.createLoggerFor(FileStorage.class);
+
+	private VFSContainer rootContainer;
 	
-	@Autowired
-	private QuestionPoolModule qpoolModule;
+	public FileStorage(VFSContainer rootContainer) {
+		this.rootContainer = rootContainer;
+	}
 
 	public String generateDir() {
 		String uuid = UUID.randomUUID().toString();
@@ -70,8 +63,29 @@ public class FileStorage {
 		return path;
 	}
 	
+	public String generateDir(String uuid, boolean addNumberedDir) {
+		if(addNumberedDir) {
+			return generateDir(uuid);
+		}
+
+		String cleanUuid = uuid.replace("-", "");
+		String firstToken = cleanUuid.substring(0, 2);
+		String secondToken = cleanUuid.substring(2, 4);
+		String thirdToken = cleanUuid.substring(4, 6);
+
+		VFSContainer firstContainer = getNextDirectory(rootContainer, firstToken);
+		VFSContainer secondContainer = getNextDirectory(firstContainer, secondToken);
+		getNextDirectory(secondContainer, thirdToken);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(firstToken).append("/")
+		  .append(secondToken).append("/")
+		  .append(thirdToken).append("/");
+		String path = sb.toString();
+		return path;
+	}
+	
 	protected String createContainer(String firstToken, String secondToken, String thirdToken) {
-		VFSContainer rootContainer = qpoolModule.getRootContainer();
 		VFSContainer firstContainer = getNextDirectory(rootContainer, firstToken);
 		VFSContainer secondContainer = getNextDirectory(firstContainer, secondToken);
 		VFSContainer thirdContainer = getNextDirectory(secondContainer, thirdToken);
@@ -94,6 +108,7 @@ public class FileStorage {
 				}
 				if(!names.contains(potentielName)) {
 					lastToken = potentielName;
+					break;
 				}
 			}
 		}
@@ -106,16 +121,12 @@ public class FileStorage {
 	}
 	
 	public VFSContainer getContainer(String dir) {
-		VFSContainer rootContainer = CoreSpringFactory.getImpl(QuestionPoolModule.class).getRootContainer();
-		String[] tokens = dir.split("/");
-		String firstToken = tokens[0];
-		VFSContainer firstContainer = getNextDirectory(rootContainer, firstToken);
-		String secondToken = tokens[1];
-		VFSContainer secondContainer = getNextDirectory(firstContainer, secondToken);
-		String thirdToken = tokens[2];
-		VFSContainer thridContainer = getNextDirectory(secondContainer, thirdToken);
-		String forthToken = tokens[3];
-		return getNextDirectory(thridContainer, forthToken);
+		String[] tokens = dir.split("/");		
+		VFSContainer container = rootContainer;
+		for(String token:tokens) {
+			container = getNextDirectory(container, token);
+		}
+		return container;
 	}
 	
 	private VFSContainer getNextDirectory(VFSContainer container, String token) {

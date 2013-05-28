@@ -54,7 +54,7 @@ import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QuestionItemFull;
-import org.olat.modules.qpool.manager.FileStorage;
+import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
@@ -69,9 +69,9 @@ public class QTIExportProcessor {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTIExportProcessor.class);
 
-	private final FileStorage qpoolFileStorage;
+	private final QPoolFileStorage qpoolFileStorage;
 	
-	public QTIExportProcessor(FileStorage qpoolFileStorage) {
+	public QTIExportProcessor(QPoolFileStorage qpoolFileStorage) {
 		this.qpoolFileStorage = qpoolFileStorage;
 	}
 	

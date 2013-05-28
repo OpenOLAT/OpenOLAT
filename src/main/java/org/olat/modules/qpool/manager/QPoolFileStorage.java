@@ -19,47 +19,45 @@
  */
 package org.olat.modules.qpool.manager;
 
-import java.util.UUID;
+import javax.annotation.PostConstruct;
 
-import junit.framework.Assert;
-
-import org.junit.Test;
+import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.test.OlatTestCase;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 11.03.2013<br>
+ * 
+ * 
+ * Initial date: 07.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FileStorageTest extends OlatTestCase {
-	
+@Service("qpoolFileStorage")
+public class QPoolFileStorage {
+
 	@Autowired
-	private QPoolFileStorage qpoolFileStorage;
+	private QuestionPoolModule qpoolModule;
 	
-	@Test
-	public void testGenerateDir() {
-		String uuid = UUID.randomUUID().toString();
-		String dir = qpoolFileStorage.generateDir(uuid);
-		Assert.assertNotNull(dir);
-		VFSContainer container = qpoolFileStorage.getContainer(dir);
-		Assert.assertTrue(container.exists());
+	private FileStorage fileStorage;
+	
+	@PostConstruct
+	public void init() {
+		VFSContainer rootContainer = qpoolModule.getRootContainer();
+		fileStorage = new FileStorage(rootContainer);
 	}
 
-	/**
-	 * With the same uuid, generate 2 different directories
-	 */
-	@Test
-	public void testGenerateDir_testUnicity() {
-		String fakeUuid = "aabbccddeeff";
-		String dir1 = qpoolFileStorage.generateDir(fakeUuid);
-		String dir2 = qpoolFileStorage.generateDir(fakeUuid);
-		
-		//check
-		Assert.assertNotNull(dir1);
-		Assert.assertNotNull(dir2);
-		Assert.assertFalse(dir1.equals(dir2));
+	public String generateDir() {
+		return fileStorage.generateDir();
+	}
+	
+	public String generateDir(String uuid) {
+		return fileStorage.generateDir(uuid);
+	}
+
+	public VFSContainer getContainer(String dir) {
+		return fileStorage.getContainer(dir);
 	}
 }

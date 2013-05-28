@@ -25,12 +25,16 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.zip.Adler32;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -48,10 +52,10 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistentObject;
@@ -60,16 +64,17 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.MailAttachment;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerSMTPAuthenticator;
 import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.model.DBMailAttachment;
-import org.olat.core.util.mail.model.DBMailAttachmentData;
 import org.olat.core.util.mail.model.DBMailImpl;
 import org.olat.core.util.mail.model.DBMailRecipient;
 import org.olat.core.util.notifications.NotificationsManager;
@@ -77,6 +82,11 @@ import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.notifications.PublisherData;
 import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.util.vfs.FileStorage;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 
 /**
  * 
@@ -93,6 +103,7 @@ public class MailManager extends BasicManager {
 	
 	private final MailModule mailModule;
 	private DB dbInstance;
+	private FileStorage attachmentStorage;
 	private NotificationsManager notificationsManager;
 	
 	private static MailManager INSTANCE;
@@ -127,6 +138,9 @@ public class MailManager extends BasicManager {
 	 * [used by Spring]
 	 */
 	public void init() {
+		VFSContainer root = mailModule.getRootForAttachments();
+		attachmentStorage = new FileStorage(root);
+		
 		PublisherData pdata = getPublisherData();
 		SubscriptionContext scontext = getSubscriptionContext();
 		notificationsManager.getOrCreatePublisher(scontext, pdata);
@@ -187,17 +201,89 @@ public class MailManager extends BasicManager {
 				.getResultList();
 	}
 	
-	public DBMailAttachmentData getAttachmentWithData(Long key) {
+	public DBMailAttachment getAttachment(Long key) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select attachment from ").append(DBMailAttachmentData.class.getName()).append(" attachment")
+		sb.append("select attachment from ").append(DBMailAttachment.class.getName()).append(" attachment")
 			.append(" where attachment.key=:attachmentKey");
 
-		List<DBMailAttachmentData> mails = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), DBMailAttachmentData.class)
+		List<DBMailAttachment> attachments = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DBMailAttachment.class)
 				.setParameter("attachmentKey", key)
 				.getResultList();
-		if(mails.isEmpty()) return null;
-		return mails.get(0);
+
+		if(attachments.isEmpty()) {
+			return null;
+		}
+		return attachments.get(0);
+	}
+	
+	public String saveAttachmentToStorage(String name, String mimetype, long checksum, long size, InputStream stream) {
+		String hasSibling = getAttachmentSibling(name, mimetype, checksum, size);
+		if(StringHelper.containsNonWhitespace(hasSibling)) {
+			return hasSibling;
+		}
+		
+		String uuid = Encoder.encrypt(name + checksum);
+		String dir = attachmentStorage.generateDir(uuid, false);
+		VFSContainer container = attachmentStorage.getContainer(dir);
+		String uniqueName = VFSManager.similarButNonExistingName(container, name);
+		VFSLeaf file = container.createChildLeaf(uniqueName);
+		VFSManager.copyContent(stream, file);
+		return dir + uniqueName;
+	}
+	
+	public String getAttachmentSibling(String name, String mimetype, long checksum, long size) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select attachment from ").append(DBMailAttachment.class.getName()).append(" attachment")
+			.append(" where attachment.checksum=:checksum and attachment.size=:size and attachment.name=:name");
+		if(mimetype == null) {
+			sb.append(" and attachment.mimetype is null");
+		} else {
+			sb.append(" and attachment.mimetype=:mimetype");
+		}
+		
+		TypedQuery<DBMailAttachment> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DBMailAttachment.class)
+				.setParameter("checksum", new Long(checksum))
+				.setParameter("size", new Long(size))
+				.setParameter("name", name);
+		if(mimetype != null) {
+			query.setParameter("mimetype", mimetype);
+		}
+
+		List<DBMailAttachment> attachments = query.getResultList();
+		if(attachments.isEmpty()) {
+			return null;
+		}
+		return attachments.get(0).getPath();
+	}
+	
+	public int countAttachment(String path) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(attachment) from ").append(DBMailAttachment.class.getName()).append(" attachment")
+			.append(" where attachment.path=:path");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("path", path)
+				.getSingleResult().intValue();
+	}
+	
+	public VFSLeaf getAttachmentDatas(Long key) {
+		DBMailAttachment attachment = getAttachment(key);
+		return getAttachmentDatas(attachment);
+	}
+	
+	public VFSLeaf getAttachmentDatas(MailAttachment attachment) {
+		String path = attachment.getPath();
+		if(StringHelper.containsNonWhitespace(path)) {
+			VFSContainer root = mailModule.getRootForAttachments();
+			VFSItem item = root.resolve(path);
+			if(item instanceof VFSLeaf) {
+				return (VFSLeaf)item;
+			}
+		}
+		return null;
 	}
 	
 	public boolean hasNewMail(Identity identity) {
@@ -341,13 +427,29 @@ public class MailManager extends BasicManager {
 		}
 		
 		if(delete) {
+			Set<String> paths = new HashSet<String>();
+			
 			//all marked as deleted -> delete the mail
 			List<DBMailAttachment> attachments = getAttachments(mail);
 			for(DBMailAttachment attachment: attachments) {
 				mail = attachment.getMail();//reload from the hibernate session
 				dbInstance.deleteObject(attachment);
+				if(StringHelper.containsNonWhitespace(attachment.getPath())) {
+					paths.add(attachment.getPath());
+				}
 			}
 			dbInstance.deleteObject(mail);
+			
+			//try to remove orphans file
+			for(String path:paths) {
+				int count = countAttachment(path);
+				if(count == 0) {
+					VFSItem item = mailModule.getRootForAttachments().resolve(path);
+					if(item instanceof VFSLeaf) {
+						((VFSLeaf)item).delete();
+					}
+				}
+			}
 		} else {
 			for(DBMailRecipient update:updates) {
 				dbInstance.updateObject(update);
@@ -651,30 +753,34 @@ public class MailManager extends BasicManager {
 			//add bcc recipients
 			appendRecipients(mail, bccLists, toAddress, bccAddress, false, makeRealMail, result);
 			
-			dbInstance.saveObject(mail);
+			dbInstance.getCurrentEntityManager().persist(mail);
 			
 			//save attachments
 			if(attachments != null && !attachments.isEmpty()) {
 				for(File attachment:attachments) {
-					DBMailAttachmentData data = new DBMailAttachmentData();
-					data.setSize(attachment.length());
-					data.setName(attachment.getName());
-					data.setMimetype(WebappHelper.getMimeType(attachment.getName()));
-					data.setMail(mail);
-					
-					InputStream fis = null;
+
+					FileInputStream in = null;
 					try {
-						byte[] datas = new byte[(int)attachment.length()];
-						fis = new FileInputStream(attachment);
-						fis.read(datas);
-						data.setDatas(datas);
-						dbInstance.saveObject(data);
+						DBMailAttachment data = new DBMailAttachment();
+						data.setSize(attachment.length());
+						data.setName(attachment.getName());
+						
+						long checksum = FileUtils.checksum(attachment, new Adler32()).getValue();
+						data.setChecksum(new Long(checksum));
+						data.setMimetype(WebappHelper.getMimeType(attachment.getName()));
+						
+						in = new FileInputStream(attachment);
+						String path = saveAttachmentToStorage(data.getName(), data.getMimetype(), checksum, attachment.length(), in);
+						data.setPath(path);
+						data.setMail(mail);
+
+						dbInstance.getCurrentEntityManager().persist(data);
 					} catch (FileNotFoundException e) {
 						logError("File attachment not found: " + attachment, e);
 					} catch (IOException e) {
 						logError("Error with file attachment: " + attachment, e);
 					} finally {
-						IOUtils.closeQuietly(fis);
+						IOUtils.closeQuietly(in);
 					}
 				}
 			}
@@ -1055,9 +1161,9 @@ public class MailManager extends BasicManager {
 						return msg;
 					}
 					messageBodyPart = new MimeBodyPart();
-					
-					DBMailAttachmentData data = getAttachmentWithData(attachment.getKey());
-					DataSource source = new ByteArrayDataSource(data.getDatas(), attachment.getMimetype());
+
+					VFSLeaf data = getAttachmentDatas(attachment);
+					DataSource source = new VFSDataSource(attachment.getName(), attachment.getMimetype(), data);
 					messageBodyPart.setDataHandler(new DataHandler(source));
 					messageBodyPart.setFileName(attachment.getName());
 					multipart.addBodyPart(messageBodyPart);
@@ -1224,5 +1330,37 @@ public class MailManager extends BasicManager {
 			logWarn("Could not send mail", e);
 		}
 	}
+	
+	private static class VFSDataSource implements DataSource {
+		
+		private final String name;
+		private final String contentType;
+		private final VFSLeaf file;
+		
+		public VFSDataSource(String name, String contentType, VFSLeaf file) {
+			this.name = name;
+			this.contentType = contentType;
+			this.file = file;
+		}
 
+		@Override
+		public String getContentType() {
+			return contentType;
+		}
+
+		@Override
+		public InputStream getInputStream() throws IOException {
+			return file.getInputStream();
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public OutputStream getOutputStream() throws IOException {
+			return null;
+		}
+	}
 }

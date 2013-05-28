@@ -20,19 +20,14 @@
 
 package org.olat.core.util.mail.ui;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.manager.MailManager;
-import org.olat.core.util.mail.model.DBMailAttachmentData;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 
 /**
  * 
@@ -62,8 +57,8 @@ public class MailAttachmentMapper implements Mapper {
 				String attachmentKey = relPath.substring(startIndex + ATTACHMENT_CONTEXT.length(), endIndex);
 				try {
 					Long key = new Long(attachmentKey);
-					DBMailAttachmentData datas = mailManager.getAttachmentWithData(key);
-					BytesMediaResource resource = new BytesMediaResource(datas);
+					VFSLeaf datas = mailManager.getAttachmentDatas(key);
+					MediaResource resource = new VFSMediaResource(datas);
 					return resource;	
 				} catch(NumberFormatException e) {
 					return new NotFoundMediaResource(relPath);
@@ -71,56 +66,5 @@ public class MailAttachmentMapper implements Mapper {
 			}
 		}
 		return new NotFoundMediaResource(relPath);
-	}
-	
-	public class BytesMediaResource implements MediaResource {
-		
-		private final DBMailAttachmentData datas;
-		
-		public BytesMediaResource(DBMailAttachmentData datas) {
-			this.datas = datas;
-		}
-
-		@Override
-		public String getContentType() {
-			if(StringHelper.containsNonWhitespace(datas.getMimetype())) {
-				return datas.getMimetype();
-			}
-			if(StringHelper.containsNonWhitespace(datas.getName())) {
-				String mimeType = WebappHelper.getMimeType(datas.getName());
-				if(StringHelper.containsNonWhitespace(mimeType)) {
-					return mimeType;
-				}
-			}
-			return "application/octet-stream";
-		}
-
-		@Override
-		public Long getSize() {
-			if(datas.getDatas() == null) return 0l;
-			return new Long(datas.getDatas().length);
-		}
-
-		@Override
-		public InputStream getInputStream() {
-			return new ByteArrayInputStream(datas.getDatas());
-		}
-
-		@Override
-		public Long getLastModified() {
-			return null;
-		}
-
-		@Override
-		public void prepare(HttpServletResponse hres) {
-			String fileName = datas.getName();
-			hres.setHeader("Content-Disposition","filename=\"" + StringHelper.urlEncodeISO88591(fileName) + "\"");
-			hres.setHeader("Content-Description",StringHelper.urlEncodeISO88591(fileName));
-		}
-
-		@Override
-		public void release() {
-			//
-		}
 	}
 }

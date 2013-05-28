@@ -762,6 +762,9 @@ create table o_mail_attachment (
   datas_size number(20),
   datas_name varchar(255 char),
   mimetype varchar(255 char),
+  datas_checksum number(20),
+  datas_path varchar2(1024 char),
+  datas_lastmodified date,
   fk_att_mail_id number(20),
   primary key (attachment_id)
 );
@@ -2036,6 +2039,9 @@ alter table o_mail_recipient add constraint FKF86663165A4FA5DG foreign key (fk_r
 alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) references o_mail_recipient (recipient_id);
 alter table o_mail_to_recipient add constraint FKF86663165A4FA5DD foreign key (fk_recipient_id) references o_mail_recipient (recipient_id);
 alter table o_mail_attachment add constraint FKF86663165A4FA5DF foreign key (fk_att_mail_id) references o_mail (mail_id);
+create index idx_mail_att_checksum_idx on o_mail_attachment (datas_checksum);
+create index idx_mail_path_idx on o_mail_attachment (datas_path);
+create index idx_mail_att_siblings_idx on o_mail_attachment (datas_checksum, mimetype, datas_size, datas_name);
 
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);

@@ -342,4 +342,14 @@ alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk
 -- mapper
 alter table o_mapper add column expirationdate datetime;
 
+-- mail
+alter table o_mail_attachment add column datas_checksum bigint;
+alter table o_mail_attachment add column datas_path varchar(1024);
+alter table o_mail_attachment add column datas_lastmodified datetime;
+create index idx_mail_att_checksum_idx on o_mail_attachment (datas_checksum);
+create index idx_mail_path_idx on o_mail_attachment (datas_path);
+create index idx_mail_att_siblings_idx on o_mail_attachment (datas_checksum, mimetype, datas_size, datas_name);
+
+
+
 

@@ -341,3 +341,12 @@ create index idx_lti_outcome_rsrc_id_idx on o_lti_outcome (fk_resource_id);
 
 -- mapper
 alter table o_mapper add (expirationdate date);
+
+-- mail
+alter table o_mail_attachment add (datas_checksum number(20));
+alter table o_mail_attachment add (datas_path varchar2(1024 char));
+alter table o_mail_attachment add (datas_lastmodified date);
+create index idx_mail_att_checksum_idx on o_mail_attachment (datas_checksum);
+create index idx_mail_path_idx on o_mail_attachment (datas_path);
+create index idx_mail_att_siblings_idx on o_mail_attachment (datas_checksum, mimetype, datas_size, datas_name);
+

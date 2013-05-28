@@ -19,8 +19,11 @@
  */
 package org.olat.core.util.mail.model;
 
+import java.util.Date;
+
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.util.mail.MailAttachment;
 
 /**
  * 
@@ -31,13 +34,16 @@ import org.olat.core.gui.util.CSSHelper;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class DBMailAttachment extends PersistentObject {
+public class DBMailAttachment extends PersistentObject implements MailAttachment {
 
 	private static final long serialVersionUID = -1713863670528439651L;
 
 	private Long size;
 	private String name;
 	private String mimetype;
+	private Long checksum;
+	private String path;
+	private Date lastModified;
 	private DBMailImpl mail;
 	
 	public DBMailAttachment() {
@@ -80,6 +86,30 @@ public class DBMailAttachment extends PersistentObject {
 		this.mimetype = mimetype;
 	}
 	
+	public Long getChecksum() {
+		return checksum;
+	}
+
+	public void setChecksum(Long checksum) {
+		this.checksum = checksum;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
+
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 2951 : getKey().hashCode();

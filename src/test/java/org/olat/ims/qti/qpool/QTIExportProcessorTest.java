@@ -40,7 +40,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
-import org.olat.modules.qpool.manager.FileStorage;
+import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
@@ -61,7 +61,7 @@ public class QTIExportProcessorTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private FileStorage qpoolFileStorage;
+	private QPoolFileStorage qpoolFileStorage;
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired

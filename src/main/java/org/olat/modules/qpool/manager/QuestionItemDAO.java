@@ -66,7 +66,7 @@ public class QuestionItemDAO {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private FileStorage qpoolFileStorage;
+	private QPoolFileStorage qpoolFileStorage;
 	@Autowired
 	private BaseSecurity securityManager;
 	

@@ -4,11 +4,12 @@
         "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping default-lazy="false">
   
-  <class name="org.olat.core.util.mail.model.DBMailAttachment" table="o_mail_attachment">  
+  <class name="org.olat.upgrade.model.DBMailAttachmentData" table="o_mail_attachment">  
     <id name="key" column="attachment_id" type="long" unsaved-value="null">
       <generator class="hilo"/>
     </id>
 		<property name="creationDate" column="creationdate" type="timestamp" />
+		<property name="datas" column="datas" type="binary" length="16777215"/>
 		<property name="size" column="datas_size" type="long"/>
 		<property name="mimetype" column="mimetype" type="string" not-null="false" length="255"/>
 		<property name="name" column="datas_name" type="string" not-null="false" length="255"/>

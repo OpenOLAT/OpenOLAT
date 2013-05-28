@@ -58,7 +58,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
-import org.olat.modules.qpool.manager.FileStorage;
+import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
@@ -84,7 +84,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	public static final String QTI_12_OO_TEST = "OpenOLAT Test";
 
 	@Autowired
-	private FileStorage qpoolFileStorage;
+	private QPoolFileStorage qpoolFileStorage;
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired

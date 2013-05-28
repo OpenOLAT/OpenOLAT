@@ -29,7 +29,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.manager.AbstractQPoolServiceProvider;
-import org.olat.modules.qpool.manager.FileStorage;
+import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.ui.FilePreviewController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,10 +48,10 @@ public class FileQPoolServiceProvider extends AbstractQPoolServiceProvider {
 	@Autowired
 	private QPoolService qpoolService;
 	@Autowired
-	private FileStorage qpoolFileStorage;
+	private QPoolFileStorage qpoolFileStorage;
 
 	@Override
-	public FileStorage getFileStorage() {
+	public QPoolFileStorage getFileStorage() {
 		return qpoolFileStorage;
 	}
 

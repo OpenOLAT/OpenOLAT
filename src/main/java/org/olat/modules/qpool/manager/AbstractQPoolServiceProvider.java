@@ -68,7 +68,7 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	
 	private static final OLog log = Tracing.createLoggerFor(AbstractQPoolServiceProvider.class);
 	
-	public abstract FileStorage getFileStorage();
+	public abstract QPoolFileStorage getFileStorage();
 	
 	public abstract QItemType getDefaultType();
 	

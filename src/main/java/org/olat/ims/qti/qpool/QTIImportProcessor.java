@@ -56,7 +56,7 @@ import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
-import org.olat.modules.qpool.manager.FileStorage;
+import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
@@ -85,18 +85,18 @@ class QTIImportProcessor {
 	private final File importedFile;
 
 	private final QItemTypeDAO qItemTypeDao;
-	private final FileStorage qpoolFileStorage;
+	private final QPoolFileStorage qpoolFileStorage;
 	private final QuestionItemDAO questionItemDao;
 	private final QEducationalContextDAO qEduContextDao;
 	
 	public QTIImportProcessor(Identity owner, Locale defaultLocale, QuestionItemDAO questionItemDao,
-			QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao, FileStorage qpoolFileStorage) {
+			QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao, QPoolFileStorage qpoolFileStorage) {
 		this(owner, defaultLocale, null, null, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 	}
 
 	public QTIImportProcessor(Identity owner, Locale defaultLocale, String importedFilename, File importedFile,
 			QuestionItemDAO questionItemDao, QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
-			FileStorage qpoolFileStorage) {
+			QPoolFileStorage qpoolFileStorage) {
 		this.owner = owner;
 		this.defaultLocale = defaultLocale;
 		this.importedFilename = importedFilename;

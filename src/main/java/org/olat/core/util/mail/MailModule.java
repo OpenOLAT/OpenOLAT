@@ -19,7 +19,10 @@
  */
 package org.olat.core.util.mail;
 
+import java.io.File;
+
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.extensions.action.GenericActionExtension;
@@ -28,6 +31,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
 
 /**
  * 
@@ -46,6 +51,9 @@ public class MailModule extends AbstractOLATModule {
 	private boolean internSystem;
 	private boolean receiveRealMailUserDefaultSetting;
 	private int maxSizeOfAttachments = 5;
+	
+	private static final String ATTACHMENT_DEFAULT = "/mail";
+	private String attachmentsRoot = ATTACHMENT_DEFAULT;
 	
 	private WebappHelper webappHelper;
 	
@@ -163,6 +171,16 @@ public class MailModule extends AbstractOLATModule {
 			maxSizeOfAttachments = Integer.parseInt(maxSizeStr);
 		}
 		return maxSizeOfAttachments;
+	}
+	
+	public VFSContainer getRootForAttachments() {
+		String root = FolderConfig.getCanonicalRoot() + attachmentsRoot;
+		File rootFile = new File(root);
+		if(!rootFile.exists()) {
+			rootFile.mkdirs();
+		}
+		VFSContainer rootContainer = new LocalFolderImpl(rootFile);
+		return rootContainer;
 	}
 
 	/**

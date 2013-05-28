@@ -17,9 +17,13 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.mail.model;
+package org.olat.upgrade.model;
+
+import java.util.Date;
 
 import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.core.util.mail.MailAttachment;
+import org.olat.core.util.mail.model.DBMailImpl;
 
 /**
  * 
@@ -30,13 +34,16 @@ import org.olat.core.commons.persistence.PersistentObject;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class DBMailAttachmentData extends PersistentObject {
+public class DBMailAttachmentData extends PersistentObject implements MailAttachment {
 
 	private static final long serialVersionUID = -3741636430048220733L;
 	
 	private Long size;
 	private String name;
 	private String mimetype;
+	private Long checksum;
+	private String path;
+	private Date lastModified;
 	private byte[] datas;
 	private DBMailImpl mail;
 	
@@ -82,6 +89,30 @@ public class DBMailAttachmentData extends PersistentObject {
 
 	public void setMimetype(String mimetype) {
 		this.mimetype = mimetype;
+	}
+
+	public Long getChecksum() {
+		return checksum;
+	}
+
+	public void setChecksum(Long checksum) {
+		this.checksum = checksum;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
 	}
 
 	@Override
