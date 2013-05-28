@@ -58,9 +58,4 @@ public class UpgradeManagerDummy extends UpgradeManager {
 		//nothing to do
 	}
 
-	@Override
-	public void runAlterDbStatements() {
-		//nothing to do
-	}
-
 }

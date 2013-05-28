@@ -60,42 +60,33 @@ import org.olat.core.util.xml.XStreamHelper;
 public abstract class UpgradeManager extends BasicManager implements Initializable, GenericEventListener {
 	
 	protected String INSTALLED_UPGRADES_XML = "installed_upgrades.xml";
-	static final String SYSTEM_DIR = "system";
-	
-	List<OLATUpgrade> upgrades;
-	Map<String, UpgradeHistoryData> upgradesHistories;
+	public static final String SYSTEM_DIR = "system";
+
+	private DataSource dataSource;
+	protected List<OLATUpgrade> upgrades;
+	protected Map<String, UpgradeHistoryData> upgradesHistories;
 	protected UpgradesDefinitions upgradesDefinitions;
-	protected DataSource dataSource;
 	protected boolean needsUpgrade = true;
-	protected boolean autoUpgradeDatabase = true;
+
 	
+  public DataSource getDataSource() {
+  	return dataSource;
+  }
+  
 	/**
    * [used by spring]
    * @param dataSource
    */
   public void setDataSource (DataSource dataSource) {
-          this.dataSource = dataSource;
+  	this.dataSource = dataSource;
   }
-
-  public DataSource getDataSource() {
-          return dataSource;
-  }
-
-	
+  
 	/**
 	 * [used by spring]
 	 * @param upgradesDefinitions
 	 */
 	public void setUpgradesDefinitions(UpgradesDefinitions upgradesDefinitions) {
 		this.upgradesDefinitions = upgradesDefinitions;
-	}
-
-	/**
-	 * [used by spring]
-	 * @param autoUpgradeDatabase
-	 */
-	public void setAutoUpgradeDatabase(boolean autoUpgradeDatabase) {
-		this.autoUpgradeDatabase = autoUpgradeDatabase;
 	}
 
 	/**
@@ -120,23 +111,12 @@ public abstract class UpgradeManager extends BasicManager implements Initializab
 				throw new AssertException("Upgrade first your installtion to OLAT 7.0 and after go with OpenOLAT");
 			}
 			
-			if (autoUpgradeDatabase) {
-				runAlterDbStatements();
-			} else {
-				logInfo("Auto upgrade of the database is disabled. Make sure you do it manually by applying the " +
-						"alter*.sql scripts and adding an entry to system/installed_upgrades.xml file.");
-			}
 			doPreSystemInitUpgrades();
 			
 			//post system init task are triggered by an event
 			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
-
-	/**
-	 * Execute alter db sql statements
-	 */
-	public abstract void runAlterDbStatements();
 
 	/**
 	 * Execute the pre system init code of all upgrades in the order as they were configured

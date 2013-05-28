@@ -19,7 +19,12 @@
  */
 package org.olat.upgrade;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -27,10 +32,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.olat.core.logging.StartupException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XStreamHelper;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 
 /**
@@ -44,10 +53,34 @@ import org.olat.core.util.xml.XStreamHelper;
  */
 public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 
+	private String dbVendor;
+	private boolean autoUpgradeDatabase = true;
+	
 	protected UpgradesDefinitions olatUpgradesDefinitions;
 	
 	public DatabaseUpgradeManager() {
 		INSTALLED_UPGRADES_XML = "installed_database_upgrades.xml";
+	}
+	
+	
+	public String getDbVendor() {
+		return dbVendor;
+	}
+	
+	/**
+	 * [user by Spring]
+	 * @param dbVendor
+	 */
+	public void setDbVendor(String dbVendor) {
+		this.dbVendor = dbVendor;
+	}
+  
+	/**
+	 * [used by spring]
+	 * @param autoUpgradeDatabase
+	 */
+	public void setAutoUpgradeDatabase(boolean autoUpgradeDatabase) {
+		this.autoUpgradeDatabase = autoUpgradeDatabase;
 	}
 	
 	/**
@@ -75,11 +108,11 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 	/**
 	 * @see org.olat.upgrade.UpgradeManager#runAlterDbStatements()
 	 */
-	@Override
 	public void runAlterDbStatements() {
-		String dialect = "";
+		Dialect dialect;
 		//only run upgrades on mysql or postgresql
-		if (getDbVendor().contains("mysql")) dialect = "mysql";
+		if (getDbVendor().contains("mysql")) dialect = Dialect.mysql;
+		else if (getDbVendor().contains("postgresql")) dialect = Dialect.postgresql;
 		else return;
 			
 		Statement statement = null;
@@ -92,7 +125,7 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 			logAudit("+ <entry><string>Database update</string><boolean>true</boolean></entry>+");
 			logAudit("+--------------------------------------------------------------+");
 			
-			statement  = dataSource.getConnection().createStatement();
+			statement  = getDataSource().getConnection().createStatement();
 			
 			Iterator<OLATUpgrade> iter = upgrades.iterator();
 			OLATUpgrade upgrade = null;
@@ -132,6 +165,84 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 				throw new StartupException("Could not close sql statements.", e2);
 			}
 		}
+	}
+	
+	/**
+	 * load file with alter statements and add to batch
+	 * @param statements
+	 * @param alterDbStatements
+	 */
+	private void loadAndExecuteSqlStatements(Statement statement, String alterDbStatements, Dialect dialect) {
+		try {
+			Resource setupDatabaseFile = new ClassPathResource("/database/"+dialect+"/"+alterDbStatements);
+			if (!setupDatabaseFile.exists()) {
+				throw new StartupException("The database upgrade file was not found on the classpath: "+"/database/"+dialect+"/"+alterDbStatements);
+			}
+			InputStream in = setupDatabaseFile.getInputStream();
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			StringBuilder sb = new StringBuilder();
+			//Read File Line By Line
+			while ((strLine = br.readLine()) != null)   {
+				if (strLine.length() > 1 && (!strLine.startsWith("--") && !strLine.startsWith("#"))) {
+					sb.append(strLine.trim()).append(' ');
+				}
+			}
+			
+			StringTokenizer tokenizer = new StringTokenizer(sb.toString(), ";");
+			String sql = null;
+				while (tokenizer.hasMoreTokens()) {
+					try {
+						String token = tokenizer.nextToken();
+						if(!StringHelper.containsNonWhitespace(token)) {
+							continue;
+						}
+						
+						sql = token + ";".toLowerCase();
+						
+						if (sql.startsWith("update") || sql.startsWith("delete") || sql.startsWith("alter") || sql.startsWith("insert")) {
+							statement.executeUpdate(sql);
+						} else {
+							statement.execute(sql);
+						}
+						logInfo("Successfully upgraded database with the following sql: "+sql);
+					} catch (SQLException e) {
+						if(isErrorFatal(dialect, sql, e)) {
+							throw new StartupException("Fatal error trying to update database.", e);
+						}
+					} catch (Exception e) {
+						//handle non sql errors
+						logError("Could not upgrade your database!",e);
+						throw new StartupException("Could not add alter db statements to batch.", e);
+					}
+				}
+			in.close();
+		} catch (FileNotFoundException e1) {
+			logError("could not find deleteDatabase.sql file!", e1);
+			abort(e1);
+		} catch (IOException e) {
+			logError("could not read deleteDatabase.sql file!", e);
+			abort(e);
+		}
+	}
+	
+	private boolean isErrorFatal(Dialect dialect, String sql, SQLException e) {
+		if(dialect == Dialect.mysql) {
+			return isMysqlErrorFatal(sql, e);
+		} else if(dialect == Dialect.postgresql) {
+			return isPostgresqlErrorFatal(sql, e);
+		}
+		return false;	
+	}
+	
+	private boolean isMysqlErrorFatal(String sql, SQLException e) {
+		logError("Error while trying to upgrade the database with:("+sql+"). We will continue with upgrading but check the errors manually! Error says:", e);
+		return false;
+	}
+	
+	private boolean isPostgresqlErrorFatal(String sql, SQLException e) {
+		logError("Error while trying to upgrade the database with:("+sql+"). We will continue with upgrading but check the errors manually! Error says:", e);
+		return false;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -176,5 +287,10 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 	@Override
 	public void doPostSystemInitUpgrades() {
 		//
+	}
+	
+	private enum Dialect {
+		mysql,
+		postgresql
 	}
 }
