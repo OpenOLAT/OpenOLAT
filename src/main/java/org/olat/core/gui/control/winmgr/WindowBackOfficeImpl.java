@@ -172,6 +172,11 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		return settings;
 	}
 
+	@Override
+	public void setWindowSettings(WindowSettings settings) {
+		this.settings = settings;
+	}
+
 	/**
 	 * @return
 	 */

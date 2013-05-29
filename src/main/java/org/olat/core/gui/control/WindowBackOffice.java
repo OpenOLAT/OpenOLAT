@@ -73,7 +73,9 @@ public interface WindowBackOffice extends Disposable{
 	 * Some settings for the current window
 	 * @return
 	 */
-	WindowSettings getWindowSettings();
+	public WindowSettings getWindowSettings();
+	
+	public void setWindowSettings(WindowSettings settings);
 
 	/**
 	 * @param ureq

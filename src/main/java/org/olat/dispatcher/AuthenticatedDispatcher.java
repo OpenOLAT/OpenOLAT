@@ -38,6 +38,7 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
+import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
@@ -66,7 +67,6 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	
 	protected static final String AUTHDISPATCHER_ENTRYURL = "AuthDispatcher:entryUrl";
 	protected static final String AUTHDISPATCHER_BUSINESSPATH = "AuthDispatcher:businessPath";
-	public static final String AUTHDISPATCHER_OPTIONS = "AuthDispatcher:options";
 	
 	protected static final String QUESTIONMARK = "?";
 	protected static final String GUEST = "guest";
@@ -190,8 +190,14 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			if (businessPath != null) {
 				BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
 				ChiefController cc = (ChiefController) Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
-
 				WindowControl wControl = cc.getWindowControl();
+
+				String wSettings = (String) usess.removeEntryFromNonClearedStore(WINDOW_SETTINGS);
+				if(wSettings != null) {
+					WindowSettings settings = WindowSettings.parse(wSettings);
+					wControl.getWindowBackOffice().setWindowSettings(settings);
+				}
+
 			  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
 			  NewControllerFactory.getInstance().launch(ureq, bwControl);	
 				// render the window

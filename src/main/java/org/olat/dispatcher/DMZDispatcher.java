@@ -294,7 +294,7 @@ public class DMZDispatcher implements Dispatcher {
 				if (window == null) {
 					// no window found, -> start a new WorkFlow/Controller and obtain the window
 					// main controller which also implements the windowcontroller for pagestatus and modal dialogs
-					Object wSettings = usess.getEntry(AuthenticatedDispatcher.AUTHDISPATCHER_OPTIONS);
+					Object wSettings = usess.getEntry(WINDOW_SETTINGS);
 					ChiefController occ = chiefControllerCreator.createChiefController(ureq);
 					
 					window = occ.getWindow();
@@ -308,7 +308,7 @@ public class DMZDispatcher implements Dispatcher {
 						dts.activate(ureq, null, ces);
 					}
 					//apply the settings forward
-					usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_OPTIONS, wSettings);
+					usess.putEntryInNonClearedStore(WINDOW_SETTINGS, wSettings);
 				}
 				window.dispatchRequest(ureq);
 			}

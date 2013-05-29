@@ -89,6 +89,7 @@
 				<value>.*Lynx.*</value>					<!-- Lynx console browser (no js) -->
 			</list>
 		</property>
+		<property name="crossOriginFilter" value="${allow.cross.origin.domain}"/>
 		<!-- 
 			Set the system theme here. Make sure the directory webapp/WEB-INF/static/themes/YOURTHEME exists. 
 			This is only the default value in case no user configuration is found. Use the administration GUI to

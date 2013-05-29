@@ -29,6 +29,7 @@ package org.olat.core.commons.chiefcontrollers;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -62,7 +63,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
-import org.olat.dispatcher.AuthenticatedDispatcher;
 
 /**
  * Description: <br>
@@ -145,7 +145,7 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		mainPanel.setContent(mainvc);
 
 		WindowManager winman = Windows.getWindows(ureq).getWindowManager();
-		String wSettings = (String)ureq.getUserSession().removeEntryFromNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_OPTIONS);
+		String wSettings = (String)ureq.getUserSession().removeEntryFromNonClearedStore(Dispatcher.WINDOW_SETTINGS);
 		WindowSettings settings = WindowSettings.parse(wSettings);
 		wbo = winman.createWindowBackOffice("basechiefwindow", this, settings);
 		Window w = wbo.getWindow();

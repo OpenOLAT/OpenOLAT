@@ -40,6 +40,11 @@ import javax.servlet.http.HttpServletResponse;
  * @author Felix Jost
  */
 public interface Dispatcher {
+	
+	/**
+	 * wsettings=hnf12 where
+	 */
+	public static final String WINDOW_SETTINGS = "wsettings";
 
 	/**
 	 * @param request
