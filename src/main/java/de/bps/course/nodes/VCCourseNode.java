@@ -27,6 +27,7 @@ import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.control.generic.tabbable.TabbableDefaultController;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -46,6 +47,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
+import de.bps.course.nodes.vc.NoProviderController;
 import de.bps.course.nodes.vc.VCConfiguration;
 import de.bps.course.nodes.vc.VCEditController;
 import de.bps.course.nodes.vc.VCRunController;
@@ -106,15 +108,23 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 		// load and check configuration
 		String providerId = getModuleConfiguration().getStringValue(CONF_PROVIDER_ID);
 		VCProvider provider = providerId == null ? VCProviderFactory.createDefaultProvider() : VCProviderFactory.createProvider(providerId);
-		VCConfiguration config = handleConfig(provider);
-		// create room if configured to do it immediately
-		if(config.isCreateMeetingImmediately()) {
-			Long key = course.getResourceableId();
-			// here, the config is empty in any case, thus there are no start and end dates
-			provider.createClassroom(key + "_" + this.getIdent(), this.getShortName(), this.getLongTitle(), null, null, config);
+		
+		TabbableDefaultController childTabCntrllr;
+		if(provider != null) {
+			VCConfiguration config = handleConfig(provider);
+			// create room if configured to do it immediately
+			if(config.isCreateMeetingImmediately()) {
+				Long key = course.getResourceableId();
+				// here, the config is empty in any case, thus there are no start and end dates
+				provider.createClassroom(key + "_" + this.getIdent(), this.getShortName(), this.getLongTitle(), null, null, config);
+			}
+			// create edit controller
+			childTabCntrllr = new VCEditController(ureq, wControl, this, course, userCourseEnv, provider, config);
+		} else {
+			//empty panel
+			childTabCntrllr = new NoProviderController(ureq, wControl);
 		}
-		// create edit controller
-		VCEditController childTabCntrllr = new VCEditController(ureq, wControl, this, course, userCourseEnv, provider, config);
+		
 		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, course.getCourseEnvironment()
 				.getCourseGroupManager(), userCourseEnv, childTabCntrllr);
 		nodeEditCtr.addControllerListener(childTabCntrllr);
@@ -176,8 +186,7 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 		// load configuration
 		final String providerId = getModuleConfiguration().getStringValue(CONF_PROVIDER_ID);
 		VCProvider provider = providerId == null ? VCProviderFactory.createDefaultProvider() : VCProviderFactory.createProvider(providerId);
-		VCConfiguration config = handleConfig(provider);
-		boolean invalid = !config.isConfigValid();
+		boolean invalid = provider == null || !handleConfig(provider).isConfigValid();
 		if (invalid) {
 			String[] params = new String[] { this.getShortTitle() };
 			String shortKey = "error.config.short";
