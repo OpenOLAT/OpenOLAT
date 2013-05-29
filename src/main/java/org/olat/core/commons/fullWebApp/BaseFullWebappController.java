@@ -135,6 +135,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 	private Panel initialPanel;
 	private DTabs myDTabsImpl;
 	private static Integer MAX_TAB;
+	private WindowSettings wSettings;
 	
 	public BaseFullWebappController(UserRequest ureq, WindowControl ouisc_wControl,
 			BaseFullWebappControllerParts baseFullWebappControllerParts) {
@@ -365,13 +366,10 @@ public class BaseFullWebappController extends BasicController implements Generic
 			}
 		}
 		
-		WindowSettings wSettings = getWindowControl().getWindowBackOffice().getWindowSettings();
-
 		navVc.contextPut("sites", sites);
 		navVc.contextPut("dtabs", dtabs);
 		navVc.contextPut("dtabsLinkNames", dtabsLinkNames);
 		navVc.contextPut("tabhelper", this);
-		navVc.setVisible(!wSettings.isHideNavigation());
 
 		// header, optional (e.g. for logo, advertising )
 		headerCtr = baseFullWebappControllerParts.createHeaderController(ureq, getWindowControl());
@@ -379,7 +377,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 			listenTo(headerCtr); // cleanup on dispose
 			Component headerCmp = headerCtr.getInitialComponent();
 			mainVc.put("headerComponent", headerCmp);
-			headerCmp.setVisible(!wSettings.isHideHeader());
 		}
 
 		// topnav, optional (e.g. for imprint, logout)
@@ -388,7 +385,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 			listenTo(topnavCtr); // cleanup on dispose
 			Component topNavCmp = topnavCtr.getInitialComponent();
 			mainVc.put("topnavComponent", topNavCmp);
-			topNavCmp.setVisible(!wSettings.isHideHeader());
 		}
 
 		// panel for modal overlays, placed right after the olat-header-div
@@ -405,7 +401,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 			listenTo(footerCtr); // cleanup on dispose
 			Component footerCmp = footerCtr.getInitialComponent();
 			mainVc.put("footerComponent", footerCmp);
-			footerCmp.setVisible(!wSettings.isHideFooter());
 		}
 		
 		
@@ -434,8 +429,25 @@ public class BaseFullWebappController extends BasicController implements Generic
 		String stickyMessage = GlobalStickyMessage.getGlobalStickyMessage();
 		mainVc.contextPut("hasStickyMessage", (stickyMessage == null ? Boolean.FALSE : Boolean.TRUE));					
 		mainVc.contextPut("stickyMessage", stickyMessage);		
+
+		setWindowSettings(getWindowControl().getWindowBackOffice().getWindowSettings());
 		
 		addCustomThemeJS();
+	}
+	
+	private void setWindowSettings(WindowSettings wSettings) {
+		if((this.wSettings == null && wSettings != null)
+				|| (this.wSettings != null && !this.wSettings.equals(wSettings))) {
+			this.wSettings = wSettings;
+			navVc.setVisible(wSettings == null || !wSettings.isHideNavigation());
+			if (topnavCtr != null) {
+				topnavCtr.getInitialComponent().setVisible(wSettings == null || !wSettings.isHideHeader());
+			}
+			if (footerCtr != null) {
+				footerCtr.getInitialComponent().setVisible(wSettings == null || !wSettings.isHideFooter());
+			}
+			mainVc.setDirty(true);
+		}
 	}
 
 	/**
@@ -908,7 +920,9 @@ public class BaseFullWebappController extends BasicController implements Generic
 	 *      org.olat.core.gui.control.generic.dtabs.DTab, java.lang.String)
 	 */
 	public void activate(final UserRequest ureq, DTab dTab, final String viewIdentifier, final List<ContextEntry> entries) {
-		// FIXME:fj:c if viewIdentifier is DTABS.initialView -> activate to this
+		//update window settings if needed
+		setWindowSettings(getWindowControl().getWindowBackOffice().getWindowSettings());
+
 		// init view (e.g. kurs in run mode, repo-detail-edit...)
 		// jump here via external link or just open a new tab from e.g. repository
 		//fxdiff FXOLAT-113: business path in DMZ

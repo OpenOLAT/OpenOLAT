@@ -19,7 +19,6 @@
  */
 package org.olat.core.gui;
 
-import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -29,24 +28,35 @@ import org.olat.core.util.StringHelper;
  */
 public class WindowSettings {
 	
-	private boolean hideHeader = false;
-	private boolean hideNavigation = false;
-	private boolean hideFooter = false;
-	private boolean hideColumn1 = false;
-	private boolean hideColumn2 = false;
-	
+	private final boolean hideHeader;
+	private final boolean hideNavigation;
+	private final boolean hideFooter;
+	private final boolean hideColumn1;
+	private final boolean hideColumn2;
+
 	public WindowSettings() {
-		//
+		this(false, false, false, false, false);
+	}
+	
+	public WindowSettings(boolean hideHeader, boolean hideNavigation, boolean hideFooter, boolean hideColumn1, boolean hideColumn2) {
+		this.hideHeader = hideHeader;
+		this.hideNavigation = hideNavigation;
+		this.hideFooter = hideFooter;
+		this.hideColumn1 = hideColumn1;
+		this.hideColumn2 = hideColumn2;
 	}
 
 	public static WindowSettings parse(String settings) {
-		WindowSettings wSettings = new WindowSettings();
-		if(StringHelper.containsNonWhitespace(settings)) {
-			wSettings.hideHeader = settings.indexOf('h') >= 0;
-			wSettings.hideNavigation = settings.indexOf('n') >= 0;
-			wSettings.hideFooter = settings.indexOf('f') >= 0;
-			wSettings.hideColumn1 = settings.indexOf('1') >= 0;
-			wSettings.hideColumn2 = settings.indexOf('2') >= 0;
+		WindowSettings wSettings;
+		if(settings != null) {
+			boolean hideHeader = settings.indexOf('h') >= 0;
+			boolean hideNavigation = settings.indexOf('n') >= 0;
+			boolean hideFooter = settings.indexOf('f') >= 0;
+			boolean hideColumn1 = settings.indexOf('1') >= 0;
+			boolean hideColumn2 = settings.indexOf('2') >= 0;
+			wSettings = new WindowSettings(hideHeader, hideNavigation, hideFooter, hideColumn1, hideColumn2);
+		} else {
+			wSettings = new WindowSettings();
 		}
 		return wSettings;
 	}
@@ -55,40 +65,20 @@ public class WindowSettings {
 		return hideHeader;
 	}
 	
-	public void setHideHeader(boolean hideHeader) {
-		this.hideHeader = hideHeader;
-	}
-	
 	public boolean isHideNavigation() {
 		return hideNavigation;
-	}
-	
-	public void setHideNavigation(boolean hideNavigation) {
-		this.hideNavigation = hideNavigation;
 	}
 	
 	public boolean isHideFooter() {
 		return hideFooter;
 	}
 	
-	public void setHideFooter(boolean hideFooter) {
-		this.hideFooter = hideFooter;
-	}
-	
 	public boolean isHideColumn1() {
 		return hideColumn1;
 	}
 	
-	public void setHideColumn1(boolean hideColumn1) {
-		this.hideColumn1 = hideColumn1;
-	}
-	
 	public boolean isHideColumn2() {
 		return hideColumn2;
-	}
-	
-	public void setHideColumn2(boolean hideColumn2) {
-		this.hideColumn2 = hideColumn2;
 	}
 	
 	@Override
@@ -100,5 +90,19 @@ public class WindowSettings {
 		if(hideColumn1) sb.append('1');
 		if(hideColumn2) sb.append('2');
 		return sb.toString();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof WindowSettings) {
+			WindowSettings settings = (WindowSettings)obj;
+			return settings.hideHeader == hideHeader && settings.hideNavigation == hideNavigation
+					&& settings.hideFooter == hideFooter && settings.hideColumn1 == hideColumn1
+					&& settings.hideColumn2 == hideColumn2;
+		}
+		return false;
 	}
 }
