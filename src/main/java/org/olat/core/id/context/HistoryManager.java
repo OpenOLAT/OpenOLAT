@@ -32,6 +32,7 @@ import org.olat.core.util.resource.Resourceable;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.repository.RepositoryEntry;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -52,6 +53,7 @@ public class HistoryManager extends BasicManager {
 		//xstream config
 		historyReadStream.omitField(BusinessGroup.class, "groupContext");
 		historyReadStream.omitField(BusinessGroupImpl.class, "groupContext");
+		historyReadStream.omitField(RepositoryEntry.class, "metaDataElements");
 		historyReadStream.alias("org.olat.core.util.resource.OresHelper$1", Resourceable.class);
 		historyReadStream.alias("org.olat.core.util.resource.OresHelper$2", Resourceable.class);
 		historyReadStream.alias("org.olat.core.util.resource.OresHelper$3", Resourceable.class);
