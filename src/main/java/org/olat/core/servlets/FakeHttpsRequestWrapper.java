@@ -42,17 +42,17 @@ public class FakeHttpsRequestWrapper extends HttpServletRequestWrapper {
 
 	@Override
 	public boolean isSecure() {
-		return Settings.isSecurePortAvailable();
+		return true;
 	}
 
 	@Override
 	public String getScheme() {
-		return Settings.getURIScheme();
+		return "https";
 	}
     
 	@Override
 	public int getServerPort() {
 		String port = Settings.getServerconfig("server_securePort");
-		return Integer.parseInt(port);
+		return 443;
 	}
 }
