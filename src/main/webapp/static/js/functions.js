@@ -852,6 +852,20 @@ OPOL.getMainColumnsMaxHeight =  function(){
 	return b_viewportHeight();
 };
 
+OPOL.adjustHeight = function() {
+	try {
+		// Reset col height first
+		jQuery('#b_col1_content').height('auto');
+		jQuery('#b_col2_content').height('auto');
+		// Calculate new col height
+		var contentHeight = OPOL.getMainColumnsMaxHeight();
+		jQuery('#b_col1_content').height(contentHeight);
+		jQuery('#b_col2_content').height(contentHeight);
+	} catch (e) {
+		if(console)	console.log(e);			
+	}
+};
+
   
 function b_resizeIframeToMainMaxHeight(iframeId) {
 	// adjust the given iframe to use as much height as possible

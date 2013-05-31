@@ -922,7 +922,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_CREATED, getClass(),
 				LoggingResourceable.wrap(newNode));
 		// Resize layout columns to make all nodes viewable in the menu column
-		JSCommand resizeCommand = new JSCommand("b_AddOnDomReplacementFinishedCallback( B_ResizableColumns.adjustHeight.bind(B_ResizableColumns));");
+		JSCommand resizeCommand = new JSCommand("try { OPOL.adjustHeight(); } catch(e) {if(console) console.log(e); }");
 		getWindowControl().getWindowBackOffice().sendCommandTo(resizeCommand);
 	}
 

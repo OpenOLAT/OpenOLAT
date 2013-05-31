@@ -39,20 +39,7 @@
 <script type="text/javascript">
 /* <![CDATA[ */
 jQuery().ready(function() {
-	function adjustHeight() {
-		try {
-			// Reset col height first
-			jQuery('#b_col1_content').height('auto');
-			jQuery('#b_col2_content').height('auto');
-			// Calculate new col height
-			var contentHeight = OPOL.getMainColumnsMaxHeight();
-			jQuery('#b_col1_content').height(contentHeight);
-			jQuery('#b_col2_content').height(contentHeight);
-		} catch (e) {
-			if(console)	console.log(e);			
-		}
-	};
-	adjustHeight();
+	OPOL.adjustHeight();
 	
 	// Main vertical splitter, anchored to the browser window
 	jQuery("#b_col1").resizable({

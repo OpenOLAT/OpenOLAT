@@ -34,7 +34,6 @@
 	var zindex = o_info.zseed;
 	o_info.zseed = zindex + 5;
 
-	jQuery('#b_top').scrollTop();
 	var bodyHeight = document.getElementById('b_body').parentNode.offsetHeight;
 	var windowHeight = window.innerHeight;
 	var finalHeight = Math.min(bodyHeight, windowHeight)-20;
@@ -47,4 +46,5 @@
 			iframe.style.height=finalHeight+'px';
 		}
 	}
+	jQuery('#b_body').scrollTop(0);
 </script>
