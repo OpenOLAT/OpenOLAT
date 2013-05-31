@@ -167,6 +167,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	
 	public void updateSource(QuestionItemsSource source) {
 		this.source = source;
+		model.clear();
 		itemsTable.reset();
 	}
 

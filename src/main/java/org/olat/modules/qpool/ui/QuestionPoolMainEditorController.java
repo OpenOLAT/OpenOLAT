@@ -370,7 +370,6 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		} else {
 			markedQuestionsCtrl.updateSource(ureq, source);
 		}
-		;
 		currentCtrl = markedQuestionsCtrl;
 		setContent(ureq, markedQuestionsCtrl, entries, state);
 	}
