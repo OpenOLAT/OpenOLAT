@@ -35,6 +35,7 @@ import org.olat.core.util.event.MultiUserEvent;
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
 public class NewIframeUriEvent extends MultiUserEvent {
+	private static final long serialVersionUID = -7164902238543271949L;
 	private String newUri;
 
 	/**

@@ -30,13 +30,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -44,7 +41,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreCalculator;
@@ -68,9 +64,6 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 	
 	private static final String DELETED_NODE_IDENTIFYER = "deletedNode";
   private List<CourseNode> assessableNodesList;
-
-  private String[] hasScoreKeys   = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
-  private String[] hasScoreValues = new String[] { translate("scform.hasScore.yes"), translate("no") };
   private List<CourseNode> nodeIdentList;
   /**
 	 * @param name
@@ -106,14 +99,14 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		}
 		
 		if (hasPassed.isSelected(0)) {
-			if (passedType.getSelectedKey().equals(sc.PASSED_TYPE_INHERIT)) {
+			if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_INHERIT)) {
 				if (passedNodeIdents.getSelectedKeys().size() == 0) {
 					passedNodeIdents.setErrorKey("scform.passedNodeIndents.error", null);
 					rv = false;
 				} else {
 					passedNodeIdents.clearError();
 				}
-			} else if (passedType.getSelectedKey().equals(sc.PASSED_TYPE_CUTVALUE)) {
+			} else if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_CUTVALUE)) {
 				if (!hasScore.isSelected(0)) {
 					passedType.setErrorKey("scform.passedType.error", null);
 					rv = false;
@@ -212,16 +205,16 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 	 * @param allNodesList List of all assessable course nodes
 	 * @return StaticMultipleSelectionElement The configured form element
 	 */
-	private MultipleSelectionElement initNodeSelectionElement(FormItemContainer formLayout, String elemId, ScoreCalculator scoreCalculator, List selectedNodeList,
-			List allNodesList) {
+	private MultipleSelectionElement initNodeSelectionElement(FormItemContainer formLayout, String elemId, ScoreCalculator scoreCalculator,
+			List<String> selectedNodeList, List<CourseNode> allNodesList) {
 		
 		boolean addDeletedNodeIdent = false;		
 		if (scoreCalculator != null && selectedNodeList != null) {
-			for (Iterator iter = selectedNodeList.iterator(); iter.hasNext();) {
-				String nodeIdent = (String) iter.next();
+			for (Iterator<String> iter = selectedNodeList.iterator(); iter.hasNext();) {
+				String nodeIdent = iter.next();
 				boolean found = false;
-				for (Iterator nodeIter = allNodesList.iterator(); nodeIter.hasNext();) {
-					CourseNode node = (CourseNode) nodeIter.next();
+				for (Iterator<CourseNode> nodeIter = allNodesList.iterator(); nodeIter.hasNext();) {
+					CourseNode node = nodeIter.next();
 					if (node.getIdent().equals(nodeIdent)) {
 						found = true;           
 					}					
@@ -246,11 +239,11 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		MultipleSelectionElement mse = uifactory.addCheckboxesVertical(elemId, formLayout, nodeKeys, nodeValues, null, 2);
 		// preselect nodes from configuration
 		if (scoreCalculator != null && selectedNodeList != null) {
-			for (Iterator iter = selectedNodeList.iterator(); iter.hasNext();) {
-				String nodeIdent = (String) iter.next();
+			for (Iterator<String> iter = selectedNodeList.iterator(); iter.hasNext();) {
+				String nodeIdent = iter.next();
 				boolean found = false;
-				for (Iterator nodeIter = allNodesList.iterator(); nodeIter.hasNext();) {
-					CourseNode node = (CourseNode) nodeIter.next();
+				for (Iterator<CourseNode> nodeIter = allNodesList.iterator(); nodeIter.hasNext();) {
+					CourseNode node = nodeIter.next();
 					if (node.getIdent().equals(nodeIdent)) {
 						found = true;
 					}
@@ -300,7 +293,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		uifactory.addSpacerElement("spacer", formLayout, false);
 		
 		hasPassed = uifactory.addCheckboxesHorizontal("scform.passedtype", formLayout, new String[]{"xx"}, new String[]{null}, null);
-		hasPassed.select("xx", sc != null && sc.getPassedType() != null && !sc.getPassedType().equals(sc.PASSED_TYPE_NONE));
+		hasPassed.select("xx", sc != null && sc.getPassedType() != null && !sc.getPassedType().equals(ScoreCalculator.PASSED_TYPE_NONE));
 		hasPassed.addActionListener(listener, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		
 		String[] passedTypeKeys = new String[] {

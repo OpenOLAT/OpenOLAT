@@ -178,8 +178,8 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 		List<String> nodeDescriptionList = new ArrayList<String>();
 		if (ce != null) {
 			Set<String> selectedNodesIds = ce.getSoftReferencesOf("courseNodeId");
-			for (Iterator nodeIter = assessableNodesList.iterator(); nodeIter.hasNext();) {
-				CourseNode node = (CourseNode) nodeIter.next();
+			for (Iterator<CourseNode> nodeIter = assessableNodesList.iterator(); nodeIter.hasNext();) {
+				CourseNode node = nodeIter.next();
 				if (selectedNodesIds.contains(node.getIdent())) {
 					StatusDescription isConfigValid = node.isConfigValid();
 					if (isConfigValid != null && isConfigValid.isError()) {

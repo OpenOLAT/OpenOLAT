@@ -27,14 +27,20 @@
 package org.olat.ims.cp;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.apache.commons.io.IOUtils;
 import org.dom4j.tree.DefaultDocument;
 import org.dom4j.tree.DefaultElement;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ZipUtil;
@@ -44,12 +50,16 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XMLParser;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.cp.objects.CPOrganization;
 import org.olat.ims.cp.objects.CPResource;
+import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.ims.cp.ui.CPPage;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * The CP manager implementation.
@@ -63,11 +73,55 @@ import org.olat.repository.RepositoryManager;
  */
 public class CPManagerImpl extends CPManager {
 	
+	private static final OLog log = Tracing.createLoggerFor(CPManagerImpl.class);
+
+	public static final String PACKAGE_CONFIG_FILE_NAME = "CPPackageConfig.xml";
+
+	private static XStream configXstream = XStreamHelper.createXStreamInstance();
+	static {
+		configXstream.alias("packageConfig", CPPackageConfig.class);
+		configXstream.alias("deliveryOptions", DeliveryOptions.class);
+	}
+	
 	/**
 	 * [spring]
 	 */
 	private CPManagerImpl() {
 		INSTANCE = this;
+	}
+
+	@Override
+	public CPPackageConfig getCPPackageConfig(OLATResourceable ores) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File reFolder = frm.getFileResourceRoot(ores);
+		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
+		if(configXml.exists()) {
+			CPPackageConfig config = (CPPackageConfig)configXstream.fromXML(configXml);
+			return config;
+		}
+		return null;
+	}
+
+	@Override
+	public void setCPPackageConfig(OLATResourceable ores, CPPackageConfig config) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File reFolder = frm.getFileResourceRoot(ores);
+		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
+		if(config == null) {
+			if(configXml.exists()) {
+				configXml.delete();
+			}
+		} else {
+			OutputStream out = null;
+			try {
+				out = new FileOutputStream(configXml);
+				configXstream.toXML(config, out);
+			} catch (IOException e) {
+				log.error("", e);
+			} finally {
+				IOUtils.closeQuietly(out);
+			}
+		}
 	}
 
 	/**

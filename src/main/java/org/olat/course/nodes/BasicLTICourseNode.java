@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
@@ -43,7 +44,6 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.basiclti.LTIConfigForm;
 import org.olat.course.nodes.basiclti.LTIEditController;
 import org.olat.course.nodes.basiclti.LTIRunController;
-import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -71,7 +71,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	public static final String CONFIG_KEY_PASSED_CUT_VALUE = MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE;
 	public static final String CONFIG_HEIGHT = "displayHeight";
 	public static final String CONFIG_WIDTH = "displayWidth";
-	public static final String CONFIG_HEIGHT_AUTO = ScormEditController.CONFIG_HEIGHT_AUTO;
+	public static final String CONFIG_HEIGHT_AUTO = DeliveryOptions.CONFIG_HEIGHT_AUTO;
 	public static final String CONFIG_DISPLAY = "display";
 	
 	

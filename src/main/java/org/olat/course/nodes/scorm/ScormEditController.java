@@ -26,10 +26,6 @@
 package org.olat.course.nodes.scorm;
 
 import java.io.File;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -51,10 +47,11 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -68,6 +65,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.scorm.ScormAPIandDisplayController;
 import org.olat.modules.scorm.ScormConstants;
 import org.olat.modules.scorm.ScormMainManager;
+import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
@@ -84,6 +82,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 
 	public static final String PANE_TAB_CPCONFIG = "pane.tab.cpconfig";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
+	private static final String PANE_TAB_DELIVERY = "pane.tab.delivery";
+
 
 	private static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
 	public static final String CONFIG_SHOWMENU = "showmenu";
@@ -94,9 +94,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	public static final String CONFIG_ASSESSABLE_TYPE_SCORE = "score";
 	public static final String CONFIG_ASSESSABLE_TYPE_PASSED = "passed";
 	public static final String CONFIG_CUTVALUE = "cutvalue";
-	public static final String CONFIG_RAW_CONTENT = "rawcontent";
-	public static final String CONFIG_HEIGHT = "height";	
-	public final static String CONFIG_HEIGHT_AUTO = "auto";
+	
+	public static final String CONFIG_DELIVERY_OPTIONS = "deliveryOptions";
 	//fxdiff FXOLAT-116: SCORM improvements
 	public final static String CONFIG_FULLWINDOW = "fullwindow";
 	public final static String CONFIG_CLOSE_ON_FINISH = "CLOSEONFINISH";
@@ -125,6 +124,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	private CloseableModalController cmc;
 	
 	private ConditionEditController accessibilityCondContr;
+	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	private ScormCourseNode scormNode;
 
 	private TabbedPane myTabbedPane;
@@ -156,13 +156,14 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		chooseCPButton = LinkFactory.createButtonSmall("command.importcp", cpConfigurationVc, this);
 		changeCPButton = LinkFactory.createButtonSmall("command.changecp", cpConfigurationVc, this);
 		
+		DeliveryOptions parentConfig = null;
 		if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
 			// fetch repository entry to display the repository entry title of the
 			// chosen cp
 			RepositoryEntry re = getScormCPReference(config, false);
 			if (re == null) { // we cannot display the entries name, because the repository entry had been deleted 
 												// between the time when it was chosen here, and now				
-				this.showError(NLS_ERROR_CPREPOENTRYMISSING);
+				showError(NLS_ERROR_CPREPOENTRYMISSING);
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
 				cpConfigurationVc.contextPut(VC_CHOSENCP, translate(NLS_NO_CP_CHOSEN));
 			} else {
@@ -170,7 +171,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, cpConfigurationVc, this);
 				previewLink.setCustomEnabledLinkCSS("b_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
-
+				
+				ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(re.getOlatResource());
+				parentConfig = scormConfig == null ? null : scormConfig.getDeliveryOptions();
 			}
 		} else {
 			// no valid config yet
@@ -194,17 +197,13 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		boolean advanceScore = config.getBooleanSafe(CONFIG_ADVANCESCORE, true);
 		// </OLATCE-289>
 		int cutvalue = config.getIntegerSafe(CONFIG_CUTVALUE, 0);
-		boolean rawContent = config.getBooleanSafe(CONFIG_RAW_CONTENT, true);
-		String height = (String) config.get(CONFIG_HEIGHT);
-		String encContent = (String) config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
-		String encJS = (String) config.get(NodeEditController.CONFIG_JS_ENCODING);
 		//fxdiff FXOLAT-116: SCORM improvements
 		boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
 		//= conf.get(CONFIG_CUTVALUE);
 		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons,
-				rawContent, height, encContent, encJS, assessableType, cutvalue, fullWindow,
+				assessableType, cutvalue, fullWindow,
 				closeOnFinish, maxAttempts, advanceScore, attemptsDependOnScore);
 		listenTo(scorevarform);
 		cpConfigurationVc.put("scorevarform", scorevarform.getInitialComponent());
@@ -214,7 +213,11 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager(), 
 				accessCondition, "accessabilityConditionForm",
 				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), scormNode), euce);		
-		this.listenTo(accessibilityCondContr);
+		listenTo(accessibilityCondContr);
+
+		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CONFIG_DELIVERY_OPTIONS);
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, parentConfig);
+		listenTo(deliveryOptionsCtrl);
 
 		main.setContent(cpConfigurationVc);
 	}
@@ -240,7 +243,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 			if (re == null) { // we cannot preview it, because the repository entry
 												// had been deleted between the time when it was
 												// chosen here, and now				
-				this.showError("error.cprepoentrymissing");
+				showError("error.cprepoentrymissing");
 			} else {
 				File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
 				boolean showMenu = config.getBooleanSafe(CONFIG_SHOWMENU, true);
@@ -252,18 +255,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				// configure some display options
 				boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
 				previewController.showNavButtons(showNavButtons);
-				String height = (String) config.get(ScormEditController.CONFIG_HEIGHT);
-				if ( ! height.equals(ScormEditController.CONFIG_HEIGHT_AUTO)) {
-					previewController.setHeightPX(Integer.parseInt(height));
-				}
-				String contentEncoding = (String) config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
-				if ( ! contentEncoding.equals(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO)) {
-					previewController.setContentEncoding(contentEncoding);
-				}
-				String jsEncoding = (String) config.get(NodeEditController.CONFIG_JS_ENCODING);
-				if ( ! jsEncoding.equals(NodeEditController.CONFIG_JS_ENCODING_AUTO)) {
-					previewController.setJSEncoding(jsEncoding);
-				}
+				
+				DeliveryOptions deliveryOptions = deliveryOptionsCtrl.getOptionsForPreview();
+				previewController.setDeliveryOptions(deliveryOptions);
 				previewController.activate();
 			}
 		}
@@ -288,6 +282,10 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 					// fire event so the updated config is saved by the
 					// editormaincontroller
 					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+					
+					ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(re.getOlatResource());
+					DeliveryOptions parentConfig = scormConfig == null ? null : scormConfig.getDeliveryOptions();
+					deliveryOptionsCtrl.setParentDeliveryOptions(parentConfig);
 				}
 				// else cancelled repo search
 			}
@@ -316,13 +314,13 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				config.setBooleanEntry(CONFIG_ADVANCESCORE, scorevarform.isAdvanceScore());
 				config.setBooleanEntry(CONFIG_ATTEMPTSDEPENDONSCORE, scorevarform.getAttemptsDependOnScore());
 				// </OLATCE-289>
-				config.setBooleanEntry(CONFIG_RAW_CONTENT, scorevarform.isRawContent());
-				config.set(CONFIG_HEIGHT, scorevarform.getHeightValue());
-				config.set(NodeEditController.CONFIG_CONTENT_ENCODING, scorevarform.getEncodingContentValue());
-				config.set(NodeEditController.CONFIG_JS_ENCODING, scorevarform.getEncodingJSValue());
-				
 				// fire event so the updated config is saved by the
 				// editormaincontroller
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else if(source == deliveryOptionsCtrl) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				config.set(CONFIG_DELIVERY_OPTIONS, deliveryOptionsCtrl.getDeliveryOptions());
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}
@@ -335,6 +333,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(NLS_CONDITION_ACCESSIBILITY_TITLE)));
 		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), main); // the choose learning content tab
+		tabbedPane.addTab(translate(PANE_TAB_DELIVERY), deliveryOptionsCtrl.getInitialComponent());
 	}
 
 	/**
@@ -405,25 +404,13 @@ class VarForm extends FormBasicController {
 	private SelectionElement closeOnFinishEl;//fxdiff FXOLAT-116: SCORM improvements
 	private SelectionElement isAssessableEl;
 	private SelectionElement skipLaunchPageEl; //fxdiff FXOLAT-322 : skip start-page / auto-launch
-	private SelectionElement rawContentEl;
 	private IntegerElement cutValueEl;
-	private SingleSelection heightEl;
-	private SingleSelection encodingContentEl;
-	private SingleSelection encodingJSEl;
 	
-	
-	private boolean showMenu, showNavButtons, isAssessable, skipLaunchPage, rawContent;
+	private boolean showMenu, showNavButtons, skipLaunchPage;
 	private String assessableType;
-	private String height;
-	private String encodingContent;
-	private String encodingJS;
 	private int cutValue;
 	private boolean fullWindow;//fxdiff FXOLAT-116: SCORM improvements
 	private boolean closeOnFinish;//fxdiff FXOLAT-116: SCORM improvements
-	private String[] keys, values;
-	private String[] encodingContentKeys, encodingContentValues;
-	private String[] encodingJSKeys, encodingJSValues;
-	
 	private String[] assessableKeys, assessableValues;
 
 	// <OLATCE-289>
@@ -441,7 +428,6 @@ class VarForm extends FormBasicController {
 	 * @param name  Name of the form
 	 */
 	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage, boolean showNavButtons, 
-			boolean rawContent, String height, String encodingContent, String encodingJS, 
 			String assessableType, int cutValue, boolean fullWindow, boolean closeOnFinish,
 			// <OLATCE-289>
 			int maxattempts, boolean advanceScore, boolean attemptsDependOnScore
@@ -456,65 +442,12 @@ class VarForm extends FormBasicController {
 		//fxdiff FXOLAT-116: SCORM improvements
 		this.fullWindow = fullWindow;
 		this.closeOnFinish = closeOnFinish;
-		this.rawContent = rawContent;
-		this.height = height;
-		this.encodingContent = encodingContent;
-		this.encodingJS = encodingJS;
 		
 		// <OLATCE-289>
 		this.advanceScore = advanceScore;
 		this.scoreAttempts = attemptsDependOnScore;
 		this.maxattempts = maxattempts;
 		// </OLATCE-289>
-		
-		keys = new String[]{ ScormEditController.CONFIG_HEIGHT_AUTO, "460", "480", 
-				"500", "520", "540", "560", "580",
-				"600", "620", "640", "660", "680",
-				"700", "720", "730", "760", "780",
-				"800", "820", "840", "860", "880",
-				"900", "920", "940", "960", "980",
-				"1000", "1020", "1040", "1060", "1080",
-				"1100", "1120", "1140", "1160", "1180",
-				"1200", "1220", "1240", "1260", "1280",
-				"1300", "1320", "1340", "1360", "1380"
-		};
-		
-		values = new String[]{ translate("height.auto"), "460px", "480px", 
-				"500px", "520px", "540px", "560px", "580px",
-				"600px", "620px", "640px", "660px", "680px",
-				"700px", "720px", "730px", "760px", "780px",
-				"800px", "820px", "840px", "860px", "880px",
-				"900px", "920px", "940px", "960px", "980px",
-				"1000px", "1020px", "1040px", "1060px", "1080px",
-				"1100px", "1120px", "1140px", "1160px", "1180px",
-				"1200px", "1220px", "1240px", "1260px", "1280px",
-				"1300px", "1320px", "1340px", "1360px", "1380px"
-		};
-		
-		Map<String,Charset> charsets = Charset.availableCharsets();
-		int numOfCharsets = charsets.size() + 1;
-		
-		encodingContentKeys = new String[numOfCharsets];
-		encodingContentKeys[0] = NodeEditController.CONFIG_CONTENT_ENCODING_AUTO;
-
-		encodingContentValues = new String[numOfCharsets];
-		encodingContentValues[0] = translate("encoding.auto");
-		
-		encodingJSKeys = new String[numOfCharsets];
-		encodingJSKeys[0] = NodeEditController.CONFIG_JS_ENCODING_AUTO;
-
-		encodingJSValues = new String[numOfCharsets];
-		encodingJSValues[0] =	translate("encoding.same");
-
-		int count = 1;
-		Locale locale = ureq.getLocale();
-		for(Map.Entry<String, Charset> charset:charsets.entrySet()) {
-			encodingContentKeys[count] = charset.getKey();
-			encodingContentValues[count] = charset.getValue().displayName(locale);
-			encodingJSKeys[count] = charset.getKey();
-			encodingJSValues[count] = charset.getValue().displayName(locale);
-			count++;
-		}
 		
 		assessableKeys = new String[]{ "off", ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE,
 				ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED };
@@ -567,21 +500,7 @@ class VarForm extends FormBasicController {
 		return null;
 	}
 	
-	public boolean isRawContent() {
-		return rawContentEl.isSelected(0);
-	}
-	
-	public String getHeightValue() {
-		return heightEl.getSelectedKey();
-	}
-	
-	public String getEncodingContentValue() {
-		return encodingContentEl.getSelectedKey();
-	}
-	
-	public String getEncodingJSValue() {
-		return encodingJSEl.getSelectedKey();
-	}
+
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -592,14 +511,6 @@ class VarForm extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 
-		heightEl.clearError();
-		if(isRawContent()) {
-			String height = getHeightValue();
-			if(!StringHelper.containsNonWhitespace(height) || ScormEditController.CONFIG_HEIGHT_AUTO.equals(height)) {
-				allOk &= false;
-				heightEl.setErrorKey("rawcontent.height.error", null);
-			}	
-		}
 		return allOk && super.validateFormLogic(ureq);
 	}
 
@@ -622,31 +533,6 @@ class VarForm extends FormBasicController {
 		
 		closeOnFinishEl = uifactory.addCheckboxesVertical("closeonfinish", "closeonfinish.label", formLayout, new String[]{"closeonfinish"}, new String[]{null}, null, 1);
 		closeOnFinishEl.select("closeonfinish", closeOnFinish);
-
-		rawContentEl = uifactory.addCheckboxesVertical("rawcontent", "rawcontent.label", formLayout, new String[]{"rawcontent"}, new String[]{null}, null, 1);
-		rawContentEl.select("rawcontent", rawContent);
-		
-		heightEl = uifactory.addDropdownSingleselect("height", "height.label", formLayout, keys, values, null);
-		if (Arrays.asList(keys).contains(height)) {
-			heightEl.select(height, true);
-		} else {
-			heightEl.select(ScormEditController.CONFIG_HEIGHT_AUTO, true);
-		}
-
-		encodingContentEl = uifactory.addDropdownSingleselect("encoContent", "encoding.content", formLayout, encodingContentKeys, encodingContentValues, null);
-		if (Arrays.asList(encodingContentKeys).contains(encodingContent)) {
-			encodingContentEl.select(encodingContent, true);
-		} else {
-			encodingContentEl.select(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO, true);
-		}
-		
-		encodingJSEl = uifactory.addDropdownSingleselect("encoJS", "encoding.js", formLayout, encodingJSKeys, encodingJSValues, null);
-		if (Arrays.asList(encodingJSKeys).contains(encodingJS)) {
-			encodingJSEl.select(encodingJS, true);
-		} else {
-			encodingJSEl.select(NodeEditController.CONFIG_JS_ENCODING_AUTO, true);
-		}
-		
 
 		isAssessableEl = uifactory.addRadiosVertical("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues);
 		if(ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {

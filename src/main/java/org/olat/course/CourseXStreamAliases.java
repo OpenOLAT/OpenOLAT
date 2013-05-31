@@ -20,6 +20,7 @@
 */
 package org.olat.course;
 
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ExtendedCondition;
@@ -138,6 +139,9 @@ public class CourseXStreamAliases {
 		readXstream.alias("HasAttributeOperator", HasAttributeOperator.class);
 		readXstream.alias("HasNotAttributeOperator", HasNotAttributeOperator.class);
 		readXstream.alias("AttributeStartswithOperator", AttributeStartswithOperator.class);
+		
+		//deleted attributes
+		readXstream.omitField(DeliveryOptions.class, "noJavascript");
 	}
 	
 	/**

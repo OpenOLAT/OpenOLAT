@@ -17,24 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.mail;
+package org.olat.modules.scorm;
+
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 
 /**
  * 
- * Initial date: 28.05.2013<br>
+ * Initial date: 29.05.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface MailAttachment {
-	
-	public String getName();
-	
-	public String getPath();
-	
-	public Long getChecksum();
-	
-	public Long getSize();
-	
-	public String getMimetype();
+public class ScormPackageConfig {
+
+	private DeliveryOptions deliveryOptions;
+
+	public DeliveryOptions getDeliveryOptions() {
+		return deliveryOptions;
+	}
+
+	public void setDeliveryOptions(DeliveryOptions options) {
+		this.deliveryOptions = options;
+	}
+
 
 }

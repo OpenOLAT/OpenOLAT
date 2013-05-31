@@ -25,10 +25,8 @@
 
 package org.olat.course.nodes.st;
 
-import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
@@ -80,37 +78,6 @@ public class STCourseNodeConfiguration extends AbstractCourseNodeConfiguration i
 		return "st";
 	}
 
-	//
-	// OLATExtension interface implementations.
-	//
-
-	public String getName() {
-		return getAlias();
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionResources()
-	 */
-	public List getExtensionResources() {
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionCSS()
-	 */
-	public ExtensionResource getExtensionCSS() {
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#setURLBuilder(org.olat.core.gui.render.URLBuilder)
-	 */
-	public void setExtensionResourcesBaseURI(String ubi) {
-	// no need for the URLBuilder
-	}
-
 	/**
 	 * Spring setter method to configure the maximum number of selectable child
 	 * nodes for peekview rendering.
@@ -125,5 +92,4 @@ public class STCourseNodeConfiguration extends AbstractCourseNodeConfiguration i
 					"invalid configuration for maxPeekviewChildNodes: must be greater than 0. check your olat_buildingblocks.xml config files");
 		}
 	}
-
 }

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href=“http://www.openolat.org“>
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,27 +14,31 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * 2011 by frentix GmbH, http://www.frentix.com
  * <p>
- */
-package org.olat.core.util.mail;
+**/
+package org.olat.ims.cp.ui;
+
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 
 /**
  * 
- * Initial date: 28.05.2013<br>
+ * Initial date: 29.05.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface MailAttachment {
+public class CPPackageConfig {
+
+	private DeliveryOptions deliveryOptions;
+
+	public DeliveryOptions getDeliveryOptions() {
+		return deliveryOptions;
+	}
+
+	public void setDeliveryOptions(DeliveryOptions options) {
+		this.deliveryOptions = options;
+	}
 	
-	public String getName();
 	
-	public String getPath();
-	
-	public Long getChecksum();
-	
-	public Long getSize();
-	
-	public String getMimetype();
 
 }

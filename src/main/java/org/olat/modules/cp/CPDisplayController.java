@@ -45,6 +45,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
 import org.olat.core.gui.control.winmgr.JSCommand;
@@ -108,7 +109,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	 * @param activateFirstPage
 	 */
 	CPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean showNavigation,
-			boolean activateFirstPage, boolean showPrint, String initialUri, OLATResourceable ores) {
+			boolean activateFirstPage, boolean showPrint, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores) {
 		super(ureq, wControl);
 		this.rootContainer = rootContainer;
 
@@ -131,7 +132,7 @@ public class CPDisplayController extends BasicController implements Activateable
 			cpComponent.addListener(this);
 			myContent.put("cpContent", cpComponent);
 		} else {
-			cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(),rootContainer, null, ores);
+			cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(),rootContainer, null, ores, deliveryOptions);
 			cpContentCtr.setAllowDownload(true);
 			listenTo(cpContentCtr);
 			myContent.put("cpContent", cpContentCtr.getInitialComponent());

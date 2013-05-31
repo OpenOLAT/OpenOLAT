@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
@@ -46,6 +47,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CPCourseNode;
@@ -53,6 +55,8 @@ import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.cp.CPManager;
+import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.cp.CPDisplayController;
 import org.olat.modules.cp.CPManifestTreeModel;
@@ -84,7 +88,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 	private ControllerEventListener treeNodeClickListener;
 	private String nodecmd;
 	private String selNodeId;
-	private OLATResourceable ores;
+	private OLATResourceable courseResource;
 
 	
 	/**
@@ -101,7 +105,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 	public CPRunController(ModuleConfiguration config, UserRequest ureq, UserCourseEnvironment userCourseEnv, WindowControl wControl, CPCourseNode cpNode, String nodecmd, OLATResourceable course) {
 		super(ureq, wControl);
 		this.nodecmd = nodecmd;
-		this.ores = course;
+		this.courseResource = OresHelper.clone(course);
 		// assertion to make sure the moduleconfig is valid
 		if (!CPEditController.isModuleConfigValid(config)) throw new AssertException("cprun controller had an invalid module config:"	+ config.toString());
 		this.config = config;
@@ -166,6 +170,8 @@ public class CPRunController extends BasicController implements ControllerEventL
 	}
 
 	private void doLaunch(UserRequest ureq) {
+		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CPEditController.CONFIG_DELIVERYOPTIONS);
+		
 		if (cpRoot == null) {
 			// it is the first time we start the contentpackaging from this instance
 			// of this controller.
@@ -176,6 +182,13 @@ public class CPRunController extends BasicController implements ControllerEventL
 			// should always exist because references cannot be deleted as long as
 			// nodes reference them
 			if (cpRoot == null) throw new AssertException("file of repository entry " + re.getKey() + " was missing");
+			
+			if(deliveryOptions != null && deliveryOptions.getInherit() != null && deliveryOptions.getInherit().booleanValue()) {
+				CPPackageConfig packageConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());
+				if(packageConfig != null && packageConfig.getDeliveryOptions() != null) {
+					deliveryOptions = packageConfig.getDeliveryOptions();
+				}
+			}
 		}
 		// else cpRoot is already set (save some db access if the user opens /
 		// closes / reopens the cp from the same CPRuncontroller instance)
@@ -185,7 +198,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 		}
 		//fxdiff VCRP-13: cp navigation
 		boolean navButtons = isNavButtonConfigured();
-		cpDispC = CPUIFactory.getInstance().createContentOnlyCPDisplayController(ureq, getWindowControl(), new LocalFolderImpl(cpRoot), activateFirstPage, navButtons, nodecmd, ores);
+		cpDispC = CPUIFactory.getInstance().createContentOnlyCPDisplayController(ureq, getWindowControl(), new LocalFolderImpl(cpRoot), activateFirstPage, navButtons, deliveryOptions, nodecmd, courseResource);
 		cpDispC.setContentEncoding(getContentEncoding());
 		cpDispC.setJSEncoding(getJSEncoding());
 		cpDispC.addControllerListener(this);

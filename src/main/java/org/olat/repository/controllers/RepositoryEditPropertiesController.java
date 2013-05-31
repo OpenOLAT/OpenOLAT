@@ -42,6 +42,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
@@ -78,10 +80,15 @@ import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
+import org.olat.fileresource.types.ScormCPFileResource;
+import org.olat.ims.cp.CPManager;
+import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.modules.glossary.GlossaryEditSettingsController;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.glossary.GlossaryRegisterSettingsController;
+import org.olat.modules.scorm.ScormMainManager;
+import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.repository.PropPupForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -113,6 +120,7 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 	private CourseEfficencyStatementController ceffC;
 	private CourseCalendarConfigController calCfgCtr;
 	private CourseConfigGlossaryController cglosCtr;
+	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	//fxdiff VCRP-1,2: access control of resources
 	private AccessConfigurationController acCtr;
 	private TabbedPane tabbedPane;
@@ -208,19 +216,19 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 			  tabbedPane.addTab(translate("tab.layout"), clayoutC.getInitialComponent());
 
 			  csfC = new CourseSharedFolderController(ureq, getWindowControl(), changedCourseConfig);
-			  this.listenTo(csfC);
+			  listenTo(csfC);
 			  tabbedPane.addTab(translate("tab.sharedfolder"), csfC.getInitialComponent());
 
 			  ceffC = new CourseEfficencyStatementController(ureq, getWindowControl(), changedCourseConfig);
-			  this.listenTo(ceffC);
+			  listenTo(ceffC);
 			  efficiencyConfigPos = tabbedPane.addTab(translate("tab.efficencystatement"), ceffC.getInitialComponent());
 			
 			  calCfgCtr = new CourseCalendarConfigController(ureq, getWindowControl(), changedCourseConfig);
-			  this.listenTo(calCfgCtr);
+			  listenTo(calCfgCtr);
 			  tabbedPane.addTab(translate("tab.calendar"), calCfgCtr.getInitialComponent());
 
 			  cglosCtr = new CourseConfigGlossaryController(ureq, getWindowControl(), changedCourseConfig, course.getResourceableId());
-			  this.listenTo(cglosCtr);
+			  listenTo(cglosCtr);
 			  tabbedPane.addTab(translate("tab.glossary"), cglosCtr.getInitialComponent());		
 			}     
 		} else if (repositoryEntry.getOlatResource().getResourceableTypeName().equals(GlossaryResource.TYPE_NAME)){
@@ -237,6 +245,18 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 				Controller quotaCtrl = qm.getQuotaEditorInstance(ureq, wControl, cpRoot.getRelPath(), false);
 				tabbedPane.addTab(translate("tab.quota.edit"), quotaCtrl.getInitialComponent());
 			}
+			
+			CPPackageConfig cpConfig = CPManager.getInstance().getCPPackageConfig(repositoryEntry.getOlatResource());
+			DeliveryOptions config = cpConfig == null ? null : cpConfig.getDeliveryOptions();
+			deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), config);
+			tabbedPane.addTab(translate("tab.layout"), deliveryOptionsCtrl.getInitialComponent());
+			listenTo(deliveryOptionsCtrl);
+		}  else if (ScormCPFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+			ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(repositoryEntry.getOlatResource());
+			DeliveryOptions config = scormConfig == null ? null : scormConfig.getDeliveryOptions();
+			deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), config);
+			tabbedPane.addTab(translate("tab.layout"), deliveryOptionsCtrl.getInitialComponent());
+			listenTo(deliveryOptionsCtrl);
 		} else if (BlogFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())
 				|| PodcastFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
 			QuotaManager qm = QuotaManager.getInstance();
@@ -465,7 +485,27 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 				
 				return;
 			}
+		} else if(source == deliveryOptionsCtrl) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				DeliveryOptions config = deliveryOptionsCtrl.getDeliveryOptions();
+				if (ImsCPFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+					CPPackageConfig cpConfig = CPManager.getInstance().getCPPackageConfig(repositoryEntry.getOlatResource());
+					if(cpConfig == null) {
+						cpConfig = new CPPackageConfig();
+					}
+					cpConfig.setDeliveryOptions(config);
+					CPManager.getInstance().setCPPackageConfig(repositoryEntry.getOlatResource(), cpConfig);
+				} else if (ScormCPFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+					ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(repositoryEntry.getOlatResource());
+					if(scormConfig == null) {
+						scormConfig = new ScormPackageConfig();
+					}
+					scormConfig.setDeliveryOptions(config);
+					ScormMainManager.getInstance().setScormPackageConfig(repositoryEntry.getOlatResource(), scormConfig);
+				}
+			}
 		}
+		
 	  } catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION);			
 			this.dispose();

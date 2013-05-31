@@ -137,6 +137,7 @@ public class FileChooseCreateEditController extends BasicController{
 	public static final Event FILE_CONTENT_CHANGED_EVENT = new Event("filecontentchanged");
 	/** Event fired when configuration option to allow relative links has been changed **/
 	public static final Event ALLOW_RELATIVE_LINKS_CHANGED_EVENT = new Event("allowrelativelinkschanged");
+	public static final Event DELIVERY_OPTIONS_CHANGED_EVENT = new Event("deliveryoptionschanged");
 	private Link editButton;
 	private Link deleteButton;
 	private Link changeFileButtonOne;
@@ -187,7 +188,7 @@ public class FileChooseCreateEditController extends BasicController{
 		this.chosenFile = file;		
 		this.rootContainer = rContainer;
 		this.allowRelativeLinks = allowRelLinks == null ? false : allowRelLinks.booleanValue();
-		this.myContent = createVelocityContainer("chosenfile");
+		myContent = createVelocityContainer("chosenfile");
 		editButton = LinkFactory.createButtonSmall("command.edit", myContent, this);
 		editButton.setElementCssClass("o_sel_filechooser_edit");
 		deleteButton = LinkFactory.createButtonSmall("command.delete", myContent, this);
@@ -215,7 +216,7 @@ public class FileChooseCreateEditController extends BasicController{
 		
 		allowRelativeLinksForm = new AllowRelativeLinksForm(ureq, wControl, allowRelativeLinks);
 		listenTo(allowRelativeLinksForm);
-
+		
 		VFSContainer namedCourseFolder = new NamedContainerImpl(getTranslator().translate(NLS_FOLDER_DISPLAYNAME), rContainer);
 		rootContainer = namedCourseFolder;
 		FolderComponent folderComponent = new FolderComponent(ureq, "foldercomp", namedCourseFolder, null, null);
@@ -385,7 +386,7 @@ public class FileChooseCreateEditController extends BasicController{
 				allowRelativeLinks = allowRelativeLinksForm.getAllowRelativeLinksConfig();
 				fireEvent(ureq, ALLOW_RELATIVE_LINKS_CHANGED_EVENT);
 			}
-		}	 
+		}
 	}
 
 	/**
@@ -485,14 +486,19 @@ public class FileChooseCreateEditController extends BasicController{
 	 * @return The choosen file name
 	 */
 	public String getChosenFile(){
-	    return this.chosenFile;
+	    return chosenFile;
+	}
+	
+	public boolean isEditorEnabled() {
+		Boolean editable = (Boolean)myContent.getContext().get(VC_ENABLEEDIT);
+		return editable != null && editable.booleanValue();
 	}
 	
 	/**
 	 * @return The configuration for the allow relative links flag
 	 */
 	public Boolean getAllowRelativeLinks() {
-		return this.allowRelativeLinks;
+		return allowRelativeLinks;
 	}
 	
 	/**
@@ -512,10 +518,10 @@ public class FileChooseCreateEditController extends BasicController{
 			// add form to velocity
 			myContent.put("allowRelativeLinksForm", allowRelativeLinksForm.getInitialComponent());
 			if (file.toLowerCase().endsWith(".html") || file.toLowerCase().endsWith(".htm")) {
-					myContent.contextPut(VC_ENABLEEDIT, Boolean.TRUE);
-				} else {
-					myContent.contextPut(VC_ENABLEEDIT, Boolean.FALSE);
-				}
+				myContent.contextPut(VC_ENABLEEDIT, Boolean.TRUE);
+			} else {
+				myContent.contextPut(VC_ENABLEEDIT, Boolean.FALSE);
+			}
 		} else {
 			myContent.contextPut(VC_CHANGE, Boolean.FALSE);
 			fileChooser.contextPut(VC_CHANGE, Boolean.FALSE);			

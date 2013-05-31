@@ -137,6 +137,26 @@ public class TabbedPane extends Container implements Activateable2 {
 		}
 		return tabbedPanes.size() - 1;
 	}
+	
+	public boolean containsTab(Component component) {
+		return tabbedPanes.contains(component);
+	}
+	
+	public boolean containsTab(String displayName) {
+		return displayNames.contains(displayName);
+	}
+	
+	public void removeTab(Component component) {
+		int index = tabbedPanes.indexOf(component);
+		if(index >= 0 && index < tabbedPanes.size()) {
+			tabbedPanes.remove(index);
+			displayNames.remove(index);
+			if(selectedPane == index) {
+				setSelectedPane(0);
+			}
+			setDirty(true);
+		}
+	}
 
 	public void removeAll() {
 		if (this.selectedPane != -1) {

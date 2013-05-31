@@ -376,7 +376,6 @@ class IQEditForm extends FormBasicController {
 		update();
 	}
 	
-	@SuppressWarnings("unused")
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		update();

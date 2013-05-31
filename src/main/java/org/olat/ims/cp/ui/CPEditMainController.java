@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -54,17 +55,20 @@ public class CPEditMainController extends MainLayoutBasicController {
 	private CPTreeController treeCtr;
 	private final ContentPackage cp;
 	private LockResult lock;
+	private DeliveryOptions deliveryOptions;
 
 	public CPEditMainController(UserRequest ureq, WindowControl wControl, VFSContainer cpContainer, OLATResourceable ores) {
 		super(ureq, wControl);
 
 		// acquire lock for resource
 		lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), null);
-
-		CPManager cpMgm = CPManager.getInstance();
-
-		this.cp = cpMgm.load(cpContainer, ores);
-
+		cp = CPManager.getInstance().load(cpContainer, ores);
+		
+		CPPackageConfig packageConfig = CPManager.getInstance().getCPPackageConfig(ores);
+		if(packageConfig != null) {
+			deliveryOptions = packageConfig.getDeliveryOptions();
+		}
+		
 		String errorString = cp.getLastError();
 		if (errorString == null) {
 			if (lock.isSuccess()) {
@@ -75,7 +79,7 @@ public class CPEditMainController extends MainLayoutBasicController {
 			}
 		} else {
 			initErrorView(ureq, wControl, errorString);
-			this.showError("maincontroller.loaderror", errorString);
+			showError("maincontroller.loaderror", errorString);
 		}
 		logAudit("cp editor started. oresId: " + ores.getResourceableId(), null);
 	}
@@ -88,8 +92,8 @@ public class CPEditMainController extends MainLayoutBasicController {
 	 * @param root
 	 */
 	private void displayCP(UserRequest ureq, WindowControl wControl, VFSContainer root) {
-		MainLayout3ColumnsController cpCtr = CPUIFactory.getInstance().createMainLayoutController(ureq, wControl, root, true);
-		this.putInitialPanel(cpCtr.getInitialComponent());
+		MainLayout3ColumnsController cpCtr = CPUIFactory.getInstance().createMainLayoutController(ureq, wControl, root, true, deliveryOptions);
+		putInitialPanel(cpCtr.getInitialComponent());
 	}
 
 	/**

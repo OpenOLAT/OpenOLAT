@@ -33,6 +33,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -49,6 +50,8 @@ import org.olat.course.repository.ImportReferencesController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.ims.cp.CPManager;
+import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -60,6 +63,8 @@ import org.olat.repository.RepositoryEntryImportExport;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class CPCourseNode extends AbstractAccessableCourseNode {
+
+	private static final long serialVersionUID = -4317662219173515498L;
 	private static final String TYPE = "cp";
 
 	/**
@@ -201,11 +206,49 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 				config.setConfigurationVersion(3);
 			}
 			
-			//fxdiff VCRP-13: cp navigation
 			if(config.getConfigurationVersion() < 4) {
 				config.setBooleanEntry(CPEditController.CONFIG_SHOWNAVBUTTONS, Boolean.TRUE.booleanValue());
 				config.setConfigurationVersion(4);
 			}
+			
+			if(config.getConfigurationVersion() < 5) {
+				String contentEncoding = (String)config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
+				String jsEncoding = (String)config.get(NodeEditController.CONFIG_JS_ENCODING);
+
+				CPPackageConfig reConfig = null;
+				DeliveryOptions nodeDeliveryOptions = new DeliveryOptions();
+				RepositoryEntry re = getReferencedRepositoryEntry();
+				if(re != null) {
+					reConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());
+
+					//move the settings from the node to the repo
+					if(reConfig == null || reConfig.getDeliveryOptions() == null) {
+						if(reConfig == null) {
+							reConfig = new CPPackageConfig();
+						}
+						reConfig.setDeliveryOptions(new DeliveryOptions());
+						nodeDeliveryOptions.setInherit(Boolean.TRUE);
+						nodeDeliveryOptions.setStandardMode(Boolean.TRUE);
+						reConfig.getDeliveryOptions().setStandardMode(Boolean.TRUE);
+						reConfig.getDeliveryOptions().setContentEncoding(contentEncoding);
+						reConfig.getDeliveryOptions().setJavascriptEncoding(jsEncoding);
+						CPManager.getInstance().setCPPackageConfig(re.getOlatResource(), reConfig);
+					} else {
+						DeliveryOptions repoDeliveryOptions = reConfig.getDeliveryOptions();
+						if(((contentEncoding == null && repoDeliveryOptions.getContentEncoding() == null) || (contentEncoding != null && contentEncoding.equals(repoDeliveryOptions.getContentEncoding())))
+							&& ((jsEncoding == null && repoDeliveryOptions.getJavascriptEncoding() == null) || (jsEncoding != null && jsEncoding.equals(repoDeliveryOptions.getJavascriptEncoding())))) {
+							nodeDeliveryOptions.setInherit(Boolean.TRUE);	
+						} else {
+							nodeDeliveryOptions.setInherit(Boolean.FALSE);	
+							nodeDeliveryOptions.setContentEncoding(contentEncoding);
+							nodeDeliveryOptions.setJavascriptEncoding(jsEncoding);
+						}
+					}
+				}
+				
+				config.setConfigurationVersion(5);
+			}
+			
 			// else node is up-to-date - nothing to do
 		}
 	}

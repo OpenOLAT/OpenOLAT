@@ -81,6 +81,10 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 	private String themeBaseUri;
 	private String customHeaderContent;
 	
+	private Boolean jQueryEnabled;
+	private Boolean prototypeEnabled;
+	private Boolean openolatCss;
+	
 	private transient boolean checkForInlineEvent;
 	private transient long suppressEndlessReload;
 	
@@ -106,6 +110,29 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		this.customCssURL = customCssURL;
 		this.themeBaseUri = themeBaseUri;
 		this.customHeaderContent = customHeaderContent;
+	}
+	
+	public void setDeliveryOptions(DeliveryOptions config) {
+		if(config != null) {
+			jQueryEnabled = config.getjQueryEnabled();
+			prototypeEnabled = config.getPrototypeEnabled();
+			if(config.getGlossaryEnabled() != null) {
+				enableTextmarking = config.getGlossaryEnabled().booleanValue();
+			}
+			openolatCss = config.getOpenolatCss();
+			if(config.getContentEncoding() != null) {
+				g_encoding = config.getContentEncoding();
+			}
+			if(config.getJavascriptEncoding() != null) {
+				jsEncoding = config.getJavascriptEncoding();
+			}
+			
+			if(DeliveryOptions.CONFIG_HEIGHT_AUTO.equals(config.getHeight())) {
+				adjusteightAutomatically = true;
+			} else if(StringHelper.containsNonWhitespace(config.getHeight())) {
+				adjusteightAutomatically = false;
+			}
+		}
 	}
 
 	public void setCheckForInlineEvent(boolean checkForInlineEvent) {
@@ -224,7 +251,11 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		} else {
 			String agent = httpRequest.getHeader("User-Agent");
 			boolean firefoxWorkaround = agent != null && agent.indexOf("Firefox/") > 0;
-			smr.setData(injectJavaScript(page, mimetype, checkForInlineEvent, firefoxWorkaround));			     
+			if(rawContent) {
+				smr.setData(page);	
+			} else {
+				smr.setData(injectJavaScript(page, mimetype, checkForInlineEvent, firefoxWorkaround));	
+			}
 			// When loading next page, check if it was an inline user click
 			this.checkForInlineEvent = true; 
 
@@ -249,11 +280,6 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 	 * when puttings js to the end or menachism like ext.onReady is needed
 	 */
 	private String injectJavaScript(String page, String mimetype, boolean addCheckForInlineEvents, boolean anchorFirefoxWorkaround) {
-		//if raw content, add nothing
-		if(rawContent) {
-			return page;
-		}
-		
 		//do not use parser and just check for css and script stuff myself and append just before body and head
 		SimpleHtmlParser parser = new SimpleHtmlParser(page);
 		if (!parser.isValidHtml()) {
@@ -261,7 +287,7 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		}
 
 		String docType = parser.getHtmlDocType();	
-		StringOutput sb = new StringOutput(page.length() + 1000);
+		HtmlOutput sb = new HtmlOutput(docType, themeBaseUri, page.length() + 1000);
 		if (docType != null) sb.append(docType).append("\n");
 		if (parser.getXhtmlNamespaces() == null) sb.append("<html><head>");
 		else {
@@ -273,46 +299,35 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
 		sb.append(">");
 		
-		if (!parser.hasOwnCss()) {
-			// add olat content css as used in html editor
-			sb.append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" type=\"text/css\" ");
-			if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
-			sb.append(">\n");
+		if(openolatCss != null && openolatCss.booleanValue()) {
+			sb.appendOpenolatCss();
+		}
+		
+		if(!parser.hasOwnCss()) {
+			if(openolatCss == null || openolatCss.booleanValue()) {
+				//add olat content css as used in html editor
+				sb.appendOpenolatCss();//css only loaded once in HtmlOutput
+			}
 			if (customCssURL != null) {
 				// add the custom  CSS, e.g. the course css that overrides the standard content css
-				sb.append("<link href=\"").append(customCssURL).append("\" rel=\"stylesheet\" type=\"text/css\" ");
-				if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
-				sb.append(">\n");				
+				sb.appendCss(customCssURL);				
 			}
 		}
 		
-		//TODO:gs:a do not include if it is a scorm packge!! may results in problems
 		if (enableTextmarking) {
 			if (log.isDebug()) {
 				log.debug("Textmarking is enabled, including tooltips js files into iframe source...");
 			}
-			sb.append("\n<script type=\"text/javascript\" src=\"");
-			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-1.9.1.min.js");
-			sb.append("\"></script>\n<script type=\"text/javascript\" src=\"");
-			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-migrate-1.1.1.min.js");
-			sb.append("\"></script>\n<script type=\"text/javascript\" src=\"");
-			StaticMediaDispatcher.renderStaticURI(sb, "js/jshashtable-2.1_src.js");
-			sb.append("\"></script>\n<script type=\"text/javascript\" src=\"");
-			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/ui/jquery-ui-1.10.2.custom.min.js");
-			sb.append("\"></script>");
-			// Load glossary code now			
-			sb.append("\n<script type=\"text/javascript\" id=\"textmarkerLib\" src=\"");
-		  StaticMediaDispatcher.renderStaticURI(sb, "js/openolat/glossaryhighlighter.js");
-			sb.append("\"></script>");
-			sb.append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"textmarkercss\" href=\"");
-		  StaticMediaDispatcher.renderStaticURI(sb, "js/openolat/glossaryhighlighter.css");
-		  sb.append("\"");
-			if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
-			sb.append(">\n<link rel=\"stylesheet\" type=\"text/css\" id=\"jqueryiocss\" href=\"");
-		  StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/ui/jquery-ui-1.10.2.custom.min.css");
-		  sb.append("\" ");
-			if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
-			sb.append(">\n");
+			sb.appendJQuery();	
+			sb.appendGlossary();
+		}
+		
+		if(jQueryEnabled != null && jQueryEnabled.booleanValue()) {
+			sb.appendJQuery();
+		}
+		
+		if(prototypeEnabled != null && prototypeEnabled.booleanValue()) {
+			sb.appendPrototype();
 		}
 		
 		// Load some iframe.js helper code
@@ -347,29 +362,23 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			}
 			sb.append("b_addOnloadEvent(b_changeLinkTargets);");
 			
-			if (this.enableTextmarking){
+			if(enableTextmarking){
 				sb.append("b_addOnloadEvent(b_glossaryHighlight);");
 			}
 			
 			if(anchorFirefoxWorkaround) {
 				sb.append("b_addOnloadEvent(b_anchorFirefoxWorkaround);");
 			}
-			
 			sb.append("\n/* ]]> */\n</script>");
 		}		
-		
-		
+
 		String origHTMLHead = parser.getHtmlHead();
 		// jsMath brute force approach to render latex formulas: add library if
 		// a jsmath class is found in the code and the library is not already in
 		// the header of the page
 		if (BaseChiefController.isJsMathEnabled()) {
 			if ((page.indexOf("class=\"math\"") != -1 || page.indexOf("class='math'") != -1) && (origHTMLHead == null || origHTMLHead.indexOf("jsMath/easy/load.js") == -1)) {
-				sb.append("\n<script type=\"text/javascript\" src=\"");
-				StaticMediaDispatcher.renderStaticURI(sb, "js/jsMath/easy/load.js");
-				sb.append("\"></script>");			
-				// don't show jsmath info box, aready visible in parent window
-				sb.append("<style type='text/css'>#jsMath_button {display:none}</style>");			
+				sb.appendJsMath();		
 			}			
 		}
 
@@ -520,6 +529,76 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			return Charset.isSupported(enc);
 		} catch (IllegalCharsetNameException e) {
 			return false;
+		}
+	}
+	
+	private static class HtmlOutput extends StringOutput {
+		private boolean ooCssLoaded = false;
+		private boolean jqueryLoaded = false;
+
+		private final String docType;
+		private final String themeBaseUri;
+		
+		public HtmlOutput(String docType, String themeBaseUri, int length) {
+			super(length);
+			this.docType = docType;
+			this.themeBaseUri = themeBaseUri;
+		}
+		
+		private void appendOpenolatCss() {
+			if(ooCssLoaded) return;
+			
+			append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" type=\"text/css\" ");
+			if (docType != null && docType.indexOf("XHTML") > 0) append("/"); // close tag only when xhtml to validate
+			append(">\n");
+			ooCssLoaded = true;
+		}
+		
+		public void appendJQuery() {
+			if(jqueryLoaded) return;
+			
+			appendStaticJs("js/jquery/jquery-1.9.1.min.js");
+			appendStaticJs("js/jshashtable-2.1_src.js");
+			appendStaticJs("js/jquery/ui/jquery-ui-1.10.2.custom.min.js");
+		  appendStaticCss("js/jquery/ui/jquery-ui-1.10.2.custom.min.css");
+		  jqueryLoaded = true;
+		}
+
+		public void appendPrototype() {
+			appendStaticJs("js/prototype/prototype.js");
+		}
+		
+		public void appendJsMath() {
+			append("\n<script type=\"text/javascript\" src=\"");
+			StaticMediaDispatcher.renderStaticURI(this, "js/jsMath/easy/load.js");
+			append("\"></script>");			
+			// don't show jsmath info box, aready visible in parent window
+			append("<style type='text/css'>#jsMath_button {display:none}</style>");	
+		}
+		
+		public void appendGlossary() {
+			appendStaticJs("js/openolat/glossaryhighlighter.js");
+			appendStaticJs("js/openolat/glossaryhighlighter.css");
+		}
+
+		public void appendStaticJs(String javascript) {
+			append("<script type=\"text/javascript\" src=\"");
+			StaticMediaDispatcher.renderStaticURI(this, javascript);
+			append("\"></script>\n");
+		}
+		
+		public void appendStaticCss(String css) {
+			append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"textmarkercss\" href=\"");
+		  StaticMediaDispatcher.renderStaticURI(this, css);
+		  append("\"");
+			if (docType != null && docType.indexOf("XHTML") > 0) append("/"); // close tag only when xhtml to validate
+			append(">\n");
+		}
+		
+		public void appendCss(String css) {
+			append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"textmarkercss\" href=\"").append(css).append("\"");
+			if (docType != null && docType.indexOf("XHTML") > 0) append("/"); // close tag only when xhtml to validate
+			append(">\n");
 		}
 	}
 	

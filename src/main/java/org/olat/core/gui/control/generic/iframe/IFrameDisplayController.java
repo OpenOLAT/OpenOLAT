@@ -71,7 +71,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	private Panel newUriEventPanel;
 	private Panel main;
 	private IFrameDeliveryMapper contentMapper;
-
+	private DeliveryOptions deliveryOptions;
 	/**
 	 * Base URI of contentMapper
 	 */
@@ -92,7 +92,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param fileRoot File that points to the root directory of the resource 
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot) {
-		this(ureq, wControl, new LocalFolderImpl(fileRoot), null);
+		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, null);
 	}
 	
 	/**
@@ -103,7 +103,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot, OLATResourceable ores) {
-		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, ores);
+		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, ores, null);
 	}
 	/**
 	 * 
@@ -112,7 +112,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param rootDir VFSItem that points to the root folder of the resource
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir) {
-		this(ureq, wControl, rootDir, null, null);
+		this(ureq, wControl, rootDir, null, null, null);
 	}
 	/**
 	 * 
@@ -121,8 +121,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param rootDir
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
-	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, OLATResourceable ores) {
-		this(ureq, wControl, rootDir, null, ores);
+	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, OLATResourceable ores, DeliveryOptions deliveryOptions) {
+		this(ureq, wControl, rootDir, null, ores, deliveryOptions);
 	}
 	/**
 	 * 
@@ -132,7 +132,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param frameId if you need access to the iframe html id, provide it here
 	 * @param enableTextmarking to enable textmakring of the content in the iframe enable it here
 	 */
-	public IFrameDisplayController(final UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String frameId, OLATResourceable contextRecourcable) {
+	public IFrameDisplayController(final UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String frameId,
+			OLATResourceable contextRecourcable, DeliveryOptions options) {
 		super(ureq, wControl);
 		
 		//register this object for textMarking on/off events
@@ -140,6 +141,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		if (contextRecourcable != null) {
 			ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), contextRecourcable);
 		}
+		this.deliveryOptions = options;
 		
 		boolean  enableTextmarking = TextMarkerManagerImpl.getInstance().isTextmarkingEnabled(ureq, contextRecourcable);
 		// Set correct user content theme
@@ -157,6 +159,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, adjusteightAutomatically,
 				null /*g_encoding*/, null /*jsEncoding*/, null /*contentEncoding*/,
 				frameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
+		contentMapper.setDeliveryOptions(options);
 
 		String mapperID = VFSManager.getRealPath(rootDir);
 		if (mapperID == null) {
@@ -243,6 +246,15 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	
 	public void setJSEncoding(String encoding) {
 		contentMapper.setJsEncoding(encoding);
+	}
+	
+	public DeliveryOptions getDeliveryOptions() {
+		return deliveryOptions;
+	}
+	
+	public void setDeliveryOptions(DeliveryOptions config) {
+		deliveryOptions = config;
+		contentMapper.setDeliveryOptions(config);
 	}
 
 	/**

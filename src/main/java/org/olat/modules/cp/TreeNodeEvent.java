@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 
 public class TreeNodeEvent extends Event {
 
+	private static final long serialVersionUID = 4036674652971556138L;
 	private final TreeNode chosenTreeNode;
 
 	TreeNodeEvent(TreeNode chosenTreeNode) {

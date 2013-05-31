@@ -45,6 +45,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
 import org.olat.core.gui.media.RedirectMediaResource;
@@ -87,6 +88,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	
 	// mapper for the external site
 	private String amapPath;
+	private DeliveryOptions deliveryOptions;
 	private IFrameDisplayController idc;
 	
 	private String g_curURI;
@@ -116,9 +118,10 @@ public class SinglePageController extends BasicController implements CloneableCo
 	 * @param allowRelativeLinks
 	 * @param showHomeLink
 	 */
-	public SinglePageController(UserRequest ureq, WindowControl wControl, final VFSContainer rootContainer, final String fileName, String currentUri, boolean allowRelativeLinks) {
+	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName, String currentUri,
+			boolean allowRelativeLinks) {
 		//default behavior is to show the home link in a single page
-		this(ureq, wControl, rootContainer, fileName, currentUri, allowRelativeLinks, null);
+		this(ureq, wControl, rootContainer, fileName, currentUri, allowRelativeLinks, null, null);
 	}
 
 	 /**
@@ -142,7 +145,8 @@ public class SinglePageController extends BasicController implements CloneableCo
 	  * 
 	  * 
 	  */
-	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName, String currentUri, boolean allowRelativeLinks, OLATResourceable contextResourcable) {
+	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName, String currentUri,
+			boolean allowRelativeLinks, OLATResourceable contextResourcable, DeliveryOptions config) {
 		super(ureq, wControl);
 		
 		Panel mainP = new Panel("iframemain");
@@ -151,6 +155,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 		// remember values in case of later cloning
 		// g_fileName : initial file name given (no root correction), e.g. bla.html or f/g/blu.html
 		// always use non-iframe mode for screenreaders
+		this.deliveryOptions = config;
 		this.g_inIframe = !getWindowControl().getWindowBackOffice().getWindowManager().isForScreenReader();
 		this.g_allowRelativeLinks = allowRelativeLinks;
 		this.g_fileName = fileName;
@@ -206,7 +211,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 		// b) page is a direct jump in (unclear why not in this case, code was like that)
 		// c) when page type can not be inline rendered (e.g. when page is a pdf file)
 		if (g_inIframe || jumpIn || !HtmlStaticPageComponent.isFileTypeSupported(startURI)) {
-			idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer, contextResourcable);
+			idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer, contextResourcable, deliveryOptions);
 			listenTo(idc);
 			
 			idc.setCurrentURI(startURI);
@@ -392,7 +397,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	 * @see org.olat.core.gui.control.generic.clone.CloneableController#cloneController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public Controller cloneController(UserRequest ureq, WindowControl control) {
-		return new SinglePageController(ureq, control, g_rootContainer, g_fileName, g_curURI, g_allowRelativeLinks, null);
+		return new SinglePageController(ureq, control, g_rootContainer, g_fileName, g_curURI, g_allowRelativeLinks, null, deliveryOptions);
 	}
 
 	/**

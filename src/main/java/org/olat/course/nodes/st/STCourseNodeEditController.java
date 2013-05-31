@@ -41,8 +41,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
@@ -68,6 +69,7 @@ import org.olat.modules.ModuleConfiguration;
 public class STCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	private static final String PANE_TAB_ST_SCORECALCULATION = "pane.tab.st_scorecalculation";
+	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
 	public static final String PANE_TAB_ST_CONFIG = "pane.tab.st_config";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	
@@ -78,6 +80,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 * allowed? *
 	 */
 	public static final String CONFIG_KEY_ALLOW_RELATIVE_LINKS = "allowRelativeLinks";
+	public static final String CONFIG_KEY_DELIVERYOPTIONS = "deliveryOptions";
 	// key to store information on what to display in the run 
 	public static final String CONFIG_KEY_DISPLAY_TYPE = "display";
 	// display a custom file
@@ -108,13 +111,16 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private VFSContainer courseFolderContainer;
 	private String chosenFile;
 	private Boolean allowRelativeLinks;
+	private DeliveryOptions deliveryOptions;
 
 	private Panel fccePanel;
 	private FileChooseCreateEditController fccecontr;
+	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	private ConditionEditController accessibilityCondContr;
 
 	private boolean editorEnabled = false;
 	private UserCourseEnvironment euce;
+	
 	private TabbedPane myTabbedPane;
 	private CourseEditorTreeModel editorModel;
 
@@ -136,15 +142,15 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		this.euce = euce;
 		this.editorModel = editorModel;
 
-		Translator fallback = new PackageTranslator(Util.getPackageName(Condition.class), ureq.getLocale());
-		Translator newTranslator = new PackageTranslator(Util.getPackageName(STCourseNodeEditController.class), ureq.getLocale(), fallback);
+		Translator fallback = Util.createPackageTranslator(Condition.class, getLocale());
+		Translator newTranslator = Util.createPackageTranslator(STCourseNodeEditController.class, getLocale(), fallback);
 		setTranslator(newTranslator);
 				
-		score = this.createVelocityContainer("scoreedit");
+		score = createVelocityContainer("scoreedit");
 		activateEasyModeButton = LinkFactory.createButtonSmall("cmd.activate.easyMode", score, this);
 		activateExpertModeButton = LinkFactory.createButtonSmall("cmd.activate.expertMode", score, this);
 				
-		configvc = this.createVelocityContainer("config");
+		configvc = createVelocityContainer("config");
 
 		// Load configured value for file if available and enable editor when in
 		// file display move, even when no file is selected (this will display the
@@ -153,6 +159,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		editorEnabled = (CONFIG_VALUE_DISPLAY_FILE.equals(stNode.getModuleConfiguration().getStringValue(CONFIG_KEY_DISPLAY_TYPE)));
 		
 		allowRelativeLinks = stNode.getModuleConfiguration().getBooleanSafe(CONFIG_KEY_ALLOW_RELATIVE_LINKS);
+		deliveryOptions = (DeliveryOptions)stNode.getModuleConfiguration().get(CONFIG_KEY_DELIVERYOPTIONS);
 
 		nodeDisplayConfigFormController = new STCourseNodeDisplayConfigFormController(ureq, wControl, stNode.getModuleConfiguration(), editorModel.getCourseEditorNodeById(stNode.getIdent()));
 		listenTo(nodeDisplayConfigFormController);
@@ -162,6 +169,9 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 			configvc.contextPut("editorEnabled", Boolean.valueOf(editorEnabled));
 			addStartEditorToView(ureq);
 		}
+		
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions);
+		listenTo(deliveryOptionsCtrl);
 
 		// Find assessable children nodes
 		assessableChildren = AssessmentHelper.getAssessableNodes(editorModel, stNode);
@@ -170,7 +180,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		Condition accessCondition = stNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition, "accessabilityConditionForm",
 				assessableChildren, euce);		
-		this.listenTo(accessibilityCondContr);
+		listenTo(accessibilityCondContr);
 
 		ScoreCalculator scoreCalc = stNode.getScoreCalculator();
 		if (scoreCalc != null) {
@@ -280,7 +290,10 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 			allowRelativeLinks = fccecontr.getAllowRelativeLinks();
 			stNode.getModuleConfiguration().setBooleanEntry(CONFIG_KEY_ALLOW_RELATIVE_LINKS, allowRelativeLinks.booleanValue());
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			
+		} else if (source == deliveryOptionsCtrl) {
+			deliveryOptions = deliveryOptionsCtrl.getDeliveryOptions();
+			stNode.getModuleConfiguration().set(CONFIG_KEY_DELIVERYOPTIONS, deliveryOptions);
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		} else if (source == nodeDisplayConfigFormController) {
 			if (event == Event.DONE_EVENT) {
 				// update the module configuration
@@ -299,6 +312,9 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 					//fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 					// Let other config values from old config setup remain in config,
 					// maybe used when user switches back to other config (OLAT-5610)
+					if(myTabbedPane.containsTab(deliveryOptionsCtrl.getInitialComponent())) {
+						myTabbedPane.removeTab(deliveryOptionsCtrl.getInitialComponent());
+					}
 				}
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
@@ -355,13 +371,19 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 
 	private void addStartEditorToView(UserRequest ureq) {
-		this.fccecontr = new LinkChooseCreateEditController(ureq, getWindowControl(), chosenFile, allowRelativeLinks, courseFolderContainer, new CourseInternalLinkTreeModel(editorModel) );		
-		this.listenTo(fccecontr);
+		fccecontr = new LinkChooseCreateEditController(ureq, getWindowControl(), chosenFile, allowRelativeLinks, courseFolderContainer, new CourseInternalLinkTreeModel(editorModel) );		
+		listenTo(fccecontr);
 
 		fccePanel = new Panel("filechoosecreateedit");
 		Component fcContent = fccecontr.getInitialComponent();
 		fccePanel.setContent(fcContent);
 		configvc.put(fccePanel.getComponentName(), fccePanel);
+		
+		if(myTabbedPane != null) {
+			if(!myTabbedPane.containsTab(deliveryOptionsCtrl.getInitialComponent())) {
+				myTabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
+			}
+		}
 	}
 
 	/**
@@ -372,6 +394,9 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_ST_CONFIG), configvc);
 		tabbedPane.addTab(translate(PANE_TAB_ST_SCORECALCULATION), score);
+		if(editorEnabled) {
+			tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
+		}
 	}
 
 	/**

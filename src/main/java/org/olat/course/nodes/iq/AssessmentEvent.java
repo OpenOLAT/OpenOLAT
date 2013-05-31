@@ -46,7 +46,9 @@ import org.olat.instantMessaging.InstantMessagingService;
  * @author Lavinia Dumitrescu
  */
 public class AssessmentEvent extends MultiUserEvent {
-	
+
+	private static final long serialVersionUID = -4619743031390573124L;
+
 	public static enum TYPE {STARTED, STOPPED}
 	
 	private TYPE eventType = TYPE.STARTED;

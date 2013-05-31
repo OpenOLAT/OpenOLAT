@@ -334,7 +334,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			allowRelativeLinks=Boolean.FALSE;
 		}
 		fccecontr = new LinkChooseCreateEditController(ureq, wControl, disclaimer, allowRelativeLinks, course.getCourseFolderContainer(), type, legend, new CourseInternalLinkTreeModel(course.getEditorTreeModel()) );		
-		this.listenTo(fccecontr);
+		listenTo(fccecontr);
 		
 		Component fcContent = fccecontr.getInitialComponent();
 		myContent.put("filechoosecreateedit", fcContent);

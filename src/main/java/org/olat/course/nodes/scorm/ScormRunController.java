@@ -40,6 +40,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.event.GenericEventListener;
@@ -58,6 +59,7 @@ import org.olat.modules.scorm.ScormAPIandDisplayController;
 import org.olat.modules.scorm.ScormCPManifestTreeModel;
 import org.olat.modules.scorm.ScormConstants;
 import org.olat.modules.scorm.ScormMainManager;
+import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -300,22 +302,16 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// configure some display options
 		boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
 		scormDispC.showNavButtons(showNavButtons);
-		boolean rawContent = config.getBooleanSafe(ScormEditController.CONFIG_RAW_CONTENT, true);
-		scormDispC.setRawContent(rawContent);
-		String height = (String) config.get(ScormEditController.CONFIG_HEIGHT);
-		if (!height.equals(ScormEditController.CONFIG_HEIGHT_AUTO)) {
-			scormDispC.setHeightPX(Integer.parseInt(height));
-		} else if(config.getBooleanSafe(ScormEditController.CONFIG_RAW_CONTENT, true)) {
-			//height auto but raw content set -> set default
+		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(ScormEditController.CONFIG_DELIVERY_OPTIONS);
+		if(deliveryOptions != null && deliveryOptions.getInherit() != null && deliveryOptions.getInherit().booleanValue()) {
+			ScormPackageConfig pConfig = ScormMainManager.getInstance().getScormPackageConfig(cpRoot);
+			deliveryOptions = (pConfig == null ? null : pConfig.getDeliveryOptions());
+		}
+		
+		if(deliveryOptions == null) {
 			scormDispC.setHeightPX(680);
-		}
-		String contentEncoding = (String) config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
-		if (!contentEncoding.equals(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO)) {
-			scormDispC.setContentEncoding(contentEncoding);
-		}
-		String jsEncoding = (String) config.get(NodeEditController.CONFIG_JS_ENCODING);
-		if (!jsEncoding.equals(NodeEditController.CONFIG_JS_ENCODING_AUTO)) {
-			scormDispC.setJSEncoding(jsEncoding);
+		} else {
+			scormDispC.setDeliveryOptions(deliveryOptions);
 		}
 		listenTo(scormDispC);
 		// the scormDispC activates itself

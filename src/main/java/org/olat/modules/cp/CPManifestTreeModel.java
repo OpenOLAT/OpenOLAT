@@ -53,6 +53,7 @@ import org.olat.ims.resources.IMSEntityResolver;
 */
 public class CPManifestTreeModel extends GenericTreeModel {
 
+	private static final long serialVersionUID = 9216107936843069562L;
 	private Element rootElement;
 	private final Map<String,String>	nsuris = new HashMap<String,String>(2);
 	private final Map<String,TreeNode> hrefToTreeNode = new HashMap<String,TreeNode>();
@@ -80,10 +81,11 @@ public class CPManifestTreeModel extends GenericTreeModel {
 		Element elResources = (Element) metares.selectSingleNode(rootElement);
 		if (elResources == null) throw new AssertException("could not find element resources");
 		
-		List resourcesList = elResources.elements("resource");
+		@SuppressWarnings("unchecked")
+		List<Element> resourcesList = elResources.elements("resource");
 		resources = new HashMap<String,String>(resourcesList.size());
-		for (Iterator iter = resourcesList.iterator(); iter.hasNext();) {
-			Element elRes = (Element) iter.next();
+		for (Iterator<Element> iter = resourcesList.iterator(); iter.hasNext();) {
+			Element elRes = iter.next();
 			String identVal = elRes.attributeValue("identifier");
 			String hrefVal = elRes.attributeValue("href");
 			if (hrefVal != null) { // href is optional element for resource element
@@ -172,10 +174,11 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			else gtn.setAccessible(false);
 		}
 		
-		List chds = item.elements("item");
+		@SuppressWarnings("unchecked")
+		List<Element> chds = item.elements("item");
 		int childcnt = chds.size();
 		for (int i = 0; i < childcnt; i++) {
-			Element childitem = (Element) chds.get(i);
+			Element childitem = chds.get(i);
 			GenericTreeNode gtnchild = buildNode(childitem);
 			gtn.addChild(gtnchild);
 		}

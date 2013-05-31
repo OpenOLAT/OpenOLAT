@@ -34,6 +34,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.cp.objects.CPOrganization;
 import org.olat.ims.cp.objects.CPResource;
+import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.ims.cp.ui.CPPage;
 
 /**
@@ -52,6 +53,11 @@ public abstract class CPManager extends BasicManager {
 	public static CPManager getInstance() {
 		return INSTANCE;
 	}
+	
+	public abstract CPPackageConfig getCPPackageConfig(OLATResourceable ores);
+	
+	
+	public abstract void setCPPackageConfig(OLATResourceable ores, CPPackageConfig config);
 
 	/**
 	 * Generates a new Instance of ContentPackage and loads the xmlmanifest

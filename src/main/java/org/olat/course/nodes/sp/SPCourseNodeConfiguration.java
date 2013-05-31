@@ -25,10 +25,8 @@
 
 package org.olat.course.nodes.sp;
 
-import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
@@ -76,36 +74,4 @@ public class SPCourseNodeConfiguration extends AbstractCourseNodeConfiguration i
 	public String getAlias() {
 		return "sp";
 	}
-
-	//
-	// OLATExtension interface implementations.
-	//
-
-	public String getName() {
-		return getAlias();
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionResources()
-	 */
-	public List getExtensionResources() {
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionCSS()
-	 */
-	public ExtensionResource getExtensionCSS() {
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#setURLBuilder(org.olat.core.gui.render.URLBuilder)
-	 */
-	public void setExtensionResourcesBaseURI(String ubi) {
-	// no need for the URLBuilder
-	}
-
 }

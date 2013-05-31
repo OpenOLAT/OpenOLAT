@@ -33,6 +33,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -65,6 +66,7 @@ public class SPPeekviewController extends BasicController {
 		super(ureq, wControl);
 		// just display the page
 		String file = config.getStringValue(SPEditController.CONFIG_KEY_FILE);
+		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 		Component resPanel = new Panel("empty"); // empty panel to use if no file could be found
 		if (file != null) {
 			String fileLC = file.toLowerCase();
@@ -72,8 +74,8 @@ public class SPPeekviewController extends BasicController {
 				// Render normal view but scaled down to 75%
 				SinglePageController spController =  new SinglePageController(ureq, wControl, 
 						userCourseEnv.getCourseEnvironment().getCourseFolderContainer(), 
-						file, null, 
-						config.getBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS), ores);		
+						file, null, config.getBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS),
+						ores, deliveryOptions);		
 				// but add scaling to fit preview into minimized space
 				spController.setScaleFactorAndHeight(0.75f, 400, true);
 				listenTo(spController);

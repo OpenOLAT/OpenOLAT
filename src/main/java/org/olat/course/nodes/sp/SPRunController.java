@@ -25,8 +25,6 @@
 
 package org.olat.course.nodes.sp;
 
-import java.util.Map;
-
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -44,12 +42,12 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.clone.CloneController;
 import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallback;
 import org.olat.core.gui.control.generic.clone.CloneableController;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
-import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
@@ -73,8 +71,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  */
 public class SPRunController extends BasicController {
-	
-	private static final String KEY_CURRENT_URI = "cururi";
 	
 	private SPCourseNode courseNode;
 	private Panel main;
@@ -160,12 +156,15 @@ public class SPRunController extends BasicController {
 		Boolean allowRelativeLinks = config.getBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS);
 		// create the possibility to float
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName, null, allowRelativeLinks.booleanValue(), ores);
+
+		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
+		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName, null,
+				allowRelativeLinks.booleanValue(), ores, deliveryOptions);
 		spCtr.setAllowDownload(true);
 		
 		// only for inline integration: register for controller event to forward a olatcmd to the course,
 		// and also to remember latest position in the script		
-		this.listenTo(spCtr);
+		listenTo(spCtr);
 		// enable edit mode if user has the according rights
 		if (hasEditRightsTo) {
 			spCtr.allowPageEditing();

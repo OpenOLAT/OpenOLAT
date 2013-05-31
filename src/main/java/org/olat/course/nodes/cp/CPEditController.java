@@ -26,10 +26,6 @@
 package org.olat.course.nodes.cp;
 
 import java.io.File;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -37,7 +33,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -50,6 +45,8 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
@@ -64,6 +61,8 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
+import org.olat.ims.cp.CPManager;
+import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.cp.CPUIFactory;
 import org.olat.repository.RepositoryEntry;
@@ -81,10 +80,12 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 
 	public static final String PANE_TAB_CPCONFIG = "pane.tab.cpconfig";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
+	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
 	private static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
 	private static final String VC_CHOSENCP = "chosencp";
 	//fxdiff VCRP-13: cp navigation
 	public static final String CONFIG_SHOWNAVBUTTONS = "shownavbuttons";
+	public static final String CONFIG_DELIVERYOPTIONS = "deliveryOptions";
   
 	// NLS support:	
 	private static final String NLS_ERROR_CPREPOENTRYMISSING = "error.cprepoentrymissing";
@@ -99,6 +100,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	
 	private ModuleConfiguration config;
 	private ReferencableEntriesSearchController searchController;
+	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	
 	private ConditionEditController accessibilityCondContr;
 	private CPCourseNode cpNode;
@@ -137,12 +139,13 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		changeCPButton = LinkFactory.createButtonSmall(NLS_COMMAND_CHANGECP, cpConfigurationVc, this);
 		changeCPButton.setElementCssClass("o_sel_cp_change_repofile");
 		
+		DeliveryOptions parentConfig = null;
 		if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
 			// fetch repository entry to display the repository entry title of the chosen cp
 			RepositoryEntry re = getCPReference(config, false);
 			if (re == null) { // we cannot display the entries name, because the
 				// repository entry had been deleted between the time when it was chosen here, and now				
-				this.showError(NLS_ERROR_CPREPOENTRYMISSING);
+				showError(NLS_ERROR_CPREPOENTRYMISSING);
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
 				cpConfigurationVc.contextPut(VC_CHOSENCP, translate("no.cp.chosen"));
 			} else {
@@ -153,6 +156,9 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, cpConfigurationVc, this);
 				previewLink.setCustomEnabledLinkCSS("b_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
+				
+				CPPackageConfig cpConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());
+				parentConfig = (cpConfig == null ? null : cpConfig.getDeliveryOptions());
 			}
 		} else {
 			// no valid config yet
@@ -175,6 +181,10 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager(),
 				accessCondition, "accessabilityConditionForm", AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), cpNode), euce);		
 		listenTo(accessibilityCondContr);
+
+		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CPEditController.CONFIG_DELIVERYOPTIONS);
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, parentConfig);
+		listenTo(deliveryOptionsCtrl);
 
 		main.setContent(cpConfigurationVc);
 	}
@@ -209,7 +219,9 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				// pre: showMenuB != null
 				removeAsListenerAndDispose(previewCtr);
 				
-				previewCtr = CPUIFactory.getInstance().createMainLayoutPreviewController_v2(ureq, getWindowControl(), new LocalFolderImpl(cpRoot), showMenuB.booleanValue());
+				DeliveryOptions previewOptions = deliveryOptionsCtrl.getOptionsForPreview();
+				previewCtr = CPUIFactory.getInstance().createMainLayoutPreviewController_v2(ureq, getWindowControl(), new LocalFolderImpl(cpRoot),
+						showMenuB.booleanValue(), previewOptions);
 				stackPanel.pushController(translate("preview.cp"), previewCtr);
 			}
 		} else if (source == editLink) {
@@ -244,6 +256,11 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 					}
 					// fire event so the updated config is saved by the editormaincontroller
 					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+					
+					CPPackageConfig cpConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());
+					if(cpConfig != null && cpConfig.getDeliveryOptions() != null) {
+						deliveryOptionsCtrl.setParentDeliveryOptions(cpConfig.getDeliveryOptions());
+					}
 				}
 			}
 			// else cancelled repo search
@@ -258,9 +275,11 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				config.setBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU, cpMenuForm.isCpMenu());
 				//fxdiff VCRP-13: cp navigation
 				config.setBooleanEntry(CPEditController.CONFIG_SHOWNAVBUTTONS, cpMenuForm.isCpNavButtons());
-				config.set(NodeEditController.CONFIG_CONTENT_ENCODING, cpMenuForm.getContentEncoding());
-				config.set(NodeEditController.CONFIG_JS_ENCODING, cpMenuForm.getJSEncoding());
-				
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else if (source == deliveryOptionsCtrl) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				config.set(CPEditController.CONFIG_DELIVERYOPTIONS, deliveryOptionsCtrl.getDeliveryOptions());
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}
@@ -285,6 +304,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(NLS_CONDITION_ACCESSIBILITY_TITLE)));
 		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), main);
+		tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
 	}
 
 	/**
@@ -369,73 +389,27 @@ class CompMenuForm extends FormBasicController {
 
 	// NLS support:
 	private static final String NLS_DISPLAY_CONFIG_COMPMENU = "display.config.compMenu";
-	//fxdiff VCRP-13: cp navigation
 	private static final String NLS_DISPLAY_CONFIG_COMP_NEXT_PREVIOUS = "display.config.compNextPrevious";
 
 	private SelectionElement cpMenu;
-	//fxdiff VCRP-13: cp navigation
 	private SelectionElement cpNavButtons;
-	private SingleSelection encodingContentEl;
-	private SingleSelection encodingJSEl;
-	
+
 	private boolean compMenuConfig;
-	//fxdiff VCRP-13: cp navigation
 	private boolean compNavButtonsConfig;
-	private String contentEncoding;
-	private String jsEncoding;
-	
-	private String[] encodingContentKeys, encodingContentValues;
-	private String[] encodingJSKeys, encodingJSValues;
+
 	
 	CompMenuForm(UserRequest ureq, WindowControl wControl, Boolean compMenuConfig, Boolean compNavButtons, String contentEncoding, String jsEncoding) {
 		super(ureq, wControl);
-		this.compMenuConfig = compMenuConfig == null ? true:compMenuConfig.booleanValue();
+		compMenuConfig = compMenuConfig == null ? true:compMenuConfig.booleanValue();
 		//fxdiff VCRP-13: cp navigation
-		this.compNavButtonsConfig = compNavButtons == null ? true:compNavButtons.booleanValue();
-		this.contentEncoding = contentEncoding;
-		this.jsEncoding = jsEncoding;
-		
-		Map<String,Charset> charsets = Charset.availableCharsets();
-		int numOfCharsets = charsets.size() + 1;
-		
-		encodingContentKeys = new String[numOfCharsets];
-		encodingContentKeys[0] = NodeEditController.CONFIG_CONTENT_ENCODING_AUTO;
-
-		encodingContentValues = new String[numOfCharsets];
-		encodingContentValues[0] = translate("encoding.auto");
-		
-		encodingJSKeys = new String[numOfCharsets];
-		encodingJSKeys[0] = NodeEditController.CONFIG_JS_ENCODING_AUTO;
-
-		encodingJSValues = new String[numOfCharsets];
-		encodingJSValues[0] =	translate("encoding.same");
-
-		int count = 1;
-		Locale locale = ureq.getLocale();
-		for(Map.Entry<String, Charset> charset:charsets.entrySet()) {
-			encodingContentKeys[count] = charset.getKey();
-			encodingContentValues[count] = charset.getValue().displayName(locale);
-			encodingJSKeys[count] = charset.getKey();
-			encodingJSValues[count] = charset.getValue().displayName(locale);
-			count++;
-		}
-		
+		compNavButtonsConfig = compNavButtons == null ? true:compNavButtons.booleanValue();
 		initForm(ureq);
-	}
-	
-	public Object getJSEncoding() {
-		return encodingJSEl.getSelectedKey();
-	}
-
-	public Object getContentEncoding() {
-		return encodingContentEl.getSelectedKey();
 	}
 
 	public boolean isCpMenu() {
 		return cpMenu.isSelected(0);
 	}
 	
-	//fxdiff VCRP-13: cp navigation
 	public boolean isCpNavButtons() {
 		return cpNavButtons.isSelected(0);
 	}
@@ -450,23 +424,8 @@ class CompMenuForm extends FormBasicController {
 		cpMenu = uifactory.addCheckboxesVertical("cpMenu", NLS_DISPLAY_CONFIG_COMPMENU, formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		cpMenu.select("xx",compMenuConfig);
 		
-		//fxdiff VCRP-13: cp navigation
 		cpNavButtons = uifactory.addCheckboxesVertical("cpNextPrevious", NLS_DISPLAY_CONFIG_COMP_NEXT_PREVIOUS, formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		cpNavButtons.select("xx",compNavButtonsConfig);
-		
-		encodingContentEl = uifactory.addDropdownSingleselect("encoContent", "encoding.content", formLayout, encodingContentKeys, encodingContentValues, null);
-		if (Arrays.asList(encodingContentKeys).contains(contentEncoding)) {
-			encodingContentEl.select(contentEncoding, true);
-		} else {
-			encodingContentEl.select(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO, true);
-		}
-		
-		encodingJSEl = uifactory.addDropdownSingleselect("encoJS", "encoding.js", formLayout, encodingJSKeys, encodingJSValues, null);
-		if (Arrays.asList(encodingJSKeys).contains(jsEncoding)) {
-			encodingJSEl.select(jsEncoding, true);
-		} else {
-			encodingJSEl.select(NodeEditController.CONFIG_JS_ENCODING_AUTO, true);
-		}
 		
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
