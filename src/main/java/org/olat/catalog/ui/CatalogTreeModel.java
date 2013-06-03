@@ -40,6 +40,7 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
  */
 public class CatalogTreeModel extends GenericTreeModel {
 
+	private static final long serialVersionUID = 2893877155919419400L;
 	private Map<Long, GenericTreeNode> entryMap = new HashMap<Long, GenericTreeNode>();
 	private CatalogEntry entryToMove;
 	private List<CatalogEntry> ownedEntries;
@@ -83,24 +84,26 @@ public class CatalogTreeModel extends GenericTreeModel {
 	 */
 	private GenericTreeNode buildTree(List<CatalogEntry> entryList) {
 		GenericTreeNode rootNode = null;
-
-		if (entryList == null || entryList.size() < 1) {
-			rootNode = new GenericTreeNode("keine Node :(", null);
-		}
 		// build the tree - note that the entry list is not ordered in any way
-		for (int cnt = 0; cnt < entryList.size(); cnt++) {
-			CatalogEntry elem = entryList.get(cnt);
-			// create a tree node and add it to the entry map
-			GenericTreeNode n = addNode(elem);
-			if (n != null) {
-				// a node was created, keep it as a potential root node candidate
-				rootNode = addNode(elem);
+		if(entryList != null) {	
+			for (CatalogEntry elem :entryList) {
+				// create a tree node and add it to the entry map
+				GenericTreeNode n = addNode(elem);
+				if (n != null) {
+					// a node was created, keep it as a potential root node candidate
+					rootNode = addNode(elem);
+				}
 			}
 		}
 
 		// walk to the final root node of the tree
-		while (rootNode.getParent() != null) {
+		while (rootNode != null && rootNode.getParent() != null) {
 			rootNode = (GenericTreeNode) rootNode.getParent();
+		}
+		
+		//we always need a root 
+		if(rootNode == null) {
+			rootNode = new GenericTreeNode("keine Node :(", null);
 		}
 
 		calculateAccessibility(rootNode);
