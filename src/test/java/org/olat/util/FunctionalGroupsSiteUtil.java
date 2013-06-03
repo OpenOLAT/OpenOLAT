@@ -147,6 +147,7 @@ public class FunctionalGroupsSiteUtil {
 		CALENDAR,
 		FOLDER,
 		FORUM,
+		CHAT,
 		WIKI,
 		EPORTFOLIO;
 	}
@@ -158,6 +159,7 @@ public class FunctionalGroupsSiteUtil {
 		EMAIL("o_co_icon"),
 		FOLDER("o_bc_icon"),
 		FORUM("o_fo_icon"),
+		CHAT("o_chat_icon"),
 		WIKI("o_wiki_icon"),
 		PORTFOLIO("o_ep_icon"),
 		ADMINISTRATION("o_admin_icon"),
@@ -522,6 +524,11 @@ public class FunctionalGroupsSiteUtil {
 			action = GroupsTabAction.FORUM;
 		}
 		break;
+		case CHAT:
+		{
+			action = GroupsTabAction.CHAT;
+		}
+		break;
 		case WIKI:
 		{
 			action = GroupsTabAction.WIKI;
@@ -587,30 +594,42 @@ public class FunctionalGroupsSiteUtil {
 		
 		if(ArrayUtils.contains(tools, GroupTools.INFORMATION)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.INFORMATION.ordinal()));
+			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.EMAIL)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.EMAIL.ordinal()));
+			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.CALENDAR)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.CALENDAR.ordinal()));
+			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.FOLDER)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.FOLDER.ordinal()));
+			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.FORUM)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.FORUM.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		if(ArrayUtils.contains(tools, GroupTools.CHAT)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.CHAT.ordinal()));
+			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.WIKI)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.WIKI.ordinal()));
+			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.EPORTFOLIO)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.EPORTFOLIO.ordinal()));
+			functionalUtil.idle(browser);
 		}
 		
 		return(true);

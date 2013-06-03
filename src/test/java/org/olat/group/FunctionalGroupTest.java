@@ -165,6 +165,7 @@ public class FunctionalGroupTest {
 				GroupTools.CALENDAR,
 				GroupTools.FOLDER,
 				GroupTools.FORUM,
+				GroupTools.CHAT,
 				GroupTools.WIKI,
 				GroupTools.EPORTFOLIO
 			};
