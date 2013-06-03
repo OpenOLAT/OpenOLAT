@@ -270,8 +270,8 @@ public class EPMapRunController extends BasicController implements Activateable2
 		createMapCtrl = new EPCreateMapController(ureq, getWindowControl());
 		listenTo(createMapCtrl);
 		createMapBox = new CloseableModalController(getWindowControl(), title, createMapCtrl.getInitialComponent());
+		createMapBox.setCustomWindowCSS("o_sel_add_map_window");
 		listenTo(createMapBox);
-		//createMapBox.setInitialWindowSize(750, 300);
 		createMapBox.activate();
 	}
 	
@@ -283,8 +283,8 @@ public class EPMapRunController extends BasicController implements Activateable2
 				new String[]{EPTemplateMapResource.TYPE_NAME}, commandLabel, false, false, false, false, false);			
 		listenTo(searchTemplateCtrl);
 		createMapBox = new CloseableModalController(getWindowControl(), title, searchTemplateCtrl.getInitialComponent());
+		createMapBox.setCustomWindowCSS("o_sel_add_map_template_window");
 		listenTo(createMapBox);
-		//createMapBox.setInitialWindowSize(800, 600);
 		createMapBox.activate();
 	}
 	
