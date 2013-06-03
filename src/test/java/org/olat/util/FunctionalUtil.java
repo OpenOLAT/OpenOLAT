@@ -47,14 +47,14 @@ public class FunctionalUtil {
 	public final static String LOGIN_PAGE = "dmz";
 	public final static String ACKNOWLEDGE_CHECKBOX = "acknowledge_checkbox";
 
-	public final static long TIMEOUT = 60000;
-	public final static long POLL_INTERVAL = 100;
+	public final static long TIMEOUT = 20000;
+	public final static long POLL_INTERVAL = 200;
 	
 	public enum WaitLimitAttribute {
 		NORMAL("10000"),
-		EXTENDED("20000"),
-		SAVE("30000"),
-		VERY_SAVE("60000");
+		EXTENDED("15000"),
+		SAVE("20000"),
+		VERY_SAVE("30000");
 		
 		private String extend;
 		private long extendAsLong;

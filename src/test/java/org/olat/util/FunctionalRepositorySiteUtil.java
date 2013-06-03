@@ -1122,7 +1122,7 @@ public class FunctionalRepositorySiteUtil {
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getRepositoryPopupCss())
-		.append("')]//form//input[@type='text']");
+		.append("')]//input[@type='text']");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), title);
@@ -1135,7 +1135,7 @@ public class FunctionalRepositorySiteUtil {
 		
 		selectorBuffer.append("xpath=(//div[contains(@class, '")
 		.append(getRepositoryPopupCss())
-		.append("')]//form//div[contains(@class, '")
+		.append("')]//div[contains(@class, '")
 		.append(getRepositorySaveDetailsCss())
 		.append("')]//button[contains(@class, '")
 		.append(functionalUtil.getButtonDirtyCss())
