@@ -571,10 +571,20 @@ public class FunctionalHomeSiteUtil {
 				.append("']//a");
 
 				browser.click(actionSelectorBuffer.toString());
+				
+				if(browser.isConfirmationPresent()){
+					browser.getConfirmation();
+				}
+				
 				functionalUtil.waitForPageToLoad(browser);
 			}
 
 			browser.click(selectorBuffer.toString());
+			
+			if(browser.isConfirmationPresent()){
+				browser.getConfirmation();
+			}
+			
 			functionalUtil.waitForPageToLoad(browser);
 			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		}

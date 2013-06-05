@@ -59,7 +59,7 @@ public class FunctionalEPortfolioUtil {
 	public final static String UPLOAD_FILE_ARTEFACT_CSS = "o_sel_add_upload_artfeact";
 	public final static String CREATE_LEARNING_JOURNAL_CSS = "o_sel_add_liveblog_artfeact";
 	
-	public final static String ADD_BINDER_BOX_ID = "o_addMapBox";
+	public final static String ADD_BINDER_BOX_CSS = "o_sel_add_map_window";
 	public final static String CREATE_BINDER_CSS = "o_sel_create_map";
 	public final static String CREATE_DEFAULT_BINDER_CSS = "o_sel_create_default_map";
 	public final static String CREATE_TEMPLATE_BINDER_CSS = "o_sel_create_template_map";
@@ -130,7 +130,7 @@ public class FunctionalEPortfolioUtil {
 	private String uploadFileArtefactCss;
 	private String createLearningJournalCss;
 	
-	private String addBinderBoxId;
+	private String addBinderBoxCss;
 	private String createBinderCss;
 	private String createDefaultBinderCss;
 	private String createTemplateBinderCss;
@@ -173,7 +173,7 @@ public class FunctionalEPortfolioUtil {
 		setUploadFileArtefactCss(UPLOAD_FILE_ARTEFACT_CSS);
 		setCreateLearningJournalCss(CREATE_LEARNING_JOURNAL_CSS);
 		
-		setAddBinderBoxId(ADD_BINDER_BOX_ID);
+		setAddBinderBoxCss(ADD_BINDER_BOX_CSS);
 		setCreateBinderCss(CREATE_BINDER_CSS);
 		setCreateDefaultBinderCss(CREATE_DEFAULT_BINDER_CSS);
 		setCreateTemplateBinderCss(CREATE_TEMPLATE_BINDER_CSS);
@@ -254,30 +254,31 @@ public class FunctionalEPortfolioUtil {
 	 * @return
 	 */
 	public String createSelector(String binder, String page, String structure){
-		if(binder == null || binder.isEmpty() || page == null || page.isEmpty())
+		if(binder == null || binder.isEmpty())
 			return(null);
 		
+		/*  */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=");
-		selectorBuffer.append("//ul//li//div[contains(@class, 'x-tree-node-expanded')]//a//span[text()='")
+		selectorBuffer.append("//ul//li//div[contains(@class, 'b_tree_item_wrapper')]//a//span[text()='")
 		.append(binder)
-		.append("']/../../..//ul//li");
-		
-		if(structure != null && !structure.isEmpty()){
-			selectorBuffer.append("//div[contains(@class, 'x-tree-node-expanded')]");
-		}
-		
-		selectorBuffer.append("//a//span[text()='")
-		.append(page)
 		.append("']");
 		
-		if(structure != null && !structure.isEmpty()){
-			selectorBuffer.append("/../../..//ul//li//a//span[text()='")
-			.append(structure)
+		if(page != null && !page.isEmpty()){
+			selectorBuffer.append("/../../../../..//ul//li");
+			selectorBuffer.append("//div[contains(@class, 'b_tree_item_wrapper')]//a//span[text()='")
+			.append(page)
 			.append("']");
+			
+			if(structure != null && !structure.isEmpty()){
+				selectorBuffer.append("/../../../../..//ul//li");
+				selectorBuffer.append("//div[contains(@class, 'b_tree_item_wrapper')]//a//span[text()='")
+				.append(structure)
+				.append("']");
+			}
 		}
-		
+
 		selectorBuffer.append("/..");
 		
 		return(selectorBuffer.toString());
@@ -461,9 +462,9 @@ public class FunctionalEPortfolioUtil {
 		
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[@id='")
-		.append(getAddBinderBoxId())
-		.append("']//form//input[@type='text']");
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getAddBinderBoxCss())
+		.append("')]//form//input[@type='text']");
 		
 		browser.type(selectorBuffer.toString(), title);
 		
@@ -474,9 +475,9 @@ public class FunctionalEPortfolioUtil {
 		/* fill in dialog - save */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=(//div[@id='")
-		.append(getAddBinderBoxId())
-		.append("']//form//button)[last()]");
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getAddBinderBoxCss())
+		.append("')]//form//button)[last()]");
 		
 		browser.click(selectorBuffer.toString());
 		
@@ -600,6 +601,10 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
+		if(browser.isConfirmationPresent()){
+			browser.getConfirmation();
+		}
+		
 		functionalUtil.waitForPageToLoad(browser);
 		
 		boolean modified = false;
@@ -678,12 +683,18 @@ public class FunctionalEPortfolioUtil {
 		.append(functionalUtil.getTreeNodeLoadingCss())
 		.append("')]");
 		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+
+		/* select binder */
+		String binderSelector = createSelector(binder, null, null);
+		
+		functionalUtil.waitForPageToLoadElement(browser, binderSelector);
+		browser.click(binderSelector);
 		
 		/* select page */
-		String selector = createSelector(binder, oldName, null);
+		String pageSelector = createSelector(binder, oldName, null);
 		
-		functionalUtil.waitForPageToLoadElement(browser, selector);
-		browser.click(selector);
+		functionalUtil.waitForPageToLoadElement(browser, pageSelector);
+		browser.click(pageSelector);
 		
 		/* rename */
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -724,6 +735,7 @@ public class FunctionalEPortfolioUtil {
 	public boolean structureExists(Selenium browser, String binder, String page, String title){
 		if(!openBinder(browser, binder))
 			return(false);
+		
 		
 		functionalUtil.idle(browser);
 		
@@ -802,36 +814,17 @@ public class FunctionalEPortfolioUtil {
 		/* wait until tree has loaded */
 		functionalUtil.idle(browser);
 		
-		StringBuffer locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=//div[contains(@class, '")
-		.append(functionalUtil.getTreeNodeLoadingCss())
-		.append("')]");
-		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+//		StringBuffer locatorBuffer = new StringBuffer();
+//		
+//		locatorBuffer.append("xpath=//div[contains(@class, '")
+//		.append(functionalUtil.getTreeNodeLoadingCss())
+//		.append("')]");
+//		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
 		
 		/* select page and click create structure */
+		selectTree(browser, binder, page, null);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//a[contains(@class, '")
-		.append("x-tree-node-anchor")
-		.append("')]/span[text()='")
-		.append(page)
-		.append("']/..");
-		
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		
-		browser.click(selectorBuffer.toString());
-		
-		selectorBuffer = new StringBuffer();
-		selectorBuffer.append("xpath=//div[contains(@class, 'x-tree-selected')]//a[contains(@class, '")
-		.append("x-tree-node-anchor")
-		.append("')]/span[text()='")
-		.append(page)
-		.append("']");
-		
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		
-		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getAddLinkCss())
@@ -841,6 +834,10 @@ public class FunctionalEPortfolioUtil {
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
+
+		if(browser.isConfirmationPresent()){
+			browser.getConfirmation();
+		}
 		
 		functionalUtil.waitForPageToLoad(browser);
 		
@@ -851,7 +848,7 @@ public class FunctionalEPortfolioUtil {
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getEPortfolioMapCss())
-		.append("')]//form//input[@type='text']");
+		.append("')]//input[@type='text']");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), title);
@@ -864,7 +861,7 @@ public class FunctionalEPortfolioUtil {
 
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getEPortfolioMapCss())
-		.append("')]//form//button[last() and contains(@class, '")
+		.append("')]//button[last() and contains(@class, '")
 		.append(functionalUtil.getButtonDirtyCss())
 		.append("')]");
 		
@@ -951,18 +948,6 @@ public class FunctionalEPortfolioUtil {
 		/*  */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
-		.append(getEPortfolioMapCss())
-		.append("')]");
-		
-		if(structure != null){
-			selectorBuffer.append("//div[contains(@class, '")
-			.append(getEPortfolioStructureCss())
-			.append("')]//h5[text()='")
-			.append(structure)
-			.append("']/..");
-		}
-		
 		selectorBuffer.append("//div[contains(@class, '")
 		.append(getEPortfolioArtefactCss())
 		.append("')]//h4[text()='")
@@ -988,7 +973,7 @@ public class FunctionalEPortfolioUtil {
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, 'x-tool-close')]");
+		selectorBuffer.append("xpath=//a[contains(@class, 'b_link_close')]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
@@ -1071,16 +1056,15 @@ public class FunctionalEPortfolioUtil {
 	 */
 	//TODO:JK: implement type in tags switch
 	protected boolean fillInTags(Selenium browser, String[] tags, boolean typeTags){
-		functionalUtil.idle(browser);
-		
-		int i = 1;
 		
 		for(String tag: tags){
+			functionalUtil.idle(browser);
+			
 			StringBuffer locatorBuffer = new StringBuffer();
 			
 			locatorBuffer.append("xpath=(//div[contains(@class, '")
 			.append(getArtefactWizardCss())
-			.append("')]//input[@type='text'])[" + i + "]");
+			.append("')]//li[contains(@class, 'tagit-new')]//input[@type='text'])");
 			
 			functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 			
@@ -1096,16 +1080,16 @@ public class FunctionalEPortfolioUtil {
 			browser.fireEvent(locatorBuffer.toString(), "changed");
 			browser.fireEvent(locatorBuffer.toString(), "blur");
 			
-			i++;
+			/* verify */
+			locatorBuffer = new StringBuffer();
+			
+			locatorBuffer.append("xpath=(//div[contains(@class, '")
+			.append(getArtefactWizardCss())
+			.append("')]//span[contains(@class, 'tagit-label') and text()='" + tag + "']");
+			
+			//TODO:JK: implement me
 		}
 		
-		StringBuffer locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=(//div[contains(@class, '")
-		.append(getArtefactWizardCss())
-		.append("')]//input[@type='text'])[" + i + "]");
-		
-		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		functionalUtil.clickWizardNext(browser, getArtefactWizardCss());
 		
 		return(true);
@@ -1121,30 +1105,86 @@ public class FunctionalEPortfolioUtil {
 	 * @return
 	 */
 	protected boolean selectTree(Selenium browser, String binder, String page, String structure){
+		/* binder */
+		if(binder == null || binder.isEmpty())
+			return(false);
+		
 		functionalUtil.idle(browser);
 		
-		String selector = createSelector(binder, page, structure);
-
-		/* wait until tree has loaded */
-		StringBuffer locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=//li[contains(@class, '")
-		.append(functionalUtil.getTreeNodeLoadingCss())
-		.append("')]");
-		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		String selector = createSelector(binder, null, null);
 		
 		/* click selector */
 		functionalUtil.waitForPageToLoadElement(browser, selector);
 
 		browser.click(selector);
+		
+		if(browser.isConfirmationPresent()){
+			browser.getConfirmation();
+		}
 
-		locatorBuffer = new StringBuffer();
+		StringBuffer locatorBuffer = new StringBuffer();
 
-		locatorBuffer.append("xpath=//li[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
-		.append((structure != null) ? structure: page)
+		locatorBuffer.append("xpath=//ul//li//div[contains(@class, 'b_tree_item_wrapper')]//a//span[contains(text(), '")
+		.append(binder)
 		.append("')]");
 
 		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
+		
+		/* page */
+		if(page != null && !page.isEmpty()){
+			functionalUtil.idle(browser);
+			
+			selector = createSelector(binder, page, null);
+		
+			/* click selector */
+			functionalUtil.waitForPageToLoadElement(browser, selector);
+	
+			browser.click(selector);
+
+			if(browser.isConfirmationPresent()){
+				browser.getConfirmation();
+			}
+			
+			locatorBuffer = new StringBuffer();
+	
+			locatorBuffer.append("xpath=//ul//li//div[contains(@class, 'b_tree_item_wrapper')]//a//span[contains(text(), '")
+			.append(page)
+			.append("')]");
+	
+			functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
+			
+			/* structure */
+			if(structure != null && !structure.isEmpty()){
+				functionalUtil.idle(browser);
+				
+				selector = createSelector(binder, page, structure);
+		
+				/* wait until tree has loaded */
+//				StringBuffer locatorBuffer = new StringBuffer();
+//				
+//				locatorBuffer.append("xpath=//li[contains(@class, '")
+//				.append(functionalUtil.getTreeNodeLoadingCss())
+//				.append("')]");
+//				functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+				
+				/* click selector */
+				functionalUtil.waitForPageToLoadElement(browser, selector);
+		
+				browser.click(selector);
+
+				if(browser.isConfirmationPresent()){
+					browser.getConfirmation();
+				}
+		
+				locatorBuffer = new StringBuffer();
+		
+				locatorBuffer.append("xpath=//ul//li//div[contains(@class, 'b_tree_item_wrapper')]//a//span[contains(text(), '")
+				.append(structure)
+				.append("')]");
+		
+				functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
+			}
+		}
 		
 		return(true);
 	}
@@ -1428,19 +1468,10 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.idle(browser);
 		
 		/* select page or structure */
-		StringBuffer selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//a[contains(@class, '")
-		.append("x-tree-node")
-		.append("')]/span[text()='")
-		.append((structure == null) ? page: structure)
-		.append("']/..");
-		
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		browser.click(selectorBuffer.toString());
+		selectTree(browser, binder, page, structure);
 		
 		/* open wizard by clicking link link */
-		selectorBuffer = new StringBuffer();
+		StringBuffer selectorBuffer = new StringBuffer();
 		selectorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getAddLinkCss())
 		.append("')]");
@@ -1609,12 +1640,12 @@ public class FunctionalEPortfolioUtil {
 		this.createLearningJournalCss = createLearningJournalCss;
 	}
 
-	public String getAddBinderBoxId() {
-		return addBinderBoxId;
+	public String getAddBinderBoxCss() {
+		return addBinderBoxCss;
 	}
 
-	public void setAddBinderBoxId(String addBinderBoxId) {
-		this.addBinderBoxId = addBinderBoxId;
+	public void setAddBinderBoxCss(String addBinderBoxCss) {
+		this.addBinderBoxCss = addBinderBoxCss;
 	}
 
 	public String getCreateBinderCss() {

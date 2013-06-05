@@ -504,7 +504,9 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, FORUM_BINDER, FORUM_PAGE, FORUM_STRUCTURE,
 				FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS,
 				functionalEportfolioUtil));
-
+		
+		functionalCourseUtil.closeActiveTab(browser);
+		
 		/*
 		 * Test for content and make assumptions if the changes were applied.
 		 * Keep it simple use quick access with business paths.
@@ -561,6 +563,8 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, WIKI_BINDER, WIKI_PAGE, WIKI_STRUCTURE,
 				WIKI_ARTEFACT_TITLE, WIKI_ARTEFACT_DESCRIPTION, WIKI_TAGS,
 				functionalEportfolioUtil));
+		
+		functionalCourseUtil.closeActiveTab(browser);
 		
 		/*
 		 * Test for content and make assumptions if the changes were applied.
@@ -620,6 +624,8 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, BLOG_BINDER, BLOG_PAGE, BLOG_STRUCTURE,
 				BLOG_ARTEFACT_TITLE, BLOG_ARTEFACT_DESCRIPTION, BLOG_TAGS,
 				functionalEportfolioUtil));
+		
+		functionalCourseUtil.closeActiveTab(browser);
 		
 		/*
 		 * Test for content and make assumptions if the changes were applied.
