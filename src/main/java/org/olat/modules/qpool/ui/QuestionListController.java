@@ -108,7 +108,7 @@ public class QuestionListController extends AbstractItemListController implement
 
 	@Override
 	protected void initButtons(FormItemContainer formLayout) {
-		list = uifactory.addFormLink("create.list", formLayout, Link.BUTTON);
+		list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
 		shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
 		if(getSource().isRemoveEnabled()) {
@@ -346,7 +346,7 @@ public class QuestionListController extends AbstractItemListController implement
 		if(nextRow != null) {
 			QuestionItem nextItem = qpoolService.loadItemById(nextRow.getKey());
 			stackPanel.popUpToRootController(ureq);
-			doSelect(ureq, nextItem, true);
+			doSelect(ureq, nextItem, row.isEditable());
 		}
 	}
 	
@@ -356,7 +356,7 @@ public class QuestionListController extends AbstractItemListController implement
 		if(previousRow != null) {
 			QuestionItem previousItem = qpoolService.loadItemById(previousRow.getKey());
 			stackPanel.popUpToRootController(ureq);
-			doSelect(ureq, previousItem, true);
+			doSelect(ureq, previousItem, row.isEditable());
 		}
 	}
 	

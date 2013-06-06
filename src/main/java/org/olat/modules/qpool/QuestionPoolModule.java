@@ -24,11 +24,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.qpool.site.QuestionPoolSite;
 
 /**
  * 
@@ -44,7 +47,10 @@ public class QuestionPoolModule extends AbstractOLATModule implements ConfigOnOf
 
 	@Override
 	public void init() {
-		//
+		
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("QPool",
+				new SiteContextEntryControllerCreator(QuestionPoolSite.class));
+
 	}
 
 	@Override
