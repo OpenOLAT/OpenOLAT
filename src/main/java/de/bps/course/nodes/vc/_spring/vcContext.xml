@@ -47,7 +47,9 @@
 		<property name="accountId" value="${vc.adobe.accountid}" />
 		<property name="templates"><!-- optional -->
 			<map key-type="java.lang.String" value-type="java.lang.String">
-				<entry value="Standardmeetingvorlage" key="4711" />
+				<entry value="${vc.template.name.0}" key="${vc.template.key.0}" />
+				<entry value="${vc.template.name.1}" key="${vc.template.key.1}" />
+				<entry value="${vc.template.name.2}" key="${vc.template.key.2}" />
 			</map>
 		</property>
 		<property name="showOptions" value="${vc.adobe.showoptions}" />
@@ -69,9 +71,9 @@
 				<property name="jobDataAsMap">
 				    <map>
 						<entry key="providerId" value="adobe" />
-						<entry key="daysToKeep" value="1" />
-						<entry key="cleanupMeetings" value="true" />
-						<entry key="cleanupModerators" value="false" />
+						<entry key="daysToKeep" value="${vc.adobe.daysToKeep}" />
+						<entry key="cleanupMeetings" value="${vc.adobe.cleanupMeetings}" />
+						<entry key="cleanupModerators" value="${vc.adobe.cleanupModerators}" />
 				    </map>
 			  	</property>
 			</bean>
