@@ -601,10 +601,6 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
-		if(browser.isConfirmationPresent()){
-			browser.getConfirmation();
-		}
-		
 		functionalUtil.waitForPageToLoad(browser);
 		
 		boolean modified = false;
@@ -834,10 +830,6 @@ public class FunctionalEPortfolioUtil {
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
-
-		if(browser.isConfirmationPresent()){
-			browser.getConfirmation();
-		}
 		
 		functionalUtil.waitForPageToLoad(browser);
 		
@@ -1117,10 +1109,6 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selector);
 
 		browser.click(selector);
-		
-		if(browser.isConfirmationPresent()){
-			browser.getConfirmation();
-		}
 
 		StringBuffer locatorBuffer = new StringBuffer();
 
@@ -1140,10 +1128,6 @@ public class FunctionalEPortfolioUtil {
 			functionalUtil.waitForPageToLoadElement(browser, selector);
 	
 			browser.click(selector);
-
-			if(browser.isConfirmationPresent()){
-				browser.getConfirmation();
-			}
 			
 			locatorBuffer = new StringBuffer();
 	
@@ -1171,10 +1155,6 @@ public class FunctionalEPortfolioUtil {
 				functionalUtil.waitForPageToLoadElement(browser, selector);
 		
 				browser.click(selector);
-
-				if(browser.isConfirmationPresent()){
-					browser.getConfirmation();
-				}
 		
 				locatorBuffer = new StringBuffer();
 		

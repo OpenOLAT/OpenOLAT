@@ -328,6 +328,11 @@ public class FunctionalUtil {
 		long startTime = Calendar.getInstance().getTimeInMillis();
 		long currentTime = startTime;
 		long waitLimit = TIMEOUT;
+
+		//FIXME:JK: this is really ugly. For better performance revise confirmation
+		if(browser.isConfirmationPresent()){
+			browser.getConfirmation();
+		}
 		
 		while(linkBusy(browser) && waitLimit >  currentTime - startTime){
 			try {
