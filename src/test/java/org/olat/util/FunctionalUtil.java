@@ -132,9 +132,9 @@ public class FunctionalUtil {
 	public final static String TABLE_LAST_CHILD_CSS = "b_last_child";
 	public final static String TABLE_ALL_CSS = "b_table_page_all";
 	
-	public final static String TREE_NODE_ANCHOR_CSS = "x-tree-node-anchor";
-	public final static String TREE_NODE_CSS = "x-tree-node";
-	public final static String TREE_NODE_LOADING_CSS = "x-tree-node-loading";
+	public final static String TREE_NODE_ANCHOR_CSS = "b_tree_item_wrapper";
+	public final static String TREE_NODE_CSS = "b_tree_item_wrapper";
+	public final static String TREE_NODE_LOADING_CSS = null;
 	public final static String TREE_LEVEL0_CSS = "b_tree_l0";
 	public final static String TREE_LEVEL1_CSS = "b_tree_l1";
 	public final static String TREE_LEVEL2_CSS = "b_tree_l2";

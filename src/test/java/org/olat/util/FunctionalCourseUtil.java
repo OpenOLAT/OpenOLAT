@@ -878,36 +878,61 @@ public class FunctionalCourseUtil {
 	 * @param path
 	 * @return
 	 */
-	public String[] createCatalogSelectors(String path){
+	public String createCatalogSelectors(Selenium browser, String path){
 		if(path == null ||
 				!path.startsWith("/")){
 			return(null);
 		}
 		
+		/*
+		 * Determine best matching item by using regular expressions
+		 */
 		Matcher categoryMatcher = categoryPattern.matcher(path);
-		ArrayList<String> selectors = new ArrayList<String>();
 		
-		StringBuffer selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//li//a[contains(@class, '")
-		.append(functionalUtil.getTreeNodeAnchorCss())
-		.append("')]");
-		
-		selectors.add(selectorBuffer.toString());
+		StringBuffer itemLocator = new StringBuffer();
+		int i = 0;
 		
 		while(categoryMatcher.find()){
-			StringBuffer selector = new StringBuffer();
+			itemLocator.append("(<div[\\s]*class=\"b_selectiontree_content\"[\\s]*>[\\s]*" + categoryMatcher.group(1) + "[\\s]*</div>[\\s]*)?[\\s]*");
+			i++;
+		}
+	
+		itemLocator.deleteCharAt(itemLocator.length() - 1);
+		int segmentCount = i;
+		String item = path.substring(path.lastIndexOf('/') + 1);
+		
+		Pattern itemPattern = Pattern.compile(itemLocator.toString());
+		String dom = browser.getHtmlSource();
+		Matcher itemMatcher = itemPattern.matcher(dom);
+		
+		int offset = 1;
+		boolean foundPath = false;
+		
+		for(; itemMatcher.find(); offset++){
+			int j = 1;
 			
-			selector.append("xpath=//li//a[contains(@class, '")
-			.append(functionalUtil.getTreeNodeCss())
-			.append("')]//span[text()='")
-			.append(categoryMatcher.group(1))
-			.append("']/..");
-			
-			selectors.add(selector.toString());
+			if(itemMatcher.group(0) != null && !itemMatcher.group(0).isEmpty()){
+				foundPath = true;
+				break;
+			}
 		}
 		
-		return(selectors.toArray(new String[selectors.size()]));
+		if(!foundPath){
+			return(null);
+		}
+		
+		/* create selector */
+		StringBuffer selectorBuffer = new StringBuffer();
+				
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
+		.append("b_selectiontree_item")
+		.append("')]//div[contains(@class, 'b_selectiontree_content') and text()='")
+		.append(item)
+		.append("']/../..//input[@type='radio'])[position()='")
+		.append(offset)
+		.append("']");
+		
+		return(selectorBuffer.toString());
 	}
 	
 	/**
@@ -968,25 +993,17 @@ public class FunctionalCourseUtil {
 			
 			browser.click(selectorBuffer.toString());
 			
-			String[] catalogSelectors = createCatalogSelectors(catalog);
-			
-			for(String catalogSelector: catalogSelectors){
-				functionalUtil.idle(browser);
-				functionalUtil.waitForPageToLoadElement(browser, catalogSelector);
-
-				if(browser.isElementPresent(catalogSelector + "/../img[contains(@class, 'x-tree-elbow-end-plus')]")){
-					browser.doubleClick(catalogSelector);
-				}else{
-					browser.click(catalogSelector);
-				}
-			}
+			String catalogSelector = createCatalogSelectors(browser, catalog);
+			functionalUtil.idle(browser);
+			functionalUtil.waitForPageToLoadElement(browser, catalogSelector);
+			browser.click(catalogSelector);
 			
 			/* click choose */
 			selectorBuffer = new StringBuffer();
 			
 			selectorBuffer.append("xpath=//div[contains(@class, '")
 			.append(getCatalogCss())
-			.append("')]//a[contains(@class, '")
+			.append("')]//button[contains(@class, '")
 			.append(functionalUtil.getButtonDirtyCss())
 			.append("')]");
 			
