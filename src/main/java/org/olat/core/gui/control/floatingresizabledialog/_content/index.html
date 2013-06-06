@@ -1,4 +1,4 @@
-<div id="${panelName}">
+<div id="${panelName}" class="${panelName}">
 	#if ($r.available("collapsibleContent"))
 		<div id="${panelName}-east" class="pane ui-layout-east">
 			$r.render("collapsibleContent")
@@ -10,7 +10,17 @@
 </div>
 <script type="text/javascript">
 /* <![CDATA[ */ 
-	jQuery(function(){
+	jQuery(function() {
+		var duplicate = jQuery('.${panelName}').length > 1;
+		if(duplicate) {
+			jQuery('.${panelName}').each(function(index, el) {
+				if(jQuery(el).parent('.ui-dialog').length == 0) {
+					jQuery(el).remove();
+				}
+			}); 
+			return;
+		}
+		
 		jQuery('#${panelName}').dialog({
 			title: '$title',
 			width: ${width},
