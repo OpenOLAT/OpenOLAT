@@ -71,6 +71,9 @@
 		background-color: $basecolor_ultra_light;
 	}
 }
+.ui-autocomplete {
+	z-index: 10000;
+}
 
 /*
  * datepicker
