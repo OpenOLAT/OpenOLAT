@@ -480,7 +480,7 @@ public class FilterForUserController extends BasicController {
 			searchValue = searchValue == null ? null : searchValue.toLowerCase();
 			for(UserInfo info:stats) {
 				Identity identity = info.getIdentity();
-				String name = identity.getName();
+				String name = identity.getName();//TODO username
 				
 				if(identity.getName().startsWith(searchValue)) {
 					receiver.addEntry(name, name, info.getLastName() + " " + info.getFirstName(), CSSHelper.CSS_CLASS_USER);
@@ -540,7 +540,7 @@ public class FilterForUserController extends BasicController {
 		public UserInfo getUserInfo(String username) {
 			for(UserInfo info:infos) {
 				Identity id = info.getIdentity();
-				if(username.equals(id.getName())) {
+				if(username.equals(id.getName())) {//TODO username
 					return info;
 				}
 			}

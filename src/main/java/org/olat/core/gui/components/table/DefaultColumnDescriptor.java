@@ -325,14 +325,4 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 		this.hrefGenerator = hrefGenerator;
 	}
 
-	public String toString(final int rowid) {
-		Object obj = getModelData(rowid);
-		if(obj instanceof Date){
-			return "[date]";
-		}
-		StringOutput sb = new StringOutput();
-		renderValue(sb,rowid,null);
-		return sb.toString();
-	}
-
 }

@@ -142,10 +142,5 @@ public interface ColumnDescriptor {
 	void setHrefGenerator(HrefGenerator h);
 
 	HrefGenerator getHrefGenerator();
-	/**
-	 * String represenation of the value at specified row
-	 * @param rowid
-	 * @return
-	 */
-	String toString(int rowid);
+
 }

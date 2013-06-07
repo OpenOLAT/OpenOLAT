@@ -168,7 +168,7 @@ public class RepositoryMailing {
 				User user = identity.getUser();
 				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
 				context.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
-				context.put("login", identity.getName());
+				context.put("login", identity.getName());//TODO username
 				// Put variables from greater context
 				context.put("coursename", reName);
 				context.put("coursedescription", redescription);

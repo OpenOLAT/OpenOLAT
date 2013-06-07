@@ -94,6 +94,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.user.UserManager;
 
 /**
  * <pre>
@@ -229,6 +230,7 @@ public class CatalogController extends BasicController implements Activateable2 
 	public static final String LOCK_TOKEN = "catalogeditlock";
 	
 	private final MarkManager markManager;
+	private final UserManager userManager;
 	
 	/**
 	 * Init with catalog root
@@ -245,6 +247,7 @@ public class CatalogController extends BasicController implements Activateable2 
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 
 		List<CatalogEntry> rootNodes = cm.getRootCatalogEntries();
 		CatalogEntry rootce;
@@ -422,7 +425,8 @@ public class CatalogController extends BasicController implements Activateable2 
 			if (event.getCommand().equals(ACTION_ADD_CTLGCATEGORY)) {
 				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
 				if ( ! catModificationLock.isSuccess()) {
-					showError("catalog.locked.by", catModificationLock.getOwner().getName());
+					String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
+					showError("catalog.locked.by", ownerName);
 					return;
 				}
 				removeAsListenerAndDispose(addEntryForm);
@@ -464,7 +468,8 @@ public class CatalogController extends BasicController implements Activateable2 
 			else if (event.getCommand().equals(ACTION_EDIT_CTLGCATEGORY)) {
 				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
 				if ( ! catModificationLock.isSuccess()) {
-					showError("catalog.locked.by", catModificationLock.getOwner().getName());
+					String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
+					showError("catalog.locked.by", ownerName);
 					return;
 				}
 				removeAsListenerAndDispose(editEntryForm);
@@ -513,7 +518,8 @@ public class CatalogController extends BasicController implements Activateable2 
 			else if (event.getCommand().equals(ACTION_DELETE_CTLGCATEGORY)) {
 				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
 				if ( ! catModificationLock.isSuccess()) {
-					showError("catalog.locked.by", catModificationLock.getOwner().getName());
+					String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
+					showError("catalog.locked.by", ownerName);
 					return;
 				}
 				String[] trnslP = { currentCatalogEntry.getName() };
@@ -592,7 +598,8 @@ public class CatalogController extends BasicController implements Activateable2 
 				//
 				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
 				if (!catModificationLock.isSuccess()) {
-					showError("catalog.locked.by", catModificationLock.getOwner().getName());
+					String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
+					showError("catalog.locked.by", ownerName);
 					return;
 				}
 				

@@ -37,16 +37,19 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 public class NoteEvent extends MultiUserEvent {
 
-	private final String username;
+	private static final long serialVersionUID = -9028075258477862700L;
+	private final Long identityKey;
+	
 	/**
 	 * @param username
 	 */
-	public NoteEvent(String username) {
+	public NoteEvent(Long identityKey) {
 		super("note_event");
-		this.username = username;
+		this.identityKey = identityKey;
+	}
+	public Long getIdentityKey() {
+		return identityKey;
 	}
 
-	public String getUsername() {
-		return username;
-	}
+
 }

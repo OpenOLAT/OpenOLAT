@@ -68,7 +68,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 			StringBuilder sb = new StringBuilder(identities.size() * 25);
 			for(Identity id:identities) {
 				if(sb.length() > 0) sb.append(" / ");
-				sb.append(userManager.getUserDisplayName(id.getUser()));
+				sb.append(userManager.getUserDisplayName(id));
 			}
 			((FormLayoutContainer)formLayout).contextPut("identities", sb.toString());
 		}

@@ -136,7 +136,7 @@ public class ScoreAccountingHelper {
 		Formatter formatter = Formatter.getInstance(locale);
 
 		for (Identity identity:identities) {
-			String uname = identity.getName();
+			String uname = identity.getName();//TODO username
 
 			tableContent.append(rowNumber);
 			tableContent.append("\t");

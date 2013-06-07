@@ -146,7 +146,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			efficiencyStatement.setCourseTitle(userCourseEnv.getCourseEnvironment().getCourseTitle());
 			efficiencyStatement.setCourseRepoEntryKey(repoEntryKey);
 			User user = identity.getUser();
-			efficiencyStatement.setDisplayableUserInfo(user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null) + " (" + identity.getName() + ")");
+			efficiencyStatement.setDisplayableUserInfo(user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null) + " (" + identity.getName() + ")");//TODO username
 			efficiencyStatement.setLastUpdated(System.currentTimeMillis());
 							
 			UserEfficiencyStatementImpl efficiencyProperty = getUserEfficiencyStatementFull(repoEntryKey, identity);

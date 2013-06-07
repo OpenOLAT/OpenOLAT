@@ -159,7 +159,7 @@ private static Map<String,String> i18nkeyMap;
 			if (item instanceof OlatRelPathImpl) {
 				// update meta data
 				MetaInfo meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
-				meta.setAuthor(ureq.getIdentity().getName());
+				meta.setAuthor(ureq.getIdentity());
 				meta.write();
 			}		
 			fireEvent(ureq, Event.DONE_EVENT);							

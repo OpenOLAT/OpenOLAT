@@ -227,7 +227,7 @@ public class ZipUtil {
 							if(newEntry instanceof MetaTagged) {
 								MetaInfo info = ((MetaTagged)newEntry).getMetaInfo();
 								if(info != null) {
-									info.setAuthor(identity.getName());
+									info.setAuthor(identity);
 									info.write();
 								}
 							}
@@ -242,7 +242,7 @@ public class ZipUtil {
 							if(newEntry instanceof MetaTagged) {
 								MetaInfo info = ((MetaTagged)newEntry).getMetaInfo();
 								if(info != null && identity != null) {
-									info.setAuthor(identity.getName());
+									info.setAuthor(identity);
 									info.write();
 								}
 							}
@@ -335,7 +335,7 @@ public class ZipUtil {
 							if(newEntry instanceof MetaTagged) {
 								MetaInfo info = ((MetaTagged)newEntry).getMetaInfo();
 								if(info != null) {
-									info.setAuthor(identity.getName());
+									info.setAuthor(identity);
 									info.write();
 								}
 							}
@@ -350,7 +350,7 @@ public class ZipUtil {
 							if(newEntry instanceof MetaTagged) {
 								MetaInfo info = ((MetaTagged)newEntry).getMetaInfo();
 								if(info != null && identity != null) {
-									info.setAuthor(identity.getName());
+									info.setAuthor(identity);
 									info.write();
 								}
 							}
@@ -530,7 +530,7 @@ public class ZipUtil {
 				if (identity != null && vfsSubpath instanceof MetaTagged) {
 					MetaInfo info = ((MetaTagged)vfsSubpath).getMetaInfo();
 					if(info != null) {
-						info.setAuthor(identity.getName());
+						info.setAuthor(identity);
 						info.write();
 					}
 				}

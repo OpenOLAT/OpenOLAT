@@ -149,7 +149,7 @@ public class UserSessionController extends BasicController implements StackedCon
 					listenTo(detailsCtrl);
 					
 					String username = usess.getIdentity() == null ? "-"
-							: UserManager.getInstance().getUserDisplayName(usess.getIdentity().getUser());
+							: UserManager.getInstance().getUserDisplayName(usess.getIdentity());
 					stackController.pushController(username, detailsCtrl);
 				}
 			}

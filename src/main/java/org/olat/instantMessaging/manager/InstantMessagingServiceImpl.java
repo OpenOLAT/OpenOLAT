@@ -171,7 +171,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	
 	@Override
 	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey, String body, OLATResourceable chatResource) {
-		String name = userManager.getUserDisplayName(from.getUser());
+		String name = userManager.getUserDisplayName(from);
 		InstantMessage message = imDao.createMessage(from, name, false, body, chatResource);
 		imDao.createNotification(from.getKey(), toIdentityKey, chatResource);
 		dbInstance.commit();//commit before sending event
@@ -203,7 +203,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		if(StringHelper.containsNonWhitespace(nickName)) {
 			event.setName(nickName);
 		}
-		String fullName = userManager.getUserDisplayName(me.getUser());
+		String fullName = userManager.getUserDisplayName(me);
 		rosterDao.updateRosterEntry(chatResource, me, fullName, nickName, anonym, vip);
 		dbInstance.commit();//commit before sending event
 		
@@ -281,7 +281,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 			addBuddyToGroupList(participant, me, groupMap, groups, identityKeyToStatus, false, offlineUsers);
 		}
 		
-		Map<Long,String> nameMap = userManager.getUserDisplayNames(identityKeyToStatus.keySet());
+		Map<Long,String> nameMap = userManager.getUserDisplayNamesByKey(identityKeyToStatus.keySet());
 		for(BuddyGroup group:groups) {
 			for(Buddy buddy:group.getBuddy()) {
 				buddy.setName(nameMap.get(buddy.getIdentityKey()));	
@@ -378,7 +378,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	@Override
 	public void listenChat(Identity identity, OLATResourceable chatResource,
 			boolean anonym, boolean vip, GenericEventListener listener) {
-		String fullName = userManager.getUserDisplayName(identity.getUser());
+		String fullName = userManager.getUserDisplayName(identity);
 		rosterDao.updateRosterEntry(chatResource, identity, fullName, null, anonym, vip);
 		dbInstance.commit();
 		coordinator.getCoordinator().getEventBus().registerFor(listener, identity, chatResource);

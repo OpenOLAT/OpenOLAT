@@ -27,7 +27,6 @@ package org.olat.admin.properties;
 
 import java.util.List;
 
-import org.olat.admin.user.UserSearchController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -40,9 +39,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
-
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 
 /**
 *  Description:<br>
@@ -103,7 +101,7 @@ public class AdvancedPropertiesController extends BasicController {
 				String propertyName = searchForm.getPropertyName();
 				if (propertyName != null && propertyName.equals("")) propertyName = null;
 
-				List entries = PropertyManager.getInstance().listProperties(searchForm.getIdentity(), null, resourceTypeName, resTypeId, category, propertyName);				
+				List<Property> entries = PropertyManager.getInstance().listProperties(searchForm.getIdentity(), null, resourceTypeName, resTypeId, category, propertyName);				
 				PropertiesTableDataModel ptdm = new PropertiesTableDataModel(entries);
 
 				TableGuiConfiguration tableConfig = new TableGuiConfiguration();

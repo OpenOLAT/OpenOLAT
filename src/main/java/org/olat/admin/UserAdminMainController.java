@@ -513,6 +513,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		OLATResourceable lockResourceable = OresHelper.createOLATResourceableTypeWithoutCheck(TabbedPaneController.class.getName());
 		lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, ureq.getIdentity(), "deleteGroup");
 		if (!lock.isSuccess()) {
+		//TODO username
 			String text = getTranslator().translate("error.deleteworkflow.locked.by", new String[]{lock.getOwner().getName()});
 			Controller monoCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 			return monoCtr;

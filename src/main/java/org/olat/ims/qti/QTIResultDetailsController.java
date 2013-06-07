@@ -176,7 +176,7 @@ public class QTIResultDetailsController extends BasicController {
 			} else if(tEvent.getActionId().equals("ret")) {
 				updateTableModel();
 				if(tableModel.isTestRunning()) {
-					String fullname = UserManager.getInstance().getUserDisplayName(assessedIdentity.getUser());
+					String fullname = UserManager.getInstance().getUserDisplayName(assessedIdentity);
 					String title = translate("retrievetest.confirm.title");
 					String text = translate("retrievetest.confirm.text", new String[]{fullname});
 					retrieveConfirmationCtr = activateYesNoDialog(ureq, title, text, retrieveConfirmationCtr);

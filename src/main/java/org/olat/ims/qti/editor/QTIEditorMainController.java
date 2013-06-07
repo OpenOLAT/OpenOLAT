@@ -109,13 +109,13 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.modules.iq.IQDisplayController;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
-import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.references.ReferenceImpl;
+import org.olat.user.UserManager;
 
 /**
  * Description: <br>
@@ -231,12 +231,14 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private Link notEditableButton; 
 	private Set<String> deletableMediaFiles;
 
+	private final UserManager userManager;
 	private final QTIQPoolServiceProvider qtiQpoolServiceProvider;
 	
 	public QTIEditorMainController(List<ReferenceImpl> referencees, UserRequest ureq, WindowControl wControl, FileResource fileResource) {
 		super(ureq, wControl);
 		
 		qtiQpoolServiceProvider = (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 
 		for(Iterator<ReferenceImpl> iter = referencees.iterator(); iter.hasNext(); ) {
 			ReferenceImpl ref = iter.next();
@@ -272,7 +274,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			//
 			init(ureq); // initialize the gui
 		} else {
-			wControl.setWarning( getTranslator().translate("error.lock", new String[] { lockEntry.getOwner().getName(),
+			String fullName = userManager.getUserDisplayName(lockEntry.getOwner());
+			wControl.setWarning( getTranslator().translate("error.lock", new String[] { fullName,
 				Formatter.formatDatetime(new Date(lockEntry.getLockAquiredTime())) }) );
 		}
 	}
@@ -532,7 +535,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					String userN = ureq.getIdentity().getName();
 					String lastN = ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale());
 					String firstN = ureq.getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale());
-					String changeMsg = "Changed by: " + firstN + " " + lastN + " [" + userN + "]\n";
+					String changeMsg = "Changed by: " + firstN + " " + lastN + " [" + userN + "]\n";//TODO username
 					changeMsg += createChangeMessage();
 					changeEmail.setBodyText(changeMsg);
 					chngMsgFormVC.contextPut("chngMsg", changeEmail.getBodyText());

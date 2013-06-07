@@ -169,7 +169,7 @@ public class SharingController extends FormBasicController {
 		public Object getValueAt(int row, int col) {
 			Identity id = getObject(row);
 			if(col == 0) {
-				return UserManager.getInstance().getUserDisplayName(id.getUser());
+				return UserManager.getInstance().getUserDisplayName(id);
 			}
 			return null;
 		}

@@ -137,7 +137,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 			nm.saveNote(n);
 			Long newKey = n.getKey();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(Note.class, newKey);
-			sec.fireEventToListenersOf(new NoteEvent(getIdentity().getName()), ores);
+			sec.fireEventToListenersOf(new NoteEvent(getIdentity().getKey()), ores);
 		} else {
 			nm.updateNote(n);
 		}

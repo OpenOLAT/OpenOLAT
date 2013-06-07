@@ -385,7 +385,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		}
 
 		public String getFullName() {
-			return UserManagerImpl.getInstance().getUserDisplayName(identity.getUser());
+			return UserManagerImpl.getInstance().getUserDisplayName(identity);
 		}
 
 		public Long getKey() {

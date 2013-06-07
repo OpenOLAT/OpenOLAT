@@ -23,12 +23,14 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.navigation.Dated;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.user.UserManager;
 
 /**
  * This is the feed item class. A feed has many items. Implements Serializable
@@ -40,6 +42,8 @@ import org.olat.core.util.StringHelper;
  * @authorKey Gregor Wassmann
  */
 public class Item implements Serializable, Dated {
+
+	private static final long serialVersionUID = 8856863396847065934L;
 	private String title;
 	private String description, content;
 	// The authorKey corresponds to the olat identity key of the user that created
@@ -175,7 +179,7 @@ public class Item implements Serializable, Dated {
 				if (user == null) {
 					modifierName = modifier = identity.getName();					
 				} else {
-					modifierName = modifier = user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null);
+					modifierName = modifier = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(identity);
 				}
 			}
 		}

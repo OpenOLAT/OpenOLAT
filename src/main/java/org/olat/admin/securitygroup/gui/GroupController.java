@@ -369,7 +369,7 @@ public class GroupController extends BasicController {
 				if (toAdd.size() == 1) {
 					//check if already in group [makes only sense for a single choosen identity]
 					if (securityManager.isIdentityInSecurityGroup(toAdd.get(0), securityGroup)) {
-						getWindowControl().setInfo(translate("msg.subjectalreadyingroup", new String[]{toAdd.get(0).getName()}));
+						getWindowControl().setInfo(translate("msg.subjectalreadyingroup", new String[]{toAdd.get(0).getName()}));//TODO username
 						return;
 					}
 				} else if (toAdd.size() > 1) {
@@ -384,7 +384,7 @@ public class GroupController extends BasicController {
 					if (!alreadyInGroup.isEmpty()) {
 						StringBuilder names = new StringBuilder();
 						for(Identity ident: alreadyInGroup) {
-							names.append(" ").append(ident.getName());
+							names.append(" ").append(ident.getName());//TODO username
 							toAdd.remove(ident);
 						}
 						getWindowControl().setInfo(translate("msg.subjectsalreadyingroup", names.toString()));
@@ -502,7 +502,7 @@ public class GroupController extends BasicController {
 		if (confirmDelete != null) confirmDelete.dispose();
 		StringBuilder names = new StringBuilder();
 		for (Identity identity : toRemove) {
-			names.append(identity.getName()).append(" ");
+			names.append(identity.getName()).append(" ");//TODO username
 		}
 		confirmDelete = activateYesNoDialog(ureq, null, translate("remove.text", names.toString()), confirmDelete);
 		return;
@@ -561,10 +561,10 @@ public class GroupController extends BasicController {
 		// build info message for identities which could be added.
 		StringBuilder infoMessage = new StringBuilder();
 		for (Identity identity : identitiesAddedEvent.getIdentitiesWithoutPermission()) {
-	    infoMessage.append(translate("msg.isingroupanonymous", identity.getName())).append("<br />");
+	    infoMessage.append(translate("msg.isingroupanonymous", identity.getName())).append("<br />");//TODO username
 		}
 		for (Identity identity : identitiesAddedEvent.getIdentitiesAlreadyInGroup()) {
-			infoMessage.append(translate("msg.subjectalreadyingroup", identity.getName())).append("<br />");
+			infoMessage.append(translate("msg.subjectalreadyingroup", identity.getName())).append("<br />");//TODO username
 		}
 		// send the notification mail fro added users
 		StringBuilder errorMessage = new StringBuilder();

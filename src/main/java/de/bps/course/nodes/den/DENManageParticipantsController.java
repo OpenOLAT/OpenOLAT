@@ -339,7 +339,7 @@ public class DENManageParticipantsController extends BasicController {
 		ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
 		ContactList contactList = null;
 		if(participants.size() == 1) {
-			contactList = new ContactList(participants.get(0).getName());
+			contactList = new ContactList(participants.get(0).getName());//TODO username
 		} else {
 			contactList = new ContactList(translate("participants.message.to"));
 		}

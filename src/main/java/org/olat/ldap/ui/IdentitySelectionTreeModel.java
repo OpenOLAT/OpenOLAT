@@ -66,7 +66,7 @@ public class IdentitySelectionTreeModel  extends GenericTreeModel implements INo
 		for (Identity identity : identities) {
 			// collect user name information
 			StringBuffer sb = new StringBuffer();
-			sb.append(identity.getName()).append(": ");
+			sb.append(identity.getName()).append(": ");//TODO username
 			boolean first = true;
 			// collect user properties information
 			for (UserPropertyHandler userProperty : properHandlerList) {

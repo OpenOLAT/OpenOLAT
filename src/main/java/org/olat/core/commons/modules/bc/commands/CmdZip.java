@@ -113,7 +113,7 @@ public class CmdZip extends BasicController implements FolderCommand {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//empty
 	}
@@ -199,7 +199,7 @@ public class CmdZip extends BasicController implements FolderCommand {
 				if(zipFile instanceof MetaTagged) {
 					MetaInfo info = ((MetaTagged)zipFile).getMetaInfo();
 					if(info != null) {
-						info.setAuthor(ureq.getIdentity().getName());
+						info.setAuthor(ureq.getIdentity());
 						info.write();
 					}
 				}

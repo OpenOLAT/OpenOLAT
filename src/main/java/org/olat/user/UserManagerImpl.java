@@ -19,6 +19,7 @@
  */
 package org.olat.user;
 
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -44,6 +46,8 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.properties.Property;
@@ -69,6 +73,10 @@ public class UserManagerImpl extends UserManager {
   private DB dbInstance;
   @Autowired
   private BaseSecurity securityManager;
+  @Autowired
+  private CoordinatorManager coordinatorManager;
+
+	private CacheWrapper<Serializable,String> usernameCache;
   
 	/**
 	 * Use UserManager.getInstance(), this is a spring factory method to load the
@@ -76,6 +84,12 @@ public class UserManagerImpl extends UserManager {
 	 */
 	private UserManagerImpl() {
 		INSTANCE = this;
+	}
+	
+	@PostConstruct
+	public void init() {
+		usernameCache = coordinatorManager.getCoordinator().getCacher()
+				.getCache(UserManager.class.getSimpleName(), "username");
 	}
 
 	/**
@@ -295,7 +309,7 @@ public class UserManagerImpl extends UserManager {
 	 * @see org.olat.user.UserManager#loadUserByKey(java.lang.Long)
 	 */
 	public User loadUserByKey(Long key) {
-		return (UserImpl) DBFactory.getInstance().loadObject(UserImpl.class, key);
+		return DBFactory.getInstance().loadObject(UserImpl.class, key);
 		// User not loaded yet (lazy initialization). Need to access
 		// a field first to really load user from database.
 	}
@@ -303,15 +317,23 @@ public class UserManagerImpl extends UserManager {
 	/**
 	 * @see org.olat.user.UserManager#updateUser(org.olat.core.id.User)
 	 */
-	public void updateUser(User usr) {
+	@Override
+	public User updateUser(User usr) {
 		if (usr == null) throw new AssertException("User object is null!");
-		DBFactory.getInstance().updateObject(usr);
+		return dbInstance.getCurrentEntityManager().merge(usr);
 	}
 
 	/**
 	 * @see org.olat.user.UserManager#updateUserFromIdentity(org.olat.core.id.Identity)
 	 */
+	@Override
 	public boolean updateUserFromIdentity(Identity identity) {
+		try {
+			String fullName = getUserDisplayName(identity);
+			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+		} catch (Exception e) {
+			logWarn("Error update usernames cache", e);
+		}
 		updateUser(identity.getUser());
 		return true;
 	}
@@ -374,34 +396,122 @@ public class UserManagerImpl extends UserManager {
 		updateUser(user);
 		if(isLogDebugEnabled()) logDebug("Delete all user-attributtes for user=" + user);
 	}
+	
+	
+
+	@Override
+	public String getUserDisplayName(String username) {
+		String fullName = usernameCache.get(username);
+		if(fullName == null) {
+			List<IdentityShort> identities = securityManager.findShortIdentitiesByName(Collections.singletonList(username));
+			for(IdentityShort identity:identities) {
+				fullName = getUserDisplayName(identity);
+				updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+			}
+		}
+		return fullName;
+	}
+
+	@Override
+	public String getUserDisplayName(Long identityKey) {
+		if(identityKey == null || identityKey.longValue() <= 0) {
+			return "";
+		}
+		
+		String fullName = usernameCache.get(identityKey);
+		if(fullName == null) {
+			IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
+			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+		}
+		return fullName;
+	}
+
+	@Override
+	public Map<String, String> getUserDisplayNamesByUserName(Collection<String> usernames) {
+		if(usernames == null | usernames.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		
+		Map<String, String> fullNames = new HashMap<String,String>();
+		List<String> newUsernames = new ArrayList<String>();
+		for(String username:usernames) {
+			String fullName = usernameCache.get(username);
+			if(fullName != null) {
+				fullNames.put(username, fullName);
+			} else {
+				newUsernames.add(username);
+			}
+		}
+
+		List<IdentityShort> identities = securityManager.findShortIdentitiesByName(newUsernames);
+		for(IdentityShort identity:identities) {
+			String fullName = getUserDisplayName(identity);
+			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+			fullNames.put(identity.getName(), fullName);
+		}
+
+		return fullNames;
+	}
+
+	@Override
+	public String getUserDisplayName(Identity identity) {
+		if (userDisplayNameCreator == null) return "";
+		String fullName = userDisplayNameCreator.getUserDisplayName(identity.getUser());
+		updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+		return fullName;
+	}
 
 	/**
 	 * @see org.olat.user.UserManager#getUserDisplayName(org.olat.core.id.User)
 	 */
 	@Override
 	public String getUserDisplayName(User user) {
-		if (this.userDisplayNameCreator == null) return "";
-		return this.userDisplayNameCreator.getUserDisplayName(user);
+		if (userDisplayNameCreator == null) return "";
+		return userDisplayNameCreator.getUserDisplayName(user);
 	}
 	
 	/**
 	 * @see org.olat.user.UserManager#getUserDisplayName(org.olat.core.id.IdentityShort)
 	 */
 	@Override
-	public String getUserDisplayName(IdentityShort user) {
-		if (this.userDisplayNameCreator == null) return "";
-		return this.userDisplayNameCreator.getUserDisplayName(user);
+	public String getUserDisplayName(IdentityShort identity) {
+		if (userDisplayNameCreator == null) return "";
+		String fullName = userDisplayNameCreator.getUserDisplayName(identity);
+		updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+		return fullName;
 	}
 
 	@Override
-	public Map<Long, String> getUserDisplayNames(Collection<Long> identityKeys) {
-		List<IdentityShort> identities = securityManager.loadIdentityShortByKeys(identityKeys);
-		Map<Long,String> namesMap = new HashMap<Long,String>(identities.size());
-		for(IdentityShort identity:identities) {
-			String displayName = this.getUserDisplayName(identity);
-			namesMap.put(identity.getKey(), displayName);
+	public Map<Long, String> getUserDisplayNamesByKey(Collection<Long> identityKeys) {
+		
+		if(identityKeys == null | identityKeys.isEmpty()) {
+			return Collections.emptyMap();
 		}
-		return namesMap;
+		
+		Map<Long, String> fullNames = new HashMap<Long,String>();
+		List<Long> newIdentityKeys = new ArrayList<Long>();
+		for(Long identityKey:identityKeys) {
+			String fullName = usernameCache.get(identityKey);
+			if(fullName != null) {
+				fullNames.put(identityKey, fullName);
+			} else {
+				newIdentityKeys.add(identityKey);
+			}
+		}
+
+		List<IdentityShort> identities = securityManager.loadIdentityShortByKeys(identityKeys);
+		for(IdentityShort identity:identities) {
+			String fullName = getUserDisplayName(identity);
+			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+			fullNames.put(identity.getKey(), fullName);
+		}
+
+		return fullNames;
+	}
+	
+	private void updateUsernameCache(Long identityKey, String username, String fullName) {
+		usernameCache.put(identityKey, fullName);
+		usernameCache.put(username, fullName);
 	}
 
 	/**

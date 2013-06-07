@@ -38,7 +38,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;

@@ -691,7 +691,7 @@ public class FileUploadController extends FormBasicController {
 			if (metaDataCtr != null) {
 				meta = metaDataCtr.getMetaInfo(meta);
 			}
-			meta.setAuthor(ureq.getIdentity().getName());
+			meta.setAuthor(ureq.getIdentity());
 			meta.clearThumbnails();//if overwrite an older file
 			meta.write();
 		}

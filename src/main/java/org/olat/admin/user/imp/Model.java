@@ -70,7 +70,7 @@ public class Model extends DefaultTableDataModel<Object> {
 		if (col == 0) { // existing
 			return (userExists ? Boolean.FALSE : Boolean.TRUE);
 		}
-		
+		//TODO username
 		if (col == 1) { return (userExists ? ident.getName() : userArray.get(col)); }
 
 		if (col == 2) {// pwd

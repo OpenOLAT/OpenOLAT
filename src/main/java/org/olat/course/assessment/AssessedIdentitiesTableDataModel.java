@@ -168,7 +168,7 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
 		// lookup the column name first and 
 		// deliver value based on the column name
 		String colName = colMapping.get(col);
-		if (colName.equals(COL_NAME)) return identity.getName();
+		if (colName.equals(COL_NAME)) return identity.getName();//TODO username
 		else if (userPropertyNameList.contains(colName)) return identity.getUser().getProperty(colName, getLocale());		
 		else if (colName.equals(COL_DETAILS)) return wrappedIdentity.getDetailsListView();
 		else if (colName.equals(COL_ATTEMPTS)) return wrappedIdentity.getNodeAttempts();

@@ -130,6 +130,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.testutils.codepoints.server.Codepoint;
+import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 
@@ -214,7 +215,8 @@ public class CourseFactory extends BasicManager {
 			// already locked by another person
 
 			Translator translator = Util.createPackageTranslator(RunMainController.class, ureq.getLocale());
-			wControl.setWarning(translator.translate("error.editoralreadylocked", new String[] { emc.getLockEntry().getOwner().getName() }));
+			String lockerName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(emc.getLockEntry().getOwner());
+			wControl.setWarning(translator.translate("error.editoralreadylocked", new String[] { lockerName }));
 			return null;
 		}
 		//set the logger if editor is started

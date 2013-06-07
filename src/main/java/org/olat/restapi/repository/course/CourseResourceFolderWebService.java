@@ -354,7 +354,7 @@ public class CourseResourceFolderWebService {
 		
 		if(newFile instanceof MetaTagged && ((MetaTagged)newFile).getMetaInfo() != null) {
 			MetaInfo infos = ((MetaTagged)newFile).getMetaInfo();
-			infos.setAuthor(ureq.getIdentity().getName());
+			infos.setAuthor(ureq.getIdentity());
 			infos.write();
 		}
 

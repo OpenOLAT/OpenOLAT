@@ -139,7 +139,7 @@ public abstract class UserManager extends BasicManager {
 	 * @param usr The user object to be updated
 	 * @return The true if successfully updated
 	 */
-	public abstract void updateUser(User usr);
+	public abstract User updateUser(User usr);
 
 	/**
 	 * Updates the user object for a given identity
@@ -249,10 +249,17 @@ public abstract class UserManager extends BasicManager {
 	
 	/**
 	 * 
+	 * @param identity
+	 * @return
+	 */
+	public abstract String getUserDisplayName(Identity identity);
+	
+	/**
+	 * 
 	 * @param identityKeys
 	 * @return
 	 */
-	public abstract Map<Long,String> getUserDisplayNames(Collection<Long> identityKeys);
+	public abstract Map<Long,String> getUserDisplayNamesByKey(Collection<Long> identityKeys);
 	
 	/**
 	 * Returns the users displayable name, e.g. "Firstname Lastname"
@@ -261,4 +268,16 @@ public abstract class UserManager extends BasicManager {
 	 * @return
 	 */
 	public abstract String getUserDisplayName(IdentityShort user);
+	
+	public abstract String getUserDisplayName(String username);
+	
+	public abstract String getUserDisplayName(Long identityKey);
+	
+	/**
+	 * Return a map where the key is the username and the value is
+	 * the full name
+	 * @param usernames
+	 * @return
+	 */
+	public abstract Map<String,String> getUserDisplayNamesByUserName(Collection<String> usernames);
 }

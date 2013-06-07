@@ -1992,7 +1992,7 @@ alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) re
 alter table o_mail_to_recipient add constraint FKF86663165A4FA5DD foreign key (fk_recipient_id) references o_mail_recipient (recipient_id);
 alter table o_mail_attachment add constraint FKF86663165A4FA5DF foreign key (fk_att_mail_id) references o_mail (mail_id);
 create index idx_mail_att_checksum_idx on o_mail_attachment (datas_checksum);
-create index idx_mail_path_idx on o_mail_attachment (datas_path);
+create index idx_mail_path_idx on o_mail_attachment (datas_path(255));
 create index idx_mail_att_siblings_idx on o_mail_attachment (datas_checksum, mimetype, datas_size, datas_name);
 
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);

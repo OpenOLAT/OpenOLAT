@@ -255,9 +255,8 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		myContent = createVelocityContainer("userinfo");
 
 		if (menuCommand.equals(CMD_HOMEPAGE)) {
-			String userName = identity.getName();
 			HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
-			HomePageConfig homePageConfig = hpcm.loadConfigFor(userName);
+			HomePageConfig homePageConfig = hpcm.loadConfigFor(identity.getName());
 			removeAsListenerAndDispose(homePageDisplayController);
 			homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), identity, homePageConfig);
 			listenTo(homePageDisplayController);

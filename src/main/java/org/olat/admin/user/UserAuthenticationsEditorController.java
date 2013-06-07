@@ -118,6 +118,7 @@ public class UserAuthenticationsEditorController extends BasicController{
 				if (actionid.equals("delete")) {
 					int rowid = te.getRowId();
 					Authentication auth = (Authentication) authTableModel.getObject(rowid);
+					//TODO username
 					confirmationDialog = activateYesNoDialog(ureq, null, getTranslator().translate("authedit.delete.confirm", new String[] { auth.getProvider(), changeableIdentity.getName() }), confirmationDialog);
 					confirmationDialog.setUserObject(auth);
 					return;

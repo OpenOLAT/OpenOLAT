@@ -175,7 +175,7 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 	 * @param userRequest
 	 */
 	private void fillTURequestWithUserInfo(TURequest tuRequest, UserRequest userRequest){
-		String userName = userRequest.getIdentity().getName();
+		String userName = userRequest.getIdentity().getName();//TODO username
 		User u = userRequest.getIdentity().getUser();
 		String lastName = u.getProperty(UserConstants.LASTNAME, loc);
 		String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);

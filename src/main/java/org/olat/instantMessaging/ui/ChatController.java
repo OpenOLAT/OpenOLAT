@@ -279,7 +279,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			fromName = rosterCtrl.getNickName();
 		} else {
 			anonym = false;
-			fromName = userManager.getUserDisplayName(getIdentity().getUser());
+			fromName = userManager.getUserDisplayName(getIdentity());
 		}
 		InstantMessage message;
 		if(privateReceiverKey == null) {

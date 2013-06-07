@@ -185,7 +185,7 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		
 		String firstName = set.getFirstName();
 		String lastName = set.getLastName();
-		String login = set.getLogin();
+		String login = set.getLogin();//TODO username
 		String instUsrIdent = set.getInstitutionalUserIdentifier();
 		if (instUsrIdent == null) {
 			instUsrIdent = translator.translate("column.field.notavailable");

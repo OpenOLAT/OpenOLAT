@@ -34,8 +34,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -46,10 +44,8 @@ import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
-import org.olat.properties.Property;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.user.UserManager;
@@ -82,7 +78,6 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	private final Translator translator; // package-local to avoid synthetic accessor method.
 	private final ACService acService;
 	private final UserManager userManager;
-	private final BaseSecurity securityManager;
 	
 	private final Map<Long,OLATResourceAccess> repoEntriesWithOffer = new HashMap<Long,OLATResourceAccess>();;
 	private final Map<String,String> fullNames = new HashMap<String, String>();
@@ -97,7 +92,6 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 	}
 
 	/**
@@ -254,10 +248,8 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		}
 		
 		if(!newNames.isEmpty()) {
-			for(IdentityShort identity: securityManager.findShortIdentitiesByName(newNames)) {
-				String fullname = userManager.getUserDisplayName(identity);
-				fullNames.put(identity.getName(), fullname);
-			}
+			Map<String,String> newFullnames = userManager.getUserDisplayNamesByUserName(newNames);
+			fullNames.putAll(newFullnames);
 		}
 	}
 	

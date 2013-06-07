@@ -28,6 +28,7 @@ package org.olat.admin.securitygroup.gui;
 import java.util.List;
 
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -63,6 +64,8 @@ public class WaitingGroupController extends GroupController {
 	private MailNotificationEditController transferMailCtr;
 	private CloseableModalController cmc;
 	private List<Identity> toTransfer;
+	
+	private final UserManager userManager;
 
 	/**
 	 * @param ureq
@@ -75,6 +78,8 @@ public class WaitingGroupController extends GroupController {
 	public WaitingGroupController(UserRequest ureq, WindowControl wControl, boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences,
 			boolean allowDownload, boolean mandatoryEmail, SecurityGroup waitingListGroup) {
 		super(ureq, wControl, mayModifyMembers, keepAtLeastOne, enableTablePreferences, false, allowDownload, mandatoryEmail, waitingListGroup);
+		
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 
 	/**
@@ -115,7 +120,8 @@ public class WaitingGroupController extends GroupController {
 				fireEvent(ureq, identitiesMoveEvent);
 				StringBuilder infoMessage = new StringBuilder();
 				for (Identity identity : identitiesMoveEvent.getNotMovedIdentities()) {
-					infoMessage.append(translate("msg.alreadyinwaiitinggroup", identity.getName())).append("<br />");
+					String fullName = userManager.getUserDisplayName(identity);
+					infoMessage.append(translate("msg.alreadyinwaiitinggroup", fullName)).append("<br />");
 				}
 				// report any errors on screen
 				if (infoMessage.length() > 0) getWindowControl().setInfo(infoMessage.toString());

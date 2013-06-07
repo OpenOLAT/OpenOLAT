@@ -117,7 +117,7 @@ public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel {
 		Identity identity = getIdentityAt(row);
 		User user = identity.getUser();
 		if (col == 0) {
-			return identity.getName();
+			return identity.getName();//TODO username
 
 		} else if (col > 0 && col < userPropertyHandlers.size() + 1) {
 			// get user property for this column

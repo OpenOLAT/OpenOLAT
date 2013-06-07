@@ -593,7 +593,7 @@ public class EPShareListController extends FormBasicController {
 	
 	protected String formatIdentity(Identity ident) {
 		User u = ident.getUser();
-		String login = ident.getName();
+		String login = ident.getName();//TODO username
 		String first = u.getProperty(UserConstants.FIRSTNAME, null);
 		String last = u.getProperty(UserConstants.LASTNAME, null);
 		return login + ": " + last + " " + first;
@@ -613,7 +613,7 @@ public class EPShareListController extends FormBasicController {
 				boolean hasMore = false;
 				for (Identity ident:res) {
 					maxEntries--;
-					String login = ident.getName();
+					String login = ident.getName();//TODO username
 					resMap.put(formatIdentity(ident), login);
 					if(maxEntries <= 0) {
 						hasMore = true;
@@ -767,7 +767,7 @@ public class EPShareListController extends FormBasicController {
 			
 			Map<String,String> values = new HashMap<String,String>();
 			for(Identity identity:mapPolicy.getIdentities()) {
-				String login = identity.getName();
+				String login = identity.getName();//TODO username
 				values.put(formatIdentity(identity), login);
 			}
 			return values;

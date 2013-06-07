@@ -217,7 +217,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			if (item instanceof OlatRelPathImpl) {
 				// update meta data
 				MetaInfo meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
-				meta.setAuthor(ureq.getIdentity().getName());
+				meta.setAuthor(ureq.getIdentity());
 				meta.write();
 			}	
 			fileName = getItemName();			

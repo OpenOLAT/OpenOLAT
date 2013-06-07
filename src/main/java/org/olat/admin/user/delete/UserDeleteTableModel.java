@@ -103,7 +103,7 @@ public class UserDeleteTableModel extends DefaultTableDataModel {
 		Identity identity = (Identity) getObject(row);
 		User user = identity.getUser();
 		if (col == 0) {
-			return identity.getName();		
+			return identity.getName();//TODO username	
 		} else if (col < userPropertyHandlers.size()+1) {
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col-1);
 			String value = userPropertyHandler.getUserProperty(user, getLocale());

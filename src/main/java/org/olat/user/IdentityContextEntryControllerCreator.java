@@ -72,7 +72,7 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		Identity identity = extractIdentity(ce);
 		if (identity == null) return null;
-		return UserManagerImpl.getInstance().getUserDisplayName(identity.getUser());
+		return UserManagerImpl.getInstance().getUserDisplayName(identity);
 	}
 
 	/**

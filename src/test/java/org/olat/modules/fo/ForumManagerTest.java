@@ -29,6 +29,7 @@ package org.olat.modules.fo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -168,12 +169,15 @@ public class ForumManagerTest extends OlatTestCase {
 	@Test public void testGetNewMessageInfo() {
 		log.debug("Start testGetNewMessageInfo()");
 		ForumManager foma = ForumManager.getInstance();
-		Date now = new Date();
-		List<Message> msgList = foma.getNewMessageInfo(fo.getKey(), new Date() );
-		assertEquals(0,msgList.size());
-		Date before = new Date(now.getTime() - 3600);
-		msgList = foma.getNewMessageInfo(fo.getKey(), before );
-		assertEquals(14,msgList.size());
+		
+		sleep(1500);//we must ensure a lap of 1 second
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		List<Message> msgList = foma.getNewMessageInfo(fo.getKey(), cal.getTime());
+		assertEquals(0, msgList.size());
+		cal.add(Calendar.HOUR_OF_DAY, - 1);
+		msgList = foma.getNewMessageInfo(fo.getKey(), cal.getTime());
+		assertEquals(14, msgList.size());
 	}
 	
 	@Test public void testDeleteMessageTree() {

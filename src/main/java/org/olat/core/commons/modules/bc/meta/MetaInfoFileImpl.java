@@ -587,7 +587,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 					log.warn("Found no idenitiy with key='" + authorIdentKey + "'");
 					return "-";
 				}
-				return identity.getName(); 
+				return identity.getName();
 			} catch (Exception e) {
 				return "-";
 			}
@@ -630,7 +630,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			String formattedName = user.getProperty(UserConstants.FIRSTNAME, null); 
 			formattedName = formattedName + " " + user.getProperty(UserConstants.LASTNAME, null); 
 			//TODO: add link to user profile when checking in 4289/4295 and remove reference to loginname
-			formattedName = formattedName + " (" + identity.getName() + ")";
+			formattedName = formattedName + " (" + identity.getName() + ")";//TODO username
 			return formattedName; 
 		}	
 	}
@@ -672,6 +672,16 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		Identity identity = BaseSecurityManager.getInstance().findIdentityByName(username);
 		if (identity == null) {
 			log.warn("Found no idenitiy with username='" + username + "'");
+			authorIdentKey = null;
+			return;
+		}
+		authorIdentKey = identity.getKey(); 
+	}
+
+	@Override
+	public void setAuthor(Identity identity) {
+		if (identity == null) {
+			log.warn("Found no idenity");
 			authorIdentKey = null;
 			return;
 		}

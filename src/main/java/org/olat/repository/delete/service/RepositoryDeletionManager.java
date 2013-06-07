@@ -255,6 +255,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 			}
 			return null; // Send ok => return null
 		} else {
+			//TODO username
 			return pT.translate("email.error.send.failed", new String[] {identity.getUser().getProperty(UserConstants.EMAIL, null), identity.getName()} );
 		}
 	}

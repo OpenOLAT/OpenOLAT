@@ -76,9 +76,9 @@ public class PersonalRSSFeed extends SyndFeedImpl {
 		NotificationsManager man = NotificationsManager.getInstance();
 		//TODO bookmark List<Bookmark> bookmarks = BookmarkManager.getInstance().findBookmarksByIdentity(identity);
 
-		setTitle(translator.translate("rss.title", new String[] { identity.getName() }));
+		setTitle(translator.translate("rss.title", new String[] { identity.getName() }));//TODO username
 		setLink(RSSUtil.URI_SERVER);
-		setDescription(translator.translate("rss.description", new String[] { identity.getName() }));
+		setDescription(translator.translate("rss.description", new String[] { identity.getName() }));//TODO username
 
 		// create and add an image to the feed
 		SyndImage image = new SyndImageImpl();

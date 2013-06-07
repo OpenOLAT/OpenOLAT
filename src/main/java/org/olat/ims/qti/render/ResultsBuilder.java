@@ -117,6 +117,7 @@ public class ResultsBuilder {
 		// Add User information
 		Element context = result.addElement("context");
 		User user = identity.getUser();
+		//TODO username
 		String name = user.getProperty(UserConstants.FIRSTNAME, locale) + " " + user.getProperty(UserConstants.LASTNAME, locale) + " (" + identity.getName() + ")";
 		String instId = user.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, locale);
 		String instName = user.getProperty(UserConstants.INSTITUTIONALNAME, locale);

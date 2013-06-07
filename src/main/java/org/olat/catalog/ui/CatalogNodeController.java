@@ -73,6 +73,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.repository.controllers.RepositorySearchController;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -107,6 +108,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 	private final CatalogManager cm;
 	private final BaseSecurity securityManager;
 	private final RepositoryManager repositoryManager;
+	private final UserManager userManager;
 	
 	private boolean localTreeAdmin; 
 	
@@ -119,6 +121,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		cm = CatalogManager.getInstance();
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 
 		this.catalogEntry = catalogEntry;
 		
@@ -302,7 +305,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 	private boolean acquireLock() {
 		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CatalogController.class), getIdentity(), LOCK_TOKEN);
 		if (!catModificationLock.isSuccess()) {
-			showError("catalog.locked.by", catModificationLock.getOwner().getName());
+			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
+			showError("catalog.locked.by", ownerName);
 			return false;
 		}
 		return true;

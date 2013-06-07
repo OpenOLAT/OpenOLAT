@@ -177,7 +177,7 @@ public class NoteManager extends BasicManager implements UserDataDeletable {
 	 */
 	private void fireBookmarkEvent(Identity identity) {
 		//event this identity
-		NoteEvent noteEvent = new NoteEvent(identity.getName());
+		NoteEvent noteEvent = new NoteEvent(identity.getKey());
 		OLATResourceable eventBusOres = OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey());							
 		//TODO: LD: use SingleUserEventCenter
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(noteEvent, eventBusOres);		

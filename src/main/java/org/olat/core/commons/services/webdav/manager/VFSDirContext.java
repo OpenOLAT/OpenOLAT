@@ -589,7 +589,7 @@ public class VFSDirContext extends BaseDirContext {
 		if(childLeaf instanceof MetaTagged) {
 			MetaInfo infos = ((MetaTagged)childLeaf).getMetaInfo();
 			if(infos != null && infos.getAuthorIdentity() == null) {
-				infos.setAuthor(userSession.getIdentity().getName());
+				infos.setAuthor(userSession.getIdentity());
 				infos.clearThumbnails();
 				infos.write();
 			}
@@ -649,7 +649,7 @@ public class VFSDirContext extends BaseDirContext {
 		if(file instanceof MetaTagged) {
 			MetaInfo infos = ((MetaTagged)file).getMetaInfo();
 			if(infos != null && infos.getAuthorIdentity() == null) {
-				infos.setAuthor(userSession.getIdentity().getName());
+				infos.setAuthor(userSession.getIdentity());
 				infos.clearThumbnails();
 				infos.write();
 			}

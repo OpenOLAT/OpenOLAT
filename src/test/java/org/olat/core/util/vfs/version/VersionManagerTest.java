@@ -325,7 +325,7 @@ public class VersionManagerTest extends OlatTestCase {
 		//set the author
 		MetaTagged metaTagged = (MetaTagged)file;
 		MetaInfo metaInfo = metaTagged.getMetaInfo();
-		metaInfo.setAuthor(id1.getName());
+		metaInfo.setAuthor(id1);
 		metaInfo.setCreator(id1.getName());
 		metaInfo.write();
 		
@@ -386,7 +386,7 @@ public class VersionManagerTest extends OlatTestCase {
 		//set the author
 		MetaTagged metaTagged = (MetaTagged)file;
 		MetaInfo metaInfo = metaTagged.getMetaInfo();
-		metaInfo.setAuthor(id1.getName());
+		metaInfo.setAuthor(id1);
 		metaInfo.setCreator(id1.getName());
 		metaInfo.write();
 		
@@ -454,7 +454,7 @@ public class VersionManagerTest extends OlatTestCase {
 		//set the author
 		MetaTagged metaTagged = (MetaTagged)file;
 		MetaInfo metaInfo = metaTagged.getMetaInfo();
-		metaInfo.setAuthor(id1.getName());
+		metaInfo.setAuthor(id1);
 		metaInfo.setCreator(id1.getName());
 		metaInfo.write();
 		

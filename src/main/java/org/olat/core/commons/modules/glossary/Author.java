@@ -46,7 +46,7 @@ public class Author {
 	public Author(Identity identity) {
 		firstname = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
 		surname = identity.getUser().getProperty(UserConstants.LASTNAME, null);
-		link = "[Identity:" + identity.getKey() + "][Username:" + identity.getName() + "]";
+		link = "[Identity:" + identity.getKey() + "][Username:" + identity.getName() + "]";//TODO username
 	}
 	
 	public Long extractKey() {

@@ -69,7 +69,7 @@ public class GroupLeaveDialogBoxController extends FormBasicController {
 			if(groupToLeaveNames.length() > 0) groupToLeaveNames.append(", ");
 			groupToLeaveNames.append(group.getName());
 		}
-		String identityName = UserManager.getInstance().getUserDisplayName(leavingIdentity.getUser());
+		String identityName = UserManager.getInstance().getUserDisplayName(leavingIdentity);
 		String leaveText = translate("unsubscribe.text", new String[]{identityName, groupToLeaveNames.toString()});
 		uifactory.addStaticTextElement("leaving.desc", null, leaveText, formLayout);
 		String[] values = new String[]{

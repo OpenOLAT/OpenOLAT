@@ -188,7 +188,7 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 	 */
 	public void event(Event event) {		
 		if(event instanceof NoteEvent) {			
-			if(((NoteEvent)event).getUsername().equals(getIdentity().getName())) {
+			if(((NoteEvent)event).getIdentityKey().equals(getIdentity().getKey())) {
 			  reloadModel(sortingCriteria);						  
 			}
 		}		

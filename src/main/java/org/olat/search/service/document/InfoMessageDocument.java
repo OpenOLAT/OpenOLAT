@@ -44,7 +44,7 @@ public class InfoMessageDocument extends OlatDocument {
 
 		messageDocument.setTitle(message.getTitle());
 		messageDocument.setContent(message.getMessage());
-		messageDocument.setAuthor(message.getAuthor().getName());
+		messageDocument.setAuthor(message.getAuthor().getName());//TODO username
 		messageDocument.setCreatedDate(message.getCreationDate());
 		messageDocument.setLastChange(message.getCreationDate());
 		messageDocument.setResourceUrl(searchResourceContext.getResourceUrl());

@@ -79,7 +79,7 @@ public class UserSearchAndInfoController extends BasicController {
 					DTab dt = dts.getDTab(ores);
 					if (dt == null) {
 						// does not yet exist -> create and add
-						String name = UserManager.getInstance().getUserDisplayName(chosenIdentity.getUser());
+						String name = UserManager.getInstance().getUserDisplayName(chosenIdentity);
 						dt = dts.createDTab(ores, null, name);
 						if (dt == null) return;
 						UserInfoMainController uimc = new UserInfoMainController(ureq, dt.getWindowControl(), chosenIdentity);

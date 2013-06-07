@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableController;
@@ -37,6 +37,7 @@ import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.wiki.WikiMainController;
 import org.olat.modules.wiki.WikiPage;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -46,13 +47,15 @@ import org.olat.modules.wiki.WikiPage;
  * 
  * @author guido
  */
-public class HistoryTableDateModel extends DefaultTableDataModel implements TableDataModel {
+public class HistoryTableDateModel extends DefaultTableDataModel<WikiPage> implements TableDataModel<WikiPage> {
 
-	private Translator trans;
+	private final Translator trans;
+	private final UserManager userManager;
 
-	public HistoryTableDateModel(List entries, Translator trans) {
+	public HistoryTableDateModel(List<WikiPage> entries, Translator trans) {
 		super(entries);
 		this.trans = trans;
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 
 	private static final int COLUMN_COUNT = 3;
@@ -68,7 +71,7 @@ public class HistoryTableDateModel extends DefaultTableDataModel implements Tabl
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		WikiPage page = (WikiPage) objects.get(row);
+		WikiPage page = getObject(row);
 		switch (col) {
 			case 0:
 				return String.valueOf(page.getVersion());
@@ -78,8 +81,7 @@ public class HistoryTableDateModel extends DefaultTableDataModel implements Tabl
 				return String.valueOf(page.getViewCount());
 			case 3:
 				long key = page.getModifyAuthor();
-				return key != 0 ? BaseSecurityManager.getInstance().loadIdentityByKey(Long.valueOf(page.getModifyAuthor())).getName() :"n/a";
-				//TODO:gs:a loadIdenitiesByKeys(List keys) would be much more performant as each lookup get one database lookup
+				return userManager.getUserDisplayName(new Long(key));
 			case 4:
 				int v = page.getVersion();
 				if(v == 0) return new String("");

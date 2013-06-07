@@ -750,10 +750,12 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			    fireEvent(ureq, Event.FAILED_EVENT);			
 		    }
 		  } else if(lockResult!=null && lockResult.isSuccess() && isAlreadyLocked) {
-		  	showInfo("warning.course.alreadylocked.bySameUser", lockResult.getOwner().getName());
+		  	String fullName = userManager.getUserDisplayName(lockResult.getOwner());
+		  	showInfo("warning.course.alreadylocked.bySameUser", fullName);
 		  	lockResult = null; //invalid lock, it was already locked
 		  } else {
-		  	showInfo("warning.course.alreadylocked", lockResult.getOwner().getName());
+		  	String fullName = userManager.getUserDisplayName(lockResult.getOwner());
+		  	showInfo("warning.course.alreadylocked", fullName);
 		  }
 		}
 		finally {	
@@ -787,8 +789,9 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		} else if (lockResult!=null && lockResult.isSuccess() && isAlreadyLocked) {
 			showWarning("warning.course.alreadylocked.bySameUser");
 			lockResult = null;
-		}	else {			  
-		  showWarning("warning.course.alreadylocked", lockResult.getOwner().getName());
+		}	else {	
+			String fullName = userManager.getUserDisplayName(lockResult.getOwner());
+		  showWarning("warning.course.alreadylocked", fullName);
 	  }
 	}
 	

@@ -60,7 +60,7 @@ public class LockTableModel extends DefaultTableDataModel<LockEntry> {
 	public Object getValueAt(int row, int col) {
 		LockEntry lock = getObject(row); 
 		switch (col) {
-			case 0: return lock.getKey();
+			case 0: return lock.getKey();//TODO username
 			case 1: return lock.getOwner().getName() + ", " + lock.getOwner().getUser().getProperty(UserConstants.FIRSTNAME, null)
 			                                         + " "  + lock.getOwner().getUser().getProperty(UserConstants.LASTNAME, null);		
 			case 2: return Formatter.formatDatetime(new Date(lock.getLockAquiredTime()));

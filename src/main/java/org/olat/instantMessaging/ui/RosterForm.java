@@ -56,7 +56,7 @@ public class RosterForm extends FormBasicController {
 		this.defaultAnonym = defaultAnonym;
 		this.offerAnonymMode = offerAnonymMode;
 		this.buddyList = buddyList;
-		fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(getIdentity().getUser());
+		fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(getIdentity());
 
 		initForm(ureq);
 	}

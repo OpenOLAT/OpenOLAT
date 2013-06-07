@@ -115,6 +115,7 @@ public class DirectDeleteController extends BasicController {
 				toDelete = new ArrayList<Identity>();
 				toDelete.add(uce.getChosenIdentity());
 				
+				//TODO username
 				deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", uce.getChosenIdentity().getName()), deleteConfirmController);
 				return;
 			} else {
@@ -166,6 +167,7 @@ public class DirectDeleteController extends BasicController {
 			if (buf.length() > 0) {
 				buf.append(",");
 			}
+			//TODO username
 			buf.append(identity.getName());
 		}
 		return buf.toString();

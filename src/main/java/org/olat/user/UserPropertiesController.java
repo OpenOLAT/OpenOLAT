@@ -28,6 +28,7 @@ package org.olat.user;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -124,7 +125,8 @@ public class UserPropertiesController extends BasicController {
 				else if (actionid.equals("delete")) {
 					int rowid = te.getRowId();
 					foundProp = (Property) tdm.getObject(rowid);
-					activateYesNoDialog(ureq, translate("propdelete.yesno.title"),translate("propdelete.yesno.text",new String[]{foundProp.getName(),displayedIdentity.getName()}), null);
+					String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(displayedIdentity);
+					activateYesNoDialog(ureq, translate("propdelete.yesno.title"),translate("propdelete.yesno.text",new String[]{foundProp.getName(), fullName}), null);
 				}
 			}
 		}

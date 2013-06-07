@@ -56,6 +56,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.catalog.ui.CatalogController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
@@ -72,6 +73,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.vo.ErrorVO;
+import org.olat.user.UserManager;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 
@@ -758,7 +760,9 @@ public class CatalogWebService {
 		}
 		
 		Translator translator = Util.createPackageTranslator(CatalogController.class, locale);
-		String translation = translator.translate("catalog.locked.by", new String[]{lock.getOwner().getName()});
+
+		String ownerName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lock.getOwner());
+		String translation = translator.translate("catalog.locked.by", new String[]{ ownerName });
 		ErrorVO vo = new ErrorVO("org.olat.catalog.ui","catalog.locked.by",translation);
 		ErrorVO[] voes = new ErrorVO[]{vo};
 		return Response.ok(voes).status(Status.UNAUTHORIZED).build();

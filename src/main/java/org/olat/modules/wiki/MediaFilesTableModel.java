@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -35,6 +36,7 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -44,13 +46,15 @@ import org.olat.core.util.Formatter;
  * 
  * @author guido
  */
-public class MediaFilesTableModel extends DefaultTableDataModel {
+public class MediaFilesTableModel extends DefaultTableDataModel<MediaFileElement> {
 	private static final int COLUMN_COUNT = 5;
 	private Formatter formatter;
+	private UserManager userManager;
 
-	public MediaFilesTableModel(List objects, Translator trans) {
+	public MediaFilesTableModel(List<MediaFileElement> objects, Translator trans) {
 		super(objects);
 		setLocale(trans.getLocale());
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		formatter = Formatter.getInstance(trans.getLocale());
 	}
 
@@ -82,13 +86,13 @@ public class MediaFilesTableModel extends DefaultTableDataModel {
 			case 1:
 				long identKey = entry.getCreatedBy();
 				if (identKey == 0) return "---";
-				return BaseSecurityManager.getInstance().loadIdentityByKey(identKey).getName();
+				return userManager.getUserDisplayName(new Long(identKey));//TODO username
 			case 2:
 				return formatter.formatDateAndTime(new Date(entry.getCreationDate()));
 			case 3:
 				long key = entry.getDeletedBy();
 				if (key == 0) return "---";
-				return BaseSecurityManager.getInstance().loadIdentityByKey(key).getName();
+				return userManager.getUserDisplayName(new Long(key));//TODO username
 			case 4:
 				long delDate = entry.getDeletionDate();
 				if (delDate == 0) return "---";

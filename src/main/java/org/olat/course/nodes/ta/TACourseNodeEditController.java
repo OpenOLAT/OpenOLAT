@@ -510,7 +510,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				
 		Context c = new VelocityContext();
 		Identity identity = ureq.getIdentity();
-		c.put("login", identity.getName());
+		c.put("login", identity.getName());//TODO username
 		c.put("first", identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
 		c.put("last", identity.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
 		c.put("email", identity.getUser().getProperty(UserConstants.EMAIL, getLocale()));

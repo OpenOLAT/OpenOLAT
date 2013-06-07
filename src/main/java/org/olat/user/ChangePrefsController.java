@@ -207,7 +207,8 @@ class SpecialPrefsForm extends FormBasicController {
 		// OLAT-6429 don't change another users GUI prefs when he is logged in 
 		if (!ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
 			if (sessionManager.isSignedOnIdentity(tobeChangedIdentity.getKey())) {
-				showError("error.user.logged.in", tobeChangedIdentity.getName());
+				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(tobeChangedIdentity);
+				showError("error.user.logged.in",fullName);
 				prefsElement.reset();
 				return;
 			}

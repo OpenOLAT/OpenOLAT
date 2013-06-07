@@ -25,6 +25,7 @@
 
 package org.olat.gui.demo;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -36,6 +37,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.dev.controller.SourceViewController;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -56,9 +58,14 @@ public class HelloWorldController extends BasicController {
 	private Panel panel = new Panel("panel");
 	private Link link;
 	private Link button;
+	
+	private final UserManager userManager;
 
 	public HelloWorldController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		
 		// we pass a variable to the velocity container
 		// which can be accessed in our helloworld.html file
 		myContent.contextPut("myContentVariable", myString);
@@ -99,7 +106,8 @@ public class HelloWorldController extends BasicController {
 			logInfo("Someone asked us to say hello... so we do.", null);
 			// we say hello to the and display the userName which is part of the
 			// user identity and stored in the user session
-			getWindowControl().setInfo("Hi, your name is " + ureq.getIdentity().getName());
+			String fullName = userManager.getUserDisplayName(getIdentity());
+			getWindowControl().setInfo("Hi, your name is " + fullName);
 		} else if (source == button) {
 			// someone pressed the button
 			panel.setContent(newsVc);

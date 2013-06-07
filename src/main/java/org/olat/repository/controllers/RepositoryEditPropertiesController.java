@@ -95,6 +95,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
+import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -192,11 +193,12 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 			 //try to acquire edit lock for this course and show dialog box on failure..
 			courseLockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(repositoryEntry.getOlatResource(), ureq.getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
 			if (!courseLockEntry.isSuccess()){				
-				this.showWarning("error.course.alreadylocked", courseLockEntry.getOwner().getName());
+				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(courseLockEntry.getOwner());
+				showWarning("error.course.alreadylocked", fullName);
 				//beware: the controller is not properly initialized - the initial component is null
 				return;
 			} else if(courseLockEntry.isSuccess() && isAlreadyLocked) {
-				this.showWarning("warning.course.alreadylocked.bySameUser");
+				showWarning("warning.course.alreadylocked.bySameUser");
 				//beware: the controller is not properly initialized - the initial component is null
 				courseLockEntry = null; //invalid lock
 				return;

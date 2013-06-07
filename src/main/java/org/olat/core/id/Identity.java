@@ -52,13 +52,13 @@ public interface Identity extends CreateInfo, Persistable {
     /**
      * @return The username, (login name, nickname..)
      */
-    public abstract String getName();
+   public String getName();
 
     /**
 	 * @return The user object associated with this identity. The user
 	 * encapsulates the user data (profile and preferences)
 	 */
-	public abstract User getUser();
+	public User getUser();
 	
 	/**
 	 * @return Last date when the user logged in.

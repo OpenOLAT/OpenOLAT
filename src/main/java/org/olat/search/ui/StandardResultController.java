@@ -20,6 +20,11 @@
 
 package org.olat.search.ui;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -34,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.search.model.ResultDocument;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -64,8 +70,17 @@ public class StandardResultController extends FormBasicController implements Res
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer formLayoutCont = (FormLayoutContainer)formLayout;
 			formLayoutCont.contextPut("result", document);
-			formLayoutCont.contextPut("id", this.hashCode());
+			formLayoutCont.contextPut("id", hashCode());
 			formLayoutCont.contextPut("formatter", Formatter.getInstance(getLocale()));
+			
+			String author = document.getAuthor();
+			if(StringHelper.containsNonWhitespace(author)) {
+				List<IdentityShort> identities = BaseSecurityManager.getInstance().findShortIdentitiesByName(Collections.singleton(author));
+				if(identities.size() > 0) {
+					author = UserManager.getInstance().getUserDisplayName(identities.get(0));
+				}
+			}
+			formLayoutCont.contextPut("author", author);
 		}
 		
 		String highlightLabel = document.getHighlightTitle();

@@ -55,6 +55,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
+import org.olat.user.UserManager;
 
 /**
  * Initial Date:  Feb 12, 2004
@@ -304,6 +305,9 @@ public class ListRenderer {
 
 			String author = metaInfo.getAuthor();
 			if (StringHelper.containsNonWhitespace(author)) {
+				if(!"-".equals(author)) {
+					author = UserManager.getInstance().getUserDisplayName(author);
+				}
 				sb.append("<p>").append(Formatter.escapeDoubleQuotes(translator.translate("mf.author")));
 				sb.append(": ").append(Formatter.escapeDoubleQuotes(author)).append("</p>");			
 			}

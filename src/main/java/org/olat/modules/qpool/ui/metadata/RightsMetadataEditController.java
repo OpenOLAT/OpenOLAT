@@ -138,7 +138,7 @@ public class RightsMetadataEditController extends FormBasicController {
 		List<String> authorLinks = new ArrayList<String>(authors.size());
 		int pos = 0;
 		for(Identity author:authors) {
-			String name = userManager.getUserDisplayName(author.getUser());
+			String name = userManager.getUserDisplayName(author);
 			FormLink link = uifactory.addFormLink("author_" + pos++, name, null, authorCont, Link.NONTRANSLATED);
 			link.setUserObject(author);
 			authorLinks.add(link.getComponent().getComponentName());

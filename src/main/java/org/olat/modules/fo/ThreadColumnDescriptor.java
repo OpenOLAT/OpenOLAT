@@ -52,7 +52,7 @@ public class ThreadColumnDescriptor extends DefaultColumnDescriptor {
 	private static final int MAXINDENTS = 20;
 	private static final String[] INDENTS;
 
-	private List messages;
+	private List<Message> messages;
 	private TreeWalker tw;
 	private boolean toIndent;
 
@@ -165,7 +165,7 @@ public class ThreadColumnDescriptor extends DefaultColumnDescriptor {
 																															// need the
 																															// traversal order
 																															// after sorting
-			Iterator mit = messages.iterator();
+			Iterator<Message> mit = messages.iterator();
 			while (mit.hasNext()) {
 				Message m = (Message) mit.next();
 				tw.addRelationship(m, m.getParent());
@@ -223,13 +223,6 @@ public class ThreadColumnDescriptor extends DefaultColumnDescriptor {
 	 */
 	public void otherColumnDescriptorSorted() {
 		toIndent = false;
-	}
-
-
-	public String toString(int rowid) {
-		String retVal = super.toString(rowid);
-		Message m = (Message)messages.get(getTable().getSortedRow(rowid));
-		return retVal+m.getTitle()+m.getCreator().getName();
 	}
 }
 

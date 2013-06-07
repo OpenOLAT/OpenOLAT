@@ -72,6 +72,7 @@ import org.olat.portfolio.EPUIFactory;
 import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageConfigManagerImpl;
 import org.olat.user.UserInfoMainController;
+import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -110,6 +111,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private FeedItemDisplayConfig displayConfig;
 	public static Event HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT = new Event("cmd.handle.new.external.feed.dialog");
 	public static Event FEED_INFO_IS_DIRTY_EVENT = new Event("cmd.feed.info.is.dirty");
+	
+	private final UserManager userManager;
 
 	/**
 	 * default constructor, with full FeedItemDisplayConfig
@@ -140,6 +143,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 	public ItemsController(final UserRequest ureq, final WindowControl wControl, final Feed feed, final FeedViewHelper helper, final FeedUIFactory uiFactory,
 			final FeedSecurityCallback callback, final VelocityContainer vcRightColumn, FeedItemDisplayConfig displayConfig) {
 		super(ureq, wControl);
+		
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		if (displayConfig == null) {
 			displayConfig = new FeedItemDisplayConfig(true, true, true);
 		}
@@ -409,7 +414,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 					itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feed);
 					activateModalDialog(itemFormCtr);
 				} else {
-					showInfo("feed.item.is.being.edited.by", lock.getOwner().getName());
+					String fullName = userManager.getUserDisplayName(lock.getOwner());
+					showInfo("feed.item.is.being.edited.by", fullName);
 				}				
 			} else {
 				showInfo("feed.item.is.being.edited.by", "unknown");
@@ -586,7 +592,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 				ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_DELETE, getClass(), LoggingResourceable.wrap(item));
 
 			} else {
-				showInfo("feed.item.is.being.edited.by", lock.getOwner().getName());
+				String fullName = userManager.getUserDisplayName(lock.getOwner());
+				showInfo("feed.item.is.being.edited.by", fullName);
 			}
 
 		} else if (source == itemFormCtr) {

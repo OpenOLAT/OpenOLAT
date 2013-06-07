@@ -177,7 +177,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		} else if (zipContainer instanceof MetaTagged) {
 			MetaInfo info = ((MetaTagged)zipContainer).getMetaInfo();
 			if(info != null && ureq.getIdentity() != null) {
-				info.setAuthor(ureq.getIdentity().getName());
+				info.setAuthor(ureq.getIdentity());
 				info.write();
 			}
 		}

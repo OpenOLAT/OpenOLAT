@@ -129,7 +129,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		try {
 			scormAdapter = new OLATApiAdapter();	
 			scormAdapter.addAPIListener(apiCallback);
-			String fullname = UserManager.getInstance().getUserDisplayName(getIdentity().getUser());
+			String fullname = UserManager.getInstance().getUserDisplayName(getIdentity());
 			String scormResourceIdStr = scormResourceId == null ? null : scormResourceId.toString();
 			scormAdapter.init(cpRoot, scormResourceIdStr, courseIdNodeId, FolderConfig.getCanonicalRoot(), username, fullname, lesson_mode, credit_mode, hashCode());
 		} catch (IOException e) {

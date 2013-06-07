@@ -1255,7 +1255,7 @@ public class EPFrontendManager extends BasicManager {
 		List<Identity> ownerIdents = securityManager.getIdentitiesOfSecurityGroup(map.getOwnerGroup(), 0, 1);
 		if(ownerIdents.size() > 0){
 			Identity id = ownerIdents.get(0);
-			return userManager.getUserDisplayName(id.getUser());
+			return userManager.getUserDisplayName(id);
 		}
 		return "n/a";
 	}

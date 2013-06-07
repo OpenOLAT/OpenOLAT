@@ -30,7 +30,6 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.user.UserManager;
 
@@ -64,10 +63,9 @@ public class UserSearchListProvider implements ListProvider {
 		for (Iterator<Identity> it_res = res.iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {
 			maxEntries--;
 			Identity ident = it_res.next();
-			User u = ident.getUser();
 			String key = ident.getKey().toString();
 			String displayKey = ident.getName();
-			String displayText = userManager.getUserDisplayName(u);
+			String displayText = userManager.getUserDisplayName(ident);
 			receiver.addEntry(key, displayKey, displayText, CSSHelper.CSS_CLASS_USER);
 		}					
 		if(hasMore){

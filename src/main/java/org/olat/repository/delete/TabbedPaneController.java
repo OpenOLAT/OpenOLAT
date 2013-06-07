@@ -25,6 +25,7 @@
 
 package org.olat.repository.delete;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -42,6 +43,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.user.UserManager;
 
 /** 
  * Learning-resource deletion tabbed pane controller.
@@ -77,7 +79,8 @@ public class TabbedPaneController extends BasicController implements ControllerE
 			OLATResourceable lockResourceable = OresHelper.createOLATResourceableTypeWithoutCheck(this.getClass().getName());
 			lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, ureq.getIdentity(), "deleteGroup");
 			if (!lock.isSuccess()) {
-				String text = getTranslator().translate("error.deleteworkflow.locked.by", new String[]{lock.getOwner().getName()});
+				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lock.getOwner());
+				String text = getTranslator().translate("error.deleteworkflow.locked.by", new String[]{ fullName });
 				Controller uiInfoMsgCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, null, text);
 				listenTo(uiInfoMsgCtrl);//register to let dispose on dispose of this controller
 				putInitialPanel(uiInfoMsgCtrl.getInitialComponent());

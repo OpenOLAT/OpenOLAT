@@ -258,7 +258,7 @@ public class DropboxController extends BasicController {
 				if(fOut instanceof MetaTagged) {
 					MetaInfo info = ((MetaTagged)fOut).getMetaInfo();
 					if(info != null) {
-						info.setAuthor(ureq.getIdentity().getName());
+						info.setAuthor(ureq.getIdentity());
 						info.write();
 					}
 				}

@@ -24,14 +24,12 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.IdentityShort;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.gui.UserRequest;
@@ -60,6 +58,7 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.version.VFSRevision;
 import org.olat.core.util.vfs.version.Versions;
 import org.olat.core.util.vfs.version.VersionsManager;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -91,11 +90,13 @@ public class DeletedFileListController extends BasicController {
 	private DialogBoxController dialogCtr;
 
 	private boolean isAdmin;
+	private UserManager userManager;
 	
 	public DeletedFileListController(UserRequest ureq, WindowControl wControl, VFSContainer container) {
 		super(ureq, wControl);
 		this.container = container;
 		deletedFiles = VersionsManager.getInstance().getDeletedFiles(container);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		
 		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 
@@ -135,21 +136,17 @@ public class DeletedFileListController extends BasicController {
 	private void loadModel(UserRequest ureq) {
 		Collection<String> names = new HashSet<String>();
 		for(Versions deletedFile:deletedFiles) {
-			if(deletedFile.getCreator() != null) {
+			if(deletedFile.getCreator() != null && !"-".equals(deletedFile.getCreator())) {
 				names.add(deletedFile.getCreator());
 			}
 			VFSRevision lastRevision = getLastRevision(deletedFile);
-			if(lastRevision != null && lastRevision.getAuthor() != null) {
+			if(lastRevision != null && lastRevision.getAuthor() != null && !"-".equals(lastRevision.getAuthor())) {
 				names.add(lastRevision.getAuthor());
 			}
 		}
 		
-		Map<String, IdentityShort> mappedIdentities = new HashMap<String, IdentityShort>();
-		for(IdentityShort identity :BaseSecurityManager.getInstance().findShortIdentitiesByName(names)) {
-			mappedIdentities.put(identity.getName(), identity);
-		}
-
-		DeletedFileListDataModel model = new DeletedFileListDataModel(deletedFiles, mappedIdentities, ureq.getLocale());
+		Map<String, String> mappedFullnames = userManager.getUserDisplayNamesByUserName(names);
+		DeletedFileListDataModel model = new DeletedFileListDataModel(deletedFiles, mappedFullnames, ureq.getLocale());
 		deletedFilesListTableCtr.setTableDataModel(model);
 	}
 
@@ -217,6 +214,7 @@ public class DeletedFileListController extends BasicController {
 			}
 		} else if (source == dialogCtr) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {	
+				@SuppressWarnings("unchecked")
 				List<Versions> versionsToDelete =  (List<Versions>)dialogCtr.getUserObject();
 				VersionsManager.getInstance().deleteVersions(versionsToDelete);
 				status = FolderCommandStatus.STATUS_SUCCESS;
@@ -271,15 +269,15 @@ public class DeletedFileListController extends BasicController {
 		return lastRevision;
 	}
 
-	public class DeletedFileListDataModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
+	public class DeletedFileListDataModel extends BaseTableDataModelWithoutFilter<Versions> implements TableDataModel<Versions> {
 		private final DateFormat format;
 		private final List<Versions> versionList;
 		private final Calendar cal = Calendar.getInstance();
-		private final Map<String, IdentityShort> mappedIdentities;
+		private final Map<String, String> mappedFullnames;
 
-		public DeletedFileListDataModel(List<Versions> versionList, Map<String, IdentityShort> mappedIdentities, Locale locale) {
+		public DeletedFileListDataModel(List<Versions> versionList, Map<String, String> mappedFullnames, Locale locale) {
 			this.versionList = versionList;
-			this.mappedIdentities = mappedIdentities;
+			this.mappedFullnames = mappedFullnames;
 			format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
 		}
 
@@ -319,16 +317,13 @@ public class DeletedFileListController extends BasicController {
 			if(!StringHelper.containsNonWhitespace(name)) {
 				return null;
 			}
-			IdentityShort id = mappedIdentities.get(name);
-			if(id == null) {
+			String fullName = mappedFullnames.get(name);
+			if(fullName == null) {
 				return null;
 			}
 			
 			StringBuilder sb = new StringBuilder();
-			sb.append(id.getFirstName())
-			  .append(" ")
-			  .append(id.getLastName());
-			
+			sb.append(fullName);
 			if(isAdmin) {
 				sb.append(" (").append(name).append(")");
 			}

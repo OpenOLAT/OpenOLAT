@@ -737,7 +737,7 @@ public class BusinessGroupArchiver {
 	 */
 	private void appendMember(StringBuffer buf, Member member, List<String> columnList, List<OrganisationalEntity> groupList, String role) {
 		if(columnList.contains("username")) {
-		  buf.append(member.getIdentity().getName());	
+		  buf.append(member.getIdentity().getName());	//TODO username
 		  buf.append(DELIMITER);
 		}		
 

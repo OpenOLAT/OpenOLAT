@@ -203,7 +203,10 @@ public interface MetaInfo {
 	/**
 	 * @param string
 	 */
+	@Deprecated
 	public void setAuthor(String username);
+	
+	public void setAuthor(Identity identy);
 
 	/**
 	 * @param string

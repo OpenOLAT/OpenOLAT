@@ -80,14 +80,14 @@ public class AdvancedPropertySearchForm extends FormBasicController {
 		super(ureq, wControl);
 		
 		PropertyManager pm = PropertyManager.getInstance();
-		List resourceTypeNames = pm.getAllResourceTypeNames();
+		List<String> resourceTypeNames = pm.getAllResourceTypeNames();
 		int size = resourceTypeNames.size();
 		theKeys = new String[size+1];
 		theValues = new String[size+1];
 		theKeys[0] = "0";
-		theValues[0] = null;
+		theValues[0] = "";
 		int i = 1;
-		for (Iterator iter = resourceTypeNames.iterator(); iter.hasNext(); i++) {
+		for (Iterator<String> iter = resourceTypeNames.iterator(); iter.hasNext(); i++) {
 			theKeys[i] = Integer.toString(i);
 			theValues[i] = (String)iter.next();
 		}

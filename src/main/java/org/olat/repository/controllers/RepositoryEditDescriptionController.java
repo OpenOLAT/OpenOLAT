@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.olat.ControllerFactory;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -49,7 +48,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.NamedFileMediaResource;
-import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -83,7 +81,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private FormLink deleteImage;
 
 	private final UserManager userManager;
-	private final BaseSecurity securityManager;
 	private final RepositoryManager repositoryManager;
 
 	/**
@@ -97,7 +94,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		super(ureq, wControl, "bgrep");
 		setBasePackage(RepositoryManager.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		this.isSubWorkflow = isSubWorkflow;
 		this.repositoryEntry = entry;
@@ -118,10 +114,9 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		String id = repositoryEntry.getResourceableId() == null ? "-" : repositoryEntry.getResourceableId().toString();
 		uifactory.addStaticTextElement("cif.id", id, descCont);
 
-		String initalAuthor = repositoryEntry.getInitialAuthor() == null ? "-" : repositoryEntry.getInitialAuthor().toString();
-		Identity authorId = securityManager.findIdentityByName(initalAuthor);
-		if(authorId != null) {
-			initalAuthor = userManager.getUserDisplayName(authorId.getUser());
+		String initalAuthor = repositoryEntry.getInitialAuthor() == null ? "-" : repositoryEntry.getInitialAuthor();
+		if(repositoryEntry.getInitialAuthor() != null) {
+			initalAuthor = userManager.getUserDisplayName(initalAuthor);
 		}
 		uifactory.addStaticTextElement("cif.initialAuthor", initalAuthor, descCont);
 		// Add resource type

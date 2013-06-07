@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -56,6 +56,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -336,7 +337,8 @@ public class GlossaryMainController extends BasicController implements Activatea
 			// try to get lock for this glossary
 			lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(resourceable, ureq.getIdentity(), "GlossaryEdit");
 			if (!lockEntry.isSuccess()) {
-				showInfo("glossary.locked", lockEntry.getOwner().getName());
+				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lockEntry.getOwner());
+				showInfo("glossary.locked", fullName);
 				glistVC.contextPut("editModeEnabled", Boolean.FALSE);
 			}
 		}

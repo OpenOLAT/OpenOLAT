@@ -180,7 +180,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		return propertyList;
 	}
 
-	private String buildPropertyHashKey(Property p) {
+	private String buildPropertyHashKey(Property p) {//TODO username
     return buildPropertyHashKey(p.getCategory(), (p.getIdentity() == null) ? "" : p.getIdentity().getName(), p.getGrp(), p.getName());
 	}
 	

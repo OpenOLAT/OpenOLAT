@@ -26,6 +26,7 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -36,12 +37,14 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class ArtefactTableDataModel extends DefaultTableDataModel {
+public class ArtefactTableDataModel extends DefaultTableDataModel<AbstractArtefact> {
 
-	private EPFrontendManager ePFMgr;
+	private final UserManager userManager;
+	private final EPFrontendManager ePFMgr;
 
 	public ArtefactTableDataModel(List<AbstractArtefact> artefacts) {
 		super(artefacts);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 	}
 
@@ -68,7 +71,7 @@ public class ArtefactTableDataModel extends DefaultTableDataModel {
 			case 2:
 				return artefact.getCreationDate();
 			case 3:
-				return artefact.getAuthor().getName();
+				return userManager.getUserDisplayName(artefact.getAuthor());
 			case 4: 
 				List<String> artTags = ePFMgr.getArtefactTags(artefact);
 				return StringHelper.formatAsCSVString(artTags);

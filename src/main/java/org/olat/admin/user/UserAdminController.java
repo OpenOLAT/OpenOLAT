@@ -340,7 +340,7 @@ public class UserAdminController extends BasicController implements Activateable
 	 */
 	private void exposeUserDataToVC(UserRequest ureq, Identity identity) {		
 		Locale loc = ureq.getLocale();
-		myContent.contextPut("foundUserName", identity.getName());
+		myContent.contextPut("foundUserName", identity.getName());//TODO username
 		myContent.contextPut("foundFirstName", identity.getUser().getProperty(UserConstants.FIRSTNAME, loc));
 		myContent.contextPut("foundLastName", identity.getUser().getProperty(UserConstants.LASTNAME, loc));
 		myContent.contextPut("foundEmail", identity.getUser().getProperty(UserConstants.EMAIL, loc));

@@ -824,7 +824,7 @@ public class DENManager {
 				identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()),
 				identity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()),
 				identity.getUser().getProperty(UserConstants.EMAIL, ureq.getLocale()),
-					identity.getName(),
+					identity.getName(), //TODO username
 					subjectStr
 				};
 		

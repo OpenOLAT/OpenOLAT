@@ -92,7 +92,7 @@ public class UserTableDataModel extends DefaultTableDataModel<Identity> {
 		Identity identity = getObject(row);
 		User user = identity.getUser();
 		if (col == 0) {
-			return identity.getName();			
+			return identity.getName();//TODO username		
 
 		} else if ((col-1) < userPropertyHandlers.size()) {
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col-1);

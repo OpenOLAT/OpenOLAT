@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.user.UserManager;
 
 /**
  * <h3>Description:</h3>
@@ -72,7 +73,8 @@ public class DefaultFooterController extends BasicController {
 		// Push information about user
 		if (ureq.getUserSession().isAuthenticated()) {
 			footerVC.contextPut("loggedIn", Boolean.TRUE);
-			footerVC.contextPut("username", ureq.getIdentity().getName());
+			String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(getIdentity());
+			footerVC.contextPut("username", fullName);
 		} else {
 			footerVC.contextPut("loggedIn", Boolean.FALSE);
 		}

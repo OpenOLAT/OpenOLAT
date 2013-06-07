@@ -169,7 +169,7 @@ public class HTMLEditorController extends FormBasicController {
 			VelocityContainer vc = (VelocityContainer) flc.getComponent();
 			if (!lock.isSuccess()) {
 				vc.contextPut("locked", Boolean.TRUE);
-				vc.contextPut("lockOwner", lock.getOwner().getName());
+				vc.contextPut("lockOwner", lock.getOwner().getName());//TODO username
 				this.editable = false;
 				return;
 			} else {

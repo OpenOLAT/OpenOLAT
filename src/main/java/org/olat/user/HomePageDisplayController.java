@@ -77,7 +77,6 @@ public class HomePageDisplayController extends BasicController {
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
 		VelocityContainer mainVC = createVelocityContainer("homepagedisplay");
 
-		mainVC.contextPut("userName", homeIdentity.getName());
 		mainVC.contextPut("deleted", homeIdentity.getStatus().equals(Identity.STATUS_DELETED));
 		mainVC.contextPut("user", homeIdentity.getUser());
 		mainVC.contextPut("locale", getLocale());

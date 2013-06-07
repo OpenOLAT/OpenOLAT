@@ -85,7 +85,7 @@ public class MemberInfoController extends FormBasicController {
 			Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), identity, true, false);
 			listenTo(dpc); // auto dispose
 			layoutCont.put("image", dpc.getInitialComponent());
-			layoutCont.contextPut("fullname", userManager.getUserDisplayName(identity.getUser()));
+			layoutCont.contextPut("fullname", userManager.getUserDisplayName(identity));
 		}
 		
 		//user properties

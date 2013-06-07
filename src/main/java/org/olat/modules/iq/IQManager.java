@@ -87,6 +87,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -96,6 +97,8 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class IQManager extends BasicManager implements UserDataDeletable {
 
 	private static IQManager INSTANCE;
+	
+	private UserManager userManager;
 	
 	/**
 	 *  [spring]
@@ -111,8 +114,14 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 		return INSTANCE; 
 	}
 	
-	
-	//--- methods for controller creation
+	/**
+	 * [user by Spring]
+	 * @param userManager
+	 */
+	public void setUserManager(UserManager userManager) {
+		this.userManager = userManager;
+	}
+
 	/**
 	 * IMS QTI Display Controller from within course -> moduleConfiguration
 	 * 
@@ -131,8 +140,9 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 			Translator translator = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
       //so this resource is locked, let's find out who locked it
 			LockResult lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(re.getOlatResource(), ureq.getIdentity(), null);
+			String fullName = userManager.getUserDisplayName(lockResult.getOwner());
 			return MessageUIFactory.createInfoMessage(ureq, wControl, translator.translate("status.currently.locked.title"), 
-					translator.translate("status.currently.locked", new String[] {lockResult.getOwner().getName()}));
+					translator.translate("status.currently.locked", new String[] { fullName }));
 		}else{
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(re, OlatResourceableType.iq));
 			return new IQDisplayController(moduleConfiguration, secCallback, ureq, wControl, callingResId, callingResDetail, delegate);

@@ -21,6 +21,7 @@ package org.olat.modules.webFeed.ui;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -47,6 +48,7 @@ import org.olat.modules.webFeed.FeedViewHelper;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
+import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -74,6 +76,8 @@ public class FeedMainController extends BasicController implements Activateable2
 	private FeedSecurityCallback callback;
 	// needed for comparison
 	private String oldFeedUrl;
+	
+	private final UserManager userManager;
 	
 	/**
 	 * Constructor for learning resource (not course nodes)
@@ -103,6 +107,7 @@ public class FeedMainController extends BasicController implements Activateable2
 		super(ureq, wControl);
 		this.uiFactory = uiFactory;
 		this.callback = callback;
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		setTranslator(uiFactory.getTranslator());
 		feed = feedManager.getFeed(ores);
 		helper = new FeedViewHelper(feed, getIdentity(), uiFactory.getTranslator(), courseId, nodeId, callback);
@@ -182,7 +187,8 @@ public class FeedMainController extends BasicController implements Activateable2
 				feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory);
 				activateModalDialog(feedFormCtr);
 			} else {
-				showInfo("feed.is.being.edited.by", lock.getOwner().getName());
+				String fullName = userManager.getUserDisplayName(lock.getOwner());
+				showInfo("feed.is.being.edited.by", fullName);
 			}
 		}
 	}
