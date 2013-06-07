@@ -387,11 +387,12 @@ public class FolderRunController extends BasicController implements Activateable
 			
 			folderCommand = FolderCommandFactory.getInstance().getCommand(cmd, ureq, getWindowControl());
 			if (folderCommand != null) {
-				folderCommandController = folderCommand.execute(folderComponent, ureq, getWindowControl(), getTranslator());
-				if (folderCommandController != null) {
+				Controller commandController = folderCommand.execute(folderComponent, ureq, getWindowControl(), getTranslator());
+				if (commandController != null) {
+					folderCommandController = commandController;
 					// activate command's controller
-					this.listenTo(folderCommandController);
-					if ( ! folderCommand.runsModal()) {
+					listenTo(folderCommandController);
+					if (!folderCommand.runsModal()) {
 						cmc = new CloseableModalController(getWindowControl(), translate("close"), folderCommandController.getInitialComponent());
 						cmc.activate();						
 						listenTo(cmc);
