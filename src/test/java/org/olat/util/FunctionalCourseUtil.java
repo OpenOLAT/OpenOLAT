@@ -24,6 +24,7 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -887,38 +888,42 @@ public class FunctionalCourseUtil {
 		/*
 		 * Determine best matching item by using regular expressions
 		 */
-		Matcher categoryMatcher = categoryPattern.matcher(path);
-		
 		StringBuffer itemLocator = new StringBuffer();
-		int i = 0;
+		itemLocator.append("//div[contains(@class, 'b_selectiontree_item')]");
 		
-		while(categoryMatcher.find()){
-			itemLocator.append("(<div[\\s]*class=\"b_selectiontree_content\"[\\s]*>[\\s]*" + categoryMatcher.group(1) + "[\\s]*</div>[\\s]*)?[\\s]*");
-			i++;
-		}
-	
-		itemLocator.deleteCharAt(itemLocator.length() - 1);
-		int segmentCount = i;
-		String item = path.substring(path.lastIndexOf('/') + 1);
+		VelocityContext context = new VelocityContext();
+
+		context.put("treeSelector", itemLocator.toString());
+		context.put("treePath", path);
 		
-		Pattern itemPattern = Pattern.compile(itemLocator.toString());
-		String dom = browser.getHtmlSource();
-		Matcher itemMatcher = itemPattern.matcher(dom);
+		VelocityEngine engine = null;
+
+		engine = new VelocityEngine();
+
+		StringWriter sw = new StringWriter();
+		Integer offset = null;
 		
-		int offset = 1;
-		boolean foundPath = false;
-		
-		for(; itemMatcher.find(); offset++){
-			int j = 1;
+		try {
+			engine.evaluate(context, sw, "catalogTreeEntryPosition", FunctionalEPortfolioUtil.class.getResourceAsStream("CatalogTreeEntryPosition.vm"));
+
+			offset = new Integer(browser.getEval(sw.toString()));
 			
-			if(itemMatcher.group(0) != null && !itemMatcher.group(0).isEmpty()){
-				foundPath = true;
-				break;
+			if(offset.intValue() == -1){
+				return(null);
 			}
-		}
-		
-		if(!foundPath){
-			return(null);
+
+		} catch (ParseErrorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MethodInvocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ResourceNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		/* create selector */
@@ -926,10 +931,8 @@ public class FunctionalCourseUtil {
 				
 		selectorBuffer.append("xpath=(//div[contains(@class, '")
 		.append("b_selectiontree_item")
-		.append("')]//div[contains(@class, 'b_selectiontree_content') and text()='")
-		.append(item)
-		.append("']/../..//input[@type='radio'])[position()='")
-		.append(offset)
+		.append("')]//input[@type='radio'])[position()='")
+		.append(offset.intValue())
 		.append("']");
 		
 		return(selectorBuffer.toString());

@@ -1,0 +1,32 @@
+offset = -1;
+
+if(document.querySelector){
+    var selector = "${treeSelector}";
+    var path = "${treePath}";
+    
+    /* make array out of path */
+    path = path.substring(1);
+    var item = path.split("/");
+
+    /* count items till path fits */
+    var selection = window.document.evaluate(selector, window.document.body, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    var i = 0;
+    var j = 0;
+    
+    for(; i < selection.snapshotLength && j < item.length; i++){
+        var current = selection.snapshotItem(i);
+        
+        if(current != null){
+        	var itemSelector = "(" + selector + ")[" + (i) + "]//div[contains(@class, 'b_selectiontree_content') and text()='" + item[j] + "']";
+        	var itemSelection = window.document.evaluate(itemSelector, window.document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        
+        	if(itemSelection != null && itemSelection.snapshotLength > 0){
+        		j++;
+        	}
+        }
+    }
+    
+    offset = (i / 2) - (item.length - 1);
+}
+
+offset;
