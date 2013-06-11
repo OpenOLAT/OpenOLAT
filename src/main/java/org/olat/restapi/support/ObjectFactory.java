@@ -19,6 +19,10 @@
  */
 package org.olat.restapi.support;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import javax.ws.rs.core.EntityTag;
 
 import org.olat.basesecurity.Authentication;
@@ -26,6 +30,9 @@ import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -42,6 +49,7 @@ import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
+import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 
 /**
@@ -53,6 +61,30 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class ObjectFactory {
+	private static final OLog log = Tracing.createLoggerFor(ObjectFactory.class);
+	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+
+	public static String formatDate(Date date) {
+		if(date == null) return null;
+		synchronized(format) {
+			return format.format(date);
+		}
+	}
+	
+	public static Date parseDate(String date) {
+		if(!StringHelper.containsNonWhitespace(date)) {
+			return null;
+		}
+		
+		try {
+			synchronized(format) {
+				return format.parse(date);
+			}
+		} catch (ParseException e) {
+			log.warn("", e);
+			return null;
+		}
+	}
 	
 	public static GroupVO get(BusinessGroup grp) {
 		GroupVO vo = new GroupVO();
@@ -61,6 +93,8 @@ public class ObjectFactory {
 		vo.setDescription(grp.getDescription());
 		vo.setMaxParticipants(grp.getMaxParticipants());
 		vo.setMinParticipants(grp.getMinParticipants());
+		vo.setExternalId(grp.getExternalId());
+		vo.setManagedFlags(grp.getManagedFlags());
 		vo.setType(grp.getType());
 		return vo;
 	}
@@ -70,6 +104,8 @@ public class ObjectFactory {
 		vo.setKey(grp.getKey());
 		vo.setName(grp.getName());
 		vo.setDescription(grp.getDescription());
+		
+		
 		vo.setMaxParticipants(grp.getMaxParticipants());
 		vo.setMinParticipants(grp.getMinParticipants());
 		vo.setType(grp.getType());
@@ -132,6 +168,12 @@ public class ObjectFactory {
 		vo.setEditorRootNodeId(course.getEditorTreeModel().getRootNode().getIdent());
 		vo.setSoftKey(re.getSoftkey());
 		vo.setRepoEntryKey(re.getKey());
+		vo.setExternId(re.getExternalId());
+		vo.setExternRef(re.getExternalRef());
+		vo.setManagedFlags(re.getManagedFlags());
+		if(re.getLifecycle() != null) {
+			vo.setLifecycle(new RepositoryEntryLifecycleVO(re.getLifecycle()));
+		}
 		return vo;
 	}
 	

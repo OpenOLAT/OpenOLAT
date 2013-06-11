@@ -56,6 +56,27 @@ public class SortKey {
 	}
 	
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (asc ? 1231 : 1237);
+		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof SortKey) {
+			SortKey orderBy = (SortKey)obj;
+			return key != null && key.equals(orderBy.key) && asc == orderBy.asc;
+		}
+		return false;
+	}
+
+	@Override
 	public String toString() {
 		return "sort[key=" + key + ":asc=" + asc + "]";
 	}

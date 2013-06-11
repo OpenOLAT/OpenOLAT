@@ -20,12 +20,8 @@
 
 package org.olat.restapi.support.vo;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -43,13 +39,13 @@ public class CourseVO {
 	private Long key;
 	private String softKey;
 	private Long repoEntryKey;
+	private String externId;
+	private String externRef;
+	private String managedFlags;
 	private String title;
 	private String displayName;
 	private String editorRootNodeId;
-	
-	
-	@XmlElement(name="link")
-	private List<LinkVO> link = new ArrayList<LinkVO>();
+	private RepositoryEntryLifecycleVO lifecycle;
 	
 	public CourseVO() {
 		//make JAXB happy
@@ -79,6 +75,30 @@ public class CourseVO {
 		this.repoEntryKey = repoEntryKey;
 	}
 
+	public String getExternId() {
+		return externId;
+	}
+
+	public void setExternId(String externId) {
+		this.externId = externId;
+	}
+
+	public String getExternRef() {
+		return externRef;
+	}
+
+	public void setExternRef(String externRef) {
+		this.externRef = externRef;
+	}
+
+	public String getManagedFlags() {
+		return managedFlags;
+	}
+
+	public void setManagedFlags(String managedFlags) {
+		this.managedFlags = managedFlags;
+	}
+
 	public String getTitle() {
 		return title;
 	}
@@ -103,13 +123,11 @@ public class CourseVO {
 		this.editorRootNodeId = editorRootNodeId;
 	}
 
-	public List<LinkVO> getLink() {
-		return link;
+	public RepositoryEntryLifecycleVO getLifecycle() {
+		return lifecycle;
 	}
 
-	public void setLink(List<LinkVO> link) {
-		this.link = link;
+	public void setLifecycle(RepositoryEntryLifecycleVO lifecycle) {
+		this.lifecycle = lifecycle;
 	}
-	
-	
 }

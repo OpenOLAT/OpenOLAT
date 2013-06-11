@@ -37,6 +37,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class GroupVO {
 	private Long key;
 	private String description;
+	private String externalId;
+	private String managedFlags;
 	private String name;
 	private String type;
 	private Integer minParticipants;
@@ -62,6 +64,22 @@ public class GroupVO {
 		this.description = description;
 	}
 	
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public String getManagedFlags() {
+		return managedFlags;
+	}
+
+	public void setManagedFlags(String managedFlags) {
+		this.managedFlags = managedFlags;
+	}
+
 	public String getName() {
 		return name;
 	}

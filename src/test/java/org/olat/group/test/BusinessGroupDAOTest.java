@@ -804,6 +804,56 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(contains(allGroupViews, group3));
 	}
 	
+	
+	@Test
+	public void findManagedGroups() {
+		//create a managed group with an external ID
+		String externalId = UUID.randomUUID().toString();
+		String managedFlags = "title,description";
+		BusinessGroup managedGroup = businessGroupDao.createAndPersist(null, "managed-grp-1", "managed-grp-1-desc",
+				externalId, managedFlags, 0, 5, true, false, true, false, false);
+		BusinessGroup freeGroup = businessGroupDao.createAndPersist(null, "free-grp-1", "free-grp-1-desc",
+				0, 5, true, false, true, false, false);
+		dbInstance.commitAndCloseSession();
+
+		//search managed group
+		SearchBusinessGroupParams paramsManaged = new SearchBusinessGroupParams();
+		paramsManaged.setManaged(Boolean.TRUE);
+		List<BusinessGroup> managedGroups = businessGroupDao.findBusinessGroups(paramsManaged, null, 0, 0);
+		Assert.assertNotNull(managedGroups);
+		Assert.assertTrue(managedGroups.size() >= 1);
+		Assert.assertTrue(managedGroups.contains(managedGroup));
+		Assert.assertFalse(managedGroups.contains(freeGroup));
+		
+		//search free group
+		SearchBusinessGroupParams paramsAll = new SearchBusinessGroupParams();
+		paramsAll.setManaged(Boolean.FALSE);
+		List<BusinessGroup> freeGroups = businessGroupDao.findBusinessGroups(paramsAll, null, 0, 0);
+		Assert.assertNotNull(freeGroups);
+		Assert.assertTrue(freeGroups.size() >= 1);
+		Assert.assertTrue(freeGroups.contains(freeGroup));
+		Assert.assertFalse(freeGroups.contains(managedGroup));
+	}
+	
+	
+	@Test
+	public void findGroupByExternalId() {
+		//create a managed group with an external ID
+		String externalId = UUID.randomUUID().toString();
+		String managedFlags = "all";
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "managed-grp-2", "managed-grp-2-desc",
+				externalId, managedFlags, 0, 5, true, false, true, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		//search
+		SearchBusinessGroupParams paramsAll = new SearchBusinessGroupParams();
+		paramsAll.setExternalId(externalId);
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(paramsAll, null, 0, 0);
+		Assert.assertNotNull(groups);
+		Assert.assertEquals(1, groups.size());
+		Assert.assertTrue(groups.contains(group));
+	}
+	
 	@Test
 	public void findPublicGroups() {
 		//create a group with an access control

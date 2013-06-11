@@ -52,6 +52,8 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	private String description;
 	private String name;
 	private String type;
+	private String externalId;
+	private String managedFlags;
 	private Integer minParticipants;
 	private Integer maxParticipants;
 	private OLATResource resource;
@@ -132,6 +134,22 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 */
 	public void setDescription(final String descriptionP) {
 		this.description = descriptionP;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public String getManagedFlags() {
+		return managedFlags;
+	}
+
+	public void setManagedFlags(String managedFlags) {
+		this.managedFlags = managedFlags;
 	}
 
 	/**

@@ -697,6 +697,35 @@ public class RepositoryManagerTest extends OlatTestCase {
 		}
 	}
 
+	@Test
+	public void genericANDQueryWithRoles_managed() {
+		RepositoryEntry managedRe = JunitTestHelper.createAndPersistRepositoryEntry();
+		managedRe.setManagedFlags("all");
+		managedRe = dbInstance.getCurrentEntityManager().merge(managedRe);
+		RepositoryEntry freeRe = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		//search managed
+		SearchRepositoryEntryParameters paramsManaged = new SearchRepositoryEntryParameters();
+		paramsManaged.setRoles(new Roles(true, false, false, false, false, false, false));
+		paramsManaged.setManaged(Boolean.TRUE);
+		List<RepositoryEntry> managedEntries = repositoryManager.genericANDQueryWithRolesRestriction(paramsManaged, 0, -1, true);
+		Assert.assertNotNull(managedEntries);
+		Assert.assertTrue(managedEntries.size() > 0);
+		Assert.assertTrue(managedEntries.contains(managedRe));
+		Assert.assertFalse(managedEntries.contains(freeRe));
+
+		//search unmanaged
+		SearchRepositoryEntryParameters paramsFree = new SearchRepositoryEntryParameters();
+		paramsFree.setRoles(new Roles(true, false, false, false, false, false, false));
+		paramsFree.setManaged(Boolean.FALSE);
+		List<RepositoryEntry> freeEntries = repositoryManager.genericANDQueryWithRolesRestriction(paramsFree, 0, -1, true);
+		Assert.assertNotNull(freeEntries);
+		Assert.assertTrue(freeEntries.size() > 0);
+		Assert.assertFalse(freeEntries.contains(managedRe));
+		Assert.assertTrue(freeEntries.contains(freeRe));
+	}
+
 	private RepositoryEntry createRepositoryEntry(final String type, long i) {
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(type, new Long(i));
 		OLATResource r =  resourceManager.createOLATResourceInstance(resourceable);

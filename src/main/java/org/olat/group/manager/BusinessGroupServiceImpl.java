@@ -187,8 +187,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			RepositoryEntry re) {
+		return createBusinessGroup(creator, name,  description, null, null,
+				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, re);
+	}
 
-		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description,
+	@Override
+	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
+			String externalId, String managedFlags, Integer minParticipants, Integer maxParticipants,
+			boolean waitingListEnabled, boolean autoCloseRanksEnabled, RepositoryEntry re) {
+		
+		if("".equals(managedFlags) || "none".equals(managedFlags)) {
+			managedFlags = null;
+		}
+		
+		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description, externalId, managedFlags,
 				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, false, false, false);
 		if(re != null) {
 			addResourceTo(group, re);
@@ -198,7 +210,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public BusinessGroup updateBusinessGroup(Identity ureqIdentity, BusinessGroup group, String name, String description,
-			Integer minParticipants, Integer maxParticipants) {
+			String managedFlags, Integer minParticipants, Integer maxParticipants) {
 		
 		BusinessGroup bg = businessGroupDAO.loadForUpdate(group.getKey());
 
@@ -208,6 +220,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		bg.setMaxParticipants(maxParticipants);
 		bg.setMinParticipants(minParticipants);
 		bg.setLastUsage(new Date(System.currentTimeMillis()));
+		
+		//strip
+		if("none".equals(managedFlags) || "".equals(managedFlags)) {
+			managedFlags = null;
+		}
+		bg.setManagedFlags(managedFlags);
+
 		//auto rank if possible
 		autoRankCheck(ureqIdentity, bg, previousMaxParticipants);
 		BusinessGroup updatedGroup = businessGroupDAO.merge(bg);

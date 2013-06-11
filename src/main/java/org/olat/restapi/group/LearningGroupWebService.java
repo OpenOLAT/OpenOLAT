@@ -35,6 +35,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -119,21 +120,29 @@ public class LearningGroupWebService {
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc This is the list of all groups in OLAT system
    * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVOes}
+	 * @param externalId Search with an external ID
+	 * @param managed (true / false) Search only managed / not managed groups 
    * @param request The HTTP Request
 	 * @return
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getGroupList(@Context HttpServletRequest request) {
+	public Response getGroupList(@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
+			@Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		List<BusinessGroup> groups;
+		SearchBusinessGroupParams params;
 		if(isGroupManager(request)) {
-			groups = bgs.loadAllBusinessGroups();
+			params = new SearchBusinessGroupParams();
 		} else {
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, true);
-			groups = bgs.findBusinessGroups(params, null, 0, -1);
+			params = new SearchBusinessGroupParams(identity, true, true);
 		}
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			params.setExternalId(externalId);
+		}
+		params.setManaged(managed);
+		groups = bgs.findBusinessGroups(params, null, 0, -1);
 		
 		int count = 0;
 		GroupVO[] groupVOs = new GroupVO[groups.size()];
@@ -216,7 +225,8 @@ public class LearningGroupWebService {
 
 		Integer minPart = normalize(group.getMinParticipants());
 		Integer maxPart = normalize(group.getMaxParticipants());
-		BusinessGroup newBG = bgs.createBusinessGroup(identity, group.getName(), group.getDescription(), minPart, maxPart, false, false, null);
+		BusinessGroup newBG = bgs.createBusinessGroup(identity, group.getName(), group.getDescription(),
+				group.getExternalId(), group.getManagedFlags(), minPart, maxPart, false, false, null);
 		GroupVO savedVO = ObjectFactory.get(newBG);
 		return Response.ok(savedVO).build();
 	}
@@ -258,7 +268,7 @@ public class LearningGroupWebService {
 		}
 		Identity identity = RestSecurityHelper.getIdentity(request);
 		BusinessGroup mergedBg = bgs.updateBusinessGroup(identity, bg, group.getName(), group.getDescription(),
-				normalize(group.getMinParticipants()), normalize(group.getMaxParticipants()));
+				group.getManagedFlags(), normalize(group.getMinParticipants()), normalize(group.getMaxParticipants()));
 		//save the updated group
 		GroupVO savedVO = ObjectFactory.get(mergedBg);
 		return Response.ok(savedVO).build();

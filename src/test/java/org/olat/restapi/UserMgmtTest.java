@@ -124,6 +124,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	private static Identity owner1, id1, id2, id3;
 	private static BusinessGroup g1, g2, g3, g4;
+	private static String g1externalId, g3ExternalId;
 	
 	private static ICourse demoCourse;
 	private static FOCourseNode demoForumNode;
@@ -183,7 +184,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     // 1) context one: learning groups
     RepositoryEntry c1 = JunitTestHelper.createAndPersistRepositoryEntry();
     // create groups without waiting list
-    g1 = businessGroupService.createBusinessGroup(null, "user-rest-g1", null, 0, 10, false, false, c1);
+    g1externalId = UUID.randomUUID().toString();
+    g1 = businessGroupService.createBusinessGroup(null, "user-rest-g1", null, g1externalId, "all", 0, 10, false, false, c1);
     g2 = businessGroupService.createBusinessGroup(null, "user-rest-g2", null, 0, 10, false, false, c1);
     // members g1
     secm.addIdentityToSecurityGroup(id1, g1.getOwnerGroup());
@@ -195,7 +197,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     // 2) context two: right groups
     RepositoryEntry c2 = JunitTestHelper.createAndPersistRepositoryEntry();
     // groups
-    g3 = businessGroupService.createBusinessGroup(null, "user-rest-g3", null, -1, -1, false, false, c2);
+    g3ExternalId = UUID.randomUUID().toString();
+    g3 = businessGroupService.createBusinessGroup(null, "user-rest-g3", null, g3ExternalId, "all", -1, -1, false, false, c2);
     g4 = businessGroupService.createBusinessGroup(null, "user-rest-g4", null, -1, -1, false, false, c2);
     // members
     secm.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
@@ -884,6 +887,69 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		List<GroupVO> groups = parseGroupArray(body);
 		assertNotNull(groups);
 		assertEquals(3, groups.size());//g1, g2 and g3
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUserGroup_managed() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//retrieve managed groups
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
+				.queryParam("managed", "true").build();
+		
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+
+		InputStream body = response.getEntity().getContent();
+		List<GroupVO> groups = parseGroupArray(body);
+		assertNotNull(groups);
+		assertEquals(2, groups.size());//g1 and g3
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUserGroup_notManager() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//retrieve free groups
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
+				.queryParam("managed", "false").build();
+		
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+
+		InputStream body = response.getEntity().getContent();
+		List<GroupVO> groups = parseGroupArray(body);
+		assertNotNull(groups);
+		assertEquals(1, groups.size());//g2
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUserGroup_externalId() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//retrieve g1
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
+				.queryParam("externalId", g1externalId).build();
+		
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+
+		InputStream body = response.getEntity().getContent();
+		List<GroupVO> groups = parseGroupArray(body);
+		assertNotNull(groups);
+		assertEquals(1, groups.size());
+		assertEquals(g1.getKey(), groups.get(0).getKey());
+		assertEquals(g1externalId, groups.get(0).getExternalId());
+
 		conn.shutdown();
 	}
 	

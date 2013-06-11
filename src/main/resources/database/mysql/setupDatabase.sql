@@ -37,6 +37,8 @@ create table if not exists o_gp_business (
    lastusage datetime,
    businessgrouptype varchar(15) not null,
    groupname varchar(255),
+   external_id varchar(64),
+   managed_flags varchar(255),
    descr longtext,
    minparticipants integer,
    maxparticipants integer,
@@ -299,12 +301,16 @@ create table if not exists o_repositoryentry (
    creationdate datetime,
    lastusage datetime,
    softkey varchar(30) not null unique,
+   external_id varchar(64),
+   external_ref varchar(64),
+   managed_flags varchar(255),
    displayname varchar(110) not null,
    resourcename varchar(100) not null,
+   fk_lifecycle bigint,
    fk_olatresource bigint unique,
    fk_ownergroup bigint unique,
    fk_tutorgroup bigint,
-	 fk_participantgroup bigint,
+   fk_participantgroup bigint,
    description longtext,
    initialauthor varchar(128) not null,
    accesscode integer not null default 0,
@@ -317,6 +323,17 @@ create table if not exists o_repositoryentry (
    launchcounter bigint not null,
    downloadcounter bigint not null,
    primary key (repositoryentry_id)
+);
+create table o_repositoryentry_cycle (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   r_softkey varchar(64),
+   r_label varchar(255),
+   r_privatecycle bit default 0,
+   r_validfrom datetime,
+   r_validto datetime,
+   primary key (id)
 );
 create table if not exists o_bookmark (
    bookmark_id bigint not null,
@@ -2057,6 +2074,14 @@ alter table o_qp_item_type add unique (q_type(200));
 
 alter table o_lti_outcome add constraint idx_lti_outcome_ident_id foreign key (fk_identity_id) references o_bs_identity(id);
 alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
+
+
+create index idx_re_lifecycle_soft_idx on o_repositoryentry_cycle (r_softkey);
+create index idx_re_lifecycle_extid_idx on o_repositoryentry (external_id);
+create index idx_re_lifecycle_extref_idx on o_repositoryentry (external_ref);
+alter table o_repositoryentry add constraint idx_re_lifecycle_fk foreign key (fk_lifecycle) references o_repositoryentry_cycle(id);
+
+create index idx_grp_lifecycle_soft_idx on o_gp_business (external_id);
 
 insert into hibernate_unique_key values ( 0 );
 

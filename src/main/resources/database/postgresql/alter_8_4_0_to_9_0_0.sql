@@ -352,4 +352,32 @@ create index idx_mail_att_checksum_idx on o_mail_attachment (datas_checksum);
 create index idx_mail_path_idx on o_mail_attachment (datas_path);
 create index idx_mail_att_siblings_idx on o_mail_attachment (datas_checksum, mimetype, datas_size, datas_name);
 
+-- managed groups and repository entries
+create table o_repositoryentry_cycle (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   r_softkey varchar(64),
+   r_label varchar(255),
+   r_privatecycle bool default false,
+   r_validfrom timestamp,
+   r_validto timestamp,
+   primary key (id)
+);
+create index idx_re_lifecycle_soft_idx on o_repositoryentry_cycle (r_softkey);
+
+alter table o_repositoryentry add column external_id varchar(64);
+alter table o_repositoryentry add column external_ref varchar(64);
+alter table o_repositoryentry add column managed_flags varchar(255);
+create index idx_re_lifecycle_extid_idx on o_repositoryentry (external_id);
+create index idx_re_lifecycle_extref_idx on o_repositoryentry (external_ref);
+
+alter table o_repositoryentry add column fk_lifecycle int8;
+alter table o_repositoryentry add constraint idx_re_lifecycle_fk foreign key (fk_lifecycle) references o_repositoryentry_cycle(id);
+create index idx_re_lifecycle_idx on o_repositoryentry (fk_lifecycle);
+
+alter table o_gp_business add column external_id varchar(64);
+alter table o_gp_business add column managed_flags varchar(255);
+create index idx_grp_lifecycle_soft_idx on o_gp_business (external_id);
+
 

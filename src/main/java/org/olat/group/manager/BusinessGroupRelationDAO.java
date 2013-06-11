@@ -241,6 +241,7 @@ public class BusinessGroupRelationDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 			.append(" inner join fetch v.olatResource as ores ")
+			.append(" left join fetch v.lifecycle as lifecycle")
 			.append(" left join fetch v.ownerGroup as ownerGroup ")
 			.append(" left join fetch v.tutorGroup as tutorGroup ")
 			.append(" left join fetch v.participantGroup as participantGroup ")

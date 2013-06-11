@@ -43,6 +43,9 @@ public class SearchRepositoryEntryParameters {
 	private Roles roles;
 	private Boolean marked;
 	private String institution;
+	private Boolean managed;
+	private String externalId;
+	private String externalRef;
 	private boolean onlyExplicitMember;
 	private List<Long> repositoryEntryKeys;
 	
@@ -100,6 +103,30 @@ public class SearchRepositoryEntryParameters {
 		this.desc = desc;
 	}
 	
+	public Boolean getManaged() {
+		return managed;
+	}
+
+	public void setManaged(Boolean managed) {
+		this.managed = managed;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public String getExternalRef() {
+		return externalRef;
+	}
+
+	public void setExternalRef(String externalRef) {
+		this.externalRef = externalRef;
+	}
+
 	public List<String> getResourceTypes() {
 		return resourceTypes;
 	}

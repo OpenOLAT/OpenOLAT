@@ -37,11 +37,14 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
+import junit.framework.Assert;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -57,25 +60,38 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CoursesTest extends OlatJerseyTestCase {
 	
 	private static final OLog log = Tracing.createLoggerFor(CoursesTest.class);
 	
 	private Identity admin;
-	private ICourse course1, course2;
+	private ICourse course1, course2, course3;
+	private String externId, externRef;
+	private String externId3;
 	private RestConnection conn;
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryEntryLifecycleDAO reLifecycleDao;
 
 	/**
 	 * SetUp is called before each test.
@@ -87,10 +103,22 @@ public class CoursesTest extends OlatJerseyTestCase {
 		try {
 			// create course and persist as OLATResourceImpl
 			admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-			course1 = CoursesWebService.createEmptyCourse(admin, "courses1", "courses1 long name", null);
-			course2 = CoursesWebService.createEmptyCourse(admin, "courses2", "courses2 long name", null);
+			course1 = CoursesWebService.createEmptyCourse(admin, "courses1", "courses1 long name", null, null, null, null, null);
 			
-			DBFactory.getInstance().closeSession();
+			externId = UUID.randomUUID().toString();
+			externRef = UUID.randomUUID().toString();
+			course2 = CoursesWebService.createEmptyCourse(admin, "courses2", "courses2 long name", null, externId, externRef, "all", null);
+			
+			dbInstance.commitAndCloseSession();
+
+			externId3 = UUID.randomUUID().toString();
+			course3 = CoursesWebService.createEmptyCourse(admin, "courses3", "courses3 long name", null, externId3, null, "all", null);
+			RepositoryEntry re3 = repositoryManager.lookupRepositoryEntry(course3, false);
+			RepositoryEntryLifecycle lifecycle3 = reLifecycleDao.create("course3 lifecycle", UUID.randomUUID().toString(), true, new Date(), new Date());
+			re3.setLifecycle(lifecycle3);
+			re3 = dbInstance.getCurrentEntityManager().merge(re3);
+
+			dbInstance.commitAndCloseSession();
 		} catch (Exception e) {
 			log.error("Exception in setUp(): " + e);
 		}
@@ -134,6 +162,110 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertEquals(vo1.getKey(), course1.getResourceableId());
 		assertNotNull(vo2);
 		assertEquals(vo2.getKey(), course2.getResourceableId());
+	}
+	
+	@Test
+	public void testGetCourses_searchExternID() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses").queryParam("externId", externId).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		List<CourseVO> courses = parseCourseArray(body);
+		assertNotNull(courses);
+		assertTrue(courses.size() >= 1);
+		
+		CourseVO vo = null;
+		for(CourseVO course:courses) {
+			if(externId.equals(course.getExternId())) {
+				vo = course;
+			}
+		}
+		assertNotNull(vo);
+		assertEquals(vo.getKey(), course2.getResourceableId());
+	}
+	
+	@Test
+	public void testGetCourses_searchExternID_withLifecycle() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses").queryParam("externId", externId3).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
+		List<CourseVO> courses = parseCourseArray(body);
+		assertNotNull(courses);
+		assertEquals(1, courses.size());
+		CourseVO vo = courses.get(0);
+		assertNotNull(vo);
+		assertEquals(vo.getKey(), course3.getResourceableId());
+		assertNotNull(vo.getLifecycle());
+		assertNotNull(vo.getLifecycle().getSoftkey());
+	}
+	
+	@Test
+	public void testGetCourses_searchExternRef() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses").queryParam("externRef", externRef).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		List<CourseVO> courses = parseCourseArray(body);
+		assertNotNull(courses);
+		assertTrue(courses.size() >= 1);
+		
+		CourseVO vo = null;
+		for(CourseVO course:courses) {
+			if(externRef.equals(course.getExternRef())) {
+				vo = course;
+			}
+		}
+		assertNotNull(vo);
+		assertEquals(vo.getKey(), course2.getResourceableId());
+	}
+	
+	@Test
+	public void testGetCourses_managed() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses").queryParam("managed", "true").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		List<CourseVO> courses = parseCourseArray(body);
+		assertNotNull(courses);
+		assertTrue(courses.size() >= 1);
+		
+		for(CourseVO course:courses) {
+			boolean managed = StringHelper.containsNonWhitespace(course.getManagedFlags());
+			Assert.assertTrue(managed);
+		}
+	}
+	
+	@Test
+	public void testGetCourses_notManaged() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses").queryParam("managed", "false").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		List<CourseVO> courses = parseCourseArray(body);
+		assertNotNull(courses);
+		assertTrue(courses.size() >= 1);
+		
+		for(CourseVO course:courses) {
+			boolean managed = StringHelper.containsNonWhitespace(course.getManagedFlags());
+			Assert.assertFalse(managed);
+		}
 	}
 	
 	@Test

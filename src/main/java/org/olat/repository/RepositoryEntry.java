@@ -36,13 +36,15 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 
 /**
  *Represents a repository entry.
  */
 public class RepositoryEntry extends PersistentObject implements ModifiedInfo, OLATResourceable {
-	
+
+	private static final long serialVersionUID = 5319576295875289054L;
 	// IMPORTANT: Keep relation ACC_OWNERS < ACC_OWNERS_AUTHORS < ACC_USERS < ACC_USERS_GUESTS
 	/**
 	 * limit access to owners
@@ -74,6 +76,12 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	private String displayname; // mandatory
 	private String description; // mandatory
 	private String initialAuthor; // mandatory // login of the author of the first version
+	
+	private String externalId;
+	private String externalRef;
+	private String managedFlags;
+	private RepositoryEntryLifecycle lifecycle;
+	
 	private int access;
 	private boolean canCopy;
 	private boolean canReference;
@@ -384,6 +392,38 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 		if (displayname.length() > 100)
 			throw new AssertException("DisplayName is limited to 100 characters.");
 		this.displayname = displayname;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public String getExternalRef() {
+		return externalRef;
+	}
+
+	public void setExternalRef(String externalRef) {
+		this.externalRef = externalRef;
+	}
+
+	public String getManagedFlags() {
+		return managedFlags;
+	}
+
+	public void setManagedFlags(String managedFlags) {
+		this.managedFlags = managedFlags;
+	}
+
+	public RepositoryEntryLifecycle getLifecycle() {
+		return lifecycle;
+	}
+
+	public void setLifecycle(RepositoryEntryLifecycle lifecycle) {
+		this.lifecycle = lifecycle;
 	}
 
 	/**

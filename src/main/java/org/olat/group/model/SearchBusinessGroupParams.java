@@ -44,6 +44,8 @@ public class SearchBusinessGroupParams {
 	private String description;
 	private String ownerName;
 	private String courseTitle;
+	private String externalId;
+	private Boolean managed;
 	
 	private Identity identity;
 	private boolean owner;
@@ -138,6 +140,22 @@ public class SearchBusinessGroupParams {
 
 	public void setNameOrDesc(String nameOrDesc) {
 		this.nameOrDesc = nameOrDesc;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public Boolean getManaged() {
+		return managed;
+	}
+
+	public void setManaged(Boolean managed) {
+		this.managed = managed;
 	}
 
 	public Identity getIdentity() {

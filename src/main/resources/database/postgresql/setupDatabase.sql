@@ -35,6 +35,8 @@ create table o_gp_business (
    lastusage timestamp,
    businessgrouptype varchar(15) not null,
    groupname varchar(255),
+   external_id varchar(64),
+   managed_flags varchar(255),
    descr text,
    minparticipants int4,
    maxparticipants int4,
@@ -297,8 +299,12 @@ create table o_repositoryentry (
    creationdate timestamp,
    lastusage timestamp,
    softkey varchar(30) not null unique,
+   external_id varchar(64),
+   external_ref varchar(64),
+   managed_flags varchar(255),
    displayname varchar(110) not null,
    resourcename varchar(100) not null,
+   fk_lifecycle int8,
    fk_olatresource int8 unique,
    fk_ownergroup int8 unique,
    fk_tutorgroup int8,
@@ -315,6 +321,17 @@ create table o_repositoryentry (
    launchcounter int8 not null,
    downloadcounter int8 not null,
    primary key (repositoryentry_id)
+);
+create table o_repositoryentry_cycle (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   r_softkey varchar(64),
+   r_label varchar(255),
+   r_privatecycle bool default false,
+   r_validfrom timestamp,
+   r_validto timestamp,
+   primary key (id)
 );
 create table o_bookmark (
    bookmark_id int8 not null,
@@ -1997,5 +2014,14 @@ alter table o_lti_outcome add constraint idx_lti_outcome_ident_id foreign key (f
 alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
 create index idx_lti_outcome_ident_id_idx on o_lti_outcome (fk_identity_id);
 create index idx_lti_outcome_rsrc_id_idx on o_lti_outcome (fk_resource_id);
+
+
+create index idx_re_lifecycle_soft_idx on o_repositoryentry_cycle (r_softkey);
+
+create index idx_re_lifecycle_extid_idx on o_repositoryentry (external_id);
+create index idx_re_lifecycle_extref_idx on o_repositoryentry (external_ref);
+alter table o_repositoryentry add constraint idx_re_lifecycle_fk foreign key (fk_lifecycle) references o_repositoryentry_cycle(id);
+create index idx_re_lifecycle_idx on o_repositoryentry (fk_lifecycle);
+create index idx_grp_lifecycle_soft_idx on o_gp_business (external_id);
 
 insert into hibernate_unique_key values ( 0 );

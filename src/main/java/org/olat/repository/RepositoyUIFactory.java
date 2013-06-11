@@ -38,6 +38,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.LifecycleAdminController;
 
 /**
  * Description:<br>
@@ -95,5 +96,9 @@ public class RepositoyUIFactory {
 			return layoutCtr;
 		}
 	}
-
+	
+	public static Controller createLifecylceAdminController(UserRequest ureq, WindowControl wControl) {
+		Controller ctrl = new LifecycleAdminController(ureq, wControl);
+		return ctrl;
+	}
 }

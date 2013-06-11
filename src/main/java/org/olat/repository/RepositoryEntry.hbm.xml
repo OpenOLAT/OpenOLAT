@@ -26,6 +26,10 @@
 		<property name="resourcename">
 			<column name="resourcename" unique="false" not-null="true" length="100" index="resource_idx"/>
 		</property>
+		
+		<property name="externalId" column="external_id" unique="false" not-null="false" type="string"/>
+		<property name="externalRef" column="external_ref" unique="false" not-null="false" type="string"/>
+		<property name="managedFlags" column="managed_flags" unique="false" not-null="false" type="string"/>
 
 		<many-to-one name="olatResource"
                      column="fk_olatresource"
@@ -54,6 +58,13 @@
                      outer-join="true"   
                      unique="true" 
                      cascade="none"/>
+                     
+        <many-to-one name="lifecycle"
+                     column="fk_lifecycle"
+                     class="org.olat.repository.model.RepositoryEntryLifecycle" 
+                     outer-join="true"
+                     fetch="join"
+                     cascade="none"/>            
 
 		<property name="description" type="string">
 			<column name="description" length="16777210" unique="false" not-null="false" />

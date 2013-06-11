@@ -69,6 +69,25 @@ public interface BusinessGroupService {
 			RepositoryEntry resource);
 	
 	/**
+	 * Mostly used by REST API. Same as above but with parameter to save an external id and a list of flags.
+	 * @param creator
+	 * @param name
+	 * @param description
+	 * @param externalId
+	 * @param managedFlags
+	 * @param minParticipants
+	 * @param maxParticipants
+	 * @param waitingListEnabled
+	 * @param autoCloseRanksEnabled
+	 * @param resource
+	 * @return
+	 */
+	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
+			String externalId, String managedFlags,
+			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
+			RepositoryEntry resource);
+	
+	/**
 	 * Update the business group with the supplied arguments and do it in sync
 	 * @param group
 	 * @param name
@@ -78,7 +97,7 @@ public interface BusinessGroupService {
 	 * @return
 	 */
 	public BusinessGroup updateBusinessGroup(Identity ureqIdentity, BusinessGroup group, String name, String description,
-			Integer minParticipants, Integer maxParticipants);
+			String managedFlags, Integer minParticipants, Integer maxParticipants);
 	
 	/**
 	 * Update the business group with the supplied arguments and do it in sync

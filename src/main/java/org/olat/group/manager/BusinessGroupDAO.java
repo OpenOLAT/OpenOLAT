@@ -83,6 +83,15 @@ public class BusinessGroupDAO {
 	public BusinessGroup createAndPersist(Identity creator, String name, String description,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			boolean showOwners, boolean showParticipants, boolean showWaitingList) {
+		return createAndPersist(creator, name, description, null, null,
+				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled,
+				showOwners, showParticipants, showWaitingList);
+	}
+		
+		public BusinessGroup createAndPersist(Identity creator, String name, String description,
+				String externalId, String managedFlags,
+				Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
+				boolean showOwners, boolean showParticipants, boolean showWaitingList) {
 
 		BusinessGroupImpl businessgroup = null;
 		//security groups
@@ -96,6 +105,13 @@ public class BusinessGroupDAO {
 		}
 		if(maxParticipants != null && maxParticipants.intValue() > 0) {
 			businessgroup.setMaxParticipants(maxParticipants);
+		}
+		
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			businessgroup.setExternalId(externalId);
+		}
+		if(StringHelper.containsNonWhitespace(managedFlags)) {
+			businessgroup.setManagedFlags(managedFlags);
 		}
 		
 		businessgroup.setWaitingListEnabled(waitingListEnabled);
@@ -452,6 +468,20 @@ public class BusinessGroupDAO {
 			searchLikeAttribute(query, "identity", "name", "owner");
 			query.append(")");
 		}
+
+		if(StringHelper.containsNonWhitespace(params.getExternalId())) {
+			where = where(query, where);
+			query.append("bgi.externalId=:externalId");
+		}
+		
+		if(params.getManaged() != null) {
+			where = where(query, where);
+			if(params.getManaged().booleanValue()) {
+				query.append("bgi.managedFlags is not null");
+			} else {
+				query.append("bgi.managedFlags is null");
+			}
+		}
 		
 		if(params.getGroupKeys() != null && !params.getGroupKeys().isEmpty()) {
 			where = where(query, where);
@@ -587,6 +617,9 @@ public class BusinessGroupDAO {
 		}
 		if(params.getGroupKeys() != null && !params.getGroupKeys().isEmpty()) {
 			dbq.setParameter("groupKeys", params.getGroupKeys());
+		}
+		if(StringHelper.containsNonWhitespace(params.getExternalId())) {
+			dbq.setParameter("externalId", params.getExternalId());
 		}
 		
 		if (resource != null) {

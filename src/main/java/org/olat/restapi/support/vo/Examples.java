@@ -20,6 +20,10 @@
 
 package org.olat.restapi.support.vo;
 
+import java.util.Calendar;
+
+import org.olat.restapi.support.ObjectFactory;
+
 
 public class Examples {
  
@@ -27,6 +31,8 @@ public class Examples {
 	public static final GroupVOes SAMPLE_GROUPVOes = new GroupVOes();
 	public static final GroupInfoVO SAMPLE_GROUPINFOVO = new GroupInfoVO();
 	public static final GroupInfoVOes SAMPLE_GROUPINFOVOes = new GroupInfoVOes();
+	
+	public static final RepositoryEntryLifecycleVO SAMPLE_LIFECYCLE = new RepositoryEntryLifecycleVO();
 	
 	public static final ErrorVO SAMPLE_ERRORVO = new ErrorVO();
 	public static final ErrorVOes SAMPLE_ERRORVOes = new ErrorVOes();
@@ -88,6 +94,14 @@ public class Examples {
   	SAMPLE_REPOENTRYVO.setResourceableTypeName("CourseModule");
   	SAMPLE_REPOENTRYVOes.setRepositoryEntries(new RepositoryEntryVO[]{SAMPLE_REPOENTRYVO});
   	SAMPLE_REPOENTRYVOes.setTotalCount(1);
+  	
+  	Calendar cal = Calendar.getInstance();
+  	SAMPLE_LIFECYCLE.setKey(2873423876l);
+  	SAMPLE_LIFECYCLE.setLabel("Semester 13");
+  	SAMPLE_LIFECYCLE.setSoftkey("st_13");
+  	SAMPLE_LIFECYCLE.setValidFrom(ObjectFactory.formatDate(cal.getTime()));
+  	cal.add(Calendar.DATE, 5);
+  	SAMPLE_LIFECYCLE.setValidTo(ObjectFactory.formatDate(cal.getTime()));
   	
   	SAMPLE_AUTHVO.setKey(38759l);
   	SAMPLE_AUTHVO.setAuthUsername("john");
