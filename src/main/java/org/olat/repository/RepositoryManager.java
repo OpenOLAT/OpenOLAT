@@ -1906,6 +1906,20 @@ public class RepositoryManager extends BasicManager {
 		}
 
 		boolean allOk = securityManager.removeIdentityFromSecurityGroups(members, secGroups);
+		if (allOk) {
+			// do logging - not optimal but 
+			StringBuffer sb = new StringBuffer();
+			sb.append("Idenitity(.key):").append(ureqIdentity.getKey()).append("removed multiple identities from security groups. Identities:: " );
+			for (Identity member : members) {
+				sb.append(member.getName()).append(", ");
+			}
+			sb.append(" SecurityGroups:: ");
+			for (SecurityGroup group : secGroups) {
+				sb.append(group.getKey()).append(", ");
+			}
+			logAudit(sb.toString());					
+		}
+		
 		for(Identity identity:members) {
 			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
 		}

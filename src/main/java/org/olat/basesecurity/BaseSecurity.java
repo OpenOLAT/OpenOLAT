@@ -79,9 +79,11 @@ public interface BaseSecurity {
 	
 	/**
 	 * Update the roles
-	 * @param identity
+	 * @param actingIdentity The identity who is performing the change
+	 * @param updatedIdentity The identity that is changed
+	 * @param roles The new roles to set on updatedIdentity
 	 */
-	public void updateRoles(Identity identity, Roles roles);
+	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, Roles roles);
 
 	/**
 	 * @param identity

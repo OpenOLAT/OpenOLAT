@@ -587,6 +587,7 @@ public class CourseWebService {
 		if(!hasBeenAuthor) {
 			//not an author already, add this identity to the security group "authors"
 			securityManager.addIdentityToSecurityGroup(author, authorGroup);
+			log.audit("User::" + identity.getName() + " added system role::" + Constants.GROUP_AUTHORS + " to user::" + author.getName() + " via addAuthor method in course REST API", null);
 		}
 		
 		//add the author as owner of the course

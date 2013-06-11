@@ -181,9 +181,15 @@ public class UserBulkChangeManager extends BasicManager {
 				if (roleChangeMap.containsKey(securityGroup)) {
 					thisRoleAction = roleChangeMap.get(securityGroup);
 					// user not anymore in security group, remove him
-					if (isInGroup && thisRoleAction.equals("remove")) secMgr.removeIdentityFromSecurityGroup(identity, secGroup);
+					if (isInGroup && thisRoleAction.equals("remove")) {
+						secMgr.removeIdentityFromSecurityGroup(identity, secGroup);
+						logAudit("User::" + addingIdentity.getName() + " removed system role::" + securityGroup + " from user::" + identity.getName(), null);
+					}
 					// user not yet in security group, add him
-					if (!isInGroup && thisRoleAction.equals("add")) secMgr.addIdentityToSecurityGroup(identity, secGroup);
+					if (!isInGroup && thisRoleAction.equals("add")) {
+						secMgr.addIdentityToSecurityGroup(identity, secGroup);
+						logAudit("User::" + addingIdentity.getName() + " added system role::" + securityGroup + " to user::" + identity.getName(), null);
+					}
 				}
 			}
 			
@@ -191,7 +197,20 @@ public class UserBulkChangeManager extends BasicManager {
 			// set status
 			if (roleChangeMap.containsKey("Status")) {
 				Integer status = Integer.parseInt(roleChangeMap.get("Status"));
+
+				int oldStatus = identity.getStatus();
+				String oldStatusText = (oldStatus == Identity.STATUS_PERMANENT ? "permanent"
+						: (oldStatus == Identity.STATUS_ACTIV ? "active"
+								: (oldStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied"
+										: (oldStatus == Identity.STATUS_DELETED ? "deleted"
+												: "unknown"))));
+				String newStatusText = (status == Identity.STATUS_PERMANENT ? "permanent"
+						: (status == Identity.STATUS_ACTIV ? "active"
+								: (status == Identity.STATUS_LOGIN_DENIED ? "login_denied"
+										: (status == Identity.STATUS_DELETED ? "deleted"
+												: "unknown"))));
 				identity = secMgr.saveIdentityStatus(identity, status);
+				logAudit("User::" + addingIdentity.getName() + " changed accout status for user::" + identity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
 			}
 
 			// persist changes:
@@ -202,7 +221,7 @@ public class UserBulkChangeManager extends BasicManager {
 			} else {
 				um.updateUserFromIdentity(identity);
 				changedIdentities.add(identity);
-				log.audit("user successfully changed during bulk-change: " + identity.getName());
+				logAudit("User::" + addingIdentity.getName() + " successfully changed account data for user::" + identity.getName() + " in bulk change", null);
 			}
 
 			// commit changes for this user
