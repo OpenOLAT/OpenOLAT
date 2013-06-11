@@ -32,7 +32,6 @@ import java.util.Map;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.logging.StartupException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.login.auth.AuthenticationProvider;
@@ -57,7 +56,7 @@ public class LoginModule extends AbstractOLATModule {
 	private static int attackPreventionMaxAttempts;
 	private static int attackPreventionTimeout;
 	private static boolean guestLoginLinksEnabled;
-	private static CacheWrapper failedLoginCache;
+	private static CacheWrapper<String, Integer> failedLoginCache;
 	private static String defaultProviderName;
 	private static boolean allowLoginUsingEmail;
 	private CoordinatorManager coordinatorManager;
@@ -74,25 +73,25 @@ public class LoginModule extends AbstractOLATModule {
 	protected void initDefaultProperties() {
 		attackPreventionEnabled = getBooleanConfigParameter(CONF_ATTACK_ENABLED, true);
 		if (attackPreventionEnabled) {
-			Tracing.logInfo("Attack prevention enabled. Max number of attempts: " + attackPreventionMaxAttempts + ", timeout: " + attackPreventionTimeout + " minutes.", LoginModule.class);
+			logInfo("Attack prevention enabled. Max number of attempts: " + attackPreventionMaxAttempts + ", timeout: " + attackPreventionTimeout + " minutes.", null);
 		} else {
-			Tracing.logInfo("Attack prevention is disabled.", LoginModule.class);
+			logInfo("Attack prevention is disabled.", null);
 		}
 		attackPreventionMaxAttempts = getIntConfigParameter(CONF_ATTACK_MAXATTEMPTS, 5);
 		attackPreventionTimeout = getIntConfigParameter(CONF_ATTACK_TIMEOUTMIN, 5);
 		
 		guestLoginLinksEnabled = getBooleanConfigParameter(CONF_GUESTLINKS_ENABLED, true);
 		if (guestLoginLinksEnabled) {
-			Tracing.logInfo("Guest login links on login page enabled", LoginModule.class);
+			logInfo("Guest login links on login page enabled", null);
 		} else {
 			guestLoginLinksEnabled = false;
-			Tracing.logInfo("Guest login links on login page disabled or not properly configured. " , LoginModule.class);
+			logInfo("Guest login links on login page disabled or not properly configured. ", null);
 		}
 		invitationEnabled = getBooleanConfigParameter(CONF_INVITATION_ENABLED, true);
 		if (invitationEnabled) {
-			Tracing.logInfo("Invitation login enabled", LoginModule.class);
+			logInfo("Invitation login enabled", null);
 		} else {
-			Tracing.logInfo("Invitation login disabled" , LoginModule.class);
+			logInfo("Invitation login disabled", null);
 		}
 		
 		
@@ -114,6 +113,7 @@ public class LoginModule extends AbstractOLATModule {
 	 * [used by spring]
 	 * @param authProviders
 	 */
+	@SuppressWarnings("static-access")
 	public void setAuthenticaionProviders(Map<String, AuthenticationProvider> authProviders) {
 		this.authenticationProviders = authProviders;
 	}
@@ -148,18 +148,15 @@ public class LoginModule extends AbstractOLATModule {
 	 */
 	public static final boolean registerFailedLoginAttempt(String login) {
 		if (!attackPreventionEnabled) return false;
-		Integer numAttempts = (Integer)failedLoginCache.get(login);
+		Integer numAttempts = failedLoginCache.get(login);
 		
 		if (numAttempts == null) { // create new entry
 			numAttempts = new Integer(1);
+			failedLoginCache.put(login, numAttempts);
 		} else { // update entry
 			numAttempts = new Integer(numAttempts.intValue() + 1);
-		}
-		// do not use putSilent(...) here, since failed login attempts should propagate to all cluster nodes 
-		// o_clusterREVIEW todo: this is fine, however loading the data (numAttempts == null) ... should be via db e.g properties table, 
-		// otherwise it cannot be clustersafe
-		failedLoginCache.update(login, numAttempts);
-		
+			failedLoginCache.update(login, numAttempts);
+		}		
 		return (numAttempts.intValue() > attackPreventionMaxAttempts);
 	}
 	
@@ -169,27 +166,25 @@ public class LoginModule extends AbstractOLATModule {
 	 */
 	public static final void clearFailedLoginAttempts(String login) {
 		if (!attackPreventionEnabled) return;
-		//EHCacheManager.getInstance().removeFromCache(failedLoginCache, login);
 		failedLoginCache.remove(login);
 	}
 	
 	/**
-	 * Tells wether a login is blocked to prevent brute force attacks or not.
+	 * Tells whether a login is blocked to prevent brute force attacks or not.
 	 * @param login
 	 * @return True if login is blocked by attack prevention mechanism
 	 */
 	public static final boolean isLoginBlocked(String login) {
 		if (!attackPreventionEnabled) return false;
-		//Integer numAttempts = (Integer)EHCacheManager.getInstance().get(failedLoginCache, login);
-		Integer numAttempts = (Integer)failedLoginCache.get(login);
+		Integer numAttempts = failedLoginCache.get(login);
 		
 		if (numAttempts == null) return false;
 		else return (numAttempts.intValue() > attackPreventionMaxAttempts);
 	}
 	
 	/**
-	 * @return True if guest login kinks must be shown on login screen, false
-	 *         otherwhise
+	 * @return True if guest login links must be shown on login screen, false
+	 *         otherwise
 	 */
 	public static final boolean isGuestLoginLinksEnabled() {
 		return guestLoginLinksEnabled;
@@ -222,7 +217,7 @@ public class LoginModule extends AbstractOLATModule {
 			if (provider.isDefault()) {
 				defaultProviderFound = true;
 				defaultProviderName = provider.getName();
-				Tracing.logInfo("Using default authentication provider '" + defaultProviderName + "'.", LoginModule.class);
+				logInfo("Using default authentication provider '" + defaultProviderName + "'.", null);
 			}
 		}
 		
@@ -237,8 +232,7 @@ public class LoginModule extends AbstractOLATModule {
 
 	@Override
 	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
+		// nothing to do
 	}
 
 	@Override

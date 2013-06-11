@@ -42,6 +42,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -64,9 +66,6 @@ import org.olat.registration.DisclaimerController;
 import org.olat.registration.PwChangeController;
 import org.olat.registration.RegistrationManager;
 import org.olat.user.UserModule;
-
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 
 public class LDAPAuthenticationController extends AuthenticationController implements Activateable2 {
 	public static final String PROVIDER_LDAP = "LDAP";
@@ -148,6 +147,12 @@ protected void event(UserRequest ureq, Component source, Event event) {
 			String login = loginForm.getLogin();
 			String pass = loginForm.getPass();
 
+			if (LoginModule.isLoginBlocked(login)) {
+				// do not proceed when already blocked
+				showError("login.blocked", LoginModule.getAttackPreventionTimeoutMin().toString());
+				getLogger().audit("Login attempt on already blocked login for " + login + ". IP::" + ureq.getHttpReq().getRemoteAddr(), null);
+				return;
+			}
 			authenticatedIdentity= authenticate(login, pass, ldapError);
 
 			if (authenticatedIdentity != null) {
@@ -164,7 +169,7 @@ protected void event(UserRequest ureq, Component source, Event event) {
 			// Still not found? register for hacking attempts
 			if (authenticatedIdentity == null) {
 				if (LoginModule.registerFailedLoginAttempt(login)) {
-					logAudit("Too many failed login attempts for " + login + ". Login blocked.", null);
+					logAudit("Too many failed login attempts for " + login + ". Login blocked. IP::" + ureq.getHttpReq().getRemoteAddr(), null);
 					showError("login.blocked", LoginModule.getAttackPreventionTimeoutMin().toString());
 					return;
 				} else {

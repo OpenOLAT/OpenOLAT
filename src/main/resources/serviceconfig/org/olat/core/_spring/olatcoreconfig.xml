@@ -56,7 +56,6 @@
 	<constructor-arg index="0" ref="infinispanCacheManager"/>
 	<property name="cacheConfig">
 		<map>
-			<entry key="LoginModule" value-ref="org.olat.login.LoginModule_blockafterfailedattempts" />
 			<entry key="QTIHelper"  value-ref="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"/>
 			<entry key="WikiManager" value-ref="org.olat.modules.wiki.WikiManager_wiki"/>
 			<entry key="CalendarManager" value-ref="org.olat.commons.calendar.ICalFileCalendarManager_calendar" />
@@ -72,11 +71,7 @@
 	
 <!-- cache beans -->
 <!-- MapperService, UserSessionManager, OpenMeetingsManager, FeedManager -->
-<bean id="org.olat.login.LoginModule_blockafterfailedattempts" class="org.olat.core.util.cache.CacheConfig" >
-	<property name="timeToLive" value="300" />
-	<property name="timeToIdle" value="0" />
-	<property name="maxElementsInMemory" value="1000" />
-</bean>
+<!-- Note: cache configuration has been moved to infinispan-config.xml, entries below will be moved as well -->
 <bean id="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents" class="org.olat.core.util.cache.CacheConfig">
 	<property name="timeToLive" value="3600" />
 	<property name="timeToIdle" value="1800" />
