@@ -32,8 +32,12 @@ import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.helpers.Settings;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -52,10 +56,13 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 	"classpath:/org/olat/_spring/mainContext.xml"
 })
 public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
+	private static final OLog log = Tracing.createLoggerFor(OlatTestCase.class);
 	
 	private static boolean postgresqlConfigured = false;
 	private static boolean oracleConfigured = false;
 	private static boolean started = false;
+	
+	 @Rule public TestName name = new TestName();
 	
 	/**
 	 * If you like to disable a test method for some time just add the
@@ -72,8 +79,13 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		Settings.setJUnitTest(true);
 	}
 	
-	@Before public void printBanner(){
-		if(started) return;
+	@Before
+	public void printBanner(){
+		log.info("Method run: " + name.getMethodName() + "(" + this.getClass().getCanonicalName() + ")");
+		
+		if(started) {
+			return;
+		}
 		
 		FrameworkStartupEventChannel.fireEvent();
 		
@@ -92,6 +104,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	
 	@After
 	public void closeConnectionAfter() {
+		log.info("Method test finished: " + name.getMethodName() + "(" + this.getClass().getCanonicalName() + ")");
 		try {
 			DBFactory.getInstance().commitAndCloseSession();
 		} catch (Exception e) {
