@@ -195,4 +195,12 @@ public class ItemRow implements QuestionItemView {
 		}
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("itemRow[key=").append(delegate.getKey()).append(":")
+		  .append("name=").append(delegate.getTitle()).append("]");
+		return sb.toString();
+	}
 }

@@ -38,13 +38,6 @@ public interface FlexiTableDataSource<U> extends FlexiTableDataModel<U> {
 	public void clear();
 	
 	/**
-	 * Load the rows needed for paging
-	 * @param firstResult
-	 * @param maxResults
-	 */
-	public ResultInfos<U> load(int firstResult, int maxResults, SortKey... orderBy);
-	
-	/**
 	 * Reload the rows needed for paging
 	 * @param firstResult
 	 * @param maxResults
@@ -57,6 +50,6 @@ public interface FlexiTableDataSource<U> extends FlexiTableDataModel<U> {
 	 * @param maxResults
 	 * @param orderBy
 	 */
-	public ResultInfos<U> search(String query, List<String> addQueries, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<U> load(String query, List<String> addQueries, int firstResult, int maxResults, SortKey... orderBy);
 
 }

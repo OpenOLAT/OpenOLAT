@@ -25,6 +25,8 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +35,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.ResultInfos;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -88,11 +92,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private CloseableCalloutWindowController callout;
 	private final WindowControl wControl;
 	private final String mapperUrl;
-	
+
+	private SortKey[] orderBy;
 	private Object selectedObj;
 	private boolean allSelectedIndex;
 	private Set<Integer> multiSelectedIndex;
+	private List<String> conditionalQueries;
 	private Set<Integer> enabledColumnIndex = new HashSet<Integer>();
+	
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel) {
@@ -134,7 +141,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		
 		if(dataSource != null) {
 			//preload it
-			dataSource.load(0, pageSize);
+			dataSource.load(null, null, 0, pageSize);
 		}
 	}
 
@@ -213,6 +220,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	public String getSearchText() {
 		return searchFieldEl == null ? null : searchFieldEl.getValue();
+	}
+	
+	public List<String> getConditionalQueries() {
+		return conditionalQueries;
+	}
+	
+	public SortKey[] getOrderBy() {
+		return orderBy;
 	}
 
 	public TextElement getSearchElement() {
@@ -415,7 +430,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			search = searchFieldEl.getValue();
 		}
 		List<String> condQueries = extendedSearchCtrl.getConditionalQueries();
-		doSearch(ureq, search, condQueries);
+		doSearch(search, condQueries);
 	}
 
 	protected void evalSearchRequest(UserRequest ureq) {
@@ -423,7 +438,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		searchFieldEl.evalFormRequest(ureq);
 		String search = searchFieldEl.getValue();
 		if(StringHelper.containsNonWhitespace(search)) {
-			doSearch(ureq, search, null);
+			doSearch(search, null);
 		} else {
 			doResetSearch(ureq);
 		}
@@ -450,20 +465,39 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	protected void doSelect(UserRequest ureq, String action, int index) {
 		getRootForm().fireFormEvent(ureq, new SelectionEvent(action, index, this, FormEvent.ONCLICK));
 	}
+
 	
-	protected void doSearch(UserRequest ureq, String search, List<String> condQueries) {
+	protected void doSearch(String search, List<String> condQueries) {
+		if(condQueries == null || condQueries.isEmpty()) {
+			conditionalQueries = null;
+		} else {
+			conditionalQueries = new ArrayList<String>(condQueries);
+		}
+		
 		if(dataSource != null) {
 			resetInternComponents();
 			dataSource.clear();
-			dataSource.search(search, condQueries, 0, getPageSize());
+			ResultInfos<?> infos = dataSource.load(search, conditionalQueries, 0, getPageSize(), orderBy);
+			System.out.println("Found: " + infos.getObjects().size());
 		}
+	}
+	
+	protected ResultInfos<?> doScroll(int firstResult, int maxResults, SortKey... sortKeys) {
+		boolean same = Arrays.equals(orderBy , sortKeys);
+		if(!same) {
+			//clear data source
+			dataSource.clear();
+			orderBy = sortKeys;
+		}
+		
+		return dataSource.load(getSearchText(), getConditionalQueries(), firstResult, maxResults, sortKeys);
 	}
 	
 	protected void doResetSearch(UserRequest ureq) {
 		if(dataSource != null) {
 			resetInternComponents();
 			dataSource.clear();
-			dataSource.load(0, getPageSize());
+			dataSource.load(null, null, 0, getPageSize());
 		}
 	}
 
@@ -480,7 +514,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public Set<Integer> getMultiSelectedIndex() {
 		if(allSelectedIndex && dataSource != null) {
 			//ensure the whole data model is loaded
-			dataSource.load(0, -1);
+			dataSource.load(getSearchText(), getConditionalQueries(), 0, -1);
 			Set<Integer> allIndex = new HashSet<Integer>();
 			for(int i=dataModel.getRowCount(); i-->0; ) {
 				allIndex.add(new Integer(i));
@@ -539,7 +573,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void reloadData() {
 		if(dataSource != null) {
-			dataSource.load(0, getPageSize());//reload needed rows
+			dataSource.clear();
+			dataSource.load(getSearchText(), getConditionalQueries(), 0, getPageSize());//reload needed rows
 		}
 	}
 	

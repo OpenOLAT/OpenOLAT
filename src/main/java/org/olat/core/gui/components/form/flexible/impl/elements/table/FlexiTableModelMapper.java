@@ -80,7 +80,6 @@ public class FlexiTableModelMapper implements Mapper {
 
 		if(StringHelper.isLong(firstRowStr) && StringHelper.isLong(maxRowStr)) {
 			FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
-			FlexiTableDataSource<?> dataSource = ftE.getTableDataSource();
 			FlexiTableColumnModel columnsModel = dataModel.getTableColumnModel();
 			
 			SortKey orderBy = null;
@@ -115,12 +114,7 @@ public class FlexiTableModelMapper implements Mapper {
 				int maxRows = Integer.parseInt(maxRowStr);
 				int lastRow = Math.min(rows, firstRow + maxRows);
 				//paged loading
-				ResultInfos<?> results;
-				if(StringHelper.containsNonWhitespace(ftE.getSearchText())) {
-					results = dataSource.search(ftE.getSearchText(), null, firstRow, maxRows, orderBy);
-				} else {
-					results = dataSource.load(firstRow, maxRows, orderBy);
-				}
+				ResultInfos<?> results = ftE.doScroll(firstRow, maxRows, orderBy);
 				ftE.setCurrentFirstResult(results.getNextFirstResult());
 				
 				for (int i = firstRow; i < lastRow; i++) {

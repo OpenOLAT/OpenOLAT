@@ -138,11 +138,6 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 	}
 
 	@Override
-	public ResultInfos<U> load(final int firstResult, final int maxResults, SortKey... orderBy) {
-		return loadDatas(null, null, false, firstResult, maxResults, orderBy);
-	}
-
-	@Override
 	public void reload(List<Integer> rowIndex) {
 		if(rowIndex == null || rowIndex.isEmpty()) return;
 		
@@ -171,7 +166,7 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 	}
 
 	@Override
-	public ResultInfos<U> search(String query, List<String> addQueries, int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<U> load(String query, List<String> addQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		return loadDatas(query, addQueries, false, firstResult, maxResults, orderBy);
 	}
 	
