@@ -338,6 +338,28 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testFindUsersByLogin_notFuzzy() throws IOException, URISyntaxException {
+		//there is user-rest-...
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("user-rest");
+		Assert.assertNotNull(id);
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("login","\"user-rest\"").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> vos = parseUserArray(response.getEntity().getContent());
+
+		assertNotNull(vos);
+		assertEquals(1, vos.size());
+		assertEquals("user-rest", vos.get(0).getLogin());
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testFindUsersByProperty() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
@@ -911,7 +933,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testUserGroup_notManager() throws IOException, URISyntaxException {
+	public void testUserGroup_notManaged() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		

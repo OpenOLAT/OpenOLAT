@@ -39,11 +39,20 @@ public class RepositoryEntryVO {
 	private String softkey;
 	private String resourcename;
 	private String displayname;
+	private String externalId;
+	private String externalRef;
+	private String managedFlags;
 	private Long resourceableId;
 	private String resourceableTypeName;
 	
 	private Long olatResourceId;
 	private String olatRresourceTypeName;
+	
+	private RepositoryEntryLifecycleVO lifecycle;
+	
+	public RepositoryEntryVO() {
+		//
+	}
 	
 	public Long getKey() {
 		return key;
@@ -77,6 +86,30 @@ public class RepositoryEntryVO {
 		this.displayname = displayname;
 	}
 	
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public String getExternalRef() {
+		return externalRef;
+	}
+
+	public void setExternalRef(String externalRef) {
+		this.externalRef = externalRef;
+	}
+
+	public String getManagedFlags() {
+		return managedFlags;
+	}
+
+	public void setManagedFlags(String managedFlags) {
+		this.managedFlags = managedFlags;
+	}
+
 	public Long getResourceableId() {
 		return resourceableId;
 	}
@@ -107,6 +140,14 @@ public class RepositoryEntryVO {
 
 	public void setOlatRresourceTypeName(String olatRresourceTypeName) {
 		this.olatRresourceTypeName = olatRresourceTypeName;
+	}
+
+	public RepositoryEntryLifecycleVO getLifecycle() {
+		return lifecycle;
+	}
+
+	public void setLifecycle(RepositoryEntryLifecycleVO lifecycle) {
+		this.lifecycle = lifecycle;
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -148,8 +149,12 @@ public class RepositoryEntriesResource {
    * @response.representation.200.mediaType text/plain, text/html, application/xml, application/json
    * @response.representation.200.doc List all entries in the repository
    * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVOes}
-	 * @param start
-	 * @param limit
+	 * @param start (optional)
+	 * @param limit (optional)
+	 * @param managed (optional)
+	 * @param externalId External ID (optional)
+	 * @param externalRef External reference number (optional)
+	 * @param resourceType The resource type (CourseModule) (optional)
 	 * @param httpRequest The HTTP request
 	 * @param request The RESt request
 	 * @return
@@ -157,14 +162,27 @@ public class RepositoryEntriesResource {
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getEntries(@QueryParam("start") @DefaultValue("0") Integer start,
-			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
-			@Context Request request) {
+			@QueryParam("limit") @DefaultValue("25") Integer limit,
+			@QueryParam("managed") Boolean managed, @QueryParam("externalId") String externalId,
+			@QueryParam("externalRef") String externalRef, @QueryParam("resourceType") String resourceType,
+			@Context HttpServletRequest httpRequest, @Context Request request) {
 		try {
 			// list of courses open for everybody
 			Roles roles = getRoles(httpRequest);
 			Identity identity = getIdentity(httpRequest);
 			RepositoryManager rm = RepositoryManager.getInstance();
 			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles);
+			params.setManaged(managed);
+			if(StringHelper.containsNonWhitespace(externalId)) {
+				params.setExternalId(externalId);
+			}
+			if(StringHelper.containsNonWhitespace(externalRef)) {
+				params.setExternalRef(externalRef);
+			}
+			if(StringHelper.containsNonWhitespace(resourceType)) {
+				params.setResourceTypes(Collections.singletonList(resourceType));
+			}
+			
 			if(MediaTypeVariants.isPaged(httpRequest, request)) {
 				int totalCount = rm.countGenericANDQueryWithRolesRestriction(params, true);
 				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);

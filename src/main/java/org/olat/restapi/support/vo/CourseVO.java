@@ -39,8 +39,8 @@ public class CourseVO {
 	private Long key;
 	private String softKey;
 	private Long repoEntryKey;
-	private String externId;
-	private String externRef;
+	private String externalId;
+	private String externalRef;
 	private String managedFlags;
 	private String title;
 	private String displayName;
@@ -75,20 +75,20 @@ public class CourseVO {
 		this.repoEntryKey = repoEntryKey;
 	}
 
-	public String getExternId() {
-		return externId;
+	public String getExternalId() {
+		return externalId;
 	}
 
-	public void setExternId(String externId) {
-		this.externId = externId;
+	public void setExternalId(String id) {
+		this.externalId = id;
 	}
 
-	public String getExternRef() {
-		return externRef;
+	public String getExternalRef() {
+		return externalRef;
 	}
 
-	public void setExternRef(String externRef) {
-		this.externRef = externRef;
+	public void setExternalRef(String ref) {
+		this.externalRef = ref;
 	}
 
 	public String getManagedFlags() {

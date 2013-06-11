@@ -335,6 +335,7 @@ create table o_lti_outcome (
    fk_identity_id bigint not null,
    primary key (id)
 );
+alter table o_lti_outcome ENGINE = InnoDB;
 
 alter table o_lti_outcome add constraint idx_lti_outcome_ident_id foreign key (fk_identity_id) references o_bs_identity(id);
 alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
@@ -362,6 +363,8 @@ create table o_repositoryentry_cycle (
    r_validto datetime,
    primary key (id)
 );
+
+alter table  o_repositoryentry_cycle ENGINE = InnoDB;
 create index idx_re_lifecycle_soft_idx on o_repositoryentry_cycle (r_softkey);
 
 alter table o_repositoryentry add column external_id varchar(64);

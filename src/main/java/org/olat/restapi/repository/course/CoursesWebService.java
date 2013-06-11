@@ -140,8 +140,8 @@ public class CoursesWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseList(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,
-			@QueryParam("managed") Boolean managed, @QueryParam("externId") String externalId,
-			@QueryParam("externRef") String externalRef,
+			@QueryParam("managed") Boolean managed, @QueryParam("externalId") String externalId,
+			@QueryParam("externalRef") String externalRef,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 
@@ -150,8 +150,12 @@ public class CoursesWebService {
 		Identity identity = getIdentity(httpRequest);
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, CourseModule.getCourseTypeName());
 		params.setManaged(managed);
-		params.setExternalId(externalId);
-		params.setExternalRef(externalRef);
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			params.setExternalId(externalId);
+		}
+		if(StringHelper.containsNonWhitespace(externalRef)) {
+			params.setExternalRef(externalRef);
+		}
 
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
 			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params, true);
@@ -451,20 +455,20 @@ public class CoursesWebService {
 	 * @param shortTitle
 	 * @param longTitle
 	 * @param softKey
-	 * @param externId
-	 * @param externRef
+	 * @param externalId
+	 * @param externalRef
 	 * @param managedFlags
 	 * @param courseConfigVO
 	 * @return
 	 */
 	public static ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle,
-			String softKey, String externId, String externRef, String managedFlags, CourseConfigVO courseConfigVO) {
+			String softKey, String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
 		String learningObjectives = shortTitle + " (Example of creating a new course)";
 
 		try {
 			OLATResourceable oresable = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 			// create a repository entry
-			RepositoryEntry addedEntry = createCourseRepositoryEntry(initialAuthor, shortTitle,  softKey, externId, externRef, managedFlags, oresable);
+			RepositoryEntry addedEntry = createCourseRepositoryEntry(initialAuthor, shortTitle,  softKey, externalId, externalRef, managedFlags, oresable);
 			// create an empty course
 			CourseFactory.createEmptyCourse(oresable, shortTitle, longTitle, learningObjectives);
 			prepareSecurityGroup(initialAuthor, addedEntry, RepositoryEntry.ACC_OWNERS);
@@ -475,7 +479,7 @@ public class CoursesWebService {
 	}
 	
 	private static RepositoryEntry createCourseRepositoryEntry(Identity initialAuthor, String shortTitle, 
-			String softKey, String externId, String externRef, String managedFlags, OLATResourceable oresable) {
+			String softKey, String externalId, String externalRef, String managedFlags, OLATResourceable oresable) {
 		// create a repository entry
 		RepositoryEntry addedEntry = RepositoryManager.getInstance().createRepositoryEntryInstance(initialAuthor.getName());
 		addedEntry.setCanDownload(false);
@@ -485,8 +489,8 @@ public class CoursesWebService {
 		if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 			addedEntry.setSoftkey(softKey);
 		}
-		addedEntry.setExternalId(externId);
-		addedEntry.setExternalRef(externRef);
+		addedEntry.setExternalId(externalId);
+		addedEntry.setExternalRef(externalRef);
 		addedEntry.setManagedFlags(managedFlags);
 		
 		// Do set access for owner at the end, because unfinished course should be

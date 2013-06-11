@@ -143,6 +143,33 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testGetEntry_managed() throws IOException, URISyntaxException {
+		RepositoryEntry re = createRepository("Test GET repo entry");
+		re.setManagedFlags("all");
+		re = dbInstance.getCurrentEntityManager().merge(re);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.queryParam("managed", "true").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<RepositoryEntryVO> entryVoes = parseRepoArray(response.getEntity().getContent());
+		Assert.assertNotNull(entryVoes);
+		Assert.assertFalse(entryVoes.isEmpty());
+		//only repo entries with managed flags
+		for(RepositoryEntryVO entryVo:entryVoes) {
+			Assert.assertNotNull(entryVo.getManagedFlags());
+			Assert.assertTrue(entryVo.getManagedFlags().length() > 0);
+		}
+		
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testImportCp() throws IOException, URISyntaxException {
 		URL cpUrl = RepositoryEntriesTest.class.getResource("cp-demo.zip");
 		assertNotNull(cpUrl);

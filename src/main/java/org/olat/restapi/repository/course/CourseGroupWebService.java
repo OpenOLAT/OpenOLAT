@@ -231,27 +231,6 @@ public class CourseGroupWebService {
 	}
 	
 	/**
-	 * Fallback method for the browser.
-	 * @response.representation.qname {http://www.example.com}groupVO
-   * @response.representation.mediaType application/xml, application/json
-   * @response.representation.doc A group to save
-   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The persisted group
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param group The group's metadatas
-   * @param request The HTTP request
-	 * @return
-	 */
-	@POST
-	@Path("new")
-	public Response postNewGroup(GroupVO group, @Context HttpServletRequest request) {
-		return putNewGroup(group, request);
-	}
-	
-	/**
 	 * Retrieves the metadata of the specified group.
 	 * @response.representation.200.qname {http://www.example.com}groupVO
    * @response.representation.200.mediaType application/xml, application/json

@@ -151,6 +151,12 @@ public class ObjectFactory {
 			vo.setOlatResourceId(resource.getResourceableId());
 			vo.setOlatRresourceTypeName(resource.getResourceableTypeName());
 		}
+		vo.setExternalId(entry.getExternalId());
+		vo.setExternalRef(entry.getExternalRef());
+		vo.setManagedFlags(entry.getManagedFlags());
+		if(entry.getLifecycle() != null) {
+			vo.setLifecycle(new RepositoryEntryLifecycleVO(entry.getLifecycle()));
+		}
 		return vo;
 	}
 	
@@ -168,8 +174,8 @@ public class ObjectFactory {
 		vo.setEditorRootNodeId(course.getEditorTreeModel().getRootNode().getIdent());
 		vo.setSoftKey(re.getSoftkey());
 		vo.setRepoEntryKey(re.getKey());
-		vo.setExternId(re.getExternalId());
-		vo.setExternRef(re.getExternalRef());
+		vo.setExternalId(re.getExternalId());
+		vo.setExternalRef(re.getExternalRef());
 		vo.setManagedFlags(re.getManagedFlags());
 		if(re.getLifecycle() != null) {
 			vo.setLifecycle(new RepositoryEntryLifecycleVO(re.getLifecycle()));
