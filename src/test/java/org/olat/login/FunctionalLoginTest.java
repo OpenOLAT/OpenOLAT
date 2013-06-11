@@ -47,6 +47,7 @@ import org.olat.restapi.RestConnection;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalUtil;
+import org.olat.util.FunctionalVOUtil;
 
 import com.thoughtworks.selenium.DefaultSelenium;
 
@@ -70,11 +71,19 @@ public class FunctionalLoginTest {
 	@ArquillianResource
 	URL deploymentUrl;
 
-	FunctionalUtil functionalUtil;
-
+	static FunctionalUtil functionalUtil;
+	static FunctionalVOUtil functionalVOUtil;
+	
+	static boolean initialized = false;
+	
 	@Before
 	public void setup(){
-		functionalUtil = new FunctionalUtil();
+		if(!initialized){
+			functionalUtil = new FunctionalUtil();
+			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
+			
+			initialized = true;
+		}
 	}
 
 	@Test
@@ -88,20 +97,18 @@ public class FunctionalLoginTest {
 
 	@Test
 	@RunAsClient
-	public void loadLogin() {
-		browser.open(deploymentUrl + "dmz");
-		browser.waitForPageToLoad("5000");
-		boolean isLoginFormPresent = browser.isElementPresent("xpath=//div[@class='o_login_form']");
-		Assert.assertTrue(isLoginFormPresent);
+	public void loadLogin() throws IOException, URISyntaxException {
+		/* create user */
+		int userCount = 1;
+			
+		final UserVO[] users = new UserVO[userCount];
+		functionalVOUtil.createTestUsers(deploymentUrl, userCount).toArray(users);
 
-		//type the password
-		browser.type("id=o_fiooolat_login_name", "administrator");
-		browser.type("id=o_fiooolat_login_pass", "openolat");
-		browser.click("id=o_fiooolat_login_button");
-		functionalUtil.waitForPageToLoad(browser);
+		/* login */
+		Assert.assertTrue(functionalUtil.login(browser, users[0].getLogin(), users[0].getPassword(), true));
 
 		//check if administrator appears in the footer
-		boolean loginAs = browser.isElementPresent("xpath=//div[@id='b_footer_user']//i[contains(text(), 'administrator')]");
+		boolean loginAs = functionalUtil.waitForPageToLoadElement(browser, "xpath=//div[@id='b_footer_user']//i[contains(text(), '" + users[0].getLastName() + ", " + users[0].getFirstName() + "')]");
 		if(!loginAs) {
 			boolean acknowledge = browser.isElementPresent("xpath=//input[@name='acknowledge_checkbox']");
 			Assert.assertTrue("Acknowledge first!", acknowledge);
@@ -140,7 +147,7 @@ public class FunctionalLoginTest {
 		EntityUtils.consume(response.getEntity());
 
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
-		Assert.assertTrue(functionalUtil.login(browser));
+		Assert.assertTrue(functionalUtil.login(browser, username, password, true));
 
 		restConnection.shutdown();
 	}
