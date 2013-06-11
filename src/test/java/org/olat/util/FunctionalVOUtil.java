@@ -282,6 +282,34 @@ public class FunctionalVOUtil {
 		restConnection.shutdown();
 	}
 	
+	/**
+	 * Adds participant to group.
+	 * 
+	 * @param deploymentUrl
+	 * @param group
+	 * @param owner
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public void addParticipantToGroup(URL deploymentUrl, GroupVO group, UserVO participant) throws IOException, URISyntaxException{
+		//add an owner
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		assertTrue(restConnection.login(getUsername(), getPassword()));
+
+		URI request = UriBuilder.fromUri(deploymentUrl.toURI())
+				.path("restapi")
+				.path("groups").path(group.getKey().toString())
+				.path("participants").path(participant.getKey().toString())
+				.build();
+
+		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = restConnection.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		restConnection.shutdown();
+	}
+	
 	public void setGroupConfiguration(URL deploymentUrl, GroupVO group,
 			String[] tools,
 			boolean ownersPublic, boolean ownersVisible,
