@@ -202,6 +202,8 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 		if(firstResult == 0) {
 			if(newRows.getObjects().size() < correctMaxResults) {
 				rowCount = newRows.getObjects().size();
+			} else if(newRows.getCorrectedRowCount() >= 0) {
+				rowCount = newRows.getCorrectedRowCount();
 			} else {
 				rowCount = sourceDelegate.getRowCount();
 			}

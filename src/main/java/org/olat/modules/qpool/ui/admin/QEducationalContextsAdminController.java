@@ -101,7 +101,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.id.i18nKey(), Cols.id.ordinal(), true, "key"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.id.i18nKey(), Cols.id.ordinal(), true, "key"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.level.i18nKey(), Cols.level.ordinal(), true, "level"));
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("translate", new TextFlexiCellRenderer());
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.levelI18n.i18nKey(), Cols.levelI18n.ordinal(), "translate", renderer));

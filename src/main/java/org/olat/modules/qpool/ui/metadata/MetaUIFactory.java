@@ -143,6 +143,31 @@ public class MetaUIFactory {
 		return allOk;
 	}
 	
+	protected static boolean validateInteger(TextElement el, int min, int max, boolean enabled) {
+		boolean allOk = true;
+		el.clearError();
+		if(enabled) {
+			String val = el.getValue();
+			if(StringHelper.containsNonWhitespace(val)) {
+				
+				try {
+					double value = Integer.parseInt(val);
+					if(min > value) {
+						el.setErrorKey("error.wrongFloat", null);
+						allOk = false;
+					} else if(max < value) {
+						el.setErrorKey("error.wrongFloat", null);
+						allOk = false;
+					}
+				} catch (NumberFormatException e) {
+					el.setErrorKey("error.wrongFloat", null);
+					allOk = false;
+				}
+			}
+		}
+		return allOk;	
+	}
+	
 	protected static boolean validateBigDecimal(TextElement el, double min, double max, boolean enabled) {
 		boolean allOk = true;
 		el.clearError();

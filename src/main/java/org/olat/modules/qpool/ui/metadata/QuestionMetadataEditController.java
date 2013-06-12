@@ -25,6 +25,7 @@ import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toBigDecimal;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toInt;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateBigDecimal;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateInteger;
 
 import java.math.BigDecimal;
 
@@ -128,6 +129,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 		allOk &= validateBigDecimal(difficultyEl, 0.0d, 1.0d, true);
 		allOk &= validateBigDecimal(stdevDifficultyEl, 0.0d, 1.0d, true);
 		allOk &= validateBigDecimal(differentiationEl, -1.0d, 1.0d, true);
+		allOk &= validateInteger(numAnswerAltEl, 0, Integer.MAX_VALUE, true);
 		allOk &= validateSelection(assessmentTypeEl, true);
 		return allOk && super.validateFormLogic(ureq);
 	}

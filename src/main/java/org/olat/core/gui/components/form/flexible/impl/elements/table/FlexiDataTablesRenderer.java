@@ -58,7 +58,7 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
 		
 		Form rootForm = ftE.getRootForm();
 		String id = ftC.getFormDispatchId();
-		int rows = dataModel.getRowCount();
+		int loadedRows = dataModel.getRowCount();
 
 		int selectPos = -1;
 		Object selectedObject = ftE.getSelectedObj();
@@ -74,16 +74,17 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
 		target.append("<script type='text/javascript'>")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
+		  .append(" var scrollHeight = (jQuery('#qitems').height() - 130) + 'px';\n")
 		  .append(" var selectedIndex =").append(selectPos).append(";\n")
       .append("	jQuery('#").append(id).append("').dataTable( {\n")
       .append("		'bScrollInfinite': true,\n")
       .append("		'bScrollCollapse': true,\n")
       .append("		'bFilter': false,\n")
-      .append("		'sScrollY': '1px',\n")
+      .append("		'sScrollY': scrollHeight,\n")
       .append("		'bProcessing': true,\n")
       .append("		'bServerSide': true,\n")
       .append("		'iDisplayLength': ").append(ftE.getPageSize()).append(",\n")
-      .append("		'iDeferLoading': ").append(rows).append(",\n")
+      .append("		'iDeferLoading': ").append(loadedRows).append(",\n")
       .append("		'sAjaxSource': '").append(ftE.getMapperUrl()).append("',\n")
       .append("   'asStripeClasses': ['','b_table_odd'],\n")
       .append("		'fnRowCallback': function( nRow, aData, iDisplayIndex, iDisplayIndexFull) {\n")

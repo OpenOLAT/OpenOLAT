@@ -50,6 +50,9 @@ import org.olat.modules.qpool.ui.events.QPoolEvent;
 
 /**
  * 
+ * This controller build the GUI with the table of items,
+ * the preview and the short summary of metadatas.<br/>
+ * 
  * Initial date: 12.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *

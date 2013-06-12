@@ -477,8 +477,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(dataSource != null) {
 			resetInternComponents();
 			dataSource.clear();
-			ResultInfos<?> infos = dataSource.load(search, conditionalQueries, 0, getPageSize(), orderBy);
-			System.out.println("Found: " + infos.getObjects().size());
+			dataSource.load(search, conditionalQueries, 0, getPageSize(), orderBy);
 		}
 	}
 	

@@ -122,6 +122,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		for(QuestionItemShort item:items) {
 			lifeIndexer.deleteDocument(QItemDocument.TYPE, item.getKey());
 		}
+		
+		dbInstance.getCurrentEntityManager().flush();//allow reload of data
 	}
 
 	@Override
@@ -173,6 +175,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		return questionItemDao.loadById(key);
 	}
 
+	@Override
 	public QuestionItem updateItem(QuestionItem item) {
 		QuestionItem mergedItem = questionItemDao.merge(item);
 		dbInstance.commit();//
@@ -191,6 +194,9 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				provider.copyItem(original, copy);
 			}
 			copies.add(copy);
+		}
+		if(copies.size()> 0) {// reload of data must be possible in the same transaction
+			dbInstance.getCurrentEntityManager().flush();
 		}
 		return copies;
 	}
@@ -262,6 +268,10 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Override
 	public VFSLeaf getRootFile(QuestionItem item) {
 		QuestionItemImpl reloadedItem = questionItemDao.loadById(item.getKey());
+		if(reloadedItem == null) {
+			return null;
+		}
+		
 		VFSContainer root = qpoolModule.getRootContainer();
 		VFSItem dir = root.resolve(reloadedItem.getDirectory());
 		if(dir instanceof VFSContainer) {

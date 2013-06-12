@@ -82,7 +82,8 @@ public class EducationalMetadataEditController extends FormBasicController {
 			contextValues[count++] = translation;
 		}
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout, contextKeys, contextValues, null);
-
+		contextEl.setEnabled(count > 0);
+		
 		String page = velocity_root + "/learning_time.html";
 		learningTimeContainer = FormLayoutContainer.createCustomFormLayout("learningTime", getTranslator(), page);
 		learningTimeContainer.setRootForm(mainForm);

@@ -67,6 +67,9 @@ import org.olat.repository.controllers.RepositoryDetailsController;
 
 /**
  * 
+ * This controller wrap the table of qitems and decorate it with
+ * features like copy, delete...<br/>
+ * 
  * Initial date: 22.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

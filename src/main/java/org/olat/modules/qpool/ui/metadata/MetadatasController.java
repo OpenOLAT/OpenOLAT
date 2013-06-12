@@ -175,6 +175,7 @@ public class MetadatasController extends BasicController {
 	}
 	
 	private void doEditEducationalMetadata(UserRequest ureq) {
+		removeAsListenerAndDispose(educationalEditCtrl);
 		educationalEditCtrl= new EducationalMetadataEditController(ureq, getWindowControl(), item);
 		listenTo(educationalEditCtrl);
 		mainVC.put("details_educational", educationalEditCtrl.getInitialComponent());
@@ -187,6 +188,7 @@ public class MetadatasController extends BasicController {
 	}
 	
 	private void doEditQuestionMetadata(UserRequest ureq) {
+		removeAsListenerAndDispose(questionEditCtrl);
 		questionEditCtrl= new QuestionMetadataEditController(ureq, getWindowControl(), item);
 		listenTo(questionEditCtrl);
 		mainVC.put("details_question", questionEditCtrl.getInitialComponent());
