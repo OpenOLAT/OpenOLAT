@@ -75,7 +75,7 @@ import org.olat.repository.controllers.RepositoryDetailsController;
  */
 public class QuestionListController extends AbstractItemListController implements StackedControllerAware {
 
-	private FormLink list, exportItem, shareItem, unshareItem, copyItem, deleteItem, authorItem, importItem, bulkChange;
+	private FormLink list, exportItem, shareItem, removeItem, copyItem, deleteItem, authorItem, importItem, bulkChange;
 	
 	private StackedController stackPanel;
 	
@@ -115,7 +115,7 @@ public class QuestionListController extends AbstractItemListController implement
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
 		shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
 		if(getSource().isRemoveEnabled()) {
-			unshareItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);
+			removeItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);
 		}
 		
 		copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
@@ -145,7 +145,7 @@ public class QuestionListController extends AbstractItemListController implement
 				}
 			} else if(link == shareItem) {
 				doShare(ureq);
-			} else if(link == unshareItem) {
+			} else if(link == removeItem) {
 				List<QuestionItemShort> items = getSelectedShortItems();
 				if(items.size() > 0) {
 					doConfirmRemove(ureq, items);
@@ -177,7 +177,11 @@ public class QuestionListController extends AbstractItemListController implement
 				doOpenImport(ureq);
 			} else if(link == bulkChange) {
 				List<QuestionItemShort> items = getSelectedShortItems();
-				doBulkChange(ureq, items);
+				if(items.size() > 0) {
+					doBulkChange(ureq, items);
+				} else {
+					showWarning("error.select.one");
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

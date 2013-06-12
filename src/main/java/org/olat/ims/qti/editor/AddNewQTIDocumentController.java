@@ -113,7 +113,7 @@ public class AddNewQTIDocumentController extends DefaultController implements IA
 			if(object instanceof QItemList) {
 				QItemList itemToImport = (QItemList)object;
 				QTIQPoolServiceProvider provider = (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
-				provider.exportToEditorPackage(tmpPackage, itemToImport.getItems());
+				provider.exportToEditorPackage(tmpPackage, itemToImport.getItems(), true);
 			}
 		}
 		

@@ -17,6 +17,9 @@ div.o_qpool_toolbar { padding: 3px; text-align:right; }
 .o_readwrite { background-image: url('../openolat/images/pencil.png'); }
 .o_readonly { background-image: url('../openolat/images/pencil-prohibition.png'); }
 
+.o_public, .o_exportable { background-image: url('../openolat/images/tick.png'); }
+.o_private, .o_unexportable { background-image: url('../openolat/images/cross.png'); }
+
 .o_qpool_edit_learning_time {
 	div {
 		float:left;

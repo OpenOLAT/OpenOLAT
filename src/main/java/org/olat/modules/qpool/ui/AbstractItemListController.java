@@ -130,14 +130,13 @@ public abstract class AbstractItemListController extends FormBasicController
 		
 		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
 		itemsTable = uifactory.addTableElement(ureq, getWindowControl(), "items", model, 50, getTranslator(), formLayout);
+		itemsTable.setWrapperSelector("#qitems");
 		itemsTable.setSelectAllEnable(true);
 		itemsTable.setMultiSelect(true);
 		itemsTable.setSearchEnabled(true);
 		itemsTable.setExtendedSearchCallout(extendedSearchCtrl);
 		itemsTable.setRendererType(FlexiTableRendererType.dataTables);
-		
 
-		
 		initButtons(formLayout);
 	}
 	
@@ -169,6 +168,14 @@ public abstract class AbstractItemListController extends FormBasicController
 		this.source = source;
 		model.clear();
 		itemsTable.reset();
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == extendedSearchCtrl) {
+			itemsTable.closeExtendedSearch();
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

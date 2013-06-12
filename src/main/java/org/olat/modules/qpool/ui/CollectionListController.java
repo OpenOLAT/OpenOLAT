@@ -127,6 +127,11 @@ public class CollectionListController extends FormBasicController {
 	}
 
 	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

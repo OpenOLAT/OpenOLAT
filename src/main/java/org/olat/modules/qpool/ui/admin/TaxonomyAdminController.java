@@ -156,7 +156,7 @@ public class TaxonomyAdminController extends BasicController {
 		listenTo(editCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				editCtrl.getInitialComponent(), true, translate("edit.pool"));
+				editCtrl.getInitialComponent(), true, translate("add.taxonomyLevel"));
 		cmc.activate();
 		listenTo(cmc);
 	}

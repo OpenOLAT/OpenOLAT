@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.ResultInfos;
@@ -29,10 +30,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -60,6 +65,8 @@ import org.olat.modules.qpool.ui.metadata.MetadatasController;
  *
  */
 public class PoolsController extends FormBasicController {
+	
+	private FormLink selectButton;
 	
 	private Object userObject;
 	private PoolDataModel model;
@@ -92,8 +99,13 @@ public class PoolsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.id.i18nKey(), Cols.id.ordinal(), true, "key"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.publicPool.i18nKey(), Cols.publicPool.ordinal(), true, "name"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.id.i18nKey(), Cols.id.ordinal(), true, "key"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.publicPool.i18nKey(), Cols.publicPool.ordinal(),
+				true, "publicPool", FlexiColumnModel.ALIGNMENT_LEFT,
+				new BooleanCellRenderer(
+						new CSSIconFlexiCellRenderer("o_public"),
+						new CSSIconFlexiCellRenderer("o_private"))
+		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, "name"));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select-pool"));
 
@@ -106,7 +118,7 @@ public class PoolsController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		uifactory.addFormLink("select", buttonsCont, Link.BUTTON);
+		selectButton = uifactory.addFormLink("select", buttonsCont, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
@@ -125,6 +137,16 @@ public class PoolsController extends FormBasicController {
 					Pool row = model.getObject(se.getIndex());
 					fireEvent(ureq, new QPoolSelectionEvent(Collections.singletonList(row)));
 				}
+			}
+		} else if(source == selectButton) {
+			Set<Integer> selectIndexes = poolTable.getMultiSelectedIndex();
+			if(!selectIndexes.isEmpty()) {
+				List<Pool> rows = new ArrayList<Pool>(selectIndexes.size());
+				for(Integer index:selectIndexes) {
+					Pool row = model.getObject(index.intValue());
+					rows.add(row);
+				}
+				fireEvent(ureq, new QPoolSelectionEvent(rows));	
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

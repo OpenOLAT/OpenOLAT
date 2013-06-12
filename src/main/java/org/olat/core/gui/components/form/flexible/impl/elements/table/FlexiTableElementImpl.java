@@ -92,6 +92,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private CloseableCalloutWindowController callout;
 	private final WindowControl wControl;
 	private final String mapperUrl;
+	
+	private String wrapperSelector;
 
 	private SortKey[] orderBy;
 	private Object selectedObj;
@@ -161,6 +163,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setMultiSelect(boolean multiSelect) {
 		this.multiSelect = multiSelect;
+	}
+
+	public String getWrapperSelector() {
+		return wrapperSelector;
+	}
+
+	public void setWrapperSelector(String wrapperSelector) {
+		this.wrapperSelector = wrapperSelector;
 	}
 
 	@Override
@@ -384,6 +394,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				extendedSearchButton, "Search", true, "o_sel_flexi_search_callout");
 		callout.activate();
 		callout.addControllerListener(this);
+	}
+	
+	@Override
+	public void closeExtendedSearch() {
+		if(callout != null) {
+			callout.deactivate();
+		}
 	}
 
 	protected void customizeCallout(UserRequest ureq) {

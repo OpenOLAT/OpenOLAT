@@ -120,7 +120,8 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 
 		int col = 0;
 		if(ftE.isMultiSelect()) {
-			target.append("<th class='b_first_child'>").append("choice").append("</th>");
+			String choice = translator.translate("table.header.choice");
+			target.append("<th class='b_first_child'>").append(choice).append("</th>");
 			col++;
 		}
 		

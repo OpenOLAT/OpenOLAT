@@ -77,8 +77,6 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-
-		
 		
 		this.prefsKey = prefsKey;
 		prefs = (ExtendedSearchPrefs) ureq.getUserSession().getGuiPreferences()

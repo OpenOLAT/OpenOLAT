@@ -26,8 +26,11 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
@@ -69,7 +72,12 @@ public class ExportOverviewController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("exportable", Cols.exportable.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "exportable", Cols.exportable.ordinal(),
+				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+				new BooleanCellRenderer(
+						new CSSIconFlexiCellRenderer("o_exportable"),
+						new CSSIconFlexiCellRenderer("o_unexportable"))
+		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("general.title", Cols.title.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("technical.format", Cols.format.ordinal()));
 		itemsModel = new QItemDataModel(columnsModel, format);

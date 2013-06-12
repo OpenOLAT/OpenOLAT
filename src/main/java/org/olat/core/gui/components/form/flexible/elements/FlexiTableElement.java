@@ -56,9 +56,21 @@ public interface FlexiTableElement extends FormItem {
 	
 	/**
 	 * Enable multi-selection
-	 * @return
 	 */
 	public void setMultiSelect(boolean enable);
+	
+	/**
+	 * @return The CSS selector used to calculate the height of the table
+	 * (datatables variant only)
+	 */
+	public String getWrapperSelector();
+	
+	/**
+	 * Set a CSS selector for the datatables variant. It can
+	 * calculate the height it can use.
+	 * @param wrapperSelector
+	 */
+	public void setWrapperSelector(String wrapperSelector);
 	
 	/**
 	 * @return true if the links select all / unselect all are enabled
@@ -108,6 +120,10 @@ public interface FlexiTableElement extends FormItem {
 	 */
 	public void setExtendedSearchCallout(ExtendedFlexiTableSearchController callout);
 	
+	/**
+	 * Close the extended search callout if open
+	 */
+	public void closeExtendedSearch();
 	
 	/**
 	 * Return the page size

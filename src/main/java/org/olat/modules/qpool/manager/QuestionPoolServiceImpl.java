@@ -210,10 +210,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				importedItem = provider.importItems(owner, defaultLocale, filename, file);
 			}	
 		}
+		if(importedItem != null && importedItem.size() > 0) {
+			dbInstance.getCurrentEntityManager().flush();
+		}
 		return importedItem;
 	}
-	
-	
 	
 	@Override
 	public MediaResource export(List<QuestionItemShort> items, ExportFormatOptions format) {

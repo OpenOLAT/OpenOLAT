@@ -94,7 +94,6 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		lastModified("technical.lastModified"),
 		taxnonomyLevel("classification.taxonomy.level"),
 		difficulty("question.difficulty"),
-		
 		type("question.type"),
 		format("technical.format"),
 		rating("rating"),

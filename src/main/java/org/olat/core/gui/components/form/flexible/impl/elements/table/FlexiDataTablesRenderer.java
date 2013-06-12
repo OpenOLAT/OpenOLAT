@@ -29,6 +29,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Render the table using the jQuery plugin DataTables
@@ -70,22 +71,36 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
 				}
 			}
 		}
+		
+		String scrollHeight;
+		String wrapperSelector = ftE.getWrapperSelector();
+		if(StringHelper.containsNonWhitespace(wrapperSelector)) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("Math.max((jQuery('").append(wrapperSelector).append("').height() - 130),100) + 'px'");
+			scrollHeight = sb.toString();
+		} else {
+			scrollHeight = "'100px'";
+		}
 
 		target.append("<script type='text/javascript'>")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
-		  .append(" var scrollHeight = (jQuery('#qitems').height() - 130) + 'px';\n")
+		  .append(" var scrollHeight = ").append(scrollHeight).append(";\n")
 		  .append(" var selectedIndex =").append(selectPos).append(";\n")
       .append("	jQuery('#").append(id).append("').dataTable( {\n")
       .append("		'bScrollInfinite': true,\n")
       .append("		'bScrollCollapse': true,\n")
       .append("		'bFilter': false,\n")
-      .append("		'sScrollY': scrollHeight,\n")
+      .append("		'sScrollY': ").append(scrollHeight).append(",\n")
       .append("		'bProcessing': true,\n")
       .append("		'bServerSide': true,\n")
       .append("		'iDisplayLength': ").append(ftE.getPageSize()).append(",\n")
       .append("		'iDeferLoading': ").append(loadedRows).append(",\n")
       .append("		'sAjaxSource': '").append(ftE.getMapperUrl()).append("',\n")
+      .append("		'oLanguage': {\n")
+      .append("		  'sInfo': '").append(translator.translate("table.sInfo")).append("',\n")
+      .append("		  'sEmptyTable': '").append(translator.translate("table.sEmptyTable")).append("'\n")
+      .append("    },\n")
       .append("   'asStripeClasses': ['','b_table_odd'],\n")
       .append("		'fnRowCallback': function( nRow, aData, iDisplayIndex, iDisplayIndexFull) {\n")
       .append("     if(selectedIndex == iDisplayIndexFull) {\n")

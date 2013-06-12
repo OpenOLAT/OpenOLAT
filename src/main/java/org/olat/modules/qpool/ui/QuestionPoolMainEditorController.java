@@ -380,6 +380,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 
 		DefaultItemsSource source = new DefaultItemsSource(getIdentity(), ureq.getUserSession().getRoles(), pool.getName());
 		source.getDefaultParams().setPoolKey(pool.getKey());
+		source.setRemoveEnabled(isPoolEditable(pool));
 		if(selectedPoolCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, pool, null);
 			selectedPoolCtrl = new QuestionsController(ureq, swControl, source, "poll-" + pool.getKey());
@@ -391,6 +392,15 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		}
 		currentCtrl = selectedPoolCtrl;
 		setContent(ureq, selectedPoolCtrl, entries, state);
+	}
+	
+	/**
+	 * TODO must be implemented
+	 * @param pool
+	 * @return
+	 */
+	private boolean isPoolEditable(Pool pool) {
+		return true;// pool.isPublicPool();
 	}
 	
 	private void doSelectGroup(UserRequest ureq, BusinessGroup group, TreeNode node, List<ContextEntry> entries, StateEntry state) {
