@@ -458,9 +458,9 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 
 		// institutional resource manager
 		SecurityGroup poolManagerGroup = findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
-		boolean hasBeenPoolManager = isIdentityInSecurityGroup(identity, poolManagerGroup);
+		boolean hasBeenPoolManager = isIdentityInSecurityGroup(updatedIdentity, poolManagerGroup);
 		boolean poolManager = roles.isPoolAdmin()	&& !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(identity, poolManagerGroup, hasBeenPoolManager, poolManager);
+		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, poolManagerGroup, hasBeenPoolManager, poolManager, Constants.GROUP_POOL_MANAGER);
 
 		// system administrator
 		SecurityGroup adminGroup = findSecurityGroupByName(Constants.GROUP_ADMIN);

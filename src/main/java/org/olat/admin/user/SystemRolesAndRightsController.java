@@ -37,9 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Util;
 
 /**
  * Initial Date:  Jan 27, 2006
@@ -151,7 +149,7 @@ public class SystemRolesAndRightsController extends BasicController {
 			SecurityGroup poolManagerGroup = secMgr.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
 			boolean hasBeenPoolManager = secMgr.isIdentityInSecurityGroup(myIdentity, poolManagerGroup);
 			boolean isPoolManager = form.isPoolmanager();
-			updateSecurityGroup(myIdentity, secMgr, poolManagerGroup, hasBeenPoolManager, isPoolManager);
+			updateSecurityGroup(myIdentity, secMgr, poolManagerGroup, hasBeenPoolManager, isPoolManager, Constants.GROUP_AUTHORS);
 		}
 		// author
 		Boolean canAuthorByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS;	
