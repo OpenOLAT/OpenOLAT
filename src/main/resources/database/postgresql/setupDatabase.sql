@@ -389,7 +389,6 @@ create table oc_lock (
 	asset varchar(120) not null unique, 
 	primary key (lock_id)
 );
-create index ocl_asset_idx on oc_lock (asset);
 alter table oc_lock add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity;
 
 create table o_readmessage (
@@ -1811,7 +1810,7 @@ alter table o_checkpoint add constraint FK9E30F4B661159ZZZ foreign key (checklis
 create index idx_chpt_checklist_fk on o_checkpoint (checklist_fk);
 
 -- plock
-create index asset_idx on o_plock (asset);
+-- index created asset_idx on unique constraint
 
 -- property
 alter table o_property add constraint FKB60B1BA5190E5 foreign key (grp) references o_gp_business;
@@ -1828,13 +1827,13 @@ create index restype_idx1 on o_property (resourcetypename);
 alter table o_gp_business add constraint FKCEEB8A86DF6BCD14 foreign key (groupcontext_fk) references o_gp_bgcontext;
 create index idx_grp_to_ctxt_idx on o_gp_business (groupcontext_fk);
 alter table o_gp_business add constraint FKCEEB8A86A1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup;
-create index idx_grp_to_own_grp_idx on o_gp_business (fk_ownergroup);
+-- index idx_grp_to_own_grp_idx created on unique constraint
 alter table o_gp_business add constraint FKCEEB8A86C06E3EF3 foreign key (fk_partipiciantgroup) references o_bs_secgroup;
-create index idx_grp_to_part_grp_idx on o_gp_business (fk_partipiciantgroup);
+-- index idx_grp_to_part_grp_idx created on unique cosntraint
 alter table o_gp_business add constraint idx_bgp_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
-create index idx_grp_to_rsrc_idx on o_gp_business (fk_resource);
+-- index idx_grp_to_rsrc_idx create on unique constraint
 alter table o_gp_business add constraint idx_bgp_waiting foreign key (fk_waitinggroup) references o_bs_secgroup (id);
-create index idx_grp_to_wait_grp_idx on o_gp_business (fk_waitinggroup);
+-- index idx_grp_to_wait_grp_idx created on unique constraint
 
 create index idx_grp_to_sec_grps_idx on o_gp_business (fk_ownergroup, fk_partipiciantgroup, fk_waitinggroup);
 create index gp_name_idx on o_gp_business (groupname);
@@ -1878,8 +1877,7 @@ create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);
 
 alter table o_bs_identity add constraint FKFF94111CD1A80C95 foreign key (fk_user_id) references o_user;
-create index idx_ident_to_user_idx on o_bs_identity (fk_user_id);
-create index name_idx3 on o_bs_identity (name);
+-- index created idx_ident_to_user_idx on unique constraint
 create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
 create index idx_id_lastlogin_idx on o_bs_identity (lastlogin);
@@ -1919,12 +1917,11 @@ create index idx_sub_to_ident_idx on o_noti_sub (fk_identity);
 
 create index idx_sub_to_id_pub_idx on o_noti_sub (publisher_id, fk_publisher);
 create index idx_sub_to_id_ident_idx on o_noti_sub (publisher_id, fk_identity);
-create index idx_sub_to_pub_ident_idx on o_noti_sub (fk_publisher, fk_identity);
+-- index created idx_sub_to_pub_ident_idx on unique constraint
 create index idx_sub_to_id_pub_ident_idx on o_noti_sub (publisher_id, fk_publisher, fk_identity);
 
 -- qti
 alter table o_qtiresultset add constraint FK14805D0F5259603C foreign key (identity_id) references o_bs_identity;
-create index idx_qtires_ident_idx on o_qtiresultset (olatresourcedetail);
 
 create index oresdetindex on o_qtiresultset (olatresourcedetail);
 create index oresindex on o_qtiresultset (olatresource_fk);
@@ -1939,7 +1936,6 @@ create index itemindex on o_qtiresult (itemident);
 alter table o_catentry add constraint FKF4433C2C7B66B0D0 foreign key (parent_id) references o_catentry;
 create index idx_catentry_parent_idx on o_catentry (parent_id);
 alter table o_catentry add constraint FKF4433C2CA1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup;
-create index idx_catentry_ownergrp_idx on o_catentry (fk_ownergroup);
 alter table o_catentry add constraint FKF4433C2CDDD69946 foreign key (fk_repoentry) references o_repositoryentry;
 create index idx_catentry_re_idx on o_catentry (fk_repoentry);
 
@@ -1955,9 +1951,9 @@ create index id_idx on o_olatresource (resid);
 
 -- repository 
 alter table o_repositoryentry add constraint FK2F9C439888C31018 foreign key (fk_olatresource) references o_olatresource;
-create index idx_repoentry_rsrc_idx on o_repositoryentry (fk_olatresource);
+-- index created idx_repoentry_rsrc_idx on unique constraint
 alter table o_repositoryentry add constraint FK2F9C4398A1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup;
-create index idx_repoentry_owner_idx on o_repositoryentry (fk_ownergroup);
+-- index created idx_repoentry_owner_idx on unique cosntraint
 alter table o_repositoryentry add constraint repo_tutor_sec_group_ctx foreign key (fk_tutorgroup) references o_bs_secgroup (id);
 create index idx_repoentry_tutor on o_repositoryentry(fk_tutorgroup);
 alter table o_repositoryentry add constraint repo_parti_sec_group_ctx foreign key (fk_participantgroup) references o_bs_secgroup (id);
@@ -1968,7 +1964,7 @@ create index access_idx on o_repositoryentry (accesscode);
 create index initialAuthor_idx on o_repositoryentry (initialauthor);
 create index resource_idx on o_repositoryentry (resourcename);
 create index displayname_idx on o_repositoryentry (displayname);
-create index softkey_idx on o_repositoryentry (softkey);
+-- index created softkey_idx on unique constraint
 create index repo_members_only_idx on o_repositoryentry (membersonly);
 create index idx_re_lifecycle_soft_idx on o_repositoryentry_cycle (r_softkey);
 create index idx_re_lifecycle_extid_idx on o_repositoryentry (external_id);
@@ -2055,7 +2051,7 @@ create index readmessage_identity_idx on o_readmessage (identity_id);
 
 -- project broker
 create index projectbroker_project_broker_idx on o_projectbroker_project (projectbroker_fk);
-create index projectbroker_project_id_idx on o_projectbroker_project (project_id);
+-- index created on projectbroker_project_id_idx unique constraint
 create index o_projectbroker_customfields_idx on o_projectbroker_customfields (fk_project_id);
 
 -- info messages

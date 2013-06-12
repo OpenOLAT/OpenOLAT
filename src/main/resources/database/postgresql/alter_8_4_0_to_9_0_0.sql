@@ -406,10 +406,6 @@ create index idx_prop_grp_idx on o_property (grp);
 
 -- business group
 create index idx_grp_to_ctxt_idx on o_gp_business (groupcontext_fk);
-create index idx_grp_to_rsrc_idx on o_gp_business (fk_resource);
-create index idx_grp_to_own_grp_idx on o_gp_business (fk_ownergroup);
-create index idx_grp_to_part_grp_idx on o_gp_business (fk_partipiciantgroup);
-create index idx_grp_to_wait_grp_idx on o_gp_business (fk_waitinggroup);
 create index idx_grp_to_sec_grps_idx on o_gp_business (fk_ownergroup, fk_partipiciantgroup, fk_waitinggroup);
 
 create index idx_grrsrc_to_rsrc_idx on o_gp_business_to_resource (fk_resource);
@@ -425,7 +421,6 @@ create index idx_auth_ident_idx on o_bs_authentication (identity_fk);
 
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
 create index idx_id_lastlogin_idx on o_bs_identity (lastlogin);
-create index idx_ident_to_user_idx on o_bs_identity (fk_user_id);
 
 create index idx_policy_rsrc_idx on o_bs_policy (oresource_id);
 create index idx_policy_grp_idx on o_bs_policy (group_id);
@@ -449,11 +444,10 @@ create index idx_sub_to_pub_idx on o_noti_sub (fk_publisher);
 create index idx_sub_to_ident_idx on o_noti_sub (fk_identity);
 create index idx_sub_to_id_pub_idx on o_noti_sub (publisher_id, fk_publisher);
 create index idx_sub_to_id_ident_idx on o_noti_sub (publisher_id, fk_identity);
-create index idx_sub_to_pub_ident_idx on o_noti_sub (fk_publisher, fk_identity);
+-- index created idx_sub_to_pub_ident_idx on unique constraint
 create index idx_sub_to_id_pub_ident_idx on o_noti_sub (publisher_id, fk_publisher, fk_identity);
 
 -- qti
-create index idx_qtires_ident_idx on o_qtiresultset (olatresourcedetail);
 create index FK3563E67340EF401F on o_qtiresult (resultset_fk);
 
 -- references
@@ -462,15 +456,11 @@ create index idx_ref_target_idx on o_references (target_id);
 
 -- catalog
 create index idx_catentry_parent_idx on o_catentry (parent_id);
-create index idx_catentry_ownergrp_idx on o_catentry (fk_ownergroup);
+-- index created idx_catentry_ownergrp_idx on unique constraint
 create index idx_catentry_re_idx on o_catentry (fk_repoentry);
 
 -- resource
 create index name_idx4 on o_olatresource (resname);
-
--- repository
-create index idx_repoentry_rsrc_idx on o_repositoryentry (fk_olatresource);
-create index idx_repoentry_owner_idx on o_repositoryentry (fk_ownergroup);
 
 -- access control
 create index idx_offeracc_method_idx on o_ac_offer_access (fk_method_id);
