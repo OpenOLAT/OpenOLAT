@@ -314,13 +314,13 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 			value = new Integer(property.getLongValue().intValue());
 		} else if (propertyName.equals(SCORE)) {
 			value = property.getFloatValue();
-		} else if (propertyName.equals(PASSED)) {
+		} else if (propertyName.equals(PASSED) || FULLY_ASSESSED.equals(propertyName)) {
 			value = new Boolean(property.getStringValue());
 		} else if (propertyName.equals(ASSESSMENT_ID)) {
 			value = property.getLongValue();			
 		} else if (propertyName.equals(COMMENT) || propertyName.equals(COACH_COMMENT)) {
 			value = property.getTextValue();			
-		}	else {
+		} else {
 			throw new AssertionError("property in list that is not of type attempts, score, passed or ASSESSMENT_ID, COMMENT and COACH_COMMENT :: " + propertyName);
 		}
 		

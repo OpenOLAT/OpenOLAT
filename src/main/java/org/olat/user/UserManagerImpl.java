@@ -448,8 +448,12 @@ public class UserManagerImpl extends UserManager {
 			String fullName = getUserDisplayName(identity);
 			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
 			fullNames.put(identity.getName(), fullName);
+			newUsernames.remove(identity.getName());
 		}
-
+		//not found
+		for(String notFound:newUsernames) {
+			usernameCache.put(notFound, notFound);
+		}
 		return fullNames;
 	}
 

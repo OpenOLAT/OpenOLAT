@@ -47,6 +47,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.user.UserManager;
 
@@ -77,6 +78,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	private static final int COLUMN_COUNT = 7;
 	private final Translator translator; // package-local to avoid synthetic accessor method.
 	private final ACService acService;
+	private final AccessControlModule acModule;
 	private final UserManager userManager;
 	
 	private final Map<Long,OLATResourceAccess> repoEntriesWithOffer = new HashMap<Long,OLATResourceAccess>();;
@@ -91,6 +93,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		this.translator = translator;
 
 		acService = CoreSpringFactory.getImpl(ACService.class);
+		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 
@@ -225,19 +228,22 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	private void secondaryInformations(List<RepositoryEntry> repoEntries) {
 		if(repoEntries == null || repoEntries.isEmpty()) return;
 		
-		//paged it
-		int count = 0;
-		int batch = 200;
-		do {
-			int toIndex = Math.min(count + batch, objects.size());
-			List<RepositoryEntry> toLoad = objects.subList(count, toIndex);
-			List<OLATResourceAccess> withOffers = acService.filterRepositoryEntriesWithAC(toLoad);
-			for(OLATResourceAccess withOffer:withOffers) {
-				repoEntriesWithOffer.put(withOffer.getResource().getKey(), withOffer);
-			}
-			count += batch;
-		} while(count < objects.size());
-		
+		secondaryInformationsAccessControl(repoEntries);
+		secondaryInformationsUsernames(repoEntries);
+	}
+
+	private void secondaryInformationsAccessControl(List<RepositoryEntry> repoEntries) {
+		if(repoEntries == null || repoEntries.isEmpty() || !acModule.isEnabled()) return;
+
+		List<OLATResourceAccess> withOffers = acService.filterRepositoryEntriesWithAC(repoEntries);
+		for(OLATResourceAccess withOffer:withOffers) {
+			repoEntriesWithOffer.put(withOffer.getResource().getKey(), withOffer);
+		}
+	}
+	
+	private void secondaryInformationsUsernames(List<RepositoryEntry> repoEntries) {
+		if(repoEntries == null || repoEntries.isEmpty()) return;
+
 		Set<String> newNames = new HashSet<String>();
 		for(RepositoryEntry re:repoEntries) {
 			final String author = re.getInitialAuthor();
