@@ -199,7 +199,9 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 		} catch (InterruptedException e) {
 			//
 		}
-		logWarn("Could not generate thumbnail: "+thumbnailFile, null);
+		if(rv == null) {
+			logWarn("Could not generate thumbnail: "+thumbnailFile, null);
+		}
 		return rv;
 	}
 	/**

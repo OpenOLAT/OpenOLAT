@@ -293,7 +293,8 @@ public class UserWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 			Roles modRoles = roles.toRoles();
-			BaseSecurityManager.getInstance().updateRoles(identity, modRoles);
+			Identity actingIdentity = getIdentity(request);
+			BaseSecurityManager.getInstance().updateRoles(actingIdentity, identity, modRoles);
 			return Response.ok(new RolesVO(modRoles)).build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);

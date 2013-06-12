@@ -151,14 +151,11 @@ public class LoginModule extends AbstractOLATModule {
 		
 		if (numAttempts == null) { // create new entry
 			numAttempts = new Integer(1);
+			failedLoginCache.put(login, numAttempts);
 		} else { // update entry
 			numAttempts = new Integer(numAttempts.intValue() + 1);
-		}
-		// do not use putSilent(...) here, since failed login attempts should propagate to all cluster nodes 
-		// o_clusterREVIEW todo: this is fine, however loading the data (numAttempts == null) ... should be via db e.g properties table, 
-		// otherwise it cannot be clustersafe
-		failedLoginCache.update(login, numAttempts);
-		
+			failedLoginCache.update(login, numAttempts);
+		}		
 		return (numAttempts.intValue() > attackPreventionMaxAttempts);
 	}
 	
@@ -172,7 +169,7 @@ public class LoginModule extends AbstractOLATModule {
 	}
 	
 	/**
-	 * Tells wether a login is blocked to prevent brute force attacks or not.
+	 * Tells whether a login is blocked to prevent brute force attacks or not.
 	 * @param login
 	 * @return True if login is blocked by attack prevention mechanism
 	 */
@@ -185,8 +182,8 @@ public class LoginModule extends AbstractOLATModule {
 	}
 	
 	/**
-	 * @return True if guest login kinks must be shown on login screen, false
-	 *         otherwhise
+	 * @return True if guest login links must be shown on login screen, false
+	 *         otherwise
 	 */
 	public static final boolean isGuestLoginLinksEnabled() {
 		return guestLoginLinksEnabled;
