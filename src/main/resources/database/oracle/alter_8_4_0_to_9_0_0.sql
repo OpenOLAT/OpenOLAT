@@ -297,28 +297,45 @@ create or replace view o_qp_share_2_item_short_v as (
 
 
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);
+create index idx_pool_ownergrp_idx on o_qp_pool (fk_ownergroup);
 
 alter table o_qp_pool_2_item add constraint idx_qp_pool_2_item_pool_id foreign key (fk_pool_id) references o_qp_pool(id);
 alter table o_qp_pool_2_item add constraint idx_qp_pool_2_item_item_id foreign key (fk_item_id) references o_qp_item(id);
 alter table o_qp_pool_2_item add unique (fk_pool_id, fk_item_id);
+create index idx_poolitem_pool_idx on o_qp_pool_2_item (fk_pool_id);
+create index idx_poolitem_item_idx on o_qp_pool_2_item (fk_item_id);
 
 alter table o_qp_share_item add constraint idx_qp_share_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
 alter table o_qp_share_item add constraint idx_qp_share_item_id foreign key (fk_item_id) references o_qp_item(id);
 alter table o_qp_share_item add unique (fk_resource_id, fk_item_id);
+create index idx_shareitem_pool_idx on o_qp_share_item (fk_resource_id);
+create index idx_shareitem_item_idx on o_qp_share_item (fk_item_id);
 
 alter table o_qp_item_collection add constraint idx_qp_coll_owner_id foreign key (fk_owner_id) references o_bs_identity(id);
+create index idx_itemcoll_owner_idx on o_qp_item_collection (fk_owner_id);
 
 alter table o_qp_collection_2_item add constraint idx_qp_coll_coll_id foreign key (fk_collection_id) references o_qp_item_collection(id);
 alter table o_qp_collection_2_item add constraint idx_qp_coll_item_id foreign key (fk_item_id) references o_qp_item(id);
 alter table o_qp_collection_2_item add unique (fk_collection_id, fk_item_id);
+create index idx_coll2item_coll_idx on o_qp_collection_2_item (fk_collection_id);
+create index idx_coll2item_item_idx on o_qp_collection_2_item (fk_item_id);
 
 alter table o_qp_item add constraint idx_qp_pool_2_field_id foreign key (fk_taxonomy_level) references o_qp_taxonomy_level(id);
+create index idx_item_taxon_idx on o_qp_item (fk_taxonomy_level);
 alter table o_qp_item add constraint idx_qp_item_owner_id foreign key (fk_ownergroup) references o_bs_secgroup(id);
+create index idx_item_ownergrp_idx on o_qp_item (fk_ownergroup);
 alter table o_qp_item add constraint idx_qp_item_edu_ctxt_id foreign key (fk_edu_context) references o_qp_edu_context(id);
+create index idx_item_eductxt_idx on o_qp_item (fk_edu_context);
 alter table o_qp_item add constraint idx_qp_item_type_id foreign key (fk_type) references o_qp_item_type(id);
+create index idx_item_type_idx on o_qp_item (fk_type);
 alter table o_qp_item add constraint idx_qp_item_license_id foreign key (fk_license) references o_qp_license(id);
+create index idx_item_license_idx on o_qp_item (fk_license);
 
 alter table o_qp_taxonomy_level add constraint idx_qp_field_2_parent_id foreign key (fk_parent_field) references o_qp_taxonomy_level(id);
+create index idx_taxon_parent_idx on o_qp_taxonomy_level (fk_parent_field);
+create index idx_taxon_mat_pathon on o_qp_taxonomy_level (q_mat_path_ids);
+
+alter table o_qp_item_type add constraint cst_unique_item_type unique (q_type);
 
 -- lti
 create table o_lti_outcome (
@@ -377,6 +394,85 @@ create index idx_re_lifecycle_idx on o_repositoryentry (fk_lifecycle);
 alter table o_gp_business add external_id varchar2(64 char);
 alter table o_gp_business add managed_flags varchar2(255 char);
 create index idx_grp_lifecycle_soft_idx on o_gp_business (external_id);
+
+
+
+
+
+-- complet missing index
+
+-- checkpoint
+create index idx_chpt_checklist_fk on o_checkpoint (checklist_fk);
+create index idx_chres_check_idx on o_checkpoint_results (checkpoint_fk);
+create index idx_chres_ident_idx on o_checkpoint_results (identity_fk);
+
+-- business group
+
+create index idx_bgp_to_rsrc_fk on o_gp_business_to_resource (fk_resource);
+create index idx_bgp_to_bgp_fk on o_gp_business_to_resource (fk_group);
+
+-- bs
+create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
+create index idx_id_lastlogin_idx on o_bs_identity (lastlogin);
+
+create index idx_policy_grp_rsrc_idx on o_bs_policy (oresource_id, group_id);
+
+-- access control
+create index idx_offeracc_method_idx on o_ac_offer_access (fk_method_id);
+create index idx_offeracc_offer_idx on o_ac_offer_access (fk_offer_id);
+create index idx_orderpart_order_idx on o_ac_order_part (fk_order_id);
+create index idx_orderline_orderpart_idx on o_ac_order_line (fk_order_part_id);
+create index idx_orderline_offer_idx on o_ac_order_line (fk_offer_id);
+create index idx_transact_order_idx on o_ac_transaction (fk_order_id);
+create index idx_transact_orderpart_idx on o_ac_transaction (fk_order_part_id);
+create index idx_transact_method_idx on o_ac_transaction (fk_method_id);
+
+-- reservations
+create index idx_rsrv_to_rsrc_idx on o_ac_reservation(fk_resource);
+create index idx_rsrv_to_rsrc_id_idx on o_ac_reservation(fk_identity);
+
+-- db courses
+create index o_co_db_course_ident_idx on o_co_db_entry (identity);
+
+-- open meetings
+create index idx_omroom_group_idx on o_om_room_reference (businessgroup);
+
+-- eportfolio
+create index idx_artfeact_to_auth_idx on o_ep_artefact (fk_artefact_auth_id);
+create index idx_artfeact_to_struct_idx on o_ep_artefact (fk_struct_el_id);
+
+create index idx_structel_to_rsrc_idx on o_ep_struct_el (fk_olatresource);
+create index idx_structel_to_ownegrp_idx on o_ep_struct_el (fk_ownergroup);
+create index idx_structel_to_map_idx on o_ep_struct_el (fk_map_source_id);
+create index idx_structel_to_root_idx on o_ep_struct_el (fk_struct_root_id);
+create index idx_structel_to_rootmap_idx on o_ep_struct_el (fk_struct_root_map_id);
+create index idx_structlink_to_parent_idx on o_ep_struct_struct_link (fk_struct_parent_id);
+create index idx_structlink_to_child_idx on o_ep_struct_struct_link (fk_struct_child_id);
+create index idx_structart_to_struct_idx on o_ep_struct_artefact_link (fk_struct_id);
+create index idx_structart_to_art_idx on o_ep_struct_artefact_link (fk_artefact_id);
+create index idx_structart_to_auth_idx on o_ep_struct_artefact_link (fk_auth_id);
+
+-- tag
+create index idx_tag_to_auth_idx on o_tag (fk_author_id);
+
+-- mail
+create index idx_mail_from_idx on o_mail (fk_from_id);
+create index idx_mailrec_rcp_idx on o_mail_recipient (fk_recipient_id);
+create index idx_mailtorec_mail_idx on o_mail_to_recipient (fk_mail_id);
+create index idx_mailtorec_rcp_idx on o_mail_to_recipient (fk_recipient_id);
+create index idx_mail_att_mail_idx on o_mail_attachment (fk_att_mail_id);
+
+-- efficiency statements
+create index idx_eff_statement_ident_idx on o_as_eff_statement (fk_identity);
+
+-- user course infos
+create index idx_ucourseinfos_ident_idx on o_as_user_course_infos (fk_identity);
+create index idx_ucourseinfos_rsrc_idx on o_as_user_course_infos (fk_resource_id);
+
+
+
+
+
 
 
 

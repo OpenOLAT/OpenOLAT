@@ -65,8 +65,6 @@ public interface BusinessGroupView extends BusinessGroupShort, Persistable, Crea
 	public long getNumWaiting();
 	
 	public long getNumOfOffers();
-	
-	public long getNumOfValidOffers();
 
 	/**
 	 * The BusinessGroup has 1..n Owners acting as <i>administrators </i>.

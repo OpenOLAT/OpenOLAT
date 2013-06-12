@@ -381,8 +381,12 @@ alter table o_gp_business add column managed_flags varchar(255);
 create index idx_grp_lifecycle_soft_idx on o_gp_business (external_id);
 
 
+-- complet missing index
 
+create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
+create index idx_id_lastlogin_idx on o_bs_identity (lastlogin);
 
+create index idx_policy_grp_rsrc_idx on o_bs_policy (oresource_id, group_id);
 
 
 
