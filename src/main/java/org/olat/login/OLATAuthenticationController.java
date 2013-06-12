@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.AuthHelper;
-import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
@@ -197,11 +196,17 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		
 		if (source == loginForm && event == Event.DONE_EVENT) {
 			String login = loginForm.getLogin();
-			String pass = loginForm.getPass();
+			String pass = loginForm.getPass();	
+			if (LoginModule.isLoginBlocked(login)) {
+				// do not proceed when blocked
+				showError("login.blocked", LoginModule.getAttackPreventionTimeoutMin().toString());
+				getLogger().audit("Login attempt on already blocked login for " + login + ". IP::" + ureq.getHttpReq().getRemoteAddr(), null);
+				return;
+			}
 			authenticatedIdentity = authenticate(login, pass);
 			if (authenticatedIdentity == null) {
 				if (LoginModule.registerFailedLoginAttempt(login)) {
-					getLogger().audit("Too many failed login attempts for " + login + ". Login blocked.", null);
+					getLogger().audit("Too many failed login attempts for " + login + ". Login blocked. IP::" + ureq.getHttpReq().getRemoteAddr(), null);
 					showError("login.blocked", LoginModule.getAttackPreventionTimeoutMin().toString());
 					return;
 				} else {

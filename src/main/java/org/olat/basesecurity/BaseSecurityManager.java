@@ -419,63 +419,65 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	}
 
 	@Override
-	public void updateRoles(Identity identity, Roles roles) {
+	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, Roles roles) {
 		SecurityGroup anonymousGroup = findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
-		boolean hasBeenAnonymous = isIdentityInSecurityGroup(identity, anonymousGroup);
-		updateRolesInSecurityGroup(identity, anonymousGroup, hasBeenAnonymous, roles.isGuestOnly());
+		boolean hasBeenAnonymous = isIdentityInSecurityGroup(updatedIdentity, anonymousGroup);
+		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, anonymousGroup, hasBeenAnonymous, roles.isGuestOnly(), Constants.GROUP_ANONYMOUS);
 		
 		// system users - opposite of anonymous users
 		SecurityGroup usersGroup = findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		boolean hasBeenUser = isIdentityInSecurityGroup(identity, usersGroup);
-		updateRolesInSecurityGroup(identity,  usersGroup, hasBeenUser, !roles.isGuestOnly());
+		boolean hasBeenUser = isIdentityInSecurityGroup(updatedIdentity, usersGroup);
+		updateRolesInSecurityGroup(actingIdentity, updatedIdentity,  usersGroup, hasBeenUser, !roles.isGuestOnly(), Constants.GROUP_OLATUSERS);
 
 		SecurityGroup groupManagerGroup = findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS);
-		boolean hasBeenGroupManager = isIdentityInSecurityGroup(identity, groupManagerGroup);
+		boolean hasBeenGroupManager = isIdentityInSecurityGroup(updatedIdentity, groupManagerGroup);
 		boolean groupManager = roles.isGroupManager()
 				&& !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(identity, groupManagerGroup, hasBeenGroupManager, groupManager);
+		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, groupManagerGroup, hasBeenGroupManager, groupManager, Constants.GROUP_GROUPMANAGERS);
 
-	// author
+		// author
 		SecurityGroup authorGroup = findSecurityGroupByName(Constants.GROUP_AUTHORS);
-		boolean hasBeenAuthor = isIdentityInSecurityGroup(identity, authorGroup);
+		boolean hasBeenAuthor = isIdentityInSecurityGroup(updatedIdentity, authorGroup);
 		boolean isAuthor = (roles.isAuthor() || roles.isInstitutionalResourceManager())
 				&& !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(identity, authorGroup, hasBeenAuthor, isAuthor);
+		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, authorGroup, hasBeenAuthor, isAuthor, Constants.GROUP_AUTHORS);
 
 		// user manager, only allowed by admin
 		SecurityGroup userManagerGroup = findSecurityGroupByName(Constants.GROUP_USERMANAGERS);
-		boolean hasBeenUserManager = isIdentityInSecurityGroup(identity, userManagerGroup);
+		boolean hasBeenUserManager = isIdentityInSecurityGroup(updatedIdentity, userManagerGroup);
 		boolean userManager = roles.isUserManager()
 				&& !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(identity,  userManagerGroup, hasBeenUserManager, userManager);
+		updateRolesInSecurityGroup(actingIdentity, updatedIdentity,  userManagerGroup, hasBeenUserManager, userManager, Constants.GROUP_USERMANAGERS);
 
  		// institutional resource manager
 		SecurityGroup institutionalResourceManagerGroup = findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
-		boolean hasBeenInstitutionalResourceManager = isIdentityInSecurityGroup(identity, institutionalResourceManagerGroup);
+		boolean hasBeenInstitutionalResourceManager = isIdentityInSecurityGroup(updatedIdentity, institutionalResourceManagerGroup);
 		boolean institutionalResourceManager = roles.isInstitutionalResourceManager()
 				&& !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(identity, institutionalResourceManagerGroup, hasBeenInstitutionalResourceManager, institutionalResourceManager);
+		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, institutionalResourceManagerGroup, hasBeenInstitutionalResourceManager, institutionalResourceManager, Constants.GROUP_INST_ORES_MANAGER);
 
 		// institutional resource manager
 		SecurityGroup poolManagerGroup = findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
-		boolean hasBeenPoolManager = isIdentityInSecurityGroup(identity, poolManagerGroup);
+		boolean hasBeenPoolManager = isIdentityInSecurityGroup(updatedIdentity, poolManagerGroup);
 		boolean poolManager = roles.isPoolAdmin()	&& !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(identity, poolManagerGroup, hasBeenPoolManager, poolManager);
+		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, poolManagerGroup, hasBeenPoolManager, poolManager, Constants.GROUP_POOL_MANAGER);
 
 		// system administrator
 		SecurityGroup adminGroup = findSecurityGroupByName(Constants.GROUP_ADMIN);
-		boolean hasBeenAdmin = isIdentityInSecurityGroup(identity, adminGroup);
+		boolean hasBeenAdmin = isIdentityInSecurityGroup(updatedIdentity, adminGroup);
 		boolean isOLATAdmin = roles.isOLATAdmin() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(identity, adminGroup, hasBeenAdmin, isOLATAdmin);		
+		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, adminGroup, hasBeenAdmin, isOLATAdmin, Constants.GROUP_ADMIN);		
 	}
 	
-	private void updateRolesInSecurityGroup(Identity identity, SecurityGroup securityGroup, boolean hasBeenInGroup, boolean isNowInGroup) {
+	private void updateRolesInSecurityGroup(Identity actingIdentity, Identity updatedIdentity, SecurityGroup securityGroup, boolean hasBeenInGroup, boolean isNowInGroup, String groupName) {
 		if (!hasBeenInGroup && isNowInGroup) {
 			// user not yet in security group, add him
-			addIdentityToSecurityGroup(identity, securityGroup);
+			addIdentityToSecurityGroup(updatedIdentity, securityGroup);
+			logAudit("User::" + actingIdentity.getName() + " added system role::" + groupName + " to user::" + updatedIdentity.getName(), null);
 		} else if (hasBeenInGroup && !isNowInGroup) {
 			// user not anymore in security group, remove him
-			removeIdentityFromSecurityGroup(identity, securityGroup);
+			removeIdentityFromSecurityGroup(updatedIdentity, securityGroup);
+			logAudit("User::" + actingIdentity.getName() + " removed system role::" + groupName + " from user::" + updatedIdentity.getName(), null);
 		}
 	}
 

@@ -264,13 +264,14 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	@Test
 	public void testUpdateRoles_giveAllRights() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "roles-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "roles-" + UUID.randomUUID().toString());
 		Roles roles = securityManager.getRoles(id1);
 		Assert.assertNotNull(roles);
 		dbInstance.commitAndCloseSession();
 
 		//update roles
 		Roles modifiedRoles = new Roles(true, true, true, true, false, true, true, false);
-		securityManager.updateRoles(id1, modifiedRoles);
+		securityManager.updateRoles(id2, id1, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
 		//check roles
@@ -292,13 +293,14 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	@Test
 	public void testUpdateRoles_someRights() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "roles-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "roles-" + UUID.randomUUID().toString());
 		Roles roles = securityManager.getRoles(id1);
 		Assert.assertNotNull(roles);
 		dbInstance.commitAndCloseSession();
 
 		//update roles
 		Roles modifiedRoles = new Roles(false, true, false, true, false, false, false, false);
-		securityManager.updateRoles(id1, modifiedRoles);
+		securityManager.updateRoles(id2, id1, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
 		//check roles
@@ -320,13 +322,14 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	@Test
 	public void testUpdateRoles_guest() {
 		Identity invitee = JunitTestHelper.createAndPersistIdentityAsUser("invitee-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("invitee-" + UUID.randomUUID().toString());
 		Roles roles = securityManager.getRoles(invitee);
 		Assert.assertNotNull(roles);
 		dbInstance.commitAndCloseSession();
 
 		//update roles
 		Roles modifiedRoles = new Roles(true, true, true, true, true, true, false);
-		securityManager.updateRoles(invitee, modifiedRoles);
+		securityManager.updateRoles(user, invitee, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 
 		//check roles
