@@ -932,7 +932,7 @@ public class FunctionalCourseUtil {
 		selectorBuffer.append("xpath=(//div[contains(@class, '")
 		.append("b_selectiontree_item")
 		.append("')]//input[@type='radio'])[position()='")
-		.append(offset.intValue())
+		.append(offset.intValue() + 1)
 		.append("']");
 		
 		return(selectorBuffer.toString());

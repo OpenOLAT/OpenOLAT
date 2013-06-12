@@ -94,15 +94,13 @@ public class CourseLogsArchiveController extends BasicController {
 		
 		if (AsyncExportManager.getInstance().asyncArchiveCourseLogOngoingFor(ureq.getIdentity())) {
 			// then show the ongoing feedback
-	    ICourse course = CourseFactory.loadCourse(ores);
-	    final String courseTitle = course.getCourseTitle();
-		  showExportOngoing(courseTitle);
+			showExportOngoing(false);
 		} else if (isOLATAdmin || aLogV || uLogV || sLogV){
-		  myContent.contextPut("hasLogArchiveAccess", true);
+			myContent.contextPut("hasLogArchiveAccess", true);
 			logFileChooserForm = new LogFileChooserForm(ureq, wControl, isOLATAdmin, aLogV, uLogV, sLogV);
 			listenTo(logFileChooserForm);
 			myContent.put("logfilechooserform",logFileChooserForm.getInitialComponent());
-	    ICourse course = CourseFactory.loadCourse(ores);
+			ICourse course = CourseFactory.loadCourse(ores);
 			myContent.contextPut("body", translate("course.logs.existingarchiveintro", course.getCourseTitle()));
 			showFileButton = LinkFactory.createButton("showfile", myContent, this);
 			File exportDir = CourseFactory.getDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
@@ -114,7 +112,7 @@ public class CourseLogsArchiveController extends BasicController {
 			myPanel.setContent(myContent);
 		} else {
 		    myContent.contextPut("hasLogArchiveAccess", new Boolean(false));
-				myPanel.setContent(myContent);
+			myPanel.setContent(myContent);
 		}
 
 		putInitialPanel(myPanel);
@@ -198,16 +196,21 @@ public class CourseLogsArchiveController extends BasicController {
 				},
 				resId, targetDir, begin, end, logAdminChecked, logUserChecked, logStatisticChecked, charset, theLocale, email);
 
-			  showExportOngoing(courseTitle);
+			  showExportOngoing(true);
 			} else if (event == Event.DONE_EVENT) {
 				myPanel.setContent(myContent);
 			}
 		}
 	}
 	
-	private void showExportOngoing(final String courseTitle) {
+	private void showExportOngoing(final boolean thisCourse) {
 		VelocityContainer vcOngoing = createVelocityContainer("courselogs_ongoing");
-		vcOngoing.contextPut("body", translate("course.logs.ongoing", courseTitle));
+		if (thisCourse) {
+			vcOngoing.contextPut("body", translate("course.logs.ongoing"));			
+		} else {
+			// more generic message that makes also sense in other courses
+			vcOngoing.contextPut("body", translate("course.logs.busy"));			
+		}
 		myPanel.setContent(vcOngoing);
 
 		// initialize polling 

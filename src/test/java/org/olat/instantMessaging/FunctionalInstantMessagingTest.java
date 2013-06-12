@@ -69,7 +69,7 @@ public class FunctionalInstantMessagingTest {
 		int count = 0;
 		
 		GROUP_CHAT_DIALOG.put(GROUP_CHAT_PARTICIPANT0 + "#" + count++, "hello world!");
-		GROUP_CHAT_DIALOG.put(GROUP_CHAT_PARTICIPANT2 + "#" + count++, "clear sky.");
+		GROUP_CHAT_DIALOG.put(GROUP_CHAT_PARTICIPANT1 + "#" + count++, "clear sky.");
 	}
 	
 	@Deployment(testable = false)
@@ -92,7 +92,7 @@ public class FunctionalInstantMessagingTest {
 		if(!initialized){
 			functionalUtil = new FunctionalUtil();
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
-			functionalInstantMessagingUtil = new FunctionalInstantMessagingUtil();
+			functionalInstantMessagingUtil = new FunctionalInstantMessagingUtil(functionalUtil);
 			
 			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 			
@@ -136,6 +136,14 @@ public class FunctionalInstantMessagingTest {
 		Assert.assertTrue(functionalUtil.login(tutor0, tutor.get(0).getLogin(), tutor.get(0).getPassword(), true));
 		
 		Assert.assertTrue(functionalUtil.login(student0, user.get(0).getLogin(), user.get(0).getPassword(), true));
+		
+		/* open roaster */
+		
+		
+		/* modify visibility settings in group */
+		
+		
+		/* login */
 		Assert.assertTrue(functionalUtil.login(student1, user.get(1).getLogin(), user.get(1).getPassword(), true));
 		Assert.assertTrue(functionalUtil.login(student2, user.get(2).getLogin(), user.get(2).getPassword(), true));
 		
