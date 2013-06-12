@@ -59,6 +59,8 @@ public interface AssessmentManager {
 	public static final String COACH_COMMENT = "COACH_COMMENT";
 	public static final String ASSESSMENT_ID = "ASSESSMENT_ID";
 
+	public final static String FULLY_ASSESSED = "FULLY_ASSESSED";
+	
 	/**
 	 * Load all persisted assessment data into a local cache if such a cache is available
 	 * @param identity Restrict preloading to a certain identity or null to preload assessment data from all users
@@ -195,5 +197,15 @@ public interface AssessmentManager {
 	 * @return
 	 */
 	public OLATResourceable createOLATResourceableForLocking(Identity assessedIdentity);
+	
+	/**
+	 * @param courseNode
+	 *            The course node
+	 * @param identity
+	 *            The identity
+	 * @return True if this node has been fully assessed, false if it had been
+	 *         set to not fully assessed, null if no info is available
+	 */
+	public Boolean getNodeFullyAssessed(CourseNode courseNode, Identity identity);
 
 }

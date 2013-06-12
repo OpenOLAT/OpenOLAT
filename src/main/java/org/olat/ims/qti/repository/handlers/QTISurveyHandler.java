@@ -32,6 +32,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.ims.qti.editor.AddNewQTIDocumentController;
@@ -44,6 +45,7 @@ import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.AddFileResourceController;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
@@ -51,6 +53,9 @@ import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
+
+import de.bps.onyx.plugin.OnyxModule;
+import de.bps.onyx.plugin.run.OnyxRunController;
 
 
 /**
@@ -91,15 +96,24 @@ public class QTISurveyHandler extends QTIHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
 	 */
-	public boolean supportsLaunch(RepositoryEntry repoEntry) { return LAUNCHEABLE; }
+	public boolean supportsLaunch(RepositoryEntry repoEntry) {
+		return LAUNCHEABLE;
+	}
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
 	 */
-	public boolean supportsDownload(RepositoryEntry repoEntry) { return DOWNLOADEABLE; }
+	public boolean supportsDownload(RepositoryEntry repoEntry) {
+		return DOWNLOADEABLE;
+	}
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
 	 */
-	public boolean supportsEdit(RepositoryEntry repoEntry) { return EDITABLE; }
+	public boolean supportsEdit(RepositoryEntry repoEntry) {
+		if (OnyxModule.isOnyxTest(repoEntry.getOlatResource())) {
+			return false;
+		}
+		return EDITABLE;
+	}
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsWizard(org.olat.repository.RepositoryEntry)
 	 */
@@ -111,17 +125,25 @@ public class QTISurveyHandler extends QTIHandler {
 	public Controller createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
-	
+
 	/**
 	 * @param res
 	 * @param ureq
 	 * @param wControl
 	 * @return Controller
 	 */
-	public Controller getLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		Resolver resolver = new ImsRepositoryResolver(res);
-		IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
-		Controller runController = IQManager.getInstance().createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, secCallback, ureq, wControl);
+	@Override
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+		Controller runController;
+		if (OnyxModule.isOnyxTest(res)) {
+			RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
+			runController = new OnyxRunController(ureq, wControl, entry, false);
+		} else {
+			Resolver resolver = new ImsRepositoryResolver(res);
+			IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
+			runController = IQManager.getInstance().createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, secCallback, ureq, wControl);
+		}
+		
 		// use on column layout
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, runController.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(runController); // dispose content on layout dispose
@@ -132,6 +154,10 @@ public class QTISurveyHandler extends QTIHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+		if (OnyxModule.isOnyxTest(res)) {
+			return null;
+		}
+		
 		SurveyFileResource fr = new SurveyFileResource();
 		fr.overrideResourceableId(res.getResourceableId());
 		

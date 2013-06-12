@@ -81,7 +81,8 @@ public class AssessmentManagerTest extends OlatTestCase  {
 	private Identity student;
 	private final Float score = new Float(10);
 	private final Boolean passed = Boolean.TRUE;
-
+	private final Boolean fullyAssessed = Boolean.TRUE;
+	
 	@Before
 	public void setUp() throws Exception {		
 		try {
@@ -150,7 +151,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		String userComment = "UselessUserComment";
 		
 		//store ScoreEvaluation for the assessableCourseNode and student
-		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score,passed, assessmentID);
+		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score,passed, fullyAssessed, assessmentID);
     
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
 		ienv.setIdentity(student);

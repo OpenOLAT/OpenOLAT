@@ -4,26 +4,19 @@
 	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+  http://www.springframework.org/schema/beans/spring-beans.xsd
   http://www.springframework.org/schema/context 
-  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:component-scan base-package="org.olat.course.assessment.manager" />
 
-<bean id="assessmentModule" class="org.olat.course.assessment.AssessmentModule" init-method="init" destroy-method="destroy" >
-	<constructor-arg index="0" ref="courseModule" />
-</bean>
+	<bean id="assessmentModule" class="org.olat.course.assessment.AssessmentModule" init-method="init" destroy-method="destroy" >
+		<constructor-arg index="0" ref="courseModule" />
+	</bean>
 
-<bean id="assessmentuiFactory" class="org.olat.course.assessment.AssessmentUIFactory">
-	<constructor-arg index="0" ref="AssessmentControllerCreator${assessmentplugin.activate}" />
-</bean>
-
-<bean id="AssessmentControllerCreatorOlat" class="org.olat.course.assessment.AssessmentControllerCreatorOlat" lazy-init="true"/>
-
-<bean id="org.olat.course.assessment.EfficiencyStatementManager" class="org.olat.course.assessment.EfficiencyStatementManager">
-	<property name="dbInstance" ref="database"/>
-	<property name="repositoryManager" ref="repositoryManager"/>
-</bean>
-
+	<bean id="org.olat.course.assessment.EfficiencyStatementManager" class="org.olat.course.assessment.EfficiencyStatementManager">
+		<property name="dbInstance" ref="database"/>
+		<property name="repositoryManager" ref="repositoryManager"/>
+	</bean>
 
 </beans>

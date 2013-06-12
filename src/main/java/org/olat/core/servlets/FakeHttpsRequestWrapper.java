@@ -30,7 +30,7 @@ import org.olat.core.helpers.Settings;
  * "true" for isSecure, "https" for the scheme and "443" for the server port. But
  * it only deliver these settings if OpenOLAT is set to use https.
  * 
- * Necessary for automatic WSDL generation (ONYX) behind an apache that is
+ * Necessary for automatic WSDL generation (ONYX) behind an apache server that is
  * behind a haproxy
  *
  */
@@ -42,17 +42,30 @@ public class FakeHttpsRequestWrapper extends HttpServletRequestWrapper {
 
 	@Override
 	public boolean isSecure() {
-		return true;
+		return Settings.isSecurePortAvailable();
 	}
 
 	@Override
 	public String getScheme() {
-		return "https";
+		String scheme = Settings.getURIScheme();
+		if(scheme == null) {
+			scheme = isSecure() ? "https" : "http";
+		} else if(scheme.endsWith(":")) {
+			scheme = scheme.substring(0, scheme.length() - 1);
+		}
+		return scheme;
 	}
-    
+
 	@Override
 	public int getServerPort() {
-		String port = Settings.getServerconfig("server_securePort");
-		return 443;
+		int serverPort;
+		if(isSecure()) {
+			String port = Settings.getServerconfig("server_securePort");
+			serverPort = Integer.parseInt(port);
+		} else {
+			String port = Settings.getServerconfig("server_insecurePort");
+			serverPort = Integer.parseInt(port);
+		}
+		return serverPort;
 	}
 }

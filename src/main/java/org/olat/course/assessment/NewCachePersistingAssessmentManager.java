@@ -166,6 +166,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		  .append(" and p.name in ('")
 		  .append(ATTEMPTS).append("','")
 		  .append(SCORE).append("','")
+		  .append(FULLY_ASSESSED).append("','")
 		  .append(PASSED).append("','")
 		  .append(ASSESSMENT_ID).append("','")
 		  .append(COMMENT).append("','")
@@ -380,8 +381,33 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	}
 
 	/**
-	 * @see org.olat.course.assessment.AssessmentManager#saveNodeAttempts(org.olat.course.nodes.CourseNode,
-	 *      org.olat.core.id.Identity, org.olat.core.id.Identity,
+	 * 
+	 * @param courseNode
+	 * @param identity
+	 * @param assessedIdentity
+	 * @param mark
+	 * @param coursePropManager
+	 */
+	void saveNodeFullyAssessed(CourseNode courseNode, Identity identity, Identity assessedIdentity, Boolean fullyAssessed,
+			CoursePropertyManager coursePropManager) {
+		// olat:::: introduce a createOrUpdate method in the cpm and also if applicable in the general propertymanager
+		if (fullyAssessed != null) {
+			Property markProperty = coursePropManager.findCourseNodeProperty(courseNode, assessedIdentity, null, FULLY_ASSESSED);
+			if (markProperty == null) {
+				markProperty = coursePropManager.createCourseNodePropertyInstance(courseNode, assessedIdentity, null, FULLY_ASSESSED, null, null,
+						String.valueOf(fullyAssessed), null);
+				coursePropManager.saveProperty(markProperty);
+			} else {
+				markProperty.setStringValue(String.valueOf(fullyAssessed));
+				coursePropManager.updateProperty(markProperty);
+			}
+			// add to cache
+			putPropertyIntoCache(assessedIdentity, markProperty);
+		}
+	}
+	
+	/**
+	 * @see org.olat.course.assessment.AssessmentManager#saveNodeAttempts(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity,
 	 *      java.lang.Integer)
 	 */
 	public void saveNodeAttempts(final CourseNode courseNode, final Identity identity, final Identity assessedIdentity, final Integer attempts) {
@@ -690,7 +716,21 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 			return result;
 		}		
 	}
-	
+
+	@Override
+	public Boolean getNodeFullyAssessed(CourseNode courseNode, Identity identity) {
+		Boolean fullyAssessed = null;
+		if (courseNode != null) {
+			String cacheKey = getCacheKey(courseNode, FULLY_ASSESSED);
+			Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, null, false);
+			synchronized (m) {//o_clusterOK by:fj is per vm only
+				fullyAssessed = (Boolean) m.get(cacheKey);
+			}
+		}
+
+		return fullyAssessed;
+	}
+
 	/**
 	 * Internal method to create a cache key for a given node, and property
 	 * @param identity
@@ -911,7 +951,41 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));	
 		}
 	}
-	
+
+	public Long syncAndsaveScoreEvaluation(CourseNode courseNode, Identity identity, Identity assessedIdentity,
+			ScoreEvaluation scoreEvaluation, boolean incrementUserAttempts, UserCourseEnvironment userCourseEnv,
+			CoursePropertyManager cpm) {
+		return saveScoreEvaluationInSync(courseNode, identity, assessedIdentity, scoreEvaluation, incrementUserAttempts, userCourseEnv, cpm);
+	}
+
+	private Long saveScoreEvaluationInSync(CourseNode courseNode, Identity identity, Identity assessedIdentity, ScoreEvaluation scoreEvaluation,
+			boolean incrementUserAttempts, final UserCourseEnvironment userCourseEnv, final CoursePropertyManager cpm) {
+		Long attempts = null;
+		Codepoint.codepoint(NewCachePersistingAssessmentManager.class, "doInSyncUpdateUserEfficiencyStatement");
+		log.debug("codepoint reached: doInSyncUpdateUserEfficiencyStatement by identity: " + identity.getName());
+		saveNodeScore(courseNode, assessedIdentity, scoreEvaluation.getScore(), cpm);
+		log.debug("successfully saved node score : " + scoreEvaluation.getScore());
+		saveNodePassed(courseNode, assessedIdentity, scoreEvaluation.getPassed(), cpm);
+		log.debug("successfully saved node passed : " + scoreEvaluation.getPassed());
+		saveAssessmentID(courseNode, assessedIdentity, scoreEvaluation.getAssessmentID(), cpm);
+		log.debug("successfully saved node asssessmentId : " + scoreEvaluation.getPassed());
+		saveNodeFullyAssessed(courseNode, identity, assessedIdentity, scoreEvaluation.getFullyAssessed(), cpm);
+		log.debug("successfully saved node marked completely : " + scoreEvaluation.getPassed());
+		if (incrementUserAttempts) {
+			attempts = incrementNodeAttemptsProperty(courseNode, assessedIdentity, cpm);
+			log.debug("successfully saved user attemps : " + attempts);
+		}
+		saveNodeFullyAssessed(courseNode, identity, assessedIdentity, scoreEvaluation.getFullyAssessed(), cpm);
+		log.debug("successfully saved node fullyAssessed : " + scoreEvaluation.getFullyAssessed());
+		DBFactory.getInstance().commitAndCloseSession();
+		if (courseNode instanceof AssessableCourseNode) {
+			userCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode) courseNode, scoreEvaluation);
+			EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
+			esm.updateUserEfficiencyStatement(userCourseEnv);
+		}
+		return attempts;
+	}
+
 	/**
 	 * Always use this to get a OLATResourceable for doInSync locking!
 	 * Uses the assessIdentity.

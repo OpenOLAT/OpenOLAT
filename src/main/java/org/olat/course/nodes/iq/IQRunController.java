@@ -458,9 +458,11 @@ public class IQRunController extends BasicController implements GenericEventList
 	public void submitAssessment(AssessmentInstance ai) {
 		if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
 			AssessmentContext ac = ai.getAssessmentContext();
+			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 			Float score = new Float(ac.getScore());
 			Boolean passed = new Boolean(ac.isPassed());
-			ScoreEvaluation sceval = new ScoreEvaluation(score, passed, new Long(ai.getAssessID()));
+			ScoreEvaluation sceval = new ScoreEvaluation(score, passed, am.getNodeFullyAssessed(courseNode,
+					getIdentity()), new Long(ai.getAssessID()));
 			AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assesable			
 			boolean incrementUserAttempts = true;
 			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), incrementUserAttempts);

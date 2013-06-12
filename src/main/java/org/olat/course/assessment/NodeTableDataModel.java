@@ -84,11 +84,25 @@ public class NodeTableDataModel extends DefaultTableDataModel {
 				case 3:
 					//min score
 					return nodeData.get(AssessmentHelper.KEY_MAX);
+				case 4:
+					// show OnyxReport
+					final Boolean courseNodeIsOnyx = (Boolean) nodeData.get(AssessmentMainController.KEY_IS_ONYX);
+					if (courseNodeIsOnyx != null && courseNodeIsOnyx.booleanValue()) {
+						return trans.translate("table.action.showOnyxReporter");
+					} else {
+						return "";
+					}
 				default:
 					return "error";
 			}
     }
 
-    
-    
+    public enum Cols {
+    	data,
+    	select,
+    	min,
+    	max,
+    	onyxReport
+    }
+ 
 }

@@ -33,6 +33,7 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
@@ -42,12 +43,17 @@ import org.olat.core.util.ZipUtil;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
+import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.ims.qti.QTIResultSet;
+import org.olat.repository.RepositoryEntry;
 
 import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
@@ -57,13 +63,17 @@ import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
  */
 public class OnyxResultManager {
 	//<ONYX-705>
-	private static final String PASS = "pass";
-	private static final String SCORE = "score";
+	public static final String PASS = "pass";
+	public static final String SCORE = "score";
 	//</ONYX-705>
 	
+	public static final String SUFFIX_ZIP = ".zip";
+	public static final String SUFFIX_XML = ".xml";
 	private static final String RES_REPORTING = "resreporting";
-	
+
 	private static final String REPORTER_NOT_FINISHED = "reporter_not_finshed";
+	
+	public final static long IGNORE_PREVIEW_CASE = -1l;
 
 	public static String getResReporting() {
 		return RES_REPORTING;
@@ -71,7 +81,7 @@ public class OnyxResultManager {
 	
 	public static OLog LOGGER = Tracing.createLoggerFor(OnyxResultManager.class);
 
-	public static void persistOnyxResults(QTIResultSet qtiResultSet, String resultfile) {
+	public static void persistOnyxResults(QTIResultSet qtiResultSet, final String resultfile) {
 
 		//if onyx was started from learningressources or bookmark no results are persisted
 		if (qtiResultSet == null) {
@@ -79,9 +89,9 @@ public class OnyxResultManager {
 			return;
 		}
 
-		//Get course and course node
-		ICourse course = CourseFactory.loadCourse(qtiResultSet.getOlatResource());
-		CourseNode courseNode = course.getRunStructure().getNode(qtiResultSet.getOlatResourceDetail());
+		// Get course and course node
+		final ICourse course = CourseFactory.loadCourse(qtiResultSet.getOlatResource());
+		final CourseNode courseNode = course.getRunStructure().getNode(qtiResultSet.getOlatResourceDetail());
 
 		Boolean isSurvey = false;
 		// <OLATBPS-363>
@@ -93,118 +103,220 @@ public class OnyxResultManager {
 				+ resultfile);
 		String path = null;
 		if (isSurvey) {
-			OlatRootFolderImpl courseRootContainer = course.getCourseEnvironment().getCourseBaseContainer();
+			final OlatRootFolderImpl courseRootContainer = course.getCourseEnvironment().getCourseBaseContainer();
 			path = courseRootContainer.getBasefile() + File.separator + courseNode.getIdent() + File.separator;
 		} else {
-			path = WebappHelper.getUserDataRoot() + File.separator + RES_REPORTING + File.separator + qtiResultSet.getIdentity().getName()
-				+ File.separator + courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString() + File.separator;
+			path = WebappHelper.getUserDataRoot() + File.separator + RES_REPORTING + File.separator + qtiResultSet.getIdentity().getName() + File.separator
+					+ courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString() + File.separator;
 		}
-		File dir = new File(path);
+		final File dir = new File(path);
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
 
-		File resultfileF = new File(resultfile);
-		File resultfileUnzippedDir = new File(resultfileF.getAbsolutePath().substring(0, resultfileF.getAbsolutePath().length() - 4) + "__unzipped");
+		final File resultfileF = new File(resultfile);
+		final File resultfileUnzippedDir = new File(resultfileF.getAbsolutePath().substring(0, resultfileF.getAbsolutePath().length() - 4) + "__unzipped");
 		if (!resultfileUnzippedDir.exists()) {
 			resultfileUnzippedDir.mkdir();
 		}
 		ZipUtil.unzip(resultfileF, resultfileUnzippedDir);
-		File[] results = resultfileUnzippedDir.listFiles(new FileFilter() {
+		final File[] results = resultfileUnzippedDir.listFiles(new FileFilter() {
+			@Override
 			public boolean accept(java.io.File result) {
-				return result.getName().toLowerCase().endsWith("xml")&&result.getName().toLowerCase().startsWith("result");
+				return result.getName().toLowerCase().startsWith("result");
 			}
 		});
 
-		if (results==null || results.length != 1) { throw new UnsupportedOperationException("onyx result zip contains not exactly 1 result file"); }
-		File result = results[0];
-		//add onyx session id (assessment id in qtiresultset table) to identify the different test attempts
-		File file_s = new File(path + courseNode.getIdent() + "v" + qtiResultSet.getAssessmentID() + ".xml");
-		//result.copyTo(file_s);
-		FileUtils.copyFileToFile(result, file_s, false);
-		result.delete();
-		resultfileF.delete();
+		if (results == null || results.length < 1) {
+			throw new UnsupportedOperationException("Onyx result zip does not contain exactly 1 result file");
+		}
+		File file_s = null;
+		for (File result : results) {
+			final String name = result.getName();
+			LOGGER.debug("Found file: " + name);
+			String suffix = SUFFIX_XML;
+			if (name != null) {
+				int i = name.lastIndexOf('.');
+				if (i >= 0) {
+					suffix = name.substring(i);
+				}
+				LOGGER.debug("Using suffix: " + suffix);
+			}
+
+			//add onyx session id (assessment id in qtiresultset table) to identify the different test attempts
+			final String prefix = getResultsFilenamePrefix(path, courseNode, qtiResultSet.getAssessmentID());
+			final File file = new File(prefix + suffix);
+			if (SUFFIX_ZIP.equals(suffix)) {
+				// the result file to use with result set
+				file_s = file;
+			} else if (file_s == null) {
+				// the xml file to use with result set
+				// only take XML instead of ZIP file, if no ZIP file found already
+				file_s = file;
+			}
+			//result.copyTo(file_s);
+			FileUtils.copyFileToFile(result, file, false);
+			result.delete();
+		}
+		
 		resultfileUnzippedDir.delete();
 
 		//if this is a onyx survey we are done here
 		if (isSurvey) {
 			return;
-		}
+		} else {
+			// before asking onyxReporter for resultsets, save the QTIResultSet
+			// with the flag "reporterFinsished = false"
+			qtiResultSet = (QTIResultSet) DBFactory.getInstance().loadObject(qtiResultSet);
+			qtiResultSet.setLastModified(new Date());
+			try {
+				DBFactory.getInstance().updateObject(qtiResultSet);
+			} catch (Exception e) {
+				LOGGER.error("Unable to initialy save the QTIResultSet after finishing Onyx Test.", e);
+			}
 
-		//before asking onyxReporter for resultsets, save the QTIResultSet with the flag "reporterFinsished = false"
-		qtiResultSet = (QTIResultSet) DBFactory.getInstance().loadObject(qtiResultSet);
-		qtiResultSet.setLastModified(new Date());
-		try {
-			DBFactory.getInstance().saveObject(qtiResultSet);
-		} catch (Exception e) {
-			LOGGER.error("Unable to initialy save the QTIResultSet after finishing Onyx Test.", e);
-		}
+			// create an identenv with no roles, no attributes, no locale
+			IdentityEnvironment ienv = new IdentityEnvironment();
+			ienv.setIdentity(qtiResultSet.getIdentity());
+			UserCourseEnvironment userCourseEnvironment = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 
-		performOnyxReport(qtiResultSet, file_s);
+			boolean reporterFinished = false;
+			try {
+				reporterFinished = OnyxResultManager.performOnyxReport(qtiResultSet);
+			} catch (Exception e) {
+				LOGGER.error("unable to to finish ReporterTask", e);
+			}
+
+			qtiResultSet = (QTIResultSet) DBFactory.getInstance().loadObject(qtiResultSet);
+			QTICourseNode node = (QTICourseNode) (courseNode instanceof QTICourseNode ? courseNode : null);
+			if (reporterFinished && !qtiResultSet.getSuspended() && node != null) {
+				boolean bestResultConfigured = false;
+				ScoreEvaluation sc = OnyxModule.getUserScoreEvaluationFromQtiResult(userCourseEnvironment.getCourseEnvironment().getCourseResourceableId(), (QTICourseNode) node,
+						bestResultConfigured, qtiResultSet.getIdentity());
+				if(node instanceof AssessableCourseNode){
+					((AssessableCourseNode) node).updateUserScoreEvaluation(sc, userCourseEnvironment, qtiResultSet.getIdentity(), false);
+				}
+				
+			} else {
+				LOGGER.info("Won't update ScoreEvaluation for user for resultKey: " + qtiResultSet.getKey() + " assessmentId: " + qtiResultSet.getAssessmentID()
+						+ "; reporterFinished: " + reporterFinished + "; suspended: " + qtiResultSet.getSuspended());
+			}
+			qtiResultSet = null;
+			DBFactory.getInstance().commitAndCloseSession();
+		}
 	}
 
-	public static String getUniqueId(Identity identity, CourseNode node,
-			UserCourseEnvironment userCourseEnv) {
-		String uId = String.valueOf(CodeHelper.getGlobalForeverUniqueID().hashCode());
-
+	public static QTIResultSet createQTIResultSet(Identity identity, CourseNode node, Long olatResourceId, Long assessmentId) {
 		QTIResultSet qtiResultSet = new QTIResultSet();
-		qtiResultSet.setAssessmentID(Long.parseLong(uId));
-		qtiResultSet.setOlatResource(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+		qtiResultSet.setAssessmentID(assessmentId);
+		qtiResultSet.setOlatResource(olatResourceId);
 		qtiResultSet.setOlatResourceDetail(node.getIdent());
 		qtiResultSet.setRepositoryRef(node.getReferencedRepositoryEntry().getKey().longValue());
 		qtiResultSet.setIdentity(identity);
 		qtiResultSet.setQtiType(1);
 		qtiResultSet.setLastModified(new Date());
 		DBFactory.getInstance().saveObject(qtiResultSet);
-		DBFactory.getInstance().commit();
+		DBFactory.getInstance().commitAndCloseSession();
+		qtiResultSet = (QTIResultSet) DBFactory.getInstance().loadObject(qtiResultSet, true);
+
+		return qtiResultSet;
+	}
+
+	public static String getUniqueIdForShowOnly(Identity identity, RepositoryEntry entry) {
+		final String uId = String.valueOf(CodeHelper.getGlobalForeverUniqueID().hashCode());
+
+		QTIResultSet qtiResultSet = new QTIResultSet();
+		qtiResultSet.setAssessmentID(Long.valueOf(uId));
+		qtiResultSet.setOlatResource(IGNORE_PREVIEW_CASE);
+		qtiResultSet.setOlatResourceDetail(uId);
+		qtiResultSet.setRepositoryRef(entry.getKey());
+		qtiResultSet.setIdentity(identity);
+		qtiResultSet.setQtiType(1);
+		qtiResultSet.setLastModified(new Date());
+		DBFactory.getInstance().saveObject(qtiResultSet);
+		DBFactory.getInstance().commitAndCloseSession();
+		qtiResultSet = (QTIResultSet) DBFactory.getInstance().loadObject(qtiResultSet, true);
 
 		return uId;
 	}
 
-	public static String getUniqueIdForShowOnly() {
-		String uId = String.valueOf(CodeHelper.getGlobalForeverUniqueID().hashCode());
-		return uId;
-	}
-
-	public static QTIResultSet getResultSet(long uniqueId)	{
-		List<QTIResultSet> liste = getResultSetByAssassmentId(uniqueId);
+	public static QTIResultSet getResultSet(final long uniqueId) {
+		final List<Long> liste = getResultSetByAssassmentId(uniqueId);
 		QTIResultSet qtiResultSet = null;
 		if (liste != null && liste.size() > 0) {
-			qtiResultSet = liste.get(0);
+			Long key = liste.get(0);
+			qtiResultSet = (QTIResultSet) DBFactory.getInstance().loadObject(QTIResultSet.class, key);
+			DBFactory.getInstance().intermediateCommit();
 		}
 		return qtiResultSet;
 	}
 
-	private static List<QTIResultSet> getResultSetByAssassmentId(Long assessmentID) {
-		DB db = DBFactory.getInstance();
+	public static Boolean isLastTestTry(QTIResultSet testTry) {
+		Boolean isLast = true;
 
+		String query = "select rset.key from org.olat.ims.qti.QTIResultSet rset where rset.identity=? and rset.olatResourceDetail=? and rset.creationDate >= ?";
+		@SuppressWarnings("unchecked")
+		List<Long> results = DBFactory.getInstance().find(query,
+				new Object[] { testTry.getIdentity().getKey(), testTry.getOlatResourceDetail(), testTry.getCreationDate() },
+				new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING, StandardBasicTypes.DATE });
+		for (Long result : results) {
+			if (!(testTry.getKey().equals(result)) && testTry.getKey() < result) {
+				isLast = false;
+				break;
+			}
+		}
+
+		return isLast;
+	}
+
+	public static QTIResultSet getLastSuspendedQTIResultSet(Identity identity, CourseNode node) {
+		List<Long> suspendedResults = getSuspendedQTIResultSet(identity, node);
+		QTIResultSet lastResultSet = null;
+
+		for (Long resultSet : suspendedResults) {
+			QTIResultSet res = ((QTIResultSet) DBFactory.getInstance().loadObject(QTIResultSet.class, resultSet));
+			if (lastResultSet != null) {
+				if (lastResultSet.getCreationDate().before(res.getCreationDate())) {
+					lastResultSet = res;
+				}
+			} else {
+				lastResultSet = res;
+			}
+		}
+
+		return lastResultSet;
+	}
+
+	private static List<Long> getSuspendedQTIResultSet(Identity identity, CourseNode node) {
+		String query = "select rset.key from org.olat.ims.qti.QTIResultSet rset where rset.suspended = ? and rset.identity=? and rset.olatResourceDetail=?";
+		List<Long> results = DBFactory.getInstance().find(query, new Object[] { Boolean.TRUE, identity.getKey(), node.getIdent() },
+				new Type[] { StandardBasicTypes.BOOLEAN, StandardBasicTypes.LONG, StandardBasicTypes.STRING });
+		DBFactory.getInstance().intermediateCommit();
+		return results;
+	}
+
+	private static List<Long> getResultSetByAssassmentId(Long assessmentID) {
+		DB db = DBFactory.getInstance();
+		db.commitAndCloseSession();
 		StringBuilder slct = new StringBuilder();
-		slct.append("select rset from ");
+		slct.append("select rset.key from ");
 		slct.append("org.olat.ims.qti.QTIResultSet rset ");
 		slct.append("where ");
 		slct.append("rset.assessmentID=? ");
-
-		return db.find(slct.toString(), new Object[] { assessmentID }, new Type[] { StandardBasicTypes.LONG });
-	}
-
-	/**
-	 * Ask the Onyx Reporter for a result.xml that has allready been saved but the reporter was not finished.
-	 * This is called by a nightly job.
-	 * @param qtiResultSet
-	 */
-	private static boolean performOnyxReport(QTIResultSet qtiResultSet) {
-		return performOnyxReport(qtiResultSet, null);
+		List<Long> results = db.find(slct.toString(), new Object[] { assessmentID }, new Type[] { StandardBasicTypes.LONG });
+		db.intermediateCommit();
+		return results;
 	}
 
 	/**
 	 * Ask the Onyx Reporter with a given file and save the results to db.
+	 * 
 	 * @param qtiResultSet
 	 * @param file_s
 	 */
-	private static boolean performOnyxReport(QTIResultSet qtiResultSet, File file_s) {
-		
+	static boolean performOnyxReport(QTIResultSet qtiResultSet) {
 		boolean reporterFinsished = true;
-		
+		LOGGER.info("PerfomReport Begin for " + qtiResultSet.getAssessmentID() + " # " + qtiResultSet.getKey());
 		//Get course and course node
 		ICourse course = CourseFactory.loadCourse(qtiResultSet.getOlatResource());
 		CourseNode courseNode = course.getRunStructure().getNode(qtiResultSet.getOlatResourceDetail());
@@ -214,81 +326,98 @@ public class OnyxResultManager {
 		if (courseNode instanceof AbstractAccessableCourseNode) {
 			node = (AbstractAccessableCourseNode) courseNode;
 		} else {
-			LOGGER.warn("Tried to perform an OnyxReport with a non-assessable course node! "+(courseNode!=null?(courseNode.getShortName()+" Class: "+courseNode.getClass()):"NULL"));
+			LOGGER.warn("Tried to perform an OnyxReport with a non-assessable course node! "
+					+ (courseNode != null ? (courseNode.getShortName()
+							+ " Class: " + courseNode.getClass()) : "NULL"));
 		}
-		//</OLATCE-1048>
+		// </OLATCE-1048>
 		//<ONYX-705>
 		Map<String, String> results = null;
 		//</ONYX-705>
-		//if no file was given use the qtiresultset to get the file
-		if (file_s == null) {
-			String path = WebappHelper.getUserDataRoot() + File.separator + RES_REPORTING + File.separator + qtiResultSet.getIdentity().getName()
-			+ File.separator + courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString() + File.separator;
-			file_s = new File(path + courseNode.getIdent() + "v" + qtiResultSet.getAssessmentID() + ".xml");
-			if (!file_s.exists()) {
-				LOGGER.error("performOnyxReport was called but no result.xml exists with path: " + file_s.getAbsolutePath());
-				return false;
-			}
-		}
 
-		try {
-		//<ONYX-705>
-			OnyxReporterConnector onyxReporter = new OnyxReporterConnector();
-			
-			// <OLATBPS-363>
-				results = onyxReporter.getResults(file_s, node, qtiResultSet.getIdentity());
-			// </OLATBPS-363>
-		} catch (OnyxReporterException e) {
-		//</ONYX-705>
-			LifeCycleManager.createInstanceFor(qtiResultSet).markTimestampFor(REPORTER_NOT_FINISHED);
+		String path = WebappHelper.getUserDataRoot() + File.separator + RES_REPORTING + File.separator + qtiResultSet.getIdentity().getName() + File.separator
+				+ courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString() + File.separator;
+		File file_s = getResultsFile(path, courseNode, qtiResultSet.getAssessmentID());
+		if (!file_s.exists()) {
+			LOGGER.error("performOnyxReport was called but no result.xml exists with path: " + file_s.getAbsolutePath());
 			reporterFinsished = false;
-			LOGGER.warn("OnyxReporter was unreachable during get the results. An entry in Lifecyclemanager is done and the report will be finshed with a job.");
 		}
 
-		String score = null, passed = null;
-		
-		//<ONYX-705>
-		for (String vars : results.keySet()) {
-			// only testoutcomes "score" and "passed" are stored at olat db
-			if (SCORE.equalsIgnoreCase(vars)) {
-				score = results.get(vars);
-			}	else if (PASS.equalsIgnoreCase(vars)) {
-					passed = results.get(vars);
-			} else {
-				LOGGER.info("TestOutCome "+results.get(vars)+ " is not stored in OLAT DB");
+		if(reporterFinsished){
+			try {
+				//<ONYX-705>
+				OnyxReporterConnector onyxReporter = new OnyxReporterConnector();
+	
+				// <OLATBPS-363>
+				results = onyxReporter.getResults(file_s, node, qtiResultSet.getIdentity());
+				// </OLATBPS-363>
+			} catch (OnyxReporterException e) {
+				//</ONYX-705>
+				LifeCycleManager.createInstanceFor(qtiResultSet).markTimestampFor(REPORTER_NOT_FINISHED);
+				reporterFinsished = false;
+				LOGGER.warn("OnyxReporter was unreachable during get the results. An entry in Lifecyclemanager is done and the report will be finshed with a job.");
 			}
 		}
-		//</ONYX-705>
-		if (score != null || passed != null) {
-			if (score != null) {
-				qtiResultSet.setScore(Float.valueOf(score));
-				//if own cutvalue for passed is configured use this instead of the PASS variable from onyx test.
-				if (courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_CUTVALUE) != null) {
-					// <OLATBPS-508>
-					if (Float.valueOf(score) >= ((Float) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_CUTVALUE))) {
-					// </OLATBPS-508>
-						passed = "true";
-					}
+
+		if(reporterFinsished) {
+			String score = null, passed = null;
+		
+			//<ONYX-705>
+			for (String vars : results.keySet()) {
+				// only testoutcomes "score" and "passed" are stored at olat db
+				if (SCORE.equalsIgnoreCase(vars)) {
+					score = results.get(vars);
+				}	else if (PASS.equalsIgnoreCase(vars)) {
+					passed = results.get(vars);
+				} else {
+					LOGGER.debug("TestOutCome "+results.get(vars)+ " is not stored in OLAT DB");
 				}
 			}
-			if (passed != null) {
-				qtiResultSet.setIsPassed(Boolean.valueOf(passed));
+			qtiResultSet = (QTIResultSet) DBFactory.getInstance().loadObject(qtiResultSet);
+			synchronized (qtiResultSet) {
+				if (score != null || passed != null) {
+					Float scoreValue = null;
+					try {
+						if (score != null) {
+							scoreValue = Float.valueOf(score);
+							qtiResultSet.setScore(scoreValue);
+						}
+
+						//if own cutvalue for passed is configured use this instead of the PASS variable from onyx test.
+						if (courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_CUTVALUE) != null) {
+							Float cutValue = ((Float) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_CUTVALUE));
+							if (scoreValue >= cutValue) {
+								passed = "true";
+							} else {
+								passed = "false";
+							}
+						}
+					} catch (NumberFormatException nfe) {
+						LOGGER.error("Unable to parse score: " + score + "to float", nfe);
+					} catch (ClassCastException cce) {
+						LOGGER.error("Unable to cast cut-value to float", cce);
+					}
+
+					if (passed != null) {
+						qtiResultSet.setIsPassed(Boolean.valueOf(passed));
+					}
+				}
+				qtiResultSet.setLastModified(new Date());
+				DBFactory.getInstance().updateObject(qtiResultSet);
+				DBFactory.getInstance().commitAndCloseSession();
 			}
 		}
-		qtiResultSet.setLastModified(new Date());
-		DBFactory.getInstance().saveObject(qtiResultSet);
-		DBFactory.getInstance().commit();
+		LOGGER.info("PerfomReport Finished for " + qtiResultSet.getAssessmentID() + " # " + qtiResultSet.getKey());
 		return reporterFinsished;
 	}
 
 	/**
-	 * This is called by a nightly job: update all resultsets where the Onyx Reporter has not finished yet.
-	 * (maybe because the reporter was not available).
+	 * This is called by a nightly job: update all resultsets where the Onyx Reporter has not finished yet. (maybe because the reporter was not available).
 	 */
 	public static void updateOnyxResults() {
-		List<QTIResultSet> liste = findResultSets();
-		for (QTIResultSet qTIResultSet : liste) {
-			LifeCycleManager lcm =  null;
+		final List<QTIResultSet> liste = findResultSets();
+		for (final QTIResultSet qTIResultSet : liste) {
+			LifeCycleManager lcm = null;
 			if (qTIResultSet != null) {
 				lcm = LifeCycleManager.createInstanceFor(qTIResultSet);
 			}
@@ -298,15 +427,42 @@ public class OnyxResultManager {
 				}
 			}
 		}
- }
-	
-	public static List findResultSets() {
-		DB db = DBFactory.getInstance();
+	}
 
-		StringBuilder slct = new StringBuilder();
+	public static List<QTIResultSet> findResultSets() {
+		final DB db = DBFactory.getInstance();
+
+		final StringBuilder slct = new StringBuilder();
 		slct.append("select rset from ");
 		slct.append("org.olat.ims.qti.QTIResultSet rset ");
-		
+
 		return db.find(slct.toString());
+	}
+	
+	public static final String getResultsFilenamePrefix(final String path, final CourseNode courseNode, final long assessmentId) {
+		final String prefix = path + courseNode.getIdent() + "v" + assessmentId;
+		return prefix;
+	}
+
+	/**
+	 * Retrieves the results file.
+	 * 
+	 * @param path
+	 * @param courseNode
+	 * @param assessmentId
+	 * @return Delivers the result.zip, if found, the result.xml otherwise.
+	 *         Returns null if not found.
+	 */
+	public static final File getResultsFile(final String path, final CourseNode courseNode, final long assessmentId) {
+		final String prefix = getResultsFilenamePrefix(path, courseNode, assessmentId);
+		File file = new File(prefix + SUFFIX_ZIP);
+		if (file.exists()) {
+			return file;
+		}
+		file = new File(prefix + SUFFIX_XML);
+		if (file.exists()) {
+			return file;
+		}
+		return null;
 	}
 }

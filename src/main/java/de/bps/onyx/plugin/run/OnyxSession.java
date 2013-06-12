@@ -42,7 +42,7 @@ public class OnyxSession {
 	/**
 	 * @param userCourseEnvironment The userCourseEnvironment to set.
 	 */
-	public void setUserCourseEnvironment(UserCourseEnvironment userCourseEnvironment) {
+	public void setUserCourseEnvironment(final UserCourseEnvironment userCourseEnvironment) {
 		this.userCourseEnvironment = userCourseEnvironment;
 	}
 
@@ -55,13 +55,14 @@ public class OnyxSession {
 
 	/**
 	 * The Identity of the user who attends the test.
+	 * 
 	 * @param identity The identity to set.
 	 */
-	public void setIdentity(Identity identity) {
+	public void setIdentity(final Identity identity) {
 		this.identity = identity;
 	}
 
-	public void setAssessmenttype(String assessmenttype) {
+	public void setAssessmenttype(final String assessmenttype) {
 		this.assessmenttype = assessmenttype;
 	}
 
@@ -69,7 +70,7 @@ public class OnyxSession {
 		return assessmenttype;
 	}
 
-	public void setNode(CourseNode node) {
+	public void setNode(final CourseNode node) {
 		this.node = node;
 	}
 

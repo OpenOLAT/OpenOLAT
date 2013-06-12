@@ -62,6 +62,7 @@ public class StreamMediaResource implements MediaResource {
 	 * @return
 	 * @see org.olat.core.gui.media.MediaRequest#getSize()
 	 */
+	@Override
 	public Long getSize() {
 		return size;
 	}
@@ -69,6 +70,7 @@ public class StreamMediaResource implements MediaResource {
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
 	 */
+	@Override
 	public InputStream getInputStream() {
 		return is;
 	}

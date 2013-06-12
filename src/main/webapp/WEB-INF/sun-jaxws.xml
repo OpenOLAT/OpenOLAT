@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- <OLATCE-1322> -->
+<endpoints version="2.0" xmlns="http://java.sun.com/xml/ns/jax-ws/ri/runtime">
+  <endpoint name="ReturnWSService"
+    implementation="de.bps.onyx.plugin.wsserver.ReturnWSService"
+    url-pattern="/services/ReturnWSService" />
+    <endpoint name="TraineeStatusService" implementation="de.bps.onyx.plugin.wsserver.TraineeStatusService" url-pattern="/services/TraineeStatusService"/>
+</endpoints>
+<!--
+ history:
+
+ $Log: sun-jaxws.xml,v $
+ Revision 1.1  2012-01-04 13:29:07  blaw
+ OLATCE-1322
+ Switched from the axis2 based WebService for the ReturnWSService to save qti2 test results in olat to a jax-ws / annotations based implementation.
+
+
+-->

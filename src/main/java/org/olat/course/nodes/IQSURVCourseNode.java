@@ -66,7 +66,7 @@ import org.olat.repository.RepositoryManager;
  * @author Mike Stock Comment:
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class IQSURVCourseNode extends AbstractAccessableCourseNode {
+public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QTICourseNode {
 
 	private static final String PACKAGE = Util.getPackageName(IQSURVCourseNode.class);
 	private static final String TYPE = "iqsurv";

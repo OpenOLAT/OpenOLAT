@@ -1561,6 +1561,18 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+	    <!-- <OLATCE-1322> -->
+	    <dependency>
+	      <groupId>com.sun.xml.ws</groupId>
+	      <artifactId>jaxws-rt</artifactId>
+	      <version>2.2.6</version>
+	    </dependency>
+	    <dependency>
+	    	<groupId>com.sun.xml.fastinfoset</groupId>
+	    	<artifactId>FastInfoset</artifactId>
+	    	<version>1.2.8</version>
+	    </dependency>
+	    <!-- </OLATCE-1322> -->
 		<dependency>
 			<!-- Used by SCORM implementation -->
 			<groupId>org.beanshell</groupId>

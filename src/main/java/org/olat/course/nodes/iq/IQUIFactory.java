@@ -60,10 +60,10 @@ public class IQUIFactory {
 	 * XXXController(..) creation of different IQxyzRun / IQxyzEdit /
 	 * IQxyzPreviewControllers within the IQxyzCourseNodes.
 	 */
-	static IQControllerCreator iqControllerCreator = null;
+	private static IQControllerCreator iqControllerCreator = new IQControllerCreatorOlat();
 
-	IQUIFactory(IQControllerCreator specificIqControllerCreator) {
-		IQUIFactory.iqControllerCreator = specificIqControllerCreator;
+	public IQUIFactory() {
+		//
 	}
 
 	public static TabbableController createIQTestEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course,

@@ -33,7 +33,7 @@ import org.olat.core.logging.Tracing;
 //<ONYX-705>
 
 @WebServiceClient(name = "ReporterWSService", targetNamespace = "http://server.webservice.plugin.bps.de/")
-class OnyxReporterClient extends Service {
+public class OnyxReporterClient extends Service {
 
     private final static URL REPORTERSERVICE_WSDL_LOCATION;
     private final static OLog logger = Tracing.createLoggerFor(de.bps.webservices.clients.onyxreporter.OnyxReporterClient.class);

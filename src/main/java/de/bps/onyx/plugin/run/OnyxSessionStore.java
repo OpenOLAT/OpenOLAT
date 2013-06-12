@@ -34,12 +34,11 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public class OnyxSessionStore {
 
-	private static HashMap<String,OnyxSession> idOnyxsession = new HashMap<String,OnyxSession>();
+	private static HashMap<String, OnyxSession> idOnyxsession = new HashMap<String, OnyxSession>();
 
-	public static String getUniqueId(Identity identity, CourseNode node,
-			UserCourseEnvironment userCourseEnv) {
-		String uId= String.valueOf(CodeHelper.getGlobalForeverUniqueID().hashCode());
-		OnyxSession os = new OnyxSession();
+	public static String getUniqueId(final Identity identity, final CourseNode node, final UserCourseEnvironment userCourseEnv) {
+		final String uId = String.valueOf(CodeHelper.getGlobalForeverUniqueID().hashCode());
+		final OnyxSession os = new OnyxSession();
 		os.setNode(node);
 		os.setUserCourseEnvironment(userCourseEnv);
 		os.setAssessmenttype(node.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString());
@@ -48,18 +47,19 @@ public class OnyxSessionStore {
 		return uId;
 	}
 
-	public static OnyxSession getAndRemoveOnyxsession(String getUniqueId){
+	public static OnyxSession getAndRemoveOnyxsession(final String getUniqueId) {
 		return idOnyxsession.get(getUniqueId);
 	}
 
 	/**
 	 * Getting the key to the value.
+	 * 
 	 * @param os The OnyxSession to get the id for.
 	 * @return the unique id.
 	 */
-	public static String getIdForSession(OnyxSession os) {
+	public static String getIdForSession(final OnyxSession os) {
 		String id = "";
-		for (Map.Entry entry : idOnyxsession.entrySet()) {
+		for (final Map.Entry<String, OnyxSession> entry : idOnyxsession.entrySet()) {
 			if (entry.getValue().equals(os)) {
 				id = entry.getKey().toString();
 			}
@@ -67,4 +67,3 @@ public class OnyxSessionStore {
 		return id;
 	}
 }
-

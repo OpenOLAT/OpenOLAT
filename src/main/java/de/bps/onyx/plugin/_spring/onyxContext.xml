@@ -3,15 +3,16 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 <bean id="onyxModule" class="de.bps.onyx.plugin.OnyxModule" depends-on="coordinatorManager">
 	<property name="onyxPluginWSLocation" value="${onyx.plugin.wslocation}" />
 	<!-- <OLATCE-713> -->
 	<property name="onyxUserViewLocation" value="${onyx.plugin.userviewlocation}" />
 	<property name="onyxReporterUserViewLocation" value="${onyx.reporter.userviewlocation}" />
-	<!-- </OLATCE-713> -->
+	<property name="onyxExamModeLocation" value="${onyx.plugin.exammodelocation}" />
 	<property name="configName" value="${onyx.plugin.configname}" />
+	<property name="assessmentPlugin" value="${assessmentplugin.activate}" />
 	
 	<property name="persistedProperties">
 	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
@@ -25,17 +26,6 @@
         <property name="targetObject" ref="onyxModule" />
         <property name="targetMethod" value="init" />
 </bean>
-
-<bean id="IQControllerCreatorOnyx" class="de.bps.onyx.plugin.course.nodes.iq.IQControllerCreatorOnyx" lazy-init="true"/>
-
-
-<!-- The Handlers which are registered by the QTIMOdule at the repository -->
-<bean id="QTITestHandlerOnyx" class="de.bps.ims.qti.repository.handlers.QTITestHandlerOnyx"></bean>
-<bean id="QTISurveyHandlerOnyx" class="de.bps.ims.qti.repository.handlers.QTISurveyHandlerOnyx"></bean>
-
-<bean id="SurveyValidatorOnyx" class="de.bps.ims.qti.fileresource.SurveyFileResourceValidatorOnyx" />
-
-<bean id="TestValidatorOnyx" class="de.bps.ims.qti.fileresource.TestFileResourceValidatorOnyx" />
 
 <!-- update job for onyx results -->
 <bean id="updateQtiResultsTriggerOnyx" class="org.springframework.scheduling.quartz.CronTriggerBean">
@@ -57,8 +47,5 @@
 	<!-- NOTE: reusing the notifications.DummyJob here -->
 	<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
 </bean>
-
-<!-- REST API properties -->
-<bean id="OnyxCustomConfigCreator" class="de.bps.onyx.plugin.restapi.config.OnyxCustomConfigCreator" lazy-init="true"/>
 
 </beans>

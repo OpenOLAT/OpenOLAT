@@ -34,27 +34,38 @@ public class ScoreEvaluation {
 	private final Float score;
 	private final Boolean passed; //could be Boolean.TRUE, Boolean.FALSE or null if "passed" info is not defined
 	private final Long assessmentID;
-		
+	private final Boolean fullyAssessed;
+	
+	
 	/**
 	 * @param score
 	 * @param passed
 	 */
 	public ScoreEvaluation(Float score, Boolean passed) {
-		this.score = score;
-		this.passed = passed;
-		this.assessmentID = null;
+		this(score, passed, null);
 	}
 	
+	
+	/**
+	 * @param score
+	 * @param passed
+	 * @param fullyAssessed
+	 */
+	public ScoreEvaluation(final Float score, final Boolean passed, final Boolean fullyAssessed) {
+		this(score, passed, fullyAssessed, null);
+	}
+
 	/**
 	 * Constructor for passing the assessmentID.
 	 * @param score
 	 * @param passed
 	 * @param assessmentID
 	 */
-	public ScoreEvaluation(Float score, Boolean passed, Long assessmentID) {
+	public ScoreEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
 		this.score = score;
 		this.passed = passed;
 		this.assessmentID = assessmentID;
+		this.fullyAssessed = fullyAssessed;
 	}
 
 	/**
@@ -74,8 +85,9 @@ public class ScoreEvaluation {
 	/** (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
-		return "score:"+score+", passed:"+passed+", S"+hashCode();
+		return "score:" + score + ", passed:" + passed + ", fullyAssessed " + fullyAssessed + ", S" + hashCode();
 	}
 
   /**
@@ -84,5 +96,9 @@ public class ScoreEvaluation {
    */
 	public Long getAssessmentID() {
 		return assessmentID;
+	}
+	
+	public Boolean getFullyAssessed() {
+		return fullyAssessed;
 	}
 }

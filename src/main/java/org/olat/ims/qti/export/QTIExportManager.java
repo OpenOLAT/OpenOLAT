@@ -86,13 +86,13 @@ public class QTIExportManager extends BasicManager{
 		File exportDirectory, String charset, String fileNameSuffix) {
 		boolean resultsFoundAndExported = false;
 		QTIResultManager qrm = QTIResultManager.getInstance();
-		List results = qrm.selectResults(olatResource, olatResourceDetail, repositoryRef, qef.getType());
+		List<QTIResult> results = qrm.selectResults(olatResource, olatResourceDetail, repositoryRef, qef.getType());
 		if(results.size() > 0){
-			QTIResult res0 = (QTIResult) results.get(0);
+			QTIResult res0 = results.get(0);
 			
 			QTIObjectTreeBuilder qotb = new QTIObjectTreeBuilder(new Long(res0.getResultSet().getRepositoryRef()));
 			
-			List qtiItemObjectList = qotb.getQTIItemObjectList();
+			List<QTIItemObject> qtiItemObjectList = qotb.getQTIItemObjectList();
 			qef.setQTIItemObjectList(qtiItemObjectList);
 			if (results.size() > 0) {
 				createContentOfExportFile(results,qtiItemObjectList,qef);

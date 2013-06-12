@@ -63,13 +63,15 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 
+import de.bps.onyx.plugin.OnyxModule;
+
 /**
  * Initial Date: Feb 9, 2004
  * 
  * @author Mike Stock
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class IQSELFCourseNode extends AbstractAccessableCourseNode implements SelfAssessableCourseNode {
+public class IQSELFCourseNode extends AbstractAccessableCourseNode implements SelfAssessableCourseNode, QTICourseNode {
 
 	private static final String PACKAGE_IQ = Util.getPackageName(IQRunController.class);
 	private static final String TYPE = "iqself";
@@ -294,13 +296,31 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	 * 
 	 * @see org.olat.course.nodes.SelfAssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		long olatResourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().longValue();
-		QTIResultSet qTIResultSet = IQManager.getInstance().getLastResultSet(identity, olatResourceId, this.getIdent());
-		if(qTIResultSet!=null) {
-		  ScoreEvaluation scoreEvaluation = new ScoreEvaluation(new Float(qTIResultSet.getScore()), qTIResultSet.getIsPassed(), new Long(qTIResultSet.getAssessmentID()));
-		  return scoreEvaluation;
+	@Override
+	public ScoreEvaluation getUserScoreEvaluation(final UserCourseEnvironment userCourseEnv) {
+		// read score from properties save score, passed and attempts information
+		RepositoryEntry referencedRepositoryEntry = getReferencedRepositoryEntry();
+		if (referencedRepositoryEntry != null && OnyxModule.isOnyxTest(getReferencedRepositoryEntry().getOlatResource())) {
+			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+			Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+			Boolean passed = am.getNodePassed(this, mySelf);
+			Float score = am.getNodeScore(this, mySelf);
+			Long assessmentID = am.getAssessmentID(this, mySelf);
+			// <OLATCE-374>
+			Boolean fullyAssessed = am.getNodeFullyAssessed(this, mySelf);
+			ScoreEvaluation se = new ScoreEvaluation(score, passed, fullyAssessed, assessmentID);
+			// </OLATCE-374>
+			return se;
+		} else {
+			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+			long olatResourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().longValue();
+			QTIResultSet qTIResultSet = IQManager.getInstance().getLastResultSet(identity, olatResourceId, this.getIdent());
+			if (qTIResultSet != null) {
+				Boolean passed = qTIResultSet.getIsPassed();
+				Boolean fullyAssessed = qTIResultSet.getFullyAssessed();
+				ScoreEvaluation scoreEvaluation = new ScoreEvaluation(new Float(qTIResultSet.getScore()), passed, fullyAssessed, new Long(qTIResultSet.getAssessmentID()));
+				return scoreEvaluation;
+			}
 		}
 		return null;
 	}

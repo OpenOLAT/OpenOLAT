@@ -28,6 +28,7 @@ package org.olat.course.run.preview;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -45,10 +46,10 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * @author Mike Stock
  */
 final class PreviewAssessmentManager extends BasicManager implements AssessmentManager {
-	private HashMap nodeScores = new HashMap();
-	private HashMap nodePassed = new HashMap();
-	private HashMap nodeAttempts = new HashMap();
-	private HashMap nodeAssessmentID = new HashMap();
+	private Map<String,Float> nodeScores = new HashMap<String,Float>();
+	private Map<String,Boolean> nodePassed = new HashMap<String,Boolean>();
+	private Map<String,Integer> nodeAttempts = new HashMap<String,Integer>();
+	private Map<String,Long> nodeAssessmentID = new HashMap<String,Long>();
 
 	/**
 	 * @see org.olat.course.assessment.AssessmentManager#saveNodeScore(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, java.lang.Float)
@@ -89,7 +90,7 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 * @see org.olat.course.assessment.AssessmentManager#incrementNodeAttempts(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
 	 */
 	public void incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment) {
-		Integer attempts = (Integer)nodeAttempts.get(courseNode.getIdent());
+		Integer attempts = nodeAttempts.get(courseNode.getIdent());
 		if (attempts == null) attempts = new Integer(0);
 		int iAttempts = attempts.intValue();
 		iAttempts++;
@@ -109,7 +110,7 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 * @see org.olat.course.assessment.AssessmentManager#getNodeScore(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
 	 */
 	public Float getNodeScore(CourseNode courseNode, Identity identity) {
-		return (Float)nodeScores.get(courseNode.getIdent());
+		return nodeScores.get(courseNode.getIdent());
 	}
 
 	/**
@@ -130,14 +131,19 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 * @see org.olat.course.assessment.AssessmentManager#getNodePassed(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
 	 */
 	public Boolean getNodePassed(CourseNode courseNode, Identity identity) {
-		return (Boolean)nodePassed.get(courseNode.getIdent());
+		return nodePassed.get(courseNode.getIdent());
+	}
+
+	@Override
+	public Boolean getNodeFullyAssessed(CourseNode courseNode, Identity identity) {
+		return nodePassed.get(courseNode.getIdent());
 	}
 
 	/**
 	 * @see org.olat.course.assessment.AssessmentManager#getNodeAttempts(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
 	 */
 	public Integer getNodeAttempts(CourseNode courseNode, Identity identity) {
-		Integer attempts = (Integer)nodeAttempts.get(courseNode.getIdent());
+		Integer attempts = nodeAttempts.get(courseNode.getIdent());
 		return (attempts == null ? new Integer(0) : attempts);
 	}
 

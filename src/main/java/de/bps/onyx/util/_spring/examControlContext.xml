@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+                        http://www.springframework.org/schema/context 
+                        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+	<!-- general reference-holder -->
+	<!-- ================================= -->
+	<bean id="examControlPlaceHolder" class="de.bps.onyx.util.ExamControlPlaceHolder" lazy-init="default">
+	  <constructor-arg index="0" ref="examControl.master.${exam.mode.masternode}" />
+   	</bean>
+   	
+	<!-- SEARCH SERVICE SIDE CONFIGURATION -->
+	<!-- ================================= -->
+
+	<bean id="examControl.master.true" class="de.bps.onyx.util.ExamPoolManagerProvider" init-method="springInit" lazy-init="true">
+		<constructor-arg name="examPoolManager" ref="examPoolManagerServer"/>
+		<property name="connectionFactory" ref="examControlConnectionFactory"/>
+		<property name="searchQueue" ref="examControlQueue"/>
+	</bean>
+		
+	<bean id="examPoolManagerServer" class="de.bps.onyx.util.ExamPoolManagerServer" lazy-init="true" />
+	
+
+	<!-- SEARCH PROXY SIDE CONFIGURATION -->
+	<!-- =============================== -->
+	
+	<bean id="examControl.master.false" class="de.bps.onyx.util.ExamPoolManagerProxy" init-method="springInit" lazy-init="true">
+		<property name="connectionFactory" ref="examControlConnectionFactory"/>
+		<property name="searchQueue" ref="examControlQueue"/>
+		<property name="receiveTimeout" value="45000"/>
+		<property name="timeToLive" value="45000"/>
+	</bean>
+
+	<!-- SEARCH COMMON CONFIGURATION (PROXY-SIDE AND SERVICE-SIDE) -->
+	<!-- ========================================================= -->
+
+	<!-- JMS Stuff -->
+	<bean id="examControlConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
+		<property name="brokerURL" value="${search.broker.url}" /> 
+	</bean>
+
+	<!-- used for sending the search requests -->
+	<bean id="examControlQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
+		<constructor-arg value="olat/examQueue" />
+	</bean>
+
+
+</beans>
+
+<!--
+ history:
+
+ $Log: examControlContext.xml,v $
+ Revision 1.1  2012-03-29 14:39:01  blaw
+ OLATCE-1425
+ * exam-control-mode
+ * show active-students
+ * allow resume of tests (recycle assessment-id, no new assessment)
+ * allow stop of exams
+ * allow start for exams
+ * add ws-interface to save student-exam -state (mockup)
+
+-->

@@ -28,32 +28,34 @@
 */
 package de.bps.jobs;
 
-import org.olat.core.commons.scheduler.JobWithDB;
 import org.olat.core.logging.Tracing;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import de.bps.onyx.plugin.OnyxResultManager;
 
 /**
  * Description:<br>
  * This class calls the updateOnyxResults in a nightliy job.
- * 
  * <P>
- * Initial Date:  20.01.2010 <br>
+ * Initial Date: 20.01.2010 <br>
+ * 
  * @author thomasw
  */
-public class UpdateOnyxResults extends JobWithDB {
+public class UpdateOnyxResults extends QuartzJobBean {
 
+	/**
+	 * @see org.springframework.scheduling.quartz.QuartzJobBean#executeInternal(org.quartz.JobExecutionContext)
+	 */
 	@Override
-	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
+	protected void executeInternal(final JobExecutionContext arg0) throws JobExecutionException {
 		try {
 			OnyxResultManager.updateOnyxResults();
 			Tracing.createLoggerFor(this.getClass()).info("updated onyx results");
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			Tracing.createLoggerFor(this.getClass()).error("error in nightly update of onyx results", e);
 			throw new JobExecutionException(e);
 		}
 	}
 }
- 

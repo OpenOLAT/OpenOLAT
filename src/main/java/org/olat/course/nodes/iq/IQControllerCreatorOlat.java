@@ -25,6 +25,7 @@
 package org.olat.course.nodes.iq;
 
 import java.io.File;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
@@ -39,23 +40,33 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.ims.qti.QTIResultDetailsController;
+import org.olat.ims.qti.QTI12ResultDetailsController;
+import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
 import org.olat.ims.qti.export.QTIExportManager;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+
+import de.bps.ims.qti.QTIResultDetailsController;
+import de.bps.onyx.plugin.OnyxExportManager;
+import de.bps.onyx.plugin.OnyxModule;
+import de.bps.onyx.plugin.run.OnyxRunController;
 
 /**
  * Description:<br>
@@ -120,10 +131,9 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 	 * @param courseNode
 	 * @return
 	 */
-	public Controller createIQTestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, IQTESTCourseNode courseNode){
-		
-		Controller controller = null;
-		
+	@Override
+	public Controller createIQTestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, IQTESTCourseNode courseNode) {
+		Controller controller;
 		// Do not allow guests to start tests
 		Roles roles = ureq.getUserSession().getRoles();
 		Translator trans = Util.createPackageTranslator(IQTESTCourseNode.class, ureq.getLocale());
@@ -132,38 +142,64 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-			IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
-			RepositoryEntry repositoryEntry = ne.getCourseNode().getReferencedRepositoryEntry();
-			OLATResourceable ores = repositoryEntry.getOlatResource();
-			Long resId = ores.getResourceableId();
-			TestFileResource fr = new TestFileResource();
-			fr.overrideResourceableId(resId);
-			if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
-				//QTI1
-				controller = new IQRunController(userCourseEnv, courseNode.getModuleConfiguration(), sec, ureq, wControl, courseNode);
+			ModuleConfiguration config = courseNode.getModuleConfiguration();
+			boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
+			if (onyx) {
+				final AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+				final IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
+				controller = new OnyxRunController(userCourseEnv, config, sec, ureq, wControl, courseNode);
 			} else {
-				String title = trans.translate("editor.lock.title");
-				String message = trans.translate("editor.lock.message");
-				controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+				IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
+				RepositoryEntry repositoryEntry = ne.getCourseNode().getReferencedRepositoryEntry();
+				OLATResourceable ores = repositoryEntry.getOlatResource();
+				Long resId = ores.getResourceableId();
+				TestFileResource fr = new TestFileResource();
+				fr.overrideResourceableId(resId);
+				if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
+					//QTI1
+					controller = new IQRunController(userCourseEnv, courseNode.getModuleConfiguration(), sec, ureq, wControl, courseNode);
+				} else {
+					String title = trans.translate("editor.lock.title");
+					String message = trans.translate("editor.lock.message");
+					controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+				}
 			}
 		}
-		
 		return controller;
 	}
 	
+	@Override
 	public Controller createIQTestPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, IQTESTCourseNode courseNode){
-		return new IQPreviewController(ureq, wControl, userCourseEnv, courseNode, ne);
+		Controller controller;
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
+		if (onyx) {
+			controller = new OnyxRunController(ureq, wControl, courseNode);
+		} else {
+			controller = new IQPreviewController(ureq, wControl, userCourseEnv, courseNode, ne);
+		}
+		return controller;
 	}
-	
+
+	@Override
 	public Controller createIQSelftestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, IQSELFCourseNode courseNode){
+		Controller controller;
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
-		return  new IQRunController(userCourseEnv, courseNode.getModuleConfiguration(), sec, ureq, wControl, courseNode);		
+		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
+		if (onyx) {
+			controller = new OnyxRunController(userCourseEnv, config, sec, ureq, wControl, courseNode);
+		} else {
+			controller = new IQRunController(userCourseEnv, courseNode.getModuleConfiguration(), sec, ureq, wControl, courseNode);
+		}
+		return controller;
 	}
-	
+
+	@Override
 	public Controller createIQSurveyRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, IQSURVCourseNode courseNode){
-		Controller controller = null;
+		Controller controller;
 		
 		// Do not allow guests to start questionnaires
 		Roles roles = ureq.getUserSession().getRoles();
@@ -173,40 +209,62 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			RepositoryEntry repositoryEntry = ne.getCourseNode().getReferencedRepositoryEntry();
-			OLATResourceable ores = repositoryEntry.getOlatResource();
-			Long resId = ores.getResourceableId();
-			SurveyFileResource fr = new SurveyFileResource();
-			fr.overrideResourceableId(resId);
-			if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
+			ModuleConfiguration config = courseNode.getModuleConfiguration();
+			boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
+			if (onyx) {
 				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 				IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
-				controller = new IQRunController(userCourseEnv, courseNode.getModuleConfiguration(), sec, ureq, wControl, courseNode);
+				controller = new OnyxRunController(userCourseEnv, config, sec, ureq, wControl, courseNode);
 			} else {
-				Translator trans = Util.createPackageTranslator(IQSURVCourseNode.class, ureq.getLocale());
-				String title = trans.translate("editor.lock.title");
-				String message = trans.translate("editor.lock.message");
-				controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+				RepositoryEntry repositoryEntry = ne.getCourseNode().getReferencedRepositoryEntry();
+				OLATResourceable ores = repositoryEntry.getOlatResource();
+				Long resId = ores.getResourceableId();
+				SurveyFileResource fr = new SurveyFileResource();
+				fr.overrideResourceableId(resId);
+				if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
+					AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+					IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
+					controller = new IQRunController(userCourseEnv, courseNode.getModuleConfiguration(), sec, ureq, wControl, courseNode);
+				} else {
+					Translator trans = Util.createPackageTranslator(IQSURVCourseNode.class, ureq.getLocale());
+					String title = trans.translate("editor.lock.title");
+					String message = trans.translate("editor.lock.message");
+					controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+				}
 			}
 		}
 		return controller;
-		
 	}
 
-
+	@Override
 	public Controller createIQTestDetailsEditController(Long courseResourceableId, String ident, Identity identity,
 			RepositoryEntry referencedRepositoryEntry, String qmdEntryTypeAssess, UserRequest ureq, WindowControl wControl) {
-		return new QTIResultDetailsController(ureq, wControl, courseResourceableId, ident, identity, referencedRepositoryEntry, qmdEntryTypeAssess);
+		boolean onyx = OnyxModule.isOnyxTest(referencedRepositoryEntry.getOlatResource());
+		if(onyx) {
+			return new QTIResultDetailsController(courseResourceableId, ident, identity, referencedRepositoryEntry, qmdEntryTypeAssess, ureq, wControl);
+		} else {
+			return new QTI12ResultDetailsController(ureq, wControl, courseResourceableId, ident, identity, referencedRepositoryEntry, qmdEntryTypeAssess);
+		}
 	}
-
 
 	@Override
 	public boolean archiveIQTestCourseNode(Locale locale, String repositorySoftkey, Long courseResourceableId, String shortTitle,  String ident, File exportDirectory, String charset) {
-		QTIExportManager qem = QTIExportManager.getInstance();
-		Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, true).getKey();
-		QTIExportFormatter qef = new QTIExportFormatterCSVType1(locale,"\t", "\"", "\\", "\r\n", false);
-		boolean retVal = qem.selectAndExportResults(qef, courseResourceableId, shortTitle, ident, repKey, exportDirectory,charset, ".xls");
-		return retVal;
+		boolean onyx = OnyxModule.isOnyxTest(RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, true).getOlatResource());
+		if (onyx) {
+			ICourse course = CourseFactory.loadCourse(courseResourceableId);
+			CourseNode currentCourseNode = course.getRunStructure().getNode(ident);
+			Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, true).getKey();
+			QTIResultManager qrm = QTIResultManager.getInstance();
+			List<QTIResultSet> results = qrm.getResultSets(courseResourceableId, ident, repKey, null);
+			if (results.size() > 0) {
+				OnyxExportManager.getInstance().exportResults(results, exportDirectory, currentCourseNode);
+			}
+			return true;
+		} else {
+			QTIExportManager qem = QTIExportManager.getInstance();
+			Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, true).getKey();
+			QTIExportFormatter qef = new QTIExportFormatterCSVType1(locale,"\t", "\"", "\\", "\r\n", false);
+			return qem.selectAndExportResults(qef, courseResourceableId, shortTitle, ident, repKey, exportDirectory,charset, ".xls");
+		}
 	}
-
 }

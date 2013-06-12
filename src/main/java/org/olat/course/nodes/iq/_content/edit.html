@@ -10,25 +10,45 @@
 	
 	#if ($dontRenderRepositoryButton)
 		<p>		
-		<strong>$r.translate("file.name"):</strong>&nbsp;$r.render("command.preview")
+		<strong>$r.translate("file.name"):</strong>&nbsp;
+		#if ($isOnyx)
+			$onyxDisplayName
+		#else
+			$r.render("command.preview")
+		#end
 		</p>
+		<p>
 		$r.render("command.changeRepFile")
 		#if($r.available("command.editRepFile"))
 			$r.render("command.editRepFile")
 		#end
-		<table>
-			<tbody>			
-			#if ($minscore)
-				<tr><td>$r.translate("score.min"):</td><td>  $minscore</td></tr>
-			#end
-			#if ($maxscore)
-				<tr><td>$r.translate("score.max"):</td><td>  $maxscore</td></tr>
-			#end			
-			#if ($cutvalue)
-				<tr><td>$r.translate("score.cut"):</td><td>  $cutvalue</td></tr>
-			#end
-			</tbody>
-		</table>		
+		</p>
+
+		#if ($showOutcomes)
+				#b_togglebox_start("o_course_node_outcomes" $r.translate("outcomes.title"))
+				<table>
+					<tbody>
+						#foreach($key in $outcomes.keySet())
+		        	 		<tr><td>$key:</td><td>$outcomes.get($key)</td></tr>
+		           		 #end
+		            </tbody>
+				</table>
+				#b_togglebox_end()
+		#else
+			<table>
+				<tbody>			
+				#if ($minscore)
+					<tr><td>$r.translate("score.min"):</td><td>$minscore</td></tr>
+				#end
+				#if ($maxscore)
+					<tr><td>$r.translate("score.max"):</td><td>$maxscore</td></tr>
+				#end			
+				#if ($cutvalue)
+					<tr><td>$r.translate("score.cut"):</td><td>$cutvalue</td></tr>
+				#end
+				</tbody>
+			</table>
+		#end		
 	#else
 		<p>
 		<strong>$r.translate("file.name"):</strong>  $!chosentest

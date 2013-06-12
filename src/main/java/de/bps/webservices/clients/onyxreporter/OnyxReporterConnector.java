@@ -30,12 +30,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
@@ -44,11 +47,13 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.iq.IQEditController;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.qti.QTIResultSet;
 import org.olat.repository.RepositoryEntry;
 
+import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.OnyxResultManager;
-import de.bps.onyx.plugin.course.nodes.iq.IQEditController;
 import de.bps.security.SSLConfigurationModule;
 
 //<ONYX-705>
@@ -63,9 +68,10 @@ public class OnyxReporterConnector {
 	//</OLATCE-1089>
 	private String surveyFolderPath;
 	
-	private OLog log = Tracing.createLoggerFor(OnyxReporterConnector.class);
+	private final static OLog log = Tracing.createLoggerFor(OnyxReporterConnector.class);
 	private final OnyxReporterClient connector;
 	
+	private final Pattern pattern = Pattern.compile("(.*v)(.*)\\.(xml|zip)");
 	
 	public OnyxReporterConnector() throws OnyxReporterException {
 		
@@ -78,7 +84,6 @@ public class OnyxReporterConnector {
 			//</OLATCE-1124>
 			throw new OnyxReporterException("Unable to connect to OnyxReporter");
 		}
-		
 	}
 	
 	
@@ -128,7 +133,7 @@ public class OnyxReporterConnector {
 
 	public Map<String, String> getResults(AssessableCourseNode node, Identity identity) throws OnyxReporterException {
 		//<OLATCE-1073>
-		File resultXml = getResultXml(identity.getName(), node.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString(), node.getIdent(), 0);
+		File resultXml = getResultFile(identity.getName(), node.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString(), node, 0);
 		return getResults(resultXml, node, identity);
 		//</OLATCE-1073>
 	}
@@ -146,7 +151,7 @@ public class OnyxReporterConnector {
 		OnyxReporterServices reporterService = connector.getService();
 		
 		/** ARM SITE **/
-		String[] dlh = armSite(reporterService, identity, false);
+		String[] dlh = armSite(reporterService, identity, ReporterRole.AUTHOR);
 		
 		String secret = dlh[0];
 		String sessionId = dlh[1];
@@ -175,20 +180,26 @@ public class OnyxReporterConnector {
 		
 		return results;
 	}
-	
+
 	/**
 	 * This method starts the OnyxReporter and returns the link to it.
-	 * @param students The students to show the results for.
-	 * @param node The AssessableCourseNode to get the nodeId and to get the (OnyxTest) RepositoryEntry.
-	 * @param studentview True if OnyxReporter shall display the detail view of the one given student,
-	 * 				false if it shall display the overall results for all given students.
-	 * @param reporterView TODO
-	 * @param ureq The UserRequest for getting the identity and role of the current user.
+	 * 
+	 * @param students
+	 *            The students to show the results for.
+	 * @param node
+	 *            The AssessableCourseNode to get the nodeId and to get the
+	 *            (OnyxTest) RepositoryEntry.
+	 * @param role
+	 *            defines for which role and which resulting view the reporter
+	 *            should be called
+	 * @param ureq
+	 *            The UserRequest for getting the identity and role of the
+	 *            current user.
 	 * @return the Link to the reporter.
 	 */
-	//<OLATCE-1124>
-	public String startReporterGUI(Identity caller, List<Identity> students, CourseNode node, Long assessmentId, boolean studentview, boolean reporterView) throws OnyxReporterException{
-	//</OLATCE-1124>
+	public String startReporterGUI(Identity caller, List<Identity> students, CourseNode node, Long assessmentId, ReporterRole role)
+			throws OnyxReporterException {
+		
 		String link = "";
 		RepositoryEntry repositoryEntry = node.getReferencedRepositoryEntry();
 				
@@ -202,14 +213,24 @@ public class OnyxReporterConnector {
 		try {
 			OnyxReporterServices reporterService = connector.getService();
 			
-			String[] dlh = armSite(reporterService, caller, studentview);
+			HashMapWrapper mapWrapper = new HashMapWrapper();
+			if (ReporterRole.ASSESSMENT == role) {
+				HashMap<String, String> underlyingMap = new HashMap<String, String>();
+				if (assessmentId != null) {
+					underlyingMap.put("assessmentID", String.valueOf(assessmentId));
+				}
+				underlyingMap.put("providerID", OnyxModule.getConfigName());
+				mapWrapper.setMap(underlyingMap);
+			}
+
+			String[] dlh = armSite(reporterService, caller, role, mapWrapper);
 			
 			byte[] contentPackage = getContentPackage(repositoryEntry);
 			
 			ResultsForStudentsWrapper wrapper = new ResultsForStudentsWrapper();
 			wrapper.setStudents(resForStudents);
 			
-			link = reporterService.initiateSite(1, dlh[1], dlh[0], wrapper, contentPackage, new HashMapWrapper());
+			link = reporterService.initiateSite(1, dlh[1], dlh[0], wrapper, contentPackage, mapWrapper);
 			
 			if (link == null) {
 				throw new OnyxReporterException("Unable to start ReporterGUI! Could not resolve reporter URL!");
@@ -217,9 +238,9 @@ public class OnyxReporterConnector {
 				// use error link to show reporter error page
 			} else {
 				//<OLATCE-1124>
-				if (reporterView) {
+				if (ReporterRole.REPORTING == role) {
 					link += FIVE; // view 5 for reporting view / statistical evaluation
-				} else 	if (studentview) {
+				} else if (ReporterRole.STUDENT == role) {
 					link += ONE; // view 1 (single learner view)
 				} else {
 					link += FOUR; // view 4 (all learners overview)
@@ -228,10 +249,17 @@ public class OnyxReporterConnector {
 				
 				//add params
 				link += "?sid=" + dlh[1] + "&secret=" + dlh[0];
-				
+
 				//switch to the student view of a specified student
-				if (studentview) {
-					link += "&uid="+ students.get(0).getKey();
+				if (ReporterRole.STUDENT == role) {
+					//link += "&uid="+ students.get(0).getKey();
+					link += "&uid=" + assessmentId;
+				}
+
+				// add language information
+				final String lang = caller.getUser().getPreferences().getLanguage();
+				if (lang != null && !lang.isEmpty()) {
+					link += "&lang=" + lang;
 				}
 			}
 		} catch (Exception e) {
@@ -240,10 +268,10 @@ public class OnyxReporterConnector {
 		
 		return link;
 	}
-	
+
 	// <OLATCE-498>
-	public boolean hasResultXml(String username, String assessmentType, String nodeId) {
-		return getResultXml(username, assessmentType, nodeId, 0) != null;
+	public boolean hasResults(String username, String assessmentType, CourseNode node) {
+		return getResultFile(username, assessmentType, node, 0) != null;
 	}
 	// </OLATCE-498>
 	
@@ -251,7 +279,7 @@ public class OnyxReporterConnector {
 	public String startReporterGUIForSurvey(Identity caller, CourseNode node, String resultsPath) throws OnyxReporterException{
 		this.surveyFolderPath = resultsPath;
 		//<OLATCE-1124>
-		return startReporterGUI(caller, null, node, null, false, true);
+		return startReporterGUI(caller, null, node, null, ReporterRole.REPORTING);
 		//</OLATCE-1124>
 	}
 	
@@ -267,21 +295,27 @@ public class OnyxReporterConnector {
 		
 		Long fileLength = cpFile.length();
 		byte[] contentPackage = new byte[fileLength.intValue()];
-		
+
+		java.io.FileInputStream inp = null;
 		try {
-			java.io.FileInputStream inp;
 			inp = new java.io.FileInputStream(cpFile);
 			inp.read(contentPackage);
 		} catch (FileNotFoundException e) {
 			log.error("Missing file: "+cpFile.getAbsolutePath(),e);
 		} catch (IOException e) {
 			log.error("Error copying file: "+cpFile.getAbsolutePath(),e);
+		} finally {
+			IOUtils.closeQuietly(inp);
 		}
 		
 		return contentPackage;
 	}
 	
-	private String[] armSite(OnyxReporterServices reporterService, Identity caller, boolean studentview){
+	private String[] armSite(OnyxReporterServices reporterService, Identity caller, ReporterRole role) {
+		return armSite(reporterService, caller, role, new HashMapWrapper());
+	}
+
+	private String[] armSite(OnyxReporterServices reporterService, Identity caller, ReporterRole role, HashMapWrapper wrapper) {
 
 		String secret = "" + new Random().nextLong();
 		
@@ -291,8 +325,8 @@ public class OnyxReporterConnector {
 		lastname=lastname!=null&&lastname.length()>0?lastname:NONAME;
 		firstname=firstname!=null&&firstname.length()>0?firstname:NONAME;
 		
-		String reporterSessionId = reporterService.armSite(1, caller.getName(), studentview?0:1 , secret,
-				lastname, firstname, new HashMapWrapper());
+		String reporterSessionId = reporterService.armSite(1, caller.getName(), role.getKey(), secret,
+				lastname, firstname, wrapper);
 		//</OLATCE-1089>
 		return new String[]{secret, reporterSessionId!=null?reporterSessionId:"dummy"};
 	}
@@ -303,7 +337,7 @@ public class OnyxReporterConnector {
 		ResultsForStudent resForStudent = null;
 		Long fileLength = resultFile.length();
 		byte[] resultFileStream = new byte[fileLength.intValue()];
-		java.io.FileInputStream inp;
+		java.io.FileInputStream inp = null;
 		
 		try {
 			inp = new java.io.FileInputStream(resultFile);
@@ -321,7 +355,19 @@ public class OnyxReporterConnector {
 			resForStudent.setLastname(lastname);
 			//</OLATCE-1169>
 			//</OLATCE-1089>
-			resForStudent.setStudentId(String.valueOf(student.getKey()));
+			//resForStudent.setStudentId(String.valueOf(student.getKey()));
+			String filename = resultFile.getName();
+			Matcher matcher = pattern.matcher(filename);
+			String assessmentId = null;
+			if (matcher.matches()) {
+				assessmentId = matcher.group(2);
+			} else {
+				final Long key = student.getKey();
+				log.warn("Could not determine assessment ID from unexpected file name " + filename);
+				assessmentId = String.valueOf(key);
+			}
+			resForStudent.setStudentId(assessmentId);
+
 			resForStudent.setGroupname("");
 			resForStudent.setTutorname("");
 			resForStudent.setResultsFile(resultFileStream);
@@ -331,6 +377,8 @@ public class OnyxReporterConnector {
 			log.error("Missing file: "+resultFile.getAbsolutePath(),e);
 		} catch (IOException e) {
 			log.error("Error copying file: "+resultFile.getAbsolutePath(),e);
+		} finally {
+			IOUtils.closeQuietly(inp);
 		}
 		return resForStudent;
 		
@@ -341,10 +389,13 @@ public class OnyxReporterConnector {
 		ArrayList<ResultsForStudent> resForStudents = new ArrayList<ResultsForStudent>();
 		
 		for(Identity student : students){
-			File resultFile = getResultXml(student.getName(), node.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString(), node.getIdent(), assessmentId!=null?assessmentId:0);
+			File resultFile = getResultFile(student.getName(), node.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString(), node,
+					assessmentId != null ? assessmentId : 0);
 			//<OLATCE-1048>
 			if(resultFile != null)
+			 {
 				resForStudents.add(getStudentWithResult(student, resultFile));
+			 }
 			//</OLATCE-1048>
 		}
 		
@@ -364,7 +415,7 @@ public class OnyxReporterConnector {
 		Long fileLength;
 		File resultFile;
 		if(directory.exists()) {
-			String[] allXmls = directory.list(new myFilenameFilter(nodeId));
+			String[] allXmls = directory.list(new OnyxReporterConnectorFileNameFilter(nodeId));
 			if (allXmls != null && allXmls.length > 0) {
 				int id = 0;
 				for (String xmlFileName : allXmls) {
@@ -401,32 +452,80 @@ public class OnyxReporterConnector {
 		return serviceStudents;
 	}
 	
+	public static String getFilePath(String username, String assessmentType) {
+		new File(WebappHelper.getUserDataRoot());
+		return OnyxResultManager.getResReporting() + File.separator + username + File.separator + assessmentType + File.separator;
+	}
 	
-	
-	private File getResultXml(String username, String assessmentType, String nodeId, long assessmentId) {
-		File xml = null;
-		String filename;
-		File fUserdataRoot = new File(WebappHelper.getUserDataRoot());
-		String path = OnyxResultManager.getResReporting() + File.separator + username + File.separator
-		+ assessmentType + File.separator;
-		//if an assassment id was given, use the corresponding file
-		if (assessmentId != 0) {
-			filename = nodeId + "v" + assessmentId + ".xml";
-			xml  = new File(fUserdataRoot, path + filename);
+	public static File getResultFileOrNull(QTIResultSet set, CourseNode node) {
+		if (set == null || node == null) {
+			return null;
 		}
+		return getResultFileOrNull(set.getIdentity().getName(), node.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString(), node,
+				set.getAssessmentID());
+	}
+	
+	private static File getResultFileOrNull(String username, String assessmentType, CourseNode node, long assessmentId) {
+		File xml = null;
+		String prefix;
+		String path = getFilePath(username, assessmentType);
+		//if an assessment id was given, use the corresponding file
+		if (assessmentId != 0) {
+			prefix = OnyxResultManager.getResultsFilenamePrefix(path, node, assessmentId);
+			xml = new File(WebappHelper.getUserDataRoot(), prefix + OnyxResultManager.SUFFIX_ZIP);
+			if (xml.exists()) {
+				return xml;
+			}
+			// fall back to "old" xml implementation
+			xml = new File(WebappHelper.getUserDataRoot(), prefix + OnyxResultManager.SUFFIX_XML);
+		}
+		return xml;
+	}
+
+	private File getResultFile(String username, String assessmentType, CourseNode node, long assessmentId) {
+		File fUserdataRoot = new File(WebappHelper.getUserDataRoot());
+		String path = getFilePath(username, assessmentType);
+		File xml = getResultFileOrNull(username, assessmentType, node, assessmentId);
 		//otherwise search the newest result file with this node id in this directory
 		if (xml == null || !(xml.exists())) {
 			File directory = new File(fUserdataRoot, path);
-			String[] allXmls = directory.list(new myFilenameFilter(nodeId));
+			String[] allXmls = directory.list(new OnyxReporterConnectorFileNameFilter(node.getIdent()));
 			if (allXmls != null && allXmls.length > 0) {
 				File newestXml = new File(fUserdataRoot, path + allXmls[0]);
+				File newestZip = null;
+				/*
+				 * Search for newest file in array. If ZIP files are found,
+				 * prefer them. Use XML files otherwise.
+				 */
 				for (String xmlFileName : allXmls) {
 					File xmlFile = new File(fUserdataRoot, path + xmlFileName);
-					if (xmlFile.lastModified() > newestXml.lastModified()) {
-						newestXml = xmlFile;
+					Matcher matcher = pattern.matcher(xmlFileName);
+					String currentAssessmentId = null;
+					if (matcher.matches()) {
+						currentAssessmentId = matcher.group(2);
+						QTIResultSet resultSet = OnyxResultManager.getResultSet(Long.parseLong(currentAssessmentId));
+						if (resultSet != null && !resultSet.getSuspended()) {
+							if (xmlFileName.endsWith(OnyxResultManager.SUFFIX_ZIP)) {
+								if (newestZip == null) {
+									newestZip = xmlFile;
+								} else {
+									if (xmlFile.lastModified() > newestZip.lastModified()) {
+										newestZip = xmlFile;
+									}
+								}
+							} else if (xmlFile.lastModified() > newestXml.lastModified()) {
+								newestXml = xmlFile;
+							}
+						} else {
+							log.info("Skip suspended result : " + xmlFile);
+						}
 					}
 				}
-				xml = newestXml;
+				if (newestZip != null) {
+					xml = newestZip;
+				} else {
+					xml = newestXml;
+				}
 			}
 		}
 		
@@ -434,7 +533,7 @@ public class OnyxReporterConnector {
 			//<OLATCE-1048>
 			xml = null;
 			//</OLATCE-1048>
-			log.error("There is no file for this test and student "+username+" assessmentType: "+assessmentType+ " nodeId: "+nodeId+" assessmentId: "+assessmentId);
+			//log.error("There is no file for this test and student "+username+" assessmentType: "+assessmentType+ " nodeId: "+nodeId+" assessmentId: "+assessmentId);
 		}
 
 		return xml;
@@ -464,42 +563,16 @@ public class OnyxReporterConnector {
 		return onyxTestZip;
 	}
 	
-	/**
-	 * Description:<br>
-	 * Filters the filenames of the "File.list()" method so that only files
-	 * witch passes the method "accept" are returned.
-	 *
-	 * <P>
-	 * Initial Date:  25.09.2009 <br>
-	 * @author thomasw@bps-system.de
-	 */
-	private class myFilenameFilter implements FilenameFilter {
-
-		private String nodeId;
-
-		public myFilenameFilter(String nodeId) {
-			this.nodeId = nodeId;
-		}
-		/**
-		 * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
-		 */
-		public boolean accept(File diretory, String name) {
-			if (name.startsWith(nodeId)) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-	}
-	
 	private boolean isServiceAvailable(String target) {
 
 		HostnameVerifier hv = new HostnameVerifier() {
+			@Override
 			public boolean verify(String urlHostName, SSLSession session) {
-				if (urlHostName.equals(session.getPeerHost()))
+				if (urlHostName.equals(session.getPeerHost())) {
 					return true;
-				else
+				} else {
 					return false;
+				}
 			}
 		};
 		HttpsURLConnection.setDefaultHostnameVerifier(hv);
@@ -536,12 +609,13 @@ public class OnyxReporterConnector {
 	public boolean hasAnyResults(boolean forSurvey,List<Identity> forStudents, String surveyFolder, CourseNode node){
 		boolean hasResults = false;
 		
+		FilenameFilter filter = new OnyxReporterConnectorFileNameFilter(node.getIdent());
 		File directory = new File(WebappHelper.getUserDataRoot());
 		if(forSurvey){
 			File surveyDir = new File(surveyFolder);
 			if(surveyDir.exists()) {
 				
-				String[] allXmls = surveyDir.list(new myFilenameFilter(node.getIdent()));
+				String[] allXmls = surveyDir.list(filter);
 				if (allXmls != null && allXmls.length > 0) {
 					hasResults = true;
 				}
@@ -555,7 +629,7 @@ public class OnyxReporterConnector {
 				File	xml  = new File(directory, path);
 				
 				if (xml != null && xml.exists()) {
-					String[] allXmls = xml.list(new myFilenameFilter(node.getIdent()));
+					String[] allXmls = xml.list(filter);
 					if (allXmls != null && allXmls.length > 0) {
 						hasResults = true;
 						break;

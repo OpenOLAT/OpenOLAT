@@ -67,7 +67,7 @@ import org.olat.repository.RepositoryManager;
  * @author Mike Stock Comment:
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class IQTESTCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
+public class IQTESTCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode, QTICourseNode {
 	private static final String TYPE = "iqtest";
 
 	private static final int CURRENT_CONFIG_VERSION = 2;
@@ -174,8 +174,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		Boolean passed = am.getNodePassed(this, mySelf);
 		Float score = am.getNodeScore(this, mySelf);		
-		Long assessmentID = am.getAssessmentID(this, mySelf);		
-		ScoreEvaluation se = new ScoreEvaluation(score, passed, assessmentID);
+		Long assessmentID = am.getAssessmentID(this, mySelf);	
+		Boolean fullyAssessed = am.getNodeFullyAssessed(this, mySelf);	
+		ScoreEvaluation se = new ScoreEvaluation(score, passed, fullyAssessed, assessmentID);
 		return se;
 	}
 

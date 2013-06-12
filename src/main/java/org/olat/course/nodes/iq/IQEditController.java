@@ -27,7 +27,9 @@ package org.olat.course.nodes.iq;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dom4j.Attribute;
 import org.dom4j.Document;
@@ -93,6 +95,11 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 
+import de.bps.onyx.plugin.OnyxModule;
+import de.bps.onyx.plugin.course.nodes.iq.IQEditForm;
+import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
+import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
+
 /**
  * Description:<BR/>
  * Edit controller for the qti test, selftest and survey course node
@@ -156,23 +163,36 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_ALLOW_RELATIVE_LINKS = "allowRelativeLinks";
 	/** configuration key: enable 'show score infos' on start page */
 	public static final String CONFIG_KEY_ENABLESCOREINFO = "enableScoreInfo";
+	//<OLATCE-982>
+	public static final String CONFIG_KEY_ALLOW_SHOW_SOLUTION = "showSolution";
+	//</OLATCE-982>
+	//<OLATCE-2009>
+	public static final String CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED = "suspendAllowed";
+	//</OLATCE-2009>
 	/** Test in full window mode*/
 	public final static String CONFIG_FULLWINDOW = "fullwindow";
-	
+
 	public static final String CONFIG_KEY_DATE_DEPENDENT_RESULTS = "dateDependentResults";
 	public static final String CONFIG_KEY_RESULTS_START_DATE = "resultsStartDate";
 	public static final String CONFIG_KEY_RESULTS_END_DATE = "resultsEndDate";
 	public static final String CONFIG_KEY_RESULT_ON_FINISH = "showResultsOnFinish";
 	public static final String CONFIG_KEY_RESULT_ON_HOME_PAGE = "showResultsOnHomePage";
-	
+
+	public static final String CONFIG_KEY_TEMPLATE = "templateid";
+	public static final String CONFIG_KEY_TYPE_QTI = "qtitype";
+	public static final String CONFIG_VALUE_QTI2 = "qti2";
+	public static final Object CONFIG_VALUE_QTI1 = "qti1";
+	public static final String CONFIG_KEY_IS_SURVEY = "issurv";
+
 	private OLog log = Tracing.createLoggerFor(IQEditController.class);
 	private final String[] paneKeys;
 
 	private ModuleConfiguration moduleConfiguration;
 	private Panel main;
 	private VelocityContainer myContent;
-	
-	private IQEditForm modConfigForm;	
+
+	private IQEditForm modOnyxConfigForm;
+	private IQ12EditForm mod12ConfigForm;
 	private ReferencableEntriesSearchController searchController;
 	private ICourse course;
 	private ConditionEditController accessibilityCondContr;
@@ -211,7 +231,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.course = course;
 		this.courseNode = courseNode;
 		this.euce = euce;
-		this.type = AssessmentInstance.QMD_ENTRY_TYPE_ASSESS;
+		type = AssessmentInstance.QMD_ENTRY_TYPE_ASSESS;
 		this.PANE_TAB_IQCONFIG_XXX = PANE_TAB_IQCONFIG_TEST;
 		paneKeys = new String[]{PANE_TAB_IQCONFIG_XXX,PANE_TAB_ACCESSIBILITY};
 		// put some default values
@@ -224,7 +244,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		
 		init(ureq, groupMgr, wControl);
 		myContent.contextPut("repEntryTitle", translate("choosenfile.test"));
-		myContent.contextPut("type", this.type);
+		myContent.contextPut("type", type);
 	}
 
 	/**
@@ -244,7 +264,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.course = course;
 		this.courseNode = courseNode;
 		this.euce = euce;
-		this.type = AssessmentInstance.QMD_ENTRY_TYPE_SELF;
+		type = AssessmentInstance.QMD_ENTRY_TYPE_SELF;
 		this.PANE_TAB_IQCONFIG_XXX = PANE_TAB_IQCONFIG_SELF;
 		paneKeys = new String[]{PANE_TAB_IQCONFIG_XXX,PANE_TAB_ACCESSIBILITY};
 		// put some default values
@@ -255,7 +275,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 		init(ureq, groupMgr, wControl);
 		myContent.contextPut("repEntryTitle", translate("choosenfile.self"));
-		myContent.contextPut("type", this.type);
+		myContent.contextPut("type", type);
 	}
 
 	/**
@@ -275,7 +295,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.course = course;
 		this.courseNode = courseNode;
 		this.euce = euce;
-		this.type = AssessmentInstance.QMD_ENTRY_TYPE_SURVEY;
+		type = AssessmentInstance.QMD_ENTRY_TYPE_SURVEY;
 		this.PANE_TAB_IQCONFIG_XXX = PANE_TAB_IQCONFIG_SURV;
 		paneKeys = new String[]{PANE_TAB_IQCONFIG_XXX,PANE_TAB_ACCESSIBILITY};
 
@@ -289,36 +309,45 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		
 		init(ureq, groupMgr, wControl);
 		myContent.contextPut("repEntryTitle", translate("choosenfile.surv"));
-		myContent.contextPut("type", this.type);
+		myContent.contextPut("type", type);
 		chooseTestButton.setCustomDisplayText(translate("command.createSurvey"));
 	}
 
 	private void init(UserRequest ureq, CourseGroupManager groupMgr, WindowControl wControl) {		
 		main = new Panel("iqeditpanel");
 		
-		myContent = this.createVelocityContainer("edit");		
+		myContent = createVelocityContainer("edit");		
 		chooseTestButton = LinkFactory.createButtonSmall("command.chooseRepFile", myContent, this);
 		chooseTestButton.setElementCssClass("o_sel_test_choose_repofile");
 		changeTestButton = LinkFactory.createButtonSmall("command.changeRepFile", myContent, this);
 		changeTestButton.setElementCssClass("o_sel_test_change_repofile");
-		modConfigForm = new IQEditForm(ureq, wControl, moduleConfiguration);
-		listenTo(modConfigForm);
-		myContent.put("iqeditform",modConfigForm.getInitialComponent());
+		
 
 		// fetch repository entry
 		RepositoryEntry re = null;
 		String repoSoftkey = (String) moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
-		if (repoSoftkey != null) re = getIQReference(moduleConfiguration, false);
+		if (repoSoftkey != null) {
+			re = getIQReference(moduleConfiguration, false);
+		}
+		
 		myContent.contextPut(VC_CHOSENTEST, re == null ? translate("no.file.chosen") : re.getDisplayname());
 		if (re != null) {
-			if (isEditable(ureq.getIdentity(), re)) {
-				editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
-			}
 			myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
 			// Put values to velocity container
-			myContent.contextPut(CONFIG_KEY_MINSCORE, moduleConfiguration.get(CONFIG_KEY_MINSCORE));
-			myContent.contextPut(CONFIG_KEY_MAXSCORE, moduleConfiguration.get(CONFIG_KEY_MAXSCORE));
-			myContent.contextPut(CONFIG_KEY_CUTVALUE, moduleConfiguration.get(CONFIG_KEY_CUTVALUE));
+
+			boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
+			if(isOnyx) {
+				setOnyxVariables(re);
+			} else {
+				if (isEditable(ureq.getIdentity(), re)) {
+					editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
+				}
+				myContent.contextPut("showOutcomes", Boolean.FALSE);
+				myContent.contextPut(CONFIG_KEY_MINSCORE, moduleConfiguration.get(CONFIG_KEY_MINSCORE));
+				myContent.contextPut(CONFIG_KEY_MAXSCORE, moduleConfiguration.get(CONFIG_KEY_MAXSCORE));
+				myContent.contextPut(CONFIG_KEY_CUTVALUE, moduleConfiguration.get(CONFIG_KEY_CUTVALUE));
+			}
+
 			previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, myContent, this);
 			previewLink.setCustomEnabledLinkCSS("b_preview");
 			previewLink.setTitle(getTranslator().translate("command.preview"));
@@ -342,10 +371,40 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		Condition accessCondition = courseNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition, "accessabilityConditionForm",
 				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),euce);		
-		this.listenTo(accessibilityCondContr);
+		listenTo(accessibilityCondContr);
 
 		main.setContent(myContent);
-		// not needed for tabbledController: setInitialComponent(main);
+		
+		updateEditController(ureq);
+	}
+	
+	private void updateEditController(UserRequest ureq) {
+		removeAsListenerAndDispose(mod12ConfigForm);
+		removeAsListenerAndDispose(modOnyxConfigForm);
+		
+		RepositoryEntry re = getIQReference(moduleConfiguration, false);
+		if(re == null || !OnyxModule.isOnyxTest(re.getOlatResource())) {
+			mod12ConfigForm = new IQ12EditForm(ureq, getWindowControl(), moduleConfiguration);
+			listenTo(mod12ConfigForm);
+			myContent.put("iqeditform", mod12ConfigForm.getInitialComponent());
+		} else {
+			modOnyxConfigForm = new IQEditForm(ureq, getWindowControl(), moduleConfiguration, re);
+			listenTo(modOnyxConfigForm);
+			myContent.put("iqeditform", modOnyxConfigForm.getInitialComponent());
+		}
+	}
+	
+	private void setOnyxVariables(RepositoryEntry entry) {
+		myContent.contextPut("onyxDisplayName", entry.getDisplayname());
+		myContent.contextPut("showOutcomes", Boolean.TRUE);
+		Map<String, String> outcomes = new HashMap<String, String>();
+		try {
+			OnyxReporterConnector onyxReporter = new OnyxReporterConnector();
+			outcomes = onyxReporter.getPossibleOutcomeVariables(courseNode);
+		} catch (OnyxReporterException e) {
+			getWindowControl().setWarning(translate("reporter.unavailable"));
+		}
+		myContent.contextPut("outcomes", outcomes);
 	}
 
 	/**
@@ -354,8 +413,13 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @return
 	 */
 	private boolean isEditable(Identity identity, RepositoryEntry re) {
+		boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
+		if (isOnyx) {
+			return false;
+		}
+
 		return (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)
-				|| RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re) 
+				|| RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re)
 				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(re, identity));
 	}
 
@@ -373,17 +437,18 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				 */
 				String repoSoftKey = (String)moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
 				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoSoftKey,false);
-				if(re==null){
+				if(re==null) {
 					//not found
-				}else{
+				} else {
 					RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
 					OLATResourceable ores = re.getOlatResource();
-					correctQTIcontroller = typeToEdit.createEditorController(ores, ureq, this.getWindowControl());
-					this.getWindowControl().pushToMainArea(correctQTIcontroller.getInitialComponent());					
-					this.listenTo(correctQTIcontroller);
+					correctQTIcontroller = typeToEdit.createEditorController(ores, ureq, getWindowControl());
+					getWindowControl().pushToMainArea(correctQTIcontroller.getInitialComponent());					
+					listenTo(correctQTIcontroller);
 				}
 			}
 		} else if (source == previewLink){
+			removeAsListenerAndDispose(previewLayoutCtr);
 			// handle preview
 			Controller previewController = IQManager.getInstance().createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), course
 					.getResourceableId().longValue(), courseNode.getIdent(), null);
@@ -398,7 +463,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
 						TestFileResource.TYPE_NAME, translate("command.chooseTest"));
 			}			
-			this.listenTo(searchController);
+			listenTo(searchController);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("command.chooseRepFile"));
 			cmc.activate();
 		}
@@ -407,7 +472,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				String[] types = new String[]{TestFileResource.TYPE_NAME};
 				searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseTest"));
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
-				this.listenTo(searchController);
+				listenTo(searchController);
 			} else if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS) | type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {//test, survey
 				String[] types;
 				if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {//test
@@ -418,34 +483,63 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				//look if there are PASSED entries in changelog
 				//if yes create archive of results and all users can be notified about the changed test configuration
 				String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-		    Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
-				List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), repKey, 1);
-				// test was passed from an user
-				boolean passed = (results != null && results.size() > 0) ? true : false;
-				// test was started and not passed
-				// it exists partly results for this test
-				List<Identity> identitiesWithQtiSerEntry = IQManager.getInstance().getIdentitiesWithQtiSerEntry(course.getResourceableId(), courseNode.getIdent());
-				if(passed || identitiesWithQtiSerEntry.size() > 0) {
-					learners = new ArrayList<Identity>();
-					for(QTIResult result : results) {
-						Identity identity = result.getResultSet().getIdentity();
-						if(identity != null && !learners.contains(identity)) learners.add(identity);
+				Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
+				RepositoryEntry re = courseNode.getReferencedRepositoryEntry();
+				
+				if (moduleConfiguration.get(CONFIG_KEY_TYPE_QTI) == null) {
+					updateQtiType(re);
+				}
+
+				int onyxSuccess = 0;
+				if (moduleConfiguration.get(CONFIG_KEY_TYPE_QTI) != null && moduleConfiguration.get(CONFIG_KEY_TYPE_QTI).equals(CONFIG_VALUE_QTI2)) {
+					if (courseNode.getClass().equals(IQSURVCourseNode.class)) {
+						File surveyDir = new File(course.getCourseEnvironment().getCourseBaseContainer()
+								.getBasefile() + File.separator + courseNode.getIdent() + File.separator);
+						if (surveyDir != null && surveyDir.exists() && surveyDir.listFiles().length > 0) {
+							onyxSuccess = surveyDir.listFiles().length;
+						}
+					} else {
+						List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), repKey, 1);
+						if (results != null && results.size() > 0) {
+							onyxSuccess = results.size();
+						}
 					}
-					// add identities with qti.ser entry
-					for (Identity identity : identitiesWithQtiSerEntry) {
-						if(!learners.contains(identity)) learners.add(identity);
-					}
-					replaceWizard = new IQEditReplaceWizard(ureq, getWindowControl(), course, courseNode, types, learners, results, identitiesWithQtiSerEntry.size());
+				}
+				if (moduleConfiguration.get(CONFIG_KEY_TYPE_QTI) != null
+						&& moduleConfiguration.get(CONFIG_KEY_TYPE_QTI).equals(CONFIG_VALUE_QTI2)
+						&& onyxSuccess > 0) {
+					replaceWizard = new IQEditReplaceWizard(ureq, getWindowControl(), course, courseNode, types, learners, null, onyxSuccess, true);
 					replaceWizard.addControllerListener(this);
 					cmc = new CloseableModalController(getWindowControl(), translate("close"), replaceWizard.getInitialComponent());
 				} else {
-					if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {//test					
-						searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseTest"));
-					} else {//survey
-						searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseSurvey"));
+					List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), repKey, 1);
+					// test was passed from an user
+					boolean passed = (results != null && results.size() > 0) ? true : false;
+					// test was started and not passed
+					// it exists partly results for this test
+					List<Identity> identitiesWithQtiSerEntry = IQManager.getInstance().getIdentitiesWithQtiSerEntry(course.getResourceableId(), courseNode.getIdent());
+					if(passed || identitiesWithQtiSerEntry.size() > 0) {
+						learners = new ArrayList<Identity>();
+						for(QTIResult result : results) {
+							Identity identity = result.getResultSet().getIdentity();
+							if(identity != null && !learners.contains(identity)) learners.add(identity);
+						}
+						// add identities with qti.ser entry
+						for (Identity identity : identitiesWithQtiSerEntry) {
+							if(!learners.contains(identity)) learners.add(identity);
+						}
+						replaceWizard = new IQEditReplaceWizard(ureq, getWindowControl(), course, courseNode, types, learners, results, identitiesWithQtiSerEntry.size(), false);
+						replaceWizard.addControllerListener(this);
+						cmc = new CloseableModalController(getWindowControl(), translate("close"), replaceWizard.getInitialComponent());
+					} else {
+						if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {//test					
+							searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseTest"));
+						} else {//survey
+							searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseSurvey"));
+						}
+						listenTo(searchController);
+						cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
 					}
-					this.listenTo(searchController);
-					cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
 				}
 			}
 			cmc.activate();
@@ -454,7 +548,21 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, courseNode);
 		}
 	}
-	
+
+	/**
+	 * This method updates the QTI Type in the editortreemodel.
+	 * 
+	 * @param re Needed to check if this Test is of QTI Type 2.1
+	 */
+	private void updateQtiType(RepositoryEntry re) {
+		boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
+		if (isOnyx) {
+			moduleConfiguration.set(CONFIG_KEY_TYPE_QTI, CONFIG_VALUE_QTI2);
+		} else {
+			moduleConfiguration.set(CONFIG_KEY_TYPE_QTI, CONFIG_VALUE_QTI1);
+		}
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
@@ -465,6 +573,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				cmc.deactivate();
 				RepositoryEntry re = searchController.getSelectedEntry();
 				doIQReference(urequest, re);
+				this.updateEditController(urequest);
 			}
 		} else if (source == accessibilityCondContr) {
 			if (event == Event.CHANGED_EVENT) {
@@ -488,8 +597,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == correctQTIcontroller){
-			if(event == Event.DONE_EVENT){				
-				//getWindowControl().pop();				
+			if(event == Event.DONE_EVENT){
+				//getWindowControl().pop();
 			}
 		} else if (source == replaceWizard) {
 			if(event == Event.CANCELLED_EVENT) {
@@ -507,51 +616,77 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				}
 				doIQReference(urequest, replaceWizard.getSelectedRepositoryEntry());
 			}
-		} else if (source == modConfigForm) { // config form action
-			if (event == Event.CANCELLED_EVENT) {
-				return;
-			} else if (event == Event.DONE_EVENT) {
-				
-				
-				moduleConfiguration.set(CONFIG_KEY_DISPLAYMENU, new Boolean(modConfigForm.isDisplayMenu()));
-				moduleConfiguration.set(CONFIG_FULLWINDOW, new Boolean(modConfigForm.isFullWindow()));
-				
-				if (modConfigForm.isDisplayMenu()) {
-					moduleConfiguration.set(CONFIG_KEY_RENDERMENUOPTION, modConfigForm.isMenuRenderSectionsOnly());
-					moduleConfiguration.set(CONFIG_KEY_ENABLEMENU, new Boolean(modConfigForm.isEnableMenu()));
-				} else {
-					// set default values when menu is not displayed
-					moduleConfiguration.set(CONFIG_KEY_RENDERMENUOPTION, Boolean.FALSE);
-					moduleConfiguration.set(CONFIG_KEY_ENABLEMENU, Boolean.FALSE); 
-				}
-				
-				moduleConfiguration.set(CONFIG_KEY_QUESTIONPROGRESS, new Boolean(modConfigForm.isDisplayQuestionProgress()));
-				moduleConfiguration.set(CONFIG_KEY_SEQUENCE, modConfigForm.getSequence());
-				moduleConfiguration.set(CONFIG_KEY_ENABLECANCEL, new Boolean(modConfigForm.isEnableCancel()));
-				moduleConfiguration.set(CONFIG_KEY_ENABLESUSPEND, new Boolean(modConfigForm.isEnableSuspend()));
-				moduleConfiguration.set(CONFIG_KEY_QUESTIONTITLE, new Boolean(modConfigForm.isDisplayQuestionTitle()));
-				moduleConfiguration.set(CONFIG_KEY_AUTOENUM_CHOICES, new Boolean(modConfigForm.isAutoEnumChoices()));
-				moduleConfiguration.set(CONFIG_KEY_MEMO, new Boolean(modConfigForm.isProvideMemoField()));
-				// Only tests and selftests have summaries and score progress
-				if (!type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
-					moduleConfiguration.set(CONFIG_KEY_SUMMARY, modConfigForm.getSummary());
-					moduleConfiguration.set(CONFIG_KEY_SCOREPROGRESS, new Boolean(modConfigForm.isDisplayScoreProgress()));
-					moduleConfiguration.set(CONFIG_KEY_ENABLESCOREINFO, new Boolean(modConfigForm.isEnableScoreInfo()));
-					moduleConfiguration.set(CONFIG_KEY_DATE_DEPENDENT_RESULTS, new Boolean(modConfigForm.isShowResultsDateDependent()));
-					moduleConfiguration.set(CONFIG_KEY_RESULTS_START_DATE, modConfigForm.getShowResultsStartDate());
-					moduleConfiguration.set(CONFIG_KEY_RESULTS_END_DATE, modConfigForm.getShowResultsEndDate());
-					moduleConfiguration.set(CONFIG_KEY_RESULT_ON_FINISH, modConfigForm.isShowResultsAfterFinishTest());
-					moduleConfiguration.set(CONFIG_KEY_RESULT_ON_HOME_PAGE, modConfigForm.isShowResultsOnHomePage());
-				}
-				// Only tests have a limitation on number of attempts
-				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
-					moduleConfiguration.set(CONFIG_KEY_ATTEMPTS, modConfigForm.getAttempts());
-					moduleConfiguration.set(CONFIG_KEY_BLOCK_AFTER_SUCCESS, new Boolean(modConfigForm.isBlockAfterSuccess()));
-				}				
-				
+		} else if (source == mod12ConfigForm) { // config form action
+			if (event == Event.DONE_EVENT) {				
+				doMod12ConfigForm(mod12ConfigForm);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-				return;
 			}
+		} else if (source == modOnyxConfigForm) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doModOnyxConfigForm(modOnyxConfigForm);
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		}
+	}
+	
+	private void doModOnyxConfigForm(IQEditForm modConfigForm) {
+		String qtiType = null;
+		if (moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI) != null) {
+			qtiType = (String) moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI);
+		}
+	
+		moduleConfiguration.set(CONFIG_KEY_TEMPLATE, modConfigForm.getTemplate());
+		if (!(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY))) {
+			moduleConfiguration.set(CONFIG_KEY_ATTEMPTS, modConfigForm.getAttempts());
+			moduleConfiguration.set(CONFIG_KEY_CUTVALUE, modConfigForm.getCutValue() != null ? Float.parseFloat("" + modConfigForm.getCutValue()) : null);
+		}
+		moduleConfiguration.set(CONFIG_KEY_DATE_DEPENDENT_RESULTS, new Boolean(modConfigForm.isShowResultsDateDependent()));
+		moduleConfiguration.set(CONFIG_KEY_RESULTS_START_DATE, modConfigForm.getShowResultsStartDate());
+		moduleConfiguration.set(CONFIG_KEY_RESULTS_END_DATE, modConfigForm.getShowResultsEndDate());
+		moduleConfiguration.set(CONFIG_KEY_RESULT_ON_HOME_PAGE, modConfigForm.isShowResultsOnHomePage());
+		//<OLATCE-982>
+		moduleConfiguration.set(CONFIG_KEY_ALLOW_SHOW_SOLUTION, modConfigForm.allowShowSolution());
+		//</OLATCE-982>
+		//<OLATCE-2009>
+		moduleConfiguration.set(CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED, modConfigForm.allowSuspension());
+		//</OLATCE-2009>
+	}
+	
+	private void doMod12ConfigForm(IQ12EditForm modConfigForm) {
+		moduleConfiguration.set(CONFIG_KEY_DISPLAYMENU, new Boolean(modConfigForm.isDisplayMenu()));
+		moduleConfiguration.set(CONFIG_FULLWINDOW, new Boolean(modConfigForm.isFullWindow()));
+		
+		if (modConfigForm.isDisplayMenu()) {
+			moduleConfiguration.set(CONFIG_KEY_RENDERMENUOPTION, modConfigForm.isMenuRenderSectionsOnly());
+			moduleConfiguration.set(CONFIG_KEY_ENABLEMENU, new Boolean(modConfigForm.isEnableMenu()));
+		} else {
+			// set default values when menu is not displayed
+			moduleConfiguration.set(CONFIG_KEY_RENDERMENUOPTION, Boolean.FALSE);
+			moduleConfiguration.set(CONFIG_KEY_ENABLEMENU, Boolean.FALSE); 
+		}
+		
+		moduleConfiguration.set(CONFIG_KEY_QUESTIONPROGRESS, new Boolean(modConfigForm.isDisplayQuestionProgress()));
+		moduleConfiguration.set(CONFIG_KEY_SEQUENCE, modConfigForm.getSequence());
+		moduleConfiguration.set(CONFIG_KEY_ENABLECANCEL, new Boolean(modConfigForm.isEnableCancel()));
+		moduleConfiguration.set(CONFIG_KEY_ENABLESUSPEND, new Boolean(modConfigForm.isEnableSuspend()));
+		moduleConfiguration.set(CONFIG_KEY_QUESTIONTITLE, new Boolean(modConfigForm.isDisplayQuestionTitle()));
+		moduleConfiguration.set(CONFIG_KEY_AUTOENUM_CHOICES, new Boolean(modConfigForm.isAutoEnumChoices()));
+		moduleConfiguration.set(CONFIG_KEY_MEMO, new Boolean(modConfigForm.isProvideMemoField()));
+		// Only tests and selftests have summaries and score progress
+		if (!type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
+			moduleConfiguration.set(CONFIG_KEY_SUMMARY, modConfigForm.getSummary());
+			moduleConfiguration.set(CONFIG_KEY_SCOREPROGRESS, new Boolean(modConfigForm.isDisplayScoreProgress()));
+			moduleConfiguration.set(CONFIG_KEY_ENABLESCOREINFO, new Boolean(modConfigForm.isEnableScoreInfo()));
+			moduleConfiguration.set(CONFIG_KEY_DATE_DEPENDENT_RESULTS, new Boolean(modConfigForm.isShowResultsDateDependent()));
+			moduleConfiguration.set(CONFIG_KEY_RESULTS_START_DATE, modConfigForm.getShowResultsStartDate());
+			moduleConfiguration.set(CONFIG_KEY_RESULTS_END_DATE, modConfigForm.getShowResultsEndDate());
+			moduleConfiguration.set(CONFIG_KEY_RESULT_ON_FINISH, modConfigForm.isShowResultsAfterFinishTest());
+			moduleConfiguration.set(CONFIG_KEY_RESULT_ON_HOME_PAGE, modConfigForm.isShowResultsOnHomePage());
+		}
+		// Only tests have a limitation on number of attempts
+		if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
+			moduleConfiguration.set(CONFIG_KEY_ATTEMPTS, modConfigForm.getAttempts());
+			moduleConfiguration.set(CONFIG_KEY_BLOCK_AFTER_SUCCESS, new Boolean(modConfigForm.isBlockAfterSuccess()));
 		}
 	}
 	
@@ -559,8 +694,12 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		// repository search controller done				
 		if (re != null) {
 			if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(re.getOlatResource(), null)) {						
-				this.showError("error.entry.locked");
+				showError("error.entry.locked");
 			} else {
+				if(editTestButton != null) {
+					myContent.remove(editTestButton);
+				}
+
 				setIQReference(re, moduleConfiguration);
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, myContent, this);
 				previewLink.setCustomEnabledLinkCSS("b_preview");
@@ -568,15 +707,26 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
 				// If of type test, get min, max, cut - put in module config and push
 				// to velocity
-				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
-					updateModuleConfigFromQTIFile(re.getOlatResource());
-					// Put values to velocity container
-					myContent.contextPut(CONFIG_KEY_MINSCORE, moduleConfiguration.get(CONFIG_KEY_MINSCORE));
-					myContent.contextPut(CONFIG_KEY_MAXSCORE, moduleConfiguration.get(CONFIG_KEY_MAXSCORE));
-					myContent.contextPut(CONFIG_KEY_CUTVALUE, moduleConfiguration.get(CONFIG_KEY_CUTVALUE));
-				}
-				if (isEditable(urequest.getIdentity(), re)) {
-					editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
+				
+				boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
+				myContent.contextPut("isOnyx", new Boolean(isOnyx));
+				if(isOnyx) {
+					myContent.contextPut("onyxDisplayName", re.getDisplayname());
+					moduleConfiguration.set(CONFIG_KEY_TYPE_QTI, CONFIG_VALUE_QTI2);
+					setOnyxVariables(re);
+				} else {
+					myContent.contextPut("showOutcomes", Boolean.FALSE);
+					moduleConfiguration.set(CONFIG_KEY_TYPE_QTI, CONFIG_VALUE_QTI1);
+					if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
+						updateModuleConfigFromQTIFile(re.getOlatResource());
+						// Put values to velocity container
+						myContent.contextPut(CONFIG_KEY_MINSCORE, moduleConfiguration.get(CONFIG_KEY_MINSCORE));
+						myContent.contextPut(CONFIG_KEY_MAXSCORE, moduleConfiguration.get(CONFIG_KEY_MAXSCORE));
+						myContent.contextPut(CONFIG_KEY_CUTVALUE, moduleConfiguration.get(CONFIG_KEY_CUTVALUE));
+					}
+					if (isEditable(urequest.getIdentity(), re)) {
+						editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
+					}
 				}
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
@@ -601,13 +751,19 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 */
 	public static RepositoryEntry getIQReference(ModuleConfiguration config, boolean strict) {
 		if (config == null) {
-			if (strict) throw new AssertException("missing config in IQ");
-			else return null;
+			if (strict) {
+				throw new AssertException("missing config in IQ");
+			} else {
+				return null;
+			}
 		}
 		String repoSoftkey = (String) config.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repoSoftkey == null) {
-			if (strict) throw new AssertException("invalid config when being asked for references");
-			else return null;
+			if (strict) {
+				throw new AssertException("invalid config when being asked for references");
+			} else {
+				return null;
+			}
 		}
 		RepositoryManager rm = RepositoryManager.getInstance();
 		return rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
@@ -636,7 +792,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * Update the module configuration from the qti file: read min/max/cut values
 	 * @param res
 	 */
-	public void updateModuleConfigFromQTIFile(OLATResource res) {
+	private void updateModuleConfigFromQTIFile(OLATResource res) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedRoot = frm.unzipFileResource(res);
 		//with VFS FIXME:pb:c: remove casts to LocalFileImpl and LocalFolderImpl if no longer needed.

@@ -32,7 +32,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.notifications.ContextualSubscriptionController;
+import org.olat.core.util.notifications.PublisherData;
+import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.course.ICourse;
+import org.olat.ims.qti.export.QTIArchiveWizardController;
 
 /**
  * Description:<br>
@@ -44,20 +48,14 @@ import org.olat.course.ICourse;
  */
 public class AssessmentUIFactory {
 
-	private static AssessmentControllerCreator controllerCreator = null;
-	
-	AssessmentUIFactory(AssessmentControllerCreator specificControllerCreator) {
-		AssessmentUIFactory.controllerCreator = specificControllerCreator;
-	}
-	
 	
 	public static Activateable2 createAssessmentMainController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
-		return controllerCreator.createAssessmentMainController(ureq, wControl, stackPanel, ores, assessmentCallback);
+		return new AssessmentMainController(ureq, wControl, stackPanel, ores, assessmentCallback);
 	}
 	
 	public static Controller createQTIArchiveWizardController(boolean dummyMode, UserRequest ureq, List nodesTableObjectArrayList, ICourse course,
-			WindowControl windowControl) {
-		return controllerCreator.createQTIArchiveWizardController(dummyMode, ureq, nodesTableObjectArrayList, course, windowControl);
+			WindowControl wControl) {
+		return new QTIArchiveWizardController(dummyMode, ureq, nodesTableObjectArrayList, course, wControl);
 	}
 	
 	/**
@@ -68,7 +66,12 @@ public class AssessmentUIFactory {
 	 * @return null if no contextualSubscriptionController is available
 	 */
 	public static Controller createContextualSubscriptionController(UserRequest ureq, WindowControl wControl, ICourse course){
-		return controllerCreator.createContextualSubscriptionController(ureq, wControl, course);
+		AssessmentNotificationsHandler anh = AssessmentNotificationsHandler.getInstance();
+		SubscriptionContext subsContext = anh.getAssessmentSubscriptionContext(ureq.getIdentity(), course);
+		if (subsContext != null) {
+			PublisherData pData = anh.getAssessmentPublisherData(course, wControl.getBusinessControl().getAsString());
+			return new ContextualSubscriptionController(ureq, wControl, subsContext, pData);
+		}
+		return null;
 	}
-	
 }

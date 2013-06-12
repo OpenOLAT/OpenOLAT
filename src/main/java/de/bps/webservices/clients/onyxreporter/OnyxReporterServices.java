@@ -28,7 +28,7 @@ import javax.jws.soap.SOAPBinding;
 
 @WebService(name = "ReporterWSService", targetNamespace = "http://server.webservice.plugin.bps.de/")
 @SOAPBinding(style = SOAPBinding.Style.RPC)
-interface OnyxReporterServices {
+public interface OnyxReporterServices {
 
 	/**
 	 * @param version
@@ -40,7 +40,7 @@ interface OnyxReporterServices {
 	 * @param additionalParams
 	 */
 	@WebMethod(operationName = "armSite")
-	 String armSite(
+	public String armSite(
 		@WebParam(name = "version") final Integer version,
 		@WebParam(name = "userId") final String userId,
 		@WebParam(name = "optionalRole") final Integer role,
@@ -51,7 +51,7 @@ interface OnyxReporterServices {
 	);
     
     @WebMethod(operationName = "initiateSite")
-     String initiateSite(
+	public String initiateSite(
     	@WebParam(name = "version") final Integer version,
     	@WebParam(name = "sessionId") final String sessionId,
     	@WebParam(name = "secretToShare") final String secretToShare,
@@ -62,7 +62,7 @@ interface OnyxReporterServices {
     );
     
     @WebMethod(operationName = "disarmSite")
-     Boolean disarmSite(
+	public Boolean disarmSite(
     	@WebParam(name = "version") final Integer version,
     	@WebParam(name = "sessionId") final String sessionId,
     	@WebParam(name = "secretToShare") final String secretToShare,
@@ -70,7 +70,7 @@ interface OnyxReporterServices {
     );
     
     @WebMethod(operationName = "getResultValues")
-     HashMapWrapper getResultValues(
+	public HashMapWrapper getResultValues(
     	@WebParam(name = "version") final Integer version,
     	@WebParam(name = "sessionId") final String sessionId,
     	@WebParam(name = "secretToShare") final String secretToShare,
@@ -79,7 +79,7 @@ interface OnyxReporterServices {
     );
     
     @WebMethod(operationName = "getResultVariables")
-	 HashMapWrapper getResultVariables(
+	public HashMapWrapper getResultVariables(
 			@WebParam(name = "version") final Integer version,
 			@WebParam(name = "contentPackage") final byte[] contentPackage,
 			@WebParam(name = "additionalParams") final HashMapWrapper additionalParams

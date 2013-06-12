@@ -51,8 +51,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.wizard.WizardController;
 import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -60,15 +63,24 @@ import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.NodeTableDataModel;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
+import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.qti.export.helper.QTIItemObject;
 import org.olat.ims.qti.export.helper.QTIObjectTreeBuilder;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserManager;
+
+import de.bps.onyx.plugin.OnyxExportManager;
 
 /**
  * Initial Date: June 06, 2006 <br>
@@ -210,56 +222,100 @@ public class QTIArchiveWizardController extends BasicController {
 					Map nodeData = (Map) nodeTableModel.getObject(rowid);
 					ICourse course = CourseFactory.loadCourse(ores);
 					this.currentCourseNode = course.getRunStructure().getNode((String) nodeData.get(AssessmentHelper.KEY_IDENTIFYER));
-					
-			    olatResource = course.getResourceableId();
-					boolean success = hasResultSets(ureq);
 
-					if (success) {
-				    String repositorySoftKey = (String) currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+					boolean isOnyx = false;
+					if (currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI) != null) {
+						isOnyx = currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI).equals(IQEditController.CONFIG_VALUE_QTI2);
+					}
+					olatResource = course.getResourceableId();
+					boolean success = false;
+					String repositorySoftKey = (String) currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 				    Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
-						
-						QTIResultManager qrm = QTIResultManager.getInstance();
-						results = qrm.selectResults(olatResource, currentCourseNode.getIdent(), repKey, type);
-						QTIResult res0 = (QTIResult) results.get(0);
-						
-						QTIObjectTreeBuilder qotb = new QTIObjectTreeBuilder(new Long(res0.getResultSet().getRepositoryRef()));
-						qtiItemObjectList = qotb.getQTIItemObjectList();
-						
-						this.qtiItemConfigs = getQTIItemConfigs();
-						
-						if(dummyMode){
+				    if (isOnyx) {
+				    	if (currentCourseNode.getClass().equals(IQSURVCourseNode.class)) {
+				    			File surveyDir = new File(course.getCourseEnvironment().getCourseBaseContainer().getBasefile() + File.separator + currentCourseNode.getIdent()
+									+ File.separator);
+				    			if (surveyDir != null && surveyDir.exists() && surveyDir.listFiles().length > 0) {
+				    				success = true;
+				    			}
+						} else {
+							// <OLATBPS-498>
+							QTIResultManager qrm = QTIResultManager.getInstance();
+							success = false;
+							List<QTIResultSet> resultSets = qrm.getResultSets(course.getResourceableId(), currentCourseNode.getIdent(), repKey, null);
+							File fUserdataRoot = new File(WebappHelper.getUserDataRoot());
+							for (QTIResultSet rs : resultSets) {
+								String resultXml = OnyxExportManager.getInstance().getResultXml(rs.getIdentity().getName(),
+										currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString(), currentCourseNode.getIdent(),
+										rs.getAssessmentID());
+								File xml = new File(fUserdataRoot, resultXml);
+								if (xml != null && xml.exists()) {
+									// there is at least one result file
+									// existing
+									success = true;
+									break;
+								}
+							}
+							// </OLATBPS-498>
+						}
+				    } else {
+						success = hasResultSets(ureq);
+				    }
+				    
+				    if (success) {
+						if (isOnyx) {
 							finishedVC = createVelocityContainer("finished");
 							showFileButton = LinkFactory.createButton("showfile", finishedVC, this);
 							finishedVC.contextPut("nodetitle", currentCourseNode.getShortTitle());
-							
-							this.sep = convert2CtrlChars(sep);
-							this.car = convert2CtrlChars(car);
-							
-							formatter = getFormatter(ureq.getLocale(), sep, emb, esc, car, true);
-				    	formatter.setMapWithExportItemConfigs(qtiItemConfigs);
-							
-					    exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
-							UserManager um = UserManager.getInstance();
-					    String charset = um.getUserCharset(ureq.getIdentity());
-					    
-							QTIExportManager qem = QTIExportManager.getInstance();
-
-				    	targetFileName = qem.exportResults(formatter, results, qtiItemObjectList, currentCourseNode.getShortTitle(),exportDir, charset, suf);
+							targetFileName = exportOnyx(ureq, course);
 							finishedVC.contextPut("filename", targetFileName);
-				    	wc.setWizardTitle(getTranslator().translate("wizard.finished.title"));
+							wc.setWizardTitle(getTranslator().translate("wizard.finished.title"));
 							wc.setNextWizardStep(getTranslator().translate("wizard.finished.howto"), finishedVC);
+						} else {
+				    
+							QTIResultManager qrm = QTIResultManager.getInstance();
+							results = qrm.selectResults(olatResource, currentCourseNode.getIdent(), repKey, type);
+							QTIResult res0 = (QTIResult) results.get(0);
 							
-						} else { // expert mode
-							optionsChooseVC = createVelocityContainer("optionschoose");
-							backLinkAtOptionChoose = LinkFactory.createLinkBack(optionsChooseVC, this);
-							optionsChooseVC.contextPut("nodetitle", currentCourseNode.getShortTitle());
-							removeAsListenerAndDispose(ocForm);
-							ocForm = new OptionsChooseForm(ureq, getWindowControl(), qtiItemConfigs);
-							listenTo(ocForm);
-							optionsChooseVC.put("ocForm", ocForm.getInitialComponent());
+							QTIObjectTreeBuilder qotb = new QTIObjectTreeBuilder(new Long(res0.getResultSet().getRepositoryRef()));
+							qtiItemObjectList = qotb.getQTIItemObjectList();
 							
-							wc.setWizardTitle(getTranslator().translate("wizard.optionschoose.title"));
-							wc.setNextWizardStep(getTranslator().translate("wizard.optionschoose.howto"), optionsChooseVC);
+							qtiItemConfigs = getQTIItemConfigs();
+						
+							if(dummyMode){
+								finishedVC = createVelocityContainer("finished");
+								showFileButton = LinkFactory.createButton("showfile", finishedVC, this);
+								finishedVC.contextPut("nodetitle", currentCourseNode.getShortTitle());
+							
+								this.sep = convert2CtrlChars(sep);
+								this.car = convert2CtrlChars(car);
+							
+								formatter = getFormatter(ureq.getLocale(), sep, emb, esc, car, true);
+								formatter.setMapWithExportItemConfigs(qtiItemConfigs);
+							
+								exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
+								UserManager um = UserManager.getInstance();
+								String charset = um.getUserCharset(ureq.getIdentity());
+					    
+								QTIExportManager qem = QTIExportManager.getInstance();
+
+								targetFileName = qem.exportResults(formatter, results, qtiItemObjectList, currentCourseNode.getShortTitle(),exportDir, charset, suf);
+								finishedVC.contextPut("filename", targetFileName);
+								wc.setWizardTitle(getTranslator().translate("wizard.finished.title"));
+								wc.setNextWizardStep(getTranslator().translate("wizard.finished.howto"), finishedVC);
+							
+							} else { // expert mode
+								optionsChooseVC = createVelocityContainer("optionschoose");
+								backLinkAtOptionChoose = LinkFactory.createLinkBack(optionsChooseVC, this);
+								optionsChooseVC.contextPut("nodetitle", currentCourseNode.getShortTitle());
+								removeAsListenerAndDispose(ocForm);
+								ocForm = new OptionsChooseForm(ureq, getWindowControl(), qtiItemConfigs);
+								listenTo(ocForm);
+								optionsChooseVC.put("ocForm", ocForm.getInitialComponent());
+							
+								wc.setWizardTitle(getTranslator().translate("wizard.optionschoose.title"));
+								wc.setNextWizardStep(getTranslator().translate("wizard.optionschoose.howto"), optionsChooseVC);
+							}
 						}
 					} else { // no success
 						noResultsVC = createVelocityContainer("noresults");
@@ -275,12 +331,11 @@ public class QTIArchiveWizardController extends BasicController {
 					}
 				}
 			}
-		}
-    else if (source == wc){
+		} else if (source == wc) {
 			if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, event);
 			}
-		}else if (source == dcForm){
+		} else if (source == dcForm) {
 			if (event == Event.DONE_EVENT) {
 				finishedVC = createVelocityContainer("finished");
 				showFileButton = LinkFactory.createButton("showfile", finishedVC, this);
@@ -296,46 +351,111 @@ public class QTIArchiveWizardController extends BasicController {
 				this.car = convert2CtrlChars(car);
 				
 				formatter = getFormatter(ureq.getLocale(), sep, emb, esc, car, dcForm.isTagless());
-
-	    	formatter.setMapWithExportItemConfigs(qtiItemConfigs);
+				formatter.setMapWithExportItemConfigs(qtiItemConfigs);
 				
-	    	ICourse course = CourseFactory.loadCourse(ores);
-		    exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
+				ICourse course = CourseFactory.loadCourse(ores);
+				exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
 				UserManager um = UserManager.getInstance();
-		    String charset = um.getUserCharset(ureq.getIdentity());
+				String charset = um.getUserCharset(ureq.getIdentity());
 		    
 				QTIExportManager qem = QTIExportManager.getInstance();
 
-	    	targetFileName = qem.exportResults(formatter, results, qtiItemObjectList, currentCourseNode.getShortTitle(),exportDir, charset, suf);
+				targetFileName = qem.exportResults(formatter, results, qtiItemObjectList, currentCourseNode.getShortTitle(),exportDir, charset, suf);
 				finishedVC.contextPut("filename", targetFileName);
-	    	wc.setWizardTitle(getTranslator().translate("wizard.finished.title"));
+				wc.setWizardTitle(getTranslator().translate("wizard.finished.title"));
 				wc.setNextWizardStep(getTranslator().translate("wizard.finished.howto"), finishedVC);
 			}
 		}
 	}
-	
-	private boolean hasResultSets(UserRequest ureq){
-    if (currentCourseNode instanceof IQTESTCourseNode){
-        type = 1;
-    }
-    else if (currentCourseNode instanceof IQSELFCourseNode ){
-        type = 2;
-    } else {
-        type = 3;
-    }
-    
-    QTIResultManager qrm = QTIResultManager.getInstance();
-	
-    String repositorySoftKey = (String) currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-	
-    Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
-    boolean hasSets = qrm.hasResultSets(olatResource, currentCourseNode.getIdent(), repKey);
-    
-    if (hasSets) return true;
-    else return false;
+
+	private String exportOnyx(UserRequest ureq, ICourse course) {
+		String filename = "";
+		exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
+		OnyxExportManager onyxExportManager = OnyxExportManager.getInstance();
+		if (currentCourseNode.getClass().equals(IQSURVCourseNode.class)) {
+			// it is an onyx survey
+			String surveyPath = course.getCourseEnvironment().getCourseBaseContainer().getBasefile() + File.separator + currentCourseNode.getIdent() + File.separator;
+			filename = onyxExportManager.exportResults(surveyPath, exportDir, currentCourseNode);
+		} else {
+
+//			OnyxReporterConnector connector;
+			File csvFile = null;
+//			try {
+//				connector = new OnyxReporterConnector();
+//				File csvtmpFile = connector.collectResultsAsCSV(getIdentity(), currentCourseNode);
+//				csvFileName = generateExportFileName(currentCourseNode.getShortTitle());
+//				csvFile = new File(exportDir, csvFileName);
+//				boolean success = FileUtils.copyFileToFile(csvtmpFile, csvFile, false);
+//				if (!success) {
+//					showCSVFileButton.setEnabled(false);
+//				}
+//			} catch (OnyxReporterException e) {
+//				showCSVFileButton.setEnabled(false);
+//				getWindowControl().setError("reporter.unavailable");
+//			}
+
+			String repositorySoftKey = (String) currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+			Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
+			QTIResultManager qrm = QTIResultManager.getInstance();
+			List<QTIResultSet> resultSets = qrm.getResultSets(course.getResourceableId(), currentCourseNode.getIdent(), repKey, null);
+			// <OLATCE-654>
+			//			filename = onyxExportManager.exportResults(resultSets, exportDir, currentCourseNode);
+			String repoSoftkey = (String) currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+			if (repoSoftkey != null) {
+				RepositoryManager rm = RepositoryManager.getInstance();
+				RepositoryEntry re = rm.lookupRepositoryEntryBySoftkey(repoSoftkey, false);
+				RepositoryHandler repoHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
+				OLATResource res = OLATResourceManager.getInstance().findResourceable(re.getOlatResource());
+				if (res != null) {
+					boolean isAlreadyLocked = repoHandler.isLocked(res);
+					LockResult lockResult = null;
+					try {
+						lockResult = repoHandler.acquireLock(res, ureq.getIdentity());
+						if (lockResult == null || (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
+							MediaResource mr = repoHandler.getAsMediaResource(res, false);
+							if (mr != null) {
+								filename = onyxExportManager.exportAssessmentResults(resultSets, exportDir, mr, currentCourseNode, false, csvFile);
+							}
+						} else if (lockResult != null && lockResult.isSuccess() && isAlreadyLocked) {
+							lockResult = null; // invalid lock, it was already locked
+						}
+					} finally {
+						if ((lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
+							repoHandler.releaseLock(lockResult);
+							lockResult = null;
+						}
+					}
+				}
+			}
+			// </OLATCE-654>
+
+		}
+		return filename;
 	}
-	
-  
+
+	private boolean hasResultSets(UserRequest ureq) {
+		if (currentCourseNode instanceof IQTESTCourseNode) {
+			type = 1;
+		} else if (currentCourseNode instanceof IQSELFCourseNode) {
+			type = 2;
+		} else {
+			type = 3;
+		}
+
+		QTIResultManager qrm = QTIResultManager.getInstance();
+
+		String repositorySoftKey = (String) currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+
+		Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
+		boolean hasSets = qrm.hasResultSets(olatResource, currentCourseNode.getIdent(), repKey);
+
+		if (hasSets) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	private String convert2CtrlChars(String source) {
 		if (source == null) return null;
 		StringBuilder sb = new StringBuilder(300);

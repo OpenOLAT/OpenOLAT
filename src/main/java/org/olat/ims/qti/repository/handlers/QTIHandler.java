@@ -83,14 +83,14 @@ public abstract class QTIHandler extends FileHandler implements RepositoryHandle
 		IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
 		MainLayoutController runController = res.getResourceableTypeName().equals(SurveyFileResource.TYPE_NAME) ?
 			IQManager.getInstance().createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, secCallback, ureq, wControl) :	
-		  IQManager.getInstance().createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SELF, secCallback, ureq, wControl);
+			IQManager.getInstance().createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SELF, secCallback, ureq, wControl);
 			// use on column layout
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, runController.getInitialComponent(), null);
-			layoutCtr.addDisposableChildController(runController); // dispose content on layout dispose
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, runController.getInitialComponent(), null);
+		layoutCtr.addDisposableChildController(runController); // dispose content on layout dispose
 			
-			//fxdiff VCRP-1: access control of learn resources
-			RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
-			return wrapper;
+		//fxdiff VCRP-1: access control of learn resources
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+		return wrapper;
 	}
 
 	/**
@@ -163,6 +163,4 @@ public abstract class QTIHandler extends FileHandler implements RepositoryHandle
 		
 		return oLATResourceable;
 	}
-	
-	
 }

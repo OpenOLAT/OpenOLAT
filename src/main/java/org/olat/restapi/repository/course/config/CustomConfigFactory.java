@@ -24,27 +24,77 @@
 */
 package org.olat.restapi.repository.course.config;
 
+import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.iq.IQEditController;
+import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService.CustomConfigDelegate;
 
+import de.bps.onyx.plugin.OnyxModule;
+
 public class CustomConfigFactory {
 	
-	static ICustomConfigCreator creator = null;
-	
-	public CustomConfigFactory(ICustomConfigCreator creator) {
-		CustomConfigFactory.creator = creator;
-	}
-	
+
+
 	public static CustomConfigDelegate getTestCustomConfig(RepositoryEntry repoEntry) {
-		return CustomConfigFactory.creator.getTestCustomConfig(repoEntry);
+		return new OlatTestCustomConfig(repoEntry);
 	}
 	
 	public static CustomConfigDelegate getSurveyCustomConfig(RepositoryEntry repoEntry) {
-		return CustomConfigFactory.creator.getSurveyCustomConfig(repoEntry);
+		return new OlatSurveyCustomConfig(repoEntry);
 	}
 	
-	public interface ICustomConfigCreator {
-		public CustomConfigDelegate getTestCustomConfig(RepositoryEntry repoEntry);
-		public CustomConfigDelegate getSurveyCustomConfig(RepositoryEntry repoEntry);
+	/* CustomConfigDelegate implementations */
+	public static class OlatTestCustomConfig implements CustomConfigDelegate {
+		private RepositoryEntry testRepoEntry;
+
+		@Override
+		public boolean isValid() {
+			return testRepoEntry != null;
+		}
+
+		public OlatTestCustomConfig(RepositoryEntry testRepoEntry) {
+			this.testRepoEntry = testRepoEntry;
+		}
+
+		@Override
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+			moduleConfig.set(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY, testRepoEntry.getSoftkey());
+			if (OnyxModule.isOnyxTest(testRepoEntry.getOlatResource())) {
+				moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
+			} else {
+				moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);
+			}
+
+		}
+	}
+	
+	public static class OlatSurveyCustomConfig implements CustomConfigDelegate {
+		private RepositoryEntry surveyRepoEntry;
+
+		public OlatSurveyCustomConfig(RepositoryEntry surveyRepoEntry) {
+			this.surveyRepoEntry = surveyRepoEntry;
+		}
+
+		@Override
+		public boolean isValid() {
+			return true;
+		}
+
+		@Override
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+			moduleConfig.set(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY, surveyRepoEntry.getSoftkey());
+			moduleConfig.set(IQEditController.CONFIG_KEY_ENABLEMENU, new Boolean(true));
+			moduleConfig.set(IQEditController.CONFIG_KEY_SEQUENCE, AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM);
+			moduleConfig.set(IQEditController.CONFIG_KEY_TYPE, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY);
+			moduleConfig.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_NONE);
+			if (OnyxModule.isOnyxTest(surveyRepoEntry)) {
+				moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
+			} else {
+				moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);
+			}
+		}
 	}
 }

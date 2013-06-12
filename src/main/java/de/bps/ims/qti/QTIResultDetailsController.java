@@ -63,10 +63,11 @@ import org.olat.repository.RepositoryEntry;
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
+import de.bps.webservices.clients.onyxreporter.ReporterRole;
 
 /**
- * Initial Date:  12.01.2005
- *
+ * Initial Date: 12.01.2005
+ * 
  * @author Mike Stock
  */
 public class QTIResultDetailsController extends BasicController {
@@ -76,15 +77,16 @@ public class QTIResultDetailsController extends BasicController {
 	private Identity identity;
 	private RepositoryEntry repositoryEntry;
 	private String type;
-	
+
 	private VelocityContainer main, details;
 	private VelocityContainer onyxReporterVC;
 	private QTIResultTableModel tableModel;
 	private TableController tableCtr;
-	
+
 	private CloseableModalController cmc;
 	//<ONYX-705>
 	private final static OLog log = Tracing.createLoggerFor(QTIResultDetailsController.class);
+	private CloseableModalController onyxCmc;
 	//</ONYX-705>
 	/**
 	 * @param courseResourceableId
@@ -95,25 +97,26 @@ public class QTIResultDetailsController extends BasicController {
 	 * @param ureq
 	 * @param wControl
 	 */
-	public QTIResultDetailsController(Long courseResourceableId, String nodeIdent, Identity identity, RepositoryEntry re, String type, UserRequest ureq, WindowControl wControl) {
+	public QTIResultDetailsController(Long courseResourceableId, String nodeIdent, Identity identity, final RepositoryEntry re, final String type,
+			UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		Translator translator = Util.createPackageTranslator(org.olat.ims.qti.QTIResultDetailsController.class, getTranslator().getLocale(), getTranslator());
+
+		Translator translator = Util.createPackageTranslator(org.olat.ims.qti.QTI12ResultDetailsController.class, getTranslator().getLocale(), getTranslator());
 		setTranslator(translator);
-		
+
 		this.courseResourceableId = courseResourceableId;
 		this.nodeIdent = nodeIdent;
 		this.identity = identity;
 		this.repositoryEntry = re;
 		this.type = type;
-		
+
 		init(ureq);
 	}
-	
+
 	private void init(UserRequest ureq) {
 		main = createVelocityContainer("qtires");
 		details = createVelocityContainer("qtires_details");
-		
+
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("column.header.date", 0, null, ureq.getLocale()));
@@ -122,18 +125,18 @@ public class QTIResultDetailsController extends BasicController {
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("sel", "column.header.details", getTranslator().translate("select")));
 
 		QTIResultManager qrm = QTIResultManager.getInstance();
-		tableModel = new QTIResultTableModel(
-				qrm.getResultSets(courseResourceableId, nodeIdent, repositoryEntry.getKey(), identity), getTranslator());
+		tableModel = new QTIResultTableModel(qrm.getResultSets(courseResourceableId, nodeIdent, repositoryEntry.getKey(), identity), getTranslator());
 		tableCtr.setTableDataModel(tableModel);
 		listenTo(tableCtr);
-		
+
 		main.put("qtirestable", tableCtr.getInitialComponent());
 		putInitialPanel(main);
 	}
-	
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == main) {
 			if (event.getCommand().equals("close")) {
@@ -145,16 +148,18 @@ public class QTIResultDetailsController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableCtr) {
-			TableEvent tEvent = (TableEvent)event;
+			TableEvent tEvent = (TableEvent) event;
 			if (tEvent.getActionId().equals("sel")) {
 				if (OnyxModule.isOnyxTest(repositoryEntry.getOlatResource())) {
 					QTIResultSet resultSet = tableModel.getResultSet(tEvent.getRowId());
 					onyxReporterVC = createVelocityContainer("onyxreporter");
 					if (showOnyxReporter(ureq, resultSet.getAssessmentID())) {
-						CloseableModalController cmc = new CloseableModalController(getWindowControl(), getTranslator().translate("close"), onyxReporterVC);
-						cmc.activate();
+						onyxCmc = new CloseableModalController(getWindowControl(), getTranslator().translate("close"), onyxReporterVC);
+						onyxCmc.activate();
+						listenTo(onyxCmc);
 					} else {
 						getWindowControl().setError(getTranslator().translate("onyxreporter.error"));
 					}
@@ -174,13 +179,18 @@ public class QTIResultDetailsController extends BasicController {
 				listenTo(cmc);
 				
 				cmc.activate();
+				}
 			}
+			} else if (source == onyxCmc && CloseableModalController.CLOSE_MODAL_EVENT.equals(event)) {
+				QTIResultManager qrm = QTIResultManager.getInstance();
+				tableModel = new QTIResultTableModel(qrm.getResultSets(courseResourceableId, nodeIdent, repositoryEntry.getKey(), identity), getTranslator());
+				tableCtr.setTableDataModel(tableModel);
 			}
-		}
 	}
 
 	/**
 	 * This methods calls the OnyxReporter and shows it in an iframe.
+	 * 
 	 * @param ureq The UserRequest for getting the identity and role of the current user.
 	 */
 	private boolean showOnyxReporter(UserRequest ureq, long assassmentId) {
@@ -199,13 +209,11 @@ public class QTIResultDetailsController extends BasicController {
 				identityList.add(identity);
 				
 				CourseNode cn = CourseFactory.loadCourse(courseResourceableId).getEditorTreeModel().getCourseNode(this.nodeIdent);
+				//<ONYX-705>
 				String iframeSrc = "";
 				try {
-					//<OLATCE-1124>
-					//<ONYX-705>
-					iframeSrc = onyxReporter.startReporterGUI(ureq.getIdentity(), identityList, (AssessableCourseNode) cn, assassmentId, true, false);
+					iframeSrc = onyxReporter.startReporterGUI(ureq.getIdentity(), identityList, (AssessableCourseNode) cn, assassmentId, ReporterRole.ASSESSMENT);
 					//</ONYX-705>
-					//</OLATCE-1124>
 				} catch (OnyxReporterException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -223,6 +231,7 @@ public class QTIResultDetailsController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		//
 	}

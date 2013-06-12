@@ -167,6 +167,7 @@
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 								<ref bean="userPropertyInstitutionalEmail" />
+								<ref bean="userPropertyStudySubject" />
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
@@ -177,6 +178,7 @@
 								<!-- (UZH Note) may contain matrikel number, an information
 								which should not be revealed by a search. -->
 								<ref bean="userPropertyInstitutionalEmail" />
+								<ref bean="userPropertyStudySubject" />
 							</set>						
 						</property>
 					</bean>

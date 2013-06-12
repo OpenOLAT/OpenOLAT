@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.configuration.Initializable;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -35,6 +36,8 @@ public class WebServiceModule implements Initializable {
 	private static Map<String, Service> configuration = new HashMap<String, Service>();
 
 	private static Map<String, List<String>> services;
+
+	private final static OLog log = Tracing.createLoggerFor(WebServiceModule.class);
 
 	/**
 	 * @return Returns the services.
@@ -69,20 +72,24 @@ public class WebServiceModule implements Initializable {
 	@Override
 	public void init() {
 		try {
-			for (String serviceName : services.keySet()) {
-				Map<String, String> mapIdToInstName = new HashMap<String, String>();
-				Map<String, String> mapInstNameToAddress = new HashMap<String, String>();
-					String id = services.get(serviceName).get(0);
-					String instName = Service.ALL_INSTITUTIONS;
-					String address = services.get(serviceName).get(1);
-					mapIdToInstName.put(id, instName);
-					mapInstNameToAddress.put(instName, address);
-					Tracing.createLoggerFor(getClass()).audit(serviceName + " # " + id + " # " + instName + " # " + address);
-				Service service = new Service(serviceName, mapIdToInstName, mapInstNameToAddress);
-				configuration.put(service.getName(), service);
+			if (services != null) {
+				for (String serviceName : services.keySet()) {
+					Map<String, String> mapIdToInstName = new HashMap<String, String>();
+					Map<String, String> mapInstNameToAddress = new HashMap<String, String>();
+						String id = services.get(serviceName).get(0);
+						String instName = Service.ALL_INSTITUTIONS;
+						String address = services.get(serviceName).get(1);
+						mapIdToInstName.put(id, instName);
+						mapInstNameToAddress.put(instName, address);
+						Tracing.createLoggerFor(getClass()).audit(serviceName + " # " + id + " # " + instName + " # " + address);
+					Service service = new Service(serviceName, mapIdToInstName, mapInstNameToAddress);
+					configuration.put(service.getName(), service);
+				}
+			}else {
+				log.info("No services found to initialize.");
 			}
 		} catch (Exception e) {
-			Tracing.createLoggerFor(getClass()).error("Initialization failed", e);
+			log.error("Initialization failed", e);
 		}
 	}
 	

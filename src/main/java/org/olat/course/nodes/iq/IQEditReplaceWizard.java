@@ -47,13 +47,17 @@ import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.ims.qti.QTIResult;
+import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
+import org.olat.ims.qti.export.QTIExportItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportKPRIMItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportMCQItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportManager;
@@ -65,6 +69,8 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.user.UserManager;
 
+import de.bps.onyx.plugin.OnyxExportManager;
+
 /**
  * 
  * Description:<br>
@@ -73,6 +79,7 @@ import org.olat.user.UserManager;
  * <P>
  * Initial Date:  21.10.2008 <br>
  * @author skoeber
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class IQEditReplaceWizard extends WizardController {
 	
@@ -89,8 +96,9 @@ public class IQEditReplaceWizard extends WizardController {
 	private List<Identity> learners;
 	private List<QTIResult> results;
 	private String[] types;
-	
-	//presentation
+	private boolean isOnyx;
+
+	// presentation
 	private VelocityContainer vcStep1, vcStep2, vcStep3;
 	private Link nextBtn, showFileButton;
 	private MailNotificationEditController mailCtr;
@@ -108,7 +116,8 @@ public class IQEditReplaceWizard extends WizardController {
 	 * @param course
 	 * @param courseNode
 	 */
-	public IQEditReplaceWizard(UserRequest ureq, WindowControl wControl, ICourse course, CourseNode courseNode, String[] types, List<Identity> learners, List<QTIResult> results, int numberOfQtiSerEntries) {
+	public IQEditReplaceWizard(UserRequest ureq, WindowControl wControl, ICourse course, CourseNode courseNode,
+			String[] types, List<Identity> learners, List<QTIResult> results, int numberOfQtiSerEntries, boolean isOnyx) {
 		super(ureq, wControl, STEPS);
 		
 		setBasePackage(IQEditReplaceWizard.class);
@@ -119,7 +128,8 @@ public class IQEditReplaceWizard extends WizardController {
 		this.learners = learners;
 		this.results = results;
 		this.numberOfQtiSerEntries = numberOfQtiSerEntries;
-		
+		this.isOnyx = isOnyx;
+
 		setWizardTitle(translate("replace.wizard.title"));
 		doStep1(ureq);
 	}
@@ -152,7 +162,11 @@ public class IQEditReplaceWizard extends WizardController {
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if (source == searchCtr && event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 			selectedRepositoryEntry = searchCtr.getSelectedEntry();
-			doStep2(ureq);
+			if (isOnyx) {
+				doStep2Onyx(ureq);
+			} else {
+				doStep2(ureq);
+			}
 		}
 	}
 	
@@ -173,9 +187,9 @@ public class IQEditReplaceWizard extends WizardController {
 			QTIExportManager qem = QTIExportManager.getInstance();
 			Long repositoryRef = results.get(0).getResultSet().getRepositoryRef();
 			QTIObjectTreeBuilder qotb = new QTIObjectTreeBuilder(repositoryRef);
-			List qtiItemObjectList = qotb.getQTIItemObjectList();
+			List<QTIItemObject> qtiItemObjectList = qotb.getQTIItemObjectList();
 			QTIExportFormatter formatter = new QTIExportFormatterCSVType1(ureq.getLocale(), "\t", "\"", "\\", "\r\n", false);
-			Map qtiItemConfigs = getQTIItemConfigs(qtiItemObjectList);
+			Map<Class<?>, QTIExportItemFormatConfig> qtiItemConfigs = getQTIItemConfigs(qtiItemObjectList);
 			formatter.setMapWithExportItemConfigs(qtiItemConfigs);
 			resultExportFile = qem.exportResults(formatter, results, qtiItemObjectList, courseNode.getShortTitle(), exportDir, charset, ".xls");
 			vcStep2 = createVelocityContainer("replacewizard_step2");
@@ -195,7 +209,43 @@ public class IQEditReplaceWizard extends WizardController {
 		nextBtn = LinkFactory.createButton("replace.wizard.next", vcStep2, this);
 		setNextWizardStep(translate("replace.wizard.title.step2"), vcStep2);
 	}
-	
+
+	/**
+	 * Does export of test results for onyx tests
+	 * @param ureq
+	 */
+	private void doStep2Onyx(UserRequest ureq) {
+		String nodeTitle = courseNode.getShortTitle();
+		exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
+		OnyxExportManager onyxExportManager = OnyxExportManager.getInstance();
+		if (courseNode.getClass().equals(IQSURVCourseNode.class)) {
+			// it is an onyx survey
+			String surveyPath = course.getCourseEnvironment().getCourseBaseContainer().getBasefile() + File.separator + courseNode.getIdent() + File.separator;
+			resultExportFile = onyxExportManager.exportResults(surveyPath, exportDir, courseNode);
+		} else {
+			String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+			Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
+			QTIResultManager qrm = QTIResultManager.getInstance();
+			List<QTIResultSet> resultSets = qrm.getResultSets(course.getResourceableId(), courseNode.getIdent(), repKey, null);
+			learners = new ArrayList<Identity>();
+			for (QTIResultSet resultSet : resultSets) {
+				if (!learners.contains(resultSet.getIdentity())) {
+					learners.add(resultSet.getIdentity());
+				}
+			}
+			resultExportFile = onyxExportManager.exportResults(resultSets, exportDir, courseNode);
+		}
+		// vcStep2 = new VelocityContainer("replaceWizard", VELOCITY_ROOT + "/replacewizard_step2.html", translator, this);
+		vcStep2 = createVelocityContainer("replacewizard_step2");
+		String[] args = new String[] {Integer.toString(learners != null ? learners.size() : 0), exportDir.getName(), resultExportFile };
+		vcStep2.contextPut("information", getTranslator().translate("replace.wizard.information", args));
+		vcStep2.contextPut("nodetitle", nodeTitle);
+		vcStep2.contextPut("filename", resultExportFile);
+		showFileButton = LinkFactory.createButton("replace.wizard.showfile", vcStep2, this);
+		nextBtn = LinkFactory.createButton("replace.wizard.next", vcStep2, this);
+		this.setNextWizardStep(getTranslator().translate("replace.wizard.title.step2"), vcStep2);
+	}
+
 	private void doStep3(UserRequest ureq) {
 		StringBuilder extLink = new StringBuilder();
 		extLink.append(Settings.getServerContextPathURI());
@@ -213,7 +263,6 @@ public class IQEditReplaceWizard extends WizardController {
 		
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
 			@Override
-			@SuppressWarnings({"unused"})
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				// nothing to do
 			}
@@ -235,58 +284,49 @@ public class IQEditReplaceWizard extends WizardController {
 		return selectedRepositoryEntry;
 	}
 	
-	private Map getQTIItemConfigs(List qtiItemObjectList){
-		Map itConfigs = new HashMap();
+	private Map<Class<?>, QTIExportItemFormatConfig> getQTIItemConfigs(List<QTIItemObject> qtiItemObjectList){
+		Map<Class<?>, QTIExportItemFormatConfig> itConfigs = new HashMap<Class<?>, QTIExportItemFormatConfig>();
   	
-		for (Iterator iter = qtiItemObjectList.iterator(); iter.hasNext();) {
+		for (Iterator<QTIItemObject> iter = qtiItemObjectList.iterator(); iter.hasNext();) {
 			QTIItemObject item = (QTIItemObject) iter.next();
 			if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_SCQ)){
 				if (itConfigs.get(QTIExportSCQItemFormatConfig.class) == null){
 					QTIExportSCQItemFormatConfig confSCQ = new QTIExportSCQItemFormatConfig(true, false, false, false);
-			  	itConfigs.put(QTIExportSCQItemFormatConfig.class, confSCQ);
+					itConfigs.put(QTIExportSCQItemFormatConfig.class, confSCQ);
 				}
-			}
-			else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_MCQ)){
+			} else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_MCQ)){
 				if (itConfigs.get(QTIExportMCQItemFormatConfig.class) == null){
 					QTIExportMCQItemFormatConfig confMCQ = new QTIExportMCQItemFormatConfig(true, false, false, false);
-			  	itConfigs.put(QTIExportMCQItemFormatConfig.class, confMCQ );
+					itConfigs.put(QTIExportMCQItemFormatConfig.class, confMCQ );
 				}
-			}
-			else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_KPRIM)){
+			} else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_KPRIM)){
 				if (itConfigs.get(QTIExportKPRIMItemFormatConfig.class) == null){
 					QTIExportKPRIMItemFormatConfig confKPRIM = new QTIExportKPRIMItemFormatConfig(true, false, false, false);
-			  	itConfigs.put(QTIExportKPRIMItemFormatConfig.class, confKPRIM);
+					itConfigs.put(QTIExportKPRIMItemFormatConfig.class, confKPRIM);
 				}
-			}
-			else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_ESSAY)){
+			} else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_ESSAY)){
 				if (itConfigs.get(QTIExportEssayItemFormatConfig.class) == null){
 					QTIExportEssayItemFormatConfig confEssay = new QTIExportEssayItemFormatConfig(true, false);
-			  	itConfigs.put(QTIExportEssayItemFormatConfig.class, confEssay);
+					itConfigs.put(QTIExportEssayItemFormatConfig.class, confEssay);
 				}
-			}
-			else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_FIB)){
+			} else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_FIB)){
 				if (itConfigs.get(QTIExportFIBItemFormatConfig.class) == null){
 					QTIExportFIBItemFormatConfig confFIB = new QTIExportFIBItemFormatConfig(true, false, false);
-			  	itConfigs.put(QTIExportFIBItemFormatConfig.class, confFIB);
+					itConfigs.put(QTIExportFIBItemFormatConfig.class, confFIB);
 				}
-			}
-			else if (item.getItemType().equals(QTIItemObject.TYPE.A)){
+			} else if (item.getItemType().equals(QTIItemObject.TYPE.A)){
 				QTIExportEssayItemFormatConfig confEssay = new QTIExportEssayItemFormatConfig(true, false);
-		  	itConfigs.put(QTIExportEssayItemFormatConfig.class, confEssay);
-			}
-			else if (item.getItemType().equals(QTIItemObject.TYPE.R)){
+				itConfigs.put(QTIExportEssayItemFormatConfig.class, confEssay);
+			} else if (item.getItemType().equals(QTIItemObject.TYPE.R)){
 				QTIExportSCQItemFormatConfig confSCQ = new QTIExportSCQItemFormatConfig(true, false, false, false);
-		  	itConfigs.put(QTIExportSCQItemFormatConfig.class, confSCQ);
-			}
-			else if (item.getItemType().equals(QTIItemObject.TYPE.C)){
+				itConfigs.put(QTIExportSCQItemFormatConfig.class, confSCQ);
+			} else if (item.getItemType().equals(QTIItemObject.TYPE.C)){
 				QTIExportMCQItemFormatConfig confMCQ = new QTIExportMCQItemFormatConfig(true, false, false, false);
-		  	itConfigs.put(QTIExportMCQItemFormatConfig.class, confMCQ );
-			}
-			else if (item.getItemType().equals(QTIItemObject.TYPE.B)){
+				itConfigs.put(QTIExportMCQItemFormatConfig.class, confMCQ );
+			} else if (item.getItemType().equals(QTIItemObject.TYPE.B)){
 				QTIExportFIBItemFormatConfig confFIB = new QTIExportFIBItemFormatConfig(true, false, false);
-		  	itConfigs.put(QTIExportFIBItemFormatConfig.class, confFIB);
-			}
-			else{
+				itConfigs.put(QTIExportFIBItemFormatConfig.class, confFIB);
+			} else{
 				throw new OLATRuntimeException(null,"Can not resolve QTIItem type", null);
 			}
 		}

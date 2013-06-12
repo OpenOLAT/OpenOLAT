@@ -32,6 +32,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.ims.qti.editor.AddNewQTIDocumentController;
@@ -44,6 +45,7 @@ import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.AddFileResourceController;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
@@ -51,6 +53,9 @@ import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
+
+import de.bps.onyx.plugin.OnyxModule;
+import de.bps.onyx.plugin.run.OnyxRunController;
 
 
 /**
@@ -89,19 +94,30 @@ public class QTITestHandler extends QTIHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
 	 */
-	public boolean supportsLaunch(RepositoryEntry repoEntry) { return LAUNCHEABLE; }
+	public boolean supportsLaunch(RepositoryEntry repoEntry) {
+		return LAUNCHEABLE;
+	}
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
 	 */
-	public boolean supportsDownload(RepositoryEntry repoEntry) { return DOWNLOADEABLE; }
+	public boolean supportsDownload(RepositoryEntry repoEntry) {
+		return DOWNLOADEABLE;
+	}
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
 	 */
-	public boolean supportsEdit(RepositoryEntry repoEntry) { return EDITABLE; }
+	public boolean supportsEdit(RepositoryEntry repoEntry) { 
+		if (OnyxModule.isOnyxTest(repoEntry.getOlatResource())) {
+			return false;
+		}
+		return EDITABLE;
+	}
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsWizard(org.olat.repository.RepositoryEntry)
 	 */
-	public boolean supportsWizard(RepositoryEntry repoEntry) { return WIZARD_SUPPORT; }
+	public boolean supportsWizard(RepositoryEntry repoEntry) {
+		return WIZARD_SUPPORT;
+	}
 	
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
@@ -116,12 +132,20 @@ public class QTITestHandler extends QTIHandler {
 	 * @param wControl
 	 * @return Controller
 	 */
-	public Controller getLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		Resolver resolver = new ImsRepositoryResolver(res);
-		IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
-		Controller runController = 
-			IQManager.getInstance().createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SELF, secCallback, ureq, wControl);
-		// use on column layout
+	@Override
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+		Controller runController;
+		if (OnyxModule.isOnyxTest(res)) {
+			// <OLATCE-1054>
+			RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
+			runController = new OnyxRunController(ureq, wControl, entry, false);
+		} else {
+			Resolver resolver = new ImsRepositoryResolver(res);
+			IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
+			runController = 
+				IQManager.getInstance().createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SELF, secCallback, ureq, wControl);
+		}
+		
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, runController.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(runController); // dispose content on layout dispose
 		return layoutCtr;
@@ -131,6 +155,10 @@ public class QTITestHandler extends QTIHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+		if(OnyxModule.isOnyxTest(res)) {
+			return null;
+		}
+
 		TestFileResource fr = new TestFileResource();
 		fr.overrideResourceableId(res.getResourceableId());
 		
@@ -151,10 +179,11 @@ public class QTITestHandler extends QTIHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAddController(org.olat.repository.controllers.RepositoryAddCallback, java.lang.Object, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public IAddController createAddController(RepositoryAddCallback callback, Object userObject, UserRequest ureq, WindowControl wControl) {
-		if (userObject == null || userObject.equals(RepositoryAddController.PROCESS_ADD))
+		if (userObject == null || userObject.equals(RepositoryAddController.PROCESS_ADD)) {
 			return new AddFileResourceController(callback, supportedTypes, new String[] {"zip"}, ureq, wControl);
-		else
+		} else {
 			return new AddNewQTIDocumentController(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, callback, ureq, wControl);
+		}
 	}
 
 	protected String getDeletedFilePrefix() {
@@ -164,5 +193,4 @@ public class QTITestHandler extends QTIHandler {
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		throw new AssertException("not implemented");
 	}
-
 }

@@ -329,7 +329,7 @@ public class CourseAssessmentWebService {
 				importTestItems(course, nodeKey, requestIdentity, resultsVO);
 			} else {
 				AssessableCourseNode assessableNode = (AssessableCourseNode) node;
-				ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, new Long(nodeKey));//not directly pass this key
+				ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Boolean.TRUE, new Long(nodeKey));//not directly pass this key
 				assessableNode.updateUserScoreEvaluation(scoreEval, userCourseEnvironment, requestIdentity, true);
 			}
 
@@ -437,7 +437,7 @@ public class CourseAssessmentWebService {
 				// update scoring overview for the user in the current course
 				Float score = ac.getScore();
 				Boolean passed = ac.isPassed();
-				ScoreEvaluation sceval = new ScoreEvaluation(score, passed, new Long(nodeKey));//perhaps don't pass this key directly
+				ScoreEvaluation sceval = new ScoreEvaluation(score, passed, passed, new Long(nodeKey));//perhaps don't pass this key directly
 				AssessableCourseNode acn = (AssessableCourseNode) courseNode;
 				// assessment nodes are assessable
 				boolean incrementUserAttempts = true;

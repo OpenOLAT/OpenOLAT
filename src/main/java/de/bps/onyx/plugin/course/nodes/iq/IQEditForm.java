@@ -50,6 +50,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.course.nodes.iq.IQ12EditForm;
+import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -60,11 +62,10 @@ import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
 
 /**
- * Test configuration form.
- * Used for configuring Test, Self-test, and Questionnaire(aka Survey).
+ * Test configuration form. Used for configuring Test, Self-test, and Questionnaire(aka Survey).
  * <p>
- * Initial Date:  Mar 3, 2004
- *
+ * Initial Date: Mar 3, 2004
+ * 
  * @author Mike Stock
  */
 public class IQEditForm extends FormBasicController {
@@ -73,6 +74,9 @@ public class IQEditForm extends FormBasicController {
 	private static final String ALLOW = "allow";
 	private MultipleSelectionElement allowShowSolutionBox;
 	//</OLATCE-982>
+	//<OLATCE-2009>
+	private MultipleSelectionElement allowSuspensionBox;
+	//</OLATCE-2009>
 	private SelectionElement enableMenu;
 	private SelectionElement displayMenu;
 	private SelectionElement displayScoreProgress;
@@ -94,15 +98,10 @@ public class IQEditForm extends FormBasicController {
 
 	private ModuleConfiguration modConfig;
 
-	private String[] menuRenderOptKeys, menuRenderOptValues;
-	private String[] sequenceKeys, sequenceValues;
 	private String configKeyType;
 
-	
 	private SingleSelection template;
 	private TextElement cutValue;
-	private boolean isOnyx;
-	
 
 	private boolean isAssessment, isSelfTest, isSurvey;
 	//<OLATCE-1012>
@@ -112,59 +111,35 @@ public class IQEditForm extends FormBasicController {
 
 	/**
 	 * Constructor for the qti configuration form
+	 * 
 	 * @param ureq
 	 * @param wControl
 	 * @param modConfig
-	 * @param repoEntry Used to check if this is a onyx-test and if this onyx-test has the outcome-variable PASS defined
 	 */
 	// <OLATCE-654>
-//	public IQEditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig) {
-	public IQEditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig,RepositoryEntry repoEntry) {
+	public IQEditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, RepositoryEntry repoEntry) {
 	// </OLATCE-654>
 		super (ureq, wControl);
 
 		//<OLATCE-1012>		
 		this.repoEntry = repoEntry;
 		//</OLATCE-1012>
-		Translator translator = Util.createPackageTranslator(org.olat.course.nodes.iq.IQEditController.class, getTranslator().getLocale(), getTranslator());
+		Translator translator = Util.createPackageTranslator(IQ12EditForm.class, getLocale(), getTranslator());
 		setTranslator(translator);
-		
+
 		this.modConfig = modConfig;
 
-		configKeyType = (String)modConfig.get(IQEditController.CONFIG_KEY_TYPE);
+		configKeyType = (String) modConfig.get(IQEditController.CONFIG_KEY_TYPE);
 
 		isAssessment = configKeyType.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
-		isSelfTest   = configKeyType.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF);
-		isSurvey     = configKeyType.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY);
-		
-		isOnyx = false;
-		if (modConfig.get(IQEditController.CONFIG_KEY_TYPE_QTI) != null) {
-			String qtiType = (String) modConfig.get(IQEditController.CONFIG_KEY_TYPE_QTI);
-			isOnyx = (IQEditController.CONFIG_VALUE_QTI2.equals(qtiType)) ? true : false;
-		}
-
-		menuRenderOptKeys = new String[] {
-				Boolean.FALSE.toString(),
-				Boolean.TRUE.toString()
-		};
-		menuRenderOptValues = new String[] {
-				translate("qti.form.menurender.allquestions"),
-				translate("qti.form.menurender.sectionsonly")
-		};
-		sequenceKeys = new String[] {
-				AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM,
-				AssessmentInstance.QMD_ENTRY_SEQUENCE_SECTION
-		};
-		sequenceValues = new String[] {
-				translate("qti.form.sequence.item"),
-				translate("qti.form.sequence.section")
-		};
+		isSelfTest = configKeyType.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF);
+		isSurvey = configKeyType.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY);
 
 		initForm(ureq);
 	}
 
-	protected boolean validateFormLogic (UserRequest ureq) {
-
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
 		startDateElement.clearError();
 		endDateElement.clearError();
 
@@ -203,10 +178,12 @@ public class IQEditForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		limitAttempts = uifactory.addCheckboxesVertical("limitAttempts", "qti.form.limit.attempts", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		limitAttempts = uifactory.addCheckboxesVertical("limitAttempts", "qti.form.limit.attempts", formLayout, new String[] { "xx" }, new String[] { null }, null, 1);
 
 		Integer confAttempts = (Integer) modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS);
-		if (confAttempts == null) confAttempts = new Integer(0);
+		if (confAttempts == null) {
+			confAttempts = new Integer(0);
+		}
 		attempts = uifactory.addIntegerElement("qti.form.attempts", confAttempts, formLayout);
 		attempts.setDisplaySize(2);
 		attempts.setMinValueCheck(1, null);
@@ -216,7 +193,7 @@ public class IQEditForm extends FormBasicController {
 
 		// Only assessments have a limitation on number of attempts
 		if (isAssessment) {
-			limitAttempts.select("xx", confAttempts>0);
+			limitAttempts.select("xx", confAttempts > 0);
 			limitAttempts.addActionListener(this, FormEvent.ONCLICK);
 		} else {
 			limitAttempts.select("xx", false);
@@ -224,189 +201,89 @@ public class IQEditForm extends FormBasicController {
 			attempts.setVisible(false);
 		}
 
-		
-		if (isOnyx) {
-			//<OLATCE-982>
-			Boolean confAllowShowSolution = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_ALLOW_SHOW_SOLUTION);
-			String[] allowShowSolution=new String[]{ALLOW};
-			String[] valuesShowSolution = new String[]{""};
-			//Surveys do not have a solution
-			if(!isSurvey){
-				allowShowSolutionBox = uifactory.addCheckboxesVertical("allowShowSolution", "qti.form.allowShowSolution", formLayout, allowShowSolution, valuesShowSolution, null, 1);
-				if(confAllowShowSolution!=null){
-					allowShowSolutionBox.select(ALLOW, confAllowShowSolution);
-				} else if (isSelfTest){
-					allowShowSolutionBox.select(ALLOW, true);
-				}
+		//<OLATCE-982>
+		Boolean confAllowShowSolution = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_ALLOW_SHOW_SOLUTION);
+		String[] allowShowSolution=new String[]{ALLOW};
+		String[] valuesShowSolution = new String[]{""};
+		//Surveys do not have a solution
+		if(!isSurvey){
+			allowShowSolutionBox = uifactory.addCheckboxesVertical("allowShowSolution", "qti.form.allowShowSolution", formLayout, allowShowSolution, valuesShowSolution, null, 1);
+			if(confAllowShowSolution!=null){
+				allowShowSolutionBox.select(ALLOW, confAllowShowSolution);
+			} else if (isSelfTest){
+				allowShowSolutionBox.select(ALLOW, true);
 			}
-			//</OLATCE-982>
-			//select onyx template
-			String[] values = new String[OnyxModule.PLAYERTEMPLATES.size()];
-			String[] keys = new String[OnyxModule.PLAYERTEMPLATES.size()];
+		}
+		//</OLATCE-982>
+		//<OLATCE-2009>
+		Boolean confAllowSuspension = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
+		String[] allowSuspension = new String[] { ALLOW };
+		String[] valuesSuspesion = new String[] { "" };
+		allowSuspensionBox = uifactory.addCheckboxesVertical("allowSuspension", "qti.form.allowSuspension", formLayout, allowSuspension,
+				valuesSuspesion, null, 1);
+		if (confAllowSuspension != null) {
+			allowSuspensionBox.select(ALLOW, confAllowSuspension);
+		} else if (isSelfTest) {
+			allowSuspensionBox.select(ALLOW, false);
+		}
+		//</OLATCE-2009>
+		//select onyx template
+		String[] values = new String[OnyxModule.PLAYERTEMPLATES.size()];
+		String[] keys = new String[OnyxModule.PLAYERTEMPLATES.size()];
 
-			int i = 0;
-			for (PlayerTemplate pt : OnyxModule.PLAYERTEMPLATES) {
-				keys[i] = pt.id;
-				values[i] = getTranslator().translate(pt.i18nkey);
-				++i;
+		int i = 0;
+		for (PlayerTemplate pt : OnyxModule.PLAYERTEMPLATES) {
+			keys[i] = pt.id;
+			values[i] = getTranslator().translate(pt.i18nkey);
+			++i;
+		}
+		template = uifactory.addDropdownSingleselect("qti.form.onyx.template", formLayout, keys, values, null);
+		try {
+			if (modConfig.get(IQEditController.CONFIG_KEY_TEMPLATE) != null) {
+				template.select(modConfig.get(IQEditController.CONFIG_KEY_TEMPLATE).toString(), true);
 			}
-			template = uifactory.addDropdownSingleselect("qti.form.onyx.template", formLayout, keys, values, null);
+		} catch (RuntimeException e) {
+			log.warn("Template not found", e);
+		}
+
+		//<OLATCE-1342>
+		if(repoEntry == null || repoEntry.getOlatResource() == null){
+			getWindowControl().setWarning(translate("qti.form.onyx.nocontent"));
+		} else {
+		//the cutvalue
+		if (!isSurvey) {
+			cutValue = uifactory.addTextElement("qti.form.onyx.cutvalue", "qti.form.onyx.cutvalue", 20, "", formLayout);
+			if (modConfig.get(IQEditController.CONFIG_KEY_CUTVALUE) != null) {
+				cutValue.setValue(modConfig.get(IQEditController.CONFIG_KEY_CUTVALUE).toString());
+			} else {
+				cutValue.setValue("");
+			}
+			//<OLATCE-1012>				
+	
 			try {
-				if (modConfig.get(IQEditController.CONFIG_KEY_TEMPLATE) != null) {
-					// <OLATCE-499>
-					String templateId = modConfig.get(IQEditController.CONFIG_KEY_TEMPLATE).toString();
-					boolean isTemplateValid = false;
-					for (PlayerTemplate template : OnyxModule.PLAYERTEMPLATES) {
-						if (template.id.equals(templateId)) {
-							isTemplateValid = true;
-							break;
-						}
-					}
-					if (!isTemplateValid) {
-						templateId = OnyxModule.PLAYERTEMPLATES.get(0).id;
-					}
-					template.select(templateId, true);
-					// </OLATCE-499>
+				OnyxReporterConnector onyxReporter = new OnyxReporterConnector();
+				Map<String, String> outcomes = onyxReporter.getPossibleOutcomeVariables(repoEntry);
+				if(outcomes.containsKey("PASS")){
+					uifactory.addStaticTextElement("qti.form.onyx.cutvalue.passed.overwrite", null, translate("qti.form.onyx.cutvalue.passed.overwrite"), formLayout);
 				}
-			} catch (RuntimeException e) {
-				Tracing.logWarn("Template not found", e, this.getClass());
+			} catch (OnyxReporterException e) {
+				log.warn("Unable to get outcome variables for the test!", e);
 			}
 
-			//the cutvalue
-			if (!isSurvey) {
-				cutValue = uifactory.addTextElement("qti.form.onyx.cutvalue", "qti.form.onyx.cutvalue", 20, "", formLayout);
-				if (modConfig.get(IQEditController.CONFIG_KEY_CUTVALUE) != null) {
-					cutValue.setValue(modConfig.get(IQEditController.CONFIG_KEY_CUTVALUE).toString());
-				}
-				else {
-					cutValue.setValue("");
-				}
-				//<OLATCE-1012>				
-				if(isOnyx){
-					try {
-						OnyxReporterConnector onyxReporter = new OnyxReporterConnector();
-						Map<String, String> outcomes = onyxReporter.getPossibleOutcomeVariables(repoEntry);
-						if(outcomes.containsKey("PASS")){
-							uifactory.addStaticTextElement("qti.form.onyx.cutvalue.passed.overwrite", null, translate("qti.form.onyx.cutvalue.passed.overwrite"), formLayout);
-						}
-					} catch (OnyxReporterException e) {
-						log.warn("Unable to get outcome variables for the test!", e);
-					}
-				}
-				//</OLATCE-1012>
-			}
-
-		} else {
-		
-		Boolean CdisplayMenu = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_DISPLAYMENU);
-		displayMenu = uifactory.addCheckboxesVertical("qti_displayMenu", "qti.form.menudisplay", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		displayMenu.select("xx", CdisplayMenu == null ? true : CdisplayMenu );
-		displayMenu.addActionListener(this, FormEvent.ONCLICK);
-
-		Boolean CenableMenu = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_ENABLEMENU);
-		enableMenu = uifactory.addCheckboxesVertical("qti_enableMenu", "qti.form.menuenable", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		enableMenu.select("xx", CenableMenu == null ? true : CenableMenu);
-
-		menuRenderOptions = uifactory.addRadiosVertical("qti_form_menurenderoption", "qti.form.menurender", formLayout, menuRenderOptKeys, menuRenderOptValues);
-		menuRenderOptions.setVisible(displayMenu.isSelected(0));
-		Boolean renderSectionsOnly;
-		if (modConfig.get(IQEditController.CONFIG_KEY_RENDERMENUOPTION) == null) {
-			// migration
-			modConfig.set(IQEditController.CONFIG_KEY_RENDERMENUOPTION, Boolean.FALSE);
-			renderSectionsOnly = Boolean.FALSE;
-		} else {
-			renderSectionsOnly = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_RENDERMENUOPTION);
+			//</OLATCE-1012>
 		}
-		menuRenderOptions.select(renderSectionsOnly.toString(), true);
-
-		// sequence type
-		sequence = uifactory.addRadiosVertical("qti_form_sequence", "qti.form.sequence", formLayout, sequenceKeys, sequenceValues);
-		String confSequence = (String)modConfig.get(IQEditController.CONFIG_KEY_SEQUENCE);
-		if (confSequence == null) confSequence = AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM;
-		sequence.select(confSequence, true);
-
-
-		Boolean bDisplayQuestionTitle = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_QUESTIONTITLE);
-		boolean confDisplayQuestionTitle = (bDisplayQuestionTitle != null) ? bDisplayQuestionTitle.booleanValue() : true;
-		displayQuestionTitle = uifactory.addCheckboxesVertical("qti_displayQuestionTitle", "qti.form.questiontitle", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		displayQuestionTitle.select("xx", confDisplayQuestionTitle);
-
-		// question progress
-		Boolean bEnableQuestionProgress = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_QUESTIONPROGRESS);
-		boolean confEnableQuestionProgress = (bEnableQuestionProgress != null) ? bEnableQuestionProgress.booleanValue() : true;
-		displayQuestionProgress	= uifactory.addCheckboxesVertical("qti_enableQuestionProgress", "qti.form.questionprogress", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		displayQuestionProgress.select("xx", confEnableQuestionProgress);
-		displayQuestionProgress.setVisible(!isSurvey);
-
-		// score progress
-		Boolean bEnableScoreProgress = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_SCOREPROGRESS);
-		boolean confEnableScoreProgress = (bEnableScoreProgress != null) ? bEnableScoreProgress.booleanValue() : true;
-		displayScoreProgress = uifactory.addCheckboxesVertical("resultTitle", "qti.form.scoreprogress", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-
-		if (isAssessment || isSelfTest) {
-			displayScoreProgress.select("xx", confEnableScoreProgress);
-		} else {
-			displayScoreProgress.select("xx", false);
-			displayScoreProgress.setEnabled(false);
-			displayScoreProgress.setVisible(false);
+			//</OLATCE-1342>
 		}
 
-
-		// enable cancel
-		Boolean bEnableCancel = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_ENABLECANCEL);
-		boolean confEnableCancel = true;
-		if (bEnableCancel != null) {
-			// if defined use config value
-			confEnableCancel = bEnableCancel.booleanValue();
-		} else {
-			// undefined... migrate according to old behaviour
-			if (configKeyType != null && configKeyType.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS))
-				confEnableCancel = false;
-		}
-		enableCancel = uifactory.addCheckboxesVertical("qti_enableCancel", "qti.form.enablecancel", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		enableCancel.select("xx", confEnableCancel);
-
-		if (isSelfTest) {
-			enableCancel.select("xx", true);
-			enableCancel.setVisible(false);
-			enableCancel.setEnabled(false);
-		}
-
-		// enable suspend
-		Boolean bEnableSuspend = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_ENABLESUSPEND);
-		boolean confEnableSuspend = (bEnableSuspend != null) ? bEnableSuspend.booleanValue() : false;
-		enableSuspend = uifactory.addCheckboxesVertical("qti_enableSuspend", "qti.form.enablesuspend", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		enableSuspend.select("xx", confEnableSuspend);
-
-		uifactory.addSpacerElement("s2", formLayout, true);
-		
-		//Show score infos on start page
-		Boolean bEnableScoreInfos = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
-	  boolean enableScoreInfos = (bEnableScoreInfos != null) ? bEnableScoreInfos.booleanValue() : true;
-		scoreInfo = uifactory.addCheckboxesVertical("qti_scoreInfo", "qti.form.scoreinfo", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		scoreInfo.select("xx", enableScoreInfos);
-		if (isAssessment || isSelfTest) {
-			scoreInfo.select("xx", enableScoreInfos);
-			scoreInfo.addActionListener(this, FormEvent.ONCLICK);
-		} else {
-			// isSurvey
-			scoreInfo.setVisible(false);
-		}
-		// <OLATCE-380>
-		//end of "!isOnyx"
-		}
-		// </OLATCE-380>
-
-
-		//migration: check if old tests have no summary
-	  String configuredSummary = (String) modConfig.get(IQEditController.CONFIG_KEY_SUMMARY);
-	  boolean noSummary = configuredSummary!=null && configuredSummary.equals(AssessmentInstance.QMD_ENTRY_SUMMARY_NONE) ? true : false;
-
+		// migration: check if old tests have no summary
+		String configuredSummary = (String) modConfig.get(IQEditController.CONFIG_KEY_SUMMARY);
+		boolean noSummary = configuredSummary != null && configuredSummary.equals(AssessmentInstance.QMD_ENTRY_SUMMARY_NONE) ? true : false;
 
 		Boolean showResultOnHomePage = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		boolean confEnableShowResultOnHomePage = (showResultOnHomePage != null) ? showResultOnHomePage.booleanValue() : false;
 		confEnableShowResultOnHomePage = !noSummary && confEnableShowResultOnHomePage;
-		showResultsOnHomePage = uifactory.addCheckboxesVertical("qti_enableResultsOnHomePage", "qti.form.results.onhomepage", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		showResultsOnHomePage = uifactory.addCheckboxesVertical("qti_enableResultsOnHomePage", "qti.form.results.onhomepage", formLayout, new String[] { "xx" },
+				new String[] { null }, null, 1);
 		showResultsOnHomePage.select("xx", confEnableShowResultOnHomePage);
 		showResultsOnHomePage.addActionListener(this, FormEvent.ONCLICK);
 		showResultsOnHomePage.setVisible(!isSurvey);
@@ -417,7 +294,8 @@ public class IQEditForm extends FormBasicController {
 			showResultsDateDependent = showResultsActive.booleanValue();
 		}
 
-		showResultsDateDependentButton = uifactory.addCheckboxesVertical("qti_showresult", "qti.form.show.results", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		showResultsDateDependentButton = uifactory.addCheckboxesVertical("qti_showresult", "qti.form.show.results", formLayout, new String[] { "xx" },
+				new String[] { null }, null, 1);
 		if (isAssessment || isSelfTest) {
 			showResultsDateDependentButton.select("xx", showResultsDateDependent);
 			showResultsDateDependentButton.addActionListener(this, FormEvent.ONCLICK);
@@ -439,75 +317,22 @@ public class IQEditForm extends FormBasicController {
 		if (endDate != null) {
 			endDateElement.setDate(endDate);
 		}
-
-
-		// <OLATCE-380>
-		if (!isOnyx) {
-			Boolean showResultOnFinish = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
-			boolean confEnableShowResultOnFinish = (showResultOnFinish != null) ? showResultOnFinish.booleanValue() : true;
-			confEnableShowResultOnFinish = !noSummary && confEnableShowResultOnFinish;
-			showResultsAfterFinishTest = uifactory.addCheckboxesVertical("qti_enableResultsOnFinish", "qti.form.results.onfinish", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-			showResultsAfterFinishTest.select("xx", confEnableShowResultOnFinish);
-			showResultsAfterFinishTest.addActionListener(this, FormEvent.ONCLICK);
-		}
-		// </OLATCE-380>
-
-		String[] summaryKeys = new String[] {
-				AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT,
-				AssessmentInstance.QMD_ENTRY_SUMMARY_SECTION,
-				AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED
-		};
-
-		String[] summaryValues = new String[] {
-				translate("qti.form.summary.compact"),
-				translate("qti.form.summary.section"),
-				translate("qti.form.summary.detailed")
-		};
-
 		
-		if (!isOnyx) {
-		
-		summary = uifactory.addRadiosVertical("qti_form_summary", "qti.form.summary", formLayout, summaryKeys, summaryValues);
-		String confSummary = (String) modConfig.get(IQEditController.CONFIG_KEY_SUMMARY);
-		uifactory.addSpacerElement("spcSummary", formLayout, true);
-		if (confSummary == null || noSummary) {
-			confSummary = AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT;
-		}
-		if (isAssessment || isSelfTest) {
-			summary.select(confSummary, true);
-		} else {
-			summary.setEnabled(false);
-		}
-		
-		}
-		
-
-		uifactory.addSpacerElement("submitSpacer", formLayout, true);
 		uifactory.addFormSubmitButton("submit", formLayout);
 
 		update();
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		update();
 	}
 
 	private void update() {
-
-		
-		if (!isOnyx) {
-			enableMenu.setVisible(displayMenu.isSelected(0));
-			menuRenderOptions.setVisible(displayMenu.isSelected(0));
-			summary.setVisible(showResultsAfterFinishTest.isSelected(0) || showResultsOnHomePage.isSelected(0) );
-		}
-		
-
 		if (!limitAttempts.isSelected(0)) {
 			attempts.setIntValue(0);
 		}
-		attempts.setVisible(limitAttempts.isVisible()&&limitAttempts.isSelected(0));
+		attempts.setVisible(limitAttempts.isVisible() && limitAttempts.isSelected(0));
 		attempts.setMandatory(attempts.isVisible());
 		attempts.clearError();
 
@@ -517,107 +342,140 @@ public class IQEditForm extends FormBasicController {
 			startDateElement.setValue("");
 		}
 		startDateElement.clearError();
-		startDateElement.setVisible(
-				showResultsDateDependentButton.isVisible() &&
-				showResultsDateDependentButton.isSelected(0)
-		);
+		startDateElement.setVisible(showResultsDateDependentButton.isVisible() && showResultsDateDependentButton.isSelected(0));
 
 		endDateElement.clearError();
-		if (!endDateElement.isVisible()) endDateElement.setValue("");
+		if (!endDateElement.isVisible()) {
+			endDateElement.setValue("");
+		}
 		endDateElement.setVisible(startDateElement.isVisible());
 	}
-
 
 	/**
 	 * @return true: menu is enabled
 	 */
-	public boolean isEnableMenu() { return enableMenu.isSelected(0); }
+	public boolean isEnableMenu() {
+		return enableMenu.isSelected(0);
+	}
+
 	/**
 	 * @return true: menu should be displayed
 	 */
-	public boolean isDisplayMenu() { return displayMenu.isSelected(0); }
+	public boolean isDisplayMenu() {
+		return displayMenu.isSelected(0);
+	}
+
 	/**
 	 * @return true: score progress is enabled
 	 */
-	public boolean isDisplayScoreProgress() { return displayScoreProgress.isSelected(0); }
+	public boolean isDisplayScoreProgress() {
+		return displayScoreProgress.isSelected(0);
+	}
+
 	/**
 	 * @return true: score progress is enabled
 	 */
-	public boolean isDisplayQuestionProgress() { return displayQuestionProgress.isSelected(0); }
+	public boolean isDisplayQuestionProgress() {
+		return displayQuestionProgress.isSelected(0);
+	}
+
 	/**
 	 * @return true: question title is enabled
 	 */
-	public boolean isDisplayQuestionTitle() { return displayQuestionTitle.isSelected(0); }
+	public boolean isDisplayQuestionTitle() {
+		return displayQuestionTitle.isSelected(0);
+	}
+
 	/**
 	 * @return sequence configuration: section or item
 	 */
-	public String getSequence() { return sequence.getSelectedKey(); }
+	public String getSequence() {
+		return sequence.getSelectedKey();
+	}
+
 	/**
 	 * @return true: cancel is enabled
 	 */
-	public boolean isEnableCancel() { return enableCancel.isSelected(0); }
+	public boolean isEnableCancel() {
+		return enableCancel.isSelected(0);
+	}
+
 	/**
 	 * @return true: suspend is enabled
 	 */
-	public boolean isEnableSuspend() { return enableSuspend.isSelected(0); }
+	public boolean isEnableSuspend() {
+		return enableSuspend.isSelected(0);
+	}
+
 	/**
 	 * @return summary type: compact or detailed
 	 */
-	public String getSummary() { return summary.getSelectedKey();}
+	public String getSummary() {
+		return summary.getSelectedKey();
+	}
+
 	/**
 	 * @return number of max attempts
 	 */
 	public Integer getAttempts() {
-		Integer a =  attempts.getIntValue();
+		final Integer a = attempts.getIntValue();
 		return a == 0 ? null : attempts.getIntValue();
 	}
 
 	/**
-	 *
 	 * @return true if only section title should be rendered
 	 */
-	public Boolean isMenuRenderSectionsOnly() {	return Boolean.valueOf(menuRenderOptions.getSelectedKey());}
+	public Boolean isMenuRenderSectionsOnly() {
+		return Boolean.valueOf(menuRenderOptions.getSelectedKey());
+	}
+
 	/**
 	 * @return true: score-info on start-page is enabled
 	 */
-	public boolean isEnableScoreInfo() { return scoreInfo.isSelected(0); }
+	public boolean isEnableScoreInfo() {
+		return scoreInfo.isSelected(0);
+	}
 
 	/**
-	 *
 	 * @return true is the results are shown date dependent
 	 */
-	public boolean isShowResultsDateDependent() { return showResultsDateDependentButton.isSelected(0); }
+	public boolean isShowResultsDateDependent() {
+		return showResultsDateDependentButton.isSelected(0);
+	}
 
 	/**
-	 *
 	 * @return Returns the start date for the result visibility.
 	 */
-	public Date getShowResultsStartDate() { return startDateElement.getDate(); }
+	public Date getShowResultsStartDate() {
+		return startDateElement.getDate();
+	}
 
 	/**
-	 *
 	 * @return Returns the end date for the result visibility.
 	 */
-	public Date getShowResultsEndDate() { return endDateElement.getDate(); }
+	public Date getShowResultsEndDate() {
+		return endDateElement.getDate();
+	}
 
 	/**
-	 *
 	 * @return Returns true if the results are shown after test finished.
 	 */
-	public boolean isShowResultsAfterFinishTest() { return showResultsAfterFinishTest.isSelected(0); }
+	public boolean isShowResultsAfterFinishTest() {
+		return showResultsAfterFinishTest.isSelected(0);
+	}
 
 	/**
-	 *
 	 * @return Returns true if the results are shown on the test home page.
 	 */
-	public boolean isShowResultsOnHomePage() { return showResultsOnHomePage.isSelected(0); }
+	public boolean isShowResultsOnHomePage() {
+		return showResultsOnHomePage.isSelected(0);
+	}
 
-	
 	/**
 	 * @return Returns the points needes to pass an onyx test.
 	 */
 	public Integer getCutValue() {
-		Scanner cutValueScanner = new Scanner(cutValue.getValue());
+		final Scanner cutValueScanner = new Scanner(cutValue.getValue());
 		if (cutValueScanner.hasNextInt()) {
 			return new Integer(cutValueScanner.nextInt());
 		} else {
@@ -631,7 +489,6 @@ public class IQEditForm extends FormBasicController {
 	public String getTemplate() {
 		return template.getSelectedKey();
 	}
-	
 
 	@Override
 	protected void doDispose() {
@@ -647,6 +504,16 @@ public class IQEditForm extends FormBasicController {
 		return allow;
 	}
 	//</OLATCE-982>
+
+	//<OLATCE-2009>
+	public boolean allowSuspension() {
+		boolean allow = false;
+		if (allowSuspensionBox != null && allowSuspensionBox.isVisible()) {
+			allow = allowSuspensionBox.isAtLeastSelected(1);
+		}
+		return allow;
+	}
+	//</OLATCE-2009>
 	
 }
 

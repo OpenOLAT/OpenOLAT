@@ -114,7 +114,7 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @param repositoryRef
 	 * @return List of QTIResult objects
 	 */
-	public List selectResults(Long olatResource, String olatResourceDetail, Long repositoryRef, int type) {
+	public List<QTIResult> selectResults(Long olatResource, String olatResourceDetail, Long repositoryRef, int type) {
 		Long olatRes = olatResource;
 		String olatResDet = olatResourceDetail;
 		Long repRef = repositoryRef;

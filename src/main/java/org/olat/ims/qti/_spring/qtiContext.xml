@@ -5,39 +5,26 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<bean id="qtiModule" class="org.olat.ims.qti.QTIModule" depends-on="database" >
-	<property name="qtiRepositoryHandlers">
-		<list>
-			<ref bean="QTITestHandler${assessmentplugin.activate}" />
-			<ref bean="QTISurveyHandler${assessmentplugin.activate}" /> 
-		</list>
-	</property>
+	<bean id="qtiModule" class="org.olat.ims.qti.QTIModule" depends-on="database" >
+		<property name="qtiRepositoryHandlers">
+			<list>
+				<ref bean="QTITestHandler" />
+				<ref bean="QTISurveyHandler" /> 
+			</list>
+		</property>
+		<property name="persistedProperties">
+		  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+		    <constructor-arg index="0" ref="coordinatorManager"/>
+		    <constructor-arg index="1" ref="qtiModule" />
+		  </bean>
+		</property>
+	</bean>
 	
-	<property name="persistedProperties">
-	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-	    <constructor-arg index="0" ref="coordinatorManager"/>
-	    <constructor-arg index="1" ref="qtiModule" />
-	  </bean>
-	</property>
-</bean>
-<!-- The Handlers which are registered by the QTIMOdule at the repository -->
-<bean id="QTITestHandlerOlat" class="org.olat.ims.qti.repository.handlers.QTITestHandler"></bean>
-<bean id="QTISurveyHandlerOlat" class="org.olat.ims.qti.repository.handlers.QTISurveyHandler"></bean>
+	<!-- The Handlers which are registered by the QTIMOdule at the repository -->
+	<bean id="QTITestHandler" class="org.olat.ims.qti.repository.handlers.QTITestHandler"></bean>
+	<bean id="QTISurveyHandler" class="org.olat.ims.qti.repository.handlers.QTISurveyHandler"></bean>
 
-<!--  The validators for detecting qti conformant files -->
-<bean class="org.olat.ims.qti.fileresource.SurveyFileResource" >
-	<property name="validator" ref="SurveyValidator${assessmentplugin.activate}" />
-</bean>
-<bean id="SurveyValidatorOlat" class="org.olat.ims.qti.fileresource.SurveyFileResourceValidator" />
-
-<bean class="org.olat.ims.qti.fileresource.TestFileResource" >
-	<property name="validator" ref="TestValidator${assessmentplugin.activate}" />
-</bean>
-<bean id="TestValidatorOlat" class="org.olat.ims.qti.fileresource.TestFileResourceValidator" />
-
-
-
-<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="targetObject" ref="qtiModule" />
         <property name="targetMethod" value="init" />
         <property name="arguments">
@@ -46,7 +33,7 @@
 					validating=false
          			</value>
          </property>
-</bean>
+	</bean>
 		
 	<bean id="qtiResultManager" class="org.olat.ims.qti.QTIResultManager"/>
 
