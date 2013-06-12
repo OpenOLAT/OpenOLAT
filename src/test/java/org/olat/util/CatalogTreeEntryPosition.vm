@@ -17,7 +17,7 @@ if(document.querySelector){
         var current = selection.snapshotItem(i);
         
         if(current != null){
-        	var itemSelector = "(" + selector + ")[" + (i) + "]//div[contains(@class, 'b_selectiontree_content') and text()='" + item[j] + "']";
+        	var itemSelector = "(" + selector + ")[" + (i + 1) + "]//div[contains(@class, 'b_selectiontree_content') and text()='" + item[j] + "']";
         	var itemSelection = window.document.evaluate(itemSelector, window.document.body, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         
         	if(itemSelection != null && itemSelection.snapshotLength > 0){
@@ -26,7 +26,7 @@ if(document.querySelector){
         }
     }
     
-    offset = (i / 2) - (item.length - 1);
+    offset = ((i - 1) / 2) - (item.length - 1);
 }
 
 offset;
