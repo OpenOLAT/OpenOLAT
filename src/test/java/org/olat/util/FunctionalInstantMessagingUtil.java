@@ -42,6 +42,15 @@ public class FunctionalInstantMessagingUtil {
 	public final static String INSTANT_MESSAGING_GROUP_CSS = "o_instantmessaging_groupname";
 	public final static String INSTANT_MESSAGING_AVAILABLE_CSS = "o_instantmessaging_available_icon";
 	
+	public final static String INSTANT_MESSAGING_CHAT_CSS = "o_instantmessaging_chat";
+	public final static String INSTANT_MESSAGING_BODY_CSS = "o_instantmessaging_body";
+	
+	public enum UserStatus{
+		AVAILABLE,
+		BUSY,
+		OFFLINE,
+	}
+	
 	private String instantMessagingClientSummaryCss;
 	
 	private String instantMessagingRosterCss;
@@ -52,6 +61,9 @@ public class FunctionalInstantMessagingUtil {
 	
 	private String instantMessagingGroupCss;
 	private String instantMessagingAvailableCss;
+	
+	private String instantMessagingChatCss;
+	private String instantMessagingBodyCss;
 	
 	private FunctionalUtil functionalUtil;
 	
@@ -66,7 +78,11 @@ public class FunctionalInstantMessagingUtil {
 		setInstantMessagingShowGroupsCss(INSTANT_MESSAGING_SHOW_GROUPS_CSS);
 		setInstantMessagingHideGroupsCss(INSTANT_MESSAGING_HIDE_GROUPS_CSS);
 		
+		setInstantMessagingGroupCss(INSTANT_MESSAGING_GROUP_CSS);
 		setInstantMessagingAvailableCss(INSTANT_MESSAGING_AVAILABLE_CSS);
+		
+		setInstantMessagingChatCss(INSTANT_MESSAGING_CHAT_CSS);
+		setInstantMessagingBodyCss(INSTANT_MESSAGING_BODY_CSS);
 	}
 	
 	/**
@@ -190,21 +206,31 @@ public class FunctionalInstantMessagingUtil {
 		return(true);
 	}
 	
+	public List<String> findOnlineContacts(Selenium browser){
+		return(findContacts(browser, false));
+	}
+	
+	public List<String> findOfflineContacts(Selenium browser){
+		return(findContacts(browser, true));
+	}
+	
 	/**
-	 * Finds the offline contacts by parsing roster data.
+	 * Finds the offline as well online contacts by parsing roster data.
 	 * 
 	 * @param browser
 	 * @return A List containing contact names.
 	 */
-	public List<String> findOfflineContacts(Selenium browser){
+	public List<String> findContacts(Selenium browser, boolean includeOfflineContacts){
 		if(!openRoster(browser)){
 			return(null);
 		}
 		
-		if(!openOfflineContacts(browser)){
-			return(null);
+		if(includeOfflineContacts){
+			if(!openOfflineContacts(browser)){
+				return(null);
+			}
 		}
-
+		
 		functionalUtil.idle(browser);
 		
 		List<String> contacts = new ArrayList<String>();
@@ -226,7 +252,7 @@ public class FunctionalInstantMessagingUtil {
 			.append(i + 1)
 			.append("]//span");
 			
-			contacts.add(browser.getText(selectorBuffer.toString()));
+			contacts.add(browser.getText(selectorBuffer.toString()).substring(1));
 		}
 		
 		return(contacts);
@@ -274,48 +300,176 @@ public class FunctionalInstantMessagingUtil {
 		return(groups);
 	}
 	
-	public boolean openUserChat(Selenium browser, String userName){
-		if(!openRoster(browser)){
-			return(false);
-		}
+	/**
+	 * Retrieve status information of the given user.
+	 * 
+	 * @param browser
+	 * @param firstname
+	 * @param surname
+	 * @return
+	 */
+	public UserStatus retrieveUserStatus(Selenium browser, String firstname, String surname){
 		
+		//TODO:JK: implement me
+		
+		return(null);
+	}
+	
+	/**
+	 * Change your very own status.
+	 * 
+	 * @param browser
+	 * @param status
+	 * @return
+	 */
+	public boolean changeStatus(Selenium browser, UserStatus status){
+
 		//TODO:JK: implement me
 		
 		return(false);
 	}
 	
+	/**
+	 * Opens a chat window with the given user.
+	 * 
+	 * @param browser
+	 * @param firstname
+	 * @param surname
+	 * @return
+	 */
+	public boolean openUserChat(Selenium browser, String firstname, String surname){
+		if(!openRoster(browser)){
+			return(false);
+		}
+		
+		functionalUtil.idle(browser);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		selectorBuffer.append("xpath=//ul//li//a[contains(@class, '")
+		.append(getInstantMessagingAvailableCss())
+		.append("')]//span[text()=' ")
+		.append(surname)
+		.append(", ")
+		.append(firstname)
+		.append("']");
+		
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * Opens a chat window with the given group.
+	 * 
+	 * @param browser
+	 * @param groupName
+	 * @return
+	 */
 	public boolean openGroupChat(Selenium browser, String groupName){
 		if(!openRoster(browser)){
 			return(false);
 		}
 		
-		//TODO:JK: implement me
+		functionalUtil.idle(browser);
 		
-		return(false);
+		StringBuffer selectorBuffer = new StringBuffer();
+		selectorBuffer.append("xpath=//ul//li//div[contains(@class, '")
+		.append(getInstantMessagingGroupCss())
+		.append("') and text()='")
+		.append(groupName)
+		.append("']");
+		
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
 	}
 	
-	public boolean sendMessageToUser(Selenium browser, String userName, String message){
+	/**
+	 * Sends a message to the given user.
+	 * 
+	 * @param browser
+	 * @param firstname
+	 * @param surname
+	 * @param message
+	 * @return
+	 */
+	public boolean sendMessageToUser(Selenium browser, String firstname, String surname, String message){
+		if(message == null){
+			return(true);
+		}
+		
 		if(!openRoster(browser)){
 			return(false);
 		}
 		
-		//TODO:JK: implement me
+		if(!openUserChat(browser, firstname, surname)){
+			return(false);
+		}
+
+		functionalUtil.idle(browser);
 		
-		/* using roster failed, so let's try visiting card */
+		StringBuffer selectorBuffer = new StringBuffer();
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getInstantMessagingChatCss())
+		.append("')]//input[@type='text']");
 		
-		return(false);
+		browser.type(selectorBuffer.toString(), message);
+		
+		return(true);
 	}
 	
+	/**
+	 * Sends a message to the given group.
+	 * 
+	 * @param browser
+	 * @param groupName
+	 * @param message
+	 * @return
+	 */
 	public boolean sendMessageToGroup(Selenium browser, String groupName, String message){
+		if(message == null){
+			return(true);
+		}
+		
 		if(!openRoster(browser)){
 			return(false);
 		}
 		
-		//TODO:JK: implement me
+		if(!openGroupChat(browser, groupName)){
+			return(false);
+		}
+
+		functionalUtil.idle(browser);
 		
-		return(false);	
+		StringBuffer selectorBuffer = new StringBuffer();
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getInstantMessagingChatCss())
+		.append("')]//input[@type='text']");
+		
+		browser.type(selectorBuffer.toString(), message);
+		
+		return(true);	
 	}
 
+	public boolean waitForPageToLoadMessage(Selenium browser, String message){
+		if(message == null){
+			return(true);
+		}
+		
+		functionalUtil.idle(browser);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getInstantMessagingChatCss())
+		.append("')]//div[contains(@class, '")
+		.append(getInstantMessagingBodyCss())
+		.append("') and contains(text(), '")
+		.append(message)
+		.append("')]");
+		
+		return(functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString()));
+	}
+	
 	public String getInstantMessagingClientSummaryCss() {
 		return instantMessagingClientSummaryCss;
 	}
@@ -383,6 +537,22 @@ public class FunctionalInstantMessagingUtil {
 
 	public void setInstantMessagingAvailableCss(String instantMessagingAvailableCss) {
 		this.instantMessagingAvailableCss = instantMessagingAvailableCss;
+	}
+
+	public String getInstantMessagingChatCss() {
+		return instantMessagingChatCss;
+	}
+
+	public void setInstantMessagingChatCss(String instantMessagingChatCss) {
+		this.instantMessagingChatCss = instantMessagingChatCss;
+	}
+
+	public String getInstantMessagingBodyCss() {
+		return instantMessagingBodyCss;
+	}
+
+	public void setInstantMessagingBodyCss(String instantMessagingBodyCss) {
+		this.instantMessagingBodyCss = instantMessagingBodyCss;
 	}
 
 	public FunctionalUtil getFunctionalUtil() {

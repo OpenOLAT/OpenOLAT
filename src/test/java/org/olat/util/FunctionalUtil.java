@@ -636,6 +636,24 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Retrieve the user count who currently are logged in by parsing openolat footer.
+	 * 
+	 * @param browser
+	 * @return
+	 */
+	public int retrieveUserCount(Selenium browser){
+		idle(browser);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		selectorBuffer.append("xpath=//span[@id='b_counter span']//span");
+		
+		String str = browser.getText(selectorBuffer.toString());
+		str = str.substring(1);
+		
+		return(Integer.valueOf(str));
+	}
+	
+	/**
 	 * Find CSS mapping for specific olat site.
 	 * 
 	 * @param site

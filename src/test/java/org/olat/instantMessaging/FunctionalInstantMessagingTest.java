@@ -22,12 +22,12 @@ package org.olat.instantMessaging;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -41,6 +41,8 @@ import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.restapi.support.vo.GroupVO;
+import org.olat.util.FunctionalGroupsSiteUtil;
+import org.olat.util.FunctionalGroupsSiteUtil.MembersConfiguration;
 import org.olat.util.FunctionalInstantMessagingUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
@@ -59,19 +61,15 @@ import com.thoughtworks.selenium.Selenium;
 @RunWith(Arquillian.class)
 public class FunctionalInstantMessagingTest {
 	
-	public final static String GROUP_CHAT_TUTOR0 = "tutor0";
-	public final static String GROUP_CHAT_PARTICIPANT0 = "participant0";
-	public final static String GROUP_CHAT_PARTICIPANT1 = "participant1";
-	public final static String GROUP_CHAT_PARTICIPANT2 = "participant2";
-	public final static Map<String,String> GROUP_CHAT_DIALOG = new HashMap<String,String>();
-	
-	static{
-		int count = 0;
-		
-		GROUP_CHAT_DIALOG.put(GROUP_CHAT_PARTICIPANT0 + "#" + count++, "hello world!");
-		GROUP_CHAT_DIALOG.put(GROUP_CHAT_PARTICIPANT1 + "#" + count++, "clear sky.");
-	}
-	
+	public final static List<Dialog> GROUP_CHAT_DIALOG = new ArrayList<Dialog>();
+	public final static String[] GROUP_CHAT_MESSAGE = new String[]{
+		null,
+		null,
+		null,
+		"Hello world!",
+		"Clear sky.",
+	};
+
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		return ArquillianDeployments.createDeployment();
@@ -81,6 +79,7 @@ public class FunctionalInstantMessagingTest {
 	URL deploymentUrl;
 
 	static FunctionalUtil functionalUtil;
+	static FunctionalGroupsSiteUtil functionalGroupsSiteUtil;
 	static FunctionalInstantMessagingUtil functionalInstantMessagingUtil;
 
 	static FunctionalVOUtil functionalVOUtil;
@@ -92,6 +91,7 @@ public class FunctionalInstantMessagingTest {
 		if(!initialized){
 			functionalUtil = new FunctionalUtil();
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
+			functionalGroupsSiteUtil = new FunctionalGroupsSiteUtil(functionalUtil);
 			functionalInstantMessagingUtil = new FunctionalInstantMessagingUtil(functionalUtil);
 			
 			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
@@ -132,36 +132,331 @@ public class FunctionalInstantMessagingTest {
 		/*
 		 * Content
 		 */
-		/* login */
-		Assert.assertTrue(functionalUtil.login(tutor0, tutor.get(0).getLogin(), tutor.get(0).getPassword(), true));
+		functionalUtil.login(tutor0, tutor.get(0).getLogin(), tutor.get(0).getPassword(), true);
 		
-		Assert.assertTrue(functionalUtil.login(student0, user.get(0).getLogin(), user.get(0).getPassword(), true));
+		/* message #0 */
+		Dialog dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[0]);
+		Dialog.Action action = dialog.new LoginAction(user.get(0));
+		dialog.getPreProcessor().add(action);
+		action = dialog.new OnlineContactsAction(0);
+		dialog.getPreProcessor().add(action);
+		action = dialog.new OfflineContactsAction(0);
+		dialog.getPreProcessor().add(action);
+		action = dialog.new UsersAction(0);
+		dialog.getPreProcessor().add(action);
+		action = dialog.new LogoutAction();
+		GROUP_CHAT_DIALOG.add(dialog);
 		
-		/* open roaster */
+		/* message #1 */
+		dialog = new Dialog(student1, group.get(0), GROUP_CHAT_MESSAGE[1]);
+		action = dialog.new ModifySettingsAction(tutor0, new FunctionalGroupsSiteUtil.MembersConfiguration[]{
+				MembersConfiguration.CAN_SEE_COACHES,
+		});
+		dialog.getPreProcessor().add(action);
+		action = dialog.new LoginAction(user.get(0));
+		dialog.getPreProcessor().add(action);
+		action = dialog.new OnlineContactsAction(1);
+		dialog.getPreProcessor().add(action);
+		action = dialog.new CheckUserAction(tutor.get(0).getFirstName(), tutor.get(0).getLastName());
+		dialog.getPreProcessor().add(action);
+		action = dialog.new OfflineContactsAction(0);
+		dialog.getPreProcessor().add(action);
+		action = dialog.new LogoutAction();
+		GROUP_CHAT_DIALOG.add(dialog);
 		
+		/* message #2 */
+		dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[2]);
+		//TODO:JK implement me
 		
-		/* modify visibility settings in group */
+		/* message #3 */
+		dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[3]);
+		//TODO:JK implement me
 		
+		/* message #4 */
+		dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[4]);
+		action = dialog.new OnlineContactsAction(0);
+		dialog.getPreProcessor().add(action);
+		GROUP_CHAT_DIALOG.add(dialog);
+
+		//TODO:JK implement me
 		
-		/* login */
-		Assert.assertTrue(functionalUtil.login(student1, user.get(1).getLogin(), user.get(1).getPassword(), true));
-		Assert.assertTrue(functionalUtil.login(student2, user.get(2).getLogin(), user.get(2).getPassword(), true));
+		/* chat */
+		for(Dialog current: GROUP_CHAT_DIALOG){
+			Assert.assertTrue(current.chat());
+		}
+	}
+	
+	public class Dialog{
+		private Selenium browser;
 		
-		/* dialog */
-		String[] keys = (String[]) GROUP_CHAT_DIALOG.keySet().toArray();
+		private Object conversationPartner;
 		
-		for(int i = 0; i < GROUP_CHAT_DIALOG.size(); i++){
-			String current = GROUP_CHAT_DIALOG.get(keys[i]);
+		private String message;
+		
+		private List<Action> preProcessor = new ArrayList<Action>();
+		private List<Action> postProcessor = new ArrayList<Action>();
+	
+		public Dialog(Selenium browser, Object conversationPartner, String message){
+			this.browser = browser;
+			this.conversationPartner = conversationPartner;
+			this.message = message;
+		}
+		
+		public boolean performPreProcessing(){
+			for(Action current: preProcessor){
+				if(!current.process(this)){
+					return(false);
+				}
+			}
 			
-			if(keys[i].startsWith(GROUP_CHAT_TUTOR0)){
-				//nothing to be done, here.
-			}else if(keys[i].startsWith(GROUP_CHAT_PARTICIPANT0)){
-				functionalInstantMessagingUtil.sendMessageToGroup(student0, group.get(0).getName(), current);
-			}else if(keys[i].startsWith(GROUP_CHAT_PARTICIPANT1)){
-				functionalInstantMessagingUtil.sendMessageToGroup(student1, group.get(0).getName(), current);
-			}else if(keys[i].startsWith(GROUP_CHAT_PARTICIPANT2)){
-				//nothing to be done, here.
+			return(true);
+		}
+		
+		public boolean performPostProcessing(){
+			for(Action current: postProcessor){
+				if(!current.process(this)){
+					return(false);
+				}
+			}
+			
+			return(true);
+		}
+		
+		public boolean chat(){
+			if(!performPreProcessing()){
+				return(false);
+			}
+			
+			if(conversationPartner instanceof UserVO){
+				if(!functionalInstantMessagingUtil.sendMessageToUser(browser,
+						((UserVO) conversationPartner).getFirstName(), ((UserVO) conversationPartner).getLastName(),
+						message)){
+					return(false);
+				}
+			}else if(conversationPartner instanceof GroupVO){
+				if(!functionalInstantMessagingUtil.sendMessageToGroup(browser,
+						((GroupVO) conversationPartner).getName(),
+						message)){
+					return(false);
+				}
+			}
+			
+			if(performPostProcessing()){
+				return(false);
+			}
+			
+			return(true);
+		}
+		
+		public Selenium getBrowser() {
+			return browser;
+		}
+
+		public void setBrowser(Selenium browser) {
+			this.browser = browser;
+		}
+
+		public Object getConversationPartner() {
+			return conversationPartner;
+		}
+
+		public void setConversationPartner(Object conversationPartner) {
+			this.conversationPartner = conversationPartner;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public void setMessage(String message) {
+			this.message = message;
+		}
+
+		public List<Action> getPreProcessor() {
+			return preProcessor;
+		}
+
+		public void setPreProcessor(List<Action> preProcessor) {
+			this.preProcessor = preProcessor;
+		}
+
+		public List<Action> getPostProcessor() {
+			return postProcessor;
+		}
+
+		public void setPostProcessor(List<Action> postProcessor) {
+			this.postProcessor = postProcessor;
+		}
+
+		public abstract class Action{
+			public abstract boolean process(Dialog dialog);
+		}
+		
+		public class UsersAction extends Action{
+			private int count;
+			
+			public UsersAction(int count){
+				this.count = count;
+			}
+			
+			@Override
+			public boolean process(Dialog dialog) {
+				int users = functionalInstantMessagingUtil.onlineContactCount(getBrowser());
+				
+				if(users == count){
+					return(true);
+				}else{
+					return(false);
+				}
+			}
+		}
+		
+		public class LoginAction extends Action {
+			private UserVO user;
+			
+			public LoginAction(UserVO user){
+				this.user = user;
+			}
+			
+			@Override
+			public boolean process(Dialog dialog) {
+				if(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true)){
+					return(true);
+				}else{
+					return(false);
+				}
+			}
+			
+		}
+		
+		public class LogoutAction extends Action {
+			public LogoutAction(){
+			}
+			
+			@Override
+			public boolean process(Dialog dialog) {
+				if(functionalUtil.logout(browser)){
+					return(true);
+				}else{
+					return(false);
+				}
+			}
+			
+		}
+		
+		public class AvailableUsersAction extends Action{
+			private int count;
+			
+			public AvailableUsersAction(int count){
+				this.count = count;
+			}
+			
+			@Override
+			public boolean process(Dialog dialog) {
+				int users = functionalInstantMessagingUtil.onlineContactCount(browser);
+				
+				if(users == count){
+					return(true);
+				}else{
+					return(false);
+				}
+			}
+		}
+		
+		public class OnlineContactsAction extends Action{
+			private int count;
+			
+			public OnlineContactsAction(int count){
+				this.count = count;
+			}
+			
+			@Override
+			public boolean process(Dialog dialog) {
+				int users = functionalUtil.retrieveUserCount(browser);
+				
+				if(users == count){
+					return(true);
+				}else{
+					return(false);
+				}
+			}
+		}
+		
+		public class OfflineContactsAction extends Action{
+			private int count;
+			
+			public OfflineContactsAction(int count){
+				this.count = count;
+			}
+			
+			@Override
+			public boolean process(Dialog dialog) {
+				List<String> contacts = functionalInstantMessagingUtil.findOfflineContacts(browser);
+				
+				if(contacts.size() == count){
+					return(true);
+				}else{
+					return(false);
+				}
+			}
+		}
+		
+		public class VerifyMessageAction extends Action {
+			String message[];
+
+			public VerifyMessageAction(String message[]){
+				this.message = message;
+			}
+			
+			@Override
+			public boolean process(Dialog dialog) {
+				for(String current: message){
+					if(!functionalInstantMessagingUtil.waitForPageToLoadMessage(browser, current)){
+						return(false);
+					}
+				}
+				
+				return(true);
+			}
+		}
+		
+		public class ModifySettingsAction extends Action {
+			private Selenium tutor;
+			private FunctionalGroupsSiteUtil.MembersConfiguration[] config;
+			
+			public ModifySettingsAction(Selenium tutor, FunctionalGroupsSiteUtil.MembersConfiguration[] config){
+				this.tutor = tutor;
+				this.config = config;
+			}
+			
+			@Override
+			public boolean process(Dialog dialog) {
+				functionalGroupsSiteUtil.applyMembersConfiguration(tutor, config);
+				
+				return(true);
+			}
+		}
+		
+		public class CheckUserAction extends Action {
+			private String firstname;
+			private String surname;
+			
+			public CheckUserAction(String firstname, String surname){
+				this.firstname = firstname;
+				this.surname = surname;
+			}
+			
+			@Override
+			public boolean process(Dialog dialog) {
+				String name = surname + ", " + firstname;
+				
+				if(ArrayUtils.contains(functionalInstantMessagingUtil.findOnlineContacts(browser).toArray(), name)){
+					return(true);
+				}else{
+					return(false);
+				}
 			}
 		}
 	}
 }
+
