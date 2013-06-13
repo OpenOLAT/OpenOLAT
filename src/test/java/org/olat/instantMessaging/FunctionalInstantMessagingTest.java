@@ -68,6 +68,7 @@ public class FunctionalInstantMessagingTest {
 		null,
 		"Hello world!",
 		"Clear sky.",
+		null,
 	};
 
 	@Deployment(testable = false)
@@ -99,8 +100,7 @@ public class FunctionalInstantMessagingTest {
 			initialized = true;
 		}
 	}
-
-	@Ignore
+	
 	@Test
 	@RunAsClient
 	public void checkGroupChat(@Tutor1 Selenium tutor0, @Student1 Selenium student0, @Student2 Selenium student1, @Student3 Selenium student2)
@@ -136,51 +136,118 @@ public class FunctionalInstantMessagingTest {
 		
 		/* message #0 */
 		Dialog dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[0]);
+		
 		Dialog.Action action = dialog.new LoginAction(user.get(0));
 		dialog.getPreProcessor().add(action);
+		
 		action = dialog.new OnlineContactsAction(0);
 		dialog.getPreProcessor().add(action);
+		
 		action = dialog.new OfflineContactsAction(0);
 		dialog.getPreProcessor().add(action);
+		
 		action = dialog.new UsersAction(0);
 		dialog.getPreProcessor().add(action);
+		
 		action = dialog.new LogoutAction();
+		dialog.getPreProcessor().add(action);
+		
 		GROUP_CHAT_DIALOG.add(dialog);
 		
 		/* message #1 */
-		dialog = new Dialog(student1, group.get(0), GROUP_CHAT_MESSAGE[1]);
+		dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[1]);
+		
 		action = dialog.new ModifySettingsAction(tutor0, new FunctionalGroupsSiteUtil.MembersConfiguration[]{
 				MembersConfiguration.CAN_SEE_COACHES,
 		});
 		dialog.getPreProcessor().add(action);
+		
 		action = dialog.new LoginAction(user.get(0));
 		dialog.getPreProcessor().add(action);
+		
 		action = dialog.new OnlineContactsAction(1);
 		dialog.getPreProcessor().add(action);
-		action = dialog.new CheckUserAction(tutor.get(0).getFirstName(), tutor.get(0).getLastName());
+		
+		action = dialog.new CheckUserAction(tutor.get(0).getFirstName(), tutor.get(0).getLastName(), true, false);
 		dialog.getPreProcessor().add(action);
+		
 		action = dialog.new OfflineContactsAction(0);
 		dialog.getPreProcessor().add(action);
+		
 		action = dialog.new LogoutAction();
+		dialog.getPreProcessor().add(action);
+		
 		GROUP_CHAT_DIALOG.add(dialog);
 		
 		/* message #2 */
 		dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[2]);
-		//TODO:JK implement me
+		
+		action = dialog.new ModifySettingsAction(tutor0, new FunctionalGroupsSiteUtil.MembersConfiguration[]{
+				MembersConfiguration.CAN_SEE_COACHES,
+				MembersConfiguration.CAN_SEE_PARTICIPANTS,
+		});
+		dialog.getPreProcessor().add(action);
+
+		action = dialog.new LoginAction(user.get(0));
+		dialog.getPreProcessor().add(action);
+
+		action = dialog.new OnlineContactsAction(1);
+		dialog.getPreProcessor().add(action);
+		
+		action = dialog.new CheckUserAction(tutor.get(0).getFirstName(), tutor.get(0).getLastName(), true, false);
+		dialog.getPreProcessor().add(action);
+		
+		action = dialog.new CheckUserAction(user.get(1).getFirstName(), user.get(1).getLastName(), false, true);
+		dialog.getPreProcessor().add(action);
+		
+		action = dialog.new CheckUserAction(user.get(2).getFirstName(), user.get(2).getLastName(), false, true);
+		dialog.getPreProcessor().add(action);
+		
+		GROUP_CHAT_DIALOG.add(dialog);
 		
 		/* message #3 */
-		dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[3]);
-		//TODO:JK implement me
+		dialog = new Dialog(student1, group.get(0), GROUP_CHAT_MESSAGE[3]);
+		
+		action = dialog.new LoginAction(user.get(1));
+		dialog.getPreProcessor().add(action);
+		
+		action = dialog.new OnlineContactsAction(2);
+		dialog.getPreProcessor().add(action);
+
+		action = dialog.new CheckUserAction(tutor.get(0).getFirstName(), tutor.get(0).getLastName(), true, false);
+		dialog.getPreProcessor().add(action);
+		
+		action = dialog.new CheckUserAction(user.get(0).getFirstName(), user.get(0).getLastName(), true, false);
+		dialog.getPreProcessor().add(action);
+		
+		action = dialog.new VerifyMessageAction(new String[]{
+				GROUP_CHAT_MESSAGE[3],
+		});
+		dialog.getPostProcessor().add(action);
+
+		GROUP_CHAT_DIALOG.add(dialog);
 		
 		/* message #4 */
-		dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[4]);
-		action = dialog.new OnlineContactsAction(0);
-		dialog.getPreProcessor().add(action);
+		dialog = new Dialog(student0, user.get(2), GROUP_CHAT_MESSAGE[4]);
+
 		GROUP_CHAT_DIALOG.add(dialog);
 
-		//TODO:JK implement me
+		/* message #5 */
+		dialog = new Dialog(student2, group.get(0), GROUP_CHAT_MESSAGE[5]);
+
+		action = dialog.new LoginAction(user.get(2));
+		dialog.getPreProcessor().add(action);
+
+		action = dialog.new VerifyMessageAction(new String[]{
+				GROUP_CHAT_MESSAGE[4],
+		});
+		dialog.getPostProcessor().add(action);
+
+		GROUP_CHAT_DIALOG.add(dialog);
 		
-		/* chat */
+		/*
+		 * chat - run the dialogs with its pre and post processors
+		 */
 		for(Dialog current: GROUP_CHAT_DIALOG){
 			Assert.assertTrue(current.chat());
 		}
@@ -440,17 +507,25 @@ public class FunctionalInstantMessagingTest {
 		public class CheckUserAction extends Action {
 			private String firstname;
 			private String surname;
+			private boolean onlineContacts;
+			private boolean offlineContacts;
 			
-			public CheckUserAction(String firstname, String surname){
+			public CheckUserAction(String firstname, String surname, boolean onlineContacts, boolean offlineContacts){
 				this.firstname = firstname;
 				this.surname = surname;
+				this.onlineContacts = onlineContacts;
+				this.offlineContacts = offlineContacts;
 			}
 			
 			@Override
 			public boolean process(Dialog dialog) {
 				String name = surname + ", " + firstname;
 				
-				if(ArrayUtils.contains(functionalInstantMessagingUtil.findOnlineContacts(browser).toArray(), name)){
+				boolean isOnline = ArrayUtils.contains(functionalInstantMessagingUtil.findOnlineContacts(browser).toArray(), name);
+				boolean isOffline = ArrayUtils.contains(functionalInstantMessagingUtil.findOfflineContacts(browser).toArray(), name);
+				
+				if((onlineContacts && isOnline) ||
+						(offlineContacts && isOffline)){
 					return(true);
 				}else{
 					return(false);
