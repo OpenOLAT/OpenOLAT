@@ -642,13 +642,11 @@ public class FunctionalUtil {
 	 * @return
 	 */
 	public int retrieveUserCount(Selenium browser){
-		idle(browser);
-		
 		StringBuffer selectorBuffer = new StringBuffer();
-		selectorBuffer.append("xpath=//span[@id='b_counter span']//span");
+		selectorBuffer.append("xpath=//span[@id='b_counter']//span");
 		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		String str = browser.getText(selectorBuffer.toString());
-		str = str.substring(1);
 		
 		return(Integer.valueOf(str));
 	}

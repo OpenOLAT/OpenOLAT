@@ -92,14 +92,13 @@ public class FunctionalInstantMessagingUtil {
 	 * @return The count of online contacts.
 	 */
 	public int onlineContactCount(Selenium browser){
-		functionalUtil.idle(browser);
-		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
+		selectorBuffer.append("xpath=//li[@id='")
 		.append(getInstantMessagingClientSummaryCss())
-		.append("')]//a//span");
-		
+		.append("']//a//span");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		String summary = browser.getText(selectorBuffer.toString());
 		
 		Matcher matcher = CONTACT_COUNT_PATTERN.matcher(summary);
@@ -116,14 +115,13 @@ public class FunctionalInstantMessagingUtil {
 	 * @return The count of available contacts.
 	 */
 	public int availableContactCount(Selenium browser){
-		functionalUtil.idle(browser);
-		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
+		selectorBuffer.append("xpath=//li[@id='")
 		.append(getInstantMessagingClientSummaryCss())
-		.append("')]//a//span");
-		
+		.append("']//a//span");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		String summary = browser.getText(selectorBuffer.toString());
 		
 		Matcher matcher = CONTACT_COUNT_PATTERN.matcher(summary);
@@ -140,14 +138,13 @@ public class FunctionalInstantMessagingUtil {
 	 * @return true on success
 	 */
 	public boolean openRoster(Selenium browser){
-		functionalUtil.idle(browser);
-		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
+		selectorBuffer.append("xpath=//li[contains(@class, '")
 		.append(getInstantMessagingClientSummaryCss())
 		.append("')]//a");
-		
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		/* wait until dialog appears */
@@ -169,6 +166,8 @@ public class FunctionalInstantMessagingUtil {
 	 * @return true on success
 	 */
 	private boolean openOfflineContacts(Selenium browser){
+		functionalUtil.idle(browser);
+		
 		/* check if it's already open */
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -191,6 +190,8 @@ public class FunctionalInstantMessagingUtil {
 	 * @return true on success
 	 */
 	private boolean openGroups(Selenium browser){
+		functionalUtil.idle(browser);
+		
 		/* check if it's already open */
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -231,8 +232,6 @@ public class FunctionalInstantMessagingUtil {
 			}
 		}
 		
-		functionalUtil.idle(browser);
-		
 		List<String> contacts = new ArrayList<String>();
 		
 		StringBuffer selectorBufferFragment = new StringBuffer();
@@ -252,6 +251,7 @@ public class FunctionalInstantMessagingUtil {
 			.append(i + 1)
 			.append("]//span");
 			
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 			contacts.add(browser.getText(selectorBuffer.toString()).substring(1));
 		}
 		
@@ -293,7 +293,8 @@ public class FunctionalInstantMessagingUtil {
 			.append(")[")
 			.append(i + 1)
 			.append("]");
-			
+
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 			groups.add(browser.getText(selectorBuffer.toString()));
 		}
 		
@@ -341,9 +342,7 @@ public class FunctionalInstantMessagingUtil {
 		if(!openRoster(browser)){
 			return(false);
 		}
-		
-		functionalUtil.idle(browser);
-		
+
 		StringBuffer selectorBuffer = new StringBuffer();
 		selectorBuffer.append("xpath=//ul//li//a[contains(@class, '")
 		.append(getInstantMessagingAvailableCss())
@@ -352,7 +351,8 @@ public class FunctionalInstantMessagingUtil {
 		.append(", ")
 		.append(firstname)
 		.append("']");
-		
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		return(true);
@@ -370,15 +370,14 @@ public class FunctionalInstantMessagingUtil {
 			return(false);
 		}
 		
-		functionalUtil.idle(browser);
-		
 		StringBuffer selectorBuffer = new StringBuffer();
 		selectorBuffer.append("xpath=//ul//li//div[contains(@class, '")
 		.append(getInstantMessagingGroupCss())
 		.append("') and text()='")
 		.append(groupName)
 		.append("']");
-		
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		return(true);
@@ -405,14 +404,13 @@ public class FunctionalInstantMessagingUtil {
 		if(!openUserChat(browser, firstname, surname)){
 			return(false);
 		}
-
-		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getInstantMessagingChatCss())
 		.append("')]//input[@type='text']");
-		
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), message);
 		
 		return(true);
@@ -438,14 +436,13 @@ public class FunctionalInstantMessagingUtil {
 		if(!openGroupChat(browser, groupName)){
 			return(false);
 		}
-
-		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getInstantMessagingChatCss())
 		.append("')]//input[@type='text']");
-		
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), message);
 		
 		return(true);	
@@ -456,8 +453,6 @@ public class FunctionalInstantMessagingUtil {
 			return(true);
 		}
 		
-		functionalUtil.idle(browser);
-		
 		StringBuffer selectorBuffer = new StringBuffer();
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getInstantMessagingChatCss())
@@ -466,6 +461,7 @@ public class FunctionalInstantMessagingUtil {
 		.append("') and contains(text(), '")
 		.append(message)
 		.append("')]");
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		return(functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString()));
 	}

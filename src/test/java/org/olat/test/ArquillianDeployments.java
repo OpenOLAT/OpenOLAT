@@ -74,7 +74,8 @@ public class ArquillianDeployments {
 		return archive
 				.addAsWebInfResource(new File(WEBINF, "olat_portals_links.xsd"), "olat_portals_links.xsd")
 				.addAsWebInfResource(new File(WEBINF, "olat_portals_links.xml"), "olat_portals_links.xml")
-				.addAsWebInfResource(new File(WEBINF, "olat_portals_institution.xml"), "olat_portals_institution.xml");
+				.addAsWebInfResource(new File(WEBINF, "olat_portals_institution.xml"), "olat_portals_institution.xml")
+				.addAsWebInfResource(new File(WEBINF, "sun-jaxws.xml"), "sun-jaxws.xml");
 				//.addAsWebInfResource(new File(WEBINF, "services/ReturnWSService/META-INF/ReturnWSService.wsdl"), "services/ReturnWSService/META-INF/ReturnWSService.wsdl")
 				//.addAsWebInfResource(new File(WEBINF, "services/ReturnWSService/META-INF/services.xml"), "services/ReturnWSService/META-INF/services.xml");
 	}
