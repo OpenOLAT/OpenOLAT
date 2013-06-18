@@ -43,6 +43,7 @@ import org.olat.collaboration.CollaborationTools;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.util.FunctionalGroupsSiteUtil;
 import org.olat.util.FunctionalGroupsSiteUtil.MembersConfiguration;
+import org.olat.util.FunctionalUtil.OlatSite;
 import org.olat.util.FunctionalInstantMessagingUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
@@ -150,7 +151,8 @@ public class FunctionalInstantMessagingTest {
 		action = dialog.new OfflineContactsAction(0);
 		dialog.getPreProcessor().add(action);
 		
-		action = dialog.new UsersAction(3);//FIXME:JK: really ugly, probably rest connection remains open
+		//FIXME:JK: really ugly, probably rest connection remains open
+		action = dialog.new UsersAction(3);
 		dialog.getPreProcessor().add(action);
 		
 		action = dialog.new LogoutAction();
@@ -163,13 +165,13 @@ public class FunctionalInstantMessagingTest {
 		
 		action = dialog.new ModifySettingsAction(tutor0, new FunctionalGroupsSiteUtil.MembersConfiguration[]{
 				MembersConfiguration.CAN_SEE_COACHES,
-		});
+		}, group.get(0).getName());
 		dialog.getPreProcessor().add(action);
 		
 		action = dialog.new LoginAction(user.get(0));
 		dialog.getPreProcessor().add(action);
 		
-		action = dialog.new OnlineContactsAction(1);
+		action = dialog.new OnlineContactsAction(2);
 		dialog.getPreProcessor().add(action);
 		
 		action = dialog.new CheckUserAction(tutor.get(0).getFirstName(), tutor.get(0).getLastName(), true, false);
@@ -187,25 +189,22 @@ public class FunctionalInstantMessagingTest {
 		dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[2]);
 		
 		action = dialog.new ModifySettingsAction(tutor0, new FunctionalGroupsSiteUtil.MembersConfiguration[]{
-				MembersConfiguration.CAN_SEE_COACHES,
+				//MembersConfiguration.CAN_SEE_COACHES,
 				MembersConfiguration.CAN_SEE_PARTICIPANTS,
-		});
+		}, group.get(0).getName());
 		dialog.getPreProcessor().add(action);
 
 		action = dialog.new LoginAction(user.get(0));
 		dialog.getPreProcessor().add(action);
 
-		action = dialog.new OnlineContactsAction(1);
+		action = dialog.new OnlineContactsAction(2);
 		dialog.getPreProcessor().add(action);
 		
 		action = dialog.new CheckUserAction(tutor.get(0).getFirstName(), tutor.get(0).getLastName(), true, false);
 		dialog.getPreProcessor().add(action);
 		
-		action = dialog.new CheckUserAction(user.get(1).getFirstName(), user.get(1).getLastName(), false, true);
-		dialog.getPreProcessor().add(action);
-		
-		action = dialog.new CheckUserAction(user.get(2).getFirstName(), user.get(2).getLastName(), false, true);
-		dialog.getPreProcessor().add(action);
+//		action = dialog.new CheckUserAction(user.get(1).getFirstName(), user.get(1).getLastName(), false, true);
+//		dialog.getPreProcessor().add(action);
 		
 		GROUP_CHAT_DIALOG.add(dialog);
 		
@@ -215,7 +214,7 @@ public class FunctionalInstantMessagingTest {
 		action = dialog.new LoginAction(user.get(1));
 		dialog.getPreProcessor().add(action);
 		
-		action = dialog.new OnlineContactsAction(2);
+		action = dialog.new OnlineContactsAction(3);
 		dialog.getPreProcessor().add(action);
 
 		action = dialog.new CheckUserAction(tutor.get(0).getFirstName(), tutor.get(0).getLastName(), true, false);
@@ -253,7 +252,7 @@ public class FunctionalInstantMessagingTest {
 		 * chat - run the dialogs with its pre and post processors
 		 */
 		for(Dialog current: GROUP_CHAT_DIALOG){
-			Assert.assertTrue(current.chat());
+			Assert.assertTrue(current.getClass().getName(), current.chat());
 		}
 	}
 	
@@ -298,21 +297,23 @@ public class FunctionalInstantMessagingTest {
 				return(false);
 			}
 			
-			if(conversationPartner instanceof UserVO){
-				if(!functionalInstantMessagingUtil.sendMessageToUser(browser,
-						((UserVO) conversationPartner).getFirstName(), ((UserVO) conversationPartner).getLastName(),
-						message)){
-					return(false);
-				}
-			}else if(conversationPartner instanceof GroupVO){
-				if(!functionalInstantMessagingUtil.sendMessageToGroup(browser,
-						((GroupVO) conversationPartner).getName(),
-						message)){
-					return(false);
+			if(message != null){
+				if(conversationPartner instanceof UserVO){
+					if(!functionalInstantMessagingUtil.sendMessageToUser(browser,
+							((UserVO) conversationPartner).getFirstName(), ((UserVO) conversationPartner).getLastName(),
+							message)){
+						return(false);
+					}
+				}else if(conversationPartner instanceof GroupVO){
+					if(!functionalInstantMessagingUtil.sendMessageToGroup(browser,
+							((GroupVO) conversationPartner).getName(),
+							message)){
+						return(false);
+					}
 				}
 			}
 			
-			if(performPostProcessing()){
+			if(!performPostProcessing()){
 				return(false);
 			}
 			
@@ -372,7 +373,7 @@ public class FunctionalInstantMessagingTest {
 			
 			@Override
 			public boolean process(Dialog dialog) {
-				int users = functionalInstantMessagingUtil.onlineContactCount(getBrowser());
+				int users = functionalUtil.retrieveUserCount(getBrowser());
 				
 				if(users == count){
 					return(true);
@@ -413,25 +414,6 @@ public class FunctionalInstantMessagingTest {
 				}
 			}
 			
-		}
-		
-		public class AvailableUsersAction extends Action{
-			private int count;
-			
-			public AvailableUsersAction(int count){
-				this.count = count;
-			}
-			
-			@Override
-			public boolean process(Dialog dialog) {
-				int users = functionalInstantMessagingUtil.onlineContactCount(browser);
-				
-				if(users == count){
-					return(true);
-				}else{
-					return(false);
-				}
-			}
 		}
 		
 		public class OnlineContactsAction extends Action{
@@ -493,15 +475,18 @@ public class FunctionalInstantMessagingTest {
 		
 		public class ModifySettingsAction extends Action {
 			private Selenium tutor;
+			private String groupName;
 			private FunctionalGroupsSiteUtil.MembersConfiguration[] config;
 			
-			public ModifySettingsAction(Selenium tutor, FunctionalGroupsSiteUtil.MembersConfiguration[] config){
+			public ModifySettingsAction(Selenium tutor, FunctionalGroupsSiteUtil.MembersConfiguration[] config, String groupName){
 				this.tutor = tutor;
+				this.groupName = groupName;
 				this.config = config;
 			}
 			
 			@Override
 			public boolean process(Dialog dialog) {
+				functionalGroupsSiteUtil.openMyGroup(tutor, groupName);
 				functionalGroupsSiteUtil.applyMembersConfiguration(tutor, config);
 				
 				return(true);

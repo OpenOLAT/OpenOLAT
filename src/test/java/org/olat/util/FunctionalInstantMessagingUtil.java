@@ -29,9 +29,9 @@ import com.thoughtworks.selenium.Selenium;
 
 public class FunctionalInstantMessagingUtil {
 	
-	public final static Pattern CONTACT_COUNT_PATTERN = Pattern.compile("([\\d])+/([\\d])+");
+	public final static Pattern CONTACT_COUNT_PATTERN = Pattern.compile("\\(([\\d]+)/([\\d]+)\\)");
 	
-	public final static String INSTANT_MESSAGING_CLIENT_SUMMARY_CSS = "o_topnav_imclient_summary";
+	public final static String INSTANT_MESSAGING_CLIENT_SUMMARY = "o_topnav_imclient_summary";
 	
 	public final static String INSTANT_MESSAGING_ROSTER_CSS = "o_extjsPanel_im_roster";
 	public final static String INSTANT_MESSAGING_SHOW_OFFLINE_CONTACTS_CSS = "o_instantmessaging_showofflineswitch";
@@ -41,6 +41,7 @@ public class FunctionalInstantMessagingUtil {
 	
 	public final static String INSTANT_MESSAGING_GROUP_CSS = "o_instantmessaging_groupname";
 	public final static String INSTANT_MESSAGING_AVAILABLE_CSS = "o_instantmessaging_available_icon";
+	public final static String INSTANT_MESSAGING_UNAVAILABLE_CSS = "o_instantmessaging_unavailable_icon";
 	
 	public final static String INSTANT_MESSAGING_CHAT_CSS = "o_instantmessaging_chat";
 	public final static String INSTANT_MESSAGING_BODY_CSS = "o_instantmessaging_body";
@@ -51,7 +52,7 @@ public class FunctionalInstantMessagingUtil {
 		OFFLINE,
 	}
 	
-	private String instantMessagingClientSummaryCss;
+	private String instantMessagingClientSummary;
 	
 	private String instantMessagingRosterCss;
 	private String instantMessagingShowOfflineContactsCss;
@@ -61,6 +62,7 @@ public class FunctionalInstantMessagingUtil {
 	
 	private String instantMessagingGroupCss;
 	private String instantMessagingAvailableCss;
+	private String instantMessagingUnavailableCss;
 	
 	private String instantMessagingChatCss;
 	private String instantMessagingBodyCss;
@@ -70,7 +72,7 @@ public class FunctionalInstantMessagingUtil {
 	public FunctionalInstantMessagingUtil(FunctionalUtil functionalUtil){
 		setFunctionalUtil(functionalUtil);
 		
-		setInstantMessagingClientSummaryCss(INSTANT_MESSAGING_CLIENT_SUMMARY_CSS);
+		setInstantMessagingClientSummary(INSTANT_MESSAGING_CLIENT_SUMMARY);
 		
 		setInstantMessagingRosterCss(INSTANT_MESSAGING_ROSTER_CSS);
 		setInstantMessagingShowOfflineContactsCss(INSTANT_MESSAGING_SHOW_OFFLINE_CONTACTS_CSS);
@@ -80,6 +82,7 @@ public class FunctionalInstantMessagingUtil {
 		
 		setInstantMessagingGroupCss(INSTANT_MESSAGING_GROUP_CSS);
 		setInstantMessagingAvailableCss(INSTANT_MESSAGING_AVAILABLE_CSS);
+		setInstantMessagingUnavailableCss(INSTANT_MESSAGING_UNAVAILABLE_CSS);
 		
 		setInstantMessagingChatCss(INSTANT_MESSAGING_CHAT_CSS);
 		setInstantMessagingBodyCss(INSTANT_MESSAGING_BODY_CSS);
@@ -95,7 +98,7 @@ public class FunctionalInstantMessagingUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//li[@id='")
-		.append(getInstantMessagingClientSummaryCss())
+		.append(getInstantMessagingClientSummary())
 		.append("']//a//span");
 
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
@@ -103,6 +106,7 @@ public class FunctionalInstantMessagingUtil {
 		
 		Matcher matcher = CONTACT_COUNT_PATTERN.matcher(summary);
 		
+		matcher.find();
 		int count = Integer.valueOf(matcher.group(1));
 		
 		return(count);
@@ -118,14 +122,15 @@ public class FunctionalInstantMessagingUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//li[@id='")
-		.append(getInstantMessagingClientSummaryCss())
+		.append(getInstantMessagingClientSummary())
 		.append("']//a//span");
 
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		String summary = browser.getText(selectorBuffer.toString());
 		
 		Matcher matcher = CONTACT_COUNT_PATTERN.matcher(summary);
-		
+
+		matcher.find();
 		int count = Integer.valueOf(matcher.group(2));
 		
 		return(count);
@@ -138,11 +143,13 @@ public class FunctionalInstantMessagingUtil {
 	 * @return true on success
 	 */
 	public boolean openRoster(Selenium browser){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//li[contains(@class, '")
-		.append(getInstantMessagingClientSummaryCss())
-		.append("')]//a");
+		selectorBuffer.append("xpath=//li[@id='")
+		.append(getInstantMessagingClientSummary())
+		.append("']//a");
 
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
@@ -208,51 +215,94 @@ public class FunctionalInstantMessagingUtil {
 	}
 	
 	public List<String> findOnlineContacts(Selenium browser){
-		return(findContacts(browser, false));
-	}
-	
-	public List<String> findOfflineContacts(Selenium browser){
-		return(findContacts(browser, true));
-	}
-	
-	/**
-	 * Finds the offline as well online contacts by parsing roster data.
-	 * 
-	 * @param browser
-	 * @return A List containing contact names.
-	 */
-	public List<String> findContacts(Selenium browser, boolean includeOfflineContacts){
 		if(!openRoster(browser)){
 			return(null);
-		}
-		
-		if(includeOfflineContacts){
-			if(!openOfflineContacts(browser)){
-				return(null);
-			}
 		}
 		
 		List<String> contacts = new ArrayList<String>();
 		
 		StringBuffer selectorBufferFragment = new StringBuffer();
-		selectorBufferFragment.append("//ul//li//a[contains(@class, '")
+		selectorBufferFragment.append("//ul//li[.]//a[contains(@class,'")
 		.append(getInstantMessagingAvailableCss())
 		.append("')]");
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		locatorBuffer.append("xpath=")
-		.append(selectorBufferFragment);
+		.append(selectorBufferFragment.toString());
 		
-		for(int i = 0; i < browser.getXpathCount(locatorBuffer.toString()).intValue(); i++){
+		functionalUtil.idle(browser);
+		
+		int count = 0;
+		
+		if(browser.getXpathCount(selectorBufferFragment.toString()) == null){
+			return(contacts);
+		}else{
+			count = browser.getXpathCount(selectorBufferFragment.toString()).intValue();
+		}
+		
+		for(int i = 0; i < count; i++){
 			StringBuffer selectorBuffer = new StringBuffer();
 			selectorBuffer.append("xpath=(")
-			.append(selectorBufferFragment)
+			.append(selectorBufferFragment.toString())
 			.append(")[")
 			.append(i + 1)
 			.append("]//span");
 			
 			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-			contacts.add(browser.getText(selectorBuffer.toString()).substring(1));
+			
+			String contact = browser.getText(selectorBuffer.toString());
+			
+			if(contact != null &&
+					!contact.isEmpty()){
+				contacts.add(contact);
+			}
+		}
+		
+		return(contacts);
+	}
+	
+	public List<String> findOfflineContacts(Selenium browser){
+		if(!openRoster(browser)){
+			return(null);
+		}
+		
+		List<String> contacts = new ArrayList<String>();
+		
+		StringBuffer selectorBufferFragment = new StringBuffer();
+		selectorBufferFragment.append("//ul//li[.]//a[contains(@class,'")
+		.append(getInstantMessagingUnavailableCss())
+		.append("')]");
+		
+		StringBuffer locatorBuffer = new StringBuffer();
+		locatorBuffer.append("xpath=")
+		.append(selectorBufferFragment.toString());
+		
+		functionalUtil.idle(browser);
+		
+		int count = 0;
+		
+		if(browser.getXpathCount(selectorBufferFragment.toString()) == null){
+			return(contacts);
+		}else{
+			count = browser.getXpathCount(selectorBufferFragment.toString()).intValue();
+		}
+		
+		for(int i = 0; i < count; i++){
+			StringBuffer selectorBuffer = new StringBuffer();
+			selectorBuffer.append("xpath=(")
+			.append(selectorBufferFragment.toString())
+			.append(")[")
+			.append(i + 1)
+			.append("]//span");
+			
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			
+			String contact = browser.getText(selectorBuffer.toString());
+			
+			if(contact != null &&
+					!contact.isEmpty()){
+				contacts.add(contact);
+			}
 		}
 		
 		return(contacts);
@@ -466,13 +516,13 @@ public class FunctionalInstantMessagingUtil {
 		return(functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString()));
 	}
 	
-	public String getInstantMessagingClientSummaryCss() {
-		return instantMessagingClientSummaryCss;
+	public String getInstantMessagingClientSummary() {
+		return instantMessagingClientSummary;
 	}
 
-	public void setInstantMessagingClientSummaryCss(
-			String instantMessagingClientSummaryCss) {
-		this.instantMessagingClientSummaryCss = instantMessagingClientSummaryCss;
+	public void setInstantMessagingClientSummary(
+			String instantMessagingClientSummary) {
+		this.instantMessagingClientSummary = instantMessagingClientSummary;
 	}
 
 	public String getInstantMessagingRosterCss() {
@@ -533,6 +583,15 @@ public class FunctionalInstantMessagingUtil {
 
 	public void setInstantMessagingAvailableCss(String instantMessagingAvailableCss) {
 		this.instantMessagingAvailableCss = instantMessagingAvailableCss;
+	}
+
+	public String getInstantMessagingUnavailableCss() {
+		return instantMessagingUnavailableCss;
+	}
+
+	public void setInstantMessagingUnavailableCss(
+			String instantMessagingUnavailableCss) {
+		this.instantMessagingUnavailableCss = instantMessagingUnavailableCss;
 	}
 
 	public String getInstantMessagingChatCss() {
