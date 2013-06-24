@@ -237,7 +237,9 @@ public class FunctionalGroupsSiteUtil {
 	private String groupParticipantsCss;
 	
 	private String accessControlTokenEntryCss;
-	
+
+	private String instantMessagingChatCss;
+
 	private FunctionalUtil functionalUtil;
 	
 	public FunctionalGroupsSiteUtil(FunctionalUtil functionalUtil){
@@ -268,6 +270,8 @@ public class FunctionalGroupsSiteUtil {
 		this.groupParticipantsCss = GROUP_PARTICIPANTS_CSS;
 		
 		this.accessControlTokenEntryCss = ACCESS_CONTROL_TOKEN_ENTRY_CSS;
+		
+		this.instantMessagingChatCss = FunctionalInstantMessagingUtil.INSTANT_MESSAGING_CHAT_CSS;
 		
 		this.functionalUtil = functionalUtil;
 	}
@@ -1037,6 +1041,53 @@ public class FunctionalGroupsSiteUtil {
 		return(true);
 	}
 	
+	/**
+	 * Opens the chat of the appropriate group.
+	 * 
+	 * @param browser
+	 * @param groupName
+	 * @return
+	 */
+	public boolean openGroupChat(Selenium browser, String groupName){
+		if(!openMyGroup(browser, groupName)){
+			return(false);
+		}
+		
+		if(!openActionByMenuTree(browser, GroupsTabAction.CHAT)){
+			return(false);
+		}
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(functionalUtil.getContentCss())
+		.append("')]//a[contains(@class, '")
+		.append(functionalUtil.getButtonCss())
+		.append("')]");
+
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
+		
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	public boolean sendMessageToGroup(Selenium browser, String groupName, String message){
+		if(!openGroupChat(browser, groupName)){
+			return(false);
+		}
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getInstantMessagingChatCss())
+		.append("')]//input[@type='text']");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), message);
+		
+		return(true);
+	}
+	
 	public FunctionalUtil getFunctionalUtil() {
 		return functionalUtil;
 	}
@@ -1197,5 +1248,13 @@ public class FunctionalGroupsSiteUtil {
 
 	public void setAccessControlTokenEntryCss(String accessControlTokenEntryCss) {
 		this.accessControlTokenEntryCss = accessControlTokenEntryCss;
+	}
+
+	public String getInstantMessagingChatCss() {
+		return instantMessagingChatCss;
+	}
+
+	public void setInstantMessagingChatCss(String instantMessagingChatCss) {
+		this.instantMessagingChatCss = instantMessagingChatCss;
 	}
 }

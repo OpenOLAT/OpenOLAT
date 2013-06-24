@@ -305,7 +305,7 @@ public class FunctionalInstantMessagingTest {
 						return(false);
 					}
 				}else if(conversationPartner instanceof GroupVO){
-					if(!functionalInstantMessagingUtil.sendMessageToGroup(browser,
+					if(!functionalGroupsSiteUtil.sendMessageToGroup(browser,
 							((GroupVO) conversationPartner).getName(),
 							message)){
 						return(false);
