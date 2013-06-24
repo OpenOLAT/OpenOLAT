@@ -26,7 +26,7 @@ if(document.querySelector){
         }
     }
     
-    offset = (i - 2) - (item.length - 1);
+    offset = (i + 1) / 2 - (item.length - 1) - 1;
 }
 
 offset;

@@ -885,6 +885,8 @@ public class FunctionalCourseUtil {
 			return(null);
 		}
 		
+		functionalUtil.idle(browser);
+		
 		/*
 		 * Determine best matching item by using regular expressions
 		 */
@@ -902,6 +904,12 @@ public class FunctionalCourseUtil {
 
 		StringWriter sw = new StringWriter();
 		Integer offset = null;
+		
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=")
+		.append(itemLocator.toString());
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		
 		try {
 			engine.evaluate(context, sw, "catalogTreeEntryPosition", FunctionalEPortfolioUtil.class.getResourceAsStream("CatalogTreeEntryPosition.vm"));

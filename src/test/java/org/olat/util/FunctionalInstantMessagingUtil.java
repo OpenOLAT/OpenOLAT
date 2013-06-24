@@ -425,7 +425,7 @@ public class FunctionalInstantMessagingUtil {
 		.append(getInstantMessagingGroupCss())
 		.append("') and text()='")
 		.append(groupName)
-		.append("']");
+		.append("']//a");
 
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
