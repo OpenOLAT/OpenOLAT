@@ -56,6 +56,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.BusinessGroupTableModelWithMaxSize;
+import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -174,6 +175,7 @@ public class ENRunController extends BasicController implements GenericEventList
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {	
 		String cmd = event.getCommand();
 		 if (source == tableCtr) {
@@ -196,9 +198,15 @@ public class ENRunController extends BasicController implements GenericEventList
 						getWindowControl().setError(enrollStatus.getErrorMessage());
 					}
 					// events are already fired BusinessGroupManager level :: BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, choosenGroup,  ureq.getIdentity());
+					// but async
 					doEnrollView(ureq);
 					// fire event to indicate runmaincontroller that the menuview is to update
-					fireEvent(ureq, Event.DONE_EVENT);
+					
+					if (enrollStatus.isEnrolled() ) {
+						fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, enrolledGroup, getIdentity()));
+					} else {
+						fireEvent(ureq, Event.DONE_EVENT);
+					}
 				} else if (actionid.equals(CMD_ENROLLED_CANCEL)) {
 					if (waitingListGroup != null) {
 						enrollmentManager.doCancelEnrollmentInWaitingList(ureq.getIdentity(), choosenGroup, enNode, coursePropertyManager, getWindowControl(), getTranslator());
@@ -210,10 +218,10 @@ public class ENRunController extends BasicController implements GenericEventList
 					doEnrollView(ureq);
 					if (enrolledGroup == null) {
 						// fire event to indicate runmaincontroller that the menuview is to update
-						fireEvent(ureq, Event.DONE_EVENT);
+						fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, choosenGroup, getIdentity()));
 					}
 					// events are already fired BusinessGroupManager level :: BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group,  ureq.getIdentity());
-					
+					// but async
 				}
 			}
 		}

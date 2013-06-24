@@ -181,7 +181,33 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 		}
 	}
 	
+	public static Deferred createDeferredEvent(String command, BusinessGroup group, Identity identity) {
+		Deferred modifiedEvent = new Deferred(command, group, identity);
+		return modifiedEvent;	
+	}
+	
+	public static void fireDeferredEvents(List<Deferred> events) {
+		if(events == null || events.isEmpty()) return;
+		
+		for(Deferred deferedEvent:events) {
+			fireModifiedGroupEvents(deferedEvent.command, deferedEvent.group, deferedEvent.identity);
+		}
+	}
+	
+	@Override
 	public String toString() {
 		return "groupkey:"+groupKey+",identityKey:"+identityKey+", isTutor:"+isTutor+"|"+super.toString();
+	}
+	
+	public static class Deferred {
+		private final String command;
+		private final Identity identity;
+		private final BusinessGroup group;
+		
+		public Deferred(String command, BusinessGroup group, Identity identity) {
+			this.command = command;
+			this.group = group;
+			this.identity = identity;
+		}
 	}
 }

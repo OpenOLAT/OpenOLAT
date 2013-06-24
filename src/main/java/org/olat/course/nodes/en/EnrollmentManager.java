@@ -94,12 +94,13 @@ public class EnrollmentManager extends BasicManager {
 			// and: why can't we just have a group here and a max participants count and an identity to enrol?
 			// the group was chosen, so why do we need the groupNames and areaNames here???
 
-			EnrollState state =businessGroupService.enroll(identity, roles, identity, group, null);
+			EnrollState state = businessGroupService.enroll(identity, roles, identity, group, null);
 			if(state.isFailed()) {
 				enrollStatus.setErrorMessage(trans.translate(state.getI18nErrorMessage()));
 			} else {
 				if(state.getEnrolled() == BGMembership.participant) {
 					addUserToParticipantList(identity, group, enNode, coursePropertyManager, wControl, trans);
+					enrollStatus.setIsEnrolled(true);
 				} else if(state.getEnrolled() == BGMembership.waiting) {
 					addUserToWaitingList(identity, group, enNode, coursePropertyManager, wControl, trans);
 				}

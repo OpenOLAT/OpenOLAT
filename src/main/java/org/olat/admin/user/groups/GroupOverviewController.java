@@ -29,7 +29,6 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -331,14 +330,6 @@ public class GroupOverviewController extends BasicController {
 				// 2) remove as participant
 				businessGroupService.removeParticipants(getIdentity(), Collections.singletonList(identity), group, mailing);
 				MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), getLocale());
-	
-				// 3) notify user about this action:
-				/*if(doSendMail){
-					MailTemplate mailTemplate = BGMailHelper.createRemoveParticipantMailTemplate(group, getIdentity());
-					MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-					MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), null, mailTemplate, null);
-					
-				}*/
 			}
 		}
 
