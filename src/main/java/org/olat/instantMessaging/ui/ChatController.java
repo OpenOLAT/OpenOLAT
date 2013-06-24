@@ -158,6 +158,7 @@ public class ChatController extends BasicController implements GenericEventListe
 				roomName , width, height, offsetX, offsetY, rosterCtrl == null ? null : rosterCtrl.getInitialComponent(),
 				translate("groupchat.roster"), true, false, true, String.valueOf(hashCode()));
 		listenTo(chatPanelCtr);
+		chatPanelCtr.setElementCSSClass("o_instantmessaging_chat_dialog");
 		
 		String pn = chatPanelCtr.getPanelName();
 		

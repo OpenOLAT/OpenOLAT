@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.ConsumableBoolean;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -157,6 +158,13 @@ public class FloatingResizableDialogController extends BasicController {
 	private static final Pattern posGeometry = Pattern.compile("^(\\d+),(\\d+)$");
 	private static final Pattern parseGeometry = Pattern.compile("(\\d+)");
 	
+	public void setElementCSSClass(String cssClass) {
+		if(StringHelper.containsNonWhitespace(cssClass)) {
+			wrapper.contextPut("cssClass", cssClass);
+		} else {
+			wrapper.contextRemove("cssClass");
+		}
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
