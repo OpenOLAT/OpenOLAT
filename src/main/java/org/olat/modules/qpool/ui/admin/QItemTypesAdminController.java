@@ -174,7 +174,7 @@ public class QItemTypesAdminController extends FormBasicController {
 		Locale orgininalLocale = getLocale();
 		Locale varLocale = new Locale(orgininalLocale.getLanguage(), orgininalLocale.getCountry(), "__customizing");
 
-		I18nItem item = new I18nItem("org.olat.modules.qpool.ui", "item.type." + row.getType(), varLocale, 1, 1);
+		I18nItem item = new I18nItem("org.olat.modules.qpool.ui", "item.type." + row.getType().toLowerCase(), varLocale, 1, 1);
 		List<I18nItem> i18nItems = new ArrayList<I18nItem>();
 		i18nItems.add(item);
 

@@ -73,6 +73,18 @@ public interface FlexiTableElement extends FormItem {
 	public void setWrapperSelector(String wrapperSelector);
 	
 	/**
+	 * 
+	 * @return
+	 */
+	public int getColumnLabelForDragAndDrop();
+
+	/**
+	 * 
+	 * @param columnLabelForDragAndDrop
+	 */
+	public void setColumnLabelForDragAndDrop(int columnLabelForDragAndDrop);
+	
+	/**
 	 * @return true if the links select all / unselect all are enabled
 	 */
 	public boolean isSelectAllEnable();

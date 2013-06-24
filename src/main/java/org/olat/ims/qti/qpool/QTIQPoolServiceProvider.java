@@ -30,12 +30,14 @@ import java.util.zip.ZipOutputStream;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -43,6 +45,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.QTI12EditorController;
 import org.olat.ims.qti.QTI12PreviewController;
 import org.olat.ims.qti.QTIConstants;
@@ -53,17 +56,18 @@ import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.ExportFormatOptions;
+import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.ExportFormatOptions.Outcome;
-import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
+import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
@@ -83,6 +87,8 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	
 	public static final String QTI_12_OO_TEST = "OpenOLAT Test";
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private QPoolFileStorage qpoolFileStorage;
 	@Autowired
@@ -163,6 +169,17 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		QTIImportProcessor processor = new QTIImportProcessor(owner, defaultLocale, filename, file,
 				questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		return processor.process();
+	}
+	
+	public List<QuestionItem> importRepositoryEntry(Identity owner, RepositoryEntry repositoryEntry, Locale defaultLocale) {
+		OLATResourceable ores = repositoryEntry.getOlatResource();
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File testFile = frm.getFileResource(ores);
+		List<QuestionItem> importedItem = importItems(owner, defaultLocale, testFile.getName(), testFile);
+		if(importedItem != null && importedItem.size() > 0) {
+			dbInstance.getCurrentEntityManager().flush();
+		}
+		return importedItem;
 	}
 	
 	public void importBeecomItem(Identity owner, Item item, VFSContainer sourceDir, Locale defaultLocale) {

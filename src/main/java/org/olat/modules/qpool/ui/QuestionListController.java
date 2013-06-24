@@ -47,6 +47,8 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
+import org.olat.ims.qti.fileresource.TestFileResource;
+import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
@@ -62,6 +64,7 @@ import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.RepositoryDetailsController;
 
@@ -98,6 +101,9 @@ public class QuestionListController extends AbstractItemListController implement
 	private QuestionItemDetailsController currentDetailsCtrl;
 	private LayoutMain3ColsController currentMainDetailsCtrl;
 	private MetadataBulkChangeController bulkChangeCtrl;
+	private ImportSourcesController importSourcesCtrl;
+	private CloseableCalloutWindowController importCalloutCtrl;
+	private ReferencableEntriesSearchController importTestCtrl;
 	
 	private final QPoolService qpoolService;
 	private final RepositoryManager repositoryManager;
@@ -210,6 +216,13 @@ public class QuestionListController extends AbstractItemListController implement
 					doShareItemsToGroups(ureq, items, null, pools);
 				}
 			}	
+		} else if(source == importSourcesCtrl) {
+			importCalloutCtrl.deactivate();
+			if(ImportSourcesController.IMPORT_FILE.equals(event.getCommand())) {
+				doOpenFileImport(ureq);
+			} else if(ImportSourcesController.IMPORT_REPO.equals(event.getCommand())) {
+				doOpenRepositoryImport(ureq);
+			}
 		} else if(source == selectGroupCtrl) {
 			cmc.deactivate();
 			if(event instanceof BusinessGroupSelectionEvent) {
@@ -268,6 +281,13 @@ public class QuestionListController extends AbstractItemListController implement
 			}
 		} else if(source == importItemCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getItemsTable().reset();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == importTestCtrl) {
+			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				doImportResource(ureq, importTestCtrl.getSelectedEntry());
 				getItemsTable().reset();
 			}
 			cmc.deactivate();
@@ -331,12 +351,14 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(addController);
 		removeAsListenerAndDispose(bulkChangeCtrl);
 		removeAsListenerAndDispose(importItemCtrl);
+		removeAsListenerAndDispose(importTestCtrl);
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(createCollectionCtrl);
 		cmc = null;
 		addController = null;
 		bulkChangeCtrl = null;
 		importItemCtrl = null;
+		importTestCtrl = null;
 		selectGroupCtrl = null;
 		createCollectionCtrl = null;
 	}
@@ -379,12 +401,48 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 	
 	private void doOpenImport(UserRequest ureq) {
+		String title = translate("import");
+		removeAsListenerAndDispose(importSourcesCtrl);
+		importSourcesCtrl = new ImportSourcesController(ureq, getWindowControl());
+		listenTo(importSourcesCtrl);
+		
+		removeAsListenerAndDispose(importCalloutCtrl);
+		importCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), importSourcesCtrl.getInitialComponent(), importItem, title, true, null);
+		listenTo(importCalloutCtrl);
+		importCalloutCtrl.activate();	
+	}
+	
+	private void doOpenFileImport(UserRequest ureq) {
 		removeAsListenerAndDispose(importItemCtrl);
 		importItemCtrl = new ImportController(ureq, getWindowControl());
 		listenTo(importItemCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				importItemCtrl.getInitialComponent(), true, translate("import.item"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doImportResource(UserRequest ureq, RepositoryEntry repositoryEntry) {
+		QTIQPoolServiceProvider spi
+			= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
+		List<QuestionItem> importItems = spi.importRepositoryEntry(getIdentity(), repositoryEntry, getLocale());
+		if(importItems.isEmpty()) {
+			showWarning("import.failed");
+		} else {
+			showInfo("import.success", Integer.toString(importItems.size()));
+			getItemsTable().reset();
+		}
+	}
+	
+	private void doOpenRepositoryImport(UserRequest ureq) {
+		removeAsListenerAndDispose(importTestCtrl);
+		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{ TestFileResource.TYPE_NAME },
+				translate("import.repository"), false, false, false, false, true);
+		listenTo(importTestCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				importTestCtrl.getInitialComponent(), true, translate("import.repository"));
 		cmc.activate();
 		listenTo(cmc);
 	}

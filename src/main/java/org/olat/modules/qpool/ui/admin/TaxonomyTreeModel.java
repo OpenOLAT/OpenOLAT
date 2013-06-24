@@ -38,16 +38,15 @@ import org.olat.modules.qpool.TaxonomyLevel;
 public class TaxonomyTreeModel extends GenericTreeModel {
 
 	private static final long serialVersionUID = 3032222581990406868L;
-	private QPoolService qpoolService;
-	
-	public TaxonomyTreeModel() {
+	private final QPoolService qpoolService;
+
+	public TaxonomyTreeModel(String rootLabel) {
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-		
-		buildTree();
+		buildTree(rootLabel);
 	}
 	
-	private void buildTree() {
-		GenericTreeNode rootNode = new GenericTreeNode("root", "root");
+	private void buildTree(String rootLabel) {
+		GenericTreeNode rootNode = new GenericTreeNode(rootLabel, "root");
 		setRootNode(rootNode);
 
 		List<TaxonomyLevel> fields = qpoolService.getTaxonomyLevels();

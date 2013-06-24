@@ -69,12 +69,11 @@ public class TaxonomyAdminController extends BasicController {
 		mainVC.put("details", detailsCtrl.getInitialComponent());
 
 		taxonomyTree = new MenuTree("qpoolTree");
-		taxonomyTreeModel = new TaxonomyTreeModel();
+		taxonomyTreeModel = new TaxonomyTreeModel(translate("root.taxonomyLevel"));
 		taxonomyTree.setTreeModel(taxonomyTreeModel);
 		taxonomyTree.setSelectedNode(taxonomyTree.getTreeModel().getRootNode());
 		taxonomyTree.setDropEnabled(false);
 		taxonomyTree.addListener(this);
-		taxonomyTree.setRootVisible(false);
 
 		mainVC.put("tree", taxonomyTree);
 		putInitialPanel(mainVC);
@@ -97,6 +96,8 @@ public class TaxonomyAdminController extends BasicController {
 					if(node != null && node.getUserObject() instanceof TaxonomyLevel) {
 						TaxonomyLevel taxonomyLevel = (TaxonomyLevel)node.getUserObject();
 						detailsCtrl.setTaxonomyLevel(taxonomyLevel);
+					} else {
+						detailsCtrl.setTaxonomyLevel(null);
 					}
 				}
 			}
@@ -107,7 +108,7 @@ public class TaxonomyAdminController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(editCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				taxonomyTreeModel = new TaxonomyTreeModel();
+				taxonomyTreeModel = new TaxonomyTreeModel(translate("root.taxonomyLevel"));
 				taxonomyTree.setTreeModel(taxonomyTreeModel);
 				if(editCtrl.getTaxonomyLevel() != null) {
 					TreeNode newNode
@@ -121,7 +122,7 @@ public class TaxonomyAdminController extends BasicController {
 			cleanUp();
 		} else if(detailsCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				taxonomyTreeModel = new TaxonomyTreeModel();
+				taxonomyTreeModel = new TaxonomyTreeModel(translate("root.taxonomyLevel"));
 				taxonomyTree.setTreeModel(taxonomyTreeModel);
 				if(detailsCtrl.getTaxonomyLevel() != null) {
 					TreeNode newNode
@@ -160,9 +161,4 @@ public class TaxonomyAdminController extends BasicController {
 		cmc.activate();
 		listenTo(cmc);
 	}
-
-
-	
-	
-
 }

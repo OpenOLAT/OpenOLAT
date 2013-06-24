@@ -21,6 +21,13 @@ table {
 		tr.b_row_selected td { background: $basecolor_light; }
 	 }
 }
+
+div.b_table_drag {
+	padding:5px;
+	@include o-border-radius($di_border_radius);
+	border:1px solid $basecolor;
+	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
+}
 	
 	
 /* tables from OpenOLAT tablecontroller are wrapped in b_table_wrapper */

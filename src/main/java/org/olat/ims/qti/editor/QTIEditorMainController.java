@@ -89,6 +89,7 @@ import org.olat.ims.qti.QTIChangeLogMessage;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.QTIObject;
@@ -934,9 +935,45 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				Item item = (Item)qtiObject;
 				VFSContainer editorContainer = qtiPackage.getBaseDir();
 				qtiQpoolServiceProvider.importBeecomItem(getIdentity(), item, editorContainer, getLocale());
-				showInfo("export.qpool.successful");
+				showInfo("export.qpool.successful", "1");
 			}	
+		} else if(selectedNode instanceof SectionNode) {
+			SectionNode sectionNode = (SectionNode)selectedNode;
+			QTIObject qtiObject = sectionNode.getUnderlyingQTIObject();
+			if(qtiObject instanceof Section) {
+				int count = doExportSection((Section)qtiObject);
+				showInfo("export.qpool.successful", Integer.toString(count));
+			}
+		} else if(selectedNode instanceof AssessmentNode) {
+			AssessmentNode assessmentNode = (AssessmentNode)selectedNode;
+			QTIObject qtiObject = assessmentNode.getUnderlyingQTIObject();
+			if(qtiObject instanceof Assessment) {
+				int count = doExportAssessment((Assessment)qtiObject);
+				
+				showInfo("export.qpool.successful", Integer.toString(count));
+			}
 		}
+	}
+	
+	private int doExportAssessment(Assessment assessment) {
+		int count = 0;
+		if(assessment.getSections() != null) {
+			for(Section section:assessment.getSections()) {
+				count += doExportSection(section);
+			}
+		}
+		return count;
+	}
+	
+	private int doExportSection(Section section) {
+		if(section.getItems() != null) {
+			VFSContainer editorContainer = qtiPackage.getBaseDir();
+			for(Item item:section.getItems()) {
+				qtiQpoolServiceProvider.importBeecomItem(getIdentity(), item, editorContainer, getLocale());
+			}
+			return section.getItems().size();
+		}
+		return 0;
 	}
 
 	/**

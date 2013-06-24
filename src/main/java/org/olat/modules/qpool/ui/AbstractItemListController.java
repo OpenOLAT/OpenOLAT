@@ -136,6 +136,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setSearchEnabled(true);
 		itemsTable.setExtendedSearchCallout(extendedSearchCtrl);
 		itemsTable.setRendererType(FlexiTableRendererType.dataTables);
+		itemsTable.setColumnLabelForDragAndDrop(Cols.title.ordinal());
 
 		initButtons(formLayout);
 	}

@@ -321,6 +321,14 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
+	public boolean isOwner(Identity owner, Pool pool) {
+		if(pool == null || owner == null) return false;
+		
+		SecurityGroup secGroup = ((PoolImpl)pool).getOwnerGroup();
+		return securityManager.isIdentityInSecurityGroup(owner, secGroup);
+	}
+
+	@Override
 	public void addOwners(List<Identity> owners, List<Pool> pools) {
 		if(owners == null || owners.isEmpty() || pools == null || pools.isEmpty()) {
 			return;//nothing to do

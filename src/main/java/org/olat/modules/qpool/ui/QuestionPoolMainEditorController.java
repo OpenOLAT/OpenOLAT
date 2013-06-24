@@ -51,6 +51,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -99,6 +100,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private final Roles roles;
 	private final MarkManager markManager;
 	private final QPoolService qpoolService;
+	private final BusinessGroupService businessGroupService;
 	
 	public QuestionPoolMainEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -106,6 +108,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		roles = ureq.getUserSession().getRoles();
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		menuTree = new MenuTree("qpoolTree");
 		menuTree.setTreeModel(buildTreeModel());
@@ -376,11 +379,12 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelectPool(UserRequest ureq, Pool pool, TreeNode node, List<ContextEntry> entries, StateEntry state) {
 		ControlledTreeNode cNode = (ControlledTreeNode)node;
+		Roles roles = ureq.getUserSession().getRoles();
 		QuestionsController selectedPoolCtrl = cNode.getController();
 
-		DefaultItemsSource source = new DefaultItemsSource(getIdentity(), ureq.getUserSession().getRoles(), pool.getName());
+		DefaultItemsSource source = new DefaultItemsSource(getIdentity(), roles, pool.getName());
 		source.getDefaultParams().setPoolKey(pool.getKey());
-		source.setRemoveEnabled(isPoolEditable(pool));
+		source.setRemoveEnabled(isShareAdmin(roles, pool));
 		if(selectedPoolCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, pool, null);
 			selectedPoolCtrl = new QuestionsController(ureq, swControl, source, "poll-" + pool.getKey());
@@ -395,18 +399,22 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	}
 	
 	/**
-	 * TODO must be implemented
+	 * Can administrate if has role OLAT admin or Pool admin, if the pool is public,
+	 * if owner of the pool
 	 * @param pool
 	 * @return
 	 */
-	private boolean isPoolEditable(Pool pool) {
-		return true;// pool.isPublicPool();
+	private boolean isShareAdmin(Roles roles, Pool pool) {
+		return roles != null && (roles.isOLATAdmin() || roles.isPoolAdmin() || pool.isPublicPool()
+				|| qpoolService.isOwner(getIdentity(), pool));
 	}
 	
 	private void doSelectGroup(UserRequest ureq, BusinessGroup group, TreeNode node, List<ContextEntry> entries, StateEntry state) {
 		ControlledTreeNode cNode = (ControlledTreeNode)node;
 		QuestionsController sharedItemsCtrl = cNode.getController();
-		SharedItemsSource source = new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles());
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean shareAdmin = isShareAdmin(roles, group);
+		SharedItemsSource source = new SharedItemsSource(group, getIdentity(), roles, shareAdmin);
 
 		if(sharedItemsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, group, null);
@@ -419,6 +427,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		}
 		currentCtrl = sharedItemsCtrl;
 		setContent(ureq, sharedItemsCtrl, entries, state);
+	}
+	
+	private boolean isShareAdmin(Roles roles, BusinessGroup group) {
+		return roles != null && (roles.isOLATAdmin() || roles.isPoolAdmin()
+				|| businessGroupService.isIdentityInBusinessGroup(getIdentity(), group.getKey(), true, false, null));
 	}
 	
 	private void doSelectCollection(UserRequest ureq, QuestionItemCollection coll, TreeNode node, List<ContextEntry> entries, StateEntry state) {

@@ -80,6 +80,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private int pageSize;
 	private boolean searchEnabled;
 	private boolean selectAllEnabled;
+	
+	private int columnLabelForDragAndDrop;
 
 	private FormLink customButton;
 	private FormLink searchButton, extendedSearchButton;
@@ -147,10 +149,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 
+	@Override
+	public int getColumnLabelForDragAndDrop() {
+		return columnLabelForDragAndDrop;
+	}
+
+	@Override
+	public void setColumnLabelForDragAndDrop(int columnLabelForDragAndDrop) {
+		this.columnLabelForDragAndDrop = columnLabelForDragAndDrop;
+	}
+
+	@Override
 	public FlexiTableRendererType getRendererType() {
 		return rendererType;
 	}
-	
+
+	@Override
 	public void setRendererType(FlexiTableRendererType rendererType) {
 		this.rendererType = rendererType;
 	}

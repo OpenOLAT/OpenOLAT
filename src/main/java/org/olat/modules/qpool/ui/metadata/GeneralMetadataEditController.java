@@ -192,7 +192,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 			selectPathCmp.setMultiselect(false);
 			selectPathCmp.setFormButtonKey("select");
 			selectPathCmp.setShowCancelButton(true);
-			TaxonomyTreeModel treeModel = new TaxonomyTreeModel();
+			TaxonomyTreeModel treeModel = new TaxonomyTreeModel("");
 			selectPathCmp.setTreeModel(treeModel);
 			
 			if(itemImpl.getTaxonomyLevel() != null || selectedTaxonomicPath != null) {

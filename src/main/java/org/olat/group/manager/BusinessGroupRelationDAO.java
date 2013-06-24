@@ -119,14 +119,18 @@ public class BusinessGroupRelationDAO {
 			  .append("   )");
 		}
 		  
-		sb.append(" )")
-			.append(" and bgi in (")
-			.append("   select relation.group from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
-			.append(" )");
+		sb.append(" )");
+		if(resource != null) {
+			sb.append(" and bgi in (")
+				.append("   select relation.group from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
+				.append(" )");
+		}
 
 		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("resourceKey", resource.getKey());
+				.setParameter("identityKey", identity.getKey());
+		if(resource != null) {
+				query.setParameter("resourceKey", resource.getKey());
+		}
 		if(groupKey != null) {
 			query.setParameter("groupKey", groupKey);
 		}

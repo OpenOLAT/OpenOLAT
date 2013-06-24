@@ -46,13 +46,15 @@ import org.olat.resource.OLATResource;
  */
 public class SharedItemsSource implements QuestionItemsSource {
 	
+	private final boolean admin;
 	private final Roles roles;
 	private final Identity identity;
 	private final String sourceName;
 	private final OLATResource resource;
 	private final QPoolService qpoolService;
 	
-	public SharedItemsSource(BusinessGroup group, Identity identity, Roles roles) {
+	public SharedItemsSource(BusinessGroup group, Identity identity, Roles roles, boolean admin) {
+		this.admin = admin;
 		this.roles = roles;
 		this.identity = identity;
 		this.sourceName = group.getName();
@@ -72,7 +74,7 @@ public class SharedItemsSource implements QuestionItemsSource {
 
 	@Override
 	public boolean isRemoveEnabled() {
-		return true;
+		return roles.isOLATAdmin() || roles.isPoolAdmin() || admin;
 	}
 
 	@Override

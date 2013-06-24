@@ -102,6 +102,26 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("		  'sEmptyTable': '").append(translator.translate("table.sEmptyTable")).append("'\n")
       .append("    },\n")
       .append("   'asStripeClasses': ['','b_table_odd'],\n")
+      .append("		'aoColumns': [\n");
+		int count = 0;
+		if(ftE.isMultiSelect()) {
+			target.append("			{'mData':'multiSelectCol', bSortable: false }\n");
+			count++;
+		}
+		int colDnd = 0;
+		for(int i=0; i<columnsModel.getColumnCount(); i++) {
+			FlexiColumnModel col = columnsModel.getColumnModel(i);
+			if(ftE.isColumnModelVisible(col)) {
+				if(count > 0) target.append(",");
+				count++;
+				target.append("			{'mData':'").append(col.getColumnKey())
+			  	.append("', bSortable: ").append(col.isSortable()).append(" }\n");
+			}
+			if(col.getColumnIndex() == ftE.getColumnLabelForDragAndDrop()) {
+				colDnd = count;
+			}
+		}
+    target.append("		],\n")
       .append("		'fnRowCallback': function( nRow, aData, iDisplayIndex, iDisplayIndexFull) {\n")
       .append("     if(selectedIndex == iDisplayIndexFull) {\n")
       .append("       jQuery(nRow).addClass('b_row_selected');\n")
@@ -112,26 +132,11 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("				cursorAt: {left: 0, top: 0},\n")
       .append("				accept: function(event,ui){ return true; },\n")
       .append("				helper: function(event,ui,zt) {\n")
-      .append("				  return jQuery(\"<div class='ui-widget-header'>I'm a custom helper</div>\").appendTo('body').css('zIndex',5).show();\n")
+      .append("				  var helperText = jQuery(this).children(\"td:nth-child(").append(colDnd + 1).append(")\").text();\n")
+      .append("				  return jQuery(\"<div class='ui-widget-header b_table_drag'>\" + helperText + \"</div>\").appendTo('body').css('zIndex',5).show();\n")
       .append("				}\n")
       .append("			});\n")
       .append("		},\n")
-      .append("		'aoColumns': [\n");
-		int count = 0;
-		if(ftE.isMultiSelect()) {
-			target.append("			{'mData':'multiSelectCol', bSortable: false }\n");
-			count++;
-		}
-		for(int i=0; i<columnsModel.getColumnCount(); i++) {
-			FlexiColumnModel col = columnsModel.getColumnModel(i);
-			if(ftE.isColumnModelVisible(col)) {
-				if(count > 0) target.append(",");
-				count++;
-				target.append("			{'mData':'").append(col.getColumnKey())
-			  	.append("', bSortable: ").append(col.isSortable()).append(" }\n");
-			}
-		}
-    target.append("		],\n")
       .append("	  fnInitComplete: function (oSettings, json) {\n")
       .append("     if(selectedIndex < 0) return;\n")
       .append("     var scrollTo = 0;\n")

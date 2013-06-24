@@ -361,7 +361,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		
 		@Override
 		public FormItem createItem(String startValue) {
-			TaxonomyTreeModel treeModel = new TaxonomyTreeModel();
+			TaxonomyTreeModel treeModel = new TaxonomyTreeModel("");
 			List<String> keys = new ArrayList<String>();
 			List<String> values = new ArrayList<String>();
 			flatTree(treeModel.getRootNode(), "", keys, values);
