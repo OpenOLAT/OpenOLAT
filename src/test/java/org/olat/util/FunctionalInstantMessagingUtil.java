@@ -508,9 +508,9 @@ public class FunctionalInstantMessagingUtil {
 		.append(getInstantMessagingChatCss())
 		.append("')]//div[contains(@class, '")
 		.append(getInstantMessagingBodyCss())
-		.append("') and contains(text(), '")
+		.append("') and contains('")
 		.append(message)
-		.append("')]");
+		.append("', text())]");
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		return(functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString()));

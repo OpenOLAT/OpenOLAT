@@ -960,6 +960,8 @@ public class FunctionalUtil {
 			.append(tabIndex + 1)
 			.append(" * a");
 			
+			waitForPageToLoadElement(browser, selectorBuffer.toString());
+			
 			browser.click(selectorBuffer.toString());
 			waitForPageToLoad(browser);
 		}

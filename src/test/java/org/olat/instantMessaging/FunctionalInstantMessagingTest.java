@@ -210,7 +210,7 @@ public class FunctionalInstantMessagingTest {
 		
 		/* message #3 */
 		dialog = new Dialog(student1, group.get(0), GROUP_CHAT_MESSAGE[3]);
-		
+
 		action = dialog.new LoginAction(user.get(1));
 		dialog.getPreProcessor().add(action);
 		
@@ -225,14 +225,19 @@ public class FunctionalInstantMessagingTest {
 		
 		action = dialog.new VerifyMessageAction(new String[]{
 				GROUP_CHAT_MESSAGE[3],
-		});
+		}, 0);
 		dialog.getPostProcessor().add(action);
 
 		GROUP_CHAT_DIALOG.add(dialog);
 		
 		/* message #4 */
-		dialog = new Dialog(student0, user.get(2), GROUP_CHAT_MESSAGE[4]);
+		dialog = new Dialog(student0, group.get(0), GROUP_CHAT_MESSAGE[4]);
 
+		action = dialog.new VerifyMessageAction(new String[]{
+				GROUP_CHAT_MESSAGE[4],
+		}, 1);
+		dialog.getPostProcessor().add(action);
+		
 		GROUP_CHAT_DIALOG.add(dialog);
 
 		/* message #5 */
@@ -241,18 +246,13 @@ public class FunctionalInstantMessagingTest {
 		action = dialog.new LoginAction(user.get(2));
 		dialog.getPreProcessor().add(action);
 
-		action = dialog.new VerifyMessageAction(new String[]{
-				GROUP_CHAT_MESSAGE[4],
-		});
-		dialog.getPostProcessor().add(action);
-
 		GROUP_CHAT_DIALOG.add(dialog);
 		
 		/*
 		 * chat - run the dialogs with its pre and post processors
 		 */
 		for(Dialog current: GROUP_CHAT_DIALOG){
-			Assert.assertTrue(current.getClass().getName(), current.chat());
+			current.chat();
 		}
 	}
 	
@@ -275,7 +275,7 @@ public class FunctionalInstantMessagingTest {
 		public boolean performPreProcessing(){
 			for(Action current: preProcessor){
 				if(!current.process(this)){
-					return(false);
+					Assert.fail(current.getClass().getName());
 				}
 			}
 			
@@ -285,7 +285,7 @@ public class FunctionalInstantMessagingTest {
 		public boolean performPostProcessing(){
 			for(Action current: postProcessor){
 				if(!current.process(this)){
-					return(false);
+					Assert.fail(current.getClass().getName());
 				}
 			}
 			
@@ -293,29 +293,25 @@ public class FunctionalInstantMessagingTest {
 		}
 		
 		public boolean chat(){
-			if(!performPreProcessing()){
-				return(false);
-			}
+			performPreProcessing();
 			
 			if(message != null){
 				if(conversationPartner instanceof UserVO){
 					if(!functionalInstantMessagingUtil.sendMessageToUser(browser,
 							((UserVO) conversationPartner).getFirstName(), ((UserVO) conversationPartner).getLastName(),
 							message)){
-						return(false);
+						Assert.fail();
 					}
 				}else if(conversationPartner instanceof GroupVO){
 					if(!functionalGroupsSiteUtil.sendMessageToGroup(browser,
 							((GroupVO) conversationPartner).getName(),
 							message)){
-						return(false);
+						Assert.fail();
 					}
 				}
 			}
 			
-			if(!performPostProcessing()){
-				return(false);
-			}
+			performPostProcessing();
 			
 			return(true);
 		}
@@ -456,16 +452,23 @@ public class FunctionalInstantMessagingTest {
 		
 		public class VerifyMessageAction extends Action {
 			String message[];
+			int index;
 
-			public VerifyMessageAction(String message[]){
+			public VerifyMessageAction(String message[], int index){
 				this.message = message;
 			}
 			
 			@Override
 			public boolean process(Dialog dialog) {
 				for(String current: message){
-					if(!functionalInstantMessagingUtil.waitForPageToLoadMessage(browser, current)){
-						return(false);
+					if(conversationPartner instanceof UserVO){
+						if(!functionalInstantMessagingUtil.waitForPageToLoadMessage(browser, current)){
+							return(false);
+						}
+					}else if(conversationPartner instanceof GroupVO){
+						if(!functionalGroupsSiteUtil.waitForPageToLoadMessage(browser, ((GroupVO) conversationPartner).getName(), current, index)){
+							return(false);
+						}
 					}
 				}
 				
