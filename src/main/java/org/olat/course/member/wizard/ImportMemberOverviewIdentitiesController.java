@@ -20,7 +20,6 @@
 package org.olat.course.member.wizard;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.admin.user.UserTableDataModel;
@@ -33,6 +32,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -55,6 +55,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 	
 	private List<Identity> oks;
+	private List<String> notfounds;
 	private boolean isAdministrativeUser;
 	
 	private final UserManager userManager;
@@ -70,11 +71,11 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		oks = null;
 		if(containsRunContextKey("logins")) {
 			String logins = (String)runContext.get("logins");
-			oks = loadModel(logins);
+			loadModel(logins);
 		} else if(containsRunContextKey("keys")) {
 			@SuppressWarnings("unchecked")
 			List<String> keys = (List<String>)runContext.get("keys");
-			oks = loadModel(keys);
+			loadModel(keys);
 		}
 
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -84,6 +85,21 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(notfounds != null && !notfounds.isEmpty()) {
+			String page = velocity_root + "/warn_notfound.html";
+			FormLayoutContainer warnLayout = FormLayoutContainer.createCustomFormLayout("warnNotFounds", getTranslator(), page);
+			warnLayout.setRootForm(mainForm);
+			formLayout.add(warnLayout);
+			
+			StringBuffer sb = new StringBuffer();
+			for(String notfound:notfounds) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(notfound);
+			}
+			String msg = translate("user.notfound", new String[]{sb.toString()});
+			addToRunContext("notFounds", sb.toString());
+			warnLayout.contextPut("notFounds", msg);
+		}
 		
 		//add the table
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -108,14 +124,11 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		uifactory.addTableElement("users", userTableModel, myTrans, formLayout);
 	}
 	
-	private List<Identity> loadModel(List<String> keys) {
-		List<Identity> existIdents = Collections.emptyList();//securityManager.getIdentitiesOfSecurityGroup(securityGroup);
-
-		List<Identity> oks = new ArrayList<Identity>();
+	private void loadModel(List<String> keys) {
+		oks = new ArrayList<Identity>();
 		List<String> isanonymous = new ArrayList<String>();
-		List<String> notfounds = new ArrayList<String>();
-		List<String> alreadyin = new ArrayList<String>();
-
+		notfounds = new ArrayList<String>();
+		
 		SecurityGroup anonymousSecGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 		for (String identityKey : keys) {
 			Identity ident = securityManager.loadIdentityByKey(Long.parseLong(identityKey));
@@ -123,31 +136,16 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 				notfounds.add(identityKey);
 			} else if (securityManager.isIdentityInSecurityGroup(ident, anonymousSecGroup)) {
 				isanonymous.add(identityKey);
-			} else {
-				// check if already in group
-				boolean inGroup = PersistenceHelper.containsPersistable(existIdents, ident);
-				if (inGroup) {
-					// added to warning: already in group
-					alreadyin.add(ident.getName());
-				} else {
-					// ok to add -> preview (but filter duplicate entries)
-					if (!PersistenceHelper.containsPersistable(oks, ident)) {
-						oks.add(ident);
-					}
-				}
+			} else if (!PersistenceHelper.containsPersistable(oks, ident)) {
+				oks.add(ident);
 			}
 		}
-		
-		return oks;
 	}
 	
-	private List<Identity> loadModel(String inp) {
-		List<Identity> existIdents = Collections.emptyList();//securityManager.getIdentitiesOfSecurityGroup(securityGroup);
-
-		List<Identity> oks = new ArrayList<Identity>();
+	private void loadModel(String inp) {
+		oks = new ArrayList<Identity>();
 		List<String> isanonymous = new ArrayList<String>();
-		List<String> notfounds = new ArrayList<String>();
-		List<String> alreadyin = new ArrayList<String>();
+		notfounds = new ArrayList<String>();
 
 		SecurityGroup anonymousSecGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 
@@ -160,25 +158,12 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 					notfounds.add(username);
 				} else if (securityManager.isIdentityInSecurityGroup(ident, anonymousSecGroup)) {
 					isanonymous.add(username);
-				} else {
-					// check if already in group
-					boolean inGroup = PersistenceHelper.containsPersistable(existIdents, ident);
-					if (inGroup) {
-						// added to warning: already in group
-						alreadyin.add(ident.getName());
-					} else {
-						// ok to add -> preview (but filter duplicate entries)
-						if (!PersistenceHelper.containsPersistable(oks, ident)) {
-							oks.add(ident);
-						}
-					}
+				} else if (!PersistenceHelper.containsPersistable(oks, ident)) {
+					oks.add(ident);
 				}
 			}
 		}
-		
-		return oks;
 	}
-	
 
 	public boolean validate() {
 		return true;
