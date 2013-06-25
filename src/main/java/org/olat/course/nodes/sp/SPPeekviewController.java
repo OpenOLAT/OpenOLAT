@@ -70,10 +70,10 @@ public class SPPeekviewController extends BasicController {
 			String fileLC = file.toLowerCase();
 			if (fileLC.endsWith(".html") || fileLC.endsWith(".htm") || fileLC.endsWith(".xhtml")) {
 				// Render normal view but scaled down to 75%
+				boolean allowRelativeLinks = config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS);
 				SinglePageController spController =  new SinglePageController(ureq, wControl, 
 						userCourseEnv.getCourseEnvironment().getCourseFolderContainer(), 
-						file, null, 
-						config.getBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS), ores);		
+						file, null, allowRelativeLinks, ores);		
 				// but add scaling to fit preview into minimized space
 				spController.setScaleFactorAndHeight(0.75f, 400, true);
 				listenTo(spController);
