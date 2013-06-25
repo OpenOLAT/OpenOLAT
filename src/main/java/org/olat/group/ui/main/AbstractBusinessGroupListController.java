@@ -274,7 +274,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 				BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(businessGroupKey);
 				//prevent rs after a group is deleted by someone else
 				if(businessGroup == null) {
-					groupListModel.removeBusinessGroup(businessGroup);
+					groupListModel.removeBusinessGroup(businessGroupKey);
 					groupListCtr.modelChanged();
 				} else if(TABLE_ACTION_DELETE.equals(actionid)) {
 					BGTableItem item = groupListModel.getObject(te.getRowId());

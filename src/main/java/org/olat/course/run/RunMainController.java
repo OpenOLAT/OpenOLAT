@@ -423,7 +423,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				nclr = navHandler.evaluateJumpToCourseNode(ureq, getWindowControl(), null, null, null);
 			}
 			if (!nclr.isVisible()) {
-				MessageController msgController = MessageUIFactory.createInfoMessage(ureq, this.getWindowControl(),	translate("course.noaccess.title"), translate("course.noaccess.text"));
+				MessageController msgController = MessageUIFactory.createInfoMessage(ureq, getWindowControl(),	translate("course.noaccess.title"), translate("course.noaccess.text"));
 				contentP.setContent(msgController.getInitialComponent());					
 				luTree.setTreeModel(new GenericTreeModel());
 				return false;
@@ -631,8 +631,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				luTree.setSelectedNodeId(newCpTreeNode.getIdent());
 			} else if (event == Event.CHANGED_EVENT) {
 				updateTreeAndContent(ureq, currentCourseNode, null);
+			} else if (event instanceof BusinessGroupModifiedEvent) {
+				processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
+				updateTreeAndContent(ureq, currentCourseNode, null);
 			}
-
 		} else if (source == toolC) {
 			String cmd = event.getCommand();
 			doHandleToolEvents(ureq, cmd);
@@ -938,11 +940,40 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				needsRebuildAfterRunDone = true;
 			}
 		} else if (event instanceof BusinessGroupModifiedEvent) {
-			BusinessGroupModifiedEvent bgme = (BusinessGroupModifiedEvent) event;
-			Identity identity = uce.getIdentityEnvironment().getIdentity();
-			// only do something if this identity is affected by change and the action
-			// was adding or removing of the user
-			if (bgme.wasMyselfAdded(identity) || bgme.wasMyselfRemoved(identity)) {
+			processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
+		} else if (event instanceof CourseConfigEvent) {				
+			doDisposeAfterEvent();
+		} else if (event instanceof EntryChangedEvent && ((EntryChangedEvent)event).getChange()!=EntryChangedEvent.MODIFIED_AT_PUBLISH) {
+			//courseRepositoryEntry changed (e.g. fired at course access rule change)
+			EntryChangedEvent repoEvent = (EntryChangedEvent) event;			
+			if (courseRepositoryEntry.getKey().equals(repoEvent.getChangedEntryKey()) && repoEvent.getChange() == EntryChangedEvent.MODIFIED) {				
+				doDisposeAfterEvent();
+			}
+		}
+	}
+	
+	private void processBusinessGroupModifiedEvent(BusinessGroupModifiedEvent bgme) {
+		Identity identity = uce.getIdentityEnvironment().getIdentity();
+		// only do something if this identity is affected by change and the action
+		// was adding or removing of the user
+		if (bgme.wasMyselfAdded(identity) || bgme.wasMyselfRemoved(identity)) {
+			// 1) reinitialize all group memberships
+			reloadGroupMemberships(identity);
+			// 2) reinitialize the users roles and rights
+			reloadUserRolesAndRights(identity);
+			// 3) rebuild toolboxes with link to groups and tools
+			removeAsListenerAndDispose(toolC);
+			toolC = initToolController(identity, null);
+			listenTo(toolC);
+			Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
+			columnLayoutCtr.setCol2(toolComp);
+			needsRebuildAfterRunDone = true;
+		} else if (bgme.getCommand().equals(BusinessGroupModifiedEvent.GROUPRIGHTS_MODIFIED_EVENT)) {
+			// check if this affects a right group where the user does participate.
+			// if so, we need
+			// to rebuild the toolboxes
+			if (PersistenceHelper.listContainsObjectByKey(uce.getParticipatingGroups(), bgme.getModifiedGroupKey()) ||
+					PersistenceHelper.listContainsObjectByKey(uce.getCoachedGroups(), bgme.getModifiedGroupKey())) {
 				// 1) reinitialize all group memberships
 				reloadGroupMemberships(identity);
 				// 2) reinitialize the users roles and rights
@@ -953,33 +984,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				listenTo(toolC);
 				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 				columnLayoutCtr.setCol2(toolComp);
-				needsRebuildAfterRunDone = true;
-			} else if (bgme.getCommand().equals(BusinessGroupModifiedEvent.GROUPRIGHTS_MODIFIED_EVENT)) {
-				// check if this affects a right group where the user does participate.
-				// if so, we need
-				// to rebuild the toolboxes
-				if (PersistenceHelper.listContainsObjectByKey(uce.getParticipatingGroups(), bgme.getModifiedGroupKey()) ||
-						PersistenceHelper.listContainsObjectByKey(uce.getCoachedGroups(), bgme.getModifiedGroupKey())) {
-					// 1) reinitialize all group memberships
-					reloadGroupMemberships(identity);
-					// 2) reinitialize the users roles and rights
-					reloadUserRolesAndRights(identity);
-					// 3) rebuild toolboxes with link to groups and tools
-					removeAsListenerAndDispose(toolC);
-					toolC = initToolController(identity, null);
-					listenTo(toolC);
-					Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-					columnLayoutCtr.setCol2(toolComp);
-				}
-			}
-
-		} else if (event instanceof CourseConfigEvent) {				
-			doDisposeAfterEvent();
-		} else if (event instanceof EntryChangedEvent && ((EntryChangedEvent)event).getChange()!=EntryChangedEvent.MODIFIED_AT_PUBLISH) {
-			//courseRepositoryEntry changed (e.g. fired at course access rule change)
-			EntryChangedEvent repoEvent = (EntryChangedEvent) event;			
-			if (courseRepositoryEntry.getKey().equals(repoEvent.getChangedEntryKey()) && repoEvent.getChange() == EntryChangedEvent.MODIFIED) {				
-				doDisposeAfterEvent();
 			}
 		}
 	}

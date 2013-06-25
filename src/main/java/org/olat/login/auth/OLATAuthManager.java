@@ -24,22 +24,39 @@
 */
 package org.olat.login.auth;
 
+import java.util.Collections;
+import java.util.Locale;
+
+import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.ldap.LDAPError;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.OLATAuthenticationController;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -77,7 +94,6 @@ public class OLATAuthManager extends BasicManager {
 		// The 128 bit MD5 hash is converted into a 32 character long String
 		String hashedPwd = Encoder.encrypt(newPwd);
 		
-		//DBFactory.getInstance().reputInHibernateSessionCache(identity);
 		//o_clusterREVIEW
 		identity = (Identity) DBFactory.getInstance().loadObject(identity);
 		
@@ -100,7 +116,38 @@ public class OLATAuthManager extends BasicManager {
 		else {
 			allOk =changeOlatPassword(doer, identity, hashedPwd);
 		}
+		if(allOk) {
+			sendConfirmationEmail(doer, identity);
+		}
+		
 		return allOk;
+	}
+	
+	private static void sendConfirmationEmail(Identity doer, Identity identity) {
+		String prefsLanguage = identity.getUser().getPreferences().getLanguage();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefsLanguage);
+		Translator translator = Util.createPackageTranslator(OLATAuthenticationController.class, locale);
+
+		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("changepw", 0l));
+		String changePwUrl = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
+		String[] args = new String[] {
+				identity.getName(),//0: changed users username
+				identity.getUser().getProperty(UserConstants.EMAIL, locale),// 1: changed users email address
+				UserManager.getInstance().getUserDisplayName(doer.getUser()),// 2: Name (first and last name) of user who changed the password
+				WebappHelper.getMailConfig("mailSupport"), //3: configured support email address
+				changePwUrl //4: direct link to change password workflow (e.g. https://xx.xx.xx/olat/url/changepw/0)
+		};
+		String subject = translator.translate("mail.pwd.subject", args);
+		String body = translator.translate("mail.pwd.body", args);
+		MailTemplate template = new MailTemplate(subject, body, null){
+			@Override
+			public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
+				//
+			}
+		};
+		MailContext context = new MailContextImpl(null, null, "[Identity:" + identity.getKey() + "]");
+		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+		mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, template, null, null);
 	}
 	
 	private static boolean changeOlatPassword(Identity doer, Identity identity, String hashedPwd) {

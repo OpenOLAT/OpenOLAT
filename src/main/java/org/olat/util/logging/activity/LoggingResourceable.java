@@ -417,6 +417,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public static LoggingResourceable wrap(Feed feed) {
 		String title = feed.getTitle();
 		// truncate title after 230 chars
+		if (title == null) title = "";
 		if (title.length() > 230) title = title.substring(0, 229);
 		return new LoggingResourceable(feed, OlatResourceableType.feed, feed.getResourceableTypeName(),
 				String.valueOf(feed.getResourceableId()), title, false);

@@ -153,13 +153,13 @@ public class SPRunController extends BasicController {
 	}
 
 	private void doInlineIntegration(UserRequest ureq, boolean hasEditRightsTo) {
-		Boolean allowRelativeLinks = config.getBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS);
+		boolean allowRelativeLinks = config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS);
 		// create the possibility to float
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName, null,
-				allowRelativeLinks.booleanValue(), ores, deliveryOptions);
+				allowRelativeLinks, ores, deliveryOptions);
 		spCtr.setAllowDownload(true);
 		
 		// only for inline integration: register for controller event to forward a olatcmd to the course,
