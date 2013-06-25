@@ -34,7 +34,6 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 
 /**
@@ -173,10 +172,12 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		setObjects(owned);
 	}
 	
-	public void removeBusinessGroup(BusinessGroup bg) {
+	public void removeBusinessGroup(Long bgKey) {
+		if(bgKey == null) return;
+		
 		for(int i=objects.size(); i-->0; ) {
 			BGTableItem wrapped = (BGTableItem)objects.get(i);
-			if(bg.getKey().equals(wrapped.getBusinessGroupKey())) {
+			if(bgKey.equals(wrapped.getBusinessGroupKey())) {
 				objects.remove(i);
 				return;
 			}
