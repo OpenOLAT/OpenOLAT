@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.data.DataProxy
  * @extends Ext.util.Observable
@@ -358,7 +372,7 @@ proxy.setApi(Ext.data.Api.actions.read, '/users/new_load_url');
      * request.  If all API-actions are routed to unique urls, the xaction parameter is unecessary.  However, if no api is defined
      * and all Proxy actions are routed to DataProxy#url, the server-side will require the xaction parameter to perform a switch to
      * the corresponding code for CRUD action.
-     * @param {String [Ext.data.Api.CREATE|READ|UPDATE|DESTROY]} action
+     * @param {String} action CREATE READ UPDATE or DESTROY
      * @return {Boolean}
      */
     isApiAction : function(action) {

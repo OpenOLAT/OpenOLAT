@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.util.DelayedTask
  * <p> The DelayedTask class provides a convenient way to "buffer" the execution of a method,
@@ -29,7 +43,7 @@ Ext.get('myInputField').on('keypress', function(){
  * also setup a delayed task for you to buffer events.</p> 
  * @constructor The parameters to this constructor serve as defaults and are not required.
  * @param {Function} fn (optional) The default function to call.
- * @param {Object} scope The default scope (The <code><b>this</b></code> reference) in which the
+ * @param {Object} scope (optional) The default scope (The <code><b>this</b></code> reference) in which the
  * function is called. If not specified, <code>this</code> will refer to the browser window.
  * @param {Array} args (optional) The default Array of arguments.
  */

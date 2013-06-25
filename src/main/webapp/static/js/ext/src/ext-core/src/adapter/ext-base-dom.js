@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 (function(){
 	var doc = document,
 		isCSS1 = doc.compatMode == "CSS1Compat",
@@ -48,14 +62,14 @@
         },
 
         getViewportHeight: function(){
-	        return Ext.isIE ? 
+	        return Ext.isIE9m ? 
 	        	   (Ext.isStrict ? doc.documentElement.clientHeight : doc.body.clientHeight) :
 	        	   self.innerHeight;
         },
 
         getViewportWidth : function() {
 	        return !Ext.isStrict && !Ext.isOpera ? doc.body.clientWidth :
-	        	   Ext.isIE ? doc.documentElement.clientWidth : self.innerWidth;
+	        	   Ext.isIE9m ? doc.documentElement.clientWidth : self.innerWidth;
         },
         
         getY : function(el) {

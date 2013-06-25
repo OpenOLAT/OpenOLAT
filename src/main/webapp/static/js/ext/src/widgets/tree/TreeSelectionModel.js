@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.tree.DefaultSelectionModel
  * @extends Ext.util.Observable
@@ -27,8 +41,8 @@ Ext.tree.DefaultSelectionModel = Ext.extend(Ext.util.Observable, {
              * @event beforeselect
              * Fires before the selected node changes, return false to cancel the change
              * @param {DefaultSelectionModel} this
-             * @param {TreeNode} node the new selection
-             * @param {TreeNode} node the old selection
+             * @param {TreeNode} newNode the new selection
+             * @param {TreeNode} oldNode the old selection
              */
             'beforeselect'
         );
@@ -247,7 +261,7 @@ Ext.tree.MultiSelectionModel = Ext.extend(Ext.util.Observable, {
      * Select a node.
      * @param {TreeNode} node The node to select
      * @param {EventObject} e (optional) An event associated with the selection
-     * @param {Boolean} keepExisting True to retain existing selections
+     * @param {Boolean} keepExisting (optional) True to retain existing selections
      * @return {TreeNode} The selected node
      */
     select : function(node, e, keepExisting){

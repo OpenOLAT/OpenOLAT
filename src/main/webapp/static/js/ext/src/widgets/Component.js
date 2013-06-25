@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.Component
  * @extends Ext.util.Observable
@@ -93,6 +107,7 @@ textarea         {@link Ext.form.TextArea}
 textfield        {@link Ext.form.TextField}
 timefield        {@link Ext.form.TimeField}
 trigger          {@link Ext.form.TriggerField}
+twintrigger      {@link Ext.form.TwinTriggerField}
 
 Chart components
 ---------------------------------------
@@ -765,7 +780,7 @@ new Ext.Panel({
     }
 });
 </code></pre>
-     * <p>See also <tt>{@link #getEl getEl}</p>
+     * <p>See also <tt>{@link #getEl getEl}</tt></p>
      * @type Ext.Element
      * @property el
      */
@@ -838,7 +853,7 @@ new Ext.Panel({
      * The initial set of data to apply to the <code>{@link #tpl}</code> to
      * update the content area of the Component.
      */
-    
+
     /**
      * @cfg {Array} bubbleEvents
      * <p>An array of events that, when fired, should be bubbled to any parent container.
@@ -1566,7 +1581,7 @@ var isBoxInstance = t.isXType('box', true); // false, not a direct BoxComponent 
      * <pre><code>
 var c = new Ext.Component();
 console.log(c.isXType(c));
-console.log(c.isXType(Ext.Component)); 
+console.log(c.isXType(Ext.Component));
 </code></pre>
      * @param {Boolean} shallow (optional) False to check whether this Component is descended from the xtype (this is
      * the default), or true to check whether this Component is directly of the specified xtype.
@@ -1633,7 +1648,7 @@ alert(t.getXTypes());  // alerts 'component/box/field/textfield'
             return c.isXType(xtype, shallow);
         });
     },
-    
+
     /**
      * Bubbles up the component/container heirarchy, calling the specified function with each component. The scope (<i>this</i>) of
      * function call will be the scope provided or the current component. The arguments to the function

@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.StoreMgr
  * @extends Ext.util.MixedCollection
@@ -18,9 +32,7 @@ Ext.StoreMgr = Ext.apply(new Ext.util.MixedCollection(), {
     /**
      * Registers one or more Stores with the StoreMgr. You do not normally need to register stores
      * manually.  Any store initialized with a {@link Ext.data.Store#storeId} will be auto-registered. 
-     * @param {Ext.data.Store} store1 A Store instance
-     * @param {Ext.data.Store} store2 (optional)
-     * @param {Ext.data.Store} etc... (optional)
+     * @param {Ext.data.Store...} stores Any number of Store instances
      */
     register : function(){
         for(var i = 0, s; (s = arguments[i]); i++){
@@ -30,9 +42,7 @@ Ext.StoreMgr = Ext.apply(new Ext.util.MixedCollection(), {
 
     /**
      * Unregisters one or more Stores with the StoreMgr
-     * @param {String/Object} id1 The id of the Store, or a Store instance
-     * @param {String/Object} id2 (optional)
-     * @param {String/Object} etc... (optional)
+     * @param {String/Object} ids IDs of the Stores, or Store instances
      */
     unregister : function(){
         for(var i = 0, s; (s = arguments[i]); i++){

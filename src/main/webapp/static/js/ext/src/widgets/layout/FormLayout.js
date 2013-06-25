@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.layout.FormLayout
  * @extends Ext.layout.AnchorLayout
@@ -147,21 +161,23 @@ Ext.layout.FormLayout = Ext.extend(Ext.layout.AnchorLayout, {
     // private
     setContainer : function(ct){
         Ext.layout.FormLayout.superclass.setContainer.call(this, ct);
-        if(ct.labelAlign){
-            ct.addClass('x-form-label-'+ct.labelAlign);
+        ct.labelAlign = ct.labelAlign || this.labelAlign;
+        if (ct.labelAlign) {
+            ct.addClass('x-form-label-' + ct.labelAlign);
         }
 
-        if(ct.hideLabels){
+        if (ct.hideLabels || this.hideLabels) { 
             Ext.apply(this, {
                 labelStyle: 'display:none',
                 elementStyle: 'padding-left:0;',
                 labelAdjust: 0
             });
-        }else{
+        } else {
             this.labelSeparator = Ext.isDefined(ct.labelSeparator) ? ct.labelSeparator : this.labelSeparator;
-            ct.labelWidth = ct.labelWidth || 100;
+            ct.labelWidth = ct.labelWidth || this.labelWidth || 100;
             if(Ext.isNumber(ct.labelWidth)){
-                var pad = Ext.isNumber(ct.labelPad) ? ct.labelPad : 5;
+                var pad = ct.labelPad || this.labelPad;
+                pad = Ext.isNumber(pad) ? pad : 5;
                 Ext.apply(this, {
                     labelAdjust: ct.labelWidth + pad,
                     labelStyle: 'width:' + ct.labelWidth + 'px;',
@@ -339,7 +355,7 @@ new Ext.Template(
     // private
     adjustWidthAnchor: function(value, c){
         if(c.label && !this.isHide(c) && (this.container.labelAlign != 'top')){
-            var adjust = Ext.isIE6 || (Ext.isIE && !Ext.isStrict);
+            var adjust = Ext.isIE6 || Ext.isIEQuirks;
             return value - this.labelAdjust + (adjust ? -3 : 0);
         }
         return value;

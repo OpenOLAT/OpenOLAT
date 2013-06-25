@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.layout.BorderLayout
  * @extends Ext.layout.ContainerLayout
@@ -197,7 +211,7 @@ Ext.layout.BorderLayout = Ext.extend(Ext.layout.ContainerLayout, {
                 collapsed[i].collapse(false);
             }
         }
-        if(Ext.isIE && Ext.isStrict){ // workaround IE strict repainting issue
+        if(Ext.isIE9m && Ext.isStrict){ // workaround IE strict repainting issue
             target.repaint();
         }
         // Putting a border layout into an overflowed container is NOT correct and will make a second layout pass necessary.
@@ -235,8 +249,9 @@ Ext.layout.BorderLayout = Ext.extend(Ext.layout.ContainerLayout, {
 /**
  * @class Ext.layout.BorderLayout.Region
  * <p>This is a region of a {@link Ext.layout.BorderLayout BorderLayout} that acts as a subcontainer
- * within the layout.  Each region has its own {@link Ext.layout.ContainerLayout layout} that is
- * independent of other regions and the containing BorderLayout, and can be any of the
+ * within the layout. Each region in the layout is a component, the region itself is constructed on top
+ * of that component, acting like a mixin. Each region has its own {@link Ext.layout.ContainerLayout layout} 
+ * that is independent of other regions and the containing BorderLayout, and can be any of the
  * {@link Ext.layout.ContainerLayout valid Ext layout types}.</p>
  * <p>Region size is managed automatically and cannot be changed by the user -- for
  * {@link #split resizable regions}, see {@link Ext.layout.BorderLayout.SplitRegion}.</p>

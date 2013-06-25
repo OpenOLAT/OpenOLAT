@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.layout.HBoxLayout
  * @extends Ext.layout.BoxLayout
@@ -25,6 +39,7 @@ Ext.layout.HBoxLayout = Ext.extend(Ext.layout.BoxLayout, {
      * the height of the container</div></li>
      * <li><b><tt>stretchmax</tt></b> : <div class="sub-desc">child items are stretched vertically to
      * the height of the largest item.</div></li>
+     * </ul></div>
      */
     align: 'top', // top, middle, stretch, strechmax
 
@@ -88,7 +103,7 @@ Ext.layout.HBoxLayout = Ext.extend(Ext.layout.BoxLayout, {
             boxes        = [],
 
             //used in the for loops below, just declared here for brevity
-            child, childWidth, childHeight, childSize, childMargins, canLayout, i, calcs, flexedWidth, 
+            child, childWidth, childHeight, childSize, childMargins, canLayout, i, calcs, flexedWidth,
             horizMargins, vertMargins, stretchHeight;
 
         //gather the total flex of all flexed items and the width taken up by fixed width items
@@ -143,13 +158,13 @@ Ext.layout.HBoxLayout = Ext.extend(Ext.layout.BoxLayout, {
                 width    : childWidth  || undefined
             });
         }
-                
+
         var shortfall = desiredWidth - width,
             tooNarrow = minimumWidth > width;
-            
+
         //the width available to the flexed items
         var availableWidth = Math.max(0, width - nonFlexWidth - paddingHoriz);
-        
+
         if (tooNarrow) {
             for (i = 0; i < visibleCount; i++) {
                 boxes[i].width = visibleItems[i].minWidth || visibleItems[i].width || boxes[i].width;
@@ -159,12 +174,10 @@ Ext.layout.HBoxLayout = Ext.extend(Ext.layout.BoxLayout, {
             //the shortfall has been accounted for
             if (shortfall > 0) {
                 var minWidths = [];
-                
-                /**
-                 * When we have a shortfall but are not tooNarrow, we need to shrink the width of each non-flexed item.
-                 * Flexed items are immediately reduced to their minWidth and anything already at minWidth is ignored.
-                 * The remaining items are collected into the minWidths array, which is later used to distribute the shortfall.
-                 */
+
+                // When we have a shortfall but are not tooNarrow, we need to shrink the width of each non-flexed item.
+                // Flexed items are immediately reduced to their minWidth and anything already at minWidth is ignored.
+                // The remaining items are collected into the minWidths array, which is later used to distribute the shortfall.
                 for (var index = 0, length = visibleCount; index < length; index++) {
                     var item     = visibleItems[index],
                         minWidth = item.minWidth || 0;
@@ -181,12 +194,12 @@ Ext.layout.HBoxLayout = Ext.extend(Ext.layout.BoxLayout, {
                         });
                     }
                 }
-                
+
                 //sort by descending amount of width remaining before minWidth is reached
                 minWidths.sort(function(a, b) {
                     return a.available > b.available ? 1 : -1;
                 });
-                
+
                 /*
                  * Distribute the shortfall (difference between total desired with of all items and actual width available)
                  * between the non-flexed items. We try to distribute the shortfall evenly, but apply it to items with the
@@ -195,20 +208,20 @@ Ext.layout.HBoxLayout = Ext.extend(Ext.layout.BoxLayout, {
                  */
                 for (var i = 0, length = minWidths.length; i < length; i++) {
                     var itemIndex = minWidths[i].index;
-                    
+
                     if (itemIndex == undefined) {
                         continue;
                     }
-                        
+
                     var item      = visibleItems[itemIndex],
                         box       = boxes[itemIndex],
                         oldWidth  = box.width,
                         minWidth  = item.minWidth,
                         newWidth  = Math.max(minWidth, oldWidth - Math.ceil(shortfall / (length - i))),
                         reduction = oldWidth - newWidth;
-                    
+
                     boxes[itemIndex].width = newWidth;
-                    shortfall -= reduction;                    
+                    shortfall -= reduction;
                 }
             } else {
                 //temporary variables used in the flex width calculations below
@@ -234,22 +247,22 @@ Ext.layout.HBoxLayout = Ext.extend(Ext.layout.BoxLayout, {
                 }
             }
         }
-        
+
         if (isCenter) {
             leftOffset += availableWidth / 2;
         } else if (isEnd) {
             leftOffset += availableWidth;
         }
-        
+
         //finally, calculate the left and top position of each item
         for (i = 0; i < visibleCount; i++) {
             child = visibleItems[i];
             calcs = boxes[i];
-            
+
             childMargins = child.margins;
             leftOffset  += childMargins.left;
             vertMargins  = childMargins.top + childMargins.bottom;
-            
+
             calcs.left = leftOffset;
             calcs.top  = topOffset + childMargins.top;
 
@@ -270,7 +283,7 @@ Ext.layout.HBoxLayout = Ext.extend(Ext.layout.BoxLayout, {
                         calcs.top = topOffset + vertMargins + (diff / 2);
                     }
             }
-            
+
             leftOffset += calcs.width + childMargins.right;
         }
 

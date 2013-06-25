@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.layout.ColumnLayout
  * @extends Ext.layout.ContainerLayout
@@ -88,7 +102,7 @@ Ext.layout.ColumnLayout = Ext.extend(Ext.layout.ContainerLayout, {
             // IE in strict mode will return a width of 0 on the 1st pass of getViewSize.
             // Use getStyleSize to verify the 0 width, the adjustment pass will then work properly
             // with getViewSize
-            if (Ext.isIE && Ext.isStrict && ret.width == 0){
+            if (Ext.isIE9m && Ext.isStrict && ret.width == 0){
                 ret =  target.getStyleSize();
             }
 
@@ -121,7 +135,7 @@ Ext.layout.ColumnLayout = Ext.extend(Ext.layout.ContainerLayout, {
 
         var size = this.getLayoutTargetSize();
 
-        if(size.width < 1 && size.height < 1){ // display none?
+        if (Ext.isIE9m && (size.width < 1 && size.height < 1)) { // display none?
             return;
         }
 
@@ -155,7 +169,7 @@ Ext.layout.ColumnLayout = Ext.extend(Ext.layout.ContainerLayout, {
 
         // Browsers differ as to when they account for scrollbars.  We need to re-measure to see if the scrollbar
         // spaces were accounted for properly.  If not, re-layout.
-        if (Ext.isIE) {
+        if (Ext.isIE9m) {
             if (i = target.getStyle('overflow') && i != 'hidden' && !this.adjustmentPass) {
                 var ts = this.getLayoutTargetSize();
                 if (ts.width != size.width){

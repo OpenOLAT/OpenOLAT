@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.form.HtmlEditor
  * @extends Ext.form.Field
@@ -474,11 +488,11 @@ Ext.form.HtmlEditor = Ext.extend(Ext.form.Field, {
         doc.write(this.getDocMarkup());
         doc.close();
 
-        var task = { // must defer to wait for browser to be ready
+        this.readyTask = { // must defer to wait for browser to be ready
             run : function(){
                 var doc = this.getDoc();
                 if(doc.body || doc.readyState == 'complete'){
-                    Ext.TaskMgr.stop(task);
+                    Ext.TaskMgr.stop(this.readyTask);
                     this.setDesignMode(true);
                     this.initEditor.defer(10, this);
                 }
@@ -487,7 +501,7 @@ Ext.form.HtmlEditor = Ext.extend(Ext.form.Field, {
             duration:10000,
             scope: this
         };
-        Ext.TaskMgr.start(task);
+        Ext.TaskMgr.start(this.readyTask);
     },
 
 
@@ -787,9 +801,13 @@ Ext.form.HtmlEditor = Ext.extend(Ext.form.Field, {
         if(this.monitorTask){
             Ext.TaskMgr.stop(this.monitorTask);
         }
+        if(this.readyTask){
+            Ext.TaskMgr.stop(this.readyTask);
+        }
         if(this.rendered){
             Ext.destroy(this.tb);
             var doc = this.getDoc();
+            Ext.EventManager.removeFromSpecialCache(doc);
             if(doc){
                 try{
                     Ext.EventManager.removeAll(doc);

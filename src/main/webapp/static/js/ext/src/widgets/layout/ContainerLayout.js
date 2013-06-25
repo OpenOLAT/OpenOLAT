@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.layout.ContainerLayout
  * <p>This class is intended to be extended or created via the <tt><b>{@link Ext.Container#layout layout}</b></tt>
@@ -132,7 +146,7 @@ Ext.layout.ContainerLayout = Ext.extend(Object, {
                 if (Ext.isNumber(position)) {
                     position = target.dom.childNodes[position];
                 }
-                
+
                 target.dom.insertBefore(c.getPositionEl().dom, position || null);
                 c.container = target;
                 this.configureItem(c);
@@ -161,7 +175,7 @@ Ext.layout.ContainerLayout = Ext.extend(Object, {
             var t = c.getPositionEl ? c.getPositionEl() : c;
             t.addClass(this.extraCls);
         }
-        
+
         // If we are forcing a layout, do so *before* we hide so elements have height/width
         if (c.doLayout && this.forceLayout) {
             c.doLayout();
@@ -216,7 +230,7 @@ Ext.layout.ContainerLayout = Ext.extend(Object, {
 
     // private
     setContainer : function(ct){
-        /**
+        /*
          * This monitorResize flag will be renamed soon as to avoid confusion
          * with the Container version which hooks onWindowResize to doLayout
          *
@@ -247,7 +261,7 @@ Ext.layout.ContainerLayout = Ext.extend(Object, {
         }
         var ms  = v.split(' '),
             len = ms.length;
-            
+
         if (len == 1) {
             ms[1] = ms[2] = ms[3] = ms[0];
         } else if(len == 2) {
@@ -256,7 +270,7 @@ Ext.layout.ContainerLayout = Ext.extend(Object, {
         } else if(len == 3) {
             ms[3] = ms[1];
         }
-        
+
         return {
             top   :parseInt(ms[0], 10) || 0,
             right :parseInt(ms[1], 10) || 0,
