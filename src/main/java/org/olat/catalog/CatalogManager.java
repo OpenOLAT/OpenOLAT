@@ -292,16 +292,19 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param ce
 	 */
 	public void deleteCatalogEntry(CatalogEntry ce) {
-		boolean debug = isLogDebugEnabled();
+		final boolean debug = isLogDebugEnabled();
 		if(debug) logDebug("deleteCatalogEntry start... ce=" + ce);
 		
 		if (ce.getType() == CatalogEntry.TYPE_LEAF) {
-			//delete catalog entry, then delete owner group
-			SecurityGroup owner = ce.getOwnerGroup();
-			dbInstance.getCurrentEntityManager().remove(ce);
-			if (owner != null) {
-				getLogger().debug("deleteCatalogEntry case_1: delete owner-group=" + owner);
-				securityManager.deleteSecurityGroup(owner);
+			//reload the detached catalog entry, delete it and then the owner group
+			ce = getCatalogEntryByKey(ce.getKey());
+			if(ce != null) {
+				SecurityGroup owner = ce.getOwnerGroup();
+				dbInstance.getCurrentEntityManager().remove(ce);
+				if (owner != null) {
+					getLogger().debug("deleteCatalogEntry case_1: delete owner-group=" + owner);
+					securityManager.deleteSecurityGroup(owner);
+				}
 			}
 		} else {
 			List<SecurityGroup> secGroupsToBeDeleted = new ArrayList<SecurityGroup>();
@@ -317,7 +320,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			deleteCatalogSubtree(ce,secGroupsToBeDeleted);
 			// after deleting all entries, delete all secGroups corresponding
 			for (Iterator<SecurityGroup> iter = secGroupsToBeDeleted.iterator(); iter.hasNext();) {
-				SecurityGroup grp = (SecurityGroup) iter.next();
+				SecurityGroup grp = iter.next();
 				if(debug) logDebug("deleteCatalogEntry case_2: delete groups of deleteCatalogSubtree grp=" + grp);
 				securityManager.deleteSecurityGroup(grp);
 			}
