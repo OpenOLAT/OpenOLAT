@@ -490,6 +490,7 @@ public class FunctionalBlogTest {
 		Assert.assertTrue(functionalUtil.logout(browser));
 	}
 	
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkConcurrentTutors(@Drone @Tutor1 DefaultSelenium tutor0, @Drone @Tutor2 DefaultSelenium tutor1) throws IOException, URISyntaxException{
