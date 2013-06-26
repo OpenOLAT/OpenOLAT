@@ -21,6 +21,7 @@ package org.olat.restapi.support.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -40,6 +41,8 @@ public class GroupInfoVO extends GroupVO {
 	private Long forumKey;
 	private Boolean hasWiki = Boolean.FALSE;
 	private Boolean hasFolder = Boolean.FALSE;
+	@XmlAttribute(name="folderWrite", required=false)
+	private boolean folderWrite;
 	
 	public GroupInfoVO() {
 		//make JAXB happy
@@ -75,5 +78,13 @@ public class GroupInfoVO extends GroupVO {
 
 	public void setHasFolder(Boolean hasFolder) {
 		this.hasFolder = hasFolder;
+	}
+
+	public boolean isFolderWrite() {
+		return folderWrite;
+	}
+
+	public void setFolderWrite(boolean folderWrite) {
+		this.folderWrite = folderWrite;
 	}
 }

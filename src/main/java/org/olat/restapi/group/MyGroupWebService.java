@@ -140,7 +140,7 @@ public class MyGroupWebService {
 			int count = 0;
 			GroupInfoVO[] groupVOs = new GroupInfoVO[groups.size()];
 			for(BusinessGroup group:groups) {
-				groupVOs[count++] = ObjectFactory.getInformation(group);
+				groupVOs[count++] = ObjectFactory.getInformation(retrievedUser, group);
 			}
 			GroupInfoVOes voes = new GroupInfoVOes();
 			voes.setGroups(groupVOs);

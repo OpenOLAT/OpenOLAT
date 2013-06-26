@@ -361,15 +361,15 @@ public class LearningGroupWebService {
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		
+
+		Identity identity = RestSecurityHelper.getIdentity(request);
 		if(!isGroupManager(request)) {
-			Identity identity = RestSecurityHelper.getIdentity(request);
 			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		}
 		
-		GroupInfoVO info = getInformation(bg);
+		GroupInfoVO info = getInformation(identity, bg);
 		return Response.ok(info).build();
 	}
 	
