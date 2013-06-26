@@ -176,7 +176,7 @@ public class QLicensesAdminController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				editCtrl.getInitialComponent(), true, translate("edit.pool"));
+				editCtrl.getInitialComponent(), true, translate("create.license"));
 		cmc.activate();
 		listenTo(cmc);	
 	}

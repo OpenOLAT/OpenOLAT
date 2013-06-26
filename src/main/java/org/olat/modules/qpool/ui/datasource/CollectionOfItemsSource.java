@@ -77,6 +77,11 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
+	public boolean isDeleteEnabled() {
+		return false;
+	}
+
+	@Override
 	public void removeFromSource(List<QuestionItemShort> items) {
 		qpoolService.removeItemsFromCollection(items, collection);
 	}

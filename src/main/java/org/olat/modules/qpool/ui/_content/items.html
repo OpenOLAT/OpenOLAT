@@ -14,7 +14,9 @@
 <div id="qbuttons" class="b_clearfix o_qpool_button_bar_box">
 	<div class="o_qpool_button_bar">
 		$r.render("select.item")
-		$r.render("delete.item")
+		#if($r.available("delete.item"))
+			$r.render("delete.item")
+		#end
 	</div>
 </div>
 <script type="text/javascript">

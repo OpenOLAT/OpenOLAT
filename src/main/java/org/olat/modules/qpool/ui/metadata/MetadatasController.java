@@ -236,6 +236,10 @@ public class MetadatasController extends BasicController {
 		mainVC.put("details_rights", rightsCtrl.getInitialComponent());
 	}
 	
+	public void updateShares() {
+		sharingCtrl.setItem(getItem());
+	}
+	
 	public QuestionItem updateVersionNumber() {
 		if(item instanceof QuestionItemImpl && StringHelper.containsNonWhitespace(item.getItemVersion())) {
 			String version = item.getItemVersion();

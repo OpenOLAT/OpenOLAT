@@ -65,7 +65,7 @@ public class QTI12MetadataController extends FormBasicController  {
 			leftSettingsCont.setRootForm(mainForm);
 			formLayout.add("leftSettings", leftSettingsCont);
 			
-			String shuffleStr = Boolean.toString(question.isShuffle());
+			String shuffleStr = translate(question.isShuffle() ? "editor.true" : "editor.false");
 			uifactory.addStaticTextElement("form.imd.shuffle", shuffleStr, leftSettingsCont);
 			
 			String duration = "";

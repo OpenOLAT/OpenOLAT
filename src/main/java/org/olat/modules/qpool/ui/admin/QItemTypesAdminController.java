@@ -219,7 +219,7 @@ public class QItemTypesAdminController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				editCtrl.getInitialComponent(), true, translate("edit.pool"));
+				editCtrl.getInitialComponent(), true, translate("create.type"));
 		cmc.activate();
 		listenTo(cmc);	
 	}

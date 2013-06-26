@@ -78,6 +78,11 @@ public class SharedItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
+	public boolean isDeleteEnabled() {
+		return false;
+	}
+
+	@Override
 	public void removeFromSource(List<QuestionItemShort> items) {
 		qpoolService.removeItemsFromResource(items, resource);
 	}

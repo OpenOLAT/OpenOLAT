@@ -350,6 +350,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private void doSelectMyQuestions(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		DefaultItemsSource source = new DefaultItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "My"); 
 		source.getDefaultParams().setAuthor(getIdentity());
+		source.setDeleteEnabled(true);
 		if(myQuestionsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("My"), null);
 			myQuestionsCtrl = new QuestionsController(ureq, swControl, source, "my");

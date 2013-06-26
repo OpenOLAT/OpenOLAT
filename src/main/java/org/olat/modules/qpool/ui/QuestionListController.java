@@ -127,7 +127,9 @@ public class QuestionListController extends AbstractItemListController implement
 		copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
 		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
 		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
-		deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
+		if(getSource().isDeleteEnabled()) {
+			deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
+		}
 		bulkChange = uifactory.addFormLink("bulk.change", formLayout, Link.BUTTON);
 	}
 
@@ -666,7 +668,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		removeAsListenerAndDispose(currentMainDetailsCtrl);
 		
-		currentDetailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item, editable);
+		currentDetailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item, editable, getSource().isDeleteEnabled());
 		currentDetailsCtrl.setStackedController(stackPanel);
 		listenTo(currentDetailsCtrl);
 		currentMainDetailsCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), currentDetailsCtrl);

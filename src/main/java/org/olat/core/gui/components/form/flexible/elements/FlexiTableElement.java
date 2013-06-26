@@ -60,6 +60,18 @@ public interface FlexiTableElement extends FormItem {
 	public void setMultiSelect(boolean enable);
 	
 	/**
+	 * 
+	 * @return true if the user can customize the columns of the table
+	 */
+	public boolean isCustomizeColumns();
+
+	/**
+	 * Enable customizing of columns
+	 * @param customizeColumns
+	 */
+	public void setCustomizeColumns(boolean customizeColumns);
+	
+	/**
 	 * @return The CSS selector used to calculate the height of the table
 	 * (datatables variant only)
 	 */

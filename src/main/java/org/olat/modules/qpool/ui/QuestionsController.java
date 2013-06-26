@@ -91,8 +91,10 @@ public class QuestionsController extends BasicController implements Activateable
 		mainVC.put("preview", previewCtrl.getInitialComponent());
 		mainVC.contextPut("tableId", listCtrl.getTableFormDispatchId());
 		
-		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
-		deleteItem.setEnabled(false);
+		if(source.isDeleteEnabled()) {
+			deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
+			deleteItem.setEnabled(false);
+		}
 		selectItem = LinkFactory.createButton("select.item", mainVC, this);
 		selectItem.setEnabled(false);
 
@@ -199,13 +201,15 @@ public class QuestionsController extends BasicController implements Activateable
 	}
 	
 	private void doUpdateDetails(UserRequest ureq, QuestionItemView itemView) {
-		deleteItem.setVisible(itemView.isEditable());
+		if(deleteItem != null) {
+			deleteItem.setVisible(itemView.isEditable());
+			deleteItem.setEnabled(true);
+		}
 		QuestionItem item = qpoolService.loadItemById(itemView.getKey());
 		detailsCtrl.updateItem(item, itemView.isEditable());
 		previewCtrl.updateItem(ureq, item);
 		
 		selectItem.setEnabled(true);
-		deleteItem.setEnabled(true);
 	}
 	
 	private void doDelete(UserRequest ureq, QuestionItemShort item) {

@@ -65,7 +65,7 @@ public class QItemTypeEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String name = itemType == null ? "" : itemType.getType();
-		nameEl = uifactory.addTextElement("type.type", "type.type", 128, name, formLayout);
+		nameEl = uifactory.addTextElement("type.type", "type.type.alt", 128, name, formLayout);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);

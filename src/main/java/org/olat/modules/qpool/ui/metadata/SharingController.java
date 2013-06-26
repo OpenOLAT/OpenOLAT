@@ -84,12 +84,14 @@ public class SharingController extends FormBasicController {
 		poolInfosColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("pool.name", 1));
 		poolInfosModel = new PoolInfosDataModel(poolInfosColumnsModel);
 		poolInfosTable = uifactory.addTableElement(ureq, getWindowControl(), "pools", poolInfosModel, getTranslator(), formLayout);
+		poolInfosTable.setCustomizeColumns(false);
 		
 		//list of authors
 		FlexiTableColumnModel authorsColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		authorsColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("sharing.author.name", 0));
 		authorsModel = new AuthorDataModel(authorsColumnsModel);
 		authorsTable = uifactory.addTableElement(ureq, getWindowControl(), "authors", authorsModel, getTranslator(), formLayout);
+		authorsTable.setCustomizeColumns(false);
 
 		//list of groups
 		FlexiTableColumnModel sharesColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -101,6 +103,7 @@ public class SharingController extends FormBasicController {
 		sharesColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("pool.name", 1));
 		sharesModel = new SharesDataModel(poolInfosColumnsModel);
 		sharesTable = uifactory.addTableElement(ureq, getWindowControl(), "shares", sharesModel, getTranslator(), formLayout);
+		sharesTable.setCustomizeColumns(false);
 	}
 	
 	@Override

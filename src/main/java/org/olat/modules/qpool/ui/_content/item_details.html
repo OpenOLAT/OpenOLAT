@@ -13,7 +13,9 @@ $r.render("metadatas")
 		$r.render("export.item")
 		$r.render("share.item")
 		$r.render("copy")
-		$r.render("delete.item")
+		#if($r.available("delete.item"))
+			$r.render("delete.item")
+		#end
 	</div>
 </div>
 $r.render("comments")

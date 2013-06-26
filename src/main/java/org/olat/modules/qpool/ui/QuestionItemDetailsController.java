@@ -80,7 +80,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 	private final QuestionPoolModule poolModule;
 	private final QPoolService qpoolService;
 	
-	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean editable) {
+	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean editable, boolean deletable) {
 		super(ureq, wControl);
 
 		poolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
@@ -112,8 +112,10 @@ public class QuestionItemDetailsController extends BasicController implements St
 		
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
 		copyItem = LinkFactory.createButton("copy", mainVC, this);
-		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
-		deleteItem.setVisible(canEdit);
+		if(deletable) {
+			deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
+			deleteItem.setVisible(canEdit);
+		}
 		exportItem = LinkFactory.createButton("export.item", mainVC, this);
 		
 		mainVC.put("type_specifics", previewCtrl.getInitialComponent());
@@ -179,6 +181,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 				if(groups.size() > 0) {
 					QuestionItem item = (QuestionItem)((SelectBusinessGroupController)source).getUserObject();
 					doShareItems(ureq, item, groups);
+					metadatasCtrl.updateShares();
 				}
 			}
 			cmc.deactivate();

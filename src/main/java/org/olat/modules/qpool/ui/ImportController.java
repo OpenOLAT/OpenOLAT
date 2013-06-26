@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -31,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
 
 /**
  * 
@@ -85,8 +87,14 @@ public class ImportController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String filename = fileEl.getUploadFileName();
 		File file = fileEl.getUploadFile();
-		qpoolservice.importItems(getIdentity(), getLocale(), filename, file);
+		List<QuestionItem> importItems = qpoolservice.importItems(getIdentity(), getLocale(), filename, file);
 		fireEvent(ureq, Event.DONE_EVENT);
+		
+		if(importItems.isEmpty()) {
+			showWarning("import.failed");
+		} else {
+			showInfo("import.success", Integer.toString(importItems.size()));
+		}
 	}
 
 	@Override

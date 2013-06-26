@@ -35,7 +35,10 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -99,7 +102,12 @@ public class PoolsAdminController extends FormBasicController {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.id.i18nKey(), Cols.id.ordinal(), true, "key"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.publicPool.i18nKey(), Cols.publicPool.ordinal(), true, "name"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.publicPool.i18nKey(), Cols.publicPool.ordinal(),
+				true, "publicPool", FlexiColumnModel.ALIGNMENT_LEFT,
+				new BooleanCellRenderer(
+						new CSSIconFlexiCellRenderer("o_public"),
+						new CSSIconFlexiCellRenderer("o_private"))
+		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, "name"));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit-pool"));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("pool.owners", translate("pool.owners"), "owners-pool"));
@@ -220,7 +228,7 @@ public class PoolsAdminController extends FormBasicController {
 			listenTo(groupCtrl);
 	
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					groupCtrl.getInitialComponent(), true, translate("manage.owners"));
+					groupCtrl.getInitialComponent(), true, translate("pool.owners"));
 			cmc.activate();
 			listenTo(cmc);
 		}

@@ -45,6 +45,7 @@ import org.olat.modules.qpool.ui.QuestionItemsSource;
 public class DefaultItemsSource implements QuestionItemsSource {
 
 	private boolean removeEnabled = false;
+	private boolean deleteEnabled = false;
 	private final String name;
 	private final QPoolService qpoolService;
 	private final SearchQuestionItemParams defaultParams;
@@ -84,6 +85,15 @@ public class DefaultItemsSource implements QuestionItemsSource {
 	
 	public void setRemoveEnabled(boolean removeEnabled) {
 		this.removeEnabled = removeEnabled;
+	}
+
+	@Override
+	public boolean isDeleteEnabled() {
+		return deleteEnabled;
+	}
+
+	public void setDeleteEnabled(boolean deleteEnabled) {
+		this.deleteEnabled = deleteEnabled;
 	}
 
 	@Override

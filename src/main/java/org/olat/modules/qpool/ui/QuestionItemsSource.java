@@ -44,6 +44,8 @@ public interface QuestionItemsSource {
 	
 	public boolean isRemoveEnabled();
 	
+	public boolean isDeleteEnabled();
+	
 	public void removeFromSource(List<QuestionItemShort> items);
 	
 	public int getNumOfItems();

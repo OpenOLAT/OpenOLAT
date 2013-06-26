@@ -72,6 +72,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	//settings
 	private boolean multiSelect;
 	private FlexiTableRendererType rendererType = FlexiTableRendererType.classic;
+	private boolean customizeColumns = true;
 	
 	private int rowCount = -1;
 	
@@ -177,6 +178,16 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setMultiSelect(boolean multiSelect) {
 		this.multiSelect = multiSelect;
+	}
+	
+	
+
+	public boolean isCustomizeColumns() {
+		return customizeColumns;
+	}
+
+	public void setCustomizeColumns(boolean customizeColumns) {
+		this.customizeColumns = customizeColumns;
 	}
 
 	public String getWrapperSelector() {

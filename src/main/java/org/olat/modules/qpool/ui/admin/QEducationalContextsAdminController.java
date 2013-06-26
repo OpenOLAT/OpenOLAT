@@ -218,7 +218,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				editCtrl.getInitialComponent(), true, translate("edit.pool"));
+				editCtrl.getInitialComponent(), true, translate("create.level"));
 		cmc.activate();
 		listenTo(cmc);	
 	}
