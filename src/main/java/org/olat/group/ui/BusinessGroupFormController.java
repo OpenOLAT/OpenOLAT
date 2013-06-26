@@ -29,6 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -162,12 +163,14 @@ public class BusinessGroupFormController extends FormBasicController {
 			BusinessControlFactory bcf = BusinessControlFactory.getInstance();
 			List<ContextEntry> entries = bcf.createCEListFromString("[BusinessGroup:" + businessGroup.getKey() + "]");
 			String url = bcf.getAsURIString(entries, true);
-			uifactory.addStaticTextElement("create.form.businesspath", url, formLayout);
+			StaticTextElement urlEl = uifactory.addStaticTextElement("create.form.businesspath", url, formLayout);
+			urlEl.setElementCssClass("o_sel_group_url");
 			// link to group visiting card
 			bcf = BusinessControlFactory.getInstance();
 			entries = bcf.createCEListFromString("[GroupCard:" + businessGroup.getKey() + "]");
 			url = bcf.getAsURIString(entries, true);
-			uifactory.addStaticTextElement("create.form.groupcard", url, formLayout);
+			StaticTextElement cardEl = uifactory.addStaticTextElement("create.form.groupcard", url, formLayout);
+			cardEl.setElementCssClass("o_sel_group_card_url");
 		}
 		
 		uifactory.addSpacerElement("myspacer", formLayout, true);

@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
@@ -52,14 +53,12 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public void evalFormRequest(UserRequest ureq) {
 		// static text must not evaluate
 	}
 	
 	@Override
-	@SuppressWarnings("unused")
-	public void validate(List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		//static text must not validate
 	}
 
@@ -73,6 +72,12 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 	}
 
 	@Override
+	public void setElementCssClass(String elementCssClass) {
+		super.setElementCssClass(elementCssClass);
+		component.setElementCssClass(elementCssClass);
+	}
+
+	@Override
 	protected void rootFormAvailable() {
 		//root form not interesting for Static text
 	}
@@ -82,8 +87,7 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 	}
 
 	public void setValue(String replacementValue) {
-		this.value = replacementValue;
-		this.getFormItemComponent().setDirty(true);
+		value = replacementValue;
+		getFormItemComponent().setDirty(true);
 	}
-
 }

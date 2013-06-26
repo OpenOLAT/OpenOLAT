@@ -34,6 +34,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -48,45 +49,33 @@ class StaticTextElementRenderer implements ComponentRenderer {
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
-	@SuppressWarnings("unused")
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 
 		StaticTextElementComponent steC = (StaticTextElementComponent)source;
-		
 		String id = steC.getFormDispatchId();
 		String value = steC.getValue();
 		
-		sb.append("<span id=\"");
-		sb.append(id);
-		sb.append("\" ");
-		sb.append(FormJSHelper.getRawJSFor(steC.getRootForm(), id, steC.getAction()));
-//		sb.append("title=\"");
-//		sb.append(value);
-//		sb.append("\" "); 
-		sb.append(" >");
-		sb.append(value); //
-		sb.append("</span>");
-
+		sb.append("<span id=\"").append(id).append("\" ")
+		  .append(FormJSHelper.getRawJSFor(steC.getRootForm(), id, steC.getAction()));
+		if(StringHelper.containsNonWhitespace(steC.getElementCssClass())) {
+			sb.append("class=\"").append(steC.getElementCssClass()).append("\"");
+		}
+		sb.append(">").append(value).append("</span>");
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.RenderingState)
 	 */
-	@SuppressWarnings("unused")
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderingState)
 	 */
-	@SuppressWarnings("unused")
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {
-	// TODO Auto-generated method stub
-
+		//
 	}
-
 }
