@@ -44,7 +44,10 @@ public class FunctionalInstantMessagingUtil {
 	public final static String INSTANT_MESSAGING_UNAVAILABLE_CSS = "o_instantmessaging_unavailable_icon";
 	
 	public final static String INSTANT_MESSAGING_CHAT_CSS = "o_instantmessaging_chat";
+	public final static String INSTANT_MESSAGING_MESSAGE_GROUP_CSS = "o_instantmessaging_message_group";
 	public final static String INSTANT_MESSAGING_BODY_CSS = "o_instantmessaging_body";
+	public final static String INSTANT_MESSAGING_AVATAR_CSS = "o_instantmessaging_avatar";
+	public final static String INSTANT_MESSAGING_FORM_CSS = "o_instantmessaging_chat_form";
 	
 	public enum UserStatus{
 		AVAILABLE,
@@ -65,7 +68,10 @@ public class FunctionalInstantMessagingUtil {
 	private String instantMessagingUnavailableCss;
 	
 	private String instantMessagingChatCss;
+	private String instantMessagingMessageGroupCss;
 	private String instantMessagingBodyCss;
+	private String instantMessagingAvatarCss;
+	private String instantMessagingFormCss;
 	
 	private FunctionalUtil functionalUtil;
 	
@@ -85,7 +91,10 @@ public class FunctionalInstantMessagingUtil {
 		setInstantMessagingUnavailableCss(INSTANT_MESSAGING_UNAVAILABLE_CSS);
 		
 		setInstantMessagingChatCss(INSTANT_MESSAGING_CHAT_CSS);
+		setInstantMessagingMessageGroupCss(INSTANT_MESSAGING_MESSAGE_GROUP_CSS);
 		setInstantMessagingBodyCss(INSTANT_MESSAGING_BODY_CSS);
+		setInstantMessagingAvatarCss(INSTANT_MESSAGING_AVATAR_CSS);
+		setInstantMessagingFormCss(INSTANT_MESSAGING_FORM_CSS);
 	}
 	
 	/**
@@ -602,12 +611,37 @@ public class FunctionalInstantMessagingUtil {
 		this.instantMessagingChatCss = instantMessagingChatCss;
 	}
 
+	public String getInstantMessagingMessageGroupCss() {
+		return instantMessagingMessageGroupCss;
+	}
+
+	public void setInstantMessagingMessageGroupCss(
+			String instantMessagingMessageGroupCss) {
+		this.instantMessagingMessageGroupCss = instantMessagingMessageGroupCss;
+	}
+
 	public String getInstantMessagingBodyCss() {
 		return instantMessagingBodyCss;
 	}
 
 	public void setInstantMessagingBodyCss(String instantMessagingBodyCss) {
 		this.instantMessagingBodyCss = instantMessagingBodyCss;
+	}
+
+	public String getInstantMessagingAvatarCss() {
+		return instantMessagingAvatarCss;
+	}
+
+	public void setInstantMessagingAvatarCss(String instantMessagingAvatarCss) {
+		this.instantMessagingAvatarCss = instantMessagingAvatarCss;
+	}
+
+	public String getInstantMessagingFormCss() {
+		return instantMessagingFormCss;
+	}
+
+	public void setInstantMessagingFormCss(String instantMessagingFormCss) {
+		this.instantMessagingFormCss = instantMessagingFormCss;
 	}
 
 	public FunctionalUtil getFunctionalUtil() {

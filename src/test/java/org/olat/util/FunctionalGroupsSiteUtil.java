@@ -240,6 +240,8 @@ public class FunctionalGroupsSiteUtil {
 
 	private String instantMessagingChatCss;
 	private String instantMessagingBodyCss;
+	private String instantMessagingAvatarCss;
+	private String instantMessagingFormCss;
 
 	private FunctionalUtil functionalUtil;
 	
@@ -274,7 +276,9 @@ public class FunctionalGroupsSiteUtil {
 		
 		this.instantMessagingChatCss = FunctionalInstantMessagingUtil.INSTANT_MESSAGING_CHAT_CSS;
 		this.instantMessagingBodyCss = FunctionalInstantMessagingUtil.INSTANT_MESSAGING_BODY_CSS;
-
+		this.instantMessagingAvatarCss = FunctionalInstantMessagingUtil.INSTANT_MESSAGING_AVATAR_CSS;
+		this.instantMessagingFormCss = FunctionalInstantMessagingUtil.INSTANT_MESSAGING_FORM_CSS;
+		
 		this.functionalUtil = functionalUtil;
 	}
 	
@@ -1126,6 +1130,8 @@ public class FunctionalGroupsSiteUtil {
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getInstantMessagingChatCss())
+		.append("')]//div[contains(@class, '")
+		.append(getInstantMessagingFormCss())
 		.append("')]//input[@type='text']");
 
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
@@ -1136,6 +1142,8 @@ public class FunctionalGroupsSiteUtil {
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getInstantMessagingChatCss())
+		.append("')]//div[contains(@class, '")
+		.append(getInstantMessagingFormCss())
 		.append("')]//a[contains(@class, '")
 		.append(functionalUtil.getButtonCss())
 		.append("')]");
@@ -1322,5 +1330,21 @@ public class FunctionalGroupsSiteUtil {
 
 	public void setInstantMessagingBodyCss(String instantMessagingBodyCss) {
 		this.instantMessagingBodyCss = instantMessagingBodyCss;
+	}
+
+	public String getInstantMessagingAvatarCss() {
+		return instantMessagingAvatarCss;
+	}
+
+	public void setInstantMessagingAvatarCss(String instantMessagingAvatarCss) {
+		this.instantMessagingAvatarCss = instantMessagingAvatarCss;
+	}
+
+	public String getInstantMessagingFormCss() {
+		return instantMessagingFormCss;
+	}
+
+	public void setInstantMessagingFormCss(String instantMessagingFormCss) {
+		this.instantMessagingFormCss = instantMessagingFormCss;
 	}
 }

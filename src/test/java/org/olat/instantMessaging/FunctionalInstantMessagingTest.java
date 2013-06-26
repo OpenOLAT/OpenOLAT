@@ -456,6 +456,7 @@ public class FunctionalInstantMessagingTest {
 
 			public VerifyMessageAction(String message[], int index){
 				this.message = message;
+				this.index = index;
 			}
 			
 			@Override
