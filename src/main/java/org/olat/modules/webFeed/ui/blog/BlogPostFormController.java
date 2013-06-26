@@ -22,14 +22,11 @@ package org.olat.modules.webFeed.ui.blog;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.management.timer.Timer;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -64,8 +61,6 @@ public class BlogPostFormController extends FormBasicController {
 	private TextElement title;
 	private RichTextElement description, content;
 	private DateChooser publishDateChooser;
-	private IntegerElement hours;
-	private TextElement mins;
 	private FormLink draftLink;
 	
 	private boolean currentlyDraft;
@@ -121,25 +116,7 @@ public class BlogPostFormController extends FormBasicController {
 		post.setContent(content.getValue());
 		// The author is set already
 		post.setLastModified(new Date());
-		int hh = 0;
-		try {
-			hh = hours.getIntValue();
-		} catch (Exception e) {
-			hh = 0;
-		}
-		int mm;
-		try {
-			mm = Integer.parseInt(mins.getValue());
-		} catch (NumberFormatException e) {
-			mm = 0;
-		}
-		long time;
-		if(publishDateChooser.getDate() != null) {
-			time = publishDateChooser.getDate().getTime() + hh * Timer.ONE_HOUR + mm * Timer.ONE_MINUTE;
-		} else {
-			time = new Date().getTime() + hh * Timer.ONE_HOUR + mm * Timer.ONE_MINUTE;
-		}
-		post.setPublishDate(new Date(time));
+		post.setPublishDate(publishDateChooser.getDate());
 	}
 
 	/**
@@ -196,39 +173,18 @@ public class BlogPostFormController extends FormBasicController {
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
 
-		final FormLayoutContainer dateAndTimeLayout = FormLayoutContainer.createHorizontalFormLayout("feed.publish.date", getTranslator());
-		formLayout.add(dateAndTimeLayout);
-		dateAndTimeLayout.setLabel("feed.publish.date", null);
-		dateAndTimeLayout.setMandatory(true);
-		publishDateChooser = uifactory.addDateChooser("publishDateChooser", null, null, dateAndTimeLayout);
-		publishDateChooser.setNotEmptyCheck("feed.publish.date.is.required");
-		publishDateChooser.setValidDateCheck("feed.publish.date.invalid");
 		Calendar cal = Calendar.getInstance(ureq.getLocale());
 		if (post.getPublishDate() != null) {
 			cal.setTime(post.getPublishDate());
 		}
-		publishDateChooser.setDate(cal.getTime());
-		hours = uifactory.addIntegerElement("hour", null, cal.get(Calendar.HOUR_OF_DAY), dateAndTimeLayout);
-		hours.setDisplaySize(2);
-		hours.setMaxLength(2);
-
-		String minutesIn2digits = Long.toString(cal.get(Calendar.MINUTE));
-		if (minutesIn2digits.length() == 1) {
-			// always show two digits for minutes
-			minutesIn2digits = '0' + minutesIn2digits;
-		}
-		uifactory.addStaticTextElement("timeSeparator", null, ":", dateAndTimeLayout);
-		// dTextElement("mins", cal.get(Calendar.MINUTE), dateAndTimeLayout);
-		mins = uifactory.addTextElement("mins", null, 2, minutesIn2digits, dateAndTimeLayout);
-		mins.setDisplaySize(2);
-		mins.setRegexMatchCheck("\\d*", "feed.form.minutes.error");
-		mins.setNotEmptyCheck("feed.form.minutes.error");
-
-		uifactory.addStaticTextElement("o.clock", null, translate("feed.publish.time.o.clock"), dateAndTimeLayout);
+		publishDateChooser = uifactory.addDateChooser("publishDateChooser", "feed.publish.date", cal.getTime(), formLayout);
+		publishDateChooser.setNotEmptyCheck("feed.publish.date.is.required");
+		publishDateChooser.setValidDateCheck("feed.publish.date.invalid");
+		publishDateChooser.setDateChooserTimeEnabled(true);
 
 		// Submit and cancel buttons
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
-		this.flc.add(buttonLayout);
+		formLayout.add(buttonLayout);
 
 		uifactory.addFormSubmitButton("feed.publish", buttonLayout);
 		draftLink = uifactory.addFormLink("feed.save.as.draft", buttonLayout, Link.BUTTON);

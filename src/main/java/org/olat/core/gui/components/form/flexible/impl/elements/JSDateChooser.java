@@ -168,7 +168,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 		Date d = null;
 		try {
 			d = parseDate(getValue());
-			if(d != null && (minute >= 0 || hour >= 0)) {
+			if(d != null && isDateChooserTimeEnabled() && (minute >= 0 || hour >= 0)) {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(d);
 				if(hour >= 0) {
