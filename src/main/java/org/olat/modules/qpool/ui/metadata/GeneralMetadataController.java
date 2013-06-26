@@ -44,7 +44,7 @@ import org.olat.modules.qpool.ui.events.QPoolEvent;
 public class GeneralMetadataController extends FormBasicController {
 	
 	private FormLink editLink;
-	private StaticTextElement keyEl, identifierEl, masterIdentifierEl, titleEl, keywordsEl, coverageEl, addInfosEl, languageEl, studyFieldEl;
+	private StaticTextElement titleEl, keywordsEl, coverageEl, addInfosEl, languageEl, studyFieldEl;
 	
 	private final boolean edit;
 	
@@ -67,10 +67,6 @@ public class GeneralMetadataController extends FormBasicController {
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);
 
-		keyEl = uifactory.addStaticTextElement("general.key", "", metaCont);
-		identifierEl = uifactory.addStaticTextElement("general.identifier", "", metaCont);
-		masterIdentifierEl = uifactory.addStaticTextElement("general.master.identifier", "", metaCont);
-
 		//general
 		titleEl = uifactory.addStaticTextElement("general.title", "", metaCont);
 		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", metaCont);
@@ -83,10 +79,6 @@ public class GeneralMetadataController extends FormBasicController {
 	}
 	
 	public void setItem(QuestionItem item) {
-		keyEl.setValue(item.getKey().toString());
-		identifierEl.setValue(item.getIdentifier());
-		String masterId = item.getMasterIdentifier() == null ? "" : item.getMasterIdentifier();
-		masterIdentifierEl.setValue(masterId);
 		String title = item.getTitle() == null ? "" : item.getTitle();
 		titleEl.setValue(title);
 		String keywords = item.getKeywords() == null ? "" : item.getKeywords();

@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
@@ -42,12 +43,11 @@ import org.olat.modules.qpool.ui.QuestionItemsSource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DefaultItemsSource implements QuestionItemsSource {
+public abstract class DefaultItemsSource implements QuestionItemsSource {
 
 	private boolean removeEnabled = false;
-	private boolean deleteEnabled = false;
 	private final String name;
-	private final QPoolService qpoolService;
+	protected final QPoolService qpoolService;
 	private final SearchQuestionItemParams defaultParams;
 	
 	public DefaultItemsSource(Identity me, Roles roles, String name) {
@@ -88,13 +88,10 @@ public class DefaultItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public boolean isDeleteEnabled() {
-		return deleteEnabled;
-	}
+	public abstract boolean isDeleteEnabled();
 
-	public void setDeleteEnabled(boolean deleteEnabled) {
-		this.deleteEnabled = deleteEnabled;
-	}
+	@Override
+	public abstract int postImport(List<QuestionItem> items);
 
 	@Override
 	public void removeFromSource(List<QuestionItemShort> items) {

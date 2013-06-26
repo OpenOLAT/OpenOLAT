@@ -46,7 +46,8 @@ import org.olat.resource.OLATResource;
  *
  */
 public interface QPoolService {
-
+	
+	
 	/**
 	 * Create a new item and persist it on the database
 	 * @param owner
@@ -113,14 +114,14 @@ public interface QPoolService {
 	
 	public void removeOwners(List<Identity> owners, List<Pool> pools);
 	
-	public void addItemsInPools(List<QuestionItemShort> items, List<Pool> pools, boolean editable);
+	public void addItemsInPools(List<? extends QuestionItemShort> items, List<Pool> pools, boolean editable);
 	
 	public void removeItemsInPool(List<QuestionItemShort> items, Pool pool);
 	
 	public List<QuestionItem2Pool> getPoolInfosByItem(QuestionItemShort item);
 	
 	//share
-	public void shareItemsWithGroups(List<QuestionItemShort> items, List<BusinessGroup> groups, boolean editable);
+	public void shareItemsWithGroups(List<? extends QuestionItemShort> items, List<BusinessGroup> groups, boolean editable);
 	
 	public void removeItemsFromResource(List<QuestionItemShort> items, OLATResource resource);
 	
@@ -135,7 +136,7 @@ public interface QPoolService {
 	//list
 	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItemShort> initialItems);
 	
-	public void addItemToCollection(List<QuestionItemShort> items, List<QuestionItemCollection> collections);
+	public void addItemToCollection(List<? extends QuestionItemShort> items, List<QuestionItemCollection> collections);
 	
 	public void removeItemsFromCollection(List<QuestionItemShort> items, QuestionItemCollection collection);
 

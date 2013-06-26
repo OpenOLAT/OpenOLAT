@@ -51,6 +51,12 @@ public interface QPoolSPI {
 	public boolean isCompatible(String filename, VFSLeaf file);
 	
 	/**
+	 * List a item's type this provider can create
+	 * @return
+	 */
+	public List<QItemFactory> getItemfactories();
+	
+	/**
 	 * Extract text for indexing
 	 * @param item
 	 * @return

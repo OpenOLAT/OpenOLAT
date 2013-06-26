@@ -67,6 +67,9 @@ public class TechnicalMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("technical");
+		
+		uifactory.addStaticTextElement("general.identifier", item.getIdentifier(), formLayout);
+		uifactory.addStaticTextElement("general.master.identifier", item.getMasterIdentifier(), formLayout);
 
 		editorEl = uifactory.addTextElement("technical.editor", "technical.editor", 50, item.getEditor(), formLayout);
 		editorVersionEl = uifactory.addTextElement("technical.editorVersion", "technical.editorVersion", 50, item.getEditorVersion(), formLayout);

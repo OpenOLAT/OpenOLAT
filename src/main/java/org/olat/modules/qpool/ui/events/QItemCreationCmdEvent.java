@@ -17,30 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.qpool.ui.events;
+
+import org.olat.core.gui.control.Event;
+import org.olat.modules.qpool.QItemFactory;
 
 /**
+ * Event to create a new item
  * 
- * Initial date: 21.03.2013<br>
+ * Initial date: 26.06.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemView extends QuestionItemShort {
-	
-	public boolean isEditable();
-	
-	public boolean isMarked();
-	
-	public Double getRating();
-	
-	//general
-	public String getCoverage();
+public class QItemCreationCmdEvent extends Event {
 
-	public String getAdditionalInformations();
+	private static final long serialVersionUID = -8559321741155502634L;
+	public static final String CREATE_NEW_ITEM_CMD = "createNewItemAsap";
 	
-	//life cycle
-	public String getItemVersion();
-	
-	
+	private final String title;
+	private final QItemFactory factory;
 
+	public QItemCreationCmdEvent(String title, QItemFactory factory) {
+		super(CREATE_NEW_ITEM_CMD);
+		this.title = title;
+		this.factory = factory;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public QItemFactory getFactory() {
+		return factory;
+	}
 }

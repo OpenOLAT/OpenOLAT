@@ -32,6 +32,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
+import org.olat.modules.qpool.ui.datasource.MarkedItemsSource;
+import org.olat.modules.qpool.ui.datasource.MyItemsSource;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 
 /**
@@ -100,7 +102,7 @@ public class SelectItemController extends BasicController {
 
 	private int updateMarkedItems(UserRequest ureq) {
 		if(markedItemsCtrl == null) {
-			DefaultItemsSource source = new DefaultItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "Fav");
+			DefaultItemsSource source = new MarkedItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "Fav");
 			source.getDefaultParams().setFavoritOnly(true);
 			source.getDefaultParams().setFormat(restrictToFormat);
 			markedItemsCtrl = new ItemListController(ureq, getWindowControl(), source);
@@ -113,7 +115,7 @@ public class SelectItemController extends BasicController {
 	
 	private void updateOwnedGroups(UserRequest ureq) {
 		if(ownedItemsCtrl == null) {
-			DefaultItemsSource source = new DefaultItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "My"); 
+			DefaultItemsSource source = new MyItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "My"); 
 			source.getDefaultParams().setAuthor(getIdentity());
 			source.getDefaultParams().setFormat(restrictToFormat);
 			ownedItemsCtrl = new ItemListController(ureq, getWindowControl(), source);
@@ -122,8 +124,4 @@ public class SelectItemController extends BasicController {
 		ownedItemsCtrl.updateList();
 		mainVC.put("itemList", ownedItemsCtrl.getInitialComponent());
 	}
-
-
-
-
 }

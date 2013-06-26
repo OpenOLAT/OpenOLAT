@@ -51,10 +51,12 @@ import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QItemList;
+import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
@@ -78,10 +80,11 @@ import org.olat.repository.controllers.RepositoryDetailsController;
  */
 public class QuestionListController extends AbstractItemListController implements StackedControllerAware {
 
-	private FormLink list, exportItem, shareItem, removeItem, copyItem, deleteItem, authorItem, importItem, bulkChange;
+	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, deleteItem, authorItem, importItem, bulkChange;
 	
 	private StackedController stackPanel;
-	
+
+	private Controller newItemCtrl;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmCopyBox;
 	private DialogBoxController confirmDeleteBox;
@@ -96,13 +99,13 @@ public class QuestionListController extends AbstractItemListController implement
 	private ImportController importItemCtrl;
 	private CollectionTargetController listTargetCtrl;
 	private ShareTargetController shareTargetCtrl;
-	private CloseableCalloutWindowController shareCalloutCtrl;
 	private RepositoryAddController addController;
 	private QuestionItemDetailsController currentDetailsCtrl;
 	private LayoutMain3ColsController currentMainDetailsCtrl;
 	private MetadataBulkChangeController bulkChangeCtrl;
 	private ImportSourcesController importSourcesCtrl;
-	private CloseableCalloutWindowController importCalloutCtrl;
+	private NewItemOptionsController newItemOptionsCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
 	private ReferencableEntriesSearchController importTestCtrl;
 	
 	private final QPoolService qpoolService;
@@ -123,7 +126,8 @@ public class QuestionListController extends AbstractItemListController implement
 		if(getSource().isRemoveEnabled()) {
 			removeItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);
 		}
-		
+
+		newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
 		copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
 		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
 		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
@@ -183,6 +187,8 @@ public class QuestionListController extends AbstractItemListController implement
 				}
 			} else if(link == importItem) {
 				doOpenImport(ureq);
+			} else if(link == newItem) {
+				doChooseNewItemType(ureq);
 			} else if(link == bulkChange) {
 				List<QuestionItemShort> items = getSelectedShortItems();
 				if(items.size() > 0) {
@@ -199,7 +205,7 @@ public class QuestionListController extends AbstractItemListController implement
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == shareTargetCtrl) {
 			List<QuestionItemShort> items = getSelectedShortItems();
-			shareCalloutCtrl.deactivate();
+			calloutCtrl.deactivate();
 			if(items.isEmpty()) {
 				showWarning("error.select.one");
 			} else if(ShareTargetController.SHARE_GROUP_CMD.equals(event.getCommand())) {
@@ -219,11 +225,17 @@ public class QuestionListController extends AbstractItemListController implement
 				}
 			}	
 		} else if(source == importSourcesCtrl) {
-			importCalloutCtrl.deactivate();
+			calloutCtrl.deactivate();
 			if(ImportSourcesController.IMPORT_FILE.equals(event.getCommand())) {
 				doOpenFileImport(ureq);
 			} else if(ImportSourcesController.IMPORT_REPO.equals(event.getCommand())) {
 				doOpenRepositoryImport(ureq);
+			}
+		} else if(source == newItemOptionsCtrl) {
+			cmc.deactivate();
+			if(event instanceof QItemCreationCmdEvent) {
+				QItemCreationCmdEvent qicce = (QItemCreationCmdEvent)event;
+				doCreateNewItem(ureq, qicce.getTitle(), qicce.getFactory());
 			}
 		} else if(source == selectGroupCtrl) {
 			cmc.deactivate();
@@ -244,7 +256,7 @@ public class QuestionListController extends AbstractItemListController implement
 			cleanUp();
 		} else if(source == listTargetCtrl) {
 			List<QuestionItemShort> items = getSelectedShortItems();
-			shareCalloutCtrl.deactivate();
+			calloutCtrl.deactivate();
 			if(CollectionTargetController.ADD_TO_LIST_POOL_CMD.equals(event.getCommand())) {
 				if(items.isEmpty()) {
 					showWarning("error.select.one");
@@ -402,21 +414,46 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 	}
 	
+	private void doChooseNewItemType(UserRequest ureq) {
+		removeAsListenerAndDispose(newItemOptionsCtrl);
+		newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl());
+		listenTo(newItemOptionsCtrl);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				newItemOptionsCtrl.getInitialComponent(), true, translate("new.item"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doCreateNewItem(UserRequest ureq, String title, QItemFactory factory) {
+		removeAsListenerAndDispose(newItemCtrl);
+		
+		newItemCtrl = factory.getEditor(ureq, getWindowControl(), title);
+		listenTo(newItemCtrl);
+
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				newItemCtrl.getInitialComponent(), true, translate("import.repository"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
 	private void doOpenImport(UserRequest ureq) {
 		String title = translate("import");
 		removeAsListenerAndDispose(importSourcesCtrl);
 		importSourcesCtrl = new ImportSourcesController(ureq, getWindowControl());
 		listenTo(importSourcesCtrl);
 		
-		removeAsListenerAndDispose(importCalloutCtrl);
-		importCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), importSourcesCtrl.getInitialComponent(), importItem, title, true, null);
-		listenTo(importCalloutCtrl);
-		importCalloutCtrl.activate();	
+		removeAsListenerAndDispose(calloutCtrl);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), importSourcesCtrl.getInitialComponent(), importItem, title, true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();	
 	}
 	
 	private void doOpenFileImport(UserRequest ureq) {
 		removeAsListenerAndDispose(importItemCtrl);
-		importItemCtrl = new ImportController(ureq, getWindowControl());
+		importItemCtrl = new ImportController(ureq, getWindowControl(), getSource());
 		listenTo(importItemCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -429,6 +466,11 @@ public class QuestionListController extends AbstractItemListController implement
 		QTIQPoolServiceProvider spi
 			= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
 		List<QuestionItem> importItems = spi.importRepositoryEntry(getIdentity(), repositoryEntry, getLocale());
+		int postImported = getSource().postImport(importItems);
+		if(postImported > 0) {
+			getItemsTable().reset();
+		}
+		
 		if(importItems.isEmpty()) {
 			showWarning("import.failed");
 		} else {
@@ -455,10 +497,10 @@ public class QuestionListController extends AbstractItemListController implement
 		listTargetCtrl = new CollectionTargetController(ureq, getWindowControl());
 		listenTo(listTargetCtrl);
 		
-		removeAsListenerAndDispose(shareCalloutCtrl);
-		shareCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), listTargetCtrl.getInitialComponent(), list, title, true, null);
-		listenTo(shareCalloutCtrl);
-		shareCalloutCtrl.activate();	
+		removeAsListenerAndDispose(calloutCtrl);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), listTargetCtrl.getInitialComponent(), list, title, true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();	
 	}
 	
 	private void doAskCollectionName(UserRequest ureq, List<QuestionItemShort> items) {
@@ -592,10 +634,10 @@ public class QuestionListController extends AbstractItemListController implement
 		shareTargetCtrl = new ShareTargetController(ureq, getWindowControl());
 		listenTo(shareTargetCtrl);
 		
-		removeAsListenerAndDispose(shareCalloutCtrl);
-		shareCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), shareTargetCtrl.getInitialComponent(), shareItem, title, true, null);
-		listenTo(shareCalloutCtrl);
-		shareCalloutCtrl.activate();	
+		removeAsListenerAndDispose(calloutCtrl);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), shareTargetCtrl.getInitialComponent(), shareItem, title, true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();	
 	}
 	
 	private void doConfirmRemove(UserRequest ureq, List<QuestionItemShort> items) {

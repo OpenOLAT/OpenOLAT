@@ -45,6 +45,7 @@ import org.olat.modules.qpool.ui.events.QPoolEvent;
 public class TechnicalMetadataController extends FormBasicController  {
 	
 	private FormLink editLink;
+	private StaticTextElement identifierEl, masterIdentifierEl;
 	private StaticTextElement editorEl, editorVersionEl, formatEl, creationDateEl, lastModifiedEl;
 	
 	private final boolean edit;
@@ -68,7 +69,10 @@ public class TechnicalMetadataController extends FormBasicController  {
 		
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);
-
+		
+		identifierEl = uifactory.addStaticTextElement("general.identifier", "", metaCont);
+		masterIdentifierEl = uifactory.addStaticTextElement("general.master.identifier", "", metaCont);
+		
 		editorEl = uifactory.addStaticTextElement("technical.editor", "", metaCont);
 		editorVersionEl = uifactory.addStaticTextElement("technical.editorVersion", "", metaCont);
 		formatEl = uifactory.addStaticTextElement("technical.format", "", metaCont);
@@ -77,6 +81,9 @@ public class TechnicalMetadataController extends FormBasicController  {
 	}
 	
 	public void setItem(QuestionItem item) {
+		identifierEl.setValue(item.getIdentifier());
+		String masterId = item.getMasterIdentifier() == null ? "" : item.getMasterIdentifier();
+		masterIdentifierEl.setValue(masterId);
 		String editor = item.getEditor() == null ? "" : item.getEditor();
 		editorEl.setValue(editor);
 		String editorVersion = item.getEditorVersion() == null ? "" : item.getEditorVersion();

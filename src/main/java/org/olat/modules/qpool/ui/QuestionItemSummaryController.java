@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.math.BigDecimal;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -36,13 +38,8 @@ import org.olat.modules.qpool.QuestionItem;
  */
 public class QuestionItemSummaryController extends FormBasicController {
 	
-	private StaticTextElement keyEl;
-	private StaticTextElement identifierEl;
-	private StaticTextElement subjectEl;
-	private StaticTextElement studyFieldEl;
-	private StaticTextElement keywordsEl;
-	private StaticTextElement usageEl;
-	private StaticTextElement descriptionEl;
+	private StaticTextElement subjectEl, studyFieldEl, keywordsEl, usageEl, descriptionEl;
+	private StaticTextElement difficultyEl, stdevDifficultyEl, differentiationEl;
 	
 	private boolean canEdit;
 	private QuestionItem item;
@@ -56,12 +53,13 @@ public class QuestionItemSummaryController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("metadatas");
 		
-		keyEl = uifactory.addStaticTextElement("general.key", "", formLayout);
-		identifierEl = uifactory.addStaticTextElement("general.identifier", "", formLayout);
 		subjectEl = uifactory.addStaticTextElement("general.title", "", formLayout);
 		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", formLayout);
 		studyFieldEl = uifactory.addStaticTextElement("classification.taxonomy.level", "", formLayout);
 		usageEl = uifactory.addStaticTextElement("question.usage", "", formLayout);
+		difficultyEl = uifactory.addStaticTextElement("question.difficulty", "", formLayout);
+		stdevDifficultyEl = uifactory.addStaticTextElement("question.stdevDifficulty", "", formLayout);
+		differentiationEl = uifactory.addStaticTextElement("question.differentiation", "", formLayout);
 		descriptionEl = uifactory.addStaticTextElement("general.description", "", formLayout);
 	}
 	
@@ -86,16 +84,16 @@ public class QuestionItemSummaryController extends FormBasicController {
 		this.item = item;
 		if(item == null) {
 			canEdit = false;
-			identifierEl.setValue("");
 			subjectEl.setValue("");
 			keywordsEl.setValue("" );
 			studyFieldEl.setValue("");
 			usageEl.setValue("");
 			descriptionEl.setValue("");
+			difficultyEl.setValue("");
+			stdevDifficultyEl.setValue("");
+			differentiationEl.setValue("");
 		} else {
 			this.canEdit = canEdit;
-			keyEl.setValue(item.getKey().toString());
-			identifierEl.setValue(item.getIdentifier());
 			subjectEl.setValue(item.getTitle());
 			String keywords = item.getKeywords();
 			keywordsEl.setValue(keywords == null ? "" : keywords);
@@ -109,6 +107,10 @@ public class QuestionItemSummaryController extends FormBasicController {
 			}
 			usageEl.setValue(usageStr);
 			
+			difficultyEl.setValue(toString(item.getDifficulty()));
+			stdevDifficultyEl.setValue(toString(item.getStdevDifficulty()));
+			differentiationEl.setValue(toString(item.getDifferentiation()));
+			
 			String description = item.getDescription();
 			if(StringHelper.containsNonWhitespace(description)) {
 				descriptionEl.setValue(description);
@@ -119,7 +121,6 @@ public class QuestionItemSummaryController extends FormBasicController {
 	}
 	
 	public void reset() {
-		keyEl.setValue("");
 		subjectEl.setValue("");
 		studyFieldEl.setValue("");
 		keywordsEl.setValue("");
@@ -130,5 +131,9 @@ public class QuestionItemSummaryController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private String toString(BigDecimal val) {
+		return (val == null) ? "" : val.toPlainString();
 	}
 }

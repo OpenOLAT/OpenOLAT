@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui.datasource;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -32,11 +33,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
-import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -49,22 +50,20 @@ public class SharedItemsSource implements QuestionItemsSource {
 	private final boolean admin;
 	private final Roles roles;
 	private final Identity identity;
-	private final String sourceName;
-	private final OLATResource resource;
+	private final BusinessGroup group;
 	private final QPoolService qpoolService;
 	
 	public SharedItemsSource(BusinessGroup group, Identity identity, Roles roles, boolean admin) {
 		this.admin = admin;
 		this.roles = roles;
 		this.identity = identity;
-		this.sourceName = group.getName();
-		this.resource = group.getResource();
+		this.group = group;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
 
 	@Override
 	public String getName() {
-		return sourceName;
+		return group.getName();
 	}
 
 	@Override
@@ -83,20 +82,27 @@ public class SharedItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
+	public int postImport(List<QuestionItem> items) {
+		if(items == null || items.isEmpty()) return 0;
+		qpoolService.shareItemsWithGroups(items, Collections.singletonList(group), false);
+		return items.size();
+	}
+
+	@Override
 	public void removeFromSource(List<QuestionItemShort> items) {
-		qpoolService.removeItemsFromResource(items, resource);
+		qpoolService.removeItemsFromResource(items, group.getResource());
 	}
 
 	@Override
 	public int getNumOfItems() {
-		return qpoolService.countSharedItemByResource(resource);
+		return qpoolService.countSharedItemByResource(group.getResource());
 	}
 
 	@Override
 	public List<QuestionItemView> getItems(Collection<Long> keys) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setItemKeys(keys);
-		ResultInfos<QuestionItemView> items = qpoolService.getSharedItemByResource(resource, params, 0, -1);
+		ResultInfos<QuestionItemView> items = qpoolService.getSharedItemByResource(group.getResource(), params, 0, -1);
 		return items.getObjects();
 	}
 
@@ -105,6 +111,6 @@ public class SharedItemsSource implements QuestionItemsSource {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setSearchString(query);
 		params.setCondQueries(condQueries);
-		return qpoolService.getSharedItemByResource(resource, params, firstResult, maxResults, orderBy);
+		return qpoolService.getSharedItemByResource(group.getResource(), params, firstResult, maxResults, orderBy);
 	}
 }

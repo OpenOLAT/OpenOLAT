@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui.datasource;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -31,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
@@ -79,6 +81,13 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	@Override
 	public boolean isDeleteEnabled() {
 		return false;
+	}
+
+	@Override
+	public int postImport(List<QuestionItem> items) {
+		if(items == null || items.isEmpty()) return 0;
+		qpoolService.addItemToCollection(items, Collections.singletonList(collection));
+		return items.size();
 	}
 
 	@Override

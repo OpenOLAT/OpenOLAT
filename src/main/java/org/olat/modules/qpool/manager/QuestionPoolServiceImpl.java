@@ -359,7 +359,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public void addItemsInPools(List<QuestionItemShort> items, List<Pool> pools, boolean editable) {
+	public void addItemsInPools(List<? extends QuestionItemShort> items, List<Pool> pools, boolean editable) {
 		if(items == null || items.isEmpty() || pools == null || pools.isEmpty()) {
 			return;//nothing to do
 		}
@@ -511,7 +511,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public void shareItemsWithGroups(List<QuestionItemShort> items, List<BusinessGroup> groups, boolean editable) {
+	public void shareItemsWithGroups(List<? extends QuestionItemShort> items, List<BusinessGroup> groups, boolean editable) {
 		if(items == null || items.isEmpty() || groups == null || groups.isEmpty()) {
 			return;//nothing to do
 		}
@@ -599,7 +599,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public void addItemToCollection(List<QuestionItemShort> items, List<QuestionItemCollection> collections) {
+	public void addItemToCollection(List<? extends QuestionItemShort> items, List<QuestionItemCollection> collections) {
 		for(QuestionItemShort item:items) {
 			collectionDao.addItemToCollection(item.getKey(), collections);
 		}

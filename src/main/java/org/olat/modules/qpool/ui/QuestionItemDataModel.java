@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.math.BigDecimal;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
@@ -58,10 +60,18 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case masterIdentifier: return item.getMasterIdentifier();
 			case title: return item.getTitle();
 			case keywords: return item.getKeywords();
+			case coverage: return item.getCoverage();
+			case additionalInfos: return item.getAdditionalInformations();
 			case creationDate: return item.getCreationDate();
 			case lastModified: return item.getLastModified();
 			case taxnonomyLevel: return item.getTaxonomyLevelName();
-			case difficulty: return item.getDifficulty();
+			case difficulty: return toString(item.getDifficulty());
+			case stdevDifficulty: return toString(item.getStdevDifficulty());
+			case differentiation: return toString(item.getDifferentiation());
+			case numOfAnswerAlternatives:
+				return item.getNumOfAnswerAlternatives() > 0 ? Integer.toString(item.getNumOfAnswerAlternatives()) : "";
+			case usage:
+				return item.getUsage() > 0 ? Integer.toString(item.getUsage()) : "";
 			case type: {
 				String type = item.getItemType();
 				if(type == null) {
@@ -71,6 +81,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			}
 			case rating: return item.getRating();
 			case format: return item.getFormat();
+			case itemVersion: return item.getItemVersion();
 			case status: {
 				QuestionStatus s = item.getQuestionStatus();
 				if(s == null) {
@@ -84,19 +95,30 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		}
 	}
 	
+	private String toString(BigDecimal decimal) {
+		return decimal == null ? "" : decimal.toPlainString();
+	}
+	
 	public enum Cols {
 		key("general.key"),
 		identifier("general.identifier"),
 		masterIdentifier("general.master.identifier"),
 		title("general.title"),
 		keywords("general.keywords"),
+		coverage("general.coverage"),
+		additionalInfos("general.additional.informations"),
 		creationDate("technical.creation"),
 		lastModified("technical.lastModified"),
 		taxnonomyLevel("classification.taxonomy.level"),
 		difficulty("question.difficulty"),
+		stdevDifficulty("question.stdevDifficulty"),
+		differentiation("question.differentiation"),
+		numOfAnswerAlternatives("question.numOfAnswerAlternatives"),
+		usage("question.usage"),
 		type("question.type"),
 		format("technical.format"),
 		rating("rating"),
+		itemVersion("lifecycle.version"),
 		status("lifecycle.status"),
 		editable("editable"),
 		mark("mark");

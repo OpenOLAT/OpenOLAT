@@ -96,10 +96,6 @@ public class GeneralMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("general");
-
-		uifactory.addStaticTextElement("general.key", item.getKey().toString(), formLayout);
-		uifactory.addStaticTextElement("general.identifier", item.getIdentifier(), formLayout);
-		uifactory.addStaticTextElement("general.master.identifier", item.getMasterIdentifier(), formLayout);
 		
 		String title = item.getTitle();
 		titleEl = uifactory.addTextElement("general.title", "general.title", 1000, title, formLayout);

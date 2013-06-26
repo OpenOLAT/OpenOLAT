@@ -44,9 +44,11 @@ public class ImportController extends FormBasicController {
 	
 	private FileElement fileEl;
 	private final QPoolService qpoolservice;
+	private final QuestionItemsSource source;
 	
-	public ImportController(UserRequest ureq, WindowControl wControl) {
+	public ImportController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
 		super(ureq, wControl);
+		this.source = source;
 		qpoolservice = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);
 	}
@@ -88,8 +90,9 @@ public class ImportController extends FormBasicController {
 		String filename = fileEl.getUploadFileName();
 		File file = fileEl.getUploadFile();
 		List<QuestionItem> importItems = qpoolservice.importItems(getIdentity(), getLocale(), filename, file);
-		fireEvent(ureq, Event.DONE_EVENT);
+		source.postImport(importItems);
 		
+		fireEvent(ureq, Event.DONE_EVENT);
 		if(importItems.isEmpty()) {
 			showWarning("import.failed");
 		} else {

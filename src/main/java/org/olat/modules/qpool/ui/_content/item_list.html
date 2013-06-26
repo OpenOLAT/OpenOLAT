@@ -13,6 +13,9 @@ $r.render("items")
 	#if($r.available("unshare.item"))
 		$r.render("unshare.item")
 	#end
+	#if($r.available("new.item"))
+		$r.render("new.item")
+	#end
 	#if($r.available("copy"))
 		$r.render("copy")
 	#end

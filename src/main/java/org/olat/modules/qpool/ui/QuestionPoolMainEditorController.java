@@ -64,6 +64,9 @@ import org.olat.modules.qpool.ui.admin.QLicensesAdminController;
 import org.olat.modules.qpool.ui.admin.TaxonomyAdminController;
 import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
 import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
+import org.olat.modules.qpool.ui.datasource.MarkedItemsSource;
+import org.olat.modules.qpool.ui.datasource.MyItemsSource;
+import org.olat.modules.qpool.ui.datasource.PoolItemsSource;
 import org.olat.modules.qpool.ui.datasource.SharedItemsSource;
 import org.olat.modules.qpool.ui.events.QItemMarkedEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
@@ -348,9 +351,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	}
 	
 	private void doSelectMyQuestions(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		DefaultItemsSource source = new DefaultItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "My"); 
-		source.getDefaultParams().setAuthor(getIdentity());
-		source.setDeleteEnabled(true);
+		DefaultItemsSource source = new MyItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "My"); 
 		if(myQuestionsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("My"), null);
 			myQuestionsCtrl = new QuestionsController(ureq, swControl, source, "my");
@@ -364,8 +365,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	}
 	
 	private void doSelectMarkedQuestions(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		DefaultItemsSource source = new DefaultItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "Fav"); 
-		source.getDefaultParams().setFavoritOnly(true);
+		DefaultItemsSource source = new MarkedItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "Fav"); 
 		if(markedQuestionsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Marked"), null);
 			markedQuestionsCtrl = new QuestionsController(ureq, swControl, source, "favorit");
@@ -383,8 +383,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		Roles roles = ureq.getUserSession().getRoles();
 		QuestionsController selectedPoolCtrl = cNode.getController();
 
-		DefaultItemsSource source = new DefaultItemsSource(getIdentity(), roles, pool.getName());
-		source.getDefaultParams().setPoolKey(pool.getKey());
+		DefaultItemsSource source = new PoolItemsSource(getIdentity(), roles, pool);
 		source.setRemoveEnabled(isShareAdmin(roles, pool));
 		if(selectedPoolCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, pool, null);

@@ -17,30 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.qpool.ui.datasource;
+
+import java.util.List;
+
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.modules.qpool.QuestionItem;
 
 /**
  * 
- * Initial date: 21.03.2013<br>
+ * Initial date: 26.06.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemView extends QuestionItemShort {
+public class MyItemsSource extends DefaultItemsSource {
 	
-	public boolean isEditable();
-	
-	public boolean isMarked();
-	
-	public Double getRating();
-	
-	//general
-	public String getCoverage();
+	public MyItemsSource(Identity me, Roles roles, String name) {
+		super(me, roles, name);
+		getDefaultParams().setAuthor(me);
+	}
 
-	public String getAdditionalInformations();
-	
-	//life cycle
-	public String getItemVersion();
-	
-	
+	@Override
+	public int postImport(List<QuestionItem> items) {
+		return items.size();
+	}
 
+	@Override
+	public boolean isDeleteEnabled() {
+		return true;
+	}
 }

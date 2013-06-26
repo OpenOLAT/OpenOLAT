@@ -52,7 +52,7 @@ public class QTI12EditorController extends BasicController implements GenericEve
 	
 	private final TabbedPane mainPanel;
 	private final VelocityContainer mainVC;
-	private ItemNodeTabbedFormController previewCtrl;
+	private ItemNodeTabbedFormController editorsCtrl;
 	
 	private final QPoolService qpoolService;
 
@@ -74,9 +74,9 @@ public class QTI12EditorController extends BasicController implements GenericEve
 				String mapperUrl = registerMapper(ureq, new VFSContainerMapper(directory));
 				QTIDocument doc = new QTIDocument();
 				QTIEditorPackage qtiPackage = new QTI12ItemEditorPackage(item, doc, mapperUrl, leaf, directory, this);
-				previewCtrl = new ItemNodeTabbedFormController(item, qtiPackage, ureq, getWindowControl(), translator, false);
-				previewCtrl.addTabs(mainPanel);
-				listenTo(previewCtrl);
+				editorsCtrl = new ItemNodeTabbedFormController(item, qtiPackage, ureq, getWindowControl(), translator, false);
+				editorsCtrl.addTabs(mainPanel);
+				listenTo(editorsCtrl);
 			}
 		}
 		

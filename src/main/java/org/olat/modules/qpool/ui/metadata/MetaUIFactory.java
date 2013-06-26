@@ -43,13 +43,13 @@ import org.olat.modules.qpool.model.QLicense;
  */
 public class MetaUIFactory {
 	
-	protected static KeyValues getFormats() {
+	public static KeyValues getFormats() {
 		String[] formatKeys = new String[]{ QTIConstants.QTI_12_FORMAT };
 		
 		return new KeyValues(formatKeys, formatKeys);
 	}
 
-	protected static KeyValues getAssessmentTypes(Translator translator) {
+	public static KeyValues getAssessmentTypes(Translator translator) {
 		String[] assessmentTypeKeys = new String[]{ "summative", "formative", "both"};
 		String[] assessmentTypeValues = new String[]{
 				translator.translate("question.assessmentType.summative"),
@@ -59,7 +59,7 @@ public class MetaUIFactory {
 		return new KeyValues(assessmentTypeKeys, assessmentTypeValues);
 	}
 	
-	protected static KeyValues getStatus(Translator translator) {
+	public static KeyValues getStatus(Translator translator) {
 		String[] statusTypeKeys = QuestionStatus.valueString();
 		String[] statusTypeValues = new String[statusTypeKeys.length];
 		for(int i=statusTypeKeys.length; i-->0; ) {
@@ -68,7 +68,7 @@ public class MetaUIFactory {
 		return new KeyValues(statusTypeKeys, statusTypeValues);
 	}
 	
-	protected static KeyValues getContextKeyValues(Translator translator, QPoolService qpoolService) {
+	public static KeyValues getContextKeyValues(Translator translator, QPoolService qpoolService) {
 		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
 		String[] contextKeys = new String[ levels.size() ];
 		String[] contextValues = new String[ levels.size() ];
@@ -84,7 +84,7 @@ public class MetaUIFactory {
 		return new KeyValues(contextKeys, contextValues);
 	}
 	
-	protected static KeyValues getQLicenseKeyValues(QPoolService qpoolService) {
+	public static KeyValues getQLicenseKeyValues(QPoolService qpoolService) {
 		List<QLicense> allLicenses = qpoolService.getAllLicenses();
 		List<QLicense> licenses = new ArrayList<QLicense>(allLicenses);
 		for(Iterator<QLicense> it=licenses.iterator(); it.hasNext(); ) {
@@ -109,7 +109,7 @@ public class MetaUIFactory {
 		return new KeyValues(keys, values);
 	}
 	
-	protected static KeyValues getQItemTypeKeyValues(Translator translator, QPoolService qpoolService) {
+	public static KeyValues getQItemTypeKeyValues(Translator translator, QPoolService qpoolService) {
 		List<QItemType> types = qpoolService.getAllItemTypes();
 		String[] typeKeys = new String[types.size()];
 		String[] typeValues = new String[types.size()];
@@ -126,7 +126,7 @@ public class MetaUIFactory {
 		return new KeyValues(typeKeys, typeValues);
 	}
 	
-	protected static boolean validateElementLogic(TextElement el, int maxLength, boolean mandatory, boolean enabled) {
+	public static boolean validateElementLogic(TextElement el, int maxLength, boolean mandatory, boolean enabled) {
 		boolean allOk = true;
 		el.clearError();
 		if(enabled) {
@@ -143,7 +143,7 @@ public class MetaUIFactory {
 		return allOk;
 	}
 	
-	protected static boolean validateInteger(TextElement el, int min, int max, boolean enabled) {
+	public static boolean validateInteger(TextElement el, int min, int max, boolean enabled) {
 		boolean allOk = true;
 		el.clearError();
 		if(enabled) {

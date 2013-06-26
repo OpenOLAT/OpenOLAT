@@ -90,7 +90,17 @@ public class ItemRow implements QuestionItemView {
 	public String getKeywords() {
 		return delegate.getKeywords();
 	}
-	
+
+	@Override
+	public String getCoverage() {
+		return delegate.getCoverage();
+	}
+
+	@Override
+	public String getAdditionalInformations() {
+		return delegate.getAdditionalInformations();
+	}
+
 	@Override
 	public String getLanguage() {
 		return delegate.getLanguage();
@@ -163,6 +173,11 @@ public class ItemRow implements QuestionItemView {
 	@Override
 	public QuestionStatus getQuestionStatus() {
 		return delegate.getQuestionStatus();
+	}
+
+	@Override
+	public String getItemVersion() {
+		return delegate.getItemVersion();
 	}
 
 	public FormLink getMarkLink() {

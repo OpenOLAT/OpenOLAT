@@ -70,10 +70,14 @@ abstract class AbstractItemView implements QuestionItemView, CreateInfo, Modifie
 	private String masterIdentifier;
 	@Column(name="item_title", nullable=false, insertable=true, updatable=true)
 	private String title;
-	@Column(name="item_language", nullable=false, insertable=true, updatable=true)
-	private String language;
 	@Column(name="item_keywords", nullable=true, insertable=true, updatable=true)
 	private String keywords;
+	@Column(name="item_coverage", nullable=true, insertable=true, updatable=true)
+	private String coverage;
+	@Column(name="item_additional_informations", nullable=true, insertable=true, updatable=true)
+	private String additionalInformations;
+	@Column(name="item_language", nullable=false, insertable=true, updatable=true)
+	private String language;
 	
 	//classification
 	@Column(name="item_taxonomy_level", nullable=true, insertable=false, updatable=false)
@@ -100,6 +104,8 @@ abstract class AbstractItemView implements QuestionItemView, CreateInfo, Modifie
 	private int usage;
 	
 	//life cycle
+	@Column(name="item_version", nullable=true, insertable=true, updatable=true)
+	private String itemVersion;
 	@Column(name="item_status", nullable=false, insertable=true, updatable=true)
 	private String status;
 
@@ -301,6 +307,22 @@ abstract class AbstractItemView implements QuestionItemView, CreateInfo, Modifie
 		this.format = format;
 	}
 
+	public String getCoverage() {
+		return coverage;
+	}
+
+	public void setCoverage(String coverage) {
+		this.coverage = coverage;
+	}
+
+	public String getAdditionalInformations() {
+		return additionalInformations;
+	}
+
+	public void setAdditionalInformations(String additionalInformations) {
+		this.additionalInformations = additionalInformations;
+	}
+
 	public String getLanguage() {
 		return language;
 	}
@@ -317,6 +339,14 @@ abstract class AbstractItemView implements QuestionItemView, CreateInfo, Modifie
 		this.itemType = itemType;
 	}
 	
+	public String getItemVersion() {
+		return itemVersion;
+	}
+
+	public void setItemVersion(String itemVersion) {
+		this.itemVersion = itemVersion;
+	}
+
 	public String getStatus() {
 		return status;
 	}

@@ -35,12 +35,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -50,13 +52,16 @@ import org.olat.ims.qti.QTI12EditorController;
 import org.olat.ims.qti.QTI12PreviewController;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.editor.QTIEditHelper;
+import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.ims.qti.editor.QTIEditorPackageImpl;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
+import org.olat.ims.qti.qpool.QTI12ItemFactory.Type;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
+import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
@@ -135,6 +140,16 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		boolean ok = new ItemFileResourceValidator().validate(filename, file);
 		return ok;
 	}
+	
+	@Override
+	public List<QItemFactory> getItemfactories() {
+		List<QItemFactory> factories = new ArrayList<QItemFactory>();
+		factories.add(new QTI12ItemFactory(Type.sc));
+		factories.add(new QTI12ItemFactory(Type.mc));
+		factories.add(new QTI12ItemFactory(Type.kprim));
+		factories.add(new QTI12ItemFactory(Type.fib));
+		return factories;
+	}
 
 	@Override
 	public String extractTextContent(QuestionItemFull item) {
@@ -180,6 +195,32 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 			dbInstance.getCurrentEntityManager().flush();
 		}
 		return importedItem;
+	}
+	
+	public QuestionItem createItem(Identity owner, QTI12ItemFactory.Type type, String title, Locale defaultLocale) {
+		Translator trans = Util.createPackageTranslator(QTIEditorMainController.class, defaultLocale);
+		Item item;
+		switch(type) {
+			case sc: item = QTIEditHelper.createSCItem(trans); break;
+			case mc: item = QTIEditHelper.createMCItem(trans); break;
+			case kprim: item = QTIEditHelper.createKPRIMItem(trans); break;
+			case fib: item = QTIEditHelper.createFIBItem(trans); break;
+			default: return null;
+		}
+		item.setLabel(title);
+		item.setTitle(title);
+		
+		QTIImportProcessor processor = new QTIImportProcessor(owner, defaultLocale,
+				questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
+		
+		Document doc = QTIEditHelper.itemToXml(item);
+		Element itemEl = (Element)doc.selectSingleNode("questestinterop/item");
+		QuestionItemImpl qitem = processor.processItem(itemEl, "", null, "OpenOLAT", Settings.getVersion());
+		//save to file System
+		VFSContainer baseDir = qpoolFileStorage.getContainer(qitem.getDirectory());
+		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
+		QTIEditHelper.serialiazeDoc(doc, leaf);
+		return qitem;
 	}
 	
 	public void importBeecomItem(Identity owner, Item item, VFSContainer sourceDir, Locale defaultLocale) {

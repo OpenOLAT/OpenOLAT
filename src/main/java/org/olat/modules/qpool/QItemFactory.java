@@ -17,44 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.modules.qpool;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Locale;
 
-import org.olat.core.commons.persistence.ResultInfos;
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionItemView;
 
 /**
  * 
- * Initial date: 12.02.2013<br>
+ * Initial date: 26.06.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemsSource {
+public interface QItemFactory {
 	
-	public String getName();
+	public String getLabel(Locale locale);
 	
-	public Controller getSourceController(UserRequest ureq, WindowControl wControl);
-	
-	public boolean isRemoveEnabled();
-	
-	public boolean isDeleteEnabled();
-	
-	public int postImport(List<QuestionItem> items);
-	
-	public void removeFromSource(List<QuestionItemShort> items);
-	
-	public int getNumOfItems();
-	
-	public List<QuestionItemView> getItems(Collection<Long> keys);
-	
-	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
+	public Controller getEditor(UserRequest ureq, WindowControl wControl, String title);
 
 }
