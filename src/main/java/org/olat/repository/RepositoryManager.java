@@ -1997,6 +1997,7 @@ public class RepositoryManager extends BasicManager {
 		  .append("   where bgroup.partipiciantGroup=vmember.securityGroup and res=bresource.resource and bgroup=bresource.group and vmember.identity=:identityKey")
 		  .append("  )")
 		  .append(" )");
+		appendOrderBy(sb, "v", orderby);
 
 		/* query based on permission
 		StringBuilder sb3 = new StringBuilder(400);
@@ -2126,7 +2127,8 @@ public class RepositoryManager extends BasicManager {
 		return query.getSingleResult().intValue();
 	}
 	
-	public List<RepositoryEntry> getFavoritLearningResourcesAsTeacher(Identity identity, List<String> types, int firstResult, int maxResults) {
+	public List<RepositoryEntry> getFavoritLearningResourcesAsTeacher(Identity identity, List<String> types, int firstResult, int maxResults,
+			RepositoryEntryOrder... orderby) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as res ")
@@ -2139,6 +2141,7 @@ public class RepositoryManager extends BasicManager {
 		if(types != null && !types.isEmpty()) {
 			sb.append(" and res.resName in (:types)");
 		}
+		this.appendOrderBy(sb, "v", orderby);
 
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
@@ -2249,8 +2252,8 @@ public class RepositoryManager extends BasicManager {
 			sb.append(" order by ");
 			for(RepositoryEntryOrder o:orderby) {
 				switch(o) {
-					case nameAsc: sb.append(var).append(".key asc").append(","); break;
-					case nameDesc: sb.append(var).append(".key desc").append(","); break;
+					case nameAsc: sb.append(var).append(".displayname asc").append(","); break;
+					case nameDesc: sb.append(var).append(".displayname desc").append(","); break;
 				}
 			}
 			sb.append(var).append(".key asc");
