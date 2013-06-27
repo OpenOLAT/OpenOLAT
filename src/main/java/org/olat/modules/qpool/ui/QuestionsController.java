@@ -43,6 +43,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
@@ -129,6 +130,10 @@ public class QuestionsController extends BasicController implements Activateable
 				doSelect(ureq, detailsCtrl.getItem(), detailsCtrl.isCanEdit());
 			}
 		}
+	}
+	
+	public void setQuestionItemCollection(QuestionItemCollection coll) {
+		listCtrl.setItemCollection(coll);
 	}
 
 	public void updateSource(UserRequest ureq, QuestionItemsSource source) {

@@ -37,15 +37,22 @@ public class CollectionTargetController extends BasicController {
 	
 	public static final String ADD_TO_LIST_POOL_CMD = "qpool.list.add";
 	public static final String NEW_LIST_CMD = "qpool.list.new";
+	public static final String RENAME_LIST_CMD = "qpool.list.rename";
+	public static final String DELETE_LIST_CMD = "qpool.list.delete";
 
 	private final Link newList, addToList;
+	private Link deleteSource, renameSource;
 	
-	public CollectionTargetController(UserRequest ureq, WindowControl wControl) {
+	public CollectionTargetController(UserRequest ureq, WindowControl wControl, boolean editItemCollection) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("collection_target");
 		newList = LinkFactory.createLink("create.list", mainVC, this);
 		addToList = LinkFactory.createLink("add.to.list", mainVC, this);
+		if(editItemCollection) {
+			renameSource = LinkFactory.createLink("rename.collection", mainVC, this);
+			deleteSource = LinkFactory.createLink("delete.collection", mainVC, this);
+		}
 		putInitialPanel(mainVC);
 	}
 
@@ -60,6 +67,10 @@ public class CollectionTargetController extends BasicController {
 			fireEvent(ureq, new Event(NEW_LIST_CMD));
 		} else if(addToList == source) {
 			fireEvent(ureq, new Event(ADD_TO_LIST_POOL_CMD));
+		} else if(deleteSource == source) {
+			fireEvent(ureq, new Event(DELETE_LIST_CMD));
+		} else if(renameSource == source) {
+			fireEvent(ureq, new Event(RENAME_LIST_CMD));
 		}
 	}
 }

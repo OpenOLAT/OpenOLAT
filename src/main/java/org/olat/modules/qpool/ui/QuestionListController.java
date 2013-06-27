@@ -54,6 +54,7 @@ import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QItemList;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
@@ -82,13 +83,16 @@ public class QuestionListController extends AbstractItemListController implement
 
 	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, deleteItem, authorItem, importItem, bulkChange;
 	
+	
 	private StackedController stackPanel;
 
 	private Controller newItemCtrl;
+	private RenameController renameCtrl;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmCopyBox;
 	private DialogBoxController confirmDeleteBox;
 	private DialogBoxController confirmRemoveBox;
+	private DialogBoxController confirmDeleteSourceBox;
 	private ShareItemOptionController shareItemsCtrl;
 	private PoolsController selectPoolCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
@@ -107,6 +111,8 @@ public class QuestionListController extends AbstractItemListController implement
 	private NewItemOptionsController newItemOptionsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ReferencableEntriesSearchController importTestCtrl;
+	
+	private QuestionItemCollection itemCollection;
 	
 	private final QPoolService qpoolService;
 	private final RepositoryManager repositoryManager;
@@ -135,6 +141,14 @@ public class QuestionListController extends AbstractItemListController implement
 			deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
 		}
 		bulkChange = uifactory.addFormLink("bulk.change", formLayout, Link.BUTTON);
+	}
+
+	public QuestionItemCollection getItemCollection() {
+		return itemCollection;
+	}
+
+	public void setItemCollection(QuestionItemCollection itemCollection) {
+		this.itemCollection = itemCollection;
 	}
 
 	@Override
@@ -265,6 +279,10 @@ public class QuestionListController extends AbstractItemListController implement
 				}
 			} else if(CollectionTargetController.NEW_LIST_CMD.equals(event.getCommand())) {
 				doAskCollectionName(ureq, items);
+			} else if(CollectionTargetController.RENAME_LIST_CMD.equals(event.getCommand())) {
+				doOpenRenameCallout(ureq);
+			} else if(CollectionTargetController.DELETE_LIST_CMD.equals(event.getCommand())) {
+				doConfirmDeleteSource(ureq);
 			}
 		} else if(source == createCollectionCtrl) {
 			if(Event.DONE_EVENT == event) {
@@ -274,6 +292,17 @@ public class QuestionListController extends AbstractItemListController implement
 			}
 			cmc.deactivate();
 			cleanUp();
+		} if(source == confirmDeleteSourceBox) {
+			boolean delete = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
+			if(delete) {
+				doDeleteItemCollection(ureq);
+			}
+		} else if(source == renameCtrl) {
+			cmc.deactivate();
+			if(Event.CHANGED_EVENT == event) {
+				String newName = renameCtrl.getName();
+				doRenameItemCollection(ureq, newName);
+			}
 		} else if(source == chooseCollectionCtrl) {
 			cmc.deactivate();
 			cleanUp();
@@ -494,7 +523,7 @@ public class QuestionListController extends AbstractItemListController implement
 	protected void doList(UserRequest ureq) {
 		String title = translate("filter.view");
 		removeAsListenerAndDispose(shareTargetCtrl);
-		listTargetCtrl = new CollectionTargetController(ureq, getWindowControl());
+		listTargetCtrl = new CollectionTargetController(ureq, getWindowControl(), itemCollection != null);
 		listenTo(listTargetCtrl);
 		
 		removeAsListenerAndDispose(calloutCtrl);
@@ -650,6 +679,32 @@ public class QuestionListController extends AbstractItemListController implement
 		getSource().removeFromSource(items);
 		getItemsTable().reset();
 		showInfo("item.deleted");
+	}
+	
+	private void doOpenRenameCallout(UserRequest ureq) {
+		removeAsListenerAndDispose(renameCtrl);
+		renameCtrl = new RenameController(ureq, getWindowControl());
+		listenTo(renameCtrl);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				renameCtrl.getInitialComponent(), true, translate("rename.collection"));
+		cmc.activate();	
+		listenTo(cmc);
+	}
+	
+	private void doRenameItemCollection(UserRequest ureq, String newName) {
+		itemCollection = qpoolService.renameCollection(itemCollection, newName);
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.COLL_CHANGED));
+	}
+
+	private void doConfirmDeleteSource(UserRequest ureq) {
+		confirmDeleteSourceBox = activateYesNoDialog(ureq, null, translate("confirm.delete.source"), confirmDeleteSourceBox);
+	}
+	
+	private void doDeleteItemCollection(UserRequest ureq) {
+		qpoolService.deleteCollection(itemCollection);
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.COLL_DELETED));
 	}
 	
 	protected void doSelectGroup(UserRequest ureq, List<QuestionItemShort> items) {

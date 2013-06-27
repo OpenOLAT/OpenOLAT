@@ -73,6 +73,7 @@ public class SharingController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("sharing");
+		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "sharing.html", "help.hover.sharing");
 		
 		//list of pools
 		FlexiTableColumnModel poolInfosColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

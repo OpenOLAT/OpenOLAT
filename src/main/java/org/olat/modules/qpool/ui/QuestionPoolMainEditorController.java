@@ -436,12 +436,13 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelectCollection(UserRequest ureq, QuestionItemCollection coll, TreeNode node, List<ContextEntry> entries, StateEntry state) {
 		ControlledTreeNode cNode = (ControlledTreeNode)node;
-		CollectionQuestionsController collItemsCtrl = (CollectionQuestionsController)cNode.getController();
+		QuestionsController collItemsCtrl = cNode.getController();
 		
 		CollectionOfItemsSource source = new CollectionOfItemsSource(coll, getIdentity(), ureq.getUserSession().getRoles());
 		if(collItemsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, coll, null);
-			collItemsCtrl = new CollectionQuestionsController(ureq, swControl, source);
+			collItemsCtrl = new QuestionsController(ureq, swControl, source, "coll-" + coll.getKey());
+			collItemsCtrl.setQuestionItemCollection(coll);
 			collItemsCtrl.setStackedController(stackPanel);
 			listenTo(collItemsCtrl);
 			cNode.setController(collItemsCtrl);

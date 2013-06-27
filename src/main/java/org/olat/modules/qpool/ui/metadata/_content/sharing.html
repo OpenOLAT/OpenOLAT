@@ -1,5 +1,6 @@
 <div class="b_form b_form_vertical b_clearfix">
 	<fieldset><legend>$r.translate("sharing")</legend>
+	#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
 	#if($showPoolInfos) 
 		<span>$r.translate("menu.pools")</span>
 		$r.render("pools")

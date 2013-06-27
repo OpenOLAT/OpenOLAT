@@ -1,2 +1,8 @@
 $r.render("create.list")<br/>
-$r.render("add.to.list")
+$r.render("add.to.list")<br/>
+#if($r.available("rename.collection"))
+	$r.render("rename.collection")<br/>
+#end
+#if($r.available("delete.collection"))
+	$r.render("delete.collection")
+#end

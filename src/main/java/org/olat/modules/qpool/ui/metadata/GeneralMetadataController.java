@@ -59,6 +59,7 @@ public class GeneralMetadataController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("general");
+		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "general.html", "help.hover.general");
 		if(edit) {
 			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
 			editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
