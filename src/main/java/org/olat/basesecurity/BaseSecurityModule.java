@@ -64,6 +64,12 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private static final String USERSEARCH_ADMINPROPS_USERMANAGERS = "userSearchAdminPropsForUsermanagers";
 	private static final String USERSEARCH_ADMINPROPS_GROUPMANAGERS = "userSearchAdminPropsForGroupmanagers";
 	private static final String USERSEARCH_ADMINPROPS_ADMINISTRATORS = "userSearchAdminPropsForAdministrators";
+	
+	private static final String USER_LASTLOGIN_VISIBLE_USERS = "userLastLoginVisibleForUsers";
+	private static final String USER_LASTLOGIN_VISIBLE_AUTHORS = "userLastLoginVisibleForAuthors";
+	private static final String USER_LASTLOGIN_VISIBLE_USERMANAGERS = "userLastLoginVisibleForUsermanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_GROUPMANAGERS = "userLastLoginVisibleForGroupmanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_ADMINISTRATORS = "userLastLoginVisibleForAdministrators";
 
 	private static final String USERSEARCHAUTOCOMPLETE_USERS = "userSearchAutocompleteForUsers";
 	private static final String USERSEARCHAUTOCOMPLETE_AUTHORS = "userSearchAutocompleteForAuthors";
@@ -100,6 +106,12 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private String userSearchAdminPropsForUsermanagers;
 	private String userSearchAdminPropsForGroupmanagers;
 	private String userSearchAdminPropsForAdministrators;
+	
+	private String userLastLoginVisibleForUsers;
+	private String userLastLoginVisibleForAuthors;
+	private String userLastLoginVisibleForUsermanagers;
+	private String userLastLoginVisibleForGroupmanagers;
+	private String userLastLoginVisibleForAdministrators;
 	
 	private String userSearchMaxResults;
 	private String userSearchAutocompleteForUsers;
@@ -158,6 +170,12 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		userSearchAdminPropsForGroupmanagers = getStringConfigParameter(USERSEARCH_ADMINPROPS_GROUPMANAGERS, "enabled", true);
 		userSearchAdminPropsForAdministrators = getStringConfigParameter(USERSEARCH_ADMINPROPS_ADMINISTRATORS, "enabled", true);
 
+		userLastLoginVisibleForUsers = getStringConfigParameter(USER_LASTLOGIN_VISIBLE_USERS, "disabled", true);
+		userLastLoginVisibleForAuthors = getStringConfigParameter(USER_LASTLOGIN_VISIBLE_AUTHORS, "enabled", true);
+		userLastLoginVisibleForUsermanagers = getStringConfigParameter(USER_LASTLOGIN_VISIBLE_USERMANAGERS, "enabled", true);
+		userLastLoginVisibleForGroupmanagers = getStringConfigParameter(USER_LASTLOGIN_VISIBLE_GROUPMANAGERS, "enabled", true);
+		userLastLoginVisibleForAdministrators = getStringConfigParameter(USER_LASTLOGIN_VISIBLE_ADMINISTRATORS, "enabled", true);
+
 		userSearchAutocompleteForUsers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERS, "enabled", true);
 		userSearchAutocompleteForAuthors = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_AUTHORS, "enabled", true);
 		userSearchAutocompleteForUsermanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERMANAGERS, "enabled", true);
@@ -191,6 +209,27 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_ADMINISTRATORS, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			userSearchAdminPropsForAdministrators = enabled;
+		}
+		
+		enabled = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_USERS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userLastLoginVisibleForUsers = enabled;
+		}
+		enabled = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_AUTHORS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userLastLoginVisibleForAuthors = enabled;
+		}
+		enabled = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_USERMANAGERS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userLastLoginVisibleForUsermanagers = enabled;
+		}
+		enabled = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_GROUPMANAGERS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userLastLoginVisibleForGroupmanagers = enabled;
+		}
+		enabled = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_ADMINISTRATORS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userLastLoginVisibleForAdministrators = enabled;
 		}
 
 		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERS, true);
@@ -283,6 +322,66 @@ public class BaseSecurityModule extends AbstractOLATModule {
 
 	public void setUserSearchAdminPropsForAdministrators(String enable) {
 		setStringProperty(USERSEARCH_ADMINPROPS_ADMINISTRATORS, enable, true);
+	}
+	
+	public boolean isUserLastVisitVisible(Roles roles) {
+		if(roles == null) return false;
+		if(roles.isOLATAdmin()) {
+			return "enabled".equals(userLastLoginVisibleForAdministrators);
+		}
+		if(roles.isGroupManager()) {
+			return "enabled".equals(userLastLoginVisibleForGroupmanagers);
+		}
+		if(roles.isUserManager()) {
+			return "enabled".equals(userLastLoginVisibleForUsermanagers);
+		}
+		if(roles.isAuthor()) {
+			return "enabled".equals(userLastLoginVisibleForAuthors);
+		}
+		if(roles.isInvitee()) {
+			return false;
+		}
+		return "enabled".equals(userLastLoginVisibleForUsers);
+	}
+
+	public String getUserLastLoginVisibleForUsers() {
+		return userLastLoginVisibleForUsers;
+	}
+
+	public void setUserLastLoginVisibleForUsers(String enable) {
+		setStringProperty(USER_LASTLOGIN_VISIBLE_USERS, enable, true);
+	}
+
+	public String getUserLastLoginVisibleForAuthors() {
+		return userLastLoginVisibleForAuthors;
+	}
+
+	public void setUserLastLoginVisibleForAuthors(String enable) {
+		setStringProperty(USER_LASTLOGIN_VISIBLE_AUTHORS, enable, true);
+	}
+
+	public String getUserLastLoginVisibleForUsermanagers() {
+		return userLastLoginVisibleForUsermanagers;
+	}
+
+	public void setUserLastLoginVisibleForUsermanagers(String enable) {
+		setStringProperty(USER_LASTLOGIN_VISIBLE_USERMANAGERS, enable, true);
+	}
+
+	public String getUserLastLoginVisibleForGroupmanagers() {
+		return userLastLoginVisibleForGroupmanagers;
+	}
+
+	public void setUserLastLoginVisibleForGroupmanagers(String enable) {
+		setStringProperty(USER_LASTLOGIN_VISIBLE_GROUPMANAGERS, enable, true);
+	}
+
+	public String getUserLastLoginVisibleForAdministrators() {
+		return userLastLoginVisibleForAdministrators;
+	}
+
+	public void setUserLastLoginVisibleForAdministrators(String enable) {
+		setStringProperty(USER_LASTLOGIN_VISIBLE_ADMINISTRATORS, enable, true);
 	}
 
 	public boolean isUserAllowedAutoComplete(Roles roles) {

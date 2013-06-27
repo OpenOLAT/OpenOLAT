@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 public class PrivacyAdminController extends FormBasicController {
 	
 	private MultipleSelectionElement adminPropsEl;
+	private MultipleSelectionElement lastloginEl;
 
 	private final BaseSecurityModule module;
 	
@@ -71,6 +72,14 @@ public class PrivacyAdminController extends FormBasicController {
 		adminPropsEl.select("groupmanagers", "enabled".equals(module.getUserSearchAdminPropsForGroupmanagers()));
 		adminPropsEl.select("administrators", "enabled".equals(module.getUserSearchAdminPropsForAdministrators()));
 		adminPropsEl.addActionListener(this, FormEvent.ONCHANGE);
+
+		lastloginEl = uifactory.addCheckboxesVertical("last.login", formLayout, adminPropKeys, adminPropValues, null, 1);
+		lastloginEl.select("users", "enabled".equals(module.getUserLastLoginVisibleForUsers()));
+		lastloginEl.select("authors", "enabled".equals(module.getUserLastLoginVisibleForAuthors()));
+		lastloginEl.select("usermanagers", "enabled".equals(module.getUserLastLoginVisibleForUsermanagers()));
+		lastloginEl.select("groupmanagers", "enabled".equals(module.getUserLastLoginVisibleForGroupmanagers()));
+		lastloginEl.select("administrators", "enabled".equals(module.getUserLastLoginVisibleForAdministrators()));
+		lastloginEl.addActionListener(this, FormEvent.ONCHANGE);
 	}
 	
 	@Override
@@ -81,12 +90,19 @@ public class PrivacyAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == adminPropsEl) {
-			Set<String> enrolmentSelectedKeys = adminPropsEl.getSelectedKeys();
-			module.setUserSearchAdminPropsForUsers(enrolmentSelectedKeys.contains("users") ? "enabled" : "disabled");
-			module.setUserSearchAdminPropsForAuthors(enrolmentSelectedKeys.contains("authors") ? "enabled" : "disabled");
-			module.setUserSearchAdminPropsForUsermanagers(enrolmentSelectedKeys.contains("usermanagers") ? "enabled" : "disabled");
-			module.setUserSearchAdminPropsForGroupmanagers(enrolmentSelectedKeys.contains("groupmanagers") ? "enabled" : "disabled");
-			module.setUserSearchAdminPropsForAdministrators(enrolmentSelectedKeys.contains("administrators") ? "enabled" : "disabled");
+			Set<String> selectedKeys = adminPropsEl.getSelectedKeys();
+			module.setUserSearchAdminPropsForUsers(selectedKeys.contains("users") ? "enabled" : "disabled");
+			module.setUserSearchAdminPropsForAuthors(selectedKeys.contains("authors") ? "enabled" : "disabled");
+			module.setUserSearchAdminPropsForUsermanagers(selectedKeys.contains("usermanagers") ? "enabled" : "disabled");
+			module.setUserSearchAdminPropsForGroupmanagers(selectedKeys.contains("groupmanagers") ? "enabled" : "disabled");
+			module.setUserSearchAdminPropsForAdministrators(selectedKeys.contains("administrators") ? "enabled" : "disabled");
+		} else if(source == lastloginEl) {
+			Set<String> selectedKeys = lastloginEl.getSelectedKeys();
+			module.setUserLastLoginVisibleForUsers(selectedKeys.contains("users") ? "enabled" : "disabled");
+			module.setUserLastLoginVisibleForAuthors(selectedKeys.contains("authors") ? "enabled" : "disabled");
+			module.setUserLastLoginVisibleForUsermanagers(selectedKeys.contains("usermanagers") ? "enabled" : "disabled");
+			module.setUserLastLoginVisibleForGroupmanagers(selectedKeys.contains("groupmanagers") ? "enabled" : "disabled");
+			module.setUserLastLoginVisibleForAdministrators(selectedKeys.contains("administrators") ? "enabled" : "disabled");
 		}
 	}
 

@@ -56,6 +56,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -115,6 +116,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 
 	private final RepositoryEntry repoEntry;
 	private final BusinessGroup businessGroup;
+	private final boolean isLastVisitVisible;
 	private final boolean isAdministrativeUser;
 	private final boolean chatEnabled;
 	
@@ -159,8 +161,10 @@ public abstract class AbstractMemberListController extends BasicController imple
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		memberViewComparator = new GroupMemberViewComparator(Collator.getInstance(getLocale()));
 		
+		Roles roles = ureq.getUserSession().getRoles();
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		isLastVisitVisible = securityModule.isUserLastVisitVisible(roles);
 		mainVC = createVelocityContainer(page);
 
 		//table
@@ -207,7 +211,10 @@ public abstract class AbstractMemberListController extends BasicController imple
 		}
 		
 		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), null, getLocale()));
-		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
+		if(isLastVisitVisible) {
+			memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
+		}
+		
 		CustomCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
 		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer) {
 			@Override

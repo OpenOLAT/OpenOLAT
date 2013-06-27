@@ -38,6 +38,12 @@
 						userSearchAdminPropsForGroupmanagers=${usersearch.adminProps.groupmanagers}
 						userSearchAdminPropsForAdministrators=${usersearch.adminProps.administrators}
 						
+						userLastLoginVisibleForUsers=${user.lastlogin.visible.users}
+						userLastLoginVisibleForAuthors=${user.lastlogin.visible.authors}
+						userLastLoginVisibleForUsermanagers=${user.lastlogin.visible.usermanagers}
+						userLastLoginVisibleForGroupmanagers=${user.lastlogin.visible.groupmanagers}
+						userLastLoginVisibleForAdministrators=${user.lastlogin.visible.administrators}
+						
 						userSearchAutocompleteForUsers=${usersearch.autocomplete.users}
 						userSearchAutocompleteForAuthors=${usersearch.autocomplete.authors}
 						userSearchAutocompleteForUsermanagers=${usersearch.autocomplete.usermanagers}
