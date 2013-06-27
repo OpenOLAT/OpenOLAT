@@ -19,8 +19,6 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.math.BigDecimal;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -29,6 +27,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 
 /**
  * 
@@ -107,9 +106,9 @@ public class QuestionItemSummaryController extends FormBasicController {
 			}
 			usageEl.setValue(usageStr);
 			
-			difficultyEl.setValue(toString(item.getDifficulty()));
-			stdevDifficultyEl.setValue(toString(item.getStdevDifficulty()));
-			differentiationEl.setValue(toString(item.getDifferentiation()));
+			difficultyEl.setValue(MetaUIFactory.bigDToString(item.getDifficulty()));
+			stdevDifficultyEl.setValue(MetaUIFactory.bigDToString(item.getStdevDifficulty()));
+			differentiationEl.setValue(MetaUIFactory.bigDToString(item.getDifferentiation()));
 			
 			String description = item.getDescription();
 			if(StringHelper.containsNonWhitespace(description)) {
@@ -131,9 +130,5 @@ public class QuestionItemSummaryController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
-	}
-	
-	private String toString(BigDecimal val) {
-		return (val == null) ? "" : val.toPlainString();
 	}
 }

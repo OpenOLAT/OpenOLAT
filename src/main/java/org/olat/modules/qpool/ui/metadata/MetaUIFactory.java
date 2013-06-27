@@ -231,11 +231,11 @@ public class MetaUIFactory {
 		return null;
 	}
 	
-	protected static String bigDToString(BigDecimal val) {
+	public static String bigDToString(BigDecimal val) {
 		if(val == null) {
 			return "";
 		}
-		return val.toPlainString();
+		return val.stripTrailingZeros().toPlainString();
 	}
 	
 	protected static int toInt(String val) {

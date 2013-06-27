@@ -19,13 +19,12 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.math.BigDecimal;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 
 /**
  * 
@@ -65,9 +64,9 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case creationDate: return item.getCreationDate();
 			case lastModified: return item.getLastModified();
 			case taxnonomyLevel: return item.getTaxonomyLevelName();
-			case difficulty: return toString(item.getDifficulty());
-			case stdevDifficulty: return toString(item.getStdevDifficulty());
-			case differentiation: return toString(item.getDifferentiation());
+			case difficulty: return MetaUIFactory.bigDToString(item.getDifficulty());
+			case stdevDifficulty: return MetaUIFactory.bigDToString(item.getStdevDifficulty());
+			case differentiation: return MetaUIFactory.bigDToString(item.getDifferentiation());
 			case numOfAnswerAlternatives:
 				return item.getNumOfAnswerAlternatives() > 0 ? Integer.toString(item.getNumOfAnswerAlternatives()) : "";
 			case usage:
@@ -93,10 +92,6 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case mark: return item.getMarkLink();
 			default: return "-";
 		}
-	}
-	
-	private String toString(BigDecimal decimal) {
-		return decimal == null ? "" : decimal.toPlainString();
 	}
 	
 	public enum Cols {

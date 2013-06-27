@@ -83,20 +83,20 @@ public class QuestionMetadataEditController extends FormBasicController {
 		}
 		
 		String difficulty = bigDToString(item.getDifficulty());
-		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 10, difficulty, formLayout);
+		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 24, difficulty, formLayout);
 		difficultyEl.setExampleKey("question.difficulty.example", null);
 		difficultyEl.setDisplaySize(4);
 
 		String stdevDifficulty = bigDToString(item.getStdevDifficulty());
-		stdevDifficultyEl = uifactory.addTextElement("question.stdevDifficulty", "question.stdevDifficulty", 10, stdevDifficulty, formLayout);
+		stdevDifficultyEl = uifactory.addTextElement("question.stdevDifficulty", "question.stdevDifficulty", 24, stdevDifficulty, formLayout);
 		stdevDifficultyEl.setExampleKey("question.stdevDifficulty.example", null);
 		stdevDifficultyEl.setDisplaySize(4);
 		String differentiation = bigDToString(item.getDifferentiation());
-		differentiationEl = uifactory.addTextElement("question.differentiation", "question.differentiation", 10, differentiation, formLayout);
+		differentiationEl = uifactory.addTextElement("question.differentiation", "question.differentiation", 24, differentiation, formLayout);
 		differentiationEl.setExampleKey("question.differentiation.example", null);
 		differentiationEl.setDisplaySize(4);
 		String numAnswerAlt = item.getNumOfAnswerAlternatives() < 0 ? "" : Integer.toString(item.getNumOfAnswerAlternatives());
-		numAnswerAltEl = uifactory.addTextElement("question.numOfAnswerAlternatives", "question.numOfAnswerAlternatives", 10, numAnswerAlt, formLayout);
+		numAnswerAltEl = uifactory.addTextElement("question.numOfAnswerAlternatives", "question.numOfAnswerAlternatives", 24, numAnswerAlt, formLayout);
 		numAnswerAltEl.setDisplaySize(4);
 		
 		uifactory.addStaticTextElement("question.usage", Integer.toString(item.getUsage()), formLayout);

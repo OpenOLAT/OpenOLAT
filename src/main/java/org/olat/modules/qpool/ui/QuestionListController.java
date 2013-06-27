@@ -163,7 +163,7 @@ public class QuestionListController extends AbstractItemListController implement
 			if(link == list) {
 				doList(ureq);
 			} else if(link == exportItem) {
-				List<QuestionItemShort> items = getSelectedShortItems();
+				List<QuestionItemShort> items = getSelectedShortItems(false);
 				if(items.size() > 0) {
 					doExport(ureq, items);
 				} else {
@@ -172,28 +172,28 @@ public class QuestionListController extends AbstractItemListController implement
 			} else if(link == shareItem) {
 				doShare(ureq);
 			} else if(link == removeItem) {
-				List<QuestionItemShort> items = getSelectedShortItems();
+				List<QuestionItemShort> items = getSelectedShortItems(false);
 				if(items.size() > 0) {
 					doConfirmRemove(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == copyItem) {
-				List<QuestionItemShort> items = getSelectedShortItems();
+				List<QuestionItemShort> items = getSelectedShortItems(false);
 				if(items.size() > 0) {
 					doConfirmCopy(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == deleteItem) {
-				List<QuestionItemShort> items = getSelectedShortItems();
+				List<QuestionItemShort> items = getSelectedShortItems(true);
 				if(items.size() > 0) {
 					doConfirmDelete(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == authorItem) {
-				List<QuestionItemShort> items = getSelectedShortItems();
+				List<QuestionItemShort> items = getSelectedShortItems(false);
 				if(items.size() > 0) {
 					doChooseAuthoren(ureq, items);
 				} else {
@@ -204,7 +204,7 @@ public class QuestionListController extends AbstractItemListController implement
 			} else if(link == newItem) {
 				doChooseNewItemType(ureq);
 			} else if(link == bulkChange) {
-				List<QuestionItemShort> items = getSelectedShortItems();
+				List<QuestionItemShort> items = getSelectedShortItems(true);
 				if(items.size() > 0) {
 					doBulkChange(ureq, items);
 				} else {
@@ -218,7 +218,7 @@ public class QuestionListController extends AbstractItemListController implement
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == shareTargetCtrl) {
-			List<QuestionItemShort> items = getSelectedShortItems();
+			List<QuestionItemShort> items = getSelectedShortItems(false);
 			calloutCtrl.deactivate();
 			if(items.isEmpty()) {
 				showWarning("error.select.one");
@@ -269,7 +269,7 @@ public class QuestionListController extends AbstractItemListController implement
 			cmc.deactivate();
 			cleanUp();
 		} else if(source == listTargetCtrl) {
-			List<QuestionItemShort> items = getSelectedShortItems();
+			List<QuestionItemShort> items = getSelectedShortItems(false);
 			calloutCtrl.deactivate();
 			if(CollectionTargetController.ADD_TO_LIST_POOL_CMD.equals(event.getCommand())) {
 				if(items.isEmpty()) {

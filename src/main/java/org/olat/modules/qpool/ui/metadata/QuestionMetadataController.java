@@ -19,8 +19,6 @@
  */
 package org.olat.modules.qpool.ui.metadata;
 
-import java.math.BigDecimal;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -93,22 +91,14 @@ public class QuestionMetadataController extends FormBasicController  {
 			typeEl.setValue(translation);
 		}
 		
-		difficultyEl.setValue(toString(item.getDifficulty()));
-		stdevDifficultyEl.setValue(toString(item.getStdevDifficulty()));
-		differentiationEl.setValue(toString(item.getDifferentiation()));
+		difficultyEl.setValue(MetaUIFactory.bigDToString(item.getDifficulty()));
+		stdevDifficultyEl.setValue(MetaUIFactory.bigDToString(item.getStdevDifficulty()));
+		differentiationEl.setValue(MetaUIFactory.bigDToString(item.getDifferentiation()));
 		numAnswerAltEl.setValue(Integer.toString(item.getNumOfAnswerAlternatives()));
 		usageEl.setValue(Integer.toString(item.getUsage()));
 		String assessmentType = item.getAssessmentType() == null ?
 				"" : translate("question.assessmentType." + item.getAssessmentType());
 		assessmentTypeEl.setValue(assessmentType);
-	}
-	
-	private String toString(BigDecimal val) {
-		if(val == null) {
-			return "";
-		} else {
-			return val.toPlainString();
-		}
 	}
 	
 	@Override

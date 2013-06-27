@@ -233,17 +233,17 @@ public abstract class AbstractItemListController extends FormBasicController
 		}
 	}
 
-	public List<QuestionItemShort> getSelectedShortItems() {
+	public List<QuestionItemShort> getSelectedShortItems(boolean onlyEditable) {
 		Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-		List<QuestionItemShort> items = getShortItems(selections);
+		List<QuestionItemShort> items = getShortItems(selections, onlyEditable);
 		return items;
 	}
 
-	public List<QuestionItemShort> getShortItems(Set<Integer> index) {
+	public List<QuestionItemShort> getShortItems(Set<Integer> index, boolean onlyEditable) {
 		List<QuestionItemShort> items = new ArrayList<QuestionItemShort>();
 		for(Integer i:index) {
 			ItemRow row = model.getObject(i.intValue());
-			if(row != null) {
+			if(row != null && (!onlyEditable || row.isEditable())) {
 				items.add(row);
 			}
 		}
