@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -222,7 +223,9 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
+		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		//was: (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
 		
 		main = new Panel("assessmentmain");
 
@@ -491,7 +494,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 					} else {
 						// all other cases where user can be choosen the assessed identity wrapper is used
 						AssessedIdentitiesTableDataModel userListModel = (AssessedIdentitiesTableDataModel) userListCtr.getTableDataModel();
-						this.assessedIdentityWrapper = userListModel.getWrappedIdentity(rowid);
+						this.assessedIdentityWrapper = userListModel.getObject(rowid);
 					}
 					// init edit controller for this identity and this course node 
 					// or use identity assessment overview if no course node is defined
@@ -800,7 +803,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		}
 		
 		// Add the wrapped identities to the table data model
-		AssessedIdentitiesTableDataModel tdm = new AssessedIdentitiesTableDataModel(wrappedIdentities, courseNode, ureq.getLocale(), isAdministrativeUser, mode == MODE_USERFOCUS);
+		AssessedIdentitiesTableDataModel tdm = new AssessedIdentitiesTableDataModel(wrappedIdentities, courseNode, getLocale(), isAdministrativeUser, mode == MODE_USERFOCUS);
 		tdm.addColumnDescriptors(userListCtr, CMD_CHOOSE_USER, mode == MODE_NODEFOCUS || mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS);
 		userListCtr.setTableDataModel(tdm);
 

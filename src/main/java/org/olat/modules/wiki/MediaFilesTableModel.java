@@ -27,7 +27,6 @@ package org.olat.modules.wiki;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
@@ -86,13 +85,13 @@ public class MediaFilesTableModel extends DefaultTableDataModel<MediaFileElement
 			case 1:
 				long identKey = entry.getCreatedBy();
 				if (identKey == 0) return "---";
-				return userManager.getUserDisplayName(new Long(identKey));//TODO username
+				return userManager.getUserDisplayName(new Long(identKey));
 			case 2:
 				return formatter.formatDateAndTime(new Date(entry.getCreationDate()));
 			case 3:
 				long key = entry.getDeletedBy();
 				if (key == 0) return "---";
-				return userManager.getUserDisplayName(new Long(key));//TODO username
+				return userManager.getUserDisplayName(new Long(key));
 			case 4:
 				long delDate = entry.getDeletionDate();
 				if (delDate == 0) return "---";

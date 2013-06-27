@@ -27,6 +27,8 @@ package org.olat.admin.properties;
 
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -39,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Roles;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 
@@ -55,6 +58,7 @@ public class AdvancedPropertiesController extends BasicController {
 	private VelocityContainer vcSearchForm;
 	
 	private TableController tableCtr;
+	private final boolean isAdministrativeUser;
 	
 	/**
 	 * caller of this constructor must make sure only olat admins come here
@@ -63,7 +67,10 @@ public class AdvancedPropertiesController extends BasicController {
 	 * @param wControl
 	 */
 	public AdvancedPropertiesController(UserRequest ureq, WindowControl wControl) {
-		super(ureq,wControl);		
+		super(ureq,wControl);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
 		
 		//TODO: make special security check as soon as this controller can also modify polices (at the moment: read only)
 		
@@ -101,25 +108,27 @@ public class AdvancedPropertiesController extends BasicController {
 				String propertyName = searchForm.getPropertyName();
 				if (propertyName != null && propertyName.equals("")) propertyName = null;
 
-				List<Property> entries = PropertyManager.getInstance().listProperties(searchForm.getIdentity(), null, resourceTypeName, resTypeId, category, propertyName);				
-				PropertiesTableDataModel ptdm = new PropertiesTableDataModel(entries);
+				List<Property> entries = PropertyManager.getInstance().listProperties(searchForm.getIdentity(), null, resourceTypeName, resTypeId, category, propertyName);
+				
+				
+				PropertiesTableDataModel ptdm = new PropertiesTableDataModel(entries, isAdministrativeUser);
 
 				TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 				
 				removeAsListenerAndDispose(tableCtr);
 				tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 				//use null as listener argument because we are using listenTo(..) from basiccontroller
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.userName", 0, null, ureq.getLocale()));
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.resourceTypeName", 1, null, ureq.getLocale()));
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.resourceTypeId", 2, null, ureq.getLocale(),ColumnDescriptor.ALIGNMENT_RIGHT));
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.category", 3, null, ureq.getLocale()));
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.name", 4, null, ureq.getLocale()));
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.floatValue", 5, null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_RIGHT));
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.stringValue", 6, null, ureq.getLocale()));
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.longValue", 10, null, ureq.getLocale()));
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.textValue", 7, null, ureq.getLocale()));
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.creationdate", 8, null, ureq.getLocale()));
-				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.lastmodified", 9, null, ureq.getLocale()));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.userName", 0, null, getLocale()));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.resourceTypeName", 1, null, getLocale()));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.resourceTypeId", 2, null, getLocale(),ColumnDescriptor.ALIGNMENT_RIGHT));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.category", 3, null, getLocale()));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.name", 4, null, getLocale()));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.floatValue", 5, null, getLocale(), ColumnDescriptor.ALIGNMENT_RIGHT));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.stringValue", 6, null, getLocale()));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.longValue", 10, null, getLocale()));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.textValue", 7, null, getLocale()));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.creationdate", 8, null, getLocale()));
+				tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.lastmodified", 9, null, getLocale()));
 				tableCtr.setTableDataModel(ptdm);
 				listenTo(tableCtr);
 

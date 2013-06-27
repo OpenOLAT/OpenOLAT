@@ -46,9 +46,10 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author Christian Guretzki
  */
-public class UserDeleteTableModel extends DefaultTableDataModel {
+public class UserDeleteTableModel extends DefaultTableDataModel<Identity> {
 
-	private List<UserPropertyHandler> userPropertyHandlers;
+	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final boolean isAdministrativeUser;
 	private static final String usageIdentifyer = UserDeleteTableModel.class.getCanonicalName();
 	
 	/**
@@ -57,9 +58,10 @@ public class UserDeleteTableModel extends DefaultTableDataModel {
 	 * @param locale
 	 * @param isAdministrativeUser
 	 */
-	public UserDeleteTableModel(List objects, Locale locale, boolean isAdministrativeUser) {
+	public UserDeleteTableModel(List<Identity> objects, Locale locale, boolean isAdministrativeUser) {
 		super(objects);
-		setLocale(locale);		
+		setLocale(locale);
+		this.isAdministrativeUser = isAdministrativeUser;
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 	}
 		
@@ -74,14 +76,16 @@ public class UserDeleteTableModel extends DefaultTableDataModel {
 	 */
 	public void addColumnDescriptors(TableController tableCtr, String actionCommand) {
 		// first column is the username
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.user.login", 0, actionCommand, getLocale()));
+		if(isAdministrativeUser) {
+			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.user.login", 301, actionCommand, getLocale()));
+		}
 		// followed by the users fields
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
-			tableCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(i+1, null, getLocale()));						
+			tableCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(i, null, getLocale()));						
 		}
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.user.lastlogin", getColumnCount()-2, actionCommand, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.user.lastlogin", 302, actionCommand, getLocale()));
 	}
 	
 	/**
@@ -92,7 +96,7 @@ public class UserDeleteTableModel extends DefaultTableDataModel {
 	 */
 	public void addColumnDescriptors(TableController tableCtr, String actionCommand, String deleteEmailKey) {
 		addColumnDescriptors(tableCtr, actionCommand);
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor(deleteEmailKey, getColumnCount()-1, actionCommand, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor(deleteEmailKey, 303, actionCommand, getLocale()));
 	}
 
 	/**
@@ -100,18 +104,19 @@ public class UserDeleteTableModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.DefaultTableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {		
-		Identity identity = (Identity) getObject(row);
+		Identity identity = getObject(row);
 		User user = identity.getUser();
-		if (col == 0) {
-			return identity.getName();//TODO username	
-		} else if (col < userPropertyHandlers.size()+1) {
-			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col-1);
+
+		if (col == 301) {
+			return identity.getName();
+		} else if (col < userPropertyHandlers.size()) {
+			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col);
 			String value = userPropertyHandler.getUserProperty(user, getLocale());
 			return (value == null ? "n/a" : value);			
-		} else if(col == userPropertyHandlers.size()+1) {
+		} else if(col == 302) {
 			Date lastLogin= identity.getLastLogin();
 			return (lastLogin == null ? "n/a" : lastLogin);			
-		} else if(col == userPropertyHandlers.size()+2) {
+		} else if(col == 303) {
 			LifeCycleEntry lcEvent = LifeCycleManager.createInstanceFor(identity).lookupLifeCycleEntry(UserDeletionManager.SEND_DELETE_EMAIL_ACTION);
 			if (lcEvent == null) {
 				return "n/a";

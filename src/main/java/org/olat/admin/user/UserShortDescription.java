@@ -27,6 +27,8 @@ package org.olat.admin.user;
 
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -60,17 +62,21 @@ public class UserShortDescription extends BasicController {
 		String usernameLabel = translate("table.user.login");
 		//use the PropertyHandlerTranslator for the velocityContainer
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
-		velocityContainer = this.createVelocityContainer("userShortDescription");
+		velocityContainer = createVelocityContainer("userShortDescription");
 				
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
+		boolean isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
+		//(roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		velocityContainer.contextPut("userPropertyHandlers", userPropertyHandlers);
 		velocityContainer.contextPut("user", identity.getUser());			
-		velocityContainer.contextPut("username", identity.getName());
+		
+		if(getIdentity().equals(identity) || isAdministrativeUser) {
+			velocityContainer.contextPut("username", identity.getName());
+		}
 		velocityContainer.contextPut("usernameLabel", usernameLabel);
 		
-		this.putInitialPanel(velocityContainer);
+		putInitialPanel(velocityContainer);
 	}
 
 	@Override

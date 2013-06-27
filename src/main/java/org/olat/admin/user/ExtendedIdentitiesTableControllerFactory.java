@@ -29,14 +29,11 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 
@@ -52,17 +49,15 @@ import org.olat.user.UserManager;
  * itself is work in progress.
  */
 public class ExtendedIdentitiesTableControllerFactory {
-	private static final String PACKAGE = Util.getPackageName(ExtendedIdentitiesTableControllerFactory.class);
 	public static final String COMMAND_VCARD = "show.vcard";
 	public static final String COMMAND_SELECTUSER = "select.user";
 
-	
 	/**
 	 * @param args
 	 */
 	public static TableController createController(ExtendedIdentitiesTableDataModel dataModel, UserRequest ureq, WindowControl wControl, boolean actionEnabled) {
 		Locale loc = ureq.getLocale();
-		Translator trans = new PackageTranslator(PACKAGE, loc);
+		Translator trans = Util.createPackageTranslator(ExtendedIdentitiesTableControllerFactory.class, loc);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDownloadOffered(true);
 		tableConfig.setPreferencesOffered(true, "ExtendedIdentitiesTable");		
@@ -75,7 +70,7 @@ public class ExtendedIdentitiesTableControllerFactory {
 		return tableCtr;
 	}
 	
-	public static ExtendedIdentitiesTableDataModel createTableDataModel(UserRequest ureq, List identities, boolean actionEnabled) {
+	public static ExtendedIdentitiesTableDataModel createTableDataModel(UserRequest ureq, List<Identity> identities, boolean actionEnabled) {
 		return new ExtendedIdentitiesTableDataModel(ureq, identities, actionEnabled);
 	}
 }

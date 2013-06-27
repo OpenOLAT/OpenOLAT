@@ -1,9 +1,10 @@
 <table class="b_table">		
+	#if($username)
 	<tr>
 		<td><b>$usernameLabel</b></td>
 		<td>$username</td>
 	</tr>
-	
+	#end
 	#foreach( $propertyHandler in $userPropertyHandlers )		
 	    #if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")		
 		<tr>

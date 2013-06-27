@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
@@ -99,7 +100,8 @@ public class RevisionListController extends BasicController {
 	public RevisionListController(UserRequest ureq, WindowControl wControl, Versionable versionedFile, String title, String description) {
 		super(ureq, wControl);
 		
-		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		isAdmin = CoreSpringFactory.getImpl(BaseSecurityModule.class)
+				.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		
 		//reload the file with all possible precautions
@@ -336,7 +338,7 @@ public class RevisionListController extends BasicController {
 			StringBuilder sb = new StringBuilder();
 			sb.append(userManager.getUserDisplayName(id));
 			if(isAdmin) {
-				sb.append(" (").append(name).append(")");//TODO username
+				sb.append(" (").append(name).append(")");
 			}
 			return sb.toString();
 		}

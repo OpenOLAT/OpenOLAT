@@ -38,8 +38,6 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -56,6 +54,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.UserManager;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -77,6 +76,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	private static EfficiencyStatementManager INSTANCE;
 
 	private DB dbInstance;
+	private UserManager userManager;
 	private RepositoryManager repositoryManager;
 	private final XStream xstream = XStreamHelper.createXStreamInstance();
 
@@ -110,6 +110,14 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 */
 	public void setRepositoryManager(RepositoryManager repositoryManager) {
 		this.repositoryManager = repositoryManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param userManager
+	 */
+	public void setUserManager(UserManager userManager) {
+		this.userManager = userManager;
 	}
 
 	/**
@@ -145,8 +153,8 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			efficiencyStatement.setAssessmentNodes(assessmentNodes);
 			efficiencyStatement.setCourseTitle(userCourseEnv.getCourseEnvironment().getCourseTitle());
 			efficiencyStatement.setCourseRepoEntryKey(repoEntryKey);
-			User user = identity.getUser();
-			efficiencyStatement.setDisplayableUserInfo(user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null) + " (" + identity.getName() + ")");//TODO username
+			String userInfos = userManager.getUserDisplayName(identity);
+			efficiencyStatement.setDisplayableUserInfo(userInfos);
 			efficiencyStatement.setLastUpdated(System.currentTimeMillis());
 							
 			UserEfficiencyStatementImpl efficiencyProperty = getUserEfficiencyStatementFull(repoEntryKey, identity);

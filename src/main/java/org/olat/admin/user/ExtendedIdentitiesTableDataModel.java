@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
@@ -50,9 +52,10 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * user and its creation date. The idea is to extend the functionality further
  * to display more information using a wrapper object.
  */
-public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel {
+public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel<Identity> {
 
-	private boolean actionEnabled;
+	private final boolean actionEnabled;
+	private final boolean isAdministrativeUser;
 	private int colCount = 0;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = ExtendedIdentitiesTableDataModel.class.getCanonicalName();
@@ -64,12 +67,12 @@ public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel {
 	 * @param actionEnabled true: the action button is enabled; false: list
 	 *          without action button
 	 */
-	ExtendedIdentitiesTableDataModel(UserRequest ureq, List identities, boolean actionEnabled) {
+	ExtendedIdentitiesTableDataModel(UserRequest ureq, List<Identity> identities, boolean actionEnabled) {
 		super(identities);
 		this.actionEnabled = actionEnabled;
 
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
+		isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 	}
 
@@ -83,27 +86,26 @@ public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel {
 		setLocale(trans.getLocale());
 		// first column is users login name
 		// default rows
-		DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.identity.name", 0,
-				(actionEnabled ? ExtendedIdentitiesTableControllerFactory.COMMAND_VCARD : null), getLocale());
-		cd0
-				.setIsPopUpWindowAction(true,
-						"height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
-		tableCtr.addColumnDescriptor(cd0);
-		colCount++;
+		
+		if(isAdministrativeUser) {
+			String action = (actionEnabled ? ExtendedIdentitiesTableControllerFactory.COMMAND_VCARD : null);
+			DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.identity.name", colCount++, action, getLocale());
+			cd0.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
+			tableCtr.addColumnDescriptor(cd0);
+		}
+
 		UserManager um = UserManager.getInstance();
 		// followed by the users fields
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
 			boolean visible = um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler);
-			tableCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(i + 1, null, getLocale()));
-			colCount++;
+			tableCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(colCount++, null, getLocale()));
 		}
 		// in the end the last login and creation date
-		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.identity.lastlogin", colCount, null, getLocale()));
-		colCount++;
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.identity.lastlogin", colCount++, null, getLocale()));
 		// creation date at the end, enabled by default
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.identity.creationdate", colCount, null, getLocale()));
-		colCount++;
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.identity.creationdate", colCount++, null, getLocale()));
+
 		if (actionEnabled) {
 			tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ExtendedIdentitiesTableControllerFactory.COMMAND_SELECTUSER,
 					"table.identity.action", trans.translate("action.select")));
@@ -114,41 +116,32 @@ public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public final Object getValueAt(int row, int col) {
-		Identity identity = getIdentityAt(row);
+		Identity identity = getObject(row);
 		User user = identity.getUser();
-		if (col == 0) {
-			return identity.getName();//TODO username
-
-		} else if (col > 0 && col < userPropertyHandlers.size() + 1) {
+		int offSet = isAdministrativeUser ? 1 : 0;
+		if (col == 0 && isAdministrativeUser) {
+			return identity.getName();
+		}
+		if (col >= offSet && col < userPropertyHandlers.size() + offSet) {
 			// get user property for this column
-			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - 1);
+			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - offSet);
 			String value = userPropertyHandler.getUserProperty(user, getLocale());
 			return (value == null ? "n/a" : value);
-
-		} else if (col == userPropertyHandlers.size() + 1) {
-			return identity.getLastLogin();
-		} else if (col == userPropertyHandlers.size() + 2) {
-			return user.getCreationDate();
-
-		} else {
-			return "error";
 		}
+		if (col == userPropertyHandlers.size() + offSet) {
+			return identity.getLastLogin();
+		}
+		if (col == userPropertyHandlers.size() + offSet + 1) {
+			return user.getCreationDate();
+		} 
+		return "error";
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
 	 */
 	public int getColumnCount() {
-		return colCount;
-	}
-
-	/**
-	 * @param rowid
-	 * @return The identity at the given position in the table
-	 */
-	public Identity getIdentityAt(int rowid) {
-		Identity ident = (Identity) getObject(rowid);
-		return ident;
+		return colCount + 1;
 	}
 
 	/**
@@ -158,10 +151,9 @@ public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel {
 	public List<Identity> getIdentities(BitSet selection) {
 		List<Identity> identities = new ArrayList<Identity>();
 		for (int i = selection.nextSetBit(0); i >= 0; i = selection.nextSetBit(i + 1)) {
-			Identity identityAt = getIdentityAt(i);
+			Identity identityAt = getObject(i);
 			identities.add(identityAt);
 		}
 		return identities;
 	}
-
 }

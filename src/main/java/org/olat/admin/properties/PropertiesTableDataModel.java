@@ -31,6 +31,7 @@ import java.util.List;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.properties.Property;
+import org.olat.user.UserManager;
 
 /**
 *  Description:<br>
@@ -40,20 +41,25 @@ import org.olat.properties.Property;
 */
 public class PropertiesTableDataModel extends DefaultTableDataModel<Property> {
 
-
+	private final boolean isAdministrativeUser;
+	private final UserManager userManager;
+	
 	/**
 	 * Default constructor.
 	 */
-	public PropertiesTableDataModel() {
-		this(new ArrayList<Property>());
+	public PropertiesTableDataModel(boolean isAdministrativeUser) {
+		this(new ArrayList<Property>(), isAdministrativeUser);
+		
 	}
 
 	/**
 	 * Initialize table model with objects.
 	 * @param objects
 	 */
-	public PropertiesTableDataModel(List<Property> objects) {
+	public PropertiesTableDataModel(List<Property> objects, boolean isAdministrativeUser) {
 		super(objects);
+		this.isAdministrativeUser = isAdministrativeUser;
+		userManager = UserManager.getInstance();
 	}
 	
 	/**
@@ -73,7 +79,13 @@ public class PropertiesTableDataModel extends DefaultTableDataModel<Property> {
 		switch(col) {
 			case 0:
 				Identity id = p.getIdentity();
-				return ((id != null) ?  (p.getIdentity().getName()): (null));//TODO username
+				if(id == null) {
+					return null;
+				}
+				if(isAdministrativeUser) {
+					return id.getName();
+				}
+				return userManager.getUserDisplayName(id);
 			case 1:
 				return p.getResourceTypeName();
 			case 2:

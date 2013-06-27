@@ -159,6 +159,7 @@ public class UserSearchForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
+		login.setVisible(isAdminProps);
 
 		UserManager um = UserManager.getInstance();
 		Translator tr = Util.createPackageTranslator(

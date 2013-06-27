@@ -16,6 +16,7 @@
 
 	<bean id="org.olat.course.assessment.EfficiencyStatementManager" class="org.olat.course.assessment.EfficiencyStatementManager">
 		<property name="dbInstance" ref="database"/>
+		<property name="userManager" ref="userManager"/>
 		<property name="repositoryManager" ref="repositoryManager"/>
 	</bean>
 

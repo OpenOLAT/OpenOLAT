@@ -36,6 +36,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -109,6 +110,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private ProfileAndHomePageEditController userProfileCtr;
 	private GroupOverviewController grpCtr;
 	
+	private final boolean isAdministrativeUser;
+	private final BaseSecurityModule securityModule;
 
 	/**
 	 * Constructor that creates a back - link as default
@@ -118,6 +121,10 @@ public class UserAdminController extends BasicController implements Activateable
 	 */
 	public UserAdminController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl);
+		
+		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		
 		BaseSecurity mgr = BaseSecurityManager.getInstance();
 		if (!mgr.isIdentityPermittedOnResourceable(
 				ureq.getIdentity(), 
@@ -153,7 +160,7 @@ public class UserAdminController extends BasicController implements Activateable
 		if("tab".equals(entryPoint)) {
 			userTabP.activate(ureq, entries, state);
 		} else if (userTabP != null) {
-				userTabP.setSelectedPane(translate(entryPoint));
+			userTabP.setSelectedPane(translate(entryPoint));
 		}
 	}
 
@@ -339,11 +346,6 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @param identity
 	 */
 	private void exposeUserDataToVC(UserRequest ureq, Identity identity) {		
-		Locale loc = ureq.getLocale();
-		myContent.contextPut("foundUserName", identity.getName());//TODO username
-		myContent.contextPut("foundFirstName", identity.getUser().getProperty(UserConstants.FIRSTNAME, loc));
-		myContent.contextPut("foundLastName", identity.getUser().getProperty(UserConstants.LASTNAME, loc));
-		myContent.contextPut("foundEmail", identity.getUser().getProperty(UserConstants.EMAIL, loc));
 		removeAsListenerAndDispose(portraitCtr);
 		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), identity, true, true);
 		myContent.put("portrait", portraitCtr.getInitialComponent());

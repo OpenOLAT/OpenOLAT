@@ -19,10 +19,8 @@
  */
 package de.bps.course.nodes.den;
 
-import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
@@ -57,17 +55,4 @@ public class DENCourseNodeConfiguration extends AbstractCourseNodeConfiguration 
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
 		return translator.translate("title_den");
 	}
-
-	public ExtensionResource getExtensionCSS() {
-		return null;
-	}
-
-	public List getExtensionResources() {
-		return null;
-	}
-
-	public String getName() {
-		return getAlias();
-	}
-
 }

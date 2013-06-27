@@ -32,6 +32,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
@@ -40,7 +42,6 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -60,6 +61,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.UserManager;
 
 
 /**
@@ -81,7 +83,6 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 	private static final int DEFAULT_DELETE_EMAIL_DURATION = 30;
 	
 	private static RepositoryDeletionManager INSTANCE;
-	private static final String PACKAGE = Util.getPackageName(SelectionController.class);
 
 	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
 	private static final String REPOSITORY_DELETED_ACTION = "respositoryEntryDeleted";
@@ -156,14 +157,14 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		return getPropertyByName(DELETE_EMAIL_DURATION_PROPERTY_NAME, DEFAULT_DELETE_EMAIL_DURATION);
 	}
 
-	public String sendDeleteEmailTo(List selectedRepositoryEntries, MailTemplate mailTemplate, boolean isTemplateChanged, String key_email_subject, 
+	public String sendDeleteEmailTo(List<RepositoryEntry> selectedRepositoryEntries, MailTemplate mailTemplate, boolean isTemplateChanged, String key_email_subject, 
 			String key_email_body, Identity sender, Translator pT) {
 		StringBuilder buf = new StringBuilder();
 		if (mailTemplate != null) {
-			HashMap identityRepositoryList = collectRepositoryEntriesForIdentities(selectedRepositoryEntries); 
+			Map<Identity, List<RepositoryEntry>> identityRepositoryList = collectRepositoryEntriesForIdentities(selectedRepositoryEntries); 
 			// loop over identity list and send email
-			for (Iterator iterator = identityRepositoryList.keySet().iterator(); iterator.hasNext();) {
-				String result = sendEmailToIdentity((Identity) iterator.next(), identityRepositoryList, mailTemplate, isTemplateChanged, key_email_subject, 
+			for (Iterator<Identity> iterator = identityRepositoryList.keySet().iterator(); iterator.hasNext();) {
+				String result = sendEmailToIdentity(iterator.next(), identityRepositoryList, mailTemplate, isTemplateChanged, key_email_subject, 
 						key_email_body, sender, pT);
 				if (result != null) {
 					buf.append(result).append("\n");
@@ -171,8 +172,8 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 			}
 		} else {
 			// no template => User decides to sending no delete-email, mark only in lifecycle table 'sendEmail'
-			for (Iterator iter = selectedRepositoryEntries.iterator(); iter.hasNext();) {
-				RepositoryEntry repositoryEntry = (RepositoryEntry)iter.next();
+			for (Iterator<RepositoryEntry> iter = selectedRepositoryEntries.iterator(); iter.hasNext();) {
+				RepositoryEntry repositoryEntry = iter.next();
 				logAudit("Repository-Deletion: Move in 'Email sent' section without sending email, repositoryEntry=" + repositoryEntry );
 				markSendEmailEvent(repositoryEntry);
 			}
@@ -186,10 +187,10 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 	 * @param repositoryList
 	 * @return HashMap with Identity as key elements, List of RepositoryEntry as objects
 	 */
-	private HashMap collectRepositoryEntriesForIdentities(List repositoryList) {
-		HashMap identityRepositoryList = new HashMap();
-		for (Iterator iter = repositoryList.iterator(); iter.hasNext();) {
-			RepositoryEntry repositoryEntry = (RepositoryEntry)iter.next();
+	private Map<Identity, List<RepositoryEntry>> collectRepositoryEntriesForIdentities(List<RepositoryEntry> repositoryList) {
+		Map<Identity, List<RepositoryEntry>> identityRepositoryList = new HashMap<Identity, List<RepositoryEntry>>();
+		for (Iterator<RepositoryEntry> iter = repositoryList.iterator(); iter.hasNext();) {
+			RepositoryEntry repositoryEntry = iter.next();
 			
 			// Build owner group, list of identities
 			SecurityGroup ownerGroup = repositoryEntry.getOwnerGroup();
@@ -206,10 +207,10 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 			for (Iterator<Identity> iterator = ownerIdentities.iterator(); iterator.hasNext();) {
 				Identity identity = iterator.next();
 				if (identityRepositoryList.containsKey(identity) ) {
-					List repositoriesOfIdentity = (List)identityRepositoryList.get(identity);
+					List<RepositoryEntry> repositoriesOfIdentity = identityRepositoryList.get(identity);
 					repositoriesOfIdentity.add(repositoryEntry);
 				} else {
-					List repositoriesOfIdentity = new ArrayList();
+					List<RepositoryEntry> repositoriesOfIdentity = new ArrayList<RepositoryEntry>();
 					repositoriesOfIdentity.add(repositoryEntry);
 					identityRepositoryList.put(identity, repositoriesOfIdentity);
 				}
@@ -220,20 +221,21 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 	}
 
 
-	private String sendEmailToIdentity(Identity identity,HashMap identityRepositoryList, MailTemplate template, 
+	private String sendEmailToIdentity(Identity identity, Map<Identity, List<RepositoryEntry>> identityRepositoryList, MailTemplate template, 
 			boolean isTemplateChanged, String keyEmailSubject, String keyEmailBody, Identity sender, Translator pT) {
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		template.addToContext("responseTo", deletionModule.getEmailResponseTo());
 		if (!isTemplateChanged) {
 			// Email template has NOT changed => take translated version of subject and body text
-		Translator identityTranslator = new PackageTranslator(PACKAGE, I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage()));
+			Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
+			Translator identityTranslator = Util.createPackageTranslator(SelectionController.class, locale);
 			template.setSubjectTemplate(identityTranslator.translate(keyEmailSubject));
 			template.setBodyTemplate(identityTranslator.translate(keyEmailBody));
 		} 
 		// loop over all repositoriesOfIdentity to build email message
 		StringBuilder buf = new StringBuilder();
-		for (Iterator repoIterator = ((List)identityRepositoryList.get(identity)).iterator(); repoIterator.hasNext();) {
-			RepositoryEntry repositoryEntry = (RepositoryEntry) repoIterator.next();
+		for (Iterator<RepositoryEntry> repoIterator = identityRepositoryList.get(identity).iterator(); repoIterator.hasNext();) {
+			RepositoryEntry repositoryEntry = repoIterator.next();
 			buf.append("\n  ").append( repositoryEntry.getDisplayname() ).append(" / ").append(trimDescription(repositoryEntry.getDescription(), 60));
 		}
 		template.addToContext("repositoryList", buf.toString());
@@ -248,15 +250,15 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), ccIdentities, template, sender);
 		if (mailerResult.getReturnCode() == MailerResult.OK) {
 			// Email sended ok => set deleteEmailDate
-			for (Iterator repoIterator = ((List)identityRepositoryList.get(identity)).iterator(); repoIterator.hasNext();) {
-				RepositoryEntry repositoryEntry = (RepositoryEntry) repoIterator.next();
+			for (Iterator<RepositoryEntry> repoIterator = identityRepositoryList.get(identity).iterator(); repoIterator.hasNext();) {
+				RepositoryEntry repositoryEntry = repoIterator.next();
 				logAudit("Repository-Deletion: Delete-email for repositoryEntry=" + repositoryEntry + "send to identity=" + identity.getName());
 				markSendEmailEvent(repositoryEntry);
 			}
 			return null; // Send ok => return null
 		} else {
-			//TODO username
-			return pT.translate("email.error.send.failed", new String[] {identity.getUser().getProperty(UserConstants.EMAIL, null), identity.getName()} );
+			String fullname = UserManager.getInstance().getUserDisplayName(identity);
+			return pT.translate("email.error.send.failed", new String[] { identity.getUser().getProperty(UserConstants.EMAIL, null), fullname } );
 		}
 	}
 
@@ -275,7 +277,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 	}
 
 
-	public List getDeletableReprositoryEntries(int lastLoginDuration) {
+	public List<RepositoryEntry> getDeletableReprositoryEntries(int lastLoginDuration) {
 		Calendar lastUsageLimit = Calendar.getInstance();
 		lastUsageLimit.add(Calendar.MONTH, - lastLoginDuration);
 		logDebug("lastLoginLimit=" + lastUsageLimit);
@@ -302,12 +304,12 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 	}
 
 
-	private List filterRepositoryWithReferences(List repositoryList) {
+	private List<RepositoryEntry> filterRepositoryWithReferences(List<RepositoryEntry> repositoryList) {
 		logDebug("filterRepositoryWithReferences repositoryList.size=" + repositoryList.size());
-		List filteredList = new ArrayList();
+		List<RepositoryEntry> filteredList = new ArrayList<RepositoryEntry>();
 		int loopCounter = 0;
-		for (Iterator iter = repositoryList.iterator(); iter.hasNext();) {
-			RepositoryEntry repositoryEntry = (RepositoryEntry) iter.next();
+		for (Iterator<RepositoryEntry> iter = repositoryList.iterator(); iter.hasNext();) {
+			RepositoryEntry repositoryEntry = iter.next();
 			logDebug("filterRepositoryWithReferences repositoryEntry=" + repositoryEntry);
 			logDebug("filterRepositoryWithReferences repositoryEntry.getOlatResource()=" + repositoryEntry.getOlatResource());
 			if (OLATResourceManager.getInstance().findResourceable(repositoryEntry.getOlatResource()) != null) {
@@ -333,7 +335,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		return filteredList;
 	}
 
-	public List getReprositoryEntriesInDeletionProcess(int deleteEmailDuration) {
+	public List<RepositoryEntry> getReprositoryEntriesInDeletionProcess(int deleteEmailDuration) {
 		Calendar deleteEmailLimit = Calendar.getInstance();
 		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
 		logDebug("deleteEmailLimit=" + deleteEmailLimit);
@@ -348,7 +350,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		return filterRepositoryWithReferences(dbq.list());
 	}
 
-	public List getReprositoryEntriesReadyToDelete(int deleteEmailDuration) {
+	public List<RepositoryEntry> getReprositoryEntriesReadyToDelete(int deleteEmailDuration) {
 		Calendar deleteEmailLimit = Calendar.getInstance();
 		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
 		logDebug("deleteEmailLimit=" + deleteEmailLimit);
@@ -363,9 +365,9 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		return filterRepositoryWithReferences(dbq.list());
 	}
 
-	public void deleteRepositoryEntries(UserRequest ureq, WindowControl wControl, List repositoryEntryList) {
-		for (Iterator iter = repositoryEntryList.iterator(); iter.hasNext();) {
-			RepositoryEntry repositoryEntry = (RepositoryEntry) iter.next();
+	public void deleteRepositoryEntries(UserRequest ureq, WindowControl wControl, List<RepositoryEntry> repositoryEntryList) {
+		for (Iterator<RepositoryEntry> iter = repositoryEntryList.iterator(); iter.hasNext();) {
+			RepositoryEntry repositoryEntry = iter.next();
 			RepositoryHandler repositoryHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 			File archiveDir = new File(getArchivFilePath());
 			if (!archiveDir.exists()) {
@@ -400,7 +402,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 	// Private Methods
 	//////////////////
 	private int getPropertyByName(String name, int defaultValue) {
-		List properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, name);
+		List<Property> properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, name);
 		if (properties.size() == 0) {
 			return defaultValue;
 		} else {
@@ -409,7 +411,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 	}
 
 	private void setProperty(String propertyName, int value) {
-		List properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, propertyName);
+		List<Property> properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, propertyName);
 		Property property = null;
 		if (properties.size() == 0) {
 			property = PropertyManager.getInstance().createPropertyInstance(null, null, null, PROPERTY_CATEGORY, propertyName, null,  new Long(value), null, null);

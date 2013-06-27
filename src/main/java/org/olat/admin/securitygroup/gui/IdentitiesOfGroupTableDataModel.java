@@ -63,7 +63,7 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<Group
 	public final Object getValueAt(int row, int col) {
 		GroupMemberView co = getObject(row);
 		switch(col) {
-			case 0: return co.getIdentity().getName();//TODO username
+			case 0: return co.getIdentity().getName();
 			case 1: return co.getOnlineStatus();
 			case 2: return co.getAddedAt();
 			default: {

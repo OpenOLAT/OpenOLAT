@@ -197,8 +197,13 @@ public class MailHelper {
 				for (Identity identity : failedIdentites) {
 					User user = identity.getUser();
 					warnings.append("<li>");
-					warnings.append(trans.translate("mailhelper.error.failedusers.user", new String[] { user.getProperty(UserConstants.FIRSTNAME, null), user.getProperty(UserConstants.LASTNAME, null),
-							user.getProperty(UserConstants.EMAIL, null), identity.getName() }));//TODO username
+					String fullname = UserManager.getInstance().getUserDisplayName(identity);
+					warnings.append(trans.translate("mailhelper.error.failedusers.user", new String[] {
+							user.getProperty(UserConstants.FIRSTNAME, null),
+							user.getProperty(UserConstants.LASTNAME, null),
+							user.getProperty(UserConstants.EMAIL, null),
+							fullname
+						}));
 					warnings.append("</li>");
 				}
 				warnings.append("</ul></p>");

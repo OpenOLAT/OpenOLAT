@@ -337,12 +337,7 @@ public class DENManageParticipantsController extends BasicController {
 	private void createParticipantsMail(UserRequest ureq, List<Identity> participants) {
 		VelocityContainer sendMessageVC = createVelocityContainer("sendmessage");
 		ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
-		ContactList contactList = null;
-		if(participants.size() == 1) {
-			contactList = new ContactList(participants.get(0).getName());//TODO username
-		} else {
-			contactList = new ContactList(translate("participants.message.to"));
-		}
+		ContactList contactList = new ContactList(translate("participants.message.to"));
 		contactList.addAllIdentites(participants);
 		cmsg.addEmailTo(contactList);
 		

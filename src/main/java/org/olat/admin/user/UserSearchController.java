@@ -181,8 +181,8 @@ public class UserSearchController extends BasicController {
 		}
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isAdmin = securityModule.isUserAllowedAdminProps(roles);
-		searchform = new UserSearchForm(ureq, wControl, isAdmin, cancelbutton);
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		searchform = new UserSearchForm(ureq, wControl, isAdministrativeUser, cancelbutton);
 		listenTo(searchform);
 		searchPanel.setContent(searchform.getInitialComponent());
 	
@@ -194,7 +194,7 @@ public class UserSearchController extends BasicController {
 		if (ajax && autoCompleteAllowed) {
 			// insert a autocompleter search
 			ListProvider provider = new UserSearchListProvider();
-			autocompleterC = new AutoCompleterController(ureq, getWindowControl(), provider, null, isAdmin, 60, 3, null);
+			autocompleterC = new AutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, 60, 3, null);
 			listenTo(autocompleterC);
 			myContent.put("autocompletionsearch", autocompleterC.getInitialComponent());
 		}
@@ -204,9 +204,6 @@ public class UserSearchController extends BasicController {
 		tableConfig.setDownloadOffered(false);// no download because user should not download user-list
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), myContent.getTranslator());
 		listenTo(tableCtr);
-		
-		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
-
 		putInitialPanel(myContent);
 	}
 

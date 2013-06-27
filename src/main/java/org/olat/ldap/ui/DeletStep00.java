@@ -101,8 +101,7 @@ public class DeletStep00 extends BasicStep{
 
 		@Override
 		protected void doDispose() {
-			// TODO Auto-generated method stub
-			
+			//
 		}
 
 		@Override
@@ -116,7 +115,6 @@ public class DeletStep00 extends BasicStep{
 		}
 		
 		@Override
-		@SuppressWarnings("unused")
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == selectAllLink) {
 				multiSelectTree.selectAll();
@@ -128,14 +126,6 @@ public class DeletStep00 extends BasicStep{
 			}
 		}
 
-		
-		protected boolean validateFormLogic(@SuppressWarnings("unused")
-				UserRequest ureq){
-					return true;
-				}
-
-
-		@SuppressWarnings("unused")
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/delet_step00.html");

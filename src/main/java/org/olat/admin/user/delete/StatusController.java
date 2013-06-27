@@ -29,6 +29,8 @@ import java.util.List;
 
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -42,7 +44,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -55,8 +56,6 @@ import org.olat.user.UserManager;
  * @author Christian Guretzki
  */
 public class StatusController extends BasicController {
-	private static final String MY_PACKAGE = Util.getPackageName(StatusController.class);
-	private static final String PACKAGE_USER_SEARCH = Util.getPackageName(UserSearchController.class);
 	
 	private static final String ACTION_SINGLESELECT_CHOOSE = "ssc";
 	
@@ -76,15 +75,16 @@ public class StatusController extends BasicController {
 	 */
 	public StatusController(UserRequest ureq, WindowControl wControl) {		
 		super(ureq, wControl);
-		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_USER_SEARCH, ureq.getLocale());
-		this.setTranslator( new PackageTranslator( MY_PACKAGE, ureq.getLocale(), fallbackTrans) );
+		Translator fallbackTrans = Util.createPackageTranslator(UserSearchController.class, getLocale());
+		setTranslator(Util.createPackageTranslator(StatusController.class, getLocale(), fallbackTrans));
     //	use the PropertyHandlerTranslator	as tableCtr translator
 		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
 		
-		myContent = this.createVelocityContainer("deletestatus");
+		myContent = createVelocityContainer("deletestatus");
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
+		isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
+			//(roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
 
 		userDeleteStatusPanel = new Panel("userDeleteStatusPanel");
 		userDeleteStatusPanel.addListener(this);
@@ -94,7 +94,7 @@ public class StatusController extends BasicController {
 
 		initializeTableController(ureq);		
 		
-		this.putInitialPanel(myContent);
+		putInitialPanel(myContent);
 	}
 
 	/**
@@ -133,7 +133,7 @@ public class StatusController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), this.propertyHandlerTranslator);
 		listenTo(tableCtr);
 				
-		List l = UserDeletionManager.getInstance().getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());
+		List<Identity> l = UserDeletionManager.getInstance().getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());
 		tdm = new UserDeleteTableModel(l, ureq.getLocale(), isAdministrativeUser);
 		tdm.addColumnDescriptors(tableCtr, null,"table.identity.deleteEmail");	
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", translate("action.activate")));
@@ -144,7 +144,7 @@ public class StatusController extends BasicController {
 	}
 
 	protected void updateUserList() {
-		List l = UserDeletionManager.getInstance().getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());		
+		List<Identity> l = UserDeletionManager.getInstance().getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());		
 		tdm.setObjects(l); 
 		tableCtr.setTableDataModel(tdm);			
 	}

@@ -480,7 +480,7 @@ public class FilterForUserController extends BasicController {
 			searchValue = searchValue == null ? null : searchValue.toLowerCase();
 			for(UserInfo info:stats) {
 				Identity identity = info.getIdentity();
-				String name = identity.getName();//TODO username
+				String name = identity.getName();
 				
 				if(identity.getName().startsWith(searchValue)) {
 					receiver.addEntry(name, name, info.getLastName() + " " + info.getFirstName(), CSSHelper.CSS_CLASS_USER);
@@ -530,7 +530,7 @@ public class FilterForUserController extends BasicController {
 	/**
 	 * TableDataModel for the overview of all users in the forum
 	 */
-	public class UsersTableModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
+	public class UsersTableModel extends BaseTableDataModelWithoutFilter<UserInfo> implements TableDataModel<UserInfo> {
 		private final List<UserInfo> infos;
 		
 		public UsersTableModel(List<UserInfo> infos) {
@@ -540,7 +540,7 @@ public class FilterForUserController extends BasicController {
 		public UserInfo getUserInfo(String username) {
 			for(UserInfo info:infos) {
 				Identity id = info.getIdentity();
-				if(username.equals(id.getName())) {//TODO username
+				if(username.equals(id.getName())) {
 					return info;
 				}
 			}

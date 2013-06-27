@@ -52,7 +52,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 	/**
 	 * Hashmap contains hasmaps
 	 */
-	private Map properties = new HashMap();
+	private Map<String,List<Property>> properties = new HashMap<String,List<Property>>();
 	
 	/**
 	 * Creates a new course proprerty manager that stores properties per instance.
@@ -87,7 +87,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 	 * @see org.olat.course.properties.CoursePropertyManager#deleteProperty(org.olat.properties.Property)
 	 */
 	public void deleteProperty(Property p) {
-		List propertyList = getListOfProperties(p);
+		List<Property> propertyList = getListOfProperties(p);
 		for (int i=0; i < propertyList.size(); i++) {
 			Property propertyElement = (Property)propertyList.get(i);
 			if (propertyElement.getLongValue().equals(p.getLongValue())
@@ -104,7 +104,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 	 * @see org.olat.course.properties.CoursePropertyManager#saveProperty(org.olat.properties.Property)
 	 */
 	public void saveProperty(Property p) {
-		List propertyList = getListOfProperties(p);
+		List<Property> propertyList = getListOfProperties(p);
 		// since this is a save (only done once after creation) we
 		// can safely add it to the list without looking for duplicates
 		propertyList.add(p);
@@ -120,16 +120,16 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 	/**
 	 * @see org.olat.course.properties.CoursePropertyManager#listCourseNodeProperties(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.group.BusinessGroup, java.lang.String)
 	 */
-	public List listCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
+	public List<Property> listCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
 		throw new AssertException("Not implemented for preview.");
 	}
 
 	/**
 	 * @see org.olat.course.properties.CoursePropertyManager#findCourseNodeProperties(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.group.BusinessGroup, java.lang.String)
 	 */
-	public List findCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
-		List propertiesList = (List)properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), (identity == null ? "" : identity.getName()), grp, name));
-		if (propertiesList == null) propertiesList = new ArrayList();
+	public List<Property> findCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
+		List<Property> propertiesList = properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), (identity == null ? 0l : identity.getKey()), grp, name));
+		if (propertiesList == null) propertiesList = new ArrayList<Property>();
 		return propertiesList;
 	}
 
@@ -137,9 +137,9 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 	 * @see org.olat.course.properties.CoursePropertyManager#findCourseNodeProperty(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.group.BusinessGroup, java.lang.String)
 	 */
 	public Property findCourseNodeProperty(CourseNode node, Identity identity, BusinessGroup grp, String name) {
-		List propertyList = (List)properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), (identity == null ? "" : identity.getName()), grp, name));
+		List<Property> propertyList = properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), (identity == null ? 0l : identity.getKey()), grp, name));
 		if (propertyList == null) return null;
-		return (Property)propertyList.get(0);
+		return propertyList.get(0);
 	}
 
 	@Override
@@ -169,23 +169,23 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 	 * @param p
 	 * @return list of properties with the same key
 	 */
-	private List getListOfProperties(Property p) {
+	private List<Property> getListOfProperties(Property p) {
 		String propertyKey = buildPropertyHashKey(p);
 		// get the list of properties for this key...
-		List propertyList = (List)properties.get(propertyKey);
+		List<Property> propertyList = properties.get(propertyKey);
 		if (propertyList == null) {
-			propertyList = new ArrayList();
+			propertyList = new ArrayList<Property>();
 			properties.put(propertyKey, propertyList);
 		}
 		return propertyList;
 	}
 
-	private String buildPropertyHashKey(Property p) {//TODO username
-    return buildPropertyHashKey(p.getCategory(), (p.getIdentity() == null) ? "" : p.getIdentity().getName(), p.getGrp(), p.getName());
+	private String buildPropertyHashKey(Property p) {
+    return buildPropertyHashKey(p.getCategory(), (p.getIdentity() == null) ? 0l : p.getIdentity().getKey(), p.getGrp(), p.getName());
 	}
 	
-	private String buildPropertyHashKey(String category, String identityName, BusinessGroup group, String name) {
-    return (category + identityName + (group == null ? "" : group.getKey().toString()) + name);
+	private String buildPropertyHashKey(String category, Long identityKey, BusinessGroup group, String name) {
+    return (category + identityKey + (group == null ? "" : group.getKey().toString()) + name);
 	}
 	
 	private String buildCourseNodePropertyCategory(CourseNode node) {

@@ -46,6 +46,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.user.UserManager;
 
 /**
  * Initial Date:  Aug 27, 2004
@@ -117,9 +118,10 @@ public class UserAuthenticationsEditorController extends BasicController{
 				String actionid = te.getActionId();
 				if (actionid.equals("delete")) {
 					int rowid = te.getRowId();
-					Authentication auth = (Authentication) authTableModel.getObject(rowid);
-					//TODO username
-					confirmationDialog = activateYesNoDialog(ureq, null, getTranslator().translate("authedit.delete.confirm", new String[] { auth.getProvider(), changeableIdentity.getName() }), confirmationDialog);
+					Authentication auth = authTableModel.getObject(rowid);
+					String fullname = UserManager.getInstance().getUserDisplayName(auth.getIdentity());
+					String msg = translate("authedit.delete.confirm", new String[] { auth.getProvider(), fullname });
+					confirmationDialog = activateYesNoDialog(ureq, null, msg, confirmationDialog);
 					confirmationDialog.setUserObject(auth);
 					return;
 				}

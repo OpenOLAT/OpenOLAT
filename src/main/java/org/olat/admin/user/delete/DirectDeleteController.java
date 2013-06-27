@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
+import org.olat.user.UserManager;
 
 /**
  * Controller for 'Direct User Deletion' tab.
@@ -60,15 +61,19 @@ public class DirectDeleteController extends BasicController {
 	private BulkDeleteController bdc;
 	private CloseableModalController cmc;
 	
+	private final UserManager userManager;
+	
 	public DirectDeleteController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		userManager = UserManager.getInstance();
+		
 		myContent = createVelocityContainer("directdelete");
 
 		initializeUserSearchController(ureq);
 		initializeUserListForm(ureq);
 		
 		putInitialPanel(myContent);
-		
 	}
 
 	/**
@@ -103,7 +108,8 @@ public class DirectDeleteController extends BasicController {
 					showInfo("info.is.not.ready.to.delete");
 					return;
 				}
-				deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", buildUserNameList(toDelete) ), deleteConfirmController);
+				String names = buildUserNameList(toDelete);
+				deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", names), deleteConfirmController);
 				return;
 			} else if (event instanceof SingleIdentityChosenEvent) {
 				// single choose event may come from autocompleter user search
@@ -115,8 +121,8 @@ public class DirectDeleteController extends BasicController {
 				toDelete = new ArrayList<Identity>();
 				toDelete.add(uce.getChosenIdentity());
 				
-				//TODO username
-				deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", uce.getChosenIdentity().getName()), deleteConfirmController);
+				String fullname = userManager.getUserDisplayName(uce.getChosenIdentity());
+				deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", fullname), deleteConfirmController);
 				return;
 			} else {
 				throw new AssertException("unknown event ::" + event.getCommand());
@@ -136,8 +142,8 @@ public class DirectDeleteController extends BasicController {
 			toDelete = bdc.getToDelete();
 			cmc.deactivate();
 			
-			deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", buildUserNameList(toDelete)), deleteConfirmController);
-			
+			String names = buildUserNameList(toDelete);
+			deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", names), deleteConfirmController);
 		} else if (sourceController == cmc) {
 			if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();		
@@ -157,7 +163,7 @@ public class DirectDeleteController extends BasicController {
 	}
 
 	/**
-	 * Build comma seperated list of usernames.
+	 * Build comma separated list of usernames.
 	 * @param toDelete
 	 * @return
 	 */
@@ -165,10 +171,9 @@ public class DirectDeleteController extends BasicController {
 		StringBuilder buf = new StringBuilder();
 		for (Identity identity : toDeleteIdentities) {
 			if (buf.length() > 0) {
-				buf.append(",");
+				buf.append(", ");
 			}
-			//TODO username
-			buf.append(identity.getName());
+			buf.append(userManager.getUserDisplayName(identity));
 		}
 		return buf.toString();
 	}
@@ -186,7 +191,7 @@ public class DirectDeleteController extends BasicController {
 		usc = new DeletableUserSearchController(ureq, getWindowControl());
 		listenTo(usc);
 		myContent.put("usersearch", usc.getInitialComponent());
-		myContent.contextPut("deletedusers", new ArrayList());		
+		myContent.contextPut("deletedusers", new ArrayList<Identity>());		
 	}
 	
 	private void initializeUserListForm(UserRequest ureq) {

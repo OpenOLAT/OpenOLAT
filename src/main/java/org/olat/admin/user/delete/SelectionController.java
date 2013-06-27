@@ -30,6 +30,8 @@ import java.util.List;
 import org.apache.velocity.VelocityContext;
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -51,7 +53,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -67,8 +68,6 @@ import org.olat.user.UserManager;
  * @author Christian Guretzki
  */
 public class SelectionController extends BasicController {
-	private static final String MY_PACKAGE = Util.getPackageName(SelectionController.class);
-	private static final String PACKAGE_USER_SEARCH = Util.getPackageName(UserSearchController.class);
 	
 	private static final String ACTION_SINGLESELECT_CHOOSE = "ssc";
 	private static final String ACTION_MULTISELECT_CHOOSE = "msc";
@@ -84,7 +83,7 @@ public class SelectionController extends BasicController {
 	private VelocityContainer selectionListContent;
 	private Link editParameterLink;
 	private MailNotificationEditController deleteUserMailCtr;
-	private List selectedIdentities;
+	private List<Identity> selectedIdentities;
   private boolean isAdministrativeUser;
   private Translator propertyHandlerTranslator;
   
@@ -98,15 +97,16 @@ public class SelectionController extends BasicController {
 	public SelectionController(UserRequest ureq, WindowControl wControl) {
 		super (ureq, wControl);
 		
-		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_USER_SEARCH, ureq.getLocale());
-		this.setTranslator( new PackageTranslator( MY_PACKAGE, ureq.getLocale(), fallbackTrans) );
+		Translator fallbackTrans = Util.createPackageTranslator(UserSearchController.class, getLocale());
+		setTranslator(Util.createPackageTranslator(SelectionController.class, getLocale(), fallbackTrans));
 		//use the PropertyHandlerTranslator	as tableCtr translator
 		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
 				
 		myContent = this.createVelocityContainer("panel");
 
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
+		isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
+		//(roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
 		
 		userSelectionPanel = new Panel("userSelectionPanel");
 		userSelectionPanel.addListener(this);
@@ -114,7 +114,7 @@ public class SelectionController extends BasicController {
 		initializeContent();
 		myContent.put("panel", userSelectionPanel);
 		
-		this.putInitialPanel(myContent);
+		putInitialPanel(myContent);
 	}
 
 	private void initializeContent() {
@@ -216,7 +216,7 @@ public class SelectionController extends BasicController {
 			
 			cmc.activate();
 		} else {			
-			this.showWarning("nothing.selected.msg");
+			showWarning("nothing.selected.msg");
 		}
 	}
 
@@ -228,7 +228,7 @@ public class SelectionController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), this.propertyHandlerTranslator);
 		listenTo(tableCtr);
 		
-		List l = UserDeletionManager.getInstance().getDeletableIdentities(UserDeletionManager.getInstance().getLastLoginDuration());		
+		List<Identity> l = UserDeletionManager.getInstance().getDeletableIdentities(UserDeletionManager.getInstance().getLastLoginDuration());		
 		tdm = new UserDeleteTableModel(l, ureq.getLocale(), isAdministrativeUser);				
 		tdm.addColumnDescriptors(tableCtr, null);		
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", translate("action.activate")));
@@ -238,7 +238,7 @@ public class SelectionController extends BasicController {
 	}
 
 	public void updateUserList() {
-		List l = UserDeletionManager.getInstance().getDeletableIdentities(UserDeletionManager.getInstance().getLastLoginDuration());		
+		List<Identity> l = UserDeletionManager.getInstance().getDeletableIdentities(UserDeletionManager.getInstance().getLastLoginDuration());		
 		tdm.setObjects(l);	
 		tableCtr.setTableDataModel(tdm);			
 	}

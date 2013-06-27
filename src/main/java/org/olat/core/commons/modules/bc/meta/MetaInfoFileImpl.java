@@ -52,14 +52,11 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailService;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -70,6 +67,7 @@ import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
+import org.olat.user.UserManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
@@ -621,21 +619,14 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		if (authorIdentKey == null) {
 			return "-";
 		} else {
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(authorIdentKey);
-			if (identity == null) {
-				log.warn("Found no idenitiy with key='" + authorIdentKey + "'");
+			String fullName = UserManager.getInstance().getUserDisplayName(authorIdentKey);
+			if (fullName == null) {
+				log.warn("Found no identity with key='" + authorIdentKey + "'");
 				return "-";
 			}
-			User user = identity.getUser();
-			String formattedName = user.getProperty(UserConstants.FIRSTNAME, null); 
-			formattedName = formattedName + " " + user.getProperty(UserConstants.LASTNAME, null); 
-			//TODO: add link to user profile when checking in 4289/4295 and remove reference to loginname
-			formattedName = formattedName + " (" + identity.getName() + ")";//TODO username
-			return formattedName; 
+			return fullName; 
 		}	
 	}
-	
-
 	
 	/**
 	 * @return comment

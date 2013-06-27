@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
@@ -98,7 +99,8 @@ public class DeletedFileListController extends BasicController {
 		deletedFiles = VersionsManager.getInstance().getDeletedFiles(container);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		
-		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		isAdmin = CoreSpringFactory.getImpl(BaseSecurityModule.class)
+				.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
 		TableGuiConfiguration summaryTableConfig = new TableGuiConfiguration();
 		summaryTableConfig.setDownloadOffered(false);

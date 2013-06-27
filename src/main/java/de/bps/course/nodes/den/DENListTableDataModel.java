@@ -94,7 +94,7 @@ public class DENListTableDataModel extends DefaultTableDataModel<KalendarEvent> 
 				return "";
 			for( String participant : event.getParticipants() ) {
 				Identity identity = BaseSecurityManager.getInstance().findIdentityByName(participant);
-				usernames.append(identity.getName() + "<br>");//TODO username
+				usernames.append(identity.getName() + "<br>");
 			}
 			return usernames.toString();
 		case 7:

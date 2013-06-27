@@ -29,14 +29,14 @@ import org.olat.core.id.UserConstants;
  * Table data model for the view of participants enrolled in an event
  * @author skoeber
  */
-class DENParticipantsTableDataModel extends DefaultTableDataModel {
+class DENParticipantsTableDataModel extends DefaultTableDataModel<Identity> {
 	
 	public static final String MAIL_ACTION = "denSendMail";
 	public static final String REMOVE_ACTION = "denRemoveParticipant";
 	
 	private static final int COLUMN_COUNT = 2;
 
-	public DENParticipantsTableDataModel(List objects) {
+	public DENParticipantsTableDataModel(List<Identity> objects) {
 		super(objects);
 	}
 
@@ -47,7 +47,7 @@ class DENParticipantsTableDataModel extends DefaultTableDataModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		Identity identity = (Identity)objects.get(row);
+		Identity identity = objects.get(row);
 		
 		switch (col) {
 		case 0:

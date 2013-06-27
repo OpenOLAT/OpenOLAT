@@ -29,9 +29,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.coordinate.LockEntry;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -40,16 +40,20 @@ import org.olat.core.util.coordinate.LockEntry;
 
 public class LockTableModel extends DefaultTableDataModel<LockEntry> {
 	
+	private final UserManager userManager;
+	
 	/**
 	 * @param list of locks
 	 */
 	public LockTableModel(List<LockEntry> locks) {
 		super(locks);
+		userManager = UserManager.getInstance();
 	}
 	
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
 	 */
+	@Override
 	public int getColumnCount() {
 		return 4;
 	}
@@ -57,15 +61,22 @@ public class LockTableModel extends DefaultTableDataModel<LockEntry> {
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
+	@Override
 	public Object getValueAt(int row, int col) {
 		LockEntry lock = getObject(row); 
-		switch (col) {
-			case 0: return lock.getKey();//TODO username
-			case 1: return lock.getOwner().getName() + ", " + lock.getOwner().getUser().getProperty(UserConstants.FIRSTNAME, null)
-			                                         + " "  + lock.getOwner().getUser().getProperty(UserConstants.LASTNAME, null);		
-			case 2: return Formatter.formatDatetime(new Date(lock.getLockAquiredTime()));
+		switch (Cols.values()[col]) {
+			case key: return lock.getKey();
+			case ownerName: return lock.getOwner().getName();
+			case ownerFullname: return	userManager.getUserDisplayName(lock.getOwner());	
+			case acquiredTime: return Formatter.formatDatetime(new Date(lock.getLockAquiredTime()));
 			default: return "Error";
 		}
 	}
-
+	
+	public enum Cols {
+		key,
+		ownerName,
+		ownerFullname,
+		acquiredTime	
+	}
 }

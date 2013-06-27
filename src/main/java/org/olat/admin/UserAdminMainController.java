@@ -74,6 +74,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -104,6 +105,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private String activatePaneInDetailView = null;
 
 	private LockResult lock;
+	private final UserManager userManager;
 
 	/**
 	 * Constructor of the home main controller
@@ -112,6 +114,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	 */
 	public UserAdminMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);		
+		
+		userManager = UserManager.getInstance();
+		
 		olatMenuTree = new MenuTree("olatMenuTree");
 		olatMenuTree.setExpandSelectedNode(false);
 		TreeModel tm = buildTreeModel(ureq); 
@@ -513,8 +518,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		OLATResourceable lockResourceable = OresHelper.createOLATResourceableTypeWithoutCheck(TabbedPaneController.class.getName());
 		lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, ureq.getIdentity(), "deleteGroup");
 		if (!lock.isSuccess()) {
-		//TODO username
-			String text = getTranslator().translate("error.deleteworkflow.locked.by", new String[]{lock.getOwner().getName()});
+			String fullname = userManager.getUserDisplayName(lock.getOwner());
+			String text = getTranslator().translate("error.deleteworkflow.locked.by", new String[]{ fullname });
 			Controller monoCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 			return monoCtr;
 		}

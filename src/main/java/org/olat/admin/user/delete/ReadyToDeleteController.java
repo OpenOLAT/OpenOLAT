@@ -31,6 +31,8 @@ import java.util.List;
 
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,7 +50,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -62,8 +63,6 @@ import org.olat.user.UserManager;
  * @author Christian Guretzki
  */
 public class ReadyToDeleteController extends BasicController {
-	private static final String MY_PACKAGE = Util.getPackageName(ReadyToDeleteController.class);
-	private static final String PACKAGE_USER_SEARCH = Util.getPackageName(UserSearchController.class);
 
 	private static final String ACTION_SINGLESELECT_CHOOSE = "ssc";
 	private static final String ACTION_MULTISELECT_CHOOSE = "msc";
@@ -87,8 +86,8 @@ public class ReadyToDeleteController extends BasicController {
 		
 		super(ureq, wControl);
 		
-		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_USER_SEARCH, ureq.getLocale());
-		this.setTranslator( new PackageTranslator( MY_PACKAGE, ureq.getLocale(), fallbackTrans) );
+		Translator fallbackTrans = Util.createPackageTranslator(UserSearchController.class, ureq.getLocale());
+		setTranslator(Util.createPackageTranslator(ReadyToDeleteController.class, ureq.getLocale(), fallbackTrans));
     //	use the PropertyHandlerTranslator	as tableCtr translator
 		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
 		
@@ -98,7 +97,8 @@ public class ReadyToDeleteController extends BasicController {
 		myContent.put("panel", readyToDeletePanel);
 
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
+		isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
+		//(roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
 		
 		initializeTableController(ureq);
 		initializeContent();
@@ -183,8 +183,8 @@ public class ReadyToDeleteController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), this.propertyHandlerTranslator);
 		listenTo(tableCtr);
 		
-		List l = UserDeletionManager.getInstance().getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());
-		tdm = new UserDeleteTableModel(l, ureq.getLocale(), isAdministrativeUser);
+		List<Identity> l = UserDeletionManager.getInstance().getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());
+		tdm = new UserDeleteTableModel(l, getLocale(), isAdministrativeUser);
 		tdm.addColumnDescriptors(tableCtr, null,"table.identity.deleteEmail");	
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", translate("action.activate")));				
 		tableCtr.addMultiSelectAction("action.ready.to.delete", ACTION_MULTISELECT_CHOOSE);		
@@ -202,7 +202,7 @@ public class ReadyToDeleteController extends BasicController {
 	}
 
 	protected void updateUserList() {
-		List l = UserDeletionManager.getInstance().getIdentitiesReadyToDelete(UserDeletionManager.getInstance().getDeleteEmailDuration());		
+		List<Identity> l = UserDeletionManager.getInstance().getIdentitiesReadyToDelete(UserDeletionManager.getInstance().getDeleteEmailDuration());		
 		tdm.setObjects(l);	
 		tableCtr.setTableDataModel(tdm);
 	}

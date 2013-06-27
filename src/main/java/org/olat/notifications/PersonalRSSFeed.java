@@ -38,6 +38,7 @@ import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.notifications.SubscriptionInfo;
 import org.olat.core.util.notifications.SubscriptionItem;
+import org.olat.user.UserManager;
 
 import com.sun.syndication.feed.synd.SyndContent;
 import com.sun.syndication.feed.synd.SyndContentImpl;
@@ -58,6 +59,8 @@ import com.sun.syndication.feed.synd.SyndImageImpl;
 
 public class PersonalRSSFeed extends SyndFeedImpl {
 
+	private static final long serialVersionUID = -5246221887165246074L;
+
 	/**
 	 * Constructor for a RSS document that contains all the users personal
 	 * notifications
@@ -74,11 +77,11 @@ public class PersonalRSSFeed extends SyndFeedImpl {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(PersonalRSSFeed.class, locale);
 		NotificationsManager man = NotificationsManager.getInstance();
-		//TODO bookmark List<Bookmark> bookmarks = BookmarkManager.getInstance().findBookmarksByIdentity(identity);
-
-		setTitle(translator.translate("rss.title", new String[] { identity.getName() }));//TODO username
+		String fullName = UserManager.getInstance().getUserDisplayName(identity);
+		
+		setTitle(translator.translate("rss.title", new String[] { fullName }));
 		setLink(RSSUtil.URI_SERVER);
-		setDescription(translator.translate("rss.description", new String[] { identity.getName() }));//TODO username
+		setDescription(translator.translate("rss.description", new String[] { fullName }));
 
 		// create and add an image to the feed
 		SyndImage image = new SyndImageImpl();
@@ -96,21 +99,6 @@ public class PersonalRSSFeed extends SyndFeedImpl {
 		description.setValue(translator.translate("rss.olat.description"));
 		entry.setDescription(description);
 		entries.add(entry);
-
-		//TODO bookmark  bookmark news
-		/*
-		for (Bookmark bookmark : bookmarks) {
-			SyndEntry item = new SyndEntryImpl();
-			item.setTitle(translator.translate("rss.bookmark.title", new String[] { bookmark.getTitle() }));
-			// create jump in link with factory method from manager
-			String itemLink = BookmarkManager.getInstance().createJumpInURL(bookmark);
-			item.setLink(itemLink);
-			SyndContent itemDescription = new SyndContentImpl();
-			itemDescription.setType("text/plain");
-			itemDescription.setValue(bookmark.getDescription());
-			item.setDescription(itemDescription);
-			entries.add(item);
-		}*/
 
 		// notification news
 		// we are only interested in subscribers which listen to a valid publisher

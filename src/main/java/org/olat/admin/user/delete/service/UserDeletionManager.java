@@ -184,7 +184,7 @@ public class UserDeletionManager extends BasicManager {
 	 * @param lastLoginDuration  last-login duration in month
 	 * @return List of Identity objects
 	 */
-	public List getDeletableIdentities(int lastLoginDuration) {
+	public List<Identity> getDeletableIdentities(int lastLoginDuration) {
 		Calendar lastLoginLimit = Calendar.getInstance();
 		lastLoginLimit.add(Calendar.MONTH, - lastLoginDuration);
 		logDebug("lastLoginLimit=" + lastLoginLimit);
@@ -194,7 +194,7 @@ public class UserDeletionManager extends BasicManager {
 			+ " and (ident.lastLogin = null or ident.lastLogin < :lastLogin)";	
 		DBQuery dbq = DBFactory.getInstance().createQuery(queryStr);
 		dbq.setDate("lastLogin", lastLoginLimit.getTime());
-		List identities = dbq.list();
+		List<Identity> identities = dbq.list();
 		// 2. get all 'active' identities in deletion process
 		queryStr = "select ident from org.olat.core.id.Identity as ident"
 			+ " , org.olat.commons.lifecycle.LifeCycleEntry as le"
@@ -202,7 +202,7 @@ public class UserDeletionManager extends BasicManager {
 			+ " and le.persistentTypeName ='" + IdentityImpl.class.getName() + "'" 
 			+ " and le.action ='" + SEND_DELETE_EMAIL_ACTION + "' ";
 		dbq = DBFactory.getInstance().createQuery(queryStr);
-		List identitiesInProcess = dbq.list();
+		List<Identity> identitiesInProcess = dbq.list();
 		// 3. Remove all identities in deletion-process from all inactive-identities
 		identities.removeAll(identitiesInProcess);
 		return identities;		 
@@ -214,7 +214,7 @@ public class UserDeletionManager extends BasicManager {
 	 * @param deleteEmailDuration  Duration of user-deletion-process in days
 	 * @return List of Identity objects
 	 */
-	public List getIdentitiesInDeletionProcess(int deleteEmailDuration) {
+	public List<Identity> getIdentitiesInDeletionProcess(int deleteEmailDuration) {
 		Calendar deleteEmailLimit = Calendar.getInstance();
 		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration-1));
 		logDebug("deleteEmailLimit=" + deleteEmailLimit);
@@ -235,7 +235,7 @@ public class UserDeletionManager extends BasicManager {
 	 * @param deleteEmailDuration  Duration of user-deletion-process in days
 	 * @return List of Identity objects
 	 */
-	public List getIdentitiesReadyToDelete(int deleteEmailDuration) {
+	public List<Identity> getIdentitiesReadyToDelete(int deleteEmailDuration) {
 		Calendar deleteEmailLimit = Calendar.getInstance();
 		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
 		logDebug("deleteEmailLimit=" + deleteEmailLimit);

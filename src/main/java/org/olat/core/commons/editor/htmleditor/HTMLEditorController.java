@@ -53,6 +53,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.version.Versionable;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -169,8 +170,9 @@ public class HTMLEditorController extends FormBasicController {
 			VelocityContainer vc = (VelocityContainer) flc.getComponent();
 			if (!lock.isSuccess()) {
 				vc.contextPut("locked", Boolean.TRUE);
-				vc.contextPut("lockOwner", lock.getOwner().getName());//TODO username
-				this.editable = false;
+				String fullname = UserManager.getInstance().getUserDisplayName(lock.getOwner());
+				vc.contextPut("lockOwner", fullname);
+				editable = false;
 				return;
 			} else {
 				vc.contextPut("locked", Boolean.FALSE);				

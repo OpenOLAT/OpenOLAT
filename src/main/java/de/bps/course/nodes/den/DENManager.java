@@ -30,11 +30,13 @@ import java.util.StringTokenizer;
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -188,7 +190,6 @@ public class DENManager {
 		DENStatus status = new DENStatus();
 		ICourse course = CourseFactory.loadCourse(ores);
 		Kalendar cal = calManager.getCourseCalendar(course).getKalendar();
-		Collection<KalendarEvent> collEvents = cal.getEvents();
 		//check if identity is enrolled
 		if( !isEnrolledInDate(identity, event) ) {
 			status.setCancelled(false);
@@ -355,7 +356,7 @@ public class DENManager {
 	 */
 	public int getEventCount(Long courseId, String courseNodeId) {
 		if(courseId != null && courseNodeId != null) {
-			List events = null;
+			List<KalendarEvent> events = null;
 			try {
 				events = getDENEvents(courseId, courseNodeId);
 			} catch(Exception e) {
@@ -498,7 +499,7 @@ public class DENManager {
 			userNewEvent.setLocation(newEvent.getLocation());
 			userNewEvent.setSourceNodeId(newEvent.getSourceNodeId());
 			userNewEvent.setClassification(KalendarEvent.CLASS_PRIVATE);
-			List kalendarEventLinks = userNewEvent.getKalendarEventLinks();
+			List<KalendarEventLink> kalendarEventLinks = userNewEvent.getKalendarEventLinks();
 			kalendarEventLinks.clear();
 			kalendarEventLinks.addAll(newEvent.getKalendarEventLinks());
 			calManager.addEventTo(userCal, userNewEvent);
@@ -608,7 +609,12 @@ public class DENManager {
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.duration", 2, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.comment", 4, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participant.name", 5, null, ureq.getLocale()));
-		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participant.username", 6, null, ureq.getLocale()));
+		
+		boolean isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		if(isAdministrativeUser) {
+			tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participant.username", 6, null, ureq.getLocale()));
+		}
+		
 		tableCntrl.addColumnDescriptor(new BooleanColumnDescriptor("participants", 7, DENListTableDataModel.CHANGE_ACTION,
 				trans.translate("dates.table.participant.manage"), ""));
 		tableCntrl.addMultiSelectAction("dates.table.list.email", DENListTableDataModel.MAIL_ACTION);
@@ -855,7 +861,7 @@ public class DENManager {
 	}
 	
 	private void createKalendarEventLinks(ICourse course, DENCourseNode courseNode, KalendarEvent event) {
-		List kalendarEventLinks = event.getKalendarEventLinks();
+		List<KalendarEventLink> kalendarEventLinks = event.getKalendarEventLinks();
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(courseNode.getIdent()));

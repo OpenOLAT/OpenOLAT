@@ -61,7 +61,6 @@ public class VersionCommentController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	@SuppressWarnings("unused") 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(comment && lock) {
