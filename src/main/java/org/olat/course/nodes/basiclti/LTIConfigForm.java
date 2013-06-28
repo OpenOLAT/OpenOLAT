@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -114,9 +115,7 @@ public class LTIConfigForm extends FormBasicController {
 	private String[] ltiRolesKeys = new String[]{
 			"Learner", "Instructor", "Administrator", "TeachingAssistant", "ContentDeveloper", "Mentor"
 	};
-	private String[] ltiRolesValues = new String[]{
-			"Learner", "Instructor", "Administrator", "TeachingAssistant", "ContentDeveloper", "Mentor"
-	};
+	private String[] ltiRolesValues;
 	
 	private String[] displayKeys = new String[]{
 			"iframe", "window"
@@ -157,6 +156,15 @@ public class LTIConfigForm extends FormBasicController {
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		Translator userPropsTranslator = userManager.getPropertyHandlerTranslator(getTranslator());
 		
+		ltiRolesValues = new String[]{
+				translate("roles.lti.learner"),
+				translate("roles.lti.instructor"),
+				translate("roles.lti.administrator"),
+				translate("roles.lti.teachingAssistant"),
+				translate("roles.lti.contentDeveloper"),
+				translate("roles.lti.mentor")		
+		};
+
 		displayValues = new String[]{
 				translate("display.config.window.iframe"), translate("display.config.window.window")
 		};
@@ -230,13 +238,18 @@ public class LTIConfigForm extends FormBasicController {
 		thost = uifactory.addTextElement("host", "LTConfigForm.url", 255, fullURI, formLayout);
 		thost.setExampleKey("LTConfigForm.url.example", null);
 		thost.setDisplaySize(64);
+		thost.setMandatory(true);
 		
 		tkey  = uifactory.addTextElement ("key","LTConfigForm.key", 255, key, formLayout);
 		tkey.setExampleKey ("LTConfigForm.key.example", null);
+		tkey.setMandatory(true);
 		
 		tpass = uifactory.addTextElement ("pass","LTConfigForm.pass", 255, pass, formLayout);
 		tpass.setExampleKey("LTConfigForm.pass.example", null);
-		
+		tpass.setMandatory(true);
+
+		uifactory.addSpacerElement("attributes", formLayout, false);
+
 		sendName = uifactory.addCheckboxesVertical("sendName", "display.config.sendName", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		sendName.select("xx", sendNameConfig);
 		
@@ -254,8 +267,38 @@ public class LTIConfigForm extends FormBasicController {
 			createNameValuePair("", "", -1);
 		}
 		
-		doDebug = uifactory.addCheckboxesVertical("doDebug", "display.config.doDebug", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		doDebug.select("xx", doDebugConfig);
+		uifactory.addSpacerElement("roles", formLayout, false);
+		uifactory.addStaticTextElement("roletitle", "roles.title.oo", translate("roles.title.lti"), formLayout);
+		
+		authorRoleEl = uifactory.addCheckboxesHorizontal("author", "author.roles", formLayout, ltiRolesKeys, ltiRolesValues, null);
+		udpateRoles(authorRoleEl, BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, "Instructor,Administrator,TeachingAssistant,ContentDeveloper,Mentor"); 
+		coachRoleEl = uifactory.addCheckboxesHorizontal("coach", "coach.roles", formLayout, ltiRolesKeys, ltiRolesValues, null);
+		udpateRoles(coachRoleEl, BasicLTICourseNode.CONFIG_KEY_COACHROLE, "Instructor,TeachingAssistant,Mentor");
+		participantRoleEl = uifactory.addCheckboxesHorizontal("participant", "participant.roles", formLayout, ltiRolesKeys, ltiRolesValues, null);
+		udpateRoles(participantRoleEl, BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, "Learner"); 
+		
+		uifactory.addSpacerElement("scoring", formLayout, false);
+		
+		//add score info
+		String[] assessableKeys = new String[]{ "on" };
+		String[] assessableValues = new String[]{ "" };
+		isAssessableEl = uifactory.addCheckboxesHorizontal("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues, null);
+		isAssessableEl.addActionListener(this, FormEvent.ONCHANGE);
+		if(isAssessable) {
+			isAssessableEl.select("on", true);
+		}
+	
+		Float scaleValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
+		String scaleFactor = scaleValue == null ? "1.0" : scaleValue.toString();
+		scaleFactorEl = uifactory.addTextElement("scale", "scaleFactor", 10, scaleFactor, formLayout);
+		scaleFactorEl.setDisplaySize(3);
+		scaleFactorEl.setVisible(isAssessable);
+		
+		Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		String cut = cutValue == null ? "" : cutValue.toString();
+		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 10, cut, formLayout);
+		cutValueEl.setDisplaySize(3);
+		cutValueEl.setVisible(isAssessable);
 		
 		uifactory.addSpacerElement("display", formLayout, false);
 		
@@ -282,39 +325,12 @@ public class LTIConfigForm extends FormBasicController {
 				widthEl.select(heightKey, true);
 			}
 		}
-
-		uifactory.addSpacerElement("scoring", formLayout, false);
 		
-		//add score info
-		String[] assessableKeys = new String[]{ "on" };
-		String[] assessableValues = new String[]{ "" };
-		isAssessableEl = uifactory.addCheckboxesHorizontal("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues, null);
-		isAssessableEl.addActionListener(this, FormEvent.ONCHANGE);
-		if(isAssessable) {
-			isAssessableEl.select("on", true);
-		}
-	
-    Float scaleValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
-		String scaleFactor = scaleValue == null ? "1.0" : scaleValue.toString();
-		scaleFactorEl = uifactory.addTextElement("scale", "scaleFactor", 10, scaleFactor, formLayout);
-		scaleFactorEl.setDisplaySize(3);
-		scaleFactorEl.setVisible(isAssessable);
+		uifactory.addSpacerElement("debug", formLayout, false);
 		
-		Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		String cut = cutValue == null ? "" : cutValue.toString();
-		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 10, cut, formLayout);
-		cutValueEl.setDisplaySize(3);
-		cutValueEl.setVisible(isAssessable);
-		
-		uifactory.addSpacerElement("roles", formLayout, false);
-
-		authorRoleEl = uifactory.addCheckboxesHorizontal("author", "author.roles", formLayout, ltiRolesKeys, ltiRolesValues, null);
-		udpateRoles(authorRoleEl, BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, "Instructor,Administrator,TeachingAssistant,ContentDeveloper,Mentor"); 
-		coachRoleEl = uifactory.addCheckboxesHorizontal("coach", "coach.roles", formLayout, ltiRolesKeys, ltiRolesValues, null);
-		udpateRoles(coachRoleEl, BasicLTICourseNode.CONFIG_KEY_COACHROLE, "Instructor,TeachingAssistant,Mentor");
-		participantRoleEl = uifactory.addCheckboxesHorizontal("participant", "participant.roles", formLayout, ltiRolesKeys, ltiRolesValues, null);
-		udpateRoles(participantRoleEl, BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, "Learner"); 
-		
+		doDebug = uifactory.addCheckboxesVertical("doDebug", "display.config.doDebug", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		doDebug.select("xx", doDebugConfig);
+				
 		uifactory.addSpacerElement("buttons", formLayout, false);
 		uifactory.addFormSubmitButton("save", formLayout);
 	}
@@ -487,6 +503,10 @@ public class LTIConfigForm extends FormBasicController {
 		} else if(source instanceof FormLink && source.getName().startsWith("rm_")) {
 			NameValuePair pair = (NameValuePair)source.getUserObject();
 			doRemoveNameValuePair(pair);
+			if(nameValuePairs.isEmpty()) {
+				// add a new empty default pair
+				createNameValuePair("", "", -1);
+			}
 		} else if(source instanceof SingleSelection && source.getName().startsWith("typ_")) {
 			NameValuePair pair = (NameValuePair)source.getUserObject();
 			SingleSelection typeChoice = (SingleSelection)source;

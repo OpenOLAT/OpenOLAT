@@ -35,6 +35,17 @@ div.b_module_singlepage_wrapper a.b_content_edit {position:absolute; top:0; righ
 div.b_module_singlepage_wrapper a.b_content_download { position:absolute; top:0; z-index:10; background: url(../openolat/images/docs/document_download.png) no-repeat top left; padding-left: 20px; margin-top:3px; min-height:19px; height:19px; }
 div.b_titled_wrapper div.b_module_singlepage_wrapper a.b_content_download { position:relative; padding-bottom:3px;}
 div.b_titled_wrapper div.b_module_singlepage_wrapper div.b_iframe_wrapper { margin-top:3px; }
+
+div.b_lti_edit_wrapper { 
+	/* fix positioning of preview button */ 
+	div.o_buttons_box_right {
+		z-index: 10;
+		top: 13px;
+		right: 20px;
+	}
+}
+
+
 /* CONTENT POPUP */
 #b_content_popup {float: right; background: url(../openolat/images/applications.png) no-repeat top left; width: 16px; height: 16px; margin: 3px;}
 	

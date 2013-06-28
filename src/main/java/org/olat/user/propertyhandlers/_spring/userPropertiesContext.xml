@@ -803,12 +803,11 @@
 						<property name="description" value="Can be used for LTI" />
 						<property name="propertyHandlers">
 							<list>
-								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyEmail" />	
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />	
 								<ref bean="userPropertyInstitutionalEmail" />						
+								<ref bean="userPropertyOrgUnit" />
+								<ref bean="userPropertyStudySubject" />
 							</list>
 						</property>
 					</bean>
