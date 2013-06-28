@@ -20,8 +20,6 @@
 package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
-import static org.olat.user.restapi.UserVOFactory.get;
-import static org.olat.user.restapi.UserVOFactory.link;
 
 import java.util.List;
 
@@ -34,7 +32,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
@@ -59,14 +56,13 @@ public class ContactsWebService {
 	 * @param start
 	 * @param limit
 	 * @param httpRequest The HTTP request
-	 * @param uriInfo The URI information
 	 * @return The list of contacts
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMyContacts(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,
-			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
+			@Context HttpServletRequest httpRequest) {
 		
 		Identity identity = getIdentity(httpRequest);
 		if(identity == null) {
@@ -78,11 +74,11 @@ public class ContactsWebService {
 		int totalCount = bgs.countContacts(identity);
 		
 		int count = 0;
-		UserVO[] userVOs = new UserVO[contacts.size()];
+		ContactVO[] userVOs = new ContactVO[contacts.size()];
 		for(Identity contact:contacts) {
-			userVOs[count++] = link(get(contact, null, true, false, true), uriInfo);
+			userVOs[count++] = new ContactVO(contact);
 		}
-		UserVOes voes = new UserVOes();
+		ContactVOes voes = new ContactVOes();
 		voes.setUsers(userVOs);
 		voes.setTotalCount(totalCount);
 		return Response.ok(voes).build();

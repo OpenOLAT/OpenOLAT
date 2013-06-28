@@ -52,7 +52,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
-import org.olat.user.restapi.UserVOes;
+import org.olat.user.restapi.ContactVOes;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class ContactsTest extends OlatJerseyTestCase {
@@ -201,7 +201,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		UserVOes contacts = conn.parse(response, UserVOes.class);
+		ContactVOes contacts = conn.parse(response, ContactVOes.class);
 		assertNotNull(contacts);
 		assertNotNull(contacts.getUsers());
 		assertEquals(1, contacts.getUsers().length);
