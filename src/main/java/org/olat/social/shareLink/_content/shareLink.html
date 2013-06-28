@@ -34,13 +34,33 @@
 		<script type="text/javascript">
 		/* <![CDATA[ */
 			function b_shareSocialLink() {
-				jQuery('#b_link').tooltip({
-					items: '#b_link',
-					content: function() {
-						return jQuery('<p><span>$r.translate("share.link")</span>:<br/><input id="callout_share_link_in" type="text" name="cl_share_link" value="' + b_shareSocialUrl() + '" /></p>')
-							.html();
+				var callout = '';
+				callout += '<div id="b_callout_sharesociallink" class="b_callout_area b_clearfix" style="z-index:101;"><div class="b_floatscrollbox"><a name="b_modal"></a><div class="b_callout"><div class="b_callout_top_left_arrow"></div><div class="b_callout_top_left_arrow-border"></div>';
+				callout += '<div id="callout_layer_sharesociallink" class="b_callout_content"><div id="callout_layer_content_sharesociallink">';
+				callout += '<p><span>$r.translate("share.link")</span>:<br/><input id="callout_share_link_in" type="text" name="cl_share_link" size="64" value="' + b_shareSocialUrl() + '" /></p>';
+				callout += '</div></div></div></div></div><div id="b_callout_overlay_sharesociallink" class="b_callout_overlay" style="z-index:100;"></div>';
+			
+				jQuery('body').append(callout);
+				jQuery('#callout_layer_sharesociallink').each(function(index, el) {
+					jQuery(el).parents('div.b_callout_area').next('div.b_callout_overlay').each(function(index2, el2) {
+						jQuery(el2).click(function() {
+							jQuery('#b_callout_overlay_sharesociallink').remove();
+							jQuery('#b_callout_sharesociallink').remove();
+						});
+					});
+				});
+				
+				jQuery('#b_callout_sharesociallink').each(function(index, el) {
+					var targetEl = jQuery('#b_link');
+					var targetOffset = targetEl.offset();
+					if(targetOffset) {
+						var callout = jQuery(el);
+						callout.offset({
+							top: (targetOffset.top + targetEl.height() + 15) ,
+							left: (targetOffset.left - 23)
+						}).css('zindex', 105);
 					}
-				}).tooltip('open');
+				});
 			}
 		/* ]]> */
 		</script>

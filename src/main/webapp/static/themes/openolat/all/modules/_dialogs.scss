@@ -98,7 +98,21 @@ div.b_callout_content { max-width: 60em; margin: 10px; overflow: hidden; }
 .b_callout_top_right_arrow-border {
 	width: 0; height: 0;
 	border-left: 11px solid transparent; border-right: 11px solid transparent; border-bottom: 11px solid $basecolor;
-	position:absolute; right:20px; top:-11px;
+	position:absolute; left:20px; top:-11px;
+	z-index:1000;
+}
+
+.b_callout_top_left_arrow {
+	width: 0; height: 0;
+	border-left: 11px solid transparent; border-right: 11px solid transparent; border-bottom: 11px solid #FFF;
+	position:absolute; left:20px; top:-10px;
+	z-index:1001;
+}
+
+.b_callout_top_left_arrow-border {
+	width: 0; height: 0;
+	border-left: 11px solid transparent; border-right: 11px solid transparent; border-bottom: 11px solid $basecolor;
+	position:absolute; left:20px; top:-11px;
 	z-index:1000;
 }
 
