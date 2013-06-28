@@ -111,6 +111,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public abstract class AbstractBusinessGroupListController extends BasicController implements Activateable2 {
 	protected static final String TABLE_ACTION_LEAVE = "bgTblLeave";
+	protected static final String TABLE_ACTION_EDIT = "bgTblEdit";
 	protected static final String TABLE_ACTION_LAUNCH = "bgTblLaunch";
 	protected static final String TABLE_ACTION_ACCESS = "bgTblAccess";
 	protected static final String TABLE_ACTION_DUPLICATE = "bgTblDuplicate";
@@ -281,6 +282,8 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 					confirmDelete(ureq, Collections.singletonList(item));
 				} else if(actionid.equals(TABLE_ACTION_LAUNCH)) {
 					doLaunch(ureq, businessGroup);
+				} else if(actionid.equals(TABLE_ACTION_EDIT)) {
+					doEdit(ureq, businessGroup);
 				} else if(actionid.equals(TABLE_ACTION_LEAVE)) {
 					leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", businessGroup.getName()), leaveDialogBox);
 					leaveDialogBox.setUserObject(businessGroup);
@@ -405,6 +408,16 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	 */
 	protected void doLaunch(UserRequest ureq, BusinessGroup group) {
 		String businessPath = "[BusinessGroup:" + group.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	/**
+	 * Launch a business group with its business path in administration part
+	 * @param ureq
+	 * @param group
+	 */
+	protected void doEdit(UserRequest ureq, BusinessGroup group) {
+		String businessPath = "[BusinessGroup:" + group.getKey() + "][tooladmin:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
