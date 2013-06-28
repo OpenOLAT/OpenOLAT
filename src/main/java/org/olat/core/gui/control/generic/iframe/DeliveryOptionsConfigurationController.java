@@ -142,7 +142,9 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("option.desc");
+		setFormTitle("option.desc");
+		setFormContextHelp(this.getClass().getPackage().getName(), "display-options.html", "chelp.display-options.title");
+		
 		String[] inheritValues = new String[]{
 				translate("inherit"), translate("custom")	
 		};
@@ -153,14 +155,21 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		} else {
 			inheritEl.select(inheritKeys[1], true);
 		}
-		inheritEl.setVisible(parentConfig != null);
-		
+		if (parentConfig == null) {
+			inheritEl.setVisible(false);			
+		} else {
+			inheritEl.setVisible(true);			
+			uifactory.addSpacerElement("spacer.mode", formLayout, false);			
+		}
+
 		String[] standardModeValues = new String[]{
 			translate("mode.standard"), translate("mode.configured")	
 		};
 		standardModeEl = uifactory.addRadiosVertical("mode", formLayout, standardModeKeys, standardModeValues);
 		standardModeEl.addActionListener(this, FormEvent.ONCHANGE);
 		
+		uifactory.addSpacerElement("spacer.js", formLayout, false);
+
 		String[] jsValues = new String[] {
 				translate("option.js.none"), translate("option.js.jQuery"), translate("option.js.prototypejs")
 		};
@@ -238,6 +247,14 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			//set inherited values
 		} else {
 			boolean standard = standardModeEl.isSelected(0);
+			// set default values for OO-mode
+			if (!standard) {
+				jsOptionEl.select(jsKeys[1], true);
+				cssOptionEl.select(cssKeys[1], true);
+				heightEl.select(keys[0], true);
+				glossarEl.select("on", true);
+			}
+			// enable everything
 			boolean jQueryEnabled = jsOptionEl.isSelected(1);
 			jsOptionEl.setEnabled(!standard);
 			cssOptionEl.setEnabled(!standard);
