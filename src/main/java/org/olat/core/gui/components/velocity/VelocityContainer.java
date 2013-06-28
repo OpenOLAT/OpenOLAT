@@ -132,7 +132,9 @@ public class VelocityContainer extends Container {
 		setDirty(true);
 	}
 	
-	
+	public Object contextGet(String key) {
+		return context.get(key);
+	}
 
 	/**
 	 * Remove a variable from the velocity context

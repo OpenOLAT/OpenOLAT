@@ -148,7 +148,7 @@ public class UserSearchFlexiController extends FormBasicController {
 			boolean ajax = Windows.getWindows(ureq).getWindowManager().isAjaxEnabled();
 			if (ajax && autoCompleteAllowed) {
 				ListProvider provider = new UserSearchListProvider();
-				autocompleterC = new FlexiAutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, 60, 3, null, mainForm);
+				autocompleterC = new FlexiAutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, false, 60, 3, null, mainForm);
 				listenTo(autocompleterC);
 				layoutCont.put("autocompletionsearch", autocompleterC.getInitialComponent());
 			}

@@ -72,6 +72,8 @@ public class FlexiAutoCompleterController extends FormBasicController {
 
 	private Mapper mapper;
 	private final ListProvider gprovider;
+	private final boolean allowNewValues;
+	private boolean formElement;
 	
 	private String datastoreName;
 	private String comboboxName;
@@ -104,16 +106,33 @@ public class FlexiAutoCompleterController extends FormBasicController {
 			final boolean showDisplayKey, int inputWidth, int minChars, String label) {
 		super(ureq, wControl, "autocomplete");
 		this.gprovider = provider;
+		this.allowNewValues = false;
 		setupAutoCompleter(ureq, noresults, showDisplayKey, inputWidth, minChars, label);
+		setFormElement(true);
 	}
 	
 	public FlexiAutoCompleterController(UserRequest ureq, WindowControl wControl, ListProvider provider, String noresults,
-			final boolean showDisplayKey, int inputWidth, int minChars, String label, Form externalMainForm) {
+			final boolean showDisplayKey, final boolean allowNewValues, int inputWidth, int minChars, String label, Form externalMainForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "autocomplete", externalMainForm);
 		this.gprovider = provider;
+		this.allowNewValues = true;
 		setupAutoCompleter(ureq, noresults, showDisplayKey, inputWidth, minChars, label);
+		setFormElement(true);
 	}
 	
+	public boolean isFormElement() {
+		return formElement;
+	}
+
+	public void setFormElement(boolean formElement) {
+		this.formElement = formElement;
+		if(formElement) {
+			flc.contextPut("formElementClass", "b_form_element");
+		} else {
+			flc.contextPut("formElementClass", "");
+		}
+	}
+
 	private void setupAutoCompleter(UserRequest ureq, String noresults,
 			final boolean showDisplayKey, int inputWidth, int minChars, String label) {
 		String noResults = (noresults == null ? translate("autocomplete.noresults") : noresults);
@@ -197,7 +216,20 @@ public class FlexiAutoCompleterController extends FormBasicController {
 				}
 				fireEvent(ureq, new EntriesChosenEvent(selectedEntries));					
 			}
+		} else if(source == mainForm.getInitialComponent()) {
+			if(allowNewValues) {
+				String searchValue = getSearchValue(ureq);
+				List<String> selectedEntries = new ArrayList<String>();
+				selectedEntries.add(searchValue);
+				fireEvent(ureq, new EntriesChosenEvent(selectedEntries));	
+			}
 		}
+	}
+	
+	private String getSearchValue(UserRequest ureq) {
+		VelocityRenderDecorator r = (VelocityRenderDecorator) ((VelocityContainer)flc.getComponent()).getContext().get("r");
+		String searchValue = ureq.getParameter(r.getId(JSNAME_INPUTFIELD).toString());
+		return searchValue;
 	}
 
 	@Override

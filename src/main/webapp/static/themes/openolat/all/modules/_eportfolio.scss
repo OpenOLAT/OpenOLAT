@@ -100,6 +100,18 @@ ul.b_eportfolio_maps {
 	div {display:inline;}
 }
 
+div.b_eportfolio_share_with_user {
+	clear:both;
+	
+	p {
+		vertical-align: middle;
+		span {
+			float:none;
+		
+		}
+	}
+}
+
 /* different map styles  */
 /* default, leather and comic were standard (OLATpro 7.2) */
 /* green / blue / red etc. were added 2011 for ZAG */

@@ -386,6 +386,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	public void contextRemove(String key) {
 		formLayoutContainer.contextRemove(key);
 	}
+	
+	public Object contextGet(String key) {
+		return formLayoutContainer.contextGet(key);
+	}
 
 	public void put(String name, Component component) {
 		formLayoutContainer.put(name, component);

@@ -1,0 +1,9 @@
+<div class="b_eportfolio_share_with_user b_clearfix">
+	<p>
+	#foreach($group in $groups)
+		<span class="b_deletableentry_wrapper"><span class="b_deletableentry">$group.name</span>$r.render($group.removeLinkName)</span>
+	#end
+	</p>
+	$r.render("choose.group")
+</div>
+

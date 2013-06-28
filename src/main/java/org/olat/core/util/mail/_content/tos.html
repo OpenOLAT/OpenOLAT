@@ -1,0 +1,7 @@
+<p>
+	#foreach($to in $tos)
+		<span class="b_deletableentry_wrapper"><span class="b_deletableentry">$to.name</span>$r.render($to.removeLinkName)</span>
+	#end
+</p>
+$r.render("add.email")
+

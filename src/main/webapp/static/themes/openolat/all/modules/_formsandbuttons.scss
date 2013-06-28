@@ -186,6 +186,28 @@ span.b_toggle_slide_legend {font-size: 90%; }
 	> span {background-image: url('../openolat/images/arrow_right_big.png');}
 }
 
+.b_remove_icon {
+	> span {background-image: url('../openolat/images/cross_small.png');}
+}
+
+.b_deletableentry_wrapper {
+	.b_deletableentry {
+		
+	}
+	
+	.b_link_left_icon {
+		border: none;
+		background:inherit;
+		margin: 0;
+		
+		&:focus, &:hover, &:focus, &:active {
+			text-decoration: none;
+			border:none;
+			@include o-box-shadow(0, 0, 0, transparent);
+		}
+	}
+}
+
 
 /** ----------------- FORMS + LOGIN  ----------------- **/
 div.o_login {
