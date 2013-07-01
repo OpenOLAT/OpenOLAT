@@ -198,8 +198,8 @@ public class RestApiLoginFilter implements Filter {
 	
 	private boolean isRequestTokenValid(HttpServletRequest request) {
 		String token = request.getHeader(RestSecurityHelper.SEC_TOKEN);
-		RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
-		return securityBean.isTokenRegistrated(token);
+		RestSecurityBean securityBean =  CoreSpringFactory.getImpl(RestSecurityBean.class);
+		return securityBean.isTokenRegistrated(token, request.getSession(true));
 	}
 	
 	private boolean isRequestURIInOpenSpace(String requestURI) {
@@ -250,7 +250,7 @@ public class RestApiLoginFilter implements Filter {
 		
 		String token = request.getHeader(RestSecurityHelper.SEC_TOKEN);
 		RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
-		if(StringHelper.containsNonWhitespace(token) && securityBean.isTokenRegistrated(token)) {
+		if(StringHelper.containsNonWhitespace(token) && securityBean.isTokenRegistrated(token, request.getSession(true))) {
 			//is authenticated by token, follow its current token
 			followToken(token, request, response, chain);
 			return;

@@ -40,6 +40,7 @@ import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
@@ -48,15 +49,16 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.exception.MsgFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.restapi.security.RestSecurityBean;
 import org.olat.shibboleth.util.ShibbolethAttribute;
 import org.olat.shibboleth.util.ShibbolethHelper;
 
@@ -66,17 +68,26 @@ import org.olat.shibboleth.util.ShibbolethHelper;
  * @author Mike Stock
  */
 public class ShibbolethDispatcher implements Dispatcher{
+	
+	private static final OLog log = Tracing.createLoggerFor(ShibbolethDispatcher.class);
 
 	/** Provider identifier */
 	public static final String PROVIDER_SHIB = "Shib";
 	/** Identifies requests for the ShibbolethDispatcher */
 	public static final String PATH_SHIBBOLETH = "/shib/";
 	
-		
-	private static final String PACKAGE = Util.getPackageName(ShibbolethDispatcher.class);	
 	private Translator translator;
+	private boolean mobile = false;
 	
 	
+	/**
+	 * [used by Spring]
+	 * @param mobile
+	 */
+	public void setMobile(boolean mobile) {
+		this.mobile = mobile;
+	}
+
 	/**
 	 * Main method called by DIspatcherAction.
 	 * This processess all shibboleth requests.
@@ -87,7 +98,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 	 */
 	public void execute(HttpServletRequest req,	HttpServletResponse resp, String uriPrefix) {
 		if(translator==null) {
-			translator = new PackageTranslator(PACKAGE, I18nModule.getDefaultLocale());
+			translator = Util.createPackageTranslator(ShibbolethDispatcher.class, I18nModule.getDefaultLocale());
 		}
 		String uri = req.getRequestURI();
 		
@@ -117,8 +128,8 @@ public class ShibbolethDispatcher implements Dispatcher{
 			//or authors copy-pasted links to the content.
 			//showing redscreens for non valid URL is wrong instead
 			//a 404 message must be shown -> e.g. robots correct their links.
-			if(Tracing.isDebugEnabled(ShibbolethDispatcher.class)){
-				Tracing.logDebug("Bad Request "+req.getPathInfo(), this.getClass());
+			if(log.isDebug()){
+				log.debug("Bad Request "+req.getPathInfo());
 			}
 			DispatcherAction.sendBadRequest(req.getPathInfo(), resp);
 			return;
@@ -145,15 +156,25 @@ public class ShibbolethDispatcher implements Dispatcher{
 		UserDeletionManager.getInstance().setIdentityAsActiv(ureq.getIdentity());
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
 				ShibbolethModule.getAttributeTranslator().translateAttributesMap(attributesMap));
-		MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
-		if (!(mr instanceof RedirectMediaResource)) {
-			DispatcherAction.redirectToDefaultDispatcher(resp); // error, redirect to login screen
-			return;
-		}
 		
-		RedirectMediaResource rmr = (RedirectMediaResource)mr;
-		rmr.prepare(resp);
-
+		if(mobile) {
+			RestSecurityBean secBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
+			String token = secBean.generateToken(ureq.getIdentity(), ureq.getHttpReq().getSession(true));
+			
+			try {
+				resp.sendRedirect(WebappHelper.getServletContextPath() + "/mobile?x-olat-token=" + token + "&username=" + ureq.getIdentity().getName());
+			} catch (IOException e) {
+				log.error("Redirect to mobile app.", e);
+			}
+		} else {
+			MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
+			if (mr instanceof RedirectMediaResource) {
+				RedirectMediaResource rmr = (RedirectMediaResource)mr;
+				rmr.prepare(resp);
+			} else {
+				DispatcherAction.redirectToDefaultDispatcher(resp); // error, redirect to login screen
+			}
+		}
 	}
 
 	private String getUniqueIdentifierFromRequest(HttpServletRequest req, HttpServletResponse resp, Map<String, String> attributesMap) {
@@ -173,7 +194,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 	private Map<String, String> getShibbolethAttributesFromRequest(HttpServletRequest req) {
 		Set<String> translateableAttributes = ShibbolethModule.getAttributeTranslator().getTranslateableAttributes();
 		Map<String, String> attributesMap = new HashMap<String, String>();
-		Enumeration headerEnum = req.getHeaderNames();
+		Enumeration<String> headerEnum = req.getHeaderNames();
 		while(headerEnum.hasMoreElements()) {
 			String attribute = (String)headerEnum.nextElement();
 			String attributeValue = req.getHeader(attribute);
@@ -186,8 +207,8 @@ public class ShibbolethDispatcher implements Dispatcher{
 			}
 		}
 		
-		if(Tracing.isDebugEnabled(ShibbolethDispatcher.class)){
-			Tracing.logDebug("Shib attribute Map: \n\n"+attributesMap.toString()+"\n\n", ShibbolethDispatcher.class);
+		if(log.isDebug()){
+			log.debug("Shib attribute Map: \n\n"+attributesMap.toString()+"\n\n");
 		}
 		
 		return attributesMap;
@@ -219,7 +240,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 		try {
 			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherAction.getPathDefault() + ShibbolethModule.PATH_REGISTER_SHIBBOLETH + "/");
 		} catch (IOException e) {
-			Tracing.logError("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherAction.getPathDefault(),e, ShibbolethDispatcher.class);
+			log.error("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherAction.getPathDefault(),e);
 		}
 	}
 
@@ -250,7 +271,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 					new OLATRuntimeException("Error processing Shibboleth request: " + e.getMessage(), e), false);
 			  msgcc.getWindow().dispatchRequest(ureq, true);
 		  } catch (Throwable t) {
-			  Tracing.logError("We're fucked up....",t, ShibbolethDispatcher.class);
+			  log.error("We're fucked up....",t);
 		  }
 	  }
 	}

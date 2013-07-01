@@ -33,7 +33,7 @@ public class OLATRuntimeException extends RuntimeException {
 	private String usrMsgKey;
 	private String usrMsgPackage;
 	private String[] usrMsgArgs;
-	private Class throwingClazz;
+	private Class<?> throwingClazz;
 
 	/**
 	 * @param throwing class
@@ -43,7 +43,7 @@ public class OLATRuntimeException extends RuntimeException {
 	 * @param logMsg
 	 * @param cause
 	 */
-	public OLATRuntimeException(Class throwingClazz, String usrMsgKey, String[] usrMsgArgs, String usrMsgPackage, String logMsg, Throwable cause) {
+	public OLATRuntimeException(Class<?> throwingClazz, String usrMsgKey, String[] usrMsgArgs, String usrMsgPackage, String logMsg, Throwable cause) {
 		super(logMsg);
 		this.throwingClazz = throwingClazz != null ? throwingClazz : OLATRuntimeException.class;
 		this.usrMsgKey = usrMsgKey;
@@ -72,7 +72,7 @@ public class OLATRuntimeException extends RuntimeException {
 	 * @param logMsg
 	 * @param cause
 	 */
-	public OLATRuntimeException(Class throwingClazz, String logMsg, Throwable cause) {
+	public OLATRuntimeException(Class<?> throwingClazz, String logMsg, Throwable cause) {
 		this (throwingClazz, null, null, null, logMsg, cause);
 	}
 
@@ -130,7 +130,7 @@ public class OLATRuntimeException extends RuntimeException {
 		return logMsg;
 	}
 
-	public Class getThrowingClazz() {
+	public Class<?> getThrowingClazz() {
 		return throwingClazz;
 	}
 
