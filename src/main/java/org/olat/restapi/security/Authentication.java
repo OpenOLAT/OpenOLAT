@@ -32,10 +32,12 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.login.OLATAuthenticationController;
 
 /**
@@ -84,9 +86,42 @@ public class Authentication {
 	@GET
 	@Path("{username}")
 	@Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_XML})
-	public Response login(@PathParam("username") String username, @QueryParam("password") String password,
+	public Response login(@PathParam("username") String username,
+			@QueryParam("password") String password,
+			@QueryParam("x-olat-token") String secToken,
 			@Context HttpServletRequest httpRequest) {
 		
+		if(StringHelper.containsNonWhitespace(password)) {
+			return loginWithPassword(username, password, httpRequest);
+		} else if (StringHelper.containsNonWhitespace(secToken)) {
+			return loginWithToken(username, secToken, httpRequest);
+		}
+		return Response.serverError().status(Response.Status.BAD_REQUEST).build();
+	}
+	
+	private Response loginWithToken(String username, String secToken, HttpServletRequest httpRequest) {
+		Identity identity = BaseSecurityManager.getInstance().findIdentityByName(username);
+		if(identity == null) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		org.olat.basesecurity.Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, RestSecurityBeanImpl.REST_AUTH_PROVIDER);
+		if(auth == null) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		if(auth.getCredential() != null && auth.getCredential().equals(secToken)) {
+			UserRequest ureq = RestSecurityHelper.getUserRequest(httpRequest);
+			int loginStatus = AuthHelper.doHeadlessLogin(identity, RestSecurityBeanImpl.REST_AUTH_PROVIDER, ureq, true);
+			if (loginStatus == AuthHelper.LOGIN_OK) {
+				return Response.ok("<hello identityKey=\"" + identity.getKey() + "\">Hello " + username + "</hello>", MediaType.APPLICATION_XML)
+						.header(RestSecurityHelper.SEC_TOKEN, secToken).build();
+			}
+		}
+		return Response.serverError().status(Status.UNAUTHORIZED).build();
+	}
+	
+	private Response loginWithPassword(String username, String password, HttpServletRequest httpRequest) {
 		UserRequest ureq = RestSecurityHelper.getUserRequest(httpRequest);
 		Identity identity = OLATAuthenticationController.authenticate(username, password);
 		if(identity == null) {
@@ -98,7 +133,7 @@ public class Authentication {
 			//fxdiff: FXOLAT-268 update last login date and register active user
 			UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 			//Forge a new security token
-			RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
+			RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
 			String token = securityBean.generateToken(identity, httpRequest.getSession(true));
 			return Response.ok("<hello identityKey=\"" + identity.getKey() + "\">Hello " + username + "</hello>", MediaType.APPLICATION_XML)
 				.header(RestSecurityHelper.SEC_TOKEN, token).build();

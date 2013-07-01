@@ -43,6 +43,9 @@
 				<entry key="/shib/">
 					<ref bean="shibbean" />
 				</entry>
+				<entry key="/mshib/">
+					<ref bean="shibmobilebean" />
+				</entry>
 				<entry key="/stats.html">
 					<ref bean="statisticbean" />
 				</entry>
@@ -173,8 +176,11 @@
 	-->
 	<bean id="remoteloginbean" class="org.olat.dispatcher.RemoteLoginformDispatcher" />
 
-	<bean id="shibbean"
-		class="org.olat.shibboleth.ShibbolethDispatcher" />
+	<bean id="shibbean" class="org.olat.shibboleth.ShibbolethDispatcher" />
+	
+	<bean id="shibmobilebean" class="org.olat.shibboleth.ShibbolethDispatcher">
+		<property name="mobile" value="true"/>
+	</bean>
 		
 	<!--  static files delivery. See org.olat.core.dispatcher.mapper.package.html for more infos -->
 	<bean id="staticsrawbean"

@@ -292,6 +292,22 @@ public interface BaseSecurity {
 	public Authentication findAuthentication(Identity identity, String provider);
 	
 	/**
+	 * 
+	 * @param identity
+	 * @param creationDate
+	 * @return
+	 */
+	public List<Authentication> findOldAuthentication(String provider, Date creationDate);
+	
+	/**
+	 * 
+	 * @param provider
+	 * @param token
+	 * @return
+	 */
+	public List<Authentication> findAuthentication(String provider, String credential);
+	
+	/**
 	 * Return the credential or null
 	 * @param identity
 	 * @param provider
@@ -315,6 +331,12 @@ public interface BaseSecurity {
 	 * @param authentication
 	 */
 	public void deleteAuthentication(Authentication authentication);
+	
+	/**
+	 * 
+	 * @param authentication
+	 */
+	public Authentication updateAuthentication(Authentication authentication);
 
 	// --- SecGroup management
 

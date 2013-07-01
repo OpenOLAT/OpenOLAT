@@ -33,12 +33,12 @@ import java.util.Locale;
 import javax.servlet.http.Cookie;
 
 import org.olat.basesecurity.AuthHelper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,7 +50,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationController;
-import org.olat.core.CoreSpringFactory;
 
 
 /**
@@ -68,14 +67,13 @@ import org.olat.core.CoreSpringFactory;
 
 public class ShibbolethAuthenticationController extends AuthenticationController {
 	protected static final String IDP_HOMESITE_COOKIE = "idpsite-presel";
+	protected static final String SHIB_MOBILE = "shibbolet-mobile";
 
 	private Translator fallbackTranslator;
 	private VelocityContainer loginComp;		
 	private Link anoLink;
 	
 	private static OLog log = Tracing.createLoggerFor(ShibbolethAuthenticationController.class);
-	private Panel mainPanel;
-
 		
 	public ShibbolethAuthenticationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -85,8 +83,7 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		// Manually set translator that uses a fallback translator to the login module
 		// Can't use constructor with fallback translator because it gets overriden by setBasePackage call above
 		setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale(), Util.createPackageTranslator(LoginModule.class, ureq.getLocale())));
-		
-		
+
 		if (!ShibbolethModule.isEnableShibbolethLogins()) throw new OLATSecurityException(
 				"Tried to access shibboleth wayf but shibboleth is not enabled.");
 		loginComp = createVelocityContainer("shibbolethlogin");
@@ -99,7 +96,12 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		loginComp.contextPut("wayfSPEntityID", config.getWayfSPEntityID());
 		loginComp.contextPut("wayfSPHandlerURL", config.getWayfSPHandlerURL());
 		loginComp.contextPut("wayfSPSamlDSURL", config.getWayfSPSamlDSURL());
-		loginComp.contextPut("wayfReturnUrl", config.getWayfReturnUrl());
+		boolean mobile = isMobile(ureq);
+		if(mobile) {
+			loginComp.contextPut("wayfReturnUrl", config.getWayfReturnMobileUrl());
+		} else {
+			loginComp.contextPut("wayfReturnUrl", config.getWayfReturnUrl());
+		}
 		loginComp.contextPut("additionalIDPs", config.getAdditionalIdentityProviders());
 		
 
@@ -113,7 +115,22 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 			showWarning("info.browser.close");
 		}
 		
-		mainPanel = putInitialPanel(loginComp);
+		putInitialPanel(loginComp);
+	}
+	
+	private boolean isMobile(UserRequest ureq) {
+		boolean mobile = false;
+		String mparam = ureq.getHttpReq().getParameter("mshib");
+		if("true".equals(mparam)) {
+			ureq.getUserSession().putEntry(SHIB_MOBILE, Boolean.TRUE);
+			mobile = true;
+		} else {
+			Object mobileFlag = ureq.getUserSession().getEntry(SHIB_MOBILE);
+			if(mobileFlag != null && Boolean.TRUE.equals(mobileFlag)) {
+				mobile = true;
+			}
+		}
+		return mobile;
 	}
 
 	/**

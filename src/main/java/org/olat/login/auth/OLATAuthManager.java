@@ -29,10 +29,10 @@ import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -93,13 +93,14 @@ public class OLATAuthManager extends BasicManager {
 		// password's length is limited to 128 chars. 
 		// The 128 bit MD5 hash is converted into a 32 character long String
 		String hashedPwd = Encoder.encrypt(newPwd);
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		
 		//o_clusterREVIEW
-		identity = (Identity) DBFactory.getInstance().loadObject(identity);
+		identity = securityManager.loadIdentityByKey(identity.getKey());
 		
 		boolean allOk = false;
 		
-		Authentication ldapAuth = BaseSecurityManager.getInstance().findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication ldapAuth = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
 		if(ldapAuth != null) {
 			if(LDAPLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 				LDAPError ldapError = new LDAPError();
@@ -158,7 +159,7 @@ public class OLATAuthManager extends BasicManager {
 		}
 
 		auth.setCredential(hashedPwd);
-		DBFactory.getInstance().updateObject(auth);
+		auth = BaseSecurityManager.getInstance().updateAuthentication(auth);
 		log.audit(doer.getName() + " set new password for identity: " +identity.getName());
 		return true;
 	}

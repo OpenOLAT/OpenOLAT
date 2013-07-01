@@ -36,7 +36,7 @@ public interface RestSecurityBean {
 	
 	public String generateToken(Identity identity, HttpSession session);
 	
-	public boolean isTokenRegistrated(String token);
+	public boolean isTokenRegistrated(String token, HttpSession session);
 	
 	public Identity getIdentity(String token);
 	
@@ -60,8 +60,7 @@ public interface RestSecurityBean {
 	public String renewToken(String token);
 	
 	/**
-	 * Force invalidation of the token
-	 * @param token
+	 * 
 	 */
-	public void invalidToken(String token);
+	public int removeTooOldRestToken();
 }

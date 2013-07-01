@@ -30,6 +30,7 @@ public class SwitchShibbolethAuthenticationConfigurator {
 	private String wayfSPHandlerURL;
 	private String wayfSPSamlDSURL;
 	private String wayfReturnUrl;
+	private String wayfReturnMobileUrl;
 	private String additionalIDPs;
 	
 	/**
@@ -87,6 +88,14 @@ public class SwitchShibbolethAuthenticationConfigurator {
 		this.wayfReturnUrl = wayfReturnUrl;
 	}
 	
+	public String getWayfReturnMobileUrl() {
+		return wrapWithQuotes(wayfReturnMobileUrl);
+	}
+
+	public void setWayfReturnMobileUrl(String wayfReturnMobileUrl) {
+		this.wayfReturnMobileUrl = wayfReturnMobileUrl;
+	}
+
 	public void setAdditionalIdentityProviders(String additionalIDPs) {
 		this.additionalIDPs = additionalIDPs;
 	}

@@ -70,6 +70,9 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	private static Map<String, String> mailConfig = new HashMap<String, String>(6);
 	private static long timeOfServerStartup = System.currentTimeMillis();
 	
+	
+	private static String mobileContext;
+	
 	/** need to set this at least once before the actual request, since we cannot extract it from the servletContext, 
 	 * but many methods use it (renderers) which do not have access to userRequest and thus to to getPathInfo...**/
 	private static String servletContextPath;
@@ -227,6 +230,21 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	 */
 	public static Long getTimeOfServerStartup() {
 		return timeOfServerStartup;
+	}
+
+	/**
+	 * @return The context of the moible application starting with /
+	 */
+	public static String getMobileContext() {
+		return mobileContext;
+	}
+
+	public void setMobileContext(String mobileContext) {
+		if(!mobileContext.startsWith("/")) {
+			mobileContext = "/" + mobileContext;
+		}
+		
+		WebappHelper.mobileContext = mobileContext;
 	}
 
 	public void setFullPathToSrc(String fullPathToSrc) {
