@@ -26,9 +26,11 @@ import java.util.Date;
 import javax.ws.rs.core.EntityTag;
 
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.components.form.ValidationError;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -99,7 +101,7 @@ public class ObjectFactory {
 		return vo;
 	}
 	
-	public static GroupInfoVO getInformation(BusinessGroup grp) {
+	public static GroupInfoVO getInformation(Identity identity, BusinessGroup grp) {
 		GroupInfoVO vo = new GroupInfoVO();
 		vo.setKey(grp.getKey());
 		vo.setName(grp.getName());
@@ -123,6 +125,16 @@ public class ObjectFactory {
 		
 		boolean hasFolder = collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER);
 		vo.setHasFolder(hasFolder);
+		boolean hasFolderWrite = hasFolder;
+		if(hasFolder) {
+			Long access = collabTools.lookupFolderAccess();
+			if(access != null && access.intValue() == CollaborationTools.FOLDER_ACCESS_OWNERS) {
+				//is owner?
+				hasFolderWrite = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, grp.getOwnerGroup());
+			}
+		}
+		vo.setFolderWrite(hasFolderWrite);
+		
 		return vo;
 	}
 	

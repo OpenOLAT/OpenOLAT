@@ -17,74 +17,52 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.restapi.support.vo;
+package org.olat.user.restapi;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * 
  * Description:<br>
- * GroupInfoVO
+ * Helper class for the example in the WADL document. Don't use it
+ * for something else!!!
  * 
  * <P>
- * Initial Date:  26 aug. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial Date:  7 apr. 2010 <br>
+ * @author srosse, stephane.rosse@frentix.com
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "groupInfoVO")
-public class GroupInfoVO extends GroupVO {
-	
-	private String news;
-	private Long forumKey;
-	private Boolean hasWiki = Boolean.FALSE;
-	private Boolean hasFolder = Boolean.FALSE;
-	@XmlAttribute(name="folderWrite", required=false)
-	private boolean folderWrite;
-	
-	public GroupInfoVO() {
+@XmlRootElement(name = "contacts")
+public class ContactVOes {
+
+	@XmlElementWrapper(name="users")
+	@XmlElement(name="users")
+	private ContactVO[] users;
+	@XmlAttribute(name="totalCount")
+	private int totalCount;
+
+	public ContactVOes() {
 		//make JAXB happy
 	}
 
-	public String getNews() {
-		return news;
+	public ContactVO[] getUsers() {
+		return users;
 	}
 
-	public void setNews(String news) {
-		this.news = news;
+	public void setUsers(ContactVO[] users) {
+		this.users = users;
 	}
 
-	public Long getForumKey() {
-		return forumKey;
+	public int getTotalCount() {
+		return totalCount;
 	}
 
-	public void setForumKey(Long forumKey) {
-		this.forumKey = forumKey;
-	}
-
-	public Boolean getHasWiki() {
-		return hasWiki;
-	}
-
-	public void setHasWiki(Boolean hasWiki) {
-		this.hasWiki = hasWiki;
-	}
-
-	public Boolean getHasFolder() {
-		return hasFolder;
-	}
-
-	public void setHasFolder(Boolean hasFolder) {
-		this.hasFolder = hasFolder;
-	}
-
-	public boolean isFolderWrite() {
-		return folderWrite;
-	}
-
-	public void setFolderWrite(boolean folderWrite) {
-		this.folderWrite = folderWrite;
+	public void setTotalCount(int totalCount) {
+		this.totalCount = totalCount;
 	}
 }

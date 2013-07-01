@@ -215,7 +215,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id, re.getParticipantGroup());
 		dbInstance.commitAndCloseSession();
 
-		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, 0, -1);
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, 0, -1, RepositoryEntryOrder.nameAsc);
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.isEmpty());
 		Assert.assertTrue(entries.contains(re));
@@ -321,7 +321,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		//check get favorite
 		List<String> types = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
-		List<RepositoryEntry> entries = repositoryManager.getFavoritLearningResourcesAsTeacher(id, types, 0, -1);
+		List<RepositoryEntry> entries = repositoryManager.getFavoritLearningResourcesAsTeacher(id, types, 0, -1, RepositoryEntryOrder.nameAsc);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertTrue(entries.contains(re));

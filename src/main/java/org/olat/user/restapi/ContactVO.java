@@ -19,42 +19,39 @@
  */
 package org.olat.user.restapi;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 
 /**
  * 
  * Description:<br>
- * TODO: srosse Class Description for UserVO
+ * Very minimal view of the user
  * 
  * <P>
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "userVO")
-public class UserVO {
+@XmlRootElement(name = "contactVO")
+public class ContactVO {
 
 	private Long key;
-	private String login;
-	private String password;
 	private String firstName;
 	private String lastName;
-	private String email;
-	private String portrait;
 
-	@XmlElementWrapper(name="properties")
-	@XmlElement(name="property")
-	private List<UserPropertyVO> properties = new ArrayList<UserPropertyVO>();
 
-	public UserVO() {
+	public ContactVO() {
 		//make JAXB happy
+	}
+	
+	public ContactVO(Identity identity) {
+		key = identity.getKey();
+		firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
+		lastName = identity.getUser().getProperty(UserConstants.LASTNAME, null);
 	}
 
 	public Long getKey() {
@@ -63,22 +60,6 @@ public class UserVO {
 
 	public void setKey(Long key) {
 		this.key = key;
-	}
-
-	public String getLogin() {
-		return login;
-	}
-
-	public void setLogin(String login) {
-		this.login = login;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
 	}
 
 	public String getFirstName() {
@@ -97,46 +78,12 @@ public class UserVO {
 		this.lastName = lastName;
 	}
 
-	public String getEmail() {
-		return email;
-	}
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
 
-	public String getPortrait() {
-		return portrait;
-	}
-
-	public void setPortrait(String portrait) {
-		this.portrait = portrait;
-	}
-
-	public List<UserPropertyVO> getProperties() {
-		return properties;
-	}
-
-	public void setProperties(List<UserPropertyVO> properties) {
-		this.properties = properties;
-	}
-	
-	public void putProperty(String name, String value) {
-		properties.add(new UserPropertyVO(name,value));
-	}
-	
-	public String getProperty(String name) {
-		for(UserPropertyVO entry:properties) {
-			if(entry.getName().equals(name)) {
-				return entry.getValue();
-			}
-		}
-		return null;
-	}
 
 	@Override
 	public String toString() {
-		return "UserVO[key=" + key + ":name=" + login + "]";
+		return "UserVO[key=" + key + ":lastName=" + lastName + "]";
 	}
 	
 	@Override
@@ -144,8 +91,8 @@ public class UserVO {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof UserVO) {
-			UserVO vo = (UserVO)obj;
+		if(obj instanceof ContactVO) {
+			ContactVO vo = (ContactVO)obj;
 			return key != null && key.equals(vo.key);
 		}
 		return false;
