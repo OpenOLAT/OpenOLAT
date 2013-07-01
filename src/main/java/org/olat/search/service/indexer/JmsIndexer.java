@@ -211,6 +211,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 		if(consumer != null) {
 			try {
 				consumer.close();
+				System.out.println("Close consumer JMSINDEXER");
 			} catch (JMSException e) {
 				log.error("", e);
 			}
@@ -219,6 +220,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			try {
 				indexerSession.close();
 				connection.close();
+				System.out.println("Close connection JMSINDEXER");
 			} catch (JMSException e) {
 				log.error("", e);
 			}

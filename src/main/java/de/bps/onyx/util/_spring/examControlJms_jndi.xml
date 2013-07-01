@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans.xsd">
+                        
+	<!-- JMS Stuff -->
+	<bean id="examControlConnectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+        <property name="jndiName"><value>${jms.broker.jndi}</value></property>
+    </bean>
+
+	<!-- used for sending the search requests -->
+	<bean id="examControlQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
+		<constructor-arg value="olat/examQueue" />
+	</bean>           
+                        
+            
+    <bean id="examControlQueue" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName"><value>${exam.broker.jndi}</value></property>
+	</bean>            
+                        
+
+	<!-- JMS Stuff -->
+	<bean id="searchConnectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+        <property name="jndiName"><value>${jms.broker.jndi}</value></property>
+    </bean>
+    <bean id="searchQueue" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName"><value>${search.broker.jndi}</value></property>
+	</bean>
+	
+	<bean id="indexConnectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+        <property name="jndiName"><value>${jms.broker.jndi}</value></property>
+    </bean>
+    <bean id="indexQueue" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName"><value>${index.broker.jndi}</value></property>
+	</bean>
+</beans>

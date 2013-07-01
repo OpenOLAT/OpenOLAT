@@ -36,6 +36,8 @@ Configuration JBoss AS 7.1
      jms.broker.jndi=java:/ConnectionFactory
      sysbus.broker.jndi=java:jboss/exported/jms/topic/sysbus
      search.broker.jndi=java:jboss/exported/jms/queue/searchQueue
+     index.broker.jndi=java:jboss/exported/jms/queue/indexQueue
+     exam.broker.jndi=java:jboss/exported/jms/queue/examQueue
 
 
 Configuration Glassfish 3.1
@@ -61,6 +63,8 @@ Configuration Glassfish 3.1
      jms.broker.jndi=OpenOLATConnectionFactory
      sysbus.broker.jndi=topic/sysbus
      search.broker.jndi=queue/searchQueue
+     index.broker.jndi=queue/indexQueue
+     exam.broker.jndi=queue/examQueue
 
 
 Features located on the application server

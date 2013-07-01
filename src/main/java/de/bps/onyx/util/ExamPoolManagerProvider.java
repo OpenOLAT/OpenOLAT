@@ -197,6 +197,30 @@ public class ExamPoolManagerProvider implements MessageListener {
 		connection.start();
 		log.info("springInit: JMS connection started with connectionFactory=" + connectionFactory);
 	}
+	
+
+	public void springStop() throws JMSException {
+		closeQueue();
+	}
+	
+	private void closeQueue() {
+		if(consumer != null) {
+			try {
+				consumer.close();
+				System.out.println("Close consumer exam pool");
+			} catch (JMSException e) {
+				log.error("", e);
+			}
+		}
+		if(connection != null) {
+			try {
+				connection.close();
+				System.out.println("Close connection exam pool");
+			} catch (JMSException e) {
+				log.error("", e);
+			}
+		}
+	}
 
 	private synchronized Session acquireSession() throws JMSException {
 		if (sessions.size() == 0) {
