@@ -683,7 +683,13 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />														
 							</list>
-						</property>						
+						</property>		
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</set>
+						</property>				
 					</bean>
 				</entry>
 				

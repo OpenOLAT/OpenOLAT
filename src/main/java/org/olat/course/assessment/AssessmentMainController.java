@@ -803,10 +803,9 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		}
 		
 		// Add the wrapped identities to the table data model
-		AssessedIdentitiesTableDataModel tdm = new AssessedIdentitiesTableDataModel(wrappedIdentities, courseNode, getLocale(), isAdministrativeUser, mode == MODE_USERFOCUS);
+		AssessedIdentitiesTableDataModel tdm = new AssessedIdentitiesTableDataModel(wrappedIdentities, courseNode, getLocale(), isAdministrativeUser);
 		tdm.addColumnDescriptors(userListCtr, CMD_CHOOSE_USER, mode == MODE_NODEFOCUS || mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS);
 		userListCtr.setTableDataModel(tdm);
-
 
 		if (mode == MODE_USERFOCUS) {
 			userChoose.contextPut("showBack", Boolean.FALSE);
