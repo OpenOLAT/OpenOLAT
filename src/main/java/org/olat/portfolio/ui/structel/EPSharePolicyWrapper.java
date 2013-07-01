@@ -20,9 +20,7 @@
 package org.olat.portfolio.ui.structel;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.Policy;
@@ -30,8 +28,6 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.group.BusinessGroup;
 import org.olat.portfolio.manager.EPMapPolicy;
 
@@ -126,25 +122,6 @@ public class EPSharePolicyWrapper {
 			mapPolicy.setType(type);
 			mapPolicy.getPolicies().clear();
 		}
-	}
-	
-	public Map<String,String> getIdentitiesValue() {
-		if(mapPolicy.getIdentities() == null) return new HashMap<String,String>();
-		
-		Map<String,String> values = new HashMap<String,String>();
-		for(Identity identity:mapPolicy.getIdentities()) {
-			String login = identity.getName();//TODO username
-			values.put(formatIdentity(identity), login);
-		}
-		return values;
-	}
-	
-	protected String formatIdentity(Identity ident) {
-		User u = ident.getUser();
-		String login = ident.getName();//TODO username
-		String first = u.getProperty(UserConstants.FIRSTNAME, null);
-		String last = u.getProperty(UserConstants.LASTNAME, null);
-		return login + ": " + last + " " + first;
 	}
 
 	public List<Identity> getIdentities() {

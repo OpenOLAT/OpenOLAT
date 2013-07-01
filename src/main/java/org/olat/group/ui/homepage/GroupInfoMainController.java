@@ -209,6 +209,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		GenericTreeNode childNode = new GenericTreeNode();
 		childNode.setTitle(translate("main.menu.title"));
 		childNode.setUserObject(COMMAND_MENU_GROUPINFO);
+		childNode.setCssClass("o_sel_groupcard_infos");
 		childNode.setSelected(true);
 		rootNode.addChild(childNode);
 		rootNode.setDelegate(childNode);
@@ -217,6 +218,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 			childNode = new GenericTreeNode();
 			childNode.setTitle(translate("main.menu.members"));
 			childNode.setUserObject(COMMAND_MENU_GROUPMEMBERS);
+			childNode.setCssClass("o_sel_groupcard_members");
 			rootNode.addChild(childNode);
 		}
 		
@@ -224,6 +226,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 			childNode = new GenericTreeNode();
 			childNode.setTitle(translate("main.menu.contact"));
 			childNode.setUserObject(COMMAND_MENU_GROUPCONTACT);
+			childNode.setCssClass("o_sel_groupcard_contact");
 			rootNode.addChild(childNode);
 		}
 		
