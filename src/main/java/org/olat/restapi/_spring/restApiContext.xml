@@ -93,14 +93,8 @@
 	<bean id="restTokenJob.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.restapi.security.RestTokenJob" />
 	</bean>
-	<bean id="epDeadlineJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+	<bean id="restTokenJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
-	</bean>
-	
-	<!-- Using singletons would be good for the future and prevent using CoreSpringFactory -->
-	<!-- bean id="userWebService" class="org.olat.user.restapi.UserWebService"/ -->
-	<bean id="configFactory" class="org.olat.restapi.repository.course.config.CustomConfigFactory">
-		<constructor-arg index="0" ref="${assessmentplugin.activate}CustomConfigCreator" />
 	</bean>
 	
 	<!-- Definition of the providers -->
