@@ -41,9 +41,6 @@ public class EventVO {
 	private Date end;
 	private boolean allDayEvent;
 	
-	private Date creationDate;
-	private String createdBy;
-	
 	public EventVO() {
 		//
 	}
@@ -57,7 +54,6 @@ public class EventVO {
 		end = event.getEnd();
 		allDayEvent = event.isAllDayEvent();
 		calendarId = event.getCalendar().getType() + "_" + event.getCalendar().getCalendarID();
-		creationDate = new Date(event.getCreated());
 	}
 
 	public String getId() {
@@ -114,22 +110,6 @@ public class EventVO {
 
 	public void setAllDayEvent(boolean allDayEvent) {
 		this.allDayEvent = allDayEvent;
-	}
-
-	public Date getCreationDate() {
-		return creationDate;
-	}
-
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
-	}
-
-	public String getCreatedBy() {
-		return createdBy;
-	}
-
-	public void setCreatedBy(String createdBy) {
-		this.createdBy = createdBy;
 	}
 
 	public String getCalendarId() {

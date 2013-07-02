@@ -53,6 +53,7 @@ import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.restapi.CalendarVO;
 import org.olat.commons.calendar.restapi.EventVO;
+import org.olat.commons.calendar.restapi.EventVOes;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -108,13 +109,24 @@ public class CalendarTest extends OlatJerseyTestCase {
 
 			CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 			KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course);
-
+			
 			Calendar cal = Calendar.getInstance();
-			Date begin = cal.getTime();
+			for(int i=0; i<10; i++) {
+				Date begin = cal.getTime();
+				cal.add(Calendar.HOUR_OF_DAY, 1);
+				Date end = cal.getTime();
+				KalendarEvent event = new KalendarEvent(UUID.randomUUID().toString(), "Unit test " + i, begin, end);
+				calendarManager.addEventTo(calendarWrapper.getKalendar(), event);
+				cal.add(Calendar.DATE, 1);
+			}
+
+			cal = Calendar.getInstance();
+			cal.add(Calendar.MONTH, -1);
+			Date begin2 = cal.getTime();
 			cal.add(Calendar.HOUR_OF_DAY, 1);
-			Date end = cal.getTime();
-			KalendarEvent event = new KalendarEvent(UUID.randomUUID().toString(), "Unit test", begin, end);
-			calendarWrapper.getKalendar().addEvent(event);
+			Date end2 = cal.getTime();
+			KalendarEvent event2 = new KalendarEvent(UUID.randomUUID().toString(), "Unit test 2", begin2, end2);
+			calendarManager.addEventTo(calendarWrapper.getKalendar(), event2);
 			
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course1, false);
 			entry = repositoryManager.setAccess(entry, RepositoryEntry.ACC_USERS, false);
@@ -140,7 +152,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 			Assert.assertNotNull(calendarWrapper);
 
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course2, false);
-			entry = repositoryManager.setAccess(entry, RepositoryEntry.ACC_OWNERS, true);
+			entry = repositoryManager.setAccess(entry, RepositoryEntry.ACC_USERS, false);
 
 			dbInstance.commit();
 		}
@@ -186,8 +198,68 @@ public class CalendarTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		List<EventVO> vos = parseEventArray(response);
 		assertNotNull(vos);
-		assertEquals(1, vos.size());//Root-1
+		assertTrue(11 <= vos.size());//Root-1
 		
+		conn.shutdown();
+	}
+
+	@Test
+	public void testGetEvents_onlyFuture() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").path("events")
+				.queryParam("onlyFuture", "true").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<EventVO> vos = parseEventArray(response);
+		assertNotNull(vos);
+		assertTrue(10 <= vos.size());//Root-1
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date currentDate = cal.getTime();
+		
+		for(EventVO event:vos) {
+			System.out.println(currentDate + " :: " + event.getEnd());
+			assertTrue(currentDate.equals(event.getEnd()) || currentDate.before(event.getEnd()));
+		}
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetEvents_paging() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").path("events")
+				.queryParam("start", "0").queryParam("limit", "5").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EventVOes voes = conn.parse(response, EventVOes.class);
+
+		assertNotNull(voes);
+		assertTrue(10 <= voes.getTotalCount());
+		assertNotNull(voes.getEvents());
+		assertEquals(5, voes.getEvents().length);
+		
+		//check reliability of api
+		URI uriOverflow = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").path("events")
+				.queryParam("start", voes.getTotalCount()).queryParam("limit", "5").build();
+		HttpGet methodOverflow = conn.createGet(uriOverflow, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse responseOverflow = conn.execute(methodOverflow);
+		assertEquals(200, responseOverflow.getStatusLine().getStatusCode());
+		EventVOes voesOverflow  = conn.parse(responseOverflow, EventVOes.class);
+		assertNotNull(voesOverflow);
+		assertNotNull(voesOverflow.getEvents());
+		assertEquals(0, voesOverflow.getEvents().length);
+
 		conn.shutdown();
 	}
 	
@@ -212,10 +284,67 @@ public class CalendarTest extends OlatJerseyTestCase {
 		assertEquals(200, eventResponse.getStatusLine().getStatusCode());
 		List<EventVO> events = parseEventArray(eventResponse);
 		assertNotNull(events);
-		assertEquals(1, events.size());//Root-1
+		assertEquals(11, events.size());//Root-1
 		
 		conn.shutdown();
 	}
+	
+	@Test
+	public void testGetCalendarEvents_onlyFuture() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<CalendarVO> vos = parseArray(response);
+		assertNotNull(vos);
+		assertTrue(2 <= vos.size());//course1 + personal
+		CalendarVO calendar = getCourseCalendar(vos, course1);
+
+		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString())
+				.path("calendars").path(calendar.getId()).path("events").queryParam("onlyFuture", "true").build();
+		HttpGet eventMethod = conn.createGet(eventUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse eventResponse = conn.execute(eventMethod);
+		assertEquals(200, eventResponse.getStatusLine().getStatusCode());
+		List<EventVO> events = parseEventArray(eventResponse);
+		assertNotNull(events);
+		assertEquals(10, events.size());
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetCalendarEvents_paging() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<CalendarVO> vos = parseArray(response);
+		assertNotNull(vos);
+		assertTrue(2 <= vos.size());//course1 + personal
+		CalendarVO calendar = getCourseCalendar(vos, course1);
+
+		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString())
+				.path("calendars").path(calendar.getId()).path("events")
+				.queryParam("start", "0").queryParam("limit", "5").queryParam("onlyFuture", "true").build();
+		
+		HttpGet eventMethod = conn.createGet(eventUri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse eventResponse = conn.execute(eventMethod);
+		assertEquals(200, eventResponse.getStatusLine().getStatusCode());
+		EventVOes events = conn.parse(eventResponse, EventVOes.class);
+		assertNotNull(events);
+		assertEquals(10, events.getTotalCount());
+		assertNotNull(events.getEvents());
+		assertEquals(5, events.getEvents().length);
+		
+		conn.shutdown();
+	}
+	
 	
 	@Test
 	public void testOutputGetCalendarEvents() throws IOException, URISyntaxException {

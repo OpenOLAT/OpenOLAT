@@ -22,22 +22,29 @@ package org.olat.commons.calendar.restapi;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -47,6 +54,7 @@ import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -58,6 +66,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
@@ -74,6 +83,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.restapi.support.MediaTypeVariants;
 
 /**
  * 
@@ -102,7 +112,7 @@ public class CalendarWebService {
 		CalendarVO[] voes = new CalendarVO[wrappers.size()];
 		int count = 0;
 		for(KalendarRenderWrapper wrapper:wrappers) {
-			voes[count++] = new CalendarVO(wrapper);
+			voes[count++] = new CalendarVO(wrapper, hasWriteAccess(wrapper));
 		}
 		return Response.ok(voes).build();
 	}
@@ -111,7 +121,11 @@ public class CalendarWebService {
 	@Path("{calendarId}/events")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getEventsByCalendar(@PathParam("calendarId") String calendarId,
-			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+			@PathParam("identityKey") Long identityKey, @QueryParam("start") @DefaultValue("0") Integer start,
+			@QueryParam("limit") @DefaultValue("25") Integer limit,
+			@QueryParam("onlyFuture") @DefaultValue("false") Boolean onlyFuture,
+			@Context HttpServletRequest httpRequest, @Context Request request) {
+		
 		UserRequest ureq = getUserRequest(httpRequest);
 		if(!ureq.getUserSession().isAuthenticated()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -133,9 +147,7 @@ public class CalendarWebService {
 			events.add(eventVo);
 		}
 
-		EventVO[] voes = new EventVO[events.size()];
-		voes = events.toArray(voes);
-		return Response.ok(voes).build();
+		return processEvents(events, onlyFuture, start, limit, httpRequest, request);
 	}
 	
 	@DELETE
@@ -240,7 +252,12 @@ public class CalendarWebService {
 	@GET
 	@Path("events")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getEvents(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+	public Response getEvents(@PathParam("identityKey") Long identityKey,
+			@QueryParam("start") @DefaultValue("0") Integer start,
+			@QueryParam("limit") @DefaultValue("25") Integer limit,
+			@QueryParam("onlyFuture") @DefaultValue("false") Boolean onlyFuture,
+			@Context HttpServletRequest httpRequest, @Context Request request) {
+		
 		UserRequest ureq = getUserRequest(httpRequest);
 		if(!ureq.getUserSession().isAuthenticated()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -260,9 +277,48 @@ public class CalendarWebService {
 			}
 		}
 
-		EventVO[] voes = new EventVO[events.size()];
-		voes = events.toArray(voes);
-		return Response.ok(voes).build();
+		return processEvents(events, onlyFuture, start, limit, httpRequest, request);
+	}
+	
+	private Response processEvents(List<EventVO> events, Boolean onlyFuture, int firstResult, int maxReturns,
+			HttpServletRequest httpRequest, Request request) {
+		
+		if(onlyFuture != null && onlyFuture.booleanValue()) {
+			Locale locale = I18nManager.getInstance().getCurrentThreadLocale();
+			Calendar cal = CalendarUtils.getStartOfDayCalendar(locale);
+			Date today = cal.getTime();
+			
+			for(Iterator<EventVO> eventIt=events.iterator(); eventIt.hasNext(); ) {
+				EventVO event = eventIt.next();
+				Date end = event.getEnd();
+				if(end.before(today)) {
+					eventIt.remove();
+				}
+			}
+		}
+		
+		if(MediaTypeVariants.isPaged(httpRequest, request)) {
+			int totalCount = events.size();
+			if(maxReturns > 0 && firstResult >= 0) {
+				if(firstResult >= events.size()) {
+					events.clear();
+				} else {	
+					int lastResult = Math.min(events.size(), firstResult + maxReturns);
+					events = events.subList(firstResult, lastResult); 
+				}
+			}
+			
+			EventVO[] voes = new EventVO[events.size()];
+			voes = events.toArray(voes);
+			EventVOes vos = new EventVOes();
+			vos.setEvents(voes);
+			vos.setTotalCount(totalCount);
+			return Response.ok(vos).build();
+		} else {
+			EventVO[] voes = new EventVO[events.size()];
+			voes = events.toArray(voes);
+			return Response.ok(voes).build();
+		}
 	}
 	
 	private boolean hasReadAccess(KalendarRenderWrapper wrapper) {

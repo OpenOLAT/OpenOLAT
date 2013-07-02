@@ -97,7 +97,7 @@
 	<bean id="restTokenJob.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.restapi.security.RestTokenJob" />
 	</bean>
-	<bean id="epDeadlineJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+	<bean id="restTokenJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
 	</bean>
 	
