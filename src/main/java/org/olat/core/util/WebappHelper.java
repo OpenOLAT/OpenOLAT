@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 
 import javax.servlet.ServletContext;
 
@@ -62,6 +63,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	
 	private static final OLog log = Tracing.createLoggerFor(WebappHelper.class);
 	private static int nodeId;
+	private static final String bootId = UUID.randomUUID().toString();
 	private static String fullPathToSrc;
 	private static String fullPathToWebappSrc;
 	private static ServletContext servletContext;
@@ -147,6 +149,13 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	 */
 	public static int getNodeId() {
 		return nodeId;
+	}
+	
+	/**
+	 * @return Return a unique ID per node and per reboot
+	 */
+	public static String getBootId() {
+		return bootId;
 	}
 
 	/**

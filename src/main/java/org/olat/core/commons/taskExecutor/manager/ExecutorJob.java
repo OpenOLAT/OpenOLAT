@@ -17,31 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.taskExecutor;
+package org.olat.core.commons.taskExecutor.manager;
 
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.logging.Tracing;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.scheduler.JobWithDB;
+import org.olat.core.commons.taskExecutor.TaskExecutorManager;
+import org.quartz.JobExecutionContext;
 
 /**
+ * The job execute the persistent tasks
  * 
+ * 
+ * Initial date: 01.07.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class Task implements Runnable {
+public class ExecutorJob extends JobWithDB {
 	
-	private final Runnable task;
-	
-	public Task(Runnable task) {
-		this.task = task;
-	}
-
-	@Override
-	public void run() {
+	/**
+	 * @see org.olat.core.commons.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
+	 */
+	public void executeWithDB(JobExecutionContext context) {
 		try {
-			task.run();
-			DBFactory.getInstance().commitAndCloseSession();
-		} catch (Throwable e) {
-			DBFactory.getInstance().rollbackAndCloseSession();
-			Tracing.logError("Error while running task in a separate thread.", e, TaskExecutorManager.class);
-		}
+			log.info("Starting checking task to do");
+			CoreSpringFactory.getImpl(TaskExecutorManager.class).executeTaskToDo();
+		} catch (Exception e) {
+			// ups, something went completely wrong! We log this but continue next time
+			log.error("Error while checking task to do", e);
+		}		
 	}
 }

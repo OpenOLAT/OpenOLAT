@@ -104,19 +104,11 @@ public class DirectDeleteController extends BasicController {
 					showError("msg.selectionempty");
 					return;
 				}
-				if (!UserDeletionManager.getInstance().isReadyToDelete()) {
-					showInfo("info.is.not.ready.to.delete");
-					return;
-				}
 				String names = buildUserNameList(toDelete);
 				deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", names), deleteConfirmController);
 				return;
 			} else if (event instanceof SingleIdentityChosenEvent) {
 				// single choose event may come from autocompleter user search
-				if (!UserDeletionManager.getInstance().isReadyToDelete()) {
-					showInfo("info.is.not.ready.to.delete");
-					return;
-				}
 				SingleIdentityChosenEvent uce = (SingleIdentityChosenEvent) event;
 				toDelete = new ArrayList<Identity>();
 				toDelete.add(uce.getChosenIdentity());

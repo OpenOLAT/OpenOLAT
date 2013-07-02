@@ -70,7 +70,6 @@ import org.olat.repository.delete.service.DeletionModule;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -251,13 +250,6 @@ public class UserDeletionManager extends BasicManager {
 	}
 	
 	/**
-	 * 
-	 * @return true when user can be deleted (non deletion-process is still running)
-	 */
-	public boolean isReadyToDelete() {
-		return UserFileDeletionManager.isReadyToDelete();
-	}
-	/**
 	 * Delete all user-data in registered deleteable resources.
 	 * @param identity
 	 * @return true 
@@ -274,21 +266,7 @@ public class UserDeletionManager extends BasicManager {
 		
 		// FIXME: it would be better to call the mangers over a common interface which would not need to have references to all mangers here
 		if (!managersInitialized) {
-			//HomePageConfigManagerImpl.getInstance();
-			//DisplayPortraitManager.getInstance();
-			//NoteManager.getInstance();
-			//PropertyManager.getInstance();
-			//BookmarkManager.getInstance();
-			//NotificationsManager.getInstance();
-			//PersonalFolderManager.getInstance();
-			//IQManager.getInstance();
-			//QTIResultManager.getInstance();
-			//BusinessGroupManagerImpl.getInstance();
-			//RepositoryDeletionManager.getInstance();
-			//CatalogManager.getInstance();
 			CalendarManagerFactory.getInstance(); //the only one that left for refactoring
-			//EfficiencyStatementManager.getInstance();
-			//UserFileDeletionManager.getInstance();
 			managersInitialized = true;
 		}
 		
@@ -469,7 +447,7 @@ public class UserDeletionManager extends BasicManager {
 	 * @param keepUserLoginAfterDeletion The keepUserLoginAfterDeletion to set.
 	 */
 	public void setKeepUserLoginAfterDeletion(boolean keepUserLoginAfterDeletion) {
-		this.keepUserLoginAfterDeletion = keepUserLoginAfterDeletion;
+		UserDeletionManager.keepUserLoginAfterDeletion = keepUserLoginAfterDeletion;
 	}
 
 	/**
@@ -477,7 +455,7 @@ public class UserDeletionManager extends BasicManager {
 	 * @param keepUserEmailAfterDeletion The keepUserEmailAfterDeletion to set.
 	 */
 	public void setKeepUserEmailAfterDeletion(boolean keepUserEmailAfterDeletion) {
-		this.keepUserEmailAfterDeletion = keepUserEmailAfterDeletion;
+		UserDeletionManager.keepUserEmailAfterDeletion = keepUserEmailAfterDeletion;
 	}
 
 	public static boolean isKeepUserLoginAfterDeletion() {

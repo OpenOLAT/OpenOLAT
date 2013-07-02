@@ -72,6 +72,7 @@
 		<property name="connectionFactory" ref="searchConnectionFactory"/>
 		<property name="searchQueue" ref="searchQueue"/>
 		<property name="receiveTimeout" value="45000"/>
+		<property name="taskExecutorManager" ref="taskExecutorManager"/>
 	</bean>
 	
 	<bean id="fileDocumentFactory" class="org.olat.search.service.document.file.FileDocumentFactory">

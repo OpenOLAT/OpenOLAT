@@ -56,6 +56,7 @@ public class ExamPoolManagerProvider implements MessageListener {
 
 	private final OLog log = Tracing.createLoggerFor(ExamPoolManagerProvider.class);
 	private final ExamPoolManager examPoolManager;
+	private TaskExecutorManager taskExecutorManager;
 	private ConnectionFactory connectionFactory;
 	private Connection connection;
 	private Queue examControlQueue;
@@ -78,7 +79,7 @@ public class ExamPoolManagerProvider implements MessageListener {
 			if (message instanceof ObjectMessage) {
 				ObjectMessage objectMessage = (ObjectMessage) message;
 				final JMSExamMessage examMessage = (JMSExamMessage) objectMessage.getObject();
-				TaskExecutorManager.getInstance().runTask(new Runnable() {
+				taskExecutorManager.execute(new Runnable() {
 					@Override
 					public void run() {
 						handleRemoteMessage(examMessage, correlationID, replyTo);
@@ -188,6 +189,12 @@ public class ExamPoolManagerProvider implements MessageListener {
 		this.examControlQueue = examControlQueue;
 	}
 
+	/**
+	 * [used by Spring]
+	 */
+	public void setTaskExecutorManager(TaskExecutorManager taskExecutorManager) {
+		this.taskExecutorManager = taskExecutorManager;
+	}
 
 	public void springInit() throws JMSException {
 		connection = connectionFactory.createConnection();

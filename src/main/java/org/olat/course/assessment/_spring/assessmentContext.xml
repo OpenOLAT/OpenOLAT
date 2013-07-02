@@ -12,6 +12,7 @@
 
 	<bean id="assessmentModule" class="org.olat.course.assessment.AssessmentModule" init-method="init" destroy-method="destroy" >
 		<constructor-arg index="0" ref="courseModule" />
+		<property name="taskExecutorManager" ref="taskExecutorManager"/>
 	</bean>
 
 	<bean id="org.olat.course.assessment.EfficiencyStatementManager" class="org.olat.course.assessment.EfficiencyStatementManager">

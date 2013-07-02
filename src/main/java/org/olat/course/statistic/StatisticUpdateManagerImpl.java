@@ -74,6 +74,7 @@ class StatisticUpdateManagerImpl extends BasicManager implements StatisticUpdate
 	
 	boolean updateOngoing_ = false;
 	
+	private TaskExecutorManager taskExecutorManager;
 	
 	/** spring **/
 	public StatisticUpdateManagerImpl(CoordinatorManager coordinatorManager, StatisticUpdateConfig config, String enabled) {
@@ -95,6 +96,13 @@ class StatisticUpdateManagerImpl extends BasicManager implements StatisticUpdate
 				OresHelper.createOLATResourceableTypeWithoutCheck(StatisticUpdateManagerImpl.class.getName()));
 	}
 	
+	/**
+	 * [used by Spring]
+	 * @param taskExecutorManager
+	 */
+	public void setTaskExecutorManager(TaskExecutorManager taskExecutorManager) {
+		this.taskExecutorManager = taskExecutorManager;
+	}
 
 	@Override
 	public void addStatisticUpdater(IStatisticUpdater updater) {
@@ -169,7 +177,7 @@ class StatisticUpdateManagerImpl extends BasicManager implements StatisticUpdate
 			
 		};
 		try{
-			TaskExecutorManager.getInstance().runTask(r);
+			taskExecutorManager.execute(r);
 			log_.info("updateStatistics: starting the update in its own thread");
 			return true;
 		} catch(AssertException ae) {

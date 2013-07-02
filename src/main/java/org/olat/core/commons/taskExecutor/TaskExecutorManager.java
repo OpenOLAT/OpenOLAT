@@ -25,54 +25,27 @@
 */ 
 package org.olat.core.commons.taskExecutor;
 
-import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
+import java.util.concurrent.Executor;
+
 /**
  * 
  * Description:<br>
  * Generic task executor to run tasks in it's own threads. Use it to decouple stuff that might
- * takes more time than a user may is willing to wait. The task gets executed immediately by a thread pool.
+ * takes more time than a user may is willing to wait. The task gets executed by a thread pool.
+ * Task only marked as Runnable are executed immediately. Task marked by interface LongRunnable
+ * will be persisted to the database and run after some time.
+ * 
  * If you look for scheduled task see @see {@link org.olat.core.commons.scheduler}
  * 
  * <P>
  * Initial Date:  02.05.2007 <br>
  * @author guido
+ * @author srosse, stephane.rosse@frentix.com, http://www.frnetix.com
  */
-public class TaskExecutorManager extends BasicManager {
-	private final ThreadPoolTaskExecutor taskExecutor;
+public interface TaskExecutorManager extends Executor {
 	
-	private static TaskExecutorManager INSTANCE;
 	
-	/**
-	 * [used by spring]
-	 */
-	private TaskExecutorManager(ThreadPoolTaskExecutor threadPoolTaskExecutor) {
-		this.taskExecutor = threadPoolTaskExecutor;
-		INSTANCE = this;
-	}
-	
-	public static TaskExecutorManager getInstance() {
-		return INSTANCE;
-	}
-	
-	public void destroy() {
-		taskExecutor.shutDown();
-	}
-	
-	/**
-	 * runs the task and wraps it in a new runnable to catch uncatched errors
-	 * and may close db sessions used in the task.
-	 * @param task
-	 */
-	public void runTask(final Runnable task) {
-		//wrap call to the task here to catch all errors that are may not catched yet in the task itself
-		//like outOfMemory or other system errors.
-		Task safetask = new Task(task);
-		if (taskExecutor != null) {
-			taskExecutor.runTask(safetask);
-		} else {
-			logError("taskExecutor is not initialized (taskExecutor=null). Do not call 'runTask' before TaskExecutorModule is initialized.", null);
-			throw new AssertException("taskExecutor is not initialized");
-		}
-	}
+	public void executeTaskToDo();
+
+
 }

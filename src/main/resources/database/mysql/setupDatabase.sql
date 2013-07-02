@@ -1235,6 +1235,18 @@ create table o_lti_outcome (
    primary key (id)
 );
 
+create table o_ex_task (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   e_name varchar(255) not null,
+   e_status varchar(16) not null,
+   e_executor_node varchar(16),
+   e_executor_boot_id varchar(64),
+   e_task mediumtext not null,
+   primary key (id)
+);
+
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -1885,7 +1897,7 @@ alter table o_im_message ENGINE = InnoDB;
 alter table o_im_notification ENGINE = InnoDB;
 alter table o_im_roster_entry ENGINE = InnoDB;
 alter table o_im_preferences ENGINE = InnoDB;
-
+alter table o_ex_task ENGINE = InnoDB;
 
 
 -- rating

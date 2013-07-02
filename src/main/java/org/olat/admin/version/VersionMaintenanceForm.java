@@ -73,12 +73,14 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 	private ProgressController progressCtrl;
 	
 	private final VersionsManager versionsManager;
+	private final TaskExecutorManager taskExecutorManager;
 	
 	public VersionMaintenanceForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		// use combined translator from system admin main
 		setTranslator(Util.createPackageTranslator(SystemAdminMainController.class, ureq.getLocale(), getTranslator()));
 		versionsManager = CoreSpringFactory.getImpl(VersionsManager.class);
+		taskExecutorManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);
 		
 		initForm(ureq);
 	}
@@ -157,7 +159,7 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 			confirmPrunehistoryBox = activateYesNoDialog(ureq, null, text, confirmPrunehistoryBox);
 		} else if (source == orphanSize) {
 			orphanSizeEl.setValue(translate("version.orphan.size.calculating"));
-			TaskExecutorManager.getInstance().runTask(new Runnable() {
+			taskExecutorManager.execute(new Runnable() {
 				public void run() {
 					calculateOrphanSize();
 				}
@@ -175,7 +177,7 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 		progressCtrl.setMax(100.0f);
 		listenTo(progressCtrl);
 		
-		TaskExecutorManager.getInstance().runTask(new Runnable() {
+		taskExecutorManager.execute(new Runnable() {
 			public void run() {
 				waitASecond();
 				versionsManager.deleteOrphans(VersionMaintenanceForm.this);
@@ -199,7 +201,7 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 		progressCtrl.setMax(versionsManager.countDirectories());
 		listenTo(progressCtrl);
 
-		TaskExecutorManager.getInstance().runTask(new Runnable() {
+		taskExecutorManager.execute(new Runnable() {
 			public void run() {
 				waitASecond();
 				Long numOfVersions = getNumOfVersions();

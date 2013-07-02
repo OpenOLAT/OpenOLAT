@@ -35,6 +35,8 @@ import org.olat.course.ICourse;
 * @author Felix Jost
 */
 public class PublishEvent extends MultiUserEvent {
+
+	private static final long serialVersionUID = 7105017036750676773L;
 	public final static int PRE_PUBLISH =0;
 	public final static int PUBLISH = 1;
 	//TODO: LD: temporary introduced, for the purpose of identifying the source of the event (same VM or another cluster node)
@@ -44,9 +46,9 @@ public class PublishEvent extends MultiUserEvent {
 	long pubtimestamp;
 	private Long publishedCourseResId;
 	
-	private Set insertedCourseNodeIds;
-	private Set deletedCourseNodeIds;
-	private Set modifiedCourseNodeIds;
+	private Set<String> insertedCourseNodeIds;
+	private Set<String> deletedCourseNodeIds;
+	private Set<String> modifiedCourseNodeIds;
 
 	private int state = PUBLISH;
 	
@@ -74,15 +76,15 @@ public class PublishEvent extends MultiUserEvent {
 		return pubtimestamp;
 	}
 	
-	public Set getInsertedCourseNodeIds() {
+	public Set<String> getInsertedCourseNodeIds() {
 		return insertedCourseNodeIds;
 	}
 
-	public Set getDeletedCourseNodeIds() {
+	public Set<String> getDeletedCourseNodeIds() {
 		return deletedCourseNodeIds;
 	}
 
-	public Set getModifiedCourseNodeIds() {
+	public Set<String> getModifiedCourseNodeIds() {
 		return modifiedCourseNodeIds;
 	}
 	

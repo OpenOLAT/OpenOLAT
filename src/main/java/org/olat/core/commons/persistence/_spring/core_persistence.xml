@@ -90,6 +90,7 @@
 		<mapping-file>org/olat/upgrade/model/DBMailAttachmentData.hbm.xml</mapping-file>
 		
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
+		<class>org.olat.core.commons.taskExecutor.model.PersistentTask</class>
 		<class>org.olat.group.model.BusinessGroupParticipantViewImpl</class>
 		<class>org.olat.group.model.BusinessGroupOwnerViewImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryLifecycle</class>

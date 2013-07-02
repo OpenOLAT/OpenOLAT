@@ -1278,6 +1278,18 @@ create table o_lti_outcome (
    primary key (id)
 );
 
+create table o_ex_task (
+   id number(20) not null,
+   creationdate date not null,
+   lastmodified date not null,
+   e_name varchar2(255 char) not null,
+   e_status varchar2(16 char) not null,
+   e_executor_node varchar2(16 char),
+   e_executor_boot_id varchar2(64 char),
+   e_task clob not null,
+   primary key (id)
+);
+
 --
 -- Table: o_co_db_entry
 --;

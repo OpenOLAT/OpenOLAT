@@ -1232,6 +1232,18 @@ create table o_lti_outcome (
    primary key (id)
 );
 
+create table o_ex_task (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   e_name varchar(255) not null,
+   e_status varchar(16) not null,
+   e_executor_node varchar(16),
+   e_executor_boot_id varchar(64),
+   e_task text not null,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select

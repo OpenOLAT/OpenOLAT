@@ -167,7 +167,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 				doBatchSync(errors);
 			}				
 		};
-		taskExecutorManager.runTask(batchSyncTask);		
+		taskExecutorManager.execute(batchSyncTask);		
 	}
 
 	/**

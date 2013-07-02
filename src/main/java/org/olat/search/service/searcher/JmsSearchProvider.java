@@ -77,6 +77,7 @@ public class JmsSearchProvider implements MessageListener {
 	private MessageConsumer consumer_;
 	private LinkedList<Session> sessions_ = new LinkedList<Session>();
 	private long receiveTimeout = 60000;
+	private TaskExecutorManager taskExecutorManager;
 	
 	/**
 	 * [used by spring]
@@ -96,6 +97,10 @@ public class JmsSearchProvider implements MessageListener {
 
 	public void setReceiveTimeout(long receiveTimeout) {
 		this.receiveTimeout = receiveTimeout;
+	}
+
+	public void setTaskExecutorManager(TaskExecutorManager taskExecutorManager) {
+		this.taskExecutorManager = taskExecutorManager;
 	}
 
 	/**
@@ -171,7 +176,7 @@ public class JmsSearchProvider implements MessageListener {
 				if (message instanceof ObjectMessage) {
 					ObjectMessage objectMessage = (ObjectMessage) message;
 					final SearchRequest searchRequest = (SearchRequest) objectMessage.getObject();
-					TaskExecutorManager.getInstance().runTask(new Runnable() {
+					taskExecutorManager.execute(new Runnable() {
 		
 						public void run() {
 							onSearchMessage(searchRequest, correlationID, replyTo);
@@ -181,7 +186,7 @@ public class JmsSearchProvider implements MessageListener {
 				} else if (message instanceof TextMessage) {				
 					TextMessage testMessage = (TextMessage)message;
 					final String spellText = testMessage.getText();
-					TaskExecutorManager.getInstance().runTask(new Runnable() {
+					taskExecutorManager.execute(new Runnable() {
 		
 						public void run() {
 							onSpellMessage(spellText, correlationID, replyTo);

@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
@@ -85,6 +86,8 @@ public class FileSystemTestController extends BasicController implements Generic
 	
 	public static final OLATResourceable ORES_FILESYSTEMTEST = OresHelper.createOLATResourceableType(FileSystemTestController.class);
 
+	private final TaskExecutorManager taskExecutorManager;
+	
 	/**
 	 * Controlls user session in admin view.
 	 * 
@@ -95,7 +98,7 @@ public class FileSystemTestController extends BasicController implements Generic
 		super(ureq, wControl);
 		
 		testBaseDir = FolderConfig.getCanonicalTmpDir() + File.separator + TEST_BASEDIR_NAME;
-		
+		taskExecutorManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, ORES_FILESYSTEMTEST);
 		
 		myContent = createVelocityContainer("filesystemtest");
@@ -205,7 +208,7 @@ public class FileSystemTestController extends BasicController implements Generic
 				}
 			}
 		};
-		TaskExecutorManager.getInstance().runTask(fileWritterThread);
+		taskExecutorManager.execute(fileWritterThread);
 	}
 
 
@@ -297,7 +300,7 @@ public class FileSystemTestController extends BasicController implements Generic
 				}
 			}
 		};
-		TaskExecutorManager.getInstance().runTask(fileWritterThread);
+		taskExecutorManager.execute(fileWritterThread);
 	}
 
 

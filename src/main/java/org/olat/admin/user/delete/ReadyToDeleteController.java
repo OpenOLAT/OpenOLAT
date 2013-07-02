@@ -146,10 +146,6 @@ public class ReadyToDeleteController extends BasicController {
 
 	private void handleDeleteButtonEvent(UserRequest ureq, TableMultiSelectEvent tmse) {
 		if (tdm.getObjects(tmse.getSelection()).size() != 0) {
-			if (!UserDeletionManager.getInstance().isReadyToDelete()) {
-				showInfo("info.is.not.ready.to.delete");
-				return;
-			}
 			readyToDeleteIdentities = tdm.getObjects(tmse.getSelection());
 			deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", getUserlistAsString(readyToDeleteIdentities)), deleteConfirmController);
 			return;

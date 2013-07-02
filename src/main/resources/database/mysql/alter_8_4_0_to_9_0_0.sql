@@ -392,7 +392,6 @@ alter table o_gp_business add column external_id varchar(64);
 alter table o_gp_business add column managed_flags varchar(255);
 create index idx_grp_lifecycle_soft_idx on o_gp_business (external_id);
 
-
 -- complet missing index
 
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
@@ -400,6 +399,20 @@ create index idx_id_lastlogin_idx on o_bs_identity (lastlogin);
 
 create index idx_policy_grp_rsrc_idx on o_bs_policy (oresource_id, group_id);
 
+
+-- task executor
+create table o_ex_task (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   e_name varchar(255) not null,
+   e_status varchar(16) not null,
+   e_executor_node varchar(16),
+   e_executor_boot_id varchar(64),
+   e_task mediumtext not null,
+   primary key (id)
+);
+alter table o_ex_task ENGINE = InnoDB;
 
 
 

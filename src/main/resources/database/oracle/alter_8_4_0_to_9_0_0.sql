@@ -482,6 +482,20 @@ create index idx_ucourseinfos_ident_idx on o_as_user_course_infos (fk_identity);
 create index idx_ucourseinfos_rsrc_idx on o_as_user_course_infos (fk_resource_id);
 
 
+-- task executor
+create table o_ex_task (
+   id number(20) not null,
+   creationdate date not null,
+   lastmodified date not null,
+   e_name varchar2(255 char) not null,
+   e_status varchar2(16 char) not null,
+   e_executor_node varchar2(16 char),
+   e_executor_boot_id varchar2(64 char),
+   e_task clob not null,
+   primary key (id)
+);
+
+
 
 
 

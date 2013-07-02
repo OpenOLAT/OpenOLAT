@@ -17,6 +17,7 @@
 		<constructor-arg name="examPoolManager" ref="examPoolManagerServer"/>
 		<property name="connectionFactory" ref="examControlConnectionFactory"/>
 		<property name="searchQueue" ref="examControlQueue"/>
+		<property name="taskExecutorManager" ref="taskExecutorManager"/>
 	</bean>
 		
 	<bean id="examPoolManagerServer" class="de.bps.onyx.util.ExamPoolManagerServer" lazy-init="true" />

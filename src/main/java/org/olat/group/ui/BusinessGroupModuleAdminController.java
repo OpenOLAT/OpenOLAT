@@ -253,7 +253,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 				businessGroupService.dedupMembers(getIdentity(), coaches, participants, BusinessGroupModuleAdminController.this);
 			}
 		};
-		TaskExecutorManager.getInstance().runTask(worker);
+		CoreSpringFactory.getImpl(TaskExecutorManager.class).execute(worker);
 	}
 
 	@Override
