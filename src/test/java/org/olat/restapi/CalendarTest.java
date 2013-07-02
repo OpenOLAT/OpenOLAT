@@ -226,7 +226,6 @@ public class CalendarTest extends OlatJerseyTestCase {
 		Date currentDate = cal.getTime();
 		
 		for(EventVO event:vos) {
-			System.out.println(currentDate + " :: " + event.getEnd());
 			assertTrue(currentDate.equals(event.getEnd()) || currentDate.before(event.getEnd()));
 		}
 		conn.shutdown();
@@ -494,8 +493,9 @@ public class CalendarTest extends OlatJerseyTestCase {
 		conn.addJsonEntity(postEventMethod, event);
 		HttpResponse postEventResponse = conn.execute(postEventMethod);
 		assertEquals(200, postEventResponse.getStatusLine().getStatusCode());
-		EntityUtils.consume(postEventResponse.getEntity());
 		
+		EventVO newEvent = conn.parse(postEventResponse, EventVO.class);
+		Assert.assertNotNull(newEvent);
 		
 		//check if the event is saved
 		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();

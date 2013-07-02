@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -219,15 +220,16 @@ public class CalendarWebService {
 		} else if(!hasWriteAccess(calendar)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-
+		
+		KalendarEvent kalEvent;
 		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		if(!StringHelper.containsNonWhitespace(event.getId())) {
 			String id = UUID.randomUUID().toString();
-			KalendarEvent kalEvent = new KalendarEvent(id, event.getSubject(), event.getBegin(), event.getEnd());
+			kalEvent = new KalendarEvent(id, event.getSubject(), event.getBegin(), event.getEnd());
 			transfer(event, kalEvent);
 			calendarManager.addEventTo(calendar.getKalendar(), kalEvent);
 		} else {
-			KalendarEvent kalEvent = calendar.getKalendar().getEvent(event.getId());
+			kalEvent = calendar.getKalendar().getEvent(event.getId());
 			if(kalEvent == null) {
 				kalEvent = new KalendarEvent(event.getId(), event.getSubject(), event.getBegin(), event.getEnd());
 				transfer(event, kalEvent);
@@ -239,8 +241,9 @@ public class CalendarWebService {
 				transfer(event, kalEvent);
 			}
 		}
-
-		return Response.ok().build();
+		
+		EventVO vo = new EventVO(kalEvent);
+		return Response.ok(vo).build();
 	}
 	
 	private void transfer(EventVO event, KalendarEvent kalEvent) {
@@ -296,6 +299,8 @@ public class CalendarWebService {
 				}
 			}
 		}
+		
+		Collections.sort(events, new EventComparator());
 		
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
 			int totalCount = events.size();
@@ -430,6 +435,26 @@ public class CalendarWebService {
 		for(BusinessGroup group:groups) {
 			KalendarRenderWrapper wrapper = collaborationManager.getCalendar(group, ureq, false);
 			calVisitor.visit(wrapper);
+		}
+	}
+	
+	private static class EventComparator implements Comparator<EventVO> {
+		@Override
+		public int compare(EventVO e1, EventVO e2) {
+			if(e1 == null) {
+				if(e2 == null) return 0;
+				return -1;
+			}
+			if(e2 == null) return 1;
+			
+			Date d1 = e1.getBegin();
+			Date d2 = e2.getBegin();
+			if(d1 == null) {
+				if(d2 == null) return 0;
+				return -1;
+			}
+			if(d2 == null) return 1;
+			return d1.compareTo(d2);
 		}
 	}
 	
