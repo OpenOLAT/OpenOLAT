@@ -48,6 +48,7 @@ public class CalendarVO {
 		type = wrapper.getKalendar().getType();
 		css = wrapper.getKalendarConfig().getCss();
 		displayName = wrapper.getKalendarConfig().getDisplayName();
+		this.canWrite = canWrite;
 	}
 	
 	public String getId() {
