@@ -97,6 +97,12 @@
 			Set a specific theme.
 		-->				
 		<property name="guiThemeIdentifyer" value="${layout.theme}" />				
+		<!-- 
+			Optional path to a directory which contains custom themes. This is an alternative to placing the theme
+			into the webapp, default is to have your custom themes in olatdata/customizing/themes
+			Note that this must be an absolute path.
+		 -->
+		<property name="guiCustomThemePath" value="${layout.custom.themes.dir}" />						
 		<!-- the versionid is prepended to various dynamically linked sources like css and js lib includes.
 			the prepending guarantees that all browsers are forced to reload the new files, since e.g. css cache invalidation
 			based on lastmodified http headers is broken on some browsers. this here is the only safe way.

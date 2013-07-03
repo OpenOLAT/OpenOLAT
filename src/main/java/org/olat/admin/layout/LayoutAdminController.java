@@ -21,7 +21,9 @@ package org.olat.admin.layout;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Arrays;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.olat.admin.SystemAdminMainController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -95,6 +97,20 @@ public class LayoutAdminController extends FormBasicController {
 			File theme = themes[i];
 			themesStr[i] = theme.getName();
 		}
+		
+		// add custom themes from configuration if available
+		File customThemesDir = Settings.getGuiCustomThemePath();
+		if (customThemesDir != null) {
+			File[] customThemes = customThemesDir.listFiles(new ThemesFileNameFilter());
+			String[] customThemesStr = new String[customThemes.length];
+			for (int i = 0; i < customThemes.length; i++) {
+				File theme = customThemes[i];
+				customThemesStr[i] = theme.getName();
+			}
+			themesStr = (String[]) ArrayUtils.addAll(themesStr, customThemesStr);
+			Arrays.sort(themesStr);
+		}
+		
 		return themesStr;
 	}
 	

@@ -28,6 +28,7 @@
 */
 package org.olat.core.helpers;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -84,8 +85,8 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	private static String clusterMode;
 	private static Date buildDate;
 	private static String repoRevision;
-	private static String patchRepoRevision;
 	private static String crossOriginFilter;
+	private static File guiCustomThemePath;
 	
 	/**
 	 * [used by spring]
@@ -364,6 +365,31 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 		Settings.guiThemeIdentifyer = guiThemeIdentifyer;
 	}
 
+	/**
+	 * @return the File object pointing to the custom themes folder or null if
+	 *         no custom themes folder configured
+	 */
+	public static File getGuiCustomThemePath() {
+		return guiCustomThemePath;			
+	}
+
+	/**
+	 * Set the custom CSS themes folder (optional). Only used by spring.
+	 * 
+	 * @param guiCustomThemePath
+	 *            Absolute path pointing to the custom themes directory
+	 */
+	public void setGuiCustomThemePath(String guiCustomThemePath) {
+		File newPath = new File(guiCustomThemePath);
+		if (newPath.exists()) {
+			Settings.guiCustomThemePath = newPath;
+		} else {
+			log.info("No custom theme directory configured, path::"
+					+ guiCustomThemePath
+					+ " invalid. Configure property layout.custom.themes.dir if you want to use a custom themes directory.");
+		}
+	}	
+	
 	/**
 	 * Set the CSS theme used for this webapp. The configuration is stored in
 	 * the olatdata/system/configuration properties file and overrides the

@@ -119,6 +119,15 @@ public class StaticMediaDispatcher extends LogDelegator implements Dispatcher {
 			staticAbsPath = WebappHelper.getContextRoot() + STATIC_DIR_NAME;
 		}
 		File staticFile = new File(staticAbsPath, normalizedRelPath);
+		
+		// try loading themes from custom themes folder if configured 
+		if (!staticFile.exists() && normalizedRelPath.contains("/themes/") && Settings.getGuiCustomThemePath() != null) {
+			File customThemesDir = Settings.getGuiCustomThemePath();
+			String path = staticFile.getAbsolutePath();
+			path = path.substring(path.indexOf("/static/themes/") + 15);
+			staticFile = new File(customThemesDir, path);
+		}
+
 		// only serve if file exists
 		if (!staticFile.exists()) {
 			if (isLogDebugEnabled()) {
