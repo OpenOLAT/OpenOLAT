@@ -146,6 +146,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private static final String TOOL_BOOKMARK = "b";
 	private static final String TOOL_CHAT = "chat";
 	
+	public static final String REBUILD = "rebuild";
 	public static final String ORES_TYPE_COURSE_RUN = OresHelper.calculateTypeName(RunMainController.class, CourseModule.ORES_TYPE_COURSE);
 	private final OLATResourceable courseRunOres; //course run ores for course run channel 
 
@@ -625,6 +626,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					needsRebuildAfterRunDone = false;
 					updateTreeAndContent(ureq, currentCourseNode, null);
 				}
+			} else if (REBUILD.equals(event.getCommand())) {
+				needsRebuildAfterRunDone = false;
+				updateTreeAndContent(ureq, currentCourseNode, null);
 			} else if (event instanceof TreeNodeEvent) {
 				TreeNodeEvent tne = (TreeNodeEvent) event;
 				TreeNode newCpTreeNode = tne.getChosenTreeNode();

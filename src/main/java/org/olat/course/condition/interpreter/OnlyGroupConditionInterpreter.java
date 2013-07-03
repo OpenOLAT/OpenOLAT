@@ -25,13 +25,11 @@
 
 package org.olat.course.condition.interpreter;
 
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.course.condition.interpreter.score.GetPassedFunction;
 import org.olat.course.condition.interpreter.score.GetPassedWithCourseIdFunction;
 import org.olat.course.condition.interpreter.score.GetScoreFunction;
 import org.olat.course.condition.interpreter.score.GetScoreWithCourseIdFunction;
 import org.olat.course.db.interpreter.GetUserCourseDBFunction;
-import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 import com.neemsoft.jmep.Environment;
@@ -51,13 +49,7 @@ public class OnlyGroupConditionInterpreter extends ConditionInterpreter{
 	 * @param userCourseEnv
 	 */
 	public OnlyGroupConditionInterpreter(UserCourseEnvironment userCourseEnv) {
-		super();
-		uce = userCourseEnv;
-		//
-		CourseEditorEnv cev = uce.getCourseEditorEnv();
-		if (cev != null) {
-			translator = new PackageTranslator(PACKAGE, cev.getEditorEnvLocale());
-		}
+		super(userCourseEnv);
 
 		env = new Environment();
 

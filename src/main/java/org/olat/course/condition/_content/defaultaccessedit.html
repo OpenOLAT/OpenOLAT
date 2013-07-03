@@ -5,3 +5,13 @@
 		$r.render("defaultAccessConditionView")
 	</div>
 </fieldset>
+
+#if($renderPW)
+	<fieldset>
+		<legend>$r.translate("password.field")</legend>
+		$r.contextHelpWithWrapper("org.olat.course.condition.additionalconditions","ced-password.html","help.hover.password")	
+		<div class="b_clearfix">
+			$r.render("pwcond")
+		</div>
+	</fieldset>
+#end

@@ -56,7 +56,10 @@ import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.condition.additionalconditions.AdditionalConditionAnswerContainer;
+import org.olat.course.condition.additionalconditions.AdditionalConditionManager;
 import org.olat.course.editor.EditorMainController;
+import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
@@ -64,6 +67,9 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.util.logging.activity.LoggingResourceable;
+
+import de.bps.course.nodes.CourseNodePasswordManager;
+import de.bps.course.nodes.CourseNodePasswordManagerImpl;
 
 
 /**
@@ -233,6 +239,8 @@ public class NavigationHandler {
 		TreeEvaluation treeEval = new TreeEvaluation();
 		GenericTreeModel treeModel = new GenericTreeModel();
 		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+		CourseNodePasswordManager cnpm = CourseNodePasswordManagerImpl.getInstance();
+		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval);
 		TreeNode treeRoot = rootNodeEval.getTreeNode();
 		treeModel.setRootNode(treeRoot);
@@ -259,27 +267,44 @@ public class NavigationHandler {
 			// desired node
 			boolean mayAccessWholeTreeUp = mayAccessWholeTreeUp(nodeEval);
 			String newSelectedNodeId = newCalledTreeNode.getIdent();
-			if (!mayAccessWholeTreeUp) {
+			Controller controller;
+			AdditionalConditionManager addMan = null;
+			if (courseNode instanceof AbstractAccessableCourseNode) {
+				AdditionalConditionAnswerContainer answerContainer = cnpm.getAnswerContainer(ureq.getIdentity());
+				addMan = new AdditionalConditionManager( (AbstractAccessableCourseNode) courseNode, courseId, answerContainer);
+			}
+			
+			if (!mayAccessWholeTreeUp|| (addMan != null && !addMan.evaluateConditions())) {
 				// we cannot access the node anymore (since e.g. a time constraint
 				// changed), so give a (per-node-configured) explanation why and what
 				// the access conditions would be (a free form text, should be
 				// nontechnical).
-				// NOTE: we do not take into account what node caused the non-access by
-				// being !isAtLeastOneAccessible, but always state the
-				// NoAccessExplanation of the Node originally called by the user
-				String explan = courseNode.getNoAccessExplanation();
-				String sExplan = (explan == null ? "" : Formatter.formatLatexFormulas(explan));
-				Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, sExplan);
-				// write log information
-				ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_NAVIGATION_NODE_NO_ACCESS, getClass(),
-						LoggingResourceable.wrap(courseNode));
+
+				//this is the case if only one of the additional conditions failed
+
+				if (nodeEval.oldStyleConditionsOk()) {
+					controller = addMan.nextUserInputController(ureq, wControl);
+					if (listeningController != null) {
+						controller.addControllerListener(listeningController);
+					}
+				} else {
+					// NOTE: we do not take into account what node caused the non-access by
+					// being !isAtLeastOneAccessible, but always state the
+					// NoAccessExplanation of the Node originally called by the user
+					String explan = courseNode.getNoAccessExplanation();
+					String sExplan = (explan == null ? "" : Formatter.formatLatexFormulas(explan));
+					 controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, sExplan);
+					// write log information
+					ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_NAVIGATION_NODE_NO_ACCESS, getClass(),
+							LoggingResourceable.wrap(courseNode));
+				}
 				NodeRunConstructionResult ncr = new NodeRunConstructionResult(controller, null, null, null);
 				// nclr: the new treemodel, visible, selected nodeid, calledcoursenode,
 				// nodeconstructionresult
 				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, null, courseNode, ncr, false);
 			} else if (!CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).isEnabled()) {
 				Translator pT = Util.createPackageTranslator(EditorMainController.class, ureq.getLocale());
-				Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, pT.translate("course.building.block.disabled.user"));
+				controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, pT.translate("course.building.block.disabled.user"));
 				NodeRunConstructionResult ncr = new NodeRunConstructionResult(controller, null, null, null);
 				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, null, courseNode, ncr, false);
 			} else { // access ok

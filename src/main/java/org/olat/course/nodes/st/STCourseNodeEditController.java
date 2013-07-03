@@ -68,6 +68,7 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class STCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
+	public static final String ACCESSABILITY_CONDITION_FORM = "accessabilityConditionForm";
 	private static final String PANE_TAB_ST_SCORECALCULATION = "pane.tab.st_scorecalculation";
 	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
 	public static final String PANE_TAB_ST_CONFIG = "pane.tab.st_config";
@@ -178,8 +179,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 		// Accessibility precondition
 		Condition accessCondition = stNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition, "accessabilityConditionForm",
-				assessableChildren, euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition,
+				ACCESSABILITY_CONDITION_FORM, assessableChildren, euce, true);		
 		listenTo(accessibilityCondContr);
 
 		ScoreCalculator scoreCalc = stNode.getScoreCalculator();

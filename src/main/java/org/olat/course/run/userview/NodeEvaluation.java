@@ -32,6 +32,7 @@ import java.util.Map;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.nodes.GenericNode;
+import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -50,6 +51,8 @@ import org.olat.course.nodes.CourseNodeFactory;
  */
 public class NodeEvaluation extends GenericNode {
 
+	private static final long serialVersionUID = -5576947730073187682L;
+	
 	private CourseNode courseNode;
 	private GenericTreeNode gtn = null;
 
@@ -65,6 +68,12 @@ public class NodeEvaluation extends GenericNode {
 	public void putAccessStatus(String capabilityName, boolean mayAccess) {
 		accesses.put(capabilityName, new Boolean(mayAccess));
 	}
+	// <OLATCE-91>
+	
+	public boolean oldStyleConditionsOk(){
+			return accesses.containsKey(AbstractAccessableCourseNode.BLOCKED_BY_ORIGINAL_ACCESS_RULES);
+	}
+	// </OLATCE-91>
 
 	public boolean isCapabilityAccessible(String capabilityName) {
 		if(accesses.get(capabilityName)!=null) {

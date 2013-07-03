@@ -19,42 +19,67 @@
  */
 package org.olat.course.condition.additionalconditions;
 
-import org.olat.course.condition.Condition;
-import org.olat.course.nodes.GenericCourseNode;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.course.nodes.AbstractAccessableCourseNode;
 
 /**
  * Only a placeholder to import courses from other vendors
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PasswordCondition extends Condition {
+public class PasswordCondition extends AdditionalCondition {
 
 	private static final long serialVersionUID = -2311016997086309298L;
 	
-	private Long courseId;
-	private GenericCourseNode node;
-
+	// <OLATCE-91>
 	private String password;
 	private String answer;
 	
-	public Long getCourseId() {
-		return courseId;
-	}
+	public final static String PASSWORD_ENDING = "password";
+	// </OLATCE-91>
 
-	public void setCourseId(Long courseId) {
-		this.courseId = courseId;
-	}
-
-	public GenericCourseNode getNode() {
+	public AbstractAccessableCourseNode getNode() {
 		return node;
 	}
 
-	public void setNode(GenericCourseNode node) {
-		this.node = node;
+	// <OLATCE-91>
+	@Override
+	public Boolean evaluate() {
+		boolean retVal = (password==null?true:password.equals(answer)); 
+		answer=null;
+		return retVal;
 	}
 	
+	public Boolean pwdEvaluate() {
+		PasswordStore store = null;
+		
+		if(answers != null) {
+			Object obj = answers.getAnswers(node.getIdent(), courseId.toString()); 
+			if(obj instanceof PasswordStore){
+				store = (PasswordStore) obj;
+			}
+		}
+		
+		if(store !=null) {
+			answer = store.getPassword();
+		}
+		return evaluate();
+	}
+
+	@Override
+	public Controller getUserInputController(UserRequest ureq, WindowControl wControl){
+		return new PasswordVerificationController(ureq, wControl, this);
+	}
+	
+	@Override
+	public Controller getEditorComponent(UserRequest ureq, WindowControl wControl) {
+		return new PasswordConditionEditController(ureq, wControl, this);
+	}
+
 	public String getPassword(){
-		return this.password;
+		return password;
 	}
 	
 	public void setPassword(String password){

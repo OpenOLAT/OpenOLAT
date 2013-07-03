@@ -198,7 +198,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @return a list of Property objects
 	 */
 	public List<Property> listProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId, String category, String name) {
-		return listProperties(identity, grp, resourceTypeName, resourceTypeId, category, name, null);
+		return listProperties(identity, grp, resourceTypeName, resourceTypeId, category, name, null, null);
 	}
 
 	/**
@@ -212,8 +212,8 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @param longValue
 	 * @return a list of Property objects
 	 */
-	public List<Property> listProperties(final Identity identity, final BusinessGroup grp, final String resourceTypeName, final Long resourceTypeId, final String category,
-		final String name, final Long longValue) {
+	public List<Property> listProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId,
+			String category, String name, Long longValue, String stringValue) {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(Property.class.getName()).append(" as v ");
@@ -234,10 +234,6 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			and = and(sb, and);
 			sb.append("grp.key=:groupKey");
 		}
-		if (longValue != null) {
-			and = and(sb, and);
-			sb.append("v.longValue=:longVal");
-		}
 		if (resourceTypeName != null) {
 			and = and(sb, and);
 			sb.append("v.resourceTypeName=:resName");
@@ -254,6 +250,14 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			and = and(sb, and);
 			sb.append("v.name=:name");
 		}
+		if (longValue != null) {
+			and = and(sb, and);
+			sb.append("v.longValue=:long");			
+		}
+		if (stringValue != null) {
+			and = and(sb, and);
+			sb.append("v.stringValue=:string");			
+		}
 		
 		TypedQuery<Property> queryProps = DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString(), Property.class);
 		if (identity != null) {
@@ -261,9 +265,6 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		}
 		if (grp != null) {
 			queryProps.setParameter("groupKey", grp.getKey());
-		}
-		if (longValue != null) {
-			queryProps.setParameter("longVal", longValue);
 		}
 		if (resourceTypeName != null) {
 			queryProps.setParameter("resName", resourceTypeName);
@@ -276,6 +277,12 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		}
 		if (name != null) {
 			queryProps.setParameter("name", name);
+		}
+		if (longValue != null) {
+			queryProps.setParameter("long", longValue);
+		}
+		if (stringValue != null) {
+			queryProps.setParameter("string", stringValue);
 		}
 		return queryProps.getResultList();
 	}
