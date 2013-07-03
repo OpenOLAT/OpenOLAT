@@ -218,7 +218,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param wControl The window controller
 	 * @param course The course
 	 */
-	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, StackedController externStack) {
+	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
+			StackedController externStack, CourseNode selectedNode) {
 		super(ureq,wControl);
 		this.ores = ores;
 		stackPanel = externStack == null
@@ -350,9 +351,15 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			// - deleted events
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), course);
 			// activate course root node
-			String rootNodeIdent = cetm.getRootNode().getIdent();
-			menuTree.setSelectedNodeId(rootNodeIdent);
-			updateViewForSelectedNodeId(ureq, rootNodeIdent);
+			String nodeIdent = cetm.getRootNode().getIdent();
+			if(selectedNode != null) {
+				CourseEditorTreeNode editorNode = cetm.getCourseEditorNodeContaining(selectedNode);
+				if(editorNode != null) {
+					nodeIdent = editorNode.getIdent();
+				}
+			}
+			menuTree.setSelectedNodeId(nodeIdent);
+			updateViewForSelectedNodeId(ureq, nodeIdent);
 		}
 		} catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in <init>]", e);		

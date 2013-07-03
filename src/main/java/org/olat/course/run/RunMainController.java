@@ -818,7 +818,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void doEdit(UserRequest ureq) {
 		if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-			Controller ec = CourseFactory.createEditorController(ureq, getWindowControl(), all, course);
+			Controller ec = CourseFactory.createEditorController(ureq, getWindowControl(), all, course, currentCourseNode);
 			//user activity logger which was initialized with course run
 			if(ec != null){
 				//we are in editing mode

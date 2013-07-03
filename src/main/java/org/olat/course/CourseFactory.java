@@ -207,9 +207,10 @@ public class CourseFactory extends BasicManager {
 	 * @return editor controller for the given course resourceable; if the editor
 	 *         is already locked, it returns a controller with a lock message
 	 */
-	public static Controller createEditorController(UserRequest ureq, WindowControl wControl, StackedController stack, OLATResourceable olatResource) {
+	public static Controller createEditorController(UserRequest ureq, WindowControl wControl, StackedController stack,
+			OLATResourceable olatResource, CourseNode selectedNode) {
 		ICourse course = loadCourse(olatResource);
-		EditorMainController emc = new EditorMainController(ureq, wControl, course, stack);
+		EditorMainController emc = new EditorMainController(ureq, wControl, course, stack, selectedNode);
 		if (!emc.getLockEntry().isSuccess()) {
 			// get i18n from the course runmaincontroller to say that this editor is
 			// already locked by another person
