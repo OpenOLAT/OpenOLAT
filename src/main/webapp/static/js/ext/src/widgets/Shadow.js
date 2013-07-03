@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.Shadow
  * Simple class that can provide a shadow effect for any element.  Note that the element MUST be absolutely positioned,
@@ -29,7 +43,7 @@ Ext.Shadow = function(config) {
             a.w = 0;
             a.l = a.t = o;
             a.t -= 1;
-            if (Ext.isIE) {
+            if (Ext.isIE9m) {
                 a.l -= this.offset + rad;
                 a.t -= this.offset + rad;
                 a.w -= rad;
@@ -41,7 +55,7 @@ Ext.Shadow = function(config) {
             a.w = (o * 2);
             a.l = -o;
             a.t = o - 1;
-            if (Ext.isIE) {
+            if (Ext.isIE9m) {
                 a.l -= (this.offset - rad);
                 a.t -= this.offset + rad;
                 a.l += 1;
@@ -55,7 +69,7 @@ Ext.Shadow = function(config) {
             a.l = a.t = -o;
             a.t += 1;
             a.h -= 2;
-            if (Ext.isIE) {
+            if (Ext.isIE9m) {
                 a.l -= (this.offset - rad);
                 a.t -= (this.offset - rad);
                 a.l += 1;
@@ -100,7 +114,7 @@ Ext.Shadow.prototype = {
             }
         }
         this.el.setStyle("z-index", this.zIndex || parseInt(target.getStyle("z-index"), 10) - 1);
-        if (Ext.isIE) {
+        if (Ext.isIE9m) {
             this.el.dom.style.filter = "progid:DXImageTransform.Microsoft.alpha(opacity=50) progid:DXImageTransform.Microsoft.Blur(pixelradius=" + (this.offset) + ")";
         }
         this.realign(
@@ -146,7 +160,7 @@ Ext.Shadow.prototype = {
         if (s.width != sws || s.height != shs) {
             s.width = sws;
             s.height = shs;
-            if (!Ext.isIE) {
+            if (!Ext.isIE9m) {
                 cn = d.childNodes;
                 sww = Math.max(0, (sw - 12)) + "px";
                 cn[0].childNodes[1].style.width = sww;
@@ -183,7 +197,7 @@ Ext.Shadow.prototype = {
 // Private utility class that manages the internal Shadow cache
 Ext.Shadow.Pool = function() {
     var p = [],
-        markup = Ext.isIE ?
+        markup = Ext.isIE9m ?
             '<div class="x-ie-shadow"></div>':
             '<div class="x-shadow"><div class="xst"><div class="xstl"></div><div class="xstc"></div><div class="xstr"></div></div><div class="xsc"><div class="xsml"></div><div class="xsmc"></div><div class="xsmr"></div></div><div class="xsb"><div class="xsbl"></div><div class="xsbc"></div><div class="xsbr"></div></div></div>';
     return {

@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /*
  * This is code is also distributed under MIT license for use
  * with jQuery and prototype JavaScript libraries.
@@ -592,7 +606,7 @@ Ext.DomQuery = function(){
          * Selects the value of a node, optionally replacing null with the defaultValue.
          * @param {String} selector The selector/xpath query
          * @param {Node} root (optional) The start of the query (defaults to document).
-         * @param {String} defaultValue
+         * @param {String} defaultValue (optional)
          * @return {String}
          */
         selectValue : function(path, root, defaultValue){
@@ -617,7 +631,7 @@ Ext.DomQuery = function(){
          * Selects the value of a node, parsing integers and floats. Returns the defaultValue, or 0 if none is specified.
          * @param {String} selector The selector/xpath query
          * @param {Node} root (optional) The start of the query (defaults to document).
-         * @param {Number} defaultValue
+         * @param {Number} defaultValue (optional)
          * @return {Number}
          */
         selectNumber : function(path, root, defaultValue){

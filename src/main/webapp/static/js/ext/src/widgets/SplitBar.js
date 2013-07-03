@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.SplitBar
  * @extends Ext.util.Observable
@@ -32,7 +46,7 @@ Ext.SplitBar = function(dragElement, resizingElement, orientation, placement, ex
 
     /** @private */
     this.el = Ext.get(dragElement, true);
-    this.el.dom.unselectable = "on";
+    this.el.unselectable();
     /** @private */
     this.resizingEl = Ext.get(resizingElement, true);
 
@@ -101,11 +115,11 @@ Ext.SplitBar = function(dragElement, resizingElement, orientation, placement, ex
     this.adapter.init(this);
 
     if(this.orientation == Ext.SplitBar.HORIZONTAL){
-        /** @private */
+        /** @ignore */
         this.placement = placement || (this.el.getX() > this.resizingEl.getX() ? Ext.SplitBar.LEFT : Ext.SplitBar.RIGHT);
         this.el.addClass("x-splitbar-h");
     }else{
-        /** @private */
+        /** @ignore */
         this.placement = placement || (this.el.getY() > this.resizingEl.getY() ? Ext.SplitBar.TOP : Ext.SplitBar.BOTTOM);
         this.el.addClass("x-splitbar-v");
     }

@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.tree.TreeSorter
  * Provides sorting of nodes in a {@link Ext.tree.TreePanel}.  The TreeSorter automatically monitors events on the
@@ -13,7 +27,7 @@
 new Ext.tree.TreeSorter(myTree, {
     folderSort: true,
     dir: "desc",
-    sortType: function(node) {
+    sortType: function(value, node) {
         // sort by a custom, typed attribute:
         return parseInt(node.id, 10);
     }
@@ -44,10 +58,10 @@ Ext.tree.TreeSorter = Ext.extend(Object, {
      */
     /**
      * @cfg {Function} sortType A custom "casting" function used to convert node values before sorting.  The function
-     * will be called with a single parameter (the {@link Ext.tree.TreeNode} being evaluated) and is expected to return
-     * the node's sort value cast to the specific data type required for sorting.  This could be used, for example, when
+     * will be called with a two parameters, the {@link #property} value for the node and the {@link Ext.tree.TreeNode} being evaluated. 
+     * It is expected to return the node's sort value cast to the specific data type required for sorting.  This could be used, for example, when
      * a node's text (or other attribute) should be sorted as a date or numeric value.  See the class description for
-     * example usage.  Note that if a sortType is specified, any {@link #property} config will be ignored.
+     * example usage.
      */
 
     Ext.apply(this, config);
@@ -83,8 +97,8 @@ Ext.tree.TreeSorter = Ext.extend(Object, {
         }
         var prop1 = attr1[prop],
             prop2 = attr2[prop],
-            v1 = sortType ? sortType(prop1) : (caseSensitive ? prop1 : prop1.toUpperCase()),
-            v2 = sortType ? sortType(prop2) : (caseSensitive ? prop2 : prop2.toUpperCase());
+            v1 = sortType ? sortType(prop1, n1) : (caseSensitive ? prop1 : prop1.toUpperCase()),
+            v2 = sortType ? sortType(prop2, n2) : (caseSensitive ? prop2 : prop2.toUpperCase());
             
         if(v1 < v2){
             return desc ? 1 : -1;

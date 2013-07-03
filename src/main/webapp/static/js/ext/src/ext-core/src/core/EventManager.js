@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.EventManager
  * Registers event handlers that want to receive a normalized EventObject instead of the standard browser event and provides
@@ -15,7 +29,7 @@ Ext.EventManager = function(){
     var docReadyEvent,
         docReadyProcId,
         docReadyState = false,
-        DETECT_NATIVE = Ext.isGecko || Ext.isWebKit || Ext.isSafari,
+        DETECT_NATIVE = Ext.isGecko || Ext.isWebKit || Ext.isSafari || Ext.isIE10p,
         E = Ext.lib.Event,
         D = Ext.lib.Dom,
         DOC = document,
@@ -35,7 +49,7 @@ Ext.EventManager = function(){
             len = specialElCache.length,
             skip = false,
             o;
-            
+
         if (el) {
             if (el.getElementById || el.navigator) {
                 // look up the id
@@ -128,7 +142,7 @@ Ext.EventManager = function(){
      */
     function checkReadyState(e){
 
-        if(Ext.isIE && doScrollChk()){
+        if(Ext.isIE9m && doScrollChk()){
             return true;
         }
         if(DOC.readyState == COMPLETE){
@@ -165,7 +179,7 @@ Ext.EventManager = function(){
             if(DETECT_NATIVE) {
                 DOC.removeEventListener(DOMCONTENTLOADED, fireDocReady, false);
             }
-            if(Ext.isIE && checkReadyState.bindIE){  //was this was actually set ??
+            if(Ext.isIE9m && checkReadyState.bindIE){  //was this was actually set ??
                 DOC.detachEvent('onreadystatechange', checkReadyState);
             }
             E.un(WINDOW, "load", arguments.callee);
@@ -186,7 +200,7 @@ Ext.EventManager = function(){
         /*
          * Handle additional (exceptional) detection strategies here
          */
-        if (Ext.isIE){
+        if (Ext.isIE9m){
             //Use readystatechange as a backup AND primary detection mechanism for a FRAME/IFRAME
             //See if page is already loaded
             if(!checkReadyState()){
@@ -478,6 +492,17 @@ Ext.EventManager = function(){
                 return null;
             }
         },
+        
+        removeFromSpecialCache: function(o) {
+            var i = 0,
+                len = specialElCache.length;
+                
+            for (; i < len; ++i) {
+                if (specialElCache[i].el == o) {
+                    specialElCache.splice(i, 1); 
+                }
+            }
+        },
 
         purgeElement : function(el, recurse, eventName) {
             el = Ext.getDom(el);
@@ -601,11 +626,41 @@ Ext.onReady = Ext.EventManager.onDocumentReady;
             return false;
         }
 
-        var cls = [' ',
-                Ext.isIE ? "ext-ie " + (Ext.isIE6 ? 'ext-ie6' : (Ext.isIE7 ? 'ext-ie7' : (Ext.isIE8 ? 'ext-ie8' : 'ext-ie9')))
-                : Ext.isGecko ? "ext-gecko " + (Ext.isGecko2 ? 'ext-gecko2' : 'ext-gecko3')
-                : Ext.isOpera ? "ext-opera"
-                : Ext.isWebKit ? "ext-webkit" : ""];
+        var cls = [];
+        
+        if (Ext.isIE) {
+            // Only treat IE9 and less like IE in the css
+            if (!Ext.isIE10p) {
+                cls.push('ext-ie');
+            }
+            if (Ext.isIE6) {
+                cls.push('ext-ie6');
+            } else if (Ext.isIE7) {
+                cls.push('ext-ie7', 'ext-ie7m');
+            } else if (Ext.isIE8) {
+                cls.push('ext-ie8', 'ext-ie8m');
+            } else if (Ext.isIE9) {
+                cls.push('ext-ie9', 'ext-ie9m');
+            } else if (Ext.isIE10) {
+                cls.push('ext-ie10');
+            }
+        }
+        
+        if (Ext.isGecko) {
+            if (Ext.isGecko2) {
+                cls.push('ext-gecko2');
+            } else {
+                cls.push('ext-gecko3');
+            }
+        }
+        
+        if (Ext.isOpera) {
+            cls.push('ext-opera');
+        }
+        
+        if (Ext.isWebKit) {
+            cls.push('ext-webkit');
+        }
 
         if (Ext.isSafari) {
             cls.push("ext-safari " + (Ext.isSafari2 ? 'ext-safari2' : (Ext.isSafari3 ? 'ext-safari3' : 'ext-safari4')));
@@ -626,7 +681,7 @@ Ext.onReady = Ext.EventManager.onDocumentReady;
             if (p) {
                 if (!Ext.isStrict) {
                     Ext.fly(p, '_internal').addClass('x-quirks');
-                    if (Ext.isIE && !Ext.isStrict) {
+                    if (Ext.isIE9m && !Ext.isStrict) {
                         Ext.isIEQuirks = true;
                     }
                 }
@@ -639,48 +694,50 @@ Ext.onReady = Ext.EventManager.onDocumentReady;
             Ext.isForcedBorderBox = true;
             cls.push("ext-forced-border-box");
         }
-        
+
         Ext.fly(bd, '_internal').addClass(cls);
         return true;
     };
-    
+
     if (!initExtCss()) {
         Ext.onReady(initExtCss);
     }
 })();
 
-/**
- * Code used to detect certain browser feature/quirks/bugs at startup.
- */
+// Code used to detect certain browser feature/quirks/bugs at startup.
 (function(){
+    /**
+     * @class Ext.supports
+     * @ignore
+     */
     var supports = Ext.apply(Ext.supports, {
         /**
          * In Webkit, there is an issue with getting the margin right property, see
          * https://bugs.webkit.org/show_bug.cgi?id=13343
          */
         correctRightMargin: true,
-        
+
         /**
          * Webkit browsers return rgba(0, 0, 0) when a transparent color is used
          */
         correctTransparentColor: true,
-        
+
         /**
          * IE uses styleFloat, not cssFloat for the float property.
          */
         cssFloat: true
     });
-    
+
     var supportTests = function(){
             var div = document.createElement('div'),
                 doc = document,
                 view,
                 last;
-                
+
             div.innerHTML = '<div style="height:30px;width:50px;"><div style="height:20px;width:20px;"></div></div><div style="float:left;background-color:transparent;">';
             doc.body.appendChild(div);
             last = div.lastChild;
-            
+
             if((view = doc.defaultView)){
                 if(view.getComputedStyle(div.firstChild.firstChild, null).marginRight != '0px'){
                     supports.correctRightMargin = false;
@@ -692,9 +749,9 @@ Ext.onReady = Ext.EventManager.onDocumentReady;
             supports.cssFloat = !!last.style.cssFloat;
             doc.body.removeChild(div);
     };
-    
+
     if (Ext.isReady) {
-        supportTests();    
+        supportTests();
     } else {
         Ext.onReady(supportTests);
     }
@@ -923,7 +980,7 @@ Ext.EventObject = function(){
         </code></pre>
          * @param {Mixed} el The id, DOM element or Ext.Element to check
          * @param {Boolean} related (optional) true to test if the related target is within el instead of the target
-         * @param {Boolean} allowEl {optional} true to also check if the passed element is the target or related target
+         * @param {Boolean} allowEl (optional) true to also check if the passed element is the target or related target
          * @return {Boolean}
          */
         within : function(el, related, allowEl){

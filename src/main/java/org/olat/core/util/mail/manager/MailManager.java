@@ -365,7 +365,7 @@ public class MailManager extends BasicManager {
 	 */
 	public List<DBMail> getOutbox(Identity from, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select mail from ").append(DBMailImpl.class.getName()).append(" mail")
+		sb.append("select distinct(mail) from ").append(DBMailImpl.class.getName()).append(" mail")
 			.append(" inner join fetch mail.from fromRecipient")
 			.append(" inner join fromRecipient.recipient fromRecipientIdentity")
 			.append(" inner join fetch mail.recipients recipient")

@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -31,9 +30,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -46,7 +42,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.restapi.support.vo.LinkVO;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManagerImpl;
@@ -188,24 +183,6 @@ public class UserVOFactory {
 			formatedValue = propertyHandler.getStringValue(value, locale);
 		}
 		return formatedValue;
-	}
-	
-	public static UserVO link(UserVO userVO, UriInfo uriInfo) {
-		if(uriInfo != null) {
-			URI baseUri = uriInfo.getBaseUriBuilder().build();
-
-			URI getUri = UriBuilder.fromUri(baseUri).path("users").path(userVO.getKey().toString()).build();
-			userVO.getLink().add(new LinkVO("self", getUri.toString(), ""));
-			userVO.getLink().add(new LinkVO("edit", getUri.toString(), ""));
-			userVO.getLink().add(new LinkVO("delete", getUri.toString(), ""));
-
-			URI groupUri = UriBuilder.fromUri(baseUri).path("users").path(userVO.getKey().toString()).path("groups").build();
-			userVO.getLink().add(new LinkVO("self", groupUri.toString(), "Groups"));
-			
-			URI portraitUri = UriBuilder.fromUri(baseUri).path("users").path(userVO.getKey().toString()).path("portrait").build();
-			userVO.getLink().add(new LinkVO("self", portraitUri.toString(), "Portrait"));
-		}
-		return userVO;
 	}
 	
 	/**

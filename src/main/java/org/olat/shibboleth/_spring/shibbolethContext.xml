@@ -558,6 +558,7 @@
 		<property name="wayfSPHandlerURL" value="${shibboleth.wayfSPHandlerURL}" />
 		<property name="wayfSPSamlDSURL" value="${shibboleth.wayfSPSamlDSURL}" />
 		<property name="wayfReturnUrl" value="${shibboleth.wayfReturnUrl}" />
+		<property name="wayfReturnMobileUrl" value="${shibboleth.wayfReturnMobileUrl}" />
 		<property name="additionalIdentityProviders" value="${shibboleth.wayf.additionalIDPs}" />	
 </bean>	
 

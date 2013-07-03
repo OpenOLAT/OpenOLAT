@@ -35,6 +35,7 @@ import javax.ws.rs.core.Response;
 
 import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryOrder;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.MediaTypeVariants;
@@ -77,7 +78,7 @@ public class UserCoursesWebService {
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsStudent(identity, start, limit);
+			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsStudent(identity, start, limit, RepositoryEntryOrder.nameAsc);
 			int totalCount= rm.countLearningResourcesAsStudent(identity);
 
 			CourseVO[] vos = toCourseVo(repoEntries);
@@ -86,7 +87,7 @@ public class UserCoursesWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsStudent(identity, 0, -1);
+			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsStudent(identity, 0, -1, RepositoryEntryOrder.nameAsc);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}
@@ -114,7 +115,7 @@ public class UserCoursesWebService {
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsTeacher(identity, start, limit);
+			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsTeacher(identity, start, limit, RepositoryEntryOrder.nameAsc);
 			int totalCount= rm.countLearningResourcesAsTeacher(identity);
 
 			CourseVO[] vos = toCourseVo(repoEntries);
@@ -152,7 +153,7 @@ public class UserCoursesWebService {
 		List<String> courseType = Collections.singletonList("CourseModule");
 		RepositoryManager rm = RepositoryManager.getInstance();
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			List<RepositoryEntry> repoEntries = rm.getFavoritLearningResourcesAsTeacher(identity, courseType, start, limit);
+			List<RepositoryEntry> repoEntries = rm.getFavoritLearningResourcesAsTeacher(identity, courseType, start, limit, RepositoryEntryOrder.nameAsc);
 			int totalCount= rm.countFavoritLearningResourcesAsTeacher(identity, courseType);
 
 			CourseVO[] vos = toCourseVo(repoEntries);
@@ -161,7 +162,7 @@ public class UserCoursesWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			List<RepositoryEntry> repoEntries = rm.getFavoritLearningResourcesAsTeacher(identity, courseType, 0, -1);
+			List<RepositoryEntry> repoEntries = rm.getFavoritLearningResourcesAsTeacher(identity, courseType, 0, -1, RepositoryEntryOrder.nameAsc);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}

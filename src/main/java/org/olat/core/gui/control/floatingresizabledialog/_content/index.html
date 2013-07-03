@@ -12,11 +12,17 @@
 		var winPosition = null;
 		var winHeight = 0;
 		var winWidth = 0;
+		var winCollapsed = false;
 		//check if already exists
 		if( Ext.getCmp('${panelName}') != null ) {
 			${panelName}win = Ext.getCmp('${panelName}');
 			winPosition = ${panelName}win.getPosition();
-			winHeight = ${panelName}win.getHeight();
+			winCollapsed = ${panelName}win.collapsed;
+			if(!winCollapsed) {
+				winHeight = ${panelName}win.getHeight();
+			} else {
+				winHeight = ${height};
+			}
 			winWidth = ${panelName}win.getWidth();
 			${panelName}win.purgeListeners();
 			${panelName}win.close();
@@ -59,6 +65,8 @@
 					bodyBorder:false,
 					closable:true,
 					collapsible:true,
+					expandOnShow: false,
+					collapsed: winCollapsed,
 					constrain: ${constrain},
 					resizable: ${resizable},
 					width: winWidth,
@@ -87,6 +95,8 @@
 					bodyBorder:false,
 					closable:true,
 					collapsible:true,
+					expandOnShow: false,
+					collapsed: winCollapsed,
 					constrain: ${constrain},
 					resizable: ${resizable},
 					width: winWidth,

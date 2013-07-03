@@ -43,6 +43,7 @@ How to add a new job:
             <ref bean="updateQtiResultsTrigger${assessmentplugin.activate}" />
             <ref bean="invitationCleanupTrigger" />
             <ref bean="epDeadlineTrigger" />
+            <ref bean="restTokenTrigger" />
             <ref bean="systemSamplerTrigger"/>
             <ref bean="updateQtiResultsTriggerOnyx"/>
             <ref bean="acReservationCleanupJob"/>

@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.form.ComboBox
  * @extends Ext.form.TriggerField
@@ -122,7 +136,7 @@ Ext.form.ComboBox = Ext.extend(Ext.form.TriggerField, {
     defaultAutoCreate : {tag: "input", type: "text", size: "24", autocomplete: "off"},
     /**
      * @cfg {Number} listWidth The width (used as a parameter to {@link Ext.Element#setWidth}) of the dropdown
-     * list (defaults to the width of the ComboBox field).  See also <tt>{@link #minListWidth}
+     * list (defaults to the width of the ComboBox field).  See also <tt>{@link #minListWidth}</tt>
      */
     /**
      * @cfg {String} displayField The underlying {@link Ext.data.Field#name data field name} to bind to this
@@ -149,7 +163,7 @@ Ext.form.ComboBox = Ext.extend(Ext.form.TriggerField, {
      */
     /**
      * @cfg {String} hiddenId If <tt>{@link #hiddenName}</tt> is specified, <tt>hiddenId</tt> can also be provided
-     * to give the hidden field a unique id.  The <tt>hiddenId</tt> and combo {@link Ext.Component#id id} should be 
+     * to give the hidden field a unique id.  The <tt>hiddenId</tt> and combo {@link Ext.Component#id id} should be
      * different, since no two DOM nodes should share the same id.
      */
     /**
@@ -519,7 +533,7 @@ var combo = new Ext.form.ComboBox({
         }
         return zindex;
     },
-    
+
     getZIndex : function(listParent){
         listParent = listParent || Ext.getDom(this.getListParent() || Ext.getBody());
         var zindex = parseInt(Ext.fly(listParent).getStyle('z-index'), 10);
@@ -797,7 +811,7 @@ myCombo.keyNav.tab = function() {   // Override TAB handling function
                 if(hname == 'down' || this.scope.isExpanded()){
                     // this MUST be called before ComboBox#fireKey()
                     var relay = Ext.KeyNav.prototype.doRelay.apply(this, arguments);
-                    if(!Ext.isIE && Ext.EventManager.useKeydown){
+                    if((((Ext.isIE9 && Ext.isStrict) || Ext.isIE10p) || !Ext.isIE) && Ext.EventManager.useKeydown){
                         // call Combo#fireKey() for browsers which use keydown event (except IE)
                         this.scope.fireKey(e);
                     }

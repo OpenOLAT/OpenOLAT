@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.olat.restapi.support.vo.LinkVO;
 
 /**
  * 
@@ -53,9 +52,6 @@ public class UserVO {
 	@XmlElementWrapper(name="properties")
 	@XmlElement(name="property")
 	private List<UserPropertyVO> properties = new ArrayList<UserPropertyVO>();
-	
-	@XmlElement(name="link",nillable=true)
-	private List<LinkVO> link = new ArrayList<LinkVO>();
 
 	public UserVO() {
 		//make JAXB happy
@@ -136,14 +132,6 @@ public class UserVO {
 			}
 		}
 		return null;
-	}
-	
-	public List<LinkVO> getLink() {
-		return link;
-	}
-
-	public void setLink(List<LinkVO> link) {
-		this.link = link;
 	}
 
 	@Override

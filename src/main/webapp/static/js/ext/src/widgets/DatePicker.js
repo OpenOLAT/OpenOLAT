@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.DatePicker
  * @extends Ext.Component
@@ -268,7 +282,7 @@ Ext.DatePicker = Ext.extend(Ext.BoxComponent, {
         Ext.DatePicker.superclass.onEnable.call(this);
         this.doDisabled(false);
         this.update(initial ? this.value : this.activeDate);
-        if(Ext.isIE){
+        if(Ext.isIE9m){
             this.el.repaint();
         }
 
@@ -278,7 +292,7 @@ Ext.DatePicker = Ext.extend(Ext.BoxComponent, {
     onDisable : function(){
         Ext.DatePicker.superclass.onDisable.call(this);
         this.doDisabled(true);
-        if(Ext.isIE && !Ext.isIE8){
+        if(Ext.isIE9m && !Ext.isIE8){
             /* Really strange problem in IE6/7, when disabled, have to explicitly
              * repaint each of the nodes to get them to display correctly, simply
              * calling repaint on the main element doesn't appear to be enough.

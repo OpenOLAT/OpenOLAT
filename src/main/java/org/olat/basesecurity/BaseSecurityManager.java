@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.persistence.LockModeType;
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.hibernate.type.StandardBasicTypes;
@@ -1303,6 +1304,45 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return results.get(0);
 	}
 	
+	/**
+	 * @see org.olat.basesecurity.Manager#findAuthentication(org.olat.core.id.Identity, java.lang.String)
+	 */
+	@Override
+	public List<Authentication> findAuthentication(String provider, String credential) {
+		if (provider==null || credential==null) {
+			throw new IllegalArgumentException("provider and token must not be null");
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName())
+		  .append(" as auth where auth.credential=:credential and auth.provider=:provider");
+		
+		List<Authentication> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("credential", credential)
+				.setParameter("provider", provider)
+				.getResultList();
+		return results;
+	}
+	
+	@Override
+	public List<Authentication> findOldAuthentication(String provider, Date creationDate) {
+		if (provider == null || creationDate == null) {
+			throw new IllegalArgumentException("provider and token must not be null");
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName())
+		  .append(" as auth where auth.provider=:provider and auth.creationDate<:creationDate");
+		
+		List<Authentication> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("creationDate", creationDate, TemporalType.TIMESTAMP)
+				.setParameter("provider", provider)
+				.getResultList();
+		return results;
+	}
+
 	@Override
 	public String findCredentials(Identity identity, String provider) {
 		if (identity==null) {
@@ -1335,6 +1375,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		
 		Number count = (Number)query.uniqueResult();
 		return count.intValue() > 0;
+	}
+
+	@Override
+	public Authentication updateAuthentication(Authentication authentication) {
+		return dbInstance.getCurrentEntityManager().merge(authentication);
 	}
 
 	/**

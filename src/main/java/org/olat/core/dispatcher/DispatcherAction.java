@@ -232,6 +232,10 @@ public class DispatcherAction implements Dispatcher {
 	public static final void redirectToDefaultDispatcher(HttpServletResponse response) {
 		redirectTo(response, WebappHelper.getServletContextPath() + PATH_DEFAULT);
 	}
+	
+	public static final void redirectToMobile(HttpServletResponse response) {
+		redirectTo(response, WebappHelper.getServletContextPath() + WebappHelper.getMobileContext());
+	}
 
 	/**
 	 * Generic redirect method.

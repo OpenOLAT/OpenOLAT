@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.grid.GridDragZone
  * @extends Ext.dd.DragZone
@@ -21,6 +35,8 @@ Ext.grid.GridDragZone = function(grid, config){
     this.grid = grid;
     this.ddel = document.createElement('div');
     this.ddel.className = 'x-grid-dd-wrap';
+    // prevent the default action, but don't stop propagation
+    this.preventDefault = true;
 };
 
 Ext.extend(Ext.grid.GridDragZone, Ext.dd.DragZone, {
@@ -34,18 +50,47 @@ Ext.extend(Ext.grid.GridDragZone, Ext.dd.DragZone, {
      * <li><b>grid</b> : Ext.Grid.GridPanel<div class="sub-desc">The GridPanel from which the data is being dragged.</div></li>
      * <li><b>ddel</b> : htmlElement<div class="sub-desc">An htmlElement which provides the "picture" of the data being dragged.</div></li>
      * <li><b>rowIndex</b> : Number<div class="sub-desc">The index of the row which receieved the mousedown gesture which triggered the drag.</div></li>
-     * <li><b>selections</b> : Array<div class="sub-desc">An Array of the selected Records which are being dragged from the GridPanel.</div></li>
+     * <li><b>selections</b> : Array<div class="sub-desc">Array of the selected Records which are being dragged from the GridPanel.
+     * Unless a CellSelectionModel is being used and the grid is configured <code>dragCell: true</code>, in which case, this will be
+     * an Array containing the single selected cell data as <code>[rowIndex, cellIndex]</code>.</div></li>
      * </ul></p>
      */
     getDragData : function(e){
-        var t = Ext.lib.Event.getTarget(e);
-        var rowIndex = this.view.findRowIndex(t);
-        if(rowIndex !== false){
-            var sm = this.grid.selModel;
-            if(!sm.isSelected(rowIndex) || e.hasModifier()){
-                sm.handleMouseDown(this.grid, rowIndex, e);
+        var t = Ext.lib.Event.getTarget(e),
+            sm,
+            rowIndex = this.view.findRowIndex(t),
+            cellIndex,
+            selectedCell,
+            selection;
+
+        if (rowIndex !== false){
+            sm = this.grid.selModel;
+
+            // Handle mousedown on unselected items (depending on what kind of selection we are using)
+            // Select the mousedowned item
+            if (sm.getSelectedCell) {
+                cellIndex = this.view.findCellIndex(t);
+                selectedCell = sm.getSelectedCell();
+                if (!selectedCell || selectedCell[0] !== rowIndex || selectedCell[1] !== cellIndex) {
+                    sm.handleMouseDown(this.grid, rowIndex, cellIndex, e);
+                }
+                if (this.grid.dragCell) {
+                    // Selection is the cell coordinates
+                    selection = sm.getSelectedCell();
+                    if (!this.grid.hasOwnProperty('ddText')) {
+                        this.grid.ddText = '{0} selected cell{1}';
+                    }
+                } else {
+                    // Selection is the mousedowned row
+                    selection = [this.grid.store.getAt(rowIndex)];
+                }
+            } else {
+                if(!sm.isSelected(rowIndex) || e.hasModifier()){
+                    sm.handleMouseDown(this.grid, rowIndex, e);
+                }
+                selection = sm.getSelections();
             }
-            return {grid: this.grid, ddel: this.ddel, rowIndex: rowIndex, selections:sm.getSelections()};
+            return {grid: this.grid, ddel: this.ddel, rowIndex: rowIndex, selections: selection};
         }
         return false;
     },

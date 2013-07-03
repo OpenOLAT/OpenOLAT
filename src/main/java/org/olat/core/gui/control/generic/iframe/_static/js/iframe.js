@@ -324,7 +324,8 @@ function b_changeLinkTargets() {
 		if (anchor.getAttribute('href')) {
 			var target = anchor.getAttribute('target');
 			var href = anchor.getAttribute("href");
-			if (href.indexOf("/auth/repo/go?rid=") != -1 || href.indexOf("/url/RepositoryEntry/") != -1 || href.indexOf("/url/BusinessGroup/") != -1) {
+			if (href.indexOf("/auth/repo/go?rid=") != -1 || href.indexOf("/url/RepositoryEntry/") != -1
+					|| href.indexOf("/url/BusinessGroup/") != -1 || href.indexOf("/url/CatalogEntry/") != -1) {
 				// absolute links to repository entries have to by opened in the parent frame
 				// /auth/repo/ is legacy format, /url/RepositoryEntry/ is new format
 				anchor.target = "_parent";

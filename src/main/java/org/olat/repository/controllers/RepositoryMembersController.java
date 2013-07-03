@@ -138,6 +138,9 @@ public class RepositoryMembersController extends AbstractMemberListController {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 				addMembers(ureq, runContext);
+				if(runContext.containsKey("notFounds")) {
+					showWarning("user.notfound", runContext.get("notFounds").toString());
+				}
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};

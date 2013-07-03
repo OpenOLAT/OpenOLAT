@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.Panel
  * @extends Ext.Container
@@ -707,8 +721,8 @@ new Ext.Panel({
              * @event iconchange
              * Fires after the Panel icon class has been {@link #iconCls set} or {@link #setIconClass changed}.
              * @param {Ext.Panel} p the Panel which has had its {@link #iconCls icon class} changed.
-             * @param {String} The new icon class.
-             * @param {String} The old icon class.
+             * @param {String} newIcon The new icon class.
+             * @param {String} oldIcon The old icon class.
              */
             'iconchange',
             /**
@@ -1304,7 +1318,7 @@ new Ext.Panel({
          * an instance of {@link Ext.dd.DragSource} which handles dragging the Panel.</p>
          * The developer must provide implementations of the abstract methods of {@link Ext.dd.DragSource}
          * in order to supply behaviour for each stage of the drag/drop process. See {@link #draggable}.
-         * @type Ext.dd.DragSource.
+         * @type Ext.dd.DragSource
          * @property dd
          */
         this.dd = new Ext.Panel.DD(this, Ext.isBoolean(this.draggable) ? null : this.draggable);
@@ -1494,7 +1508,7 @@ new Ext.Panel({
                     if(this.bottomToolbar){
                         this.bottomToolbar.setSize(w);
                         // The bbar does not move on resize without this.
-                        if (Ext.isIE) {
+                        if (Ext.isIE9m) {
                             this.bbar.setStyle('position', 'static');
                             this.bbar.setStyle('position', '');
                         }
@@ -1503,7 +1517,7 @@ new Ext.Panel({
                 if(this.footer){
                     this.footer.setWidth(w);
                     if(this.fbar){
-                        this.fbar.setSize(Ext.isIE ? (w - this.footer.getFrameWidth('lr')) : 'auto');
+                        this.fbar.setSize(Ext.isIE9m ? (w - this.footer.getFrameWidth('lr')) : 'auto');
                     }
                 }
 

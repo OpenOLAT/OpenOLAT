@@ -46,7 +46,10 @@ import org.apache.http.cookie.Cookie;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
+import org.olat.restapi.security.RestSecurityBean;
+import org.olat.restapi.security.RestSecurityBeanImpl;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.test.OlatJerseyTestCase;
 
@@ -165,6 +168,36 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 		assertEquals(200, r4.getStatusLine().getStatusCode());
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
 		c4.shutdown();
+	}
+	
+	/**
+	 * Test if the token survive several requests
+	 * @throws HttpException
+	 * @throws IOException
+	 */
+	@Test
+	public void testFollowTokenBasedDiscussion_flushSession() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		String securityToken = conn.getSecurityToken();
+		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		conn.shutdown();
+		
+		
+		RestSecurityBeanImpl beanImpl = (RestSecurityBeanImpl)CoreSpringFactory.getImpl(RestSecurityBean.class);
+		beanImpl.clearCaches();
+		
+		//path is protected
+		RestConnection c1 = new RestConnection();
+		URI uri1 = UriBuilder.fromUri(getContextURI()).path("/users/version").build();
+		HttpGet method1 = c1.createGet(uri1, MediaType.TEXT_PLAIN, false);
+		method1.setHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
+		HttpResponse r1 = c1.execute(method1);
+		securityToken = c1.getSecurityToken(r1);
+		assertEquals(200, r1.getStatusLine().getStatusCode());
+		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		c1.shutdown();
+		
 	}
 	
 	@Test

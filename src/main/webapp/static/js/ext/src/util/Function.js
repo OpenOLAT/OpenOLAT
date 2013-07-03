@@ -1,9 +1,23 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
+/*
+This file is part of Ext JS 3.4
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-04-03 15:07:25
+*/
 /**
  * @class Ext.util.Functions
  * @singleton
@@ -207,7 +221,7 @@ Ext.defer = Ext.util.Functions.defer;
  * <b>If omitted, defaults to the scope in which the original function is called or the browser window.</b>
  * @return {Function} The new function
  * @member Ext
- * @method defer
+ * @method createInterceptor
  */
 
 Ext.createInterceptor = Ext.util.Functions.createInterceptor;
@@ -220,7 +234,7 @@ Ext.createInterceptor = Ext.util.Functions.createInterceptor;
  * If omitted, defaults to the scope in which the original function is called or the browser window.
  * @return {Function} The new function
  * @member Ext
- * @method defer
+ * @method createSequence
  */
 
 Ext.createSequence = Ext.util.Functions.createSequence;
@@ -235,6 +249,6 @@ Ext.createSequence = Ext.util.Functions.createSequence;
  * if a number the args are inserted at the specified position
  * @return {Function} The new function
  * @member Ext
- * @method defer
+ * @method createDelegate
  */
 Ext.createDelegate = Ext.util.Functions.createDelegate;

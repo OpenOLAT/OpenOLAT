@@ -16,7 +16,9 @@
 		</property>
 	</bean>
 
-	<bean id="org.olat.restapi.security.RestSecurityBean" class="org.olat.restapi.security.RestSecurityBeanImpl"/>
+	<bean id="org.olat.restapi.security.RestSecurityBean" class="org.olat.restapi.security.RestSecurityBeanImpl">
+		<property name="securityManager" ref="baseSecurityManager"/>
+	</bean>
 	
 	<bean id="org.olat.restapi.support.RestRegistrationService" class="org.olat.restapi.support.RestRegistrationServiceImpl">
 		<property name="classnames">
@@ -83,6 +85,20 @@
 	
 	<bean id="systemSamplerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
 	  <property name="jobClass" value="org.olat.restapi.system.SamplerJob" />
+	</bean>
+	
+	<!-- Deadline Job -->
+	<bean id="restTokenTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="restTokenJob.${cluster.singleton.services}" />
+  	<!--  every day at 1:21 -->
+		<property name="cronExpression" value="0 21 1 * * ?" />
+		<property name="startDelay" value="60000" />
+	</bean>
+	<bean id="restTokenJob.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.restapi.security.RestTokenJob" />
+	</bean>
+	<bean id="restTokenJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
 	</bean>
 	
 	<!-- Using singletons would be good for the future and prevent using CoreSpringFactory -->

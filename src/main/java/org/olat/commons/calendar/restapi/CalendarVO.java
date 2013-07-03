@@ -27,11 +27,12 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "catalogVO")
+@XmlRootElement(name = "calendarVO")
 public class CalendarVO {
 	
 	private String id;
 	private String type;
+	private boolean canWrite;
 	private boolean subscribed;
 	
 	private String css;
@@ -41,12 +42,13 @@ public class CalendarVO {
 		//
 	}
 	
-	public CalendarVO(KalendarRenderWrapper wrapper) {
+	public CalendarVO(KalendarRenderWrapper wrapper, boolean canWrite) {
 		id = wrapper.getKalendar().getType() + "_" + wrapper.getKalendar().getCalendarID();
 		subscribed = wrapper.isSubscribed();
 		type = wrapper.getKalendar().getType();
 		css = wrapper.getKalendarConfig().getCss();
 		displayName = wrapper.getKalendarConfig().getDisplayName();
+		this.canWrite = canWrite;
 	}
 	
 	public String getId() {
@@ -63,6 +65,14 @@ public class CalendarVO {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public boolean isCanWrite() {
+		return canWrite;
+	}
+
+	public void setCanWrite(boolean canWrite) {
+		this.canWrite = canWrite;
 	}
 
 	public boolean isSubscribed() {
