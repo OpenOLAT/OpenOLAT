@@ -181,6 +181,13 @@ public class CPManagerImpl extends CPManager {
 			orga.getItems().get(0).setTitle(initalPageTitle);
 
 			writeToFile(cp);
+			
+			//set the default settings for file delivery
+			DeliveryOptions defOptions = DeliveryOptions.defaultWithGlossary();
+			CPPackageConfig config = new CPPackageConfig();
+			config.setDeliveryOptions(defOptions);
+			setCPPackageConfig(ores, config);
+
 			return cp;
 
 		} else {

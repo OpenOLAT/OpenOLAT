@@ -266,7 +266,7 @@ public class RepositoryAddController extends BasicController {
 			typeToAdd = new ImsCPHandler();
 			addController = typeToAdd.createAddController(addCallback, ImsCPHandler.PROCESS_CREATENEW, ureq, getWindowControl());
 			translatedTypeName = translate("tools.add.cp");
-			typeIntro = translate("new.cp.intro");
+			typeIntro = translate("new.cp");
 		}		
 		else throw new AssertException("Unsuported Repository Type.");
 

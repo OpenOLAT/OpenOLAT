@@ -36,7 +36,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.cp.CPManager;
-import org.olat.ims.cp.CPManagerImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
@@ -99,7 +98,7 @@ public class CreateNewCPController extends BasicController implements IAddContro
 	}
 
 	public boolean transactionFinishBeforeCreate() {
-		CPManagerImpl cpMmg = (CPManagerImpl) CPManager.getInstance();
+		CPManager cpMmg = CPManager.getInstance();
 		String initialPageTitle = translate("cptreecontroller.newpage.title");
 		cpMmg.createNewCP(newCPResource, initialPageTitle);
 		return true;

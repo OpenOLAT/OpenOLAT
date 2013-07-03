@@ -33,6 +33,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
@@ -62,6 +63,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class SPCourseNode extends AbstractAccessableCourseNode {
 
+	private static final long serialVersionUID = -4565145351110778757L;
 	private static final String TYPE = "sp";
 
 	/**
@@ -202,6 +204,10 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 			// use defaults for new course building blocks
 			config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, false);
 			config.setBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS, false);
+			
+			DeliveryOptions defaultOptions = DeliveryOptions.defaultWithGlossary();
+			config.set(SPEditController.CONFIG_KEY_DELIVERYOPTIONS, defaultOptions);
+			
 			// new since config version 3
 			config.setConfigurationVersion(3);
 		} else {

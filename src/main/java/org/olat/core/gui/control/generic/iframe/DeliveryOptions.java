@@ -51,6 +51,20 @@ public class DeliveryOptions implements Cloneable, Serializable {
 	public DeliveryOptions(Boolean standardMode) {
 		this.standardMode = standardMode;
 	}
+	
+	/**
+	 * Return a set of options with glossary
+	 * @return
+	 */
+	public static DeliveryOptions defaultWithGlossary() {
+		DeliveryOptions defaultOptions = new DeliveryOptions();
+		defaultOptions.setStandardMode(Boolean.FALSE);
+		defaultOptions.setGlossaryEnabled(Boolean.TRUE);
+		defaultOptions.setHeight(null);
+		defaultOptions.setjQueryEnabled(Boolean.TRUE);
+		defaultOptions.setOpenolatCss(Boolean.TRUE);
+		return defaultOptions;
+	}
 
 	public Boolean getInherit() {
 		return inherit;
