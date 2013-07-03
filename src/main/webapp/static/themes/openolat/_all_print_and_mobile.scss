@@ -1,0 +1,13 @@
+@charset "UTF-8";
+
+/*
+ *  =================================================
+ *  Import of all print and mobile overides of normal style
+ *  =================================================
+ */
+
+/* ------- print -------- */
+@import "p_basemod";
+
+/* ------- mobile -------- */
+@import "m_basemod";

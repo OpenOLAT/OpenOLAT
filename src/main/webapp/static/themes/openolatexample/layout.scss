@@ -1,44 +1,26 @@
 @charset "UTF-8";
 
+/* custom license */
 @import "license";
 
-// default css import
-@import url(../../yaml/core/slim_base.css);
+/* custom content styles used everywhere */
 @import url(all/content.css);
 
-/* --------------- */
+/* -------- helpers ------- */
 @import "definitions";
 @import "mixins";
 
-/* --------------- */
+/* -------- icons and yaml modification ------- */
 @import "icons";
 @import "basemod";
 
-/* -------- modules -------- */
-@import "dd";
-@import "accesscontrol";
-@import "dialogs";
-@import "tabpane";
-@import "formsandbuttons";
-@import "tables";
-@import "develdebug";
-@import "briefcase";
-@import "wiki";
-@import "forum";
-@import "eportfolio";
-@import "imscp";
-@import "qti";
-@import "translationtool";
-@import "course";
-@import "misc";
-@import "feedandblog";
-@import "im";
-@import "portlets_boxes";
-@import "library";
 
-/* print & mobile, let's keep 'em down here... */
-/* ------- print -------- */
-@import "p_basemod";
+/* standard modules import */
+@import "all_modules";
 
-/* ------- mobile -------- */
-@import "m_basemod";
+/* custom overrides of standard modules */
+@import "all/mod.scss";
+
+/* standard print and mobile overrides import */
+@import "all_print_and_mobile";
+

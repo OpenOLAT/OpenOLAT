@@ -1,0 +1,19 @@
+#b_page_wrapper {
+  	border-bottom: 0;
+	padding: 0 10px 0 10px;
+  	@include o-box-shadow-none();
+}
+
+/*------------HEADER and LOGO --------- */
+#b_header {
+	height: 50px; 	
+	#b_logo {
+		position: absolute; 
+		top: 10px;
+		left: 0;
+	    width: 120px;
+	    height: 40px;
+	    background: url('images/openolat_powerd_by_120x30.png') no-repeat;    
+	}
+}
+ 

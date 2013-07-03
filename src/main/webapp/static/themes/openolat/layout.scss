@@ -1,67 +1,33 @@
 @charset "UTF-8";
 
 /*
-*  =================================================
-*  
-*   main SASS file for OpenOLAT 8 theme
-*   
-*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
-*   @date Nov. 2011
-*
-*	also read themes.README!
-*
-*   this file includes all other modules
-*  =================================================
-*/
-
-/* use the grey ext theme */
-/*@import url(../../js/ext/resources/css/xtheme-gray.css);*/
-
+ *  =================================================
+ *  
+ *   main SASS file for OpenOLAT theme
+ *   
+ *   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
+ *   @date Nov. 2011
+ *
+ *	 also read themes.README!
+ *
+ *   this file includes all other modules
+ *  =================================================
+ */
 @import "license";
 
-// default css import
-//@import url(../../yaml/core/slim_base.css);
+// default content styles. In separate file because also embedded in iframes
 @import url(all/content.css);
 
-
-/* --------------- */
+/* -------- helpers ------- */
 @import "definitions";
 @import "mixins";
 
-/* --------------- */
+/* -------- icons and yaml modification ------- */
 @import "icons";
 @import "basemod";
 
-/* -------- modules -------- */
-@import "dd";
-@import "accesscontrol";
-@import "dialogs";
-@import "tabpane";
-@import "formsandbuttons";
-@import "tables";
-@import "develdebug";
-@import "briefcase";
-@import "wiki";
-@import "forum";
-@import "eportfolio";
-@import "imscp";
-@import "qpool";
-@import "qti";
-@import "translationtool";
-@import "course";
-@import "misc";
-@import "feedandblog";
-@import "im";
-@import "portlets_boxes";
-@import "library";
-@import "coachingtool";
+/* -------- imports of all OO modules -------*/
+@import "all_modules";
 
-/* --------------- */
-@import "thirdparty";
-
-/* print & mobile, let's keep 'em down here... */
-/* ------- print -------- */
-@import "p_basemod";
-
-/* ------- mobile -------- */
-@import "m_basemod";
+/* -------- imports of all print and mobile overrides -------*/
+@import "all_print_and_mobile";
