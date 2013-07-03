@@ -236,7 +236,9 @@ public class LTIRunController extends BasicController {
 				if(value.startsWith(LTIManager.USER_PROPS_PREFIX)) {
 					String userProp = value.substring(LTIManager.USER_PROPS_PREFIX.length(), value.length());
 					value = user.getProperty(userProp, null);
-					customUserData.put(userProp, value);
+					if (value!= null) {
+						customUserData.put(userProp, value);
+					}
 				}
 			}
 		}
@@ -269,7 +271,7 @@ public class LTIRunController extends BasicController {
 		if (isLogDebugEnabled()) {
 			logDebug("Create accept hash::" + hash + " for data::" + data, null);
 		}
-		return null;
+		return hash;
 	}
 	
 	/**
