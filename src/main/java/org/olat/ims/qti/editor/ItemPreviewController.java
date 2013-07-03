@@ -37,6 +37,8 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.Filter;
@@ -50,6 +52,8 @@ import org.olat.ims.qti.editor.beecom.objects.Item;
  * @author mike
  */
 public class ItemPreviewController extends DefaultController implements ControllerEventListener {
+	private static final OLog log = Tracing.createLoggerFor(ItemPreviewController.class);
+	
 	/*
 	 * Logging, Velocity
 	 */
@@ -99,14 +103,19 @@ public class ItemPreviewController extends DefaultController implements Controll
 	}
 
 	private String getQuestionPreview(Item theItem) {
-		Element el = DocumentFactory.getInstance().createElement("dummy");
-		theItem.addToElement(el);
-		StringBuilder sb = new StringBuilder();
-		org.olat.ims.qti.container.qtielements.Item foo = new org.olat.ims.qti.container.qtielements.Item((Element) el.elements().get(0));
-		foo.render(sb, renderInstructions);
-		String previewWithFormattedMathElements = Formatter.formatLatexFormulas(sb.toString());
-		Filter filter = FilterFactory.getBaseURLToMediaRelativeURLFilter(mediaBaseUrl);
-		return filter.filter(previewWithFormattedMathElements);
+		try {
+			Element el = DocumentFactory.getInstance().createElement("dummy");
+			theItem.addToElement(el);
+			StringBuilder sb = new StringBuilder();
+			org.olat.ims.qti.container.qtielements.Item foo = new org.olat.ims.qti.container.qtielements.Item((Element) el.elements().get(0));
+			foo.render(sb, renderInstructions);
+			String previewWithFormattedMathElements = Formatter.formatLatexFormulas(sb.toString());
+			Filter filter = FilterFactory.getBaseURLToMediaRelativeURLFilter(mediaBaseUrl);
+			return filter.filter(previewWithFormattedMathElements);
+		} catch (Exception e) {
+			log.warn("Cannot render preview of an QTI 1.2 item: " + theItem);
+			return "ERROR";
+		}
 	}
 
 	/**

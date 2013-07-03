@@ -13,7 +13,8 @@
 	<div class="b_window_content_wrapper $!cssClass">	
 		<div class="b_window_content">
 			<div class="b_window_content_inner b_clearfix">
-				<div class="b_floatscrollbox">
+				<div class="b_floatscrollbox #if ($off_chelp_package) b_box_with_chelp #end">
+					#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end	
 					$r.render("guimessage")
 					$r.render("modalContent")
 				</div>

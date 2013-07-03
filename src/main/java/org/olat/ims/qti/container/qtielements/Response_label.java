@@ -60,9 +60,13 @@ public class Response_label extends GenericQTIElement {
 		String responseIdent = (String) ri.get(RenderInstructions.KEY_RESPONSE_IDENT);
 		// find parent render_xxx element
 		String renderClass = (String) ri.get(RenderInstructions.KEY_RENDER_CLASS);
-		if (ri == null) throw new AssertException("Render class must be set previousely to call respnse_label.render.");
+		if (ri == null) {
+			throw new AssertException("Render class must be set previousely to call respnse_label.render.");
+		}
 		
-		if (renderClass.equals("choice")) {
+		if(renderClass == null) {
+			//we don't know what to do
+		} else if (renderClass.equals("choice")) {
 			// render multiple/single choice
 			buffer.append("<div class=\"o_qti_item_choice_option");
 			if (!wantBr(ri)) buffer.append("_flow");

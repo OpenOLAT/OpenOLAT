@@ -46,7 +46,7 @@ public class Util {
 	 * @param clazz
 	 * @return the package name
 	 */
-	public static String getPackageName(Class clazz) {
+	public static String getPackageName(Class<?> clazz) {
 		return clazz.getPackage().getName();
 	}
 
@@ -58,7 +58,7 @@ public class Util {
 	 * @param clazz
 	 * @return the velocity root path
 	 */
-	public static String getPackageVelocityRoot(Class clazz) {
+	public static String getPackageVelocityRoot(Class<?> clazz) {
 		return getPackageVelocityRoot(getPackageName(clazz));
 	}
 
@@ -78,7 +78,7 @@ public class Util {
 		
 	}
 
-	public static Translator createPackageTranslator(Class baseClass, Locale locale) {
+	public static Translator createPackageTranslator(Class<?> baseClass, Locale locale) {
 		return createPackageTranslator(baseClass, locale, null);
 	}
 	
@@ -90,16 +90,26 @@ public class Util {
 	 * @param fallback The fallback translator that should be used
 	 * @return
 	 */
-	public static Translator createPackageTranslator(Class baseClass, Locale locale, Translator fallback) {
+	public static Translator createPackageTranslator(Class<?> baseClass, Locale locale, Translator fallback) {
 		String transpackage = Util.getPackageName(baseClass);
+		return createPackageTranslator(transpackage, locale, fallback);
+	}
+	
+	/**
+	 * 
+	 * Returns a Translator for the given package and locale
+	 * @param transpackage the location of the package will be taken to resolve the relative resource "_i18n/LocalStrings_(localehere).properties"
+	 * @param locale
+	 * @param fallback The fallback translator that should be used
+	 * @return
+	 */
+	public static Translator createPackageTranslator(String transpackage, Locale locale, Translator fallback) {
 		Translator trans;
 		if(fallback != null) {
 			trans = new PackageTranslator(transpackage, locale, fallback);
 		} else {
 			trans = new PackageTranslator(transpackage, locale);
 		}
-		
 		return trans;
 	}
-
 }

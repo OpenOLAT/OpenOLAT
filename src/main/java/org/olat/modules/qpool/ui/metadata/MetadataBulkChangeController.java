@@ -154,7 +154,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		decorate(keywordsEl, generalCont, listener);
 		coverageEl = uifactory.addTextElement("general.coverage", "general.coverage", 1000, null, generalCont);
 		decorate(coverageEl, generalCont, listener);
-		addInfosEl = uifactory.addTextElement("general.additional.informations", "general.additional.informations",
+		addInfosEl = uifactory.addTextElement("general.additional.informations", "general.additional.informations.long",
 				256, "", generalCont);
 		decorate(addInfosEl, generalCont, listener);
 		languageEl = uifactory.addTextElement("general.language", "general.language", 10, "", generalCont);

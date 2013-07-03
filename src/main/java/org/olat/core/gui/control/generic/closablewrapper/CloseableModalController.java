@@ -129,6 +129,17 @@ public class CloseableModalController extends DefaultController {
 	public void setCustomWindowCSS(String cssClass){
 		myContent.contextPut("windowCssClass", cssClass);
 	}
+	
+	public void setContextHelp(UserRequest ureq, String packageName, String pageName, String hoverTextKey) {
+		if (packageName == null) {
+			myContent.contextRemove("off_chelp_package");
+		} else {
+			myContent.contextPut("off_chelp_package", packageName);
+			myContent.contextPut("off_chelp_page", pageName);
+			myContent.contextPut("off_chelp_hover", hoverTextKey);
+			myContent.setTranslator(Util.createPackageTranslator(packageName, ureq.getLocale(), null));
+		}
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,

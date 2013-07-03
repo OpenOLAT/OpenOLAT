@@ -115,7 +115,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 			final boolean showDisplayKey, final boolean allowNewValues, int inputWidth, int minChars, String label, Form externalMainForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "autocomplete", externalMainForm);
 		this.gprovider = provider;
-		this.allowNewValues = true;
+		this.allowNewValues = allowNewValues;
 		setupAutoCompleter(ureq, noresults, showDisplayKey, inputWidth, minChars, label);
 		setFormElement(true);
 	}

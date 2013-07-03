@@ -47,6 +47,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
+import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
 import org.olat.modules.qpool.ExportFormatOptions;
@@ -510,12 +511,14 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void doOpenRepositoryImport(UserRequest ureq) {
 		removeAsListenerAndDispose(importTestCtrl);
-		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{ TestFileResource.TYPE_NAME },
+		String[] allowed = new String[]{ TestFileResource.TYPE_NAME, SurveyFileResource.TYPE_NAME };
+		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, allowed,
 				translate("import.repository"), false, false, false, false, true);
 		listenTo(importTestCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				importTestCtrl.getInitialComponent(), true, translate("import.repository"));
+		cmc.setContextHelp(ureq, "org.olat.modules.qpool.ui", "import-repo.html", "help.hover.importrepo");
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -649,6 +652,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private void doConfirmDelete(UserRequest ureq, List<QuestionItemShort> items) {
 		confirmDeleteBox = activateYesNoDialog(ureq, null, translate("confirm.delete"), confirmDeleteBox);
 		confirmDeleteBox.setUserObject(items);
+		confirmDeleteBox.setContextHelp("org.olat.modules.qpool.ui", "delete-item.html", "help.hover.deleteitem");
 	}
 	
 	private void doDelete(UserRequest ureq, List<QuestionItemShort> items) {
@@ -673,6 +677,7 @@ public class QuestionListController extends AbstractItemListController implement
 		String text = translate("confirm.unshare", new String[]{ getSource().getName() });
 		confirmRemoveBox = activateYesNoDialog(ureq, null, text, confirmRemoveBox);
 		confirmRemoveBox.setUserObject(items);
+		confirmRemoveBox.setContextHelp("org.olat.modules.qpool.ui", "remove-item.html", "help.hover.removeitem");
 	}
 	
 	protected void doRemove(UserRequest ureq, List<QuestionItemShort> items) {
@@ -715,6 +720,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				selectGroupCtrl.getInitialComponent(), true, translate("select.group"));
+		cmc.setContextHelp(ureq, "org.olat.modules.qpool.ui", "share-group.html", "help.hover.sharegroup");
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -736,6 +742,7 @@ public class QuestionListController extends AbstractItemListController implement
 		String text = translate("copy.confirmation");
 		confirmCopyBox = activateYesNoDialog(ureq, title, text, confirmCopyBox);
 		confirmCopyBox.setUserObject(items);
+		confirmCopyBox.setContextHelp("org.olat.modules.qpool.ui", "copy-item.html", "help.hover.copyitem");
 	}
 	
 	protected void doCopy(UserRequest ureq, List<QuestionItemShort> items) {
