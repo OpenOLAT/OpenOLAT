@@ -85,8 +85,7 @@ public class PoolsAdminController extends FormBasicController {
 	private final QPoolService qpoolService;
 	
 	public PoolsAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "pools_admin");
-		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
+		super(ureq, wControl, null, "pools_admin", Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);

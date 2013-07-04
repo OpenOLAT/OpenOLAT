@@ -52,10 +52,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nItem;
-import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.i18n.ui.I18nItemChangedEvent;
 import org.olat.core.util.i18n.ui.TranslationToolI18nItemEditCrumbController;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.ui.QuestionsController;
@@ -83,10 +81,8 @@ public class QEducationalContextsAdminController extends FormBasicController {
 	private final QPoolService qpoolService;
 	
 	public QEducationalContextsAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "levels_admin");
+		super(ureq, wControl, null, "levels_admin", Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 
-		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
-		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);
 		reloadModel();
@@ -153,6 +149,12 @@ public class QEducationalContextsAdminController extends FormBasicController {
 				QEducationalContext level = (QEducationalContext)confirmDeleteCtrl.getUserObject();
 				doDelete(ureq, level);
 			}
+		} else if(source == i18nItemEditCtr) {
+			if(event instanceof I18nItemChangedEvent) {
+				reloadModel();
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -174,19 +176,12 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		Locale orgininalLocale = getLocale();
 		Locale varLocale = new Locale(orgininalLocale.getLanguage(), orgininalLocale.getCountry(), "__customizing");
 
-		I18nItem item = new I18nItem("org.olat.modules.qpool.ui", "item.level." + row.getLevel(), varLocale, 1, 1);
+		I18nItem item = new I18nItem("org.olat.modules.qpool.ui", "item.level." + row.getLevel().toLowerCase(), varLocale, 1, 1);
 		List<I18nItem> i18nItems = new ArrayList<I18nItem>();
 		i18nItems.add(item);
 
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		List<String> referenceLangs = I18nModule.getTransToolReferenceLanguages();
-		String referencePrefs = (String)guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_REFERENCE_LANG, referenceLangs.get(0));
-		I18nManager i18nMgr = I18nManager.getInstance();
-		Locale referenceLocale = i18nMgr.getLocaleOrNull(referencePrefs);
-
-		i18nItemEditCtr = new TranslationToolI18nItemEditCrumbController(ureq, getWindowControl(), i18nItems, referenceLocale, true);
+		i18nItemEditCtr = new TranslationToolI18nItemEditCrumbController(ureq, getWindowControl(), i18nItems, null, true);
 		listenTo(i18nItemEditCtr);
-		
 		i18nItemEditCtr.initialzeI18nitemAsCurrentItem(ureq, item);
 
 		// Open in modal window

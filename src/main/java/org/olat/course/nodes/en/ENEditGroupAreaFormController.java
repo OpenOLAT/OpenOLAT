@@ -117,7 +117,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	private final BusinessGroupService businessGroupService;
 
 	public ENEditGroupAreaFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig, CourseEditorEnv cev) {
-		super(ureq, wControl, null);
+		super(ureq, wControl);
 		Translator pT = Util.createPackageTranslator(Condition.class, ureq.getLocale(), getTranslator());
 		this.setTranslator(pT);
 		

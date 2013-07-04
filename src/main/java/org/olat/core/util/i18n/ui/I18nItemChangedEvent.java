@@ -32,8 +32,10 @@ import org.olat.core.util.i18n.I18nItem;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 
-class I18nItemChangedEvent extends Event {
-	private static final String COMMAND = "I18nItemChangedEvent";
+public class I18nItemChangedEvent extends Event {
+
+	private static final long serialVersionUID = 8044524802341281294L;
+	public static final String COMMAND = "I18nItemChangedEvent";
 	private I18nItem changedItem;
 
 	/**

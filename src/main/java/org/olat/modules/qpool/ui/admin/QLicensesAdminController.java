@@ -75,9 +75,7 @@ public class QLicensesAdminController extends FormBasicController {
 	private final QPoolService qpoolService;
 	
 	public QLicensesAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "licenses_admin");
-
-		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
+		super(ureq, wControl, null, "licenses_admin", Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);

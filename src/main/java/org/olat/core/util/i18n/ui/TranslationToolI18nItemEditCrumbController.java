@@ -84,6 +84,8 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	private static final String KEYS_EMPTY = "";
 	// true when the overlay files are edited and not the language files itself
 	private boolean customizingMode = false;
+	
+	private final I18nManager i18nMgr;
 
 	/**
 	 * Constructor for the item edit controller. Use the
@@ -101,9 +103,20 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	public TranslationToolI18nItemEditCrumbController(UserRequest ureq, WindowControl control, List<I18nItem> i18nItems,
 			Locale referenceLocale, boolean customizingMode) {
 		super(ureq, control, "translationToolI18nItemEdit");
+		i18nMgr = I18nManager.getInstance();
 		this.customizingMode = customizingMode;
 		this.i18nItems = i18nItems;
-		this.referenceLocale = referenceLocale;
+		if(referenceLocale == null) {
+			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+			List<String> referenceLangs = I18nModule.getTransToolReferenceLanguages();
+			String referencePrefs = (String)guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_REFERENCE_LANG, referenceLangs.get(0));
+			this.referenceLocale = i18nMgr.getLocaleOrNull(referencePrefs);
+			if(this.referenceLocale == null) {
+				this.referenceLocale = i18nMgr.getLocaleOrDefault("de");
+			}
+		} else {
+			this.referenceLocale = referenceLocale;
+		}
 		if (i18nItems.size() > 0) {
 			currentItem = i18nItems.get(currentItemPosition);
 			initForm(ureq);
@@ -150,8 +163,8 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		FormUIFactory formFactory = FormUIFactory.getInstance();
 		I18nManager i18nMgr = I18nManager.getInstance();
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		this.flc.contextPut("referenceLanguageKey", referenceLocale.toString());
-		this.flc.contextPut("referenceLanguage", i18nMgr.getLanguageTranslated(referenceLocale.toString(), false));
+		flc.contextPut("referenceLanguageKey", referenceLocale.toString());
+		flc.contextPut("referenceLanguage", i18nMgr.getLanguageTranslated(referenceLocale.toString(), false));
 		// Add bundles and keys selection
 		List<String> bundlesList = new ArrayList<String>();
 		List<String> keysList = new ArrayList<String>();

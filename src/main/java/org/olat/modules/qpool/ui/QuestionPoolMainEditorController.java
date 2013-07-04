@@ -91,6 +91,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private QuestionsController myQuestionsCtrl;
 	private QuestionsController markedQuestionsCtrl;
 	
+	private Controller presentationCtrl;
 	private PoolsAdminController poolAdminCtrl;
 	private QItemTypesAdminController typesCtrl;
 	private QEducationalContextsAdminController levelsCtrl;
@@ -128,8 +129,9 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		menuTree.setOpenNodeIds(openNodeIds);
 		
 		content = new Panel("list");
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, content, "qpool");				
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, content, "qpool");
 		
+		doSelectPresentation(ureq);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}
 
@@ -164,7 +166,9 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelectControllerTreeNode(UserRequest ureq, TreeNode node, List<ContextEntry> entries, StateEntry state) {
 		Object uNode = node.getUserObject();
-		if("Statistics".equals(uNode)) {
+		if("Presentation".equals(uNode)) {
+			doSelectPresentation(ureq);
+		} else if("Statistics".equals(uNode)) {
 			doSelectAdmin(ureq, entries, state);
 		} else if("Taxonomy".equals(uNode)) {
 			doSelectAdminStudyFields(ureq, entries, state);
@@ -294,6 +298,15 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			((Activateable2)controller).activate(ureq, entries, state);
 		}
 		content.setContent(controller.getInitialComponent());
+	}
+	
+	private void doSelectPresentation(UserRequest ureq) {
+		if(presentationCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Presentation"), null);
+			presentationCtrl = new PresentationController(ureq, swControl);
+			listenTo(presentationCtrl);
+		} 
+		setContent(ureq, presentationCtrl, null, null);
 	}
 	
 	private void doSelectAdmin(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -461,7 +474,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		gtm.setRootNode(rootNode);
 		
 		//question database
-		myNode = new GenericTreeNode(translate("menu.database"), "menu.database");
+		myNode = new GenericTreeNode(translate("menu.database"), "Presentation");
 		myNode.setCssClass("o_sel_qpool_database");
 		rootNode.addChild(myNode);
 		buildMySubTreeModel(myNode);

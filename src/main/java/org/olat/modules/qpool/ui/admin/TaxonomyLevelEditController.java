@@ -49,8 +49,7 @@ public class TaxonomyLevelEditController extends FormBasicController {
 	private final QPoolService qpoolService;
 	
 	public TaxonomyLevelEditController(UserRequest ureq, WindowControl wControl, TaxonomyLevel parentLevel, TaxonomyLevel taxonomyLevel) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 		
 		this.parentLevel = parentLevel;
 		this.taxonomyLevel = taxonomyLevel;

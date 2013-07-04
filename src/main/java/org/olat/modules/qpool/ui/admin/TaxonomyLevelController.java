@@ -52,8 +52,7 @@ public class TaxonomyLevelController extends FormBasicController {
 	private TaxonomyLevel taxonomyLevel;
 	
 	public TaxonomyLevelController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 		initForm(ureq);
 		//make it invisible, no level to show
 		flc.setVisible(false);

@@ -50,8 +50,7 @@ public class PoolEditController extends FormBasicController {
 	private final QPoolService qpoolService;
 	
 	public PoolEditController(UserRequest ureq, WindowControl wControl, Pool pool) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 		
 		this.pool = pool;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);

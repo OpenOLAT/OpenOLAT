@@ -48,8 +48,7 @@ public class QItemTypeEditController extends FormBasicController {
 	private final QPoolService qpoolService;
 	
 	public QItemTypeEditController(UserRequest ureq, WindowControl wControl, QItemType itemType) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 		
 		this.itemType = itemType;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);

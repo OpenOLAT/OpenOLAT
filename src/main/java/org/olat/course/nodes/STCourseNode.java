@@ -565,6 +565,10 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 			// set the default display to peekview in two columns
 			config.setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW);
 			config.setIntValue(STCourseNodeEditController.CONFIG_KEY_COLUMNS, 2);
+
+			DeliveryOptions defaultOptions = DeliveryOptions.defaultWithGlossary();
+			config.set(SPEditController.CONFIG_KEY_DELIVERYOPTIONS, defaultOptions);
+			
 			config.setConfigurationVersion(3);
 		} else {
 			// update to version 2
@@ -590,6 +594,14 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 					config.setIntValue(STCourseNodeEditController.CONFIG_KEY_COLUMNS, 1);
 				}
 				config.setConfigurationVersion(3);
+			}
+
+			if (config.getConfigurationVersion() < 4) {
+				if(config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS) == null) {
+					DeliveryOptions defaultOptions = DeliveryOptions.defaultWithGlossary();
+					config.set(SPEditController.CONFIG_KEY_DELIVERYOPTIONS, defaultOptions);
+				}
+				config.setConfigurationVersion(4);
 			}
 		}
 	}

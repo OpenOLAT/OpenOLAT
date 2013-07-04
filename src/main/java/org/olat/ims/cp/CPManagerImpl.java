@@ -95,11 +95,17 @@ public class CPManagerImpl extends CPManager {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File reFolder = frm.getFileResourceRoot(ores);
 		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
+		
+		CPPackageConfig config;
 		if(configXml.exists()) {
-			CPPackageConfig config = (CPPackageConfig)configXstream.fromXML(configXml);
-			return config;
+			config = (CPPackageConfig)configXstream.fromXML(configXml);
+		} else {
+			//set default config
+			config = new CPPackageConfig();
+			config.setDeliveryOptions(DeliveryOptions.defaultWithGlossary());
+			setCPPackageConfig(ores, config);
 		}
-		return null;
+		return config;
 	}
 
 	@Override
