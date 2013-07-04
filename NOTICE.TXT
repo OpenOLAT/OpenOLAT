@@ -77,7 +77,6 @@ This product uses software based on the Apache Software License like
 * Quartz job scheduler from the OpenSymphony project (Apache 2 license) [http://www.opensymphony.com/quartz]
 * Spring framework (Apache License, Version 2.0) [http://www.springsource.org/]
 * Xerces (Apache Software License, Version 2.0) [http://xerces.apache.org/xerces-j]
-* SMACK client library from jivesoftware.org (Apache Software License, Version 2.0) [http://www.jivesoftware.org/smack]
 * Bouncycastle (Bouncy Castle Licence) [http://www.bouncycastle.org]
 * Jackson	(Apache Software License, Version 2.0) [http://jackson.codehaus.org]
 * Batik-css	(Apache Software License, Version 2.0) [http://xmlgraphics.apache.org/batik]
@@ -87,7 +86,6 @@ This product uses software based on the Apache Software License like
 * XMLBeans (Apache Software License, Version 2.0) [http://xmlbeans.apache.org]
 * ActiveMQ (Apache Software License, Version 2.0) [http://activemq.apache.org]
 * POI (Apache Software License, Version 2.0) [http://poi.apache.org]
-* Ehcache	(Apache Software License, Version 2.0) [http://www.ehcache.org]
 * JDOM (Apache like) Project [http://www.jdom.org/]
 * Apache Commons libraries (commons-codec, commons-collections, commons-fileupload, commons-httpclient, commons-io,
   commons-lang,commons-logging,commons-net) (Apache Software License, Version 2.0) [http://commons.apache.org]
@@ -105,13 +103,15 @@ This product uses software based on the Apache Software License like
   see src/main/webapp/WEB-INF/lib/licenses/ECL.license.txt) [http://sakaiproject.org/projects/lti-portlet]
 * Geronimo Specs (Apache Software License, Version 2.0) [http://geronimo.apache.org]
 * JCommander (Apache Software License, Version 2.0) [http://jcommander.org]
-* google-guice (Apache Software License, Version 2.0) [http://code.google.com/p/google-guice]
 * jsr107-cache (Apache Software License, Version 2.0) [http://sourceforge.net/projects/jsr107cache]
 * Apache Ant (Apache Software License, Version 2.0) [http://ant.apache.org]
 * SCORM player project: reload (MIT License) [http://www.reload.ac.uk]
 * Prototype javascript framework (MIT License) [http://www.prototypejs.org]
 * Script.aculo.us javascript framework (MIT License) [http://script.aculo.us]
 * JSMATH latex rendering (Apache Software License, Version 2.0) [http://www.math.union.edu/~dpvc/jsMath]
+* jQuery JavaScript DOM library (MIT License) [http://jquery.com]
+* jQuery-UI JavaScript UI library (MIT License) [http://jqueryui.com]
+* JBoss Infinispan (Apache Software License, Version 2.0) [http://www.jboss.org/infinispan/]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License
@@ -122,6 +122,7 @@ This product uses software based on the BSD License
 * Antlr (BSD license) [http://www.antlr.org]
 * PostgreSQL JDBC Driver(BSD License) [http://jdbc.postgresql.org]
 * Modernizr JS Library (BSD License) [http://modernizr.com]
+* Datatable JavaScript table UI library (BSD License) [https://datatables.net]
 
 -----------------------------------------------------------------------
 This product uses software based on the Common Public License Version
@@ -139,26 +140,23 @@ This product uses software based on the Lesser General Public License (LGPL)
 * gnu-regexp (GNU Lesser General Public License) [http://savannah.gnu.org/projects/gnu-regexp]
 * JAMWiki (GNU Lesser General Public License) [http://jamwiki.org/wiki/en]
 * XOM (GNU Lesser General Public License) [http://www.xom.nu]
-* DHTML calendar by dynarch.com (LGPL) [http://prdownloads.sourceforge.net/jscalendar]
-  Author: Mihai Bazon, <mishoo@infoiasi.ro> [http://dynarch.com/mishoo]
 * TinyMCE WYSIWYG HTML editor (LGPL) [http://tinymce.moxiecode.com]
 
 -----------------------------------------------------------------------
 This product uses software in the public domain
-* aopalliance	(Public Domain) [http://aopalliance.sourceforge.net]
+* aopalliance (Public Domain) [http://aopalliance.sourceforge.net]
 * backport-util-concurrent	(Public Domain) [http://backport-jsr166.sourceforge.net]
 * XML Pull (Public Domain) [http://www.xmlpull.org]
 
 -----------------------------------------------------------------------
 This product uses software based on the General Public License (GPL)
 * Connector/J	(GNU General Public License, Version 2) [http://www.mysql.com/downloads/connector/j/]
-* EXTJS javascript framework (GNU General Public License, Version 3) [http://www.sencha.com]
 
 -----------------------------------------------------------------------
 This product uses software based on the CDDL
 * Jersey (CDDL 1.1 and GPL 2 with CPE) [http://jersey.java.net]
-* jsr311-api	(CDDL License) [http://jsr311.java.net]
-* Grizzly	(CDDL) [http://grizzly.java.net]
+* jsr311-api (CDDL License) [http://jsr311.java.net]
+* Grizzly (CDDL) [http://grizzly.java.net]
 
 -----------------------------------------------------------------------
 This product uses software based on Creative Commons License
@@ -170,7 +168,7 @@ This product uses software based on Creative Commons License
 -----------------------------------------------------------------------
 This product uses software based on specific License
 * ical4j (see src/main/webapp/WEB-INF/lib/licenses/ical4j.license.txt) [http://wiki.modularity.net.au/ical4j]
-* cos	(Jason Hunter License see src/main/webapp/WEB-INF/lib/licenses/cos.license.txt)
+* cos (Jason Hunter License see src/main/webapp/WEB-INF/lib/licenses/cos.license.txt)
 * org.json (see src/main/webapp/WEB-INF/lib/licenses/json.license.txt) [http://json.org/java]
 * SAC (W3C Software License) [http://www.w3.org/TR/SAC]
 * SCORM API adaper by the ISN (International Relations and Security Network) at ETH Zurich [http://www.isn.ethz.ch/]
