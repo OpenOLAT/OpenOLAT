@@ -247,14 +247,6 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			//set inherited values
 		} else {
 			boolean standard = standardModeEl.isSelected(0);
-			// set default values for OO-mode
-			if (!standard) {
-				jsOptionEl.select(jsKeys[1], true);
-				cssOptionEl.select(cssKeys[1], true);
-				heightEl.select(keys[0], true);
-				glossarEl.select("on", true);
-			}
-			// enable everything
 			boolean jQueryEnabled = jsOptionEl.isSelected(1);
 			jsOptionEl.setEnabled(!standard);
 			cssOptionEl.setEnabled(!standard);
