@@ -209,7 +209,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 			config.set(SPEditController.CONFIG_KEY_DELIVERYOPTIONS, defaultOptions);
 			
 			// new since config version 3
-			config.setConfigurationVersion(3);
+			config.setConfigurationVersion(4);
 		} else {
 			config.remove(NodeEditController.CONFIG_INTEGRATION);
 			int version = config.getConfigurationVersion();
@@ -219,6 +219,14 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 				config.setBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS, Boolean.FALSE.booleanValue());
 				config.setConfigurationVersion(2);
 			}
+			if(version < 4) {
+				if(config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS) == null) {
+					DeliveryOptions defaultOptions = DeliveryOptions.defaultWithGlossary();
+					config.set(SPEditController.CONFIG_KEY_DELIVERYOPTIONS, defaultOptions);
+				}
+				config.setConfigurationVersion(4);
+			}
+			
 			//there was a version 3 but all keys new in this version have been removed
 		}
 	}
