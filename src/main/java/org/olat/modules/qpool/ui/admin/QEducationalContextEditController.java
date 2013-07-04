@@ -48,8 +48,7 @@ public class QEducationalContextEditController extends FormBasicController {
 	private final QPoolService qpoolService;
 	
 	public QEducationalContextEditController(UserRequest ureq, WindowControl wControl, QEducationalContext itemLevel) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 		
 		this.itemLevel = itemLevel;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);

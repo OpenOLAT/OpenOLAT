@@ -52,10 +52,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nItem;
-import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.i18n.ui.I18nItemChangedEvent;
 import org.olat.core.util.i18n.ui.TranslationToolI18nItemEditCrumbController;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.ui.QuestionsController;
@@ -83,9 +81,7 @@ public class QItemTypesAdminController extends FormBasicController {
 	private final QPoolService qpoolService;
 	
 	public QItemTypesAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "types_admin");
-
-		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
+		super(ureq, wControl, null, "types_admin", Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);
@@ -153,6 +149,12 @@ public class QItemTypesAdminController extends FormBasicController {
 				QItemType type = (QItemType)confirmDeleteCtrl.getUserObject();
 				doDelete(ureq, type);
 			}
+		} else if(source == i18nItemEditCtr) {
+			if(event instanceof I18nItemChangedEvent) {
+				reloadModel();
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -178,16 +180,8 @@ public class QItemTypesAdminController extends FormBasicController {
 		List<I18nItem> i18nItems = new ArrayList<I18nItem>();
 		i18nItems.add(item);
 
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		List<String> referenceLangs = I18nModule.getTransToolReferenceLanguages();
-		String referencePrefs = (String)guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_REFERENCE_LANG, referenceLangs.get(0));
-		I18nManager i18nMgr = I18nManager.getInstance();
-		Locale referenceLocale = i18nMgr.getLocaleOrNull(referencePrefs);
-		
-		
-		i18nItemEditCtr = new TranslationToolI18nItemEditCrumbController(ureq, getWindowControl(), i18nItems, referenceLocale, true);
+		i18nItemEditCtr = new TranslationToolI18nItemEditCrumbController(ureq, getWindowControl(), i18nItems, null, true);
 		listenTo(i18nItemEditCtr);
-		
 		i18nItemEditCtr.initialzeI18nitemAsCurrentItem(ureq, item);
 
 		// Open in modal window

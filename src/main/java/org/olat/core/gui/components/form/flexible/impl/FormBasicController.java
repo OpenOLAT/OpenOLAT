@@ -84,7 +84,12 @@ public abstract class FormBasicController extends BasicController {
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 	
 	public FormBasicController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
+		this(ureq, wControl, (String)null);
+	}
+	
+	
+	public FormBasicController(UserRequest ureq, WindowControl wControl, Translator fallbackTranslator) {
+		this(ureq, wControl, null, null, fallbackTranslator);
 	}
 
 	public FormBasicController(UserRequest ureq, WindowControl wControl, String pageName) {
@@ -123,8 +128,6 @@ public abstract class FormBasicController extends BasicController {
 	public FormBasicController(UserRequest ureq, WindowControl wControl, String mainFormId, String pageName, Translator fallbackTranslator) {
 		super(ureq, wControl, fallbackTranslator);
 		constructorInit(mainFormId, pageName);
-		//TODO: Translator-fix: flc , mainForm also needs to know about the new Translator
-//		setTranslator(getTranslator()); 
 	}
 	
 

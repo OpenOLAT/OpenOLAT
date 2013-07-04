@@ -56,8 +56,7 @@ public class TaxonomyAdminController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	public TaxonomyAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(QuestionsController.class, ureq.getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 		
 		mainVC = createVelocityContainer("admin_study_fields");
 		
