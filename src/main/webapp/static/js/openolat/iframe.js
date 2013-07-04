@@ -133,29 +133,6 @@ function b_glossaryHighlight(){
 		o_tm_doHighlightAll(window.document, b_getGlossaryArray(), "");
 	}
 }
- 
-function b_hideExtMessageBox(){
-// temporary hack to remove back-message in iframe
-	var mainwindow = b_getMainWindow(window.parent);
-	var counter = 0;
-	if (mainwindow != null && mainwindow != 'undefined' && mainwindow["Ext"]) {
-		var activ = setInterval(function(){
-			try {
-				if (!mainwindow.tinyMCE && mainwindow.Ext.MessageBox.isVisible()){
-					mainwindow.Ext.MessageBox.hide();
-					clearInterval(activ);
-				} else if (counter == 10) {
-				//stop interval after some tries
-					clearInterval(activ);
-				}
-				counter++;
-			} catch (e) {
-				//console.log(e);			
-				clearInterval(activ);
-			}
-		} ,50);
-	};
-};
 
 function b_sendNewUriEventToParent() {
 //console.log("b_sendNewUriEventToParent window.name=" + window.name + " b_iframeid=" + b_iframeid + " window.location=" + window.location);

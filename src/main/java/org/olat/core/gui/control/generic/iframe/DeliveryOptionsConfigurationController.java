@@ -242,7 +242,6 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			//disabled all
 			jsOptionEl.setEnabled(false);
 			cssOptionEl.setEnabled(false);
-			heightEl.setEnabled(false);
 			glossarEl.setEnabled(false);
 			//set inherited values
 		} else {
@@ -250,7 +249,6 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			boolean jQueryEnabled = jsOptionEl.isSelected(1);
 			jsOptionEl.setEnabled(!standard);
 			cssOptionEl.setEnabled(!standard);
-			heightEl.setEnabled(!standard);
 			glossarEl.setEnabled(!standard && jQueryEnabled);
 		}
 	}
@@ -312,8 +310,6 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	protected void doDispose() {
 		//
 	}
-	
-	
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -326,6 +322,12 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 					allOk &= false;
 					glossarEl.setErrorKey("glossary.need.jQuery", null);
 				}	
+			}
+			
+			heightEl.clearError();
+			if(standardModeEl.isSelected(0) || jsOptionEl.isSelected(0)) {
+				heightEl.setErrorKey("automatic.need.js", null);
+				allOk = false;
 			}
 		}
 		
@@ -377,7 +379,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			options.setjQueryEnabled(Boolean.FALSE);
 			options.setPrototypeEnabled(Boolean.FALSE);
 			options.setGlossaryEnabled(Boolean.FALSE);
-			options.setHeight(null);
+			options.setHeight(heightEl.getSelectedKey());
 			options.setOpenolatCss(Boolean.FALSE);
 		} else {
 			options.setStandardMode(Boolean.FALSE);
@@ -386,14 +388,13 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 				options.setjQueryEnabled(Boolean.FALSE);
 				options.setPrototypeEnabled(Boolean.FALSE);
 				options.setGlossaryEnabled(Boolean.FALSE);
-				options.setHeight(null);
 			} else {
 				options.setjQueryEnabled(jsOptionEl.isSelected(1));
 				options.setPrototypeEnabled(jsOptionEl.isSelected(2));
 				options.setGlossaryEnabled(glossarEl.isAtLeastSelected(1));
-				options.setHeight(heightEl.getSelectedKey());
 			}
 			//css
+			options.setHeight(heightEl.getSelectedKey());
 			options.setOpenolatCss(cssOptionEl.isSelected(1));
 		}
 		persistEncoding(config);
