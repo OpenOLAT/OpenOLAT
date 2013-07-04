@@ -620,6 +620,10 @@ public class BusinessGroupDAO {
 	public List<BusinessGroupView> findBusinessGroupWithAuthorConnection(Identity author) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgi from ").append(BusinessGroupViewImpl.class.getName()).append(" as bgi ")
+	    .append("inner join fetch bgi.ownerGroup ownerGroup ")
+		  .append("inner join fetch bgi.partipiciantGroup participantGroup ")
+		  .append("inner join fetch bgi.waitingGroup waitingGroup ")
+		  .append("inner join fetch bgi.resource bgResource ")
 		  .append("where bgi.key in (")
 		  .append("  select rel.group.key from ").append(BGResourceRelation.class.getName()).append(" as rel ")
 		  .append("  where rel.resource.key in (")

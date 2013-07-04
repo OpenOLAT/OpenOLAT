@@ -60,6 +60,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.SearchForm;
+import org.olat.repository.SearchRepositoryEntryParameters;
 
 /**
 *  Description:
@@ -239,8 +240,15 @@ public class RepositorySearchController extends BasicController implements Activ
 			restrictedTypes = (s == null) ? null : new ArrayList<String>(s);
 		}
 		//fxdiff VCRP-1,2: access control of resources
-		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(searchForm.getDisplayName(), searchForm.getAuthor(),
-			searchForm.getDescription(), restrictedTypes, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, null));
+		//List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(searchForm.getDisplayName(), searchForm.getAuthor(),
+		//	searchForm.getDescription(), restrictedTypes, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, null));
+		
+		SearchRepositoryEntryParameters params =
+				new SearchRepositoryEntryParameters(searchForm.getDisplayName(), searchForm.getAuthor(), searchForm.getDescription(),
+						restrictedTypes, ureq.getIdentity(), ureq.getUserSession().getRoles(),
+						ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, null));
+		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);	
+		
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
 		if(updateFilters) {
