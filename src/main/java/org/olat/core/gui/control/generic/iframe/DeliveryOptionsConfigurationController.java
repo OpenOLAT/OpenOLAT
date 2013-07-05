@@ -325,7 +325,8 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			}
 			
 			heightEl.clearError();
-			if(standardModeEl.isSelected(0) || jsOptionEl.isSelected(0)) {
+			if(heightEl.isSelected(0)
+					&& (standardModeEl.isSelected(0) || jsOptionEl.isSelected(0))) {
 				heightEl.setErrorKey("automatic.need.js", null);
 				allOk = false;
 			}
