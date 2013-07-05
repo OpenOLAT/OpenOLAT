@@ -32,7 +32,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.mail.model.DBMail;
+import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.mail.model.DBMailRecipient;
 
 /**
@@ -44,17 +44,17 @@ import org.olat.core.util.mail.model.DBMailRecipient;
  * Initial Date:  28 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MailDataModel implements TableDataModelWithMarkableRows<DBMail> {
+public class MailDataModel implements TableDataModelWithMarkableRows<DBMailLight> {
 	
 	private boolean outbox;
-	private List<DBMail> mails;
-	private List<DBMail> filteredMails;
+	private List<DBMailLight> mails;
+	private List<DBMailLight> filteredMails;
 	private final Identity identity;
 	private final Formatter formatter;
 	private final Translator translator;
 	private final Map<String,String> bpToContexts;
 	
-	public MailDataModel(List<DBMail> mails, Map<String,String> bpToContexts, Identity identity,
+	public MailDataModel(List<DBMailLight> mails, Map<String,String> bpToContexts, Identity identity,
 			Translator translator, Formatter formatter, boolean outbox) {
 		this.mails = mails;
 		this.bpToContexts = bpToContexts;
@@ -76,7 +76,7 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMail> {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		DBMail mail = filteredMails == null ? mails.get(row) : filteredMails.get(row);
+		DBMailLight mail = filteredMails == null ? mails.get(row) : filteredMails.get(row);
 		Columns[] cols = Columns.values();
 		if(col < cols.length) {
 			switch(cols[col]) {
@@ -149,12 +149,12 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMail> {
 	}
 
 	@Override
-	public DBMail getObject(int row) {
+	public DBMailLight getObject(int row) {
 		return filteredMails == null ? mails.get(row) : filteredMails.get(row);
 	}
 
 	@Override
-	public void setObjects(List<DBMail> objects) {
+	public void setObjects(List<DBMailLight> objects) {
 		mails = objects;
 		filteredMails = null;
 	}
@@ -166,7 +166,7 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMail> {
 	public String getRowCssClass(int row) {
 		if(outbox) return null;
 		
-		DBMail mail = filteredMails == null ? mails.get(row) : filteredMails.get(row);
+		DBMailLight mail = filteredMails == null ? mails.get(row) : filteredMails.get(row);
 		for(DBMailRecipient recipient:mail.getRecipients()) {
 			if(recipient != null && recipient.getRecipient() != null && recipient.getRecipient().equalsByPersistableKey(identity)) {
 				if (!recipient.getRead()) {
@@ -177,7 +177,7 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMail> {
 		return null;
 	}
 
-	public void replace(DBMail mail) {
+	public void replace(DBMailLight mail) {
 		int index = mails.indexOf(mail);
 		if(index >= 0 && index < mails.size()) {
 			mails.set(index, mail);
@@ -188,8 +188,8 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMail> {
 		if(filter == null || filter.getBusinessPaths() == null || filter.getBusinessPaths().isEmpty()) {
 			filteredMails = null;
 		} else {
-			filteredMails = new ArrayList<DBMail>();
-			for(DBMail mail:mails) {
+			filteredMails = new ArrayList<DBMailLight>();
+			for(DBMailLight mail:mails) {
 				if(filter.getBusinessPaths().contains((mail.getContext().getBusinessPath()))) {
 					filteredMails.add(mail);
 				}
@@ -199,7 +199,7 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMail> {
 
 	@Override
 	public Object createCopyWithEmptyList() {
-		return new MailDataModel(Collections.<DBMail>emptyList(), bpToContexts, identity, translator, formatter, outbox);
+		return new MailDataModel(Collections.<DBMailLight>emptyList(), bpToContexts, identity, translator, formatter, outbox);
 	}
 	
 	public enum Columns {

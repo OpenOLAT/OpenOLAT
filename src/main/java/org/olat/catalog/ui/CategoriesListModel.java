@@ -43,7 +43,7 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author gnaegi
  */
-public class CategoriesListModel extends DefaultTableDataModel {
+public class CategoriesListModel extends DefaultTableDataModel<CatalogEntry> {
 	private int cols = 1;
 	public static final String ACTION_GOTO = "goto";
 	public static final String ACTION_DELETE = "delete";
@@ -89,7 +89,7 @@ public class CategoriesListModel extends DefaultTableDataModel {
 	 */
 	@Override
 	public Object getValueAt(int row, int col) {
-		CatalogEntry entry = (CatalogEntry) getObject(row);
+		CatalogEntry entry = getObject(row);
 		switch (col) {
 			case 0:
 				// calculate cat entry path: travel up to the root node
@@ -105,15 +105,4 @@ public class CategoriesListModel extends DefaultTableDataModel {
 				return "error";
 		}
 	}
-
-	/**
-	 * Returns the catalog entry at the given row
-	 * 
-	 * @param row
-	 * @return
-	 */
-	public CatalogEntry getCatalogEntry(int row) {
-		return (CatalogEntry) getObject(row);
-	}
-
 }

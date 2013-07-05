@@ -71,6 +71,8 @@
 		<!-- Inbox in users Home -->
 	<bean id="mailBoxExtension" class="org.olat.core.util.mail.MailBoxExtension">
 		<property name="mailManager" ref="mailManager" />
+		<property name="repositoryManager" ref="repositoryManager"/>
+		<property name="businessGroupService" ref="businessGroupService"/>
 	</bean>
 	
 	<!--  the email-parent-menu  -->

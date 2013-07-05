@@ -22,6 +22,7 @@ package org.olat.repository;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.catalog.CatalogEntry;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 
@@ -48,6 +49,7 @@ public class SearchRepositoryEntryParameters {
 	private String externalRef;
 	private boolean onlyExplicitMember;
 	private List<Long> repositoryEntryKeys;
+	private CatalogEntry parentEntry;
 	
 	public SearchRepositoryEntryParameters() {
 		//
@@ -125,6 +127,14 @@ public class SearchRepositoryEntryParameters {
 
 	public void setExternalRef(String externalRef) {
 		this.externalRef = externalRef;
+	}
+
+	public CatalogEntry getParentEntry() {
+		return parentEntry;
+	}
+
+	public void setParentEntry(CatalogEntry parentEntry) {
+		this.parentEntry = parentEntry;
 	}
 
 	public List<String> getResourceTypes() {

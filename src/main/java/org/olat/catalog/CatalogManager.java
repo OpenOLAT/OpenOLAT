@@ -108,6 +108,20 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	public CatalogEntry createCatalogEntry() {
 		return new CatalogEntryImpl();
 	}
+	
+	public List<CatalogEntry> getChildNodesOf(CatalogEntry ce) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
+		  .append(" inner join fetch cei.parent as parentCei")
+		  .append(" inner join fetch parentCei.ownerGroup as parentOwnerGroup")
+		  .append(" where parentCei.key=:parentKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogEntry.class)
+				.setParameter("parentKey", ce.getKey())
+				.getResultList();
+	}
 
 	/**
 	 * Children of this CatalogEntry as a list of CatalogEntries
@@ -118,40 +132,27 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		return getChildrenOf(ce, 0, -1, CatalogEntry.OrderBy.name, true);
 	}
 
+	/**
+	 * Return the nodes
+	 * @param ce
+	 * @param firstResult
+	 * @param maxResults
+	 * @param orderBy
+	 * @param asc
+	 * @return
+	 */
 	public List<CatalogEntry> getChildrenOf(CatalogEntry ce, int firstResult, int maxResults, CatalogEntry.OrderBy orderBy, boolean asc) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
 		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
+		  .append(" inner join fetch cei.parent as parentCei")
+		  .append(" inner join fetch parentCei.ownerGroup as parentOwnerGroup")
 		  .append(" left join fetch cei.repositoryEntry as repositoryEntry")
 		  .append(" left join fetch repositoryEntry.ownerGroup as repoOwnerGroup")
 		  .append(" left join fetch repositoryEntry.tutorGroup as repoTutorGroup")
 		  .append(" left join fetch repositoryEntry.participantGroup as repoParticipantGroup")
-		  .append(" where cei.parent.key=:parentKey");
-		if(orderBy != null) {
-			sb.append(" order by cei.").append(orderBy.name()).append(asc ? " ASC" : " DESC");
-		}
-
-		TypedQuery<CatalogEntry> dbQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CatalogEntry.class)
-				.setParameter("parentKey", ce.getKey())
-				.setFirstResult(0);
-		if(maxResults > 0) {
-			dbQuery.setMaxResults(maxResults);
-		}
-
-		List<CatalogEntry> entries = dbQuery.getResultList();
-		return entries;
-	}
-	
-	public List<CatalogEntry> getShortChildrenOf(CatalogEntry ce, int firstResult, int maxResults, CatalogEntry.OrderBy orderBy, boolean asc) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
-		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
-		  .append(" left join fetch cei.repositoryEntry as repositoryEntry")
-		  .append(" left join fetch repositoryEntry.ownerGroup as repoOwnerGroup")
-		  .append(" left join fetch repositoryEntry.tutorGroup as repoTutorGroup")
-		  .append(" left join fetch repositoryEntry.participantGroup as repoParticipantGroup")
-		  .append(" where cei.parent.key=:parentKey");
+		  .append(" left join fetch repositoryEntry.olatResource as resource")
+		  .append(" where parentCei.key=:parentKey");
 		if(orderBy != null) {
 			sb.append(" order by cei.").append(orderBy.name()).append(asc ? " ASC" : " DESC");
 		}
@@ -177,15 +178,10 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
 		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
-		  .append(" left join fetch cei.repositoryEntry as repositoryEntry")
-		  .append(" left join fetch repositoryEntry.ownerGroup as repoOwnerGroup")
-		  .append(" left join fetch repositoryEntry.tutorGroup as repoTutorGroup")
-		  .append(" left join fetch repositoryEntry.participantGroup as repoParticipantGroup")
-		  .append(" where cei.type= :type");
+		  .append(" where cei.type=").append(CatalogEntry.TYPE_NODE);
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CatalogEntry.class)
-				.setParameter("type", CatalogEntry.TYPE_NODE)
 				.getResultList();
 	}
 
@@ -370,16 +366,15 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return List of catalog entries
 	 */
 	public List<CatalogEntry> getCatalogCategoriesFor(RepositoryEntry repoEntry) {
-		String sqlQuery = "from org.olat.catalog.CatalogEntryImpl where id in "
-				+ " (select distinct parent.id from org.olat.catalog.CatalogEntryImpl as parent " 
-					+ ", org.olat.catalog.CatalogEntryImpl as cei "
-					+ ", org.olat.repository.RepositoryEntry as re " 
-					+ " where cei.repositoryEntry = re " 
-					+ " and re.key= :reKey " 
-					+ " and cei.parent = parent)";
-		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select parentCei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		  .append(" inner join cei.ownerGroup ownerGroup ")
+		  .append(" inner join cei.parent parentCei ")
+		  .append(" inner join fetch parentCei.ownerGroup parentOwnerGroup ")
+		  .append(" inner join cei.repositoryEntry re ")
+		  .append(" where re.key=:reKey");
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sqlQuery, CatalogEntry.class)
+				.createQuery(sb.toString(), CatalogEntry.class)
 				.setParameter("reKey", repoEntry.getKey())
 				.getResultList();
 	}
@@ -464,9 +459,12 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return List of catalog entries
 	 */
 	public List<CatalogEntry> getRootCatalogEntries() {
-		String sqlQuery = "select cei from org.olat.catalog.CatalogEntryImpl as cei where cei.parent is null";
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		  .append("inner join fetch cei.ownerGroup ownerGroup ")
+		  .append("where cei.parent is null");
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sqlQuery, CatalogEntry.class)
+				.createQuery(sb.toString(), CatalogEntry.class)
 				.getResultList();
 	}
 

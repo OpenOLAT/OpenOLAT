@@ -45,6 +45,7 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
@@ -642,7 +643,29 @@ public class RepositoryManager extends BasicManager {
 		
 		List<String> displaynames = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
-				.setParameter("resid", resId.longValue())
+				.setParameter("resid", resId)
+				.getResultList();
+
+		if (displaynames.size() > 1) throw new AssertException("Repository lookup returned zero or more than one result: " + displaynames.size());
+		else if (displaynames.isEmpty()) return null;
+		return displaynames.get(0);
+	}
+	
+	/**
+	 * Convenience method to access the repositoryEntry displayname by the referenced OLATResourceable id.
+	 * This only works if a repository entry has an referenced olat resourceable like a course or an content package repo entry
+	 * @param resId
+	 * @return the repositoryentry displayname or null if not found
+	 */
+	public String lookupDisplayName(Long reId) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v.displayname from ").append(RepositoryEntry.class.getName()).append(" v ")
+		  .append(" where v.key=:reKey");
+		
+		List<String> displaynames = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("reKey", reId)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 
 		if (displaynames.size() > 1) throw new AssertException("Repository lookup returned zero or more than one result: " + displaynames.size());
@@ -1532,12 +1555,23 @@ public class RepositoryManager extends BasicManager {
 			query.append(" left join v.participantGroup as participantGroup");
 			query.append(" left join v.tutorGroup as tutorGroup");
 		} else {
-			query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ");
-			query.append(" inner join fetch v.olatResource as res");
-			query.append(" left join fetch v.lifecycle as lifecycle");
-			query.append(" left join fetch v.ownerGroup as ownerGroup");
-			query.append(" left join fetch v.participantGroup as participantGroup");
-			query.append(" left join fetch v.tutorGroup as tutorGroup");
+			if(params.getParentEntry() != null) {
+				query.append("select v from ").append(CatalogEntry.class.getName()).append(" cei ");
+				query.append(" inner join cei.parent parentCei");
+				query.append(" inner join cei.repositoryEntry v");
+				query.append(" inner join fetch v.olatResource as res");
+				query.append(" left join fetch v.lifecycle as lifecycle");
+				query.append(" left join fetch v.ownerGroup as ownerGroup");
+				query.append(" left join fetch v.participantGroup as participantGroup");
+				query.append(" left join fetch v.tutorGroup as tutorGroup");
+			} else {
+				query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ");
+				query.append(" inner join fetch v.olatResource as res");
+				query.append(" left join fetch v.lifecycle as lifecycle");
+				query.append(" left join fetch v.ownerGroup as ownerGroup");
+				query.append(" left join fetch v.participantGroup as participantGroup");
+				query.append(" left join fetch v.tutorGroup as tutorGroup");
+			}
 		}
 		
 		boolean setIdentity = false;
@@ -1568,6 +1602,10 @@ public class RepositoryManager extends BasicManager {
 		} else {
 			query.append(" where ");
 			setIdentity = appendAccessSubSelects(query, identity, roles);
+		}
+		
+		if(params.getParentEntry() != null) {
+			query.append(" and parentCei.key=:parentCeiKey");
 		}
 		
 		if (var_author) { // fuzzy author search
@@ -1628,6 +1666,9 @@ public class RepositoryManager extends BasicManager {
 		DBQuery dbQuery = dbInstance.createQuery(query.toString());
 		if(institut) {
 			dbQuery.setParameter("institution", institution);
+		}
+		if(params.getParentEntry() != null) {
+			dbQuery.setParameter("parentCeiKey", params.getParentEntry().getKey());
 		}
 		if (var_author) {
 			dbQuery.setParameter("author", author);

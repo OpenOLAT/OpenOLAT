@@ -76,6 +76,8 @@ import org.olat.core.util.mail.MailerSMTPAuthenticator;
 import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.model.DBMailAttachment;
 import org.olat.core.util.mail.model.DBMailImpl;
+import org.olat.core.util.mail.model.DBMailLight;
+import org.olat.core.util.mail.model.DBMailLightImpl;
 import org.olat.core.util.mail.model.DBMailRecipient;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Publisher;
@@ -189,7 +191,7 @@ public class MailManager extends BasicManager {
 		return mails.get(0);
 	}
 	
-	public List<DBMailAttachment> getAttachments(DBMail mail) {
+	public List<DBMailAttachment> getAttachments(DBMailLight mail) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select attachment from ").append(DBMailAttachment.class.getName()).append(" attachment")
 			.append(" inner join attachment.mail mail")
@@ -306,7 +308,7 @@ public class MailManager extends BasicManager {
 	 * @param identity
 	 * @return true if the read flag has been changed
 	 */
-	public boolean setRead(DBMail mail, Boolean read, Identity identity) {
+	public boolean setRead(DBMailLight mail, Boolean read, Identity identity) {
 		if(mail == null || read == null || identity == null) throw new NullPointerException();
 		
 		boolean changed = false;
@@ -323,7 +325,7 @@ public class MailManager extends BasicManager {
 		return changed;
 	}
 	
-	public DBMail toggleRead(DBMail mail, Identity identity) {
+	public DBMailLight toggleRead(DBMailLight mail, Identity identity) {
 		Boolean read = null;
 		for(DBMailRecipient recipient:mail.getRecipients()) {
 			if(recipient == null) continue;
@@ -344,7 +346,7 @@ public class MailManager extends BasicManager {
 	 * @param identity
 	 * @return true if the marked flag has been changed
 	 */
-	public boolean setMarked(DBMail mail, Boolean marked, Identity identity) {
+	public boolean setMarked(DBMailLight mail, Boolean marked, Identity identity) {
 		if(mail == null || marked == null || identity == null) throw new NullPointerException();
 
 		boolean changed = false;
@@ -364,7 +366,7 @@ public class MailManager extends BasicManager {
 		return changed;
 	}
 	
-	public DBMail toggleMarked(DBMail mail, Identity identity) {
+	public DBMailLight toggleMarked(DBMailLight mail, Identity identity) {
 		Boolean marked = null;
 		for(DBMailRecipient recipient:mail.getRecipients()) {
 			if(recipient == null) continue;
@@ -384,10 +386,10 @@ public class MailManager extends BasicManager {
 	 * @param mail
 	 * @param identity
 	 */
-	public void delete(DBMail mail, Identity identity, boolean deleteMetaMail) {
+	public void delete(DBMailLight mail, Identity identity, boolean deleteMetaMail) {
 		if(StringHelper.containsNonWhitespace(mail.getMetaId()) && deleteMetaMail) {
-			List<DBMail> mails = getEmailsByMetaId(mail.getMetaId());
-			for(DBMail childMail:mails) {
+			List<DBMailLight> mails = getEmailsByMetaId(mail.getMetaId());
+			for(DBMailLight childMail:mails) {
 				deleteMail(childMail, identity, false);
 			}
 		} else {
@@ -395,7 +397,7 @@ public class MailManager extends BasicManager {
 		}
 	}
 
-	private void deleteMail(DBMail mail, Identity identity, boolean forceRemoveRecipient) {
+	private void deleteMail(DBMailLight mail, Identity identity, boolean forceRemoveRecipient) {
 		boolean delete = true;
 		List<DBMailRecipient> updates = new ArrayList<DBMailRecipient>();
 		if(mail.getFrom() != null && mail.getFrom().getRecipient() != null) {
@@ -465,9 +467,9 @@ public class MailManager extends BasicManager {
 	 * @param maxResults
 	 * @return
 	 */
-	public List<DBMail> getOutbox(Identity from, int firstResult, int maxResults) {
+	public List<DBMailLight> getOutbox(Identity from, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct(mail) from ").append(DBMailImpl.class.getName()).append(" mail")
+		sb.append("select distinct(mail) from ").append(DBMailLightImpl.class.getName()).append(" mail")
 			.append(" inner join fetch mail.from fromRecipient")
 			.append(" inner join fromRecipient.recipient fromRecipientIdentity")
 			.append(" inner join fetch mail.recipients recipient")
@@ -475,7 +477,7 @@ public class MailManager extends BasicManager {
 			.append(" where fromRecipientIdentity.key=:fromKey and fromRecipient.deleted=false and recipientIdentity.key!=:fromKey")
 			.append(" order by mail.creationDate desc");
 
-		TypedQuery<DBMail> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMail.class)
+		TypedQuery<DBMailLight> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMailLight.class)
 				.setParameter("fromKey", from.getKey());
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
@@ -483,20 +485,20 @@ public class MailManager extends BasicManager {
 		if(firstResult > 0) {
 			query.setFirstResult(firstResult);
 		}
-		List<DBMail> mails = query.getResultList();
+		List<DBMailLight> mails = query.getResultList();
 		return mails;
 	}
 	
-	public List<DBMail> getEmailsByMetaId(String metaId) {
+	public List<DBMailLight> getEmailsByMetaId(String metaId) {
 		if(!StringHelper.containsNonWhitespace(metaId)) return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select mail from ").append(DBMailImpl.class.getName()).append(" mail")
+		sb.append("select mail from ").append(DBMailLightImpl.class.getName()).append(" mail")
 			.append(" inner join fetch mail.from fromRecipient")
 			.append(" inner join fromRecipient.recipient fromRecipientIdentity")
 			.append(" where mail.metaId=:metaId");
 
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMail.class)
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMailLight.class)
 				.setParameter("metaId", metaId)
 				.getResultList();
 	}
@@ -512,10 +514,10 @@ public class MailManager extends BasicManager {
 	 * @param maxResults
 	 * @return
 	 */
-	public List<DBMail> getInbox(Identity identity, Boolean unreadOnly, Boolean fetchRecipients, Date from, int firstResult, int maxResults) {
+	public List<DBMailLight> getInbox(Identity identity, Boolean unreadOnly, Boolean fetchRecipients, Date from, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		String fetchOption = (fetchRecipients != null && fetchRecipients.booleanValue()) ? "fetch" : "";
-		sb.append("select mail from ").append(DBMailImpl.class.getName()).append(" mail")
+		sb.append("select mail from ").append(DBMailLightImpl.class.getName()).append(" mail")
 			.append(" inner join ").append(fetchOption).append(" mail.recipients recipient")
 			.append(" inner join ").append(fetchOption).append(" recipient.recipient recipientIdentity")
 			.append(" where recipientIdentity.key=:recipientKey and recipient.deleted=false");
@@ -527,7 +529,7 @@ public class MailManager extends BasicManager {
 		}
 		sb.append(" order by mail.creationDate desc");
 
-		TypedQuery<DBMail> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMail.class)
+		TypedQuery<DBMailLight> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMailLight.class)
 				.setParameter("recipientKey", identity.getKey());
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
@@ -539,7 +541,7 @@ public class MailManager extends BasicManager {
 			query.setParameter("from", from, TemporalType.TIMESTAMP);
 		}
 
-		List<DBMail> mails = query.getResultList();
+		List<DBMailLight> mails = query.getResultList();
 		return mails;
 	}
 	

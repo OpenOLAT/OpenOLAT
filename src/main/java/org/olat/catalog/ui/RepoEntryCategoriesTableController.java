@@ -110,7 +110,7 @@ public class RepoEntryCategoriesTableController extends BasicController {
 			TableEvent te = (TableEvent) event;
 			String action  = te.getActionId();
 			CategoriesListModel categoriesListModel = (CategoriesListModel) tableCtr.getTableDataModel();
-			CatalogEntry selectedCategoryLevel = categoriesListModel.getCatalogEntry(te.getRowId());
+			CatalogEntry selectedCategoryLevel = categoriesListModel.getObject(te.getRowId());
 			
 			if (action.equals(CategoriesListModel.ACTION_GOTO)) {
 				// select repo site and activate catalog entry in catalog

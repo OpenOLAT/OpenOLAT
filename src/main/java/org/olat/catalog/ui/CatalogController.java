@@ -25,10 +25,8 @@
 
 package org.olat.catalog.ui;
 
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -252,7 +250,7 @@ public class CatalogController extends BasicController implements Activateable2 
 		List<CatalogEntry> rootNodes = cm.getRootCatalogEntries();
 		CatalogEntry rootce;
 		if (rootNodes.isEmpty()) throw new AssertException("No RootNodes found for Catalog! failed module init? corrupt DB?");
-		rootce = (CatalogEntry) cm.getRootCatalogEntries().get(0);
+		rootce = rootNodes.get(0);
 
 		// Check AccessRights
 		isAuthor = ureq.getUserSession().getRoles().isAuthor();
@@ -315,7 +313,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				
 			} else if (command.startsWith(CATENTRY_LEAF)) { // link clicked
 				int pos = Integer.parseInt(command.substring(CATENTRY_LEAF.length()));
-				CatalogEntry cur = (CatalogEntry) childCe.get(pos);
+				CatalogEntry cur = childCe.get(pos);
 				RepositoryEntry repoEntry = cur.getRepositoryEntry();
 				if (repoEntry == null) throw new AssertException("a leaf did not have a repositoryentry! catalogEntry = key:" + cur.getKey()
 						+ ", title " + cur.getName());
@@ -347,7 +345,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				if (s.startsWith(CATENTRY_LEAF)) {
 					// move a resource in the catalog - moving of catalog leves is triggered by a toolbox action
 					int pos = Integer.parseInt(s.substring(CATENTRY_LEAF.length()));
-					linkMarkedToBeEdited = (CatalogEntry) childCe.get(pos);
+					linkMarkedToBeEdited = childCe.get(pos);
 					
 					removeAsListenerAndDispose(cmc);
 					removeAsListenerAndDispose(catEntryMoveController);
@@ -361,7 +359,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				String s = command.substring(CATCMD_REMOVE.length());
 				if (s.startsWith(CATENTRY_LEAF)) {
 					int pos = Integer.parseInt(s.substring(CATENTRY_LEAF.length()));
-					linkMarkedToBeDeleted = (CatalogEntry) childCe.get(pos);
+					linkMarkedToBeDeleted = childCe.get(pos);
 					// create modal dialog
 					String[] trnslP = { linkMarkedToBeDeleted.getName() };
 					dialogDeleteLink = activateYesNoDialog(ureq, null, getTranslator().translate(NLS_DIALOG_MODAL_LEAF_DELETE_TEXT, trnslP), dialogDeleteLink);
@@ -384,7 +382,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				String s = command.substring(CATCMD_DETAIL.length());
 				if (s.startsWith(CATENTRY_LEAF)) {
 					int pos = Integer.parseInt(s.substring(CATENTRY_LEAF.length()));
-					CatalogEntry showDetailForLink = (CatalogEntry) childCe.get(pos);
+					CatalogEntry showDetailForLink = childCe.get(pos);
 					RepositoryEntry repoEnt = showDetailForLink.getRepositoryEntry();
 					if(repoEnt == null) {//concurrent edition, reload the current listing
 						updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
@@ -858,7 +856,7 @@ public class CatalogController extends BasicController implements Activateable2 
 					if (canAddLinks) {
 						catalogToolC.addLink(ACTION_ADD_CTLGLINK, translate(NLS_TOOLS_ADD_CATALOG_LINK), null, null, "o_sel_catalog_add_link_to_resource", false);
 					}
-					if (currentCatalogEntryLevel == 0 && isOLATAdmin && cm.getChildrenOf(currentCatalogEntry).isEmpty()) {
+					if (currentCatalogEntryLevel == 0 && isOLATAdmin && (childCe == null || childCe.isEmpty())) {
 						catalogToolC.addLink(ACTION_ADD_STRUCTURE, translate(NLS_TOOLS_PASTESTRUCTURE), null, null, "o_sel_catalog_add_root_category", false);
 					}
 			}	
@@ -902,57 +900,26 @@ public class CatalogController extends BasicController implements Activateable2 
 		// SQL query orders by catalog entry name, thus the visual ordering is
 		// wrong.
 		// fxdiff: FXOLAT-100
-		Collections.sort(childCe, new Comparator<CatalogEntry>() {
-			@Override
-			public int compare(final CatalogEntry c1, final CatalogEntry c2) {
-				String c1Title, c2Title;
-				if (c1.getType() == CatalogEntry.TYPE_LEAF) {
-					final RepositoryEntry repoEntry = c1.getRepositoryEntry();
-					if (repoEntry != null) {
-						c1Title = repoEntry.getDisplayname();
-					} else {
-						c1Title = c1.getName();
-					}
-				} else {
-					c1Title = c1.getName();
-				}
-				if (c2.getType() == CatalogEntry.TYPE_LEAF) {
-					final RepositoryEntry repoEntry = c2.getRepositoryEntry();
-					if (repoEntry != null) {
-						c2Title = repoEntry.getDisplayname();
-					} else {
-						c2Title = c2.getName();
-					}
-				} else {
-					c2Title = c2.getName();
-				}
-				// Sort now based on users locale
-				final Collator myCollator = Collator.getInstance(getLocale());
-				return myCollator.compare(c1Title, c2Title);
-			}
-		});
+		Collections.sort(childCe, new CatalogEntryComparator(getLocale()));
 	
 		myContent.contextPut("children", childCe);
 		//fxdiff VCRP-1,2: access control of resources
 		List<Long> resourceKeys = new ArrayList<Long>();
-		List<Long> repositoryEntryKeys = new ArrayList<Long>();
 		for ( CatalogEntry entry : childCe ) {
 			if(entry.getRepositoryEntry() != null && entry.getRepositoryEntry().getOlatResource() != null) {
 				resourceKeys.add(entry.getRepositoryEntry().getOlatResource().getKey());
-				repositoryEntryKeys.add(entry.getRepositoryEntry().getKey());
 			}
 		}
 		
-		if(!repositoryEntryKeys.isEmpty()) {
-			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
-			params.setIdentity(getIdentity());
-			params.setRoles(ureq.getUserSession().getRoles());
-			params.setRepositoryEntryKeys(repositoryEntryKeys);
+		if(!resourceKeys.isEmpty()) {
+			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), ureq.getUserSession().getRoles());
+			params.setParentEntry(currentCatalogEntry);
 			List<RepositoryEntry> allowedEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 			for (Iterator<CatalogEntry> itEntry = childCe.iterator(); itEntry.hasNext(); ) {
 				CatalogEntry entry = itEntry.next();
 				if(entry.getRepositoryEntry() != null && !allowedEntries.contains(entry.getRepositoryEntry())) {
 					itEntry.remove();
+					resourceKeys.remove(entry.getRepositoryEntry().getOlatResource().getKey());
 				}
 			}
 		}

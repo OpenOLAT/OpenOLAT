@@ -452,10 +452,10 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
 			  .append(" where statement.identity.key=:identityKey");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setLong("identityKey", identity.getKey());
-			List<UserEfficiencyStatementLight> statements = query.list();
-			return statements;
+			return dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserEfficiencyStatementLight.class)
+					.setParameter("identityKey", identity.getKey())
+					.getResultList();
 		} catch (Exception e) {
 			logError("findEfficiencyStatements: " + identity, e);
 			return Collections.emptyList();

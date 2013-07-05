@@ -34,7 +34,7 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBoxExtension;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.model.DBMail;
+import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,14 +93,13 @@ public class MailManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the inbox of toId
-		List<DBMail> incomingMails = mailManager.getInbox(toId, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
+		List<DBMailLight> incomingMails = mailManager.getInbox(toId, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
 		Assert.assertNotNull(incomingMails);
 		Assert.assertEquals(1, incomingMails.size());
 		
-		DBMail incomingMail = incomingMails.get(0);
+		DBMailLight incomingMail = incomingMails.get(0);
 		Assert.assertNotNull(incomingMail);
-		Assert.assertEquals("Hello inbox", incomingMail.getSubject());
-		Assert.assertEquals("Content of inbox", incomingMail.getBody());	
+		Assert.assertEquals("Hello inbox", incomingMail.getSubject());	
 	}
 	
 	@Test
@@ -114,14 +113,13 @@ public class MailManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the inbox of toId
-		List<DBMail> sendedMails = mailManager.getOutbox(fromId, 0, -1);
+		List<DBMailLight> sendedMails = mailManager.getOutbox(fromId, 0, -1);
 		Assert.assertNotNull(sendedMails);
 		Assert.assertEquals(1, sendedMails.size());
 		
-		DBMail sendedMail = sendedMails.get(0);
+		DBMailLight sendedMail = sendedMails.get(0);
 		Assert.assertNotNull(sendedMail);
 		Assert.assertEquals("Hello outbox", sendedMail.getSubject());
-		Assert.assertEquals("Content of outbox", sendedMail.getBody());	
 	}
 	
 	@Test
@@ -136,14 +134,13 @@ public class MailManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the inbox of toId
-		List<DBMail> mails = mailManager.getEmailsByMetaId(metaId);
+		List<DBMailLight> mails = mailManager.getEmailsByMetaId(metaId);
 		Assert.assertNotNull(mails);
 		Assert.assertEquals(1, mails.size());
 		
-		DBMail mail = mails.get(0);
+		DBMailLight mail = mails.get(0);
 		Assert.assertNotNull(mail);
-		Assert.assertEquals("Hello outbox", mail.getSubject());
-		Assert.assertEquals("Content of outbox", mail.getBody());	
+		Assert.assertEquals("Hello outbox", mail.getSubject());	
 	}
 	
 	
@@ -166,21 +163,21 @@ public class MailManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the inbox of 1
-		List<DBMail> incomingsMails = mailManager.getInbox(toId_1, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
+		List<DBMailLight> incomingsMails = mailManager.getInbox(toId_1, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
 		Assert.assertNotNull(incomingsMails);
 		Assert.assertEquals(1, incomingsMails.size());
-		DBMail incomingMail = incomingsMails.get(0);
+		DBMailLight incomingMail = incomingsMails.get(0);
 		Assert.assertNotNull(incomingMail);
 		Assert.assertEquals("Hello ccList", incomingMail.getSubject());
 		
 		//retrieve the inbox of 2
-		List<DBMail> incomingsMails_2 = mailManager.getInbox(toId_2, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
+		List<DBMailLight> incomingsMails_2 = mailManager.getInbox(toId_2, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
 		Assert.assertNotNull(incomingsMails_2);
 		Assert.assertEquals(1, incomingsMails_2.size());
 		Assert.assertEquals(incomingMail, incomingsMails_2.get(0));
 		
 		//retrieve the inbox of 3
-		List<DBMail> incomingsMails_3 = mailManager.getInbox(toId_2, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
+		List<DBMailLight> incomingsMails_3 = mailManager.getInbox(toId_2, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
 		Assert.assertNotNull(incomingsMails_3);
 		Assert.assertEquals(1, incomingsMails_3.size());
 		Assert.assertEquals(incomingMail, incomingsMails_3.get(0));
@@ -214,20 +211,20 @@ public class MailManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check inbox / outbox
-		List<DBMail> deletedMails_1 = mailManager.getInbox(toId_1, null, null, null, 0, -1);
+		List<DBMailLight> deletedMails_1 = mailManager.getInbox(toId_1, null, null, null, 0, -1);
 		Assert.assertNotNull(deletedMails_1);
 		Assert.assertTrue(deletedMails_1.isEmpty());
-		List<DBMail> deletedMails_2 = mailManager.getInbox(toId_2, null, null, null, 0, -1);
+		List<DBMailLight> deletedMails_2 = mailManager.getInbox(toId_2, null, null, null, 0, -1);
 		Assert.assertNotNull(deletedMails_2);
 		Assert.assertTrue(deletedMails_2.isEmpty());
-		List<DBMail> deletedMails_3 = mailManager.getInbox(toId_3, null, null, null, 0, -1);
+		List<DBMailLight> deletedMails_3 = mailManager.getInbox(toId_3, null, null, null, 0, -1);
 		Assert.assertNotNull(deletedMails_3);
 		Assert.assertTrue(deletedMails_3.isEmpty());
-		List<DBMail> deletedMails_4 = mailManager.getOutbox(fromId, 0, -1);
+		List<DBMailLight> deletedMails_4 = mailManager.getOutbox(fromId, 0, -1);
 		Assert.assertNotNull(deletedMails_4);
 		Assert.assertTrue(deletedMails_4.isEmpty());
 		//check mail by meta id
-		List<DBMail> deletedMails = mailManager.getEmailsByMetaId(metaId);
+		List<DBMailLight> deletedMails = mailManager.getEmailsByMetaId(metaId);
 		Assert.assertNotNull(deletedMails);
 		Assert.assertTrue(deletedMails.isEmpty());
 	}
@@ -260,7 +257,7 @@ public class MailManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check mail by meta id
-		List<DBMail> deletedMails = mailManager.getEmailsByMetaId(metaId);
+		List<DBMailLight> deletedMails = mailManager.getEmailsByMetaId(metaId);
 		Assert.assertNotNull(deletedMails);
 		Assert.assertTrue(deletedMails.isEmpty());
 	}

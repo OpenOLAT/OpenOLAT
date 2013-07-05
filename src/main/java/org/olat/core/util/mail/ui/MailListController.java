@@ -63,7 +63,7 @@ import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.manager.MailManager;
 import org.olat.core.util.mail.model.DBMail;
-import org.olat.core.util.mail.model.DBMailImpl;
+import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.mail.model.DBMailRecipient;
 import org.olat.core.util.mail.ui.MailDataModel.Columns;
 import org.olat.core.util.mail.ui.MailDataModel.ContextPair;
@@ -221,14 +221,14 @@ public class MailListController extends BasicController implements Activateable2
 		putInitialPanel(mainVC);
 	}
 	
-	private void replaceInModel(DBMail mail) {
+	private void replaceInModel(DBMailLight mail) {
 		MailDataModel dataModel = (MailDataModel)tableCtr.getTableDataModel();
 		dataModel.replace(mail);
 		tableCtr.modelChanged();
 	}
 	
 	private void reloadModel() {
-		List<DBMail> mails;
+		List<DBMailLight> mails;
 		if(outbox) {
 			if(StringHelper.containsNonWhitespace(metaId)) {
 				mails = MailManager.getInstance().getEmailsByMetaId(metaId);
@@ -238,8 +238,8 @@ public class MailListController extends BasicController implements Activateable2
 			
 			//strip meta emails
 			Set<String> metaIds = new HashSet<String>();
-			for(Iterator<DBMail> it=mails.iterator(); it.hasNext(); ) {
-				DBMail mail = it.next();
+			for(Iterator<DBMailLight> it=mails.iterator(); it.hasNext(); ) {
+				DBMailLight mail = it.next();
 				if(StringHelper.containsNonWhitespace(mail.getMetaId())) {
 					if(metaIds.contains(mail.getMetaId())) {
 						it.remove();
@@ -254,7 +254,7 @@ public class MailListController extends BasicController implements Activateable2
 		
 		//extract contexts
 		Map<String, String> bpToContexts = new HashMap<String, String>();
-		for(DBMail mail:mails) {
+		for(DBMailLight mail:mails) {
 			String businessPath = mail.getContext().getBusinessPath();
 			if(StringHelper.containsNonWhitespace(businessPath) && !bpToContexts.containsKey(businessPath)) {
 				String contextName = contextResolver.getName(businessPath, getLocale());
@@ -310,7 +310,7 @@ public class MailListController extends BasicController implements Activateable2
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				int rowid = te.getRowId();
-				DBMail mail = (DBMail)tableCtr.getTableDataModel().getObject(rowid);
+				DBMailLight mail = (DBMailLight)tableCtr.getTableDataModel().getObject(rowid);
 				if(CMD_READ.equals(actionid)) {
 					if(outbox && StringHelper.containsNonWhitespace(mail.getMetaId()) && !mail.getMetaId().equals(metaId)) {
 						selectMetaMail(ureq, mail.getMetaId());
@@ -352,24 +352,24 @@ public class MailListController extends BasicController implements Activateable2
 					deleteConfirmationBox.setUserObject(selectedMails);
 				} else if (CMD_SEND_REAL_MAIL.equals(actionid)) {
 					for (int i=selectedMails.nextSetBit(0); i >= 0; i=selectedMails.nextSetBit(i+1)) {
-						DBMail mail = (DBMail) tableCtr.getTableDataModel().getObject(i);						
+						DBMailLight mail = (DBMailLight) tableCtr.getTableDataModel().getObject(i);						
 						MailerResult result = forwardToMyRealMail(mail);
 						if(result.getReturnCode() != MailerResult.OK) {
 							MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
 						} else {
-							this.showInfo("mail.action.send.real.success", mail.getSubject());
+							showInfo("mail.action.send.real.success", mail.getSubject());
 						}
 					}				
 					reloadModel();
 				} else if (CMD_MARK_MARKED.equals(actionid) || CMD_MARK_UNMARKED.equals(actionid)) {
 					for (int i=selectedMails.nextSetBit(0); i >= 0; i=selectedMails.nextSetBit(i+1)) {
-						DBMailImpl mail = (DBMailImpl) tableCtr.getTableDataModel().getObject(i);
+						DBMailLight mail = (DBMailLight)tableCtr.getTableDataModel().getObject(i);
 						mailManager.setMarked(mail, CMD_MARK_MARKED.equals(actionid), getIdentity());
 					}				
 					reloadModel();
 				} else if (CMD_MARK_READ.equals(actionid) || CMD_MARK_UNREAD.equals(actionid)) {
 					for (int i=selectedMails.nextSetBit(0); i >= 0; i=selectedMails.nextSetBit(i+1)) {
-						DBMailImpl mail = (DBMailImpl) tableCtr.getTableDataModel().getObject(i);
+						DBMailLight mail = (DBMailLight) tableCtr.getTableDataModel().getObject(i);
 						mailManager.setRead(mail, CMD_MARK_READ.equals(actionid), getIdentity());
 					}				
 					reloadModel();
@@ -398,7 +398,7 @@ public class MailListController extends BasicController implements Activateable2
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				BitSet deleteMails = (BitSet)deleteConfirmationBox.getUserObject();
 				for (int i=deleteMails.nextSetBit(0); i >= 0; i=deleteMails.nextSetBit(i+1)) {
-					DBMail mail = (DBMail)tableCtr.getTableDataModel().getObject(i);
+					DBMailLight mail = (DBMailLight)tableCtr.getTableDataModel().getObject(i);
 					//reload the message
 					mail = mailManager.getMessageByKey(mail.getKey());
 					boolean deleteMetaMail = outbox && !StringHelper.containsNonWhitespace(metaId);
@@ -435,8 +435,9 @@ public class MailListController extends BasicController implements Activateable2
 		mainVC.put(MAIN_CMP, tableVC);
 	}
 	
-	private MailerResult forwardToMyRealMail(DBMail mail) {
-		return mailManager.forwardToRealInbox(getIdentity(), mail, null);
+	private MailerResult forwardToMyRealMail(DBMailLight mail) {
+		DBMail fullMail = mailManager.getMessageByKey(mail.getKey());
+		return mailManager.forwardToRealInbox(getIdentity(), fullMail, null);
 	}
 	
 	private void selectMetaMail(UserRequest ureq, String metaID) {
