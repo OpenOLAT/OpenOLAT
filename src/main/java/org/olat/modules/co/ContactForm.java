@@ -157,7 +157,7 @@ public class ContactForm extends FormBasicController {
 			//a new ContactList, put it into contactLists
 			contactLists.put(emailList.getName(), emailList);
 			//and add its name in the form
-			addContactFormEmailTo("<" + emailList.getName() + ">");
+			addContactFormEmailTo("[" + emailList.getName() + "]");
 		}
 	}
 
@@ -245,12 +245,12 @@ public class ContactForm extends FormBasicController {
 		String sep = "";
 		int i = 0;
 		int j = -1;
-		i = value.indexOf("<", j + 1);
-		j = value.indexOf(">", j + 2);
+		i = value.indexOf("[", j + 1);
+		j = value.indexOf("]", j + 2);
 		while (i > -1 && j > 0) {
 			String contactListName = value.substring(i + 1, j);
-			i = value.indexOf("<", j + 1);
-			j = value.indexOf(">", j + 2);
+			i = value.indexOf("[", j + 1);
+			j = value.indexOf("]", j + 2);
 			if (contactLists.containsKey(contactListName)) {
 				ContactList found = contactLists.get(contactListName);
 				retVal += sep + found.toString();
