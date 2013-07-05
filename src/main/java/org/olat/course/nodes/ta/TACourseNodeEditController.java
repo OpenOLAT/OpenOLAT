@@ -55,6 +55,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
@@ -510,7 +511,6 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				
 		Context c = new VelocityContext();
 		Identity identity = ureq.getIdentity();
-		c.put("login", identity.getName());//TODO username
 		c.put("first", identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
 		c.put("last", identity.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
 		c.put("email", identity.getUser().getProperty(UserConstants.EMAIL, getLocale()));

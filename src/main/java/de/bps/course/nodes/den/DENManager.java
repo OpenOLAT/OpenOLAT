@@ -796,8 +796,7 @@ public class DENManager {
 					identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()),
 					identity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()),
 					identity.getUser().getProperty(UserConstants.EMAIL, ureq.getLocale()),
-					identity.getName(),
-					subjectStr
+					"", subjectStr
 				};
 		
 		String subject = translator.translate("mail.participants.add.subject", bodyArgs);
@@ -806,10 +805,7 @@ public class DENManager {
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-//				User user = identity.getUser();
-//				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, ureq.getLocale()));
-//				context.put("lastname", user.getProperty(UserConstants.LASTNAME, ureq.getLocale()));
-//				context.put("login", identity.getName());
+				//
 			}
 		};
 		
@@ -830,23 +826,17 @@ public class DENManager {
 				identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()),
 				identity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()),
 				identity.getUser().getProperty(UserConstants.EMAIL, ureq.getLocale()),
-					identity.getName(), //TODO username
-					subjectStr
+					"", subjectStr
 				};
 		
 		String subject = trans.translate("mail.participants.remove.subject", bodyArgs);
 		String body = trans.translate("mail.participants.remove.body", bodyArgs);
-		
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-//				User user = identity.getUser();
-//				context.put("firstname", user.getFirstName());
-//				context.put("lastname", user.getLastName());
-//				context.put("login", identity.getName());
+				//
 			}
 		};
-		
 		return mailTempl;
 	}
 	

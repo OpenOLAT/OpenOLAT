@@ -186,7 +186,7 @@ class UserBulkChangeStep02 extends BasicStep {
 				List<String> userDataArray = new ArrayList<String>();
 
 				// add column for login
-				userDataArray.add(identity.getName());//TODO username
+				userDataArray.add(identity.getName());
 				// add columns for password
 				if (attributeChangeMap.containsKey(UserBulkChangeManager.PWD_IDENTIFYER)) {
 					userDataArray.add(attributeChangeMap.get(UserBulkChangeManager.PWD_IDENTIFYER));

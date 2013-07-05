@@ -1701,9 +1701,4 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public void archiveGroups(List<BusinessGroup> groups, File exportFile) {
 		businessGroupArchiver.archiveGroups(groups, exportFile);
 	}
-
-	@Override
-	public File archiveGroupMembers(OLATResource resource, List<String> columnList, List<BusinessGroup> groupList, String archiveType, Locale locale, String charset) {
-		return businessGroupArchiver.archiveGroupMembers(resource, columnList, groupList, archiveType, locale, charset);
-	}
 }

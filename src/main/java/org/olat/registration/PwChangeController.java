@@ -226,7 +226,7 @@ public class PwChangeController extends BasicController {
 					TemporaryKey tk = rm.loadTemporaryKeyByEmail(emailAdress);
 					if (tk == null) tk = rm.createTemporaryKeyByEmail(emailAdress, ip, RegistrationManager.PW_CHANGE);
 					myContent.contextPut("pwKey", tk.getRegistrationKey());
-					body = userTrans.translate("pwchange.intro", new String[] { identity.getName() })//TODO username
+					body = userTrans.translate("pwchange.intro", new String[] { identity.getName() })
 							+ userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(),
 									I18nManager.getInstance().getLocaleKey(ureq.getLocale()) }) + SEPARATOR
 							+ userTrans.translate("reg.wherefrom", new String[] { serverpath, today, ip });

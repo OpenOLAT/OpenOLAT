@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
@@ -40,24 +41,29 @@ public class PrivacyAdminController extends FormBasicController {
 	
 	private MultipleSelectionElement adminPropsEl;
 	private MultipleSelectionElement lastloginEl;
+	private MultipleSelectionElement tunnelEl;
 
 	private final BaseSecurityModule module;
 	
 	private String[] adminPropKeys = new String[]{
 			"users","authors", "usermanagers", "groupmanagers", "administrators"
 	};
+	private String[] onKeys = new String[]{ "on" };
 	
 	public PrivacyAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		module = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.menu.title");
-		setFormDescription("admin.props.desc");
 
+		FormLayoutContainer propsCont = FormLayoutContainer.createDefaultFormLayout("props", getTranslator());
+		formLayout.add(propsCont);
+		propsCont.setFormTitle(translate("admin.menu.title"));
+		propsCont.setFormDescription(translate("admin.props.desc"));
+		
 		String[] adminPropValues = new String[]{
 				translate("admin.props.users"),
 				translate("admin.props.authors"),
@@ -65,21 +71,32 @@ public class PrivacyAdminController extends FormBasicController {
 				translate("admin.props.groupmanagers"),
 				translate("admin.props.administrators")
 		};
-		adminPropsEl = uifactory.addCheckboxesVertical("admin.props", formLayout, adminPropKeys, adminPropValues, null, 1);
+		adminPropsEl = uifactory.addCheckboxesVertical("admin.props", propsCont, adminPropKeys, adminPropValues, null, 1);
 		adminPropsEl.select("users", "enabled".equals(module.getUserSearchAdminPropsForUsers()));
 		adminPropsEl.select("authors", "enabled".equals(module.getUserSearchAdminPropsForAuthors()));
 		adminPropsEl.select("usermanagers", "enabled".equals(module.getUserSearchAdminPropsForUsermanagers()));
 		adminPropsEl.select("groupmanagers", "enabled".equals(module.getUserSearchAdminPropsForGroupmanagers()));
 		adminPropsEl.select("administrators", "enabled".equals(module.getUserSearchAdminPropsForAdministrators()));
 		adminPropsEl.addActionListener(this, FormEvent.ONCHANGE);
+		
+		uifactory.addSpacerElement("admin.space.1", propsCont, true);
 
-		lastloginEl = uifactory.addCheckboxesVertical("last.login", formLayout, adminPropKeys, adminPropValues, null, 1);
+		lastloginEl = uifactory.addCheckboxesVertical("last.login", propsCont, adminPropKeys, adminPropValues, null, 1);
 		lastloginEl.select("users", "enabled".equals(module.getUserLastLoginVisibleForUsers()));
 		lastloginEl.select("authors", "enabled".equals(module.getUserLastLoginVisibleForAuthors()));
 		lastloginEl.select("usermanagers", "enabled".equals(module.getUserLastLoginVisibleForUsermanagers()));
 		lastloginEl.select("groupmanagers", "enabled".equals(module.getUserLastLoginVisibleForGroupmanagers()));
 		lastloginEl.select("administrators", "enabled".equals(module.getUserLastLoginVisibleForAdministrators()));
 		lastloginEl.addActionListener(this, FormEvent.ONCHANGE);
+		
+		FormLayoutContainer tuCont = FormLayoutContainer.createDefaultFormLayout("tu", getTranslator());
+		formLayout.add(tuCont);
+		tuCont.setFormTitle(translate("tunnel.title"));
+		tuCont.setFormDescription(translate("tunnel.desc"));
+		
+		tunnelEl = uifactory.addCheckboxesHorizontal("tunnel.cbb", tuCont, onKeys, new String[]{""}, null);
+		tunnelEl.select("on", "enabled".equals(module.getUserInfosTunnelCourseBuildingBlock()));
+		tunnelEl.addActionListener(this, FormEvent.ONCHANGE);
 	}
 	
 	@Override
@@ -103,6 +120,9 @@ public class PrivacyAdminController extends FormBasicController {
 			module.setUserLastLoginVisibleForUsermanagers(selectedKeys.contains("usermanagers") ? "enabled" : "disabled");
 			module.setUserLastLoginVisibleForGroupmanagers(selectedKeys.contains("groupmanagers") ? "enabled" : "disabled");
 			module.setUserLastLoginVisibleForAdministrators(selectedKeys.contains("administrators") ? "enabled" : "disabled");
+		} else if (source == tunnelEl) {
+			Set<String> selectedKeys = tunnelEl.getSelectedKeys();
+			module.setUserInfosTunnelCourseBuildingBlock(selectedKeys.contains("on") ? "enabled" : "disabled");
 		}
 	}
 

@@ -50,6 +50,8 @@
 						userSearchAutocompleteForGroupmanagers=${usersearch.autocomplete.groupmanagers}
 						userSearchAutocompleteForAdministrators=${usersearch.autocomplete.administrators}
 						userSearchMaxResults=${usersearch.maxResults}
+						
+						userInfosTunnelCourseBuildingBlock=${userinfos.tunnelcoursebuildingblock}
             
 						sysGroupUsermanager.canCreateUser=true
 						sysGroupUsermanager.canDeleteUser=false

@@ -533,10 +533,10 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					// sein wenn man nur ein Menü braucht.
 					// TODO:pb:a extend ContentOnlyController to work also if menu and
 					// tool are null, hence only content is desired
-					String userN = ureq.getIdentity().getName();
+					String userN = ureq.getIdentity().getUser().getProperty(UserConstants.EMAIL, ureq.getLocale());
 					String lastN = ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale());
 					String firstN = ureq.getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale());
-					String changeMsg = "Changed by: " + firstN + " " + lastN + " [" + userN + "]\n";//TODO username
+					String changeMsg = "Changed by: " + firstN + " " + lastN + " [" + userN + "]\n";
 					changeMsg += createChangeMessage();
 					changeEmail.setBodyText(changeMsg);
 					chngMsgFormVC.contextPut("chngMsg", changeEmail.getBodyText());

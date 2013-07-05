@@ -403,9 +403,21 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		return formLayoutContainer.getComponent(name);
 	}
 	
+	/**
+	 * Set the translated title
+	 * @param title
+	 */
 	public void setFormTitle(String title) {
 		formLayoutContainer.contextPut("off_title", title);
 	}
+	
+	/**
+	 * Set the translated description
+	 * @param description
+	 */
+	public void setFormDescription(String description) {
+		formLayoutContainer.contextPut("off_desc", description);
+	}	
 	
 
 	/**

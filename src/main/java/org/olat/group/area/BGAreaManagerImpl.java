@@ -25,11 +25,9 @@
 
 package org.olat.group.area;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import javax.persistence.TypedQuery;
 
@@ -44,7 +42,6 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.manager.BusinessGroupArchiver;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,9 +57,6 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private BusinessGroupArchiver businessGroupArchiver;
-
 	
 	@Override
 	public BGArea loadArea(Long key) {
@@ -457,10 +451,5 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
 			.setParameter("areaKey", area.getKey())
 			.executeUpdate();
-	}
-	
-	@Override
-	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList, String archiveType, Locale locale, String charset) {
-		return businessGroupArchiver.archiveAreaMembers(resource, columnList, areaList, archiveType, locale, charset);
 	}
 }

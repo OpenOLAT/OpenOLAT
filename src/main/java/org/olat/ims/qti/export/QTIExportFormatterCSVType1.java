@@ -25,6 +25,7 @@
 
 package org.olat.ims.qti.export;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,6 +34,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
@@ -185,7 +188,8 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		
 		String firstName = set.getFirstName();
 		String lastName = set.getLastName();
-		String login = set.getLogin();//TODO username
+		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(set.getIdentity());
+		String login = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
 		String instUsrIdent = set.getInstitutionalUserIdentifier();
 		if (instUsrIdent == null) {
 			instUsrIdent = translator.translate("column.field.notavailable");

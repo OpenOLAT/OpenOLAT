@@ -189,8 +189,12 @@ public class BGMailHelper {
 	 */
 	private static MailTemplate createMailTemplate(BusinessGroupShort group, Identity actor, String subjectKey, String bodyKey) {
 		// get some data about the actor and fetch the translated subject / body via i18n module
-		String[] bodyArgs = new String[] { actor.getUser().getProperty(UserConstants.FIRSTNAME, null), actor.getUser().getProperty(UserConstants.LASTNAME, null), actor.getUser().getProperty(UserConstants.EMAIL, null),
-					actor.getName() };
+		String[] bodyArgs = new String[] {
+				actor.getUser().getProperty(UserConstants.FIRSTNAME, null),
+				actor.getUser().getProperty(UserConstants.LASTNAME, null),
+				actor.getUser().getProperty(UserConstants.EMAIL, null),
+				actor.getUser().getProperty(UserConstants.EMAIL, null)// 2x for compatibility with old i18m properties
+		};
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
 		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale);
 		String subject = trans.translate(subjectKey);
@@ -238,7 +242,7 @@ public class BGMailHelper {
 				User user = identity.getUser();
 				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
 				context.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
-				context.put("login", identity.getName());
+				context.put("login", user.getProperty(UserConstants.EMAIL, null));
 				// Put variables from greater context
 				context.put("groupname", groupname);
 				context.put("groupdescription", groupdescription);

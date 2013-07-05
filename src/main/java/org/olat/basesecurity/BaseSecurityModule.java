@@ -78,6 +78,9 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private static final String USERSEARCHAUTOCOMPLETE_ADMINISTRATORS = "userSearchAutocompleteForAdministrators";
 	private static final String USERSEARCH_MAXRESULTS = "userSearchMaxResults";
 	
+
+	private static final String USERINFOS_TUNNEL_CBB = "userInfosTunnelCourseBuildingBlock";
+	
 	
 	/**
 	 * default values
@@ -119,6 +122,8 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private String userSearchAutocompleteForUsermanagers;
 	private String userSearchAutocompleteForGroupmanagers;
 	private String userSearchAutocompleteForAdministrators;
+	
+	private String userInfosTunnelCourseBuildingBlock;
 
 
 	private BaseSecurityModule(String defaultAuthProviderIdentifier) {
@@ -182,6 +187,8 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		userSearchAutocompleteForGroupmanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, "enabled", true);
 		userSearchAutocompleteForAdministrators = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, "enabled", true);
 		userSearchMaxResults = getStringConfigParameter(USERSEARCH_MAXRESULTS, "-1", true);
+
+		userInfosTunnelCourseBuildingBlock = getStringConfigParameter(USERINFOS_TUNNEL_CBB, "disabled", true);
 	}
 
 	@Override
@@ -256,6 +263,11 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		String maxResults = getStringPropertyValue(USERSEARCH_MAXRESULTS, true);
 		if(StringHelper.containsNonWhitespace(maxResults)) {
 			userSearchMaxResults = maxResults;
+		}
+		
+		enabled = getStringPropertyValue(USERINFOS_TUNNEL_CBB, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userInfosTunnelCourseBuildingBlock = enabled;
 		}
 	}
 
@@ -462,4 +474,14 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public void setUserSearchMaxResults(String maxResults) {
 		setStringProperty(USERSEARCH_MAXRESULTS, maxResults, true);
 	}
+
+	public String getUserInfosTunnelCourseBuildingBlock() {
+		return userInfosTunnelCourseBuildingBlock;
+	}
+
+	public void setUserInfosTunnelCourseBuildingBlock(String enable) {
+		setStringProperty(USERINFOS_TUNNEL_CBB, enable, true);
+	}
+	
+	
 }

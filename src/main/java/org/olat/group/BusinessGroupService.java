@@ -547,7 +547,4 @@ public interface BusinessGroupService {
 	
 	public void archiveGroups(List<BusinessGroup> groups, File exportFile);
 
-	public File archiveGroupMembers(OLATResource resource, List<String> columnList, List<BusinessGroup> groupList, String archiveType,
-			Locale locale, String charset);
-
 }

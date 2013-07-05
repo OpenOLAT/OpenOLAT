@@ -36,6 +36,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -175,18 +177,20 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 	 * @param userRequest
 	 */
 	private void fillTURequestWithUserInfo(TURequest tuRequest, UserRequest userRequest){
-		String userName = userRequest.getIdentity().getName();//TODO username
-		User u = userRequest.getIdentity().getUser();
-		String lastName = u.getProperty(UserConstants.LASTNAME, loc);
-		String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);
-		String email = u.getProperty(UserConstants.EMAIL, loc);
-		String userIPAdress = userRequest.getUserSession().getSessionInfo().getFromIP();
-		
-		tuRequest.setEmail(email);
-		tuRequest.setFirstName(firstName);
-		tuRequest.setLastName(lastName);
-		tuRequest.setUserName(userName);
-		tuRequest.setUserIPAddress(userIPAdress);
+		if("enabled".equals(CoreSpringFactory.getImpl(BaseSecurityModule.class).getUserInfosTunnelCourseBuildingBlock())) {
+			String userName = userRequest.getIdentity().getName();
+			User u = userRequest.getIdentity().getUser();
+			String lastName = u.getProperty(UserConstants.LASTNAME, loc);
+			String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);
+			String email = u.getProperty(UserConstants.EMAIL, loc);
+			String userIPAdress = userRequest.getUserSession().getSessionInfo().getFromIP();
+			
+			tuRequest.setEmail(email);
+			tuRequest.setFirstName(firstName);
+			tuRequest.setLastName(lastName);
+			tuRequest.setUserName(userName);
+			tuRequest.setUserIPAddress(userIPAdress);
+		}
 	}
 
 	
@@ -298,11 +302,14 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 		// Add olat specific headers to the request, can be used by external
 		// applications to identify user and to get other params
 		// test page e.g. http://cgi.algonet.se/htbin/cgiwrap/ug/test.py
-		meth.addRequestHeader("X-OLAT-USERNAME", tuReq.getUserName());
-		meth.addRequestHeader("X-OLAT-LASTNAME", tuReq.getLastName());
-		meth.addRequestHeader("X-OLAT-FIRSTNAME", tuReq.getFirstName());
-		meth.addRequestHeader("X-OLAT-EMAIL", tuReq.getEmail());
-		meth.addRequestHeader("X-OLAT-USERIP", tuReq.getUserIPAddress());
+
+		if("enabled".equals(CoreSpringFactory.getImpl(BaseSecurityModule.class).getUserInfosTunnelCourseBuildingBlock())) {
+			meth.addRequestHeader("X-OLAT-USERNAME", tuReq.getUserName());
+			meth.addRequestHeader("X-OLAT-LASTNAME", tuReq.getLastName());
+			meth.addRequestHeader("X-OLAT-FIRSTNAME", tuReq.getFirstName());
+			meth.addRequestHeader("X-OLAT-EMAIL", tuReq.getEmail());
+			meth.addRequestHeader("X-OLAT-USERIP", tuReq.getUserIPAddress());
+		}
 
 		try {
 			client.executeMethod(meth);

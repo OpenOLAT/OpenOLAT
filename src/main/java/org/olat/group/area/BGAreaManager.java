@@ -25,9 +25,7 @@
 
 package org.olat.group.area;
 
-import java.io.File;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
@@ -230,17 +228,4 @@ public interface BGAreaManager {
 	 * @return
 	 */
 	public List<Long> toAreaKeys(String areaNames, OLATResource resource);
-	
-	/**
-	 * 
-	 * @param resource
-	 * @param columnList
-	 * @param areaList
-	 * @param archiveType
-	 * @param locale
-	 * @param charset
-	 * @return
-	 */
-	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList,
-			String archiveType, Locale locale, String charset);
 }
