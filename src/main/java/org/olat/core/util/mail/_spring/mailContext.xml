@@ -69,7 +69,7 @@
 	</bean>
 	
 		<!-- Inbox in users Home -->
-	<bean id="mailBoxExtension" class="org.olat.core.util.mail.MailBoxExtension">
+	<bean id="mailBoxExtension" class="org.olat.core.util.mail.MailBoxExtension" init-method="init">
 		<property name="mailManager" ref="mailManager" />
 		<property name="repositoryManager" ref="repositoryManager"/>
 		<property name="businessGroupService" ref="businessGroupService"/>

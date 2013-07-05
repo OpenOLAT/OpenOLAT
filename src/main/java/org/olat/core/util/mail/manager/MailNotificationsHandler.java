@@ -90,13 +90,13 @@ public class MailNotificationsHandler extends LogDelegator implements Notificati
 		// can't be loaded when already deleted
 		if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
 			try {
-				List<DBMailLight> inbox = MailManager.getInstance().getInbox(subscriber.getIdentity(), Boolean.TRUE, Boolean.FALSE, compareDate, 0, 0);
+				List<DBMailLight> inbox = MailManager.getInstance().getInbox(subscriber.getIdentity(), Boolean.TRUE, Boolean.FALSE, compareDate, 0, -1);
 				if(!inbox.isEmpty()) {
 					Translator translator = Util.createPackageTranslator(MailModule.class, locale);
 					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(translator.translate("mail.notification.type"), "o_co_icon"), null);
 					for (DBMailLight mail : inbox) {
 						String subject = mail.getSubject();
-						String businessPath = "[Inbox:" + mail.getKey() + "]";
+						String businessPath = "[Inbox:0][Inbox:0][DBMail:" + mail.getKey() + "]";
 						String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 						SubscriptionListItem subListItem = new SubscriptionListItem(subject, urlToSend, businessPath, mail.getCreationDate(), "o_co_icon");
 						si.addSubscriptionListItem(subListItem);
