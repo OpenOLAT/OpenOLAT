@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -58,6 +59,7 @@ public class MemberInfoController extends FormBasicController {
 	private UserCourseInformations courseInfos;
 	
 	private final UserManager userManager;
+	private final BaseSecurityModule securityModule;
 	private final UserCourseInformationsManager efficiencyStatementManager;
 	
 	public MemberInfoController(UserRequest ureq, WindowControl wControl, Identity identity,
@@ -66,6 +68,7 @@ public class MemberInfoController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale(), getTranslator()));
 
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		efficiencyStatementManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
 	
 		this.identity = identity;
@@ -108,22 +111,24 @@ public class MemberInfoController extends FormBasicController {
 		//course informations
 		FormLayoutContainer courseInfosContainer = FormLayoutContainer.createDefaultFormLayout("courseInfos", getTranslator());
 		formLayout.add("courseInfos", courseInfosContainer);
-		
-		Formatter formatter = Formatter.getInstance(getLocale());
-		
-		String lastVisit = "";
-		String numOfVisits = "0";
-		if(courseInfos != null) {
-			if(courseInfos.getRecentLaunch() != null) {
-				lastVisit = formatter.formatDate(courseInfos.getRecentLaunch());
-			}
-			if(courseInfos.getVisit() >= 0) {
-				numOfVisits = Integer.toString(courseInfos.getVisit());
-			}	
-		}
 		membershipCreationEl = uifactory.addStaticTextElement("firstTime", "course.membership.creation", "", courseInfosContainer);
-		uifactory.addStaticTextElement("lastTime", "course.lastTime", lastVisit, courseInfosContainer);
-		uifactory.addStaticTextElement("numOfVisits", "course.numOfVisits", numOfVisits, courseInfosContainer);
+		
+		if(securityModule.isUserLastVisitVisible(ureq.getUserSession().getRoles())) {
+			Formatter formatter = Formatter.getInstance(getLocale());
+			
+			String lastVisit = "";
+			String numOfVisits = "0";
+			if(courseInfos != null) {
+				if(courseInfos.getRecentLaunch() != null) {
+					lastVisit = formatter.formatDate(courseInfos.getRecentLaunch());
+				}
+				if(courseInfos.getVisit() >= 0) {
+					numOfVisits = Integer.toString(courseInfos.getVisit());
+				}	
+			}
+			uifactory.addStaticTextElement("lastTime", "course.lastTime", lastVisit, courseInfosContainer);
+			uifactory.addStaticTextElement("numOfVisits", "course.numOfVisits", numOfVisits, courseInfosContainer);
+		}
 		
 		//links
 		homeLink = uifactory.addFormLink("home", formLayout, "b_link_left_icon b_link_to_home");
