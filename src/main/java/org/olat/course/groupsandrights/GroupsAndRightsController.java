@@ -89,7 +89,6 @@ public class GroupsAndRightsController extends FormBasicController {
 		for(String right : CourseRights.getAvailableRights()) {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(right, colIndex++));
 		}
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.remove", colIndex++));
 
 		List<BGRightsOption> groupRights = loadModel();
 		tableDataModel = new GroupsAndRightsDataModel(groupRights, tableColumnModel);
@@ -130,7 +129,6 @@ public class GroupsAndRightsController extends FormBasicController {
 		fillCheckbox(options, r == null ? null : r.getRights());
 		FormLink rmLink = uifactory.addFormLink("remove_" + UUID.randomUUID().toString(), "table.header.remove", "table.header.remove", flc, Link.LINK);
 		rmLink.setUserObject(options);
-		options.setRemoveLink(rmLink);
 		return options;
 	}
 	
@@ -168,13 +166,7 @@ public class GroupsAndRightsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink && source.getUserObject() instanceof BGRightsOption) {
-			String name = source.getName();
-			if(name.startsWith("remove_")) {
-				BGRightsOption option = (BGRightsOption)source.getUserObject();
-				doRemoveRights(option);
-			}
-		} else if (source == removeAllLink) {
+		if (source == removeAllLink) {
 			doRemoveAllRights();
 		} else {
 			super.formInnerEvent(ureq, source, event);
@@ -239,17 +231,13 @@ public class GroupsAndRightsController extends FormBasicController {
 		}
 	}
 	
-	private void doRemoveRights(BGRightsOption option) {
-		rightManager.removeBGRights(option.getGroup(), resource, option.getRole());
-	}
-	
 	private void doRemoveAllRights() {
 		List<BusinessGroup> groups = getGroups();
 		rightManager.removeBGRights(groups, resource);
 		loadModel();
 	}
 
-	private class GroupsAndRightsDataModel extends DefaultTableDataModel<BGRightsOption> implements FlexiTableDataModel {
+	private class GroupsAndRightsDataModel extends DefaultTableDataModel<BGRightsOption> implements FlexiTableDataModel<BGRightsOption> {
 		private FlexiTableColumnModel columnModel;
 		
 		public GroupsAndRightsDataModel(List<BGRightsOption> options, FlexiTableColumnModel columnModel) {
@@ -284,8 +272,6 @@ public class GroupsAndRightsController extends FormBasicController {
 					case participant: return translate("participant");
 				}
 				return "";
-			} else if (col == (getColumnCount() - 1)) {
-				return groupRights.getRemoveLink();
 			}
 			
 			//rights
@@ -325,7 +311,6 @@ public class GroupsAndRightsController extends FormBasicController {
 		private final BGRightsRole role;
 		
 		private List<BGRight> rightsEl;
-		private FormLink removeLink;
 		
 		public BGRightsOption(BusinessGroup group, BGRightsRole role) {
 			this.group = group;
@@ -364,14 +349,6 @@ public class GroupsAndRightsController extends FormBasicController {
 		
 		public void setRightsEl(List<BGRight> rightsEl) {
 			this.rightsEl = rightsEl;
-		}
-		
-		public FormLink getRemoveLink() {
-			return removeLink;
-		}
-		
-		public void setRemoveLink(FormLink removeLink) {
-			this.removeLink = removeLink;
 		}
 	}
 }
