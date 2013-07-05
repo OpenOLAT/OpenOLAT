@@ -472,12 +472,13 @@ public class MailManager extends BasicManager {
 		sb.append("select distinct(mail) from ").append(DBMailLightImpl.class.getName()).append(" mail")
 			.append(" inner join fetch mail.from fromRecipient")
 			.append(" inner join fromRecipient.recipient fromRecipientIdentity")
-			.append(" inner join fetch mail.recipients recipient")
+			.append(" inner join mail.recipients recipient")
 			.append(" inner join recipient.recipient recipientIdentity")
 			.append(" where fromRecipientIdentity.key=:fromKey and fromRecipient.deleted=false and recipientIdentity.key!=:fromKey")
 			.append(" order by mail.creationDate desc");
 
-		TypedQuery<DBMailLight> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMailLight.class)
+		TypedQuery<DBMailLight> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DBMailLight.class)
 				.setParameter("fromKey", from.getKey());
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
