@@ -44,6 +44,7 @@ import org.olat.core.util.nodes.GenericNode;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
+import org.olat.course.condition.additionalconditions.AdditionalCondition;
 import org.olat.course.condition.interpreter.ConditionErrorMessage;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -72,6 +73,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	private Condition preConditionVisibility;
 	private Condition preConditionAccess;
 	protected transient StatusDescription[] oneClickStatusCache = null;
+	protected List<AdditionalCondition> additionalConditions = new ArrayList<AdditionalCondition>();
 
 	/**
 	 * Generic course node constructor

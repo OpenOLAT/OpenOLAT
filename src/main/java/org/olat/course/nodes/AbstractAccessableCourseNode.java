@@ -59,7 +59,6 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	private Condition preConditionAccess;
 
 	public static final String BLOCKED_BY_ORIGINAL_ACCESS_RULES = "blockedByOriginalAccessRules";
-	protected List<AdditionalCondition> additionalConditions = new ArrayList<AdditionalCondition>();
 
 	/**
 	 * Constructor, only used by implementing course nodes
