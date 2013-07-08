@@ -903,10 +903,10 @@ public class CourseFactory extends BasicManager {
 	 * @return The file representing the dat export directory
 	 */
 	public static File getOrCreateDataExportDirectory(Identity identity, String courseName) {
-		File exportFolder = new File( // folder where exported user data should be
-				// put
-				FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomes() + "/" + identity.getName() + "/private/archive/"
-						+ Formatter.makeStringFilesystemSave(courseName));
+		String courseFolder = StringHelper.transformDisplayNameToFileSystemName(courseName);
+		// folder where exported user data should be put
+		File exportFolder = new File(FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomes() + "/" + identity.getName() + "/private/archive/"
+						+ courseFolder);
 		if (exportFolder.exists()) {
 			if (!exportFolder.isDirectory()) { throw new OLATRuntimeException(ExportUtil.class, "File " + exportFolder.getAbsolutePath()
 					+ " already exists but it is not a folder!", null); }
