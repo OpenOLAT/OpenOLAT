@@ -143,6 +143,7 @@ public class FunctionalUtil {
 	
 	public final static String WINDOW_CLOSE_LINK_CSS = "b_link_close";
 	
+	public final static String FORM_ELEMENT_CSS = "b_form_element";
 	public final static String FORM_SAVE_XPATH = "//button[@type='button' and last()]";
 
 	public final static String INFO_CSS = "b_info";

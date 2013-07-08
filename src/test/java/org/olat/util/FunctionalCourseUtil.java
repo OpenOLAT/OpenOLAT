@@ -36,6 +36,15 @@ import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.util.xss.XssInjection;
+import org.olat.util.xss.XssInjectionDependencies;
+import org.olat.util.xss.XssInjectionDependency;
+import org.olat.util.xss.XssInjectionElement;
+import org.olat.util.xss.XssInjectionPositional;
+import org.olat.util.xss.XssInjectionProvider;
+import org.olat.util.xss.XssInjectionRandom;
+import org.olat.util.xss.XssTutorOnly;
+import org.olat.util.xss.XssUtil;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -44,6 +53,7 @@ import com.thoughtworks.selenium.Selenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
+@XssUtil
 public class FunctionalCourseUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalCourseUtil.class);
 	
@@ -824,7 +834,9 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 * @throws MalformedURLException 
 	 */
-	public boolean uploadOverviewPage(Selenium browser, URI file) throws MalformedURLException{
+	@XssInjection
+	@XssTutorOnly
+	public boolean uploadOverviewPage(Selenium browser, @XssInjectionElement URI file) throws MalformedURLException{
 		if(!openCourseEditorCourseTab(browser, CourseEditorCourseTab.OVERVIEW)){
 			return(false);
 		}
@@ -1044,7 +1056,12 @@ public class FunctionalCourseUtil {
 	 * @param position
 	 * @return true on success otherwise false
 	 */
-	public boolean createCourseNode(Selenium browser, CourseNodeAlias node, String shortTitle, String longTitle, String description, int position){
+	@XssInjection
+	@XssTutorOnly
+	public boolean createCourseNode(Selenium browser, @XssInjectionRandom CourseNodeAlias node,
+			@XssInjectionElement String shortTitle, @XssInjectionElement String longTitle,
+			@XssInjectionElement String description,
+			@XssInjectionPositional int position){
 		functionalUtil.idle(browser);
 		
 		/* click on the appropriate link to create node */
@@ -1119,9 +1136,16 @@ public class FunctionalCourseUtil {
 	 * @param browser
 	 * @return true on success
 	 */
+	@XssInjection
+	@XssInjectionDependencies({
+		@XssInjectionDependency(className = "org.olat.util.FunctionalEPortfolioUtil", methodName = "createDefaultBinder", parameterName = { "binder" }),
+		@XssInjectionDependency(className = "org.olat.util.FunctionalEPortfolioUtil", methodName = "createPage", parameterName = { "page" }),
+		@XssInjectionDependency(className = "org.olat.util.FunctionalEPortfolioUtil", methodName = "createStructure", parameterName = { "structure" })
+	})
 	public boolean addToEportfolio(Selenium browser, String binder, String page, String structure,
-			String title, String description, String[] tags,
-			FunctionalEPortfolioUtil functionalEPortfolioUtil){
+			@XssInjectionElement String title, @XssInjectionElement String description,
+			@XssInjectionElement String[] tags,
+			@XssInjectionProvider FunctionalEPortfolioUtil functionalEPortfolioUtil){
 
 		functionalUtil.idle(browser);
 		

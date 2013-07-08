@@ -23,6 +23,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.util.FunctionalUtil.OlatSite;
+import org.olat.util.xss.XssUtil;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -30,6 +31,7 @@ import com.thoughtworks.selenium.Selenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
+@XssUtil
 public class FunctionalGroupsSiteUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalGroupsSiteUtil.class);
 	
@@ -50,6 +52,9 @@ public class FunctionalGroupsSiteUtil {
 	public final static String USERSEARCH_AUTOCOMPLETION_CSS = "o_sel_usersearch_autocompletion";
 	public final static String USERSEARCH_SEARCHFORM_CSS = "o_sel_usersearch_searchform";
 	
+	public final static String GROUP_URL_CSS = "o_sel_group_url";
+	public final static String GROUP_VISITING_CARD_CSS = "o_sel_group_card_url";
+	
 	public final static String BOOKING_ADD_METHOD_CSS = "o_sel_accesscontrol_create";
 	public final static String BOOKING_ACCESS_CODE_ICON_CSS = "b_access_method_token_icon";
 	public final static String BOOKING_FREELY_AVAILABLE_ICON_CSS = "b_access_method_free_icon";
@@ -60,6 +65,8 @@ public class FunctionalGroupsSiteUtil {
 	public final static String GROUP_PARTICIPANTS_CSS = "o_sel_group_participants";
 	
 	public final static String ACCESS_CONTROL_TOKEN_ENTRY_CSS = "o_sel_accesscontrol_token_entry";
+	
+	public final static String GROUP_VISITING_CARD_CONTENT_CSS = "o_visitingcard_content";
 	
 	public enum GroupsSiteAction {
 		MY_GROUPS("o_sel_MyGroups"),
@@ -155,7 +162,7 @@ public class FunctionalGroupsSiteUtil {
 	public enum GroupsTabAction {
 		INFORMATION("o_news_icon"),
 		CALENDAR("o_calendar_icon"),
-		GROUPS("b_group_icon"),
+		MEMBERS("b_group_icon"),
 		EMAIL("o_co_icon"),
 		FOLDER("o_bc_icon"),
 		FORUM("o_fo_icon"),
@@ -227,6 +234,9 @@ public class FunctionalGroupsSiteUtil {
 	private String usersearchAutocompletionCss;
 	private String usersearchSearchformCss;
 	
+	private String groupUrlCss;
+	private String groupVisitingCardCss;
+	
 	private String bookingAddMethodCss;
 	private String bookingAccessCodeIconCss;
 	private String bookingFreelyAvailableIconCss;
@@ -243,6 +253,8 @@ public class FunctionalGroupsSiteUtil {
 	private String instantMessagingAvatarCss;
 	private String instantMessagingFormCss;
 
+	private String groupVisitingCardContentCss;
+	
 	private FunctionalUtil functionalUtil;
 	
 	public FunctionalGroupsSiteUtil(FunctionalUtil functionalUtil){
@@ -263,6 +275,9 @@ public class FunctionalGroupsSiteUtil {
 		this.usersearchAutocompletionCss = USERSEARCH_AUTOCOMPLETION_CSS;
 		this.usersearchSearchformCss = USERSEARCH_SEARCHFORM_CSS;
 		
+		this.groupUrlCss = GROUP_URL_CSS;
+		this.groupVisitingCardCss = GROUP_VISITING_CARD_CSS;
+		
 		this.bookingAddMethodCss = BOOKING_ADD_METHOD_CSS;
 		this.bookingAccessCodeIconCss = BOOKING_ACCESS_CODE_ICON_CSS;
 		this.bookingFreelyAvailableIconCss = BOOKING_FREELY_AVAILABLE_ICON_CSS;
@@ -278,6 +293,8 @@ public class FunctionalGroupsSiteUtil {
 		this.instantMessagingBodyCss = FunctionalInstantMessagingUtil.INSTANT_MESSAGING_BODY_CSS;
 		this.instantMessagingAvatarCss = FunctionalInstantMessagingUtil.INSTANT_MESSAGING_AVATAR_CSS;
 		this.instantMessagingFormCss = FunctionalInstantMessagingUtil.INSTANT_MESSAGING_FORM_CSS;
+		
+		this.groupVisitingCardContentCss = GROUP_VISITING_CARD_CONTENT_CSS;
 		
 		this.functionalUtil = functionalUtil;
 	}
@@ -1154,6 +1171,40 @@ public class FunctionalGroupsSiteUtil {
 		return(true);
 	}
 	
+	/**
+	 * Reads the visiting card link from group administration's description tab.
+	 * 
+	 * @param browser
+	 * @param group
+	 * @return The string representing the URL
+	 */
+	public String readVisitingCardLink(Selenium browser, String group){
+		if(!openMyGroup(browser, group)){
+			return(null);
+		}
+		
+		if(!openActionByMenuTree(browser, GroupsSiteAction.GROUPS_ADMINISTRATION)){
+			return(null);
+		}
+		
+		if(!functionalUtil.openContentTab(browser, AdministrationTabs.DESCRIPTION.ordinal())){
+			return(null);
+		}
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getGroupVisitingCardCss())
+		.append("')]//span[contains(@class, '")
+		.append(getGroupVisitingCardCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		String link = browser.getText(selectorBuffer.toString());
+		
+		return(link);
+	}
+	
 	public FunctionalUtil getFunctionalUtil() {
 		return functionalUtil;
 	}
@@ -1251,6 +1302,22 @@ public class FunctionalGroupsSiteUtil {
 		this.usersearchSearchformCss = usersearchSearchformCss;
 	}
 
+	public String getGroupUrlCss() {
+		return groupUrlCss;
+	}
+
+	public void setGroupUrlCss(String groupUrlCss) {
+		this.groupUrlCss = groupUrlCss;
+	}
+
+	public String getGroupVisitingCardCss() {
+		return groupVisitingCardCss;
+	}
+
+	public void setGroupVisitingCardCss(String groupVisitingCardCss) {
+		this.groupVisitingCardCss = groupVisitingCardCss;
+	}
+
 	public String getBookingAddMethodCss() {
 		return bookingAddMethodCss;
 	}
@@ -1346,5 +1413,13 @@ public class FunctionalGroupsSiteUtil {
 
 	public void setInstantMessagingFormCss(String instantMessagingFormCss) {
 		this.instantMessagingFormCss = instantMessagingFormCss;
+	}
+
+	public String getGroupVisitingCardContentCss() {
+		return groupVisitingCardContentCss;
+	}
+
+	public void setGroupVisitingCardContentCss(String groupVisitingCardContentCss) {
+		this.groupVisitingCardContentCss = groupVisitingCardContentCss;
 	}
 }

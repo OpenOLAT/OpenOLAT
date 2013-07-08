@@ -33,6 +33,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.util.FunctionalHomeSiteUtil.EPortfolioAction;
 import org.olat.util.FunctionalUtil.OlatSite;
+import org.olat.util.xss.XssUtil;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -40,6 +41,7 @@ import com.thoughtworks.selenium.Selenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
+@XssUtil
 public class FunctionalEPortfolioUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalEPortfolioUtil.class);
 	

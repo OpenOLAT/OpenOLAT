@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- NOTE: not used, yet -->
+	<bean class="org.olat.util.FunctionalXssTest">
+		<property name="xssClasses">
+	        <list>
+				<ref bean="functionalAdministrationSiteUtil"/>
+				<ref bean="functionalCourseUtil"/>
+				<ref bean="functionalEPortfolioUtil"/>
+				<ref bean="functionalGroupsSiteUtil"/>
+				<ref bean="functionalHomeSiteUtil"/>
+				<ref bean="functionalInstantMessagingUtil"/>
+				<ref bean="functionalUserManagementSiteUtil"/>
+			</list>
+		</property>
+    </bean>
+  
+  	<bean id="functionalAdministrationSiteUtil" class="org.olat.util.FunctionalAdministrationSiteUtil"/>
+  	<bean id="functionalCourseUtil" class="org.olat.util.FunctionalCourseUtil"/>
+  	<bean id="functionalEPortfolioUtil" class="org.olat.util.FunctionalEPortfolioUtil"/>
+  	<bean id="functionalGroupsSiteUtil" class="org.olat.util.FunctionalGroupsSiteUtil"/>
+  	<bean id="functionalHomeSiteUtil" class="org.olat.util.FunctionalHomeSiteUtil"/>
+  	<bean id="functionalInstantMessagingUtil" class="org.olat.util.FunctionalInstantMessagingUtil"/>
+  	<bean id="functionalRepositorySiteUtil" class="org.olat.util.FunctionalRepositorySiteUtil"/>
+  	<bean id="functionalUserManagementSiteUtil" class="org.olat.util.FunctionalUserManagementSiteUtil"/>
+  	
+</beans>
