@@ -58,7 +58,11 @@ public class XSSFilterTest {
 	}
 
 	private void t(String input, String result) {
-		String filterRes = vFilter.filter(input);
+		t(input, result, vFilter);
+	}
+
+	private void t(String input, String result, Filter f) {
+		String filterRes = f.filter(input);
 		if (filterRes == result || filterRes.equals(result)){
 			counter ++;
 			System.out.println("------------------------------------------------");
@@ -252,7 +256,18 @@ public class XSSFilterTest {
 		String input = "<br>";
 		String output = "<br />";
 		t(input,output);
-		
+	}
+	
+	@Test
+	public void test_rawText() {
+		OWASPAntiSamyXSSFilter intlFilter = new OWASPAntiSamyXSSFilter(-1, false, true);
+		t("Stéphane Rossé", "Stéphane Rossé", intlFilter);
+	}
+	
+	@Test
+	public void test_rawTextAttaqu() {
+		OWASPAntiSamyXSSFilter intlFilter = new OWASPAntiSamyXSSFilter(-1, false, true);
+		t("&lt;script&gt;alert('hello');&lt;//script&gt;", "&lt;script&gt;alert('hello');&lt;//script&gt;", intlFilter);
 	}
 
 }

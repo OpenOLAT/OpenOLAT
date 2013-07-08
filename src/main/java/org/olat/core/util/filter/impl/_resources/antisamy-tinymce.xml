@@ -14,6 +14,8 @@
 		<directive name="embedStyleSheets" value="false" />
 		<directive name="useXHTML" value="true" />
 		<directive name="formatOutput" value="false" />
+		<directive name="entityEncodeIntlChars" value="true" />
+		<directive name="preserveSpace" value="true" />
 	</directives>
 
 	<common-regexps>

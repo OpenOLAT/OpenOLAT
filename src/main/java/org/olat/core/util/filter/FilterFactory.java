@@ -80,6 +80,16 @@ public class FilterFactory {
 		// currently the XSS filter is statefull
 		return new OWASPAntiSamyXSSFilter(maxLength, false);
 	}
+	
+	/**
+	 * 
+	 * @param maxLength
+	 * @return
+	 */
+	public static Filter getXSSFilterForTextField(int maxLength) {
+		// currently the XSS filter is statefull
+		return new OWASPAntiSamyXSSFilter(maxLength, false, false);
+	}
 
 	/**
 	 * Get a filter to add a mapper base url to relative media links in HTML
