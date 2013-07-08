@@ -110,8 +110,8 @@ class ImportStep00 extends BasicStep {
 
 		private FormLayoutContainer textContainer;
 		private List<UserPropertyHandler> userPropertyHandlers;
-		private ArrayList<List<String>> newIdents;
-		private List<Object> idents;
+		private List<TransientIdentity> newIdents;
+		private List<Identity> idents;
 
 		public ImportStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -147,8 +147,8 @@ class ImportStep00 extends BasicStep {
 
 			boolean importDataError = false;
 
-			idents = new ArrayList<Object>();
-			newIdents = new ArrayList<List<String>>();
+			idents = new ArrayList<Identity>();
+			newIdents = new ArrayList<TransientIdentity>();
 			// fxdiff: check also emails in change-workflow, see OLAT-5723
 			Set<String> tempEmailsInUse = new HashSet<String>();
 			RegistrationManager rm = RegistrationManager.getInstance();
@@ -254,21 +254,20 @@ class ImportStep00 extends BasicStep {
 						String thisKey = "";
 						String thisValue = "";
 						// check that no user with same login name is already in list
-						for (Iterator<List<String>> it_news = newIdents.iterator(); it_news.hasNext();) {
-							List<String> singleUser = it_news.next();
-							if (singleUser.get(1).equalsIgnoreCase(login)) {
+						for (Iterator<TransientIdentity> it_news = newIdents.iterator(); it_news.hasNext();) {
+							TransientIdentity singleUser = it_news.next();
+							if (singleUser.getName().equalsIgnoreCase(login)) {
 								textAreaElement.setErrorKey("error.login.douplicate", new String[] { String.valueOf(i + 1), login });
 								importDataError = true;
 								break;
 							}
 						}
 
-						List<String> ud = new ArrayList<String>();
+						TransientIdentity ud = new TransientIdentity();
 						// insert fix fields: login, pwd, lang from above
-						ud.add("false"); // used for first column in model (user existing)
-						ud.add(login);
-						ud.add(pwd);
-						ud.add(lang);
+						ud.setName(login);
+						ud.setPassword(pwd);
+						ud.setLanguage(lang);
 
 						for (int j = 0; j < userPropertyHandlers.size(); j++) {
 							userPropertyHandler = userPropertyHandlers.get(j);
@@ -326,7 +325,7 @@ class ImportStep00 extends BasicStep {
 									importedEmails.add(thisValue);
 								}
 							}
-							ud.add(thisValue);
+							ud.setProperty(thisKey, thisValue);
 							columnId++;
 						}
 						idents.add(ud);

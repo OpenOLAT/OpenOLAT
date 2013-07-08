@@ -24,7 +24,6 @@
 */
 package org.olat.admin.user.imp;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -46,6 +45,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -79,8 +79,8 @@ class ImportStep01 extends BasicStep {
 	}
 
 	private final class ImportStepForm01 extends StepFormBasicController {
-		private ArrayList<List<String>> newIdents;
-		private List<Object> idents;
+		private List<TransientIdentity> newIdents;
+		private List<Identity> idents;
 		private FormLayoutContainer textContainer;
 		private List<UserPropertyHandler> userPropertyHandlers;
 
@@ -103,14 +103,14 @@ class ImportStep01 extends BasicStep {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
-		@SuppressWarnings({ "unused", "unchecked"})
+		@SuppressWarnings({ "unchecked"})
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			FormLayoutContainer formLayoutVertical = FormLayoutContainer.createVerticalFormLayout("vertical", getTranslator());
 			formLayout.add(formLayoutVertical);
 
-			idents = (List<Object>) getFromRunContext("idents");
-			newIdents = (ArrayList<List<String>>) getFromRunContext("newIdents");
+			idents = (List<Identity>) getFromRunContext("idents");
+			newIdents = (List<TransientIdentity>) getFromRunContext("newIdents");
 			textContainer = FormLayoutContainer.createCustomFormLayout("step1", getTranslator(), this.velocity_root + "/step1.html");
 			formLayoutVertical.add(textContainer);
 
