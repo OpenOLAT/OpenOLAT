@@ -73,6 +73,7 @@ public class GroupSearchController extends StepFormBasicController {
 	private FormSubmit searchButton;
 	private FormLink saveLink, searchLink;
 	private FormItem errorComp;
+	private FlexiTableElement table;
 	private FormLayoutContainer tableCont;
 	private GroupTableDataModel tableDataModel;
 	
@@ -131,7 +132,7 @@ public class GroupSearchController extends StepFormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.participant.i18n(), Cols.participant.ordinal()));
 		
 		tableDataModel = new GroupTableDataModel(Collections.<GroupWrapper>emptyList(), tableColumnModel);
-		FlexiTableElement table = uifactory.addTableElement(ureq, getWindowControl(), "groupList", tableDataModel, tableCont);
+		table = uifactory.addTableElement(ureq, getWindowControl(), "groupList", tableDataModel, tableCont);
 		tableCont.add("groupList", table);
 		
 		if (!isUsedInStepWizzard()) {
@@ -208,6 +209,7 @@ public class GroupSearchController extends StepFormBasicController {
 				groups.add(wrapper);
 			}
 
+			table.reset();
 			tableDataModel.setObjects(groups);
 			errorComp.clearError();
 		}
@@ -342,7 +344,7 @@ public class GroupSearchController extends StepFormBasicController {
 		}
 	}
 	
-	private static class GroupTableDataModel extends DefaultTableDataModel<GroupWrapper> implements FlexiTableDataModel {
+	private static class GroupTableDataModel extends DefaultTableDataModel<GroupWrapper> implements FlexiTableDataModel<GroupWrapper> {
 		private FlexiTableColumnModel columnModel;
 		
 		public GroupTableDataModel(List<GroupWrapper> options, FlexiTableColumnModel columnModel) {
