@@ -57,14 +57,20 @@ public class OWASPAntiSamyXSSFilter extends LogDelegator implements Filter {
 	private static boolean jUnitDebug;
 	private CleanResults cr;
 	private final int maxLength;
+	private final boolean entityEncodeIntlChars;
 
 	/**
 	 * @param maxLength
 	 * @param junitDebug
 	 */
 	public OWASPAntiSamyXSSFilter(int maxLength, boolean junitDebug){
+		this(maxLength, true, junitDebug);
+	}
+	
+	public OWASPAntiSamyXSSFilter(int maxLength, boolean entityEncodeIntlChars, boolean junitDebug){
 		OWASPAntiSamyXSSFilter.jUnitDebug = junitDebug;
 		this.maxLength = maxLength;
+		this.entityEncodeIntlChars = entityEncodeIntlChars;
 	}
 	
 	/**
@@ -110,7 +116,10 @@ public class OWASPAntiSamyXSSFilter extends LogDelegator implements Filter {
 			InputStream inStream = this.getClass().getResourceAsStream(fPath);
 			policy = Policy.getInstance(inStream);
 			if(maxLength > 0) {
-				policy.setDirective("maxInputSize", Integer.toString(maxLength));
+				policy = policy.cloneWithDirective("maxInputSize", Integer.toString(maxLength));
+			}
+			if(!entityEncodeIntlChars) {
+				policy = policy.cloneWithDirective("entityEncodeIntlChars", "false");
 			}
 		} catch (PolicyException e) {
 			if (jUnitDebug) System.err.println("Policy file not found/readable/valid!");
@@ -157,6 +166,4 @@ public class OWASPAntiSamyXSSFilter extends LogDelegator implements Filter {
 		}
 		return errors;
 	}
-	
-
 }

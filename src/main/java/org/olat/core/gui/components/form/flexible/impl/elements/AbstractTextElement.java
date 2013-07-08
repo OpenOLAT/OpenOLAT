@@ -129,7 +129,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#getValue()
 	 */
 	public String getValue() {
-		Filter xssFilter = FilterFactory.getXSSFilter(value.length() + 1);
+		Filter xssFilter = FilterFactory.getXSSFilterForTextField(value.length() + 1);
 		return getValue(xssFilter);
 	}
 

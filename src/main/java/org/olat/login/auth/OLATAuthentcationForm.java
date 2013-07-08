@@ -63,8 +63,14 @@ public class OLATAuthentcationForm extends FormBasicController {
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean valid = true;
-		valid = valid && !login.isEmpty("lf.error.loginempty");
-		valid = valid && !pass.isEmpty("lf.error.passempty");
+		login.clearError();
+		//only POST is allowed
+		if(!"POST".equals(ureq.getHttpReq().getMethod())) {
+			login.setErrorKey("error.post.method.mandatory", null);
+			valid = false;
+		}
+		valid &= !login.isEmpty("lf.error.loginempty");
+		valid &= !pass.isEmpty("lf.error.passempty");
 		return valid;
 	}
 

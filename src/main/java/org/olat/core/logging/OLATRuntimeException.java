@@ -19,6 +19,9 @@
 */ 
 
 package org.olat.core.logging;
+
+import org.olat.core.util.filter.FilterFactory;
+
 /**
 *  Description:<br />
 *	 Thrown if an unrecoverable error occurs. These Exceptions get caught by the Servlet. The user
@@ -89,7 +92,7 @@ public class OLATRuntimeException extends RuntimeException {
 	 * @param th
 	 * @return HTML fragment.
 	 */
-	public static StringBuilder throwableToHtml(Throwable th) {
+	public static String throwableToHtml(Throwable th) {
 		StringBuilder sb = new StringBuilder("<br />");
 		if (th == null) {
 			sb.append("n/a");
@@ -107,7 +110,7 @@ public class OLATRuntimeException extends RuntimeException {
 				ca = ca.getCause();	
 			}
 		}
-		return sb;
+		return FilterFactory.getXSSFilter(10000).filter(sb.toString());
 	}
 
 	private static void toHtml(StringBuilder sb, Throwable th) {
