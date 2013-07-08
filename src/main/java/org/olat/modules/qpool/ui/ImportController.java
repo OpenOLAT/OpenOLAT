@@ -93,12 +93,11 @@ public class ImportController extends FormBasicController {
 		String filename = fileEl.getUploadFileName();
 		File file = fileEl.getUploadFile();
 		List<QuestionItem> importItems = qpoolservice.importItems(getIdentity(), getLocale(), filename, file);
-		source.postImport(importItems);
-		
-		fireEvent(ureq, Event.DONE_EVENT);
-		if(importItems.isEmpty()) {
+		if(importItems == null || importItems.isEmpty()) {
 			showWarning("import.failed");
 		} else {
+			source.postImport(importItems);
+			fireEvent(ureq, Event.DONE_EVENT);
 			showInfo("import.success", Integer.toString(importItems.size()));
 		}
 	}

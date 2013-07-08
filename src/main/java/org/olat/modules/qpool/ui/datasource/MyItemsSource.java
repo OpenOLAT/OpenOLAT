@@ -40,7 +40,7 @@ public class MyItemsSource extends DefaultItemsSource {
 
 	@Override
 	public int postImport(List<QuestionItem> items) {
-		return items.size();
+		return items == null ? 0 : items.size();
 	}
 
 	@Override
