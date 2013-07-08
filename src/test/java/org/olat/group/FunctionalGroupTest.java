@@ -47,6 +47,8 @@ import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalUtil.WaitLimitAttribute;
 import org.olat.util.FunctionalVOUtil;
 import org.olat.util.browser.Student1;
+import org.olat.util.browser.Student2;
+import org.olat.util.browser.Student3;
 import org.olat.util.browser.Tutor1;
 
 import com.thoughtworks.selenium.DefaultSelenium;
@@ -65,6 +67,9 @@ public class FunctionalGroupTest {
 	
 	public final static String CONFIGURE_ACCESS_CONTROL_DESCRIPTION = "test access code";
 	public final static String CONFIGURE_ACCESS_CONTROL_ACCESS_CODE = "1234";
+
+	public final static String INVITATION_GROUP_NAME = "only members";
+	public final static String INVITATION_GROUP_DESCRIPTION = "You must be invited in order to see the group's content";
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -94,6 +99,7 @@ public class FunctionalGroupTest {
 		}
 	}
 	
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkCreate(@Drone @Tutor1 DefaultSelenium tutor0) throws IOException, URISyntaxException{
@@ -133,6 +139,7 @@ public class FunctionalGroupTest {
 		functionalUtil.logout(tutor0);
 	}
 
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkConfigureTools(@Drone @Tutor1 DefaultSelenium tutor0) throws IOException, URISyntaxException{
@@ -194,6 +201,7 @@ public class FunctionalGroupTest {
 		functionalUtil.logout(tutor0);
 	}
 
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkConfigureMembers(@Drone @Tutor1 DefaultSelenium tutor0) throws IOException, URISyntaxException
@@ -238,7 +246,7 @@ public class FunctionalGroupTest {
 		Assert.assertTrue(functionalGroupsSiteUtil.openMyGroup(tutor0, groups[0].getName()));
 		
 		/* check group with tutor0  */
-		Assert.assertTrue(functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(tutor0, GroupsTabAction.GROUPS));
+		Assert.assertTrue(functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(tutor0, GroupsTabAction.MEMBERS));
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -352,14 +360,8 @@ public class FunctionalGroupTest {
 		/* logout student */
 		functionalUtil.logout(student0);
 	}
-	
-//	@Ignore
-//	@Test
-//	@RunAsClient
-//	public void checkBookGroup(){
-//		
-//	}
 
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkAddUser(@Drone @Tutor1 DefaultSelenium tutor0,
@@ -428,17 +430,95 @@ public class FunctionalGroupTest {
 		functionalUtil.logout(student0);
 	}
 	
-	@Ignore
-	@Test
-	@RunAsClient
-	public void checkInvitation(){
-		//TODO:JK: implement me
-	}
 	
-	@Ignore
 	@Test
 	@RunAsClient
-	public void checkVisitingCard(){
-		//TODO:JK: implement me
+	public void checkInvitation(@Student1 @Drone DefaultSelenium student0,
+			@Student2 @Drone DefaultSelenium student1,
+			@Student3 @Drone DefaultSelenium student2)
+					throws IOException, URISyntaxException
+	{
+		/*
+		 * test setup
+		 */
+		/* create users */
+		int studentCount = 1;
+		
+		final UserVO[] students = new UserVO[studentCount];
+		functionalVOUtil.createTestUsers(deploymentUrl, studentCount).toArray(students);
+		
+		/*
+		 * test case
+		 */
+		/* user#0 - login with user */
+		functionalUtil.login(student0, students[0].getLogin(), students[0].getPassword(), true);
+		
+		/* user#0 - create group */
+		Assert.assertTrue(functionalGroupsSiteUtil.createGroup(student0,
+				INVITATION_GROUP_NAME, INVITATION_GROUP_DESCRIPTION,
+				3,
+				null
+		));
+		
+		/* user#0 - apply tools */
+		GroupTools[] tools = new GroupTools[]{
+				GroupTools.INFORMATION,
+				GroupTools.EMAIL,
+				GroupTools.CALENDAR,
+				GroupTools.FOLDER,
+				GroupTools.FORUM,
+				GroupTools.CHAT,
+				GroupTools.WIKI,
+				GroupTools.EPORTFOLIO
+			};
+		Assert.assertTrue(functionalGroupsSiteUtil.applyTools(student0, tools));
+		
+		/* user#3 - login with user */
+		functionalUtil.login(student2, students[2].getLogin(), students[2].getPassword(), true);
+		
+		/* user#0 - read visiting card link */
+		String link = functionalGroupsSiteUtil.readVisitingCardLink(student0, INVITATION_GROUP_NAME);
+		Assert.assertNotNull(link);
+		
+		/* open visiting card */
+		functionalUtil.idle(student2);
+		student2.open(link);
+		
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//div[contains(@class, '")
+		.append(FunctionalGroupsSiteUtil.GROUP_VISITING_CARD_CONTENT_CSS)
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(student2, locatorBuffer.toString());
+		
+		/* check members menu item not visible */
+		functionalGroupsSiteUtil.openMyGroup(student2, INVITATION_GROUP_NAME);
+		functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(student2, GroupsTabAction.INFORMATION);
+		
+		locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//ul[contains(@class, '")
+		.append(functionalUtil.getTreeLevel1Css())
+		.append("')]//li[contains(@class, '")
+		.append(GroupsTabAction.MEMBERS.getIconCss())
+		.append("')]");
+		
+		Assert.assertFalse(functionalUtil.waitForPageToLoadElement(student2, locatorBuffer.toString(), false));
+		
+		/* user#0 - apply tools */
+		Assert.assertTrue(functionalGroupsSiteUtil.applyTools(student0, new GroupTools[]{
+				GroupTools.CALENDAR,
+				GroupTools.CHAT,
+				GroupTools.EMAIL,
+				GroupTools.EPORTFOLIO,
+				GroupTools.FOLDER,
+				GroupTools.FORUM,
+				GroupTools.INFORMATION,
+				GroupTools.WIKI,
+		}));
+		
+		/* user#2 - close and open visiting card */
+		
 	}
 }

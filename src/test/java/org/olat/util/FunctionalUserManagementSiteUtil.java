@@ -21,6 +21,7 @@ package org.olat.util;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.util.xss.XssUtil;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -28,6 +29,7 @@ import com.thoughtworks.selenium.Selenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
+@XssUtil
 public class FunctionalUserManagementSiteUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalUserManagementSiteUtil.class);
 	
