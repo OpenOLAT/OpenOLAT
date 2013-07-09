@@ -48,6 +48,8 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  */
 public class FolderTreeModel extends GenericTreeModel {
 
+	private static final long serialVersionUID = 7930807550759664872L;
+	
 	private boolean foldersOnly = false;
 	private boolean selectableFiles = false;
 	private boolean selectableFolders = true;
@@ -96,19 +98,19 @@ public class FolderTreeModel extends GenericTreeModel {
 	}
 
 	private boolean buildTree(TreeNode tParent, VFSContainer parentContainer, String parentPath) {
-		List children = parentContainer.getItems(fileFilter);
+		List<VFSItem> children = parentContainer.getItems(fileFilter);
 		if (children.size() == 0) return false;
 
 		// sort the children
-		Collections.sort(children, new Comparator(){
+		Collections.sort(children, new Comparator<VFSItem>(){
 			final Collator c = collator;
-			public int compare(final Object o1, final Object o2) {
-				return c.compare(((VFSItem)o1).getName(), ((VFSItem)o2).getName());
+			public int compare(final VFSItem o1, final VFSItem o2) {
+				return c.compare(o1.getName(), o2.getName());
 			}});
 
 		boolean addedAtLeastOneChild = false;
-		for (Iterator iter = children.iterator(); iter.hasNext();) {
-			VFSItem child = (VFSItem) iter.next();
+		for (Iterator<VFSItem> iter = children.iterator(); iter.hasNext();) {
+			VFSItem child = iter.next();
 			String childName = child.getName();
 			if (child instanceof VFSContainer) {
 				// container node

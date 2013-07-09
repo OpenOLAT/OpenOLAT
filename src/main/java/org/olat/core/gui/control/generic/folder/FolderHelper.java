@@ -30,6 +30,7 @@ package org.olat.core.gui.control.generic.folder;
 
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.olat.core.gui.translator.Translator;
@@ -46,14 +47,14 @@ import org.olat.core.util.Util;
 public class FolderHelper {
 	
 	private static final String FILETYPES =  "avi bat bmp css doc docx dvi exe gif gz htm html jpeg jpg log midi mov mp3 mpeg mpg pdf png ppt pptx ps ra ram readme rtf tar tgz txt wav xls xlsx xml xsl zip";
-	private static HashSet knownFileTypes;
+	private static Set<String> knownFileTypes;
 
 	static {
 		// initialize known filetypes for faster access
-		FolderHelper.knownFileTypes = new HashSet();
+		FolderHelper.knownFileTypes = new HashSet<String>();
 		StringTokenizer st = new StringTokenizer(FILETYPES, " ");
 		while (st.hasMoreElements()) {
-			FolderHelper.knownFileTypes.add(st.nextElement());
+			FolderHelper.knownFileTypes.add(st.nextToken());
 		}
 	}
 	

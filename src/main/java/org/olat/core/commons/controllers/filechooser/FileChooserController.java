@@ -22,8 +22,10 @@ package org.olat.core.commons.controllers.filechooser;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.tree.SelectionTree;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -59,7 +61,8 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 public class FileChooserController extends BasicController {
 
 	private Link cancelLink, selectLink;
-	private SelectionTree selectionTree;
+	private MenuTree selectionTree;
+	private VelocityContainer mainVC;
 	private FolderTreeModel treeModel;
 
 	private VFSItem selectedItem;
@@ -88,11 +91,16 @@ public class FileChooserController extends BasicController {
 		this.onlyLeafsSelectable = onlyLeafsSelectable;
 
 		treeModel = new FolderTreeModel(ureq.getLocale(), rootContainer,  false, true, !onlyLeafsSelectable, false, customItemFilter);
-		selectionTree = new SelectionTree("stTree", getTranslator());
+		selectionTree = new MenuTree("stTree");
 		selectionTree.setTreeModel(treeModel);
 		selectionTree.addListener(this);
-		selectionTree.setFormButtonKey("select");
-		putInitialPanel(selectionTree);
+		
+		mainVC = createVelocityContainer("filechooserajax");
+		mainVC.put("treeCtr", selectionTree);
+		selectLink = LinkFactory.createButton("select", mainVC, this);
+		cancelLink = LinkFactory.createButton("cancel", mainVC, this);
+		
+		putInitialPanel(mainVC);
 	}
 
 	/**
@@ -118,16 +126,9 @@ public class FileChooserController extends BasicController {
 			}
 		} else if (source == selectionTree) {
 			TreeEvent te = (TreeEvent) event;
-			if (te.getCommand().equals(TreeEvent.COMMAND_TREENODE_CLICKED)) {
+			if (te.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				String selectedPath = treeModel.getSelectedPath(selectionTree.getSelectedNode());
 				selectedItem = rootContainer.resolve(selectedPath);
-				if (selectedItem != null) {
-					fireEvent(ureq, new FileChoosenEvent(selectedItem));
-				} else {
-					fireEvent(ureq, Event.FAILED_EVENT);
-				}
-			} else if (te.getCommand().equals(TreeEvent.COMMAND_CANCELLED)) {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
 		}
 	}
@@ -135,9 +136,5 @@ public class FileChooserController extends BasicController {
 	@Override
 	protected void doDispose() {
 		// Controllers auto disposed by basic controller. NULL composite objects to help GC
-		cancelLink = null;
-		selectLink = null;
-		treeModel = null;
-		selectionTree = null;
 	}
 }
