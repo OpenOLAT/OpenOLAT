@@ -38,6 +38,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.SearchForm;
+import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.repository.controllers.RepositorySearchController;
 
 /**
@@ -130,8 +131,7 @@ public class RepositorySearchMultiSelectController extends RepositorySearchContr
 	 * @return
 	 */
 	public RepositoryEntry getValueAt(int row) {
-		RepositoryEntry repoEntry = (RepositoryEntry)repoTableModel.getObject(row);
-		return repoEntry;
+		return repoTableModel.getObject(row);
 	}
 	
 	/**
@@ -143,7 +143,9 @@ public class RepositorySearchMultiSelectController extends RepositorySearchContr
 		//Set s = searchForm.getRestrictedTypes();
 		//List restrictedTypes = (s == null) ? null : new ArrayList(s);
 		//fxdiff VCRP-1,2: access control of resources
-		List entries = rm.genericANDQueryWithRolesRestriction(null, null, null, null, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getIdentity().getUser().getProperty("institutionalName", null));
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, null, null, null,
+				ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getIdentity().getUser().getProperty("institutionalName", null));
+		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		repoTableModel.setObjects(entries);
 		tableCtr.modelChanged();
 		displaySearchResults(ureq);

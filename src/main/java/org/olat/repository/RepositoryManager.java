@@ -88,7 +88,6 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.model.RepositoryEntryShortImpl;
-import org.olat.repository.model.RepositoryEntryStrictMember;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
@@ -1297,7 +1296,15 @@ public class RepositoryManager extends BasicManager {
 		logInfo("Repo-Perf: runGenericANDQueryWithRolesRestriction#1 takes " + timeQuery1);
 		return result;
 	}
-	//fxdiff VCRP-1,2: access control of resources
+	
+	/**
+	 * This query need the repository entry as v, v.olatResource as res,
+	 * v.ownerGroup as ownerGroup, v.tutorGroup as tutorGroup, v.participantGroup as participantGroup
+	 * @param sb
+	 * @param identity
+	 * @param roles
+	 * @return
+	 */
 	private boolean appendAccessSubSelects(StringBuilder sb, Identity identity, Roles roles) {
 		sb.append("(v.access >= ");
 		if (roles.isAuthor()) {
@@ -1314,12 +1321,25 @@ public class RepositoryManager extends BasicManager {
 			setIdentity = true;
 			//sub select are very quick
 			sb.append(" or (")
-				.append("   v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
-				.append("   and v.key in (")
-		    .append("     select vmember.key from ").append(RepositoryEntryStrictMember.class.getName()).append(" vmember")
-			  .append("     where (vmember.repoParticipantKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.repoOwnerKey=:identityKey")
-			  .append("         or vmember.groupParticipantKey=:identityKey or vmember.groupOwnerKey=:identityKey)")
-				.append(" ))");
+				.append("  v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
+			  .append("  and (exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=participantGroup")
+			  .append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=tutorGroup")
+			  .append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=ownerGroup")
+			  .append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+			  .append("      ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+			  .append("      ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+			  .append("      where bgroup.partipiciantGroup=vmember.securityGroup and res=bresource.resource ")
+			  .append("        and bgroup=bresource.group and vmember.identity.key=:identityKey")
+			  .append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+			  .append("      ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+			  .append("      ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+			  .append("      where bgroup.ownerGroup=vmember.securityGroup and res=bresource.resource ")
+			  .append("        and bgroup=bresource.group and vmember.identity.key=:identityKey")
+			  .append("  )")
+			  .append(" ))");
 		}
 		sb.append(")");
 		return setIdentity;
@@ -1330,11 +1350,24 @@ public class RepositoryManager extends BasicManager {
 		  .append(" v.access>=").append(RepositoryEntry.ACC_USERS)
 		  .append(" or (")
 		  .append("   v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
-		  .append("   and v.key in (")
-		  .append("     select vmember.key from ").append(RepositoryEntryStrictMember.class.getName()).append(" vmember")
-			.append("     where (vmember.repoParticipantKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.repoOwnerKey=:identityKey")
-			.append("       or vmember.groupParticipantKey=:identityKey or vmember.groupOwnerKey=:identityKey)")
-		  .append(" )))");
+			.append("  and (exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			.append("     where vmember.identity.key=:identityKey and vmember.securityGroup=participantGroup")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			.append("     where vmember.identity.key=:identityKey and vmember.securityGroup=tutorGroup")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			.append("     where vmember.identity.key=:identityKey and vmember.securityGroup=ownerGroup")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+			.append("      ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+			.append("      ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+			.append("      where bgroup.partipiciantGroup=vmember.securityGroup and res=bresource.resource ")
+			.append("        and bgroup=bresource.group and vmember.identity.key=:identityKey")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+			.append("      ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+			.append("      ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+			.append("      where bgroup.ownerGroup=vmember.securityGroup and res=bresource.resource ")
+			.append("        and bgroup=bresource.group and vmember.identity.key=:identityKey")
+			.append("  ))")
+		  .append(" ))");
 		return true;
 	}
 	
@@ -1373,8 +1406,8 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	/**
-	 * Query repository
-	 * 
+	 * <b>!!! Don't use this query (NEVER). Only for history purpose!!!!</b><br>
+	 * Query repository:<br>
 	 * If any input data contains "*", then it replaced by "%" (search me*er -> sql: me%er).
 	 * 
 	 * @deprecated Use genericANDQueryWithRolesRestriction with paging instead
