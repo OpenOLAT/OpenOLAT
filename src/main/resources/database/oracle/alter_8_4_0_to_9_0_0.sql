@@ -538,7 +538,9 @@ create or replace view o_gp_business_v  as (
    from o_gp_business gp
 );
 
-
+drop view o_re_strict_participant_v;
+drop view o_re_strict_tutor_v;
+drop view o_re_strict_member_v;
 
 
 
