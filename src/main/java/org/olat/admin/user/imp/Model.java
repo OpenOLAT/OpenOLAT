@@ -39,63 +39,53 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * Description: Table model for user mass import.
  */
-public class Model extends DefaultTableDataModel<Object> {
+public class Model extends DefaultTableDataModel<Identity> {
 
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
 	private int columnCount = 0;
 
-	public Model(List<Object> objects, int columnCount) {
+	public Model(List<Identity> objects, int columnCount) {
 		super(objects);
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
 		this.columnCount = columnCount;
 	}
 
+	@Override
 	public int getColumnCount() {
 		return columnCount;
 	}
 
+	@Override
 	public Object getValueAt(int row, int col) {
-		Identity ident = null;
-		List<String> userArray = null;
-		boolean userExists = false;
-		Object o = getObject(row);
-		if (o instanceof Identity) {
-			ident = (Identity) o;
-			userExists = true;
-		} else {
-			userArray = (List<String>) o;
-		}
+		Identity ident = getObject(row);
+		boolean userExists = !(ident instanceof TransientIdentity);
 		
 		if (col == 0) { // existing
 			return (userExists ? Boolean.FALSE : Boolean.TRUE);
 		}
-		if (col == 1) { return (userExists ? ident.getName() : userArray.get(col)); }
+		if (col == 1) {
+			return ident.getName();
+		}
 
 		if (col == 2) {// pwd
 			if (userExists) {
 				return "-";
 			} else {
-				return (userArray.get(col) == null ? "-" : "***");
+				return (((TransientIdentity)ident).getPassword() == null ? "-" : "***");
 			}
 		} else if (col == 3) {// lang
 			if (userExists) {
 				return ident.getUser().getPreferences().getLanguage();
 			} else {
-				return userArray.get(col);
+				return ((TransientIdentity)ident).getLanguage();
 			}
 		} else if (col > 3 && col < getColumnCount()) {
-			if (userExists) {
-				// get user property for this column for an already existing user
-				UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - 4);
-				String value = userPropertyHandler.getUserProperty(ident.getUser(), getLocale());
-				return (value == null ? "n/a" : value);
-			} else {
-				return userArray.get(col);
-			}
-		} 
-
+			// get user property for this column for an already existing user
+			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - 4);
+			String value = userPropertyHandler.getUserProperty(ident.getUser(), getLocale());
+			return (value == null ? "n/a" : value);
+		}
 		return "ERROR";
-
 	}
 }
