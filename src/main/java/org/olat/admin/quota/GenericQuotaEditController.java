@@ -83,11 +83,11 @@ public class GenericQuotaEditController extends BasicController {
 		
 		// check if quota foqf.cannot.del.defaultr this path already exists
 		QuotaManager qm = QuotaManager.getInstance();
-		this.currentQuota = qm.getCustomQuota(relPath);
+		currentQuota = qm.getCustomQuota(relPath);
 		// init velocity context
 		initMyContent(ureq);
 		if (currentQuota == null) {
-			this.currentQuota = qm.createQuota(relPath, null, null);
+			currentQuota = qm.createQuota(relPath, null, null);
 			myContent.contextPut("editQuota", Boolean.FALSE);			
 		} else {
 			initQuotaForm(ureq, currentQuota);			
@@ -110,10 +110,10 @@ public class GenericQuotaEditController extends BasicController {
 		
 		// start with neq quota if quota is empty
 		if (quota == null) {
-			this.currentQuota = QuotaManager.getInstance().createQuota(null, null, null);
+			currentQuota = QuotaManager.getInstance().createQuota(null, null, null);
 			myContent.contextPut("isEmptyQuota", true);
 		} else {
-			this.currentQuota = quota;
+			currentQuota = quota;
 		}
 		initQuotaForm(ureq, currentQuota);
 		
@@ -146,7 +146,7 @@ public class GenericQuotaEditController extends BasicController {
 		if (quotaForm != null) {
 			removeAsListenerAndDispose(quotaForm);
 		}
-		quotaForm = new QuotaForm(ureq, getWindowControl(), quota);
+		quotaForm = new QuotaForm(ureq, getWindowControl(), quota, true);
 		listenTo(quotaForm);
 		myContent.put("quotaform", quotaForm.getInitialComponent());
 		myContent.contextPut("editQuota", Boolean.TRUE);

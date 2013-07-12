@@ -17,7 +17,7 @@
 				<td><span class="b_access_infos">$confController.infos</span></td>
 				<td><div class="b_form_element">$r.render("from_$confController.link.key")</div></td>
 				<td><div class="b_form_element">$r.render("to_$confController.link.key")</div></td>
-				<td>$r.render("del_$confController.link.key")</td>
+				<td>#if($r.available("del_$confController.link.key")) $r.render("del_$confController.link.key") #end</td>
 			</tr>
 			#set($desc = $confController.getLink().getOffer().getDescription())
 			#if ($desc)

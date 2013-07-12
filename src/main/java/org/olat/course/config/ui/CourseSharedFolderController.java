@@ -34,15 +34,12 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
-import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.fileresource.types.SharedFolderFileResource;
@@ -63,14 +60,10 @@ import org.olat.resource.references.ReferenceManager;
  * @version Initial Date: July 11, 2005
  * @author Alexander Schneider
  */
-public class CourseSharedFolderController extends DefaultController implements ControllerEventListener {
+public class CourseSharedFolderController extends BasicController  {
 
-	private static final String PACKAGE = Util.getPackageName(CourseSharedFolderController.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
 	private static final String SHAREDFOLDERREF = "sharedfolderref";
 	
-	//private ICourse course;
-	private PackageTranslator translator;
 	private VelocityContainer myContent;
 
 	private ReferencableEntriesSearchController searchController;
@@ -91,22 +84,23 @@ public class CourseSharedFolderController extends DefaultController implements C
 	 * @param wControl
 	 * @param theCourse
 	 */
-	public CourseSharedFolderController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig) {
-		super(wControl);
+	public CourseSharedFolderController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig, boolean editable) {
+		super(ureq, wControl);
 
 		this.courseConfig = courseConfig;
-		translator = new PackageTranslator(PACKAGE, ureq.getLocale());
 		
-		myContent = new VelocityContainer("courseSharedFolderTab", VELOCITY_ROOT + "/CourseSharedFolder.html", translator, this);
-		changeSFResButton = LinkFactory.createButton("sf.changesfresource", myContent, this);
-		unselectSFResButton = LinkFactory.createButton("sf.unselectsfresource", myContent, this);
-		selectSFResButton = LinkFactory.createButton("sf.selectsfresource", myContent, this);
+		myContent = createVelocityContainer("CourseSharedFolder");
+		if(editable) {
+			changeSFResButton = LinkFactory.createButton("sf.changesfresource", myContent, this);
+			unselectSFResButton = LinkFactory.createButton("sf.unselectsfresource", myContent, this);
+			selectSFResButton = LinkFactory.createButton("sf.selectsfresource", myContent, this);
+		}
 		
 		String softkey = courseConfig.getSharedFolderSoftkey();
 		String name;
 
 		if (!courseConfig.hasCustomSharedFolder()) {
-			name = translator.translate("sf.notconfigured");
+			name = translate("sf.notconfigured");
 			hasSF = false;
 			myContent.contextPut("hasSharedFolder", new Boolean(hasSF));
 		} else {
@@ -114,7 +108,7 @@ public class CourseSharedFolderController extends DefaultController implements C
 			if (re == null) {
 				//log.warning("Removed configured sahred folder from course config, because repo entry does not exist anymore.");
 				courseConfig.setSharedFolderSoftkey(CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
-				name = translator.translate("sf.notconfigured");
+				name = translate("sf.notconfigured");
 				hasSF = false;
 				myContent.contextPut("hasSharedFolder", new Boolean(hasSF));
 			} else {
@@ -125,7 +119,7 @@ public class CourseSharedFolderController extends DefaultController implements C
 		}
 		myContent.contextPut("resourceTitle", name);
 
-		setInitialComponent(myContent);
+		putInitialPanel(myContent);
 	}
 
 	/**
@@ -136,9 +130,9 @@ public class CourseSharedFolderController extends DefaultController implements C
 		if (source == selectSFResButton || source == changeSFResButton) { // select or change shared folder
 			// let user choose a shared folder
 			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
-					SharedFolderFileResource.TYPE_NAME, translator.translate("command.choose"));
+					SharedFolderFileResource.TYPE_NAME, translate("command.choose"));
 			searchController.addControllerListener(this);
-			cmc = new CloseableModalController(getWindowControl(), translator.translate("close"), searchController.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
 			cmc.activate();		
 		} else if (source == unselectSFResButton) { // unselect shared folder			
 			if (courseConfig.hasCustomSharedFolder()) {
@@ -151,7 +145,7 @@ public class CourseSharedFolderController extends DefaultController implements C
 				courseConfig.setSharedFolderSoftkey(CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
 				//deleteRefTo(course);
 				//course.getCourseEnvironment().setCourseConfig(cc);
-				String emptyKey = translator.translate(CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
+				String emptyKey = translate(CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
 				myContent.contextPut("resourceTitle", emptyKey);
 				hasSF = false;
 				myContent.contextPut("hasSharedFolder", new Boolean(hasSF));
@@ -209,9 +203,9 @@ public class CourseSharedFolderController extends DefaultController implements C
 	 */
 	public static void deleteRefTo(ICourse course) {
 		ReferenceManager refM = ReferenceManager.getInstance();
-		List repoRefs = refM.getReferences(course);
-		for (Iterator iter = repoRefs.iterator(); iter.hasNext();) {
-			ReferenceImpl ref = (ReferenceImpl) iter.next();
+		List<ReferenceImpl> repoRefs = refM.getReferences(course);
+		for (Iterator<ReferenceImpl> iter = repoRefs.iterator(); iter.hasNext();) {
+			ReferenceImpl ref = iter.next();
 			if (ref.getUserdata().equals(SHAREDFOLDERREF)) {
 				refM.delete(ref);
 				return;
@@ -227,7 +221,6 @@ public class CourseSharedFolderController extends DefaultController implements C
 			searchController.dispose();
 			searchController = null;
 		}
-
 	}
 
 	/**
@@ -241,5 +234,4 @@ public class CourseSharedFolderController extends DefaultController implements C
 	public RepositoryEntry getSharedFolderRepositoryEntry() {
 		return sharedFolderRepositoryEntry;
 	}
-
 }

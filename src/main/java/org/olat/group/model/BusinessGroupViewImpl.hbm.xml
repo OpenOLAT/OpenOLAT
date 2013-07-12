@@ -19,7 +19,8 @@
 		<property name="minParticipants" column="minparticipants" not-null="false"/>
 		<property name="maxParticipants" column="maxparticipants" not-null="false"/>
 		<property name="waitingListEnabled" type="boolean" column="waitinglist_enabled" unique="false" not-null="false"/>	
-		<property name="autoCloseRanksEnabled" type="boolean" column="autocloseranks_enabled" unique="false" not-null="false"/>	
+		<property name="autoCloseRanksEnabled" type="boolean" column="autocloseranks_enabled" unique="false" not-null="false"/>
+		<property name="managedFlagsString" column="managed_flags" unique="false" not-null="false" type="string"/>
 		<!--  statistics informations -->
   		<property name="numOfOwners" column="num_of_owners" type="long" />
   		<property name="numOfParticipants" column="num_of_participants" type="long" />

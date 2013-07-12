@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.AbstractBusinessGroupListController;
@@ -49,8 +50,11 @@ import org.olat.group.ui.main.BGAccessControlledCellRenderer;
 import org.olat.group.ui.main.BGTableItem;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
+import org.olat.group.ui.main.BusinessGroupViewFilter;
 import org.olat.group.ui.main.SelectBusinessGroupController;
+import org.olat.group.ui.main.UnmanagedGroupFilter;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.resource.OLATResource;
 
 /**
@@ -59,8 +63,8 @@ import org.olat.resource.OLATResource;
  */
 public class CourseBusinessGroupListController extends AbstractBusinessGroupListController {
 	
-	private static String TABLE_ACTION_UNLINK = "tblUnlink";
-	private static String TABLE_ACTION_MULTI_UNLINK = "tblMultiUnlink";
+	public static String TABLE_ACTION_UNLINK = "tblUnlink";
+	public static String TABLE_ACTION_MULTI_UNLINK = "tblMultiUnlink";
 	
 	private final RepositoryEntry re;
 	private final Link createGroup;
@@ -71,12 +75,15 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	private SelectBusinessGroupController selectController;
 	
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
-		super(ureq, wControl, "group_list");
+		super(ureq, wControl, "group_list", re);
 		this.re = re;
 		
+		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		createGroup = LinkFactory.createButton("group.create", mainVC, this);
+		createGroup.setVisible(!managed);
 		mainVC.put("createGroup", createGroup);
 		addGroup = LinkFactory.createButton("group.add", mainVC, this);
+		addGroup.setVisible(!managed);
 		mainVC.put("addGroup", addGroup);
 	}
 
@@ -84,16 +91,26 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	protected void initButtons(UserRequest ureq) {
 		initButtons(ureq, true);
 		groupListCtr.setMultiSelect(true);
-		groupListCtr.addMultiSelectAction("table.duplicate", TABLE_ACTION_DUPLICATE);
-		groupListCtr.addMultiSelectAction("table.merge", TABLE_ACTION_MERGE);
+		
+		RepositoryEntry re = (RepositoryEntry)getUserObject();
+		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
+		if(!managed) {
+			groupListCtr.addMultiSelectAction("table.duplicate", TABLE_ACTION_DUPLICATE);
+			groupListCtr.addMultiSelectAction("table.merge", TABLE_ACTION_MERGE);
+		}
 		groupListCtr.addMultiSelectAction("table.users.management", TABLE_ACTION_USERS);
 		groupListCtr.addMultiSelectAction("table.config", TABLE_ACTION_CONFIG);
 		groupListCtr.addMultiSelectAction("table.email", TABLE_ACTION_EMAIL);
-		groupListCtr.addMultiSelectAction("table.header.remove", TABLE_ACTION_MULTI_UNLINK);
+		if(!managed) {
+			groupListCtr.addMultiSelectAction("table.header.remove", TABLE_ACTION_MULTI_UNLINK);
+		}
 	}
 
 	@Override
 	protected int initColumns() {
+		RepositoryEntry re = (RepositoryEntry)getUserObject();
+		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
+		
 		CustomCssCellRenderer nameRenderer = new BusinessGroupNameCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, nameRenderer));
 		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
@@ -106,7 +123,9 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
 		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "table.header.edit", translate("table.header.edit")));
-		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_UNLINK, "table.header.remove", translate("table.header.remove")));
+		if(!managed) {
+			groupListCtr.addColumnDescriptor(new RemoveActionColumnDescriptor("table.header.remove", Cols.wrapper.ordinal(), getTranslator()));
+		}
 		return 11;
 	}
 
@@ -185,7 +204,8 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 
 	protected void doSelectGroups(UserRequest ureq) {
 		removeAsListenerAndDispose(selectController);
-		selectController = new SelectBusinessGroupController(ureq, getWindowControl());
+		BusinessGroupViewFilter filter = new UnmanagedGroupFilter(BusinessGroupManagedFlag.resources);
+		selectController = new SelectBusinessGroupController(ureq, getWindowControl(), filter);
 		listenTo(selectController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

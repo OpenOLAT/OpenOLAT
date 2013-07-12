@@ -36,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 import org.olat.core.util.filter.Filter;
-import org.olat.core.util.filter.FilterFactory;
 
 /**
  * Description:<br>
@@ -127,14 +126,15 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#getValue()
 	 */
+	@Override
 	public String getValue() {
-		Filter xssFilter = FilterFactory.getXSSFilterForTextField(value.length() + 1);
-		return getValue(xssFilter);
+		return value;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#getValue(org.olat.core.util.filter.Filter)
 	 */
+	@Override
 	public String getValue(Filter filter) {
 		return filter.filter(value);
 	}

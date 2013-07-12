@@ -91,7 +91,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private QuestionsController myQuestionsCtrl;
 	private QuestionsController markedQuestionsCtrl;
 	
-	private Controller presentationCtrl;
+	private Controller presentationCtrl, sharePresentationCtrl;
 	private PoolsAdminController poolAdminCtrl;
 	private QItemTypesAdminController typesCtrl;
 	private QEducationalContextsAdminController levelsCtrl;
@@ -168,6 +168,8 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		Object uNode = node.getUserObject();
 		if("Presentation".equals(uNode)) {
 			doSelectPresentation(ureq);
+		} else if("SharePresentation".equals(uNode)) {
+			doSelectSharePresentation(ureq);
 		} else if("Statistics".equals(uNode)) {
 			doSelectAdmin(ureq, entries, state);
 		} else if("Taxonomy".equals(uNode)) {
@@ -307,6 +309,15 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			listenTo(presentationCtrl);
 		} 
 		setContent(ureq, presentationCtrl, null, null);
+	}
+	
+	private void doSelectSharePresentation(UserRequest ureq) {
+		if(sharePresentationCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("SharePresentation"), null);
+			sharePresentationCtrl = new SharePresentationController(ureq, swControl);
+			listenTo(sharePresentationCtrl);
+		} 
+		setContent(ureq, sharePresentationCtrl, null, null);
 	}
 	
 	private void doSelectAdmin(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -480,7 +491,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		buildMySubTreeModel(myNode);
 
 		//pools + shares
-		sharesNode = new GenericTreeNode(translate("menu.share"), "menu.share");
+		sharesNode = new GenericTreeNode(translate("menu.share"), "SharePresentation");
 		sharesNode.setCssClass("o_sel_qpool_shares");
 		rootNode.addChild(sharesNode);	
 		buildShareSubTreeModel(sharesNode);

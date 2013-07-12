@@ -51,15 +51,15 @@ public class CourseChatSettingController extends BasicController implements Cont
 	 * @param ureq
 	 * @param wControl
 	 */
-	public CourseChatSettingController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig) {
+	public CourseChatSettingController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig, boolean editable) {
 		super(ureq, wControl);
 		this.courseConfig = courseConfig;
 		
 		myContent = createVelocityContainer("CourseChat");
-		chatForm = new CourseChatSettingsForm(ureq, wControl, courseConfig.isChatEnabled());
+		chatForm = new CourseChatSettingsForm(ureq, wControl, courseConfig.isChatEnabled(), editable);
 		listenTo (chatForm);
 		myContent.put("chatForm", chatForm.getInitialComponent());
-		//		
+	
 		putInitialPanel(myContent);
 	}
 
@@ -82,5 +82,4 @@ public class CourseChatSettingController extends BasicController implements Cont
 	protected void doDispose() {
 		//
 	}
-
 }

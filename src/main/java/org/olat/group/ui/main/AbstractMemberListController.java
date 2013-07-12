@@ -67,6 +67,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
@@ -80,6 +81,7 @@ import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
@@ -119,6 +121,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	private final boolean isLastVisitVisible;
 	private final boolean isAdministrativeUser;
 	private final boolean chatEnabled;
+	private final boolean globallyManaged;
 	
 	private final UserManager userManager;
 	
@@ -135,15 +138,18 @@ public abstract class AbstractMemberListController extends BasicController imple
 	private final GroupMemberViewComparator memberViewComparator;
 	private static final CourseMembershipComparator MEMBERSHIP_COMPARATOR = new CourseMembershipComparator();
 	
-	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, String page) {
+	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry,
+			String page) {
 		this(ureq, wControl, repoEntry, null, page);
 	}
 	
-	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, BusinessGroup group, String page) {
+	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, BusinessGroup group,
+			String page) {
 		this(ureq, wControl, null, group, page);
 	}
 	
-	private AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, BusinessGroup group, String page) {
+	private AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, BusinessGroup group,
+			String page) {
 		super(ureq, wControl, Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale()));
 		
 		this.businessGroup = group;
@@ -160,6 +166,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		memberViewComparator = new GroupMemberViewComparator(Collator.getInstance(getLocale()));
+
+		globallyManaged = calcGloballyManaged();
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
@@ -180,13 +188,34 @@ public abstract class AbstractMemberListController extends BasicController imple
 		MemberListTableModel memberListModel = new MemberListTableModel(userPropertyHandlers);
 		memberListCtr.setTableDataModel(memberListModel);
 		memberListCtr.setMultiSelect(true);
-		memberListCtr.addMultiSelectAction("table.header.edit", TABLE_ACTION_EDIT);
+		if(!globallyManaged) {
+			memberListCtr.addMultiSelectAction("table.header.edit", TABLE_ACTION_EDIT);
+		}
 		memberListCtr.addMultiSelectAction("table.header.mail", TABLE_ACTION_MAIL);
-		memberListCtr.addMultiSelectAction("table.header.remove", TABLE_ACTION_REMOVE);
+		if(!globallyManaged) {
+			memberListCtr.addMultiSelectAction("table.header.remove", TABLE_ACTION_REMOVE);
+		}
 
 		mainVC.put("memberList", memberListCtr.getInitialComponent());
 		
 		putInitialPanel(mainVC);
+	}
+	
+	private boolean calcGloballyManaged() {
+		boolean managed = true;
+		if(businessGroup != null) {
+			managed &= BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.membersmanagement);
+		}
+		if(repoEntry != null) {
+			boolean managedEntry = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
+			managed &= managedEntry;
+			
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, repoEntry.getOlatResource(), 0, -1);
+			for(BusinessGroup group:groups) {
+				managed &= BusinessGroupManagedFlag.isManaged(group, BusinessGroupManagedFlag.membersmanagement);
+			}
+		}
+		return managed;
 	}
 	
 	@Override
@@ -244,7 +273,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 		
 		memberListCtr.addColumnDescriptor(new GraduateColumnDescriptor("table.header.graduate", TABLE_ACTION_GRADUATE, getTranslator()));
 		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "table.header.edit", translate("table.header.edit")));
-		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_REMOVE, "table.header.remove", translate("table.header.remove")));
+		if(!globallyManaged) {
+			memberListCtr.addColumnDescriptor(new LeaveColumnDescriptor("table.header.remove", TABLE_ACTION_REMOVE, getTranslator()));
+		}
 	}
 
 	@Override
@@ -510,6 +541,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 
 	protected List<MemberView> updateTableModel(SearchMembersParams params) {
 		//course membership
+		boolean managedMembersRepo = 
+				RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 		List<RepositoryEntryMembership> repoMemberships =
 				repoEntry == null ? Collections.<RepositoryEntryMembership>emptyList()
 				: repositoryManager.getRepositoryEntryMembership(repoEntry);
@@ -634,6 +667,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 			if(memberView != null) {
 				memberView.setFirstTime(membership.getCreationDate());
 				memberView.setLastTime(membership.getLastModified());
+				memberView.getMembership().setManagedMembersRepo(managedMembersRepo);
 				if(membership.getOwnerRepoKey() != null) {
 					memberView.getMembership().setRepoOwner(true);
 				}

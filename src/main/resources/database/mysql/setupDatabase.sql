@@ -1391,6 +1391,7 @@ create or replace view o_gp_business_v  as (
       gp.maxparticipants as maxparticipants,
       gp.waitinglist_enabled as waitinglist_enabled,
       gp.autocloseranks_enabled as autocloseranks_enabled,
+      gp.managed_flags as managed_flags,
       (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
       (select count(pending.reservation_id) from o_ac_reservation as pending where pending.fk_resource = gp.fk_resource) as num_of_pendings,
       (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,

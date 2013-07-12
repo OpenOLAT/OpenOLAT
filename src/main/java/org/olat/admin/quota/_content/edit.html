@@ -9,7 +9,9 @@
 #else
 	<fieldset class="b_clearfix">
 		<legend>$r.translate("qf.new")</legend>
-		<div class="b_float_right">$r.render("qf.new")</div>
+		#if($r.available("qf.new"))
+			<div class="b_float_right">$r.render("qf.new")</div>
+		#end
 		$r.translate("qf.noquota")
 		#if ($modalMode)
 			&nbsp;

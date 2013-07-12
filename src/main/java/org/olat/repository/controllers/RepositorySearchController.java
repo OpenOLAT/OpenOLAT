@@ -93,6 +93,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	private boolean enableSearchforAllReferencalbeInSearchForm = false;
 	private Link loginLink;
 	private SearchType searchType;
+	private RepositoryEntryFilter filter;
 	
 	
 	/**
@@ -107,7 +108,7 @@ public class RepositorySearchController extends BasicController implements Activ
 			boolean withCancel, boolean enableDirectLaunch, boolean multiSelect) {
 		//fxdiff VCRP-10: repository search with type filter
 		super(ureq, myWControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
-		init(selectButtonLabel, ureq, withCancel, enableDirectLaunch, multiSelect, new String[]{});
+		init(selectButtonLabel, ureq, withCancel, enableDirectLaunch, multiSelect, new String[]{}, null);
 	}
 	
 	/**
@@ -121,14 +122,14 @@ public class RepositorySearchController extends BasicController implements Activ
 	 */
 	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl,
 			boolean withCancel, boolean enableDirectLaunch, boolean multiSelect, String limitType) {
-		this(selectButtonLabel, ureq,  myWControl,  withCancel,  enableDirectLaunch, multiSelect, new String[]{limitType});
+		this(selectButtonLabel, ureq,  myWControl,  withCancel,  enableDirectLaunch, multiSelect, new String[]{limitType}, null);
 	}
 
 	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl,
-			boolean withCancel, boolean enableDirectLaunch, boolean multiSelect, String[] limitTypes) {
+			boolean withCancel, boolean enableDirectLaunch, boolean multiSelect, String[] limitTypes, RepositoryEntryFilter filter) {
 		//fxdiff VCRP-10: repository search with type filter
 		super(ureq, myWControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
-		init(selectButtonLabel, ureq, withCancel, enableDirectLaunch, multiSelect, limitTypes);
+		init(selectButtonLabel, ureq, withCancel, enableDirectLaunch, multiSelect, limitTypes, filter);
 	}
 	
 	/**
@@ -139,7 +140,10 @@ public class RepositorySearchController extends BasicController implements Activ
 		super(ureq, myWControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
 	}
 
-	private void init(String selectButtonLabel, UserRequest ureq, boolean withCancel, boolean enableDirectLaunch, boolean multiSelect, String[] limitTypes) {
+	private void init(String selectButtonLabel, UserRequest ureq, boolean withCancel, boolean enableDirectLaunch, boolean multiSelect,
+			String[] limitTypes, RepositoryEntryFilter filter) {
+		
+		this.filter = filter;
 		translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 		Roles roles = ureq.getUserSession().getRoles();
 		
@@ -223,6 +227,16 @@ public class RepositorySearchController extends BasicController implements Activ
 			DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
 		}
 	}
+	
+	private void filterRepositoryEntries(List<RepositoryEntry> entries) {
+		if(filter != null && entries != null && !entries.isEmpty()) {
+			for(Iterator<RepositoryEntry> entryIt=entries.iterator(); entryIt.hasNext(); ) {
+				if(!filter.accept(entryIt.next())) {
+					entryIt.remove();
+				}
+			}
+		}
+	}
 
 	/**
 	 * Implementation normal search: find repo entries that are public
@@ -245,10 +259,7 @@ public class RepositorySearchController extends BasicController implements Activ
 						restrictedTypes, ureq.getIdentity(), ureq.getUserSession().getRoles(),
 						ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, null));
 		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);		
-		//List<RepositoryEntry> entries =	rm.genericANDQueryWithRolesRestriction(searchForm.getDisplayName(), searchForm.getAuthor(),
-		//	searchForm.getDescription(), restrictedTypes, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, null));
-
-		//fxdiff VCRP-1,2: access control of resources
+		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
 		if(updateFilters) {
@@ -285,6 +296,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		} else {
 			entries = rm.queryReferencableResourcesLimitType(ident, roles, restrictedTypes, name, author, desc);
 		}
+		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
 		if(updateFilters) {
@@ -327,7 +339,7 @@ public class RepositorySearchController extends BasicController implements Activ
 			restrictedTypes.addAll(Arrays.asList(limitTypes));
 		}
 		List<RepositoryEntry> entries = rm.queryReferencableResourcesLimitType(owner, roles, restrictedTypes, null, null, null);
-		
+		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
 		tableCtr.setFilters(null, null);
@@ -364,6 +376,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		searchType = SearchType.byOwner;
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<RepositoryEntry> entries = rm.queryByOwner(owner, limitTypes);
+		filterRepositoryEntries(entries);
 		if(updateFilters) {
 			updateFilters(entries, owner);
 		}
@@ -381,7 +394,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		RepositoryManager rm = RepositoryManager.getInstance();
 		//fxdiff VCRP-1,2: access control of resources
 		List<RepositoryEntry> entries = rm.queryByOwnerLimitAccess(owner, RepositoryEntry.ACC_USERS, Boolean.TRUE);
-
+		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
 		tableCtr.setFilters(null, null);
@@ -399,6 +412,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		searchType = null;
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<RepositoryEntry> entries = rm.queryByTypeLimitAccess(ureq.getIdentity(), ureq.getUserSession().getRoles(), type);
+		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
 		tableCtr.setFilters(null, null);
@@ -411,6 +425,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		RepositoryEntry entry = rm.lookupRepositoryEntry(id);
 		List<RepositoryEntry> entries = new ArrayList<RepositoryEntry>(1);
 		if (entry != null) entries.add(entry);
+		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.modelChanged();
 		displaySearchResults(null);
@@ -425,6 +440,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<RepositoryEntry> entries = rm.getLearningResourcesAsStudent(ureq.getIdentity(), 0, -1);
 		//fxdiff VCRP-10: repository search with type filter
+		filterRepositoryEntries(entries);
 		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
 	}
 	
@@ -436,6 +452,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		searchType = SearchType.myAsTeacher;
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<RepositoryEntry> entries = rm.getLearningResourcesAsTeacher(ureq.getIdentity(), 0, -1);
+		filterRepositoryEntries(entries);
 		//fxdiff VCRP-10: repository search with type filter
 		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
 	}

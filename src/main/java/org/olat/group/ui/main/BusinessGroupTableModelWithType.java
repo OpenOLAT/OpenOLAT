@@ -34,6 +34,7 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 
 /**
@@ -74,10 +75,26 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				description = FilterFactory.getHtmlTagsFilter().filter(description);
 				description = Formatter.truncate(description, 256);
 				return description;
-			case allowLeave:
-				return wrapped.getAllowLeave();
-			case allowDelete:
-				return wrapped.getAllowDelete();
+			case allowLeave: {
+				Boolean allowed = wrapped.getAllowLeave();
+				if(allowed != null && allowed.booleanValue()) {
+					//check managed groups
+					if(BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement)) {
+						return Boolean.FALSE;
+					}
+				}
+				return allowed;
+			}
+			case allowDelete: {
+				Boolean allowed =  wrapped.getAllowDelete();
+				if(allowed != null && allowed.booleanValue()) {
+					//check managed groups
+					if(BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.delete)) {
+						return Boolean.FALSE;
+					}
+				}
+				return allowed;
+			}
 			case resources:
 				return wrapped;
 			//fxdiff VCRP-1,2: access control of resources

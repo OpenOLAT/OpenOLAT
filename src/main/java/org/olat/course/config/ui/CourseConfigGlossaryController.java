@@ -79,7 +79,8 @@ public class CourseConfigGlossaryController extends BasicController implements C
 	 * @param wControl
 	 * @param course
 	 */
-	public CourseConfigGlossaryController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig, Long courseResourceableId) {
+	public CourseConfigGlossaryController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig,
+			Long courseResourceableId, boolean editable) {
 		super(ureq, wControl);
 		this.courseConfig = courseConfig;
 		this.courseResourceableId = courseResourceableId;
@@ -95,10 +96,12 @@ public class CourseConfigGlossaryController extends BasicController implements C
 				log.warn("Course with ID::" + courseResourceableId + " had a config for a glossary softkey::"
 						+ courseConfig.getGlossarySoftKey() + " but no such glossary was found");				
 			} else {
-				removeCommand = LinkFactory.createButton(COMMAND_REMOVE, myContent, this);
+				if(editable) {
+					removeCommand = LinkFactory.createButton(COMMAND_REMOVE, myContent, this);
+				}
 				myContent.contextPut("repoEntry", repoEntry);
 			}
-		} else {
+		} else if(editable) {
 			addCommand = LinkFactory.createButton(COMMAND_ADD, myContent, this);
 		}		
 		putInitialPanel(myContent);

@@ -61,6 +61,7 @@ import org.olat.group.ui.main.DedupMembersConfirmationController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -125,11 +126,15 @@ public class MembersOverviewController extends BasicController implements Activa
 		
 		selectedCtrl = updateAllMembers(ureq);
 		
+		boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
+		addMemberLink.setVisible(!managed);
 		mainVC.put("addMembers", addMemberLink);
 		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
+		importMemberLink.setVisible(!managed);
 		mainVC.put("importMembers", importMemberLink);
 		dedupLink = LinkFactory.createButton("dedup.members", mainVC, this);
+		dedupLink.setVisible(!managed);
 		mainVC.put("dedupMembers", dedupLink);
 		
 		putInitialPanel(mainVC);

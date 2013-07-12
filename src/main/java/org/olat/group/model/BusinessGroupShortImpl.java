@@ -22,6 +22,7 @@ package org.olat.group.model;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
 
 /**
@@ -37,6 +38,7 @@ public class BusinessGroupShortImpl extends PersistentObject implements Business
 	private static final long serialVersionUID = -5404538852842562897L;
 	
 	private String name;
+	private String managedFlagsString;
 
 	public String getName() {
 		return name;
@@ -46,8 +48,14 @@ public class BusinessGroupShortImpl extends PersistentObject implements Business
 		this.name = name;
 	}
 	
-	
-	
+	public String getManagedFlagsString() {
+		return managedFlagsString;
+	}
+
+	public void setManagedFlagsString(String managedFlagsString) {
+		this.managedFlagsString = managedFlagsString;
+	}
+
 	@Override
 	public String getResourceableTypeName() {
 		return OresHelper.calculateTypeName(BusinessGroup.class);
@@ -56,6 +64,11 @@ public class BusinessGroupShortImpl extends PersistentObject implements Business
 	@Override
 	public Long getResourceableId() {
 		return getKey();
+	}
+
+	@Override
+	public BusinessGroupManagedFlag[] getManagedFlags() {
+		return BusinessGroupManagedFlag.toEnum(managedFlagsString);
 	}
 
 	/**

@@ -180,18 +180,24 @@ public class PropPupForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
+		final boolean managedSettings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.settings);
+		
 		canCopy = uifactory.addCheckboxesVertical("cif_canCopy", "cif.canCopy", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		canCopy.select("xx", entry.getCanCopy());
+		canCopy.setEnabled(!managedSettings);
 		
 		canReference = uifactory.addCheckboxesVertical("cif_canReference", "cif.canReference", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		canReference.select("xx", entry.getCanReference());
+		canReference.setEnabled(!managedSettings);
 		
 		canLaunch = uifactory.addCheckboxesVertical("cif_canLaunch", "cif.canLaunch", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		canLaunch.select("xx", entry.getCanLaunch());
+		canLaunch.setEnabled(!managedSettings);
 		canLaunch.setVisible(handler != null && handler.supportsLaunch(this.entry));
 		
 		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", "cif.canDownload", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		canDownload.select("xx", entry.getCanDownload());
+		canLaunch.setEnabled(!managedSettings);
 		canDownload.setVisible(handler != null && handler.supportsDownload(this.entry));
 			
 		access = uifactory.addRadiosVertical("cif_access", "cif.access", formLayout, keys, values);
@@ -202,8 +208,12 @@ public class PropPupForm extends FormBasicController {
 		} else {
 			access.select(Integer.toString(entry.getAccess()), true);
 		}
+		final boolean managedAccess = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.access);
+		access.setEnabled(!managedAccess);
 	
-		uifactory.addFormSubmitButton("submit", formLayout);
+		if(!managedAccess || !managedSettings) {
+			uifactory.addFormSubmitButton("submit", formLayout);
+		}
 	}
 
 	@Override

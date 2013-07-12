@@ -75,7 +75,7 @@ public abstract class QuotaManager extends BasicManager{
 	 * Get the identifyers for the default quotas
 	 * @return
 	 */
-	public abstract Set getDefaultQuotaIdentifyers();
+	public abstract Set<String> getDefaultQuotaIdentifyers();
 	
 	/**
 	 * Get the default quota for the given identifyer or NULL if no such quota
@@ -115,7 +115,7 @@ public abstract class QuotaManager extends BasicManager{
 	 * 
 	 * @return list of quotas.
 	 */
-	public abstract List listCustomQuotasKB();
+	public abstract List<Quota> listCustomQuotasKB();
 
 	/**
 	 * call to get appropriate quota depending on role. Authors have normally
@@ -167,6 +167,8 @@ public abstract class QuotaManager extends BasicManager{
 	 * @return
 	 */
 	public abstract Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode);
+	
+	public abstract Controller getQuotaViewInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode);
 	
 	/**
 	 * Check if a user has the rights to launch the quota editor tool

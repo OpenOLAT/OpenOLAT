@@ -102,16 +102,23 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private final boolean canCreate;
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String limitType, String commandLabel) {
-		this(wControl, ureq, new String[]{limitType},commandLabel, true, true, true, false, false);
+		this(wControl, ureq, new String[]{limitType}, null, commandLabel, true, true, true, false, false);
 		setBasePackage(RepositoryManager.class);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel) {
-		this(wControl, ureq, limitTypes,commandLabel, true, true, true, false, false);
+		this(wControl, ureq, limitTypes, null, commandLabel, true, true, true, false, false);
 	}
-
+	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel,
 			boolean canImport, boolean canCreate, boolean canDirectLaunch, boolean multiSelect, boolean adminSearch) {
+		this(wControl, ureq, limitTypes, null, commandLabel, canImport, canCreate, canDirectLaunch, multiSelect, adminSearch);
+	}
+
+	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq,
+			String[] limitTypes, RepositoryEntryFilter filter, String commandLabel,
+			boolean canImport, boolean canCreate, boolean canDirectLaunch, boolean multiSelect, boolean adminSearch) {
+
 		super(ureq, wControl);
 		this.canImport = canImport;
 		this.canCreate = canCreate;
@@ -124,7 +131,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		}
 
 		// add repo search controller
-		searchCtr = new RepositorySearchController(commandLabel, ureq, getWindowControl(), false, canDirectLaunch, multiSelect, limitTypes);
+		searchCtr = new RepositorySearchController(commandLabel, ureq, getWindowControl(), false, canDirectLaunch, multiSelect, limitTypes, filter);
 		listenTo(searchCtr);
 		
 		// do instantiate buttons

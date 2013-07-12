@@ -49,14 +49,16 @@ public class QuotaForm extends FormBasicController {
 	private IntegerElement ulLimitKB;
 	
 	private Quota quota;
+	private final boolean editable;
 	
 	/**
 	 * @param name component name of form
 	 * @param quota the quota used to initialize the form or null if empty form is used
 	 */
-	public QuotaForm(UserRequest ureq, WindowControl wControl, Quota quota) {
+	public QuotaForm(UserRequest ureq, WindowControl wControl, Quota quota, boolean editable) {
 		super(ureq, wControl);
 		this.quota = quota;
+		this.editable = editable;
 		initForm(ureq);
 	}
 
@@ -88,12 +90,10 @@ public class QuotaForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic (UserRequest ureq) {
-		
 		if (!QuotaManager.getInstance().isValidQuotaPath(path.getValue())) {
 			path.setErrorKey("qf.error.path.invalid", null);
 			return false;	
 		}
-		
 		return true;
 	}
 
@@ -108,6 +108,7 @@ public class QuotaForm extends FormBasicController {
 			path.setNotEmptyCheck("qf.error.path.invalid");
 			path.setMandatory(true);
 		}
+		path.setEnabled(editable);
 		
 		if (quota != null && quota.getQuotaKB() != null) {
 			quotaKB = uifactory.addIntegerElement("qf_quota", "qf.quota", quota.getQuotaKB().intValue(), formLayout);
@@ -115,6 +116,7 @@ public class QuotaForm extends FormBasicController {
 			quotaKB = uifactory.addIntegerElement("qf_quota", "qf.quota",(int)FolderConfig.getDefaultQuotaKB() , formLayout);
 		}
 		quotaKB.setMandatory(true);
+		quotaKB.setEnabled(editable);
 		
 		if (quota != null && quota.getUlLimitKB() != null) {
 			ulLimitKB = uifactory.addIntegerElement("qf_limit", "qf.limit", quota.getUlLimitKB().intValue(), formLayout);
@@ -122,8 +124,11 @@ public class QuotaForm extends FormBasicController {
 			ulLimitKB = uifactory.addIntegerElement("qf_limit", "qf.limit",(int)FolderConfig.getLimitULKB() , formLayout);
 		}
 		ulLimitKB.setMandatory(true);
+		ulLimitKB.setEnabled(editable);
 		
-		uifactory.addFormSubmitButton("submit", formLayout);
+		if(editable) {
+			uifactory.addFormSubmitButton("submit", formLayout);
+		}
 	}
 
 	@Override

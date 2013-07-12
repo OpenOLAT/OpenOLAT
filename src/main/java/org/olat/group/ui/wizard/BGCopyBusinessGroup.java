@@ -20,6 +20,7 @@
 package org.olat.group.ui.wizard;
 
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
 
 /**
@@ -68,6 +69,11 @@ public class BGCopyBusinessGroup implements BusinessGroupShort {
 		this.name = name;
 	}
 	
+	@Override
+	public BusinessGroupManagedFlag[] getManagedFlags() {
+		return BusinessGroupManagedFlag.EMPTY_ARRAY;
+	}
+
 	public String getDescription() {
 		return description;
 	}

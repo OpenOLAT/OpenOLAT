@@ -85,13 +85,20 @@ public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateIn
 	 * 
 	 * @return List of flags which say what features are externally managed
 	 */
-	public String getManagedFlags();
+	public BusinessGroupManagedFlag[] getManagedFlags();
+
+	/**
+	 * Return the list of managed flags as a string with the
+	 * flags separated by comma.
+	 * @return
+	 */
+	public String getManagedFlagsString();
 	
 	/**
 	 * A list of flags
 	 * @param flags
 	 */
-	public void setManagedFlags(String flags);
+	public void setManagedFlagsString(String flags);
 
 	/**
 	 * BusinessGroup was active, lastUsage will be used to determine which groups

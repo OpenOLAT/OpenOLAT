@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
@@ -108,6 +109,10 @@ public class BGTableItem {
 	
 	public boolean isAutoCloseRanksEnabled() {
 		return businessGroup.isAutoCloseRanksEnabled();
+	}
+	
+	public BusinessGroupManagedFlag[] getManagedFlags() {
+		return businessGroup.getManagedFlags();
 	}
 	
 	public boolean isFull() {
@@ -208,6 +213,7 @@ public class BGTableItem {
 		private long numOfPendings;
 		private final boolean waitingListEnabled;
 		private final boolean autoCloseRanksEnabled;
+		private final BusinessGroupManagedFlag[] managedflags;
 		
 		public BGShort(BusinessGroup group) {
 			key = group.getKey();
@@ -215,6 +221,7 @@ public class BGTableItem {
 			maxParticipants = group.getMaxParticipants();
 			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
 			autoCloseRanksEnabled = group.getAutoCloseRanksEnabled() == null ? false : group.getAutoCloseRanksEnabled().booleanValue();
+			managedflags = group.getManagedFlags();
 		}
 		
 		public BGShort(BusinessGroupView group) {
@@ -227,6 +234,7 @@ public class BGTableItem {
 			numOfPendings = group.getNumOfPendings();
 			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
 			autoCloseRanksEnabled = group.getAutoCloseRanksEnabled() == null ? false : group.getAutoCloseRanksEnabled().booleanValue();
+			managedflags = group.getManagedFlags();
 		}
 
 		@Override
@@ -275,6 +283,11 @@ public class BGTableItem {
 
 		public boolean isAutoCloseRanksEnabled() {
 			return autoCloseRanksEnabled;
+		}
+
+		@Override
+		public BusinessGroupManagedFlag[] getManagedFlags() {
+			return managedflags;
 		}
 
 		@Override

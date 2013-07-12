@@ -62,12 +62,13 @@ public class CourseEfficencyStatementController extends BasicController {
 	 * @param ureq
 	 * @param wControl
 	 */
-	public CourseEfficencyStatementController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig) {
+	public CourseEfficencyStatementController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig, boolean editable) {
 		super(ureq, wControl);		
 		this.courseConfig = courseConfig;
 		//
 		myContent = createVelocityContainer("CourseEfficencyStatement");
-		efficencyForm = new CourseEfficencyStatementForm(ureq, wControl, courseConfig.isEfficencyStatementEnabled());
+		efficencyForm = new CourseEfficencyStatementForm(ureq, wControl,
+				courseConfig.isEfficencyStatementEnabled(), editable);
 		previousValue = courseConfig.isEfficencyStatementEnabled();
 		listenTo(efficencyForm);
 		myContent.put("efficencyForm", efficencyForm.getInitialComponent());

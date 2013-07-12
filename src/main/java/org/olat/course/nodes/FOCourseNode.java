@@ -87,8 +87,9 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * @author Mike Stock Comment:
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class FOCourseNode extends GenericCourseNode {
+public class FOCourseNode extends AbstractAccessableCourseNode {
 
+	private static final long serialVersionUID = 2281715263255594865L;
 	private static final String PACKAGE_FO = Util.getPackageName(FOCourseNodeRunController.class);
 	private static final String TYPE = "fo";
 	private Condition preConditionReader, preConditionPoster, preConditionModerator;

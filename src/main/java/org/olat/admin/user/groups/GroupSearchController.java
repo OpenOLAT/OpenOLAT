@@ -21,6 +21,7 @@ package org.olat.admin.user.groups;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -52,6 +53,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
@@ -60,7 +62,9 @@ import org.olat.group.ui.BusinessGroupTableModel;
 
 /**
  * Description:<br>
- * Searches for groups from the whole system.
+ * Searches for groups from the whole system. The list of
+ * groups doesn't contain any managed groups with the flags
+ * "membermanagement" and higher.
  * 
  * <P>
  * Initial Date: 11.04.2011 <br>
@@ -73,6 +77,7 @@ public class GroupSearchController extends StepFormBasicController {
 	private FormSubmit searchButton;
 	private FormLink saveLink, searchLink;
 	private FormItem errorComp;
+	private FlexiTableElement table;
 	private FormLayoutContainer tableCont;
 	private GroupTableDataModel tableDataModel;
 	
@@ -131,7 +136,7 @@ public class GroupSearchController extends StepFormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.participant.i18n(), Cols.participant.ordinal()));
 		
 		tableDataModel = new GroupTableDataModel(Collections.<GroupWrapper>emptyList(), tableColumnModel);
-		FlexiTableElement table = uifactory.addTableElement(ureq, getWindowControl(), "groupList", tableDataModel, tableCont);
+		table = uifactory.addTableElement(ureq, getWindowControl(), "groupList", tableDataModel, tableCont);
 		tableCont.add("groupList", table);
 		
 		if (!isUsedInStepWizzard()) {
@@ -182,18 +187,22 @@ public class GroupSearchController extends StepFormBasicController {
 			SearchBusinessGroupParams param1s = new SearchBusinessGroupParams();
 			param1s.setNameOrDesc(searchValue);
 			List<BusinessGroup> group1s = businessGroupService.findBusinessGroups(param1s, null, 0, -1);
-
+			filterGroups(group1s);
+			
 			SearchBusinessGroupParams param2s = new SearchBusinessGroupParams();
 			param2s.setCourseTitle(searchValue);
 			List<BusinessGroup> group2s = businessGroupService.findBusinessGroups(param2s, null, 0, -1);
-
-			List<Long> groupKeysWithRelations = PersistenceHelper.toKeys(group1s);
-			groupKeysWithRelations.addAll(PersistenceHelper.toKeys(group2s));
+			filterGroups(group2s);
+			
+			List<BusinessGroup> groups = new ArrayList<BusinessGroup>(group1s.size() + group2s.size());
+			groups.addAll(group1s);
+			groups.addAll(group2s);
+			
+			List<Long> groupKeysWithRelations = PersistenceHelper.toKeys(groups);
 			List<BGRepositoryEntryRelation> resources = businessGroupService.findRelationToRepositoryEntries(groupKeysWithRelations, 0, -1);
 
-			List<GroupWrapper> groups = new ArrayList<GroupWrapper>();
-			for(BusinessGroup group:group1s) {
-				
+			List<GroupWrapper> groupWrappers = new ArrayList<GroupWrapper>();
+			for(BusinessGroup group:groups) {
 				StringBuilder sb = new StringBuilder();
 				for(BGRepositoryEntryRelation resource:resources) {
 					if(resource.getGroupKey().equals(group.getKey())) {
@@ -205,13 +214,22 @@ public class GroupSearchController extends StepFormBasicController {
 				GroupWrapper wrapper = new GroupWrapper(group, sb.toString());
 				wrapper.setTutor(createSelection("tutor_" + group.getKey()));
 				wrapper.setParticipant(createSelection("participant_" + group.getKey()));
-				groups.add(wrapper);
+				groupWrappers.add(wrapper);
 			}
 
-			tableDataModel.setObjects(groups);
+			table.reset();
+			tableDataModel.setObjects(groupWrappers);
 			errorComp.clearError();
 		}
-	} 
+	}
+	
+	private void filterGroups(List<BusinessGroup> groups) {
+		for(Iterator<BusinessGroup> groupIt=groups.iterator(); groupIt.hasNext(); ) {
+			if(BusinessGroupManagedFlag.isManaged(groupIt.next(), BusinessGroupManagedFlag.membersmanagement)) {
+				groupIt.remove();
+			}
+		}
+	}
 	
 	private MultipleSelectionElement createSelection(String name) {
 		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createVerticalLayout("checkbox",1));
@@ -342,7 +360,7 @@ public class GroupSearchController extends StepFormBasicController {
 		}
 	}
 	
-	private static class GroupTableDataModel extends DefaultTableDataModel<GroupWrapper> implements FlexiTableDataModel {
+	private static class GroupTableDataModel extends DefaultTableDataModel<GroupWrapper> implements FlexiTableDataModel<GroupWrapper> {
 		private FlexiTableColumnModel columnModel;
 		
 		public GroupTableDataModel(List<GroupWrapper> options, FlexiTableColumnModel columnModel) {

@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
@@ -64,6 +65,7 @@ import org.olat.resource.OLATResourceManager;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class QuotaManagerImpl extends QuotaManager {
+	private static final OLog log = Tracing.createLoggerFor(QuotaManagerImpl.class);
 
 	private static final String QUOTA_CATEGORY = "quot";
 	private OLATResource quotaResource;
@@ -95,7 +97,7 @@ public class QuotaManagerImpl extends QuotaManager {
 		quotaResource = resourceManager.findOrPersistResourceable(OresHelper.lookupType(Quota.class));
 		initDefaultQuotas(); // initialize default quotas
 		DBFactory.getInstance(false).intermediateCommit();
-		Tracing.logInfo("Successfully initialized Quota Manager", QuotaManagerImpl.class);
+		log.info("Successfully initialized Quota Manager");
 	}
 
 	private void initDefaultQuotas() {
@@ -137,7 +139,8 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * Get the identifyers for the default quotas
 	 * @return
 	 */
-	public Set getDefaultQuotaIdentifyers() {
+	@Override
+	public Set<String> getDefaultQuotaIdentifyers() {
 		if (defaultQuotas == null) {
 			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
 		}
@@ -239,16 +242,17 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * 
 	 * @return list of quotas.
 	 */
-	public List listCustomQuotasKB() {
+	@Override
+	public List<Quota> listCustomQuotasKB() {
 		if (defaultQuotas == null) {
 			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
 		}
-		List results = new ArrayList();
+		List<Quota> results = new ArrayList<Quota>();
 		PropertyManager pm = PropertyManager.getInstance();
-		List props = pm.listProperties(null, null, quotaResource, QUOTA_CATEGORY, null);
+		List<Property> props = pm.listProperties(null, null, quotaResource, QUOTA_CATEGORY, null);
 		if (props == null || props.size() == 0) return results;
-		for (Iterator iter = props.iterator(); iter.hasNext();) {
-			Property prop = (Property) iter.next();
+		for (Iterator<Property> iter = props.iterator(); iter.hasNext();) {
+			Property prop = iter.next();
 			results.add(parseQuota(prop));
 		}
 		return results;
@@ -388,6 +392,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * @param path
 	 * @return
 	 */
+	@Override
 	public boolean isValidQuotaPath(String path) {
 		if (path.startsWith(QuotaConstants.IDENTIFIER_DEFAULT) && !defaultQuotas.containsKey(path)) {
 			return false;
@@ -399,9 +404,15 @@ public class QuotaManagerImpl extends QuotaManager {
 	/**
 	 * @see org.olat.core.util.vfs.QuotaManager#getQuotaEditorInstance(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, java.lang.String, boolean)
 	 */
+	@Override
 	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode) {
-		Controller ctr = new GenericQuotaEditController(ureq, wControl, relPath, modalMode);
-		return ctr;
+		return new GenericQuotaEditController(ureq, wControl, relPath, modalMode);
+	}
+	
+
+	@Override
+	public Controller getQuotaViewInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode) {
+		return new GenericQuotaViewController(ureq, wControl, relPath, modalMode);
 	}
 
 	@Override

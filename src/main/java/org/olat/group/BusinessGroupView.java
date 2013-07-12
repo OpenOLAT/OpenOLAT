@@ -21,7 +21,6 @@ package org.olat.group;
 
 import java.util.Date;
 
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
@@ -74,26 +73,6 @@ public interface BusinessGroupView extends BusinessGroupShort, Persistable, Crea
 	 */
 	public long getNumOfValidOffers();
 
-	/**
-	 * The BusinessGroup has 1..n Owners acting as <i>administrators </i>.
-	 * 
-	 * @return the owners
-	 */
-	public SecurityGroup getOwnerGroup();
-
-	/**
-	 * The BusinessGroup has 0..n Partipiciants.
-	 * 
-	 * @return the partipiciants
-	 */
-	public SecurityGroup getPartipiciantGroup();
-
-	/**
-	 * The BusinessGroup has 0..n people in the waiting group.
-	 * 
-	 * @return the waiting group
-	 */
-	public SecurityGroup getWaitingGroup();
 
 	/**
 	 * @return last usage of this group
@@ -119,6 +98,9 @@ public interface BusinessGroupView extends BusinessGroupShort, Persistable, Crea
 	 * @return true: if waiting-list is enabled
 	 */
 	public Boolean getWaitingListEnabled();
+	
+	
+	public BusinessGroupManagedFlag[] getManagedFlags();
 
 	
 }

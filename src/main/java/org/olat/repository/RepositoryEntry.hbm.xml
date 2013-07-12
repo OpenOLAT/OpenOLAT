@@ -29,7 +29,7 @@
 		
 		<property name="externalId" column="external_id" unique="false" not-null="false" type="string"/>
 		<property name="externalRef" column="external_ref" unique="false" not-null="false" type="string"/>
-		<property name="managedFlags" column="managed_flags" unique="false" not-null="false" type="string"/>
+		<property name="managedFlagsString" column="managed_flags" unique="false" not-null="false" type="string"/>
 
 		<many-to-one name="olatResource"
                      column="fk_olatresource"

@@ -32,6 +32,7 @@ public class CourseMembership {
 	private boolean groupParticipant;
 	private boolean groupWaiting;
 	private boolean pending;
+	private boolean managedMembersRepo;
 	
 	public CourseMembership() {
 		//
@@ -59,6 +60,14 @@ public class CourseMembership {
 
 	public void setPending(boolean pending) {
 		this.pending = pending;
+	}
+
+	public boolean isManagedMembersRepo() {
+		return managedMembersRepo;
+	}
+
+	public void setManagedMembersRepo(boolean managedMembersRepo) {
+		this.managedMembersRepo = managedMembersRepo;
 	}
 
 	public boolean isRepoOwner() {

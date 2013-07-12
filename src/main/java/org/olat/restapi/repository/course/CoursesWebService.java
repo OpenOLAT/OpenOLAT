@@ -491,7 +491,7 @@ public class CoursesWebService {
 		}
 		addedEntry.setExternalId(externalId);
 		addedEntry.setExternalRef(externalRef);
-		addedEntry.setManagedFlags(managedFlags);
+		addedEntry.setManagedFlagsString(managedFlags);
 		
 		// Do set access for owner at the end, because unfinished course should be
 		// invisible

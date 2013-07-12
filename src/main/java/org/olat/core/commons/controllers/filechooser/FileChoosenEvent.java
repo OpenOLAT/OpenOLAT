@@ -35,6 +35,8 @@ import org.olat.core.util.vfs.VFSItem;
  */
 
 public class FileChoosenEvent extends Event {
+
+	private static final long serialVersionUID = 6650009491560019373L;
 	public static final String COMMAND = "fileSelected";
 	private VFSItem selectedItem;
 

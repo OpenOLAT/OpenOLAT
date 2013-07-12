@@ -700,7 +700,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test
 	public void genericANDQueryWithRoles_managed() {
 		RepositoryEntry managedRe = JunitTestHelper.createAndPersistRepositoryEntry();
-		managedRe.setManagedFlags("all");
+		managedRe.setManagedFlagsString("all");
 		managedRe = dbInstance.getCurrentEntityManager().merge(managedRe);
 		RepositoryEntry freeRe = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();

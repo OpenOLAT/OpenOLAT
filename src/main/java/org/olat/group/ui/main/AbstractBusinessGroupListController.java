@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -151,9 +152,16 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	protected final BusinessGroupService businessGroupService;
 	protected final CollaborationToolsFactory collaborationTools;
 	
+	private BusinessGroupViewFilter filter;
+	private Object userObject;
+	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page) {
+		this(ureq, wControl, page, null);
+	}
+	
+	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, Object userObject) {
 		super(ureq, wControl, Util.createPackageTranslator(AbstractBusinessGroupListController.class, ureq.getLocale()));
-		
+
 		admin = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager();
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
@@ -163,6 +171,8 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		collaborationTools = CollaborationToolsFactory.getInstance();
+		
+		this.userObject = userObject;
 		
 		mainVC = createVelocityContainer(page);
 
@@ -184,6 +194,18 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		putInitialPanel(mainVC);
 	}
 	
+	public Object getUserObject() {
+		return userObject;
+	}
+	
+	public BusinessGroupViewFilter getFilter() {
+		return filter;
+	}
+
+	public void setFilter(BusinessGroupViewFilter filter) {
+		this.filter = filter;
+	}
+
 	protected abstract void initButtons(UserRequest ureq);
 
 	protected void initButtons(UserRequest ureq, boolean create) {
@@ -781,6 +803,14 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			groups = new ArrayList<BusinessGroupView>();
 		} else {
 			groups = businessGroupService.findBusinessGroupViews(params, getResource(), 0, -1);
+			
+			if(filter != null) {
+				for(Iterator<BusinessGroupView> groupIt=groups.iterator(); groupIt.hasNext(); ) {
+					if(!filter.accept(groupIt.next())) {
+						groupIt.remove();
+					}
+				}
+			}
 		}
 		return groups;
 	}

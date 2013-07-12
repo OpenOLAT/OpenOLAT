@@ -28,7 +28,6 @@ package org.olat.admin.user.imp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -112,11 +111,11 @@ public class UserImportController extends BasicController {
 		}
 	}
 
-	private Identity doCreateAndPersistIdentity(List<String> singleUser) {
+	private Identity doCreateAndPersistIdentity(TransientIdentity singleUser) {
 		// Create new user and identity and put user to users group
-		String login = singleUser.get(1); //pos 0 is used for existing/non-existing user flag
-		String pwd = singleUser.get(2);
-		String lang = singleUser.get(3);
+		String login = singleUser.getName(); //pos 0 is used for existing/non-existing user flag
+		String pwd = singleUser.getPassword();
+		String lang = singleUser.getLanguage();
 
 		// use password only when configured to do so
 		if (canCreateOLATPassword) {
@@ -132,13 +131,10 @@ public class UserImportController extends BasicController {
 		User newUser = um.createUser(null, null, null);
 
 		List<UserPropertyHandler> userProperties = userPropertyHandlers;
-		int col = 4;
-		String thisValue = "", stringValue;
 		for (UserPropertyHandler userPropertyHandler : userProperties) {
-			thisValue = singleUser.get(col);
-			stringValue = userPropertyHandler.getStringValue(thisValue, getLocale());
+			String thisValue = singleUser.getProperty(userPropertyHandler.getName(), null);
+			String stringValue = userPropertyHandler.getStringValue(thisValue, getLocale());
 			userPropertyHandler.setUserProperty(newUser, stringValue);
-			col++;
 		}
 		// Init preferences
 		newUser.getPreferences().setLanguage(lang);
@@ -172,10 +168,9 @@ public class UserImportController extends BasicController {
 					if (runContext.containsKey("validImport") && ((Boolean) runContext.get("validImport")).booleanValue()) {
 						// create new users and persist
 						@SuppressWarnings("unchecked")
-						List<List<String>> newIdents = (List<List<String>>) runContext.get("newIdents");
-						for (Iterator<List<String>> it_news = newIdents.iterator(); it_news.hasNext();) {
-							List<String> singleUser = it_news.next();
-							doCreateAndPersistIdentity(singleUser);
+						List<TransientIdentity> newIdents = (List<TransientIdentity>) runContext.get("newIdents");
+						for (TransientIdentity newIdent:newIdents) {
+							doCreateAndPersistIdentity(newIdent);
 						}
 
 						@SuppressWarnings("unchecked")
@@ -185,7 +180,7 @@ public class UserImportController extends BasicController {
 
 						if (ownGroups.size() > 0 || partGroups.size() > 0){
 							@SuppressWarnings("unchecked")
-							List<Object> allIdents = (List<Object>) runContext.get("idents");
+							List<Identity> allIdents = (List<Identity>) runContext.get("idents");
 							Boolean sendMailObj = (Boolean)runContext.get("sendMail");
 							boolean sendmail = sendMailObj == null ? true : sendMailObj.booleanValue();
 							processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, sendmail);
@@ -208,16 +203,15 @@ public class UserImportController extends BasicController {
 		}
 	}
 	
-	private Collection<Identity> getIdentities(List<Object> allIdents) {
+	private Collection<Identity> getIdentities(List<Identity> allIdents) {
 		Set<Identity> identities = new HashSet<Identity>(allIdents.size());
 		List<String> usernames = new ArrayList<String>();
 		for (Object o : allIdents) {
-			if (o instanceof Identity) {
+			if(o instanceof TransientIdentity) {
+				TransientIdentity transIdent = (TransientIdentity)o;
+				usernames.add(transIdent.getName());
+			} else if (o instanceof Identity) {
 				identities.add((Identity)o);	
-			} else if(o instanceof List) {
-				@SuppressWarnings("unchecked")
-				List<String> userArray = (List<String>) o;
-				usernames.addAll(userArray);
 			}
 		}
 
@@ -226,7 +220,7 @@ public class UserImportController extends BasicController {
 		return identities;
 	}
 
-	private void processGroupAdditionForAllIdents(List<Object> allIdents, List<Long> tutorGroups, List<Long> partGroups, boolean sendmail) {
+	private void processGroupAdditionForAllIdents(List<Identity> allIdents, List<Long> tutorGroups, List<Long> partGroups, boolean sendmail) {
 		Collection<Identity> identities = getIdentities(allIdents);
 		List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
 		for(Identity identity:identities) {

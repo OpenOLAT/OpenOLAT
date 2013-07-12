@@ -31,7 +31,7 @@
   		<property name="lastUsage" column="lastusage" type="timestamp" />   
 		<property name="type" column="businessgrouptype" unique="false" length="15" not-null="true" index="gp_type_idx"/>	
 		<property name="externalId" column="external_id" unique="false" not-null="false" type="string"/>
-		<property name="managedFlags" column="managed_flags" unique="false" not-null="false" type="string"/>
+		<property name="managedFlagsString" column="managed_flags" unique="false" not-null="false" type="string"/>
 		
 			 		
 		<property name="name" type="string" column="groupname" unique="false" length="255" index="gp_name_idx"/>	
@@ -105,5 +105,6 @@
 		</id>
 
   		<property name="name" type="string" column="groupname" unique="false" length="255"/>
+		<property name="managedFlagsString" column="managed_flags" unique="false" not-null="false" type="string"/>
 	</class>
 </hibernate-mapping>

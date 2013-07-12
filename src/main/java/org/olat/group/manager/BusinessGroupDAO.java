@@ -111,7 +111,7 @@ public class BusinessGroupDAO {
 			businessgroup.setExternalId(externalId);
 		}
 		if(StringHelper.containsNonWhitespace(managedFlags)) {
-			businessgroup.setManagedFlags(managedFlags);
+			businessgroup.setManagedFlagsString(managedFlags);
 		}
 		
 		businessgroup.setWaitingListEnabled(waitingListEnabled);
@@ -477,9 +477,9 @@ public class BusinessGroupDAO {
 		if(params.getManaged() != null) {
 			where = where(query, where);
 			if(params.getManaged().booleanValue()) {
-				query.append("bgi.managedFlags is not null");
+				query.append("bgi.managedFlagsString is not null");
 			} else {
-				query.append("bgi.managedFlags is null");
+				query.append("bgi.managedFlagsString is null");
 			}
 		}
 		

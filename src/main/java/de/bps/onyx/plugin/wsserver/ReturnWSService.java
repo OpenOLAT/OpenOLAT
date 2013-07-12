@@ -93,7 +93,6 @@ public class ReturnWSService {
 	@WebMethod(operationName = "saveResult2")
 	public void saveResult(@WebParam(name = "uniqueId") String uniqueId, @WebParam(name = "resultFile") byte[] resultFile, @WebParam(name = "params") MapWrapper params)
 			throws Exception {
-		System.out.println("*** saveResult2");
 		
 		File temp = null;
 		try {
@@ -279,14 +278,11 @@ public class ReturnWSService {
 
 	@WebMethod
 	public void saveResult(@WebParam(name = "uniqueId") String uniqueId, @WebParam(name = "resultFile") byte[] resultFile) throws Exception {
-		System.out.println("*** saveResult");
 		saveResult(uniqueId, resultFile, null);
 	}
 
 	@WebMethod
 	public void saveResultLocal(@WebParam(name = "uniqueId") String uniqueId, @WebParam(name = "resultLocalFile") String resultLocalFile) {
-
-		System.out.println("*** saveResultLocal");
 		QTIResultSet qtiResultSet = OnyxResultManager.getResultSet(Long.parseLong(uniqueId));
 
 		if (resultLocalFile == null) {

@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -38,6 +39,7 @@ import org.olat.core.util.StringHelper;
  */
 public class NewsFormController extends FormBasicController {
 
+	private FormSubmit submit;
 	/**
 	 * The rich text element for the information text.
 	 */
@@ -92,12 +94,17 @@ public class NewsFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("news.content");
-		this.newsInputElement = uifactory.addRichTextElementForStringData("news.content", "news.content", this.news, 10, -1, false, false, null,
+		newsInputElement = uifactory.addRichTextElementForStringData("news.content", "news.content", this.news, 10, -1, false, false, null,
 				null, formLayout, ureq.getUserSession(), getWindowControl());
-		this.newsInputElement.setMandatory(true);
+		newsInputElement.setMandatory(true);
 
 		// Create submit button
-		uifactory.addFormSubmitButton("submit", formLayout);
+		submit = uifactory.addFormSubmitButton("submit", formLayout);
+	}
+	
+	public void setEnabled(boolean enabled) {
+		newsInputElement.setEnabled(enabled);
+		submit.setVisible(enabled);
 	}
 
 	/**
@@ -106,7 +113,7 @@ public class NewsFormController extends FormBasicController {
 	 * @return The information text.
 	 */
 	public String getNewsValue() {
-		return this.newsInputElement.getValue();
+		return newsInputElement.getValue();
 	}
 
 	/**

@@ -101,6 +101,16 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 		showWaitingList.setVisible(b);
 		openWaitingList.setVisible(b);
 	}
+	
+	public void setEnabled(boolean enabled) {
+		showOwners.setEnabled(enabled);
+		showPartips.setEnabled(enabled);
+		showWaitingList.setEnabled(enabled);
+		openOwners.setEnabled(enabled);
+		openPartips.setEnabled(enabled);
+		openWaitingList.setEnabled(enabled);
+		downloadList.setEnabled(enabled);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

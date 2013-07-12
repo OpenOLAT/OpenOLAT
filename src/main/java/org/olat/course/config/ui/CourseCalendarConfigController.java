@@ -60,12 +60,12 @@ public class CourseCalendarConfigController extends BasicController implements C
 	 * @param ureq
 	 * @param wControl
 	 */
-	public CourseCalendarConfigController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig) {
+	public CourseCalendarConfigController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig, boolean editable) {
 		super(ureq, wControl);
 		this.courseConfig = courseConfig;
 		
 		myContent = createVelocityContainer("CourseCalendar");
-		calConfigForm = new CourseCalendarConfigForm(ureq, wControl, courseConfig.isCalendarEnabled());
+		calConfigForm = new CourseCalendarConfigForm(ureq, wControl, courseConfig.isCalendarEnabled(), editable);
 		listenTo (calConfigForm);
 		myContent.put("calendarForm", calConfigForm.getInitialComponent());
 		//		
@@ -96,27 +96,26 @@ public class CourseCalendarConfigController extends BasicController implements C
 	}
 
 	/**
-	 * 
 	 * @return Return the log message if any, else null.
 	 */
 	public ILoggingAction getLoggingAction() {
 		return loggingAction;
 	}
-
-
 }
 
 class CourseCalendarConfigForm extends FormBasicController {
 
 	private SelectionElement isOn;
 	private boolean calendarEnabled;
+	private final boolean editable;
 
 	/**
 	 * @param name
 	 * @param chatEnabled
 	 */
-	public CourseCalendarConfigForm(UserRequest ureq, WindowControl wControl, boolean calendarEnabled) {
+	public CourseCalendarConfigForm(UserRequest ureq, WindowControl wControl, boolean calendarEnabled, boolean editable) {
 		super(ureq, wControl);
+		this.editable = editable;
 		this.calendarEnabled = calendarEnabled;
 		initForm (ureq);
 	}
@@ -135,17 +134,17 @@ class CourseCalendarConfigForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		isOn = uifactory.addCheckboxesVertical("isOn", "chkbx.calendar.onoff", formLayout, new String[] {"xx"}, new String[] {""}, null, 1);
 		isOn.select("xx", calendarEnabled);
+		isOn.setEnabled(editable);
 		
-		uifactory.addFormSubmitButton("save", "save", formLayout);
-
+		if(editable) {
+			uifactory.addFormSubmitButton("save", "save", formLayout);
+		}
 	}
 
 	@Override
 	protected void doDispose() {
 		// 
 	}
-
 }

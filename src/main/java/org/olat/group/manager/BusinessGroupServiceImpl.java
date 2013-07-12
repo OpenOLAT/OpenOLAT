@@ -67,6 +67,7 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupOrder;
@@ -225,7 +226,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		if("none".equals(managedFlags) || "".equals(managedFlags)) {
 			managedFlags = null;
 		}
-		bg.setManagedFlags(managedFlags);
+		bg.setManagedFlagsString(managedFlags);
 
 		//auto rank if possible
 		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<BusinessGroupModifiedEvent.Deferred>();
@@ -1068,6 +1069,18 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			groups = findBusinessGroups(null, resource, 0, -1);
 		}
 		if(groups == null || groups.isEmpty()) {
+			return;//nothing to do
+		}
+		
+		//remove managed groups
+		for(Iterator<BusinessGroup> groupIt=groups.iterator(); groupIt.hasNext(); ) {
+			boolean managed = BusinessGroupManagedFlag.isManaged(groupIt.next(), BusinessGroupManagedFlag.membersmanagement);
+			if(managed) {
+				groupIt.remove();
+			}
+		}
+		
+		if(groups.isEmpty()) {
 			return;//nothing to do
 		}
 

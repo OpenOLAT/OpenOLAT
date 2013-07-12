@@ -42,14 +42,16 @@ public class CourseEfficencyStatementForm extends FormBasicController {
 
 	private SelectionElement isOn;
 	private boolean enabled;
+	private final boolean editable;
 
 	/**
 	 * @param name
 	 * @param chatEnabled
 	 */
-	public CourseEfficencyStatementForm(UserRequest ureq, WindowControl wControl, boolean enabled) {
+	public CourseEfficencyStatementForm(UserRequest ureq, WindowControl wControl, boolean enabled, boolean editable) {
 		super(ureq, wControl);
 		this.enabled = enabled;
+		this.editable = editable;
 		initForm (ureq);
 	}
 
@@ -71,11 +73,13 @@ public class CourseEfficencyStatementForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		isOn = uifactory.addCheckboxesVertical("isOn", "chkbx.efficency.onoff", formLayout, new String[] {"xx"}, new String[] {""}, null, 1);
 		isOn.select("xx", enabled);
+		isOn.setEnabled(editable);
 		
-		uifactory.addFormSubmitButton("save", "save", formLayout);
+		if(editable) {
+			uifactory.addFormSubmitButton("save", "save", formLayout);
+		}
 	}
 
 	@Override

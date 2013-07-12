@@ -120,12 +120,14 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 * @return The non-i18-ified raw value from the database
 	 */
 	protected String getInternalValue(User user) {
-		if (user != null) {
+		if (user instanceof UserImpl) {
 			String value = ((UserImpl)user).getProperties().get(name);
 			if("_".equals(value) && "oracle".equals(DBFactory.getInstance().getDbVendor())) {
 				value = null;
 			}
 			return value;
+		} else if (user instanceof User) {
+			return user.getProperty(name, null);
 		}
 		return null;
 	}
@@ -134,7 +136,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 * @param value The raw value in a 18n independent form
 	 */
 	protected void setInternalValue(User user, String value) {
-		if (user != null) {
+		if (user instanceof UserImpl) {
 			// remove fields with null or empty value from o_userfield table (hibernate)
 			// sparse data storage
 			if (value == null || value.length() == 0) {
@@ -147,6 +149,8 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 			} else {
 				((UserImpl)user).getProperties().put(name, value);
 			}
+		} else if (user instanceof UserImpl) {
+			user.setProperty(name, value);
 		}
 	}
 

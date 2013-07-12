@@ -46,6 +46,7 @@ import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 
@@ -58,7 +59,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	
 	private final SearchMembersParams params;
 	private final RepositoryEntry repoEntry;
-	private final Link importMemberLink, addMemberLink;
+	private Link importMemberLink, addMemberLink;
 	private StepsMainRunController importMembersWizard;
 	
 	private final RepositoryManager repositoryManager;
@@ -71,11 +72,14 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		this.repoEntry = repoEntry;
+		boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
+		addMemberLink.setVisible(!managed);
 		mainVC.put("addMembers", addMemberLink);
 		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
+		importMemberLink.setVisible(!managed);
 		mainVC.put("importMembers", importMemberLink);
-		
+
 		params = new SearchMembersParams(true, true, true, true, true, true, true);
 		reloadModel();
 	}

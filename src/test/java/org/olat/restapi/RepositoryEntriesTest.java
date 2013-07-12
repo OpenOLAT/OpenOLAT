@@ -145,7 +145,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetEntry_managed() throws IOException, URISyntaxException {
 		RepositoryEntry re = createRepository("Test GET repo entry");
-		re.setManagedFlags("all");
+		re.setManagedFlagsString("all");
 		re = dbInstance.getCurrentEntityManager().merge(re);
 		dbInstance.commitAndCloseSession();
 

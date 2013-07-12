@@ -51,10 +51,13 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.controllers.RepositoryEntryFilter;
 
 /**
  * Description:<BR>
@@ -80,6 +83,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 	private Link addTabResourcesButton;
 
 	private BusinessGroup group;
+	private final boolean managed;
 	private final BusinessGroupService businessGroupService;
 
 	/**
@@ -93,6 +97,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		super(ureq, wControl);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.group = group;
+		managed = BusinessGroupManagedFlag.isManaged(group, BusinessGroupManagedFlag.resources);
 		
 		Translator resourceTrans = Util.createPackageTranslator(RepositoryTableModel.class, getLocale(), getTranslator());
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
@@ -103,11 +108,16 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		repoTableModel = new RepositoryTableModel(resourceTrans);
 		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		repoTableModel.setObjects(repoTableModelEntries);
-		repoTableModel.addColumnDescriptors(resourcesCtr, translate("resources.remove"), false);
+		
+		repoTableModel.addColumnDescriptors(resourcesCtr, null, false);	
+		if(!managed) {
+			resourcesCtr.addColumnDescriptor(new RemoveResourceActionColumnDescriptor("resources.remove", 1, getTranslator()));
+		}
 		resourcesCtr.setTableDataModel(repoTableModel);
 		
 		mainVC = createVelocityContainer("tab_bgResources");
 		addTabResourcesButton = LinkFactory.createButtonSmall("cmd.addresource", mainVC, this);
+		addTabResourcesButton.setVisible(!managed);
 		mainVC.put("resources", resourcesCtr.getInitialComponent());
 		putInitialPanel(mainVC);
 	}
@@ -122,7 +132,9 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 			removeAsListenerAndDispose(repoSearchCtr);
 			removeAsListenerAndDispose(cmc);
 			
-			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{ CourseModule.getCourseTypeName() },
+			RepositoryEntryFilter filter = new ManagedEntryfilter();
+			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+					new String[]{ CourseModule.getCourseTypeName() }, filter,
 					translate("resources.add"), true, true, true, true, true);
 			listenTo(repoSearchCtr);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
@@ -202,5 +214,13 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private static class ManagedEntryfilter implements RepositoryEntryFilter {
+
+		@Override
+		public boolean accept(RepositoryEntry re) {
+			return !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
+		}
 	}
 }

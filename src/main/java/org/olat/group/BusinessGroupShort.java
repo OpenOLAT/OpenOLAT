@@ -32,5 +32,7 @@ public interface BusinessGroupShort extends OLATResourceable {
 	public Long getKey();
 	
 	public String getName();
+	
+	public BusinessGroupManagedFlag[] getManagedFlags();
 
 }

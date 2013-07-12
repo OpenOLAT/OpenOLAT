@@ -43,14 +43,16 @@ import org.olat.core.gui.control.WindowControl;
 public class CourseChatSettingsForm extends FormBasicController {
 
 	private SelectionElement isOn;
-	private boolean chatEnabled;
+	private final boolean chatEnabled;
+	private final boolean editable;
 
 	/**
 	 * @param name
 	 * @param chatEnabled
 	 */
-	public CourseChatSettingsForm(UserRequest ureq, WindowControl wControl, boolean chatEnabled) {
+	public CourseChatSettingsForm(UserRequest ureq, WindowControl wControl, boolean chatEnabled, boolean editable) {
 		super(ureq, wControl);
+		this.editable = editable;
 		this.chatEnabled = chatEnabled;
 		initForm (ureq);
 	}
@@ -69,16 +71,17 @@ public class CourseChatSettingsForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		isOn = uifactory.addCheckboxesVertical("isOn", "chkbx.chat.onoff", formLayout, new String[] {"xx"}, new String[] {""}, null, 1);
 		isOn.select("xx", chatEnabled);
-		
-		uifactory.addFormSubmitButton("save", "save", formLayout);
+		isOn.setEnabled(editable);
+
+		if(editable) {
+			uifactory.addFormSubmitButton("save", "save", formLayout);
+		}
 	}
 
 	@Override
 	protected void doDispose() {
 		//
 	}
-
 }

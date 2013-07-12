@@ -420,7 +420,8 @@ public interface BusinessGroupService {
 	/**
 	 * Remove the members (tutors and participants) from all business groups connected
 	 * to the resource (the resource can be a BusinessGroup) by cancelling their membership
-	 * or their reservations.
+	 * or their reservations.<br/>
+	 * This method respect the managed flags.
 	 * 
 	 * @param ureqIdentity
 	 * @param identities
