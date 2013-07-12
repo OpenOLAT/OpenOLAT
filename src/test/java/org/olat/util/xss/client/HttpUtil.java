@@ -18,15 +18,27 @@
  * <p>
  */
 
-package org.olat.util.xss;
+package org.olat.util.xss.client;
+
+import java.util.HashSet;
 
 /**
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-public @interface XssInjectionDependency {
-	String className();
-	String methodName();
-	String[] parameterName();
-	boolean useReturnValue() default false;
+public class HttpUtil {
+	enum HttpMethod {
+		HTTP_PUT,
+		HTTP_DELETE,
+		HTTP_GET,
+		HTTP_POST,
+	};
+	
+	public static byte[] createHttpHeader(HttpMethod method, HashSet<String> parameter, String headerEncoding, String bodyEncoding){
+		byte[] header = null;
+		
+		//TODO:JK: implement me
+		
+		return(header);
+	}
 }

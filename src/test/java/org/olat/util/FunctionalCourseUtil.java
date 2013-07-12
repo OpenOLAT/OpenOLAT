@@ -36,10 +36,12 @@ import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.util.xss.NotImplemented;
 import org.olat.util.xss.XssInjection;
 import org.olat.util.xss.XssInjectionDependencies;
 import org.olat.util.xss.XssInjectionDependency;
 import org.olat.util.xss.XssInjectionElement;
+import org.olat.util.xss.XssInjectionIndex;
 import org.olat.util.xss.XssInjectionPositional;
 import org.olat.util.xss.XssInjectionProvider;
 import org.olat.util.xss.XssInjectionRandom;
@@ -1220,7 +1222,14 @@ public class FunctionalCourseUtil {
 	 * @param message
 	 * @return true on success, otherwise false
 	 */
-	public boolean postForumMessage(Selenium browser, long courseId, int nthForum, String title, String message){
+	@XssInjection
+	@XssInjectionDependencies({
+		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "createCourse", parameterName = {}),
+		@XssInjectionDependency(className = "org.olat.util.FunctionalCourseUtil", methodName = "extractRepositoryEntryKey", parameterName = {"courseId"}, useReturnValue = true),
+		@XssInjectionDependency(className = "org.olat.util.FunctionalCourseUtil", methodName = "createForum", parameterName = {})
+	})
+	public boolean postForumMessage(Selenium browser, long courseId, @XssInjectionIndex int nthForum,
+			@XssInjectionElement String title, @XssInjectionElement String message){
 		if(!openForum(browser, courseId, nthForum))
 			return(false);
 
@@ -1290,7 +1299,17 @@ public class FunctionalCourseUtil {
 	 * @param content
 	 * @return true on success, otherwise false
 	 */
-	public boolean createWikiArticle(Selenium browser, long wikiId, String pagename, String content){
+	@XssInjection
+	@XssInjectionDependencies({
+		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "createCourse", parameterName = {}),
+		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "createWiki", parameterName = {}),
+		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "readIdFromDetailedView", parameterName = {"wikiId"}, useReturnValue = true),
+		@XssInjectionDependency(className = "org.olat.util.FunctionalCourseUtil", methodName = "createCourseNode", parameterName = {}),
+		@XssInjectionDependency(className = "org.olat.util.FunctionalCourseUtil", methodName = "chooseWiki", parameterName = {})
+	})
+	@NotImplemented(reason = "missing dependencies: read repository entry key")
+	public boolean createWikiArticle(Selenium browser, long wikiId,
+			@XssInjectionElement String pagename, @XssInjectionElement String content){
 		if(!openWiki(browser, wikiId))
 			return(false);
 
@@ -1406,6 +1425,9 @@ public class FunctionalCourseUtil {
 	 * @param url
 	 * @return true on success
 	 */
+	@XssInjection
+	@XssTutorOnly
+	@NotImplemented(reason = "test case won't understand url string as url")
 	public boolean importBlogFeed(Selenium browser, String url){
 
 		functionalUtil.idle(browser);
@@ -1515,14 +1537,33 @@ public class FunctionalCourseUtil {
 	 * @param content
 	 * @return true on success, otherwise false
 	 */
-	public boolean editBlogEntry(Selenium browser, long courseId, int nth,
-			String title, String description, String content, int entry, BlogEdit[] edit){
+	@XssInjection
+	@XssInjectionDependencies({
+		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "createCourse", parameterName = {}),
+		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "readIdFromDetailedView", parameterName = {"courseId"}, useReturnValue = true)
+	})
+	@NotImplemented(reason = "missing dependencies: read repository entry key")
+	public boolean editBlogEntry(Selenium browser, long courseId, @XssInjectionIndex int nth,
+			@XssInjectionElement String title, @XssInjectionElement String description,
+			@XssInjectionElement String content,
+			@XssInjectionPositional int entry, @XssInjectionElement BlogEdit[] edit){
 		if(!openBlogWithoutBusinessPath(browser, courseId, nth))
 			return(false);
 
 		return(editBlogEntry(browser, title, description, content, entry, edit));
 	}
 	
+	/**
+	 * Edit a blog entry.
+	 * 
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @param content
+	 * @param entry
+	 * @param edit
+	 * @return
+	 */
 	public boolean editBlogEntry(Selenium browser,
 			String title, String description, String content, int entry, BlogEdit[] edit){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -1987,6 +2028,20 @@ public class FunctionalCourseUtil {
 		}
 				
 		return(true);
+	}
+	
+	/**
+	 * Creates a new forum.
+	 * 
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return
+	 */
+	public boolean createForum(Selenium browser, String title, String description){
+		//TODO:JK: implement me
+		
+		return(false);
 	}
 	
 	/**

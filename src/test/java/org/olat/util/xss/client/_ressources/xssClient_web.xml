@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	metadata-complete="true">
+
+	<servlet>
+		<servlet-name>XssClient</servlet-name>
+		<servlet-class>org.olat.util.xss.client.XssClient</servlet-class>
+		<init-param>
+			<param-name>enabledForExtensions</param-name>
+			<param-value>true</param-value>
+			<!-- <description>Sets, whether the servlet supports vendor extensions 
+				for XML-RPC.</description> -->
+		</init-param>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>XssClient</servlet-name>
+		<url-pattern>/xssclient</url-pattern>
+	</servlet-mapping>
+
+</web-app>

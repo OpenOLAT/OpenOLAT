@@ -18,15 +18,21 @@
  * <p>
  */
 
-package org.olat.util.xss;
+package org.olat.util.xss.client;
+
+import java.io.IOException;
 
 /**
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-public @interface XssInjectionDependency {
-	String className();
-	String methodName();
-	String[] parameterName();
-	boolean useReturnValue() default false;
+public interface HttpClient {
+	public void connect(String host, int port);
+	
+	public void setHttpHeader(byte[] buffer);
+	
+	public void httpGet(byte[] data);
+	public void httpPut(byte[] data);
+	public void httpDelete(byte[] data);
+	public void httpPost(byte[] data);
 }

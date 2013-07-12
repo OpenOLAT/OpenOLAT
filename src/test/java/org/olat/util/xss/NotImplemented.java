@@ -24,9 +24,6 @@ package org.olat.util.xss;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-public @interface XssInjectionDependency {
-	String className();
-	String methodName();
-	String[] parameterName();
-	boolean useReturnValue() default false;
+public @interface NotImplemented {
+	String reason();
 }

@@ -18,15 +18,12 @@
  * <p>
  */
 
-package org.olat.util.xss;
+package org.olat.util.xss.client;
 
 /**
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-public @interface XssInjectionDependency {
-	String className();
-	String methodName();
-	String[] parameterName();
-	boolean useReturnValue() default false;
+public class CharsetUtil {
+
 }

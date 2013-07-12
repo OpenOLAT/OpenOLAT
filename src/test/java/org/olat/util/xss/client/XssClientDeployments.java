@@ -18,15 +18,20 @@
  * <p>
  */
 
-package org.olat.util.xss;
+package org.olat.util.xss.client;
+
+import java.io.InputStream;
 
 /**
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-public @interface XssInjectionDependency {
-	String className();
-	String methodName();
-	String[] parameterName();
-	boolean useReturnValue() default false;
+public class XssClientDeployments {
+
+	public static void createDeployment(String webapp, String xmlRpcServletProperties, String webXml){
+		
+		InputStream webArchive = XssClientDeployments.class.getResourceAsStream(webapp);
+		
+		//TODO:JK: implement me
+	}
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<browsers>
+	<browser name="Microsoft Internet Explorer" version="6">
+		<specification version="5.0">
+			<functions>
+				<function>onLoad</function>
+				<function>onMouse</function>
+				<function>onMouseOver</function>
+				<function>onMouseOut</function>
+				<function>onClick</function>
+				<function>onMotion</function>
+				<function>onKeyEvent</function>
+				<function>event</function>
+			</functions>
+		</specification>
+	</browser>
+	<browser name="Firefox" version="22">
+		<specification version="5.0">
+			<functions>
+				<function>event</function>
+			</functions>
+		</specification>
+	</browser>
+</browsers>
