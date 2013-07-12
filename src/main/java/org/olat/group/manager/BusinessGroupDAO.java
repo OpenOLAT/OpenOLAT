@@ -111,7 +111,7 @@ public class BusinessGroupDAO {
 			businessgroup.setExternalId(externalId);
 		}
 		if(StringHelper.containsNonWhitespace(managedFlags)) {
-			businessgroup.setManagedFlags(managedFlags);
+			businessgroup.setManagedFlagsString(managedFlags);
 		}
 		
 		businessgroup.setWaitingListEnabled(waitingListEnabled);

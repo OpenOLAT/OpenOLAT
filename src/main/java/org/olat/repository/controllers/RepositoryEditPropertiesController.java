@@ -91,6 +91,7 @@ import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.repository.PropPupForm;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.olat.resource.references.ReferenceImpl;
@@ -173,7 +174,9 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 		editproptabpubVC.put("proppupform", propPupForm.getInitialComponent());
 		
 		//fxdiff VCRP-1,2: access control of resources
-	  acCtr = new AccessConfigurationController(ureq, getWindowControl(), repositoryEntry.getOlatResource(), repositoryEntry.getDisplayname(), true);
+		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
+	  acCtr = new AccessConfigurationController(ureq, getWindowControl(), repositoryEntry.getOlatResource(), repositoryEntry.getDisplayname(),
+	  		true, !managedBookings);
 	  int access = propPupForm.getAccess();
 	  if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
 	  	editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
@@ -208,28 +211,37 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 			  // and course chat is enabled.
 				InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 			  if (imModule.isEnabled() && imModule.isCourseEnabled() && CourseModule.isCourseChatEnabled()) {
-				  ccc = new CourseChatSettingController(ureq, getWindowControl(), changedCourseConfig);
+			  	boolean managedChat = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.chat);
+				  ccc = new CourseChatSettingController(ureq, getWindowControl(), changedCourseConfig, !managedChat);
 				  listenTo(ccc);
 				  // push on controller stack and register <this> as controllerlistener
 				  tabbedPane.addTab(translate("tab.chat"), ccc.getInitialComponent());
 			  }
-			  clayoutC = new CourseLayoutGeneratorController(ureq, getWindowControl(), changedCourseConfig, course.getCourseEnvironment());
+			  
+			  boolean managedLayout = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.layout);
+			  clayoutC = new CourseLayoutGeneratorController(ureq, getWindowControl(), changedCourseConfig,
+			  		course.getCourseEnvironment(), !managedLayout);
 			  listenTo(clayoutC);
 			  tabbedPane.addTab(translate("tab.layout"), clayoutC.getInitialComponent());
 
-			  csfC = new CourseSharedFolderController(ureq, getWindowControl(), changedCourseConfig);
+			  boolean managedFolder = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.resourcefolder);
+			  csfC = new CourseSharedFolderController(ureq, getWindowControl(), changedCourseConfig, !managedFolder);
 			  listenTo(csfC);
 			  tabbedPane.addTab(translate("tab.sharedfolder"), csfC.getInitialComponent());
 
-			  ceffC = new CourseEfficencyStatementController(ureq, getWindowControl(), changedCourseConfig);
+			  boolean managedStatement = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
+			  ceffC = new CourseEfficencyStatementController(ureq, getWindowControl(), changedCourseConfig, !managedStatement);
 			  listenTo(ceffC);
 			  efficiencyConfigPos = tabbedPane.addTab(translate("tab.efficencystatement"), ceffC.getInitialComponent());
-			
-			  calCfgCtr = new CourseCalendarConfigController(ureq, getWindowControl(), changedCourseConfig);
+
+			  boolean managedCalendar = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.calendar);
+			  calCfgCtr = new CourseCalendarConfigController(ureq, getWindowControl(), changedCourseConfig, !managedCalendar);
 			  listenTo(calCfgCtr);
 			  tabbedPane.addTab(translate("tab.calendar"), calCfgCtr.getInitialComponent());
 
-			  cglosCtr = new CourseConfigGlossaryController(ureq, getWindowControl(), changedCourseConfig, course.getResourceableId());
+			  boolean managedGlossary = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.glossary);
+			  cglosCtr = new CourseConfigGlossaryController(ureq, getWindowControl(), changedCourseConfig,
+			  		course.getResourceableId(), !managedGlossary);
 			  listenTo(cglosCtr);
 			  tabbedPane.addTab(translate("tab.glossary"), cglosCtr.getInitialComponent());		
 			}     

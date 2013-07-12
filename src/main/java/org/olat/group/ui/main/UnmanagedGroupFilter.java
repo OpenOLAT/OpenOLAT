@@ -17,22 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group;
+package org.olat.group.ui.main;
 
-import org.olat.core.id.OLATResourceable;
+import org.olat.group.BusinessGroupManagedFlag;
+import org.olat.group.BusinessGroupView;
 
 /**
+ * Accept only NOT managed groups.
  * 
- * Very short version of business group.
- * 
+ * Initial date: 10.07.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public interface BusinessGroupShort extends OLATResourceable {
+public class UnmanagedGroupFilter implements BusinessGroupViewFilter {
 	
-	public Long getKey();
+	private final BusinessGroupManagedFlag flag;
 	
-	public String getName();
-	
-	public BusinessGroupManagedFlag[] getManagedFlags();
+	public UnmanagedGroupFilter(BusinessGroupManagedFlag flag) {
+		this.flag = flag;
+	}
 
+	@Override
+	public boolean accept(BusinessGroupView view) {
+		return !BusinessGroupManagedFlag.isManaged(view.getManagedFlags(), flag);
+	}
 }

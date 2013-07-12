@@ -120,6 +120,7 @@ import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.note.NoteController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -1022,7 +1023,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 			myTool.addHeader(translate("header.tools"));
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-				myTool.addLink(COMMAND_EDIT, translate("command.openeditor"), null, null, "o_sel_course_open_editor", false);
+				boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
+				myTool.addLink(COMMAND_EDIT, translate("command.openeditor"), "edit.cmd", null, "o_sel_course_open_editor", false);
+				myTool.setEnabled("edit.cmd", !managed);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
 				//fxdiff VCRP-1,2: access control of resources
@@ -1261,7 +1264,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				//the wrong link to the wrong person
 			}
 		} else if(RepositoryDetailsController.ACTIVATE_EDITOR.equals(type)) {
-			doEdit(ureq);
+			boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
+			if(!managed) {
+				doEdit(ureq);
+			}
 		}
 	}
 

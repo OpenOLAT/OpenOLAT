@@ -47,12 +47,14 @@ import org.olat.course.member.PermissionHelper;
 import org.olat.course.member.PermissionHelper.BGPermission;
 import org.olat.course.member.PermissionHelper.RepoPermission;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.resource.OLATResource;
@@ -168,11 +170,12 @@ public class EditMembershipController extends FormBasicController {
 				Collections.<BusinessGroupMembership>emptyList() : businessGroupService.getBusinessGroupMembership(businessGroupKeys, member);
 		List<MemberOption> options = new ArrayList<MemberOption>();
 		for(BusinessGroupView group:groups) {
+			boolean managed = BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement);
 			MemberOption option = new MemberOption(group);
 			BGPermission bgPermission = PermissionHelper.getPermission(group.getKey(), member, groupMemberships);
-			option.setTutor(createSelection(bgPermission.isTutor(), true));
-			option.setParticipant(createSelection(bgPermission.isParticipant(), true));
-			boolean waitingListEnable = group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue();
+			option.setTutor(createSelection(bgPermission.isTutor(), !managed));
+			option.setParticipant(createSelection(bgPermission.isParticipant(), !managed));
+			boolean waitingListEnable = !managed && group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue();
 			option.setWaiting(createSelection(bgPermission.isWaitingList(), waitingListEnable));
 			options.add(option);
 		}
@@ -204,7 +207,9 @@ public class EditMembershipController extends FormBasicController {
 			String[] repoValues = new String[] {
 					translate("role.repo.owner"), translate("role.repo.tutor"), translate("role.repo.participant")
 			};
+			boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 			repoRightsEl = uifactory.addCheckboxesVertical("repoRights", formLayout, repoRightsKeys, repoValues, null, 1);
+			repoRightsEl.setEnabled(!managed);
 			if(member != null) {
 				RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
 				repoRightsEl.select("owner", repoPermission.isOwner());

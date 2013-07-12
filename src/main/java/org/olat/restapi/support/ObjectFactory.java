@@ -96,7 +96,7 @@ public class ObjectFactory {
 		vo.setMaxParticipants(grp.getMaxParticipants());
 		vo.setMinParticipants(grp.getMinParticipants());
 		vo.setExternalId(grp.getExternalId());
-		vo.setManagedFlags(grp.getManagedFlags());
+		vo.setManagedFlags(grp.getManagedFlagsString());
 		vo.setType(grp.getType());
 		return vo;
 	}
@@ -165,7 +165,7 @@ public class ObjectFactory {
 		}
 		vo.setExternalId(entry.getExternalId());
 		vo.setExternalRef(entry.getExternalRef());
-		vo.setManagedFlags(entry.getManagedFlags());
+		vo.setManagedFlags(entry.getManagedFlagsString());
 		if(entry.getLifecycle() != null) {
 			vo.setLifecycle(new RepositoryEntryLifecycleVO(entry.getLifecycle()));
 		}
@@ -188,7 +188,7 @@ public class ObjectFactory {
 		vo.setRepoEntryKey(re.getKey());
 		vo.setExternalId(re.getExternalId());
 		vo.setExternalRef(re.getExternalRef());
-		vo.setManagedFlags(re.getManagedFlags());
+		vo.setManagedFlags(re.getManagedFlagsString());
 		if(re.getLifecycle() != null) {
 			vo.setLifecycle(new RepositoryEntryLifecycleVO(re.getLifecycle()));
 		}

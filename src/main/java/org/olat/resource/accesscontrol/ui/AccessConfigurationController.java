@@ -84,9 +84,10 @@ public class AccessConfigurationController extends FormBasicController {
 	private final boolean embbed;
 	private final boolean emptyConfigGrantsFullAccess;
 	private boolean allowPaymentMethod;
+	private final boolean editable;
 	
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
-			String displayName, boolean allowPaymentMethod) {
+			String displayName, boolean allowPaymentMethod, boolean editable) {
 		super(ureq, wControl, "access_configuration");
 		
 		this.resource = resource;
@@ -95,15 +96,17 @@ public class AccessConfigurationController extends FormBasicController {
 		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		embbed = false;
+		this.editable = editable;
 		emptyConfigGrantsFullAccess = true; 
 		
 		initForm(ureq);
 	}
 		
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
-			String displayName, boolean allowPaymentMethod, Form form) {
+			String displayName, boolean allowPaymentMethod, boolean editable, Form form) {
 		super(ureq, wControl, FormBasicController.LAYOUT_CUSTOM, "access_configuration", form);
 		
+		this.editable = editable;
 		this.resource = resource;
 		this.displayName = displayName;
 		this.allowPaymentMethod = allowPaymentMethod;
@@ -121,8 +124,10 @@ public class AccessConfigurationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		createLink = uifactory.addFormLink("add.accesscontrol", formLayout, Link.BUTTON);
-		createLink.setElementCssClass("o_sel_accesscontrol_create");
+		if(editable) {
+			createLink = uifactory.addFormLink("add.accesscontrol", formLayout, Link.BUTTON);
+			createLink.setElementCssClass("o_sel_accesscontrol_create");
+		}
 		
 		String confPage = velocity_root + "/configuration_list.html";
 		confControllerContainer = FormLayoutContainer.createCustomFormLayout("conf-controllers", getTranslator(), confPage);
@@ -138,12 +143,14 @@ public class AccessConfigurationController extends FormBasicController {
 			setFormDescription("accesscontrol.desc");
 			setFormContextHelp(AccessConfigurationController.class.getPackage().getName(), "accesscontrol.html", "chelp.accesscontrol.hover");
 			
-			final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-			buttonGroupLayout.setRootForm(mainForm);
-			formLayout.add(buttonGroupLayout);
-			formLayout.add("buttonLayout", buttonGroupLayout);
-			
-			uifactory.addFormSubmitButton("save", buttonGroupLayout);
+			if(editable) {
+				final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
+				buttonGroupLayout.setRootForm(mainForm);
+				formLayout.add(buttonGroupLayout);
+				formLayout.add("buttonLayout", buttonGroupLayout);
+
+				uifactory.addFormSubmitButton("save", buttonGroupLayout);
+			}
 		}
 		
 		confControllerContainer.contextPut("emptyConfigGrantsFullAccess", Boolean.valueOf(emptyConfigGrantsFullAccess));		
@@ -285,18 +292,22 @@ public class AccessConfigurationController extends FormBasicController {
 
 		DateChooser dateFrom = uifactory.addDateChooser("from_" + link.getKey(), "from", null, confControllerContainer);
 		dateFrom.setUserObject(infos);
+		dateFrom.setEnabled(editable);
 		dateFrom.setDate(link.getValidFrom());
 		confControllerContainer.add(dateFrom.getName(), dateFrom);
 		
 		DateChooser dateTo = uifactory.addDateChooser("to_" + link.getKey(), "to", null, confControllerContainer);
+		dateTo.setEnabled(editable);
 		dateTo.setUserObject(infos);
 		dateTo.setDate(link.getValidTo());
 		confControllerContainer.add(dateTo.getName(), dateTo);
 		
-		FormLink delLink = uifactory.addFormLink("del_" + link.getKey(), "delete", null, confControllerContainer, Link.LINK);
-		delLink.setUserObject(infos);
-		delLink.setCustomEnabledLinkCSS("b_with_small_icon_left b_delete_icon");
-		confControllerContainer.add(delLink.getName(), delLink);
+		if(editable) {
+			FormLink delLink = uifactory.addFormLink("del_" + link.getKey(), "delete", null, confControllerContainer, Link.LINK);
+			delLink.setUserObject(infos);
+			delLink.setCustomEnabledLinkCSS("b_with_small_icon_left b_delete_icon");
+			confControllerContainer.add(delLink.getName(), delLink);
+		}
 	}
 	
 	protected void addMethod(UserRequest ureq, AccessMethod method) {

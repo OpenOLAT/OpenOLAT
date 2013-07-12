@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class CalendarToolSettingsController extends FormBasicController {
 	
+	private FormSubmit submit;
 	private SingleSelection access;
 	private final int calendarAccess;
 	private final boolean canSave;
@@ -91,7 +93,14 @@ public class CalendarToolSettingsController extends FormBasicController {
 		else access.select("owner", true);
 		
 		if(canSave) {
-			uifactory.addFormSubmitButton("submit", formLayout);
+			submit = uifactory.addFormSubmitButton("submit", formLayout);
+		}
+	}
+	
+	public void setEnabled(boolean enabled) {
+		access.setEnabled(enabled);
+		if(submit != null) {
+			submit.setVisible(enabled);
 		}
 	}
 

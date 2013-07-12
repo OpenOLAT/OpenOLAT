@@ -6,7 +6,7 @@
 		#if($hasSharedFolder)
 			$r.render("sf.changesfresource")
 			$r.render("sf.unselectsfresource")
-		#else
+		#elseif($r.available("sf.selectsfresource"))
 			$r.render("sf.selectsfresource")
 		#end
 	</div>

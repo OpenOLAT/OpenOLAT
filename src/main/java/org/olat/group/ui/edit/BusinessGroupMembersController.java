@@ -43,6 +43,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BusinessGroupMembershipChange;
@@ -58,7 +59,7 @@ public class BusinessGroupMembersController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 
-	private DisplayMemberSwitchForm dmsForm;
+	private final DisplayMemberSwitchForm dmsForm;
 	private MemberListController membersController;
 	private final Link importMemberLink, addMemberLink;
 	private StepsMainRunController importMembersWizard;
@@ -83,11 +84,13 @@ public class BusinessGroupMembersController extends BasicController {
 		// configure the form with checkboxes for owners and/or partips according
 		// the booleans
 		dmsForm = new DisplayMemberSwitchForm(ureq, getWindowControl(), true, true, hasWaitingList);
+		dmsForm.setEnabled(!BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.display));
 		listenTo(dmsForm);
 		// set if the checkboxes are checked or not.
 		dmsForm.setDisplayMembers(displayMembers);
 		mainVC.put("displayMembers", dmsForm.getInitialComponent());
 		
+		boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.membersmanagement);
 		SearchMembersParams searchParams = new SearchMembersParams(false, false, false, true, true, true, true);
 		membersController = new MemberListController(ureq, getWindowControl(), businessGroup, searchParams);
 		listenTo(membersController);
@@ -98,9 +101,11 @@ public class BusinessGroupMembersController extends BasicController {
 		
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
 		addMemberLink.setElementCssClass("o_sel_group_add_member");
+		addMemberLink.setVisible(!managed);
 		mainVC.put("addMembers", addMemberLink);
 		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
 		importMemberLink.setElementCssClass("o_sel_group_import_members");
+		importMemberLink.setVisible(!managed);
 		mainVC.put("importMembers", importMemberLink);
 	}
 	

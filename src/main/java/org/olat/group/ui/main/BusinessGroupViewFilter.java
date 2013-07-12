@@ -17,22 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group;
+package org.olat.group.ui.main;
 
-import org.olat.core.id.OLATResourceable;
+import org.olat.group.BusinessGroupView;
 
 /**
  * 
- * Very short version of business group.
- * 
+ * Initial date: 10.07.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public interface BusinessGroupShort extends OLATResourceable {
+public interface BusinessGroupViewFilter {
 	
-	public Long getKey();
-	
-	public String getName();
-	
-	public BusinessGroupManagedFlag[] getManagedFlags();
+	public boolean accept(BusinessGroupView view);
 
 }

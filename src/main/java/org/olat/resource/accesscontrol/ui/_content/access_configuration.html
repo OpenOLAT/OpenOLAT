@@ -5,11 +5,13 @@
 #if ($off_warn) <div class="b_warning">$off_warn</div> #end
 #if ($off_info) <div class="b_info">$off_info</div> #end
 
+#if($r.available("add.accesscontrol")) 
 	<div class="b_clearfix">
 		<div class="b_float_right">
 			$r.render("add.accesscontrol")
 		</div>
 	</div>
+#end
 	<div class="b_clearfix">
 		$r.render("conf-controllers")
 	</div>

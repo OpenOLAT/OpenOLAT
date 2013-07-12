@@ -62,9 +62,15 @@ public class SelectBusinessGroupController extends BasicController {
 	
 	private final boolean enableCreate;
 	private Object userObject;
-	
+	private final BusinessGroupViewFilter filter;
+
 	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, null);
+	}
+	
+	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl, BusinessGroupViewFilter filter) {
 		super(ureq, wControl);
+		this.filter = filter;
 		enableCreate = CoreSpringFactory.getImpl(BusinessGroupModule.class)
 				.isAllowedCreate(ureq.getUserSession().getRoles());
 		mainVC = createVelocityContainer("group_list_overview");
@@ -74,7 +80,7 @@ public class SelectBusinessGroupController extends BasicController {
 			mainVC.put("create", createGroup);
 		}
 		
-		boolean marked = updateMarkedGroups(ureq).updateMarkedGroups();
+		boolean marked = updateMarkedGroups(ureq);
 		if(!marked) {
 			updateOwnedGroups(ureq);
 		}
@@ -177,53 +183,54 @@ public class SelectBusinessGroupController extends BasicController {
 		listenTo(cmc);
 	}
 
-	private SelectFavoritBusinessGroupController updateMarkedGroups(UserRequest ureq) {
+	private boolean updateMarkedGroups(UserRequest ureq) {
 		if(favoritGroupsCtrl == null) {
 			favoritGroupsCtrl = new SelectFavoritBusinessGroupController(ureq, getWindowControl());
+			favoritGroupsCtrl.setFilter(filter);
 			listenTo(favoritGroupsCtrl);
 		}
-		favoritGroupsCtrl.updateMarkedGroups();
+		boolean markedFound = favoritGroupsCtrl.updateMarkedGroups();
 		mainVC.put("groupList", favoritGroupsCtrl.getInitialComponent());
-		return favoritGroupsCtrl;
+		return markedFound;
 	}
 	
-	private SelectOwnedBusinessGroupController updateOwnedGroups(UserRequest ureq) {
+	private void updateOwnedGroups(UserRequest ureq) {
 		if(ownedGroupsCtrl == null) {
 			ownedGroupsCtrl = new SelectOwnedBusinessGroupController(ureq, getWindowControl());
+			ownedGroupsCtrl.setFilter(filter);
 			listenTo(ownedGroupsCtrl);
 		}
 		ownedGroupsCtrl.updateOwnedGroups();
 		mainVC.put("groupList", ownedGroupsCtrl.getInitialComponent());
-		return ownedGroupsCtrl;
 	}
 	
-	private SelectBusinessGroupCourseAuthorController updateCourseGroups(UserRequest ureq) {
+	private void updateCourseGroups(UserRequest ureq) {
 		if(authorGroupsCtrL == null) {
 			authorGroupsCtrL = new SelectBusinessGroupCourseAuthorController(ureq, getWindowControl());
+			authorGroupsCtrL.setFilter(filter);
 			listenTo(authorGroupsCtrL);
 		}
 		authorGroupsCtrL.updateOwnedGroups();
 		mainVC.put("groupList", authorGroupsCtrL.getInitialComponent());
-		return authorGroupsCtrL;
 	}
 	
-	private SelectSearchBusinessGroupController updateSearch(UserRequest ureq) {
+	private void updateSearch(UserRequest ureq) {
 		if(searchGroupsCtrl == null) {
 			searchGroupsCtrl = new SelectSearchBusinessGroupController(ureq, getWindowControl(), true);
+			searchGroupsCtrl.setFilter(filter);
 			listenTo(searchGroupsCtrl);
 		}
 		searchGroupsCtrl.updateSearch(ureq);
 		mainVC.put("groupList", searchGroupsCtrl.getInitialComponent());
-		return searchGroupsCtrl;
 	}
 	
-	private SelectSearchBusinessGroupController updateAdminSearch(UserRequest ureq) {
+	private void updateAdminSearch(UserRequest ureq) {
 		if(searchAdminGroupsCtrl == null) {
 			searchAdminGroupsCtrl = new SelectSearchBusinessGroupController(ureq, getWindowControl(), false);
+			searchAdminGroupsCtrl.setFilter(filter);
 			listenTo(searchAdminGroupsCtrl);
 		}
 		searchAdminGroupsCtrl.updateSearch(ureq);
 		mainVC.put("groupList", searchAdminGroupsCtrl.getInitialComponent());
-		return searchAdminGroupsCtrl;
 	}
 }

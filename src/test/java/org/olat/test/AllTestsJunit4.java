@@ -82,6 +82,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.taskExecutor.PersistentTaskDAOTest.class,//ok
 	org.olat.core.commons.taskExecutor.TaskExecutorManagerTest.class,//ok
 	org.olat.admin.user.delete.service.UserDeletionManagerTest.class,//ok
+	org.olat.group.BusinessGroupManagedFlagsTest.class,//ok
 	org.olat.group.test.BGRightManagerTest.class,//ok
 	org.olat.group.test.BGAreaManagerTest.class,//ok
 	org.olat.group.test.BusinessGroupServiceTest.class,//ok

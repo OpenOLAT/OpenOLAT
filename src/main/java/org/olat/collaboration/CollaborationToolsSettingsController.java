@@ -47,6 +47,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.instantMessaging.InstantMessagingModule;
 
 /**
@@ -65,9 +66,10 @@ public class CollaborationToolsSettingsController extends BasicController {
 	private CalendarToolSettingsController calendarForm;
 	private FolderToolSettingsController folderForm;
 
-	boolean lastCalendarEnabledState;
+	private boolean lastCalendarEnabledState;
 	private Controller quotaCtr;
-	private BusinessGroup businessGroup;
+	private final boolean managed;
+	private final BusinessGroup businessGroup;
 
 	/**
 	 * @param ureq
@@ -76,11 +78,13 @@ public class CollaborationToolsSettingsController extends BasicController {
 	public CollaborationToolsSettingsController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		this.businessGroup = businessGroup;
+		managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.tools);
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
 		
 		vc_collabtools = createVelocityContainer ("collaborationtools");
 
 		cots = new ChoiceOfToolsForm (ureq, wControl, collabTools);
+		cots.setEnabled(!managed);
 		listenTo(cots);
 		vc_collabtools.put("choiceOfTools", cots.getInitialComponent());
 		
@@ -92,7 +96,11 @@ public class CollaborationToolsSettingsController extends BasicController {
 		
 		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
 			vc_collabtools.contextPut("isOlatAdmin", Boolean.TRUE);
-			quotaCtr = QuotaManager.getInstance().getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), false);
+			if(managed) {
+				quotaCtr = QuotaManager.getInstance().getQuotaViewInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), false);
+			} else {
+				quotaCtr = QuotaManager.getInstance().getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), false);
+			}
 			listenTo(quotaCtr);
 		} else {
 			vc_collabtools.contextPut("isOlatAdmin", Boolean.FALSE);
@@ -106,6 +114,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 			Long lCalendarAccess = collabTools.lookupCalendarAccess();
 			if (lCalendarAccess != null) iCalendarAccess = lCalendarAccess.intValue();
 			calendarForm = new CalendarToolSettingsController(ureq, getWindowControl(), iCalendarAccess);
+			calendarForm.setEnabled(!managed);
 			listenTo(calendarForm);
 			
 			vc_collabtools.put("calendarform", calendarForm.getInitialComponent());
@@ -128,6 +137,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 			Long lFolderAccess = collabTools.lookupFolderAccess();
 			int access = lFolderAccess == null ? CollaborationTools.FOLDER_ACCESS_ALL : lFolderAccess.intValue();
 			folderForm = new FolderToolSettingsController(ureq, getWindowControl(), access);
+			folderForm.setEnabled(!managed);
 			listenTo(folderForm);
 			vc_collabtools.put("folderform", folderForm.getInitialComponent());
 		} else {
@@ -145,6 +155,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 			removeAsListenerAndDispose(newsController);
 		}
 		newsController = new NewsFormController(ureq, getWindowControl(), (newsValue == null ? "" : newsValue));
+		newsController.setEnabled(!managed);
 		listenTo(newsController);
 		
 		vc_collabtools.contextPut("newsToolEnabled", Boolean.TRUE);
@@ -189,6 +200,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 						this.removeAsListenerAndDispose(calendarForm);
 					}
 					calendarForm = new CalendarToolSettingsController(ureq, getWindowControl(), iCalendarAccess);
+					calendarForm.setEnabled(!managed);
 					listenTo(calendarForm);
 					vc_collabtools.put("calendarform", calendarForm.getInitialComponent());
 
@@ -214,6 +226,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 				Long lFolderAccess = collabTools.lookupFolderAccess();
 				int access = lFolderAccess == null ? CollaborationTools.FOLDER_ACCESS_ALL : lFolderAccess.intValue();
 				folderForm = new FolderToolSettingsController(ureq, getWindowControl(), access);
+				folderForm.setEnabled(!managed);
 				listenTo(folderForm);
 				vc_collabtools.put("folderform", folderForm.getInitialComponent());
 				if (ureq.getUserSession().getRoles().isOLATAdmin()) {
@@ -223,13 +236,13 @@ public class CollaborationToolsSettingsController extends BasicController {
 				vc_collabtools.contextPut("folderToolEnabled", Boolean.FALSE);
 			}
 			
-		} else if (source == this.newsController) {
+		} else if (source == newsController) {
 			if (event.equals(Event.DONE_EVENT)) {
-				String news = this.newsController.getNewsValue();
+				String news = newsController.getNewsValue();
 				collabTools.saveNews(news);
 			}
 			
-		} else if (source == this.calendarForm) {	
+		} else if (source == calendarForm) {	
 			collabTools.saveCalendarAccess(new Long(calendarForm.getCalendarAccess()));
 			// notify calendar components to refresh their calendars
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(
@@ -278,6 +291,10 @@ class ChoiceOfToolsForm extends FormBasicController {
 		}
 		
 		initForm(ureq);
+	}
+	
+	public void setEnabled(boolean enabled) {
+		ms.setEnabled(enabled);
 	}
 
 	@Override

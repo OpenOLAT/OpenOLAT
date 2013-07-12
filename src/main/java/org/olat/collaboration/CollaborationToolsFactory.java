@@ -45,9 +45,9 @@ import org.olat.group.BusinessGroup;
  * @author guido
  */
 public class CollaborationToolsFactory {
+	private static final OLog log = Tracing.createLoggerFor(CollaborationToolsFactory.class);
 	private static CollaborationToolsFactory instance;
-	CacheWrapper cache;
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private CacheWrapper<String,CollaborationTools> cache;
 	private CoordinatorManager coordinatorManager;
 	
 	/**
@@ -84,7 +84,7 @@ public class CollaborationToolsFactory {
 				if (cache == null) {
 					cache = coordinatorManager.getCoordinator().getCacher().getCache(CollaborationToolsFactory.class.getSimpleName(), "tools");
 				}
-				CollaborationTools collabTools = (CollaborationTools) cache.get(cacheKey);
+				CollaborationTools collabTools = cache.get(cacheKey);
 				if (collabTools != null) {
 					
 					if (log.isDebug()) log .debug("loading collabTool from cache. Ores: " + ores.getResourceableId());
@@ -116,7 +116,7 @@ public class CollaborationToolsFactory {
 	 */
 	public CollaborationTools getCollaborationToolsIfExists(OLATResourceable ores) {
 		String cacheKey = Long.valueOf(ores.getResourceableId()).toString();
-		return (CollaborationTools) cache.get(cacheKey);
+		return cache.get(cacheKey);
 	}
 
 	

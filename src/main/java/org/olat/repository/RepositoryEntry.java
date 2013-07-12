@@ -79,7 +79,7 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	
 	private String externalId;
 	private String externalRef;
-	private String managedFlags;
+	private String managedFlagsString;
 	private RepositoryEntryLifecycle lifecycle;
 	
 	private int access;
@@ -410,12 +410,17 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 		this.externalRef = externalRef;
 	}
 
-	public String getManagedFlags() {
-		return managedFlags;
+	public RepositoryEntryManagedFlag[] getManagedFlags() {
+		return RepositoryEntryManagedFlag.toEnum(managedFlagsString);
 	}
 
-	public void setManagedFlags(String managedFlags) {
-		this.managedFlags = managedFlags;
+
+	public String getManagedFlagsString() {
+		return managedFlagsString;
+	}
+
+	public void setManagedFlagsString(String managedFlagsString) {
+		this.managedFlagsString = managedFlagsString;
 	}
 
 	public RepositoryEntryLifecycle getLifecycle() {

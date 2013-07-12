@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -56,6 +57,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryIconRenderer;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
@@ -79,6 +81,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private RichTextElement description;
 	private ImageFormItem imageEl;
 	private FormLink deleteImage;
+	private FormSubmit submit;
 
 	private final UserManager userManager;
 	private final RepositoryManager repositoryManager;
@@ -142,13 +145,17 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		displayName = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, repositoryEntry.getDisplayname(), descCont);
 		displayName.setDisplaySize(30);
 		displayName.setMandatory(true);
+		displayName.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.title));
 
 		String desc = (repositoryEntry.getDescription() != null ? repositoryEntry.getDescription() : " ");
 		description = uifactory.addRichTextElementForStringDataMinimalistic("cif.description", "cif.description",
 				desc, 10, -1, false, descCont, ureq.getUserSession(), getWindowControl());
+		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
 		description.setMandatory(true);
 
 		uifactory.addSpacerElement("spacer2", descCont, false);
+		
+		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		
 		VFSLeaf img = repositoryManager.getImage(repositoryEntry);
 		imageEl = new ImageFormItem("imageEl");
@@ -163,7 +170,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		descCont.add(imageEl);
 		
 		deleteImage = uifactory.addFormLink("delete", "cmd.delete", null, descCont, Link.BUTTON);
-		deleteImage.setVisible(img != null);
+		deleteImage.setVisible(img != null && !managed);
 
 		fileUpload = uifactory.addFileElement("rentry.pic", "rentry.pic", descCont);
 		if(img != null) {
@@ -171,6 +178,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		}
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.addActionListener(this, FormEvent.ONCHANGE);
+		fileUpload.setVisible(!managed);
 		
 		Set<String> mimeTypes = new HashSet<String>();
 		mimeTypes.add("image/gif");
@@ -182,7 +190,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
-		uifactory.addFormSubmitButton("submit", buttonContainer);
+		submit = uifactory.addFormSubmitButton("submit", buttonContainer);
+		submit.setVisible(!managed);
 		if (!isSubWorkflow) {
 			uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 		}

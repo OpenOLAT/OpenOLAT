@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
@@ -46,17 +47,20 @@ import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 //fxdiff VCRP-1,2: access control of resources
 public class BusinessGroupEditAccessController extends FormBasicController {
 	
+	private final boolean managed;
 	private AccessConfigurationController configController;
 	
 	public BusinessGroupEditAccessController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(AccessConfigurationController.class, getLocale(), getTranslator()));
+
+		managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.bookings);
 		
 		AccessControlModule acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		if(acModule.isEnabled()) {
 			OLATResource resource = businessGroup.getResource();
 			boolean waitingList = businessGroup.getWaitingListEnabled();
-			configController = new AccessConfigurationController(ureq, wControl, resource, businessGroup.getName(), !waitingList, mainForm);
+			configController = new AccessConfigurationController(ureq, wControl, resource, businessGroup.getName(), !waitingList, !managed, mainForm);
 			listenTo(configController);
 		}
 		
@@ -65,20 +69,25 @@ public class BusinessGroupEditAccessController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(configController != null) {
-			formLayout.add(configController.getInitialFormItem());
-			uifactory.addSpacerElement("spacer1", formLayout, false);
-		}
-
 		setFormTitle("accesscontrol.title");
 		setFormDescription("accesscontrol_group.desc");
 		setFormContextHelp(AccessConfigurationController.class.getPackage().getName(), "accesscontrol_group.html", "chelp.accesscontrol_group.hover");
 
-		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		buttonGroupLayout.setRootForm(mainForm);
-		formLayout.add(buttonGroupLayout);
+		if(configController != null) {
+			formLayout.add(configController.getInitialFormItem());
+		}
 		
-		uifactory.addFormSubmitButton("save", formLayout);
+		if(configController != null && !managed) {
+			uifactory.addSpacerElement("spacer1", formLayout, false);
+		}
+		
+		if(!managed) {
+			final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
+			buttonGroupLayout.setRootForm(mainForm);
+			formLayout.add(buttonGroupLayout);
+			
+			uifactory.addFormSubmitButton("save", formLayout);
+		}
 	}
 	
 	public void updateBusinessGroup(BusinessGroup businessGroup) {

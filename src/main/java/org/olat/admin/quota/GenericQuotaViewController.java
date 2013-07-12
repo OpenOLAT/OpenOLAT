@@ -27,42 +27,26 @@ package org.olat.admin.quota;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 
 /**
- * Description:<BR>
- * Generic editor controller for quotas. Can be constructed from a quota or a
- * folder path. When finished the controller fires the following events:<BR>
- * Event.CANCELLED_EVENT
- * Event.CHANGED_EVENT
- * <p>
- * Check with QuotaManager.hasQuotaEditRights if you are allowed to use this
- * controller. Fires an exception if user is not allowed to call controller.
- * <P>
- * Initial Date:  Dec 22, 2004
+ * 
+ * Initial date: 12.07.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
- * @author gnaegi
  */
-public class GenericQuotaEditController extends BasicController {
+public class GenericQuotaViewController extends BasicController {
 
 	private VelocityContainer myContent;
 	private QuotaForm quotaForm;
 	private boolean modalMode;
-	
 	private Quota currentQuota;
-	private Link addQuotaButton;
-	private Link delQuotaButton;
-	private Link cancelButton;
 
 
 	/**
@@ -77,7 +61,7 @@ public class GenericQuotaEditController extends BasicController {
 	 * @param modalMode true: window will push to fullscreen and pop itself when finished. false: normal
 	 * controller mode, get initial component using getInitialComponent()
 	 */
-	GenericQuotaEditController(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode) {
+	GenericQuotaViewController(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode) {
 		super(ureq, wControl);
 		this.modalMode = modalMode;
 		
@@ -87,37 +71,12 @@ public class GenericQuotaEditController extends BasicController {
 		// init velocity context
 		initMyContent(ureq);
 		if (currentQuota == null) {
-			currentQuota = qm.createQuota(relPath, null, null);
-			myContent.contextPut("editQuota", Boolean.FALSE);			
+			currentQuota = qm.createQuota(relPath, null, null);		
 		} else {
 			initQuotaForm(ureq, currentQuota);			
 		}
+		myContent.contextPut("editQuota", Boolean.FALSE);	
 	  putInitialPanel(myContent);
-	}
-
-	/**
-	 * Constructor for the generic quota edit controller used when an existing quota should be
-	 * edited, as done in the admin quotamanagement
-	 * @param ureq
-	 * @param wControl
-	 * @param quota The existing quota or null. If null, a new quota is generated
-	 */
-	public GenericQuotaEditController(UserRequest ureq, WindowControl wControl, Quota quota) {
-		super(ureq, wControl);
-		this.modalMode = false;
-		
-		initMyContent(ureq);
-		
-		// start with neq quota if quota is empty
-		if (quota == null) {
-			currentQuota = QuotaManager.getInstance().createQuota(null, null, null);
-			myContent.contextPut("isEmptyQuota", true);
-		} else {
-			currentQuota = quota;
-		}
-		initQuotaForm(ureq, currentQuota);
-		
-		putInitialPanel(myContent);
 	}
 
 	private void initMyContent(UserRequest ureq) {
@@ -127,9 +86,6 @@ public class GenericQuotaEditController extends BasicController {
 
 		myContent = createVelocityContainer("edit");
 		myContent.contextPut("modalMode", Boolean.valueOf(modalMode));
-		addQuotaButton = LinkFactory.createButtonSmall("qf.new", myContent, this);
-		delQuotaButton = LinkFactory.createButtonSmall("qf.del", myContent, this);
-		cancelButton = LinkFactory.createButtonSmall("cancel", myContent, this);
 		
 		//TODO loop over QuotaManager.getDefaultQuotaIdentifyers instead
 		myContent.contextPut("users",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS));
@@ -146,7 +102,7 @@ public class GenericQuotaEditController extends BasicController {
 		if (quotaForm != null) {
 			removeAsListenerAndDispose(quotaForm);
 		}
-		quotaForm = new QuotaForm(ureq, getWindowControl(), quota, true);
+		quotaForm = new QuotaForm(ureq, getWindowControl(), quota, false);
 		listenTo(quotaForm);
 		myContent.put("quotaform", quotaForm.getInitialComponent());
 		myContent.contextPut("editQuota", Boolean.TRUE);
@@ -156,41 +112,7 @@ public class GenericQuotaEditController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		initQuotaForm(ureq, currentQuota);
-		if (source == delQuotaButton){
-			boolean deleted = QuotaManager.getInstance().deleteCustomQuota(currentQuota);
-			if (deleted) {
-				myContent.remove(quotaForm.getInitialComponent());
-				myContent.contextPut("editQuota", Boolean.FALSE);
-				showInfo("qf.deleted", currentQuota.getPath());
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else {
-				showError("qf.cannot.del.default");
-			}
-		} else if(source == cancelButton){
-			fireEvent(ureq, Event.CANCELLED_EVENT);		
-		}	
-	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == quotaForm) {
-			if (event == Event.DONE_EVENT) {
-				QuotaManager qm = QuotaManager.getInstance();
-				currentQuota = QuotaManager.getInstance().createQuota(quotaForm.getPath(), new Long(quotaForm.getQuotaKB()), new Long(quotaForm.getULLimit()));
-				qm.setCustomQuotaKB(currentQuota);
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-		}
-	}
-	/**
-	 * @return Quota the edited quota
-	 */
-	public Quota getQuota() {
-		if (currentQuota == null) throw new AssertException("getQuota called but currentQuota is null");
-		return currentQuota;
+		//
 	}
 		
 	/**

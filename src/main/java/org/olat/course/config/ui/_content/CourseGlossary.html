@@ -7,13 +7,13 @@
 		<div class="b_button_group">
 			$r.render("command.glossary.add")
 		</div>
-	#elseif ($r.available("command.glossary.remove"))
+	#elseif ($repoEntry)
 		$repoEntry.getDisplayname()
-		<p>
-			$r.translate("glossary.description"): $r.formatLatexFormulas($repoEntry.getDescription())
-		</p>
-		<div class="b_button_group">
-			$r.render("command.glossary.remove")	
-		</div>
+		<p>$r.translate("glossary.description"): $r.formatLatexFormulas($repoEntry.getDescription())</p>
+		#if($r.available("command.glossary.remove"))
+			<div class="b_button_group">
+				$r.render("command.glossary.remove")	
+			</div>
+		#end
 	#end
 </fieldset>

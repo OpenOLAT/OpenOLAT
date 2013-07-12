@@ -90,6 +90,7 @@ import org.olat.repository.DisplayCourseInfoForm;
 import org.olat.repository.DisplayInfoForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryIconRenderer;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.CourseHandler;
@@ -497,7 +498,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 					detailsToolC.addLink(ACTION_ADD_CATALOG, translate("details.catadd"), TOOL_CATALOG, null, "o_sel_repo_add_to_catalog", false);
 					
 					detailsToolC.addHeader(translate("table.action"));
-					if ((OresHelper.isOfType(repositoryEntry.getOlatResource(), CourseModule.class)) && (!RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed())) {
+
+					boolean closeManaged = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.close);
+					if ((OresHelper.isOfType(repositoryEntry.getOlatResource(), CourseModule.class))
+							&& !closeManaged
+							&& (!RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed())) {
 						detailsToolC.addLink(ACTION_CLOSE_RESSOURCE, translate("details.close.ressoure"), TOOL_CLOSE_RESSOURCE, null, "o_sel_repo_close_resource", false);
 						if(corrupted) {
 							detailsToolC.setEnabled(TOOL_CLOSE_RESSOURCE, false);
@@ -524,7 +529,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				}
 				// enable
 				if(isAuthor) {
-					detailsToolC.setEnabled(TOOL_EDIT, handler.supportsEdit(repositoryEntry) && !corrupted);
+					boolean editManaged = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.editcontent);
+					detailsToolC.setEnabled(TOOL_EDIT, handler.supportsEdit(repositoryEntry) && !corrupted && !editManaged);
 					detailsToolC.setEnabled(TOOL_CHDESC, !corrupted);
 					detailsToolC.setEnabled(TOOL_CHPROP, !corrupted);
 				}

@@ -68,7 +68,6 @@ public class SimpleNewsController extends BasicController {
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Component source, Event event) {
 	//
 	}
@@ -77,7 +76,6 @@ public class SimpleNewsController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Controller source, Event event) {
 	//
 	}

@@ -26,7 +26,6 @@
 package org.olat.admin.user;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.admin.policy.PolicyController;
 import org.olat.admin.user.groups.GroupOverviewController;
@@ -36,7 +35,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -52,7 +50,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
@@ -109,9 +106,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private Link backLink;
 	private ProfileAndHomePageEditController userProfileCtr;
 	private GroupOverviewController grpCtr;
-	
-	private final boolean isAdministrativeUser;
-	private final BaseSecurityModule securityModule;
+
 
 	/**
 	 * Constructor that creates a back - link as default
@@ -121,10 +116,7 @@ public class UserAdminController extends BasicController implements Activateable
 	 */
 	public UserAdminController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl);
-		
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		
+
 		BaseSecurity mgr = BaseSecurityManager.getInstance();
 		if (!mgr.isIdentityPermittedOnResourceable(
 				ureq.getIdentity(), 
@@ -143,11 +135,11 @@ public class UserAdminController extends BasicController implements Activateable
 			setBackButtonEnabled(true); // default
 			initTabbedPane(myIdentity, ureq);
 			exposeUserDataToVC(ureq, myIdentity);					
-			this.putInitialPanel(myContent);
+			putInitialPanel(myContent);
 		} else {
 			String supportAddr = WebappHelper.getMailConfig("mailSupport");			
-			this.showWarning(NLS_ERROR_NOACCESS_TO_USER, supportAddr);			
-			this.putInitialPanel(new Panel("empty"));
+			showWarning(NLS_ERROR_NOACCESS_TO_USER, supportAddr);			
+			putInitialPanel(new Panel("empty"));
 		}
 	}
 	

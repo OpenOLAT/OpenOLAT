@@ -17,22 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group;
+package org.olat.repository.controllers;
 
-import org.olat.core.id.OLATResourceable;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Very short version of business group.
- * 
+ * Initial date: 12.07.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public interface BusinessGroupShort extends OLATResourceable {
+public interface RepositoryEntryFilter {
 	
-	public Long getKey();
-	
-	public String getName();
-	
-	public BusinessGroupManagedFlag[] getManagedFlags();
+	public boolean accept(RepositoryEntry re);
 
 }

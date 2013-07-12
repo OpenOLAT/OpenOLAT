@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class FolderToolSettingsController extends FormBasicController {
 	
+	private FormSubmit submit;
 	private SingleSelection folderAccessEl;
 	private final int folderAccess;
 	private final boolean canSave;
@@ -78,7 +80,14 @@ public class FolderToolSettingsController extends FormBasicController {
 		String selectedKey = (folderAccess == CollaborationTools.FOLDER_ACCESS_ALL) ? "all" : "owner";
 		folderAccessEl.select(selectedKey, true);
 		if(canSave) {
-			uifactory.addFormSubmitButton("submit", formLayout);
+			submit = uifactory.addFormSubmitButton("submit", formLayout);
+		}
+	}
+	
+	public void setEnabled(boolean enabled) {
+		folderAccessEl.setEnabled(enabled);
+		if(submit != null) {
+			submit.setVisible(enabled);
 		}
 	}
 	

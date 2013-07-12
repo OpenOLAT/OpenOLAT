@@ -36,9 +36,9 @@ import org.olat.core.util.vfs.QuotaManager;
  * Initial Date: Mar 30, 2004
  * @author Mike Stock 
  */
-public class QuotaTableModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
+public class QuotaTableModel extends BaseTableDataModelWithoutFilter<Quota> implements TableDataModel<Quota> {
 
-	private List quotaList;
+	private List<Quota> quotaList;
 
 	/**
 	 * 
@@ -60,7 +60,7 @@ public class QuotaTableModel extends BaseTableDataModelWithoutFilter implements 
 	 * @return Quota.
 	 */
 	public Quota getRowData(int row) {
-		return (Quota) quotaList.get(row);
+		return quotaList.get(row);
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class QuotaTableModel extends BaseTableDataModelWithoutFilter implements 
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		Quota q = (Quota) quotaList.get(row);
+		Quota q = quotaList.get(row);
 		switch (col) {
 			case 0:
 				return q.getPath();

@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
 
 /**
@@ -77,6 +78,22 @@ public class MemberView {
 			groups = new ArrayList<BusinessGroupShort>(3);
 		}
 		groups.add(group);
+	}
+	
+	public boolean isFullyManaged() {
+		if(membership != null && !membership.isManagedMembersRepo() &&
+				(membership.isRepoOwner() || membership.isRepoTutor() || membership.isRepoParticipant())) {
+			return false;
+		}
+
+		if(groups != null) {
+			for(BusinessGroupShort group:groups) {
+				if(!BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 	
 	public Date getFirstTime() {

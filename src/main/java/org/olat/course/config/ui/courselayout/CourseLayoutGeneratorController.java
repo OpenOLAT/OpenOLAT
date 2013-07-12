@@ -90,11 +90,13 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private FormLayoutContainer logoImgFlc;
 	private FormLink logoDel;
 	private boolean elWithErrorExists = false;
+	private final boolean editable;
 
 	public CourseLayoutGeneratorController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig,
-			CourseEnvironment courseEnvironment) {
+			CourseEnvironment courseEnvironment, boolean editable) {
 		super(ureq, wControl);
 		
+		this.editable = editable;
 		this.courseConfig = courseConfig;
 		this.courseEnvironment = courseEnvironment;
 		customCMgr = (CustomConfigManager) CoreSpringFactory.getBean("courseConfigManager");
@@ -109,7 +111,6 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.layout.title");
@@ -178,6 +179,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		
 		styleSel = uifactory.addDropdownSingleselect("course.layout.selector", formLayout, theKeys, theValues, theCssClasses);
 		styleSel.addActionListener(this, FormEvent.ONCHANGE);
+		styleSel.setEnabled(editable);
 		if (keys.contains(actualCSSSettings)){
 			styleSel.select(actualCSSSettings, true);
 		} else {
@@ -195,12 +197,14 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		refreshLogoImage();	
 		
 		// offer upload for 2nd logo
-		logoUpl = uifactory.addFileElement("upload.second.logo", formLayout);
-		logoUpl.addActionListener(this, FormEvent.ONCHANGE);
-		Set<String> mimeTypes = new HashSet<String>();
-		mimeTypes.add("image/*");
-		logoUpl.limitToMimeType(mimeTypes, "logo.file.type.error", null);
-		logoUpl.setMaxUploadSizeKB(2048, "logo.size.error", null);
+		if(editable) {
+			logoUpl = uifactory.addFileElement("upload.second.logo", formLayout);
+			logoUpl.addActionListener(this, FormEvent.ONCHANGE);
+			Set<String> mimeTypes = new HashSet<String>();
+			mimeTypes.add("image/*");
+			logoUpl.limitToMimeType(mimeTypes, "logo.file.type.error", null);
+			logoUpl.setMaxUploadSizeKB(2048, "logo.size.error", null);
+		}
 		
 		// prepare the custom layouter
 		styleFlc = FormLayoutContainer.createCustomFormLayout("style", getTranslator(), velocity_root + "/style.html");
@@ -208,14 +212,16 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		styleFlc.setLabel(null, null);
 		enableDisableCustom(CourseLayoutHelper.CONFIG_KEY_CUSTOM.equals(actualCSSSettings));
 		
-		uifactory.addFormSubmitButton("course.layout.save", formLayout);		
+		if(editable) {
+			uifactory.addFormSubmitButton("course.layout.save", formLayout);
+		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
 	@Override
-	protected void formInnerEvent(@SuppressWarnings("unused") UserRequest ureq, FormItem source, FormEvent event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == styleSel) {
 			String selection = styleSel.getSelectedKey();
 			if (CourseLayoutHelper.CONFIG_KEY_CUSTOM.equals(selection)) {
@@ -256,7 +262,8 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private void enableDisableCustom(boolean onOff){
 		if (onOff) prepareStyleEditor(persistedCustomConfig);
 		styleFlc.setVisible(onOff);
-		logoUpl.setVisible(onOff);
+		styleFlc.setEnabled(editable);
+		if(logoUpl != null) logoUpl.setVisible(onOff);
 		logoImgFlc.setVisible(onOff);
 	}
 	
@@ -343,6 +350,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			image.setMaxWithAndHeightToFitWithin(300, 300);
 			logoDel = uifactory.addFormLink("logo.delete", logoImgFlc, Link.BUTTON_XSMALL);
 			logoDel.setUserObject(logo);
+			logoDel.setVisible(editable);
 			return;
 		}	
 		logoImgFlc.setVisible(false);
