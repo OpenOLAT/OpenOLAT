@@ -1637,9 +1637,9 @@ public class RepositoryManager extends BasicManager {
 		
 		if(params.getManaged() != null) {
 			if(params.getManaged().booleanValue()) {
-				query.append(" and v.managedFlags is not null");
+				query.append(" and v.managedFlagsString is not null");
 			} else {
-				query.append(" and v.managedFlags is null");
+				query.append(" and v.managedFlagsString is null");
 			}
 		}
 		
