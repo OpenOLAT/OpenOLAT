@@ -162,9 +162,8 @@ public class LinkRenderer implements ComponentRenderer {
 				sb.append("\" ");
 			} else {
 				sb.append("href=\"");
-
 				ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command },
-						iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+						link.getModURI(), iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 				sb.append("\"");
 			}
 			

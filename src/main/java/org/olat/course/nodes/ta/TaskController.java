@@ -54,6 +54,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -287,10 +288,26 @@ public class TaskController extends BasicController {
 		if (StringHelper.containsNonWhitespace(taskText)) {
 			myContent.contextPut(VC_TASKTEXT, taskText);
 		}
+
+		String taskFilename = getTaskFilename(assignedTask);
+		taskLaunchButton.setModURI(taskFilename);
 		myContent.put("task.launch", taskLaunchButton);
 		myContent.contextPut(VC_ASSIGNEDTASK, assignedTask);
 		myContent.contextPut(VC_ASSIGNEDTASK_NEWWINDOW,Boolean.TRUE);
 		panel.setContent(myContent);
+	}
+	
+	private String getTaskFilename(String task) {
+		if(!StringHelper.containsNonWhitespace(task)) {
+			return null;
+		}
+		String extension = FileUtils.getFileSuffix(assignedTask);
+		if(!StringHelper.containsNonWhitespace(extension)) {
+			return null;
+		}
+		
+		String filename = assignedTask.substring(0, assignedTask.length() - extension.length());
+		return StringHelper.transformDisplayNameToFileSystemName(filename) + "." + extension;
 	}
 
 	/**
@@ -459,10 +476,10 @@ public class TaskController extends BasicController {
 	 * Initial Date:  20.04.2010 <br>
 	 * @author Lavinia Dumitrescu
 	 */
-	class DeselectableTaskTableModel extends DefaultTableDataModel {
+	class DeselectableTaskTableModel extends DefaultTableDataModel<String> {
 		private int COLUMN_COUNT;
 
-		public DeselectableTaskTableModel(List objects, int num_cols) {
+		public DeselectableTaskTableModel(List<String> objects, int num_cols) {
 			super(objects);
 			COLUMN_COUNT = num_cols;
 		}
@@ -496,7 +513,4 @@ public class TaskController extends BasicController {
 			return task.equals(assignedTask);
 		}		
 	}
-	
-		
 }
-

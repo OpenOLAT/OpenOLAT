@@ -83,6 +83,7 @@ public class Link extends Component {
 	private String customEnabledLinkCSS;
 	private String customDisabledLinkCSS;
 	private String target;
+	private String modURI;
 	private Object internalAttachedObj;
 	private Object userObject;
 	private String accessKey;
@@ -253,6 +254,14 @@ public class Link extends Component {
 	public void setEnabled(boolean b){
 		super.setEnabled(b);
 		setDirty(true);
+	}
+
+	public String getModURI() {
+		return modURI;
+	}
+
+	public void setModURI(String modURI) {
+		this.modURI = modURI;
 	}
 
 	protected String getTextReasonForDisabling() {
