@@ -47,8 +47,8 @@ import org.olat.core.gui.control.generic.portal.SortingCriteria;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryOrder;
-import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryTypeColumnDescriptor;
 import org.olat.repository.RepositoryManager;
 
@@ -62,7 +62,7 @@ import org.olat.repository.RepositoryManager;
  * Initial Date:  06.03.2009 <br>
  * @author gnaegi
  */
-public class RepositoryPortletRunController extends AbstractPortletRunController<RepositoryEntryShort> implements GenericEventListener {
+public class RepositoryPortletRunController extends AbstractPortletRunController<RepositoryEntryLight> implements GenericEventListener {
 	
 	private static final String CMD_LAUNCH = "cmd.launch";
 
@@ -112,21 +112,39 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		putInitialPanel(repoEntriesVC);
 	}
 	
-	private List<RepositoryEntry> getAllEntries(SortingCriteria sortingCriteria) {
+	private List<RepositoryEntryLight> getAllEntries(SortingCriteria sortingCriteria) {
 		int maxResults = sortingCriteria == null ? -1 : sortingCriteria.getMaxEntries();
 		RepositoryEntryOrder orderBy = RepositoryEntryOrder.nameAsc;
 		if(sortingCriteria != null && !sortingCriteria.isAscending()) {
 			orderBy = RepositoryEntryOrder.nameDesc;
 		}
+		
+		List<RepositoryEntryLight> entries;
 		if (studentView) {
-			return RepositoryManager.getInstance().getLearningResourcesAsStudent(getIdentity(), 0, maxResults, orderBy);
+			entries = RepositoryManager.getInstance().getParticipantRepositoryEntry(getIdentity(), maxResults, orderBy);
 		} else {
-			return RepositoryManager.getInstance().getLearningResourcesAsTeacher(getIdentity(), 0, maxResults, orderBy);
+			entries = RepositoryManager.getInstance().getTutorRepositoryEntry(getIdentity(), maxResults, orderBy);
 		}
+		return entries;
 	}
 
-	private List<PortletEntry<RepositoryEntryShort>> convertRepositoryEntriesToPortletEntryList(List<RepositoryEntry> items, boolean withDescription) {
-		List<PortletEntry<RepositoryEntryShort>> convertedList = new ArrayList<PortletEntry<RepositoryEntryShort>>();
+	private List<PortletEntry<RepositoryEntryLight>> convertShortRepositoryEntriesToPortletEntryList(List<RepositoryEntryLight> items, boolean withDescription) {
+		List<PortletEntry<RepositoryEntryLight>> convertedList = new ArrayList<PortletEntry<RepositoryEntryLight>>();
+		for(RepositoryEntryLight item:items) {
+			boolean closed = RepositoryManager.getInstance().createRepositoryEntryStatus(item.getStatusCode()).isClosed();
+			if(!closed) {
+				RepositoryPortletEntry entry = new RepositoryPortletEntry(item);
+				if(withDescription) {
+					entry.setDescription(item.getDescription());
+				}
+				convertedList.add(entry);
+			}
+		}
+		return convertedList;
+	}
+	
+	private List<PortletEntry<RepositoryEntryLight>> convertRepositoryEntriesToPortletEntryList(List<RepositoryEntry> items, boolean withDescription) {
+		List<PortletEntry<RepositoryEntryLight>> convertedList = new ArrayList<PortletEntry<RepositoryEntryLight>>();
 		for(RepositoryEntry item:items) {
 			boolean closed = RepositoryManager.getInstance().createRepositoryEntryStatus(item.getStatusCode()).isClosed();
 			if(!closed) {
@@ -142,8 +160,8 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-			List<RepositoryEntry> items = getAllEntries(sortingCriteria);
-			List<PortletEntry<RepositoryEntryShort>> entries = convertRepositoryEntriesToPortletEntryList(items, false);
+			List<RepositoryEntryLight> items = getAllEntries(sortingCriteria);
+			List<PortletEntry<RepositoryEntryLight>> entries = convertShortRepositoryEntriesToPortletEntryList(items, false);
 			repoEntryListModel = new RepositoryPortletTableDataModel(entries, getLocale());
 			tableCtr.setTableDataModel(repoEntryListModel);
 		} else {
@@ -151,7 +169,7 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		}
 	}
 	
-	protected void reloadModel(List<PortletEntry<RepositoryEntryShort>> sortedItems) {						
+	protected void reloadModel(List<PortletEntry<RepositoryEntryLight>> sortedItems) {						
 		repoEntryListModel = new RepositoryPortletTableDataModel(sortedItems, getLocale());
 		tableCtr.setTableDataModel(repoEntryListModel);
 	}
@@ -180,23 +198,15 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_LAUNCH)) {
 					int rowId = te.getRowId();
-					PortletEntry<RepositoryEntryShort> entry = repoEntryListModel.getObject(rowId);
+					PortletEntry<RepositoryEntryLight> entry = repoEntryListModel.getObject(rowId);
 					NewControllerFactory.getInstance().launch("[RepositoryEntry:" + entry.getKey() + "]", ureq, getWindowControl());
 				}
 			}
 		}	
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-		super.doDispose();
-//FIXME:RH:repo listen to changes
-	}
-
 	public void event(Event event) {
-//FIXME:RH:repo listen to changes
+		//
 	}
 	
 	/**
@@ -206,14 +216,14 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * @param wControl
 	 * @return a PortletToolSortingControllerImpl instance.
 	 */
-	protected PortletToolSortingControllerImpl<RepositoryEntryShort> createSortingTool(UserRequest ureq, WindowControl wControl) {
+	protected PortletToolSortingControllerImpl<RepositoryEntryLight> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {			
-			List<RepositoryEntry> items = getAllEntries(null);
-			List<PortletEntry<RepositoryEntryShort>> entries = convertRepositoryEntriesToPortletEntryList(items, false);
-			PortletDefaultTableDataModel<RepositoryEntryShort> tableDataModel = new RepositoryPortletTableDataModel(entries, ureq.getLocale());
-			List<PortletEntry<RepositoryEntryShort>> sortedItems = getPersistentManuallySortedItems(); 
+			List<RepositoryEntryLight> items = getAllEntries(null);
+			List<PortletEntry<RepositoryEntryLight>> entries = convertShortRepositoryEntriesToPortletEntryList(items, false);
+			PortletDefaultTableDataModel<RepositoryEntryLight> tableDataModel = new RepositoryPortletTableDataModel(entries, ureq.getLocale());
+			List<PortletEntry<RepositoryEntryLight>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl<RepositoryEntryShort>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<RepositoryEntryLight>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);
@@ -226,14 +236,14 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
    * @param ureq
    * @return
    */
-  private List<PortletEntry<RepositoryEntryShort>> getPersistentManuallySortedItems() {
+  private List<PortletEntry<RepositoryEntryLight>> getPersistentManuallySortedItems() {
 		@SuppressWarnings("unchecked")
 		Map<Long, Integer> storedPrefs = (Map<Long, Integer>) guiPreferences.get(Map.class, getPreferenceKey(SORTED_ITEMS_PREF));
 		if(storedPrefs == null) {
-			return new ArrayList<PortletEntry<RepositoryEntryShort>>();
+			return new ArrayList<PortletEntry<RepositoryEntryLight>>();
 		}
 		List<RepositoryEntry> items = RepositoryManager.getInstance().lookupRepositoryEntries(storedPrefs.keySet());
-  	List<PortletEntry<RepositoryEntryShort>> entries = convertRepositoryEntriesToPortletEntryList(items, false);
+		List<PortletEntry<RepositoryEntryLight>> entries = convertRepositoryEntriesToPortletEntryList(items, false);
 		return getPersistentManuallySortedItems(entries);
 	}
   
@@ -244,9 +254,9 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * @param sortingCriteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
-  protected Comparator<RepositoryEntryShort> getComparator(final SortingCriteria sortingCriteria) {
-		return new Comparator<RepositoryEntryShort>(){			
-			public int compare(final RepositoryEntryShort repoEntry1, final RepositoryEntryShort repoEntry2) {
+  protected Comparator<RepositoryEntryLight> getComparator(final SortingCriteria sortingCriteria) {
+		return new Comparator<RepositoryEntryLight>(){			
+			public int compare(final RepositoryEntryLight repoEntry1, final RepositoryEntryLight repoEntry2) {
 				int comparisonResult = 0;
 			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
 			  	comparisonResult = collator.compare(repoEntry1.getDisplayname(), repoEntry2.getDisplayname());			  		  	

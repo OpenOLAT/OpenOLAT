@@ -2145,6 +2145,44 @@ public class RepositoryManager extends BasicManager {
 		return repoEntries;
 	}
 	
+	public List<RepositoryEntryLight> getParticipantRepositoryEntry(Identity identity, int maxResults, RepositoryEntryOrder... orderby) {
+		StringBuilder sb = new StringBuilder(200);
+		sb.append("select v from repoentrylight as v ")
+		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" where v.key in (select vm.key from participantrepoentry as vm where vm.memberId=:identityKey)")
+		  .append(" and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
+		appendOrderBy(sb, "v", orderby);
+		
+		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryLight.class)
+				.setParameter("identityKey", identity.getKey());
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+
+		List<RepositoryEntryLight> repoEntries = query.getResultList();
+		return repoEntries;
+	}
+	
+	public List<RepositoryEntryLight> getTutorRepositoryEntry(Identity identity, int maxResults, RepositoryEntryOrder... orderby) {
+		StringBuilder sb = new StringBuilder(200);
+		sb.append("select v from repoentrylight as v ")
+		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" where v.key in (select vm.key from tutorrepoentry as vm where vm.memberId=:identityKey)")
+		  .append(" and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
+		appendOrderBy(sb, "v", orderby);
+		
+		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryLight.class)
+				.setParameter("identityKey", identity.getKey());
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+
+		List<RepositoryEntryLight> repoEntries = query.getResultList();
+		return repoEntries;
+	}
+	
 	/**
 	 * Gets all learning resources where the user is coach of a learning group or
 	 * where he is in a rights group or where he is in the repository entry owner 

@@ -21,7 +21,7 @@ package org.olat.repository.portlet;
 
 import org.olat.core.gui.control.generic.portal.PortletEntry;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryShort;
+import org.olat.repository.RepositoryEntryLight;
 
 /**
  * Description:<br>
@@ -32,10 +32,14 @@ import org.olat.repository.RepositoryEntryShort;
  * 
  * @author gnaegi
  */
-public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryShort> {
-	private RepositoryEntryShort value;
+public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryLight> {
+	private RepositoryEntryLight value;
 	private String description;
 
+	public RepositoryPortletEntry(RepositoryEntryLight repoEntry) {
+		value = new REShort(repoEntry);
+	}
+	
 	public RepositoryPortletEntry(RepositoryEntry repoEntry) {
 		value = new REShort(repoEntry);
 	}
@@ -44,7 +48,7 @@ public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryShort
 		return value.getKey();
 	}
 
-	public RepositoryEntryShort getValue() {
+	public RepositoryEntryLight getValue() {
 		return value;
 	}
 	
@@ -56,17 +60,33 @@ public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryShort
 		this.description = description;
 	}
 
-	private static class REShort implements RepositoryEntryShort {
+	private static class REShort implements RepositoryEntryLight {
 		private final Long key;
 		private final String displayname;
+		private final String description;
 		private final String type;
+		private final int access;
 		private final int statusCode;
+		private final boolean membersOnly;
+		
+		public REShort(RepositoryEntryLight entry) {
+			key = entry.getKey();
+			displayname = entry.getDisplayname();
+			description = entry.getDescription();
+			type = entry.getResourceType();
+			statusCode = entry.getStatusCode();
+			access = entry.getAccess();
+			membersOnly = entry.isMembersOnly();
+		}
 		
 		public REShort(RepositoryEntry entry) {
 			key = entry.getKey();
 			displayname = entry.getDisplayname();
+			description = entry.getDescription();
 			type = entry.getOlatResource().getResourceableTypeName();
 			statusCode = entry.getStatusCode();
+			access = entry.getAccess();
+			membersOnly = entry.isMembersOnly();
 		}
 
 		@Override
@@ -77,6 +97,21 @@ public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryShort
 		@Override
 		public String getDisplayname() {
 			return displayname;
+		}
+
+		@Override
+		public String getDescription() {
+			return description;
+		}
+
+		@Override
+		public int getAccess() {
+			return access;
+		}
+
+		@Override
+		public boolean isMembersOnly() {
+			return membersOnly;
 		}
 
 		@Override

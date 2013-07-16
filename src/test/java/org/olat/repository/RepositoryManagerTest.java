@@ -252,6 +252,64 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getParticipantRepositoryEntry() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		securityManager.addIdentityToSecurityGroup(id, re.getParticipantGroup());
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntryLight> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		
+		boolean found = false;
+		Set<Long> duplicates = new HashSet<Long>();
+		for(RepositoryEntryLight entry:entries) {
+			Assert.assertTrue(duplicates.add(entry.getKey()));
+			if(entry.getKey().equals(re.getKey())) {
+				found = true;
+			}
+		
+			if(entry.getAccess() >= RepositoryEntry.ACC_USERS) {
+				//OK
+			} else if(entry.getAccess() == RepositoryEntry.ACC_OWNERS && entry.isMembersOnly()) {
+				RepositoryEntry reloadedRe = repositoryManager.lookupRepositoryEntry(entry.getKey());
+				boolean member = securityManager.isIdentityInSecurityGroup(id, reloadedRe.getParticipantGroup());
+				Assert.assertTrue(member);
+			} else {
+				Assert.fail();
+			}
+		}
+		
+		Assert.assertTrue(found);
+	}
+	
+	@Test
+	public void getParticipantRepositoryEntryWithGroups() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-ld-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studh", "th", null, null, false, false, re);
+		securityManager.addIdentityToSecurityGroup(id, group.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntryLight> entries = repositoryManager.getParticipantRepositoryEntry(id, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		
+		boolean found = false;
+		Set<Long> duplicates = new HashSet<Long>();
+		for(RepositoryEntryLight entry:entries) {
+			Assert.assertTrue(duplicates.add(entry.getKey()));
+			
+			if(entry.getKey().equals(re.getKey())) {
+				found = true;
+			}
+		}
+		
+		Assert.assertTrue(found);
+	}
+	
+	@Test
 	public void getLearningResourcesAsTeacher() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-teac-la-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -310,6 +368,64 @@ public class RepositoryManagerTest extends OlatTestCase {
 		//check count
 		int countEntries = repositoryManager.countFavoritLearningResourcesAsTeacher(id, null);
 		Assert.assertEquals(1, countEntries);
+	}
+	
+	@Test
+	public void getTutorRepositoryEntry() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-le-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		securityManager.addIdentityToSecurityGroup(id, re.getTutorGroup());
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntryLight> entries = repositoryManager.getTutorRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		
+		boolean found = false;
+		Set<Long> duplicates = new HashSet<Long>();
+		for(RepositoryEntryLight entry:entries) {
+			Assert.assertTrue(duplicates.add(entry.getKey()));
+			if(entry.getKey().equals(re.getKey())) {
+				found = true;
+			}
+		
+			if(entry.getAccess() >= RepositoryEntry.ACC_USERS) {
+				//OK
+			} else if(entry.getAccess() == RepositoryEntry.ACC_OWNERS && entry.isMembersOnly()) {
+				RepositoryEntry reloadedRe = repositoryManager.lookupRepositoryEntry(entry.getKey());
+				boolean member = securityManager.isIdentityInSecurityGroup(id, reloadedRe.getTutorGroup());
+				Assert.assertTrue(member);
+			} else {
+				Assert.fail();
+			}
+		}
+		
+		Assert.assertTrue(found);
+	}
+	
+	@Test
+	public void getTutorRepositoryEntryWithGroups() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-lf-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studi", "ti", null, null, false, false, re);
+		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntryLight> entries = repositoryManager.getTutorRepositoryEntry(id, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		
+		boolean found = false;
+		Set<Long> duplicates = new HashSet<Long>();
+		for(RepositoryEntryLight entry:entries) {
+			Assert.assertTrue(duplicates.add(entry.getKey()));
+			
+			if(entry.getKey().equals(re.getKey())) {
+				found = true;
+			}
+		}
+		
+		Assert.assertTrue(found);
 	}
 	
 	@Test

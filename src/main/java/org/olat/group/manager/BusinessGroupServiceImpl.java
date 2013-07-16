@@ -67,6 +67,7 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
+import org.olat.group.BusinessGroupLazy;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
@@ -641,6 +642,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public BusinessGroup findBusinessGroup(SecurityGroup secGroup) {
 		return businessGroupDAO.findBusinessGroup(secGroup);
+	}
+
+	@Override
+	public List<BusinessGroupLazy> findBusinessGroups(Identity identity, int maxResults, BusinessGroupOrder... orderBy) {
+		return businessGroupDAO.findBusinessGroup(identity, maxResults, orderBy);
 	}
 
 	@Override

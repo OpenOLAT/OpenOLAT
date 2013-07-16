@@ -64,8 +64,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.6</targetJdk>
-		<org.springframework.version>3.2.2.RELEASE</org.springframework.version>
-		<org.hibernate.version>4.2.0.Final</org.hibernate.version>
+		<org.springframework.version>3.2.3.RELEASE</org.springframework.version>
+		<org.hibernate.version>4.2.3.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.17.1</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
 		<org.mysql.version>5.1.24</org.mysql.version>
@@ -270,13 +270,6 @@
 					<groupId>org.hibernate</groupId>
 					<artifactId>hibernate-c3p0</artifactId>
 					<version>${org.hibernate.version}</version>
-					<exclusions>
-						<!-- includes an old version of c3p0 -->
-						<exclusion>
-							<artifactId>c3p0</artifactId>
-							<groupId>c3p0</groupId>
-						</exclusion>
-					</exclusions>
 				</dependency>
 				
 				<dependency>
@@ -441,13 +434,6 @@
 					<groupId>org.hibernate</groupId>
 					<artifactId>hibernate-c3p0</artifactId>
 					<version>${org.hibernate.version}</version>
-					<exclusions>
-						<!-- includes an old version of c3p0 -->
-						<exclusion>
-							<artifactId>c3p0</artifactId>
-							<groupId>c3p0</groupId>
-						</exclusion>
-					</exclusions>
 				</dependency>
 		
 				<dependency>
@@ -1906,18 +1892,6 @@
 			<artifactId>hibernate-c3p0</artifactId>
 			<version>${org.hibernate.version}</version>
 			<scope>test</scope>
-			<exclusions>
-				<!-- includes an old version of c3p0 -->
-				<exclusion>
-					<artifactId>c3p0</artifactId>
-					<groupId>c3p0</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>c3p0</groupId>
-			<artifactId>c3p0</artifactId>
-			<version>0.9.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>

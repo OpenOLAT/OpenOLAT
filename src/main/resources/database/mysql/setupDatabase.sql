@@ -1439,6 +1439,34 @@ create or replace view o_re_membership_v as (
    left join o_repositoryentry as re_owner_member on (membership.secgroup_id = re_owner_member.fk_ownergroup)
 );
 
+create or replace view o_re_participant_v as
+select
+   re1.repositoryentry_id as re1_id,
+   re2.repositoryentry_id as re2_id,
+   case when re1.repositoryentry_id is null then re2.repositoryentry_id else re1.repositoryentry_id end as re_id,
+   bs_member.identity_id as member_id
+  from o_bs_membership as bs_member
+  left join o_gp_business as bgroup on (bs_member.secgroup_id = bgroup.fk_partipiciantgroup)
+  left join o_gp_business_to_resource as bgroup_rel on (bgroup.group_id = bgroup_rel.fk_group)
+  left join o_repositoryentry as re1 on (bs_member.secgroup_id = re1.fk_participantgroup)
+  left join o_repositoryentry as re2 on (re2.fk_olatresource = bgroup_rel.fk_resource)
+  where re1.repositoryentry_id is not null or re2.repositoryentry_id is not null
+;
+
+create or replace view o_re_tutor_v as
+select
+   re1.repositoryentry_id as re1_id,
+   re2.repositoryentry_id as re2_id,
+   case when re1.repositoryentry_id is null then re2.repositoryentry_id else re1.repositoryentry_id end as re_id,
+   bs_member.identity_id as member_id
+  from o_bs_membership as bs_member
+  left join o_gp_business as bgroup on (bs_member.secgroup_id = bgroup.fk_ownergroup)
+  left join o_gp_business_to_resource as bgroup_rel on (bgroup.group_id = bgroup_rel.fk_group)
+  left join o_repositoryentry as re1 on (bs_member.secgroup_id = re1.fk_tutorgroup)
+  left join o_repositoryentry as re2 on (re2.fk_olatresource = bgroup_rel.fk_resource)
+  where re1.repositoryentry_id is not null or re2.repositoryentry_id is not null
+;
+
 create or replace view o_gp_visible_participant_v as (
    select
       bg_part_member.id as membership_id,

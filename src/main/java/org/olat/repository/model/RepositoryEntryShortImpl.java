@@ -34,7 +34,9 @@ public class RepositoryEntryShortImpl extends PersistentObject implements Reposi
 	private String displayName;
 	private String description;
 	private OLATResource resource;
+	private int access;
 	private int statusCode;
+	private boolean membersOnly;
 	
 	
 	@Override
@@ -68,6 +70,14 @@ public class RepositoryEntryShortImpl extends PersistentObject implements Reposi
 		this.resource = resource;
 	}
 
+	public int getAccess() {
+		return access;
+	}
+
+	public void setAccess(int access) {
+		this.access = access;
+	}
+
 	@Override
 	public int getStatusCode() {
 		return statusCode;
@@ -75,6 +85,14 @@ public class RepositoryEntryShortImpl extends PersistentObject implements Reposi
 	
 	public void setStatusCode(int statusCode) {
 		this.statusCode = statusCode;
+	}
+
+	public boolean isMembersOnly() {
+		return membersOnly;
+	}
+
+	public void setMembersOnly(boolean membersOnly) {
+		this.membersOnly = membersOnly;
 	}
 
 	@Override

@@ -59,6 +59,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLazy;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -141,17 +142,29 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		return convertedList;
 	}
 	
+	private List<PortletEntry<BusinessGroupEntry>> convertShortBusinessGroupToPortletEntryList(List<BusinessGroupLazy> groups, boolean withDescription) {
+		List<PortletEntry<BusinessGroupEntry>> convertedList = new ArrayList<PortletEntry<BusinessGroupEntry>>();
+		for(BusinessGroupLazy group:groups) {
+			GroupPortletEntry entry = new GroupPortletEntry(group);
+			if(withDescription) {
+				entry.getValue().setDescription(group.getDescription());
+			}
+			convertedList.add(entry);
+		}
+		return convertedList;
+	}
+	
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
 			BusinessGroupOrder order = null;
 			if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {
-		  	order = sortingCriteria.isAscending() ? BusinessGroupOrder.nameAsc : BusinessGroupOrder.nameDesc;
-		  } else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
-		  	order = sortingCriteria.isAscending() ? BusinessGroupOrder.creationDateAsc : BusinessGroupOrder.creationDateDesc;
-		  }
-			List<BusinessGroup> groupList = businessGroupService.findBusinessGroups(params, null, 0, sortingCriteria.getMaxEntries(), order);
-			List<PortletEntry<BusinessGroupEntry>> entries = convertBusinessGroupToPortletEntryList(groupList, false);
+				order = sortingCriteria.isAscending() ? BusinessGroupOrder.nameAsc : BusinessGroupOrder.nameDesc;
+			} else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
+				order = sortingCriteria.isAscending() ? BusinessGroupOrder.creationDateAsc : BusinessGroupOrder.creationDateDesc;
+			}
+			
+			List<BusinessGroupLazy> groupList = businessGroupService.findBusinessGroups(getIdentity(), sortingCriteria.getMaxEntries(), order);
+			List<PortletEntry<BusinessGroupEntry>> entries = convertShortBusinessGroupToPortletEntryList(groupList, false);
 			groupListModel.setObjects(entries);
 			tableCtr.modelChanged();
 		} else {
@@ -232,9 +245,8 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	 */
 	protected PortletToolSortingControllerImpl<BusinessGroupEntry> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
-			List<BusinessGroup> groupList = businessGroupService.findBusinessGroups(params, null, 0, -1);
-			List<PortletEntry<BusinessGroupEntry>> portletEntryList = convertBusinessGroupToPortletEntryList(groupList, true);
+			List<BusinessGroupLazy> groupList = businessGroupService.findBusinessGroups(getIdentity(), -1);
+			List<PortletEntry<BusinessGroupEntry>> portletEntryList = convertShortBusinessGroupToPortletEntryList(groupList, true);
 			GroupsManualSortingTableDataModel tableDataModel = new GroupsManualSortingTableDataModel(portletEntryList);
 			List<PortletEntry<BusinessGroupEntry>> sortedItems = getPersistentManuallySortedItems();
 			
@@ -251,19 +263,20 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
    * @param ureq
    * @return
    */
-  private List<PortletEntry<BusinessGroupEntry>> getPersistentManuallySortedItems() { 
-  	@SuppressWarnings("unchecked")
+	private List<PortletEntry<BusinessGroupEntry>> getPersistentManuallySortedItems() { 
+		@SuppressWarnings("unchecked")
 		Map<Long, Integer> storedPrefs = (Map<Long, Integer>)guiPreferences.get(Map.class, getPreferenceKey(SORTED_ITEMS_PREF));
   	
-  	List<BusinessGroup> groups;
-  	if(storedPrefs != null) {
-  		SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
-  		params.setGroupKeys(storedPrefs.keySet());
-  		groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-  	} else {
-  		groups = new ArrayList<BusinessGroup>();
-  	}
-  	List<PortletEntry<BusinessGroupEntry>> portletEntryList = convertBusinessGroupToPortletEntryList(groups, false);
+		List<PortletEntry<BusinessGroupEntry>> portletEntryList;
+		if(storedPrefs != null) {
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
+			params.setGroupKeys(storedPrefs.keySet());
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+			portletEntryList = convertBusinessGroupToPortletEntryList(groups, false);
+		} else {
+			List<BusinessGroupLazy> groups = new ArrayList<BusinessGroupLazy>();
+			portletEntryList = convertShortBusinessGroupToPortletEntryList(groups, false);
+		}
 		return getPersistentManuallySortedItems(portletEntryList);
 	}
   
@@ -372,6 +385,11 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	  	private Long key;
 	  	
 	  	public GroupPortletEntry(BusinessGroup group) {
+	  		value = new BusinessGroupEntry(group);
+	  		key = group.getKey();
+	  	}
+	  	
+	  	public GroupPortletEntry(BusinessGroupLazy group) {
 	  		value = new BusinessGroupEntry(group);
 	  		key = group.getKey();
 	  	}

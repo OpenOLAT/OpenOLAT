@@ -93,7 +93,11 @@
 		<class>org.olat.core.commons.taskExecutor.model.PersistentTask</class>
 		<class>org.olat.group.model.BusinessGroupParticipantViewImpl</class>
 		<class>org.olat.group.model.BusinessGroupOwnerViewImpl</class>
+		<class>org.olat.group.model.BusinessGroupLazyImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryLifecycle</class>
+		<class>org.olat.repository.model.ParticipantRepositoryEntryShort</class>
+		<class>org.olat.repository.model.TutorRepositoryEntryShort</class>
+		<class>org.olat.repository.model.RepositoryEntryLightImpl</class>
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
 		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>

@@ -254,6 +254,8 @@ public interface BusinessGroupService {
 	 */
 	public List<BusinessGroup> findBusinessGroupsAttendedBy(Identity identity, OLATResource resource);
 	
+	public List<BusinessGroupLazy> findBusinessGroups(Identity identity, int maxResults, BusinessGroupOrder... order);
+	
 	/**
 	 * Find all business-groups where the identity is on the waiting-list.
 	 * @param identity

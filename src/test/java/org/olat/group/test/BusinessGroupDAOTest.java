@@ -37,11 +37,13 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLazy;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
@@ -1070,6 +1072,27 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertFalse(groups.isEmpty());
 		Assert.assertTrue(contains(groups, headlessGroup));
 		Assert.assertFalse(contains(groups, headedGroup));
+	}
+	
+	@Test
+	public void findBusinessGroups_my() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", 0, 5, true, false, true, false, false);
+		dbInstance.commitAndCloseSession();
+
+		securityManager.addIdentityToSecurityGroup(id, group2.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+
+		//check
+		List<BusinessGroupLazy> myLazyGroups = businessGroupDao.findBusinessGroup(id, 0);
+		Assert.assertNotNull(myLazyGroups);
+		Assert.assertEquals(2, myLazyGroups.size());
+		List<Long> originalKeys = PersistenceHelper.toKeys(myLazyGroups);
+		Assert.assertTrue(originalKeys.contains(group1.getKey()));
+		Assert.assertTrue(originalKeys.contains(group2.getKey()));
+		Assert.assertFalse(originalKeys.contains(group3.getKey()));
 	}
 	
 	@Test

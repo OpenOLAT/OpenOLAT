@@ -542,7 +542,57 @@ drop view o_re_strict_participant_v;
 drop view o_re_strict_tutor_v;
 drop view o_re_strict_member_v;
 
+-- performance on login with large instance
 
+create or replace view o_re_participant_v as
+select
+   re.repositoryentry_id as re_id,
+   re_member.identity_id as member_id
+   from o_repositoryentry re
+   inner join o_bs_membership re_member on (re_member.secgroup_id = re.fk_participantgroup)
+union select
+   re.repositoryentry_id as re_id,
+   bg_member.identity_id as member_id
+   from o_repositoryentry re
+   inner join o_gp_business_to_resource bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
+   inner join o_gp_business bgroup on (bgroup.group_id = bgroup_rel.fk_group)
+   inner join o_bs_membership bg_member on (bg_member.secgroup_id = bgroup.fk_partipiciantgroup)
+;
 
+create or replace view o_re_tutor_v as
+select
+   re.repositoryentry_id as re_id,
+   re_member.identity_id as member_id
+   from o_repositoryentry re
+   inner join o_bs_membership re_member on (re_member.secgroup_id = re.fk_tutorgroup)
+union select
+   re.repositoryentry_id as re_id,
+   bg_member.identity_id as member_id
+   from o_repositoryentry re
+   inner join o_gp_business_to_resource bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
+   inner join o_gp_business bgroup on (bgroup.group_id = bgroup_rel.fk_group)
+   inner join o_bs_membership bg_member on (bg_member.secgroup_id = bgroup.fk_ownergroup)
+;
+
+create or replace view o_gp_member_v as
+   select
+      gp.group_id as bg_id,
+      gp.groupname as bg_name,
+      gp.creationdate as bg_creationdate,
+      gp.managed_flags as bg_managed_flags,
+      gp.descr as bg_desc,
+      membership.identity_id as member_id
+   from o_bs_membership membership
+   inner join o_gp_business gp on (membership.secgroup_id = gp.fk_ownergroup) 
+   union select
+      gp.group_id as bg_id,
+      gp.groupname as bg_name,
+      gp.creationdate as bg_creationdate,
+      gp.managed_flags as bg_managed_flags,
+      gp.descr as bg_desc,
+      membership.identity_id as member_id
+   from o_bs_membership membership
+   inner join o_gp_business gp on (membership.secgroup_id = gp.fk_partipiciantgroup)
+;
 
 

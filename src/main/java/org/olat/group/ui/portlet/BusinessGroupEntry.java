@@ -22,6 +22,7 @@ package org.olat.group.ui.portlet;
 import java.util.Date;
 
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupShort;
 
 /**
  * Short version of group for the portlet
@@ -43,6 +44,11 @@ class BusinessGroupEntry {
 		this.creationDate = group.getCreationDate();
 	}
 	
+	public BusinessGroupEntry(BusinessGroupShort group) {
+		this.name = group.getName() == null ? "???" : group.getName();
+		this.creationDate = null;//group.getCreationDate();
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -54,8 +60,6 @@ class BusinessGroupEntry {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
-
 	
 	public Date getCreationDate() {
 		return creationDate;

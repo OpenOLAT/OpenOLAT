@@ -461,6 +461,53 @@ drop view o_re_strict_participant_v;
 drop view o_re_strict_tutor_v;
 drop view o_re_strict_member_v;
 
+create or replace view o_re_participant_v as
+select
+   re1.repositoryentry_id as re1_id,
+   re2.repositoryentry_id as re2_id,
+   case when re1.repositoryentry_id is null then re2.repositoryentry_id else re1.repositoryentry_id end as re_id,
+   bs_member.identity_id as member_id
+  from o_bs_membership as bs_member
+  left join o_gp_business as bgroup on (bs_member.secgroup_id = bgroup.fk_partipiciantgroup)
+  left join o_gp_business_to_resource as bgroup_rel on (bgroup.group_id = bgroup_rel.fk_group)
+  left join o_repositoryentry as re1 on (bs_member.secgroup_id = re1.fk_participantgroup)
+  left join o_repositoryentry as re2 on (re2.fk_olatresource = bgroup_rel.fk_resource)
+  where re1.repositoryentry_id is not null or re2.repositoryentry_id is not null
+;
 
+create or replace view o_re_tutor_v as
+select
+   re1.repositoryentry_id as re1_id,
+   re2.repositoryentry_id as re2_id,
+   case when re1.repositoryentry_id is null then re2.repositoryentry_id else re1.repositoryentry_id end as re_id,
+   bs_member.identity_id as member_id
+  from o_bs_membership as bs_member
+  left join o_gp_business as bgroup on (bs_member.secgroup_id = bgroup.fk_ownergroup)
+  left join o_gp_business_to_resource as bgroup_rel on (bgroup.group_id = bgroup_rel.fk_group)
+  left join o_repositoryentry as re1 on (bs_member.secgroup_id = re1.fk_tutorgroup)
+  left join o_repositoryentry as re2 on (re2.fk_olatresource = bgroup_rel.fk_resource)
+  where re1.repositoryentry_id is not null or re2.repositoryentry_id is not null
+;
+
+create or replace view o_gp_member_v as
+   select
+      gp.group_id as bg_id,
+      gp.groupname as bg_name,
+      gp.creationdate as bg_creationdate,
+      gp.managed_flags as bg_managed_flags,
+      gp.descr as bg_desc,
+      membership.identity_id as member_id
+   from o_bs_membership membership
+   inner join o_gp_business gp on (membership.secgroup_id = gp.fk_ownergroup) 
+   union select
+      gp.group_id as bg_id,
+      gp.groupname as bg_name,
+      gp.creationdate as bg_creationdate,
+      gp.managed_flags as bg_managed_flags,
+      gp.descr as bg_desc,
+      membership.identity_id as member_id
+   from o_bs_membership membership
+   inner join o_gp_business gp on (membership.secgroup_id = gp.fk_partipiciantgroup)
+;
 
 

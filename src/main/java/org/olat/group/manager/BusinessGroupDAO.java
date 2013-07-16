@@ -44,6 +44,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.BusinessGroupLazy;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
@@ -88,7 +89,7 @@ public class BusinessGroupDAO {
 				showOwners, showParticipants, showWaitingList);
 	}
 		
-		public BusinessGroup createAndPersist(Identity creator, String name, String description,
+	public BusinessGroup createAndPersist(Identity creator, String name, String description,
 				String externalId, String managedFlags,
 				Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 				boolean showOwners, boolean showParticipants, boolean showWaitingList) {
@@ -373,6 +374,31 @@ public class BusinessGroupDAO {
 
 		if(res.isEmpty()) return null;
 		return res.get(0);
+	}
+	
+	public List<BusinessGroupLazy> findBusinessGroup(Identity identity, int maxResults, BusinessGroupOrder... ordering) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select gp from lazybusinessgroup gp where gp.memberId=:identityKey)");
+
+		if(ordering != null && ordering.length > 0) {
+			sb.append(" order by ");
+			for(BusinessGroupOrder o:ordering) {
+				switch(o) {
+					case nameAsc: sb.append("gp.name");break;
+					case nameDesc: sb.append("gp.name desc");break;
+					case creationDateAsc: sb.append("gp.creationDate");break;
+					case creationDateDesc: sb.append("gp.creationDate desc");break;
+				}
+			}
+			//sb.append(" gp.key ");
+		}
+
+		List<BusinessGroupLazy> res = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroupLazy.class)
+				.setParameter("identityKey", identity.getKey())
+				.setMaxResults(maxResults)
+				.getResultList();
+		return res;
 	}
 	
 	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity, OLATResource resource) {

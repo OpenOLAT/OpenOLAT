@@ -30,7 +30,7 @@ import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.gui.control.generic.portal.PortletToolController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.repository.RepositoryEntryShort;
+import org.olat.repository.RepositoryEntryLight;
 
 /**
  * Description:<br>
@@ -122,7 +122,7 @@ public class RepositoryPortlet extends AbstractPortlet {
 		}
 	}
 	
-	public PortletToolController<RepositoryEntryShort> getTools(UserRequest ureq, WindowControl wControl) {
+	public PortletToolController<RepositoryEntryLight> getTools(UserRequest ureq, WindowControl wControl) {
 		//portlet was not yet visible
 		if ( runCtr == null ) {
 			boolean studentView = CONFIG_KEY_ROLE_STUDENT.equals(getConfiguration().get(CONFIG_KEY_ROLE));
