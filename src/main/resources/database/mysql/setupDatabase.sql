@@ -1379,6 +1379,27 @@ create or replace view o_bs_gp_membership_v as (
    where (owned_gp.group_id is not null or participant_gp.group_id is not null or waiting_gp.group_id is not null)
 );
 
+create or replace view o_gp_member_v as
+   select
+      gp.group_id as bg_id,
+      gp.groupname as bg_name,
+      gp.creationdate as bg_creationdate,
+      gp.managed_flags as bg_managed_flags,
+      gp.descr as bg_desc,
+      membership.identity_id as member_id
+   from o_bs_membership membership
+   inner join o_gp_business gp on (membership.secgroup_id = gp.fk_ownergroup) 
+   union select
+      gp.group_id as bg_id,
+      gp.groupname as bg_name,
+      gp.creationdate as bg_creationdate,
+      gp.managed_flags as bg_managed_flags,
+      gp.descr as bg_desc,
+      membership.identity_id as member_id
+   from o_bs_membership membership
+   inner join o_gp_business gp on (membership.secgroup_id = gp.fk_partipiciantgroup)
+;
+
 create or replace view o_gp_business_v  as (
    select
       gp.group_id as group_id,

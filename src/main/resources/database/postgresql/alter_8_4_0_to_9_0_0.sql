@@ -632,14 +632,6 @@ union select
 create or replace view o_gp_member_v as
    select
       gp.group_id as bg_id,
-      membership.identity_id as member_id
-   from o_bs_membership as membership
-   inner join o_gp_business as gp on (membership.secgroup_id = gp.fk_ownergroup or membership.secgroup_id = gp.fk_partipiciantgroup)
-;
-
-create or replace view o_gp_member_v as
-   select
-      gp.group_id as bg_id,
       gp.groupname as bg_name,
       gp.creationdate as bg_creationdate,
       gp.managed_flags as bg_managed_flags,
