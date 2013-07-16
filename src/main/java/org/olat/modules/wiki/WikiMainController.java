@@ -359,6 +359,9 @@ public class WikiMainController extends BasicController implements CloneableCont
 			}
 		} else {
 			String path = BusinessControlFactory.getInstance().getPath(ce);
+			if(path.startsWith("page=")) {
+				path = path.substring(5, path.length());
+			}
 			Wiki wiki = getWiki();
 			String activatePageId = WikiManager.generatePageId(FilterUtil.normalizeWikiLink(path));
 			if(wiki.pageExists(activatePageId)) {
