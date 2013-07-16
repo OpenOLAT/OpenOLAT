@@ -32,6 +32,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.test.ArquillianDeployments;
@@ -47,6 +48,7 @@ import com.thoughtworks.selenium.DefaultSelenium;
  */
 @XssSuite
 @RunWith(Arquillian.class)
+@Ignore
 public class FunctionalXssTest {
 
 	@Deployment(testable = false)

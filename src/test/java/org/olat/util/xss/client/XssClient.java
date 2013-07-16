@@ -21,6 +21,7 @@
 package org.olat.util.xss.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -32,6 +33,10 @@ import java.net.InetSocketAddress;
 
 import org.apache.xmlrpc.webserver.XmlRpcServlet;
 
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
 import org.olat.util.xss.client.HttpUtil;
 import org.olat.util.xss.client.HttpUtil.HttpMethod;
 
@@ -64,9 +69,9 @@ public class XssClient extends XmlRpcServlet {
 	final static String DEFAULT_CLOSING_JSON_PATTERN = "',xssAlert: ${\"xssJSonInjectionCode\"};{";
 	final static String DEFAULT_COMMENT_OUT_PATTERN = "${\"xssInlineInjectionCode\"}<!--";
 	final static String DEFAULT_SCRIPTIFY_PATTERN = "${\"xssInlineInjectionCode\"}<javascript>";
-	final static String DEFAULT_FRAMEIFY_PATTERN = "${\"xssInlineInjectionCode\"}<frame src=\"javascript:void(){window.document.body}\" />";
-	final static String DEFAULT_IFRAMEIFY_PATTERN = "${\"xssInlineInjectionCode\"}<iframe src=\"javascript:void(){window.document.body}\" />";
-	final static String DEFAULT_TOPLEVEL_FRAME = "<iframe style=\"z-index: -1;\" src=\"javascript:void(){${\"xssSnippedInjectionCode\"}}\">";
+	final static String DEFAULT_FRAMIFY_PATTERN = "${\"xssInlineInjectionCode\"}<frame src=\"javascript:void(){window.document.body}\" />";
+	final static String DEFAULT_IFRAMIFY_PATTERN = "${\"xssInlineInjectionCode\"}<iframe src=\"javascript:void(){window.document.body}\" />";
+	final static String DEFAULT_TOPLEVEL_FRAME_PATTERN = "<iframe style=\"z-index: -1;\" src=\"javascript:void(){${\"xssSnippedInjectionCode\"}}\">";
 	final static String DEFAULT_B_MAIN_ONLY_PATTERN = "<div id=\"b_main\" class=\"javascript:void(){${\"xssSnippedInjectionCode\"}}\"/>";
 	
 	enum XssStrategy{
@@ -99,7 +104,6 @@ public class XssClient extends XmlRpcServlet {
 	private byte[] jsessionId;
 	
 	private Socket connection;
-	private OutputStream out;
 	
 	private int fieldLengthLimitation;
 	
@@ -110,6 +114,12 @@ public class XssClient extends XmlRpcServlet {
 	
 	private String escapingPattern;
 	private String closingTagsPattern;
+	private String commentOutPattern;
+	private String scriptifyPattern;
+	private String framifyPattern;
+	private String iframeifyPattern;
+	private String toplevelFramePattern;
+	private String bMainOnlyPattern;
 	
 	private List<Script> scripts;
 	
@@ -124,7 +134,6 @@ public class XssClient extends XmlRpcServlet {
 		this.scriptEncoding = DEFAULT_SCRIPT_ENCODING;
 		
 		this.connection = new Socket();
-		this.out = null;
 		
 		this.fieldLengthLimitation = DEFAULT_FIELD_LENGTH_LIMITATION;
 		
@@ -135,6 +144,12 @@ public class XssClient extends XmlRpcServlet {
 		
 		this.escapingPattern = DEFAULT_ESCAPING_PATTERN;
 		this.closingTagsPattern = DEFAULT_CLOSING_TAGS_PATTERN;
+		this.commentOutPattern = DEFAULT_COMMENT_OUT_PATTERN;
+		this.scriptifyPattern = DEFAULT_SCRIPTIFY_PATTERN;
+		this.framifyPattern = DEFAULT_FRAMIFY_PATTERN;
+		this.iframeifyPattern = DEFAULT_IFRAMIFY_PATTERN;
+		this.toplevelFramePattern = DEFAULT_TOPLEVEL_FRAME_PATTERN;
+		this.bMainOnlyPattern = DEFAULT_B_MAIN_ONLY_PATTERN;
 		
 		this.scripts = new ArrayList<Script>();
 		
@@ -159,7 +174,6 @@ public class XssClient extends XmlRpcServlet {
 	
 	public void connect(String host, int port) throws IOException {
 		connection.connect(new InetSocketAddress(host, port));
-		out = connection.getOutputStream();
 	}
 
 	public void setHttpHeader(byte[] buffer) {
@@ -305,6 +319,7 @@ public class XssClient extends XmlRpcServlet {
 			break;
 		}
 		
+		OutputStream out = connection.getOutputStream();
 		out.write(header);
 	}
 	
@@ -372,14 +387,6 @@ public class XssClient extends XmlRpcServlet {
 		this.connection = connection;
 	}
 
-	public OutputStream getOut() {
-		return out;
-	}
-
-	public void setOut(OutputStream out) {
-		this.out = out;
-	}
-
 	public int getFieldLengthLimitation() {
 		return fieldLengthLimitation;
 	}
@@ -436,6 +443,54 @@ public class XssClient extends XmlRpcServlet {
 		this.closingTagsPattern = closingTagsPattern;
 	}
 
+	public String getCommentOutPattern() {
+		return commentOutPattern;
+	}
+
+	public void setCommentOutPattern(String commentOutPattern) {
+		this.commentOutPattern = commentOutPattern;
+	}
+
+	public String getScriptifyPattern() {
+		return scriptifyPattern;
+	}
+
+	public void setScriptifyPattern(String scriptifyPattern) {
+		this.scriptifyPattern = scriptifyPattern;
+	}
+
+	public String getFramifyPattern() {
+		return framifyPattern;
+	}
+
+	public void setFramifyPattern(String framifyPattern) {
+		this.framifyPattern = framifyPattern;
+	}
+
+	public String getIframeifyPattern() {
+		return iframeifyPattern;
+	}
+
+	public void setIframeifyPattern(String iframeifyPattern) {
+		this.iframeifyPattern = iframeifyPattern;
+	}
+
+	public String getToplevelFramePattern() {
+		return toplevelFramePattern;
+	}
+
+	public void setToplevelFramePattern(String toplevelFramePattern) {
+		this.toplevelFramePattern = toplevelFramePattern;
+	}
+
+	public String getbMainOnlyPattern() {
+		return bMainOnlyPattern;
+	}
+
+	public void setbMainOnlyPattern(String bMainOnlyPattern) {
+		this.bMainOnlyPattern = bMainOnlyPattern;
+	}
+
 	public List<Script> getScripts() {
 		return scripts;
 	}
@@ -445,13 +500,67 @@ public class XssClient extends XmlRpcServlet {
 	}
 	
 	public abstract class Script{
+		private HashMap<String,List<String>> tags;
 		private List<String> variants;
 		
 		public Script(){
+			tags = new HashMap<String,List<String>>();
+			
+			try {
+				loadTags();
+			} catch (JDOMException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			variants = new ArrayList<String>();
 		}
 		
 		public abstract void load();
+		
+		public List<String> readAttributes(List<?> attributesNode){
+			List<String> attributes = new ArrayList<String>();
+			
+			for(Object current: attributesNode){
+				if(current instanceof Element){
+					Element currentAttribute = (Element) current;
+					
+					attributes.add(currentAttribute.getAttributeValue("name"));
+				}
+			}
+			
+			return(attributes);
+		}
+		
+		public void loadTags() throws JDOMException, IOException{
+			SAXBuilder sax = new SAXBuilder();
+			Document tagDocument = sax.build(XssClient.class.getResourceAsStream("xssClient_tags.xml"));
+			
+			Element rootNode = tagDocument.getRootElement();
+			
+			List<?> tagsNode = rootNode.getChildren();
+			
+			for(Object current: tagsNode){
+				if(current instanceof Element){
+					Element currentNode = (Element) current;
+					
+					tags.put(currentNode.getAttributeValue("name"),
+							readAttributes(currentNode.getChildren()));
+				}
+			}
+		}
+
+
+		public HashMap<String, List<String>> getTags() {
+			return tags;
+		}
+
+		public void setTags(HashMap<String, List<String>> tags) {
+			this.tags = tags;
+		}
 
 		public List<String> getVariants() {
 			return variants;

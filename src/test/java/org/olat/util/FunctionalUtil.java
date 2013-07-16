@@ -883,7 +883,9 @@ public class FunctionalUtil {
 		/* fill in login form */
 		browser.type("id=o_fiooolat_login_name", username);
 		browser.type("id=o_fiooolat_login_pass", password);
-	    browser.click("id=o_fiooolat_login_button");
+		
+		waitForPageToLoadElement(browser, "xpath=//button[@id='o_fiooolat_login_button']");
+	    browser.click("xpath=//button[@id='o_fiooolat_login_button']");
 	    waitForPageToLoad(browser, DEFAULT_WAIT_LIMIT);
 	    
 	    if(closeDialogs){

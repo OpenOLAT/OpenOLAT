@@ -430,7 +430,7 @@ public class FunctionalGroupTest {
 		functionalUtil.logout(student0);
 	}
 	
-	
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkInvitation(@Student1 @Drone DefaultSelenium student0,

@@ -1,38 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <list>
 	<!-- document structure tags -->
-	<tab name="html"/>
+	<tag name="html"/>
 	<tag name="head"/>
 	<tag name="meta"/>
-	<tag name ="body"/>
+	<tag name="body"/>
 	
 	<!-- formating tags -->
-	<tag name ="h1"/>
-	<tag name ="h2"/>
-	<tag name ="h3"/>
-	<tag name ="h4"/>
-	<tag name ="h5"/>
-	<tag name ="h6"/>
-	<tag name ="p"/>
-	<tag name ="table"/>
-	<tag name ="thead"/>
-	<tag name ="tr"/>
-	<tag name ="th"/>
-	<tag name ="tbody"/>
-	<tag name ="td"/>
-	<tag name ="div"/>
+	<tag name="h1"/>
+	<tag name="h2"/>
+	<tag name="h3"/>
+	<tag name="h4"/>
+	<tag name="h5"/>
+	<tag name="h6"/>
+	<tag name="p"/>
+	<tag name="table">
+		<attribute name="cellpadding"/>
+		<attribute name="cellspacing"/>
+	</tag>
+	<tag name="thead"/>
+	<tag name="tr"/>
+	<tag name="th"/>
+	<tag name="tbody"/>
+	<tag name="td">
+		<attribute name="align"/>
+		<attribute name="valing"/>
+		<attribute name="colspan"/>
+		<attribute name="rowspan"/>
+	</tag>
+	<tag name="div"/>
+	<tag name="a">
+		<attribute name="href"/>
+	</tag>
 	
 	<!-- embedding external -->
-	<tag name ="img"/>
-	<tag name ="script"/>
-	<tag name ="object"/>
-	<tag name ="embed"/>
-	<tag name ="audio"/>
-	<tag name ="video"/>
+	<tag name="img">
+		<attribute name="src"/>
+	</tag>
+	<tag name="script"/>
+	<tag name="object"/>
+	<tag name="embed"/>
+	<tag name="audio"/>
+	<tag name="video"/>
 	
 	<!-- styling -->
-	<tag name ="i"/>
-	<tag name ="b"/>
-	<tag name ="u"/>
-	<tag name ="span"/>
+	<tag name="i"/>
+	<tag name="b"/>
+	<tag name="u"/>
+	<tag name="span"/>
 </list>
