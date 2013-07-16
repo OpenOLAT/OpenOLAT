@@ -117,11 +117,14 @@ public class DatabaseWebService {
 
 				for(ObjectName name:names) {
 					String cName = name.getCanonicalName();
-					if(cName.startsWith("com.mchange.v2.c3p0:type=PooledDataSource")) {
+					System.out.println("cName: " + cName);
+					if(cName.startsWith("com.mchange.v2.c3p0:") && cName.indexOf("type=PooledDataSource") > 0) {
 						MBeanInfo info = mBeanServer.getMBeanInfo(name);
 						MBeanAttributeInfo[] attrs = info.getAttributes();
+
 						for(MBeanAttributeInfo attr:attrs) {
 							String attrName = attr.getName();
+							System.out.println(attrName);
 							if("numBusyConnectionsAllUsers".equals(attrName)) {
 								Number obj = (Number)mBeanServer.getAttribute(name, "numBusyConnectionsAllUsers");
 								activeConnectionCount += obj.intValue();
