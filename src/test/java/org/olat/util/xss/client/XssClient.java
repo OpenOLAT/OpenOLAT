@@ -20,11 +20,15 @@
 
 package org.olat.util.xss.client;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.net.InetSocketAddress;
 
 import org.apache.xmlrpc.webserver.XmlRpcServlet;
 
@@ -39,7 +43,7 @@ import org.olat.util.xss.client.HttpUtil.HttpMethod;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-public class XssClient extends XmlRpcServlet implements HttpClient {
+public class XssClient extends XmlRpcServlet {
 	
 	final static String DEFAULT_ENCODING = "UTF-8";
 	
@@ -48,13 +52,33 @@ public class XssClient extends XmlRpcServlet implements HttpClient {
 	final static String DEFAULT_BODY_ENCODING = "UTF-16";
 	final static String DEFAULT_SCRIPT_ENCODING = "UTF-7";
 	
+	final static int DEFAULT_FIELD_LENGTH_LIMITATION = 255;
+	
 	final static int DEFAULT_THREAD_COUNT = 100;
 	final static int DEFAULT_FAKE_USER_COUNT = 100;
 	final static int DEFAULT_CONCURRENT_USER_COUNT = 100;
+	final static int DEFAULT_DISTRIBUTED_CHUNK_SIZE = 65535;
+	
+	final static String DEFAULT_ESCAPING_PATTERN = "\\\\\\//";
+	final static String DEFAULT_CLOSING_TAGS_PATTERN = "</body></html>${\"xssCommonInjectionCode\"}";
+	final static String DEFAULT_CLOSING_JSON_PATTERN = "',xssAlert: ${\"xssJSonInjectionCode\"};{";
+	final static String DEFAULT_COMMENT_OUT_PATTERN = "${\"xssInlineInjectionCode\"}<!--";
+	final static String DEFAULT_SCRIPTIFY_PATTERN = "${\"xssInlineInjectionCode\"}<javascript>";
+	final static String DEFAULT_FRAMEIFY_PATTERN = "${\"xssInlineInjectionCode\"}<frame src=\"javascript:void(){window.document.body}\" />";
+	final static String DEFAULT_IFRAMEIFY_PATTERN = "${\"xssInlineInjectionCode\"}<iframe src=\"javascript:void(){window.document.body}\" />";
+	final static String DEFAULT_TOPLEVEL_FRAME = "<iframe style=\"z-index: -1;\" src=\"javascript:void(){${\"xssSnippedInjectionCode\"}}\">";
+	final static String DEFAULT_B_MAIN_ONLY_PATTERN = "<div id=\"b_main\" class=\"javascript:void(){${\"xssSnippedInjectionCode\"}}\"/>";
 	
 	enum XssStrategy{
 		TRICK_ESCAPING,
 		CLOSE_TAGS,
+		COMMENT_OUT,
+		SCRIPTIFY,
+		FRAMEIFY,
+		IFRAMIFY,
+		TOPLEVEL_FRAME,
+		B_MAIN_ONLY,
+		CLOSE_JSON,
 		MASQUERADE_ENCODING,
 		FAKE_USERS,
 		CONCURRENT_USERS,
@@ -77,11 +101,19 @@ public class XssClient extends XmlRpcServlet implements HttpClient {
 	private Socket connection;
 	private OutputStream out;
 	
+	private int fieldLengthLimitation;
+	
 	private int threadCount;
 	private int fakeUserCount;
 	private int concurrentUserCount;
+	private int distributedChunkSize;
+	
+	private String escapingPattern;
+	private String closingTagsPattern;
 	
 	private List<Script> scripts;
+	
+	private HttpUtil httpUtil;
 	
 	public XssClient(){
 		this.defaultEncoding = DEFAULT_ENCODING;
@@ -94,11 +126,19 @@ public class XssClient extends XmlRpcServlet implements HttpClient {
 		this.connection = new Socket();
 		this.out = null;
 		
+		this.fieldLengthLimitation = DEFAULT_FIELD_LENGTH_LIMITATION;
+		
 		this.threadCount = DEFAULT_THREAD_COUNT;
 		this.fakeUserCount = DEFAULT_FAKE_USER_COUNT;
 		this.concurrentUserCount = DEFAULT_CONCURRENT_USER_COUNT;
+		this.distributedChunkSize = DEFAULT_DISTRIBUTED_CHUNK_SIZE;
+		
+		this.escapingPattern = DEFAULT_ESCAPING_PATTERN;
+		this.closingTagsPattern = DEFAULT_CLOSING_TAGS_PATTERN;
 		
 		this.scripts = new ArrayList<Script>();
+		
+		this.httpUtil = new HttpUtil();
 		
 		reloadScripts();
 	}
@@ -117,51 +157,155 @@ public class XssClient extends XmlRpcServlet implements HttpClient {
 		scripts.add(script);
 	}
 	
-	@Override
-	public void connect(String host, int port) {
-		// TODO Auto-generated method stub
-		
+	public void connect(String host, int port) throws IOException {
+		connection.connect(new InetSocketAddress(host, port));
+		out = connection.getOutputStream();
 	}
 
-	@Override
 	public void setHttpHeader(byte[] buffer) {
 		this.header = buffer;
 	}
-
-	@Override
-	public void httpGet(byte[] data) {
-		// TODO Auto-generated method stub
+	
+	private HashMap<String,String> trickEscaping(HashMap<String,String> parameter, int space){
 		
+		if(parameter == null){
+			return(null);
+		}
+		
+		HashMap<String,String> injectionCode = new HashMap<String,String>();
+		Iterator<String> iter = parameter.keySet().iterator();
+		int iNext = escapingPattern.length();
+		
+		while(iter.hasNext()){
+			String key = iter.next();
+			StringBuffer stringBuffer = new StringBuffer();
+			
+			for(int i = 0;
+					iNext < fieldLengthLimitation &&
+					iNext < distributedChunkSize &&
+					iNext < space;
+					i = iNext){
+				stringBuffer.append(escapingPattern);
+				
+				iNext = i + escapingPattern.length();
+			}
+			
+			injectionCode.put(key, stringBuffer.toString());
+		}
+		
+		return(injectionCode);
 	}
 
-	@Override
-	public void httpPut(byte[] data) {
-		// TODO Auto-generated method stub
-		
-	}
+	private HashMap<String,String> closeTags(HashMap<String,String> parameter, int space){
 
-	@Override
-	public void httpDelete(byte[] data) {
-		// TODO Auto-generated method stub
+		if(parameter == null){
+			return(null);
+		}
 		
-	}
-
-	@Override
-	public void httpPost(byte[] data) {
-		// TODO Auto-generated method stub
+		HashMap<String,String> injectionCode = new HashMap<String,String>();
+		Iterator<String> iter = parameter.keySet().iterator();
+		int iNext = escapingPattern.length();
 		
-	}
-
-	public void attack(String path, HttpMethod method, HashSet<String> parameter, XssStrategy strategy, String snipped){
-		this.attack("localhost", 8080, path, method, parameter, strategy, snipped);
+		while(iter.hasNext()){
+			String key = iter.next();
+			StringBuffer stringBuffer = new StringBuffer();
+			
+			for(int i = 0;
+					iNext < fieldLengthLimitation &&
+					iNext < distributedChunkSize &&
+					iNext < space;
+					i = iNext){
+				stringBuffer.append(closingTagsPattern);
+				
+				iNext = i + closingTagsPattern.length();
+			}
+			
+			injectionCode.put(key, stringBuffer.toString());
+		}
+		
+		return(injectionCode);
 	}
 	
-	private void attack(String host, int port, String path, HttpMethod method, HashSet<String> parameter, XssStrategy strategy, String snipped){
+	private HashMap<String,String> commentOut(HashMap<String,String> parameter){
+		HashMap<String,String> injectionCode = new HashMap<String,String>();
+		
+		//TODO:JK: implement me
+		
+		return(injectionCode);
+		
+	}
+	
+	private HashMap<String,String> scriptify(HashMap<String,String> parameter){
+		HashMap<String,String> injectionCode = new HashMap<String,String>();
+		
+		//TODO:JK: implement me
+		
+		return(injectionCode);
+		
+	}
+	
+	private HashMap<String,String> frameify(HashMap<String,String> parameter){
+		HashMap<String,String> injectionCode = new HashMap<String,String>();
+		
+		//TODO:JK: implement me
+		
+		return(injectionCode);
+		
+	}
+	
+	private HashMap<String,String> b_main_only(HashMap<String,String> parameter){
+		HashMap<String,String> injectionCode = new HashMap<String,String>();
+		
+		//TODO:JK: implement me
+		
+		return(injectionCode);
+		
+	}
+	
+	private HashMap<String,String> applyStrategy(XssStrategy[] strategy, HashMap<String,String> parameter){
+		HashMap<String,String> injectionCode = new HashMap<String,String>();
+		
+		//TODO:JK: implement me
+		
+		return(injectionCode);
+	}
+	
+	public void attack(String path,
+			HttpMethod method, HashMap<String,String> parameter, String jsessionId,
+			XssStrategy[] strategy, String snipped, boolean distributed) throws IOException{
+		this.attack("localhost", 8080, path,
+				method, parameter, jsessionId,
+				strategy, snipped, distributed);
+	}
+	
+	private void attack(String host, int port, String path,
+			HttpMethod method, HashMap<String,String> parameter, String jsessionId,
+			XssStrategy[] strategy, String snipped, boolean distributed) throws IOException {
 		connect(host, port);
 		
-		byte[] header = HttpUtil.createHttpHeader(method, parameter, getClientEncoding(), getBodyEncoding());
+		//TODO:JK: implement other methods
+		byte[] header = null;
 		
+		switch(method){
+		case HTTP_GET:
+		{
+			header = httpUtil.createHttpGetHeader(path, host + ":" + port,
+					jsessionId, getClientEncoding());
+		}
+		break;
+		case HTTP_POST:
+		{
+			HashMap<String,String> injectionCode = applyStrategy(strategy, parameter);
+			
+			header = httpUtil.createHttpPostHeader(path, host + ":" + port,
+					jsessionId, getClientEncoding(), getBodyEncoding(), injectionCode);
+		}
+		break;
+		default:
+			break;
+		}
 		
+		out.write(header);
 	}
 	
 	public String getDefaultEncoding() {
@@ -236,6 +380,14 @@ public class XssClient extends XmlRpcServlet implements HttpClient {
 		this.out = out;
 	}
 
+	public int getFieldLengthLimitation() {
+		return fieldLengthLimitation;
+	}
+
+	public void setFieldLengthLimitation(int fieldLengthLimitation) {
+		this.fieldLengthLimitation = fieldLengthLimitation;
+	}
+
 	public int getThreadCount() {
 		return threadCount;
 	}
@@ -258,6 +410,30 @@ public class XssClient extends XmlRpcServlet implements HttpClient {
 
 	public void setConcurrentUserCount(int concurrentUserCount) {
 		this.concurrentUserCount = concurrentUserCount;
+	}
+
+	public int getDistributedChunkSize() {
+		return distributedChunkSize;
+	}
+
+	public void setDistributedChunkSize(int distributedChunkSize) {
+		this.distributedChunkSize = distributedChunkSize;
+	}
+
+	public String getEscapingPattern() {
+		return escapingPattern;
+	}
+
+	public void setEscapingPattern(String escapingPattern) {
+		this.escapingPattern = escapingPattern;
+	}
+
+	public String getClosingTagsPattern() {
+		return closingTagsPattern;
+	}
+
+	public void setClosingTagsPattern(String closingTagsPattern) {
+		this.closingTagsPattern = closingTagsPattern;
 	}
 
 	public List<Script> getScripts() {

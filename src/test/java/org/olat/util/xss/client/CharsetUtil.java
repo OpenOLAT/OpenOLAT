@@ -20,10 +20,23 @@
 
 package org.olat.util.xss.client;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+
 /**
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class CharsetUtil {
-
+	public static byte[] encode(String str, String charsetName){
+		Charset charset = Charset.forName(charsetName);
+		
+		return(charset.encode(str).array());
+	}
+	
+	public static String decode(byte[] str, String charsetName){
+		Charset charset = Charset.forName(charsetName);
+		
+		return(charset.decode(ByteBuffer.wrap(str)).toString());
+	}
 }
