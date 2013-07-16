@@ -519,7 +519,8 @@ public class MailManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		String fetchOption = (fetchRecipients != null && fetchRecipients.booleanValue()) ? "fetch" : "";
 		sb.append("select mail from ").append(DBMailLightImpl.class.getName()).append(" mail")
-			.append(" inner join ").append(fetchOption).append(" mail.recipients recipient")
+			.append(" inner join fetch ").append(" mail.from fromRecipient")
+		  .append(" inner join ").append(fetchOption).append(" mail.recipients recipient")
 			.append(" inner join ").append(fetchOption).append(" recipient.recipient recipientIdentity")
 			.append(" where recipientIdentity.key=:recipientKey and recipient.deleted=false");
 		if(unreadOnly != null && unreadOnly.booleanValue()) {

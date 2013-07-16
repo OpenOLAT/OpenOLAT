@@ -450,6 +450,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+				.append(" left join fetch statement.resource resource")
 			  .append(" where statement.identity.key=:identityKey");
 
 			return dbInstance.getCurrentEntityManager()
