@@ -89,6 +89,20 @@ public class ExamPoolManagerProxy extends ExamPoolManager {
 		connection.start();
 		log.info("springInit: JMS connection started with connectionFactory=" + connectionFactory);
 	}
+	
+	public void springStop() throws JMSException {
+		closeQueue();
+	}
+	
+	private void closeQueue() {
+		if(connection != null) {
+			try {
+				connection.close();
+			} catch (JMSException e) {
+				log.error("", e);
+			}
+		}
+	}
 
 	/**
 	 * Uses Request/reply mechanism for synchronous operation.

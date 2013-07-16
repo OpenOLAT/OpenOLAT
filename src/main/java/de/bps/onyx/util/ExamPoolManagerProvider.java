@@ -214,7 +214,6 @@ public class ExamPoolManagerProvider implements MessageListener {
 		if(consumer != null) {
 			try {
 				consumer.close();
-				System.out.println("Close consumer exam pool");
 			} catch (JMSException e) {
 				log.error("", e);
 			}
@@ -222,7 +221,6 @@ public class ExamPoolManagerProvider implements MessageListener {
 		if(connection != null) {
 			try {
 				connection.close();
-				System.out.println("Close connection exam pool");
 			} catch (JMSException e) {
 				log.error("", e);
 			}

@@ -26,7 +26,7 @@
 	<!-- SEARCH PROXY SIDE CONFIGURATION -->
 	<!-- =============================== -->
 	
-	<bean id="examControl.master.false" class="de.bps.onyx.util.ExamPoolManagerProxy" init-method="springInit" lazy-init="true">
+	<bean id="examControl.master.false" class="de.bps.onyx.util.ExamPoolManagerProxy" init-method="springInit" destroy-method="springStop" lazy-init="true">
 		<property name="connectionFactory" ref="examControlConnectionFactory"/>
 		<property name="searchQueue" ref="examControlQueue"/>
 		<property name="receiveTimeout" value="45000"/>
