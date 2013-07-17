@@ -393,12 +393,13 @@ public class BusinessGroupDAO {
 			//sb.append(" gp.key ");
 		}
 
-		List<BusinessGroupLazy> res = dbInstance.getCurrentEntityManager()
+		TypedQuery<BusinessGroupLazy> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroupLazy.class)
-				.setParameter("identityKey", identity.getKey())
-				.setMaxResults(maxResults)
-				.getResultList();
-		return res;
+				.setParameter("identityKey", identity.getKey());
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
 	}
 	
 	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity, OLATResource resource) {
