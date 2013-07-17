@@ -26,6 +26,7 @@
 package org.olat.catalog;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -142,6 +143,10 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return
 	 */
 	public List<CatalogEntry> getChildrenOf(CatalogEntry ce, int firstResult, int maxResults, CatalogEntry.OrderBy orderBy, boolean asc) {
+		if(ce == null) {// nothing have no children
+			return Collections.emptyList();
+		}
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
 		  .append(" inner join fetch cei.ownerGroup as ownerGroup")

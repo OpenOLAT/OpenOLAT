@@ -128,6 +128,8 @@ public class CatalogTreeModel extends GenericTreeModel {
 				} else {
 					addMissingNodes(entry);
 				}
+			} else {//it's the root
+				node = buildNode(entry);
 			}
 		}
 		return node;

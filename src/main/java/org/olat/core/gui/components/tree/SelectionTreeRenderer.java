@@ -144,7 +144,7 @@ public class SelectionTreeRenderer implements ComponentRenderer {
 		}
 		else target.append(internalTranslator.translate("selectiontree.noentries"));
 		target.append("<br /><br />");
-		if (atLeastOneIsAccessible) {
+		if (atLeastOneIsAccessible && tree.getFormButtonKey() != null) {
 			target.append("<button type=\"submit\" class=\"b_button o_sel_submit_selection\" name=\"" + Form.SUBMIT_IDENTIFICATION + "\" value=\"");
 			target.append(StringEscapeUtils.escapeHtml(translator.translate(tree.getFormButtonKey())));
 			if (!tree.isAllowEmptySelection()) {
