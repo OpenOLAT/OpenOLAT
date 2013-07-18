@@ -21,6 +21,7 @@ package org.olat.group.ui.main;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +38,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.group.BusinessGroupModule;
 
 /**
  * 
@@ -52,6 +54,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 
 	private TextElement id; // only for admins
 	private TextElement displayName;
+	private TextElement externalId;
 	private TextElement owner;
 	private TextElement description;
 	private TextElement courseTitle;
@@ -69,6 +72,8 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	private String[] roleKeys = {"all", "owner", "attendee", "waiting"};
 	private String[] openKeys = {"all", "yes", "no"};
 	private String[] resourceKeys = {"all", "yes", "no"};
+	
+	private final boolean managedEnable;
 
 	/**
 	 * Generic search form.
@@ -83,6 +88,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		this.showId = showId;
 		this.showRoles = showRoles;
 		this.showAdminTools = showAdminTools;
+		managedEnable = CoreSpringFactory.getImpl(BusinessGroupModule.class).isManagedBusinessGroups();
 		initForm(ureq);
 	}
 	
@@ -103,6 +109,11 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		displayName.setElementCssClass("o_sel_group_search_name_field");
 		displayName.setFocus(true);
 		displayName.setDisplaySize(28);
+		
+		externalId = uifactory.addTextElement("cif_externalid", "cif.externalid", 255, "", leftContainer);
+		externalId.setElementCssClass("o_sel_group_search_externalid_field");
+		externalId.setDisplaySize(28);
+		externalId.setVisible(managedEnable);
 		
 		owner = uifactory.addTextElement("cif_owner", "cif.owner", 255, "", leftContainer);
 		owner.setElementCssClass("o_sel_group_search_owner_field");
@@ -191,6 +202,14 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	public String getName() {
 		return displayName.getValue();
 	}
+	
+	/**
+	 * 
+	 * @return The external ID
+	 */
+	public String getExternalId() {
+		return externalId.getValue();
+	}
 
 	/**
 	 * @return Author field value.
@@ -218,7 +237,8 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	 */
 	public boolean isEmpty() {
 		return displayName.isEmpty() && owner.isEmpty() && description.isEmpty()
-				&& (id != null && id.isEmpty()) && courseTitle.isEmpty();
+				&& (id != null && id.isEmpty()) && courseTitle.isEmpty()
+				&& externalId.isEmpty();
 	}
 	
 	@Override
@@ -267,6 +287,9 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		if(StringHelper.containsNonWhitespace(e.getName())) {
 			displayName.setValue(e.getName());
 		}
+		if(StringHelper.containsNonWhitespace(e.getExternalId())) {
+			externalId.setValue(e.getExternalId());
+		}
 		if(StringHelper.containsNonWhitespace(e.getDescription())) {
 			description.setValue(e.getDescription());
 		}
@@ -311,6 +334,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		SearchEvent e = new SearchEvent();
 		e.setId(getId());
 		e.setName(getName());
+		e.setExternalId(getExternalId());
 		e.setDescription(getDescription());
 		e.setOwnerName(getOwner());
 		e.setCourseTitle(getCourseTitle());

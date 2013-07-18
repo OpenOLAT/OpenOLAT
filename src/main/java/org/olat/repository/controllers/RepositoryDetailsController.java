@@ -75,6 +75,7 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
@@ -198,6 +199,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
+		
 		if (log.isDebug()){
 			log.debug("Constructing ReposityMainController using velocity root " + velocity_root);
 		}
@@ -278,6 +280,17 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		main.contextPut("id", repositoryEntry.getResourceableId());
 		main.contextPut("ores_id", repositoryEntry.getOlatResource().getResourceableId());
 		main.contextPut("softkey", repositoryEntry.getSoftkey());
+		
+		boolean managed = StringHelper.containsNonWhitespace(repositoryEntry.getExternalId())
+				|| StringHelper.containsNonWhitespace(repositoryEntry.getExternalRef())
+				|| repositoryEntry.getManagedFlags().length > 0;
+		
+		if(managed) {
+			main.contextPut("externalId",
+					repositoryEntry.getExternalId() == null ? "" : repositoryEntry.getExternalId());
+			main.contextPut("externalRef",
+					repositoryEntry.getExternalRef() == null ? "" : repositoryEntry.getExternalRef());
+		}
 		
 		//add the list of owners
 		List<IdentityShort> authors = securityManager.getIdentitiesShortOfSecurityGroups(Collections.singletonList(repositoryEntry.getOwnerGroup()), 0, -1);
@@ -360,6 +373,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				setCorrupted(true);
 			}
 		}
+		
+		if(managed) {
+			infopanelVC.contextPut("managedflags", repositoryEntry.getManagedFlagsString());
+		}
+		
 		removeAsListenerAndDispose(detailsForm);
 		detailsForm = handler.createDetailsForm(ureq, getWindowControl(), repositoryEntry.getOlatResource());
 		if (detailsForm != null) { // push handler specific details view

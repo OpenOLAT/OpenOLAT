@@ -65,7 +65,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		BGTableItem wrapped = (BGTableItem)objects.get(row);
+		BGTableItem wrapped = objects.get(row);
 		switch (Cols.values()[col]) {
 			case name:
 				String name = wrapped.getBusinessGroup().getName();
@@ -151,6 +151,8 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 			}
 			case wrapper:
 				return wrapped;
+			case externalId:
+				return wrapped.getBusinessGroupExternalId();
 			default:
 				return "ERROR";
 		}
@@ -222,7 +224,8 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		tutorsCount("table.header.tutorsCount"),
 		waitingListCount("table.header.waitingListCount"),
 		wrapper(""),
-		card("table.header.businesscard");
+		card("table.header.businesscard"),
+		externalId("table.header.externalid");
 		
 		private final String i18n;
 		

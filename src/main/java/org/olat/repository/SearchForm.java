@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -83,6 +84,8 @@ public class SearchForm extends FormBasicController{
 	private TextElement displayName;
 	private TextElement author;
 	private TextElement description;
+	private TextElement externalId;
+	private TextElement externalRef;
 	private SelectionElement typesSelection;
 	private MultipleSelectionElement types;
 	private FormLink searchButton;
@@ -92,6 +95,7 @@ public class SearchForm extends FormBasicController{
 	private boolean withCancel;
 	private boolean isAdmin;
 	private boolean isAdminSearch = false;
+	private final boolean managedEnabled;
 	
 	/**
 	 * Generic search form.
@@ -122,6 +126,7 @@ public class SearchForm extends FormBasicController{
 		super(ureq, wControl);
 		this.withCancel = withCancel;
 		this.isAdmin = isAdmin;
+		managedEnabled = CoreSpringFactory.getImpl(RepositoryModule.class).isManagedRepositoryEntries();
 		initForm(ureq);
 	}
 	public SearchForm(UserRequest ureq, WindowControl wControl, boolean withCancel, boolean isAdmin, String[] limitTypes) {
@@ -132,7 +137,8 @@ public class SearchForm extends FormBasicController{
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		if (displayName.isEmpty() && author.isEmpty() && description.isEmpty() && (id != null && id.isEmpty()))	{
+		if (displayName.isEmpty() && author.isEmpty() && description.isEmpty() && (id != null && id.isEmpty())
+				&& externalId.isEmpty() && externalRef.isEmpty())	{
 			showWarning("cif.error.allempty", null);
 			return false;
 		}
@@ -152,6 +158,14 @@ public class SearchForm extends FormBasicController{
 		if (!hasId())
 			throw new AssertException("Should not call getId() if there is no id. Check with hasId() before.");
 		return new Long(id.getValue());
+	}
+	
+	public String getExternalId() {
+		return externalId.getValue();
+	}
+	
+	public String getExternalRef() {
+		return externalRef.getValue();
 	}
 
 	/**
@@ -254,6 +268,14 @@ public class SearchForm extends FormBasicController{
 		id.setRegexMatchCheck("\\d*", "search.id.format");
 		
 		
+		externalId = uifactory.addTextElement("cif_extid", "cif.externalid", 128, "", formLayout);
+		externalId.setElementCssClass("o_sel_repo_search_external_id");
+		externalId.setVisible(managedEnabled);
+
+		externalRef = uifactory.addTextElement("cif_extref", "cif.externalref", 128, "", formLayout);
+		externalRef.setElementCssClass("o_sel_repo_search_external_ref");
+		externalRef.setVisible(managedEnabled);
+
 		typesSelection = uifactory.addCheckboxesVertical("search.limit.type", formLayout, new String[]{"xx"}, new String[]{""}, new String[]{null}, 1);
 		typesSelection.addActionListener(listener, FormEvent.ONCLICK);
 		typesSelection.setElementCssClass("o_sel_repo_search_type_limit");

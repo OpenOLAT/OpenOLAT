@@ -175,6 +175,19 @@ public class BusinessGroupFormController extends FormBasicController {
 			url = bcf.getAsURIString(entries, true);
 			StaticTextElement cardEl = uifactory.addStaticTextElement("create.form.groupcard", url, formLayout);
 			cardEl.setElementCssClass("o_sel_group_card_url");
+			
+			boolean managed = StringHelper.containsNonWhitespace(businessGroup.getExternalId())
+					|| businessGroup.getManagedFlags().length > 0;
+					
+			if(managed) {
+				String extId = businessGroup.getExternalId() == null ? "" : businessGroup.getExternalId();
+				StaticTextElement externalIdEl = uifactory.addStaticTextElement("create.form.externalid", extId, formLayout);
+				externalIdEl.setElementCssClass("o_sel_group_external_id");
+				
+				String flags = businessGroup.getManagedFlagsString() == null ? "" : businessGroup.getManagedFlagsString();
+				StaticTextElement flagsEl = uifactory.addStaticTextElement("create.form.managedflags", flags, formLayout);
+				flagsEl.setElementCssClass("o_sel_group_managed_flags");
+			}
 		}
 		
 		uifactory.addSpacerElement("myspacer", formLayout, true);

@@ -21,13 +21,17 @@ package org.olat.admin.restapi;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
+import org.olat.group.BusinessGroupModule;
+import org.olat.repository.RepositoryModule;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.security.RestSecurityHelper;
 
@@ -44,19 +48,21 @@ import org.olat.restapi.security.RestSecurityHelper;
  */
 public class RestapiAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement enabled;
+	private MultipleSelectionElement enabled, managedGroupsEl, managedRepoEl;
 	private FormLayoutContainer docLinkFlc;
-	private FormLayoutContainer accessDataFlc;
 	
-	private String[] values = {""};
-	private String[] keys = {"on"};
+	private static final String[] keys = {"on"};
+	
+	private final RestModule restModule;
+	private final BusinessGroupModule groupModule;
+	private final RepositoryModule repositoryModule;
 
 	public RestapiAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "rest");
 
-		values = new String[] {
-			getTranslator().translate("rest.on")
-		};
+		restModule = CoreSpringFactory.getImpl(RestModule.class);
+		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
+		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 		
 		initForm(ureq);
 	}
@@ -69,8 +75,7 @@ public class RestapiAdminController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutContainer = (FormLayoutContainer)formLayout;
 			
-			boolean restEnabled = isEnabled();
-			
+			boolean restEnabled = restModule.isEnabled();
 			docLinkFlc = FormLayoutContainer.createCustomFormLayout("doc_link", getTranslator(), velocity_root + "/docLink.html");
 			layoutContainer.add(docLinkFlc);
 			docLinkFlc.setVisible(restEnabled);
@@ -78,20 +83,29 @@ public class RestapiAdminController extends FormBasicController {
 			String link = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/api/doc";
 			docLinkFlc.contextPut("docLink", link);
 			
-			accessDataFlc = FormLayoutContainer.createDefaultFormLayout("flc_access_data", getTranslator());
+			FormLayoutContainer accessDataFlc = FormLayoutContainer.createDefaultFormLayout("flc_access_data", getTranslator());
 			layoutContainer.add(accessDataFlc);
 
+			String[] values = new String[] { getTranslator().translate("rest.on") };
 			enabled = uifactory.addCheckboxesHorizontal("rest.enabled", accessDataFlc, keys, values, null);
 			enabled.select(keys[0], restEnabled);
+			enabled.addActionListener(this, FormEvent.ONCHANGE);
 			
 			accessDataFlc.setVisible(true);
-	
-			final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-			buttonGroupLayout.setRootForm(mainForm);
-			accessDataFlc.add(buttonGroupLayout);
-			
-			uifactory.addFormSubmitButton("save", buttonGroupLayout);
 			formLayout.add(accessDataFlc);
+			
+			FormLayoutContainer managedFlc = FormLayoutContainer.createDefaultFormLayout("flc_managed", getTranslator());
+			layoutContainer.add(managedFlc);
+			
+			String[] valueGrps = new String[] { getTranslator().translate("rest.on") };
+			managedGroupsEl = uifactory.addCheckboxesHorizontal("managed.group", managedFlc, keys, valueGrps, null);
+			managedGroupsEl.addActionListener(this, FormEvent.ONCHANGE);
+			managedGroupsEl.select(keys[0], groupModule.isManagedBusinessGroups());
+			
+			String[] valueRes = new String[] { getTranslator().translate("rest.on") };
+			managedRepoEl = uifactory.addCheckboxesHorizontal("managed.repo", managedFlc, keys, valueRes, null);
+			managedRepoEl.addActionListener(this, FormEvent.ONCHANGE);
+			managedRepoEl.select(keys[0], repositoryModule.isManagedRepositoryEntries());
 		}
 	}
 
@@ -102,19 +116,23 @@ public class RestapiAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean on = !enabled.getSelectedKeys().isEmpty();
-		setEnabled(on);
-		docLinkFlc.setVisible(on);
-		getWindowControl().setInfo("saved");
+		
 	}
-	
-	private boolean isEnabled() {
-		RestModule config = (RestModule) CoreSpringFactory.getBean("restModule");
-		return config.isEnabled();
-	}
-	
-	private void setEnabled(boolean enabled) {
-		RestModule config = (RestModule) CoreSpringFactory.getBean("restModule");
-		config.setEnabled(enabled);
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == enabled) {
+			boolean on = enabled.isAtLeastSelected(1);
+			restModule.setEnabled(on);
+			docLinkFlc.setVisible(on);
+			getWindowControl().setInfo("saved");
+		} else if(source == managedGroupsEl) {
+			boolean enabled = managedGroupsEl.isAtLeastSelected(1);
+			groupModule.setManagedBusinessGroups(enabled);
+		} else if (source == managedRepoEl) {
+			boolean enable = managedRepoEl.isAtLeastSelected(1);
+			repositoryModule.setManagedRepositoryEntries(enable);
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 }

@@ -65,6 +65,8 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	private static final String GROUP_MGR_LINK_COURSE_ALLOWED = "groupManagersAllowedToLinkCourses";
 	private static final String RESOURCE_MGR_LINK_GROUP_ALLOWED = "resourceManagersAllowedToLinkGroups";
 	
+	private static final String MANAGED_GROUPS_ENABLED = "managedBusinessGroups";
+	
 
 	private boolean userAllowedCreate;
 	private boolean authorAllowedCreate;
@@ -85,6 +87,8 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	
 	private boolean groupManagersAllowedToLinkCourses;
 	private boolean resourceManagersAllowedToLinkGroups;
+	
+	private boolean managedBusinessGroups;
 
 	/**
 	 * [used by spring]
@@ -133,6 +137,8 @@ public class BusinessGroupModule extends AbstractOLATModule {
 		
 		groupManagersAllowedToLinkCourses = getBooleanConfigParameter(GROUP_MGR_LINK_COURSE_ALLOWED, false);
 		resourceManagersAllowedToLinkGroups = getBooleanConfigParameter(RESOURCE_MGR_LINK_GROUP_ALLOWED, false);
+		
+		managedBusinessGroups = getBooleanConfigParameter(MANAGED_GROUPS_ENABLED, false);
 	}
 
 	@Override
@@ -210,6 +216,11 @@ public class BusinessGroupModule extends AbstractOLATModule {
 		String linkGroupAllowed = getStringPropertyValue(RESOURCE_MGR_LINK_GROUP_ALLOWED, true);
 		if(StringHelper.containsNonWhitespace(linkGroupAllowed)) {
 			resourceManagersAllowedToLinkGroups = "true".equals(linkGroupAllowed);
+		}
+		
+		String managedGroups = getStringPropertyValue(MANAGED_GROUPS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(managedGroups)) {
+			managedBusinessGroups = "true".equals(managedGroups);
 		}
 	}
 	
@@ -393,5 +404,13 @@ public class BusinessGroupModule extends AbstractOLATModule {
 
 	public void setResourceManagersAllowedToLinkGroups(boolean enabled) {
 		setStringProperty(RESOURCE_MGR_LINK_GROUP_ALLOWED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isManagedBusinessGroups() {
+		return managedBusinessGroups;
+	}
+
+	public void setManagedBusinessGroups(boolean enabled) {
+		setStringProperty(MANAGED_GROUPS_ENABLED, Boolean.toString(enabled), true);
 	}
 }

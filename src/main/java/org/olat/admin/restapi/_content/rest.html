@@ -5,3 +5,10 @@
 	$r.render("doc_link")
 	$r.render("flc_access_data")
 </fieldset>
+
+<fieldset>
+	<legend>$r.translate("managed.objects")</legend>
+	$r.contextHelpWithWrapper("org.olat.admin.restapi","managed.html","help.hover.managed")
+	<p>$r.translate("managed.intro")</p>
+	$r.render("flc_managed")
+</fieldset>

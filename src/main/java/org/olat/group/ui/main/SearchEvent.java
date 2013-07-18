@@ -37,6 +37,7 @@ public class SearchEvent extends Event implements StateEntry {
 	
 	private Long id;
 	private String name;
+	private String externalId;
 	private String description;
 	private String ownerName;
 	private String courseTitle;
@@ -65,6 +66,14 @@ public class SearchEvent extends Event implements StateEntry {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	public String getDescription() {

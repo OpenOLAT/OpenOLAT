@@ -14,6 +14,7 @@
 		<property  name="creationDate" column="creationdate" type="timestamp" />
 		<!-- standards business group fields -->
   		<property name="lastUsage" column="lastusage" type="timestamp" />
+		<property name="externalId" type="string" column="external_id" />	
 		<property name="name" type="string" column="groupname" unique="false" length="255" index="gp_name_idx"/>	
 		<property name="description" type="string" column="descr" length="16777210" not-null="false"/>
 		<property name="minParticipants" column="minparticipants" not-null="false"/>

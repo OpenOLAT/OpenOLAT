@@ -40,6 +40,7 @@ public class BusinessGroupViewImpl extends PersistentObject implements BusinessG
 	private Long identityKey;
 	private String description;
 	private String name;
+	private String externalId;
 	private Integer minParticipants;
 	private Integer maxParticipants;
 	private OLATResource resource;
@@ -149,6 +150,14 @@ public class BusinessGroupViewImpl extends PersistentObject implements BusinessG
 	@Override
 	public void setLastModified(Date date) {
 		this.lastModified = date;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	@Override

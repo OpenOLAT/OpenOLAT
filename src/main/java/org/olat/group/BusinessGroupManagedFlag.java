@@ -21,6 +21,7 @@ package org.olat.group;
 
 import java.util.Arrays;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -50,6 +51,7 @@ public enum BusinessGroupManagedFlag {
 	private BusinessGroupManagedFlag[] parents;
 	private static final OLog log = Tracing.createLoggerFor(BusinessGroupManagedFlag.class);
 	public static final BusinessGroupManagedFlag[] EMPTY_ARRAY = new BusinessGroupManagedFlag[0];
+	private static BusinessGroupModule groupModule;
 	
 	private BusinessGroupManagedFlag() {
 		//
@@ -90,6 +92,13 @@ public enum BusinessGroupManagedFlag {
 	}
 	
 	public static boolean isManaged(BusinessGroup group, BusinessGroupManagedFlag marker) {
+		if(groupModule == null) {
+			groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
+		}
+		if(!groupModule.isManagedBusinessGroups()) {
+			return false;
+		}
+		
 		if(group != null && (contains(group, marker) || contains(group, marker.parents))) {
 			return true;
 		}
@@ -97,6 +106,13 @@ public enum BusinessGroupManagedFlag {
 	}
 	
 	public static boolean isManaged(BusinessGroupManagedFlag[] flags, BusinessGroupManagedFlag marker) {
+		if(groupModule == null) {
+			groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
+		}
+		if(!groupModule.isManagedBusinessGroups()) {
+			return false;
+		}
+		
 		if(flags != null && (contains(flags, marker) || contains(flags, marker.parents))) {
 			return true;
 		}

@@ -258,6 +258,8 @@ public class RepositorySearchController extends BasicController implements Activ
 				new SearchRepositoryEntryParameters(searchForm.getDisplayName(), searchForm.getAuthor(), searchForm.getDescription(),
 						restrictedTypes, ureq.getIdentity(), ureq.getUserSession().getRoles(),
 						ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, null));
+		params.setExternalId(searchForm.getExternalId());
+		params.setExternalRef(searchForm.getExternalRef());
 		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);		
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);

@@ -79,6 +79,10 @@ public class BGTableItem {
 		return businessGroup.getKey();
 	}
 	
+	public String getBusinessGroupExternalId() {
+		return businessGroup.getExternalId();
+	}
+	
 	public String getBusinessGroupName() {
 		return businessGroup.getName();
 	}
@@ -206,6 +210,7 @@ public class BGTableItem {
 	private static class BGShort implements BusinessGroupShort {
 		private final Long key;
 		private final String name;
+		private final String externalId;
 		private final Integer maxParticipants;
 		private long numWaiting;
 		private long numOfOwners;
@@ -222,6 +227,7 @@ public class BGTableItem {
 			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
 			autoCloseRanksEnabled = group.getAutoCloseRanksEnabled() == null ? false : group.getAutoCloseRanksEnabled().booleanValue();
 			managedflags = group.getManagedFlags();
+			externalId = group.getExternalId();
 		}
 		
 		public BGShort(BusinessGroupView group) {
@@ -235,6 +241,7 @@ public class BGTableItem {
 			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
 			autoCloseRanksEnabled = group.getAutoCloseRanksEnabled() == null ? false : group.getAutoCloseRanksEnabled().booleanValue();
 			managedflags = group.getManagedFlags();
+			externalId = group.getExternalId();
 		}
 
 		@Override
@@ -250,6 +257,10 @@ public class BGTableItem {
 		@Override
 		public Long getKey() {
 			return key;
+		}
+
+		public String getExternalId() {
+			return externalId;
 		}
 
 		@Override

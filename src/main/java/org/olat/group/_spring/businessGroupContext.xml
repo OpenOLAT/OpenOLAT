@@ -45,6 +45,8 @@
 				acceptMembershipForUsermanagers=${group.accept.membership.usermanagers}
 				acceptMembershipForGroupmanagers=${group.accept.membership.groupmanagers}
 				acceptMembershipForAdministrators=${group.accept.membership.administrators}
+				
+				managedBusinessGroups=${group.managed}
 			</value>
 		</property>
 	</bean>

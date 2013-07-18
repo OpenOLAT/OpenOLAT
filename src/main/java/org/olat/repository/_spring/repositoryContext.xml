@@ -27,6 +27,7 @@
 			<value>
 				listallcourse=${repo.listallcourses.enabled}
 				listallresourcetypes=${repo.listallresourcetypes.enabled}
+				managedRepositoryEntries=${repo.managed}
 			</value>
 		</property>
 	</bean>

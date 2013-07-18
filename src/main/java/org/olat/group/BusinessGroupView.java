@@ -99,8 +99,9 @@ public interface BusinessGroupView extends BusinessGroupShort, Persistable, Crea
 	 */
 	public Boolean getWaitingListEnabled();
 	
-	
-	public BusinessGroupManagedFlag[] getManagedFlags();
+	/**
+	 * @return The external ID
+	 */
+	public String getExternalId();
 
-	
 }

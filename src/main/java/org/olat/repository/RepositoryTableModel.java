@@ -79,6 +79,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	private final Translator translator; // package-local to avoid synthetic accessor method.
 	private final ACService acService;
 	private final AccessControlModule acModule;
+	private final RepositoryModule repositoryModule;
 	private final UserManager userManager;
 	
 	private final Map<Long,OLATResourceAccess> repoEntriesWithOffer = new HashMap<Long,OLATResourceAccess>();;
@@ -94,6 +95,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
+		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 
@@ -109,6 +111,11 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				translator.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
 		tableCtr.addColumnDescriptor(new RepositoryEntryTypeColumnDescriptor("table.header.typeimg", 1, null, 
 				translator.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+		
+		if(repositoryModule.isManagedRepositoryEntries()) {
+			tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.externalid", 7, null, translator.getLocale()));
+			tableCtr.addColumnDescriptor( new DefaultColumnDescriptor("table.header.externalref", 8, null, translator.getLocale()));
+		}
 		
 		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", 2, enableDirectLaunch ? TABLE_ACTION_SELECT_ENTRY : null, translator.getLocale()) {
 			@Override
@@ -201,6 +208,8 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 			}
 			case 5: return re.getCreationDate();
 			case 6: return re.getLastUsage();
+			case 7: return re.getExternalId();
+			case 8: return re.getExternalRef();
 			default: return "ERROR";
 		}
 	}

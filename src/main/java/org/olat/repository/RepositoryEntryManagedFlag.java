@@ -21,6 +21,7 @@ package org.olat.repository;
 
 import java.util.Arrays;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -56,6 +57,8 @@ public enum RepositoryEntryManagedFlag {
 	private RepositoryEntryManagedFlag[] parents;
 	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryManagedFlag.class);
 	public static final RepositoryEntryManagedFlag[] EMPTY_ARRAY = new RepositoryEntryManagedFlag[0];
+	
+	private static RepositoryModule repositoryModule;
 	
 	private RepositoryEntryManagedFlag() {
 		//
@@ -96,6 +99,13 @@ public enum RepositoryEntryManagedFlag {
 	}
 	
 	public static boolean isManaged(RepositoryEntry re, RepositoryEntryManagedFlag marker) {
+		if(repositoryModule == null) {
+			repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		}
+		if(!repositoryModule.isManagedRepositoryEntries()) {
+			return false;
+		}
+		
 		if(re != null && (contains(re, marker) || contains(re, marker.parents))) {
 			return true;
 		}
@@ -103,6 +113,13 @@ public enum RepositoryEntryManagedFlag {
 	}
 	
 	public static boolean isManaged(RepositoryEntryManagedFlag[] flags, RepositoryEntryManagedFlag marker) {
+		if(repositoryModule == null) {
+			repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		}
+		if(!repositoryModule.isManagedRepositoryEntries()) {
+			return false;
+		}
+		
 		if(flags != null && (contains(flags, marker) || contains(flags, marker.parents))) {
 			return true;
 		}
@@ -127,5 +144,4 @@ public enum RepositoryEntryManagedFlag {
 		}
 		return false;
 	}
-
 }
