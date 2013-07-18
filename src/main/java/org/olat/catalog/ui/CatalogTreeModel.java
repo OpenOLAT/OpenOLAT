@@ -198,11 +198,13 @@ public class CatalogTreeModel extends GenericTreeModel {
 	private void changeAccessibility(GenericTreeNode node, boolean accessible) {
 
 		if (accessible && !node.getTitle().equals(chooseableTitle)) {
-			GenericTreeNode chooseable = new GenericTreeNode();
-			chooseable.setAccessible(accessible);
-			chooseable.setTitle(chooseableTitle);
-			chooseable.setIdent(node.getIdent());
-			node.addChild(chooseable);
+			if(ownedEntries != null) {
+				GenericTreeNode chooseable = new GenericTreeNode();
+				chooseable.setAccessible(accessible);
+				chooseable.setTitle(chooseableTitle);
+				chooseable.setIdent(node.getIdent());
+				node.addChild(chooseable);
+			}
 		} else {
 			if (node.getTitle().equals(chooseableTitle)) {
 				if (!accessible) node.removeFromParent();

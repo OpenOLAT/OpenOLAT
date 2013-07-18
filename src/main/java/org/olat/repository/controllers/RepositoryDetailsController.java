@@ -853,9 +853,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		removeAsListenerAndDispose(catalogAdddController);
 		removeAsListenerAndDispose(closeableModalController);
 		
-		catalogAdddController = new CatalogEntryAddController(ureq, getWindowControl(), repositoryEntry);
+		catalogAdddController = new CatalogEntryAddController(ureq, getWindowControl(),
+				repositoryEntry, true, false);
 		listenTo(catalogAdddController);
-		closeableModalController = new CloseableModalController(getWindowControl(), "close", catalogAdddController.getInitialComponent());
+		closeableModalController = new CloseableModalController(getWindowControl(), "close",
+				catalogAdddController.getInitialComponent(), true, translate("details.catadd"));
 		listenTo(closeableModalController);
 		closeableModalController.activate();
 	}

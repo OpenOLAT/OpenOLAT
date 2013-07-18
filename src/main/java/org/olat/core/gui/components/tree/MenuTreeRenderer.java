@@ -84,7 +84,11 @@ public class MenuTreeRenderer implements ComponentRenderer {
 
 		List<INode> selPath = new ArrayList<INode>(5);
 		INode cur = selNode;
-		if (cur == null) cur = root; 
+		if (cur == null && !tree.isUnselectNodes()) {
+			cur = root; 
+		} else if(cur == null && tree.isUnselectNodes() && openNodeIds.isEmpty()) {
+			openNodeIds.add(root.getIdent());//always open the root
+		}
 		// if no selection, select the first node to
 		// expand the children
 		// add all elems from selected path to reversed list -> first elem is

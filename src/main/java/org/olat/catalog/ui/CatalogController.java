@@ -351,7 +351,8 @@ public class CatalogController extends BasicController implements Activateable2 
 					removeAsListenerAndDispose(catEntryMoveController);
 					catEntryMoveController= new CatalogEntryMoveController(getWindowControl(), ureq, linkMarkedToBeEdited, getTranslator());
 					listenTo(catEntryMoveController);
-					cmc = new CloseableModalController(getWindowControl(), "close", catEntryMoveController.getInitialComponent());
+					cmc = new CloseableModalController(getWindowControl(), "close", catEntryMoveController.getInitialComponent(),
+							true, translate(NLS_TOOLS_MOVE_CATALOG_ENTRY));
 					listenTo(cmc);
 					cmc.activate();
 				}
@@ -605,7 +606,8 @@ public class CatalogController extends BasicController implements Activateable2 
 				removeAsListenerAndDispose(catEntryMoveController);
 				catEntryMoveController= new CatalogEntryMoveController(getWindowControl(), ureq, currentCatalogEntry, getTranslator());					
 				listenTo(catEntryMoveController);
-				cmc = new CloseableModalController(getWindowControl(), "close", catEntryMoveController.getInitialComponent());
+				cmc = new CloseableModalController(getWindowControl(), "close", catEntryMoveController.getInitialComponent(),
+						true, translate(NLS_TOOLS_MOVE_CATALOG_ENTRY));
 				listenTo(cmc);
 				cmc.activate();
 			} else if (source == addStructureForm) {

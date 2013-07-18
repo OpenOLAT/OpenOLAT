@@ -32,6 +32,7 @@
 
 package de.tuchemnitz.wizard.workflows.coursecreation.steps;
 
+import org.olat.catalog.CatalogEntry;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -171,7 +172,8 @@ class CcStep01 extends BasicStep {
 		public void finishWorkflowItem(UserRequest ureq) {
 			if (cic != null) {
 				// close selection tree and remember selection
-				getCourseConfig().setSelectedCatalogEntry(cic.getSelectedParent());
+				CatalogEntry ce = cic.getSelectedParent();
+				getCourseConfig().setSelectedCatalogEntry(ce);
 			}
 		}
 

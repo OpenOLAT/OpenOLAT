@@ -110,6 +110,7 @@ public class MenuTree extends Component {
 	private boolean dropSiblingEnabled = false;
 	private boolean expandSelectedNode = true;
 	private boolean rootVisible = true;
+	private boolean unselectNodes;
 	private String dndFeedbackUri;
 
 	private boolean dirtyForUser = false;
@@ -157,7 +158,12 @@ public class MenuTree extends Component {
 		if(COMMAND_TREENODE_CLICKED.equals(cmd)) {
 			String openClose = ureq.getParameter(COMMAND_TREENODE);
 			if(!StringHelper.containsNonWhitespace(openClose)) {
-				selectedNodeId = nodeId;
+				boolean unselect = isUnselectNodes() && isSelectedOrDescendant(nodeId);
+				if(unselect) {
+					handleDeselect(nodeId);
+				} else {
+					selectedNodeId = nodeId;
+				}
 			}
 			handleClick(ureq, openClose, nodeId);
 		} else if (COMMAND_TREENODE_DROP.equals(cmd)) {
@@ -205,6 +211,16 @@ public class MenuTree extends Component {
 		super.setDirty(true);
 	}
 	
+	private void handleDeselect(String nodeId) {
+		TreeNode node = treeModel.getNodeById(nodeId);
+		INode parentNode = node.getParent();
+		if(parentNode != null) {
+			setSelectedNodeId(parentNode.getIdent());
+		} else {
+			clearSelection();
+		}
+	}
+	
 	/**
 	 * @param selTreeNode
 	 */
@@ -244,6 +260,14 @@ public class MenuTree extends Component {
 		} // else dirtyForUser is false, since we clicked a node (which only results in the node beeing marked in a visual style)
 		super.setDirty(true);
 		fireEvent(ureq, te);
+	}
+	
+	private boolean isSelectedOrDescendant(String nodeId) {
+		if(nodeId.equals(getSelectedNodeId())) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	private boolean updateOpenedNode(TreeNode treeNode, String nodeId, String cmd) {
@@ -333,11 +357,11 @@ public class MenuTree extends Component {
 		return openNodeIds;
 	}
 
-	public void setOpenNodeIds(Collection<String> openNodeIds) {
-		if(openNodeIds == null) {
-			this.openNodeIds.clear();
+	public void setOpenNodeIds(Collection<String> nodeIds) {
+		if(nodeIds == null) {
+			openNodeIds.clear();
 		} else {
-			this.openNodeIds = new HashSet<String>(openNodeIds);
+			openNodeIds = new HashSet<String>(nodeIds);
 		}
 		setDirty(true);
 	}
@@ -428,6 +452,14 @@ public class MenuTree extends Component {
 		this.expandSelectedNode = expandSelectedNode;
 	}
 	
+	public boolean isUnselectNodes() {
+		return unselectNodes;
+	}
+	
+	public void setUnselectNodes(boolean unselectNodes) {
+		this.unselectNodes = unselectNodes;
+	}
+
 	/**
 	 * The root node is visible per default
 	 * @return
@@ -444,8 +476,12 @@ public class MenuTree extends Component {
 	 * @param nodeForum
 	 */
 	public void setSelectedNode(TreeNode node) {
-		String nId = node.getIdent();
-		setSelectedNodeId(nId);
+		if(node == null) {
+			setSelectedNodeId(null);
+		} else {
+			String nId = node.getIdent();
+			setSelectedNodeId(nId);
+		}
 	}
 
 	public ComponentRenderer getHTMLRendererSingleton() {

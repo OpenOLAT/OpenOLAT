@@ -39,11 +39,12 @@ import org.olat.catalog.CatalogManager;
 import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.tree.SelectionTree;
+import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 
@@ -66,9 +67,10 @@ public class CatalogInsertController extends CatalogEntryAddController {
 
 	public CatalogInsertController(UserRequest ureq, WindowControl control, RepositoryEntry repositoryEntry,
 			CourseCreationConfiguration courseConfig) {
-		super(ureq, control, repositoryEntry);
+		super(ureq, control, repositoryEntry, false, true);
 		toBeAddedEntry = repositoryEntry;
 		this.courseConfig = courseConfig;
+		this.selectionTree.clearSelection();
 	}
 	
 	@Override
@@ -80,26 +82,32 @@ public class CatalogInsertController extends CatalogEntryAddController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source instanceof SelectionTree) {
+		if (source instanceof MenuTree) {
 
 			TreeEvent te = (TreeEvent) event;
-			// build new entry for this catalog level
-			CatalogManager cm = CatalogManager.getInstance();
-			String nodeId = te.getNodeId();
-			Long newParentId = Long.parseLong(nodeId);
-			CatalogEntry newParent = cm.loadCatalogEntry(newParentId);
-			// check first if this repo entry is already attached to this new parent
-			List<CatalogEntry> existingChildren = cm.getChildrenOf(newParent);
-			for (CatalogEntry existingChild : existingChildren) {
-				RepositoryEntry existingRepoEntry = existingChild.getRepositoryEntry();
-				if (existingRepoEntry != null && existingRepoEntry.equalsByPersistableKey(toBeAddedEntry)) {
-					return;
+			if(MenuTree.COMMAND_TREENODE_EXPANDED.equals(te.getCommand())) {
+				// build new entry for this catalog level
+				CatalogManager cm = CatalogManager.getInstance();
+				String nodeId = selectionTree.getSelectedNodeId();
+				if(nodeId == null) {
+					selectedParent = null;
+				} else if(StringHelper.isLong(nodeId)) {
+					Long newParentId = Long.parseLong(nodeId);
+					CatalogEntry newParent = cm.loadCatalogEntry(newParentId);
+					// check first if this repo entry is already attached to this new parent
+					List<CatalogEntry> existingChildren = cm.getChildrenOf(newParent);
+					for (CatalogEntry existingChild : existingChildren) {
+						RepositoryEntry existingRepoEntry = existingChild.getRepositoryEntry();
+						if (existingRepoEntry != null && existingRepoEntry.equalsByPersistableKey(toBeAddedEntry)) {
+							return;
+						}
+					}
+					// don't create entry right away, user must select submit button first
+					selectedParent = newParent;
 				}
 			}
-			// don't create entry right away, user must select submit button first
-			selectedParent = newParent;
-			fireEvent(ureq, Event.DONE_EVENT);
 		}
+		super.event(ureq, source, event);
 	}
 
 	/**
@@ -108,7 +116,6 @@ public class CatalogInsertController extends CatalogEntryAddController {
 	public void init() {
 		if (getCourseCreationConfiguration().getSelectedCatalogEntry() != null) {
 			selectedParent = getCourseCreationConfiguration().getSelectedCatalogEntry();
-			//treeCtr.selectPath(CatalogHelper.getPath(this.selectedParent));
 		}
 	}
 

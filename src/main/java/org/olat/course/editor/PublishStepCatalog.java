@@ -209,7 +209,8 @@ class PublishStepCatalog extends BasicStep {
 			catalogAddController = new SpecialCatalogEntryAddController(ureq, getWindowControl(), repositoryEntry, categories);
 			listenTo(catalogAddController);
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), "close", catalogAddController.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), "close",
+					catalogAddController.getInitialComponent(), true, translate("publish.catalog.add"));
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -334,7 +335,7 @@ class PublishStepCatalog extends BasicStep {
 		
 		public SpecialCatalogEntryAddController(UserRequest ureq, WindowControl wControl, RepositoryEntry toBeAddedEntry,
 				List<CategoryLabel> categories) {
-			super(ureq, wControl, toBeAddedEntry);
+			super(ureq, wControl, toBeAddedEntry, true, false);
 
 			this.toBeAddedEntry = toBeAddedEntry;
 			this.categories = categories;
