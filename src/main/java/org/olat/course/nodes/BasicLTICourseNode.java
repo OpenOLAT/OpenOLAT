@@ -38,6 +38,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -263,12 +264,18 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 
 	@Override
 	public boolean hasAttemptsConfigured() {
-		return false;
+		// having score defined means the node is assessable
+		ModuleConfiguration config = getModuleConfiguration();
+		Boolean score = config.getBooleanEntry(CONFIG_KEY_HAS_SCORE_FIELD);
+		return (score == null) ? false : score.booleanValue();
 	}
 
 	@Override
 	public boolean hasDetails() {
-		return true;
+		// having score defined means the node is assessable
+		ModuleConfiguration config = getModuleConfiguration();
+		Boolean score = config.getBooleanEntry(CONFIG_KEY_HAS_SCORE_FIELD);
+		return (score == null) ? false : score.booleanValue();
 	}
 
 	@Override
@@ -278,7 +285,10 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 
 	@Override
 	public boolean isEditableConfigured() {
-		return true;
+		// having score defined means the node is assessable
+		ModuleConfiguration config = getModuleConfiguration();
+		Boolean score = config.getBooleanEntry(CONFIG_KEY_HAS_SCORE_FIELD);
+		return (score == null) ? false : score.booleanValue();
 	}
 
 	@Override
@@ -314,8 +324,11 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 
 	@Override
 	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
-		// TODO Auto-generated method stub
-		return null;
+		// having score defined means the node is assessable
+ 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
+		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		String logValue = am.getUserNodeLog(this, mySelf);
+		return logValue;
 	}
 
 	@Override
