@@ -158,6 +158,15 @@ public class RegistrationAdminController extends FormBasicController {
 		String propertyValue = registrationModule.getStaticPropertyMappingValue();
 		propertyValueElement = uifactory.addTextElement("admin.registration.prop.value", "admin.registration.propertyValue", 255, propertyValue, staticPropContainer);
 		
+		//static property
+		FormLayoutContainer remoteLoginContainerContainer = FormLayoutContainer.createDefaultFormLayout("remotelogin", getTranslator());
+		remoteLoginContainerContainer.setRootForm(mainForm);
+		remoteLoginContainerContainer.setFormTitle("remote.login.title");
+		formLayout.add(remoteLoginContainerContainer);
+		
+		String remoteExample = generateRemoteLoginExampleCode();
+		uifactory.addTextAreaElement("remotelogin.example", "admin.registrationLinkExample", 2000, 4, 65, true, remoteExample, remoteLoginContainerContainer);
+		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
@@ -273,6 +282,18 @@ public class RegistrationAdminController extends FormBasicController {
 		    .append(Settings.getServerContextPathURI()).append("/url/registration/0")
 		    .append("\" method=\"post\" target=\"OpenOLAT\" onsubmit=\"var openolat=window.open(,'OpenOLAT',''); openolat.focus();\">\n")
 		    .append("  <input type=\"submit\" value=\"Go to registration\">\n")
+		    .append("</form>");
+		return code.toString();
+	}
+	
+	private String generateRemoteLoginExampleCode() {
+		StringBuilder code = new StringBuilder();
+		code.append("<form name=\"olatremotelogin\" action=\"")
+		    .append(Settings.getServerContextPathURI()).append("/remotelogin/")
+		    .append("\" method=\"post\" target=\"OpenOLAT\" onsubmit=\"var openolat=window.open(,'OpenOLAT', 'location=no,menubar=no,resizable=yes,toolbar=no,statusbar=no,scrollbars=yes'); openolat.focus();\">\n")
+		    .append("  Benutzername	<input type=\"text\" name=\"username\">")
+		    .append("  Passwort	<input type=\"password\" name=\"pwd\">")
+		    .append("  <input type=\"submit\" value=\"Login\">\n")
 		    .append("</form>");
 		return code.toString();
 	}

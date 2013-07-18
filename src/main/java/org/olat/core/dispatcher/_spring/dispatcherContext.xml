@@ -16,7 +16,6 @@
 				<entry key="/dmz/">
 					<ref bean="dmzbean" />
 				</entry>
-				<!--  //TODO:PB:OLAT-4047 --> 
 				<entry key="/url/">
 					<!-- if you change /url make sure you also modify olatcore/src/main/java/org/olat/core/gui/components/form/flexible/impl/elements/richText/_static/js/BTinyHelper.js accordingly -->
 					<ref bean="restdispatcher" />
@@ -24,15 +23,9 @@
 				<entry key="/">
 					<ref bean="redirect2defaultbean" />
 				</entry>
-				<!-- Feature provided by Frentix:
-					see
-					- Java comment in RemoteLoginformDispatcher
-					- http://bugs.olat.org/jira/browse/OLAT-3360
-					disabled by default  
 				<entry key="/remotelogin/">
 					<ref bean="remoteloginbean" />
 				</entry>
-				 -->
 				<entry key="/auth/">
 					<!-- if you change /auth make sure you also modify olatcore/src/main/java/org/olat/core/gui/components/form/flexible/impl/elements/richText/_static/js/BTinyHelper.js accordingly -->
 					<ref bean="authbean" />
