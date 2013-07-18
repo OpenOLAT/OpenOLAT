@@ -25,6 +25,7 @@
 
 package org.olat.admin.user;
 
+import org.olat.admin.user.bulkChange.UserBulkChangeManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -193,6 +194,11 @@ public class SystemRolesAndRightsController extends BasicController {
 							: (newStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied"
 									: (newStatus == Identity.STATUS_DELETED ? "deleted"
 											: "unknown"))));
+			
+			if(newStatus == Identity.STATUS_LOGIN_DENIED) {
+				UserBulkChangeManager.getInstance().sendLoginDeniedEmail(myIdentity);
+			}
+			
 			identity = secMgr.saveIdentityStatus(myIdentity, newStatus);
 			logAudit("User::" + getIdentity().getName() + " changed accout status for user::" + myIdentity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
 		}

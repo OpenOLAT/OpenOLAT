@@ -199,7 +199,7 @@ public class ContactList extends LogDelegator {
 
 	/**
 	 * the returned ArrayList contains String Objects representing the e-mail
-	 * addresses added.
+	 * addresses added. The address of user which login is denied are excluded.
 	 * 
 	 * @return
 	 */
@@ -212,11 +212,14 @@ public class ContactList extends LogDelegator {
 		 * they were not present, the user email is used in the next loop.
 		 */
 		List<Identity> copy = new ArrayList<Identity>(identiEmails.values());
-		String addEmail = null;
 		if (emailPrioInstitutional) {
 			for (Iterator<Identity> it=copy.iterator(); it.hasNext(); ) {
 				Identity tmp = it.next();
-				addEmail = tmp.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+				if(tmp.getStatus() == Identity.STATUS_LOGIN_DENIED) {
+					continue;
+				}
+
+				String addEmail = tmp.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
 				if (addEmail != null) {
 					ret.add(addEmail);
 					it.remove();
@@ -227,6 +230,9 @@ public class ContactList extends LogDelegator {
 		 * loops over the (remaining) identities, fetches the user email.
 		 */
 		for (Identity tmp : copy){
+			if(tmp.getStatus() == Identity.STATUS_LOGIN_DENIED) {
+				continue;
+			}
 			ret.add(tmp.getUser().getProperty(UserConstants.EMAIL, null));
 		}
 		return ret;

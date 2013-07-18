@@ -33,6 +33,7 @@ import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeConstants;
+import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -45,12 +46,17 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.login.auth.OLATAuthManager;
@@ -209,6 +215,9 @@ public class UserBulkChangeManager extends BasicManager {
 								: (status == Identity.STATUS_LOGIN_DENIED ? "login_denied"
 										: (status == Identity.STATUS_DELETED ? "deleted"
 												: "unknown"))));
+				if(status == Identity.STATUS_LOGIN_DENIED) {
+					sendLoginDeniedEmail(identity);
+				}
 				identity = secMgr.saveIdentityStatus(identity, status);
 				logAudit("User::" + addingIdentity.getName() + " changed accout status for user::" + identity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
 			}
@@ -253,6 +262,30 @@ public class UserBulkChangeManager extends BasicManager {
 			bgs.updateMemberships(addingIdentity, changes, mailing);
 			DBFactory.getInstance().commit();
 		}
+	}
+	
+	public void sendLoginDeniedEmail(Identity identity) {
+		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+
+		String[] args = new String[] {
+				identity.getName(),//0: changed users username
+				identity.getUser().getProperty(UserConstants.EMAIL, null),// 1: changed users email address
+				UserManager.getInstance().getUserDisplayName(identity.getUser()),// 2: Name (first and last name) of user who changed the password
+				WebappHelper.getMailConfig("mailSupport"), //3: configured support email address
+		};
+		
+		String lang = identity.getUser().getPreferences().getLanguage();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(lang);
+		Translator translator = Util.createPackageTranslator(SystemRolesAndRightsController.class, locale);
+		String subject = translator.translate("mailtemplate.login.denied.subject", args);
+		String body = translator.translate("mailtemplate.login.denied.body", args);
+		MailTemplate template = new MailTemplate(subject, body, null){
+			@Override
+			public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
+				//
+			}
+		};
+		mailer.sendRealMail(identity, template);
 	}
 
 	public String evaluateValueWithUserContext(String valToEval, Context vcContext) {

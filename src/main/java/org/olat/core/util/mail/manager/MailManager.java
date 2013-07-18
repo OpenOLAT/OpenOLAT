@@ -790,7 +790,10 @@ public class MailManager extends BasicManager {
 			}
 			
 			if(makeRealMail) {
-				sendRealMessage(fromAddress, toAddress, ccAddress, bccAddress, subject, body, attachments, result);
+				//check that we send an email to someone
+				if(!toAddress.isEmpty() || !ccAddress.isEmpty() || !bccAddress.isEmpty()) {
+					sendRealMessage(fromAddress, toAddress, ccAddress, bccAddress, subject, body, attachments, result);
+				}
 			}
 
 			//update subscription
@@ -938,7 +941,9 @@ public class MailManager extends BasicManager {
 			List<Address> ccList = new ArrayList<Address>();
 			if(ccId != null) {
 				Address ccAddress = createAddress(ccId, result, true);
-				ccList.add(ccAddress);
+				if(ccAddress != null) {
+					ccList.add(ccAddress);
+				}
 			}
 
 			//add cc contact list
@@ -1037,6 +1042,8 @@ public class MailManager extends BasicManager {
 					result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
 				}
 			}
+		} else if(recipient.getRecipient().getStatus() == Identity.STATUS_LOGIN_DENIED) {
+			result.addFailedIdentites(recipient.getRecipient());
 		} else {
 			if(force || wantRealMailToo(recipient.getRecipient())) {
 				if(!StringHelper.containsNonWhitespace(emailAddress)) {
@@ -1066,21 +1073,25 @@ public class MailManager extends BasicManager {
 	
 	private Address createAddress(Identity recipient, MailerResult result, boolean error) {
 		if(recipient != null) {
-			String emailAddress = recipient.getUser().getProperty(UserConstants.EMAIL, null);
-			Address address;
-			try {
-				address = createAddress(emailAddress);
-				if(address == null) {
+			if(recipient.getStatus() == Identity.STATUS_LOGIN_DENIED) {
+				result.addFailedIdentites(recipient);
+			} else {
+				String emailAddress = recipient.getUser().getProperty(UserConstants.EMAIL, null);
+				Address address;
+				try {
+					address = createAddress(emailAddress);
+					if(address == null) {
+						result.addFailedIdentites(recipient);
+						if(error) {
+							result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
+						}
+					}
+					return address;
+				} catch (AddressException e) {
 					result.addFailedIdentites(recipient);
 					if(error) {
 						result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
 					}
-				}
-				return address;
-			} catch (AddressException e) {
-				result.addFailedIdentites(recipient);
-				if(error) {
-					result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
 				}
 			}
 		}
