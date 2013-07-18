@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -45,14 +47,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupLazy;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
+import org.olat.group.model.BusinessGroupMembershipImpl;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupShortImpl;
 import org.olat.group.model.BusinessGroupViewImpl;
+import org.olat.group.model.IdentityGroupKey;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
 import org.olat.repository.model.RepositoryEntryMembership;
@@ -247,6 +252,82 @@ public class BusinessGroupDAO {
 	public BusinessGroup update(BusinessGroup group) {
 		dbInstance.updateObject(group);
 		return group;
+	}
+	
+	public List<BusinessGroupMembership> getBusinessGroupsMembership(Collection<BusinessGroup> groups) {
+		
+		List<Long> ownerGroupKeys = new ArrayList<Long>();
+		List<Long> participantGroupKeys = new ArrayList<Long>();
+		List<Long> waitingGroupKeys = new ArrayList<Long>();
+		Map<Long,Long> secGroupToGroup = new HashMap<Long,Long>();
+		for(BusinessGroup group:groups) {
+			if(group.getOwnerGroup() != null) {
+				ownerGroupKeys.add(group.getOwnerGroup().getKey());
+				secGroupToGroup.put(group.getOwnerGroup().getKey(), group.getKey());
+			}
+			if(group.getPartipiciantGroup() != null) {
+				participantGroupKeys.add(group.getPartipiciantGroup().getKey());
+				secGroupToGroup.put(group.getPartipiciantGroup().getKey(), group.getKey());
+			}
+			if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()
+					&& group.getWaitingGroup() != null) {
+				waitingGroupKeys.add(group.getWaitingGroup().getKey());
+				secGroupToGroup.put(group.getWaitingGroup().getKey(), group.getKey());
+			}
+		}
+
+		Map<IdentityGroupKey, BusinessGroupMembershipImpl> memberships = new HashMap<IdentityGroupKey, BusinessGroupMembershipImpl>();
+		
+		loadBusinessGroupsMembership(ownerGroupKeys, memberships, secGroupToGroup, true, false, false);
+		loadBusinessGroupsMembership(participantGroupKeys, memberships, secGroupToGroup, false, true, false);
+		loadBusinessGroupsMembership(waitingGroupKeys, memberships, secGroupToGroup, false, false, true);
+
+		return new ArrayList<BusinessGroupMembership>(memberships.values());
+	}
+	
+	private void loadBusinessGroupsMembership(Collection<Long> secGroupKeys,
+			Map<IdentityGroupKey, BusinessGroupMembershipImpl> memberships,
+			Map<Long,Long> secGroupToGroup, boolean owner, boolean participant, boolean waiting) {
+		
+		if(secGroupKeys == null || secGroupKeys.isEmpty()) {
+			return;
+		}
+		
+		StringBuilder sb = new StringBuilder(); 
+		sb.append("select membership.identity.key, membership.creationDate, membership.lastModified, membership.securityGroup.key from ")
+		  .append(SecurityGroupMembershipImpl.class.getName()).append(" as membership ")
+		  .append(" where membership.securityGroup.key in (:secGroupKeys)");
+		
+		List<Object[]> members = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("secGroupKeys", secGroupKeys)
+				.getResultList();
+		
+		for(Object[] membership:members) {
+			Long identityKey = (Long)membership[0];
+			Date creationDate = (Date)membership[1];
+			Date lastModified = (Date)membership[2];
+			Long secGroupKey = (Long)membership[3];
+			
+			Long groupKey = secGroupToGroup.get(secGroupKey);
+
+			IdentityGroupKey key = new IdentityGroupKey(identityKey, groupKey);
+			if(!memberships.containsKey(key)) {
+				memberships.put(key, new BusinessGroupMembershipImpl(identityKey, groupKey));
+			}
+			BusinessGroupMembershipImpl mb = memberships.get(key);
+			mb.setCreationDate(creationDate);
+			mb.setLastModified(lastModified);
+			if(owner) {
+				mb.setOwner(true);
+			}
+			if(participant) {
+				mb.setParticipant(true);
+			}
+			if(waiting) {
+				mb.setWaiting(true);
+			}	
+		}
 	}
 	
 	public int countMembershipInfoInBusinessGroups(Identity identity, List<Long> groupKeys) {

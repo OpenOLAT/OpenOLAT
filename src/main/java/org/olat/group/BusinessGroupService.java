@@ -521,6 +521,15 @@ public interface BusinessGroupService {
 	public List<BusinessGroupMembership> getBusinessGroupMembership(Collection<Long> businessGroups, Identity... identity);
 
 	/**
+	 * Return the list of membership of the groups. A membership per user and per group, but
+	 * a membership can be owner and participant at the same time if the user is owner and
+	 * participant of the group.
+	 * @param businessGroups
+	 * @return
+	 */
+	public List<BusinessGroupMembership> getBusinessGroupsMembership(Collection<BusinessGroup> businessGroups);
+	
+	/**
 	 * Checks if an identity is in a business group with a specific key, either as owner or
 	 * as participant
 	 * @param identity

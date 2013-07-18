@@ -558,8 +558,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 			groupKeys.add(group.getKey());
 			keyToGroupMap.put(group.getKey(), group);
 		}
+
 		List<BusinessGroupMembership> memberships = groups.isEmpty() ? Collections.<BusinessGroupMembership>emptyList() :
-				businessGroupService.getBusinessGroupMembership(groupKeys);
+			businessGroupService.getBusinessGroupsMembership(groups);
 
 		//get identities
 		Set<Long> identityKeys = new HashSet<Long>();

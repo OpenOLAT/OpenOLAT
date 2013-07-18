@@ -44,6 +44,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLazy;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
@@ -1263,6 +1264,65 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		}
 		Assert.assertEquals(3, found);
 	}
+	
+	@Test
+	public void getBusinessGroupsMembership() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-rev-1" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-rev-2" + UUID.randomUUID().toString());
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "is-in-grp-rev-1", "is-in-grp-rev-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "is-in-grp-rev-2", "is-in-grp-rev-2-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-rev-3", "is-in-grp-rev-3-desc", 0, 5, true, false, true, false, false);
+		dbInstance.commitAndCloseSession();
+
+		securityManager.addIdentityToSecurityGroup(id1, group2.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id1, group3.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(id2, group2.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id2, group3.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+		
+		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		groups.add(group1);
+		groups.add(group2);
+		groups.add(group3);
+		List<Long> groupKeys = new ArrayList<Long>();
+		groupKeys.add(group1.getKey());
+		groupKeys.add(group2.getKey());
+		groupKeys.add(group3.getKey());
+
+		//check owner + attendee
+		int countMembership1 = businessGroupDao.countMembershipInfoInBusinessGroups(id1, groupKeys);
+		int countMembership2 = businessGroupDao.countMembershipInfoInBusinessGroups(id2, groupKeys);
+		Assert.assertEquals(3, countMembership1);
+		Assert.assertEquals(3, countMembership2);
+		List<BusinessGroupMembership> memberships = businessGroupDao.getBusinessGroupsMembership(groups);
+		Assert.assertNotNull(memberships);
+		//5: id1 3 membership in group1, group2, group3 and id2 2 memberships in group2 and group3
+		Assert.assertEquals(5, memberships.size());
+
+		int foundOwn = 0;
+		int foundPart = 0;
+		int foundWait = 0;
+		for(BusinessGroupMembership membership:memberships) {
+			Assert.assertNotNull(membership.getIdentityKey());
+			Assert.assertNotNull(membership.getCreationDate());
+			Assert.assertNotNull(membership.getLastModified());
+			Assert.assertNotNull(membership.getGroupKey());
+			Assert.assertTrue(groupKeys.contains(membership.getGroupKey()));
+			if(membership.isOwner()) {
+				foundOwn++;
+			}
+			if(membership.isParticipant()) {
+				foundPart++;
+			}
+			if(membership.isWaiting()) {
+				foundWait++;
+			}
+		}
+		Assert.assertEquals(2, foundOwn);
+		Assert.assertEquals(3, foundPart);
+		Assert.assertEquals(1, foundWait);
+	}
+	
 	
 	@Test
 	public void getMembershipInfoInBusinessGroupsWithoutIdentityParam() {
