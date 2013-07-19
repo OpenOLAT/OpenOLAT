@@ -255,14 +255,14 @@ public class MSEditFormController extends FormBasicController {
 		
 		// coach info text
 		if (infotextCoach.getValue().length() > 4000) {
-			infotextCoach.setErrorKey("input.toolong", null);
+			infotextCoach.setErrorKey("input.toolong", new String[] {"4000"});
 			return false;
 		} else {
 			infotextCoach.clearError();
 		}
 		// user info text
 		if (infotextUser.getValue().length() > 4000) {
-			infotextUser.setErrorKey("input.toolong", null);
+			infotextUser.setErrorKey("input.toolong", new String[] {"4000"});
 			return false;
 		} else {
 			infotextUser.clearError();

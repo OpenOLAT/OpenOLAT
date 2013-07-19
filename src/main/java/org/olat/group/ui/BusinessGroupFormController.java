@@ -303,7 +303,7 @@ public class BusinessGroupFormController extends FormBasicController {
 
 		// 2) Check valid description
 		if (businessGroupDescription.getValue().length() > 4000) {
-			businessGroupDescription.setErrorKey("input.toolong", new String[] {});
+			businessGroupDescription.setErrorKey("input.toolong", new String[] {"4000"});
 			return false;
 		}
 		businessGroupDescription.clearError();
