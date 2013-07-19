@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -588,6 +589,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 
 		Map<Long,MemberView> keyToMemberMap = new HashMap<Long,MemberView>();
 		List<MemberView> memberList = new ArrayList<MemberView>();
+		Locale locale = getLocale();
 
 		//reservations
 		if(params.isPending()) {
@@ -601,7 +603,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 			List<ResourceReservation> reservations = acService.getReservations(resourcesForReservations);
 			for(ResourceReservation reservation:reservations) {
 				Identity identity = reservation.getIdentity();
-				MemberView member = new MemberView(identity);
+				MemberView member = new MemberView(identity, userPropertyHandlers, locale);
 				member.getMembership().setPending(true);
 				memberList.add(member);
 				keyToMemberMap.put(identity.getKey(), member);
@@ -612,7 +614,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		Long me = getIdentity().getKey();
 		Set<Long> loadStatus = new HashSet<Long>();
 		for(Identity identity:identities) {
-			MemberView member = new MemberView(identity);
+			MemberView member = new MemberView(identity, userPropertyHandlers, locale);
 			if(chatEnabled) {
 				if(identity.getKey().equals(me)) {
 					member.setOnlineStatus("me");

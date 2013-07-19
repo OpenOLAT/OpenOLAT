@@ -22,10 +22,12 @@ package org.olat.group.ui.main;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -33,23 +35,35 @@ import org.olat.group.BusinessGroupShort;
  */
 public class MemberView {
 	
-	private final Identity identity;
+	private final Long identityKey;
+	private final String identityName;
+	private final String[] identityProps;
 	private Date firstTime;
 	private Date lastTime;
 	private final CourseMembership membership = new CourseMembership();
 	private List<BusinessGroupShort> groups;
 	private String onlineStatus;
 	
-	public MemberView(Identity identity) {
-		this.identity = identity;
+	public MemberView(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		this.identityKey = identity.getKey();
+		this.identityName = identity.getName();
+		
+		identityProps = new String[userPropertyHandlers.size()];
+		for(int i=userPropertyHandlers.size(); i-->0; ) {
+			identityProps[i] = userPropertyHandlers.get(i).getUserProperty(identity.getUser(), locale);
+		}
 	}
 
 	public Long getIdentityKey() {
-		return identity.getKey();
+		return identityKey;
+	}
+
+	public String getIdentityName() {
+		return identityName;
 	}
 	
-	public Identity getIdentity() {
-		return identity;
+	public String getIdentityProp(int index) {
+		return identityProps[index];
 	}
 
 	public String getOnlineStatus() {
@@ -139,7 +153,7 @@ public class MemberView {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("memberView[identityKey=").append(getIdentityKey() == null ? "" : getIdentityKey())
-			.append(":login=").append(identity == null ? "NULL" : identity.getName()).append("]");
+			.append(":login=").append(getIdentityName()).append("]");
 		return sb.toString();
 	}
 }

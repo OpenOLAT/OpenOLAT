@@ -47,7 +47,7 @@ public class MemberListTableModel extends DefaultTableDataModel<MemberView> {
 	public Object getValueAt(int row, int col) {
 		MemberView member = getObject(row);
 		switch(col) {
-			case 0:return member.getIdentity().getName();
+			case 0:return member.getIdentityName();
 			case 1: return member.getFirstTime();
 			case 2: return member.getLastTime();
 			case 3: return member.getMembership();
@@ -55,12 +55,7 @@ public class MemberListTableModel extends DefaultTableDataModel<MemberView> {
 			case 5:return member.getOnlineStatus();
 			default: {
 				int propPos = col - Cols.values().length;
-				if(propPos < userPropertyHandlers.size()) {
-					UserPropertyHandler handler = userPropertyHandlers.get(propPos);
-					String value = handler.getUserProperty(member.getIdentity().getUser(), getLocale());
-					return value;
-				}
-				return null;
+				return member.getIdentityProp(propPos);
 			}
 		}
 	}

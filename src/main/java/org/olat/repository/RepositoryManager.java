@@ -31,7 +31,9 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
@@ -2355,6 +2357,53 @@ public class RepositoryManager extends BasicManager {
 
 		List<RepositoryEntryMembership> entries = query.getResultList();
 		return entries;
+	}
+	
+	public List<RepositoryEntryMembership> getRepositoryEntryMembership(RepositoryEntry re) {
+		if(re == null) return Collections.emptyList();
+
+		StringBuilder sb = new StringBuilder(); 
+		sb.append("select membership.identity.key, membership.lastModified, membership.securityGroup.key from ")
+		  .append(SecurityGroupMembershipImpl.class.getName()).append(" as membership ")
+		  .append(" where membership.securityGroup.key in (:secGroupKeys)");
+		
+		List<Long> secGroupKeys = new ArrayList<Long>();
+		secGroupKeys.add(re.getOwnerGroup().getKey());
+		secGroupKeys.add(re.getTutorGroup().getKey());
+		secGroupKeys.add(re.getParticipantGroup().getKey());
+		List<Object[]> members = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("secGroupKeys", secGroupKeys)
+				.getResultList();
+		
+		Long repoKey = re.getKey();
+		Long resourceKey = re.getOlatResource().getKey();
+
+		Map<Long, RepositoryEntryMembership> memberships = new HashMap<Long, RepositoryEntryMembership>();
+		for(Object[] membership:members) {
+			Long identityKey = (Long)membership[0];
+			Date lastModified = (Date)membership[1];
+			Long secGroupKey = (Long)membership[2];
+
+			if(!memberships.containsKey(identityKey)) {
+				memberships.put(identityKey, new RepositoryEntryMembership());
+			}
+			RepositoryEntryMembership mb = memberships.get(identityKey);
+			mb.setIdentityKey(identityKey);
+			mb.setLastModified(lastModified);
+			if(secGroupKey.equals(re.getParticipantGroup().getKey())) {
+				mb.setParticipantRepoKey(repoKey);
+				mb.setParticipantResourceKey(resourceKey);
+			} else if(secGroupKey.equals(re.getTutorGroup().getKey())) {
+				mb.setTutorRepoKey(repoKey);
+				mb.setTutorResourceKey(resourceKey);
+			} else if(secGroupKey.equals(re.getOwnerGroup().getKey())) {
+				mb.setOwnerRepoKey(repoKey);
+				mb.setOwnerResourceKey(resourceKey);
+			}
+		}
+		
+		return new ArrayList<RepositoryEntryMembership>(memberships.values());
 	}
 	
 	public List<RepositoryEntryMembership> getOwnersMembership(List<RepositoryEntry> res) {

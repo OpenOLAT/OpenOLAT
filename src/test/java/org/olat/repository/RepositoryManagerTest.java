@@ -647,19 +647,29 @@ public class RepositoryManagerTest extends OlatTestCase {
 		//check with all identities
 		List<RepositoryEntryMembership> memberships = repositoryManager.getRepositoryEntryMembership(re);
 		Assert.assertNotNull(memberships);
-		Assert.assertEquals(7, memberships.size());
+		Assert.assertEquals(6, memberships.size());
+		
+		int countOwner = 0;
+		int countTutor = 0;
+		int countParticipant = 0;
 		for(RepositoryEntryMembership membership:memberships) {
 			if(membership.getOwnerRepoKey() != null) {
+				countOwner++;
 				Assert.assertEquals(re.getKey(), membership.getOwnerRepoKey());
-			} else if (membership.getTutorRepoKey() != null) {
+			}
+			if (membership.getTutorRepoKey() != null) {
+				countTutor++;
 				Assert.assertEquals(re.getKey(), membership.getTutorRepoKey());
-			} else if (membership.getParticipantRepoKey() != null) {
+			}
+			if (membership.getParticipantRepoKey() != null) {
+				countParticipant++;
 				Assert.assertEquals(re.getKey(), membership.getParticipantRepoKey());
-			} else {
-				Assert.assertTrue(false);
 			}
 			Assert.assertTrue(identityKeys.contains(membership.getIdentityKey()));
 		}
+		Assert.assertEquals(2, countOwner);
+		Assert.assertEquals(2, countTutor);
+		Assert.assertEquals(3, countParticipant);
 		
 		//check with id1
 		List<RepositoryEntryMembership> membership1s = repositoryManager.getRepositoryEntryMembership(re, id1);
