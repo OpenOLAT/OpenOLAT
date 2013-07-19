@@ -152,7 +152,7 @@ public class NoAccessExplanationFormController extends FormBasicController {
 		boolean formOK = true;
 		if (noAccessExplanationInput.getValue().length() > 4000) {
 			formOK = false;
-			noAccessExplanationInput.setErrorKey("input.toolong", new String[] {});
+			noAccessExplanationInput.setErrorKey("input.toolong", new String[] {"4000"});
 		}
 		if (formOK && super.validateFormLogic(ureq)) {
 			noAccessExplanationInput.clearError();
