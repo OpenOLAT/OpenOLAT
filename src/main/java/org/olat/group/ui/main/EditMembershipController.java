@@ -164,6 +164,21 @@ public class EditMembershipController extends FormBasicController {
 			resource = repoEntry.getOlatResource();
 		}
 		List<BusinessGroupView> groups = businessGroupService.findBusinessGroupViews(params, resource, 0, -1);
+	
+		boolean defaultMembership = false;
+		if(member == null) {
+			if(repoEntry != null && groups.isEmpty()) {
+				boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
+				if(!managed) {
+					repoRightsEl.select("participant", true);
+				}
+			} else if(repoEntry == null && groups.size() == 1) {
+				boolean managed = BusinessGroupManagedFlag.isManaged(groups.get(0).getManagedFlags(), BusinessGroupManagedFlag.membersmanagement);
+				if(!managed) {
+					defaultMembership = true;
+				}
+			}
+		}
 
 		List<Long> businessGroupKeys = PersistenceHelper.toKeys(groups);
 		groupMemberships = member == null ?
@@ -174,7 +189,7 @@ public class EditMembershipController extends FormBasicController {
 			MemberOption option = new MemberOption(group);
 			BGPermission bgPermission = PermissionHelper.getPermission(group.getKey(), member, groupMemberships);
 			option.setTutor(createSelection(bgPermission.isTutor(), !managed));
-			option.setParticipant(createSelection(bgPermission.isParticipant(), !managed));
+			option.setParticipant(createSelection(bgPermission.isParticipant() || defaultMembership, !managed));
 			boolean waitingListEnable = !managed && group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue();
 			option.setWaiting(createSelection(bgPermission.isWaitingList(), waitingListEnable));
 			options.add(option);

@@ -63,6 +63,25 @@ public class ImportMemberPermissionChoiceController extends StepFormBasicControl
 		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		MemberPermissionChangeEvent e = new MemberPermissionChangeEvent(null);
+		permissionCtrl.collectRepoChanges(e);
+		permissionCtrl.collectGroupChanges(e);
+		int size = e.size();
+		flc.contextRemove("off_warn");
+		if(size == 0) {
+			String warning = translate("error.select.role");
+			flc.contextPut("off_warn", warning);
+			allOk &= false;
+		}
+
+		return allOk & super.validateFormLogic(ureq);
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.add(permissionCtrl.getInitialFormItem());	
