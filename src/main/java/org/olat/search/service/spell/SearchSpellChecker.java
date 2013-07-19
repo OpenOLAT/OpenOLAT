@@ -47,6 +47,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.search.SearchService;
 import org.olat.search.model.OlatDocument;
 
@@ -102,13 +103,7 @@ public class SearchSpellChecker {
   			for (String word : words) {
   				filteredList.add(word);
 				}
-  			
-  			/*
-  			Set<String> directList = directCheck(query);
-  			System.out.println("Direct: " + directList);
-  			System.out.println("Filter: " + filteredList);
-  			*/
-  			
+
 			  return filteredList;
   		}
   		
@@ -164,7 +159,7 @@ public class SearchSpellChecker {
 		    indexReader = DirectoryReader.open(indexDir);
 	      // 1. Create content spellIndex 
 		    File spellDictionaryFile = new File(spellDictionaryPath);
-	      Directory contentSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + CONTENT_PATH));//true
+	      FSDirectory contentSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + CONTENT_PATH));//true
 	      SpellChecker contentSpellChecker = new SpellChecker(contentSpellIndexDirectory);
 	      Dictionary contentDictionary = new LuceneDictionary(indexReader, OlatDocument.CONTENT_FIELD_NAME);
 
@@ -173,17 +168,17 @@ public class SearchSpellChecker {
 	      
 	      contentSpellChecker.indexDictionary(contentDictionary, indexWriterConfig, true);
 	      // 2. Create title spellIndex 
-	      Directory titleSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + TITLE_PATH));//true
+	      FSDirectory titleSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + TITLE_PATH));//true
 	      SpellChecker titleSpellChecker = new SpellChecker(titleSpellIndexDirectory);
 	      Dictionary titleDictionary = new LuceneDictionary(indexReader, OlatDocument.TITLE_FIELD_NAME);
 	      titleSpellChecker.indexDictionary(titleDictionary, indexWriterConfig, true);
 	      // 3. Create description spellIndex 
-	      Directory descriptionSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + DESCRIPTION_PATH));//true
+	      FSDirectory descriptionSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + DESCRIPTION_PATH));//true
 	      SpellChecker descriptionSpellChecker = new SpellChecker(descriptionSpellIndexDirectory);
 	      Dictionary descriptionDictionary = new LuceneDictionary(indexReader, OlatDocument.DESCRIPTION_FIELD_NAME);
 	      descriptionSpellChecker.indexDictionary(descriptionDictionary, indexWriterConfig, true);
 	      // 4. Create author spellIndex 
-	      Directory authorSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + AUTHOR_PATH));//true
+	      FSDirectory authorSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + AUTHOR_PATH));//true
 	      SpellChecker authorSpellChecker = new SpellChecker(authorSpellIndexDirectory);
 	      Dictionary authorDictionary = new LuceneDictionary(indexReader, OlatDocument.AUTHOR_FIELD_NAME);
 	      authorSpellChecker.indexDictionary(authorDictionary, indexWriterConfig, true);
@@ -191,7 +186,11 @@ public class SearchSpellChecker {
 	      // Merge all part spell indexes (content,title etc.) to one common spell index
 	      Directory spellIndexDirectory = FSDirectory.open(spellDictionaryFile);//true
 	      
+	      //clean up the main index
 	      IndexWriter merger = new IndexWriter(spellIndexDirectory, indexWriterConfig);
+	      merger.deleteAll();
+	      merger.commit();
+	      
 	      Directory[] directories = { contentSpellIndexDirectory, titleSpellIndexDirectory, descriptionSpellIndexDirectory, authorSpellIndexDirectory};
 	      for(Directory directory:directories) { 
 	      	merger.addIndexes(directory);
@@ -203,6 +202,12 @@ public class SearchSpellChecker {
 	      descriptionSpellChecker.close();
 	      authorSpellChecker.close();
 	      
+	      //remove all files
+	      FileUtils.deleteDirsAndFiles(contentSpellIndexDirectory.getDirectory(), true, true);
+	      FileUtils.deleteDirsAndFiles(titleSpellIndexDirectory.getDirectory(), true, true);
+	      FileUtils.deleteDirsAndFiles(descriptionSpellIndexDirectory.getDirectory(), true, true);
+	      FileUtils.deleteDirsAndFiles(authorSpellIndexDirectory.getDirectory(), true, true);
+
 	      spellChecker = new SpellChecker(spellIndexDirectory);
 	      spellChecker.setAccuracy(0.7f);
 	       if (log.isDebug()) log.debug("SpellIndex created in " + (System.currentTimeMillis() - startSpellIndexTime) + "ms");
