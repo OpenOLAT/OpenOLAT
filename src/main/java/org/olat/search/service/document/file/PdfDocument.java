@@ -28,19 +28,17 @@ package org.olat.search.service.document.file;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.util.PDFTextStripper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.SearchServiceFactory;
+import org.olat.search.service.document.file.pdf.PdfExtractor;
 
 
 /**
@@ -53,20 +51,18 @@ public class PdfDocument extends FileDocument {
 
 	public final static String FILE_TYPE = "type.file.pdf";
 	
-	private boolean pdfTextBuffering;
-
+  private boolean externalIndexer;
 	private String pdfTextBufferPath;
-
 	private String filePath;
 
 	public PdfDocument() {
-		pdfTextBuffering = SearchServiceFactory.getService().getSearchModuleConfig().getPdfTextBuffering();
-		pdfTextBufferPath = SearchServiceFactory.getService().getSearchModuleConfig().getPdfTextBufferPath(); 
+		this(SearchServiceFactory.getService().getSearchModuleConfig().getPdfTextBufferPath(),
+				SearchServiceFactory.getService().getSearchModuleConfig().isPdfExternalIndexer());
 	}
 	
-	public PdfDocument(boolean pdfTextBuffering, String pdfTextBufferPath) {
-		this.pdfTextBuffering = pdfTextBuffering;
+	public PdfDocument(String pdfTextBufferPath, boolean externalIndexer) {
 		this.pdfTextBufferPath = pdfTextBufferPath;
+		this.externalIndexer = externalIndexer;
 	}
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
@@ -96,85 +92,29 @@ public class PdfDocument extends FileDocument {
 		return pdfTextTmpFilePath;
 	}
 
+	@Override
 	protected FileContent readContent(VFSLeaf leaf) throws DocumentException, DocumentAccessException {
 		try {
-			long startTime = 0;
-			if (log.isDebug()) startTime = System.currentTimeMillis();
-			FileContent pdfText;
-			String fullPdfTextTmpFilePath = pdfTextBufferPath + File.separator + getFilePath() + ".tmp";
-			File pdfTextFile = new File(fullPdfTextTmpFilePath);
-			if (pdfTextBuffering && !isNewPdfFile(leaf,pdfTextFile) ) {
-				// text file with extracted text exist => read pdf text from there
-				pdfText = getPdfTextFromBuffer(pdfTextFile);
-			} else {
-				// no text file with extracted text exist => extract text from pdf
-				pdfText = extractTextFromPdf(leaf);
-				if (pdfTextBuffering) {
-					// store extracted pdf-text in 
-					storePdfTextInBuffer(pdfText,fullPdfTextTmpFilePath,pdfTextFile);
+			String bean = externalIndexer ? "pdfExternalIndexer" : "pdfInternalIndexer";
+			PdfExtractor extractor = (PdfExtractor)CoreSpringFactory.getBean(bean);
+			
+			File pdfTextFile = new File(pdfTextBufferPath, getFilePath() + ".tmp");
+			if (isNewPdfFile(leaf, pdfTextFile)) {
+				//prepare dirs
+				if(!pdfTextFile.getParentFile().exists()) {
+					pdfTextFile.getParentFile().mkdirs();
 				}
-				if (log.isDebug()) log.debug("readContent from pdf done.");
+				extractor.extract(leaf, pdfTextFile);
 			}
-			if (log.isDebug()) {
-  			long time = System.currentTimeMillis() - startTime;
-	  		log.debug("readContent time=" + time);
-			}
-		  return pdfText;
+
+			// text file with extracted text exist => read pdf text from there
+			return getPdfTextFromBuffer(pdfTextFile);
 		} catch (DocumentAccessException ex) {
 			// pass exception
 			throw ex;
 		} catch (Exception ex) {
 			throw new DocumentException("Can not read PDF content. File=" + leaf.getName() + ";" + ex.getMessage() );
 		} 
-	}
-
-	private void storePdfTextInBuffer(FileContent pdfText, String fullPdfTextTmpFilePath, File pdfTextFile) throws IOException {
-		int lastSlash = fullPdfTextTmpFilePath.lastIndexOf('/');
-		String dirPath = fullPdfTextTmpFilePath.substring(0,lastSlash);
-		File dirFile = new File(dirPath);
-		dirFile.mkdirs();
-		
-		FileOutputStream out = new FileOutputStream(pdfTextFile);
-		if(StringHelper.containsNonWhitespace(pdfText.getTitle())) {
-			FileUtils.save(out, pdfText.getTitle() + "\u00A0|\u00A0" + pdfText.getContent(), "utf-8");
-		} else {
-			FileUtils.save(out, pdfText.getContent(), "utf-8");
-		}
-	}
-
-	private FileContent extractTextFromPdf(VFSLeaf leaf) throws IOException, DocumentAccessException {
-		if (log.isDebug()) log.debug("readContent from pdf starts...");
-		PDDocument document = null;
-		BufferedInputStream bis = null;
-		try {
-			bis = new BufferedInputStream(leaf.getInputStream());			
-			document = PDDocument.load(bis);
-			if (document.isEncrypted()) {
-				try {
-					document.decrypt("");
-				} catch (Exception e) {
-					throw new DocumentAccessException("PDF is encrypted. Can not read content file=" + leaf.getName());
-				}
-			}	
-			String title = getTitle(document);
-			if (log.isDebug()) log.debug("readContent PDDocument loaded");
-			PDFTextStripper stripper = new PDFTextStripper();
-			return new FileContent(title, stripper.getText(document));
-		} finally {
-			if (document != null) {
-			  document.close();
-			}
-			if (bis != null) {
-				bis.close();
-			}
-		}
-	}
-	
-	private String getTitle(PDDocument document) {
-		if(document != null && document.getDocumentInformation() != null) {
-			return document.getDocumentInformation().getTitle();
-		}
-		return null;
 	}
 
 	private FileContent getPdfTextFromBuffer(File pdfTextFile) throws IOException {
@@ -215,5 +155,4 @@ public class PdfDocument extends FileDocument {
 		}
 		return false;
 	}
-
 }

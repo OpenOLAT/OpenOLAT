@@ -110,7 +110,9 @@
 					<!-- Restart only at this day 1=Sunday,2=Monday...7=Saturday (0=restart every day) -->
 					restartDayOfWeek=0
 					<!-- Enable text-buffering of extracted PDF text -->
-					pdfTextBuffering=true		
+					pdfTextBuffering=true
+					pdfExternalIndexer=${search.pdf.external}
+					pdfExternExtractorCommand=${search.pdf.external.command}
 					<!-- updater runs every xx ms (0=stopped) -->
 					<!-- The updater is NOT implemented for all index elements, do not use it for now! -->
 					updateInterval=0
@@ -290,6 +292,12 @@
 		<property name="searchQueue" ref="searchQueue"/>
 		<property name="receiveTimeout" value="45000"/>
 		<property name="timeToLive" value="45000"/>
+	</bean>
+	
+	
+	<bean id="pdfInternalIndexer" class="org.olat.search.service.document.file.pdf.PdfBoxExtractor"/>
+	<bean id="pdfExternalIndexer" class="org.olat.search.service.document.file.pdf.PdfExternalExtractor">
+		<property name="searchModule" ref="searchModule" />
 	</bean>
 	
 

@@ -70,6 +70,8 @@ public class SearchModule extends AbstractOLATModule {
 	private static final String CONF_EXCEL_FILE_ENABLED = "excelFileEnabled";
 	private static final String CONF_PDF_FILE_ENABLED = "pdfFileEnabled";
 	private static final String CONF_PDF_TEXT_BUFFERING = "pdfTextBuffering";
+	private static final String CONF_PDF_EXTERNAL_INDEXER = "pdfExternalIndexer";
+	private static final String CONF_PDF_EXTERNAL_INDEXER_CMD = "pdfExternExtractorCommand";
 	private static final String CONF_SPELL_CHECK_ENABLED = "spellCheckEnabled";
 	private static final String CONF_TEMP_PDF_TEXT_BUF_PATH = "pdfTextBufferPath";
 	private static final String CONF_MAX_FILE_SIZE = "maxFileSize";
@@ -113,6 +115,8 @@ public class SearchModule extends AbstractOLATModule {
 	private boolean excelFileEnabled;
 	private boolean pdfFileEnabled;
 	private boolean pdfTextBuffering;
+	private boolean pdfExternalIndexer;
+	private String pdfExternalIndexerCmd;
 	private boolean isSpellCheckEnabled;
 	private String fullPdfTextBufferPath;
 	private List<String> fileSizeSuffixes;
@@ -192,6 +196,9 @@ public class SearchModule extends AbstractOLATModule {
     excelFileEnabled = getBooleanConfigParameter(CONF_EXCEL_FILE_ENABLED, true);
     pdfFileEnabled = getBooleanConfigParameter(CONF_PDF_FILE_ENABLED, true);
     pdfTextBuffering = getBooleanConfigParameter(CONF_PDF_TEXT_BUFFERING, true);
+    pdfExternalIndexer = getBooleanConfigParameter(CONF_PDF_EXTERNAL_INDEXER, false);
+    pdfExternalIndexerCmd = getStringConfigParameter(CONF_PDF_EXTERNAL_INDEXER_CMD, "convertpdf.sh", false);
+    
     isSpellCheckEnabled = getBooleanConfigParameter(CONF_SPELL_CHECK_ENABLED, true);
     maxFileSize = Integer.parseInt(getStringConfigParameter(CONF_MAX_FILE_SIZE, "0", false));
     ramBufferSizeMB = Double.parseDouble(getStringConfigParameter(CONF_RAM_BUFFER_SIZE_MB, DEFAULT_RAM_BUFFER_SIZE_MB, false));
@@ -424,6 +431,18 @@ public class SearchModule extends AbstractOLATModule {
 	 */
 	public boolean getPdfTextBuffering() {
 		return pdfTextBuffering;
+	}
+
+	public boolean isPdfExternalIndexer() {
+		return pdfExternalIndexer;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public String getPdfExternalIndexerCmd() {
+		return pdfExternalIndexerCmd;
 	}
 
 	/**

@@ -29,13 +29,14 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.document.file.FileDocument.FileContent;
+import org.olat.test.OlatTestCase;
 import org.olat.test.VFSJavaIOFile;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PDFDocumentTest {
+public class PDFDocumentTest extends OlatTestCase {
 	
 	@Test
 	public void testPDFDocument() throws DocumentException, DocumentAccessException, URISyntaxException {
@@ -44,7 +45,7 @@ public class PDFDocumentTest {
 
 		VFSLeaf doc = new VFSJavaIOFile("Test_1.pdf", new File(pdfUrl.toURI()));
 		String temp = System.getProperty("java.io.tmpdir");
-		PdfDocument document = new PdfDocument(false, temp);
+		PdfDocument document = new PdfDocument(temp, false);
 		FileContent content =	document.readContent(doc);
 		Assert.assertNotNull(content);
 		Assert.assertEquals("Test pdf indexing", content.getTitle());
@@ -58,7 +59,7 @@ public class PDFDocumentTest {
 
 		VFSLeaf doc = new VFSJavaIOFile(UUID.randomUUID().toString() + ".pdf", new File(pdfUrl.toURI()));
 		String temp = System.getProperty("java.io.tmpdir");
-		PdfDocument document = new PdfDocument(false, temp);
+		PdfDocument document = new PdfDocument(temp, false);
 		
 		//index the pdf
 		FileContent contentIndexed =	document.readContent(doc);
