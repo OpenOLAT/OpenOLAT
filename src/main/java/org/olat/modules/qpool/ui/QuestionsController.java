@@ -176,6 +176,12 @@ public class QuestionsController extends BasicController implements Activateable
 				QuestionItemView item = se.getItem();
 				doUpdateDetails(ureq, item);
 			} else if(event instanceof QPoolEvent) {
+				if(QPoolEvent.BULK_CHANGE.equals(event.getCommand())) {
+					updateSelectAfterChange(ureq);
+				} else if(QPoolEvent.ITEM_DELETED.equals(event.getCommand())) {
+					postDelete(ureq);
+					stackPanel.popUpToRootController(ureq);
+				}
 				fireEvent(ureq, event);
 			}
 		} else if(source == confirmDeleteBox) {
@@ -194,6 +200,16 @@ public class QuestionsController extends BasicController implements Activateable
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	protected void updateSelectAfterChange(UserRequest ureq) {
+		QuestionItem item = previewCtrl.getItem();
+		Collection<Long> key = Collections.singletonList(item.getKey());
+		List<QuestionItemView> items = source.getItems(key);
+		if(items.size() > 0) {
+			QuestionItemView itemView = items.get(0);
+			doUpdateDetails(ureq, itemView);
+		}
 	}
 	
 	protected void doSelect(UserRequest ureq, QuestionItem item, boolean editable) {

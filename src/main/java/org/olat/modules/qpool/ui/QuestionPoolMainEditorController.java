@@ -45,9 +45,11 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Persistable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
@@ -82,8 +84,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	public static final OLATResourceable QITEM_MARKED = OresHelper.createOLATResourceableType("QItemMark");
 	
 	private final MenuTree menuTree;
-	private GenericTreeNode sharesNode, myNode;
-	
+	private GenericTreeNode sharesNode, myNode, myOwnNode;
 	private final Panel content;
 	private StackedController stackPanel;
 
@@ -207,13 +208,18 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			}	else if(QPoolEvent.COLL_CREATED.equals(event.getCommand())
 					|| QPoolEvent.COLL_CHANGED.equals(event.getCommand())) {
 				buildMySubTreeModel(myNode);
+				Long collKey = ((QPoolEvent)event).getObjectKey();
+				GenericTreeNode nodeToSelect = findNodeByPersistableUserObject(myNode, collKey);
+				if(nodeToSelect != null) {
+					menuTree.setSelectedNode(nodeToSelect);
+					QuestionItemCollection coll = (QuestionItemCollection)nodeToSelect.getUserObject();
+					doSelectCollection(ureq, coll, nodeToSelect, null, null);
+				}
 				menuTree.setDirty(true);
 			}	else if(QPoolEvent.COLL_DELETED.equals(event.getCommand())) {
 				buildMySubTreeModel(myNode);
-				menuTree.setDirty(true);
-				menuTree.setSelectedNode(myNode);
-				currentCtrl = null;
-				content.popContent();
+				menuTree.setSelectedNode(myOwnNode);
+				doSelectMyQuestions(ureq, null, null);
 			} else if(QPoolEvent.POOL_CREATED.equals(event.getCommand())
 					|| QPoolEvent.POOL_DELETED.equals(event.getCommand())) {
 				buildShareSubTreeModel(sharesNode);
@@ -552,11 +558,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private void buildMySubTreeModel(GenericTreeNode parentNode) {
 		parentNode.removeAllChildren();
 		
-		GenericTreeNode node = new GenericTreeNode(translate("menu.database.my"), "My");
-		node.setIconCssClass("o_sel_qpool_my_items");
-		parentNode.addChild(node);
+		myOwnNode = new GenericTreeNode(translate("menu.database.my"), "My");
+		myOwnNode.setIconCssClass("o_sel_qpool_my_items");
+		parentNode.addChild(myOwnNode);
 		
-		node = new GenericTreeNode(translate("menu.database.favorit"), "Marked");
+		GenericTreeNode node = new GenericTreeNode(translate("menu.database.favorit"), "Marked");
 		node.setIconCssClass("o_sel_qpool_favorits");
 		parentNode.addChild(node);
 		
@@ -567,6 +573,28 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			parentNode.addChild(node);
 		}
 	}
+	
+	private GenericTreeNode findNodeByPersistableUserObject(GenericTreeNode parentNode, Long id) {
+		if(parentNode == null || id == null) {
+			return null;
+		}
+		
+		for(int i=parentNode.getChildCount(); i-->0; ) {
+			INode node = parentNode.getChildAt(i);
+			if(node instanceof GenericTreeNode) {
+				GenericTreeNode treeNode = (GenericTreeNode)node;
+				Object userObj = treeNode.getUserObject();
+				if(userObj instanceof Persistable) {
+					Persistable obj = (Persistable)userObj;
+					if(id.equals(obj.getKey())) {
+						return treeNode;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
 	
 	private static class ControlledTreeNode extends GenericTreeNode {
 		private static final long serialVersionUID = 768640290449143804L;

@@ -39,11 +39,25 @@ public class QPoolEvent extends MultiUserEvent {
 	public static final String COLL_CHANGED = "qpoll-coll-changed";
 	public static final String POOL_CREATED = "qpool-pool-created";
 	public static final String POOL_DELETED = "qpool-pool-deleted";
+	public static final String BULK_CHANGE = "qpool-bulk-change";
 	public static final String EDIT = "edit";
 	
+	private Long objectKey;
 
 	public QPoolEvent(String cmd) {
 		super(cmd);
 	}
+	
+	public QPoolEvent(String cmd, Long objectKey) {
+		super(cmd);
+		this.objectKey = objectKey;
+	}
 
+	public Long getObjectKey() {
+		return objectKey;
+	}
+
+	public void setObjectKey(Long objectKey) {
+		this.objectKey = objectKey;
+	}
 }

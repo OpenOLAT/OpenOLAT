@@ -589,6 +589,24 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 			}
 		}
+		
+		// allSelectedIndex is a flag which is not updated if someone
+		// deselect a row. check if the num of selected rows is equal
+		// to the number of loaded rows
+		if(allSelectedIndex) {
+			int manuallySelectedRows = multiSelectedIndex.size();
+			int modelCount = dataModel.getRowCount();
+			int loadedRows = 0;
+			for(int i=0; i<modelCount; i++) {
+				if(dataModel.isRowLoaded(i)) {
+					loadedRows++;
+				}
+			}
+			
+			if(manuallySelectedRows != loadedRows) {
+				allSelectedIndex = false;
+			}
+		}
 	}
 
 	@Override

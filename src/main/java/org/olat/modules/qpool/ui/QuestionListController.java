@@ -339,6 +339,7 @@ public class QuestionListController extends AbstractItemListController implement
 		} else if(source == bulkChangeCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				updateRows(bulkChangeCtrl.getUpdatedItems());
+				fireEvent(ureq, new QPoolEvent(QPoolEvent.BULK_CHANGE));
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -370,6 +371,11 @@ public class QuestionListController extends AbstractItemListController implement
 					doPrevious(ureq, qce.getItem());
 				} else if("next".equals(qce.getCommand())) {
 					doNext(ureq, qce.getItem());
+				}
+			} else if (event instanceof QPoolEvent) {
+				QPoolEvent qce = (QPoolEvent)event;
+				if(QPoolEvent.ITEM_DELETED.equals(qce.getCommand())) {
+					fireEvent(ureq, qce);
 				}
 			}
 		} else if(source == addController) {
@@ -610,6 +616,7 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 		cmc.activate();
 	}
+	
 	private void doExportToRepositoryEntry(UserRequest ureq, Long repoEntryKey) {
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoEntryKey, false);
 		if(re != null) {
@@ -619,8 +626,8 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 	
 	private void doCreateCollection(UserRequest ureq, String name, List<QuestionItemShort> items) {
-		qpoolService.createCollection(getIdentity(), name, items);
-		fireEvent(ureq, new QPoolEvent(QPoolEvent.COLL_CREATED));
+		QuestionItemCollection coll = qpoolService.createCollection(getIdentity(), name, items);
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.COLL_CREATED, coll.getKey()));
 	}
 	
 	private void doChooseAuthoren(UserRequest ureq, List<QuestionItemShort> items) {
@@ -700,7 +707,7 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void doRenameItemCollection(UserRequest ureq, String newName) {
 		itemCollection = qpoolService.renameCollection(itemCollection, newName);
-		fireEvent(ureq, new QPoolEvent(QPoolEvent.COLL_CHANGED));
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.COLL_CHANGED, itemCollection.getKey()));
 	}
 
 	private void doConfirmDeleteSource(UserRequest ureq) {
