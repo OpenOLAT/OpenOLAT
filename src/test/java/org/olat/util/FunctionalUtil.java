@@ -48,7 +48,7 @@ public class FunctionalUtil {
 	public final static String ACKNOWLEDGE_CHECKBOX = "acknowledge_checkbox";
 
 	public final static long TIMEOUT = 20000;
-	public final static long POLL_INTERVAL = 200;
+	public final static long POLL_INTERVAL = 3000;
 	
 	public enum WaitLimitAttribute {
 		NORMAL("10000"),

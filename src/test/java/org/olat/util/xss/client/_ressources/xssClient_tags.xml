@@ -4,7 +4,9 @@
 	<tag name="html"/>
 	<tag name="head"/>
 	<tag name="meta"/>
-	<tag name="body"/>
+	<tag name="body">
+		<attribute name="onload"/>
+	</tag>
 	
 	<!-- formating tags -->
 	<tag name="h1"/>
@@ -24,18 +26,32 @@
 	<tag name="tbody"/>
 	<tag name="td">
 		<attribute name="align"/>
-		<attribute name="valing"/>
+		<attribute name="valign"/>
 		<attribute name="colspan"/>
 		<attribute name="rowspan"/>
 	</tag>
+	<tag name="col"/>
+	<tag name="colgroup"/>
+	<tag name="tfoot"/>
 	<tag name="div"/>
 	<tag name="a">
 		<attribute name="href"/>
 	</tag>
+	<tag name="ol"/>
+	<tag name="ul"/>
+	<tag name="li"/>
+	<tag name="address"/>
+	<tag name="hr"/>
+	<tag name="pre"/>
+	<tag name="code"/>
+	<tag name="dd"/>
+	<tag name="dt"/>
+	<tag name="textarea"/>
 	
 	<!-- embedding external -->
 	<tag name="img">
 		<attribute name="src"/>
+		<attribute nama="alt"/>
 	</tag>
 	<tag name="script"/>
 	<tag name="object"/>
@@ -47,5 +63,17 @@
 	<tag name="i"/>
 	<tag name="b"/>
 	<tag name="u"/>
+	<tag name="s"/>
 	<tag name="span"/>
+	<tag name="blockquote"/>
+	<tag name="br"/>
+	<tag name="small"/>
+	<tag name="big"/>
+	<tag name="sub"/>
+	<tag name="sup"/>
+	<tag name="em"/>
+	<tag name="q"/>
+	<tag name="label"/>
+	<tag name="option"/>
+	<tag name="select"/>
 </list>

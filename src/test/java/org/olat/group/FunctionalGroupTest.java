@@ -294,6 +294,7 @@ public class FunctionalGroupTest {
 		
 		functionalVOUtil.addOwnerToGroup(deploymentUrl, groups[0], tutors[0]);
 		
+		//TODO:JK: I wish there would be REST extension to configure waiting list
 		functionalVOUtil.setGroupConfiguration(deploymentUrl, groups[0],
 				new String[]{
 					CollaborationTools.TOOL_CALENDAR,
