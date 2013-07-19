@@ -1037,14 +1037,14 @@
 	</profiles>
 	<repositories>
 		<repository>
-      <id>central</id>
-      <name>Maven Repository Switchboard</name>
-      <layout>default</layout>
-      <url>http://repo1.maven.org/maven2</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
+			<id>central</id>
+			<name>Maven Repository Switchboard</name>
+			<layout>default</layout>
+			<url>http://repo1.maven.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
 		<repository>
 			<id>maven2-repository.java.net</id>
 			<name>Java.net repository for Maven</name>
@@ -1059,7 +1059,7 @@
 		<repository>
 			<id>jboss-public-repository-group</id>
 			<name>JBoss Public Maven Repository Group</name>
-			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
+			<url>https://repository.jboss.org/nexus/content/groups/public</url>
 			<layout>default</layout>
 			<releases>
 				<enabled>true</enabled>
@@ -1073,7 +1073,7 @@
 		<repository>
 			<id>openolat-repo</id>
 			<name>OpenOLAT Public Maven Repository Group</name>
-			<url>http://nexus.openolat.org/nexus/content/groups/public/</url>
+			<url>http://nexus.openolat.org/nexus/content/groups/public</url>
 			<layout>default</layout>
 			<releases>
 				<enabled>true</enabled>
