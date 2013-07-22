@@ -95,6 +95,7 @@ public class EPTOCController extends BasicController {
 		treeCtr.setDragEnabled(true);
 		treeCtr.setDropEnabled(true);
 		treeCtr.setDropSiblingEnabled(true);
+		treeCtr.setDndAcceptJSMethod("treeAcceptDrop_portfolio");
 		treeCtr.addListener(this);
 		treeCtr.setRootVisible(true);
 

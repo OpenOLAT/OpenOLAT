@@ -1157,6 +1157,12 @@ function onTreeDrop(event, ui) {
 }
 
 function treeAcceptDrop(el) {
+	return true;
+}
+
+function treeAcceptDrop_notWithChildren(el) {
+	var accept = false;
+	
 	var dragEl = jQuery(el);
 	var dragElId = dragEl.attr('id');
 	if(dragElId != undefined && (dragElId.indexOf('dd') == 0 ||
@@ -1167,33 +1173,92 @@ function treeAcceptDrop(el) {
 		var dropElId = dropEl.attr('id');//dropped
 		var dragNodeId = dragElId.substring(2, dragElId.length);
 		var dropId = dropElId.substring(2, dropElId.length);
-		if(dragNodeId == dropId) {
-			return false;
-		} 
-		
-		var sibling = "";
-		if(dropElId.indexOf('ds') == 0) {
-			sibling = "yes";
-		} else if(dropElId.indexOf('dt') == 0) {
-			sibling = "end";
+		if(dragNodeId != dropId) {
+			var containerEl = jQuery('#dd' + dragNodeId).parents('li');
+			if(containerEl.length > 0 && jQuery(containerEl.get(0)).find('#dd' + dropId).length == 0) {
+				accept = true;
+			}
 		}
-		
-		var dropAllowed = dropEl.data(dragNodeId + "-" + sibling);
-		if(dropAllowed === undefined) {
-			var url = dropEl.droppable('option', 'fbUrl');
-			//use prototype for the Ajax call
-			jQuery.ajax(url, { 
-				async: false,
-				data: { nidle:dragNodeId, tnidle:dropId, sne:sibling },
-				dataType: "json",
-				method:'GET',
-				success: function(data) {
-					dropAllowed = data.dropAllowed;
+	}
+	
+	return accept;
+}
+
+function treeAcceptDrop_portfolio(el) {
+	var accept = false;
+	
+	var dragEl = jQuery(el);
+	var dragElId = dragEl.attr('id');
+	if(treeNode_isDragNode(dragElId)) {
+		var dropEl = jQuery(this);
+		var dropElId = dropEl.attr('id');//dropped
+		var dragNodeId = dragElId.substring(2, dragElId.length);
+		var dropId = dropElId.substring(2, dropElId.length);
+		var sibling = dragElId.indexOf('ds') == 0 || dragElId.indexOf('dt') == 0;
+		if(dragNodeId != dropId) {
+			var dragType = treeNode_portfolioType(dragEl);
+			var dropType = treeNode_portfolioType(dropEl);
+			if(dragType == "artefact") {
+				if(dropType == "page" || dropType == "struct" || dropType == "artefact") {
+					accept = true;
 				}
-	  		});
-			dropEl.data(dragNodeId + "-" + sibling, dropAllowed);
+			} else if(dragType == "struct") {
+				if(dropType == "page" || dropType == "struct") {
+					accept = true;
+				}
+			} else if(dragType == "page") {
+				if(dropType == "map" || dropType == "page") {
+					accept = true;
+				}
+			}
 		}
-		return dropAllowed;
+	}
+
+	return accept;
+}
+
+function treeNode_portfolioType(el) {
+	var nodeEl = jQuery(el.get(0));
+	var type = treeNode_portfolioTypes(nodeEl);
+	if(type == null) {
+		var parentLink = nodeEl.parent('a');
+		if(parentLink.length > 0) {
+			type = treeNode_portfolioTypes(jQuery(parentLink.get(0)));
+		} else if(nodeEl.attr('id').indexOf('ds') == 0) {
+			var prevEl = nodeEl.prev('div');
+			if(prevEl.length > 0) {
+				type = treeNode_portfolioTypes(prevEl);
+			}
+		} else if(nodeEl.attr('id').indexOf('dt') == 0) {
+			var prevEl = nodeEl.next('div');
+			if(prevEl.length > 0) {
+				type = treeNode_portfolioTypes(prevEl);
+			}
+		}
+	}
+	return type;
+}
+
+function treeNode_portfolioTypes(nodeEl) {
+	if(nodeEl.find === undefined) {
+		return null;
+	} else if(nodeEl.find(".b_ep_struct_icon").length > 0 || nodeEl.hasClass('b_ep_struct_icon')) {
+		return "struct";
+	} else if(nodeEl.find(".b_ep_page_icon").length > 0 || nodeEl.hasClass('b_ep_page_icon')) {
+		return "page";
+	} else if(nodeEl.find(".b_ep_map_icon").length > 0 || nodeEl.hasClass('b_ep_map_icon')) {
+		return "map";
+	} else if(nodeEl.find(".b_ep_artefact").length > 0 || nodeEl.hasClass('b_ep_artefact')) {
+		return "artefact";
+	}
+	return null;
+}
+
+function treeNode_isDragNode(elId) {
+	if(elId != undefined && (elId.indexOf('dd') == 0 ||
+			elId.indexOf('ds') == 0 || elId.indexOf('dt') == 0 ||
+			elId.indexOf('da') == 0 || elId.indexOf('row') == 0)) {
+		return true;
 	}
 	return false;
 }
@@ -1309,6 +1374,10 @@ function b_attach_i18n_inline_editing() {
 	});
 	// Add to on ajax ready callback for next execution
 	b_AddOnDomReplacementFinishedCallback(b_attach_i18n_inline_editing);
+}
+
+function b_hideExtMessageBox() {
+	//for compatibility
 }
  
  

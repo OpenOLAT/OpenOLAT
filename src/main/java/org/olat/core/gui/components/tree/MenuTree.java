@@ -33,14 +33,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
@@ -112,6 +109,7 @@ public class MenuTree extends Component {
 	private boolean rootVisible = true;
 	private boolean unselectNodes;
 	private String dndFeedbackUri;
+	private String dndAcceptJSMethod = "treeAcceptDrop_notWithChildren";
 
 	private boolean dirtyForUser = false;
 	
@@ -143,6 +141,7 @@ public class MenuTree extends Component {
 	/**
 	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		if (GUIInterna.isLoadPerformanceMode()) {
 			String compPath = ureq.getParameter("en");
@@ -173,16 +172,6 @@ public class MenuTree extends Component {
 			boolean atTheEnd = "end".equals(sneValue);
 			handleDropped(ureq, targetNodeId, nodeId, sibling, atTheEnd);
 		}
-	}
-	
-	//fxdiff VCRP-9: drag and drop in menu tree
-	boolean canDrop(String dropNodeId, String targetNodeId, boolean sibling) {
-		if(treeModel instanceof DnDTreeModel) {
-			TreeNode dropNode = treeModel.getNodeById(dropNodeId);
-			TreeNode targetNode = treeModel.getNodeById(targetNodeId);
-			return ((DnDTreeModel)treeModel).canDrop(dropNode, targetNode, sibling);
-		}
-		return true;
 	}
 	
 	/**
@@ -320,16 +309,6 @@ public class MenuTree extends Component {
 		}
 		return false;
 	}
-	
-	@Override
-	public void validate(UserRequest ureq, ValidationResult vr) {
-		if(dragEnabled || dropEnabled) {
-			if(dndFeedbackUri == null && treeModel instanceof DnDTreeModel) {
-				dndFeedbackUri = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), new DnDFeedbackMapper(this));
-			}
-		}
-		super.validate(ureq, vr);
-	}
 
 	/**
 	 * @return the selected node
@@ -440,6 +419,14 @@ public class MenuTree extends Component {
 		dropSiblingEnabled = enabled;
 	}
 	
+	public String getDndAcceptJSMethod() {
+		return dndAcceptJSMethod;
+	}
+
+	public void setDndAcceptJSMethod(String dndAcceptJSMethod) {
+		this.dndAcceptJSMethod = dndAcceptJSMethod;
+	}
+
 	/**
 	 * Expand the selected node to view its children
 	 * @return

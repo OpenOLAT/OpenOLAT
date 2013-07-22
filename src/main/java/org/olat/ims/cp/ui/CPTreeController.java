@@ -97,6 +97,7 @@ public class CPTreeController extends BasicController {
 		treeCtr.setDragEnabled(true);
 		treeCtr.setDropEnabled(true);
 		treeCtr.setDropSiblingEnabled(true);
+		treeCtr.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");
 		treeCtr.addListener(this);
 
 		setLinks();

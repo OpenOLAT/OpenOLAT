@@ -238,21 +238,13 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 	}
 	
 	@Override
-	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode, boolean sibling) {
-		if(droppedNode == null || targetNode == null) return false;
-		
-		CourseEditorTreeNode selectedNode = getCourseEditorNodeById(droppedNode.getIdent());
-		CourseEditorTreeNode parentNode = getCourseEditorNodeById(targetNode.getIdent());
-		if(selectedNode == null || parentNode == null) return false;
-		if(sibling && parentNode.getParent() != null) {
-			parentNode = getCourseEditorNodeById(parentNode.getParent().getIdent());
-		}
-
-		// check if insert position is within the to-be-copied tree
-		if (checkIfIsChild(parentNode, selectedNode)) {
-			return false;
-		}
+	public boolean isNodeDroppable(TreeNode node) {
 		return true;
+	}
+
+	@Override
+	public boolean isNodeDraggable(TreeNode node) {
+		return !getRootNode().getIdent().equals(node.getIdent());
 	}
 	
 	public boolean checkIfIsChild(CourseEditorTreeNode prospectChild, CourseEditorTreeNode sourceTree) {

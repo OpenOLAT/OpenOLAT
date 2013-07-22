@@ -121,6 +121,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		menuTree.setDragEnabled(false);
 		menuTree.setDropEnabled(true);
 		menuTree.setDropSiblingEnabled(false);
+		menuTree.setDndAcceptJSMethod("treeAcceptDrop");
 		menuTree.addListener(this);
 		menuTree.setRootVisible(false);
 		//open the nodes shared and my at start

@@ -31,6 +31,8 @@ package org.olat.core.gui.components.tree;
 //fxdiff VCRP-9: drag and drop in menu tree
 public interface DnDTreeModel extends TreeModel {
 	
-	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode, boolean sibling);
+	public boolean isNodeDroppable(TreeNode node);
+	
+	public boolean isNodeDraggable(TreeNode node);
 
 }

@@ -22,9 +22,7 @@ package org.olat.modules.qpool.ui;
 import org.olat.core.gui.components.tree.DnDTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.group.BusinessGroup;
-import org.olat.modules.qpool.Pool;
-import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.core.id.Persistable;
 
 /**
  * 
@@ -37,22 +35,16 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private static final long serialVersionUID = -665560407090871912L;
 
 	@Override
-	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode,	boolean sibling) {
-		if(droppedNode == null && targetNode == null) {
-			return false;
-		} else if(droppedNode == null) {
-			Object uObject = targetNode.getUserObject();
-			if("My".equals(uObject)) {
-				return !sibling;
-			} else if("Marked".equals(uObject)) {
-				return !sibling;
-			} else if(uObject instanceof BusinessGroup
-					|| uObject instanceof QuestionItemCollection
-					|| uObject instanceof Pool) {
-				return !sibling;
-			}
-			return false;
+	public boolean isNodeDroppable(TreeNode node) {
+		Object uObject = node.getUserObject();
+		if(uObject instanceof Persistable || "My".equals(uObject) || "Marked".equals(uObject)) {
+			return true;//collection, list, pool or group
 		}
+		return false;
+	}
+
+	@Override
+	public boolean isNodeDraggable(TreeNode node) {
 		return false;
 	}
 }

@@ -316,7 +316,8 @@ public class MenuTreeRenderer implements ComponentRenderer {
 	
 	//fxdiff VCRP-9: drag and drop in menu tree
 	private void appendSiblingDropObj(TreeNode node, int level, MenuTree tree, StringOutput target, URLBuilder ubu, AJAXFlags flags, boolean after) {
-		if(tree.isDropEnabled()) {
+		boolean drop = tree.isDropEnabled() && ((DnDTreeModel)tree.getTreeModel()).isNodeDroppable(node);
+		if(drop) {
 			String id = (after ? "dt" : "ds") + node.getIdent();
 			target.append("<div id='").append(id).append("' class='b_dd_sibling b_dd_sibling_l").append(level).append("'>")
 				.append("<script type='text/javascript'>jQuery('#").append(id).append("')");
@@ -328,30 +329,39 @@ public class MenuTreeRenderer implements ComponentRenderer {
 	//fxdiff VCRP-9: drag and drop in menu tree
 	private void appendDragAndDropObj(TreeNode node, MenuTree tree, StringOutput target, URLBuilder ubu, AJAXFlags flags) {
 		String id = node.getIdent();
-		target.append("<script type='text/javascript'>");
-		
-		if(tree.isDragEnabled()) {
-			target.append("jQuery('#dd").append(id).append("')");
-			appendDraggable(target);
-			target.append("jQuery('#da").append(id).append("')");
-			appendDraggable(target);
+		boolean drag = tree.isDragEnabled() && ((DnDTreeModel)tree.getTreeModel()).isNodeDraggable(node);
+		boolean drop = tree.isDropEnabled() && ((DnDTreeModel)tree.getTreeModel()).isNodeDroppable(node);
+		if(drag || drop) {
+			target.append("<script type='text/javascript'>");
+			if(drag) {
+				target.append("jQuery('#dd").append(id).append("')");
+				appendDraggable(target);
+				target.append("jQuery('#da").append(id).append("')");
+				appendDraggable(target);
+			}
+			if(drop) {
+				target.append("jQuery('#dd").append(id).append("')");
+				appendDroppable(node, tree, target, ubu, flags);
+			}
+			target.append("</script>");
 		}
-		if(tree.isDropEnabled()) {
-			target.append("jQuery('#dd").append(id).append("')");
-			appendDroppable(node, tree, target, ubu, flags);
-		}
-		target.append("</script>");
 	}
 	
 	private void appendDroppable(TreeNode node, MenuTree tree, StringOutput sb, URLBuilder ubu, AJAXFlags flags) {
 		String feedBackUri = tree.getDndFeedbackUri();
 		StringOutput endUrl = new StringOutput(64);
+		String acceptMethod = tree.getDndAcceptJSMethod();
+		if(acceptMethod == null) {
+			acceptMethod = "treeAcceptDrop";
+		}
 		ubu.buildURI(endUrl, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_DROP, node.getIdent() }, flags.isIframePostEnabled() ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		sb.append(".droppable({ fbUrl: '").append(feedBackUri).append("', endUrl: '").append(endUrl).append("', hoverClass:'b_dd_over', accept: treeAcceptDrop, drop:onTreeDrop});");
+		sb.append(".droppable({ fbUrl: '").append(feedBackUri).append("', endUrl: '").append(endUrl)
+		  .append("', hoverClass:'b_dd_over', accept: ")
+		  .append(acceptMethod).append(", drop:onTreeDrop});");
 	}
 	
 	private void appendDraggable(StringOutput sb) {
-		sb.append(".draggable({start:onTreeStartDrag, stop: onTreeStopDrag, revert:'invalid' });");
+		sb.append(".draggable({start:onTreeStartDrag, stop: onTreeStopDrag, delay:100, distance:5, revert:'invalid' });");
 	}
 	
 	//fxdiff VCRP-9: drag and drop in menu tree

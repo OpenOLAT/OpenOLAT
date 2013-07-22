@@ -263,7 +263,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			menuTree.setExpandSelectedNode(false);
 			menuTree.setDragEnabled(true);
 			menuTree.setDropEnabled(true);
-			menuTree.setDropSiblingEnabled(true);		
+			menuTree.setDropSiblingEnabled(true);	
+			menuTree.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");	
 
 			/*
 			 * create editor user course environment for enhanced syntax/semantic

@@ -83,12 +83,32 @@ public class EPTOCTreeModel extends GenericTreeModel implements DnDTreeModel {
 		for (AbstractArtefact artefact : artList) {
 			String artefactIdent = structureNode.getIdent() + artefact.getKey().toString();
 			GenericTreeNode artefactNode = new GenericTreeNode(artefactIdent, artefact.getTitle(), artefact);
-			artefactNode.setIconCssClass(artefact.getIcon());
+			artefactNode.setIconCssClass(artefact.getIcon() + " b_ep_artefact");
 			structureNode.addChild(artefactNode);
 		}
 	}
 
 	@Override
+	public boolean isNodeDroppable(TreeNode node) {
+		return !getRootNode().getIdent().equals(node.getIdent());
+	}
+
+	@Override
+	public boolean isNodeDraggable(TreeNode node) {
+		return !getRootNode().getIdent().equals(node.getIdent())
+				&& !getRootNode().getIdent().equals(node.getParent().getIdent()) ;
+	}
+
+	/**
+	 * The check is done in javascript, the purpose of this method is only
+	 * historically and for analyse
+	 * 
+	 * @deprecated
+	 * @param droppedNode
+	 * @param targetNode
+	 * @param sibling
+	 * @return
+	 */
 	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode, boolean sibling) {
 		Object droppedObj = droppedNode.getUserObject();
 		Object droppedParentObj = null;

@@ -205,8 +205,13 @@ public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 	}
 	
 	@Override
-	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode, boolean sibling) {
+	public boolean isNodeDroppable(TreeNode node) {
 		return true;
+	}
+
+	@Override
+	public boolean isNodeDraggable(TreeNode node) {
+		return !rootNodeId.equals(node.getIdent());
 	}
 	
 /*
