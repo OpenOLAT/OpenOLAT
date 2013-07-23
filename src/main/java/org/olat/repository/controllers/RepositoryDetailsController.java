@@ -97,6 +97,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.CourseHandler;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
@@ -261,6 +262,22 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		launchButton.setTextReasonForDisabling(translate("launch.noaccess"));
 		downloadButton.setEnabled(repositoryEntry.getCanDownload());
 		downloadButton.setTextReasonForDisabling(translate("disabledexportreason"));
+		
+		RepositoryEntryLifecycle cycle = repositoryEntry.getLifecycle();
+		if(cycle != null) {
+			Formatter format = Formatter.getInstance(getLocale());
+			main.contextPut("lfStart", format.formatDateAndTime(cycle.getValidFrom()));
+			main.contextPut("lfEnd", format.formatDateAndTime(cycle.getValidTo()));
+			if(!cycle.isPrivateCycle()) {
+				String label = cycle.getLabel();
+				String softKey = cycle.getSoftKey();
+				main.contextPut("lfLabel", label);
+				main.contextPut("lfSoftKey", softKey);
+			} else {
+				main.contextPut("lfLabel", null);
+				main.contextPut("lfSoftKey", null);
+			}
+		}
 		
 		if (repositoryEntry.getDescription() != null) {
 			main.contextPut("description", Formatter.formatLatexFormulas(repositoryEntry.getDescription()));
@@ -991,10 +1008,10 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		} else if (source == repositoryEditDescriptionController) {
 			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				// RepositoryEntry changed
-				// setEntry(repositoryEditDescriptionController.getRepositoryEntry(), ureq);
 				String displayname = repositoryEditDescriptionController.getRepositoryEntry().getDisplayname();
 				String description = repositoryEditDescriptionController.getRepositoryEntry().getDescription();
-				repositoryEntry = RepositoryManager.getInstance().setDescriptionAndName(repositoryEntry, displayname, description);
+				RepositoryEntryLifecycle cycle = repositoryEditDescriptionController.getRepositoryEntry().getLifecycle();
+				repositoryEntry = RepositoryManager.getInstance().setDescriptionAndName(repositoryEntry, displayname, description, cycle);
 				// do not close upon save/upload image closeableModalController.deactivate();
 				updateView(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {

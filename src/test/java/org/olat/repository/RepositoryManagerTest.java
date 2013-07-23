@@ -30,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,6 +56,8 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -85,6 +88,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private MarkManager markManager;
+	@Autowired
+	private RepositoryEntryLifecycleDAO lifecycleDao;
 	
 	@Before
 	public void setup() {
@@ -851,6 +856,49 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertFalse(freeEntries.contains(managedRe));
 		Assert.assertTrue(freeEntries.contains(freeRe));
 	}
+
+	@Test
+	public void setDescriptionAndName() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+		
+		String newName = "Brand new name";
+		String newDesc = "Brand new description";
+		re = repositoryManager.setDescriptionAndName(re, newName, newDesc);
+		Assert.assertNotNull(re);
+		
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry reloaded = repositoryManager.lookupRepositoryEntry(re.getKey());
+		Assert.assertNotNull(reloaded);
+		Assert.assertEquals("Brand new name", reloaded.getDisplayname());
+		Assert.assertEquals("Brand new description", reloaded.getDescription());
+	}
+	
+	@Test
+	public void setDescriptionAndName_lifecycle() {
+		RepositoryEntryLifecycle publicCycle
+			= lifecycleDao.create("Public 1", "Soft public 1", false, new Date(), new Date());
+
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+		
+		String newName = "Brand new name";
+		String newDesc = "Brand new description";
+		re = repositoryManager.setDescriptionAndName(re, newName, newDesc, publicCycle);
+		Assert.assertNotNull(re);
+		
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry reloaded = repositoryManager.lookupRepositoryEntry(re.getKey());
+		Assert.assertNotNull(reloaded);
+		Assert.assertEquals("Brand new name", reloaded.getDisplayname());
+		Assert.assertEquals("Brand new description", reloaded.getDescription());
+		Assert.assertEquals(publicCycle, reloaded.getLifecycle());
+	}
+	
 
 	private RepositoryEntry createRepositoryEntry(final String type, long i) {
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(type, new Long(i));

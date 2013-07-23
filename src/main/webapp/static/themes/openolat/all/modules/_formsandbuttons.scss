@@ -70,6 +70,7 @@ div.b_button_group { text-align: center; margin: 2em 0 1em 0;}
 div.b_button_group div { display: inline;}
 
 
+
 .b_xsmall, sup, sub {
 	font-size: 80%;
 }
@@ -314,6 +315,7 @@ div.b_form {
 	&.b_form_vertical div.b_button_group { text-align: left; }
 	
 	div.b_form_element div.b_form_example { display: inline; font-size: 80%; color: #504D4E;}
+	div.b_form_element div.b_inline_elements div { display: inline; }
 	
 	div.b_form_element {
 		.b_form_disabled { color: #504D4E; }

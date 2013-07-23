@@ -48,7 +48,8 @@ import org.olat.core.id.Persistable;
 @Table(name="o_repositoryentry_cycle")
 @NamedQueries({
 	@NamedQuery(name="loadReLifeCycle", query="select relifecycle from repositoryentrylifecycle relifecycle where relifecycle.key=:key"),
-	@NamedQuery(name="loadPublicReLifeCycle", query="select relifecycle from repositoryentrylifecycle relifecycle where relifecycle.privateCycle=false")
+	@NamedQuery(name="loadPublicReLifeCycle", query="select relifecycle from repositoryentrylifecycle relifecycle where relifecycle.privateCycle=false"),
+	@NamedQuery(name="countPublicReLifeCycle", query="select count(relifecycle) from repositoryentrylifecycle relifecycle where relifecycle.privateCycle=false")
 })
 public class RepositoryEntryLifecycle implements Persistable, CreateInfo, ModifiedInfo {
 

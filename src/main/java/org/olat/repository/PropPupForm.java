@@ -38,6 +38,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.fileresource.types.ScormCPFileResource;
+import org.olat.ims.qti.fileresource.SurveyFileResource;
+import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.login.LoginModule;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -181,6 +184,13 @@ public class PropPupForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		final boolean managedSettings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.settings);
+		
+		String type = entry.getOlatResource().getResourceableTypeName();
+		if(TestFileResource.TYPE_NAME.equals(type) || SurveyFileResource.TYPE_NAME.equals(type)
+				|| ScormCPFileResource.TYPE_NAME.equals(type)) {
+			String warning = translate("warn.resource.need.course");
+			flc.contextPut("off_warn", warning);
+		}
 		
 		canCopy = uifactory.addCheckboxesVertical("cif_canCopy", "cif.canCopy", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		canCopy.select("xx", entry.getCanCopy());

@@ -26,7 +26,9 @@
 package org.olat.repository.controllers;
 
 import java.io.File;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -35,9 +37,11 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -55,10 +59,13 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryIconRenderer;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 
@@ -73,18 +80,25 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 	private final boolean isSubWorkflow;
 	private RepositoryEntry repositoryEntry;
+	private final String repoEntryType;
 
 	private static final int picUploadlimitKB = 1024;
 
 	private FileElement fileUpload;
 	private TextElement displayName;
 	private RichTextElement description;
+	private SingleSelection dateTypesEl, publicDatesEl;
+	private DateChooser startDateEl, endDateEl;
 	private ImageFormItem imageEl;
 	private FormLink deleteImage;
 	private FormSubmit submit;
+	private FormLayoutContainer descCont, privateDatesCont;
+	
+	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
 
 	private final UserManager userManager;
 	private final RepositoryManager repositoryManager;
+	private final RepositoryEntryLifecycleDAO lifecycleDao;
 
 	/**
 	 * Create a repository add controller that adds the given resourceable.
@@ -98,8 +112,10 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		setBasePackage(RepositoryManager.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		lifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
 		this.isSubWorkflow = isSubWorkflow;
 		this.repositoryEntry = entry;
+		repoEntryType = repositoryEntry.getOlatResource().getResourceableTypeName();
 		initForm(ureq);
 	}
 
@@ -110,7 +126,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			layoutCont.contextPut("title", repositoryEntry.getDisplayname());
 		}
 		
-		FormLayoutContainer descCont = FormLayoutContainer.createDefaultFormLayout("desc", getTranslator());
+		descCont = FormLayoutContainer.createDefaultFormLayout("desc", getTranslator());
+		descCont.setFormContextHelp("org.olat.repository","lifecycle.html","help.hover.lifecycle");
 		descCont.setRootForm(mainForm);
 		formLayout.add("desc", descCont);
 
@@ -155,6 +172,61 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 		uifactory.addSpacerElement("spacer2", descCont, false);
 		
+		if(CourseModule.getCourseTypeName().equals(repoEntryType)) {
+			String[] dateValues = new String[] {
+					translate("cif.dates.none"),
+					translate("cif.dates.private"),
+					translate("cif.dates.public")	
+			};
+			dateTypesEl = uifactory.addRadiosVertical("cif.dates", descCont, dateKeys, dateValues);
+			if(repositoryEntry.getLifecycle() == null) {
+				dateTypesEl.select("none", true);
+			} else if(repositoryEntry.getLifecycle().isPrivateCycle()) {
+				dateTypesEl.select("private", true);
+			} else {
+				dateTypesEl.select("public", true);
+			}
+			dateTypesEl.addActionListener(this, FormEvent.ONCHANGE);
+	
+			List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
+			String[] publicKeys = new String[cycles.size()];
+			String[] publicValues = new String[cycles.size()];
+			int count = 0;	
+			for(RepositoryEntryLifecycle cycle:cycles) {
+				publicKeys[count] = cycle.getKey().toString();
+				publicValues[count] = cycle.getLabel();
+			}
+			publicDatesEl = uifactory.addDropdownSingleselect("cif.public.dates", descCont, publicKeys, publicValues, null);
+	
+			String privateDatePage = velocity_root + "/cycle_dates.html";
+			privateDatesCont = FormLayoutContainer.createCustomFormLayout("private.date", getTranslator(), privateDatePage);
+			privateDatesCont.setRootForm(mainForm);
+			privateDatesCont.setLabel("cif.private.dates", null);
+			descCont.add("private.date", privateDatesCont);
+			
+			startDateEl = uifactory.addDateChooser("date.start", "cif.date.start", null, privateDatesCont);
+			endDateEl = uifactory.addDateChooser("date.end", "cif.date.end", null, privateDatesCont);
+			
+			if(repositoryEntry.getLifecycle() != null) {
+				RepositoryEntryLifecycle lifecycle = repositoryEntry.getLifecycle();
+				if(lifecycle.isPrivateCycle()) {
+					startDateEl.setDate(lifecycle.getValidFrom());
+					endDateEl.setDate(lifecycle.getValidTo());
+				} else {
+					String key = lifecycle.getKey().toString();
+					for(String publicKey:publicKeys) {
+						if(key.equals(publicKey)) {
+							publicDatesEl.select(key, true);
+							break;
+						}
+					}
+				}
+			}
+	
+			updateDatesVisibility();
+			uifactory.addSpacerElement("spacer3", descCont, false);
+		}
+		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		
 		VFSLeaf img = repositoryManager.getImage(repositoryEntry);
@@ -196,6 +268,23 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 		}
 	}
+	
+	private void updateDatesVisibility() {
+		if(dateTypesEl.isOneSelected()) {
+			String type = dateTypesEl.getSelectedKey();
+			if("none".equals(type)) {
+				publicDatesEl.setVisible(false);
+				privateDatesCont.setVisible(false);
+			} else if("public".equals(type)) {
+				publicDatesEl.setVisible(true);
+				privateDatesCont.setVisible(false);
+			} else if("private".equals(type)) {
+				publicDatesEl.setVisible(false);
+				privateDatesCont.setVisible(true);
+			}
+		}
+		descCont.setDirty(true);
+	}
 
 	@Override
 	protected void doDispose() {
@@ -229,7 +318,9 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == fileUpload) {
+		if (source == dateTypesEl) {
+			updateDatesVisibility();
+		} else if (source == fileUpload) {
 			if (fileUpload.isUploadSuccess()) {
 				File uploadedFile = fileUpload.getUploadFile();
 				imageEl.setMediaResource(new NamedFileMediaResource(uploadedFile, fileUpload.getName(), "", false));
@@ -286,8 +377,46 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			container.delete();
 		}
 		
-		repositoryEntry.setDisplayname(displayName.getValue().trim());
-		repositoryEntry.setDescription(description.getValue().trim());
+		String displayname = displayName.getValue().trim();
+		String desc = description.getValue().trim();
+		
+		if(dateTypesEl != null) {
+			String type = "none";
+			if(dateTypesEl.isOneSelected()) {
+				type = dateTypesEl.getSelectedKey();
+			}
+			
+			if("none".equals(type)) {
+				RepositoryEntryLifecycle cycle = repositoryEntry.getLifecycle();
+				repositoryEntry.setLifecycle(null);
+				if(cycle != null && cycle.isPrivateCycle()) {
+					lifecycleDao.deleteLifecycle(cycle);
+				}
+			} else if("public".equals(type)) {
+				String key = publicDatesEl.getSelectedKey();
+				if(StringHelper.isLong(key)) {
+					Long cycleKey = Long.parseLong(key);
+					RepositoryEntryLifecycle cycle = lifecycleDao.loadById(cycleKey);
+					repositoryEntry.setLifecycle(cycle);
+				}
+			} else if("private".equals(type)) {
+				Date start = startDateEl.getDate();
+				Date end = endDateEl.getDate();
+				RepositoryEntryLifecycle cycle = repositoryEntry.getLifecycle();
+				if(cycle == null || !cycle.isPrivateCycle()) {
+					String softKey = "lf_" + repositoryEntry.getSoftkey();
+					cycle = lifecycleDao.create(displayname, softKey, true, start, end);
+				} else {
+					cycle.setValidFrom(start);
+					cycle.setValidTo(end);
+					cycle = lifecycleDao.updateLifecycle(cycle);
+				}
+				repositoryEntry.setLifecycle(cycle);
+			}
+		}
+		
+		repositoryEntry.setDisplayname(displayname);
+		repositoryEntry.setDescription(desc);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

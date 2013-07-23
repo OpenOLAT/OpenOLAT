@@ -46,6 +46,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
@@ -80,6 +81,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	private final ACService acService;
 	private final AccessControlModule acModule;
 	private final RepositoryModule repositoryModule;
+	private final RepositoryEntryLifecycleDAO lifecycleDao;
 	private final UserManager userManager;
 	
 	private final Map<Long,OLATResourceAccess> repoEntriesWithOffer = new HashMap<Long,OLATResourceAccess>();;
@@ -96,6 +98,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		lifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 
@@ -103,21 +106,33 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 * @param tableCtr
 	 * @param selectButtonLabel Label of action row or null if no action row should be used
 	 * @param enableDirectLaunch
+	 * @return the position of the display name column
 	 */
-	public void addColumnDescriptors(TableController tableCtr, String selectButtonLabel, boolean enableDirectLaunch) {
+	public int addColumnDescriptors(TableController tableCtr, String selectButtonLabel, boolean enableDirectLaunch) {
+		
+		
 		//fxdiff VCRP-1,2: access control of resources
 		CustomCellRenderer acRenderer = new RepositoryEntryACColumnDescriptor();
-		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.ac", 0, null, 
+		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.ac", RepoCols.ac.ordinal(), null, 
 				translator.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
-		tableCtr.addColumnDescriptor(new RepositoryEntryTypeColumnDescriptor("table.header.typeimg", 1, null, 
+		tableCtr.addColumnDescriptor(new RepositoryEntryTypeColumnDescriptor("table.header.typeimg", RepoCols.repoEntry.ordinal(), null, 
 				translator.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
 		
+		int indexDisplaynameCol = 1;//col 0,1 visible see above
 		if(repositoryModule.isManagedRepositoryEntries()) {
-			tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.externalid", 7, null, translator.getLocale()));
-			tableCtr.addColumnDescriptor( new DefaultColumnDescriptor("table.header.externalref", 8, null, translator.getLocale()));
+			tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.externalid", RepoCols.externalId.ordinal(), null, translator.getLocale()));
+			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.externalref", RepoCols.externalRef.ordinal(), null, translator.getLocale()));
+			indexDisplaynameCol++;
 		}
-		
-		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", 2, enableDirectLaunch ? TABLE_ACTION_SELECT_ENTRY : null, translator.getLocale()) {
+		boolean lfVisible = lifecycleDao.countPublicLifecycle() > 0;
+		if(lfVisible) {
+			indexDisplaynameCol++;
+		}
+		tableCtr.addColumnDescriptor(lfVisible, new DefaultColumnDescriptor("table.header.lifecycle.label", RepoCols.lifecycleLabel.ordinal(), null, translator.getLocale()));
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lifecycle.softkey", RepoCols.lifecycleSoftKey.ordinal(), null, translator.getLocale()));
+
+		indexDisplaynameCol++;//see above
+		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", RepoCols.displayname.ordinal(), enableDirectLaunch ? TABLE_ACTION_SELECT_ENTRY : null, translator.getLocale()) {
 			@Override
 			public int compareTo(int rowa, int rowb) {
 				Object o1 =table.getTableDataModel().getValueAt(rowa, 1);
@@ -143,15 +158,22 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 			}
 		};
 		tableCtr.addColumnDescriptor(nameColDesc);
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.author", 3, null, translator.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.access", 4, null, translator.getLocale()));
-		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.date", 5, null, translator.getLocale()));
-		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lastusage", 6, null, translator.getLocale()));
+		
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lifecycle.start", RepoCols.lifecycleStart.ordinal(), null, translator.getLocale()));
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lifecycle.end", RepoCols.lifecycleEnd.ordinal(), null, translator.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.author", RepoCols.author.ordinal(), null, translator.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.access", RepoCols.access.ordinal(), null, translator.getLocale()));
+		
+		
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.date", RepoCols.creationDate.ordinal(), null, translator.getLocale()));
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lastusage", RepoCols.lastUsage.ordinal(), null, translator.getLocale()));
 		if (selectButtonLabel != null) {
 			StaticColumnDescriptor desc = new StaticColumnDescriptor(TABLE_ACTION_SELECT_LINK, selectButtonLabel, selectButtonLabel);
 			desc.setTranslateHeaderKey(false);			
 			tableCtr.addColumnDescriptor(desc);
 		}
+		
+		return indexDisplaynameCol;
 	}
 	
 	
@@ -167,9 +189,9 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 */
 	public Object getValueAt(int row, int col) {
 		RepositoryEntry re = (RepositoryEntry)getObject(row);
-		switch (col) {
+		switch (RepoCols.values()[col]) {
 			//fxdiff VCRP-1,2: access control of resources
-			case 0: {
+			case ac: {
 				if (re.isMembersOnly()) {
 					// members only always show lock icon
 					List<String> types = new ArrayList<String>(1);
@@ -182,10 +204,10 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				}
 				return access;
 			}
-			case 1: return re; 
-			case 2: return getDisplayName(re, translator.getLocale());
-			case 3: return getFullname(re.getInitialAuthor());
-			case 4: {
+			case repoEntry: return re; 
+			case displayname: return getDisplayName(re, translator.getLocale());
+			case author: return getFullname(re.getInitialAuthor());
+			case access: {
 				//fxdiff VCRP-1,2: access control of resources
 				if(re.isMembersOnly()) {
 					return translator.translate("table.header.access.membersonly"); 
@@ -206,12 +228,32 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 						return "ERROR";
 				}
 			}
-			case 5: return re.getCreationDate();
-			case 6: return re.getLastUsage();
-			case 7: return re.getExternalId();
-			case 8: return re.getExternalRef();
+			case creationDate: return re.getCreationDate();
+			case lastUsage: return re.getLastUsage();
+			case externalId: return re.getExternalId();
+			case externalRef: return re.getExternalRef();
+			case lifecycleLabel: return re.getLifecycle() == null ? null : re.getLifecycle().getLabel();
+			case lifecycleSoftKey: return re.getLifecycle() == null ? null : re.getLifecycle().getSoftKey();
+			case lifecycleStart: return re.getLifecycle() == null ? null : re.getLifecycle().getValidFrom();
+			case lifecycleEnd: return re.getLifecycle() == null ? null : re.getLifecycle().getValidTo();
 			default: return "ERROR";
 		}
+	}
+	
+	public enum RepoCols {
+		ac,
+		repoEntry,
+		displayname,
+		author,
+		access,
+		creationDate,
+		lastUsage,
+		externalId,
+		externalRef,
+		lifecycleLabel,
+		lifecycleSoftKey,
+		lifecycleStart,
+		lifecycleEnd
 	}
 	
 	

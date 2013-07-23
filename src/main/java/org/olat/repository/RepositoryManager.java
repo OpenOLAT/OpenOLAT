@@ -88,6 +88,7 @@ import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.delete.service.RepositoryDeletionManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.model.RepositoryEntryShortImpl;
@@ -850,6 +851,36 @@ public class RepositoryManager extends BasicManager {
 			reloadedRe.setDescription(description);
 		}
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commit();
+		return updatedRe;
+	}
+	
+	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description, RepositoryEntryLifecycle cycle) {
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		if(StringHelper.containsNonWhitespace(displayName)) {
+			reloadedRe.setDisplayname(displayName);
+		}
+		if(StringHelper.containsNonWhitespace(description)) {
+			reloadedRe.setDescription(description);
+		}
+		RepositoryEntryLifecycle cycleToDelete = null;
+		RepositoryEntryLifecycle currentCycle = reloadedRe.getLifecycle();
+		if(currentCycle != null) {
+			// currently, it's a private cycle 
+			if(currentCycle.isPrivateCycle()) {
+				//the new one is none or public, remove the private cycle
+				if(cycle == null || !cycle.isPrivateCycle()) {
+					cycleToDelete = currentCycle;
+				}
+			}
+		}
+		reloadedRe.setLifecycle(cycle);
+		
+		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		if(cycleToDelete != null) {
+			DBFactory.getInstance().getCurrentEntityManager().remove(cycleToDelete);
+		}
+		
 		DBFactory.getInstance().commit();
 		return updatedRe;
 	}

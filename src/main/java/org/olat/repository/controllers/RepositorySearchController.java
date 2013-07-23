@@ -170,9 +170,9 @@ public class RepositorySearchController extends BasicController implements Activ
 		listenTo(tableCtr);
 		
 		repoTableModel = new RepositoryTableModel(translator);
-		repoTableModel.addColumnDescriptors(tableCtr, selectButtonLabel, enableDirectLaunch);
+		int sortCol = repoTableModel.addColumnDescriptors(tableCtr, selectButtonLabel, enableDirectLaunch);
 		tableCtr.setTableDataModel(repoTableModel);
-		tableCtr.setSortColumn(2, true);
+		tableCtr.setSortColumn(sortCol, true);
 		vc.put("repotable", tableCtr.getInitialComponent());
 
 		vc.contextPut("isAuthor", Boolean.valueOf(roles.isAuthor()));
