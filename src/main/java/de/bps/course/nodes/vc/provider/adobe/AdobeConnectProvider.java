@@ -145,7 +145,10 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
   public boolean createClassroom(String roomId, String name, String description, Date begin, Date end, VCConfiguration config) {
     if(existsClassroom(roomId, config)) return true;
     
-    if(!loginAdmin()) throw new AssertException("Cannot login to Adobe Connect. Please check module configuration and Adobe Connect connectivity."); 
+    if(!loginAdmin()) {
+    	logError("Cannot login to Adobe Connect. Please check module configuration and Adobe Connect connectivity.", null); 
+    	return false;
+    }
 
     // begin and end can be NULL, see interface description
     if(begin == null) begin = new Date();
