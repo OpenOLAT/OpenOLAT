@@ -1,4 +1,4 @@
-Currently OLAT uses ExtJS in version 3.4.0
+Currently OLAT uses ExtJS in version 3.4.1.1
 
 When updating the EXTJS library make sure you do the following:
 
@@ -17,7 +17,7 @@ olatcore/src/main/java/org/olat/core/commons/chiefcontrollers/_content/body.html
 olatcore/src/main/java/org/olat/core/gui/exception/_content/exception_page.html
 olatcore/src/main/java/org/olat/core/gui/control/generic/iframe/IFrameDisplayController.java
 
-4) Test with different browsers: Safari, Chrome, Firefox 3.6/4/5, IE7/8/9
+4) Test with different browsers: Safari, Chrome, Firefox 3.6/4/5, IE7/8/9/10
 a) Test that correct version is loaded by the browser
 - Shift-reload the login page
 - Open http://localhost:8080/olat/raw/20110720/js/ext/pkgs/ext-core-debug.js and check if the version mentioned above is there and not an old version
