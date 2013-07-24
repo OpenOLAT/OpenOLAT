@@ -136,7 +136,7 @@ public abstract class AbstractRepositoryEntryListController extends BasicControl
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", repoEntryKey);
 				boolean marked = markManager.isMarked(ores, getIdentity(), null);
 				if(marked) {
-					markManager.deleteMark(ores, null);
+					markManager.removeMark(ores, getIdentity(), null);
 				} else {
 					String businessPath = "[RepositoryEntry:" + repoEntryKey + "]";
 					markManager.setMark(ores, getIdentity(), null, businessPath);

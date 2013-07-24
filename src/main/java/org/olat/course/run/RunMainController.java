@@ -788,7 +788,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else if (cmd.equals(ACTION_BOOKMARK)) { // add bookmark
 			boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
 			if(marked) {
-				markManager.deleteMark(course, null);
+				markManager.removeMark(courseRepositoryEntry, getIdentity(), null);
 			} else {
 				String businessPath = "[RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
 				markManager.setMark(courseRepositoryEntry, getIdentity(), null, businessPath);

@@ -302,7 +302,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	
 	protected boolean doMark(UserRequest ureq, OLATResourceable item) {
 		if(markManager.isMarked(item, getIdentity(), null)) {
-			markManager.deleteMark(item);
+			markManager.removeMark(item, getIdentity(), null);
 			return false;
 		} else {
 			String businessPath = "[QuestionItem:" + item.getResourceableId() + "]";

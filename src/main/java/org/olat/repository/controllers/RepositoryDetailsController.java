@@ -943,7 +943,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			} else if (cmd.equals(ACTION_BOOKMARK)) {
 				boolean marked = markManager.isMarked(repositoryEntry, getIdentity(), null);
 				if(marked) {
-					markManager.deleteMark(repositoryEntry, null);
+					markManager.removeMark(repositoryEntry, getIdentity(), null);
 				} else {
 					String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
 					markManager.setMark(repositoryEntry, getIdentity(), null, businessPath);
