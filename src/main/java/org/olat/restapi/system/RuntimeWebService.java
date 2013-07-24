@@ -19,8 +19,6 @@
  */
 package org.olat.restapi.system;
 
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
-
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -71,10 +69,6 @@ public class RuntimeWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getSystemSummaryVO(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return null;
-		}
-		
 		RuntimeStatisticsVO stats = new RuntimeStatisticsVO();
 		stats.setMemory(getMemoryStatistics());
 		stats.setThreads(getThreadStatistics());
@@ -104,9 +98,6 @@ public class RuntimeWebService {
 	@Path("memory")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMemoryStatistics(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return null;
-		}
 		MemoryStatisticsVO stats = getMemoryStatistics();
 		return Response.ok(stats).build();
 	}
@@ -126,9 +117,6 @@ public class RuntimeWebService {
 	@Path("threads")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getThreadStatistics(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return null;
-		}
 		ThreadStatisticsVO stats = getThreadStatistics();
 		return Response.ok(stats).build();
 	}
@@ -147,9 +135,6 @@ public class RuntimeWebService {
 	@Path("classes")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCompilationXml(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return null;
-		}
 		ClasseStatisticsVO stats = getClasseStatistics();
 		return Response.ok(stats).build();
 	}

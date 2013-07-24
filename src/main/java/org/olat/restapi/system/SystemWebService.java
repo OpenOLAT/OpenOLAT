@@ -19,7 +19,7 @@
  */
 package org.olat.restapi.system;
 
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
+import static org.olat.restapi.security.RestSecurityHelper.isAdminOrSystem;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -55,7 +55,7 @@ public class SystemWebService {
 	
 	@Path("log")
 	public LogWebService getLogsWS(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
+		if(!isAdminOrSystem(request)) {
 			return null;
 		}
 		return new LogWebService();
@@ -75,7 +75,7 @@ public class SystemWebService {
 	@Path("environment")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getEnvironnementXml(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
+		if(!isAdminOrSystem(request)) {
 			return null;
 		}
 		
@@ -99,7 +99,7 @@ public class SystemWebService {
 	@Path("release")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getReleaseInfos(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
+		if(!isAdminOrSystem(request)) {
 			return null;
 		}
 		
@@ -112,7 +112,7 @@ public class SystemWebService {
 	
 	@Path("monitoring")
 	public MonitoringWebService getImplementedProbes(@Context HttpServletRequest request) {
-		if(!isMonitoringEnabled() && !isAdmin(request)) {
+		if(!isMonitoringEnabled() && !isAdminOrSystem(request)) {
 			return null;
 		}
 		return new MonitoringWebService();
@@ -120,7 +120,7 @@ public class SystemWebService {
 	
 	@Path("indexer")
 	public IndexerWebService getIndexer(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
+		if(!isAdminOrSystem(request)) {
 			return null;
 		}
 		return new IndexerWebService();
@@ -128,7 +128,7 @@ public class SystemWebService {
 	
 	@Path("notifications")
 	public NotificationsAdminWebService getNotifications(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
+		if(!isAdminOrSystem(request)) {
 			return null;
 		}
 		return new NotificationsAdminWebService();

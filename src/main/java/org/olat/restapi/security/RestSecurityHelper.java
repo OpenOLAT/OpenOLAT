@@ -20,6 +20,7 @@
 package org.olat.restapi.security;
 
 import java.util.Locale;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -50,6 +51,8 @@ public class RestSecurityHelper {
 	public static final String SUB_CONTEXT = "/restapi";
 	public static final String SEC_TOKEN = "X-OLAT-TOKEN";
 	public static final String SEC_USER_REQUEST = "olat-user-request";
+	
+	protected static final String SYSTEM_MARKER = UUID.randomUUID().toString();
 	
 	
 	public static UserRequest getUserRequest(HttpServletRequest request) {
@@ -142,6 +145,23 @@ public class RestSecurityHelper {
 		try {
 			Roles roles = getRoles(request);
 			return roles.isOLATAdmin();
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	public static boolean isAdminOrSystem(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			if(roles.isOLATAdmin()) {
+				return true;
+			}
+			UserRequest ureq = (UserRequest)request.getAttribute(SEC_USER_REQUEST);
+			if(ureq != null && ureq.getUserSession() != null
+					&& ureq.getUserSession().getEntry(SYSTEM_MARKER) != null) {
+				return true;
+			}
+			return false;
 		} catch (Exception e) {
 			return false;
 		}

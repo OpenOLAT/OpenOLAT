@@ -19,8 +19,6 @@
  */
 package org.olat.restapi.system;
 
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
-
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -79,12 +77,6 @@ public class LogWebService {
 	@Path("{date}")
 	@Produces({ "text/plain", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getLogFileByDate(@PathParam("date") String dateString, @Context HttpServletRequest request) {
-
-		// logfile download only allowed for admins!
-		if (!isAdmin(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
 		VFSLeaf logFile;
 		try {
 			logFile = logFileFromParam(dateString);
@@ -95,11 +87,11 @@ public class LogWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 
 		InputStream is = logFile.getInputStream();
-		if (is == null)
+		if (is == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
 
 		return Response.ok(is).cacheControl(cc).build(); // success
-
 	}
 	
 	@GET

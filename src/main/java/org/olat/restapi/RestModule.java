@@ -19,6 +19,10 @@
  */
 package org.olat.restapi;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.configuration.PersistedPropertiesChangedEvent;
 import org.olat.core.gui.control.Event;
@@ -41,6 +45,7 @@ public class RestModule implements GenericEventListener {
 	
 	private Boolean enabled;
 	private Boolean defaultEnabled;
+	private String ipsByPass;
 	private PersistedProperties persistedProperties;
 	
 	private String monitoredProbes;
@@ -84,6 +89,25 @@ public class RestModule implements GenericEventListener {
 		}
 	}
 	
+	public String getIpsByPass() {
+		return ipsByPass;
+	}
+	
+	public List<String> getIpsWithSystemAccess() {
+		List<String> ips = new ArrayList<String>();
+		for(StringTokenizer tokenizer=new StringTokenizer(ipsByPass, ",;|"); tokenizer.hasMoreTokens(); ) {
+			String token = tokenizer.nextToken();
+			if(StringHelper.containsNonWhitespace(token)) {
+				ips.add(token);
+			}
+		}
+		return ips;
+	}
+
+	public void setIpsByPass(String ipsByPass) {
+		this.ipsByPass = ipsByPass;
+	}
+
 	/**
 	 * @return the persisted properties
 	 */
