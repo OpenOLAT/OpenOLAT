@@ -29,11 +29,12 @@ package org.olat.ims.cp.objects;
 import java.util.Iterator;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.dom4j.Namespace;
 import org.dom4j.tree.DefaultAttribute;
 import org.dom4j.tree.DefaultDocument;
 import org.dom4j.tree.DefaultElement;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.cp.CPCore;
@@ -60,7 +61,7 @@ public class CPManifest extends DefaultElement implements CPNode {
 	private CPCore cp;
 	private CPMetadata metadata;
 
-	private Logger log;
+	private OLog log;
 
 	private Vector<String> errors;
 
@@ -71,7 +72,7 @@ public class CPManifest extends DefaultElement implements CPNode {
 	 */
 	public CPManifest(CPCore cp, DefaultElement me) {
 		super(me.getName());
-		log = Logger.getLogger(CPManifest.class);
+		log = Tracing.createLoggerFor(this.getClass());
 		errors = new Vector<String>();
 		this.identifier = me.attributeValue(CPCore.IDENTIFIER);
 		this.schemaLocation = me.attributeValue(CPCore.SCHEMALOCATION);
@@ -89,7 +90,7 @@ public class CPManifest extends DefaultElement implements CPNode {
 	 */
 	public CPManifest(CPCore cp, String identifier) {
 		super(CPCore.MANIFEST);
-		log = Logger.getLogger(CPManifest.class);
+		log = Tracing.createLoggerFor(this.getClass());
 		this.identifier = identifier;
 		schemaLocation = CPManifest.DEFAULT_SCHEMALOC;
 		setNamespace(new Namespace("imsmd", DEFAULT_NMS));

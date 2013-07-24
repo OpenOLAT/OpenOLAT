@@ -32,10 +32,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ObjectCloner;
 import org.olat.core.util.cache.CacheWrapper;
@@ -76,7 +76,8 @@ import org.olat.ims.resources.IMSEntityResolver;
  */
 public class QTIHelper {
 	// logging
-	private static final Logger log = Logger.getLogger(QTIHelper.class);
+	private static final OLog log = Tracing.createLoggerFor(QTIHelper.class);
+
 	
 	private static CacheWrapper<String,Object[]> ehCachLoadedQTIDocs = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(QTIHelper.class.getSimpleName(), "QTI_xml_Documents");
 	/**
@@ -393,7 +394,7 @@ public class QTIHelper {
 	 */
 	public static Document getDocument(LocalFileImpl pathToXml) {
 
-		boolean isDebugEnabled = log.isDebugEnabled();
+		boolean isDebugEnabled = log.isDebug();
 		long debugEnabledTime = 0;
 
 		Document doc = null;

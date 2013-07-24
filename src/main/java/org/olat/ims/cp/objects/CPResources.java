@@ -29,9 +29,10 @@ package org.olat.ims.cp.objects;
 import java.util.Iterator;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.cp.CPCore;
 
@@ -50,7 +51,7 @@ public class CPResources extends DefaultElement implements CPNode {
 	private Vector<CPResource> resources;
 	private CPManifest parent;
 
-	private Logger log;
+	private OLog log;
 	private Vector<String> errors;
 
 	/**
@@ -60,7 +61,7 @@ public class CPResources extends DefaultElement implements CPNode {
 	 */
 	public CPResources(DefaultElement me) {
 		super(me.getName());
-		log = Logger.getLogger(this.getClass());
+		log = Tracing.createLoggerFor(this.getClass());
 		resources = new Vector<CPResource>();
 		errors = new Vector<String>();
 
@@ -73,7 +74,7 @@ public class CPResources extends DefaultElement implements CPNode {
 	 */
 	public CPResources() {
 		super(CPCore.RESOURCES);
-		log = Logger.getLogger(this.getClass());
+		log = Tracing.createLoggerFor(this.getClass());
 		resources = new Vector<CPResource>();
 		errors = new Vector<String>();
 	}
