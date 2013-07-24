@@ -208,7 +208,7 @@ public class MarkManagerImpl implements MarkManager {
 	}
 	
 	@Override
-	public void deleteMark(OLATResourceable ores) {
+	public void deleteMarks(OLATResourceable ores) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("delete from ").append(MarkImpl.class.getName()).append(" mark where ")
 			.append("mark.resId=:resId and mark.resName=:resName");
@@ -224,7 +224,7 @@ public class MarkManagerImpl implements MarkManager {
 	 * Exact match
 	 */
 	@Override
-	public void deleteMark(OLATResourceable ores, String subPath) {
+	public void deleteMarks(OLATResourceable ores, String subPath) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("delete from ").append(MarkImpl.class.getName()).append(" mark where ")
 			.append("mark.resId=:resId and mark.resName=:resName");

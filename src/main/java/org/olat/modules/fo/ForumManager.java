@@ -346,7 +346,7 @@ public class ForumManager extends BasicManager {
 		//delete all flags
 		MarkingService markingService = (MarkingService)CoreSpringFactory.getBean(MarkingService.class);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, forum.getKey());
-		markingService.getMarkManager().deleteMark(ores);
+		markingService.getMarkManager().deleteMarks(ores);
 	}
 
 	/**
@@ -477,7 +477,7 @@ public class ForumManager extends BasicManager {
 		//delete all flags
 		MarkingService markingService = (MarkingService)CoreSpringFactory.getBean(MarkingService.class);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, forumKey);
-		markingService.getMarkManager().deleteMark(ores, m.getKey().toString());
+		markingService.getMarkManager().deleteMarks(ores, m.getKey().toString());
 		
 		if(isLogDebugEnabled()){
 			logDebug("Deleting message ", m.getKey().toString());

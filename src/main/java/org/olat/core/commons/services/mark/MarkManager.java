@@ -55,9 +55,19 @@ public interface MarkManager {
 	
 	public void removeMark(Mark mark);
 	
-	public void deleteMark(OLATResourceable ores);
+	/**
+	 * Delete the marks for all users
+	 * @param ores
+	 * @param subPath
+	 */
+	public void deleteMarks(OLATResourceable ores);
 	
-	public void deleteMark(OLATResourceable ores, String subPath);
+	/**
+	 * Delete the marks for all users
+	 * @param ores
+	 * @param subPath
+	 */
+	public void deleteMarks(OLATResourceable ores, String subPath);
 	
 	public List<MarkResourceStat> getStats(OLATResourceable ores, List<String> subPaths, Identity identity);
 }

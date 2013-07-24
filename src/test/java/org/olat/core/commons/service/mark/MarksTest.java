@@ -117,7 +117,7 @@ public class MarksTest extends OlatTestCase {
 			}
 		}
 		
-		service.getMarkManager().deleteMark(ores);
+		service.getMarkManager().deleteMarks(ores);
 
 		boolean marked = false;
 		for(Identity ident:identities) {

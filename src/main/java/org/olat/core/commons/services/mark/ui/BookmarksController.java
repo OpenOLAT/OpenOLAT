@@ -133,7 +133,7 @@ public class BookmarksController extends BasicController {
 		} else if (source == dc) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				Bookmark bookmark = (Bookmark)dc.getUserObject();
-				markManager.deleteMark(bookmark.getOLATResourceable(), bookmark.getResSubPath());
+				markManager.removeMark(bookmark.getOLATResourceable(), getIdentity(), bookmark.getResSubPath());
 				showInfo("bookmark.delete.successfull");
 				populateBmTable();
 			}
