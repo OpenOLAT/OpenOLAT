@@ -157,6 +157,13 @@ div.b_tree {
 				left: 0px;
 				z-index: 9;
 			}
+			
+			.b_tree_level_open.b_tree_oc_l1 {
+				z-index: 10;
+			}
+			.b_tree_level_close.b_tree_oc_l1 {
+				z-index: 10;
+			}
 
 
 			/* selected, hovered, active <a> tag */
