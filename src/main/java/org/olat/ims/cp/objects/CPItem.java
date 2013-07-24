@@ -31,12 +31,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.ims.cp.CPCore;
-import org.olat.ims.cp.CPManager;
 
 /**
  * 
@@ -63,7 +63,7 @@ public class CPItem extends DefaultElement implements CPNode {
 	private Vector<CPItem> items;
 	private Vector<String> errors;
 
-	private Logger log;
+	private OLog log;
 
 	/**
 	 * constructor is needed while building the datamodel-tree (parsing XML)
@@ -74,7 +74,7 @@ public class CPItem extends DefaultElement implements CPNode {
 		super(me.getName());
 		items = new Vector<CPItem>();
 		errors = new Vector<String>();
-		log = Logger.getLogger(this.getClass());
+		log = Tracing.createLoggerFor(this.getClass());
 		// setAttributes(me.attributes());
 		setContent(me.content());
 		this.parent = parent;
@@ -91,7 +91,7 @@ public class CPItem extends DefaultElement implements CPNode {
 	 */
 	public CPItem(String identifier) {
 		super(CPCore.ITEM);
-		log = Logger.getLogger(this.getClass());
+		log = Tracing.createLoggerFor(this.getClass());
 		visible = true;
 		this.identifier = identifier;
 		this.identifierRef = "";
