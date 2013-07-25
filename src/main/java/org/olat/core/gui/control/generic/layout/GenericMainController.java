@@ -295,6 +295,8 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 				}
 			} else {
 				logWarn("Could not add navigation-menu (" + childNode.getTitle() + ") to parent:: " + childNodeEntry.getValue(), null);
+				// make it at least appear on top level
+				rootTreeNode.addChild(childNode);
 			}
 		}
 
