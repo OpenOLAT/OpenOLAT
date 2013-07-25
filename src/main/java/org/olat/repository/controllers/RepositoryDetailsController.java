@@ -135,6 +135,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private static final String TOOL_DOWNLOAD = "d";
 	private static final String TOOL_DOWNLOAD_BACKWARD_COMPAT = "dcompat";
 	private static final String TOOL_EDIT = "e";
+	private static final String TOOL_DELETE = "del";
 	private static final String TOOL_CATALOG = "cat";
 	private static final String TOOL_CHDESC = "chd";
 	private static final String TOOL_CHPROP = "chp";
@@ -557,7 +558,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			}
 			if (isOwner) {
 				if (isNewController) {
-					detailsToolC.addLink(ACTION_DELETE, translate("details.delete"), null, null, "o_sel_repo_delete", false);
+					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.delete);
+					
+					detailsToolC.addLink(ACTION_DELETE, translate("details.delete"), TOOL_DELETE, null, "o_sel_repo_delete", false);
+					detailsToolC.setEnabled(TOOL_DELETE, !deleteManaged);
+					
 					detailsToolC.addHeader(translate("details.members"));
 					detailsToolC.addLink(ACTION_MEMBERS, translate("details.members"), null, null, "o_sel_repo_members", false);
 					detailsToolC.addLink(ACTION_ORDERS, translate("details.orders"), null, null, "o_sel_repo_booking", false);
