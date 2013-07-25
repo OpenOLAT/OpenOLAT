@@ -178,9 +178,12 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 	  acCtr = new AccessConfigurationController(ureq, getWindowControl(), repositoryEntry.getOlatResource(), repositoryEntry.getDisplayname(),
 	  		true, !managedBookings);
 	  int access = propPupForm.getAccess();
+	  int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
 	  if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
-	  	editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
-	  	editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
+	  	if(!managedBookings || numOfBookingConfigs > 0) {
+	  		editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
+	  		editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
+	  	}
 	  }	  
 		
 		tabbedPane.addListener(this);
@@ -490,9 +493,13 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 				}
 				
 				int access = propPupForm.getAccess();
+			  int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
+				boolean managedBookings = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.bookings);
 				if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
-			  	editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
-			  	editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
+					if(!managedBookings || numOfBookingConfigs > 0) {
+						editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
+			  		editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
+					}
 				} else {
 			  	editproptabpubVC.remove(acCtr.getInitialComponent());
 				}

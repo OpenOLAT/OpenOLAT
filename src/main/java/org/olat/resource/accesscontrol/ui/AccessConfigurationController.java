@@ -118,6 +118,10 @@ public class AccessConfigurationController extends FormBasicController {
 		initForm(ureq);
 	}
 	
+	public int getNumOfBookingConfigurations() {
+		return confControllers.size();
+	}
+	
 	public FormItem getInitialFormItem() {
 		return flc;
 	}

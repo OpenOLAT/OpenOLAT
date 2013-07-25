@@ -55,6 +55,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.ui.BGControllerFactory;
@@ -231,7 +232,13 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private BusinessGroupEditAccessController getAccessController(UserRequest ureq) {
 		if(tabAccessCtrl == null && acModule.isEnabled()) { 
 			tabAccessCtrl = new BusinessGroupEditAccessController(ureq, getWindowControl(), currBusinessGroup);
-	  	listenTo(tabAccessCtrl);
+			if(BusinessGroupManagedFlag.isManaged(currBusinessGroup, BusinessGroupManagedFlag.bookings)
+					&& tabAccessCtrl.getNumOfBookingConfigurations() == 0) {
+				//booking is managed, no booking, don't show it
+				tabAccessCtrl = null;
+			} else {
+				listenTo(tabAccessCtrl);
+			}
 		}
 		if(tabAccessCtrl != null) {
 			tabAccessCtrl.updateBusinessGroup(currBusinessGroup);

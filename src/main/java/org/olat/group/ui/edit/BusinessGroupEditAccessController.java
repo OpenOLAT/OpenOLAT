@@ -66,6 +66,10 @@ public class BusinessGroupEditAccessController extends FormBasicController {
 		
 		initForm(ureq);
 	}
+	
+	public int getNumOfBookingConfigurations() {
+		return configController == null ? 0 : configController.getNumOfBookingConfigurations();
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
