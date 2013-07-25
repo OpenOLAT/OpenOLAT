@@ -78,6 +78,7 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
@@ -194,6 +195,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private boolean isAdmin;
 
+	private final ACService acService;
 	private final BaseSecurity securityManager;
 	private final BusinessGroupService businessGroupService;
 	private EventBus singleUserEventBus;
@@ -233,6 +235,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		businessGroup = businessGroupService.setLastUsageFor(getIdentity(), bGroup);
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		if(businessGroup == null) {
 			VelocityContainer vc = createVelocityContainer("deleted");
 			vc.contextPut("name", bGroup.getName());
@@ -1126,14 +1129,17 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			//fxdiff VCRP-1,2: access control of resources
 			AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
 			if(acModule.isEnabled()) {
-				gtnChild = new GenericTreeNode();
-				gtnChild.setTitle(translate("menutree.ac"));
-				gtnChild.setUserObject(ACTIVITY_MENUSELECT_AC);
-				gtnChild.setIdent(ACTIVITY_MENUSELECT_AC);
-				gtnChild.setAltText(translate("menutree.ac.alt"));
-				gtnChild.setIconCssClass("b_order_icon");
-				root.addChild(gtnChild);
-				//acNodeId = gtnChild.getIdent();
+				if(!BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.bookings)
+						|| acService.isResourceAccessControled(businessGroup.getResource(), null)) {
+					gtnChild = new GenericTreeNode();
+					gtnChild.setTitle(translate("menutree.ac"));
+					gtnChild.setUserObject(ACTIVITY_MENUSELECT_AC);
+					gtnChild.setIdent(ACTIVITY_MENUSELECT_AC);
+					gtnChild.setAltText(translate("menutree.ac.alt"));
+					gtnChild.setIconCssClass("b_order_icon");
+					root.addChild(gtnChild);
+					//acNodeId = gtnChild.getIdent();
+				}
 			}
 		}
 

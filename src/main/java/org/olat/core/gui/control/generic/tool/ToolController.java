@@ -164,6 +164,8 @@ public interface ToolController extends Controller {
 	 * @param ident
 	 */
 	public void remove(String ident);
+	
+	public boolean hasTool(String ident);
 
 	/**
 	 * Enable/Disable a tool entry.

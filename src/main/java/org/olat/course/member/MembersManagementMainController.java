@@ -47,6 +47,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.GroupsAndRightsController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -71,6 +73,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 	private MembersOverviewController membersOverviewCtrl;
 	private GroupsAndRightsController rightsController;
 	
+	private final ACService acService;
 	private final RepositoryEntry repoEntry;
 	private final AccessControlModule acModule;
 
@@ -78,6 +81,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		super(ureq, wControl);
 		this.repoEntry = re;
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		
 		//logging
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
@@ -115,9 +119,13 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		root.addChild(node);
 
 		if(acModule.isEnabled()) {
-			node = new GenericTreeNode(translate("menu.orders"), CMD_BOOKING);
-			node.setAltText(translate("menu.orders.alt"));
-			root.addChild(node);
+			//check if the course is managed and/or has offers
+			if(!RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.bookings)
+					|| acService.isResourceAccessControled(repoEntry.getOlatResource(), null)) {
+				node = new GenericTreeNode(translate("menu.orders"), CMD_BOOKING);
+				node.setAltText(translate("menu.orders.alt"));
+				root.addChild(node);
+			}
 		}
 
 		node = new GenericTreeNode(translate("menu.rights"), CMD_RIGHTS);

@@ -230,6 +230,12 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 			fireEvent(ureq, event);
 		}
 	}
+	
+	@Override
+	public boolean hasTool(String ident) {
+		int pos = getToolEntryPosition(ident);
+		return pos > -1;
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.generic.tool.ToolController#setEnabled(java.lang.String,

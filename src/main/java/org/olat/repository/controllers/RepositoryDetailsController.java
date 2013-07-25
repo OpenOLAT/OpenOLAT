@@ -100,6 +100,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
@@ -133,6 +134,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private static final String TOOL_BOOKMARK = "b";
 	private static final String TOOL_COPY = "c";
 	private static final String TOOL_DOWNLOAD = "d";
+	private static final String TOOL_ORDERS = "orders";
 	private static final String TOOL_DOWNLOAD_BACKWARD_COMPAT = "dcompat";
 	private static final String TOOL_EDIT = "e";
 	private static final String TOOL_DELETE = "del";
@@ -183,6 +185,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	//fxdiff FXOLAT-128: back/resume function
 	public static final Event LAUNCHED_EVENT = new Event("lr-launched");
 	
+	private final ACService acService;
 	private final BaseSecurity securityManager;
 	private final UserManager userManager;
 	private final MarkManager markManager;
@@ -201,6 +204,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		
 		if (log.isDebug()){
 			log.debug("Constructing ReposityMainController using velocity root " + velocity_root);
@@ -558,15 +562,23 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			}
 			if (isOwner) {
 				if (isNewController) {
-					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.delete);
-					
 					detailsToolC.addLink(ACTION_DELETE, translate("details.delete"), TOOL_DELETE, null, "o_sel_repo_delete", false);
-					detailsToolC.setEnabled(TOOL_DELETE, !deleteManaged);
-					
 					detailsToolC.addHeader(translate("details.members"));
 					detailsToolC.addLink(ACTION_MEMBERS, translate("details.members"), null, null, "o_sel_repo_members", false);
-					detailsToolC.addLink(ACTION_ORDERS, translate("details.orders"), null, null, "o_sel_repo_booking", false);
+					detailsToolC.addLink(ACTION_ORDERS, translate("details.orders"), TOOL_ORDERS, null, "o_sel_repo_booking", false);
 				}
+				
+				if(detailsToolC.hasTool(TOOL_DELETE)) {
+					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.delete);
+					detailsToolC.setEnabled(TOOL_DELETE, !deleteManaged);
+				}
+				
+				if(detailsToolC.hasTool(TOOL_ORDERS)) {
+					boolean booking = !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.bookings)
+							|| acService.isResourceAccessControled(repositoryEntry.getOlatResource(), null);
+					detailsToolC.setEnabled(TOOL_ORDERS, booking);
+				}
+				
 				// enable
 				if(isAuthor) {
 					boolean editManaged = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.editcontent);
