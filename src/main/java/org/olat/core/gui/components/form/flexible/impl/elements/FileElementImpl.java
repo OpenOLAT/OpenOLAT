@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -119,6 +120,8 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 			}
 
 			uploadFilename = getRootForm().getRequestMultipartFileName(component.getFormDispatchId());
+			//prevent an issue with Firefox
+			uploadFilename = Normalizer.normalize(uploadFilename, Normalizer.Form.NFKC);
 			uploadMimeType = getRootForm().getRequestMultipartFileMimeType(component.getFormDispatchId());
 			if (uploadMimeType == null) {
 				// use fallback: mime-type form file name
