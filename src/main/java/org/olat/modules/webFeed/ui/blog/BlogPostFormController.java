@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.OlatMovieViewerPlugin;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -165,6 +166,9 @@ public class BlogPostFormController extends FormBasicController {
 		RichTextConfiguration descRichTextConfig = description.getEditorConfiguration();
 		// set upload dir to the media dir
 		descRichTextConfig.setFileBrowserUploadRelPath("media");
+		// disable XSS unsave buttons for movie
+		descRichTextConfig.disableButton(OlatMovieViewerPlugin.BUTTONS);
+		descRichTextConfig.setMediaEnabled(false, 0);
 
 		// Content
 		content = uifactory.addRichTextElementForStringData("content", "blog.form.content", post.getContent(), 18, -1, false, false,
@@ -172,6 +176,9 @@ public class BlogPostFormController extends FormBasicController {
 		RichTextConfiguration richTextConfig = content.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
+		// disable XSS unsave buttons for movie
+		richTextConfig.disableButton(OlatMovieViewerPlugin.BUTTONS);
+		richTextConfig.setMediaEnabled(false, 0);
 
 		Calendar cal = Calendar.getInstance(ureq.getLocale());
 		if (post.getPublishDate() != null) {
