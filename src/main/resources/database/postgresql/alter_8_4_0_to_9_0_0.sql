@@ -566,8 +566,7 @@ union select
    from o_repositoryentry re
    inner join o_gp_business_to_resource bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
    inner join o_gp_business bgroup on (bgroup.group_id = bgroup_rel.fk_group)
-   inner join o_bs_membership bg_member on (bg_member.secgroup_id = bgroup.fk_partipiciantgroup)
-;
+   inner join o_bs_membership bg_member on (bg_member.secgroup_id = bgroup.fk_partipiciantgroup);
 
 create or replace view o_re_tutor_v as
 select
@@ -581,10 +580,9 @@ union select
    from o_repositoryentry re
    inner join o_gp_business_to_resource bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
    inner join o_gp_business bgroup on (bgroup.group_id = bgroup_rel.fk_group)
-   inner join o_bs_membership bg_member on (bg_member.secgroup_id = bgroup.fk_ownergroup)
-;
+   inner join o_bs_membership bg_member on (bg_member.secgroup_id = bgroup.fk_ownergroup);
 
-create or replace view o_gp_member_v as
+create or replace view o_gp_member_v as (
    select
       gp.group_id as bg_id,
       gp.groupname as bg_name,
@@ -593,11 +591,11 @@ create or replace view o_gp_member_v as
       gp.descr as bg_desc,
       membership.identity_id as member_id
    from o_bs_membership as membership
-   inner join o_gp_business as gp on (membership.secgroup_id = gp.fk_ownergroup or membership.secgroup_id = gp.fk_partipiciantgroup)
-;
+   inner join o_gp_business as gp on (membership.secgroup_id = gp.fk_ownergroup or membership.secgroup_id = gp.fk_partipiciantgroup));
 
 -- managed groups
 drop view o_gp_business_v;
+
 create or replace view o_gp_business_v  as (
    select
       gp.group_id as group_id,

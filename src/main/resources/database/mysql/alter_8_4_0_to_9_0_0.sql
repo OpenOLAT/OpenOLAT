@@ -429,8 +429,7 @@ select
   left join o_gp_business_to_resource as bgroup_rel on (bgroup.group_id = bgroup_rel.fk_group)
   left join o_repositoryentry as re1 on (bs_member.secgroup_id = re1.fk_participantgroup)
   left join o_repositoryentry as re2 on (re2.fk_olatresource = bgroup_rel.fk_resource)
-  where re1.repositoryentry_id is not null or re2.repositoryentry_id is not null
-;
+  where re1.repositoryentry_id is not null or re2.repositoryentry_id is not null;
 
 create or replace view o_re_tutor_v as
 select
@@ -443,8 +442,7 @@ select
   left join o_gp_business_to_resource as bgroup_rel on (bgroup.group_id = bgroup_rel.fk_group)
   left join o_repositoryentry as re1 on (bs_member.secgroup_id = re1.fk_tutorgroup)
   left join o_repositoryentry as re2 on (re2.fk_olatresource = bgroup_rel.fk_resource)
-  where re1.repositoryentry_id is not null or re2.repositoryentry_id is not null
-;
+  where re1.repositoryentry_id is not null or re2.repositoryentry_id is not null;
 
 create or replace view o_gp_member_v as
    select
@@ -464,11 +462,11 @@ create or replace view o_gp_member_v as
       gp.descr as bg_desc,
       membership.identity_id as member_id
    from o_bs_membership membership
-   inner join o_gp_business gp on (membership.secgroup_id = gp.fk_partipiciantgroup)
-;
+   inner join o_gp_business gp on (membership.secgroup_id = gp.fk_partipiciantgroup);
 
 -- managed groups
 drop view o_gp_business_v;
+
 create or replace view o_gp_business_v  as (
    select
       gp.group_id as group_id,
