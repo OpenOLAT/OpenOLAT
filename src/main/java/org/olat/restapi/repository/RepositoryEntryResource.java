@@ -54,6 +54,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
@@ -61,7 +62,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
@@ -69,12 +69,15 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
+import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
@@ -489,6 +492,56 @@ public class RepositoryEntryResource {
       if((lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) typeToDownload.releaseLock(lockResult);
     }
   }
+  
+  @POST
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public Response updateEntry(@PathParam("repoEntryKey") String repoEntryKey,
+      RepositoryEntryVO vo, @Context HttpServletRequest request) {
+    if(!RestSecurityHelper.isAuthor(request)) {
+      return Response.serverError().status(Status.UNAUTHORIZED).build();
+    }
+    
+    final RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
+    if(re == null) {
+      return Response.serverError().status(Status.NOT_FOUND).build();
+    }
+    
+    RepositoryEntryLifecycle lifecycle = null;
+    RepositoryEntryLifecycleVO lifecycleVo = vo.getLifecycle();
+    if(lifecycleVo != null) {
+    	RepositoryEntryLifecycleDAO lifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
+    	if(lifecycleVo.getKey() != null) {
+    		lifecycle = lifecycleDao.loadById(lifecycleVo.getKey());
+    		if(lifecycle.isPrivateCycle()) {
+    			//check date
+      		String fromStr = lifecycleVo.getValidFrom();
+      		String toStr = lifecycleVo.getValidTo();
+      		String label = lifecycleVo.getLabel();
+      		String softKey = lifecycleVo.getSoftkey();
+    			Date from = ObjectFactory.parseDate(fromStr);
+      		Date to = ObjectFactory.parseDate(toStr);
+      		lifecycle.setLabel(label);
+      		lifecycle.setSoftKey(softKey);
+      		lifecycle.setValidFrom(from);
+      		lifecycle.setValidTo(to);
+    		}
+    	} else {
+    		String fromStr = lifecycleVo.getValidFrom();
+    		String toStr = lifecycleVo.getValidTo();
+    		String label = lifecycleVo.getLabel();
+    		String softKey = lifecycleVo.getSoftkey();
+    		Date from = ObjectFactory.parseDate(fromStr);
+    		Date to = ObjectFactory.parseDate(toStr);
+    		lifecycle = lifecycleDao.create(label, softKey, true, from, to);
+    	}
+    }
+
+    RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(re, vo.getDisplayname(), null, 
+    		vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(), lifecycle);
+    RepositoryEntryVO rvo = ObjectFactory.get(reloaded);
+    return Response.ok(rvo).build();
+  }
 
   /**
    * Replace a resource in the repository and update its display name. The implementation is
@@ -527,11 +580,15 @@ public class RepositoryEntryResource {
       File tmpFile = reader.getFile();
       String displayname = reader.getValue("displayname");
       String description = reader.getValue("description");
+      String externalId = reader.getValue("externalId");
+      String externalRef = reader.getValue("externalRef");
+      String managedFlags = reader.getValue("managedFlags");
 
       Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
       RepositoryEntry replacedRe;
       if(tmpFile == null) {
-      	replacedRe = repositoryManager.setDescriptionAndName(re, displayname, description);
+      	replacedRe = repositoryManager.setDescriptionAndName(re, displayname, description,
+      			externalId, externalRef, managedFlags, re.getLifecycle());
       } else {
 	      long length = tmpFile.length();
 	      if(length == 0) {
@@ -540,8 +597,9 @@ public class RepositoryEntryResource {
 	      replacedRe = replaceFileResource(identity, re, tmpFile);
 	      if(replacedRe == null) {
 	        return Response.serverError().status(Status.NOT_FOUND).build();
-	      } else if (StringHelper.containsNonWhitespace(displayname)) {
-	      	replacedRe = repositoryManager.setDescriptionAndName(replacedRe, displayname, null);
+	      } else {
+	      	replacedRe = repositoryManager.setDescriptionAndName(replacedRe, displayname, description,
+	      			externalId, externalRef, managedFlags, replacedRe.getLifecycle());
 	      }
       }
       RepositoryEntryVO vo = ObjectFactory.get(replacedRe);

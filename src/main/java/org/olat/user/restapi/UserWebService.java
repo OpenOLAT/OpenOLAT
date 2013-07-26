@@ -118,12 +118,12 @@ public class UserWebService {
 	 * Search users and return them in a simple form (without user properties). User properties
 	 * can be added two the query parameters. If the authUsername and the authProvider are set,
 	 * the search is made only with these two parameters because they are sufficient to return
-	 * a single user.<br/>
+	 * a single user.<br>
 	 * The search with login and user properties are made default with wild cards. If an exact
-	 * match is needed, the parameter msut be quoted:<br/>
-	 * users?login="username"<br/>
-	 * Don't forget the right escaping in the URL!<br/>
-	 * You can make a search with the user properties like this:<br/>
+	 * match is needed, the parameter msut be quoted:<br>
+	 * users?login="username"<br>
+	 * Don't forget the right escaping in the URL!<br>
+	 * You can make a search with the user properties like this:<br>
 	 * users?telMobile=39847592&login=test
 	 * 
 	 * @response.representation.200.qname {http://www.example.com}userVO

@@ -479,8 +479,8 @@ public class ForumWebService {
 	}
 	
 	/**
-	 * Upload the attachment of a message, as parameter:<br/>
-	 * filename The name of the attachment<br/>
+	 * Upload the attachment of a message, as parameter:<br>
+	 * filename The name of the attachment<br>
 	 * file The attachment.
 	 * @response.representation.200.mediaType application/json, application/xml
 	 * @response.representation.200.doc Ok

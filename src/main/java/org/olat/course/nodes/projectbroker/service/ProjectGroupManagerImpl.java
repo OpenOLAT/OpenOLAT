@@ -155,7 +155,8 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(accountManagerGroup);
 			return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, groupName, groupDescription,
-					null, reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
+					reloadedBusinessGroup.getExternalId(), reloadedBusinessGroup.getManagedFlagsString(),
+					reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
 		}
 		return null;
 	}
@@ -201,7 +202,8 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
 		return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, groupName, groupDescription,
-				null, reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
+				reloadedBusinessGroup.getExternalId(), reloadedBusinessGroup.getManagedFlagsString(),
+				reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
 	}
 
 	public List<Identity> addCandidates(final List<Identity> addIdentities, final Project project) {
@@ -307,8 +309,9 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
   	 BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
   	 BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
   	 logDebug("ProjectGroup.name=" + reloadedBusinessGroup.getName() + " setMaxParticipants=" + maxMembers);
-  	 return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, reloadedBusinessGroup.getName(), null,
-  			 reloadedBusinessGroup.getDescription(), reloadedBusinessGroup.getMinParticipants(), maxMembers);
+  	 return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, reloadedBusinessGroup.getName(), 
+  			 reloadedBusinessGroup.getDescription(), reloadedBusinessGroup.getExternalId(), reloadedBusinessGroup.getManagedFlagsString(),
+  			 reloadedBusinessGroup.getMinParticipants(), maxMembers);
 	}
 
 	///////////////////

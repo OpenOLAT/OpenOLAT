@@ -97,7 +97,7 @@ public interface BusinessGroupService {
 	 * @return
 	 */
 	public BusinessGroup updateBusinessGroup(Identity ureqIdentity, BusinessGroup group, String name, String description,
-			String managedFlags, Integer minParticipants, Integer maxParticipants);
+			String externalId, String managedFlags, Integer minParticipants, Integer maxParticipants);
 	
 	/**
 	 * Update the business group with the supplied arguments and do it in sync
@@ -422,7 +422,7 @@ public interface BusinessGroupService {
 	/**
 	 * Remove the members (tutors and participants) from all business groups connected
 	 * to the resource (the resource can be a BusinessGroup) by cancelling their membership
-	 * or their reservations.<br/>
+	 * or their reservations.<br>
 	 * This method respect the managed flags.
 	 * 
 	 * @param ureqIdentity
@@ -454,8 +454,8 @@ public interface BusinessGroupService {
 	/**
 	 * Remove a list of users from a waiting-list as participant and does all the magic that needs
 	 * to be done:
-	 * - remove from security group (optional)<br/>
-	 * - send notification email<br/>
+	 * - remove from security group (optional)<br>
+	 * - send notification email<br>
 	 * - fire multi-user event
 	 * @param ureqIdentity
 	 * @param identities

@@ -842,7 +842,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param description If null, nothing happen
 	 * @return
 	 */
-	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description ) {
+	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		if(StringHelper.containsNonWhitespace(displayName)) {
 			reloadedRe.setDisplayname(displayName);
@@ -851,6 +851,47 @@ public class RepositoryManager extends BasicManager {
 			reloadedRe.setDescription(description);
 		}
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commit();
+		return updatedRe;
+	}
+	
+	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description,
+			String externalId, String externalRef, String managedFlags, RepositoryEntryLifecycle cycle) {
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		if(StringHelper.containsNonWhitespace(displayName)) {
+			reloadedRe.setDisplayname(displayName);
+		}
+		if(StringHelper.containsNonWhitespace(description)) {
+			reloadedRe.setDescription(description);
+		}
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			reloadedRe.setExternalId(externalId);
+		}
+		if(StringHelper.containsNonWhitespace(externalRef)) {
+			reloadedRe.setExternalRef(externalRef);
+		}
+		if(StringHelper.containsNonWhitespace(managedFlags)) {
+			reloadedRe.setManagedFlagsString(managedFlags);
+		}
+		
+		RepositoryEntryLifecycle cycleToDelete = null;
+		RepositoryEntryLifecycle currentCycle = reloadedRe.getLifecycle();
+		if(currentCycle != null) {
+			// currently, it's a private cycle 
+			if(currentCycle.isPrivateCycle()) {
+				//the new one is none or public, remove the private cycle
+				if(cycle == null || !cycle.isPrivateCycle()) {
+					cycleToDelete = currentCycle;
+				}
+			}
+		}
+		reloadedRe.setLifecycle(cycle);
+		
+		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		if(cycleToDelete != null) {
+			DBFactory.getInstance().getCurrentEntityManager().remove(cycleToDelete);
+		}
+		
 		DBFactory.getInstance().commit();
 		return updatedRe;
 	}

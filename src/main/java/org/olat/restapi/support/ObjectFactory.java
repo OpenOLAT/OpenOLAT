@@ -161,7 +161,7 @@ public class ObjectFactory {
 		OLATResource resource = entry.getOlatResource();
 		if(resource != null) {
 			vo.setOlatResourceId(resource.getResourceableId());
-			vo.setOlatRresourceTypeName(resource.getResourceableTypeName());
+			vo.setOlatResourceTypeName(resource.getResourceableTypeName());
 		}
 		vo.setExternalId(entry.getExternalId());
 		vo.setExternalRef(entry.getExternalRef());

@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,6 +47,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
@@ -67,6 +69,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.restapi.support.ObjectFactory;
+import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.restapi.support.vo.RepositoryEntryVOes;
 import org.olat.test.JunitTestHelper;
@@ -167,6 +171,102 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		}
 		
 		conn.shutdown();
+	}
+	
+	@Test
+	public void testUpdateRepositoryEntry() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		RepositoryEntryVO repoVo = new RepositoryEntryVO();
+		repoVo.setKey(re.getKey());
+		repoVo.setDisplayname("New display name");
+		repoVo.setExternalId("New external ID");
+		repoVo.setExternalRef("New external ref");
+		repoVo.setManagedFlags("booking,delete");
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").path(re.getKey().toString()).build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, repoVo);
+		
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		RepositoryEntryVO updatedVo = conn.parse(response, RepositoryEntryVO.class);
+		assertNotNull(updatedVo);
+		
+		Assert.assertEquals("New display name", updatedVo.getDisplayname());
+		Assert.assertEquals("New external ID", updatedVo.getExternalId());
+		Assert.assertEquals("New external ref", updatedVo.getExternalRef());
+		Assert.assertEquals("booking,delete", updatedVo.getManagedFlags());
+		
+		conn.shutdown();
+		
+		RepositoryEntry reloadedRe = repositoryManager.lookupRepositoryEntry(re.getKey());
+		assertNotNull(reloadedRe);
+
+		Assert.assertEquals("New display name", reloadedRe.getDisplayname());
+		Assert.assertEquals("New external ID", reloadedRe.getExternalId());
+		Assert.assertEquals("New external ref", reloadedRe.getExternalRef());
+		Assert.assertEquals("booking,delete", reloadedRe.getManagedFlagsString());
+	}
+	
+	@Test
+	public void testUpdateRepositoryEntry_lifecycle() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		RepositoryEntryVO repoVo = new RepositoryEntryVO();
+		repoVo.setKey(re.getKey());
+		repoVo.setDisplayname("New display name bis");
+		repoVo.setExternalId("New external ID bis");
+		repoVo.setExternalRef("New external ref bis");
+		repoVo.setManagedFlags("all");
+		RepositoryEntryLifecycleVO cycleVo = new RepositoryEntryLifecycleVO();
+		cycleVo.setLabel("Cycle");
+		cycleVo.setSoftkey("The secret cycle");
+		cycleVo.setValidFrom(ObjectFactory.formatDate(new Date()));
+		cycleVo.setValidTo(ObjectFactory.formatDate(new Date()));
+		repoVo.setLifecycle(cycleVo);
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").path(re.getKey().toString()).build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, repoVo);
+		
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		RepositoryEntryVO updatedVo = conn.parse(response, RepositoryEntryVO.class);
+		assertNotNull(updatedVo);
+		
+		Assert.assertEquals("New display name bis", updatedVo.getDisplayname());
+		Assert.assertEquals("New external ID bis", updatedVo.getExternalId());
+		Assert.assertEquals("New external ref bis", updatedVo.getExternalRef());
+		Assert.assertEquals("all", updatedVo.getManagedFlags());
+		Assert.assertNotNull(updatedVo.getLifecycle());
+		Assert.assertEquals("Cycle", updatedVo.getLifecycle().getLabel());
+		Assert.assertEquals("The secret cycle", updatedVo.getLifecycle().getSoftkey());
+		Assert.assertNotNull(updatedVo.getLifecycle().getValidFrom());
+		Assert.assertNotNull(updatedVo.getLifecycle().getValidTo());
+		
+		conn.shutdown();
+		
+		RepositoryEntry reloadedRe = repositoryManager.lookupRepositoryEntry(re.getKey());
+		assertNotNull(reloadedRe);
+
+		Assert.assertEquals("New display name bis", reloadedRe.getDisplayname());
+		Assert.assertEquals("New external ID bis", reloadedRe.getExternalId());
+		Assert.assertEquals("New external ref bis", reloadedRe.getExternalRef());
+		Assert.assertEquals("all", reloadedRe.getManagedFlagsString());
+		Assert.assertNotNull(reloadedRe.getLifecycle());
+		Assert.assertEquals("Cycle", reloadedRe.getLifecycle().getLabel());
+		Assert.assertEquals("The secret cycle", reloadedRe.getLifecycle().getSoftKey());
+		Assert.assertNotNull(reloadedRe.getLifecycle().getValidFrom());
+		Assert.assertNotNull(reloadedRe.getLifecycle().getValidTo());
 	}
 	
 	@Test

@@ -212,7 +212,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public BusinessGroup updateBusinessGroup(Identity ureqIdentity, BusinessGroup group, String name, String description,
-			String managedFlags, Integer minParticipants, Integer maxParticipants) {
+			String externalId, String managedFlags, Integer minParticipants, Integer maxParticipants) {
 		
 		BusinessGroup bg = businessGroupDAO.loadForUpdate(group.getKey());
 
@@ -228,6 +228,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			managedFlags = null;
 		}
 		bg.setManagedFlagsString(managedFlags);
+		bg.setExternalId(externalId);
 
 		//auto rank if possible
 		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<BusinessGroupModifiedEvent.Deferred>();

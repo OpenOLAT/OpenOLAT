@@ -46,7 +46,7 @@ public class RepositoryEntryVO {
 	private String resourceableTypeName;
 	
 	private Long olatResourceId;
-	private String olatRresourceTypeName;
+	private String olatResourceTypeName;
 	
 	private RepositoryEntryLifecycleVO lifecycle;
 	
@@ -134,12 +134,12 @@ public class RepositoryEntryVO {
 		this.olatResourceId = olatResourceId;
 	}
 
-	public String getOlatRresourceTypeName() {
-		return olatRresourceTypeName;
+	public String getOlatResourceTypeName() {
+		return olatResourceTypeName;
 	}
 
-	public void setOlatRresourceTypeName(String olatRresourceTypeName) {
-		this.olatRresourceTypeName = olatRresourceTypeName;
+	public void setOlatResourceTypeName(String olatResourceTypeName) {
+		this.olatResourceTypeName = olatResourceTypeName;
 	}
 
 	public RepositoryEntryLifecycleVO getLifecycle() {

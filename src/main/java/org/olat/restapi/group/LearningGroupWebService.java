@@ -268,7 +268,7 @@ public class LearningGroupWebService {
 		}
 		Identity identity = RestSecurityHelper.getIdentity(request);
 		BusinessGroup mergedBg = bgs.updateBusinessGroup(identity, bg, group.getName(), group.getDescription(),
-				group.getManagedFlags(), normalize(group.getMinParticipants()), normalize(group.getMaxParticipants()));
+				group.getExternalId(), group.getManagedFlags(), normalize(group.getMinParticipants()), normalize(group.getMaxParticipants()));
 		//save the updated group
 		GroupVO savedVO = ObjectFactory.get(mergedBg);
 		return Response.ok(savedVO).build();

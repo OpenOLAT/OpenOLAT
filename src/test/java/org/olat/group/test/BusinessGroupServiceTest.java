@@ -225,7 +225,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check update
-		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(id, group, "up-1-b", "up-1-desc-b", null, new Integer(2), new Integer(3));
+		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(id, group, "up-1-b", "up-1-desc-b", null, null, new Integer(2), new Integer(3));
 		Assert.assertNotNull(updateGroup);
 		dbInstance.commitAndCloseSession();
 		
@@ -283,7 +283,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//update max participants
-		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(id0, group, "auto-1", "auto-1-desc", null, new Integer(0), new Integer(3));
+		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(id0, group, "auto-1", "auto-1-desc", null, null, new Integer(0), new Integer(3));
 		Assert.assertNotNull(updateGroup);
 		dbInstance.commitAndCloseSession();
 		
