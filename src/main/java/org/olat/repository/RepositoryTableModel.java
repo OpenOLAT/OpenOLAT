@@ -108,7 +108,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 * @param enableDirectLaunch
 	 * @return the position of the display name column
 	 */
-	public int addColumnDescriptors(TableController tableCtr, String selectButtonLabel, boolean enableDirectLaunch) {
+	public ColumnDescriptor addColumnDescriptors(TableController tableCtr, String selectButtonLabel, boolean enableDirectLaunch) {
 		
 		
 		//fxdiff VCRP-1,2: access control of resources
@@ -173,7 +173,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 			tableCtr.addColumnDescriptor(desc);
 		}
 		
-		return indexDisplaynameCol;
+		return nameColDesc;
 	}
 	
 	

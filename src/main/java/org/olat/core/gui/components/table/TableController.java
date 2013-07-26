@@ -721,6 +721,15 @@ public class TableController extends BasicController {
 			table.resort();
 		}
 	}
+	
+	public void setSortColumn(final ColumnDescriptor sortColumn, final boolean isSortAscending) {
+		for(int i=table.getColumnCount(); i-->0; ) {
+			if(sortColumn == table.getColumnDescriptor(i)) {
+				table.setSortColumn(i, isSortAscending);
+				table.resort();
+			}
+		}
+	}
 
 	/**
 	 * Sets whether user is able to select multiple rows via checkboxes.

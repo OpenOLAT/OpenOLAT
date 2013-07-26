@@ -39,6 +39,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
@@ -170,7 +171,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		listenTo(tableCtr);
 		
 		repoTableModel = new RepositoryTableModel(translator);
-		int sortCol = repoTableModel.addColumnDescriptors(tableCtr, selectButtonLabel, enableDirectLaunch);
+		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(tableCtr, selectButtonLabel, enableDirectLaunch);
 		tableCtr.setTableDataModel(repoTableModel);
 		tableCtr.setSortColumn(sortCol, true);
 		vc.put("repotable", tableCtr.getInitialComponent());

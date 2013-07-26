@@ -166,14 +166,11 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
 				if(TABLE_ACTION_MULTI_UNLINK.equals(te.getAction())) {
 					List<BGTableItem> selectedItems = groupListModel.getObjects(te.getSelection());
-					StringBuilder sb = new StringBuilder();
-					for(BGTableItem item:selectedItems) {
-						if(sb.length() > 0) sb.append(", ");
-						sb.append(item.getBusinessGroupName() == null ? "???" : item.getBusinessGroupName());
+					if(selectedItems.isEmpty()) {
+						showWarning("error.select.one");
+					} else {
+						doConfirmRemove(ureq, selectedItems);
 					}
-					String text = getTranslator().translate("group.remove", new String[] { sb.toString(), re.getDisplayname() });
-					confirmRemoveMultiResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
-					confirmRemoveMultiResource.setUserObject(selectedItems);
 				}
 			}
 		} else if (source == confirmRemoveResource) {
@@ -191,6 +188,29 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		}
 
 		super.event(ureq, source, event);
+	}
+	
+	private void doConfirmRemove(UserRequest ureq, List<BGTableItem> selectedItems) {
+		StringBuilder sb = new StringBuilder();
+		StringBuilder managedSb = new StringBuilder();
+		for(BGTableItem item:selectedItems) {
+			String gname = item.getBusinessGroupName() == null ? "???" : item.getBusinessGroupName();
+			if(BusinessGroupManagedFlag.isManaged(item.getManagedFlags(), BusinessGroupManagedFlag.resources)) {
+				if(managedSb.length() > 0) managedSb.append(", ");
+				managedSb.append(gname);
+			} else {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(gname);
+			}
+		}
+		
+		if(managedSb.length() > 0) {
+			showWarning("error.managed.group", managedSb.toString());
+		} else {
+			String text = getTranslator().translate("group.remove", new String[] { sb.toString(), re.getDisplayname() });
+			confirmRemoveMultiResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
+			confirmRemoveMultiResource.setUserObject(selectedItems);
+		}
 	}
 	
 	@Override

@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.olat.ControllerFactory;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
 
 /**
@@ -74,12 +75,16 @@ public class RepositoryEntryIconRenderer extends CustomCssCellRenderer {
 		}
 		
 		String cssClass = "";
+		boolean managed = false;
 		if(val instanceof RepositoryEntryShort) {
-			cssClass = getIconCssClass((RepositoryEntryShort)val);
+			RepositoryEntryShort re = (RepositoryEntryShort)val;
+			cssClass = getIconCssClass(re);
 		} else if (val instanceof RepositoryEntry) {
-			cssClass = getIconCssClass((RepositoryEntry)val);
+			RepositoryEntry re = (RepositoryEntry)val;
+			cssClass = getIconCssClass(re);
+			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
 		}
-		return "b_small_icon " + cssClass;
+		return (managed ? "b_small_icon b_managed_icon " : "b_small_icon ") + cssClass;
 	}
 	
 	public String getIconCssClass(RepositoryEntryShort re) {

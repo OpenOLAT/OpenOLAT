@@ -34,6 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
@@ -109,11 +110,12 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		repoTableModel.setObjects(repoTableModelEntries);
 		
-		repoTableModel.addColumnDescriptors(resourcesCtr, null, false);	
+		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(resourcesCtr, null, false);	
 		if(!managed) {
 			resourcesCtr.addColumnDescriptor(new RemoveResourceActionColumnDescriptor("resources.remove", 1, getTranslator()));
 		}
 		resourcesCtr.setTableDataModel(repoTableModel);
+		resourcesCtr.setSortColumn(sortCol, true);
 		
 		mainVC = createVelocityContainer("tab_bgResources");
 		addTabResourcesButton = LinkFactory.createButtonSmall("cmd.addresource", mainVC, this);

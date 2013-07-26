@@ -28,7 +28,6 @@ package org.olat.group.ui.main;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
@@ -68,8 +67,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		BGTableItem wrapped = objects.get(row);
 		switch (Cols.values()[col]) {
 			case name:
-				String name = wrapped.getBusinessGroup().getName();
-				return name == null ? "" : StringEscapeUtils.escapeHtml(name);
+				return wrapped.getBusinessGroup();
 			case description:
 				String description = wrapped.getBusinessGroupDescription();
 				description = FilterFactory.getHtmlTagsFilter().filter(description);

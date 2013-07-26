@@ -19,7 +19,9 @@
  */
 package org.olat.group.ui.main;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
+import org.olat.group.BusinessGroupShort;
 
 /**
  * 
@@ -29,19 +31,28 @@ import org.olat.core.gui.components.table.CustomCssCellRenderer;
  */
 public class BusinessGroupNameCellRenderer extends CustomCssCellRenderer {
 
-	private final String cssClass;
+	private static final String cssClass = "b_small_table_icon b_group_icon";
+	private static final String managedCssClass = "b_small_table_icon b_group_icon b_managed_icon";
 	
 	public BusinessGroupNameCellRenderer() {
-		cssClass = "b_small_table_icon b_group_icon";
+		//
 	}
 	
 	@Override
 	protected String getCssClass(Object val) {
+		if(val instanceof BusinessGroupShort) {
+			BusinessGroupShort group = (BusinessGroupShort)val;
+			return group.getManagedFlags().length == 0 ? cssClass : managedCssClass;
+		}
 		return cssClass;
 	}
 
 	@Override
 	protected String getCellValue(Object val) {
+		if(val instanceof BusinessGroupShort) {
+			BusinessGroupShort group = (BusinessGroupShort)val;
+			return group.getName() == null ? "" : StringEscapeUtils.escapeHtml(group.getName());
+		}
 		return val == null ? "" : val.toString();
 	}
 
@@ -49,7 +60,4 @@ public class BusinessGroupNameCellRenderer extends CustomCssCellRenderer {
 	protected String getHoverText(Object val) {
 		return "";
 	}
-	
-	
-
 }
