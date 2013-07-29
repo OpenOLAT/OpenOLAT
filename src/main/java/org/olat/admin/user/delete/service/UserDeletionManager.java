@@ -345,7 +345,7 @@ public class UserDeletionManager extends BasicManager {
 		
 		//keep email only -> change login-name
 		if (!keepUserLoginAfterDeletion){
-			identity.setName(newName);
+			identity = securityManager.saveIdentityName(identity, newName);
 		}
 		
 		//keep everything, change identity.status to deleted
