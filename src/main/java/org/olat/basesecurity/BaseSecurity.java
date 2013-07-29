@@ -653,6 +653,22 @@ public interface BaseSecurity {
 	public Identity setIdentityLastLogin(Identity identity);
 	
 	/**
+	 * Set the identity name. 
+	 * <p><b>NOTE: do not use this to rename identities during
+	 * lifetime! This is currently not supported. This method does only rename
+	 * the identity on the database, however it does NOT rename anything on the
+	 * filesystem. </b></p>
+	 * <p>Unfortunately there are references to the identity name on
+	 * the filesystem, thus just using this method is not save at all. This
+	 * method is intended for renaming the identity after the delete process.
+	 * </p>
+	 * @param identity The identity to be renamed
+	 * @param newName The new identity name
+	 * @return The reloaded and renamed identity
+	 */
+	public Identity saveIdentityName(Identity identity, String newName);
+	
+	/**
 	 * Check if identity is visible. Deleted or login-denied users are not visible.
 	 * @param identityName
 	 * @return

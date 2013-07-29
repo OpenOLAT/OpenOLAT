@@ -1963,6 +1963,16 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return reloadedIdentity;
 	}
 	
+	@Override
+	public Identity saveIdentityName(Identity identity, String newName) {
+		Identity reloadedIdentity = loadForUpdate(identity); 
+		reloadedIdentity.setName(newName);
+		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		dbInstance.commit();
+		return reloadedIdentity;
+	}
+	
+	
 	/**
 	 * Don't forget to commit/roolback the transaction as soon as possible
 	 * @param identityKey
