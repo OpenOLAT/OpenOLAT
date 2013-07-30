@@ -113,6 +113,11 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 
 		olatMenuTree.setSelectedNodeId(nodeToSelect.getIdent());
 		olatMenuTree.addListener(this);
+		
+		// default is to not display the root element and to let user open/close sub elements
+		olatMenuTree.setRootVisible(false);
+		olatMenuTree.setExpandSelectedNode(false);
+
 
 		Object uobject = nodeToSelect.getUserObject();
 		contentCtr = getContentCtr(uobject, ureq);

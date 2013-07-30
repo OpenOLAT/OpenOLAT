@@ -124,6 +124,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		TreeNode firstNode = (TreeNode)tm.getRootNode().getChildAt(0);
 		olatMenuTree.setSelectedNodeId(firstNode.getIdent());
 		olatMenuTree.addListener(this);
+		// allow closing of active menu tree element
+		olatMenuTree.setExpandSelectedNode(false);
+
 
 		// we always start with a search controller
 		//fxdiff BAKS-7 Resume function
