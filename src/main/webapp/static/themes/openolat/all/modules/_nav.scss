@@ -141,30 +141,34 @@ div.b_tree {
 				a.b_tree_icon { background-image: none !important; }				
 			}
 			// standard icon rule
-			a.b_tree_icon {padding-left: $treeicon_width_px; padding-top:2px; position: relative; background-position: 0 50%; background-repeat: no-repeat;}				
-			
+			a.b_tree_icon {
+				padding-left: $treeicon_width_px; 
+				padding-top:2px; 
+				position: relative; 
+				background-position: 0 50%; 
+				background-repeat: no-repeat;
+			}				
 			
 			a {
 				color:$basegray;
 			}
-			a.b_tree_l1 {
+			a.b_tree_l0 {
 				padding-left:16px;
 			}
 			
-			.b_tree_oc_l1 {
+			.b_tree_oc_l0 {
 				position: absolute;
 				top: 0px;
 				left: 0px;
 				z-index: 9;
 			}
 			
-			.b_tree_level_open.b_tree_oc_l1 {
+			.b_tree_level_open.b_tree_oc_l0 {
 				z-index: 10;
 			}
-			.b_tree_level_close.b_tree_oc_l1 {
+			.b_tree_level_close.b_tree_oc_l0 {
 				z-index: 10;
 			}
-
 
 			/* selected, hovered, active <a> tag */
 			a:focus, a:hover { color: $basecolor; background-color: transparent; text-decoration:underline; }	
@@ -208,14 +212,37 @@ div.b_tree {
 	}// end ul
 	
 	
+	/* special case with hidden root - apply margin/paddings to wrapper */
+	&.b_tree_root_hidden {
+		position: relative;
+		margin: 0 0 0 $tree_level_margin; 
+		ul { 
+			padding: 0;
+			margin: 0 0 0 0;
+		} 		
+	}
+	
 	/* the open/close node icons */
-	a.b_tree_level_close {background:transparent ! important;} /* override link hover colors */
-	a.b_tree_level_open {background:transparent ! important;}
-	a.b_tree_level_close span { background: url($ico_minus) no-repeat 0 50%; padding-right:$tree_padding_opener_px;}
-	a.b_tree_level_open span { background: url($ico_plus) no-repeat 0 50%; padding-right:$tree_padding_opener_px;}
-	
-	a.b_tree_level_close:hover,a.b_tree_level_open:hover {text-decoration:none;}
-	
+	a.b_tree_level_close,
+	a.b_tree_level_open {
+		/* override link hover colors */
+		background:transparent ! important;
+		span { 
+			background-position: 0 50%;
+			background-repeat: no-repeat;
+			padding-right:$tree_padding_opener_px;
+		}
+		&:hover {
+			text-decoration:none;
+		}
+	} 
+	a.b_tree_level_close span {
+		background-image: url($ico_minus); 
+	}
+	a.b_tree_level_open span { 
+		background-image: url($ico_plus); 
+	}
+		
 }// end b_tree
 	
 	
