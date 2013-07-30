@@ -19,6 +19,11 @@ $basecolor : #025D8C !default;
 $basecolor_light : #94bed3 !default;
 $basecolor_ultra_light : #f3feff !default;
 
+/* selected table rows, calendars, buttons and other selections */
+$selectcolor : #FF9F5B !default;				
+$selectcolor_light : #FF9F5B !default;			
+$selectcolor_ultra_light : #FFDBC1 !default;	 
+
 /* then we need a base-gray and some variations */
 $basegray: #555 !default;
 $basegray_light: #777 !default;

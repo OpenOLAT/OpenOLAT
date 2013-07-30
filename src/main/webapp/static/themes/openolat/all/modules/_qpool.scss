@@ -24,7 +24,34 @@ div.o_qpool_toolbar { padding: 3px; text-align:right; }
 	}
 }
 
-div.o_sel_qpool_edit_content { float:right; }
+div.o_sel_qpool_edit_content { 
+	float:right; 
+	.b_link_edit {
+		margin-right: 20px; // space for context help	
+	}
+}
 
 div.o_sel_qpool_presentation div.b_c33l li { padding-right: 15px; }
 div.o_sel_qpool_presentation h5 { margin: 0.5em 0 0.5em 0; }
+
+/* fix strange positioning of table preferences, add space between table and search form */
+#qpoolcontainer div.b_table_wrapper {
+	a.b_table_prefs {
+		position: relative;
+		top: 1.5em;
+		left: 19px;
+	}
+	div.dataTables_wrapper { 
+		margin-top: 1em; 
+	}
+}	
+
+/* add same size to all tables in sharing metadata */
+div.o_qpool_metadata_sharing {
+	h5 {
+		margin-top: 1em;
+	}
+	table {
+		td.b_first_child { width: 15% }
+	}
+}

@@ -67,6 +67,11 @@ div.o_buttons_box_right {
 	right:0;
 }
 
+/* fix wrong positioning of box withing fieldsets */
+fieldset div.o_buttons_box_right {
+	top: 1em;
+}
+
 div.b_box_with_chelp div.o_buttons_box_right {
 	right: 20px;
 }

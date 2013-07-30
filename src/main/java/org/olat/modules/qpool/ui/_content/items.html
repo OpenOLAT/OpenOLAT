@@ -26,7 +26,8 @@ jQuery(function() {
 	var headerHeight = jQuery('#b_header').height() + jQuery('#b_nav_main').height();
 	var footerHeight = jQuery('#b_footer').height() + jQuery('#qbuttons').height();
 	var maxHeight = winHeight - headerHeight - footerHeight - 50;
-	var panePadding = 130;
+	## padding arount table = relative position of table (space for search field) + height of action buttons below table + some extra space
+	var panePadding = jQuery('.dataTables_wrapper').position().top + jQuery('.o_qpool_button_bar_box').height() + 60;
 
 	jQuery('#qpoolcontainer').width(width).height(maxHeight).layout({
 		north: { size: '50%' },

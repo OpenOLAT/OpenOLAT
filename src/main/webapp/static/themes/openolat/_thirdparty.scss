@@ -162,3 +162,8 @@ ul.tagit.ui-corner-all {
 
 //overwrite datatables -> see _tables.scss
 
+/* calendar */
+.fc-state-highlight {
+	background: $selectcolor_ultra_light;
+}
+

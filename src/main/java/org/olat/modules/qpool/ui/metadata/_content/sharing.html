@@ -1,18 +1,18 @@
-<div class="b_form b_form_vertical b_clearfix">
+<div class="b_form b_form_vertical b_clearfix o_qpool_metadata_sharing">
 	<fieldset><legend>$r.translate("sharing")</legend>
 	#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
 	#if($showPoolInfos) 
-		<span>$r.translate("menu.pools")</span>
+		<h5 class="b_with_small_icon_left o_sel_qpool_pool">$r.translate("menu.pools")</h5>
 		$r.render("pools")
 	#end
 	
 	#if($showAuthors)
-		<span>$r.translate("sharing.authors")</span>
+		<h5 class="b_with_small_icon_left b_group_icon b_managed_icon">$r.translate("sharing.authors")</h5>
 		$r.render("authors")
 	#end
 	
 	#if($showShares)
-		<span>$r.translate("sharing.shares")</span>
+		<h5 class="b_with_small_icon_left o_sel_qpool_share">$r.translate("sharing.shares")</h5>
 		$r.render("shares")
 	#end
 	

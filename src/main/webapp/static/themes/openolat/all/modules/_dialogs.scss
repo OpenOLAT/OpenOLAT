@@ -29,7 +29,7 @@ div.b_modal_area {
 	left:0px;
 	width:80%;
 	margin: 10%;
-	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
+	@include o-box-shadow(0px,0px,8px,rgba(68,68,68,0.5));
 }
 
 
@@ -71,7 +71,7 @@ div.b_callout_area {
 	position:absolute;
 	top:0px;
 	left:0px;
-	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
+	@include o-box-shadow(0px,0px,8px,rgba(68,68,68,0.5));
 }
 div.b_callout_overlay { 
 	position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1;  background: #000; opacity:0;
@@ -167,7 +167,7 @@ div.b_msg-div {
 	border: 1px solid $basecolor;
 	background: #FAFAFA;
 	@include o-border-radius(4px);
-	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
+	@include o-box-shadow(0px,0px,8px,rgba(68,68,68,0.5));
 	._msg_info_content {
 	
 	}

@@ -46,7 +46,7 @@ button { border:none; }
 	
 	&:focus,&:hover {
 		text-decoration: none;
-		border:1px solid #ffc20e;
+		border:1px solid $selectcolor;
 		@include o-gradient2( #ffffff,#FFF7E0);
 	}
 }

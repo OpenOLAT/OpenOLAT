@@ -1,14 +1,20 @@
-<div class="o_sel_qpool_edit_content">
-	#if($r.available("edit"))
-		$r.render("edit")
-	#end
-	$r.contextHelpWithWrapper("org.olat.modules.qpool.ui","item-details.html","help.hover.itemDetails")
-	$r.render("previous")
-	$r.render("next")
+<div class="b_clearfix">
+	<div class="o_sel_qpool_edit_content">
+		$r.contextHelpWithWrapper("org.olat.modules.qpool.ui","item-details.html","help.hover.itemDetails")
+		$r.render("previous")
+		$r.render("next")
+		#if($r.available("edit"))
+			$r.render("edit")
+		#end
+	</div>
 </div>
-$r.render("type_specifics")
+<div class="b_clearfix">
+	$r.render("type_specifics")
+</div>
 <hr/>
-$r.render("metadatas")
+<div class="b_clearfix">
+	$r.render("metadatas")
+</div>
 <div class="b_clearfix o_qpool_button_bar_box">
 	<div class="o_qpool_button_bar">
 		$r.render("export.item")
