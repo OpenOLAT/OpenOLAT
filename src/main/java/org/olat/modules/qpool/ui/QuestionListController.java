@@ -90,6 +90,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private Controller newItemCtrl;
 	private RenameController renameCtrl;
 	private CloseableModalController cmc;
+	private CloseableModalController cmcNewItem;
 	private DialogBoxController confirmCopyBox;
 	private DialogBoxController confirmDeleteBox;
 	private DialogBoxController confirmRemoveBox;
@@ -390,6 +391,12 @@ public class QuestionListController extends AbstractItemListController implement
 				cmc.deactivate();
 				cleanUp();
 			}
+		} else if(source == cmcNewItem) {
+			showInfo("create.success");
+			getItemsTable().reset();
+			QPoolEvent qce = new QPoolEvent(QPoolEvent.ITEM_CREATED);
+			fireEvent(ureq, qce);
+			cleanUp();
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -398,6 +405,8 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(cmcNewItem);
+		removeAsListenerAndDispose(newItemCtrl);
 		removeAsListenerAndDispose(addController);
 		removeAsListenerAndDispose(bulkChangeCtrl);
 		removeAsListenerAndDispose(importItemCtrl);
@@ -405,6 +414,8 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(createCollectionCtrl);
 		cmc = null;
+		cmcNewItem = null;
+		newItemCtrl = null;
 		addController = null;
 		bulkChangeCtrl = null;
 		importItemCtrl = null;
@@ -468,11 +479,11 @@ public class QuestionListController extends AbstractItemListController implement
 		newItemCtrl = factory.getEditor(ureq, getWindowControl(), title);
 		listenTo(newItemCtrl);
 
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+		removeAsListenerAndDispose(cmcNewItem);
+		cmcNewItem = new CloseableModalController(getWindowControl(), translate("close"),
 				newItemCtrl.getInitialComponent(), true, translate("import.repository"));
-		cmc.activate();
-		listenTo(cmc);
+		cmcNewItem.activate();
+		listenTo(cmcNewItem);
 	}
 	
 	private void doOpenImport(UserRequest ureq) {
