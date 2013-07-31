@@ -997,6 +997,48 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testUserGroup_owner() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//retrieve all groups
+		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString())
+			.path("groups").path("owner").queryParam("start", 0).queryParam("limit", 1).build();
+
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		GroupVOes groups = conn.parse(response, GroupVOes.class);
+		
+		assertNotNull(groups);
+		assertNotNull(groups.getGroups());
+		assertEquals(1, groups.getGroups().length);
+		assertEquals(1, groups.getTotalCount());//g1
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUserGroup_participant() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//retrieve all groups
+		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString())
+			.path("groups").path("participant").queryParam("start", 0).queryParam("limit", 1).build();
+
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		GroupVOes groups = conn.parse(response, GroupVOes.class);
+		
+		assertNotNull(groups);
+		assertNotNull(groups.getGroups());
+		assertEquals(1, groups.getGroups().length);
+		assertEquals(2, groups.getTotalCount());//g2 and g3
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testUserGroupInfosWithPaging() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));

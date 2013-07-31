@@ -84,9 +84,63 @@ public class MyGroupWebService {
 			@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 
+		return getGroupList(start, limit, externalId, managed, true, true, httpRequest, request);
+	}
+	
+	/**
+	 * Return all groups of a user where the user is coach/owner.
+	 * @response.representation.200.qname {http://www.example.com}groupVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The groups of the user
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVOes}
+	 * @response.representation.404.doc The identity not found
+	 * @param start The first result
+	 * @param limit The maximum results
+	 * @param externalId Search with an external ID
+	 * @param managed (true / false) Search only managed / not managed groups 
+	 * @param httpRequest The HTTP request
+	 * @param request The REST request
+	 * @return The list of groups
+	 */
+	@GET
+	@Path("owner")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getOwnedGroupList(@QueryParam("start") @DefaultValue("0") Integer start, @QueryParam("limit") @DefaultValue("25") Integer limit,
+			@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
+			@Context HttpServletRequest httpRequest, @Context Request request) {
+		return getGroupList(start, limit, externalId, managed, true, false, httpRequest, request);
+	}
+	
+	/**
+	 * Return all groups of a user where the user is participant.
+	 * @response.representation.200.qname {http://www.example.com}groupVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The groups of the user
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVOes}
+	 * @response.representation.404.doc The identity not found
+	 * @param start The first result
+	 * @param limit The maximum results
+	 * @param externalId Search with an external ID
+	 * @param managed (true / false) Search only managed / not managed groups 
+	 * @param httpRequest The HTTP request
+	 * @param request The REST request
+	 * @return The list of groups
+	 */
+	@GET
+	@Path("participant")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getParticipatingGroupList(@QueryParam("start") @DefaultValue("0") Integer start, @QueryParam("limit") @DefaultValue("25") Integer limit,
+			@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
+			@Context HttpServletRequest httpRequest, @Context Request request) {
+		return getGroupList(start, limit, externalId, managed, false, true, httpRequest, request);
+	}
+	
+	private Response getGroupList(Integer start, Integer limit, String externalId, Boolean managed,
+			boolean owner, boolean participant, HttpServletRequest httpRequest, Request request) {
+		
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, owner, participant);
 		if(StringHelper.containsNonWhitespace(externalId)) {
 			params.setExternalId(externalId);
 		}
@@ -116,7 +170,9 @@ public class MyGroupWebService {
 			}
 			return Response.ok(groupVOs).build();
 		}
+		
 	}
+	
 	
 	/**
 	 * Return all groups with information of a user. Paging is mandatory!
