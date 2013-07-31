@@ -488,19 +488,34 @@ border-collapse: collapse;
 		<!-- skip itemfeedback -->
 	</xsl:template>
 
+	<xsl:template match="extension_item_result_bak">
+		<xsl:param name="item_id"/>
+		<xsl:apply-templates select="conditionvar/and/or"><xsl:with-param name="item_id" select="$item_id"/></xsl:apply-templates>
+	</xsl:template>
+	
 	<xsl:template match="extension_item_result">
-	<xsl:param name="item_id"/>		
-		<xsl:apply-templates select="conditionvar/and/or"><xsl:with-param name="item_id" select="$item_id"/></xsl:apply-templates>			
+		<xsl:param name="item_id"/>
+		<xsl:choose>
+			<xsl:when test="conditionvar/and/or">
+				<xsl:apply-templates select="conditionvar/and/or"><xsl:with-param name="item_id" select="$item_id"/></xsl:apply-templates>
+			</xsl:when>
+			<xsl:when test="conditionvar/and">
+				<xsl:apply-templates select="conditionvar/and"><xsl:with-param name="item_id" select="$item_id"/></xsl:apply-templates>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates />
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	
 	<xsl:template match="conditionvar">
 		<xsl:apply-templates/>
 	</xsl:template>
 
-	<xsl:template match="vargte">GROESSER&nbsp;GLEICH&nbsp;<xsl:value-of select="."/>&nbsp;<xsl:apply-templates/></xsl:template>
-	<xsl:template match="varlte">KLEINER&nbsp;GLEICH&nbsp;<xsl:value-of select="."/>&nbsp;<xsl:apply-templates/></xsl:template>
-	<xsl:template match="varlt">KLEINER&nbsp;<xsl:value-of select="."/>&nbsp;<xsl:apply-templates/></xsl:template>
-	<xsl:template match="vargt">GROESSER&nbsp;<xsl:value-of select="."/>&nbsp;<xsl:apply-templates/></xsl:template>
+	<xsl:template match="vargte">&gt;=&nbsp;<xsl:value-of select="."/>&nbsp;<xsl:apply-templates/></xsl:template>
+	<xsl:template match="varlte">&lt;=&nbsp;<xsl:value-of select="."/>&nbsp;<xsl:apply-templates/></xsl:template>
+	<xsl:template match="varlt">&lt;&nbsp;<xsl:value-of select="."/>&nbsp;<xsl:apply-templates/></xsl:template>
+	<xsl:template match="vargt">&gt;&nbsp;<xsl:value-of select="."/>&nbsp;<xsl:apply-templates/></xsl:template>
 	<xsl:template match="vareq">&nbsp;<xsl:apply-templates/></xsl:template>
 	<!-- 
 	<xsl:template match="varequal">&nbsp;<xsl:value-of select="." disable-output-escaping="yes"/><xsl:apply-templates/></xsl:template>
