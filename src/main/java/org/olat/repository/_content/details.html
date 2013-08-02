@@ -1,5 +1,5 @@
 $r.render("backLink")
-<h4>$title - $r.translate("details.header")</h4>
+<h4>$r.escapeHtml($title) - $r.translate("details.header")</h4>
 #if($launchableTyp)
 	<p>
 		$r.render("details.launch")	

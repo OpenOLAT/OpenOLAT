@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.render.velocity;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -43,6 +44,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.i18n.I18nManager;
 
 /**
@@ -294,7 +296,9 @@ public class VelocityRenderDecorator {
 		StringOutput sb = new StringOutput(100);
 		if (ContextHelpModule.isContextHelpEnabled()) {
 			String hooverText = renderer.getTranslator().translate(hoverTextKey);
-			if (hooverText != null) hooverText = StringEscapeUtils.escapeHtml(hooverText).toString();
+			if (hooverText != null) {
+				hooverText = StringEscapeUtils.escapeHtml(hooverText);
+			}
 			String langCode = renderer.getTranslator().getLocale().toString();
 			sb.append("<a href=\"javascript:contextHelpWindow('");
 			Renderer.renderNormalURI(sb, "help/");
@@ -487,8 +491,13 @@ public class VelocityRenderDecorator {
 	 * @param str
 	 * @return
 	 */
-	public String escapeHtml(String str) {
+	public String escapeHtml(String str) throws IOException {
 		return StringEscapeUtils.escapeHtml(str);
+	}
+	
+	public String xssScan(String str) {
+		OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
+		return filter.filter(str);
 	}
 	
 	/**
@@ -510,7 +519,7 @@ public class VelocityRenderDecorator {
 	 * @return
 	 */
 	public String translateInAttribute(String key) {
-		return escapeHtml(translate(key));
+		return StringEscapeUtils.escapeHtml(translate(key));
 	}
 
 	/** 

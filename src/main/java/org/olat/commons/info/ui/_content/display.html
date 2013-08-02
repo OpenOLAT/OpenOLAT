@@ -21,7 +21,7 @@
 				</div>
 			#end
 			$r.render("info.date.${info.getKey()}")
-			<h5>${info.getTitle()}</h5>
+			<h5>$r.escapeHtml(${info.getTitle()})</h5>
 			<p class="o_item_info">$info.getInfos()#if($info.isModified()), <span class="o_item_info_mod">$info.getModifier()</span>#end</p>
 			<p></p>
 			#if($info.getMessage())

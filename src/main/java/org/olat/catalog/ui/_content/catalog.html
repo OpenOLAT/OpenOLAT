@@ -5,9 +5,9 @@
 	<div class="o_catalog_nav">
 		#foreach($child in $history)
 			#if($ri < $lastIndex)
-				<a href="$r.commandURIbg("history$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>$child.getName()</a> &gt; 
+				<a href="$r.commandURIbg("history$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>$r.escapeHtml($child.getName())</a> &gt; 
 			#else
-				<strong>$child.getName()</strong>
+				<strong>$r.escapeHtml($child.getName())</strong>
 			#end
 			#set ($ri = $ri +1)
 		#end
@@ -15,10 +15,10 @@
 	
 	## render category description
 	<div class="o_catalog_title b_with_small_icon_left o_catalog_cat_icon">
-		$r.translate("category") <strong>$currentCatalogEntry.getName()</strong>			
+		$r.translate("category") <strong>$r.escapeHtml($currentCatalogEntry.getName())</strong>			
 	</div>
 	#if ($currentCatalogEntry.getDescription())
-		<div class="o_catalog_desc">$currentCatalogEntry.getDescription()</div>
+		<div class="o_catalog_desc">$r.escapeHtml($currentCatalogEntry.getDescription())</div>
 	#end
 		
 	## calculate some temporary variables
@@ -40,7 +40,7 @@
 			#foreach($child in $children)
 				#if ($child.getType()==$node)
 					<li><a href="$r.commandURIbg("child$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>
-						<span class="b_with_small_icon_left o_catalog_sub_icon">$child.getName()</span> 
+						<span class="b_with_small_icon_left o_catalog_sub_icon">$r.escapeHtml($child.getName())</span> 
 					</a></li>
 				#end
 				#set ($ri = $ri +1)
@@ -90,7 +90,7 @@
 									#end
 								#end
 								<a href="$r.commandURIbg("leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_with_small_icon_left ${iconRenderer.getIconCssClass($child.getRepositoryEntry())}">
-									<span id="leaf$ri">$child.getRepositoryEntry().getDisplayname()</span>
+									<span id="leaf$ri">$r.escapeHtml($child.getRepositoryEntry().getDisplayname())</span>
 								</a>
 								<div id="o_tooltip_$ri" style="display:none;">
 									#if($r.available("image$ri"))

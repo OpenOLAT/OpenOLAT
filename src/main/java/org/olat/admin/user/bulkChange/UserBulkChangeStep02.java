@@ -61,7 +61,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.ui.BusinessGroupTableModel;
+import org.olat.group.ui.BusinessGroupFormController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -133,7 +133,7 @@ class UserBulkChangeStep02 extends BasicStep {
 			// use custom translator with fallback to user properties translator
 			UserManager um = UserManager.getInstance();
 			Translator pt1 = um.getPropertyHandlerTranslator(getTranslator());
-			Translator pt2 = Util.createPackageTranslator(BusinessGroupTableModel.class, ureq.getLocale(), pt1);
+			Translator pt2 = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), pt1);
 			Translator pt3 = Util.createPackageTranslator(GroupSearchController.class, ureq.getLocale(), pt2);
 			setTranslator(pt3);
 			flc.setTranslator(pt3);

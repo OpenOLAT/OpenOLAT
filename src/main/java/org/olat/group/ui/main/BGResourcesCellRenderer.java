@@ -33,6 +33,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntryShort;
 
 /**
@@ -68,7 +69,7 @@ public class BGResourcesCellRenderer implements CustomCellRenderer {
 						if(sb.length() > 0) {
 							sb.append(", ");
 						}
-						sb.append(relation.getDisplayname());
+						sb.append(StringHelper.escapeHtml(relation.getDisplayname()));
 					} else if(count >= 2) {
 						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
 						link.setCustomDisplayText("...");
@@ -81,7 +82,7 @@ public class BGResourcesCellRenderer implements CustomCellRenderer {
 					} else {
 						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
 						link.setCustomEnabledLinkCSS("b_small_table_icon o_CourseModule_icon");
-						link.setCustomDisplayText(relation.getDisplayname());
+						link.setCustomDisplayText(StringHelper.escapeHtml(relation.getDisplayname()));
 						link.setUserObject(relation);
 						
 						URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);

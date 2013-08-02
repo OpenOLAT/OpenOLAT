@@ -322,10 +322,10 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 		 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 		 */
 		public final Object getValueAt(int row, int col) {				
-			Note note = (Note) getObject(row).getValue();
+			Note note = getObject(row).getValue();
 			switch (col) {
 				case 0:					
-					return StringEscapeUtils.escapeHtml(note.getNoteTitle()).toString();
+					return note.getNoteTitle();
 				case 1:								
 					String resType = note.getResourceTypeName();
 					return (resType == null ? "n/a" : ControllerFactory.translateResourceableTypeName(resType, locale));
@@ -359,7 +359,7 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 			Note note = getObject(row).getValue();
 			switch (col) {
 				case 0:					
-					return StringEscapeUtils.escapeHtml(note.getNoteTitle()).toString();
+					return note.getNoteTitle();
 				case 1:								
 					Date lastUpdate = note.getLastModified();
 					return lastUpdate;

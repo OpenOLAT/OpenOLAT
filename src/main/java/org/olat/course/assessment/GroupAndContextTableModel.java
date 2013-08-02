@@ -31,6 +31,7 @@ import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
 
@@ -70,8 +71,10 @@ public class GroupAndContextTableModel extends DefaultTableDataModel<BusinessGro
         switch (col) {
             case 0 :
             		String groupName = businessGroup.getName();
-            		if(groupName == null) return "???";
-                return StringEscapeUtils.escapeHtml(businessGroup.getName());
+            		if(StringHelper.containsNonWhitespace(groupName)){
+                  return StringEscapeUtils.escapeHtml(businessGroup.getName());
+            		}
+            		return "???";
             case 1 :
             	String tmp = businessGroup.getDescription();
             	tmp = FilterFactory.getHtmlTagsFilter().filter(tmp);

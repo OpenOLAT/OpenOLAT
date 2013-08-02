@@ -75,6 +75,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.GenericEventListener;
@@ -1053,7 +1054,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (uce.getCoachedGroups().size() > 0) {
 			myTool.addHeader(translate("header.tools.ownerGroups"));
 			for (BusinessGroup group:uce.getCoachedGroups()) {
-				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
+				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), StringHelper.escapeHtml(group.getName()));
 			}
 		}
 

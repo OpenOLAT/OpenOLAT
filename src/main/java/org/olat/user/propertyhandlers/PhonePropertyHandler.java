@@ -60,12 +60,11 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 	public String getUserPropertyAsHTML(User user, Locale locale) {
 		String phonenr = getUserProperty(user, locale);
 		if (StringHelper.containsNonWhitespace(phonenr)) {
+			phonenr = StringHelper.escapeHtml(phonenr);
 			StringBuffer sb = new StringBuffer();
-			sb.append("<a href=\"callto:");
-			sb.append(phonenr);
-			sb.append("\" class=\"b_link_call\">");
-			sb.append(phonenr);
-			sb.append("</a>");
+			sb.append("<a href=\"callto:")
+			  .append(phonenr).append("\" class=\"b_link_call\">")
+			  .append(phonenr).append("</a>");
 			return sb.toString();
 		}
 		return null;

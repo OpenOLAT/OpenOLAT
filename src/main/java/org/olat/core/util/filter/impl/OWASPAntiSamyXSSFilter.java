@@ -24,9 +24,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.olat.core.logging.AssertException;
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.vfs.VFSManager;
 import org.owasp.validator.html.AntiSamy;
@@ -50,7 +50,9 @@ import org.owasp.validator.html.ScanException;
  * Initial Date:  30.07.2009 <br>
  * @author Roman Haag, roman.haag@frentix.com
  */
-public class OWASPAntiSamyXSSFilter extends LogDelegator implements Filter {
+public class OWASPAntiSamyXSSFilter implements Filter {
+	
+	private static final OLog log = Tracing.createLoggerFor(OWASPAntiSamyXSSFilter.class);
 
 	//to be found in /_resources
 	private static final String POLICY_FILE = "antisamy-tinymce.xml";
@@ -58,6 +60,26 @@ public class OWASPAntiSamyXSSFilter extends LogDelegator implements Filter {
 	private CleanResults cr;
 	private final int maxLength;
 	private final boolean entityEncodeIntlChars;
+	
+	private static Policy tinyMcePolicy;
+	private static Policy internalionalTinyMcePolicy;
+	
+	static {
+		try {
+			String fPath = VFSManager.sanitizePath(OWASPAntiSamyXSSFilter.class.getPackage().getName());
+			fPath = fPath.replace('.', '/');
+			fPath = fPath + "/_resources/" + POLICY_FILE;
+			InputStream inStream = OWASPAntiSamyXSSFilter.class.getResourceAsStream(fPath);
+			tinyMcePolicy = Policy.getInstance(inStream);
+			internalionalTinyMcePolicy = tinyMcePolicy.cloneWithDirective("entityEncodeIntlChars", "false");
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	public OWASPAntiSamyXSSFilter(){
+		this(-1, true, false);
+	}
 
 	/**
 	 * @param maxLength
@@ -80,7 +102,7 @@ public class OWASPAntiSamyXSSFilter extends LogDelegator implements Filter {
         if (jUnitDebug) System.out.println("************************************************");
         if (jUnitDebug) System.out.println("              Input: " + original);
         if (original == null) {
-            if (isLogDebugEnabled()) logDebug("  Filter-Input was null, is this intended?", null);
+            if (log.isDebug()) log.debug("  Filter-Input was null, is this intended?", null);
             return null;
         }
         String output = getCleanHTML(original);
@@ -89,11 +111,11 @@ public class OWASPAntiSamyXSSFilter extends LogDelegator implements Filter {
 		} else {
 			String errMsg = getOrPrintErrorMessages();
 			if (!errMsg.equals("")) {
-				logWarn(" Filter applied! => message from filter, check if this should not be allowed: " + errMsg, null);
-				logInfo(" Original Input: \n" + original, null);
-				logInfo("  Filter Result: \n" +  output, null);
+				log.warn(" Filter applied! => message from filter, check if this should not be allowed: " + errMsg, null);
+				log.info(" Original Input: \n" + original, null);
+				log.info("  Filter Result: \n" +  output, null);
 			} else {
-				logDebug(" Filter result doesn't match input! / no message from filter! maybe only some formatting differences.", null);
+				log.debug(" Filter result doesn't match input! / no message from filter! maybe only some formatting differences.", null);
 			}
 		}
 		return output;
@@ -108,33 +130,25 @@ public class OWASPAntiSamyXSSFilter extends LogDelegator implements Filter {
 	}
 	
 	private String getCleanHTML(String original)	{
-		Policy policy = null;
-		try {
-			String fPath = VFSManager.sanitizePath(this.getClass().getPackage().getName());
-			fPath = fPath.replace('.', '/');
-			fPath = fPath + "/_resources/" + POLICY_FILE;
-			InputStream inStream = this.getClass().getResourceAsStream(fPath);
-			policy = Policy.getInstance(inStream);
-			if(maxLength > 0) {
-				policy = policy.cloneWithDirective("maxInputSize", Integer.toString(maxLength));
-			}
-			if(!entityEncodeIntlChars) {
-				policy = policy.cloneWithDirective("entityEncodeIntlChars", "false");
-			}
-		} catch (PolicyException e) {
-			if (jUnitDebug) System.err.println("Policy file not found/readable/valid!");
-			printOriginStackTrace();
-			throw new AssertException("Owasp AntiSamy XSS Filter missing a correct policy file.");
-		} 
+		Policy policy;
+		if(entityEncodeIntlChars) {
+			policy = tinyMcePolicy;
+		} else {
+			policy = internalionalTinyMcePolicy;
+		}
+		if(maxLength > 0) {
+			policy = policy.cloneWithDirective("maxInputSize", Integer.toString(maxLength));
+		}
+
 		AntiSamy as = new AntiSamy();
 		cr = null;
 		try {
 			cr = as.scan(original, policy);
 		} catch (ScanException e) {
-			logError("XSS Filter scan error", e);
+			log.error("XSS Filter scan error", e);
 			printOriginStackTrace();
 		} catch (PolicyException e) {
-            logError("XSS Filter policy error", e);
+            log.error("XSS Filter policy error", e);
             printOriginStackTrace();
         } 
         String output = null; 
@@ -142,7 +156,7 @@ public class OWASPAntiSamyXSSFilter extends LogDelegator implements Filter {
             output = cr.getCleanHTML();
         } catch (Error e){
             output = "";
-            logError("Error getting cleaned HTML from string::" + original, e);
+            log.error("Error getting cleaned HTML from string::" + original, e);
         }
         if (jUnitDebug) System.out.println("OWASP-AntiSamy-Outp: " + output);
         getOrPrintErrorMessages();

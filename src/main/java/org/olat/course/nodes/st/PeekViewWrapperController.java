@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 
@@ -69,7 +70,7 @@ public class PeekViewWrapperController extends BasicController {
 		peekViewWrapperVC.contextPut("coursenode", courseNode);
 		// Add link to jump to course node
 		nodeLink = LinkFactory.createLink("nodeLink", peekViewWrapperVC, this);
-		nodeLink.setCustomDisplayText(courseNode.getShortTitle());
+		nodeLink.setCustomDisplayText(StringHelper.escapeHtml(courseNode.getShortTitle()));
 		// Add css class for course node type
 		String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass();
 		nodeLink.setCustomEnabledLinkCSS("b_with_small_icon_left o_gotoNode " + iconCSSClass);

@@ -319,7 +319,6 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 			switch (col) {
 			case 0:
 				String name = getBookmarkTitle(bookmark);
-				name = StringEscapeUtils.escapeHtml(name).toString();
 				return name;
 			case 1:
 				String resType = bookmark.getDisplayrestype();

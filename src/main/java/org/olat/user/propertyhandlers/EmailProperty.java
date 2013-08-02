@@ -74,13 +74,14 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 	public String getUserPropertyAsHTML(User user, Locale locale) {
 		String mail = getUserProperty(user, locale);
 		if (StringHelper.containsNonWhitespace(mail)) {
-			StringBuffer sb = new StringBuffer();
+			mail = StringHelper.escapeHtml(mail);
+			StringBuilder sb = new StringBuilder();
 			sb.append("<a href=\"mailto:");
 			sb.append(mail);
 			sb.append("\" class=\"b_link_mailto\">");
-			sb.append(getUserProperty(user, locale));
+			sb.append(mail);
 			sb.append("</a>");
-			return sb.toString();
+			return StringHelper.xssScan(sb.toString());
 		}
 		return null;
 	}

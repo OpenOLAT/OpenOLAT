@@ -253,7 +253,8 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 				}
 				sb.append(Formatter.truncate(title, 30)).append("</span>&nbsp;");
 				//link
-				String infoTitle = Formatter.truncate(item.getDescription(), 30);
+				String itemDesc = StringHelper.escapeHtml(item.getDescription());
+				String infoTitle = Formatter.truncate(itemDesc, 30);
 				sb.append("<a id='o_sel_info_msg_link_").append(key).append("' href=\"").append(item.getLink()).append("\" class=\"o_portlet_infomessage_link\"");
 
 				sb.append(">")

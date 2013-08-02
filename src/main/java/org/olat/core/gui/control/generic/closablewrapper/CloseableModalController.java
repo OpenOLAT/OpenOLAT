@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.render.ValidationResult;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -115,7 +116,9 @@ public class CloseableModalController extends DefaultController {
 			backIcon.setVisible(false);
 		}
 		
-		if (title != null) myContent.contextPut("title", title);
+		if (title != null) {
+			myContent.contextPut("title", StringHelper.escapeHtml(title));
+		}
 		myContent.put("modalContent", modalContent); // use our own name
 		this.displayAsOverlay = displayAsOverlay;
 

@@ -122,7 +122,7 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 	@Override
 	public void pushController(String displayName, Controller controller) {
 		Link link = LinkFactory.createLink("crumb_" + stack.size(), mainVC, this);
-		link.setCustomDisplayText(displayName);
+		link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
 		link.setUserObject(controller);
 		stack.add(link);
 		setContent(controller);

@@ -47,6 +47,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.ui.RepositoryEntryAccessColumnDescriptor;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
@@ -118,20 +119,15 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		tableCtr.addColumnDescriptor(new RepositoryEntryTypeColumnDescriptor("table.header.typeimg", RepoCols.repoEntry.ordinal(), null, 
 				translator.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
 		
-		int indexDisplaynameCol = 1;//col 0,1 visible see above
 		if(repositoryModule.isManagedRepositoryEntries()) {
 			tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.externalid", RepoCols.externalId.ordinal(), null, translator.getLocale()));
 			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.externalref", RepoCols.externalRef.ordinal(), null, translator.getLocale()));
-			indexDisplaynameCol++;
+
 		}
 		boolean lfVisible = lifecycleDao.countPublicLifecycle() > 0;
-		if(lfVisible) {
-			indexDisplaynameCol++;
-		}
 		tableCtr.addColumnDescriptor(lfVisible, new DefaultColumnDescriptor("table.header.lifecycle.label", RepoCols.lifecycleLabel.ordinal(), null, translator.getLocale()));
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lifecycle.softkey", RepoCols.lifecycleSoftKey.ordinal(), null, translator.getLocale()));
 
-		indexDisplaynameCol++;//see above
 		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", RepoCols.displayname.ordinal(), enableDirectLaunch ? TABLE_ACTION_SELECT_ENTRY : null, translator.getLocale()) {
 			@Override
 			public int compareTo(int rowa, int rowb) {
@@ -162,9 +158,11 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lifecycle.start", RepoCols.lifecycleStart.ordinal(), null, translator.getLocale()));
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lifecycle.end", RepoCols.lifecycleEnd.ordinal(), null, translator.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.author", RepoCols.author.ordinal(), null, translator.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.access", RepoCols.access.ordinal(), null, translator.getLocale()));
-		
-		
+
+		CustomCellRenderer accessRenderer = new RepositoryEntryAccessColumnDescriptor(translator);
+		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.access", RepoCols.repoEntry.ordinal(), null,
+				translator.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, accessRenderer));
+
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.date", RepoCols.creationDate.ordinal(), null, translator.getLocale()));
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lastusage", RepoCols.lastUsage.ordinal(), null, translator.getLocale()));
 		if (selectButtonLabel != null) {

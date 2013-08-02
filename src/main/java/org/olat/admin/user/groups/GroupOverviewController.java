@@ -36,6 +36,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
+import org.olat.core.gui.components.table.CustomCssCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -63,6 +64,7 @@ import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BGRoleCellRenderer;
 import org.olat.group.ui.main.BGTableItem;
+import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
@@ -108,12 +110,14 @@ public class GroupOverviewController extends BasicController {
 		
 		groupListCtr = new TableController(null, ureq, control, getTranslator());
 		listenTo(groupListCtr);
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.name.i18n(), Cols.name.ordinal(), canStartGroups ? TABLE_ACTION_LAUNCH : null, ureq.getLocale()));
+		CustomCssCellRenderer nameRenderer = new BusinessGroupNameCellRenderer();
+		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.name.i18n(), Cols.name.ordinal(), canStartGroups ? TABLE_ACTION_LAUNCH : null,
+				getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, nameRenderer));
 		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
 		CustomCellRenderer roleRenderer = new BGRoleCellRenderer(getLocale());
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
+		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
 		groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_UNSUBSCRIBE, translate("table.header.leave"), null));
 		
 		groupListCtr.setMultiSelect(true);

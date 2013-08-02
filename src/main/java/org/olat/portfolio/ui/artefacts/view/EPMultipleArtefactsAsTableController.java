@@ -127,6 +127,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 		artefactListTblCtrl.addColumnDescriptor(descr);
 		
 		descr = new DefaultColumnDescriptor("artefact.description", 1, null, getLocale());
+		descr.setEscapeHtml(false);
 		artefactListTblCtrl.addColumnDescriptor(true, descr);
 		
 		descr = new DefaultColumnDescriptor("artefact.date", 2, null, getLocale());

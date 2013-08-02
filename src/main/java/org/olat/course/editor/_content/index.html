@@ -22,12 +22,12 @@
 				<li>
 				#set ($counter = $velocityCount - 1)
 				#if($errorHelpWizardLink.get($counter)!="NONE")
-					<strong><a href="$r.commandURI($errorHelpWizardLink.get($counter))" title="${fixit}">${elem}</a></strong>
+					<strong><a href="$r.commandURI($errorHelpWizardLink.get($counter))" title="${fixit}">$r.escapeHtml(${elem})</a></strong>
 				#else
-					<strong>${elem}</strong>		
+					<strong>$r.escapeHtml(${elem})</strong>		
 				#end
 					<br />
-					${errorMessage.get(${counter})}
+					$r.escapeHtml(${errorMessage.get(${counter})})
 				</li>
 			#end
 			<ul>
@@ -55,12 +55,12 @@
 				<li>
 				#set ($counter = $velocityCount - 1)
 				#if($warningHelpWizardLink.get($counter)!="NONE")
-					<strong><a href="$r.commandURI($warningHelpWizardLink.get($counter))" title="${fixit}">${elem}</a></strong>
+					<strong><a href="$r.commandURI($warningHelpWizardLink.get($counter))" title="${fixit}">$r.escapeHtml(${elem})</a></strong>
 				#else
-					<strong>${elem}</strong>		
+					<strong>$r.escapeHtml(${elem})</strong>		
 				#end
 					<br />
-					${warningMessage.get(${counter})}
+					$r.escapeHtml(${warningMessage.get(${counter})})
 				</li>
 			#end
 			<ul>

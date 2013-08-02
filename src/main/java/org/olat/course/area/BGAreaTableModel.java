@@ -28,7 +28,6 @@ package org.olat.course.area;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
@@ -65,7 +64,7 @@ public class BGAreaTableModel extends DefaultTableDataModel<BGArea> {
 		BGArea area = getObject(row);
 		switch (col) {
 			case 0:
-				return StringEscapeUtils.escapeHtml(area.getName()).toString();
+				return area.getName();
 			case 1:
 				String description = area.getDescription();
 				description = FilterFactory.getHtmlTagsFilter().filter(description);

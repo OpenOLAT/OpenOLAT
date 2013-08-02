@@ -179,7 +179,7 @@ public class SelectionTreeRenderer implements ComponentRenderer {
 		// text using css if available
 		String cssClass = root.getCssClass();
 		if (cssClass != null) target.append("<span class=\"").append(cssClass).append("\">");
-		target.append(root.getTitle());
+		target.append(StringHelper.escapeHtml(root.getTitle()));
 		if (cssClass != null) target.append("</span>");
 		target.append("</div></div>");
 	}

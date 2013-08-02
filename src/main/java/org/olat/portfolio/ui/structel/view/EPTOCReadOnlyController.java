@@ -34,6 +34,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -127,7 +128,7 @@ public class EPTOCReadOnlyController extends BasicController {
 			if (artList != null && artList.size() != 0) {
 				for (AbstractArtefact artefact : artList) {
 					String key = String.valueOf(artefact.getKey());
-					String title = artefact.getTitle();
+					String title = StringHelper.escapeHtml(artefact.getTitle());
 
 					Link iconLink = LinkFactory.createCustomLink("arte_" + key, LINK_CMD_OPEN_ARTEFACT, "", Link.NONTRANSLATED, vC, this);
 					iconLink.setCustomEnabledLinkCSS("b_small_icon b_open_icon");
@@ -154,7 +155,7 @@ public class EPTOCReadOnlyController extends BasicController {
 				}
 
 				String key = String.valueOf(portfolioStructure.getKey());
-				String title = portfolioStructure.getTitle();
+				String title = StringHelper.escapeHtml(portfolioStructure.getTitle());
 
 				Link iconLink = LinkFactory.createCustomLink("portstruct" + key, LINK_CMD_OPEN_STRUCT, "", Link.NONTRANSLATED, vC, this);
 				iconLink.setCustomEnabledLinkCSS("b_small_icon b_open_icon");

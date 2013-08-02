@@ -57,10 +57,6 @@ class SelectionTreeComponentRenderer implements ComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
-
-		String[] clonedArgs = args != null ? args.clone() : new String[1];
-		int cnt = clonedArgs.length;
-		clonedArgs[cnt-1] = CheckboxElementComponent.RENDERARG_ESCAPEHTML;//
 		
 		SelectionTreeComponent stc = (SelectionTreeComponent)source;
 		Map<String,Component> checkboxes = stc.getSubComponents();

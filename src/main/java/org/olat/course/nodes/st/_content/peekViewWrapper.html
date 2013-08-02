@@ -5,7 +5,7 @@
 		</h5>
 	</div>
 #if ($coursenode.getLongTitle() &&  $coursenode.getLongTitle() != "")
-	<div class="o_course_run_displaytitle">$coursenode.getLongTitle()</div>
+	<div class="o_course_run_displaytitle">$r.escapeHtml($coursenode.getLongTitle())</div>
 #end
 #if ($coursenode.getLearningObjectives() &&  $coursenode.getLearningObjectives() != "")
 	<div class="o_course_run_objectives">

@@ -54,17 +54,10 @@ class CheckboxRenderer implements ComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		
 		//default should allow <b> </b> coming from localstring properties (see also http://bugs.olat.org/jira/browse/OLAT-4208)
-		boolean escapeHTML = false;
-		if(args != null && args.length>0){
-			for (int i = 0; i < args.length; i++) {
-				if(CheckboxElementComponent.RENDERARG_ESCAPEHTML.equals(args[i])){
-					escapeHTML = true;//so far used from SelectionTreeComponent, e.q. make the publish render tree safe against special chars in node titles
-				}
-			}
-		}
-		
-		CheckboxElementComponent cec = (CheckboxElementComponent)source;
 
+		CheckboxElementComponent cec = (CheckboxElementComponent)source;
+		boolean escapeHTML = cec.isEscapeHtml();
+		
 		String subStrName = "name=\"" + cec.getGroupingName() + "\"";
 		
 		String key = cec.getKey();

@@ -34,6 +34,7 @@ import java.util.Locale;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 
 
 /**
@@ -56,6 +57,7 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	protected Collator collator; 
 	protected Table table; 
 	protected int dataColumn;
+	private boolean escapeHtml = true;
 	private boolean translateHeaderKey = true; 
 
 	/**
@@ -103,6 +105,10 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	public void setTranslateHeaderKey(final boolean translateHeaderKey) {
 		this.translateHeaderKey = translateHeaderKey;
 	}
+	
+	public void setEscapeHtml(boolean escape) {
+		this.escapeHtml = escape;
+	}
 
 	/**
 	 * 
@@ -118,17 +124,22 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	 */
 	public void renderValue(final StringOutput sb, final int row, final Renderer renderer) {
 		Object val = getModelData(row);
-		String res;
-		if (val == null){
+		if (val == null) {
 			return;
 		}
 		if (val instanceof Date) {
-			res =  formatter.formatDateAndTime((Date)val);
+			String res =  formatter.formatDateAndTime((Date)val);
+			sb.append(res);
+		} else if(val instanceof String) {
+			if(escapeHtml) {
+				StringHelper.escapeHtml(sb, (String)val);
+			} else {
+				sb.append((String)val);
+			}
+		} else {
+			String res = val.toString();
+			sb.append(res);
 		}
-		else {
-			res = val.toString();
-		}
-		sb.append(res);
 	}
 
 	/**

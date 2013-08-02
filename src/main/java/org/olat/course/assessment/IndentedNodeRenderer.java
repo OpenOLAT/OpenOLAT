@@ -28,10 +28,10 @@ package org.olat.course.assessment;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNodeFactory;
 
 /**
@@ -85,10 +85,10 @@ public class IndentedNodeRenderer implements CustomCellRenderer {
 		
 		sb.append("<span class=\"b_with_small_icon_left ").append(cssClass);
 		if (altText != null) {
-			sb.append("\" title= \"").append(StringEscapeUtils.escapeHtml(altText));
+			sb.append("\" title= \"").append(StringHelper.escapeHtml(altText));
 		}
 		sb.append("\">");
-		sb.append(title);
+		sb.append(StringHelper.escapeHtml(title));
 		sb.append("</span>");
 	}
 

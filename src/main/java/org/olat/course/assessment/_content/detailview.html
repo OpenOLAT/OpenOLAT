@@ -1,7 +1,7 @@
 #if ($courseNode)
-	<div class="b_with_small_icon_left $courseNodeCss">$courseNode.getShortTitle()
+	<div class="b_with_small_icon_left $courseNodeCss">$r.escapeHtml($courseNode.getShortTitle())
 	#if ($courseNode.getLongTitle() && $courseNode.getLongTitle() != "")
-		($courseNode.getLongTitle())
+		($r.escapeHtml($courseNode.getLongTitle()))
 	#end
 	</div>
 	<hr />
@@ -34,7 +34,7 @@ $r.render("backLink")
 		</td>
 		<td>
 			#foreach($group in $participantGroups)
-				$group.getName()
+				$r.escapeHtml($group.getName())
 				#if ($velocityCount < $participantGroups.size())
 			,
 				#end

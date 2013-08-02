@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
@@ -76,7 +77,7 @@ public class FOPeekviewController extends BasicController implements Controller 
 			// add link to item
 			// Add link to jump to course node
 			Link nodeLink = LinkFactory.createLink("nodeLink_" + message.getKey(), peekviewVC, this);
-			nodeLink.setCustomDisplayText(message.getTitle());
+			nodeLink.setCustomDisplayText(StringHelper.escapeHtml(message.getTitle()));
 			nodeLink.setCustomEnabledLinkCSS("b_with_small_icon_left o_forum_message_icon o_gotoNode");
 			nodeLink.setUserObject(Long.toString(message.getKey()));				
 		}

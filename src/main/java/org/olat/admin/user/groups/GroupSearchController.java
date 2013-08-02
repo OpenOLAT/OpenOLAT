@@ -58,7 +58,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.BusinessGroupTableModel;
+import org.olat.group.ui.BusinessGroupFormController;
 
 /**
  * Description:<br>
@@ -89,7 +89,7 @@ public class GroupSearchController extends StepFormBasicController {
 	public GroupSearchController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		Translator pT = Util.createPackageTranslator(BusinessGroupTableModel.class, ureq.getLocale(), getTranslator());
+		Translator pT = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), getTranslator());
 		flc.setTranslator(pT);
 		initForm(ureq);
 	}	
@@ -98,7 +98,7 @@ public class GroupSearchController extends StepFormBasicController {
 	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext, int layoutVertical, String pageName) {
 		super(ureq, wControl, form, stepsRunContext, LAYOUT_VERTICAL, "resulttable");
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		Translator pT = Util.createPackageTranslator(BusinessGroupTableModel.class, ureq.getLocale(), getTranslator());
+		Translator pT = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), getTranslator());
 		flc.setTranslator(pT);
 		initForm(ureq);
 	}

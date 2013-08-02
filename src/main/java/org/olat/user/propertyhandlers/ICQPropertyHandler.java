@@ -55,11 +55,13 @@ public class ICQPropertyHandler extends Generic127CharTextPropertyHandler {
 		// return super.getUserPropertyAsHTML(user, locale);
 		String icqname = getUserProperty(user, locale);
 		if (StringHelper.containsNonWhitespace(icqname)) {
-			StringBuffer stringBuffer = new StringBuffer();
-			stringBuffer.append("<a href=\"" + ICQ_NAME_VALIDATION_URL + "" + icqname + "\" target=\"_blank\">" + icqname + "</a>");
-			stringBuffer.append("<img src=\"" + ICQ_INDICATOR_URL + "?icq=" + icqname
-					+ "&img=5\" style=\"width:10px; height:10px; margin-left:2px;\">");
-			return stringBuffer.toString();
+			icqname = StringHelper.escapeHtml(icqname);
+			StringBuilder sb = new StringBuilder();
+			sb.append("<a href=\"").append(ICQ_NAME_VALIDATION_URL).append(icqname).append("\" target=\"_blank\">")
+			  .append(icqname).append("</a>")
+			  .append("<img src=\"").append(ICQ_INDICATOR_URL).append("?icq=").append(icqname)
+			  .append("&img=5\" style=\"width:10px; height:10px; margin-left:2px;\">");
+			return sb.toString();
 		} else {
 			return null;
 		}

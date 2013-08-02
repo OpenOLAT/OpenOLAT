@@ -94,7 +94,9 @@ public class BookmarksController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.bm.title", 0, "choose", getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.bm.resource", 1, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.bm.description", 2, null, getLocale()));
+		DefaultColumnDescriptor descCol = new DefaultColumnDescriptor("table.bm.description", 2, null, getLocale());
+		descCol.setEscapeHtml(false);
+		tableCtr.addColumnDescriptor(descCol);
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "table.header.delete", translate("action.delete")));
 		listenTo(tableCtr);
 

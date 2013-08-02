@@ -29,22 +29,21 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.id.UserConstants;
 
 /**
 * @author Felix Jost
 */
-public class ForumMessagesTableDataModel extends DefaultTableDataModel {
+public class ForumMessagesTableDataModel extends DefaultTableDataModel<Message> {
 
-	private Set readMsgs;
+	private Set<Long> readMsgs;
 
 	public ForumMessagesTableDataModel() {
 		super(null);
 	}
 
-	public ForumMessagesTableDataModel(List objects, Set readMsgs) {
+	public ForumMessagesTableDataModel(List<Message> objects, Set<Long> readMsgs) {
 		super(objects);
 		this.readMsgs = readMsgs;
 	}
@@ -61,10 +60,10 @@ public class ForumMessagesTableDataModel extends DefaultTableDataModel {
 	 * fourth if it is new or not
 	 */
 	public final Object getValueAt(int row, int col) {
-		Message m= (Message) getObject(row);
+		Message m= getObject(row);
 		switch (col) {
 			case 0 :
-				String title = StringEscapeUtils.escapeHtml(m.getTitle()).toString();
+				String title = m.getTitle();
 				return title;
 			case 1 :
 				String last= m.getCreator().getUser().getProperty(UserConstants.LASTNAME, getLocale());

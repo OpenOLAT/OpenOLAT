@@ -181,7 +181,8 @@ public class InfoPeekViewController extends BasicController {
 				} else {
 					sb.append("<span>");
 				}
-				String title = Formatter.truncate(item.getTitle(), 64);
+				String title = StringHelper.escapeHtml(item.getTitle());
+				title = Formatter.truncate(title, 64);
 				sb.append(title).append("</span>&nbsp;");
 				//link
 				if(StringHelper.containsNonWhitespace(item.getBusinessPath())) {

@@ -855,7 +855,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 			getWindowControl().setError(translate("warn.tabsfull"));
 			return null;
 		}
-		DTabImpl dt = new DTabImpl(ores, repoOres, title, getWindowControl());
+		DTabImpl dt = new DTabImpl(ores, repoOres, StringHelper.escapeHtml(title), getWindowControl());
 		return dt;
 	}
 

@@ -26,7 +26,9 @@
 
 package org.olat.core.util;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -44,9 +46,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
 /**
  * enclosing_type Description: <br>
@@ -55,6 +61,8 @@ import org.olat.core.logging.AssertException;
  * @author Felix Jost
  */
 public class StringHelper {
+	
+	private static final OLog log = Tracing.createLoggerFor(StringHelper.class);
 
 	private static final NumberFormat numFormatter;
 	private static final String WHITESPACE_REGEXP = "^\\s*$";
@@ -326,6 +334,22 @@ public class StringHelper {
 			}
 		}
 		return tmpDET.toString();
+	}
+	
+	public static final String escapeHtml(String str) {
+		return StringEscapeUtils.escapeHtml(str);
+	}
+	
+	public static final void escapeHtml(Writer writer, String str) {
+		try {
+			StringEscapeUtils.escapeHtml(writer, str);
+		} catch (IOException e) {
+			log.error("Error escaping HTML", e);
+		}
+	}
+	
+	public static final String xssScan(String str) {
+		return new OWASPAntiSamyXSSFilter().filter(str);
 	}
 
 	/**

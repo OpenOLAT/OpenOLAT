@@ -28,7 +28,6 @@ package org.olat.note;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.ControllerFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 
@@ -38,7 +37,7 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
  *  @author Alexander Schneider
  */
 
-class NoteListTableDataModel extends DefaultTableDataModel {
+class NoteListTableDataModel extends DefaultTableDataModel<Note> {
 
 	private Locale locale;
 	
@@ -55,11 +54,10 @@ class NoteListTableDataModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public final Object getValueAt(int row, int col) {
-		Note n = (Note) getObject(row);
+		Note n = getObject(row);
 		switch (col) {
 			case 0 :
-			    String title = StringEscapeUtils.escapeHtml(n.getNoteTitle()).toString();
-				return title;
+			  return n.getNoteTitle();
 			case 1 :
 				String resType = n.getResourceTypeName();
 				return (resType == null ? "n/a" : ControllerFactory.translateResourceableTypeName(resType, locale));

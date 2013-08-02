@@ -103,7 +103,7 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 		this.titleInfo = titleInfo;
 
 		// set title info variables
-		theVelocityContainer.contextPut(TITLE_VAR, titleInfo.getTitle());	
+		theVelocityContainer.contextPut(TITLE_VAR, StringHelper.escapeHtml(titleInfo.getTitle()));	
 		theVelocityContainer.contextPut(CONTEXT_TITLE_VAR, titleInfo.getContextTitle());
 		theVelocityContainer.contextPut(TITLE_SIZE, titleInfo.getTitleSize());			
 		theVelocityContainer.contextPut(USE_SEPARATOR, Boolean.valueOf(titleInfo.isSeparatorEnabled()));			

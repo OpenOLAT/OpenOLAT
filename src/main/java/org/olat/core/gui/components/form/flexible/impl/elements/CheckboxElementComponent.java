@@ -43,9 +43,10 @@ class CheckboxElementComponent extends FormBaseComponentImpl {
 
 	private final SelectionElement selectionWrapper;
 	private final int which;
+	private boolean escapeHtml = true;
 	private final String cssClass;
 	private static final ComponentRenderer RENDERER = new CheckboxRenderer();
-	public static final String RENDERARG_ESCAPEHTML = "ESC_HTML";
+	//public static final String RENDERARG_ESCAPEHTML = "ESC_HTML";
 
 	/**
 	 * Constructor for a check box component. Set to private, use the
@@ -84,6 +85,14 @@ class CheckboxElementComponent extends FormBaseComponentImpl {
 	
 	int getWhichWeAre(){
 		return which;
+	}
+
+	public boolean isEscapeHtml() {
+		return escapeHtml;
+	}
+
+	public void setEscapeHtml(boolean escapeHtml) {
+		this.escapeHtml = escapeHtml;
 	}
 
 	String getKey() {

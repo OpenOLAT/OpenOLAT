@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -318,7 +317,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
   		UserEfficiencyStatementLight efficiencyStatement = getEfficiencyStatementAt(row);
   		switch (col) {
   			case 0:
-  				return StringEscapeUtils.escapeHtml(efficiencyStatement.getShortTitle());
+  				return efficiencyStatement.getShortTitle();
   			case 1:
   				Float score = efficiencyStatement.getScore();
   				return AssessmentHelper.getRoundedScore(score);

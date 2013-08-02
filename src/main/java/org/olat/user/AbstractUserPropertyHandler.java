@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -57,7 +58,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 * @see org.olat.core.id.UserField#getUserFieldValueAsHTML(org.olat.core.id.User, java.util.Locale)
 	 */
 	public String getUserPropertyAsHTML(User user, Locale locale) {
-		return getUserProperty(user, locale);
+		return StringHelper.escapeHtml(getUserProperty(user, locale));
 	}
 
 	/**

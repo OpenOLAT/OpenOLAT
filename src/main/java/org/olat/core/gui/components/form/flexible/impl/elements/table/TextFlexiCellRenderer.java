@@ -32,6 +32,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 
 /**
  * Render value with toString. Render Date value with Formatter depending on locale.
@@ -51,10 +52,11 @@ public class TextFlexiCellRenderer implements FlexiCellRenderer {
 		if (cellValue instanceof Date) {
 			Formatter formatter = Formatter.getInstance(translator.getLocale());
 			target.append( formatter.formatDateAndTime((Date)cellValue) );
-		} else {
-			if (cellValue != null) {
-				target.append( cellValue.toString() );
-			}
+		} else if(cellValue instanceof String) {
+			String str = (String)cellValue;
+			StringHelper.escapeHtml(target, str);
+		} else if (cellValue != null) {
+			target.append( cellValue.toString() );
 		}
 	}
 }

@@ -47,6 +47,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
 
@@ -160,9 +161,6 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			appendDragAndDropObj(curRoot, tree, target, ubu, flags);
 		}
-		
-		// render link
-		String title = curRoot.getTitle();
 
 		// expand icon
 		// add ajax support and real open/close function
@@ -273,8 +271,15 @@ public class MenuTreeRenderer implements ComponentRenderer {
 			target.append(" id='da").append(ident).append("'");
 		}
 		target.append(">");
-		if(title != null && title.equals("")) title = "&nbsp;";
-		target.append(title).append("</span></a>");
+
+		// render link
+		String title = curRoot.getTitle();
+		if(title != null && title.equals("")) {
+			target.append("&nbsp;");
+		} else {
+			StringHelper.escapeHtml(target, title);
+		}
+		target.append("</span></a>");
 		// mark active item as strong for accessablity reasons
 		target.append(selected ? "</strong>" : "");
 		target.append("</div>");

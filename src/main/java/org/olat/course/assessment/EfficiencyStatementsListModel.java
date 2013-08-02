@@ -27,7 +27,6 @@ package org.olat.course.assessment;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 
@@ -39,7 +38,7 @@ import org.olat.course.assessment.model.UserEfficiencyStatementLight;
  * 
  * @author gnaegi
  */
-public class EfficiencyStatementsListModel extends DefaultTableDataModel {
+public class EfficiencyStatementsListModel extends DefaultTableDataModel<UserEfficiencyStatementLight> {
 
 	/**
 	 * @param list of efficiencyStatements
@@ -62,7 +61,7 @@ public class EfficiencyStatementsListModel extends DefaultTableDataModel {
 		UserEfficiencyStatementLight efficiencyStatement = getEfficiencyStatementAt(row);
 		switch (col) {
 			case 0:
-				return StringEscapeUtils.escapeHtml(efficiencyStatement.getShortTitle());
+				return efficiencyStatement.getShortTitle();
 			case 1:
 				Float score = efficiencyStatement.getScore();
 				return AssessmentHelper.getRoundedScore(score);
@@ -78,6 +77,6 @@ public class EfficiencyStatementsListModel extends DefaultTableDataModel {
 	 * @return the efficiencyStatement at the given row
 	 */
 	public UserEfficiencyStatementLight getEfficiencyStatementAt(int row) {
-		return (UserEfficiencyStatementLight) objects.get(row);
+		return objects.get(row);
 	}
 }

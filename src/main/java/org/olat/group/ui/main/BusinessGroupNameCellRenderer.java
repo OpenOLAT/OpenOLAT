@@ -19,8 +19,8 @@
  */
 package org.olat.group.ui.main;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupShort;
 
 /**
@@ -51,7 +51,7 @@ public class BusinessGroupNameCellRenderer extends CustomCssCellRenderer {
 	protected String getCellValue(Object val) {
 		if(val instanceof BusinessGroupShort) {
 			BusinessGroupShort group = (BusinessGroupShort)val;
-			return group.getName() == null ? "" : StringEscapeUtils.escapeHtml(group.getName());
+			return group.getName() == null ? "" : StringHelper.escapeHtml(group.getName());
 		}
 		return val == null ? "" : val.toString();
 	}

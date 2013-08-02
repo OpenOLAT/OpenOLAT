@@ -65,9 +65,12 @@ public class MSNPropertyHandler extends Generic127CharTextPropertyHandler {
 	public String getUserPropertyAsHTML(User user, Locale locale) {
 		String msnname = getUserProperty(user, locale);
 		if (StringHelper.containsNonWhitespace(msnname)) {
-			StringBuffer stringBuffer = new StringBuffer();
-			stringBuffer.append("<a href=\"" + MSN_NAME_VALIDATION_URL + "?" + MSN_NAME_URL_PARAMETER + "=" + msnname + "\" target=\"_blank\">" + msnname + "</a>");
-			return stringBuffer.toString();
+			msnname = StringHelper.escapeHtml(msnname);
+			StringBuilder sb = new StringBuilder();
+			sb.append("<a href=\"").append(MSN_NAME_VALIDATION_URL).append("?")
+			  .append(MSN_NAME_URL_PARAMETER).append("=").append(msnname)
+			  .append("\" target=\"_blank\">").append(msnname).append("</a>");
+			return sb.toString();
 		} else {
 			return null;
 		}
