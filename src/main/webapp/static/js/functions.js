@@ -207,11 +207,8 @@ var BFormatter = {
 		try {
 			if (jsMath) { // only when js math available
 				if (jsMath.loaded) {
-					setTimeout(function() {
-						jQuery('#' + domId).each(function(index, el){
-							jsMath.ProcessBeforeShowing(el);
-						});
-					}, 10);					
+					jsMath.Setup.Body();
+				    jsMath.Script.Push(jsMath.Translate,'Asynchronous',domId);
 				} else { // not yet loaded (autoload), load first
 					jsMath.Autoload.LoadJsMath();
 					// retry formatting when ready (recursively until loaded)
