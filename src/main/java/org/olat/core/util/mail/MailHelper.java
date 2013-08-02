@@ -82,7 +82,7 @@ public class MailHelper {
 		UserManager um = UserManager.getInstance();
 		List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(MailHelper.class.getCanonicalName(), false);
 		ArrayList<String> uProps = new ArrayList<String>(userPropertyHandlers.size()+2);
-		uProps.add(sender.getName());
+		uProps.add(sender.getUser().getProperty(UserConstants.EMAIL, null));
 		uProps.add(Settings.getServerContextPathURI());
 		
 		for (Iterator<UserPropertyHandler> iterator = userPropertyHandlers.iterator(); iterator.hasNext();) {
