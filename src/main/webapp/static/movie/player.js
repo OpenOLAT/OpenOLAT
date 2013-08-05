@@ -4,28 +4,20 @@ var BPlayer = {
 	},
 	
 	playSound : function(soundUrl, domId) {
-		var playerUrl = BPlayer.playerUrl();
-		if(jwplayer.utils.isIE()) {
-			var flashvars = "file=" + soundUrl + "&start=0&autostart=true&repeat=none&controlbar=none&showicons=false";
-			if (swfobject.hasFlashPlayerVersion("9")) {
-	     		var fn = function() {
-	        		var att = { data:playerUrl, width:'1px', height:'1px', wmode:'transparent'};
-	        		var par = { flashvars: flashvars };
-	        		var id = domId;
-	        		var myObject = swfobject.createSWF(att, par, id);
-	      		};
-	      		swfobject.addDomLoadEvent(fn);
-			}
-		} else {
+		if(!jwplayer.utils.isIE()) {
+			var playerUrl = BPlayer.playerUrl();
 			var args = {
 				file:soundUrl,
 				start:0,
 				autostart:true,
 				repeat:'none',
 				controlbar:'none',
+				controls: false,
 				width: '1px',
 				height: '1px',
-				showicons:false
+				icons:false,
+				showicons:false,
+				flashplayer:playerUrl
 			};
 			jwplayer(domId).setup(args);
 		}
