@@ -69,7 +69,10 @@ public class MailManagerTest extends OlatTestCase {
 	
 	@After
 	public void resetInternalInbox() {
-		mailModule.setInterSystem(inbox);
+		if(!inbox) {
+			mailModule.setInterSystem(inbox);
+			sleep(500);//set of properties on module are async
+		}
 	}
 	
 	@Test
@@ -128,7 +131,9 @@ public class MailManagerTest extends OlatTestCase {
 		String metaId = UUID.randomUUID().toString();
 		Identity fromId = JunitTestHelper.createAndPersistIdentityAsUser("mail-5-" + UUID.randomUUID().toString());
 		Identity toId = JunitTestHelper.createAndPersistIdentityAsUser("mail-6-" + UUID.randomUUID().toString());
-		MailerResult result = mailManager.sendMessage(null, fromId, null, toId, null, null, null, null, metaId, "Hello outbox", "Content of outbox", null);
+		dbInstance.commitAndCloseSession();
+		
+		MailerResult result = mailManager.sendMessage(null, fromId, null, toId, null, null, null, null, metaId, "Hello meta ID", "Meta ID", null);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(MailerResult.OK, result.getReturnCode());
 		dbInstance.commitAndCloseSession();
@@ -140,7 +145,7 @@ public class MailManagerTest extends OlatTestCase {
 		
 		DBMailLight mail = mails.get(0);
 		Assert.assertNotNull(mail);
-		Assert.assertEquals("Hello outbox", mail.getSubject());	
+		Assert.assertEquals("Hello meta ID", mail.getSubject());	
 	}
 	
 	
