@@ -219,12 +219,10 @@ public class CourseGroupWebService {
     	bg = bgm.loadBusinessGroup(group.getKey());
     	bgm.addResourceTo(bg, courseRe);
     } else {
-    	String name = group.getName();
-  		String desc = group.getDescription();
   		Integer min = normalize(group.getMinParticipants());
   		Integer max = normalize(group.getMaxParticipants());
-  		
-  		bg = bgm.createBusinessGroup(ureq.getIdentity(), name, desc, min, max, false, false, courseRe);
+  		bg = bgm.createBusinessGroup(ureq.getIdentity(), group.getName(), group.getDescription(),
+  				group.getExternalId(), group.getManagedFlags(), min, max, false, false, courseRe);
     }
     GroupVO savedVO = ObjectFactory.get(bg);
 		return Response.ok(savedVO).build();
