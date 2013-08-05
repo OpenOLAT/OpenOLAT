@@ -35,144 +35,121 @@ import org.olat.core.id.Persistable;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.AssertException;
 
 /**
  * Initial Date: 08.02.2005
  * 
  * @author Mike Stock
  */
-final class PreviewIdentity implements Identity {
+final class PreviewIdentity implements Identity, User {
 
-	/**
-	 * @see org.olat.core.id.Identity#getName()
-	 */
-	public String getName() {
-		return "JaneDoe";
-	}
-
-	/**
-	 * @see org.olat.core.id.Identity#getUser()
-	 */
-	public User getUser() {
-		return new User(){
-			Map<String, String> data = new HashMap<String, String>();
-			private Map<String, String> envAttrs;
-			{
-				data.put(UserConstants.FIRSTNAME, "Jane");
-				data.put(UserConstants.LASTNAME, "Doe");
-				data.put(UserConstants.EMAIL, "jane.doe@testmail.com");
-			}
-			
-			public Long getKey() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-			@SuppressWarnings("unused")
-			public boolean equalsByPersistableKey(Persistable persistable) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-		
-			public Date getLastModified() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-		
-			public Date getCreationDate() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-			@SuppressWarnings("unused")
-			public void setProperty(String propertyName, String propertyValue) {
-				// TODO Auto-generated method stub
-				
-			}
-			@SuppressWarnings("unused")
-			public void setPreferences(Preferences prefs) {
-				// TODO Auto-generated method stub
-				
-			}
-			@SuppressWarnings("unused")
-			public String getProperty(String propertyName, Locale locale) {					
-				return data.get(propertyName);
-			}
-
-			public void setIdentityEnvironmentAttributes(Map<String, String> identEnvAttribs) {
-				this.envAttrs = identEnvAttribs;
-			}	
-
-			public String getPropertyOrIdentityEnvAttribute(String propertyName, Locale locale) {
-				String retVal = null;
-				retVal = data.get(propertyName);
-				if(retVal== null && this.envAttrs != null){
-					retVal = envAttrs.get(propertyName);
-				}
-				return retVal;
-			}
-			
-			public Preferences getPreferences() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-		
-		};
-	}
-
-	/**
-	 * @see org.olat.core.commons.persistence.Auditable#getCreationDate()
-	 */
-	public Date getCreationDate() {
-		throw new AssertException("unsupported");
-	}
-
-	/**
-	 * @see org.olat.core.commons.persistence.Auditable#getLastModified()
-	 */
-	public Date getLastModified() {
-		throw new AssertException("unsupported");
+	private static final long serialVersionUID = 6582855975941440446L;
+	
+	private final Map<String, String> data = new HashMap<String, String>();
+	private Map<String, String> envAttrs;
+	{
+		data.put(UserConstants.FIRSTNAME, "Jane");
+		data.put(UserConstants.LASTNAME, "Doe");
+		data.put(UserConstants.EMAIL, "jane.doe@testmail.com");
 	}
 
 	/**
 	 * @see org.olat.core.commons.persistence.Persistable#getKey()
 	 */
+	@Override
 	public Long getKey() {
-		throw new AssertException("unsupported");
+		return 2l;
+	}
+	
+	/**
+	 * @see org.olat.core.id.Identity#getName()
+	 */
+	@Override
+	public String getName() {
+		return "JaneDoe";
+	}
+
+	@Override
+	public void setName(String loginName) {
+		//
 	}
 
 	/**
-	 * @see org.olat.core.commons.persistence.Persistable#equalsByPersistableKey(org.olat.core.commons.persistence.Persistable)
+	 * @see org.olat.core.id.Identity#getUser()
 	 */
-	public boolean equalsByPersistableKey(Persistable persistable) {
-		throw new AssertException("unsupported");
+	@Override
+	public User getUser() {
+		return this;
 	}
 
+	@Override
+	public String getProperty(String propertyName, Locale locale) {					
+		return data.get(propertyName);
+	}
+
+	@Override
+	public void setProperty(String propertyName, String propertyValue) {
+		data.put(propertyName, propertyValue);
+	}
+
+	@Override
+	public void setIdentityEnvironmentAttributes(Map<String, String> identEnvAttribs) {
+		this.envAttrs = identEnvAttribs;
+	}	
+
+	@Override
+	public String getPropertyOrIdentityEnvAttribute(String propertyName, Locale locale) {
+		String retVal = null;
+		retVal = data.get(propertyName);
+		if(retVal== null && this.envAttrs != null){
+			retVal = envAttrs.get(propertyName);
+		}
+		return retVal;
+	}
+
+	@Override
+	public Preferences getPreferences() {
+		return null;
+	}
+
+	@Override
+	public void setPreferences(Preferences prefs) {
+		//
+	}
+
+	/**
+	 * @see org.olat.core.commons.persistence.Auditable#getCreationDate()
+	 */
+	@Override
+	public Date getCreationDate() {
+		return new Date();
+	}
+
+	@Override
 	public Date getLastLogin() {
-		throw new AssertException("unsupported");
+		return new Date();
 	}
 
+	@Override
 	public void setLastLogin(Date loginDate) {
-		throw new AssertException("unsupported");
+		//
+	}
+
+	@Override
+	public Integer getStatus() {
+		return Identity.STATUS_ACTIV;
+	}
+
+	@Override
+	public void setStatus(Integer newStatus) {
+		//
 	}
 	
-	public Integer getStatus() {
-		throw new AssertException("unsupported");
+	/**
+	 * @see org.olat.core.commons.persistence.Persistable#equalsByPersistableKey(org.olat.core.commons.persistence.Persistable)
+	 */
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
-
-	public void setStatus(Integer newStatus) {
-		throw new AssertException("unsupported");
-	}
-
-	public Date getDeleteEmailDate() {
-		throw new AssertException("unsupported");
-	}
-
-	public void setDeleteEmailDate(Date newDeleteEmail) {
-		throw new AssertException("unsupported");
-	}
-
-	public void setName(String loginName) {
-		
-	}
-
 }
