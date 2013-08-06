@@ -24,9 +24,6 @@ table {
 			&.b_row_selected td { 
 				background: $selectcolor_light; 
 			}
-			&:hover td { 
-				background: $selectcolor_ultra_light;
-			}
 		}
 	 }
 }

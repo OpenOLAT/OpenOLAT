@@ -31,6 +31,7 @@
 			td input.b_checkbox { margin: 0 4px 0 0;}
 			td a:hover, td a:focus { background-color: transparent;}
 			td.b_last_child  { padding-left: 0;}
+			tr:hover td {background: $selectcolor_ultra_light;}
 			table.b_briefcase_actions { 
 				border: 0; padding: 0; margin:0;
 				td { border: 0; padding: 0 0 0 3px; margin:0;}
