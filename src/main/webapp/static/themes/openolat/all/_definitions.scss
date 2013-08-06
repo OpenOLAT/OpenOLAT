@@ -80,6 +80,10 @@ $page_width_min : 740px !default;
 /* enable business / kmu mode */
 $enablebiz : false !default;
 
+/* show beta logo on this instance */
+$showbetalogo: true !default;
+
+
 /* defines the body-background */
 @mixin bodybg(){
 	background: #ECECEC url('../openolat/images/sky.png') repeat-x left 83px;
