@@ -184,11 +184,7 @@ public class LogFileParser extends LogDelegator {
 	 * @return
 	 */
 	public static Collection<String> getErrorToday(String errorNumber, boolean asHTML) {
-		Date d = new Date();
-		SimpleDateFormat year = new SimpleDateFormat("yyyy");
-		SimpleDateFormat month = new SimpleDateFormat("MM");
-		SimpleDateFormat day = new SimpleDateFormat("dd");
-		return getError(errorNumber, day.format(d), month.format(d), year.format(d), asHTML);
+		return getError(errorNumber, null, asHTML);
 	}
 
 	/**
@@ -200,7 +196,7 @@ public class LogFileParser extends LogDelegator {
 	 * @param yyyy requested yyyy
 	 * @return the first found errormessage
 	 */
-	public static Collection<String> getError(String errorNumber, String dd, String mm, String yyyy, boolean asHTML) {
+	public static Collection<String> getError(String errorNumber, Date date, boolean asHTML) {
 		
 		if (logfilepathBase == null) {
 			//this is null when olat is setup with an empty olat.local.properties file and no log.dir path is set. 
@@ -212,17 +208,23 @@ public class LogFileParser extends LogDelegator {
 		String memoryline = "empty";
 		String em[] = new String[10];
 		Collection<String> errormsg = new ArrayList<String>();
-		Date now = new Date();
-		String reqdate = yyyy + "-" + mm + "-" + dd;
+
 		SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd");
-		String today = sdb.format(now);
-		String logfilepath = null;
-		if (! today.equals(reqdate)) {
-			logfilepath  = logfilepathBase + "." + yyyy + "-" + mm + "-" + dd;
-		}else {
+		
+		String logfilepath;
+		if(date == null) {
 			logfilepath = logfilepathBase;
+		} else {
+			String today = sdb.format(new Date());
+			String reqdate = sdb.format(date);
+			if (today.equals(reqdate)) {
+				logfilepath = logfilepathBase;
+			} else {
+				logfilepath  = logfilepathBase + "." + reqdate;
+			}
+			log.info("logfilepath changed to " + logfilepath + "  (today: " + today + ",  requested date:" + reqdate + ")");
 		}
-		log.info("logfilepath changed to " + logfilepath + "  (today: " + today + ",  requested date:" + reqdate + ")");
+
 		int counter = linecount;
 		int founderror = 0;
 		final File logFile = new File(logfilepath);

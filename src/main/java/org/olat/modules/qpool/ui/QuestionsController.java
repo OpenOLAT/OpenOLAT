@@ -204,11 +204,13 @@ public class QuestionsController extends BasicController implements Activateable
 	
 	protected void updateSelectAfterChange(UserRequest ureq) {
 		QuestionItem item = previewCtrl.getItem();
-		Collection<Long> key = Collections.singletonList(item.getKey());
-		List<QuestionItemView> items = source.getItems(key);
-		if(items.size() > 0) {
-			QuestionItemView itemView = items.get(0);
-			doUpdateDetails(ureq, itemView);
+		if(item != null) {
+			Collection<Long> key = Collections.singletonList(item.getKey());
+			List<QuestionItemView> items = source.getItems(key);
+			if(items.size() > 0) {
+				QuestionItemView itemView = items.get(0);
+				doUpdateDetails(ureq, itemView);
+			}
 		}
 	}
 	

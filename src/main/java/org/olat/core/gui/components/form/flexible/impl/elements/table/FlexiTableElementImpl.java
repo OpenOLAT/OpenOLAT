@@ -524,7 +524,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	protected ResultInfos<?> doScroll(int firstResult, int maxResults, SortKey... sortKeys) {
-		boolean same = Arrays.equals(orderBy , sortKeys);
+		boolean same = isOrderByEqual(sortKeys);
 		if(!same) {
 			//clear data source
 			dataSource.clear();
@@ -532,6 +532,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		
 		return dataSource.load(getSearchText(), getConditionalQueries(), firstResult, maxResults, sortKeys);
+	}
+	
+	private boolean isOrderByEqual(SortKey... sortKeys) {
+		if(orderBy == null &&
+				(sortKeys == null || sortKeys.length == 0 ||
+					(sortKeys.length == 1 && sortKeys[0] == null))) {
+			return true;
+		}
+		return Arrays.equals(orderBy , sortKeys);
 	}
 	
 	protected void doResetSearch(UserRequest ureq) {

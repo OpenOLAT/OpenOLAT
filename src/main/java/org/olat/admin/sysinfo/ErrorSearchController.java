@@ -19,7 +19,6 @@
  */
 package org.olat.admin.sysinfo;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import org.olat.core.gui.UserRequest;
@@ -62,8 +61,6 @@ public class ErrorSearchController extends FormBasicController {
 		formLayout.add("fields", fieldsCont);
 		
 		errorNumberEl = uifactory.addTextElement("error.number", "error.number", 32, "", fieldsCont);
-		//errorNumberEl.setExampleKey(exampleKey, params)
-		//myErrors.contextPut("example_error", Settings.getNodeInfo()  + "-E12 "+ Settings.getNodeInfo()  + "-E64..." );
 		dateChooserEl = uifactory.addDateChooser("error.date", "error.date", null, fieldsCont);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -85,43 +82,20 @@ public class ErrorSearchController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String errorNr = errorNumberEl.getValue();
 		Date date = dateChooserEl.getDate();
-		if(date != null && StringHelper.containsNonWhitespace(errorNr)) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(date);
-			String err_dd = Integer.toString(cal.get(Calendar.DATE));
-			String err_mm = Integer.toString(cal.get(Calendar.MONTH) + 1);
-			String err_yyyy = Integer.toString(cal.get(Calendar.YEAR));
-			errorCont.contextPut("highestError", Tracing.getErrorCount());
-			errorCont.contextPut("errormsgs", LogFileParser.getError(errorNr, err_dd, err_mm, err_yyyy, true));
-		}
+		errorCont.contextPut("highestError", Tracing.getErrorCount());
+		errorCont.contextPut("errormsgs", LogFileParser.getError(errorNr, date, true));
 	}
 
-
-	
-	
-/*
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == myErrors) {
-			HttpServletRequest hreq = ureq.getHttpReq();
-			err_nr = hreq.getParameter("mynr");
-			if (hreq.getParameter("mydd") != null)
-				err_dd = hreq.getParameter("mydd");
-			if (hreq.getParameter("mymm") != null)
-				err_mm = hreq.getParameter("mymm");
-			if (hreq.getParameter("myyyyy") != null)
-				err_yyyy = hreq.getParameter("myyyyy");
-			if (err_nr != null) {
-				myErrors.contextPut("mynr", err_nr);
-				myErrors.contextPut("errormsgs", LogFileParser.getError(err_nr, err_dd, err_mm, err_yyyy, true));
-			}
-
-			myErrors.contextPut("highestError", Tracing.getErrorCount());
-			myErrors.contextPut("mydd", err_dd);
-			myErrors.contextPut("mymm", err_mm);
-			myErrors.contextPut("myyyyy", err_yyyy);
-			myErrors.contextPut("olat_formatter", Formatter.getInstance(ureq.getLocale()));
-		} 
-	}*/
-
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		errorNumberEl.clearError();
+		if(!StringHelper.containsNonWhitespace(errorNumberEl.getValue())) {
+			errorNumberEl.setErrorKey("form.mandatory.hover", null);
+			allOk &= false;
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
 }

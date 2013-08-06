@@ -97,7 +97,7 @@ public class FlexiTableModelMapper implements Mapper {
 				}
 			}
 
-			int rows = ftE.getTableDataModel().getRowCount();
+			int rows = dataModel.getRowCount();
 			String dispatchId = ftE.getComponent().getDispatchID();
 			String rowIdPrefix = "row_" + dispatchId + "-";
 			
