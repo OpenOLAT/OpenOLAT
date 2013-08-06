@@ -242,7 +242,30 @@ div.b_tree {
 	a.b_tree_level_open span { 
 		background-image: url($ico_plus); 
 	}
-		
 }// end b_tree
+
+div.b_master_detail {
+	div.b_tree {
+		ul li {
+			background: url('../openolat/images/detail/detail_separator.png') repeat-y right;
+			
+			@for $i from 0 through 11 {
+				a.b_tree_l#{$i}  { 
+					display: block;
+					padding-right: 20px;
+					background-repeat: no-repeat;
+					background-position: right;
+				}
+			}
+			a.b_tree_selected {
+				background-image: url('../openolat/images/detail/detail_arrow.png');
+				/* special case: not on root level which does not have detail */
+				&.b_tree_l0 {
+					background-image: none;
+				}	
+			}
+		}
+	}
+}
 	
 	

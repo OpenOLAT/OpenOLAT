@@ -122,6 +122,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		menuTree.setDropEnabled(true);
 		menuTree.setDropSiblingEnabled(false);
 		menuTree.setDndAcceptJSMethod("treeAcceptDrop");
+		menuTree.setExpandSelectedNode(false);
 		menuTree.addListener(this);
 		menuTree.setRootVisible(false);
 		//open the nodes shared and my at start
@@ -538,6 +539,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		GenericTreeNode node = new GenericTreeNode(translate("menu.admin.studyfields"), "Taxonomy");
 		node.setIconCssClass("o_sel_qpool_study_fields");
 		parentNode.addChild(node);
+		parentNode.setDelegate(node);
 		
 		node = new GenericTreeNode(translate("menu.admin.pools"), "Pools");
 		node.setIconCssClass("o_sel_qpool_admin_pools");
