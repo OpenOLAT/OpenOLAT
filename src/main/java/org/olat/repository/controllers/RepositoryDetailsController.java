@@ -32,6 +32,7 @@ import java.util.Locale;
 
 import org.olat.ControllerFactory;
 import org.olat.NewControllerFactory;
+import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -76,6 +77,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
@@ -370,6 +372,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		main.contextPut("type", typeDisplayText.toString());
 
 		VelocityContainer infopanelVC = createVelocityContainer("infopanel");
+		// use fallback translator from REST admin package to import managed flags context help strings
+		infopanelVC.setTranslator(Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale(), Util.createPackageTranslator(RestapiAdminController.class, ureq.getLocale())));
 		// show how many users are currently using this resource
 		String numUsers;
 		OLATResourceable ores = repositoryEntry.getOlatResource();
@@ -405,8 +409,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			}
 		}
 		
-		if(managed) {
-			infopanelVC.contextPut("managedflags", repositoryEntry.getManagedFlagsString());
+		if(managed && StringHelper.containsNonWhitespace(repositoryEntry.getManagedFlagsString())) {
+			infopanelVC.contextPut("managedflags", repositoryEntry.getManagedFlagsString().trim().split(","));
 		}
 		
 		removeAsListenerAndDispose(detailsForm);

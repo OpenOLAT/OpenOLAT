@@ -15,10 +15,20 @@
 	#if($managedflags)
 		<fieldset>
 			<legend>$r.translate("managed.resource")</legend>
+			$r.contextHelpWithWrapper("org.olat.admin.restapi","managed.html","help.hover.managed")
+			<p class="b_important">
+				$r.translate("managed.resource.intro")
+			</p>
 			<div class="b_form">
 				<div class="b_form_element_wrapper b_clearfix">
 					<div class="b_form_element_label"><label>$r.translate("cif.managedflags")</label></div>
-					<div class="b_form_element">$managedflags</div>
+					<div class="b_form_element">
+						<ul>
+							#foreach ($flag in $managedflags)
+								<li>$r.translate("managed.flags.course.${flag}")</li>
+							#end
+						</ul>
+					</div>
 				</div>
 			</div>
 		</fieldset>

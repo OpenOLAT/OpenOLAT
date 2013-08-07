@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,9 +39,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 
@@ -175,19 +178,6 @@ public class BusinessGroupFormController extends FormBasicController {
 			url = bcf.getAsURIString(entries, true);
 			StaticTextElement cardEl = uifactory.addStaticTextElement("create.form.groupcard", url, formLayout);
 			cardEl.setElementCssClass("o_sel_group_card_url");
-			
-			boolean managed = StringHelper.containsNonWhitespace(businessGroup.getExternalId())
-					|| businessGroup.getManagedFlags().length > 0;
-					
-			if(managed) {
-				String extId = businessGroup.getExternalId() == null ? "" : businessGroup.getExternalId();
-				StaticTextElement externalIdEl = uifactory.addStaticTextElement("create.form.externalid", extId, formLayout);
-				externalIdEl.setElementCssClass("o_sel_group_external_id");
-				
-				String flags = businessGroup.getManagedFlagsString() == null ? "" : businessGroup.getManagedFlagsString();
-				StaticTextElement flagsEl = uifactory.addStaticTextElement("create.form.managedflags", flags, formLayout);
-				flagsEl.setElementCssClass("o_sel_group_managed_flags");
-			}
 		}
 		
 		uifactory.addSpacerElement("myspacer", formLayout, true);
@@ -241,6 +231,50 @@ public class BusinessGroupFormController extends FormBasicController {
 			FormSubmit submit = uifactory.addFormSubmitButton("finish", buttonLayout);
 			submit.setEnabled(!BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.details));
 			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		}
+
+		if ((businessGroup != null) && (!bulkMode)) {
+			// managed group information
+			boolean managed = StringHelper.containsNonWhitespace(businessGroup.getExternalId())
+					|| businessGroup.getManagedFlags().length > 0;
+			if(managed) {
+				uifactory.addSpacerElement("managedspacer", formLayout, false);
+	
+				String extId = businessGroup.getExternalId() == null ? "" : businessGroup.getExternalId();
+				StaticTextElement externalIdEl = uifactory.addStaticTextElement("create.form.externalid", extId, formLayout);
+				externalIdEl.setElementCssClass("o_sel_group_external_id");
+	
+				FormLayoutContainer flagsFlc = FormLayoutContainer.createHorizontalFormLayout("flc_flags", getTranslator());
+				flagsFlc.setLabel("create.form.managedflags", null);
+				formLayout.add(flagsFlc);
+				flagsFlc.setFormContextHelp("org.olat.admin.restapi","managed.html","help.hover.managed");
+	
+				String flags = businessGroup.getManagedFlagsString() == null ? "" : businessGroup.getManagedFlagsString().trim();
+				String flagsFormatted = null;
+				if (flags.length() > 0) {
+					// use translator from REST admin package to import managed flags context help strings
+					Translator managedTrans = Util.createPackageTranslator(RestapiAdminController.class, ureq.getLocale());
+					StringBuffer flagList = new StringBuffer();
+					flagList.append("<p class=\"b_important\">");
+					flagList.append(translate("create.form.managedflags.intro"));
+					flagList.append("</div>");
+					flagList.append("<ul>");
+					for (String flag : flags.split(",")) {
+						flagList.append("<li>");
+						flagList.append(managedTrans.translate("managed.flags.group." + flag));
+						flagList.append("</li>");
+					}
+					
+					flagsFormatted = flagList.toString();
+					
+				} else {
+					flagsFormatted = flags;
+				}
+				
+				StaticTextElement flagsEl = uifactory.addStaticTextElement("create.form.managedflags", flagsFormatted, flagsFlc);
+				flagsEl.showLabel(false);
+				flagsEl.setElementCssClass("o_sel_group_managed_flags");
+			}
 		}
 	}
 	
