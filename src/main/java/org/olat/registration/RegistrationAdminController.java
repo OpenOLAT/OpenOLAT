@@ -280,7 +280,7 @@ public class RegistrationAdminController extends FormBasicController {
 		StringBuilder code = new StringBuilder();
 		code.append("<form name=\"openolatregistration\" action=\"")
 		    .append(Settings.getServerContextPathURI()).append("/url/registration/0")
-		    .append("\" method=\"post\" target=\"OpenOLAT\" onsubmit=\"var openolat=window.open(,'OpenOLAT',''); openolat.focus();\">\n")
+		    .append("\" method=\"post\" target=\"OpenOLAT\" onsubmit=\"var openolat=window.open('','OpenOLAT',''); openolat.focus();\">\n")
 		    .append("  <input type=\"submit\" value=\"Go to registration\">\n")
 		    .append("</form>");
 		return code.toString();
@@ -290,7 +290,7 @@ public class RegistrationAdminController extends FormBasicController {
 		StringBuilder code = new StringBuilder();
 		code.append("<form name=\"olatremotelogin\" action=\"")
 		    .append(Settings.getServerContextPathURI()).append("/remotelogin/")
-		    .append("\" method=\"post\" target=\"OpenOLAT\" onsubmit=\"var openolat=window.open(,'OpenOLAT', 'location=no,menubar=no,resizable=yes,toolbar=no,statusbar=no,scrollbars=yes'); openolat.focus();\">\n")
+		    .append("\" method=\"post\" target=\"OpenOLAT\" onsubmit=\"var openolat=window.open('','OpenOLAT', 'location=no,menubar=no,resizable=yes,toolbar=no,statusbar=no,scrollbars=yes'); openolat.focus();\">\n")
 		    .append("  Benutzername	<input type=\"text\" name=\"username\">")
 		    .append("  Passwort	<input type=\"password\" name=\"pwd\">")
 		    .append("  <input type=\"submit\" value=\"Login\">\n")
