@@ -109,4 +109,11 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 * @param isVisible Whether the checkboxes given in <code>keys</code> are to be shown (<code>true</code>) or hidden (<code>false</code>).
 	 */
 	public void setVisible(Set<String> keys, boolean isEnabled);
+	
+	/**
+	 * Enable / disable the escaping of the content. Use with cautious as disabling escaping
+	 * disable a protection against XSS attack.
+	 * @param escapeHtml
+	 */
+	public void setEscapeHtml(boolean escapeHtml);
 }

@@ -68,6 +68,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	protected FormLayouter formLayoutContainer;
 	private String[] original = null;
 	private boolean originalIsDefined = false;
+	private boolean escapeHtml = true;
 
 	public MultipleSelectionElementImpl(String name) {
 		this(name, createHorizontalLayout(name));
@@ -77,6 +78,25 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		super(name);
 		selected = new HashSet<String>();
 		formLayoutContainer = formLayout;
+	}
+	
+	@Override
+	public void setEscapeHtml(boolean escapeHtml) {
+		Component sssc = formLayoutContainer.getComponent(getName() + "_SELBOX");
+		if(sssc instanceof SelectboxComponent) {
+			((SelectboxComponent)sssc).setEscapeHtml(escapeHtml);
+		}
+		
+		if(keys != null) {
+			for (String key:keys) {
+				Component checkCmp = formLayoutContainer.getComponent(getName()+"_"+key);
+				if(checkCmp instanceof CheckboxElementComponent) {
+					((CheckboxElementComponent)checkCmp).setEscapeHtml(escapeHtml);
+				}
+			}
+		}
+		
+		this.escapeHtml = escapeHtml;
 	}
 
 	public Set<String> getSelectedKeys() {
@@ -118,7 +138,6 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	}
 
 	public int getSize() {
-		// TODO Auto-generated method stub
 		return keys.length;
 	}
 
@@ -333,6 +352,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			formLayoutContainer.put(getName()+"_"+keys[i], ssec);
 			items[i] = getName()+"_"+keys[i];
 			ssec.setEnabled(isEnabled());
+			ssec.setEscapeHtml(escapeHtml);
 			
 			if (GUIInterna.isLoadPerformanceMode()) {
 				if (getRootForm()!=null) {
@@ -343,6 +363,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		// create and add selectbox element
 		String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
 		SelectboxComponent sssc = new SelectboxComponent(ssscId, getName() + "_SELBOX", translator, this, keys, values, cssClasses);
+		sssc.setEscapeHtml(escapeHtml);
 
 		formLayoutContainer.put(getName() + "_SELBOX", sssc);
 		formLayoutContainer.contextPut("selectbox", getName() + "_SELBOX");

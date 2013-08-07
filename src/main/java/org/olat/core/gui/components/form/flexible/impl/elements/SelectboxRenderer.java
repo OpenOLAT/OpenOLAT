@@ -51,7 +51,6 @@ class SelectboxRenderer implements ComponentRenderer {
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
-	@SuppressWarnings("unused")
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 
@@ -94,11 +93,10 @@ class SelectboxRenderer implements ComponentRenderer {
 		 * the options <option ...>value</option>
 		 */
 		int cnt = options.length;
+		boolean escapeHtml = ssec.isEscapeHtml();
 		for (int i = 0; i < cnt; i++) {
 			boolean selected = ssec.isSelected(i);
-			sb.append("<option value=\"");
-			sb.append(StringEscapeUtils.escapeHtml(options[i]));
-			sb.append("\" ");
+			sb.append("<option value=\"").append(StringEscapeUtils.escapeHtml(options[i])).append("\" ");
 			if (selected) sb.append("selected=\"selected\" ");
 			if(ssec.getAction() != FormEvent.ONCHANGE){
 				//all other events go to the option
@@ -110,7 +108,11 @@ class SelectboxRenderer implements ComponentRenderer {
 				sb.append("\"");
 			}
 			sb.append(">");
-			sb.append(StringEscapeUtils.escapeHtml(values[i]));
+			if(escapeHtml) {
+				sb.append(StringEscapeUtils.escapeHtml(values[i]));
+			} else {
+				sb.append(values[i]);
+			}
 			sb.append("</option>");
 		}
 		/*

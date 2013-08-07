@@ -130,6 +130,7 @@ class I18nConfigController extends FormBasicController {
 		String[] availableLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(availablelangKeys, "b_with_small_icon_left");
 		enabledLangSelection = uifactory.addCheckboxesVertical("configuration.enabledLangSelection", null, formLayout, availablelangKeys,
 				availableValues, availableLangCssClasses, 2);
+		enabledLangSelection.setEscapeHtml(false);
 		enabledLangSelection.addActionListener(this, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		// Enable current enabled languages
 		for (String langKey : I18nModule.getEnabledLanguageKeys()) {

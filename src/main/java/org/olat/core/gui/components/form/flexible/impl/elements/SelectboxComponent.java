@@ -47,6 +47,7 @@ class SelectboxComponent extends FormBaseComponentImpl {
 	private String[] values;
 	private String[] options;
 	private String[] cssClasses;
+	private boolean escapeHtml = true;
 
 	/**
 	 * @param id A fix identifier for state-less behavior, must be unique or null
@@ -81,6 +82,14 @@ class SelectboxComponent extends FormBaseComponentImpl {
 
 	public String[] getCssClasses() {
 		return cssClasses;
+	}
+	
+	public boolean isEscapeHtml() {
+		return escapeHtml;
+	}
+
+	public void setEscapeHtml(boolean escapeHtml) {
+		this.escapeHtml = escapeHtml;
 	}
 
 	public boolean isSelected(int i) {
