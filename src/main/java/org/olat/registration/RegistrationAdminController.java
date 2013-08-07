@@ -107,7 +107,7 @@ public class RegistrationAdminController extends FormBasicController {
 		//settings
 		FormLayoutContainer settingsContainer = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
 		settingsContainer.setRootForm(mainForm);
-		settingsContainer.contextPut("off_title", translate("admin.registration.title"));
+		settingsContainer.setFormTitle(translate("admin.registration.title"));
 		formLayout.add(settingsContainer);
 		
 		registrationElement = uifactory.addCheckboxesHorizontal("enable.self.registration", "admin.enableRegistration", settingsContainer, enableRegistrationKeys, enableRegistrationValues, null);
@@ -128,7 +128,7 @@ public class RegistrationAdminController extends FormBasicController {
 		//domain configuration
 		domainsContainer = FormLayoutContainer.createDefaultFormLayout("domains", getTranslator());
 		domainsContainer.setRootForm(mainForm);
-		domainsContainer.contextPut("off_title", translate("admin.registration.domains.title"));
+		domainsContainer.setFormTitle(translate("admin.registration.domains.title"));
 		formLayout.add(domainsContainer);
 		
 		uifactory.addStaticTextElement("admin.registration.domains.error", null, translate("admin.registration.domains.desc"), domainsContainer);
@@ -138,7 +138,7 @@ public class RegistrationAdminController extends FormBasicController {
 		//static property
 		staticPropContainer = FormLayoutContainer.createDefaultFormLayout("propertiesmapping", getTranslator());
 		staticPropContainer.setRootForm(mainForm);
-		staticPropContainer.contextPut("off_title", translate("admin.registration.staticprop.title"));
+		staticPropContainer.setFormTitle(translate("admin.registration.staticprop.title"));
 		formLayout.add(staticPropContainer);
 		
 		uifactory.addStaticTextElement("admin.registration.staticprop.error", null, translate("admin.registration.staticprop.desc"), staticPropContainer);
@@ -161,7 +161,7 @@ public class RegistrationAdminController extends FormBasicController {
 		//static property
 		FormLayoutContainer remoteLoginContainerContainer = FormLayoutContainer.createDefaultFormLayout("remotelogin", getTranslator());
 		remoteLoginContainerContainer.setRootForm(mainForm);
-		remoteLoginContainerContainer.setFormTitle("remote.login.title");
+		remoteLoginContainerContainer.setFormTitle(translate("remote.login.title"));
 		formLayout.add(remoteLoginContainerContainer);
 		
 		String remoteExample = generateRemoteLoginExampleCode();
