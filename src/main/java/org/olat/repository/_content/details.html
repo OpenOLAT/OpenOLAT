@@ -20,6 +20,7 @@ $r.render("backLink")
 	</div>
 #end
 
+#if($showLf)
 <fieldset class="b_clearfix">
 	<legend>$r.translate("cif.dates")</legend>
 	#if($lfStart || $lfEnd)
@@ -39,6 +40,7 @@ $r.render("backLink")
 		<p>$r.translate("no.lifecycle")</p>
 	#end
 </fieldset>
+#end
 
 <fieldset class="b_clearfix">
 	<legend>$r.translate("details.description")</legend>

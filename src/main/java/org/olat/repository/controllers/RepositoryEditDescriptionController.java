@@ -194,7 +194,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			int count = 0;	
 			for(RepositoryEntryLifecycle cycle:cycles) {
 				publicKeys[count] = cycle.getKey().toString();
-				publicValues[count] = cycle.getLabel();
+				publicValues[count++] = cycle.getLabel();
 			}
 			publicDatesEl = uifactory.addDropdownSingleselect("cif.public.dates", descCont, publicKeys, publicValues, null);
 	

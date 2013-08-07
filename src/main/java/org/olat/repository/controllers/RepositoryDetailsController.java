@@ -268,6 +268,14 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		downloadButton.setEnabled(repositoryEntry.getCanDownload());
 		downloadButton.setTextReasonForDisabling(translate("disabledexportreason"));
 		
+		//reset cycle datas
+		main.contextPut("lfStart", null);
+		main.contextPut("lfEnd", null);
+		main.contextPut("lfLabel", null);
+		main.contextPut("lfSoftKey", null);
+		main.contextPut("showLf", Boolean.FALSE);
+		
+		//fill cycle datas if needed
 		RepositoryEntryLifecycle cycle = repositoryEntry.getLifecycle();
 		if(cycle != null) {
 			Formatter format = Formatter.getInstance(getLocale());
@@ -278,10 +286,10 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				String softKey = cycle.getSoftKey();
 				main.contextPut("lfLabel", label);
 				main.contextPut("lfSoftKey", softKey);
-			} else {
-				main.contextPut("lfLabel", null);
-				main.contextPut("lfSoftKey", null);
 			}
+			main.contextPut("showLf", Boolean.TRUE);
+		} else if("CourseModule".equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+			main.contextPut("showLf", Boolean.TRUE);
 		}
 		
 		if (repositoryEntry.getDescription() != null) {
@@ -360,6 +368,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			typeDisplayText.append(translate("cif.type.na"));
 		}
 		main.contextPut("type", typeDisplayText.toString());
+
 		VelocityContainer infopanelVC = createVelocityContainer("infopanel");
 		// show how many users are currently using this resource
 		String numUsers;
