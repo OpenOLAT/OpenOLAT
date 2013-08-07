@@ -7,13 +7,11 @@
 <fieldset>
 <legend>$r.translate("infomsg.title")</legend>
 #if ($infomsg)
-  <div class="b_border_box">
      $infomsg
-  </div>
 #else
-<i>$r.translate("infomsg.nomsg")</i>
+	<i>$r.translate("infomsg.nomsg")</i>
+	<br /><br />
 #end
-<br /><br />
 $r.render("infomsgEdit") $r.render("infomsgClear")
 </fieldset>
 
@@ -22,13 +20,11 @@ $r.render("infomsgEdit") $r.render("infomsgClear")
 <fieldset>
 <legend>$r.translate("infomsg.title.cluster")</legend>
 	#if ($infoMsgCluster)
-	  <div class="b_border_box">
 	     $infoMsgCluster
-	  </div>
 	#else
-	<i>$r.translate("infomsg.nomsg")</i>
+		<i>$r.translate("infomsg.nomsg")</i>
+		<br /><br />
 	#end
-	<br /><br />
 	$r.render("infomsgEditCluster") $r.render("infomsgClearCluster")
 </fieldset>
 #end
@@ -37,13 +33,14 @@ $r.render("infomsgEdit") $r.render("infomsgClear")
 <fieldset>
 <legend>$r.translate("maintenancemsg.title")</legend>
 #if ($maintenanceMsgAllNodes)
-  <div class="b_border_box">
+  <div id="b_msg_sticky_preview">
      $maintenanceMsgAllNodes
   </div>
 #else
-<i>$r.translate("maintenancemsg.nomsg")</i>
+	<i>$r.translate("maintenancemsg.nomsg")</i>
+	<br />
 #end
-<br /><br />
+<br />
 $r.render("maintenancemsgEdit") $r.render("maintenancemsgClear")
 </fieldset>
 
@@ -52,13 +49,14 @@ $r.render("maintenancemsgEdit") $r.render("maintenancemsgClear")
 <fieldset>
 <legend>$r.translate("maintenancemsg.title.cluster")</legend>
 #if ($maintenanceMsgThisNodeOnly)
-  <div class="b_border_box">
+  <div id="b_msg_sticky_preview">
      $maintenanceMsgThisNodeOnly
   </div>
 #else
-<i>$r.translate("maintenancemsg.nomsg")</i>
+	<i>$r.translate("maintenancemsg.nomsg")</i>
+	<br />
 #end
-<br /><br />
+<br />
 $r.render("maintenancemsgEditCluster") $r.render("maintenancemsgClearCluster")
 </fieldset>
 #end

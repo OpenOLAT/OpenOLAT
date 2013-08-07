@@ -95,7 +95,9 @@ public class InfoMsgForm extends FormBasicController {
 		//allow script tags...
 		richTextConfig.setQuotedConfigValue(RichTextConfiguration.INVALID_ELEMENTS, RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
 		richTextConfig.setQuotedConfigValue(RichTextConfiguration.EXTENDED_VALID_ELEMENTS, "script[src,type,defer]");
-
+		// add style buttons to make alert style available
+		richTextConfig.setContentCSSFromTheme(getWindowControl().getWindowBackOffice().getWindow().getGuiTheme());
+		richTextConfig.setQuotedConfigValue(RichTextConfiguration.THEME_ADVANCED_BUTTONS1_ADD, RichTextConfiguration.SEPARATOR_BUTTON + "," + RichTextConfiguration.STYLESELECT_BUTTON);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);

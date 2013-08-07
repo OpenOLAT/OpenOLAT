@@ -154,7 +154,7 @@ div.b_msg_dialog {
 }
 
 /* sticky info (admins can create stick-messages that will show for all users) */
-#b_msg_sticky { 
+#b_msg_sticky, #b_msg_sticky_preview { 
 	clear:both; padding: 10px 10px 10px 50px;
 	min-height: 32px;
 	background: #FFB651 url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px; 
@@ -191,17 +191,13 @@ div.b_msg_error_winicon { background: url(../openolat/images/icon_error_32.png) 
 	.b_msg_title { font-weight: bold; }
 }
 
-/* "info-message" on login screen */
+/* "info-message" on login screen. As of 9.0 release the styling of the info message is done in HTML editor in the admin tab */
 .o_infomessage_wrapper {
-	border: 1px solid #ccc;
-	background:#FAFAFA;
-	margin-bottom:20px;
-	
+	margin: 20px 0 20px 0;	
+
 	.o_infomessage{
-		padding: 10px 10px 10px 50px;
 		text-align: left;
-		min-height:40px;
-		background: url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px;
+
 		.o_infomessage_inner {
 		
 		}
