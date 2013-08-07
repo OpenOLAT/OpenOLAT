@@ -119,6 +119,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		TreeModel tm = buildTreeModel(); 
 		olatMenuTree.setTreeModel(tm);
 		olatMenuTree.setSelectedNodeId(tm.getRootNode().getIdent());
+		olatMenuTree.setRootVisible(false);
 		olatMenuTree.addListener(this);
 
 		// Activate correct position in menu
