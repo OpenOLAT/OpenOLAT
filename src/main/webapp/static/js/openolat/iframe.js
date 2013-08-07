@@ -32,6 +32,10 @@ function b_getMainWindow(mywin) {
 	return b_getMainWindow(mywin.parent);
 }
 
+function b_hideExtMessageBox() {
+	//for compatibility
+}
+
 function b_sizeIframe() {
 //console.log("b_sizeIframe window.name=" + window.name + " b_iframeid=" + b_iframeid);
 	try {

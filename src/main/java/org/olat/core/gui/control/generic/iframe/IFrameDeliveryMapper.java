@@ -310,7 +310,7 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			}
 			if (customCssURL != null) {
 				// add the custom  CSS, e.g. the course css that overrides the standard content css
-				sb.appendCss(customCssURL);				
+				sb.appendCss(customCssURL, "customcss");				
 			}
 		}
 		
@@ -560,7 +560,7 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			appendStaticJs("js/jquery/jquery-1.9.1.min.js");
 			appendStaticJs("js/jshashtable-2.1_src.js");
 			appendStaticJs("js/jquery/ui/jquery-ui-1.10.2.custom.min.js");
-		  appendStaticCss("js/jquery/ui/jquery-ui-1.10.2.custom.min.css");
+		  appendStaticCss("js/jquery/ui/jquery-ui-1.10.2.custom.min.css", "jqueryuicss");
 		  jqueryLoaded = true;
 		}
 
@@ -578,7 +578,7 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		
 		public void appendGlossary() {
 			appendStaticJs("js/openolat/glossaryhighlighter.js");
-			appendStaticJs("js/openolat/glossaryhighlighter.css");
+			appendStaticCss("js/openolat/glossaryhighlighter.css", "textmarkercss");
 		}
 
 		public void appendStaticJs(String javascript) {
@@ -587,16 +587,16 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			append("\"></script>\n");
 		}
 		
-		public void appendStaticCss(String css) {
-			append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"textmarkercss\" href=\"");
+		public void appendStaticCss(String css, String id) {
+			append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"").append(id).append("\" href=\"");
 		  StaticMediaDispatcher.renderStaticURI(this, css);
 		  append("\"");
 			if (docType != null && docType.indexOf("XHTML") > 0) append("/"); // close tag only when xhtml to validate
 			append(">\n");
 		}
 		
-		public void appendCss(String css) {
-			append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"textmarkercss\" href=\"").append(css).append("\"");
+		public void appendCss(String css, String id) {
+			append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"").append(id).append("\" href=\"").append(css).append("\"");
 			if (docType != null && docType.indexOf("XHTML") > 0) append("/"); // close tag only when xhtml to validate
 			append(">\n");
 		}
