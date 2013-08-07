@@ -24,18 +24,35 @@ $r.render("backLink")
 <fieldset class="b_clearfix">
 	<legend>$r.translate("cif.dates")</legend>
 	#if($lfStart || $lfEnd)
-		#if($lfLabel)
-			<b>$lfLabel</b>
-		#end
-		#if($lfSoftKey)
-			( $lfSoftKey )
+	<div class="b_form">
+		#if($lfLabel)			
+		<div class="b_form_element_wrapper b_clearfix">
+			<div class="b_form_element_label"><label>$r.translate("cif.dates.public")</label></div>
+			<div class="b_form_element b_dates_public">
+				<span>$lfLabel</span>
+				#if($lfSoftKey)
+					(${lfSoftKey})
+				#end
+			</div>
+		</div>
 		#end
 		#if($lfStart)
-			$r.translate("cif.date.start") $lfStart
+		<div class="b_form_element_wrapper b_clearfix">
+			<div class="b_form_element_label"><label>$r.translate("cif.date.start")</label></div>
+			<div class="b_form_element o_date_start">
+				$lfStart
+			</div>
+		</div>
 		#end
-		#if($lfEnd)
-			$r.translate("cif.date.end") $lfEnd
-		#end
+		#if($lfStart)
+		<div class="b_form_element_wrapper b_clearfix">
+			<div class="b_form_element_label"><label>$r.translate("cif.date.end")</label></div>
+			<div class="b_form_element o_date_end">
+				$lfEnd
+			</div>
+		</div>
+		#end		
+	</div>
 	#else
 		<p>$r.translate("no.lifecycle")</p>
 	#end
