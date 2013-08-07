@@ -75,7 +75,7 @@
 		<property name="navigationKey" value="vitero" />
 		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="i18nActionKey" value="admin.menu.lifecycle.title"/>
-		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="i18nDescriptionKey" value="admin.lifecycles.title"/>
 		<property name="translationPackage" value="org.olat.repository"/>
 		<property name="extensionPoints">
 			<list>	

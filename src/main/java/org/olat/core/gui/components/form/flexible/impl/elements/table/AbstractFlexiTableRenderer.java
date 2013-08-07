@@ -46,6 +46,10 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 
+		if (ftE.getRowCount() == 0) {
+			// don't print empty tables
+			return; 
+		}
 		
 		String id = ftC.getFormDispatchId();
 		sb.append("<div class=\"b_table_wrapper b_floatscrollbox\">");
