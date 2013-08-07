@@ -17,40 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
 package org.olat.user.restapi;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.olat.core.id.Preferences;
 
 /**
  * 
- * Description:<br>
- * 
- * <P>
- * Initial Date:  26 oct. 2011 <br>
- *
+ * Initial date: 07.08.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class Examples {
-	
-	public static final UserVO SAMPLE_USERVO = new UserVO();
-	public static final UserVOes SAMPLE_USERVOes = new UserVOes();
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "preferencesVO")
+public class PreferencesVO {
 
-	public static final RolesVO SAMPLE_ROLESVO = new RolesVO();
-	
-	public static final PreferencesVO SAMPLE_PREFERENCESVO = new PreferencesVO();
-  
-  static {
-  	SAMPLE_USERVO.setKey(345l);
-  	SAMPLE_USERVO.setFirstName("John");
-  	SAMPLE_USERVO.setLastName("Smith");
-  	SAMPLE_USERVO.setLogin("john");
-  	SAMPLE_USERVO.setEmail("john.smith@frentix.com");
-  	SAMPLE_USERVO.setPassword("");
-  	SAMPLE_USERVO.putProperty("telPrivate", "238456782");
-  	SAMPLE_USERVO.putProperty("telMobile", "238456782");
-  	SAMPLE_USERVOes.setUsers(new UserVO[]{SAMPLE_USERVO});
+	private String language;
 
-  	SAMPLE_ROLESVO.setAuthor(true);
-  	
-  	SAMPLE_PREFERENCESVO.setLanguage("de");
-  }
+	public PreferencesVO() {
+		//make JAXB happy
+	}
+	
+	public PreferencesVO(Preferences preferences) {
+		language = preferences.getLanguage();
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
+	@Override
+	public String toString() {
+		return "UserPreferencesVO[language=" + language + "]";
+	}
 }

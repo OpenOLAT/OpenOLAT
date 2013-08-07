@@ -46,7 +46,7 @@ public class PreferencesImpl implements Preferences {
 	private String language;
 	private String fontsize;
 	private String notificationInterval;
-	boolean informSessionTimeout;
+	private boolean informSessionTimeout;
 	private String receiveRealMail;
 	private boolean presenceMessagesPublic;
 	

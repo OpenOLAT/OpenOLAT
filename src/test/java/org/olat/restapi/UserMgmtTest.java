@@ -107,6 +107,8 @@ import org.olat.restapi.support.vo.GroupVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.UserManager;
+import org.olat.user.restapi.PreferencesVO;
 import org.olat.user.restapi.RolesVO;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,6 +141,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private UserManager userManager;
 	
 	@Before
 	@Override
@@ -667,6 +671,63 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		Assert.assertFalse(reloadRoles.isOLATAdmin());
 		Assert.assertFalse(reloadRoles.isPoolAdmin());
 		Assert.assertTrue(reloadRoles.isUserManager());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetPreferences() throws IOException, URISyntaxException {
+		//create an author
+		Identity prefsId = JunitTestHelper.createAndPersistIdentityAsAuthor("prefs-1-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		prefsId.getUser().getPreferences().setLanguage("fr");
+		prefsId.getUser().getPreferences().setFontsize("11");
+		userManager.updateUserFromIdentity(prefsId);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//get preferences of author
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + prefsId.getKey() + "/preferences").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		PreferencesVO prefsVo = conn.parse(response, PreferencesVO.class);
+		Assert.assertNotNull(prefsVo);
+		Assert.assertEquals("fr", prefsVo.getLanguage());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUpdatePreferences() throws IOException, URISyntaxException {
+		//create an author
+		Identity prefsId = JunitTestHelper.createAndPersistIdentityAsAuthor("prefs-1-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		prefsId.getUser().getPreferences().setLanguage("de");
+		userManager.updateUserFromIdentity(prefsId);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		PreferencesVO prefsVo = new PreferencesVO();
+		prefsVo.setLanguage("fr");
+		
+		//get roles of author
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + prefsId.getKey() + "/preferences").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, prefsVo);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		PreferencesVO modPrefs = conn.parse(response, PreferencesVO.class);
+		Assert.assertNotNull(modPrefs);
+		Assert.assertEquals("fr", prefsVo.getLanguage());
+		
+		//double check
+		Identity reloadedPrefsId = securityManager.loadIdentityByKey(prefsId.getKey());
+		Assert.assertNotNull(reloadedPrefsId);
+		Assert.assertEquals("fr", reloadedPrefsId.getUser().getPreferences().getLanguage());
+		
 		conn.shutdown();
 	}
 	
