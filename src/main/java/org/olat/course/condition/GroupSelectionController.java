@@ -45,6 +45,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.NewBGController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -65,11 +66,15 @@ public class GroupSelectionController extends FormBasicController {
 	
 	private String[] groupNames;
 	private String[] groupKeys;
+	private boolean createEnable;
 
 	public GroupSelectionController(UserRequest ureq, WindowControl wControl, String title,
 			CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
 		super(ureq, wControl, "group_or_area_selection");
 		this.courseGrpMngr = courseGrpMngr;
+
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseGrpMngr.getCourseResource(), false);
+		createEnable = !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		// unique names from list to array
 		loadNamesAndKeys();
 		initForm(ureq);
@@ -135,21 +140,23 @@ public class GroupSelectionController extends FormBasicController {
 	}
 
 	@Override
-	protected void initForm(FormItemContainer boundTo, Controller listener, UserRequest ureq) {
-		// easy creation only possible if a default group context available
-		createNew = new FormLinkImpl("create");
-		//is a button
-		createNew.setCustomEnabledLinkCSS("b_button");
-		createNew.setCustomDisabledLinkCSS("b_button b_disabled");
-		// create new group/area on the right side
-		boundTo.add(createNew);
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(createEnable) {
+			// easy creation only possible if a default group context available
+			createNew = new FormLinkImpl("create");
+			//is a button
+			createNew.setCustomEnabledLinkCSS("b_button");
+			createNew.setCustomDisabledLinkCSS("b_button b_disabled");
+			// create new group/area on the right side
+			formLayout.add(createNew);
+		}
 
-		entrySelector = uifactory.addCheckboxesVertical("entries",  null, boundTo, groupKeys, groupNames, null, 1);
+		entrySelector = uifactory.addCheckboxesVertical("entries",  null, formLayout, groupKeys, groupNames, null, 1);
 		// submitCancel after checkboxes
 		Submit subm = new FormSubmit("subm", "apply");
 		Reset reset = new FormReset("reset", "cancel");
-		boundTo.add(subm);
-		boundTo.add(reset);
+		formLayout.add(subm);
+		formLayout.add(reset);
 	}
 
 	@Override

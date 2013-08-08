@@ -38,7 +38,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.nodes.INode;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.Quota;
@@ -181,16 +180,11 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	/**
 	 * @see org.olat.course.ICourse#getCourseTitle()
 	 */
-	public String getCourseTitle() {
-		synchronized (courseTitleSyncObj) { //o_clusterOK by:ld/se
-			if (courseTitle == null) {
+	public String getCourseTitle() {	
+		if (courseTitle == null) {
+			synchronized (courseTitleSyncObj) { //o_clusterOK by:ld/se
 				// load repository entry for this course and get title from it
-				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(
-						OresHelper.createOLATResourceableInstance(CourseModule.class, this.resourceableId), false);
-				if (re == null) throw new AssertException(
-						"trying to get repoentry of a course to get the title, but no repoentry found although course is there, course resid = "
-								+ resourceableId);
-				courseTitle = re.getDisplayname();				
+				courseTitle = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resourceableId);	
 			}
 		}
 		return courseTitle;

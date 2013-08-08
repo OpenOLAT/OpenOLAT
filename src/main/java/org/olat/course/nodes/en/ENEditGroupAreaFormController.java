@@ -69,6 +69,7 @@ import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 
@@ -113,6 +114,8 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	
 	private CloseableModalController cmc;
 	
+	private final boolean managedGroups;
+	
 	private final BGAreaManager areaManager;
 	private final BusinessGroupService businessGroupService;
 
@@ -133,6 +136,11 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
+		
+
+		OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
+		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+		managedGroups = RepositoryEntryManagedFlag.isManaged(courseRe, RepositoryEntryManagedFlag.groups);
 
 		initForm(ureq);
 	}
@@ -574,7 +582,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	private void updateGroupsAndAreasCheck() {
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
 		chooseGroupsLink.setVisible(hasGroups);
-		createGroupsLink.setVisible(!hasGroups);
+		createGroupsLink.setVisible(!hasGroups && !managedGroups);
 		
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		chooseAreasLink.setVisible(hasAreas);

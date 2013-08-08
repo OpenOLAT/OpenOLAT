@@ -73,6 +73,7 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.shibboleth.ShibbolethModule;
@@ -140,6 +141,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private final BGAreaManager areaManager;
 	private final BusinessGroupService businessGroupService;
 	
+	private boolean managedGroup;
+	
 	/**
 	 * with default layout <tt>_content/easycondedit.html</tt>
 	 * 
@@ -163,6 +166,10 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		groupConfigChangeEventOres = OresHelper.createOLATResourceableType(MultiUserEvent.class);
 		singleUserEventCenter.registerFor(this, ureq.getIdentity(), groupConfigChangeEventOres);
+		
+		OLATResource courseResource = env.getCourseGroupManager().getCourseResource();
+		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+		managedGroup = RepositoryEntryManagedFlag.isManaged(courseRe, RepositoryEntryManagedFlag.groups);
 
 		/*
 		 * my instance variables, these data is used by form items to initialise
@@ -1314,7 +1321,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		boolean hasAreas = areaManager.countBGAreasInContext(courseResource) > 0;
 		boolean hasGroups = businessGroupService.countBusinessGroups(null, courseResource) > 0;
 		
-		createGroupsLink.setVisible(!hasGroups);
+		createGroupsLink.setVisible(!hasGroups && !managedGroup);
 		chooseGroupsLink.setVisible(!createGroupsLink.isVisible());
 		createAreasLink.setVisible(!hasAreas);
 		chooseAreasLink.setVisible(!createAreasLink.isVisible());

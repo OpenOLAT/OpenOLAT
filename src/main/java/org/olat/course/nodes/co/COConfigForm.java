@@ -64,6 +64,7 @@ import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 
@@ -123,6 +124,8 @@ public class COConfigForm extends FormBasicController {
 	
 	private final BGAreaManager areaManager;
 	private final BusinessGroupService businessGroupService;
+	
+	private final boolean managedGroups;
 
 	/**
 	 * Form constructor
@@ -137,6 +140,11 @@ public class COConfigForm extends FormBasicController {
 		this.cev = uce.getCourseEditorEnv();
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+
+		OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
+		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+		managedGroups = RepositoryEntryManagedFlag.isManaged(courseRe, RepositoryEntryManagedFlag.groups);
+		
 		initForm(ureq);
 	}
 
@@ -546,7 +554,7 @@ public class COConfigForm extends FormBasicController {
 		
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
 		chooseGroupsLink.setVisible(wg &&  hasGroups);
-		createGroupsLink.setVisible(wg && !hasGroups);
+		createGroupsLink.setVisible(wg && !hasGroups && !managedGroups);
 		
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		chooseAreasLink.setVisible(wg &&  hasAreas);
@@ -560,6 +568,7 @@ public class COConfigForm extends FormBasicController {
 		}
 		
 		recipentsContainer.clearError();
+		flc.setDirty(true);
 	}
 	
 	@Override
