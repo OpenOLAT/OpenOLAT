@@ -117,6 +117,7 @@
 
 /* note:  the markup will be the one from OLATpro, has to be merged yet */
 div.b_tree {
+	position: relative;
 	font-size: 100%;
 	padding: 0;
 	
@@ -150,10 +151,16 @@ div.b_tree {
 			}				
 			
 			a {
-				color:$basegray;
+				color:$menulinkcolor;
 			}
 			a.b_tree_l0 {
 				padding-left:16px;
+			}
+			
+			div.b_tree_item_wrapper {
+				&.b_tree_l0 {
+				
+				}
 			}
 			
 			.b_tree_oc_l0 {
@@ -163,25 +170,28 @@ div.b_tree {
 				z-index: 9;
 			}
 			
-			.b_tree_level_open.b_tree_oc_l0 {
-				z-index: 10;
-			}
-			.b_tree_level_close.b_tree_oc_l0 {
+			.b_tree_level_open.b_tree_oc_l0, .b_tree_level_close.b_tree_oc_l0 {
 				z-index: 10;
 			}
 
 			/* selected, hovered, active <a> tag */
-			a:focus, a:hover { color: $basecolor; background-color: transparent; text-decoration:underline; }	
-			a.b_tree_selected,a:active { color: $basecolor; background-color: transparent; text-decoration:none; }	
-			a.b_tree_selected_parents,strong { color: $basecolor; font-weight: bold; }
+			a:focus, a:hover { color: $menulinkcolor_hover; background-color: transparent; text-decoration:underline; }	
+			a.b_tree_selected,a:active { color: $menulinkcolor_selected; background-color: transparent; text-decoration:none; }	
+			a.b_tree_selected_parents,strong { color: $menulinkcolor_selected; font-weight: bold; }
 						
 			/*  icon positioning */
 			@for $i from 1 through 11 {
-				.b_tree_oc_l#{$i}  { position:absolute; top:0px; left: 1px + ($i * $tree_padding_steps_px); z-index:9; }
+				.b_tree_oc_l#{$i}  { 
+					position:absolute; top:0px; left: 1px + ($i * $tree_padding_steps_px); 
+					z-index:9; 
+				}
 			}
 
 			@for $i from 0 through 11 {
-				a.b_tree_l#{$i}  { padding-left: $tree_padding_opener_px + ($i * $tree_padding_steps_px); z-index:9; }
+				a.b_tree_l#{$i}  { 
+					padding-left: $tree_padding_opener_px + ($i * $tree_padding_steps_px); 
+					z-index:9; 
+				}
 			}			
 			
 			
@@ -206,7 +216,10 @@ div.b_tree {
 		
 		/* link to select the item with icon */
 		@for $i from 0 through 11 {
-			&.b_tree_l#{$i}  a.b_tree_icon { padding-left: ($tree_padding_opener_px + $treeicon_width_px  + $tree_padding_steps_px * $i);  background-position:($tree_padding_opener_px + 2px + $tree_padding_steps_px * $i)  50%; }
+			&.b_tree_l#{$i}  a.b_tree_icon { 
+				padding-left: ($tree_padding_opener_px + $treeicon_width_px  + $tree_padding_steps_px * $i);  
+				background-position:($tree_padding_opener_px + 2px + $tree_padding_steps_px * $i)  50%; 
+			}
 		}
 	
 	}// end ul
@@ -214,7 +227,6 @@ div.b_tree {
 	
 	/* special case with hidden root - apply margin/paddings to wrapper */
 	&.b_tree_root_hidden {
-		position: relative;
 		margin: 0 0 0 $tree_level_margin; 
 		ul { 
 			padding: 0;
@@ -222,6 +234,11 @@ div.b_tree {
 				margin-left: 0;
 			}
 		} 		
+	}
+	
+	/* special case with root node shown: move everything a bit left as the root node needs no space for the opener image */
+	&.b_tree_root_visible {
+		left: -$tree_padding_opener_px;
 	}
 	
 	/* the open/close node icons */

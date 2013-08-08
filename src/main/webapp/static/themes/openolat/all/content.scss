@@ -52,11 +52,11 @@ h6 { font-size: 116.67%; font-style:italic }  /* 14px */
 /** ----------------- LINKS ----------------- **/
 a,a:visited {
 	text-decoration:none;
-	color:$basecolor;
+	color:$linkcolor;
 }
 a:hover {
 	text-decoration:underline;
-	color:$basecolor;
+	color:$linkcolor_hover;
 }
 
 a img {

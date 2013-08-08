@@ -39,6 +39,12 @@ $glossColor4 : #3C3C3C !default;
 $okcolor : #009900 !default;
 $nokcolor : #990000 !default;
 
+$linkcolor : $basecolor !default;
+$linkcolor_hover: $basecolor !default;
+$menulinkcolor : $basegray !default;
+$menulinkcolor_hover : $basecolor !default;
+$menulinkcolor_selected : $basecolor !default;
+
 /* full screen margins. Set to 0% to have have no surrounding border at all */
 $fullScreenModalMarginPercents: 2% !default;
 

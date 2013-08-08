@@ -104,8 +104,12 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			target.append(" b_dd_ct");
 		}
+		// marker classes to differentiate rendering when root node is visible 
 		if(!tree.isRootVisible()) {
 			target.append(" b_tree_root_hidden");
+		}
+		else {
+			target.append(" b_tree_root_visible");
 		}
 		target.append("'><ul class=\"b_tree_l0\">");
 		if(tree.isRootVisible()) {
@@ -149,7 +153,7 @@ public class MenuTreeRenderer implements ComponentRenderer {
 			target.append(" b_tree_selected_parents");			
 		}
 		String ident = curRoot.getIdent();
-		target.append("\"><div id='dd").append(ident).append("' class=\"b_tree_item_wrapper");
+		target.append("\"><div id='dd").append(ident).append("' class=\"b_tree_item_wrapper b_tree_l").append(level);
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			target.append(" b_dd_item");
 		}
