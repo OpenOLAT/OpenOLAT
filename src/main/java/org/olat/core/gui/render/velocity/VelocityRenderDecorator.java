@@ -492,10 +492,16 @@ public class VelocityRenderDecorator {
 	 * @return
 	 */
 	public String escapeHtml(String str) throws IOException {
+		if(str == null) {
+			return "";
+		}
 		return StringEscapeUtils.escapeHtml(str);
 	}
 	
 	public String xssScan(String str) {
+		if(str == null) {
+			return "";
+		}
 		OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
 		return filter.filter(str);
 	}

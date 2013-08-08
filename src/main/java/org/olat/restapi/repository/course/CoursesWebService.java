@@ -209,8 +209,9 @@ public class CoursesWebService {
 	 */
 	@PUT
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle,
-			@QueryParam("title") String title,
+	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle, @QueryParam("title") String title,
+			@QueryParam("softKey") String softKey, @QueryParam("externalId") String externalId,
+			@QueryParam("externalRef") String externalRef, @QueryParam("managedFlags") String managedFlags,
 			@QueryParam("sharedFolderSoftKey") String sharedFolderSoftKey,
 			@QueryParam("copyFrom") Long copyFrom,
 			@Context HttpServletRequest request) {
@@ -223,10 +224,39 @@ public class CoursesWebService {
 		ICourse course;
 		UserRequest ureq = getUserRequest(request);
 		if(copyFrom != null) {
-			course = copyCourse(copyFrom, ureq, shortTitle, title, configVO);
+			course = copyCourse(copyFrom, ureq, shortTitle, title, softKey, externalId, externalRef, managedFlags, configVO);
 		} else {
-			course = createEmptyCourse(ureq.getIdentity(), shortTitle, title, null, null, null, null, configVO);
+			course = createEmptyCourse(ureq.getIdentity(), shortTitle, title, softKey, externalId, externalRef, managedFlags, configVO);
 		}
+		CourseVO vo = ObjectFactory.get(course);
+		return Response.ok(vo).build();
+	}
+	
+	/**
+	 * Creates an empty course
+	 * @response.representation.200.qname {http://www.example.com}courseVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The metadatas of the created course
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @param courseVo The course
+   * @param request The HTTP request
+	 * @return It returns the newly created course
+	 */
+	@PUT
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response createEmptyCourse(CourseVO courseVo, @Context HttpServletRequest request) {
+		if(!isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		UserRequest ureq = getUserRequest(request);
+
+		CourseConfigVO configVO = new CourseConfigVO();
+		ICourse course = createEmptyCourse(ureq.getIdentity(), courseVo.getTitle(),
+				courseVo.getTitle(), courseVo.getSoftKey(), courseVo.getExternalId(),
+				courseVo.getExternalRef(), courseVo.getManagedFlags(), configVO);
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
@@ -387,7 +417,8 @@ public class CoursesWebService {
 		}
 	}
 	
-	public static ICourse copyCourse(Long copyFrom, UserRequest ureq, String name, String longTitle, CourseConfigVO courseConfigVO) {
+	public static ICourse copyCourse(Long copyFrom, UserRequest ureq, String name, String longTitle,
+			String softKey, String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
 		String shortTitle = name;
 		//String learningObjectives = name + " (Example of creating a new course)";
 		
@@ -410,6 +441,19 @@ public class CoursesWebService {
 				preparedEntry.setDisplayname("Copy of " + src.getDisplayname());
 			}
 			preparedEntry.setDescription(src.getDescription());
+			
+			if(StringHelper.containsNonWhitespace(softKey)) {
+				preparedEntry.setSoftkey(softKey);
+			}
+			if(StringHelper.containsNonWhitespace(externalId)) {
+				preparedEntry.setExternalId(externalId);
+			}
+			if(StringHelper.containsNonWhitespace(externalRef)) {
+				preparedEntry.setExternalRef(externalRef);
+			}
+			if(StringHelper.containsNonWhitespace(managedFlags)) {
+				preparedEntry.setManagedFlagsString(managedFlags);
+			}
 
 			String resName = src.getResourcename();
 			if (resName == null) {

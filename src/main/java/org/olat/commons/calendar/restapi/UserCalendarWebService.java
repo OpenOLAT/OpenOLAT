@@ -19,30 +19,24 @@
  */
 package org.olat.commons.calendar.restapi;
 
+import static org.olat.commons.calendar.restapi.CalendarWSHelper.hasReadAccess;
+import static org.olat.commons.calendar.restapi.CalendarWSHelper.hasWriteAccess;
+import static org.olat.commons.calendar.restapi.CalendarWSHelper.processEvents;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
@@ -55,7 +49,6 @@ import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
-import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -66,8 +59,6 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
@@ -84,16 +75,15 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.restapi.support.MediaTypeVariants;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Path("users/{identityKey}/calendars")
-public class CalendarWebService {
+public class UserCalendarWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(CalendarWebService.class);
+	private static final OLog log = Tracing.createLoggerFor(UserCalendarWebService.class);
 	
 	
 	@GET
@@ -118,140 +108,27 @@ public class CalendarWebService {
 		return Response.ok(voes).build();
 	}
 	
-	@GET
-	@Path("{calendarId}/events")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getEventsByCalendar(@PathParam("calendarId") String calendarId,
-			@PathParam("identityKey") Long identityKey, @QueryParam("start") @DefaultValue("0") Integer start,
-			@QueryParam("limit") @DefaultValue("25") Integer limit,
-			@QueryParam("onlyFuture") @DefaultValue("false") Boolean onlyFuture,
-			@Context HttpServletRequest httpRequest, @Context Request request) {
+	@Path("{calendarId}")
+	public CalWebService getCalendarWebService(@PathParam("calendarId") String calendarId,
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
 		
 		UserRequest ureq = getUserRequest(httpRequest);
 		if(!ureq.getUserSession().isAuthenticated()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		} else if (ureq.getIdentity() == null || !ureq.getIdentity().getKey().equals(identityKey)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
 		
 		KalendarRenderWrapper calendar = getCalendar(ureq, calendarId);
 		if(calendar == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		} else if (!hasReadAccess(calendar)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
 		
-		List<EventVO> events = new ArrayList<EventVO>();
-		Collection<KalendarEvent> kalEvents = calendar.getKalendar().getEvents();
-		for(KalendarEvent kalEvent:kalEvents) {
-			EventVO eventVo = new EventVO(kalEvent);
-			events.add(eventVo);
-		}
+		return new CalWebService(calendar);
+	}
 
-		return processEvents(events, onlyFuture, start, limit, httpRequest, request);
-	}
-	
-	@DELETE
-	@Path("{calendarId}/events/{eventId}")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response deleteEventByCalendar(@PathParam("calendarId") String calendarId,
-			@PathParam("eventId") String eventId, @PathParam("identityKey") Long identityKey,
-			@Context HttpServletRequest httpRequest) {
-		
-		UserRequest ureq = getUserRequest(httpRequest);
-		if(!ureq.getUserSession().isAuthenticated()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		} else if (ureq.getIdentity() == null || !ureq.getIdentity().getKey().equals(identityKey)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		KalendarRenderWrapper calendar = getCalendar(ureq, calendarId);
-		if(calendar == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if(!hasWriteAccess(calendar)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
-		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		if(eventId == null) {
-			return Response.ok().status(Status.NOT_FOUND).build();
-		} else {
-			KalendarEvent kalEvent = calendar.getKalendar().getEvent(eventId);
-			if(kalEvent == null) {
-				return Response.ok().status(Status.NOT_FOUND).build();
-			} else {
-				calendarManager.removeEventFrom(calendar.getKalendar(), kalEvent);
-			}
-		}
-
-		return Response.ok().build();
-	}
-	
-	@PUT
-	@Path("{calendarId}/events")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putEventByCalendar(@PathParam("calendarId") String calendarId,
-			@PathParam("identityKey") Long identityKey, EventVO event, @Context HttpServletRequest httpRequest) {
-		return addEventByCalendar(calendarId, identityKey, event, httpRequest);
-	}
-	
-	@POST
-	@Path("{calendarId}/events")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postEventByCalendar(@PathParam("calendarId") String calendarId,
-			@PathParam("identityKey") Long identityKey, EventVO event, @Context HttpServletRequest httpRequest) {
-		return addEventByCalendar(calendarId, identityKey, event, httpRequest);
-	}
-	
-	private Response addEventByCalendar(String calendarId, Long identityKey, EventVO event, HttpServletRequest httpRequest) {
-		UserRequest ureq = getUserRequest(httpRequest);
-		if(!ureq.getUserSession().isAuthenticated()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		} else if (ureq.getIdentity() == null || !ureq.getIdentity().getKey().equals(identityKey)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		KalendarRenderWrapper calendar = getCalendar(ureq, calendarId);
-		if(calendar == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if(!hasWriteAccess(calendar)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		KalendarEvent kalEvent;
-		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		if(!StringHelper.containsNonWhitespace(event.getId())) {
-			String id = UUID.randomUUID().toString();
-			kalEvent = new KalendarEvent(id, event.getSubject(), event.getBegin(), event.getEnd());
-			transfer(event, kalEvent);
-			calendarManager.addEventTo(calendar.getKalendar(), kalEvent);
-		} else {
-			kalEvent = calendar.getKalendar().getEvent(event.getId());
-			if(kalEvent == null) {
-				kalEvent = new KalendarEvent(event.getId(), event.getSubject(), event.getBegin(), event.getEnd());
-				transfer(event, kalEvent);
-				calendarManager.addEventTo(calendar.getKalendar(), kalEvent);
-			} else {
-				kalEvent.setBegin(event.getBegin());
-				kalEvent.setEnd(event.getEnd());
-				kalEvent.setSubject(event.getSubject());
-				transfer(event, kalEvent);
-			}
-		}
-		
-		EventVO vo = new EventVO(kalEvent);
-		return Response.ok(vo).build();
-	}
-	
-	private void transfer(EventVO event, KalendarEvent kalEvent) {
-		kalEvent.setDescription(event.getDescription());
-		kalEvent.setLocation(event.getLocation());
-		kalEvent.setAllDayEvent(event.isAllDayEvent());
-	}
-	
 	@GET
 	@Path("events")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -281,66 +158,6 @@ public class CalendarWebService {
 		}
 
 		return processEvents(events, onlyFuture, start, limit, httpRequest, request);
-	}
-	
-	private Response processEvents(List<EventVO> events, Boolean onlyFuture, int firstResult, int maxReturns,
-			HttpServletRequest httpRequest, Request request) {
-		
-		if(onlyFuture != null && onlyFuture.booleanValue()) {
-			Locale locale = I18nManager.getInstance().getCurrentThreadLocale();
-			Calendar cal = CalendarUtils.getStartOfDayCalendar(locale);
-			Date today = cal.getTime();
-			
-			for(Iterator<EventVO> eventIt=events.iterator(); eventIt.hasNext(); ) {
-				EventVO event = eventIt.next();
-				Date end = event.getEnd();
-				if(end.before(today)) {
-					eventIt.remove();
-				}
-			}
-		}
-		
-		Collections.sort(events, new EventComparator());
-		
-		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = events.size();
-			if(maxReturns > 0 && firstResult >= 0) {
-				if(firstResult >= events.size()) {
-					events.clear();
-				} else {	
-					int lastResult = Math.min(events.size(), firstResult + maxReturns);
-					events = events.subList(firstResult, lastResult); 
-				}
-			}
-			
-			EventVO[] voes = new EventVO[events.size()];
-			voes = events.toArray(voes);
-			EventVOes vos = new EventVOes();
-			vos.setEvents(voes);
-			vos.setTotalCount(totalCount);
-			return Response.ok(vos).build();
-		} else {
-			EventVO[] voes = new EventVO[events.size()];
-			voes = events.toArray(voes);
-			return Response.ok(voes).build();
-		}
-	}
-	
-	private boolean hasReadAccess(KalendarRenderWrapper wrapper) {
-		if(wrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY) {
-			return true;
-		}
-		if(wrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE) {
-			return true;
-		}
-		return false;
-	}
-	
-	private boolean hasWriteAccess(KalendarRenderWrapper wrapper) {
-		if(wrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE) {
-			return true;
-		}
-		return false;
 	}
 	
 	private KalendarRenderWrapper getCalendar(UserRequest ureq, String calendarId) {
@@ -435,26 +252,6 @@ public class CalendarWebService {
 		for(BusinessGroup group:groups) {
 			KalendarRenderWrapper wrapper = collaborationManager.getCalendar(group, ureq, false);
 			calVisitor.visit(wrapper);
-		}
-	}
-	
-	private static class EventComparator implements Comparator<EventVO> {
-		@Override
-		public int compare(EventVO e1, EventVO e2) {
-			if(e1 == null) {
-				if(e2 == null) return 0;
-				return -1;
-			}
-			if(e2 == null) return 1;
-			
-			Date d1 = e1.getBegin();
-			Date d2 = e2.getBegin();
-			if(d1 == null) {
-				if(d2 == null) return 0;
-				return -1;
-			}
-			if(d2 == null) return 1;
-			return d1.compareTo(d2);
 		}
 	}
 	

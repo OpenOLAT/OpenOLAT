@@ -40,6 +40,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -52,6 +53,8 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.commons.calendar.restapi.CalWebService;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
@@ -70,6 +73,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -128,8 +132,24 @@ public class CourseWebService {
 	@Path("groups")
 	public CourseGroupWebService getCourseGroupWebService(@PathParam("courseId") Long courseId) {
 		OLATResource ores = getCourseOLATResource(courseId);
-		if(ores != null) {
-			return new CourseGroupWebService(ores);
+		if(ores == null) {
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
+		}
+		return new CourseGroupWebService(ores);
+	}
+	
+	@Path("calendar")
+	public CalWebService getCourseCalendarWebService(@PathParam("courseId") Long courseId,
+			@Context HttpServletRequest request) {
+		ICourse course = loadCourse(courseId);
+		if(course == null) {
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
+		}
+		if(course.getCourseConfig().isCalendarEnabled()) {
+			OLATResource ores = getCourseOLATResource(courseId);
+			UserRequest ureq = getUserRequest(request);
+			KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, ores, null);
+			return new CalWebService(wrapper);
 		}
 		return null;
 	}
