@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -54,7 +53,6 @@ import org.olat.test.OlatTestCase;
  */
 public class CoordinatorTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(CoordinatorTest.class.getName());
 	private static boolean isInitialized = false;
 	
 

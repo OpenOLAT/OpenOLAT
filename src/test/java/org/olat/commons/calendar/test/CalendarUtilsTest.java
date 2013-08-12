@@ -85,7 +85,7 @@ public class CalendarUtilsTest extends OlatTestCase {
 		
 		System.out.println("*** Find events within period...");
 		start = System.currentTimeMillis();
-		List events = CalendarUtils.listEventsForPeriod(kalendar, new Date(kalendarStart), new Date(kalendarStart + (1000 * ((long)(goBackNumYears * oneYearSec))) ));
+		List<KalendarEvent> events = CalendarUtils.listEventsForPeriod(kalendar, new Date(kalendarStart), new Date(kalendarStart + (1000 * ((long)(goBackNumYears * oneYearSec))) ));
 		stop = System.currentTimeMillis();
 		System.out.println("Duration find: " + (stop - start) + " ms.");
 		System.out.println("Found " + events.size() + " events out of " + kalendar.getEvents().size() + " total events.");

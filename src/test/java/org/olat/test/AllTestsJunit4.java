@@ -70,7 +70,6 @@ import org.junit.runners.Suite;
 	org.olat.user.EmailCheckPerformanceTest.class,//fail
 	org.olat.user.UserTest.class,//ok
 	org.olat.user.UserPropertiesTest.class,//ok
-	org.olat.commons.calendar.ui.components.WeeklyCalendarComponentTest.class,//ok
 	org.olat.commons.calendar.test.CalendarUtilsTest.class,//ok
 	org.olat.commons.calendar.ICalFileCalendarManagerTest.class,//ok
 	org.olat.commons.lifecycle.LifeCycleManagerTest.class,//fail christian fragen...
@@ -120,7 +119,6 @@ import org.junit.runners.Suite;
 	org.olat.catalog.CatalogManagerTest.class,//ok
 	org.olat.notifications.NotificationsManagerTest.class,//fail
 	org.olat.registration.RegistrationManagerTest.class,//ok
-	org.olat.commons.coordinate.singlevm.SingleVMLockerTest.class,//ok
 	org.olat.course.nodes.projectbroker.ProjectBrokerManagerTest.class,
 	org.olat.core.commons.persistence.DBTest.class,
 	org.olat.modules.ims.cp.CPManagerTest.class,
@@ -160,7 +158,6 @@ import org.junit.runners.Suite;
 	org.olat.modules.openmeetings.manager.OpenMeetingsDAOTest.class,
 	org.olat.commons.info.InfoManagerTest.class,
 	org.olat.core.commons.service.tagging.SimpleTagProposalManagerTest.class,
-	org.olat.commons.coordinate.singlevm.SingleVMLockerTest.class,
 	org.olat.core.commons.service.tagging.TaggingManagerTest.class,
 	org.olat.core.dispatcher.mapper.MapperDAOTest.class,
 	org.olat.core.dispatcher.mapper.MapperServiceTest.class,
