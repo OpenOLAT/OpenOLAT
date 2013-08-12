@@ -44,7 +44,6 @@ public class QTI_vargt implements BooleanEvaluable {
 	 * @return
 	 */
 	public boolean eval(Element boolElement, ItemContext userContext, EvalContext ect) {
-		boolean ok = false;
 		ItemInput iinp = userContext.getItemInput();
 		if (iinp.isEmpty()) return false; // user has given no answer
 		String respident = boolElement.attributeValue("respident");
@@ -56,13 +55,21 @@ public class QTI_vargt implements BooleanEvaluable {
 		// Integer
 		shouldVal = shouldVal.trim();
 		isVal = isVal.trim();
+		float fs = Float.parseFloat(shouldVal);
+		float fi;
 		try {
-			Float fs = new Float(shouldVal);
-			Float fi = new Float(isVal);
-			ok = (fi.floatValue() > fs.floatValue());
-		} catch (NumberFormatException nfe) {
-			//  
+			fi = Float.parseFloat(isVal);
+		} catch (NumberFormatException e) {
+			//try to replace , -> .
+			isVal = isVal.replace(',', '.');
+			try {
+				fi = Float.parseFloat(isVal);
+			} catch (NumberFormatException e1) {
+				//we try all what we can to understand the input value -> false
+				return false;
+			}
 		}
+		boolean ok = (fi > fs);
 		return ok;
 	}
 

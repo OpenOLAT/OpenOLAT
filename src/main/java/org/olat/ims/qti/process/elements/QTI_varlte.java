@@ -52,9 +52,21 @@ public class QTI_varlte implements BooleanEvaluable {
 		// we use Float so we are on the safe side, even if comparison was only Integer
 		shouldVal = shouldVal.trim();
 		isVal = isVal.trim();
-		Float fs = new Float(shouldVal);
-		Float fi = new Float(isVal);
-		boolean ok = (fi.floatValue() <= fs.floatValue());
+		float fs = Float.parseFloat(shouldVal);
+		float fi;
+		try {
+			fi = Float.parseFloat(isVal);
+		} catch (NumberFormatException e) {
+			//try to replace , -> .
+			isVal = isVal.replace(',', '.');
+			try {
+				fi = Float.parseFloat(isVal);
+			} catch (NumberFormatException e1) {
+				//we try all what we can to understand the input value -> false
+				return false;
+			}
+		}
+		boolean ok = (fi <= fs);
 		return ok;
 	}
 
