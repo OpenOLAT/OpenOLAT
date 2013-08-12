@@ -603,7 +603,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				canCopy = true;
 			}
 			if(isAuthor) {
-				detailsToolC.setEnabled(TOOL_COPY, canCopy && !corrupted);
+				boolean copyManaged = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.copy);
+				detailsToolC.setEnabled(TOOL_COPY, canCopy && !corrupted && !copyManaged);
 			}
 		}
 	}

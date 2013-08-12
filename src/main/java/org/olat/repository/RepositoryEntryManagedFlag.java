@@ -51,6 +51,7 @@ public enum RepositoryEntryManagedFlag {
     membersmanagement(all),
     groups(all),
     close(all),
+    copy(all),
     delete(all);
 	
 
