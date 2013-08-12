@@ -37,8 +37,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -238,7 +240,9 @@ public class EditMembershipController extends FormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.groups", 0));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.tutorsCount", 1));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.participantsCount", 2));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.freePlace", 3));
+		//tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.freePlace", 3));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.header.freePlace", 3,
+				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(false)));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.tutors", 4));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.participants", 5));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.waitingList", 6));

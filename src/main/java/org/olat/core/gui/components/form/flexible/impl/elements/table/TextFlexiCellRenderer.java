@@ -39,6 +39,17 @@ import org.olat.core.util.StringHelper;
  * @author Christian Guretzki
  */
 public class TextFlexiCellRenderer implements FlexiCellRenderer {
+	
+	private final boolean escapeHtml;
+	
+	public TextFlexiCellRenderer() {
+		escapeHtml = true;
+	}
+	
+	public TextFlexiCellRenderer(boolean escapeHtml) {
+		this.escapeHtml = escapeHtml;
+	}
+	
 
   /**
    * Render Date type with Formatter depending on locale. Render all other types with toString. 
@@ -54,7 +65,11 @@ public class TextFlexiCellRenderer implements FlexiCellRenderer {
 			target.append( formatter.formatDateAndTime((Date)cellValue) );
 		} else if(cellValue instanceof String) {
 			String str = (String)cellValue;
-			StringHelper.escapeHtml(target, str);
+			if(escapeHtml) {
+				StringHelper.escapeHtml(target, str);
+			} else {
+				target.append(str);
+			}
 		} else if (cellValue != null) {
 			target.append( cellValue.toString() );
 		}
