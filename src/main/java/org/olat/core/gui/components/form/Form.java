@@ -61,6 +61,10 @@ public final class Form  {
 	 */
 	public static final Event EVNT_VALIDATION_NEXT = new Event("validation next");
 	/**
+	 * Comment for <code>EVENT_VALIDATION_FINISH</code>
+	 */
+	public static final Event EVNT_VALIDATION_FINISH = new Event("validation finish");
+	/**
 	 * Comment for <code>EVENT_VALIDATION_NOK</code>
 	 */
 	public static final Event EVNT_VALIDATION_NOK = new Event("validation nok");

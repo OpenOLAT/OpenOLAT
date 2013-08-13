@@ -120,6 +120,10 @@ public abstract class StepFormBasicController extends FormBasicController implem
 				formNext(ureq);
 				// set container dirty to remove potentially rendered error messages
 				this.flc.setDirty(true);
+			} else if (event == org.olat.core.gui.components.form.Form.EVNT_VALIDATION_FINISH) {
+				formFinish(ureq);
+				// set container dirty to remove potentially rendered error messages
+				this.flc.setDirty(true);
 			} else if (event == org.olat.core.gui.components.form.Form.EVNT_VALIDATION_NOK) {
 				formNOK(ureq);
 				// set container dirty to rendered error messages

@@ -360,6 +360,16 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	}
 
 	@Override
+	protected void formNext(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void formFinish(UserRequest ureq) {
+		//
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		String searchValue = getSearchValue(ureq);
 		if(StringHelper.containsNonWhitespace(searchValue)) {

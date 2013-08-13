@@ -55,23 +55,27 @@ public class StepsMainRunController extends FormBasicController implements Gener
 
 	public final static Step DONE_UNCHANGED = new Step(){
 	
-
+		@Override
 		public Step nextStep() {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-	
+
+		@Override
 		public PrevNextFinishConfig getInitialPrevNextFinishConfig(){
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-		
+
+		@Override
 		public FormItem getStepTitle() {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-	
+
+		@Override
 		public FormItem getStepShortDescription() {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-		@SuppressWarnings("unused")
+		
+		@Override
 		public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,StepsRunContext stepsRunContext, Form form) {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
@@ -79,24 +83,27 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	};
 	public final static Step DONE_MODIFIED = new Step(){
 		
-
+		@Override
 		public Step nextStep() {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-	
+
+		@Override
 		public PrevNextFinishConfig getInitialPrevNextFinishConfig(){
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-		
+
+		@Override
 		public FormItem getStepTitle() {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-	
+
+		@Override
 		public FormItem getStepShortDescription() {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
 		
-		@SuppressWarnings("unused")	
+		@Override
 		public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,StepsRunContext stepsRunContext, Form form) {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
@@ -186,13 +193,11 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void formOK(UserRequest ureq) {
 	// unused
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void formInnerEvent(UserRequest ureq, FormItem source, org.olat.core.gui.components.form.flexible.impl.FormEvent event) {
 		int whichTitleClickedIndex = stepTitleLinks.indexOf(source);
 		if (source == cancelButton || source == closeLink) {
@@ -210,13 +215,13 @@ public class StepsMainRunController extends FormBasicController implements Gener
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if (source == nextButton) {
 			// submit and let current unsaved step do its work
-			flc.getRootForm().next(ureq);
+			flc.getRootForm().submitAndNext(ureq);
 			// the current step decides whether to proceed to the next step or
 			// not.
 		} else if (source == finishButton) {
 			// submit and let last unsaved step do its work
 			finishCycle = true;
-			flc.getRootForm().submit(ureq);
+			flc.getRootForm().submitAndFinish(ureq);
 			// the current step decides whether to proceed or not
 			// an end step will fire FINISH
 			// a intermediate step will fire NEXT .. but NEXT && FINISHCYCLE
@@ -255,7 +260,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.add("stepLinks", stepTitleLinks);
 		// steps/wizard navigation .. as start most of buttons are disabled
@@ -296,7 +300,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		addNextStep(startStep.getStepController(ureq, getWindowControl(), this.stepsContext, this.mainForm), startStep);
 	}
 
-	@SuppressWarnings("unused")
 	private void addNextStep(StepFormController child, Step nextStep) {
 
 		currentStepIndex++;
@@ -349,8 +352,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 				} else {
 					nextChildCreator = new ControllerCreator() {
 						private final UserRequest ureqForAfterDispatch = ureq;
-	
-						@SuppressWarnings("unused")
+						@Override
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
 							// lureq unused as the remembered ureqForAfterDispatch is
 							// taken

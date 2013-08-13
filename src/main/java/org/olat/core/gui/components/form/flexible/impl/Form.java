@@ -468,8 +468,12 @@ public class Form extends LogDelegator {
 		submit(ureq, org.olat.core.gui.components.form.Form.EVNT_VALIDATION_OK);
 	}
 	
-	public void next(UserRequest ureq) {
+	public void submitAndNext(UserRequest ureq) {
 		submit(ureq, org.olat.core.gui.components.form.Form.EVNT_VALIDATION_NEXT);
+	}
+	
+	public void submitAndFinish(UserRequest ureq) {
+		submit(ureq, org.olat.core.gui.components.form.Form.EVNT_VALIDATION_FINISH);
 	}
 	
 	private final void submit(UserRequest ureq, Event validationOkEvent) {	

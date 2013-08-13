@@ -158,6 +158,11 @@ public class GroupSearchController extends StepFormBasicController {
 	}
 
 	@Override
+	protected void formFinish(UserRequest ureq) {
+		//do nothing
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton || source == searchLink || source == search) {
 			doSearchGroups(ureq);
