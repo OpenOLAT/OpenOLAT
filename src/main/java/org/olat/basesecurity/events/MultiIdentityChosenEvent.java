@@ -41,6 +41,7 @@ import org.olat.core.util.mail.MailTemplate;
  */
 public class MultiIdentityChosenEvent extends Event {
 
+	private static final long serialVersionUID = 4441806725281221375L;
 	private List<Identity> identities;
 	private MailTemplate mailTemplate;
 

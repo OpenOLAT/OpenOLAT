@@ -50,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.LogDelegator;
@@ -464,6 +465,14 @@ public class Form extends LogDelegator {
 	 * @param ureq
 	 */
 	public void submit(UserRequest ureq) {
+		submit(ureq, org.olat.core.gui.components.form.Form.EVNT_VALIDATION_OK);
+	}
+	
+	public void next(UserRequest ureq) {
+		submit(ureq, org.olat.core.gui.components.form.Form.EVNT_VALIDATION_NEXT);
+	}
+	
+	private final void submit(UserRequest ureq, Event validationOkEvent) {	
 		ValidatingFormComponentVisitor vfcv = new ValidatingFormComponentVisitor();
 		FormComponentTraverser ct = new FormComponentTraverser(vfcv, formLayout, false);
 		ct.visitAll(ureq);
@@ -479,12 +488,12 @@ public class Form extends LogDelegator {
 			//let further validate even if one fails. TODO:pb discuss with cg
 			isValid = fbc.validateFormLogic(ureq) && isValid;
 		}
-		
-		//
-		formWrapperComponent.fireValidation(ureq, isValid);
+
+		formWrapperComponent.fireValidation(ureq, isValid, validationOkEvent);
 		isValidAndSubmitted = isValid;
 		hasAlreadyFired = true;
 	}
+	
 	
 	/**
 	 * @param ureq

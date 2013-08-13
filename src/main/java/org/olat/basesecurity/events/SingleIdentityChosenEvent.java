@@ -38,7 +38,8 @@ import org.olat.core.util.mail.MailTemplate;
  * The SingleIdentityChosenEvent has an additional field that tells which identity has been found
  */
 public class SingleIdentityChosenEvent extends Event {
-
+	
+	private static final long serialVersionUID = -4006475285941616460L;
 	private Identity identity;
 	private MailTemplate mailTemplate;
 	

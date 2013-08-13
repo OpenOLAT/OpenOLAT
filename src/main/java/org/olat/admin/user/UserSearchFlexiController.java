@@ -37,27 +37,29 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.ajax.autocompletion.EntriesChosenEvent;
 import org.olat.core.gui.control.generic.ajax.autocompletion.FlexiAutoCompleterController;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
+import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 
@@ -65,6 +67,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * Initial Date:  Jul 29, 2003
  *
  * @author Felix Jost, Florian Gnaegi
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  * 
  * <pre>
  * Comment:  
@@ -92,17 +95,19 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *         Optionally set the useMultiSelect boolean to true which allows to
  *         select multiple identities from within the search results.
  */
-public class UserSearchFlexiController extends FormBasicController {
+public class UserSearchFlexiController extends FlexiAutoCompleterController {
 
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
-
-	private FormLink backLink, selectAll, deselectAll;
-	private Panel searchPanel;
+	
+	private FormLink backLink, searchButton, selectAll, deselectAll;
+	private TextElement loginEl;
+	private List<UserPropertyHandler> userPropertyHandlers;
+	private Map <String,FormItem>propFormItems;
 	private FlexiTableElement tableEl;
 	private VelocityContainer tableVC;
-	private UserSearchForm searchform;
 	private UserSearchFlexiTableModel userTableModel;
-	private FlexiAutoCompleterController autocompleterC;
+	private FormLayoutContainer autoCompleterContainer;
+	private FormLayoutContainer searchFormContainer;
 
 	private boolean isAdministrativeUser;
 	private final BaseSecurityModule securityModule;
@@ -120,6 +125,10 @@ public class UserSearchFlexiController extends FormBasicController {
 		
 		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		userManager = UserManager.getInstance();
+		
+		ListProvider provider = new UserSearchListProvider();
+		setListProvider(provider);
+		setAllowNewValues(false);
 
 		initForm(ureq);
 	}
@@ -128,32 +137,71 @@ public class UserSearchFlexiController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			backLink = uifactory.addFormLink("btn.back", formLayout);
-
-			searchPanel = new Panel("usersearchPanel");
-			layoutCont.put("usersearchPanel", searchPanel);
-
+			
 			Roles roles = ureq.getUserSession().getRoles();
 			isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-			searchform = new UserSearchForm(ureq, getWindowControl(), isAdministrativeUser, false, mainForm);
-			listenTo(searchform);
 			
-			searchPanel.setContent(searchform.getInitialComponent());
-			layoutCont.add(searchform.getInitialFormItem());
-			layoutCont.contextPut("noList","false");			
-			layoutCont.contextPut("showButton","false");
-
 			// insert a autocompleter search
 			boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
 			boolean ajax = Windows.getWindows(ureq).getWindowManager().isAjaxEnabled();
 			if (ajax && autoCompleteAllowed) {
-				ListProvider provider = new UserSearchListProvider();
-				autocompleterC = new FlexiAutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, false, 60, 3, null, mainForm);
-				listenTo(autocompleterC);
-				layoutCont.put("autocompletionsearch", autocompleterC.getInitialComponent());
+				//auto complete
+				String velocityAutoCRoot = Util.getPackageVelocityRoot(FlexiAutoCompleterController.class);
+				String autoCPage = velocityAutoCRoot + "/autocomplete.html";
+				autoCompleterContainer = FormLayoutContainer.createCustomFormLayout("autocompletionsearch", getTranslator(), autoCPage);
+				autoCompleterContainer.setRootForm(mainForm);
+				layoutCont.add(autoCompleterContainer);
+				layoutCont.add("autocompletionsearch", autoCompleterContainer);
+				setupAutoCompleter(ureq, autoCompleterContainer, null, isAdministrativeUser, 60, 3, null);
+			}
+
+			// user search form
+			backLink = uifactory.addFormLink("btn.back", formLayout);
+			
+			//searchform = new UserSearchForm(ureq, getWindowControl(), isAdministrativeUser, false, mainForm);
+
+			searchFormContainer = FormLayoutContainer.createDefaultFormLayout("usersearchPanel", getTranslator());
+			searchFormContainer.setRootForm(mainForm);
+			layoutCont.add(searchFormContainer);
+			layoutCont.add("usersearchPanel", searchFormContainer);
+			
+			loginEl = uifactory.addTextElement("login", "search.form.login", 128, "", searchFormContainer);
+			loginEl.setVisible(isAdministrativeUser);
+
+			UserManager um = UserManager.getInstance();
+			Translator tr = Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator());
+			
+			userPropertyHandlers = um.getUserPropertyHandlersFor(UserSearchForm.class.getCanonicalName(), isAdministrativeUser);
+			
+			propFormItems = new HashMap<String,FormItem>();
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				if (userPropertyHandler == null) continue;
+				
+				FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, UserSearchForm.class.getCanonicalName(), false, searchFormContainer);
+				fi.setTranslator(tr);
+				
+				// DO NOT validate email field => see OLAT-3324, OO-155, OO-222
+				if (userPropertyHandler instanceof EmailProperty && fi instanceof TextElement) {
+					TextElement textElement = (TextElement)fi;
+					textElement.setItemValidatorProvider(null);
+				}
+
+				propFormItems.put(userPropertyHandler.getName(), fi);
 			}
 			
+			FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
+			buttonGroupLayout.setRootForm(mainForm);
+			searchFormContainer.add(buttonGroupLayout);
+			// Don't use submit button, form should not be marked as dirty since this is
+			// not a configuration form but only a search form (OLAT-5626)
+			searchButton = uifactory.addFormLink("submit.search", buttonGroupLayout, Link.BUTTON);
+
+			layoutCont.contextPut("noList","false");			
+			layoutCont.contextPut("showButton","false");
+
 			tableVC = createVelocityContainer("userflexisearch");
+			
+			layoutCont.put("userTable", tableVC);
 
 			//add the table
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -187,16 +235,107 @@ public class UserSearchFlexiController extends FormBasicController {
 			tableVC.put("deselectAll", deselectAll.getComponent());
 		}
 	}
+	
+	protected String getSearchValue(UserRequest ureq) {
+		VelocityRenderDecorator r = (VelocityRenderDecorator) ((VelocityContainer)autoCompleterContainer.getComponent()).getContext().get("r");
+		String searchValue = ureq.getParameter(r.getId(JSNAME_INPUTFIELD).toString());
+		return searchValue;
+	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == backLink) {		
-			flc.contextPut("noList","false");			
+		if (source == backLink) {				
 			flc.contextPut("showButton","false");
-			searchPanel.popContent();
+		} else if(source == autoCompleterContainer.getComponent()) {
+			if (event.getCommand().equals(COMMAND_SELECT)) {
+				doSelect(ureq);
+			}
 		} else {
 			super.event(ureq, source, event);
 		}
+	}
+	
+	/**
+	 * 
+	 */
+	@Override
+	protected void doFireSelection(UserRequest ureq, List<String> res) {
+		// if we get the event, we have a result or an incorrect selection see OLAT-5114 -> check for empty
+		String mySel = res.isEmpty() ? null : res.get(0);
+		if (( mySel == null) || mySel.trim().equals("")) {
+			getWindowControl().setWarning(translate("error.search.form.notempty"));
+			return;
+		}
+		Long key = -1l; // default not found
+		try {
+			key = Long.valueOf(mySel);				
+			if (key > 0) {
+				Identity chosenIdent = BaseSecurityManager.getInstance().loadIdentityByKey(key);
+				// No need to check for null, exception is thrown when identity does not exist which really 
+				// should not happen at all. Tell that an identity has been chosen
+				fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
+			}
+		} catch (NumberFormatException e) {
+			getWindowControl().setWarning(translate("error.no.user.found"));								
+		}
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		return true;
+	}
+	
+	private boolean validateForm(UserRequest ureq) {
+		// override for sys admins
+		if (ureq.getUserSession() != null && ureq.getUserSession().getRoles() != null
+				&& ureq.getUserSession().getRoles().isOLATAdmin()) {
+			return true;
+		}
+		
+		boolean filled = !loginEl.isEmpty();
+		StringBuilder  full = new StringBuilder(loginEl.getValue().trim());  
+		FormItem lastFormElement = loginEl;
+		
+		// DO NOT validate each user field => see OLAT-3324
+		// this are custom fields in a Search Form
+		// the same validation logic can not be applied
+		// i.e. email must be searchable and not about getting an error like
+		// "this e-mail exists already"
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			FormItem ui = propFormItems.get(userPropertyHandler.getName());
+			String uiValue = userPropertyHandler.getStringValue(ui);
+			// add value for later non-empty search check
+			if (StringHelper.containsNonWhitespace(uiValue)) {
+				full.append(uiValue.trim());
+				filled = true;
+			} else {
+				//its an empty field
+				filled = filled || false;
+			}
+
+			lastFormElement = ui;
+		}
+
+		// Don't allow searches with * or %  or @ chars only (wild cards). We don't want
+		// users to get a complete list of all OLAT users this easily.
+		String fullString = full.toString();
+		boolean onlyStar= fullString.matches("^[\\*\\s@\\%]*$");
+
+		if (!filled || onlyStar) {
+			// set the error message
+			lastFormElement.setErrorKey("error.search.form.notempty", null);
+			return false;
+		}
+		if (fullString.contains("**") ) {
+			lastFormElement.setErrorKey("error.search.form.no.wildcard.dublicates", null);
+			return false;
+		}		
+		int MIN_LENGTH = 4;
+		if ( fullString.length() < MIN_LENGTH ) {
+			lastFormElement.setErrorKey("error.search.form.to.short", null);
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -204,16 +343,47 @@ public class UserSearchFlexiController extends FormBasicController {
 		if(source == backLink) {
 			flc.contextPut("noList","false");			
 			flc.contextPut("showButton","false");
-			searchPanel.popContent();
 		} else if(selectAll == source) {
 			checkAll(true);
 		} else if(deselectAll == source) {
 			checkAll(false);
+		} else if(searchButton == source) {
+			if(validateForm(ureq)) {
+				doSearch();
+			}
 		} else if (source instanceof FormLink && source.getName().startsWith("sel_lin")) {
 			Identity chosenIdent = (Identity)source.getUserObject();
 			fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
 		} else {
 			super.formInnerEvent(ureq, source, event);
+		}
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		String searchValue = getSearchValue(ureq);
+		if(StringHelper.containsNonWhitespace(searchValue)) {
+			if(StringHelper.isLong(searchValue)) {
+				doSelect(ureq);
+			} else if(searchValue.length() >= 3){
+				Map<String, String> userProperties = new HashMap<String, String>();
+				userProperties.put(UserConstants.FIRSTNAME, searchValue);
+				userProperties.put(UserConstants.LASTNAME, searchValue);
+				userProperties.put(UserConstants.EMAIL, searchValue);
+				List<Identity> res = searchUsers(searchValue,	userProperties, false);
+				if(res.size() == 1) {
+					//do select
+					Identity chosenIdent = res.get(0);
+					fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
+				} else if (res.size() > 1){
+					tableEl.reset();
+					userTableModel.setObjects(wrapIdentities(res));
+				}
+			}
+		} else {
+			if(validateForm(ureq)) {
+				doSearch();
+			}
 		}
 	}
 	
@@ -233,53 +403,14 @@ public class UserSearchFlexiController extends FormBasicController {
 		}
 		return identities;
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	@Override
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == autocompleterC) {
-			EntriesChosenEvent ece = (EntriesChosenEvent)event;
-			List<String> res = ece.getEntries();
-			// if we get the event, we have a result or an incorrect selection see OLAT-5114 -> check for empty
-			String mySel = res.isEmpty() ? null : res.get(0);
-			if (( mySel == null) || mySel.trim().equals("")) {
-				getWindowControl().setWarning(translate("error.search.form.notempty"));
-				return;
-			}
-			Long key = -1l; // default not found
-			try {
-				key = Long.valueOf(mySel);				
-				if (key > 0) {
-					Identity chosenIdent = BaseSecurityManager.getInstance().loadIdentityByKey(key);
-					// No need to check for null, exception is thrown when identity does not exist which really 
-					// should not happen at all. Tell that an identity has been chosen
-					fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
-				}
-			} catch (NumberFormatException e) {
-				getWindowControl().setWarning(translate("error.no.user.found"));
-				return;									
-			}
-		} else if (source == searchform) {
-			if (event == Event.DONE_EVENT) {
-				doSearch();
-			} else if (event == Event.CANCELLED_EVENT) {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
-			} else {
-				fireEvent(ureq, event);
-			}
-		}
-	}
 	
 	private void doSearch() {
-		String login = searchform.login.getValue();
+		String login = loginEl.getValue();
 		// build user fields search map
 		Map<String, String> userPropertiesSearch = new HashMap<String, String>();				
-		for (UserPropertyHandler userPropertyHandler : searchform.userPropertyHandlers) {
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
-			FormItem ui = searchform.propFormItems.get(userPropertyHandler.getName());
+			FormItem ui = propFormItems.get(userPropertyHandler.getName());
 			String uiValue = userPropertyHandler.getStringValue(ui);
 			if (StringHelper.containsNonWhitespace(uiValue)) {
 				userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
@@ -290,10 +421,10 @@ public class UserSearchFlexiController extends FormBasicController {
 			userPropertiesSearch = null;
 		}
 
+		tableEl.reset();
 		List<Identity> users = searchUsers(login,	userPropertiesSearch, true);
 		if (!users.isEmpty()) {
 			userTableModel.setObjects(wrapIdentities(users));
-			searchPanel.pushContent(tableVC);
 			flc.contextPut("showButton","true");
 		} else {
 			getWindowControl().setInfo(translate("error.no.user.found"));
@@ -310,11 +441,7 @@ public class UserSearchFlexiController extends FormBasicController {
 		}
 		return wrappers;
 	}
-	
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
+
 	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)

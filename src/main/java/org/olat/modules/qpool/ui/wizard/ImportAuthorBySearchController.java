@@ -78,6 +78,11 @@ public class ImportAuthorBySearchController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void formNext(UserRequest ureq) {
 		List<Identity> identities = searchController.getSelectedIdentities();
 		Collection<String> keys = new ArrayList<String>();
 		for(Identity identity: identities) {

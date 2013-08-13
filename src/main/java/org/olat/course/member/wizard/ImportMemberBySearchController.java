@@ -44,12 +44,16 @@ import org.olat.core.id.Identity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ImportMemberBySearchController extends StepFormBasicController {
-	private UserSearchFlexiController searchController;
+	//private UserSearchFlexiController searchController;
+	private UserSearchFlexiController searchController; 
 
 	public ImportMemberBySearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
 
+		//searchController = new UserSearchFlexiController(ureq, wControl, rootForm);
 		searchController = new UserSearchFlexiController(ureq, wControl, rootForm);
+		
+		
 		listenTo(searchController);
 		
 		initForm (ureq);
@@ -76,7 +80,7 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void formNext(UserRequest ureq) {
 		List<Identity> identities = searchController.getSelectedIdentities();
 		Collection<String> keys = new ArrayList<String>();
 		for(Identity identity: identities) {
@@ -84,6 +88,11 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 		}
 		addToRunContext("keys", keys);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//do nothing
 	}
 
 	@Override

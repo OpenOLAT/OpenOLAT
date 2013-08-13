@@ -28,6 +28,7 @@ package org.olat.core.gui.components.form.flexible.impl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.Container;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 
@@ -92,8 +93,18 @@ class FormWrapperContainer extends Container {
 	 * @param ok
 	 */
 	void fireValidation(UserRequest ureq, boolean ok) {
+		fireValidation(ureq, ok, org.olat.core.gui.components.form.Form.EVNT_VALIDATION_OK);
+	}
+	
+	/**
+	 * Fire the validation event
+	 * @param ureq
+	 * @param ok Validation ok or not
+	 * @param okEvent Specify the OK event
+	 */
+	void fireValidation(UserRequest ureq, boolean ok, Event okEvent) {
 		if (ok) {
-			fireEvent(ureq, org.olat.core.gui.components.form.Form.EVNT_VALIDATION_OK);
+			fireEvent(ureq, okEvent);
 		} else {
 			fireEvent(ureq, org.olat.core.gui.components.form.Form.EVNT_VALIDATION_NOK);
 		}

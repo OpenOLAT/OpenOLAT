@@ -32,7 +32,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class UserSearchFlexiTableModel extends DefaultTableDataModel<UserResultWrapper> implements FlexiTableDataModel {
+public class UserSearchFlexiTableModel extends DefaultTableDataModel<UserResultWrapper> implements FlexiTableDataModel<UserResultWrapper> {
 	private Locale locale;
 	private boolean isAdministrativeUser;
 	private FlexiTableColumnModel columnModel;

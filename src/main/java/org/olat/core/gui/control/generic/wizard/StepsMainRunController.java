@@ -210,7 +210,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if (source == nextButton) {
 			// submit and let current unsaved step do its work
-			flc.getRootForm().submit(ureq);
+			flc.getRootForm().next(ureq);
 			// the current step decides whether to proceed to the next step or
 			// not.
 		} else if (source == finishButton) {

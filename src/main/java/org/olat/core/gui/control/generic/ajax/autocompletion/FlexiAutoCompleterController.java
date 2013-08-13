@@ -37,6 +37,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -63,16 +64,15 @@ import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
  */
 public class FlexiAutoCompleterController extends FormBasicController {
 
-	private static final String COMMAND_SELECT = "select";
-	private static final String JSNAME_INPUTFIELD = "b_autocomplete_input";
-	private static final String JSNAME_DATASTORE = "autocompleterDatastore";
-	private static final String JSNAME_COMBOBOX = "autocompleterCombobox";
-
-	static final String AUTOCOMPLETER_NO_RESULT = "AUTOCOMPLETER_NO_RESULT";
+	protected static final String COMMAND_SELECT = "select";
+	protected static final String JSNAME_INPUTFIELD = "b_autocomplete_input";
+	protected static final String JSNAME_DATASTORE = "autocompleterDatastore";
+	protected static final String JSNAME_COMBOBOX = "autocompleterCombobox";
+	protected static final String AUTOCOMPLETER_NO_RESULT = "AUTOCOMPLETER_NO_RESULT";
 
 	private Mapper mapper;
-	private final ListProvider gprovider;
-	private final boolean allowNewValues;
+	private ListProvider gprovider;
+	private boolean allowNewValues;
 	private boolean formElement;
 	
 	private String datastoreName;
@@ -107,7 +107,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		super(ureq, wControl, "autocomplete");
 		this.gprovider = provider;
 		this.allowNewValues = false;
-		setupAutoCompleter(ureq, noresults, showDisplayKey, inputWidth, minChars, label);
+		setupAutoCompleter(ureq, flc, noresults, showDisplayKey, inputWidth, minChars, label);
 		setFormElement(true);
 	}
 	
@@ -116,8 +116,20 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_CUSTOM, "autocomplete", externalMainForm);
 		this.gprovider = provider;
 		this.allowNewValues = allowNewValues;
-		setupAutoCompleter(ureq, noresults, showDisplayKey, inputWidth, minChars, label);
+		setupAutoCompleter(ureq, flc, noresults, showDisplayKey, inputWidth, minChars, label);
 		setFormElement(true);
+	}
+	
+	protected FlexiAutoCompleterController(UserRequest ureq, WindowControl wControl, int layout, String customLayoutPageName, Form externalMainForm) {
+		super(ureq, wControl, layout, customLayoutPageName, externalMainForm);
+	}
+	
+	protected void setListProvider(ListProvider provider) {
+		this.gprovider = provider;
+	}
+	
+	protected void setAllowNewValues(boolean allowNewValues) {
+		this.allowNewValues = allowNewValues;
 	}
 	
 	public boolean isFormElement() {
@@ -133,22 +145,22 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		}
 	}
 
-	private void setupAutoCompleter(UserRequest ureq, String noresults,
-			final boolean showDisplayKey, int inputWidth, int minChars, String label) {
+	protected void setupAutoCompleter(UserRequest ureq, FormLayoutContainer layoutCont, String noresults, boolean showDisplayKey, int inputWidth, int minChars, String label) {
 		String noResults = (noresults == null ? translate("autocomplete.noresults") : noresults);
 		// Configure displaying parameters
+	
 		if (label != null) {
-			flc.contextPut("autocompleter_label", label);
+			layoutCont.contextPut("autocompleter_label", label);
 		}
-		flc.contextPut("showDisplayKey", Boolean.valueOf(showDisplayKey));
-		flc.contextPut("inputWidth", Integer.valueOf(inputWidth));
-		flc.contextPut("minChars", Integer.valueOf(minChars));
-		flc.contextPut("flexi", Boolean.TRUE);
+		layoutCont.contextPut("showDisplayKey", Boolean.valueOf(showDisplayKey));
+		layoutCont.contextPut("inputWidth", Integer.valueOf(inputWidth));
+		layoutCont.contextPut("minChars", Integer.valueOf(minChars));
+		layoutCont.contextPut("flexi", Boolean.TRUE);
 		// Create name for addressing the javascript components
-		datastoreName = "o_s" + JSNAME_DATASTORE + flc.getComponent().getDispatchID();
-		comboboxName = "o_s" + JSNAME_COMBOBOX + flc.getComponent().getDispatchID();
+		datastoreName = "o_s" + JSNAME_DATASTORE + layoutCont.getComponent().getDispatchID();
+		comboboxName = "o_s" + JSNAME_COMBOBOX + layoutCont.getComponent().getDispatchID();
 		
-		flc.getComponent().addListener(this);
+		layoutCont.getComponent().addListener(this);
 
 		// Create a mapper for the server responses for a given input
 		mapper = new AutoCompleterMapper(noResults, showDisplayKey, gprovider);
@@ -156,7 +168,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		// Add mapper URL to JS data store in velocity
 		String fetchUri = registerMapper(ureq, mapper);
 		final String fulluri = fetchUri; // + "/" + fileName;
-		flc.contextPut("mapuri", fulluri+"/autocomplete.json");
+		layoutCont.contextPut("mapuri", fulluri+"/autocomplete.json");
 	}
 	
 	@Override
@@ -173,48 +185,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == flc.getComponent()) {
 			if (event.getCommand().equals(COMMAND_SELECT)) {
-				List<String> selectedEntries = new ArrayList<String>(); // init empty result list
-				String key = ureq.getParameter(AutoCompleterMapper.PARAM_KEY);
-				if (key == null) {
-					// Fallback to submitted input field: the input field does not contain
-					// the key but the search value itself
-					VelocityRenderDecorator r = (VelocityRenderDecorator) ((VelocityContainer)flc.getComponent()).getContext().get("r");
-					String searchValue = ureq.getParameter(r.getId(JSNAME_INPUTFIELD).toString());
-					if (searchValue == null) {
-						// log error because something went wrong in the code and send empty list as result
-						logError("Auto complete JS code must always send 'key' or the autocomplete parameter!", null);						
-						getWindowControl().setError(translate("autocomplete.error"));
-						return;
-					} else if (searchValue.equals("") || searchValue.length() < 3) {
-						getWindowControl().setWarning(translate("autocomplete.not.enough.chars"));
-						return;
-					}
-					// Create temporary receiver and perform search for given value. 
-					AutoCompleterListReceiver receiver = new AutoCompleterListReceiver("-", false);
-					gprovider.getResult(searchValue, receiver);
-					JSONArray result = receiver.getResult();
-					// Use key from first result
-					if (result.length() > 0) {
-						try {
-							JSONObject object = result.getJSONObject(0);
-							key = object.getString(AutoCompleterMapper.PARAM_KEY);
-						} catch (JSONException e) {
-							logError("Error while getting json object from list receiver", e);						
-							key = "";
-						}
-					} else {
-						key = "";
-					}
-				}
-				// Proceed with a key, empty or valid key
-				key = key.trim();
-				if (!key.equals("") && !key.equals(AUTOCOMPLETER_NO_RESULT)) {
-					// Normal case, add entry
-					selectedEntries.add(key);
-				} else if (key.equals(AUTOCOMPLETER_NO_RESULT)) {
-					return;
-				}
-				fireEvent(ureq, new EntriesChosenEvent(selectedEntries));					
+				doSelect(ureq);
 			}
 		} else if(source == mainForm.getInitialComponent()) {
 			if(allowNewValues) {
@@ -222,11 +193,64 @@ public class FlexiAutoCompleterController extends FormBasicController {
 				List<String> selectedEntries = new ArrayList<String>();
 				selectedEntries.add(searchValue);
 				fireEvent(ureq, new EntriesChosenEvent(selectedEntries));	
+			} else {
+				super.event(ureq, source, event);
 			}
+		} else {
+			super.event(ureq, source, event);
 		}
 	}
 	
-	private String getSearchValue(UserRequest ureq) {
+	protected void doSelect(UserRequest ureq) {
+		List<String> selectedEntries = new ArrayList<String>(); // init empty result list
+		String key = ureq.getParameter(AutoCompleterMapper.PARAM_KEY);
+		if (key == null) {
+			// Fallback to submitted input field: the input field does not contain
+			// the key but the search value itself
+			VelocityRenderDecorator r = (VelocityRenderDecorator) ((VelocityContainer)flc.getComponent()).getContext().get("r");
+			String searchValue = ureq.getParameter(r.getId(JSNAME_INPUTFIELD).toString());
+			if (searchValue == null) {
+				// log error because something went wrong in the code and send empty list as result
+				logError("Auto complete JS code must always send 'key' or the autocomplete parameter!", null);						
+				getWindowControl().setError(translate("autocomplete.error"));
+				return;
+			} else if (searchValue.equals("") || searchValue.length() < 3) {
+				getWindowControl().setWarning(translate("autocomplete.not.enough.chars"));
+				return;
+			}
+			// Create temporary receiver and perform search for given value. 
+			AutoCompleterListReceiver receiver = new AutoCompleterListReceiver("-", false);
+			gprovider.getResult(searchValue, receiver);
+			JSONArray result = receiver.getResult();
+			// Use key from first result
+			if (result.length() > 0) {
+				try {
+					JSONObject object = result.getJSONObject(0);
+					key = object.getString(AutoCompleterMapper.PARAM_KEY);
+				} catch (JSONException e) {
+					logError("Error while getting json object from list receiver", e);						
+					key = "";
+				}
+			} else {
+				key = "";
+			}
+		}
+		// Proceed with a key, empty or valid key
+		key = key.trim();
+		if (!key.equals("") && !key.equals(AUTOCOMPLETER_NO_RESULT)) {
+			// Normal case, add entry
+			selectedEntries.add(key);
+		} else if (key.equals(AUTOCOMPLETER_NO_RESULT)) {
+			return;
+		}
+		doFireSelection(ureq, selectedEntries);
+	}
+	
+	protected void doFireSelection(UserRequest ureq, List<String> selectedEntries) {
+		fireEvent(ureq, new EntriesChosenEvent(selectedEntries));
+	}
+	
+	protected String getSearchValue(UserRequest ureq) {
 		VelocityRenderDecorator r = (VelocityRenderDecorator) ((VelocityContainer)flc.getComponent()).getContext().get("r");
 		String searchValue = ureq.getParameter(r.getId(JSNAME_INPUTFIELD).toString());
 		return searchValue;

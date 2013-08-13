@@ -95,7 +95,7 @@ public class GroupSearchController extends StepFormBasicController {
 	}	
 	
 	// constructor for use in steps-wizzard
-	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext, int layoutVertical, String pageName) {
+	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext) {
 		super(ureq, wControl, form, stepsRunContext, LAYOUT_VERTICAL, "resulttable");
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		Translator pT = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), getTranslator());
@@ -149,13 +149,14 @@ public class GroupSearchController extends StepFormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(isUsedInStepWizzard()) {
-			doSave(ureq);//in wizard form OK == next
-		} else {
-			doSearchGroups(ureq);
-		}
+		doSearchGroups(ureq);
 	}
 	
+	@Override
+	protected void formNext(UserRequest ureq) {
+		doSave(ureq);
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton || source == searchLink || source == search) {

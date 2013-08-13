@@ -22,7 +22,6 @@ package org.olat.admin.user.bulkChange;
 import org.olat.admin.user.groups.GroupSearchController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
@@ -60,7 +59,7 @@ class UserBulkChangeStep01a extends BasicStep {
 	 */
 	@Override
 	public StepFormController getStepController(final UserRequest ureq, final WindowControl windowControl, final StepsRunContext stepsRunContext, final Form form) {
-		StepFormController stepI = new GroupSearchController(ureq, windowControl, form, stepsRunContext, FormBasicController.LAYOUT_VERTICAL, null);
+		StepFormController stepI = new GroupSearchController(ureq, windowControl, form, stepsRunContext);
 		return stepI;
 	}
 

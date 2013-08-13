@@ -33,7 +33,8 @@ import org.olat.core.util.event.MultiUserEvent;
  * @author srosse
  */
 public class NewIdentityCreatedEvent extends MultiUserEvent {
-	
+
+	private static final long serialVersionUID = 2970338524539022136L;
 	private Long identityId;
 	
 	public NewIdentityCreatedEvent(Identity newIdentity) {

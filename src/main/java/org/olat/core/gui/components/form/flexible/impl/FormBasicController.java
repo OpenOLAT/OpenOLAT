@@ -251,6 +251,10 @@ public abstract class FormBasicController extends BasicController {
 	 * Typically one will read and save/update values then.
 	 */
 	abstract protected void formOK(UserRequest ureq);
+	
+	protected void formNext(UserRequest ureq) {
+		formOK(ureq);
+	}
 
 	/**
 	 * called if form validation was not ok.<br>
@@ -308,6 +312,12 @@ public abstract class FormBasicController extends BasicController {
 				// flag
 				this.flc.setDirty(true);
 				formOK(ureq);
+			} else if (event == org.olat.core.gui.components.form.Form.EVNT_VALIDATION_NEXT) {
+				// Set container dirty to remove potentially rendered error messages. Do
+				// this before calling formOK() to let formOK override the dirtiness
+				// flag
+				this.flc.setDirty(true);
+				formOK(ureq);
 			} else if (event == org.olat.core.gui.components.form.Form.EVNT_VALIDATION_NOK) {
 				// Set container dirty to rendered error messages. Do this before calling
 				// formNOK() to let formNOK override the dirtiness flag
@@ -347,6 +357,7 @@ public abstract class FormBasicController extends BasicController {
 			}
 		}
 	}
+
 
 	/**
 	 * Set an optional form title that is rendered as a fieldset legend. If you
