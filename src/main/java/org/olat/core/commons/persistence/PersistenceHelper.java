@@ -123,6 +123,41 @@ public class PersistenceHelper {
 		}
 		return appended;
 	}
+	
+	public static final void appendFuzzyLike(StringBuilder sb, String var, String key, String dbVendor) {
+		if(dbVendor.equals("mysql")) {
+			sb.append(" ").append(var).append(" like :").append(key);
+		} else {
+			sb.append(" lower(").append(var).append(") like :").append(key);
+		}
+		if(dbVendor.equals("oracle")) {
+			sb.append(" escape '\\'");
+		}
+	}
+	
+	/**
+	 * Helper method that replaces * with % and appends and
+	 * prepends % to the string to make fuzzy SQL match when using like 
+	 * @param email
+	 * @return fuzzized string
+	 */
+	public static final String makeFuzzyQueryString(String string) {
+		// By default only fuzzyfy at the end. Usually it makes no sense to do a
+		// fuzzy search with % at the beginning, but it makes the query very very
+		// slow since it can not use any index and must perform a fulltext search.
+		// User can always use * to make it a really fuzzy search query
+		// fxdiff FXOLAT-252: use "" to disable this feature and use exact match
+		if (string.length() > 1 && string.startsWith("\"") && string.endsWith("\"")) {			
+			string = string.substring(1, string.length()-1);
+		} else {
+			string = string + "%";
+			string = string.replace('*', '%');
+		}
+		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
+		// To test for literal instances of '_', we have to escape it.
+		string = string.replace("_", "\\_");
+		return string.toLowerCase();
+	}
 
 	/**
 	 * 

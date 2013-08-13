@@ -1716,22 +1716,44 @@ public class RepositoryManager extends BasicManager {
 		}
 		
 		if (var_author) { // fuzzy author search
+			/*
 			author = '%' + author.replace('*', '%') + '%';
 			query.append(" and ownerGroup in (select msauth.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" msauth, ")
 		         .append(" org.olat.basesecurity.IdentityImpl msauthid,")
 		         .append(" org.olat.user.UserImpl msauthuser ")
 		         .append(" where msauth.identity = msauthid and msauthid.user = msauthuser and ")
 		         .append(" (msauthuser.properties['firstName'] like :author or msauthuser.properties['lastName'] like :author or msauthid.name like :author))");
+			*/
+			author = PersistenceHelper.makeFuzzyQueryString(author);
+			query.append(" and ownerGroup in (select msauth.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" msauth, ")
+           .append(" org.olat.basesecurity.IdentityImpl msauthid,")
+           .append(" org.olat.user.UserImpl msauthuser ")
+           .append(" where msauth.identity = msauthid and msauthid.user = msauthuser and ")
+           .append(" (");
+			
+			PersistenceHelper.appendFuzzyLike(query, "msauthuser.properties['firstName']", "author", dbInstance.getDbVendor());
+			query.append(" or ");
+			PersistenceHelper.appendFuzzyLike(query, "msauthuser.properties['lastName']", "author", dbInstance.getDbVendor());
+			query.append(" or ");
+			PersistenceHelper.appendFuzzyLike(query, "msauthid.name", "author", dbInstance.getDbVendor());
+    
+      query.append("))");
 		}
 		
 		if (var_displayname) {
-			displayName = '%' + displayName.replace('*', '%') + '%';
-			query.append(" and v.displayname like :displayname");
+			//displayName = '%' + displayName.replace('*', '%') + '%';
+			//query.append(" and v.displayname like :displayname");
+			displayName = PersistenceHelper.makeFuzzyQueryString(displayName);
+			query.append(" and ");
+			PersistenceHelper.appendFuzzyLike(query, "v.displayname", "displayname", dbInstance.getDbVendor());
 		}
 		
 		if (var_desc) {
-			desc = '%' + desc.replace('*', '%') + '%';
-			query.append(" and v.description like :desc");
+			//desc = '%' + desc.replace('*', '%') + '%';
+			//query.append(" and v.description like :desc");
+			desc = PersistenceHelper.makeFuzzyQueryString(desc);
+			query.append(" and ");
+			PersistenceHelper.appendFuzzyLike(query, "v.description", "desc", dbInstance.getDbVendor());
 		}
 		
 		if (var_resourcetypes) {
@@ -1769,6 +1791,8 @@ public class RepositoryManager extends BasicManager {
 		if(!count && orderBy) {
 			query.append(" order by v.displayname, v.key ASC");
 		}
+		
+		System.out.println(query.toString());
 
 		DBQuery dbQuery = dbInstance.createQuery(query.toString());
 		if(institut) {
