@@ -249,7 +249,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 			id.clearError();
 			if (id != null && !id.isEmpty()) {
 				try {
-					new Long(id.getValue());
+					Long.parseLong(id.getValue());
 				} catch (NumberFormatException e) {
 					id.setErrorKey("search.id.format", null);
 					allOk &= false;

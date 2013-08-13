@@ -28,7 +28,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
-import org.olat.core.gui.components.table.CustomCssCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
@@ -48,7 +47,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.AbstractBusinessGroupListController;
 import org.olat.group.ui.main.BGAccessControlledCellRenderer;
 import org.olat.group.ui.main.BGTableItem;
-import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
+import org.olat.group.ui.main.BusinessGroupNameColumnDescriptor;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 import org.olat.group.ui.main.BusinessGroupViewFilter;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -111,8 +110,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		RepositoryEntry re = (RepositoryEntry)getUserObject();
 		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		
-		CustomCssCellRenderer nameRenderer = new BusinessGroupNameCellRenderer();
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, nameRenderer));
+		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(TABLE_ACTION_LAUNCH, getLocale()));
 		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
 		if(groupModule.isManagedBusinessGroups()) {
 			groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.externalId.i18n(), Cols.externalId.ordinal(), null, getLocale()));
