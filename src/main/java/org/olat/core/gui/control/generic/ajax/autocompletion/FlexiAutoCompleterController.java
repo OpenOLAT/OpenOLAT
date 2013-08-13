@@ -207,8 +207,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		if (key == null) {
 			// Fallback to submitted input field: the input field does not contain
 			// the key but the search value itself
-			VelocityRenderDecorator r = (VelocityRenderDecorator) ((VelocityContainer)flc.getComponent()).getContext().get("r");
-			String searchValue = ureq.getParameter(r.getId(JSNAME_INPUTFIELD).toString());
+			String searchValue = getSearchValue(ureq);
 			if (searchValue == null) {
 				// log error because something went wrong in the code and send empty list as result
 				logError("Auto complete JS code must always send 'key' or the autocomplete parameter!", null);						

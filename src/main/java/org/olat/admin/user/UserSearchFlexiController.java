@@ -121,7 +121,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	 * @param statusEnabled
 	 */
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "usersearch", rootForm);
+		super(ureq, wControl, LAYOUT_CUSTOM, "usersearchext", rootForm);
 		
 		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		userManager = UserManager.getInstance();
@@ -374,7 +374,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		String searchValue = getSearchValue(ureq);
 		if(StringHelper.containsNonWhitespace(searchValue)) {
 			if(StringHelper.isLong(searchValue)) {
-				doSelect(ureq);
+				doFireSelection(ureq, Collections.singletonList(searchValue));
 			} else if(searchValue.length() >= 3){
 				Map<String, String> userProperties = new HashMap<String, String>();
 				userProperties.put(UserConstants.FIRSTNAME, searchValue);

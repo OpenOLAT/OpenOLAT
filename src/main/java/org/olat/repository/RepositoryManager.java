@@ -1791,8 +1791,6 @@ public class RepositoryManager extends BasicManager {
 		if(!count && orderBy) {
 			query.append(" order by v.displayname, v.key ASC");
 		}
-		
-		System.out.println(query.toString());
 
 		DBQuery dbQuery = dbInstance.createQuery(query.toString());
 		if(institut) {
