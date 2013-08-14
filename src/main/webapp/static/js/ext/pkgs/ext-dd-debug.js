@@ -2003,10 +2003,13 @@ Ext.dd.DragDropMgr = function() {
                 z,
                 zIndex = -1;
 
-            element = Ext.getDom(element);
             while (element !== body) {
-                if (!isNaN(z = Number(Ext.fly(element).getStyle('zIndex')))) {
+                
+            	if (!isNaN(z = Number(Ext.fly(element).getStyle('zIndex')))) {
                     zIndex = z;
+                }
+            	if(element.parentNode == null) {
+                	break;
                 }
                 element = element.parentNode;
             }
