@@ -137,7 +137,7 @@ public class DisclaimerController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == this.disclaimerFormController) {
-			if (event == event.CANCELLED_EVENT) {
+			if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			} else if (event == Event.DONE_EVENT) {
 				// Verify that, if the additional checkbox is configured to be visible, it is checked as well

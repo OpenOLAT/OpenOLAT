@@ -82,6 +82,7 @@ public class DisclaimerFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Add the "accept" checkbox to the form.
 		acceptCheckbox = uifactory.addCheckboxesVertical(ACKNOWLEDGE_CHECKBOX_NAME, null, formLayout, new String[] {DCL_CHECKBOX_KEY}, new String[] {translate(NLS_DISCLAIMER_ACKNOWLEDGED)}, null, 1);
+		acceptCheckbox.setEscapeHtml(false);
 		acceptCheckbox.setMandatory(false);
 		acceptCheckbox.select(DCL_CHECKBOX_KEY, readOnly);
 		
@@ -90,6 +91,7 @@ public class DisclaimerFormController extends FormBasicController {
 			String additionalCheckboxText = translate("disclaimer.additionalcheckbox");
 			if (additionalCheckboxText != null) {
 				additionalCheckbox = uifactory.addCheckboxesVertical(ADDITIONAL_CHECKBOX_NAME, null, formLayout, new String[] {DCL_CHECKBOX_KEY2}, new String[] {additionalCheckboxText}, null, 1);
+				additionalCheckbox.setEscapeHtml(false);
 				additionalCheckbox.select(DCL_CHECKBOX_KEY2, readOnly);
 			}
 		}
