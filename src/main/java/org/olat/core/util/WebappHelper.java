@@ -430,24 +430,6 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		writeFile.delete();
 	}
 	
-	
-	/**
-	 * @return The full OLAT licencse as a string
-	 */
-	public static String getOlatLicense() {
-		Resource license = new ClassPathResource("NOTICE.TXT");
-		String licenseS = "";
-		if (license.exists()) {
-			licenseS = FileUtils.load(license, "UTF-8");
-		}
-		File copyLicense = new File(contextRoot + "/COPYING");
-		String copyLicenseS = "";
-		if (copyLicense.exists()) {
-			copyLicenseS = FileUtils.load(copyLicense, "UTF-8");
-		}
-		return licenseS + "<br /><br />" + copyLicenseS;
-	}
-	
 	/**
 	 * Either the version of the core or the webapps provided version gets printed
 	 */

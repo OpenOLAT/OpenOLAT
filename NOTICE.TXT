@@ -28,6 +28,8 @@ Contributors and copy right holders of openolat.org codebase since 2011:
   Stephan Clemenz
 - Rain and Hail Agricultural Insurance [http://www.rainhail.com]
   Brooke Hedrick
+- University of Innsbruck, Austria [http://www.uibk.ac.at]
+  Thomas Haselwanter, Guenter Krausgruber, Hermann Schwärzler
   
 
 OpenOLAT logo and icons
