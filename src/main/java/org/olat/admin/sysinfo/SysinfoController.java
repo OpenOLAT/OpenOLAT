@@ -170,7 +170,7 @@ public class SysinfoController extends FormBasicController {
 		String nodeId = StringHelper.containsNonWhitespace(Settings.getNodeInfo()) ? Settings.getNodeInfo() : "N1";
 		uifactory.addStaticTextElement("node", "sysinfo.node", nodeId, serverCont);
 
-		File baseDir = new File(WebappHelper.getContextRoot(), "..");
+		File baseDir = new File(WebappHelper.getContextRoot());
 		String baseDirPath = null;
 		try {
 			baseDirPath = baseDir.getCanonicalPath();
