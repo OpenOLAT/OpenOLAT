@@ -57,9 +57,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class MoveCopySubtreeController extends BasicController {
 	
-	private static final String LOG_COURSENODE_COPIED = "COURSENODE_COPIED";
-	private static final String LOG_COURSENODE_MOVED = "COURSENODE_MOVED";
-	
 	private CourseEditorTreeNode moveCopyFrom;
 	private boolean copy;
 

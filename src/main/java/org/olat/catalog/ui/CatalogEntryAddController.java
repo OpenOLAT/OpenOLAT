@@ -102,14 +102,13 @@ public class CatalogEntryAddController extends BasicController {
 		if(source == okButton) {
 			GenericTreeNode node = (GenericTreeNode) selectionTree.getSelectedNode();
 			Long newParentId = Long.parseLong(node.getIdent());
-			insertNode(newParentId);
-			fireEvent(ureq, Event.DONE_EVENT);
+			insertNode(ureq, newParentId);
 		} else if(source == cancelButton) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		}
 	}
 	
-	protected boolean insertNode(Long newParentId) {
+	protected void insertNode(UserRequest ureq, Long newParentId) {
 		CatalogEntry newParent = catalogManager.loadCatalogEntry(newParentId);
 		// check first if this repo entry is already attached to this new parent
 		List<CatalogEntry> existingChildren = catalogManager.getChildrenOf(newParent);
@@ -117,7 +116,7 @@ public class CatalogEntryAddController extends BasicController {
 			RepositoryEntry existingRepoEntry = existingChild.getRepositoryEntry();
 			if (existingRepoEntry != null && existingRepoEntry.equalsByPersistableKey(toBeAddedEntry)) {
 				showError("catalog.tree.add.already.exists", toBeAddedEntry.getDisplayname());
-				return false;
+				return;
 			}
 		}
 		CatalogEntry newEntry = catalogManager.createCatalogEntry();
@@ -128,6 +127,6 @@ public class CatalogEntryAddController extends BasicController {
 		newEntry.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
 		// save entry
 		catalogManager.addCatalogEntry(newParent, newEntry);
-		return true;
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

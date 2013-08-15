@@ -23,8 +23,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,8 +33,6 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.util.xss.NotImplemented;
 import org.olat.util.xss.XssInjection;
 import org.olat.util.xss.XssInjectionDependencies;
@@ -57,9 +54,6 @@ import com.thoughtworks.selenium.Selenium;
  */
 @XssUtil
 public class FunctionalCourseUtil {
-	private final static OLog log = Tracing.createLoggerFor(FunctionalCourseUtil.class);
-	
-	private final static Pattern categoryPattern = Pattern.compile("/([^/]+)");
 	
 	public final static String COURSE_RUN_CSS = "o_course_run";
 	public final static String COURSE_OPEN_EDITOR_CSS = "o_sel_course_open_editor";
@@ -893,10 +887,10 @@ public class FunctionalCourseUtil {
 	 * @param path
 	 * @return
 	 */
-	public String createCatalogSelectors(Selenium browser, String path){
-		if(path == null ||
-				!path.startsWith("/")){
-			return(null);
+
+	public String selectCatalogPath(Selenium browser, String path){
+		if(path == null || !path.startsWith("/")){
+			return null;
 		}
 		
 		functionalUtil.idle(browser);
@@ -904,60 +898,24 @@ public class FunctionalCourseUtil {
 		/*
 		 * Determine best matching item by using regular expressions
 		 */
-		StringBuffer itemLocator = new StringBuffer();
-		itemLocator.append("//div[contains(@class, 'b_selectiontree_item')]");
-		
-		VelocityContext context = new VelocityContext();
+		String locator = null;
+		String parentPath = null;
+		String currentPath = null;
+		for(StringTokenizer tokenizer=new StringTokenizer(path, "/"); tokenizer.hasMoreTokens(); ) {
+			parentPath = currentPath;
+			currentPath = tokenizer.nextToken();
 
-		context.put("treeSelector", itemLocator.toString());
-		context.put("treePath", path);
-		
-		VelocityEngine engine = null;
-
-		engine = new VelocityEngine();
-
-		StringWriter sw = new StringWriter();
-		Integer offset = null;
-		
-		StringBuffer locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=")
-		.append(itemLocator.toString());
-		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
-		
-		try {
-			engine.evaluate(context, sw, "catalogTreeEntryPosition", FunctionalEPortfolioUtil.class.getResourceAsStream("CatalogTreeEntryPosition.vm"));
-
-			offset = new Integer(browser.getEval(sw.toString()));
-			
-			if(offset.intValue() == -1){
-				return(null);
+			StringBuilder sl = new StringBuilder();
+			sl.append("//a[span[text() = '").append(currentPath).append("']]");
+			if(parentPath != null) {
+				sl.append("[ancestor::li[div//span[text() = '").append(parentPath).append("']]]");
 			}
-
-		} catch (ParseErrorException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MethodInvocationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ResourceNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
+			locator = sl.toString();
+			functionalUtil.waitForPageToLoadElement(browser, "xpath=" + locator);
+			browser.click("xpath=" + locator);
 		}
-		
-		/* create selector */
-		StringBuffer selectorBuffer = new StringBuffer();
-				
-		selectorBuffer.append("xpath=(//div[contains(@class, '")
-		.append("b_selectiontree_item")
-		.append("')]//input[@type='radio'])[position()='")
-		.append(offset.intValue() + 1)
-		.append("']");
-		
-		return(selectorBuffer.toString());
+		return locator;
 	}
 	
 	/**
@@ -1018,26 +976,22 @@ public class FunctionalCourseUtil {
 			
 			browser.click(selectorBuffer.toString());
 			
-			String catalogSelector = createCatalogSelectors(browser, catalog);
+			String catalogSelector = selectCatalogPath(browser, catalog);
 			functionalUtil.idle(browser);
 			functionalUtil.waitForPageToLoadElement(browser, catalogSelector);
-			browser.click(catalogSelector);
+			//browser.click("xpath=" + catalogSelector);
 			
 			/* click choose */
-			selectorBuffer = new StringBuffer();
+			StringBuilder selectOk = new StringBuilder();
+			selectOk.append("xpath=//div[contains(@class,'").append(getCatalogCss()).append("')]")
+			  .append("//a[contains(@class,'").append(functionalUtil.getButtonCss()).append("')][contains(@href,'cid%3Aok/')]");
 			
-			selectorBuffer.append("xpath=//div[contains(@class, '")
-			.append(getCatalogCss())
-			.append("')]//button[contains(@class, '")
-			.append(functionalUtil.getButtonDirtyCss())
-			.append("')]");
+			functionalUtil.waitForPageToLoadElement(browser, selectOk.toString());
 			
-			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			browser.focus(selectOk.toString());
+			browser.click(selectOk.toString());
 			
-			browser.focus(selectorBuffer.toString());
-			browser.click(selectorBuffer.toString());
-			
-			functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
+			functionalUtil.waitForPageToUnloadElement(browser, selectOk.toString());
 		}else{
 			functionalUtil.selectOption(browser, getCourseEditorPublishWizardCatalogId(), ADD_TO_CATALOG_NO_VALUE);
 		}

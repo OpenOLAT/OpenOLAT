@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.util.FunctionalUtil.OlatSite;
 import org.olat.util.xss.XssUtil;
 
@@ -39,7 +37,6 @@ import com.thoughtworks.selenium.Selenium;
  */
 @XssUtil
 public class FunctionalRepositorySiteUtil {	
-	private final static OLog log = Tracing.createLoggerFor(FunctionalRepositorySiteUtil.class);
 	
 	private final static Pattern categoryPattern = Pattern.compile("/([^/]+)");
 	
@@ -1256,11 +1253,11 @@ public class FunctionalRepositorySiteUtil {
 		
 		/* catalog */
 		if(catalog != null){
-			String catalogSelectors = functionalCourseUtil.createCatalogSelectors(browser, catalog);
+			String catalogSelectors = functionalCourseUtil.selectCatalogPath(browser, catalog);
 		
 			functionalUtil.idle(browser);
 			functionalUtil.waitForPageToLoadElement(browser, catalogSelectors);
-			browser.click(catalogSelectors);
+			//browser.click(catalogSelectors);
 		}
 		
 		functionalUtil.clickWizardNext(browser);

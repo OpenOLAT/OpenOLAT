@@ -78,8 +78,7 @@ class PublishStep00a extends BasicStep implements Step {
 
 		@Override
 		protected void doDispose() {
-			// TODO Auto-generated method stub
-			
+			//
 		}
 
 		@Override
@@ -88,7 +87,6 @@ class PublishStep00a extends BasicStep implements Step {
 		}
 
 		@Override
-		@SuppressWarnings("unused")
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			//
 			if(containsRunContextKey("STEP00.warningMessage")){
@@ -99,6 +97,4 @@ class PublishStep00a extends BasicStep implements Step {
 		}
 		
 	}
-	
-	
 }

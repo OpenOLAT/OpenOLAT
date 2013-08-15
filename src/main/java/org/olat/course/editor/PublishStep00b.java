@@ -39,7 +39,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
  * Description:<br>
- * TODO: patrickb Class Description for PublishStep00b
+ * Step which shows the confirmation with all changes informations
  * 
  * <P>
  * Initial Date:  24.01.2008 <br>
@@ -92,8 +92,7 @@ class PublishStep00b extends BasicStep implements Step {
 
 		@Override
 		protected void doDispose() {
-			// TODO Auto-generated method stub
-			
+			//nothing to do
 		}
 
 		@Override
@@ -102,16 +101,11 @@ class PublishStep00b extends BasicStep implements Step {
 		}
 
 		@Override
-		@SuppressWarnings("unused")
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			PublishProcess pp = (PublishProcess)getFromRunContext("publishProcess");
 			String confirmMsg= pp.assemblePublishConfirmation();
 			uifactory.addStaticTextElement("message", null, confirmMsg, formLayout);//null > no label
 		}
-		
 	}
-	
-	
-	
-	
+
 }

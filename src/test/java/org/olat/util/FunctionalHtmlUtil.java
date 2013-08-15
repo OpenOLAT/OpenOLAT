@@ -19,8 +19,6 @@
  */
 package org.olat.util;
 
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 
 /**
@@ -28,7 +26,6 @@ import org.olat.core.util.filter.FilterFactory;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalHtmlUtil {
-	private final static OLog log = Tracing.createLoggerFor(FunctionalHtmlUtil.class);
 	
 	/**
 	 * Strips all markup of specified string.
