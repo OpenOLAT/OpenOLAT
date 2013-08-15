@@ -115,7 +115,7 @@
 	
 /** ----------------- SUB NAVIGATION (TREE) ----------------- **/
 
-/* note:  the markup will be the one from OLATpro, has to be merged yet */
+/* regular case */
 div.b_tree {
 	position: relative;
 	font-size: 100%;
@@ -136,11 +136,6 @@ div.b_tree {
 			line-height:1.7em;
 			
 			// a tree element with icon
-			// reset icon width in case no icons are shown
-			@if $tree_show_icons == false { 
-				$treeicon_width_px : 0; 
-				a.b_tree_icon { background-image: none !important; }				
-			}
 			// standard icon rule
 			a.b_tree_icon {
 				padding-left: $treeicon_width_px; 
@@ -266,6 +261,23 @@ div.b_tree {
 		background-image: url($ico_plus); 
 	}
 }// end b_tree
+
+/* Special case where menu tree icons are hidden. Only apply this to trees in col1 as the other trees will still need the icons (e.g. file chooser) */
+@if $tree_show_icons == false { 
+	$treeicon_width_px : 0; 
+	#b_col1 div.b_tree ul {
+		li a.b_tree_icon { 
+			background-image: none !important; 
+		}				
+		@for $i from 0 through 11 {
+			&.b_tree_l#{$i}  a.b_tree_icon { 
+				padding-left: ($tree_padding_opener_px + $treeicon_width_px  + $tree_padding_steps_px * $i);  
+			}
+		}		
+	}
+}
+
+
 
 div.b_master_detail {
 	div.b_tree {
