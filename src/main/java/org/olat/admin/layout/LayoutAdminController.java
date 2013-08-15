@@ -157,6 +157,7 @@ public class LayoutAdminController extends FormBasicController {
 				if (name.equalsIgnoreCase("CVS")) return false;
 				else if (name.equalsIgnoreCase(".DS_Store")) return false;
 				else if (name.equalsIgnoreCase(".sass-cache")) return false;
+				else if (name.equalsIgnoreCase(".hg")) return false;
 				else return true;
 			}
 	}

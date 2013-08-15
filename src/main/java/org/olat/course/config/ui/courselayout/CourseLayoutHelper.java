@@ -62,6 +62,21 @@ public class CourseLayoutHelper {
 	public static final String LAYOUT_COURSE_SUBFOLDER = "/layout";
 	private static final String IFRAME_CSS = "/iframe.css";
 	private static final String MAIN_CSS = "/main.css";
+	
+	private static final VFSItemFilter themeNamesFilter = new VFSItemFilter() {
+		@Override
+		public boolean accept(VFSItem it) {
+			if (!(it instanceof VFSContainer)) return false;
+			// remove unwanted meta-dirs
+			else if (it.getName().equalsIgnoreCase("CVS")) return false;
+			else if (it.getName().equalsIgnoreCase(".DS_Store")) return false;
+			else if (it.getName().equalsIgnoreCase(".sass-cache")) return false;
+			else if (it.getName().equalsIgnoreCase(".hg")) return false;
+			// last check is blacklist
+			return !(layoutBlacklist.contains(it.getName()));
+		}
+	};
+
 
 	/**
 	 * Array holding the folder-names of the blacklisted course-layouts
@@ -157,26 +172,13 @@ public class CourseLayoutHelper {
 		VFSContainer cThemeCont = new LocalFolderImpl(themesFile);
 		cThemeCont = (VFSContainer) cThemeCont.resolve("/coursethemes");
 		if (cThemeCont != null) {
-			courseThemes = cThemeCont.getItems(new VFSItemFilter() {
-				@Override
-				public boolean accept(VFSItem it) {
-					if (!(it instanceof VFSContainer)) return false;
-					if (it.getName().equals("CVS") || it.getName().equals("cvs")) return false;
-					return !(layoutBlacklist.contains(it.getName()));
-				}
-			});
+			courseThemes = cThemeCont.getItems(themeNamesFilter);
 		}
 
 		// 2. now add the additional Templates from the current Theme
 		VFSContainer addThCont = CourseLayoutHelper.getOLATThemeCourseLayoutFolder();
 		if (addThCont != null) {
-			List<VFSItem> additionalThemes = addThCont.getItems(new VFSItemFilter() {
-				@Override
-				public boolean accept(VFSItem it) {
-					if (!(it instanceof VFSContainer)) return false;
-					return (!it.getName().equals("CVS") && !it.getName().equals("cvs"));
-				}
-			});
+			List<VFSItem> additionalThemes = addThCont.getItems(themeNamesFilter);
 			courseThemes.addAll(additionalThemes);
 		}
 		return courseThemes;
@@ -190,10 +192,27 @@ public class CourseLayoutHelper {
 	 * @return the courselayouts-folder or null
 	 */
 	public static VFSContainer getOLATThemeCourseLayoutFolder() {
-		String staticThemesPath = WebappHelper.getContextRoot() + "/static/themes/";
-		File tmpDir = new File(staticThemesPath);
-		VFSContainer addThCont = new LocalFolderImpl(tmpDir);
-		return (VFSContainer) addThCont.resolve("/" + Settings.getGuiThemeIdentifyer() + "/courselayouts");
+		VFSContainer courseLayoutFolder = null;
+		File themeDir = null;
+		// first attempt is to use custom theme path
+		if (Settings.getGuiCustomThemePath() != null) {
+			themeDir = new File(Settings.getGuiCustomThemePath(), Settings.getGuiThemeIdentifyer());
+			if (themeDir.exists() && themeDir.isDirectory()) {
+				VFSContainer themeContainer = new LocalFolderImpl(themeDir);
+				courseLayoutFolder = (VFSContainer) themeContainer.resolve("/courselayouts");	
+			}
+		}
+		// fallback is to use the standards themes directory in the web app
+		if (themeDir == null || !themeDir.exists() || !themeDir.isDirectory()) {
+			File themesDir = new File(WebappHelper.getContextRoot() + "/static/themes/");
+			themeDir = new File(themesDir, Settings.getGuiThemeIdentifyer());
+		}
+		// resolve now
+		if (themeDir != null && themeDir.exists() && themeDir.isDirectory()) {
+			VFSContainer themeContainer = new LocalFolderImpl(themeDir);
+			courseLayoutFolder = (VFSContainer) themeContainer.resolve("/courselayouts");	
+		}
+		return courseLayoutFolder;
 	}
 	
 	/**
