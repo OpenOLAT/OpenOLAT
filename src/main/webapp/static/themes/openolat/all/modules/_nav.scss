@@ -185,6 +185,10 @@ div.b_tree {
 					position:absolute; top:0px; left: 1px + ($i * $tree_padding_steps_px); 
 					z-index:9; 
 				}
+				
+				.b_tree_level_open.b_tree_oc_l#{$i}, .b_tree_level_close.b_tree_oc_l#{$i} {
+					z-index: 10;
+				}
 			}
 
 			@for $i from 0 through 11 {
