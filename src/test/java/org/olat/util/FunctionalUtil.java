@@ -307,11 +307,8 @@ public class FunctionalUtil {
 	 */
 	public void loadPage(Selenium browser, String page){
 		/* create url */
-		StringBuffer urlBuffer = new StringBuffer();
-		
-		urlBuffer.append(deploymentUrl)
-		.append('/')
-		.append(page);
+		StringBuilder urlBuffer = new StringBuilder();
+		urlBuffer.append(deploymentUrl).append('/').append(page);
 		
 		String url = urlBuffer.toString();
 		
@@ -879,12 +876,11 @@ public class FunctionalUtil {
 	 */
 	public boolean login(Selenium browser, String username, String password, boolean closeDialogs){
 		loadPage(browser, getLoginPage());
+		waitForPageToLoadElement(browser, "xpath=//button[@id='o_fiooolat_login_button']");
 		
 		/* fill in login form */
 		browser.type("id=o_fiooolat_login_name", username);
 		browser.type("id=o_fiooolat_login_pass", password);
-		
-		waitForPageToLoadElement(browser, "xpath=//button[@id='o_fiooolat_login_button']");
 	    browser.click("xpath=//button[@id='o_fiooolat_login_button']");
 	    waitForPageToLoad(browser, DEFAULT_WAIT_LIMIT);
 	    
