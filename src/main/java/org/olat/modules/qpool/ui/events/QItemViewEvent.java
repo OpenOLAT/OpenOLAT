@@ -55,6 +55,9 @@ public class QItemViewEvent extends Event {
 	
 	public List<QuestionItemView> getItemList() {
 		if(itemList == null) {
+			if(item == null) {
+				return Collections.emptyList();
+			}
 			return Collections.singletonList(item);
 		}
 		return itemList;

@@ -72,6 +72,10 @@ public class ItemListController extends AbstractItemListController {
 	
 	@Override
 	protected void doSelect(UserRequest ureq, ItemRow row) {
-		fireEvent(ureq, new QItemViewEvent("select-item", row));
+		if(row == null) {
+			showWarning("error.select.one");
+		} else {
+			fireEvent(ureq, new QItemViewEvent("select-item", row));
+		}
 	}
 }
