@@ -31,8 +31,19 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.core.UriBuilder;
+import javax.xml.ws.BindingProvider;
 
 import org.apache.axis2.AxisFault;
+import org.apache.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndType;
+import org.apache.openmeetings.axis.services.RoomService;
+import org.apache.openmeetings.axis.services.RoomServicePortType;
+import org.apache.openmeetings.axis.services.UserService;
+import org.apache.openmeetings.axis.services.UserServicePortType;
+import org.apache.openmeetings.axis.services.xsd.RoomReturn;
+import org.apache.openmeetings.axis.services.xsd.RoomUser;
+import org.apache.openmeetings.persistence.beans.basic.xsd.Sessiondata;
+import org.apache.openmeetings.persistence.beans.flvrecord.xsd.FlvRecording;
+import org.apache.openmeetings.persistence.beans.room.xsd.Room;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -55,42 +66,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserDataDeletable;
-import org.openmeetings.app.persistence.beans.flvrecord.xsd.FlvRecording;
-import org.openmeetings.app.persistence.beans.rooms.xsd.Rooms;
-import org.openmeetings.axis.services.AddRoomWithModerationAndRecordingFlags;
-import org.openmeetings.axis.services.AddRoomWithModerationAndRecordingFlagsResponse;
-import org.openmeetings.axis.services.CloseRoom;
-import org.openmeetings.axis.services.CloseRoomResponse;
-import org.openmeetings.axis.services.DeleteFlvRecording;
-import org.openmeetings.axis.services.DeleteFlvRecordingResponse;
-import org.openmeetings.axis.services.DeleteRoom;
-import org.openmeetings.axis.services.DeleteRoomResponse;
-import org.openmeetings.axis.services.GetFlvRecordingByRoomId;
-import org.openmeetings.axis.services.GetFlvRecordingByRoomIdResponse;
-import org.openmeetings.axis.services.GetRoomById;
-import org.openmeetings.axis.services.GetRoomByIdResponse;
-import org.openmeetings.axis.services.GetRoomWithClientObjectsById;
-import org.openmeetings.axis.services.GetRoomWithClientObjectsByIdResponse;
-import org.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndType;
-import org.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndTypeResponse;
-import org.openmeetings.axis.services.GetSession;
-import org.openmeetings.axis.services.GetSessionResponse;
-import org.openmeetings.axis.services.KickUser;
-import org.openmeetings.axis.services.KickUserByPublicSID;
-import org.openmeetings.axis.services.KickUserByPublicSIDResponse;
-import org.openmeetings.axis.services.KickUserResponse;
-import org.openmeetings.axis.services.LoginUser;
-import org.openmeetings.axis.services.LoginUserResponse;
-import org.openmeetings.axis.services.SetUserObjectAndGenerateRoomHashByURL;
-import org.openmeetings.axis.services.SetUserObjectAndGenerateRoomHashByURLAndRecFlag;
-import org.openmeetings.axis.services.SetUserObjectAndGenerateRoomHashByURLAndRecFlagResponse;
-import org.openmeetings.axis.services.SetUserObjectAndGenerateRoomHashByURLResponse;
-import org.openmeetings.axis.services.UpdateRoomWithModeration;
-import org.openmeetings.axis.services.UpdateRoomWithModerationResponse;
-import org.openmeetings.axis.services.xsd.RoomReturn;
-import org.openmeetings.axis.services.xsd.RoomUser;
-import org.openmeetings.stubs.RoomServiceStub;
-import org.openmeetings.stubs.UserServiceStub;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -137,7 +112,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	public List<OpenMeetingsRoom> getOpenOLATRooms() {
 		try {
 			String adminSID = adminLogin();
-			RoomServiceStub roomWs = getRoomWebService();
+			RoomServicePortType roomWs = getRoomWebService();
 
 			GetRoomsWithCurrentUsersByListAndType getRooms = new GetRoomsWithCurrentUsersByListAndType();
 			getRooms.setAsc(true);
@@ -150,13 +125,12 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			Map<Long,RoomReturnInfo> realRooms = new HashMap<Long,RoomReturnInfo>();
 			
 			//get rooms on openmeetings
-			GetRoomsWithCurrentUsersByListAndTypeResponse getRoomsResponse = roomWs.getRoomsWithCurrentUsersByListAndType(getRooms);
-			RoomReturn[] roomsRet = getRoomsResponse.get_return();
+			List<RoomReturn> roomsRet = roomWs.getRoomsWithCurrentUsersByListAndType(adminSID, 0, 2000, "name", true, getOpenOLATExternalType());
 			if(roomsRet != null) {
 				for(RoomReturn roomRet:roomsRet) {
 					RoomReturnInfo info = new RoomReturnInfo();
 					info.setName(roomRet.getName());
-					info.setRoomId(roomRet.getRoom_id());
+					info.setRoomId(roomRet.getRoomId());
 					int numOfUsers = 0;
 					if(roomRet.getRoomUser() != null) {
 						for(RoomUser user:roomRet.getRoomUser()) {
@@ -166,7 +140,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 						}
 					}
 					info.setNumOfUsers(numOfUsers);
-					realRooms.put(new Long(roomRet.getRoom_id()), info);
+					realRooms.put(new Long(roomRet.getRoomId()), info);
 				}
 			}
 
@@ -244,25 +218,21 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	public String setUserToRoom(Identity identity, long roomId, boolean moderator)
 	throws OpenMeetingsException {
 		try {
-			UserServiceStub userWs = getUserWebService();
-			String adminSessionId = adminLogin();
+			UserServicePortType userWs = getUserWebService();
+			String sid = adminLogin();
 
-			SetUserObjectAndGenerateRoomHashByURLAndRecFlag userObj = new SetUserObjectAndGenerateRoomHashByURLAndRecFlag();
-			userObj.setBecomeModeratorAsInt(moderator ? 1 : 0);
-			userObj.setEmail(identity.getUser().getProperty(UserConstants.EMAIL, null));
-			userObj.setExternalUserId(getOpenOLATUserExternalId(identity));
-			userObj.setExternalUserType(getOpenOLATExternalType());
-			userObj.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
-			userObj.setLastname(identity.getUser().getProperty(UserConstants.LASTNAME, null));
-			userObj.setProfilePictureUrl(getPortraitURL(identity));
-			userObj.setRoom_id(roomId);
-			userObj.setShowAudioVideoTestAsInt(0);
-			userObj.setSID(adminSessionId);
-			userObj.setUsername(identity.getName());
-			userObj.setAllowRecording(1);
+			int becomeModeratorAsInt = (moderator ? 1 : 0);
+			String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
+			String externalUserId = getOpenOLATUserExternalId(identity);
+			String externalUserType = getOpenOLATExternalType();
+			String firstname = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
+			String lastname = identity.getUser().getProperty(UserConstants.LASTNAME, null);
+			String profilePictureUrl = getPortraitURL(identity);
+			String username = identity.getName();
 			
-			SetUserObjectAndGenerateRoomHashByURLAndRecFlagResponse response = userWs.setUserObjectAndGenerateRoomHashByURLAndRecFlag(userObj);
-			String hashedUrl = response.get_return();
+			String hashedUrl = userWs.setUserObjectAndGenerateRoomHashByURLAndRecFlag(sid,
+	        username, firstname, lastname, profilePictureUrl, email, externalUserId, externalUserType,
+	        roomId, becomeModeratorAsInt, 0, 1);
 			if(hashedUrl.startsWith("-") && hashedUrl.length() < 5) {
 				throw new OpenMeetingsException(parseErrorCode(hashedUrl));
 			}
@@ -308,28 +278,19 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	@Override
-	public String setGuestUserToRoom(String firstName, String lastName, long roomId)
+	public String setGuestUserToRoom(String firstname, String lastname, long roomId)
 	throws OpenMeetingsException {
 		try {
-			UserServiceStub userWs = getUserWebService();
 			String adminSessionId = adminLogin();
-			
 			String username = UUID.randomUUID().toString().replace("-", "");
-			SetUserObjectAndGenerateRoomHashByURL userObj = new SetUserObjectAndGenerateRoomHashByURL();
-			userObj.setBecomeModeratorAsInt(0);
-			userObj.setEmail("");
-			userObj.setExternalUserId(getOpenOLATUserExternalId(username));
-			userObj.setExternalUserType(getOpenOLATExternalType());
-			userObj.setFirstname(firstName);
-			userObj.setLastname(lastName);
-			userObj.setProfilePictureUrl("");
-			userObj.setRoom_id(roomId);
-			userObj.setShowAudioVideoTestAsInt(0);
-			userObj.setSID(adminSessionId);
-			userObj.setUsername(username);
+			String email = "";
+			String externalUserId = getOpenOLATUserExternalId(username);
+			String externalUserType = getOpenOLATExternalType();
+			String profilePictureUrl = "";
 			
-			SetUserObjectAndGenerateRoomHashByURLResponse response = userWs.setUserObjectAndGenerateRoomHashByURL(userObj);
-			String hashedUrl = response.get_return();
+			String hashedUrl = getUserWebService()
+					.setUserObjectAndGenerateRoomHashByURL(adminSessionId, username, firstname, lastname,
+							profilePictureUrl, email, externalUserId, externalUserType, roomId, 0, 0);
 			if(hashedUrl.startsWith("-") && hashedUrl.length() < 5) {
 				throw new OpenMeetingsException(parseErrorCode(hashedUrl));
 			}
@@ -382,20 +343,16 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	private OpenMeetingsRoom getRoomById(String sid, OpenMeetingsRoom room, long roomId)
 	throws OpenMeetingsException {
 		try {
-			RoomServiceStub roomWs = getRoomWebService();
-			GetRoomById getRoomById = new GetRoomById();
-			getRoomById.setSID(sid);
-			getRoomById.setRooms_id(roomId);
-			GetRoomByIdResponse getRoomResponse = roomWs.getRoomById(getRoomById);
-			Rooms omRoom = getRoomResponse.get_return();
+			RoomServicePortType roomWs = getRoomWebService();
+			Room omRoom = roomWs.getRoomById(sid, roomId);
 			if(omRoom != null) {
 				room.setComment(omRoom.getComment());
-				room.setModerated(omRoom.getIsModeratedRoom());
+				room.setModerated(omRoom.isIsModeratedRoom());
 				room.setName(omRoom.getName());
-				room.setRoomId(omRoom.getRooms_id());
+				room.setRoomId(omRoom.getRoomsId());
 				room.setSize(omRoom.getNumberOfPartizipants());
-				room.setType(omRoom.getRoomtype().getRoomtypes_id());
-				room.setClosed(omRoom.getIsClosed());
+				room.setType(omRoom.getRoomtype().getRoomtypesId());
+				room.setClosed(omRoom.isIsClosed());
 				return room;
 			} else {
 				return null;
@@ -440,16 +397,10 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		try {
 			String adminSID = adminLogin();
 
-			RoomServiceStub roomWs = getRoomWebService();
-			CloseRoom closeRoom = new CloseRoom();
-			closeRoom.setRoom_id(room.getRoomId());
-			closeRoom.setSID(adminSID);
-			closeRoom.setStatus(status);
+			RoomServicePortType roomWs = getRoomWebService();
 			//OpenMeetings doc: false = close, true = open
 			log.audit("Room state changed (true = close, false = open): " + status);
-			
-			CloseRoomResponse closeResponse = roomWs.closeRoom(closeRoom);
-			responseCode = closeResponse.get_return();
+			responseCode = roomWs.closeRoom(adminSID, room.getRoomId(), status);
 			if(responseCode < 0) {
 				throw new OpenMeetingsException(responseCode);
 			}
@@ -469,20 +420,15 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 
 		try {
 			String adminSID = adminLogin();
-			
-			RoomServiceStub roomWs = getRoomWebService();
-			GetFlvRecordingByRoomId recordingByRoom = new GetFlvRecordingByRoomId();
-			recordingByRoom.setRoomId(roomId);
-			recordingByRoom.setSID(adminSID);
-			GetFlvRecordingByRoomIdResponse recordingResponse = roomWs.getFlvRecordingByRoomId(recordingByRoom);
-			FlvRecording[] recordings = recordingResponse.get_return();
+			RoomServicePortType roomWs = getRoomWebService();
+			List<FlvRecording> recordings = roomWs.getFlvRecordingByRoomId(adminSID, roomId);
 
 			List<OpenMeetingsRecording> recList = new ArrayList<OpenMeetingsRecording>();
 			if(recordings != null) {
 				for(FlvRecording recording:recordings) {
 					if(recording != null) {
 						OpenMeetingsRecording rec = new OpenMeetingsRecording();
-						rec.setRoomId(recording.getRoom_id());
+						rec.setRoomId(recording.getRoomId());
 						rec.setRecordingId(recording.getFlvRecordingId());
 						rec.setFilename(recording.getFileName());
 						rec.setDownloadName(recording.getFileHash());
@@ -528,27 +474,12 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		}
 		
 		try {
-			String sessionId = adminLogin();
-
-			RoomServiceStub roomWs = getRoomWebService();
-			AddRoomWithModerationAndRecordingFlags omRoom = new AddRoomWithModerationAndRecordingFlags();
-			omRoom.setAppointment(false);
-			omRoom.setAllowRecording(room.isRecordingAllowed());
-			omRoom.setAllowUserQuestions(true);
-			omRoom.setComment(room.getComment());
-			omRoom.setDemoTime(0);
-			omRoom.setExternalRoomType(getOpenOLATExternalType());
-			omRoom.setIsDemoRoom(false);
-			omRoom.setIsModeratedRoom(room.isModerated());
-			omRoom.setIspublic(false);
-			omRoom.setName(room.getName());
-			omRoom.setNumberOfPartizipants(room.getSize());
-			omRoom.setRoomtypes_id(room.getType());
-			omRoom.setSID(sessionId);
-			omRoom.setWaitForRecording(false);
-
-			AddRoomWithModerationAndRecordingFlagsResponse addRoomResponse = roomWs.addRoomWithModerationAndRecordingFlags(omRoom);
-			long returned = addRoomResponse.get_return();
+			String sid = adminLogin();
+			RoomServicePortType roomWs = getRoomWebService();
+			long returned = roomWs.addRoomWithModerationAndRecordingFlags(sid,
+					room.getName(), room.getType(), room.getComment(), room.getSize(), false, false,
+					false, 0, room.isModerated(), getOpenOLATExternalType(), true,
+					false, false, room.isRecordingAllowed());
 			if(returned >= 0) {
 				room.setRoomId(returned);
 				log.audit("Room created");
@@ -579,24 +510,10 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Override
 	public OpenMeetingsRoom updateRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier, OpenMeetingsRoom room) {
 		try {
-			String sessionId = adminLogin();
-
-			RoomServiceStub roomWs = getRoomWebService();
-			UpdateRoomWithModeration omRoom = new UpdateRoomWithModeration();
-			omRoom.setAppointment(false);
-			omRoom.setComment(room.getComment());
-			omRoom.setDemoTime(0);
-			omRoom.setIsDemoRoom(false);
-			omRoom.setIsModeratedRoom(room.isModerated());
-			omRoom.setIspublic(false);
-			omRoom.setName(room.getName());
-			omRoom.setNumberOfPartizipants(room.getSize());
-			omRoom.setRoom_id(room.getRoomId());
-			omRoom.setRoomtypes_id(room.getType());
-			omRoom.setSID(sessionId);
-
-			UpdateRoomWithModerationResponse updateRoomResponse = roomWs.updateRoomWithModeration(omRoom);
-			long returned = updateRoomResponse.get_return();
+			String sid = adminLogin();
+			RoomServicePortType roomWs = getRoomWebService();
+			long returned = roomWs.updateRoomWithModeration(sid, room.getRoomId(),
+					room.getName(), room.getType(), room.getComment(), room.getSize(), false, false, false, 0, room.isModerated());
 			if(returned >= 0) {
 				log.audit("Room updated");
 				openMeetingsDao.updateReference(group, ores, subIdentifier, room);
@@ -613,13 +530,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	public boolean deleteRoom(OpenMeetingsRoom room) {
 		try {
 			String adminSID = adminLogin();
-			RoomServiceStub roomWs = getRoomWebService();
-			DeleteRoom getRoomCl = new DeleteRoom();
-			getRoomCl.setRooms_id(room.getRoomId());
-			getRoomCl.setSID(adminSID);
-			DeleteRoomResponse deleteRoomResponse = roomWs.deleteRoom(getRoomCl);
-
-			long ret = deleteRoomResponse.get_return();
+			RoomServicePortType roomWs = getRoomWebService();
+			long ret = roomWs.deleteRoom(adminSID, room.getRoomId());
 			boolean ok = ret > 0;
 			if(ok && room.getReference() != null) {
 				openMeetingsDao.delete(room.getReference());
@@ -635,12 +547,9 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	public boolean deleteRecording (OpenMeetingsRecording recording) {
 		try {
 			String adminSID = adminLogin();
-			RoomServiceStub roomWs = getRoomWebService();
-			DeleteFlvRecording deleteRecordingCl = new DeleteFlvRecording();
-			deleteRecordingCl.setFlvRecordingId(recording.getRecordingId());
-			deleteRecordingCl.setSID(adminSID);
-			DeleteFlvRecordingResponse resp = roomWs.deleteFlvRecording(deleteRecordingCl);
-			return resp.get_return();
+			RoomServicePortType roomWs = getRoomWebService();
+			boolean resp = roomWs.deleteFlvRecording(adminSID, recording.getRecordingId());
+			return resp;
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
@@ -652,15 +561,10 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	throws OpenMeetingsException {
 		try {
 			String adminSID = adminLogin();
-			RoomServiceStub roomWs = getRoomWebService();
-			GetRoomWithClientObjectsById getRoomCl = new GetRoomWithClientObjectsById();
-			getRoomCl.setRooms_id(room.getRoomId());
-			getRoomCl.setSID(adminSID);
-			GetRoomWithClientObjectsByIdResponse getRoomClResponse = roomWs.getRoomWithClientObjectsById(getRoomCl);
-
-			RoomReturn roomClRet = getRoomClResponse.get_return();
+			RoomServicePortType roomWs = getRoomWebService();
+			RoomReturn roomClRet = roomWs.getRoomWithClientObjectsById(adminSID, room.getRoomId());
 			if(roomClRet != null) {
-				RoomUser[] userArr = roomClRet.getRoomUser();
+				List<RoomUser> userArr = roomClRet.getRoomUser();
 				return convert(userArr);
 			}
 			return Collections.emptyList();
@@ -670,7 +574,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		}
 	}
 	
-	private List<OpenMeetingsUser> convert(RoomUser[] clients) {
+	private List<OpenMeetingsUser> convert(List<RoomUser> clients) {
 		List<OpenMeetingsUser> users = new ArrayList<OpenMeetingsUser>();
 		if(clients != null) {
 			for(RoomUser client:clients) {
@@ -698,12 +602,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	public boolean removeUser(String publicSID) {
 		try {
 			String adminSID = adminLogin();
-			UserServiceStub userWs = getUserWebService();
-			KickUserByPublicSID kickUser = new KickUserByPublicSID();
-			kickUser.setSID(adminSID);
-			kickUser.setPublicSID(publicSID);
-			KickUserByPublicSIDResponse kickResponse = userWs.kickUserByPublicSID(kickUser);
-			return kickResponse.get_return();
+			boolean kickResponse = getUserWebService().kickUserByPublicSID(adminSID, publicSID);
+			return kickResponse;
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
@@ -714,12 +614,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	public boolean removeUsersFromRoom(OpenMeetingsRoom room) {	
 		try {
 			String adminSID = adminLogin();
-			RoomServiceStub roomWs = getRoomWebService();
-			KickUser kickUser = new KickUser();
-			kickUser.setRoom_id(room.getRoomId());
-			kickUser.setSID_Admin(adminSID);
-			KickUserResponse kickResponse = roomWs.kickUser(kickUser);
-			return kickResponse.get_return();
+			boolean kickResponse = getRoomWebService().kickUser(adminSID, room.getRoomId());
+			return kickResponse;
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
@@ -728,9 +624,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 
 	private String getSessionID() {
 		try {
-			GetSession  getSession = new GetSession();
-			GetSessionResponse getSessionResponse = getUserWebService().getSession(getSession);
-			String sessionId = getSessionResponse.get_return().getSession_id();
+			Sessiondata getSessionResponse = getUserWebService().getSession();
+			String sessionId = getSessionResponse.getSessionId();
 			return sessionId;
 		} catch (Exception e) {
 			log.error("", e);
@@ -743,12 +638,9 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		long returnCode = 0;
 		try {
 			String sid = getSessionID();
-			LoginUser adminUser = new LoginUser();
-			adminUser.setSID(sid);
-			adminUser.setUsername(openMeetingsModule.getAdminLogin());
-			adminUser.setUserpass(openMeetingsModule.getAdminPassword());
-			LoginUserResponse loginResponse = getUserWebService().loginUser(adminUser);
-			returnCode = loginResponse.get_return();
+			String username = openMeetingsModule.getAdminLogin();
+			String userpass = openMeetingsModule.getAdminPassword();
+			returnCode = getUserWebService().loginUser(sid, username, userpass);
 			if(returnCode > 0) {
 				return sid;
 			}
@@ -783,20 +675,15 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	throws OpenMeetingsException {
 		long returnCode;
 		try {
+			UserService ss = new UserService();
+			UserServicePortType port = ss.getUserServiceHttpSoap11Endpoint();
 			String endPoint = cleanUrl(url) + "/services/UserService?wsdl";
-			UserServiceStub userWs = new UserServiceStub(endPoint);
+	    ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
 			
-			GetSession  getSession = new GetSession();
-			GetSessionResponse getSessionResponse = userWs.getSession(getSession);
-			String sid = getSessionResponse.get_return().getSession_id();
-			
-			LoginUser adminUser = new LoginUser();
-			adminUser.setSID(sid);
-			adminUser.setUsername(login);
-			adminUser.setUserpass(password);
-			LoginUserResponse loginResponse = getUserWebService().loginUser(adminUser);
-			
-			returnCode = loginResponse.get_return();
+			Sessiondata sessiondata = port.getSession();
+			String sid = sessiondata.getSessionId();
+
+			returnCode = getUserWebService().loginUser(sid, login, password);
 			if(returnCode > 0) {
 				return StringHelper.containsNonWhitespace(sid);
 			}
@@ -825,18 +712,22 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		return allOk;
 	}
 
-	private final RoomServiceStub getRoomWebService()
+	private final RoomServicePortType getRoomWebService()
 	throws AxisFault {
+		RoomService ss = new RoomService();
+		RoomServicePortType port = ss.getRoomServiceHttpSoap11Endpoint();
 		String endPoint = getOpenMeetingsEndPoint() + "RoomService?wsdl";
-		RoomServiceStub roomWs = new RoomServiceStub(endPoint);
-		return roomWs;
+    ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+		return port;
 	}
 	
-	private final UserServiceStub getUserWebService()
+	private final UserServicePortType getUserWebService()
 	throws AxisFault {
+		UserService ss = new UserService();
+		UserServicePortType port = ss.getUserServiceHttpSoap11Endpoint();
 		String endPoint = getOpenMeetingsEndPoint() + "UserService?wsdl";
-		UserServiceStub roomWs = new UserServiceStub(endPoint);
-		return roomWs;
+    ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+		return port;
 	}
 	
 	private String getOpenMeetingsEndPoint() {
