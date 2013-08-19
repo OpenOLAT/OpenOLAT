@@ -39,6 +39,7 @@ import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
@@ -95,7 +96,7 @@ public class BookmarksController extends BasicController {
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.bm.title", 0, "choose", getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.bm.resource", 1, null, getLocale()));
 		DefaultColumnDescriptor descCol = new DefaultColumnDescriptor("table.bm.description", 2, null, getLocale());
-		descCol.setEscapeHtml(false);
+		descCol.setEscapeHtml(EscapeMode.antisamy);
 		tableCtr.addColumnDescriptor(descCol);
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "table.header.delete", translate("action.delete")));
 		listenTo(tableCtr);

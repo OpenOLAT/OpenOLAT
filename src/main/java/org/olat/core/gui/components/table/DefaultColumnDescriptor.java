@@ -31,10 +31,12 @@ import java.text.Collator;
 import java.util.Date;
 import java.util.Locale;
 
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
 
 /**
@@ -57,7 +59,7 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	protected Collator collator; 
 	protected Table table; 
 	protected int dataColumn;
-	private boolean escapeHtml = true;
+	private EscapeMode escapeHtml = EscapeMode.html;
 	private boolean translateHeaderKey = true; 
 
 	/**
@@ -106,7 +108,7 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 		this.translateHeaderKey = translateHeaderKey;
 	}
 	
-	public void setEscapeHtml(boolean escape) {
+	public void setEscapeHtml(EscapeMode escape) {
 		this.escapeHtml = escape;
 	}
 
@@ -131,14 +133,25 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 			String res =  formatter.formatDateAndTime((Date)val);
 			sb.append(res);
 		} else if(val instanceof String) {
-			if(escapeHtml) {
-				StringHelper.escapeHtml(sb, (String)val);
-			} else {
-				sb.append((String)val);
-			}
+			renderString(sb, (String)val);
 		} else {
-			String res = val.toString();
-			sb.append(res);
+			renderString(sb, val.toString());
+		}
+	}
+	
+	private void renderString(StringOutput sb, String val) {
+		switch(escapeHtml) {
+			case none:
+				sb.append((String)val);
+				break;
+			case html:
+				StringHelper.escapeHtml(sb, (String)val);
+				break;
+			case antisamy:
+				System.out.println(val);
+				sb.append(new OWASPAntiSamyXSSFilter().filter(val));
+				break;
+			default : StringHelper.escapeHtml(sb, (String)val);
 		}
 	}
 
