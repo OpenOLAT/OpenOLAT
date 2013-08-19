@@ -291,11 +291,13 @@ public class ListRenderer {
 		//file metadata as tooltip
 		if (metaInfo != null) {
 			sb.append("<div id='o_sel_doc_tooltip_").append(pos).append("' class='b_ext_tooltip_wrapper b_briefcase_meta' style='display:none;'>");
-			if (StringHelper.containsNonWhitespace(metaInfo.getTitle())) {				
-				sb.append("<h5>").append(Formatter.escapeDoubleQuotes(metaInfo.getTitle())).append("</h5>");		
+			if (StringHelper.containsNonWhitespace(metaInfo.getTitle())) {	
+				String title = StringHelper.escapeHtml(metaInfo.getTitle());
+				sb.append("<h5>").append(Formatter.escapeDoubleQuotes(title)).append("</h5>");		
 			}
 			if (StringHelper.containsNonWhitespace(metaInfo.getComment())) {
-				sb.append(Formatter.escapeDoubleQuotes(metaInfo.getComment()));			
+				String comment = StringHelper.escapeHtml(metaInfo.getComment());
+				sb.append(Formatter.escapeDoubleQuotes(comment));			
 			}
 			if(metaInfo.isThumbnailAvailable()) {
 				sb.append("<div class='b_briefcase_preview' style='width:200px; height:200px; background-image:url("); 

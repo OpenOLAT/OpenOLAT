@@ -37,6 +37,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
 /**
  * Description:<br>
@@ -137,6 +138,8 @@ public class TextBoxListRenderer implements ComponentRenderer {
 		output.append("      minLength: 2\n")
 		      .append("    },\n")
 		      .append("    availableTags:[");
+
+		OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
 		Map<String, String> initItems = tblComponent.getCurrentItems();
 		if (initItems != null) {
 			boolean sep = true;
@@ -150,6 +153,8 @@ public class TextBoxListRenderer implements ComponentRenderer {
 				} else {
 					value = item.getKey();
 				}
+				value = filter.filter(value);
+				value = StringHelper.escapeHtml(value);
 				output.append("'").append(value).append("'");
 			}
 		}

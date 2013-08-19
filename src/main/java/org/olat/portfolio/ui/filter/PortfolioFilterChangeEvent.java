@@ -37,6 +37,7 @@ import org.olat.portfolio.model.EPFilterSettings;
  */
 public class PortfolioFilterChangeEvent extends Event {
 
+	private static final long serialVersionUID = -178470589077990526L;
 	private EPFilterSettings filterSettings;
 	
 	public PortfolioFilterChangeEvent(EPFilterSettings filterList) {

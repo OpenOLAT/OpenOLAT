@@ -44,6 +44,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
 /**
  * Description:<br>
@@ -433,12 +434,19 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	/**
 	 * returns a the initialItems as comma-separated list.<br />
 	 * 
-	 * @return
+	 * @return An HTML escaped list of item
 	 */
-	public String getInitialItemsAsString() {
+	protected String getInitialItemsAsString() {
 		Map<String, String> content = getInitialItems();
 		if (content != null && content.size() != 0) {
-			return StringUtils.join(content.keySet(), ", ");
+			//antisamy + escaping to prevent issue with the javascript code
+			OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
+			List<String> filtered = new ArrayList<String>();
+			for(String item:content.keySet()) {
+				String antiItem = filter.filter(item);
+				filtered.add(StringHelper.escapeHtml(antiItem));
+			}
+			return StringUtils.join(filtered, ", ");
 		} else
 			return "";
 	}

@@ -32,6 +32,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ui.MailDataModel.ContextPair;
 
 /**
@@ -60,10 +61,11 @@ public class MailContextCellRenderer implements CustomCellRenderer {
 		if(val instanceof ContextPair) {
 			ContextPair context = (ContextPair)val;
 			if(renderer == null) {
-				sb.append(context.getName());
+				StringHelper.escapeHtml(sb, context.getName());
 			} else {
+				String contextName = StringHelper.escapeHtml(context.getName());
 				Link link = LinkFactory.createLink("bp_" + UUID.randomUUID().toString(), container, listeningController);
-				link.setCustomDisplayText(context.getName());
+				link.setCustomDisplayText(contextName);
 				link.setUserObject(context.getBusinessPath());
 					
 				URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);

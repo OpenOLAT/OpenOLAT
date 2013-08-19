@@ -26,6 +26,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.notifications.SubscriptionInfo;
 
 /**
@@ -137,7 +138,7 @@ public class SubscriptionListItem {
 			sb.append("\">");
 		}
 		if (StringHelper.containsNonWhitespace(description)) {
-			sb.append(description.trim());
+			sb.append(new OWASPAntiSamyXSSFilter().filter(description.trim()));
 		}
 		if (StringHelper.containsNonWhitespace(link)) sb.append("</a>");
 		sb.append(" ").append(datePart.trim());

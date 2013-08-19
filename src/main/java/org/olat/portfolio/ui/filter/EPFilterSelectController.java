@@ -66,7 +66,6 @@ public class EPFilterSelectController extends FormBasicController {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {		
 		List<EPFilterSettings> existingFilters = ePFMgr.getSavedFilterSettings(getIdentity());
@@ -112,7 +111,6 @@ public class EPFilterSelectController extends FormBasicController {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == filterSel){
@@ -138,7 +136,6 @@ public class EPFilterSelectController extends FormBasicController {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// nothing to persist

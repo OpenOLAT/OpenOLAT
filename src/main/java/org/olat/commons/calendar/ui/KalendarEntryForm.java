@@ -297,7 +297,7 @@ public class KalendarEntryForm extends FormBasicController {
 		}
 		chooseCalendar.setVisible(isNew);
 		
-		String calName = choosenWrapper == null ? "" : choosenWrapper.getKalendarConfig().getDisplayName();
+		String calName = choosenWrapper == null ? "" : StringHelper.escapeHtml(choosenWrapper.getKalendarConfig().getDisplayName());
 		calendarName = uifactory.addStaticTextElement("calendarname", "cal.form.calendarname", calName, formLayout);
 		calendarName.setVisible(!isNew);
 		

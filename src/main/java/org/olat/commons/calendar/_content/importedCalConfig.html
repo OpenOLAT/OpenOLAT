@@ -36,7 +36,7 @@
 
 
 	<div class="o_cal_config_calendar $calendarWrapper.getKalendarConfig().getCss()">
-		$calendarWrapper.getKalendarConfig().getDisplayName()
+		$r.escapeHtml($calendarWrapper.getKalendarConfig().getDisplayName())
 	</div>
 
   #if (!$insideManager)

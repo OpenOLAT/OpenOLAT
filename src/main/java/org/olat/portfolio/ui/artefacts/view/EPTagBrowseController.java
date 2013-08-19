@@ -33,6 +33,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.portfolio.manager.EPArtefactTagCloud;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -71,7 +72,7 @@ public class EPTagBrowseController extends BasicController {
 				String id = "tag_" + count++;
 				Link tagLink = LinkFactory.createLink(id, mainVc, this);
 				tagLink.setCustomEnabledLinkCSS(inactiveCSS);
-				tagLink.setCustomDisplayText(tag);
+				tagLink.setCustomDisplayText(StringHelper.escapeHtml(tag));
 				tagLink.setCustomDisabledLinkCSS(disabledCSS);
 				tagLink.setUserObject(new TagWrapper(tag));
 				tagLinks.add(tagLink);

@@ -191,8 +191,9 @@ public class EPArtefactViewController extends FormBasicController {
 			tagLM.put(tag, tag);
 		}	
 		tblE = uifactory.addTextBoxListElement("tagTextbox", null, "tag.textboxlist.hint", tagLM, formLayout, getTranslator());
-		if (viewOnlyMode || artefactInClosedMap) tblE.setEnabled(false);
-		else {
+		if (viewOnlyMode || artefactInClosedMap) {
+			tblE.setEnabled(false);
+		} else {
 			flc.contextPut("tagclass", "b_tag_list");
 			//tblE.addActionListener(this, FormEvent.ONCHANGE);
 			Map<String, String> allUsersTags = ePFMgr.getUsersMostUsedTags(getIdentity(), -1);
@@ -202,13 +203,16 @@ public class EPArtefactViewController extends FormBasicController {
 		// get maps wherein this artefact is linked and create links to them
 		List<PortfolioStructure> linkedMaps = ePFMgr.getReferencedMapsForArtefact(artefact);
 		if (linkedMaps != null && linkedMaps.size() != 0) {
-			StringBuffer buf = new StringBuffer();
+			StringBuilder buf = new StringBuilder();
 			for (Iterator<PortfolioStructure> iterator = linkedMaps.iterator(); iterator.hasNext();) {
 				PortfolioStructure ePMap = iterator.next();
 				if (viewOnlyMode || artefactChooseMode){
-					buf.append(ePMap.getTitle()).append(", ");
+					StringHelper.escapeHtml(ePMap.getTitle());
+					buf.append(", ");
 				} else {
-					buf.append("<a href=\"").append(createLinkToMap(ePMap)).append("\">").append(ePMap.getTitle()).append("</a>, ");
+					buf.append("<a href=\"").append(createLinkToMap(ePMap)).append("\">");
+					StringHelper.escapeHtml(ePMap.getTitle());
+					buf.append("</a>, ");
 				}
 			}
 			String mapLinks = buf.toString();

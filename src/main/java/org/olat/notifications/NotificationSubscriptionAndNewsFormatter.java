@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.olat.ControllerFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.notifications.Subscriber;
@@ -72,7 +73,8 @@ public class NotificationSubscriptionAndNewsFormatter {
 	}
 	
 	public String getNewsAsHTML(Subscriber sub) {
-		return getNews(sub, SubscriptionInfo.MIME_HTML);
+		String news = getNews(sub, SubscriptionInfo.MIME_HTML);
+		return news;
 	}
 
 	public String getNewsAsTxt(Subscriber sub) {
@@ -86,17 +88,20 @@ public class NotificationSubscriptionAndNewsFormatter {
 	}
 
 	public String getTitleAsHTML(Subscriber sub) {
-		return getTitle(sub, SubscriptionInfo.MIME_HTML);
+		String htmlTitle = getTitle(sub, SubscriptionInfo.MIME_HTML);
+		return new OWASPAntiSamyXSSFilter().filter(htmlTitle);
 	}
 
 	public String getTitleAsTxt(Subscriber sub) {
-		return getTitle(sub, SubscriptionInfo.MIME_PLAIN);
+		String textTitle = getTitle(sub, SubscriptionInfo.MIME_PLAIN);
+		return textTitle;
 	}
 
 	private String getTitle(Subscriber sub, String mimeType) {
 		SubscriptionInfo subsInfo = subsInfoMap.get(sub);
 		if (subsInfo == null) return "";
-		return subsInfo.getTitle(mimeType);
+		String title = subsInfo.getTitle(mimeType);
+		return title;
 	}
 	
 	public String getCustomUrl(Subscriber sub) {

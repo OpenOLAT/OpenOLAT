@@ -41,6 +41,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.manager.MailManager;
 import org.olat.core.util.mail.model.DBMail;
@@ -95,7 +96,8 @@ public class MailController extends FormBasicController {
 		formLayout.setRootForm(mainForm);
 		vcLayout.add("mainCmp", formLayout);
 		
-		uifactory.addStaticTextElement("subject", "mail.subject", mail.getSubject(), formLayout);		
+		String subject = StringHelper.escapeHtml(mail.getSubject());
+		uifactory.addStaticTextElement("subject", "mail.subject", subject, formLayout);		
 		
 		String from = getFullName(mail.getFrom());
 		uifactory.addStaticTextElement("from", "mail.from", from, formLayout);
@@ -163,7 +165,7 @@ public class MailController extends FormBasicController {
 
 		body = body.replace("\n\r", "<br />");//if windows
 		body = body.replace("\n", "<br />");
-		return body;
+		return new OWASPAntiSamyXSSFilter().filter(body);
 	}
 	
 

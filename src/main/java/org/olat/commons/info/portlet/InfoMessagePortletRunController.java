@@ -240,6 +240,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 				SubscriptionInfo info = isi.getInfo();
 				//title
 				String title = info.getTitle(SubscriptionInfo.MIME_PLAIN);
+				title = StringHelper.escapeHtml(title);
 				int key = info.hashCode();
 				StringBuilder tipSb = null;
 				boolean tooltip = StringHelper.containsNonWhitespace(item.getDescriptionTooltip());

@@ -32,7 +32,7 @@ $r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar-callist
 
 
 	<div class="o_cal_config_calendar $calendarWrapper.getKalendarConfig().getCss()">
-		$calendarWrapper.getKalendarConfig().getDisplayName()
+		$r.escapeHtml($calendarWrapper.getKalendarConfig().getDisplayName())
 	</div>
 
 	  <a id="colorchooser_$calendarWrapper.getKalendar().getCalendarID()" class="o_cal_config_chosecolor" 

@@ -64,7 +64,6 @@ public class EPArtefactTypeSelectionController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("filter.type.intro");

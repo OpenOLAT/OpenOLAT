@@ -86,11 +86,11 @@ public class FolderComponentRenderer implements ComponentRenderer {
 		} else if (renderType == 2) {
 			crumbRenderer.render(fc, target, ubu, false, iframePostEnabled);
 		} else {
-			renderList(renderer, target, fc, ubu, translator, iframePostEnabled);
+			renderList(target, fc, ubu, translator, iframePostEnabled);
 		}
 	}
 
-	private void renderList(Renderer r, StringOutput target, FolderComponent fc, URLBuilder ubu, Translator translator, boolean iframePostEnabled) {
+	private void renderList(StringOutput target, FolderComponent fc, URLBuilder ubu, Translator translator, boolean iframePostEnabled) {
 		
 		VFSContainer currentContainer = fc.getCurrentContainer();
 		boolean canWrite = currentContainer.canWrite() == VFSConstants.YES;

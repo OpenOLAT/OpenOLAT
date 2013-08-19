@@ -279,10 +279,11 @@ public class PortfolioFilterController extends FormBasicController {
 		List<String> allActiveTagToggles = new ArrayList<String>();
 		for (Entry<String, String> entry : sortEntrySet) {
 			String tag = entry.getValue();
+			String tagText = StringHelper.escapeHtml(tag);
 			String tagCmpName = TAG_CMP_IDENTIFIER + i;
 			if (tagFlc.getComponent(tagCmpName)!=null) tagFlc.remove(tagCmpName);
-			FormToggle link = uifactory.addToggleButton(tagCmpName, tag, tagFlc, null, null);
-			link.setLabel("tag.one", new String[] { tag });
+			FormToggle link = uifactory.addToggleButton(tagCmpName, tagText, tagFlc, null, null);
+			link.setLabel("tag.one", new String[] { tagText });
 			link.setUserObject(tag);
 			if (!selectedTagsList.isEmpty() && selectedTagsList.contains(tag)) {
 				link.toggleOn();
@@ -391,7 +392,7 @@ public class PortfolioFilterController extends FormBasicController {
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	protected boolean validateFormLogic(@SuppressWarnings("unused") UserRequest ureq) {
+	protected boolean validateFormLogic(UserRequest ureq) {
 		// validate date-fields for correct date and start < end date
 		dateStart.clearError();
 		dateEnd.clearError();
@@ -428,7 +429,6 @@ public class PortfolioFilterController extends FormBasicController {
 	 *      org.olat.core.gui.components.form.flexible.FormItem,
 	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof FormLink) {
