@@ -1,0 +1,8 @@
+<fieldset><legend>$r.translate("briefcase.title")</legend>
+	<p>$r.translate("thumbnails.reset.intro.1")</p>
+	#if($recalculating)
+		<div class="o_eff_statement_recalculating">$r.render("thumbnails.reset")</div>
+	#else
+		$r.render("thumbnails.reset")
+	#end
+</fieldset>

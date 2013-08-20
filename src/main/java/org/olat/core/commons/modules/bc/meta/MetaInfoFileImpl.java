@@ -125,6 +125,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	public MetaInfoFileImpl(File metaFile) { 
 		super();
 		this.metaFile = metaFile;
+		parseSAX(metaFile);
 	}
 	
 	/**
@@ -853,6 +854,13 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	
 	@Override
 	public void clearThumbnails() {
+		cannotGenerateThumbnail = false;
+		for(Thumbnail thumbnail:thumbnails) {
+			File thumbnailFile = thumbnail.getThumbnailFile();
+			if(thumbnailFile != null && thumbnailFile.exists()) {
+				thumbnailFile.delete();
+			}
+		}
 		thumbnails.clear();
 		write();
 	}
@@ -922,6 +930,9 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	private String preferedThumbnailType(String extension) {
 		if(extension.equalsIgnoreCase("png") || extension.equalsIgnoreCase("gif")) {
 			return extension;
+		}
+		if(extension.equalsIgnoreCase("pdf")) {
+			return "png";
 		}
 		return "jpg";
 	}
