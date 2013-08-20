@@ -281,8 +281,12 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		RepositoryEntryLifecycle cycle = repositoryEntry.getLifecycle();
 		if(cycle != null) {
 			Formatter format = Formatter.getInstance(getLocale());
-			main.contextPut("lfStart", format.formatDate(cycle.getValidFrom()));
-			main.contextPut("lfEnd", format.formatDate(cycle.getValidTo()));
+			if(cycle.getValidFrom() != null) {
+				main.contextPut("lfStart", format.formatDate(cycle.getValidFrom()));
+			}
+			if(cycle.getValidTo() != null) {
+				main.contextPut("lfEnd", format.formatDate(cycle.getValidTo()));
+			}
 			if(!cycle.isPrivateCycle()) {
 				String label = cycle.getLabel();
 				String softKey = cycle.getSoftKey();
