@@ -23,8 +23,11 @@ import java.util.Collections;
 import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
@@ -114,6 +117,15 @@ public class RepositoryMailing {
 		
 		if(mailing != null && !mailing.isSendEmail()) {
 			return;
+		}
+		
+		if(mailing == null) {
+			BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+			RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+			Roles ureqRoles = securityManager.getRoles(ureqIdentity);
+			if(!repositoryModule.isMandatoryEnrolmentEmail(ureqRoles)) {
+				return;
+			}
 		}
 
 		MailTemplate template = mailing == null ? null : mailing.getTemplate();

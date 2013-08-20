@@ -37,10 +37,10 @@ if (!jsMath.Typeset) {jsMath.Typeset = {}}
 jsMath.sizes = [70, 77, 85, 92, 100, 120, 144, 173, 207, 249];
 jsMath.Img.fonts = [70, 70, 85, 85, 100, 120, 144, 173, 207, 249, 298, 358, 430];
 
-jsMath.styles['.typeset .size0']['font-size'] = '70%';
-jsMath.styles['.typeset .size1']['font-size'] = '77%';
-jsMath.styles['.typeset .size2']['font-size'] = '85%';
-jsMath.styles['.typeset .size3']['font-size'] = '92%';
+jsMath.styles['.typeset .size0'] = {'font-size': '70%'};
+jsMath.styles['.typeset .size1'] = {'font-size': '77%'};
+jsMath.styles['.typeset .size2'] = {'font-size': '85%'};
+jsMath.styles['.typeset .size3'] = {'font-size': '92%'};
 
 /*
  *  Fix multiplication factors in these routines

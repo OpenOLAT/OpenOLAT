@@ -153,12 +153,9 @@ jsMath.Add(jsMath.tex2math,{
       } else {
         if (element.className == null) {element.className = ''}
         if (element.firstChild && element.className != 'math') {
-        	var off=ignore;
-        	if(element.className.match && element.tagName.match ){
-        		 off = ignore || element.className.match(/(^| )tex2math_ignore( |$)/) ||
-        		(element.tagName && element.tagName.match(/^(script|noscript|style|textarea|pre)$/i));
-        		off = off && !element.className.match(/(^| )tex2math_process( |$)/);
-        	}
+          var off = ignore || element.className.match(/(^| )tex2math_ignore( |$)/) ||
+             (element.tagName && element.tagName.match(/^(script|noscript|style|textarea|pre|code)$/i));
+          off = off && !element.className.match(/(^| )tex2math_process( |$)/);
           this.ScanElement(element.firstChild,off);
         }
       }
@@ -241,6 +238,9 @@ jsMath.Add(jsMath.tex2math,{
                               + element.nodeValue.substr(index+1);
             this.pattern.lastIndex--;
           }
+          break;
+          
+        case '\\\\':
           break;
 
         default:
@@ -404,6 +404,6 @@ jsMath.Add(jsMath.tex2math,{
 if (jsMath.Controls.cookie.tex2math == null) {jsMath.Controls.cookie.tex2math = 1}
 if (jsMath.tex2math.allowDisableTag == null) {jsMath.tex2math.allowDisableTag = 1}
 jsMath.tex2math.TestPatterns();
-jsMath.tex2math.createPattern('stdPattern',/(\\[\(\)\[\]$]|\$\$|\$|\\(begin|end)\{[^}]+\})/g);
+jsMath.tex2math.createPattern('stdPattern',/(\\[\(\)\[\]$\\]|\$\$|\$|\\(begin|end)\{[^}]+\})/g);
 
 }

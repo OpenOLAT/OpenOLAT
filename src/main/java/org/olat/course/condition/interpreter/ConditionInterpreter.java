@@ -259,6 +259,11 @@ public class ConditionInterpreter {
 			msg = apex.getWhatsWrong();
 			params = new String[] { apex.getFunctionName(), apex.getWrongArgs() };
 			solutionMsg = apex.getSolutionProposal();
+		} catch (ClassCastException ccex) {
+			// the function, units etc, are responsible to provide reasonable error
+			// messages (translation keys)
+			msg = "error.undefined.variable.at";
+			params = new String[]{};
 		} catch (Exception ex) {
 			// this must not happen!
 			throw new OLATRuntimeException(ex.getMessage(), ex);

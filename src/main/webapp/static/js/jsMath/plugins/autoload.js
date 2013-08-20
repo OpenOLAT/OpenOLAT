@@ -35,7 +35,7 @@
  *  automatically.  jsMath.Autoload.needsJsMath will be set to true or
  *  false depending on whether jsMath needed to be loaded.
  *  
- *  The value of jsMath.Autoload.element controls the element to be
+ *  The value of jsMath.Autoload.checkElement controls the element to be
  *  searched by the autoload plug-in.  If unset, the complete document will
  *  be searched.  If set to a string, the element with that name will be
  *  searched.  If set to a DOM object, that object and its children will
@@ -116,16 +116,16 @@ jsMath.Add(jsMath.Autoload,{
             //  Firefox3 has window.postMessage for inter-window communication. 
             //  It can be used to handle the new file:// security model,
             //  so set up the listener.
-            if (window.postMessage) {
+            if (window.postMessage && window.addEventListener) {
               this.mustPost = 1;
               window.addEventListener("message",jsMath.Autoload.Post.Listener,false);
             }
           }
         }
       }
-      if (!this.request && window.ActiveXObject) {
-        var xml = ["MSXML2.XMLHTTP.5.0","MSXML2.XMLHTTP.4.0","MSXML2.XMLHTTP.3.0",
-                   "MSXML2.XMLHTTP","Microsoft.XMLHTTP"];
+      if (!this.request && window.ActiveXObject && !this.mustPost) {
+        var xml = ["MSXML2.XMLHTTP.6.0","MSXML2.XMLHTTP.5.0","MSXML2.XMLHTTP.4.0",
+                   "MSXML2.XMLHTTP.3.0","MSXML2.XMLHTTP","Microsoft.XMLHTTP"];
         for (var i = 0; i < xml.length && !this.request; i++) {
           try {this.request = new ActiveXObject(xml[i])} catch (err) {}
         }
@@ -151,12 +151,12 @@ jsMath.Add(jsMath.Autoload,{
         this.request.open("GET",jsMath.Autoload.root+url,false);
         this.request.send(null);
       } catch (err) {
-        throw "autoload: can't load the file '"+url+"'\n"
-            + "Message: "+err.message;
+        throw Error("autoload: can't load the file '"+url+"'\n"
+            + "Message: "+err.message);
       }
       if (this.request.status && this.request.status >= 400) {
-        throw "autoload: can't load the file '"+url+"'\n"
-            + "Error status: "+this.request.status;
+        throw Error("autoload: can't load the file '"+url+"'\n"
+            + "Error status: "+this.request.status);
       }
       window.eval(this.request.responseText);
       this.endLoad();
@@ -247,8 +247,8 @@ jsMath.Add(jsMath.Autoload,{
       if (event.source != jsMath.Autoload.Post.window) return;
       var domain = event.origin.replace(/^file:\/\//,'');
       var ddomain = document.domain.replace(/^file:\/\//,'');
-      if (domain == null || domain == "") {domain = "localhost"}
-      if (ddomain == null || ddomain == "") {ddomain = "localhost"}
+      if (domain == null || domain == "" || domain == "null") {domain = "localhost"}
+      if (ddomain == null || ddomain == "" || ddomain == "null") {ddomain = "localhost"}
       if (domain != ddomain || event.data.substr(0,6) != "jsMAL:") return;
       var type = event.data.substr(6,3).replace(/ /g,'');
       var message = event.data.substr(10);
@@ -405,6 +405,16 @@ jsMath.Add(jsMath.Autoload,{
       if (typeof(files) != 'object') {files = [files]}
       for (var i = 0; i < files.length; i++) {jsMath.Setup.Script(files[i])}
     }
+    var macros = jsMath.Autoload.macros;
+    if (macros) {
+      for (var id in macros) {
+        if (typeof(macros[id]) == 'string') {
+          jsMath.Macro(id,macros[id]);
+        } else {
+          jsMath.Macro(id,macros[id][0],macros[id][1]);
+        }
+      }
+    }    
     jsMath.Synchronize(function () {jsMath.Autoload.Script.RunStack()});
     jsMath.Autoload.setMessage();
   },
@@ -424,6 +434,7 @@ jsMath.Add(jsMath.Autoload,{
         color:'black', fontSize:'75%', width:'auto'
       };
       for (var id in style) {this.div.style[id] = style[id]}
+      this.div.id = "jsMath_message";
       this.div.appendChild(jsMath.document.createTextNode(message));
     } else if (this.div) {
       this.div.firstChild.nodeValue = "";

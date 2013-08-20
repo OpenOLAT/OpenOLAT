@@ -22,13 +22,17 @@ package org.olat.group.manager;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.MembershipModification;
@@ -102,6 +106,15 @@ public class BusinessGroupMailing {
 		
 		if(mailing != null && !mailing.isSendEmail()) {
 			return;
+		}
+		
+		if(mailing == null) {
+			BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+			BusinessGroupModule groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
+			Roles ureqRoles = securityManager.getRoles(ureqIdentity);
+			if(!groupModule.isMandatoryEnrolmentEmail(ureqRoles)) {
+				return;
+			}
 		}
 
 		MailTemplate template = mailing == null ? null : mailing.getTemplate();
