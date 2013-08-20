@@ -270,6 +270,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 				producer.send(message);
 			//TODO jms }
 		} catch (Exception e) {
+			log.error("Cannot send JMS message", e);
 			// cluster:::: what shall we do here: the JMS bus is broken! and we thus cannot know if other nodes are alive.
 			// if we are the only node running, then we could continue.
 			// a) either throw an exception - meaning olat doesn't really run at all and produces redscreens all the time and logging in is not possible.

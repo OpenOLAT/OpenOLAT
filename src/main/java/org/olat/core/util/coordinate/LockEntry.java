@@ -25,6 +25,8 @@
 */ 
 package org.olat.core.util.coordinate;
 
+import java.io.Serializable;
+
 import org.olat.core.id.Identity;
 /**
  * Description: <br>
@@ -32,7 +34,10 @@ import org.olat.core.id.Identity;
  * 
  * @author Felix Jost
  */
-public class LockEntry {
+public class LockEntry implements Serializable {
+
+	private static final long serialVersionUID = -319510836505419325L;
+	
 	private long lockAquiredTime;
 	private Identity owner;
 	private final String key;
