@@ -85,7 +85,7 @@ jsMath.Package(jsMath.Parser,{
   macros: {
     overbrace:           ['HandleLeaders','downbrace',1],
     underbrace:          ['HandleLeaders','upbrace',1,1,-.05],
-    overrightarrow:      ['HandleLeaders','rightarrow',],
+    overrightarrow:      ['HandleLeaders','rightarrow'],
     underrightarrow:     ['HandleLeaders','rightarrow',null,1,-.2],
     overleftarrow:       ['HandleLeaders','leftarrow'],
     underleftarrow:      ['HandleLeaders','leftarrow',null,1,-.2],

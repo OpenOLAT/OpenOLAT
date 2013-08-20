@@ -57,7 +57,9 @@ function updatePreview() {
     jsMath.Process();
     
     // After the offscreen preview has been rendered, copy it onscreen
-    jsMath.Synchronize(copyPreviewToScreen);
+    setTimeout(function() {
+    	jsMath.Synchronize(copyPreviewToScreen);
+    },100);
 }
 
 
@@ -126,5 +128,5 @@ tinyMCEPopup.onInit.add(JSMathDialog.init, JSMathDialog);
 
 //Update preview on load to show the preview correctly if there's already a formula
 window.onload = function() {
-	updatePreview();
+    setTimeout(updatePreview, 1000);
 };

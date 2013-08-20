@@ -114,6 +114,21 @@ jsMath.Easy = {
   loadFonts: [],
   
   //
+  //  List of macros to define.  These are of the form
+  //      name: value
+  //  where 'value' is the replacement text for the macro \name.
+  //  The 'value' can also be [value,n] where 'value' is the replacement
+  //  text and 'n' is the number of parameters for the macro.
+  //  Note that backslashes must be doubled in the replacement string.
+  //  E.g.,
+  //      {
+  //        RR: '{\\bf R}',
+  //        bold: ['{\\bf #1}', 1]
+  //      }
+  //
+  macros: {},
+  
+  //
   //  Allow jsMath to enter global mode?
   //  (Uses frames, so may not always work with complex web sites)
   //
@@ -159,5 +174,5 @@ if (jsMath.Easy.root == "") {
 }
 jsMath.Easy.root = jsMath.Easy.root.replace(/\/$/,""); // trim trailing "/" if any
 
-document.write('<SCRIPT SRC="'+jsMath.Easy.root+'/jsMath-easy-load.js"><'+'/SCRIPT>');
+document.write('<script src="'+jsMath.Easy.root+'/jsMath-easy-load.js"><'+'/script>');
 

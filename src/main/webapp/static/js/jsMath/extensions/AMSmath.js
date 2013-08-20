@@ -125,7 +125,7 @@ jsMath.Package(jsMath.Parser,{
   },
   
   HandleOperatorName: function (name) {
-    var limits = "";
+    var limits = "\\nolimits";
     var op = this.trimSpaces(this.GetArgument(this.cmd+name)); if (this.error) return;
     if (op == "*") {
       limits = "\\limits";

@@ -154,6 +154,25 @@ jsMath.EqnNumber = {
     jsMath.Translate.ConvertMath = this.ConvertMath;
     jsMath.Translate.ProcessComplete_old = jsMath.Translate.ProcessComplete;
     jsMath.Translate.ProcessComplete = this.ProcessComplete;
+  },
+  
+  environments: {
+    'equation*': 'Star',
+    'eqnarray*': 'Star',
+    'align*':    'Star',
+    'multline*': 'Star',
+    'gather*':   'Star',
+    align:       ['StarExtension','AMSmath'],
+    multline:    ['StarExtension','AMSmath'],
+    gather:      ['StarExtension','AMSmath']
+  },
+  
+  ResetStarEnvironments: function () {
+    var Nenv = jsMath.EqnNumber.environments;
+    var Penv = jsMath.Parser.prototype.environments;
+    for (var name in Nenv) {
+      if (name.match(/\*$/)) {Penv[name] = Nenv[name]}
+    }
   }
 
 };
@@ -165,10 +184,13 @@ if (jsMath.EqnNumber_old) {
 
 jsMath.Package(jsMath.Parser,{
   macros: {
-    label:   'Label',
-    nolabel: 'NoLabel',
-    ref:     'Ref'
+    label:    'Label',
+    nolabel:  'NoLabel',
+    nonumber: 'NoLabel',
+    ref:      'Ref'
   },
+  
+  environments: jsMath.EqnNumber.environments,
   
   Label: function (name) {
     var label = this.GetArgument(this.cmd+name); if (this.error) return;
@@ -192,8 +214,21 @@ jsMath.Package(jsMath.Parser,{
   
   Ref: function (name) {
     this.Error(this.cmd+name+' must be used by itself');
-  }
+  },
   
+  Star: function (name) {
+    this.NoLabel();
+    var cmd = this.environments[name.substr(0,name.length-1)];
+    if (typeof(cmd) === 'string') {cmd = [cmd]}
+    this[cmd[0]](name,cmd.slice(1));
+  },
+  
+  StarExtension: function (name,data) {
+    try {this.Extension(name,data)} catch (e) {}
+    jsMath.Synchronize(jsMath.EqnNumber.ResetStarEnvironments);
+    throw "restart";
+  }
+
 });
 
 jsMath.EqnNumber.Init();
