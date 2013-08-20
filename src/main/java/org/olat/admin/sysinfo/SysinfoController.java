@@ -178,6 +178,7 @@ public class SysinfoController extends FormBasicController {
 			baseDirPath = baseDir.getAbsolutePath();
 		}
 		uifactory.addStaticTextElement("sysinfo.basedir", "sysinfo.basedir", baseDirPath, serverCont);
+		uifactory.addStaticTextElement("sysinfo.olatdata", "sysinfo.olatdata", WebappHelper.getUserDataRoot(), serverCont);
 	}
 	
 	private String getHeapValue() {

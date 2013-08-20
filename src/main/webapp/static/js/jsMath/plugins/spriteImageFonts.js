@@ -24,6 +24,9 @@
  */
 
 if (!window.jsMath) {window.jsMath = {}}
+
+jsMath.spriteImageFonts = {version: "1.1"};
+
 if (!jsMath.styles) {jsMath.styles = []}
 
 jsMath.styles['.typeset .img'] = {
@@ -236,12 +239,48 @@ if (!jsMath.Img) {jsMath.Img = {}}
       if (jsMath.Browser.alphaPrintBug) {jsMath.Controls.cookie.alpha = 0}
     }
     this.loaded = 1;
-    jsMath.Browser.ImgFontInit();
     jsMath.Img.root = jsMath.root + "fonts-sprite/";
+    jsMath.version += "-sp" + jsMath.spriteImageFonts.version;
   };
 
 
 if (!jsMath.Browser) {jsMath.Browser = {}}
+  /*
+   * Hook into initialization routine
+   */
+  jsMath.Browser.Init = function () {
+    jsMath.browser = 'unknown';
+    this.TestInlineBlock();
+    this.TestSpanHeight();
+    this.TestRenameOK();
+    this.TestStyleChange();
+
+    this.MSIE();
+    this.Mozilla();
+    this.Opera();
+    this.OmniWeb();
+    this.Safari();
+    this.Konqueror();
+    
+    this.ImgFontInit();
+    
+    //
+    // Change some routines depending on the browser
+    // 
+    if (this.allowAbsoluteDelim) {
+      jsMath.Box.DelimExtend = jsMath.Box.DelimExtendAbsolute;
+      jsMath.Box.Layout = jsMath.Box.LayoutAbsolute;
+    } else {
+      jsMath.Box.DelimExtend = jsMath.Box.DelimExtendRelative;
+      jsMath.Box.Layout = jsMath.Box.LayoutRelative;
+    }
+    
+    if (this.separateSkips) {
+      jsMath.HTML.Place = jsMath.HTML.PlaceSeparateSkips;
+      jsMath.Typeset.prototype.Place = jsMath.Typeset.prototype.PlaceSeparateSkips;
+    }
+  },
+
   /*
    *  These should be part of the regular browser
    *  test functions
@@ -249,10 +288,12 @@ if (!jsMath.Browser) {jsMath.Browser = {}}
   jsMath.Browser.ImgFontInit = function () {
     this.msieImgFontBBoxFix = '';
     if (jsMath.browser == 'Mozilla') {
-      jsMath.Box.IMG = jsMath.Box.IMG_mozilla;
-    } else if (jsMath.browser == 'Opera')   {
-      this.operaImageFonts = 1;
-      jsMath.Box.IMG = jsMath.Box.IMG_opera;
+      if (!jsMath.Browser.VersionAtLeast("3.0")) {jsMath.Box.IMG = jsMath.Box.IMG_mozilla}
+    } else if (jsMath.browser == 'Opera') {
+      if (!jsMath.Browser.VersionAtLeast("9.50")) {
+        this.operaImageFonts = 1;
+        jsMath.Box.IMG = jsMath.Box.IMG_opera;
+      }
     } else if (jsMath.browser == 'MSIE') {
       if (jsMath.platform == 'mac') {
         this.msieImgFontBBoxFix = '<span style="display:none">x</span>'
@@ -266,16 +307,6 @@ if (!jsMath.Browser) {jsMath.Browser = {}}
         jsMath.Box.IMG = jsMath.Box.IMG_msie;
       }
     }
-    jsMath.version += "-sp1.0";
-  };
-
-if (!jsMath.Setup) {jsMath.Setup = {}}
-  jsMath.Setup.Fonts = function () {
-    for (var i = 0; i < jsMath.TeX.fam.length; i++) {
-      var name = jsMath.TeX.fam[i];
-      if (name) {this.EncodeFont(name)}
-    }
-    jsMath.Img.Init();
   };
 
 if (!jsMath.Parser) {jsMath.Parser = {}}

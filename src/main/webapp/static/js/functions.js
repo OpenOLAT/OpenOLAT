@@ -623,6 +623,8 @@ function o_ainvoke(r) {
 			if(jQuery(document).ooLog().isDebugEnabled())
 				jQuery(document).ooLog('debug',"Stacksize after timeout: " + b_onDomReplacementFinished_callbacks.length, "functions.js");
 		}
+		// all rendering finished, adjust height on menu and content
+		OPOL.adjustHeight();
 	}
 	
 	o_info.inainvoke = false;

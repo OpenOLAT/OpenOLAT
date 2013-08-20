@@ -364,6 +364,26 @@
 		</property>
 	</bean>
 	
+	<!--  the folder menu-entry (reset thumbnails...) -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
+		<property name="order" value="7212" />
+		<property name="navigationKey" value="briefcase" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.admin.bc.BriefcaseAdminController"/>
+			</bean>
+		</property>
+		<property name="translationPackage" value="org.olat.admin" />
+		<property name="i18nActionKey" value="menu.bc"/>
+		<property name="i18nDescriptionKey" value="menu.bc.alt"/>
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
 	<!-- the REST API menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7206" />

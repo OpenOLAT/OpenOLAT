@@ -60,10 +60,18 @@ if (!jsMath.Easy.allowGlobal) {
 if (jsMath.Easy.noImageFonts) {
   jsMath.noImgFonts = 1;
   if (!jsMath.Font) {jsMath.Font = {}}
-  jsMath.Font.extra_message =
-    'Extra TeX fonts not found: <b><span id="jsMath_ExtraFonts"></span></b><br/>'
-      + 'Using unicode fonts instead.  This may be slow and might not print well.<br/>\n'
-      + 'Use the jsMath control panel to get additional information.';
+  if (!jsMath.Font.message) {
+    jsMath.Font.message =
+      '<b>No jsMath TeX fonts found</b> -- using unicode fonts instead.<br/>\n'
+        + 'This may be slow and might not print well.<br/>\n'
+        + 'Use the jsMath control panel to get additional information.';
+  }
+  if (!jsMath.Font.extra_message) {
+    jsMath.Font.extra_message =
+      'Extra TeX fonts not found: <b><span id="jsMath_ExtraFonts"></span></b><br/>'
+        + 'Using unicode fonts instead.  This may be slow and might not print well.<br/>\n'
+        + 'Use the jsMath control panel to get additional information.';
+  }
 }
 
 if (jsMath.Easy.processSingleDollars ||
@@ -93,6 +101,7 @@ if (jsMath.Easy.autoload) {
   jsMath.Autoload.findCustomSettings = jsMath.Easy.findCustomSettings;
   jsMath.Autoload.loadFiles = jsMath.Easy.loadFiles;
   jsMath.Autoload.loadFonts = jsMath.Easy.loadFonts;
+  jsMath.Autoload.macros = jsMath.Easy.macros;
   jsMath.Autoload.delayCheck = 1;
   jsMath.Easy.autoloadCheck = 1;
   document.write('<script src="'+jsMath.Autoload.root+'plugins/autoload.js"></script>');
@@ -110,12 +119,26 @@ if (jsMath.Easy.autoload) {
   if (!jsMath.Setup) {jsMath.Setup = {}}
   if (!jsMath.Setup.UserEvent) {jsMath.Setup.UserEvent = {}}
   jsMath.Setup.UserEvent.onload = function () {
-    if (jsMath.Easy.tex2math) jsMath.Setup.Script("plugins/tex2math.js");
+    var easy = jsMath.Easy;
+    if (easy.tex2math) jsMath.Setup.Script("plugins/tex2math.js");
     var i;
-    for (i = 0; i < jsMath.Easy.loadFiles.length; i++)
-      jsMath.Setup.Script(jsMath.Easy.loadFiles[i]);
-    for (i = 0; i < jsMath.Easy.loadFonts.length; i++)
-      jsMath.Font.Load(jsMath.Easy.loadFonts[i]);
+    if (easy.loadFiles) {
+      for (i = 0; i < easy.loadFiles.length; i++)
+        jsMath.Setup.Script(easy.loadFiles[i]);
+    }
+    if (easy.loadFonts) {
+      for (i = 0; i < easy.loadFonts.length; i++)
+        jsMath.Font.Load(easy.loadFonts[i]);
+    }
+    if (easy.macros) {
+      for (i in easy.macros) {
+        if (typeof(easy.macros[i]) == 'string') {
+          jsMath.Macro(i,easy.macros[i]);
+        } else {
+          jsMath.Macro(i,easy.macros[i][0],easy.macros[i][1]);
+        }
+      }
+    }
   }
   document.write('<script src="'+jsMath.Easy.root+'/jsMath.js"></script>'+"\n");
 }

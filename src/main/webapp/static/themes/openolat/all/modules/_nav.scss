@@ -160,8 +160,8 @@ div.b_tree {
 			
 			.b_tree_oc_l0 {
 				position: absolute;
-				top: 0px;
-				left: 0px;
+				top: $tree_padding_opener_top_px;
+				left: $tree_padding_opener_left_px;
 				z-index: 9;
 			}
 			
@@ -177,7 +177,7 @@ div.b_tree {
 			/*  icon positioning */
 			@for $i from 1 through 11 {
 				.b_tree_oc_l#{$i}  { 
-					position:absolute; top:0px; left: 1px + ($i * $tree_padding_steps_px); 
+					position:absolute; top:$tree_padding_opener_top_px; left: $tree_padding_opener_left_px + ($i * $tree_padding_steps_px); 
 					z-index:9; 
 				}
 				

@@ -51,7 +51,6 @@ if (url == 'http://www.math.union.edu/locate/jsMath/jsMath/jsMath-version-check.
     window.parent.postMessage(ID+":SCR:"+request.responseText,"*");
     window.parent.postMessage(ID+":END:1","*");
   } catch (err) {
-alert(err.message);
     window.parent.postMessage(ID+":ERR:Can't load "+url+": "+err.message,"*");
   }
 } else {

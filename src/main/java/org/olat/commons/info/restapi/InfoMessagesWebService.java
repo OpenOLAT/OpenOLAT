@@ -125,7 +125,7 @@ public class InfoMessagesWebService {
 			}
 		}
 		
-		InfoMessageFrontendManager messageManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);;
+		InfoMessageFrontendManager messageManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
 		InfoMessage msg = messageManager.createInfoMessage(ores, resSubPath, businessPath, author);
 		msg.setTitle(title);
 		msg.setMessage(message);

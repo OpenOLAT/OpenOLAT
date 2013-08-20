@@ -65,6 +65,8 @@ $main_shadow_color : #D3D3D3 !default;
 $tree_level_margin : 1em !default;
 $tree_padding_steps_px : 0 !default; /* alternate solution to tree_level_margin in case the tree link has block layout */
 $tree_padding_opener_px : 13px !default; /* total width of opener image (actual image width + whitespace) */
+$tree_padding_opener_left_px : 1px !default; /* left position of opener image */
+$tree_padding_opener_top_px : 0px;
 /* show or hide tree icons, if yes, width of icons */
 $tree_show_icons : true !default; 
 $treeicon_width_px : 20px !default;

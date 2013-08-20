@@ -210,6 +210,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @param category
 	 * @param name
 	 * @param longValue
+	 * @param stringValue
 	 * @return a list of Property objects
 	 */
 	public List<Property> listProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId,

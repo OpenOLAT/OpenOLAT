@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -127,7 +128,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 		artefactListTblCtrl.addColumnDescriptor(descr);
 		
 		descr = new DefaultColumnDescriptor("artefact.description", 1, null, getLocale());
-		descr.setEscapeHtml(false);
+		descr.setEscapeHtml(EscapeMode.antisamy);
 		artefactListTblCtrl.addColumnDescriptor(true, descr);
 		
 		descr = new DefaultColumnDescriptor("artefact.date", 2, null, getLocale());

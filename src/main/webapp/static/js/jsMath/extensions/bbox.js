@@ -63,38 +63,26 @@ jsMath.Add(jsMath.mList.prototype.Atomize,{
    *  Creates the box HTML
    */
   bbox: function (style,size,mitem,prev,mlist) {
-    var box = jsMath.Box.Set(mitem.nuc2,style,size,1).Remeasured();
-    delete mitem.nuc2;
-    /*
-     *  If the box has super- or subscripts, move them
-     *  to the contained item if is in a big operator
-     *  (does anything else need this?)
-     */
-    if (mitem.sup || mitem.sub) {
-      if (mitem.nuc.type == 'mlist' && mitem.nuc.mlist.Length() == 1) {
-        var atom = mitem.nuc.mlist.Last();
-        if (atom.atom && atom.type == 'op' && !atom.sup && !atom.sub) {
-          if (mitem.sup) {atom.sup = mitem.sup; delete mitem.sup}
-          if (mitem.sub) {atom.sub = mitem.sub; delete mitem.sub}
-        }
-      }
-    }
-    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+    var box; var w; var h; var d;
+    var nuc = mitem.nuc = jsMath.Box.Set(mitem.nuc,style,size).Remeasured();
+    if (box == null) {w = nuc.w; h = nuc.h; d = nuc.d} // values before super/subs-cript
     var nuc = mitem.nuc; nuc.Styled(); var pad = mitem.pad;
-    if (pad) {box.w += 2*pad; box.h += pad; box.d += pad; nuc.w += pad}
+    if (pad) {w += 2*pad; h += pad; d += pad; nuc.w += pad}
     if (jsMath.Browser.msieCenterBugFix) 
       {nuc.html = '<span style="position:relative">'+nuc.html+'</span>'}
     nuc.html = 
-      jsMath.HTML.BBox(box.w,box.h,box.d,mitem.color,mitem.style) +
-      jsMath.HTML.Spacer(pad-box.w) +
+      jsMath.HTML.BBox(w,h,d,mitem.color,mitem.style) +
+      jsMath.HTML.Spacer(pad-w) +
       nuc.html;
-    if (pad && nuc.w < box.w) {
-      nuc.html += jsMath.HTML.Spacer(box.w-nuc.w);
-      nuc.w = box.w;
+    nuc.Remeasured();
+    if (pad && nuc.w < w) {
+      nuc.html += jsMath.HTML.Spacer(w-nuc.w);
+      nuc.w = w;
     }
-    nuc.h  = Math.max(nuc.h,box.h);  nuc.d  = Math.max(nuc.d,box.d);
-    nuc.bh = Math.max(nuc.bh,box.h); nuc.bd = Math.max(nuc.bd,box.d);
+    nuc.h  = Math.max(nuc.h,h);  nuc.d  = Math.max(nuc.d,d);
+    nuc.bh = Math.max(nuc.bh,nuc.h); nuc.bd = Math.max(nuc.bd,nuc.d);
     mitem.type = 'ord';
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
   }
 });
 
@@ -109,7 +97,6 @@ jsMath.Package(jsMath.Parser,{
     var extra = this.GetBrackets(this.cmd+name); if (this.error) return;
     var arg = this.GetArgument(this.cmd+name); if (this.error) return;
     var nuc = this.Process(arg); if (this.error) return;
-    var nuc2 = this.Process(arg); // need a second copy since Box.Set changes the list
     var color; var pad = 0; var style = '';
     if (extra != '') {
       var parts = extra.split(/,/);
@@ -120,9 +107,7 @@ jsMath.Package(jsMath.Parser,{
         else {color = parts[i]}
       }
     }
-    this.mlist.Add(new jsMath.mItem('bbox',{
-      nuc: nuc, nuc2: nuc2, atom: 1, pad: pad, color: color, style: style
-    }));
+    var atom = {nuc: nuc, atom: 1, pad: pad, color: color, style: style};
+    this.mlist.Add(new jsMath.mItem('bbox',atom));
   }
-
 });

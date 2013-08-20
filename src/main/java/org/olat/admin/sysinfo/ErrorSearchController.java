@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.LogFileParser;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -70,6 +71,14 @@ public class ErrorSearchController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			errorCont = createVelocityContainer("error_list");
 			((FormLayoutContainer)formLayout).put("errors", errorCont);
+		
+			Long errCount = Tracing.getErrorCount();
+			String lastError = "-";
+			if (errCount > 0) {
+				String nodeId = StringHelper.containsNonWhitespace(Settings.getNodeInfo()) ? Settings.getNodeInfo() : "N1";
+				lastError = nodeId + "-E" + errCount;
+			}
+			((FormLayoutContainer)formLayout).contextPut("highestError", lastError);
 		}
 	}
 
@@ -82,7 +91,6 @@ public class ErrorSearchController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String errorNr = errorNumberEl.getValue();
 		Date date = dateChooserEl.getDate();
-		errorCont.contextPut("highestError", Tracing.getErrorCount());
 		errorCont.contextPut("errormsgs", LogFileParser.getError(errorNr, date, true));
 	}
 

@@ -63,22 +63,26 @@ public class GetPassedWithCourseIdFunction extends AbstractFunction {
 		if (inStack.length > 2) {
 			return handleException(new ArgumentParseException(ArgumentParseException.NEEDS_FEWER_ARGUMENTS, name, "", "error.fewerargs",
 					"solution.provideone.nodereference"));
-		} else if (inStack.length < 2) { return handleException( new ArgumentParseException(ArgumentParseException.NEEDS_MORE_ARGUMENTS, name, "",
+		} else if (inStack.length < 1) { return handleException( new ArgumentParseException(ArgumentParseException.NEEDS_MORE_ARGUMENTS, name, "",
 				"error.moreargs", "solution.provideone.nodereference")); }
 		/*
 		 * argument type check
 		 */
 		Long courseRepoEntryKey;
 		try{
-			courseRepoEntryKey = Long.decode((String) inStack[0]) ;
+			Object arg = inStack[0];
+			if(arg instanceof Number) {
+				courseRepoEntryKey = new Long(((Number)arg).longValue());
+			} else if(arg instanceof String) {
+				courseRepoEntryKey = Long.decode((String)arg) ;
+			} else {
+				courseRepoEntryKey = null;
+			}
 		}catch(NumberFormatException nfe) {
 			return handleException( new ArgumentParseException(ArgumentParseException.WRONG_ARGUMENT_FORMAT, name, "",
 					"error.argtype.coursnodeidexpeted", "solution.example.node.infunction"));
 		}
-		
-		if (!(inStack[1] instanceof String)) return handleException( new ArgumentParseException(ArgumentParseException.WRONG_ARGUMENT_FORMAT, name, "",
-				"error.argtype.coursnodeidexpeted", "solution.example.node.infunction"));
-		String childId = (String) inStack[1];
+
 		/*
 		 * no integrity check can be done - other course might not exist anymore
 		 */
