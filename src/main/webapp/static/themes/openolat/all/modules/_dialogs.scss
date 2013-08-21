@@ -74,7 +74,7 @@ div.b_callout_area {
 	@include o-box-shadow(0px,0px,8px,rgba(68,68,68,0.5));
 }
 div.b_callout_overlay { 
-	position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1;  background: #000; opacity:0;
+	position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1;  background: #000; @include o-opacity(1);
 }
 
 div.b_callout {
