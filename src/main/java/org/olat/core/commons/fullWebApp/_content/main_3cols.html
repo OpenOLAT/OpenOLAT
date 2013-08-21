@@ -53,6 +53,7 @@ jQuery().ready(function() {
 	}).bind( "resize", resize_right);
 
 	function resize_right(event, ui) {
+		if(ui == null) return;
 	    var width = ui.size.width;
 	    var leftWidth = jQuery("#b_col2").width();
         var contWidth = jQuery('#b_main').width() - leftWidth;
@@ -76,6 +77,7 @@ jQuery().ready(function() {
 	}).bind( "resize", resize_left);
 
 	function resize_left(event, ui) {
+			if(ui == null) return;
 	    var width = ui.size.width;
 	    var rightWidth = jQuery("#b_col1").width();
         var contWidth = jQuery('#b_main').width() - rightWidth;
