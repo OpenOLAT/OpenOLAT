@@ -13,7 +13,10 @@ table {
 	&.fixed { table-layout:fixed; }
 	
 	 th,td { padding:0.3em; }
-	 thead th { color:inherit; border-bottom:1px solid #ccc; }
+	 thead th { 
+	 	color: inherit; 
+	 	border-bottom:1px solid #ccc; 
+	 }
 	 
 	 tbody{
 	 	/* odd and even rows and rollover effect */
@@ -25,6 +28,7 @@ table {
 				background: $selectcolor_light; 
 			}
 		}
+		
 	 }
 }
 
@@ -42,9 +46,15 @@ div.b_table_wrapper {
 		width: 99.5%;
 		margin-left: 1px;
 		border:1px solid $basegray_ultra_light;
-		tbody{
+		thead, thead a { 
+	 		color: $tablecolor_header; 
+	 	}		
+	 	tbody{
 			tr:hover td { background: $selectcolor_ultra_light; }
 			tr.b_row_selected:hover td { background: $selectcolor_light; }
+			a {
+				color: $tablecolor_links;
+			}
 		}
 	}
 	
@@ -107,7 +117,10 @@ div.b_table_wrapper {
 		table.dataTable {
 			thead th {
 				border-bottom: 1px solid #ccc;
-				color:$basecolor;
+				color: $tablecolor_header;
+			}
+			tbody a {
+				color: $tablecolor_links;
 			}
 		
 			tr.even td.sorting_1 {
