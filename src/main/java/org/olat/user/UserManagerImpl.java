@@ -406,7 +406,6 @@ public class UserManagerImpl extends UserManager {
 			List<IdentityShort> identities = securityManager.findShortIdentitiesByName(Collections.singletonList(username));
 			for(IdentityShort identity:identities) {
 				fullName = getUserDisplayName(identity);
-				updateUsernameCache(identity.getKey(), identity.getName(), fullName);
 			}
 		}
 		return fullName;
@@ -421,7 +420,7 @@ public class UserManagerImpl extends UserManager {
 		String fullName = usernameCache.get(identityKey);
 		if(fullName == null) {
 			IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
-			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+			fullName = getUserDisplayName(identity);
 		}
 		return fullName;
 	}
@@ -446,7 +445,6 @@ public class UserManagerImpl extends UserManager {
 		List<IdentityShort> identities = securityManager.findShortIdentitiesByName(newUsernames);
 		for(IdentityShort identity:identities) {
 			String fullName = getUserDisplayName(identity);
-			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
 			fullNames.put(identity.getName(), fullName);
 			newUsernames.remove(identity.getName());
 		}
@@ -459,8 +457,8 @@ public class UserManagerImpl extends UserManager {
 
 	@Override
 	public String getUserDisplayName(Identity identity) {
-		if (userDisplayNameCreator == null) return "";
-		String fullName = userDisplayNameCreator.getUserDisplayName(identity.getUser());
+		if (userDisplayNameCreator == null || identity == null) return "";
+		String fullName = getUserDisplayName(identity.getUser());
 		updateUsernameCache(identity.getKey(), identity.getName(), fullName);
 		return fullName;
 	}
@@ -470,7 +468,7 @@ public class UserManagerImpl extends UserManager {
 	 */
 	@Override
 	public String getUserDisplayName(User user) {
-		if (userDisplayNameCreator == null) return "";
+		if (userDisplayNameCreator == null || user == null) return "";
 		return userDisplayNameCreator.getUserDisplayName(user);
 	}
 	
@@ -479,7 +477,7 @@ public class UserManagerImpl extends UserManager {
 	 */
 	@Override
 	public String getUserDisplayName(IdentityShort identity) {
-		if (userDisplayNameCreator == null) return "";
+		if (userDisplayNameCreator == null || identity == null) return "";
 		String fullName = userDisplayNameCreator.getUserDisplayName(identity);
 		updateUsernameCache(identity.getKey(), identity.getName(), fullName);
 		return fullName;
@@ -514,10 +512,12 @@ public class UserManagerImpl extends UserManager {
 	}
 	
 	private void updateUsernameCache(Long identityKey, String username, String fullName) {
-		if(identityKey != null && fullName != null) {
+		if(fullName == null) return;
+		
+		if(identityKey != null) {
 			usernameCache.put(identityKey, fullName);
 		}
-		if(username != null && fullName != null) {
+		if(username != null) {
 			usernameCache.put(username, fullName);
 		}
 	}
