@@ -514,8 +514,12 @@ public class UserManagerImpl extends UserManager {
 	}
 	
 	private void updateUsernameCache(Long identityKey, String username, String fullName) {
-		usernameCache.put(identityKey, fullName);
-		usernameCache.put(username, fullName);
+		if(identityKey != null && fullName != null) {
+			usernameCache.put(identityKey, fullName);
+		}
+		if(username != null && fullName != null) {
+			usernameCache.put(username, fullName);
+		}
 	}
 
 	/**
