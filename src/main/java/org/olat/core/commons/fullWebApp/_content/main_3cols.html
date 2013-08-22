@@ -42,6 +42,7 @@ jQuery().ready(function() {
 	OPOL.adjustHeight();
 	
 	// Main vertical splitter, anchored to the browser window
+#if($existsCol1 && $r.visible("col1"))
 	jQuery("#b_col1").resizable({
         handles: 'e',
         containment: '#b_main',
@@ -53,6 +54,7 @@ jQuery().ready(function() {
 	}).bind( "resize", resize_right);
 
 	function resize_right(event, ui) {
+		if(ui == null) return;
 	    var width = ui.size.width;
 	    var leftWidth = jQuery("#b_col2").width();
         var contWidth = jQuery('#b_main').width() - leftWidth;
@@ -63,6 +65,7 @@ jQuery().ready(function() {
 	    jQuery('#b_col3').css('width', (contWidth - width));
 	    jQuery('#b_col3').css('margin-left', width);
 	};
+#end
 
 #if($existsCol2 && $r.visible("col2"))		
 	jQuery("#b_col3").resizable({
@@ -76,6 +79,7 @@ jQuery().ready(function() {
 	}).bind( "resize", resize_left);
 
 	function resize_left(event, ui) {
+			if(ui == null) return;
 	    var width = ui.size.width;
 	    var rightWidth = jQuery("#b_col1").width();
         var contWidth = jQuery('#b_main').width() - rightWidth;

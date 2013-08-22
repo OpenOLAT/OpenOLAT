@@ -24,20 +24,24 @@ function check() {
 </ul>
 
 <p class="b_float_right">
-	<a href="https://www.google.com/chrome">
-		<img src="$r.staticLink("images/chrome-button.png")" title="Get google Chrome!" alt="Get google Chrome!" border="0" width="150" height="50" />
-	</a>
+	<span class="b_browsercheck_chrome_button">
+		<a href="https://www.google.com/chrome">
+			<img src="$r.staticLink("images/chrome-button.png")" title="Get google Chrome!" alt="Get google Chrome!" border="0" width="150" height="50" />
+		</a>
+	</span>
 	<br />
-	<a href="http://www.mozilla.org/products/download.html" target="_blank">
-		<img border="0" alt="Get Firefox!" title="Get Firefox!" src="$r.staticLink("images/getfirefox.gif")" width="150" />
-	</a>
+	<span class="b_browsercheck_ff_button">
+		<a href="http://www.mozilla.org/firefox" target="_blank">
+			<img border="0" alt="Get Firefox!" title="Get Firefox!" src="$r.staticLink("images/getfirefox.gif")" width="150" />
+		</a>
+	</span>
 </p>
 <h4>$r.translate("browsercheck.bestresults.title")</h4>
 <ul>
-	<li><a class="b_link_extern" href="http://www.google.com/chrome/" target="_blank">Google Chrome 19</a> $r.translate("browsercheck.bestresults.newerversion") $r.translate("browsercheck.bestresults.recommended") </li>
-	<li><a class="b_link_extern" href="http://www.apple.com/safari/" target="_blank">Apple Safari 5</a> $r.translate("browsercheck.bestresults.newerversion") </li>
-	<li><a class="b_link_extern" href="http://www.mozilla.org/products/firefox/" target="_blank">Firefox 12</a> $r.translate("browsercheck.bestresults.newerversion")</li>
-	<li><a class="b_link_extern" href="http://www.microsoft.com/internetexplorer/" target="_blank">Microsoft Internet Explorer 9</a> $r.translate("browsercheck.bestresults.newerversion")</li>
+	<li class="b_browsercheck_chrome"><a class="b_link_extern" href="http://www.google.com/chrome/" target="_blank">Google Chrome 28</a> $r.translate("browsercheck.bestresults.newerversion") $r.translate("browsercheck.bestresults.recommended") ($r.translate("browsercheck.since","10"))</li>
+	<li class="b_browsercheck_safari"><a class="b_link_extern" href="http://www.apple.com/safari/" target="_blank">Apple Safari 6</a> $r.translate("browsercheck.bestresults.newerversion") ($r.translate("browsercheck.since","5"))</li>
+	<li class="b_browsercheck_ff"><a class="b_link_extern" href="http://www.mozilla.org/firefox/" target="_blank">Firefox 23</a> $r.translate("browsercheck.bestresults.newerversion") ($r.translate("browsercheck.since","10"))</li>
+	<li class="b_browsercheck_ie"><a class="b_link_extern" href="http://www.microsoft.com/internetexplorer/" target="_blank">Microsoft Internet Explorer 9</a> $r.translate("browsercheck.bestresults.newerversion") ($r.translate("browsercheck.since","8"))</li>
 </ul>
 
 <h4>$r.translate("browsercheck.others.title")</h4>

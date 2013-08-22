@@ -822,7 +822,9 @@ public class CatalogController extends BasicController implements Activateable2 
 		listenTo(catalogToolC);
 		//if (isOLATAdmin || isLocalTreeAdmin || isAuthor ) {
 		// at least a person being able to do something...
-		if (!isGuest) {
+		if (isGuest) {
+			return null;
+		} else {
 			// included normal user now for bookmark functionality
 			/*
 			 * edit tools
@@ -863,7 +865,11 @@ public class CatalogController extends BasicController implements Activateable2 
 					}
 			}	
 		}
-		return catalogToolC;
+		
+		if(canAdministrateCategory || canAddLinks || isOLATAdmin || isLocalTreeAdmin || isAuthor) {
+			return catalogToolC;
+		}
+		return null;
 	}
 
 	/**
@@ -1140,19 +1146,6 @@ public class CatalogController extends BasicController implements Activateable2 
 		canAddSubCategories = isOLATAdmin || isLocalTreeAdmin;
 		canRemoveAllLinks = isOLATAdmin || isLocalTreeAdmin;
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest, java.lang.String)
-	 *//*
-	public void activate(UserRequest ureq, String viewIdentifier){
-		 // transforms the parameter jumpToNode into a long value and calls jumpToNode(UserRequest, long)
-		try{
-			long parsed=Long.parseLong(viewIdentifier);
-			reloadHistoryStack(ureq, parsed);
-		} catch(Exception e){
-			logWarn("Could not activate catalog entry with ID::" + viewIdentifier, null);
-		}
-	}*/
 	
 	/**
 	 * Internal helper: Get's the requested catalog node and set it as active

@@ -51,6 +51,7 @@ var BLoader = {
 				jQuery.ajax(jsURL, {
 					async: false,
 					dataType: 'script',
+					cache: true,
 					success: function(script, textStatus, jqXHR) {
 						//BLoader.executeGlobalJS(script, 'loadJS');
 					}
@@ -206,9 +207,8 @@ var BFormatter = {
 	formatLatexFormulas : function(domId) {
 		try {
 			if (jsMath) { // only when js math available
-				if (jsMath.loaded) {
-					jsMath.Setup.Body();
-				    jsMath.Script.Push(jsMath.Translate,'Asynchronous',domId);
+				if (jsMath.loaded && jsMath.tex2math && jsMath.tex2math.loaded) {
+					jsMath.Process();
 				} else { // not yet loaded (autoload), load first
 					jsMath.Autoload.LoadJsMath();
 					// retry formatting when ready (recursively until loaded)
