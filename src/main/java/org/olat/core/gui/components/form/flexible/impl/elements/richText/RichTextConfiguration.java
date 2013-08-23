@@ -665,6 +665,10 @@ public class RichTextConfiguration implements Disposable {
 			oninit.add(functionName);
 		}
 	}
+	
+	public List<String> getOnInit() {
+		return oninit;
+	}
 
 	/**
 	 * Enable the tabfocus plugin
@@ -1506,6 +1510,131 @@ public class RichTextConfiguration implements Disposable {
 			return nonQuotedConfigValues.get(key);
 		}
 	}
+	
+	
+	
+	
+	void appendConfigToTinyJSArray_4(StringOutput sb) {
+		// Add plugins first
+		List<String> plugins4 = new ArrayList<String>(plugins);
+		plugins4.remove("safari");
+		plugins4.remove("inlinepopups");
+		plugins4.remove("advlink");
+		plugins4.remove("xhtmlxtras");
+		plugins4.remove("advimage");
+		if(plugins4.remove("-olatmatheditor")) {
+			plugins4.add("olatmatheditor");
+		}
+		if(plugins4.remove("-olatmovieviewer")) {
+			plugins4.add("olatmovieviewer");
+		}
+		if(plugins4.remove("-olatsmileys")) {
+			plugins4.add("olatsmileys");
+		}
+		if(plugins4.remove("-quotespliter")) {
+			plugins4.add("quotespliter");
+		}
+		if(plugins4.remove("-wordcount")) {
+			plugins4.add("wordcount");
+		}
+		plugins4.add("link");
+		plugins4.add("image");
+		plugins4.add("emoticons");
+		if(theme_advanced_buttons3.contains(CODE_BUTTON)) {
+			plugins4.add("code");
+		}
+
+		int i = appendValuesFromList(sb, PLUGINS, plugins4);
+		// Add toolbars
+		sb.append(",\n");
+		sb.append("menubar:false,\n");
+		sb.append("image_advtab:true,\n");
+
+		if (theme_advanced_buttons1.size() == 0) {
+			sb.append(THEME_ADVANCED_BUTTONS1).append(":\"\"");
+		} else {
+			i += appendValuesFromList(sb, "toolbar1", theme_advanced_buttons1);			
+		}
+		if (i > 0) sb.append(",");			
+		if (theme_advanced_buttons2.size() == 0) {
+			sb.append(THEME_ADVANCED_BUTTONS2).append(":\"\"");
+		} else {
+			i += appendValuesFromList(sb, "toolbar2", theme_advanced_buttons2);			
+		}
+		if (i > 0) sb.append(",");	
+		List<String> buttons3 = new ArrayList<String>(theme_advanced_buttons3);
+		if (buttons3.size() == 0) {
+			sb.append(THEME_ADVANCED_BUTTONS3).append(":\"\"");			
+		} else {
+			i += appendValuesFromList(sb, "toolbar3", buttons3);						
+		}
+		// Now add disabled buttons
+		if (i > 0 && theme_advanced_disable.size() > 0) sb.append(",");
+		i += appendValuesFromList(sb, THEME_ADVANCED_DISABLE, theme_advanced_disable);
+		// Now add the quoted values
+		Map<String,String> copyValues = new HashMap<String,String>(quotedConfigValues);
+		//remove unused configurations in 4
+		copyValues.remove("skin");
+		copyValues.remove("skin_variant");
+		copyValues.remove("theme");
+		copyValues.remove("theme_advanced_toolbar_location");
+		copyValues.remove("theme_advanced_statusbar_location");
+		copyValues.remove("theme_advanced_resize_horizontal");
+		copyValues.remove("theme_advanced_resizing");
+		copyValues.remove("theme_advanced_toolbar_align");
+		copyValues.remove("dialog_type");
+		copyValues.remove("mode");
+		
+		//update value from 3 to 4
+		String tabfocus = copyValues.remove("tab_focus");
+		if(tabfocus != null) {
+			copyValues.put("tabfocus_elements", tabfocus);
+		}
+		
+		for (Map.Entry<String, String> entry : copyValues.entrySet()) {
+			if (i > 0) sb.append(",");
+			sb.append(entry.getKey()).append(": \"").append(entry.getValue()).append("\"\n");
+			i++;
+		}
+
+		Map<String,String> copyNonValues = new HashMap<String,String>(nonQuotedConfigValues);
+		copyNonValues.remove("theme_advanced_resizing");
+		copyNonValues.remove("theme_advanced_resize_horizontal");
+		String converter = copyNonValues.remove(URLCONVERTER_CALLBACK);
+		if(converter != null) {
+			copyNonValues.put("convert_urls", converter);	
+		}
+		
+		// Now add the non-quoted values (e.g. true, false or functions)
+ 		for (Map.Entry<String, String> entry : copyNonValues.entrySet()) {
+			if (i > 0) sb.append(",");
+			sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+			i++;
+		}
+ 		
+ 		// Now add on init callback functions
+ 		/*if (oninit.size() > 0) {
+ 			if (i > 0) sb.append(",");
+ 			sb.append(ONINIT_CALLBACK).append(": ");
+ 			if (oninit.size() == 1) {
+ 				sb.append(oninit.iterator().next());
+ 			} else {
+ 				Iterator<String> iter = oninit.iterator();
+ 				sb.append("function(){");
+ 				while (iter.hasNext()) {
+					String function = iter.next();
+					sb.append(function);
+					if(function.endsWith(")")) {
+						sb.append(";");
+					} else {
+						sb.append("();");
+					}
+				}
+ 				sb.append("}");
+ 			}
+ 			i++;
+ 		}*/
+	}
 
 	/**
 	 * append all configurations to the given string buffer as js array
@@ -1589,6 +1718,10 @@ public class RichTextConfiguration implements Disposable {
 			String pluginURL = plugin.getPluginURL();
 			sb.append("tinymce.PluginManager.load('").append(pluginName).append("', '").append(pluginURL).append("');");					
 		}
+	}
+	
+	public List<TinyMCECustomPlugin> getCustomPlugins() {
+		return enabledCustomPlugins;
 	}
 	
 	

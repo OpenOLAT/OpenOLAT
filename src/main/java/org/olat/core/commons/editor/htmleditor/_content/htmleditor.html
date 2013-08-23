@@ -48,8 +48,8 @@
 		var elem = jQuery('#$f.getItemId("rtfElement")');
 		if (!elem) {
 			executor.stop();
-		} else if (tinyMCE && tinyMCE.activeEditor) {
-			if (tinyMCE.activeEditor.isDirty()) {
+		} else if (top.tinymce && top.tinymce.activeEditor) {
+			if (top.tinymce.activeEditor.isDirty()) {
 				o2c=1;
 				## add dirty class when dirty
 				jQuery('#b_htmleditor_button_save a').each(function(index,el) {

@@ -59,6 +59,8 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 	private RichTextElementImpl element;
 	private int cols;
 	private int rows;
+	
+	private boolean useTiny4 = true;
 
 	/**
 	 * Constructor for a text area element
@@ -106,41 +108,50 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		this.rows = rows;
 	}
 
+	public boolean isUseTiny4() {
+		return useTiny4;
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.render.ValidationResult)
 	 */
+	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-
-		// Add tiny helper library
-		//jsa.addRequiredJsFile(RichTextElementComponent.class,"js/BTinyHelper.js", "UTF-8");
-		jsa.addRequiredStaticJsFile("js/tinymce/BTinyHelper.js");
-
-		// When the tiny_mce.js is inserted via AJAX, we need to setup some
-		// variables first to make it load properly:
-		StringOutput sb = new StringOutput();
-		// 1) Use tinyMCEPreInit to prevent TinyMCE to guess the script URL. The
-		// script URL is needed because TinyMCE will load CSS, plugins and other
-		// resources
-		sb.append("tinyMCEPreInit = {};")
-		  .append("tinyMCEPreInit.suffix = '';")
-		  .append("tinyMCEPreInit.base = '");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/tinymce/tinymce", false);
-		sb.append("';");
-
-		// 2) Tell TinyMCE that the page has already been loaded
-		sb.append("tinyMCE_GZ = {};");
-		sb.append("tinyMCE_GZ.loaded = true;");
-		String preAJAXinsertionCode = sb.toString();
-
-		// Now add tiny library itself. TinyMCE files are written in iso-8859-1
-		// (important, IE panics otherwise with error 8002010)
-		if (Settings.isDebuging()) {
-			jsa.addRequiredStaticJsFile("js/tinymce/tinymce/tiny_mce_src.js", "ISO-8859-1",preAJAXinsertionCode);
+		
+		if(useTiny4) {
+			jsa.addRequiredStaticJsFile("js/tinymce4/BTinyHelper.js");
 		} else {
-			jsa.addRequiredStaticJsFile("js/tinymce/tinymce/tiny_mce.js", "ISO-8859-1", preAJAXinsertionCode);
+			// Add tiny helper library
+			//jsa.addRequiredJsFile(RichTextElementComponent.class,"js/BTinyHelper.js", "UTF-8");
+			jsa.addRequiredStaticJsFile("js/tinymce/BTinyHelper.js");
+	
+			// When the tiny_mce.js is inserted via AJAX, we need to setup some
+			// variables first to make it load properly:
+			StringOutput sb = new StringOutput();
+			// 1) Use tinyMCEPreInit to prevent TinyMCE to guess the script URL. The
+			// script URL is needed because TinyMCE will load CSS, plugins and other
+			// resources
+			sb.append("tinyMCEPreInit = {};")
+			  .append("tinyMCEPreInit.suffix = '';")
+			  .append("tinyMCEPreInit.base = '");
+			StaticMediaDispatcher.renderStaticURI(sb, "js/tinymce/tinymce", false);
+			sb.append("';");
+	
+			// 2) Tell TinyMCE that the page has already been loaded
+			sb.append("tinyMCE_GZ = {};");
+			sb.append("tinyMCE_GZ.loaded = true;");
+			String preAJAXinsertionCode = sb.toString();
+	
+			// Now add tiny library itself. TinyMCE files are written in iso-8859-1
+			// (important, IE panics otherwise with error 8002010)
+			if (Settings.isDebuging()) {
+				jsa.addRequiredStaticJsFile("js/tinymce/tinymce/tiny_mce_src.js", "ISO-8859-1",preAJAXinsertionCode);
+			} else {
+				jsa.addRequiredStaticJsFile("js/tinymce/tinymce/tiny_mce.js", "ISO-8859-1", preAJAXinsertionCode);
+			}
 		}
 	}
 

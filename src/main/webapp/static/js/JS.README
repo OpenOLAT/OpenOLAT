@@ -14,6 +14,13 @@ It contains the following minified javascripts:
   jquery.oolog.js
   jquery.translator.js
   jquery.periodic.js
+  jquery.tinymce.min.js
+  
+it minified the 4 olat plugins for tinymce 4
+  olatmatheditor
+  olatmovieviewer
+  olatsmileys
+  quotespliter
   
 and minified css:
   jquery.tagit.min.css
