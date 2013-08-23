@@ -33,7 +33,6 @@ import javax.annotation.PostConstruct;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.ws.BindingProvider;
 
-import org.apache.axis2.AxisFault;
 import org.apache.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndType;
 import org.apache.openmeetings.axis.services.RoomService;
 import org.apache.openmeetings.axis.services.RoomServicePortType;
@@ -367,7 +366,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		long type = OpenMeetingsException.UNKOWN;
 		if(ret < 0) {
 			type = ret;
-		} else if(e instanceof AxisFault) {
+		} else if(e instanceof Exception) {
 			Throwable cause = e.getCause();
 			if(cause instanceof ConnectException
 					&& cause.getMessage() != null
@@ -712,8 +711,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		return allOk;
 	}
 
-	private final RoomServicePortType getRoomWebService()
-	throws AxisFault {
+	private final RoomServicePortType getRoomWebService() {
 		RoomService ss = new RoomService();
 		RoomServicePortType port = ss.getRoomServiceHttpSoap11Endpoint();
 		String endPoint = getOpenMeetingsEndPoint() + "RoomService?wsdl";
@@ -721,8 +719,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		return port;
 	}
 	
-	private final UserServicePortType getUserWebService()
-	throws AxisFault {
+	private final UserServicePortType getUserWebService() {
 		UserService ss = new UserService();
 		UserServicePortType port = ss.getUserServiceHttpSoap11Endpoint();
 		String endPoint = getOpenMeetingsEndPoint() + "UserService?wsdl";
