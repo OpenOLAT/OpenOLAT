@@ -25,15 +25,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.olat.util.xss.XssUtil;
-
 import com.thoughtworks.selenium.Selenium;
 
 /**
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-@XssUtil
 public class FunctionalInstantMessagingUtil {
 	
 	public final static Pattern CONTACT_COUNT_PATTERN = Pattern.compile("\\(([\\d]+)/([\\d]+)\\)");

@@ -26,7 +26,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.olat.util.FunctionalUtil.OlatSite;
-import org.olat.util.xss.XssUtil;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -35,7 +34,6 @@ import com.thoughtworks.selenium.Selenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-@XssUtil
 public class FunctionalRepositorySiteUtil {	
 	
 	private final static Pattern categoryPattern = Pattern.compile("/([^/]+)");

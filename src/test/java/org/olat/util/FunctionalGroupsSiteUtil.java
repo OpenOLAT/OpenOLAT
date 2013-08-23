@@ -20,10 +20,7 @@
 package org.olat.util;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.util.FunctionalUtil.OlatSite;
-import org.olat.util.xss.XssUtil;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -31,9 +28,7 @@ import com.thoughtworks.selenium.Selenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-@XssUtil
 public class FunctionalGroupsSiteUtil {
-	private final static OLog log = Tracing.createLoggerFor(FunctionalGroupsSiteUtil.class);
 	
 	public final static String GROUP_ICON_CSS = "b_group_icon";
 	public final static String CREATE_GROUP_CSS = "o_sel_group_create";

@@ -47,8 +47,6 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.GroupConfigurationVO;
@@ -62,7 +60,6 @@ import org.olat.user.restapi.UserVO;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalVOUtil {
-	private final static OLog log = Tracing.createLoggerFor(FunctionalVOUtil.class);
 	
 	public final static String WAIT_LIMIT = "15000";
 	

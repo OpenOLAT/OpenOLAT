@@ -20,7 +20,6 @@
 package org.olat.util;
 
 import org.olat.util.FunctionalUtil.OlatSite;
-import org.olat.util.xss.XssUtil;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -28,7 +27,6 @@ import com.thoughtworks.selenium.Selenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-@XssUtil
 public class FunctionalAdministrationSiteUtil {
 	
 	public enum AdministrationSiteAction {

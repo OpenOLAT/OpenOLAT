@@ -20,7 +20,6 @@
 package org.olat.util;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.StringTokenizer;
@@ -28,22 +27,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.exception.MethodInvocationException;
-import org.apache.velocity.exception.ParseErrorException;
-import org.apache.velocity.exception.ResourceNotFoundException;
-import org.olat.util.xss.NotImplemented;
-import org.olat.util.xss.XssInjection;
-import org.olat.util.xss.XssInjectionDependencies;
-import org.olat.util.xss.XssInjectionDependency;
-import org.olat.util.xss.XssInjectionElement;
-import org.olat.util.xss.XssInjectionIndex;
-import org.olat.util.xss.XssInjectionPositional;
-import org.olat.util.xss.XssInjectionProvider;
-import org.olat.util.xss.XssInjectionRandom;
-import org.olat.util.xss.XssTutorOnly;
-import org.olat.util.xss.XssUtil;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -52,7 +35,6 @@ import com.thoughtworks.selenium.Selenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-@XssUtil
 public class FunctionalCourseUtil {
 	
 	public final static String COURSE_RUN_CSS = "o_course_run";
@@ -830,9 +812,7 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 * @throws MalformedURLException 
 	 */
-	@XssInjection
-	@XssTutorOnly
-	public boolean uploadOverviewPage(Selenium browser, @XssInjectionElement URI file) throws MalformedURLException{
+	public boolean uploadOverviewPage(Selenium browser, URI file) throws MalformedURLException{
 		if(!openCourseEditorCourseTab(browser, CourseEditorCourseTab.OVERVIEW)){
 			return(false);
 		}
@@ -1012,12 +992,10 @@ public class FunctionalCourseUtil {
 	 * @param position
 	 * @return true on success otherwise false
 	 */
-	@XssInjection
-	@XssTutorOnly
-	public boolean createCourseNode(Selenium browser, @XssInjectionRandom CourseNodeAlias node,
-			@XssInjectionElement String shortTitle, @XssInjectionElement String longTitle,
-			@XssInjectionElement String description,
-			@XssInjectionPositional int position){
+	public boolean createCourseNode(Selenium browser, CourseNodeAlias node,
+			String shortTitle, String longTitle,
+			String description,
+			int position){
 		functionalUtil.idle(browser);
 		
 		/* click on the appropriate link to create node */
@@ -1092,16 +1070,10 @@ public class FunctionalCourseUtil {
 	 * @param browser
 	 * @return true on success
 	 */
-	@XssInjection
-	@XssInjectionDependencies({
-		@XssInjectionDependency(className = "org.olat.util.FunctionalEPortfolioUtil", methodName = "createDefaultBinder", parameterName = { "binder" }),
-		@XssInjectionDependency(className = "org.olat.util.FunctionalEPortfolioUtil", methodName = "createPage", parameterName = { "page" }),
-		@XssInjectionDependency(className = "org.olat.util.FunctionalEPortfolioUtil", methodName = "createStructure", parameterName = { "structure" })
-	})
 	public boolean addToEportfolio(Selenium browser, String binder, String page, String structure,
-			@XssInjectionElement String title, @XssInjectionElement String description,
-			@XssInjectionElement String[] tags,
-			@XssInjectionProvider FunctionalEPortfolioUtil functionalEPortfolioUtil){
+			String title, String description,
+			String[] tags,
+			FunctionalEPortfolioUtil functionalEPortfolioUtil){
 
 		functionalUtil.idle(browser);
 		
@@ -1176,14 +1148,8 @@ public class FunctionalCourseUtil {
 	 * @param message
 	 * @return true on success, otherwise false
 	 */
-	@XssInjection
-	@XssInjectionDependencies({
-		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "createCourse", parameterName = {}),
-		@XssInjectionDependency(className = "org.olat.util.FunctionalCourseUtil", methodName = "extractRepositoryEntryKey", parameterName = {"courseId"}, useReturnValue = true),
-		@XssInjectionDependency(className = "org.olat.util.FunctionalCourseUtil", methodName = "createForum", parameterName = {})
-	})
-	public boolean postForumMessage(Selenium browser, long courseId, @XssInjectionIndex int nthForum,
-			@XssInjectionElement String title, @XssInjectionElement String message){
+	public boolean postForumMessage(Selenium browser, long courseId, int nthForum,
+			String title, String message){
 		if(!openForum(browser, courseId, nthForum))
 			return(false);
 
@@ -1253,17 +1219,8 @@ public class FunctionalCourseUtil {
 	 * @param content
 	 * @return true on success, otherwise false
 	 */
-	@XssInjection
-	@XssInjectionDependencies({
-		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "createCourse", parameterName = {}),
-		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "createWiki", parameterName = {}),
-		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "readIdFromDetailedView", parameterName = {"wikiId"}, useReturnValue = true),
-		@XssInjectionDependency(className = "org.olat.util.FunctionalCourseUtil", methodName = "createCourseNode", parameterName = {}),
-		@XssInjectionDependency(className = "org.olat.util.FunctionalCourseUtil", methodName = "chooseWiki", parameterName = {})
-	})
-	@NotImplemented(reason = "missing dependencies: read repository entry key")
-	public boolean createWikiArticle(Selenium browser, long wikiId,
-			@XssInjectionElement String pagename, @XssInjectionElement String content){
+
+	public boolean createWikiArticle(Selenium browser, long wikiId, String pagename, String content){
 		if(!openWiki(browser, wikiId))
 			return(false);
 
@@ -1379,9 +1336,6 @@ public class FunctionalCourseUtil {
 	 * @param url
 	 * @return true on success
 	 */
-	@XssInjection
-	@XssTutorOnly
-	@NotImplemented(reason = "test case won't understand url string as url")
 	public boolean importBlogFeed(Selenium browser, String url){
 
 		functionalUtil.idle(browser);
@@ -1491,16 +1445,8 @@ public class FunctionalCourseUtil {
 	 * @param content
 	 * @return true on success, otherwise false
 	 */
-	@XssInjection
-	@XssInjectionDependencies({
-		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "createCourse", parameterName = {}),
-		@XssInjectionDependency(className = "org.olat.util.FunctionalRepositorySiteUtil", methodName = "readIdFromDetailedView", parameterName = {"courseId"}, useReturnValue = true)
-	})
-	@NotImplemented(reason = "missing dependencies: read repository entry key")
-	public boolean editBlogEntry(Selenium browser, long courseId, @XssInjectionIndex int nth,
-			@XssInjectionElement String title, @XssInjectionElement String description,
-			@XssInjectionElement String content,
-			@XssInjectionPositional int entry, @XssInjectionElement BlogEdit[] edit){
+	public boolean editBlogEntry(Selenium browser, long courseId, int nth,
+			String title, String description, String content, int entry, BlogEdit[] edit){
 		if(!openBlogWithoutBusinessPath(browser, courseId, nth))
 			return(false);
 
