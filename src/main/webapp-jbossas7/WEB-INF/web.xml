@@ -115,41 +115,15 @@
             </listener-class>
     </listener>
     
-	
-	
-	<!-- this only works in an expanded war file: Comment on spring website:  
-	If you want to keep your WAR unexpanded or don't need application-specific log files within the WAR directory, 
-	don't use log4j setup within the application (thus, don't use Log4jConfigListener or Log4jConfigServlet). 
-	Instead, use a global, VM-wide log4j setup (for example, in JBoss) or JDK 1.4's java.util.logging (which is global too). -->
-	<listener>
-		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-	</listener>
+    <!-- log4j is global -->
+    
 	<listener>
 		<listener-class>org.olat.restapi.security.RestApiSessionListener</listener-class>
 	</listener>
 	<listener>
 		<listener-class>org.olat.core.dispatcher.mapper.MapperSessionListener</listener-class>
 	</listener>
-    
-    <!-- 4. Servlets -->
-    <servlet>
-    <servlet-name>log4j-init</servlet-name>
-    <servlet-class>org.olat.core.servlets.Log4JInitServlet</servlet-class>
 
-    <init-param>
-      <param-name>log4j-init-file</param-name>
-      <param-value>log4j.xml</param-value>
-      
-      <!-- this is the default for lazy developers to have output on eclipse console.
-		Overwrite it with -Dlog4j.configuration="file:/tmp/mylog4j.xml" (java system property) and specifie a path for your logging config.
-		See olat3/conf for an example file  -->
-      
-    </init-param>
-
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-    
-    
 	<!-- OLAT servlet -->
 	<servlet>
 		<servlet-name>olatservlet</servlet-name>
@@ -158,26 +132,6 @@
 		<!-- Set the load order -->
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-	
-	<!-- axis -->
-	<servlet>
-		<display-name>Apache-Axis Servlet</display-name>
-		<servlet-name>AxisServlet</servlet-name>
-		<servlet-class>de.bps.onyx.plugin.wsserver.OnyxAxisServlet</servlet-class>
-		<init-param>
-	    	<param-name>axis2.xml.path</param-name>
-	    	<param-value>/axis2.xml</param-value>
-	    </init-param>
-	</servlet>
-
-	
-	<servlet>
-    	<display-name>Apache-Axis Admin Servlet Web Admin</display-name>
-	    <servlet-name>AxisAdminServlet</servlet-name>
-	    <servlet-class>org.apache.axis2.transport.http.AxisAdminServlet</servlet-class>
-   		<load-on-startup>100</load-on-startup>
-    </servlet>
-	<!-- /axis -->
 
 	<!-- WebDAV servlet -->
 	<servlet>
@@ -277,25 +231,6 @@
 		<servlet-name>ical</servlet-name>
 		<url-pattern>/ical/*</url-pattern>
   	</servlet-mapping><!-- Spring loading -->
-
-	<!-- Axis mapping -->
-	<servlet-mapping>
-		<servlet-name>AxisServlet</servlet-name>
-		<url-pattern>/servlet/AxisServlet</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>AxisServlet</servlet-name>
-		<url-pattern>*.jws</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>AxisServlet</servlet-name>
-		<url-pattern>/services/*</url-pattern>
-	</servlet-mapping>
-
-    <servlet-mapping>
-	    <servlet-name>AxisAdminServlet</servlet-name>
-	    <url-pattern>/axis2-admin/*</url-pattern>
-    </servlet-mapping>
 
 
 	<!-- 6. Session-Config -->
