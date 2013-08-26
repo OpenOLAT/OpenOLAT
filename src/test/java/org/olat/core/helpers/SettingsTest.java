@@ -32,9 +32,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.gui.control.Event;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.event.GenericEventListener;
 
 /**
  * Description:<br>
@@ -172,7 +173,7 @@ public class SettingsTest {
 	
 	private Settings createCommonSettingsForPortTests(Map<String,String> addToServerconfig){
 		Settings settings = new Settings();
-		PersistedProperties persistedPropertiesHttp = Mockito.mock(PersistedProperties.class);
+		PersistedProperties persistedPropertiesHttp = new PersistedProperties(new DummyListener());
 		Properties defaultPropertiesHttp = new Properties();
 		defaultPropertiesHttp.setProperty("dummykey", "dummyvalue");
 		persistedPropertiesHttp.setDefaultProperties(defaultPropertiesHttp);
@@ -187,6 +188,10 @@ public class SettingsTest {
 		return settings;
 	}
 	
-	
-
+	private static class DummyListener implements GenericEventListener {
+		@Override
+		public void event(Event event) {
+			//
+		}
+	}
 }

@@ -155,8 +155,12 @@ public class Table extends Component {
 	 * 
 	 * @param name
 	 */
-	protected Table(final String name, final Translator translator) {
-		super(name, translator);
+	protected Table(String name, Translator translator) {
+		this(null, name, translator);
+	}
+		
+	protected Table(String id, String name, Translator translator) {
+		super(id, name, translator);
 		columnOrder = new ArrayList<ColumnDescriptor>(INITIAL_COLUMNSIZE);
 		allCDs = new ArrayList<ColumnDescriptor>(INITIAL_COLUMNSIZE);
 		sorter = new ArrayList<Integer>(DEFAULT_RESULTS_PER_PAGE);

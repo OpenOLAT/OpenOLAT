@@ -28,7 +28,6 @@ package org.olat.core.gui.components.table;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +51,7 @@ public class MultiSelectColumnDescriptorTest {
 	@Before
 	public void setUp() throws Exception {
 		one = new MultiSelectColumnDescriptor();
-		tableMockOne = mock(Table.class);
+		tableMockOne = new Table("Test", "Test", null);
 		one.setTable(tableMockOne);
 		
 		sameRefAsOne = one;
@@ -61,9 +60,8 @@ public class MultiSelectColumnDescriptorTest {
 		sameAsOne.setTable(tableMockOne);
 		
 		two = new MultiSelectColumnDescriptor();
-		tableMockTwo = mock(Table.class);
+		tableMockTwo = new Table("Test-alt", "Test-alt", null);
 		two.setTable(tableMockTwo);
-		
 	}
 	
 	@Test

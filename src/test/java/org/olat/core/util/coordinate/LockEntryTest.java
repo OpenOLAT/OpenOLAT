@@ -30,12 +30,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.id.Identity;
 
 /**
  * Description:<br>
- * TODO: patrickb Class Description for LockEntryTest
+ * Test the hash and equals method of LockEntry
  * 
  * <P>
  * Initial Date:  13.07.2010 <br>
@@ -52,9 +52,7 @@ public class LockEntryTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		Identity identity100 = Mockito.mock(Identity.class);
-		Mockito.when(identity100.getKey()).thenReturn(Long.valueOf(100));
-		Mockito.when(identity100.getName()).thenReturn("uniquename100");
+		Identity identity100 = new TestIdentity();
 		
 		//the first lock entry instance
 		leOne = new LockEntry("1234@subkey", System.currentTimeMillis(), identity100);
@@ -64,14 +62,13 @@ public class LockEntryTest {
 		
 		//a third lock entry instance, which is not equal to the other ones.
 		leThree = new LockEntry("another@subkey", System.currentTimeMillis(), identity100);
-		
 	}
 
 	/**
 	 * Test method for {@link org.olat.core.util.coordinate.LockEntry#hashCode()}.
 	 */
 	@Test
-	public void testHashCode() {
+	public void testEqualsObject() {
 		assertFalse("Wrong equals implementation, different types are recognized as equals ",leOne.equals(new Integer(1)));
 		assertFalse("Wrong equals implementation, different users are recognized as equals ",leOne.equals(leThree));
 		assertFalse("Wrong equals implementation, null value is recognized as equals ",leOne.equals(null));
@@ -83,10 +80,23 @@ public class LockEntryTest {
 	 * Test method for {@link org.olat.core.util.coordinate.LockEntry#equals(java.lang.Object)}.
 	 */
 	@Test
-	public void testEqualsObject() {
+	public void testHashCode() {
 		assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",leOne.hashCode() == leOne.hashCode());
 		assertFalse("Wrong hashCode implementation, different users have same hash-code",leOne.hashCode() == leThree.hashCode());
 		assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",leOne.hashCode() == sameAsLeOne.hashCode());
 	}
+	
+	private class TestIdentity extends TransientIdentity {
+		private static final long serialVersionUID = -6603304318632455839L;
 
+		@Override
+		public Long getKey() {
+			return 100l;
+		}
+
+		@Override
+		public String getName() {
+			return "uniquename100";
+		}
+	}
 }
