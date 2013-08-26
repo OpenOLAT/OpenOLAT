@@ -544,7 +544,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 		}
 
 		// Create Identity
-		Identity identity = securityManager.createAndPersistIdentityAndUser(uid, user, LDAPAuthenticationController.PROVIDER_LDAP, uid, null);
+		Identity identity = securityManager.createAndPersistIdentityAndUser(uid, user, LDAPAuthenticationController.PROVIDER_LDAP, uid);
 		// Add to SecurityGroup LDAP
 		SecurityGroup secGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 		securityManager.addIdentityToSecurityGroup(identity, secGroup);
@@ -662,14 +662,14 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 				Authentication ldapAuth = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
 				if(ldapAuth == null) {
 					//BUG Fixe: update the user and test if it has a ldap provider
-					securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, identity.getName(), null);
+					securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, identity.getName(), null, null);
 				}
 				return identity;
 			}
 			else {
 				if (LDAPLoginModule.isConvertExistingLocalUsersToLDAPUsers()) {
 					// Add user to LDAP security group and add the ldap provider
-					securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, identity.getName(), null);
+					securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, identity.getName(), null, null);
 					securityManager.addIdentityToSecurityGroup(identity, ldapGroup);
 					logInfo("Found identity by LDAP username that was not yet in LDAP security group. Converted user::" + uid
 							+ " to be an LDAP managed user");

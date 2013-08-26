@@ -119,7 +119,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
 		String emailAdress = user.getUser().getProperty(UserConstants.EMAIL, locale);
 		if (emailAdress != null) {
-			dummyKey = Encoder.encrypt(emailAdress);
+			dummyKey = Encoder.md5hash(emailAdress);
 
 			String serverpath = Settings.getServerContextPathURI();
 			Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale) ;

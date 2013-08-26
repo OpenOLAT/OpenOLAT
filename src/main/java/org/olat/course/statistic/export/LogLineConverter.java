@@ -172,7 +172,7 @@ public class LogLineConverter {
 	private String makeAnonymous(String s, Long courseResId) {
 		String encodeValue = s + "-" + Long.toString(courseResId);
 		// encode with MD5
-		return Encoder.encrypt(encodeValue);
+		return Encoder.md5hash(encodeValue);
 	}
 
 }

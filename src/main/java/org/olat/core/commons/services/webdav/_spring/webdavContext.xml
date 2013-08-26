@@ -10,7 +10,13 @@
 		<!-- set to false to disable the WebDAV support and remove the WebDAV Link from the GUI -->
 		<property name="enabled" value="${webdav.links.enabled}" />
 		<property name="sessionManager" ref="userSessionManager" />
-	</bean>  
+		<property name="webDAVAuthManager" ref="webDAVAuthenticationSpi" />
+	</bean>
+	
+	<bean id="webDAVAuthenticationSpi" class="org.olat.core.commons.services.webdav.manager.WebDAVAuthManager" >
+		<property name="securityManager" ref="baseSecurityManager" />
+		<property name="olatAuthenticationSpi" ref="olatAuthenticationSpi" />
+	</bean>
   
 	
 	<!-- WebDAV provider factory -->

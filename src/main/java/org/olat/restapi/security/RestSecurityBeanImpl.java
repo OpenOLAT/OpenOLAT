@@ -71,7 +71,7 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 		
 		Authentication auth = securityManager.findAuthentication(identity, REST_AUTH_PROVIDER);
 		if(auth == null) {
-			auth = securityManager.createAndPersistAuthentication(identity, REST_AUTH_PROVIDER, identity.getName(), token);
+			auth = securityManager.createAndPersistAuthentication(identity, REST_AUTH_PROVIDER, identity.getName(), token, null);
 		} else {
 			auth.setCredential(token);
 			auth = securityManager.updateAuthentication(auth);
@@ -89,7 +89,7 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 		if(!StringHelper.containsNonWhitespace(token)) return false;
 		boolean registrated = tokenToIdentity.containsKey(token);
 		if(!registrated) {
-			List<Authentication> auths = securityManager.findAuthentication(REST_AUTH_PROVIDER, token);
+			List<Authentication> auths = securityManager.findAuthenticationByToken(REST_AUTH_PROVIDER, token);
 			if(auths.size() == 1) {
 				Authentication auth = auths.get(0);
 				tokenToIdentity.put(token, auth.getIdentity().getKey());

@@ -25,13 +25,10 @@
 
 package org.olat.login;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.AuthHelper;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -47,26 +44,20 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.mail.MailHelper;
 import org.olat.login.auth.AuthenticationController;
+import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.auth.OLATAuthentcationForm;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.PwChangeController;
 import org.olat.registration.RegistrationController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
-import org.olat.registration.TemporaryKey;
-import org.olat.user.UserManager;
 import org.olat.user.UserModule;
-
-import com.thoughtworks.xstream.XStream;
 
 /**
  * Initial Date:  04.08.2004
@@ -89,6 +80,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	private Link registerLink;
 	private Link anoLink;
 	
+	private final OLATAuthManager olatAuthenticationSpi;
+	
 	/**
 	 * @see org.olat.login.auth.AuthenticationController#init(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
@@ -96,6 +89,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		// use fallback translator to registration module
 		super(ureq, winControl, Util.createPackageTranslator(RegistrationManager.class, ureq.getLocale()));
 
+		olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
+		
 		loginComp = createVelocityContainer("olat_log", "olatlogin");
 		
 		if(UserModule.isPwdchangeallowed(null)) {
@@ -203,7 +198,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 				getLogger().audit("Login attempt on already blocked login for " + login + ". IP::" + ureq.getHttpReq().getRemoteAddr(), null);
 				return;
 			}
-			authenticatedIdentity = authenticate(login, pass);
+			authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass);
 			if (authenticatedIdentity == null) {
 				if (LoginModule.registerFailedLoginAttempt(login)) {
 					getLogger().audit("Too many failed login attempts for " + login + ". Login blocked. IP::" + ureq.getHttpReq().getRemoteAddr(), null);
@@ -288,19 +283,19 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	 * @param pass
 	 * @return Identity if authentication was successfull, null otherwise.
 	 * @deprecated should not be part of the controller
-	 */
+	 *//*
 	public static Identity authenticate(String login, String pass) {
 		if (pass == null) return null; // do never accept empty passwords
 		Identity ident = BaseSecurityManager.getInstance().findIdentityByName(login);
 		return authenticate(ident, login, pass);
-	}
+	}*/
 	
 	/**
 	 * @param login
 	 * @param pass
 	 * @return Identity if authentication was successfull, null otherwise.
 	 * @deprecated should not be part of the controller
-	 */
+	 *//*
 	public static Identity authenticate(Identity ident, String login, String pass) {
 		// check for email instead of username if ident is null
 		if (ident == null && LoginModule.allowLoginUsingEmail()) {
@@ -342,7 +337,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			}
 		}
 		return null;		
-	}
+	}*/
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)

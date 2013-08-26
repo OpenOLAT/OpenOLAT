@@ -94,7 +94,6 @@ public class AuthenticationProvider implements ControllerCreator{
 	 * @param language
 	 * @return Description text.
 	 */
-	@SuppressWarnings("unchecked")
 	public String getDescription(Locale locale) {
 		Translator trans = getPackageTranslatorForLocale(locale);
 		String desc = trans.translate("authentication.provider.description");
@@ -123,7 +122,7 @@ public class AuthenticationProvider implements ControllerCreator{
 	 * @return a translator for the package matching the authenticationProvider
 	 */
 	private Translator getPackageTranslatorForLocale (Locale locale) {
-		Class authProvClass = null;
+		Class<?> authProvClass = null;
 		try {
 			authProvClass = Class.forName(clazz);
 		} catch (ClassNotFoundException e) {

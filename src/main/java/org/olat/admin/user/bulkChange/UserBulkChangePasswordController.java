@@ -26,6 +26,7 @@ package org.olat.admin.user.bulkChange;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -60,16 +61,20 @@ import org.olat.user.UserManager;
 public class UserBulkChangePasswordController extends BasicController {
 	
 	private static final OLog log = Tracing.createLoggerFor(UserBulkChangePasswordController.class);
+	
 	private ChangePasswordForm changePasswordForm;
+	private final OLATAuthManager olatAuthenticationSpi;
 
 	public UserBulkChangePasswordController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
 
 		Panel main = new Panel("changePsw");
 		VelocityContainer mainVC = createVelocityContainer("index");
 		
 		changePasswordForm = new ChangePasswordForm(ureq, wControl);
-		this.listenTo(changePasswordForm);
+		listenTo(changePasswordForm);
 		mainVC.put("form", changePasswordForm.getInitialComponent());		
 		
 		main.setContent(mainVC);
@@ -106,7 +111,7 @@ public class UserBulkChangePasswordController extends BasicController {
 					Identity identity = identityManager.findIdentityByName(username);
 					if(identity!=null) {
 						if (password!=null && password.trim().length()>0) {
-							OLATAuthManager.changePassword(ureq.getIdentity(), identity, password);	
+							olatAuthenticationSpi.changePassword(ureq.getIdentity(), identity, password);	
 							log.info("changePassword for username: " + username);
 						}
 						if (autodisc) {

@@ -36,10 +36,13 @@ import org.olat.core.logging.AssertException;
  */
 public class AuthenticationImpl extends PersistentObject implements Authentication {
 
+	private static final long serialVersionUID = 7969409958077836798L;
 	private Identity identity;
 	private String provider;
 	private String authusername;
 	private String credential;
+	private String salt;
+	private String algorithm;
 
 	/**
 	 * for hibernate only
@@ -47,8 +50,22 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	protected AuthenticationImpl() {
 	//  
 	}
+	
+	AuthenticationImpl(Identity identity, String provider, String authusername, String credentials) {
+		
+		if (provider.length() > 8) {
+			// this implementation allows only 8 characters, as defined in hibernate file
+			throw new AssertException("Authentication provider '" + provider + "' to long, only 8 characters supported!");
+		}
+		this.identity = identity;
+		this.provider = provider;
+		this.authusername = authusername;
+		this.credential = credentials;
+	}
 
-	AuthenticationImpl(Identity identity, String provider, String authusername, String credential) {
+	AuthenticationImpl(Identity identity, String provider, String authusername,
+			String credential, String salt, String algorithm) {
+		
 		if (provider.length() > 8) {
 			// this implementation allows only 8 characters, as defined in hibernate file
 			throw new AssertException("Authentication provider '" + provider + "' to long, only 8 characters supported!");
@@ -57,11 +74,14 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 		this.provider = provider;
 		this.authusername = authusername;
 		this.credential = credential;
+		this.salt = salt;
+		this.algorithm = algorithm;
 	}
 
 	/**
 	 * @return
 	 */
+	@Override
 	public String getAuthusername() {
 		return authusername;
 	}
@@ -69,6 +89,7 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	/**
 	 * @return
 	 */
+	@Override
 	public String getProvider() {
 		return provider;
 	}
@@ -78,6 +99,7 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	 * 
 	 * @param string
 	 */
+	@Override
 	public void setAuthusername(String string) {
 		authusername = string;
 	}
@@ -87,6 +109,7 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	 * 
 	 * @param string
 	 */
+	@Override
 	public void setProvider(String string) {
 		provider = string;
 	}
@@ -96,6 +119,7 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	 * 
 	 * @return
 	 */
+	@Override
 	public String getCredential() {
 		return credential;
 	}
@@ -103,13 +127,35 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	/**
 	 * @param string
 	 */
+	@Override
 	public void setCredential(String string) {
 		credential = string;
+	}
+
+	@Override
+	public String getSalt() {
+		return salt;
+	}
+
+	@Override
+	public void setSalt(String salt) {
+		this.salt = salt;
+	}
+
+	@Override
+	public String getAlgorithm() {
+		return algorithm;
+	}
+
+	@Override
+	public void setAlgorithm(String algorithm) {
+		this.algorithm = algorithm;
 	}
 
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		return "auth: provider:" + provider + " ,authusername:" + authusername + ", hashpwd:" + credential + " ," + super.toString();
 	}
@@ -117,6 +163,7 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	/**
 	 * @see org.olat.basesecurity.Authentication#getIdentity()
 	 */
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}
@@ -124,6 +171,7 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	/**
 	 * @see org.olat.basesecurity.Authentication#setIdentity(org.olat.core.id.Identity)
 	 */
+	@Override
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
 	}

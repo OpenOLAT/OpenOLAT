@@ -123,7 +123,7 @@ public class GuestBFWCParts implements BaseFullWebappControllerParts {
 
 		// let all extensions add sitedefinitions
 		ExtManager extm = ExtManager.getInstance();
-		Class extensionPointSites = DTabs.class;
+		Class<?> extensionPointSites = DTabs.class;
 		int cnt = extm.getExtensionCnt();
 		for (int i = 0; i < cnt; i++) {
 			Extension anExt = extm.getExtension(i);

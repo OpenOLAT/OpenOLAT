@@ -483,11 +483,11 @@ public class UsermanagerUserSearchController extends BasicController implements 
 									HashMap<String, String> roleChangeMap = (HashMap<String, String>) runContext.get("roleChangeMap");
 									List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");
 									List<Long> partGroups = (List<Long>) runContext.get("partGroups");
-									List<Long> mailGroups = (List<Long>) runContext.get("mailGroups");
+									//List<Long> mailGroups = (List<Long>) runContext.get("mailGroups");
 									if (attributeChangeMap.size() != 0 || roleChangeMap.size() != 0 || ownGroups.size() != 0 || partGroups.size() != 0){
 										Identity addingIdentity = ureq1.getIdentity();
 										ubcMan.changeSelectedIdentities(selectedIdentities, attributeChangeMap, roleChangeMap, notUpdatedIdentities,
-											isAdministrativeUser, ownGroups, partGroups, mailGroups, getTranslator(), addingIdentity);
+											isAdministrativeUser, ownGroups, partGroups, getTranslator(), addingIdentity);
 										hasChanges = true;
 									}
 								}

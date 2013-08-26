@@ -141,7 +141,7 @@ public class UserAuthenticationWebService {
 		String provider = authenticationVO.getProvider();
 		String authUsername = authenticationVO.getAuthUsername();
 		String credentials = authenticationVO.getCredential();
-		Authentication authentication = baseSecurity.createAndPersistAuthentication(identity, provider, authUsername, credentials);
+		Authentication authentication = baseSecurity.createAndPersistAuthentication(identity, provider, authUsername, credentials, null);
 		if(authentication == null) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}

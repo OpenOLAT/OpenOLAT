@@ -169,7 +169,7 @@ public class LDAPLoginTest extends OlatTestCase {
 			try {
 				//create user but with different attributes - must fail since user already exists
 				User user = UserManager.getInstance().createUser("klaus", "Meier", "klaus@meier.ch");
-				Identity identity = securityManager.createAndPersistIdentityAndUser("kmeier", user, "LDAP", "kmeier", null);
+				Identity identity = securityManager.createAndPersistIdentityAndUser("kmeier", user, "LDAP", "kmeier");
 				SecurityGroup secGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 				securityManager.addIdentityToSecurityGroup(identity, secGroup);
 				
@@ -188,7 +188,7 @@ public class LDAPLoginTest extends OlatTestCase {
 		} else {
 			//create user but with different attributes - must fail since user already exists
 			User user = UserManager.getInstance().createUser("klaus", "Meier", "klaus@meier.ch");
-			Identity identity = securityManager.createAndPersistIdentityAndUser("kmeier", user, "LDAP", "kmeier", null);
+			Identity identity = securityManager.createAndPersistIdentityAndUser("kmeier", user, "LDAP", "kmeier");
 			SecurityGroup secGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 			securityManager.addIdentityToSecurityGroup(identity, secGroup);
 			// simulate closed session (user adding from startup job)
@@ -250,14 +250,14 @@ public class LDAPLoginTest extends OlatTestCase {
 		
 		//create some users in LDAPSecurityGroup
 		User user = UserManager.getInstance().createUser("grollia", "wa", "gorrila@olat.org");
-		Identity identity = securityManager.createAndPersistIdentityAndUser("gorilla", user, "LDAP", "gorrila", null);
+		Identity identity = securityManager.createAndPersistIdentityAndUser("gorilla", user, "LDAP", "gorrila");
 		SecurityGroup secGroup1 = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
 		user = UserManager.getInstance().createUser("wer", "immer", "immer@olat.org");
-		identity = securityManager.createAndPersistIdentityAndUser("der", user, "LDAP", "der", null);
+		identity = securityManager.createAndPersistIdentityAndUser("der", user, "LDAP", "der");
 		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
 		user = UserManager.getInstance().createUser("die", "da", "chaspi@olat.org");
-		identity = securityManager.createAndPersistIdentityAndUser("das", user, "LDAP", "das", null);
+		identity = securityManager.createAndPersistIdentityAndUser("das", user, "LDAP", "das");
 		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
 		
 		// simulate closed session
@@ -330,11 +330,11 @@ public class LDAPLoginTest extends OlatTestCase {
 
 		//create Users in LDAP Group only existing in OLAT 
 		User user1 = UserManager.getInstance().createUser("hansi", "hürlima", "hansi@hansli.com");
-		Identity identity1 = securityManager.createAndPersistIdentityAndUser("hansi", user1, "LDAP", "hansi", null);
+		Identity identity1 = securityManager.createAndPersistIdentityAndUser("hansi", user1, "LDAP", "hansi");
 		SecurityGroup secGroup1 = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 		securityManager.addIdentityToSecurityGroup(identity1, secGroup1);
 		user1 = UserManager.getInstance().createUser("chaspi", "meier", "chaspi@hansli.com");
-		identity1 = securityManager.createAndPersistIdentityAndUser("chaspi", user1, "LDAP", "chaspi", null);
+		identity1 = securityManager.createAndPersistIdentityAndUser("chaspi", user1, "LDAP", "chaspi");
 		securityManager.addIdentityToSecurityGroup(identity1, secGroup1);
 
 		//create User to Delete List

@@ -162,7 +162,7 @@ public class LifeCycleManager extends BasicManager {
 	public static String getShortTypeName(String standardTypeName) {
 		if (standardTypeName.length() > LifeCycleEntry.PERSISTENTTYPENAME_MAXLENGTH) {
 			//encode into an md5 hash with fixed length of 32 characters otherwise the sting may get too long for locks or db fields
-			return Encoder.encrypt(standardTypeName);
+			return Encoder.md5hash(standardTypeName);
 		} else {
 			return standardTypeName;
 		}

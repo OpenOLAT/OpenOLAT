@@ -50,6 +50,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Encoder;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 
@@ -156,7 +157,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		assertEquals(1, userList.size());
 
 		// 3) two fields wheras only one matches to one single user
-		sm.createAndPersistAuthentication(s1, "mytest_p", s1.getName(), "sdf");
+		sm.createAndPersistAuthentication(s1, "mytest_p", s1.getName(), "sdf", Encoder.Algorithm.sha512);
 		String[] myProviders = new String[] {"mytest_p", "non-prov"};
 		for (int i = 0; i < myProviders.length; i++) {
 			assertTrue("Provider name.length must be <= 8", myProviders[i].length() <= 8);

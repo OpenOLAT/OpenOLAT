@@ -225,7 +225,7 @@ public class MailManager extends BasicManager {
 			return hasSibling;
 		}
 		
-		String uuid = Encoder.encrypt(name + checksum);
+		String uuid = Encoder.md5hash(name + checksum);
 		String dir = attachmentStorage.generateDir(uuid, false);
 		VFSContainer container = attachmentStorage.getContainer(dir);
 		String uniqueName = VFSManager.similarButNonExistingName(container, name);
@@ -733,7 +733,7 @@ public class MailManager extends BasicManager {
 				createAddress(toAddress, recipientTo, true, result, true);
 			} 
 			if(makeRealMail && StringHelper.containsNonWhitespace(to)) {
-				createAddress(toAddress, to, result);
+				createAddress(toAddress, to);
 			}
 			
 			if(cc != null) {
@@ -1016,7 +1016,7 @@ public class MailManager extends BasicManager {
 		}
 	}
 	
-	private boolean createAddress(List<Address> addressList, String address, MailerResult result) throws AddressException {
+	private boolean createAddress(List<Address> addressList, String address) throws AddressException {
 		Address add = createAddress(address);
 		if(add != null) {
 			addressList.add(add);

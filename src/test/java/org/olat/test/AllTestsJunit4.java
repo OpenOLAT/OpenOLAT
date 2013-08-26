@@ -60,6 +60,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.coordinate.LockEntryTest.class,
 	org.olat.core.util.StringHelperTest.class,
 	org.olat.core.util.FormatterTest.class,
+	org.olat.core.util.EncoderTest.class,
 	org.olat.core.util.mail.manager.MailManagerTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
 	org.olat.core.id.context.HistoryManagerTest.class,
@@ -95,6 +96,7 @@ import org.junit.runners.Suite;
 	org.olat.basesecurity.BaseSecurityTest.class,//ok
 	org.olat.basesecurity.BaseSecurityManagerTest.class,//ok
 	org.olat.user.UserManagerTest.class,//ok
+	org.olat.user.UserNameAndPasswordSyntaxCheckerWithRegexpTest.class,//ok
 	org.olat.repository.RepositoryManagerTest.class,//ok
 	org.olat.repository.RepositoryManagerConcurrentTest.class,//ok
 	org.olat.repository.RepositoryManagerQueryTest.class,//ok

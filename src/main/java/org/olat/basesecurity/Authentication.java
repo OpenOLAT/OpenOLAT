@@ -55,6 +55,18 @@ public interface Authentication extends CreateInfo, Persistable {
 	 * @return
 	 */
 	public String getCredential();
+	
+	/**
+	 * Salt used to hash the password
+	 * @return
+	 */
+	public String getSalt();
+	
+	/**
+	 * Algoritm used to hash the password
+	 * @return
+	 */
+	public String getAlgorithm();
 
 	/**
 	 * @param identity
@@ -75,6 +87,18 @@ public interface Authentication extends CreateInfo, Persistable {
 	 * @param credential
 	 */
 	public void setCredential(String credential);
+	
+	/**
+	 * 
+	 * @param salt
+	 */
+	public void setSalt(String salt);
+	
+	/**
+	 * 
+	 * @param algorithm
+	 */
+	public void setAlgorithm(String algorithm);
 
 }
 

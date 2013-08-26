@@ -373,7 +373,7 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
   	parameters.put("first-name", identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
   	parameters.put("last-name", identity.getUser().getProperty(UserConstants.LASTNAME, null));
   	parameters.put("login", PREFIX + identity.getName());
-  	parameters.put("password", Encoder.encrypt(identity.getName() + "@" + Settings.getApplicationName()));
+  	parameters.put("password", Encoder.md5hash(identity.getName() + "@" + Settings.getApplicationName()));
   	parameters.put("type", userType);
   	parameters.put("has-children", "false");
   	Document responseDoc = getResponseDocument(sendRequest(parameters));
@@ -453,7 +453,7 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
     parameters.put("action", "login");
     if(accountId != null) parameters.put("account-id", accountId);
     parameters.put("login", PREFIX + identity.getName());
-    parameters.put("password", Encoder.encrypt(identity.getName() + "@" + Settings.getApplicationName()));
+    parameters.put("password", Encoder.md5hash(identity.getName() + "@" + Settings.getApplicationName()));
     Document responseDoc = getResponseDocument(sendRequest(parameters));
 
     return evaluateOk(responseDoc);

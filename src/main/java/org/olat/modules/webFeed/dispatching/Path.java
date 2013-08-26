@@ -513,7 +513,7 @@ public class Path {
 			if (authentication == null) {
 				// Create an authentication
 				String token = RandomStringUtils.randomAlphanumeric(6);
-				authentication = manager.createAndPersistAuthentication(identity, TOKEN_PROVIDER, idKey, token);
+				authentication = manager.createAndPersistAuthentication(identity, TOKEN_PROVIDER, idKey, token, null);
 			}
 			// If the repository entry allows guest access it is public, thus not
 			// private.

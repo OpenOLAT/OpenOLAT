@@ -84,7 +84,7 @@ public class MapperServiceImpl implements MapperService {
 	@Override
 	public String register(UserSession session, Mapper mapper) {
 		String mapid = UUID.randomUUID().toString().replace("-", "");
-		mapid = Encoder.encrypt(mapid);
+		mapid = Encoder.md5hash(mapid);
 		
 		MapperKey mapperKey = new MapperKey(session, mapid);
 		mapperKeyToMapper.put(mapperKey, mapper);
@@ -118,7 +118,7 @@ public class MapperServiceImpl implements MapperService {
 
 	@Override
 	public String register(UserSession session, String mapperId, Mapper mapper, int expirationTime) {
-		String encryptedMapId = Encoder.encrypt(mapperId);
+		String encryptedMapId = Encoder.md5hash(mapperId);
 		MapperKey mapperKey = new MapperKey(session, encryptedMapId);
 		boolean alreadyLoaded = mapperKeyToMapper.containsKey(mapperKey);
 		if(mapper instanceof Serializable) {

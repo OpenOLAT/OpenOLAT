@@ -76,6 +76,8 @@ create table o_bs_authentication (
    provider varchar(8),
    authusername varchar(255),
    credential varchar(255),
+   salt varchar(255) default null,
+   hashalgorithm varchar(16) default null,
    primary key (id),
    unique (provider, authusername)
 );

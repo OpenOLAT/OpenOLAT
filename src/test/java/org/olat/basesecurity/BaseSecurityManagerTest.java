@@ -38,7 +38,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.Encoder;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -64,7 +63,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	public void testCreateIdentity() {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@frentix.com");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, Encoder.encrypt("secret"));
+		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret");
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -86,7 +85,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		User user = userManager.createUser("first" + name, "last" + name, name + "@frentix.com");
 		user.setProperty(UserConstants.COUNTRY, "");
 		user.setProperty(UserConstants.CITY, "Basel");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, Encoder.encrypt("secret"));
+		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret");
 		dbInstance.commitAndCloseSession();
 		
 		//reload and update
@@ -835,16 +834,5 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(permissions.contains("test.gpor-1_1"));
 		Assert.assertTrue(permissions.contains("test.gpor-1_2"));
 		Assert.assertFalse(permissions.contains("test.gpor-1_3"));
-	}
-	
-	@Test
-	public void findCredentials() {
-		//create a user with the default provider
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("find-cred-" + UUID.randomUUID().toString());
-		
-		dbInstance.commitAndCloseSession();
-		
-		String credential = securityManager.findCredentials(id, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-		Assert.assertNotNull(credential);	
 	}
 }

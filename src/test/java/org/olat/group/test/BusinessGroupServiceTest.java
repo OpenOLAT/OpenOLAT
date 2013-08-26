@@ -47,7 +47,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Encoder;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -169,8 +168,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			bgWithWaitingList.setMaxParticipants(new Integer(2));
 			// Identities
 			String suffix = UUID.randomUUID().toString();
-			User UserWg1 = userManager.createAndPersistUser("FirstName_" + suffix, "LastName_" + suffix, suffix + "_junittest@olat.unizh.ch");
-			wg1 = securityManager.createAndPersistIdentity(suffix, UserWg1, BaseSecurityModule.getDefaultAuthProviderIdentifier(), suffix, Encoder.encrypt("wg1"));
+			User userWg1 = userManager.createAndPersistUser("FirstName_" + suffix, "LastName_" + suffix, suffix + "_junittest@olat.unizh.ch");
+			wg1 = securityManager.createAndPersistIdentity(suffix, userWg1, BaseSecurityModule.getDefaultAuthProviderIdentifier(), suffix, "wg1");
 
 			dbInstance.commitAndCloseSession();
 

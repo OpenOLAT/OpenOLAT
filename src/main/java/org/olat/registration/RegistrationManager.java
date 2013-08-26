@@ -305,7 +305,7 @@ public class RegistrationManager extends BasicManager {
 	 */
 	public TemporaryKeyImpl register(String emailaddress, String ipaddress, String action) {
 		String today = new Date().toString();
-		String encryptMe = Encoder.encrypt(emailaddress + ipaddress + today);
+		String encryptMe = Encoder.md5hash(emailaddress + ipaddress + today);
 		TemporaryKeyImpl tk = new TemporaryKeyImpl(emailaddress, ipaddress, encryptMe, action);
 		DBFactory.getInstance().saveObject(tk);
 		return tk;

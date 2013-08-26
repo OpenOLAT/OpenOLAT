@@ -107,7 +107,7 @@ public class FeedManagerImpl extends FeedManager {
 	private final XStream xstream;
 	
 	// Better performance when protected (apparently)
-	protected CacheWrapper feedCache;
+	protected CacheWrapper<String,Feed> feedCache;
 	private OLog log;
 
 
@@ -185,7 +185,7 @@ public class FeedManagerImpl extends FeedManager {
 	 * 
 	 * @return The feed cache
 	 */
-	protected CacheWrapper initFeedCache() {
+	protected CacheWrapper<String,Feed> initFeedCache() {
 		if (feedCache == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType(Feed.class);
 			coordinator.getSyncer().doInSync(ores, new SyncerExecutor() {
@@ -521,7 +521,7 @@ public class FeedManagerImpl extends FeedManager {
 		e.setTitle(entry.getTitle());
 		e.setDescription(entry.getDescription() != null ? entry.getDescription().getValue() : null);
 		// Extract content objects from syndication item
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (SyndContent content : (List<SyndContent>) entry.getContents()) {
 			// we don't check for type, assume it is html or txt
 			if (sb.length() > 0) {
@@ -1234,7 +1234,7 @@ public class FeedManagerImpl extends FeedManager {
 	public LockResult acquireLock(OLATResourceable feed, Item item, Identity identity) {
 		String key = itemKey(item, feed);
 		if (key.length() >= OresHelper.ORES_TYPE_LENGTH) {
-			key = Encoder.encrypt(key);
+			key = Encoder.md5hash(key);
 		}
 		OLATResourceable itemResource = OresHelper.createOLATResourceableType(key);
 		LockResult lockResult = coordinator.getLocker().acquireLock(itemResource, identity, key);

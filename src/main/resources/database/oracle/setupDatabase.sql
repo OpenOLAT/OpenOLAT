@@ -85,6 +85,8 @@ CREATE TABLE o_bs_authentication (
   provider varchar2(8 char),
   authusername varchar2(255 char),
   credential varchar2(255 char),
+  salt varchar2(255 char),
+  hashalgorithm varchar2(16 char),
   PRIMARY KEY (id),
   CONSTRAINT u_o_bs_authentication UNIQUE (provider, authusername)
 );

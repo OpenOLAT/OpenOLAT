@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
@@ -46,6 +47,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.OLATAuthenticationController;
+import org.olat.login.auth.OLATAuthManager;
 
 /**
  * <h3>Description:</h3>
@@ -123,7 +125,8 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 			}
 			
 			// Authenticate user
-			Identity identity = OLATAuthenticationController.authenticate(userName, pwd);
+			OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
+			Identity identity = olatAuthenticationSpi.authenticate(null, userName, pwd);
 			if (identity == null) {
 				log.info("Could not authenticate user '" + userName + "', wrong password or user name");
 				// redirect to OLAT loginscreen, add error parameter so that the loginform can mark itself as errorfull

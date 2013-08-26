@@ -66,6 +66,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 
 	private CacheWrapper<String,UserSession> timedSessionCache;
 	private UserSessionManager sessionManager;
+	private WebDAVAuthManager webDAVAuthManager;
 
 	/**
 	 * [spring]
@@ -81,6 +82,14 @@ public class WebDAVManagerImpl extends WebDAVManager {
 	 */
 	public void setSessionManager(UserSessionManager sessionManager) {
 		this.sessionManager = sessionManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param webDAVAuthManager
+	 */
+	public void setWebDAVAuthManager(WebDAVAuthManager webDAVAuthManager) {
+		this.webDAVAuthManager = webDAVAuthManager;
 	}
 
 	/**
@@ -171,7 +180,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 			// and set valid true if valid.
 			// In this example, we simply check
 			// that neither field is blank
-			Identity identity = WebDAVAuthManager.authenticate(userID, password);
+			Identity identity = webDAVAuthManager.authenticate(null, userID, password);
 			if (identity != null) {
 				UserSession usess = sessionManager.getUserSession(request);
 				synchronized(usess) {

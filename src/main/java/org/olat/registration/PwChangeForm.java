@@ -25,6 +25,7 @@
 
 package org.olat.registration;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -48,12 +49,17 @@ public class PwChangeForm extends FormBasicController {
 	private TextElement newpass1;
 	private TextElement newpass2; // confirm
 	
+	private final OLATAuthManager olatAuthenticationSpi;
+	
 	/**
 	 * Password change form.
 	 * @param name
 	 */
 	public PwChangeForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
+		
+		olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
+		
 		initForm(ureq);
 	}
 
@@ -79,7 +85,7 @@ public class PwChangeForm extends FormBasicController {
 	 * @param s The identity to change the password.
 	 */
 	public boolean saveFormData(Identity s) {
-		return OLATAuthManager.changePasswordByPasswordForgottenLink(s, newpass1.getValue());	
+		return olatAuthenticationSpi.changePasswordByPasswordForgottenLink(s, newpass1.getValue());	
 	}
 
 	@Override

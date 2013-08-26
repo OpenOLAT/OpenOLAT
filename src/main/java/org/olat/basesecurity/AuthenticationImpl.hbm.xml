@@ -26,6 +26,9 @@
 	<property name="credential" type="string" not-null="false">
 		<column name="credential" length="255" index="credential_idx"/>
 	</property>
+	
+	<property name="salt" column="salt" type="string" not-null="false"/>
+	<property name="algorithm" column="hashalgorithm" type="string" not-null="false"/>
 
 	</class>
 </hibernate-mapping>

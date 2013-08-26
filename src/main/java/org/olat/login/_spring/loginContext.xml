@@ -3,10 +3,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 <bean id="loginModule" class="org.olat.login.LoginModule">
-
 	<property name="persistedProperties">
 	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
 	    <constructor-arg index="0" ref="coordinatorManager"/>
@@ -88,6 +87,8 @@
 </bean>
 
 <bean id="afterLoginInterceptionManager" class="org.olat.login.AfterLoginInterceptionManager" />
+<bean id="olatAuthenticationSpi" class="org.olat.login.auth.OLATAuthManager" />
+
 
 
 </beans>

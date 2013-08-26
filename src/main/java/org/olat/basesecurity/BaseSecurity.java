@@ -35,6 +35,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
+import org.olat.core.util.Encoder;
 import org.olat.resource.OLATResource;
 
 /**
@@ -272,6 +273,8 @@ public interface BaseSecurity {
 	 * @return nr of members in the securitygroup
 	 */
 	public int countIdentitiesOfSecurityGroup(SecurityGroup secGroup);
+	
+
 
 	/**
 	 * @param username the username
@@ -283,8 +286,8 @@ public interface BaseSecurity {
 	 * @param credential the credentials or null if not used
 	 * @return the new identity
 	 */
-	public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String credential);
-
+	public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String password);
+	
 	/**
 	 * @param username the username
 	 * @param user the unpresisted User
@@ -295,7 +298,19 @@ public interface BaseSecurity {
 	 * @param credential the credentials or null if not used
 	 * @return the new identity
 	 */
-	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername, String credential);
+	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername);
+
+	/**
+	 * @param username the username
+	 * @param user the unpresisted User
+	 * @param provider the provider of the authentication ("OLAT" or "AAI"). If
+	 *          null, no authentication token is generated.
+	 * @param authusername the username used as authentication credential
+	 *          (=username for provider "OLAT")
+	 * @param password The password which will be used as credentials (not hashed it)
+	 * @return the new identity
+	 */
+	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername, String password);
 
 	/**
 	 * Return the List of associated Authentications.
@@ -313,32 +328,22 @@ public interface BaseSecurity {
 	 */
 	public Authentication findAuthentication(Identity identity, String provider);
 	
+	
 	/**
-	 * 
-	 * @param identity
-	 * @param creationDate
+	 * Find authentication which are older than a specific date.
+	 * @param provider The provider
+	 * @param creationDate The date's limit
 	 * @return
 	 */
 	public List<Authentication> findOldAuthentication(String provider, Date creationDate);
 	
 	/**
-	 * 
-	 * @param provider
-	 * @param token
+	 * Authentication with a security token
+	 * @param provider The provider
+	 * @param securityToken The security token
 	 * @return
 	 */
-	public List<Authentication> findAuthentication(String provider, String credential);
-	
-	/**
-	 * Return the credential or null
-	 * @param identity
-	 * @param provider
-	 * @return
-	 */
-	public String findCredentials(Identity identity, String provider);
-
-	//fxdiff: FXOLAT-219 decrease the load for synching groups
-	public boolean hasAuthentication(Long identityKey, String provider);
+	public List<Authentication> findAuthenticationByToken(String provider, String securityToken);
 
 	/**
 	 * @param identity
@@ -347,7 +352,7 @@ public interface BaseSecurity {
 	 * @param credential
 	 * @return an Authentication
 	 */
-	public Authentication createAndPersistAuthentication(Identity identity, String provider, String authUsername, String credential);
+	public Authentication createAndPersistAuthentication(Identity identity, String provider, String authUsername, String password, Encoder.Algorithm algoritm);
 
 	/**
 	 * @param authentication
@@ -359,6 +364,24 @@ public interface BaseSecurity {
 	 * @param authentication
 	 */
 	public Authentication updateAuthentication(Authentication authentication);
+	
+	/**
+	 * 
+	 * @param authentication
+	 * @param password
+	 * @param algorithm
+	 * @return
+	 */
+	public boolean checkCredentials(Authentication authentication, String password);
+	
+	/**
+	 * Updated the hashed password to a new one
+	 * @param authentication
+	 * @param password
+	 * @param algorithm
+	 * @return
+	 */
+	public Authentication updateCredentials(Authentication authentication, String password, Encoder.Algorithm algorithm);
 
 	// --- SecGroup management
 

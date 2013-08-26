@@ -210,7 +210,7 @@ public class ContentPackage {
 		String orgaIdentifier = getFirstOrganizationInManifest().getIdentifier();
 		// For the root node id of the ext-js tree we use an md5 hash. This is to
 		// make sure that no unwanted characters are handed over to JS.
-		String rootNodeId = Encoder.encrypt(orgaIdentifier);
+		String rootNodeId = Encoder.md5hash(orgaIdentifier);
 		return new CPTreeDataModel(orgaIdentifier, rootNodeId, this);
 	}
 

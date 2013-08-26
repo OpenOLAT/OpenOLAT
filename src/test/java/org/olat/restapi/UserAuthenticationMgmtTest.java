@@ -55,6 +55,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Encoder;
 import org.olat.restapi.support.vo.AuthenticationVO;
 import org.olat.test.OlatJerseyTestCase;
 
@@ -155,7 +156,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		//create an authentication token
 		BaseSecurity baseSecurity = BaseSecurityManager.getInstance();
 		Identity adminIdent = baseSecurity.findIdentityByName("administrator");
-		Authentication authentication = baseSecurity.createAndPersistAuthentication(adminIdent, "REST-A-2", "administrator", "credentials");
+		Authentication authentication = baseSecurity.createAndPersistAuthentication(adminIdent, "REST-A-2", "administrator", "credentials", Encoder.Algorithm.sha512);
 		assertTrue(authentication != null && authentication.getKey() != null && authentication.getKey().longValue() > 0);
 		DBFactory.getInstance().intermediateCommit();
 		

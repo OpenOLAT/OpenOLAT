@@ -29,10 +29,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.Constants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -47,7 +48,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.ldap.LDAPError;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
-import org.olat.login.OLATAuthenticationController;
 import org.olat.login.SupportsAfterLoginInterceptor;
 import org.olat.login.auth.OLATAuthManager;
 
@@ -72,6 +72,8 @@ public class ChangePasswordController extends BasicController implements Support
 	
 	private VelocityContainer myContent;
 	private ChangePasswordForm chPwdForm;
+	
+	private final OLATAuthManager olatAuthenticationSpi;
 
 	/**
 	 * @param ureq
@@ -79,6 +81,8 @@ public class ChangePasswordController extends BasicController implements Support
 	 */
 	public ChangePasswordController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
 
 		// if a user is not allowed to change his/her own password, say it here
 		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) {
@@ -141,14 +145,14 @@ public class ChangePasswordController extends BasicController implements Support
 					//fallback to OLAT if enabled happen automatically in LDAPAuthenticationController
 					provenIdent = LDAPAuthenticationController.authenticate(ureq.getIdentity().getName(), oldPwd, ldapError);
 				} else if(BaseSecurityManager.getInstance().findAuthentication(ureq.getIdentity(), BaseSecurityModule.getDefaultAuthProviderIdentifier()) != null) {
-					provenIdent = OLATAuthenticationController.authenticate(ureq.getIdentity().getName(), oldPwd);
+					provenIdent = olatAuthenticationSpi.authenticate(ureq.getIdentity(), ureq.getIdentity().getName(), oldPwd);
 				}
 
 				if (provenIdent == null) {
 					showError("error.password.noauth");	
 				} else {
 					String newPwd = chPwdForm.getNewPasswordValue();
-					if(OLATAuthManager.changePassword(ureq.getIdentity(), provenIdent, newPwd)) {
+					if(olatAuthenticationSpi.changePassword(ureq.getIdentity(), provenIdent, newPwd)) {
 						//TODO: verify that we are NOT in a transaction (changepwd should be commited immediately)				
 						// fxdiff: we need this event for the afterlogin-controller
 						fireEvent(ureq, Event.DONE_EVENT);

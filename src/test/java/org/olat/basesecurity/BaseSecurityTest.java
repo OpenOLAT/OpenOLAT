@@ -46,7 +46,6 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Encoder;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -482,13 +481,13 @@ public class BaseSecurityTest extends OlatTestCase {
 		try {
 			User onePropUser = UserManager.getInstance().createUser("onepropuser", "onepropuser", "onepropuser@lustig.com");
 			onePropUser.setProperty(UserConstants.FIRSTNAME, "one");		
-			Identity onePropeIdentity = baseSecurityManager.createAndPersistIdentityAndUser("onePropUser", onePropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), "onepropuser", Encoder.encrypt("ppp"));
+			Identity onePropeIdentity = baseSecurityManager.createAndPersistIdentityAndUser("onePropUser", onePropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), "onepropuser", "ppp");
 			Assert.assertNotNull(onePropeIdentity);
 			
 			User twoPropUser = UserManager.getInstance().createUser("twopropuser", "twopropuser", "twopropuser@lustig.com");
 			twoPropUser.setProperty(UserConstants.FIRSTNAME, "two");
 			twoPropUser.setProperty(UserConstants.LASTNAME, "prop");
-			Identity twoPropeIdentity = baseSecurityManager.createAndPersistIdentityAndUser("twopropuser", twoPropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), "twopropuser", Encoder.encrypt("ppp"));
+			Identity twoPropeIdentity = baseSecurityManager.createAndPersistIdentityAndUser("twopropuser", twoPropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), "twopropuser", "ppp");
 			Assert.assertNotNull(twoPropeIdentity);
 			// commit
 			DBFactory.getInstance().closeSession();
@@ -575,7 +574,7 @@ public class BaseSecurityTest extends OlatTestCase {
 			multiPropUser.setProperty(UserConstants.INSTITUTIONALEMAIL, "multiinst@lustig.com");		
 			multiPropUser.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "multiinst");		
 			multiPropUser.setProperty(UserConstants.CITY, "züri");		
-			Identity onePropeIdentity = baseSecurityManager.createAndPersistIdentityAndUser("multiPropUser", multiPropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), "multipropuser", Encoder.encrypt("ppp"));
+			Identity onePropeIdentity = baseSecurityManager.createAndPersistIdentityAndUser("multiPropUser", multiPropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), "multipropuser", "ppp");
 			Assert.assertNotNull(onePropeIdentity);
 			
 			// commit
@@ -752,7 +751,7 @@ public class BaseSecurityTest extends OlatTestCase {
 			User user = UserManager.getInstance().createUser(name+"_Firstname", name + "_Lastname", name + "@lustig.com");
 			user.setProperty(UserConstants.INSTITUTIONALNAME, "unizh2");
 			user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "12-345-678-908");
-			ident = baseSecurityManager.createAndPersistIdentityAndUser(name, user, authProvider, name, Encoder.encrypt("ppp"));
+			ident = baseSecurityManager.createAndPersistIdentityAndUser(name, user, authProvider, name, "ppp");
 			return ident;
 		}
 	}

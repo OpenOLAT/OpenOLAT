@@ -226,7 +226,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		// first delete recordings
 		Map<String, String> mapRecordings = listRecordings(roomId);
 		for(String key : mapRecordings.keySet()) {
-			removeClassroomRecording(key, config);
+			removeClassroomRecording(key);
 		}
 		
 		Map<String, String> parameters = new HashMap<String, String>();
@@ -410,7 +410,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		parameters.put("function", "createUser");
 		parameters.put("target", PREFIX + identity.getKey());
 		parameters.put("password_type", "P");// specified password, see Wimba Classroom 6.0 API Guide, page 8
-		parameters.put("password", Encoder.encrypt(identity.getName() + "@" + Settings.getApplicationName()));
+		parameters.put("password", Encoder.md5hash(identity.getName() + "@" + Settings.getApplicationName()));
 		parameters.put("first_name", identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		parameters.put("last_name", identity.getUser().getProperty(UserConstants.LASTNAME, null));
 		String raw = sendRequest(parameters);
@@ -519,7 +519,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		return mapKeyName;
 	}
 	
-	public URL createClassroomRecordingUrl(String recordingId, Identity identity, VCConfiguration config) {
+	public URL createClassroomRecordingUrl(String recordingId, Identity identity) {
 		URL url = null;
 		/* Notice: This is a very special and wimba specific case, the recordingId must not prefixed! */
 		URI uri = UriBuilder.fromUri(protocol + "://" + baseUrl).port(port)
@@ -533,7 +533,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		return url;
 	}
 	
-	public boolean removeClassroomRecording(String recordingId, VCConfiguration config) {
+	public boolean removeClassroomRecording(String recordingId) {
 		if(!loginAdmin()) throw new AssertException("Cannot login to Wimba Classroom. Please check module configuration and Wimba Classroom connectivity");
 		
 		Map<String, String> parameters = new HashMap<String, String>();

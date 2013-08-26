@@ -265,7 +265,7 @@ public class WimbaDisplayController extends BasicController {
         String key = (String) recTable.getTableDataModel().getValueAt(row, 0);
         if(action.equals(COMMAND_OPEN_RECORDING)) {
           wimba.login(ureq.getIdentity(), null);
-          URL url = wimba.createClassroomRecordingUrl(key, ureq.getIdentity(), config);
+          URL url = wimba.createClassroomRecordingUrl(key, ureq.getIdentity());
           RedirectMediaResource rmr = new RedirectMediaResource(url.toString());
           ureq.getDispatchResult().setResultingMediaResource(rmr);
           return;
@@ -283,7 +283,7 @@ public class WimbaDisplayController extends BasicController {
         		getWindowControl().setError(translate(text));
         	}
         } else if(action.equals(COMMAND_DELETE_RECORDING)) {
-          if(wimba.removeClassroomRecording(key, config)) {
+          if(wimba.removeClassroomRecording(key)) {
             getWindowControl().setInfo(translate("table.recordings.delete.success"));
             recTableModel.removeRecording(row);
             recTable.modelChanged();
@@ -340,7 +340,7 @@ public class WimbaDisplayController extends BasicController {
 
 }
 
-class RecordingsTableModel implements TableDataModel {
+class RecordingsTableModel implements TableDataModel<Object[]> {
 
   private List<Object[]> recordings = new ArrayList<Object[]>();
   private Translator translator;
@@ -376,12 +376,12 @@ class RecordingsTableModel implements TableDataModel {
   }
 
   @Override
-  public Object getObject(int row) {
+  public Object[] getObject(int row) {
     return recordings.get(row);
   }
 
   @Override
-  public void setObjects(List objects) {
+  public void setObjects(List<Object[]> objects) {
     this.recordings = objects;
   }
 

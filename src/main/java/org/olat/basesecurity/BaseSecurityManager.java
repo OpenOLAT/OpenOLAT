@@ -62,11 +62,13 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.Encoder.Algorithm;
+import org.olat.core.util.Encoder;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.login.LoginModule;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
@@ -933,11 +935,31 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @param credential the credentials or null if not used
 	 * @return Identity
 	 */
+	@Override
 	public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String credential) {
 		IdentityImpl iimpl = new IdentityImpl(username, user);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
-			createAndPersistAuthentication(iimpl, provider, authusername, credential);
+			createAndPersistAuthentication(iimpl, provider, authusername, credential, LoginModule.getDefaultHashAlgorithm());
+		}
+		notifyNewIdentityCreated(iimpl);
+		return iimpl;
+	}
+
+	/**
+	 * @param username The username
+	 * @param user The unpresisted User
+	 * @param provider The provider of the authentication ("OLAT" or "AAI"). If null, no authentication token is generated.
+	 * @param authusername The username used as authentication credential (=username for provider "OLAT")
+	 * @return Identity
+	 */
+	@Override
+	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername) {
+		dbInstance.getCurrentEntityManager().persist(user);
+		IdentityImpl iimpl = new IdentityImpl(username, user);
+		dbInstance.getCurrentEntityManager().persist(iimpl);
+		if (provider != null) { 
+			createAndPersistAuthentication(iimpl, provider, authusername, null, null);
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
@@ -953,12 +975,13 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @param credential the credentials or null if not used
 	 * @return Identity
 	 */
+	@Override
 	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername, String credential) {
 		dbInstance.getCurrentEntityManager().persist(user);
 		IdentityImpl iimpl = new IdentityImpl(username, user);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
-			createAndPersistAuthentication(iimpl, provider, authusername, credential);
+			createAndPersistAuthentication(iimpl, provider, authusername, credential, LoginModule.getDefaultHashAlgorithm());
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
@@ -1383,13 +1406,20 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#createAndPersistAuthentication(org.olat.core.id.Identity, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Authentication createAndPersistAuthentication(final Identity ident, final String provider, final String authUserName, final String credential) {
+	public Authentication createAndPersistAuthentication(final Identity ident, final String provider, final String authUserName,
+			final String credentials, final Encoder.Algorithm algorithm) {
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstanceWithoutCheck(provider, ident.getKey());
 		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resourceable, new SyncerCallback<Authentication>(){
 			public Authentication execute() {
 				Authentication auth = findAuthentication(ident, provider);
 				if(auth == null) {
-					auth = new AuthenticationImpl(ident, provider, authUserName, credential);
+					if(algorithm != null) {
+						String salt = Encoder.getSalt();
+						String hash = Encoder.encrypt(credentials, salt, algorithm);
+						auth = new AuthenticationImpl(ident, provider, authUserName, hash, salt, algorithm.name());
+					} else {
+						auth = new AuthenticationImpl(ident, provider, authUserName, credentials);
+					}
 					dbInstance.getCurrentEntityManager().persist(auth);
 				}
 				return auth;
@@ -1424,8 +1454,8 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#findAuthentication(org.olat.core.id.Identity, java.lang.String)
 	 */
 	@Override
-	public List<Authentication> findAuthentication(String provider, String credential) {
-		if (provider==null || credential==null) {
+	public List<Authentication> findAuthenticationByToken(String provider, String securityToken) {
+		if (provider==null || securityToken==null) {
 			throw new IllegalArgumentException("provider and token must not be null");
 		}
 		
@@ -1435,7 +1465,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		
 		List<Authentication> results = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
-				.setParameter("credential", credential)
+				.setParameter("credential", securityToken)
 				.setParameter("provider", provider)
 				.getResultList();
 		return results;
@@ -1460,63 +1490,55 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	}
 
 	@Override
-	public String findCredentials(Identity identity, String provider) {
-		if (identity==null) {
-			throw new IllegalArgumentException("identity must not be null");
-		}
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select auth.credential from ").append(AuthenticationImpl.class.getName())
-		  .append(" as auth where auth.identity.key=:identityKey and auth.provider=:provider");
-		
-		List<String> results = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), String.class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("provider", provider)
-				.getResultList();
-		if (results == null || results.size() == 0) return null;
-		if (results.size() > 1) throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
-		return results.get(0);
-	}
-
-	@Override
-	//fxdiff: FXOLAT-219 decrease the load for synching groups
-	public boolean hasAuthentication(Long identityKey, String provider) {
-		if (identityKey == null || !StringHelper.containsNonWhitespace(provider)) return false;
-		
-		String queryStr = "select count(auth) from org.olat.basesecurity.AuthenticationImpl as auth where auth.identity.key=:key and auth.provider=:provider";
-		DBQuery query = DBFactory.getInstance().createQuery(queryStr);
-		query.setLong("key", identityKey);
-		query.setString("provider", provider);
-		
-		Number count = (Number)query.uniqueResult();
-		return count.intValue() > 0;
-	}
-
-	@Override
 	public Authentication updateAuthentication(Authentication authentication) {
 		return dbInstance.getCurrentEntityManager().merge(authentication);
+	}
+
+	@Override
+	public boolean checkCredentials(Authentication authentication, String password) {
+		Algorithm algorithm = Algorithm.find(authentication.getAlgorithm());
+		String hash = Encoder.encrypt(password, authentication.getSalt(), algorithm);
+		return authentication.getCredential() != null && authentication.getCredential().equals(hash);
+	}
+
+	@Override
+	public Authentication updateCredentials(Authentication authentication, String password, Algorithm algorithm) {
+		String salt = Encoder.getSalt();
+		String newCredentials = Encoder.encrypt(password, salt, algorithm);
+		authentication.setSalt(salt);
+		authentication.setCredential(newCredentials);
+		authentication.setAlgorithm(algorithm.name());
+		return updateAuthentication(authentication);
 	}
 
 	/**
 	 * @see org.olat.basesecurity.Manager#deleteAuthentication(org.olat.basesecurity.Authentication)
 	 */
+	@Override
 	public void deleteAuthentication(Authentication auth) {
-		DBFactory.getInstance().deleteObject(auth);
+		dbInstance.getCurrentEntityManager().remove(auth);
 	}
 
 	/**
 	 * @see org.olat.basesecurity.Manager#findAuthenticationByAuthusername(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public Authentication findAuthenticationByAuthusername(String authusername, String provider) {
-		List results = DBFactory.getInstance().find(
-				"from org.olat.basesecurity.AuthenticationImpl as auth where auth.provider = ? and auth.authusername = ?",
-				new Object[] { provider, authusername }, new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.STRING });
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity ident")
+		  .append(" where auth.provider=:provider and auth.authusername=:authusername");
+
+		List<Authentication> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("provider", provider)
+				.setParameter("authusername", authusername)
+				.getResultList();
 		if (results.size() == 0) return null;
-		if (results.size() != 1) throw new AssertException(
-				"more than one entry for the a given authusername and provider, should never happen (even db has a unique constraint on those columns combined) ");
-		Authentication auth = (Authentication) results.get(0);
-		return auth;
+		if (results.size() != 1) {
+			throw new AssertException("more than one entry for the a given authusername and provider, should never happen (even db has a unique constraint on those columns combined) ");
+		}
+		return results.get(0);
 	}
 
 	/**

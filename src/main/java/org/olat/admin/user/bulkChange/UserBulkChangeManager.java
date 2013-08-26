@@ -100,7 +100,8 @@ public class UserBulkChangeManager extends BasicManager {
 	}
 
 	public void changeSelectedIdentities(List<Identity> selIdentities, HashMap<String, String> attributeChangeMap,
-			HashMap<String, String> roleChangeMap, ArrayList<String> notUpdatedIdentities, boolean isAdministrativeUser, List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, Translator trans, Identity addingIdentity) {
+			HashMap<String, String> roleChangeMap, ArrayList<String> notUpdatedIdentities, boolean isAdministrativeUser, List<Long> ownGroups, List<Long> partGroups,
+			Translator trans, Identity addingIdentity) {
 
 		Translator transWithFallback = UserManager.getInstance().getPropertyHandlerTranslator(trans);
 		String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
@@ -129,8 +130,11 @@ public class UserBulkChangeManager extends BasicManager {
 						errorDesc = transWithFallback.translate("error.password");
 						updateError = true;
 					}
-				} else newPwd = null;
-				OLATAuthManager.changePasswordAsAdmin(identity, newPwd);
+				} else {
+					newPwd = null;
+				}
+				OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
+				olatAuthenticationSpi.changePasswordAsAdmin(identity, newPwd);
 			}
 
 			// set language

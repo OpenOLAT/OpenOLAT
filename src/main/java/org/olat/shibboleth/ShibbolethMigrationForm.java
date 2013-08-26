@@ -26,6 +26,8 @@
 package org.olat.shibboleth;
 
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -36,7 +38,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Encoder;
 import org.olat.login.LoginModule;
 
 /**
@@ -49,24 +50,25 @@ import org.olat.login.LoginModule;
  */
 
 public class ShibbolethMigrationForm extends FormBasicController {
+	private static final OLog log = Tracing.createLoggerFor(ShibbolethMigrationForm.class);
+	
 
-	private Authentication authentication;
+	private final Authentication authentication;
 	private TextElement login;
 	private TextElement password;
-	private OLog log = Tracing.createLoggerFor(this.getClass());
 	
+	private BaseSecurity securityManager;
 	
 	public ShibbolethMigrationForm(UserRequest ureq, WindowControl wControl, Authentication authentication) {
 		super(ureq, wControl);
+		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		this.authentication = authentication;
 		initForm(ureq);
 	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		String credential = authentication.getCredential();
-		if (credential == null) return false;
-		if (!credential.equals(Encoder.encrypt(password.getValue()))) {
+		if (!securityManager.checkCredentials(authentication, password.getValue())) {
 			if (LoginModule.registerFailedLoginAttempt(login.getValue())) {
 				password.setErrorKey("smf.error.blocked", null);
 				log.audit("Too many failed login attempts for " + login.getValue() + ". Login blocked.");
@@ -78,7 +80,6 @@ public class ShibbolethMigrationForm extends FormBasicController {
 		}
 		return true;
 	}
-
 	
 	/**
 	 * @return Authentication

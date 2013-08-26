@@ -26,7 +26,6 @@
 package org.olat.user;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -49,7 +48,6 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Encoder;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.login.AfterLoginConfig;
 import org.olat.login.AfterLoginInterceptionManager;
@@ -114,8 +112,7 @@ public class UserModule extends AbstractOLATModule {
 	 */
 	public static boolean isLoginOnBlacklist(String login) {
 		login = login.toLowerCase();
-		for (Iterator iter = getLoginBlacklist().iterator(); iter.hasNext();) {
-			String regexp = (String) iter.next();
+		for (String regexp: getLoginBlacklist()) {
 			if (login.matches(regexp)) {
 				log.audit("Blacklist entry match for login '" + login + "' with regexp '" + regexp + "'.");
 				return true;
@@ -142,7 +139,7 @@ public class UserModule extends AbstractOLATModule {
 			count ++;
 		}
 		
-		Tracing.logInfo("Successfully added " + count + " entries to login blacklist.", UserModule.class);
+		logInfo("Successfully added " + count + " entries to login blacklist.");
 		
 
 		// Autogeneration of test users
@@ -159,16 +156,14 @@ public class UserModule extends AbstractOLATModule {
 
 		// read user editable fields configuration
 		if (defaultUsers != null) {
-			for (Iterator iter = defaultUsers.iterator(); iter.hasNext();) {
-				DefaultUser user = (DefaultUser) iter.next();
+			for (DefaultUser user:defaultUsers) {
 				createUser(user);
 			}
 		}
 		if (hasTestUsers) {
 			// read user editable fields configuration
 			if (testUsers != null) {
-				for (Iterator iter = testUsers.iterator(); iter.hasNext();) {
-					DefaultUser user = (DefaultUser) iter.next();
+				for (DefaultUser user :testUsers) {
 					createUser(user);
 				}
 			}
@@ -250,7 +245,7 @@ public class UserModule extends AbstractOLATModule {
 			// Now finally create that user thing on the database with all
 			// credentials, person etc. in one transation context!
 			identity = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(user.getUserName(), newUser, authenticationProviderConstant,
-					user.getUserName(), Encoder.encrypt(user.getPassword()));
+					user.getUserName(), user.getPassword());
 			if (identity == null) {
 				throw new OLATRuntimeException(this.getClass(), "Error, could not create  user and subject with name " + user.getUserName(), null);
 			} else {
@@ -288,7 +283,7 @@ public class UserModule extends AbstractOLATModule {
 	/**
 	 * @return List of logins on blacklist.
 	 */
-	public static List getLoginBlacklist() {
+	public static List<String> getLoginBlacklist() {
 		return loginBlacklistChecked;
 	}
 

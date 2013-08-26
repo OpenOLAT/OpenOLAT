@@ -31,7 +31,6 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.util.Encoder;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,7 +56,7 @@ public class UserManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		String email = name + "@frentix.com";
 		User user = userManager.createUser("first" + name, "last" + name, email);
-		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, Encoder.encrypt("secret"));
+		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret");
 		dbInstance.commitAndCloseSession();
 		
 		//get empty (must survive)

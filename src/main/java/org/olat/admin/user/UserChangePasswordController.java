@@ -26,8 +26,8 @@
 package org.olat.admin.user;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -57,6 +57,8 @@ public class UserChangePasswordController extends BasicController {
 	private SendTokenToUserForm tokenForm;
 	private VelocityContainer mainVC;
 	private Identity user;
+	
+	private final OLATAuthManager olatAuthenticationSpi;
 
 	/**
 	 * @param ureq
@@ -66,7 +68,8 @@ public class UserChangePasswordController extends BasicController {
 	public UserChangePasswordController(UserRequest ureq, WindowControl wControl, Identity changeableUser) { 
 		super(ureq, wControl);
 		
-		BaseSecurity mgr = BaseSecurityManager.getInstance();
+		olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
+		BaseSecurity mgr = CoreSpringFactory.getImpl(BaseSecurity.class);
 		if (!mgr.isIdentityPermittedOnResourceable(
 				ureq.getIdentity(), 
 				Constants.PERMISSION_ACCESS, 
@@ -94,7 +97,7 @@ public class UserChangePasswordController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == chPwdForm && event.equals(Event.DONE_EVENT)) {
-			if (OLATAuthManager.changePassword(ureq.getIdentity(), user, chPwdForm.getNewPassword())) {
+			if (olatAuthenticationSpi.changePassword(ureq.getIdentity(), user, chPwdForm.getNewPassword())) {
 				showInfo("changeuserpwd.successful");
 				logAudit ("user password changed successfully of " +user.getName(), this.getClass().getName());
 			} else {

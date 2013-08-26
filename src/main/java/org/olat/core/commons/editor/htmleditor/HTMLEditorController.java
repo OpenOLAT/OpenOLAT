@@ -165,7 +165,7 @@ public class HTMLEditorController extends FormBasicController {
 			// OLAT-5066: the use of "fileName" gives users the (false) impression that the file they wish to access
 			// is already locked by someone else. Since the lock token must be smaller than 50 characters we us an 
 			// MD5 hash of the absolute file path which will always be 32 characters long and virtually unique.
-			String lockToken = Encoder.encrypt(getFileDebuggingPath(baseContainer, relFilePath));
+			String lockToken = Encoder.md5hash(getFileDebuggingPath(baseContainer, relFilePath));
 			this.lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, ureq.getIdentity(), lockToken);
 			VelocityContainer vc = (VelocityContainer) flc.getComponent();
 			if (!lock.isSuccess()) {

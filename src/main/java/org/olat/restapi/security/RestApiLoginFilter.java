@@ -55,7 +55,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.session.UserSessionManager;
-import org.olat.login.OLATAuthenticationController;
+import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.RestModule;
 
 import com.oreilly.servlet.Base64Decoder;
@@ -168,7 +168,9 @@ public class RestApiLoginFilter implements Filter {
 					if (p != -1) {
 						String username = userPass.substring(0, p);
 						String password = userPass.substring(p + 1);
-						Identity identity = OLATAuthenticationController.authenticate(username, password);
+
+						OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
+						Identity identity = olatAuthenticationSpi.authenticate(null, username, password);
 						if(identity == null) {
 							return false;
 						}

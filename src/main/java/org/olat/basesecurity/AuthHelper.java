@@ -65,7 +65,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.OlatLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Encoder;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
@@ -362,10 +361,10 @@ public class AuthHelper {
 		if (pwd == null) {
 			// when no password is used the provider must be set to null to not generate
 			// an OLAT authentication token. See method doku.
-			ident = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(loginName, newUser, null, null, null);
+			ident = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(loginName, newUser, null, null);
  		} else {
 			ident = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(loginName, newUser,
-			BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName, Encoder.encrypt(pwd));
+			BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName, pwd);
 		}
 		// TODO: Tracing message
 		return ident;

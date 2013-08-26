@@ -353,7 +353,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 					}
 					user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, shibbolethAttributesMap.get(ShibbolethModule.getInstitutionalUserIdentifier()));
-					identity = secMgr.createAndPersistIdentityAndUser(choosenLogin, user, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID, null);
+					identity = secMgr.createAndPersistIdentityAndUser(choosenLogin, user, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID);
 					SecurityGroup olatUserGroup = secMgr.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 					secMgr.addIdentityToSecurityGroup(identity, olatUserGroup);
 					// tell system that this user did accept the disclaimer
@@ -365,7 +365,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					Authentication auth = migrationForm.getAuthentication();
 					Identity authenticationedIdentity = auth.getIdentity();
 					BaseSecurity secMgr = BaseSecurityManager.getInstance();
-					secMgr.createAndPersistAuthentication(authenticationedIdentity, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID, null);
+					secMgr.createAndPersistAuthentication(authenticationedIdentity, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID, null, null);
 					
 					// update user profile
 					User user = authenticationedIdentity.getUser();

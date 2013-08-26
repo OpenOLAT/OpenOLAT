@@ -32,6 +32,7 @@ import java.util.Map;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.logging.StartupException;
+import org.olat.core.util.Encoder;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.login.auth.AuthenticationProvider;
@@ -122,6 +123,10 @@ public class LoginModule extends AbstractOLATModule {
 	 */
 	public static String getDefaultProviderName() {
 		return defaultProviderName;
+	}
+	
+	public static Encoder.Algorithm getDefaultHashAlgorithm() {
+		return Encoder.Algorithm.sha512;
 	}
 	
 	/**

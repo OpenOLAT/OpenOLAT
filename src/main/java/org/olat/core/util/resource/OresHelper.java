@@ -99,7 +99,7 @@ public class OresHelper {
 		String resourcableTypeName = ores.getResourceableTypeName();
 		if (resourcableTypeName.length() > 80) {
 			//encode into an md5 hash with fixed length of 32 characters otherwise the sting may get too long for locks or db fields
-			resourcableTypeName = Encoder.encrypt(resourcableTypeName);
+			resourcableTypeName = Encoder.md5hash(resourcableTypeName);
 		}
 		String derivedString = resourcableTypeName+"::"+ores.getResourceableId();
 		if (subKey != null) {

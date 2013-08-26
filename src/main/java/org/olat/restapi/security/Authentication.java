@@ -38,7 +38,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.login.OLATAuthenticationController;
+import org.olat.login.auth.OLATAuthManager;
 
 /**
  * 
@@ -123,7 +123,8 @@ public class Authentication {
 	
 	private Response loginWithPassword(String username, String password, HttpServletRequest httpRequest) {
 		UserRequest ureq = RestSecurityHelper.getUserRequest(httpRequest);
-		Identity identity = OLATAuthenticationController.authenticate(username, password);
+		OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
+		Identity identity = olatAuthenticationSpi.authenticate(null, username, password);
 		if(identity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}

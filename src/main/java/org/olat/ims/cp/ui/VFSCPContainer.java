@@ -64,7 +64,7 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 		super(name);
 		
 		String orgaIdentifier = cp.getFirstOrganizationInManifest().getIdentifier();
-		rootNodeId = Encoder.encrypt(orgaIdentifier);
+		rootNodeId = Encoder.md5hash(orgaIdentifier);
 
 		this.cp = cp;
 		cpMgm = (CPManagerImpl) CPManager.getInstance();

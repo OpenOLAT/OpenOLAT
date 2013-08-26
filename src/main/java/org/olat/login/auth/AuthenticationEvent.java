@@ -35,6 +35,7 @@ import org.olat.core.id.Identity;
  */
 public class AuthenticationEvent extends Event {
 
+	private static final long serialVersionUID = -5353574564474813721L;
 	Identity identity;
 	
 	/**
@@ -48,5 +49,7 @@ public class AuthenticationEvent extends Event {
 	/**
 	 * @return the identity that was authenticated.
 	 */
-	public Identity getIdentity() { return identity; }
+	public Identity getIdentity() {
+		return identity;
+	}
 }

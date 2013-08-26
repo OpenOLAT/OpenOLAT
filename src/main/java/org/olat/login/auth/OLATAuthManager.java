@@ -25,13 +25,14 @@
 package org.olat.login.auth;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -42,21 +43,29 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.Encoder;
+import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.ldap.LDAPError;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
+import org.olat.login.LoginModule;
 import org.olat.login.OLATAuthenticationController;
+import org.olat.registration.RegistrationManager;
+import org.olat.registration.TemporaryKey;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * Description:<br>
@@ -66,9 +75,80 @@ import org.olat.user.UserManager;
  * Initial Date:  26.09.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class OLATAuthManager extends BasicManager {
+public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	
 	private static OLog log = Tracing.createLoggerFor(OLATAuthenticationController.class);
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	
+	/**
+	 * 
+	 * @param identity
+	 * @param password
+	 * @param provider
+	 * @return
+	 */
+	@Override
+	public Identity authenticate(Identity ident, String login, String password) {
+		Authentication authentication;	
+		if (ident == null) {
+			// check for email instead of username if ident is null
+			if(LoginModule.allowLoginUsingEmail()) {
+				if (MailHelper.isValidEmailAddress(login)){
+	  	 	 	ident = userManager.findIdentityByEmail(login);
+	  	 	 	// check for email changed with verification workflow
+					if (ident == null) {
+						ident = findIdentInChangingEmailWorkflow(login);
+					}
+	  	 	}
+			} 
+			
+			if(ident == null) {
+				authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT");
+			} else {
+				authentication = securityManager.findAuthentication(ident, "OLAT");
+			}
+		} else {
+			authentication = securityManager.findAuthentication(ident,  "OLAT");
+		}
+
+		if (authentication == null) {
+			log.audit("Error authenticating user "+login+" via provider OLAT", OLATAuthenticationController.class.getName());
+			return null;
+		}
+		
+		// find OLAT authentication provider
+		if (securityManager.checkCredentials(authentication, password))	{
+			Algorithm algorithm = Algorithm.find(authentication.getAlgorithm());
+			if(Algorithm.md5.equals(algorithm)) {
+				authentication = securityManager.updateCredentials(authentication, password, LoginModule.getDefaultHashAlgorithm());
+			}
+			return authentication.getIdentity();
+		}
+		log.audit("Error authenticating user "+login+" via provider OLAT", OLATAuthenticationController.class.getName());
+		return null;
+	}
+	
+	private Identity findIdentInChangingEmailWorkflow(String login){
+		XStream xml = XStreamHelper.createXStreamInstance();
+		
+		RegistrationManager rm = RegistrationManager.getInstance();
+		List<TemporaryKey> tk = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
+		if (tk != null) {
+			for (TemporaryKey temporaryKey : tk) {
+				@SuppressWarnings("unchecked")
+				Map<String, String> mails = (Map<String, String>)xml.fromXML(temporaryKey.getEmailAddress());
+				if (login.equals(mails.get("changedEMail"))) {
+					return securityManager.findIdentityByName(mails.get("currentEMail"));
+				}
+			}
+		}
+		return null;		
+	}
+	
 	
 	/**
 	 * Change the password of an identity. if the given identity is a LDAP-User,
@@ -85,16 +165,10 @@ public class OLATAuthManager extends BasicManager {
 	 *            New password.
 	 * @return True upon success.
 	 */
-	public static boolean changePassword(Identity doer, Identity identity, String newPwd) {
-		
+	public boolean changePassword(Identity doer, Identity identity, String newPwd) {
 		if (doer==null) throw new AssertException("password changing identity cannot be undefined!");
-		
 		if (identity.getKey() == null) throw new AssertException("cannot change password on a nonpersisted identity");
-		// password's length is limited to 128 chars. 
-		// The 128 bit MD5 hash is converted into a 32 character long String
-		String hashedPwd = Encoder.encrypt(newPwd);
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		
+
 		//o_clusterREVIEW
 		identity = securityManager.loadIdentityByKey(identity.getKey());
 		
@@ -110,21 +184,19 @@ public class OLATAuthManager extends BasicManager {
 				allOk = ldapError.isEmpty();
 
 				if(allOk && LDAPLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
-					allOk &= changeOlatPassword(doer, identity, hashedPwd);
+					allOk &= changeOlatPassword(doer, identity, newPwd);
 				}
 			}
-		}
-		else {
-			allOk =changeOlatPassword(doer, identity, hashedPwd);
+		} else {
+			allOk = changeOlatPassword(doer, identity, newPwd);
 		}
 		if(allOk) {
 			sendConfirmationEmail(doer, identity);
 		}
-		
 		return allOk;
 	}
 	
-	private static void sendConfirmationEmail(Identity doer, Identity identity) {
+	private void sendConfirmationEmail(Identity doer, Identity identity) {
 		String prefsLanguage = identity.getUser().getPreferences().getLanguage();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefsLanguage);
 		Translator translator = Util.createPackageTranslator(OLATAuthenticationController.class, locale);
@@ -151,16 +223,15 @@ public class OLATAuthManager extends BasicManager {
 		mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, template, null, null);
 	}
 	
-	private static boolean changeOlatPassword(Identity doer, Identity identity, String hashedPwd) {
-		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+	private boolean changeOlatPassword(Identity doer, Identity identity, String newPwd) {
+		Authentication auth = securityManager.findAuthentication(identity, "OLAT");
 		if (auth == null) { // create new authentication for provider OLAT
-			auth = BaseSecurityManager.getInstance().createAndPersistAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), identity.getName(), hashedPwd);
+			auth = securityManager.createAndPersistAuthentication(identity, "OLAT", identity.getName(), newPwd, LoginModule.getDefaultHashAlgorithm());
 			log.audit(doer.getName() + " created new authenticatin for identity: " + identity.getName());
+		} else {
+			auth = securityManager.updateCredentials(auth, newPwd, LoginModule.getDefaultHashAlgorithm());
+			log.audit(doer.getName() + " set new password for identity: " + identity.getName());
 		}
-
-		auth.setCredential(hashedPwd);
-		auth = BaseSecurityManager.getInstance().updateAuthentication(auth);
-		log.audit(doer.getName() + " set new password for identity: " +identity.getName());
 		return true;
 	}
 
@@ -170,7 +241,7 @@ public class OLATAuthManager extends BasicManager {
 	 * @param newPwd
 	 * @return
 	 */
-	public static boolean changePasswordAsAdmin(Identity identity, String newPwd) {
+	public boolean changePasswordAsAdmin(Identity identity, String newPwd) {
 		Identity adminUserIdentity = BaseSecurityManager.getInstance().findIdentityByName("administrator");
 		return changePassword(adminUserIdentity, identity, newPwd);
 	}
@@ -181,7 +252,7 @@ public class OLATAuthManager extends BasicManager {
 	 * @param newPwd
 	 * @return
 	 */
-	public static boolean changePasswordByPasswordForgottenLink(Identity identity, String newPwd) {
+	public boolean changePasswordByPasswordForgottenLink(Identity identity, String newPwd) {
 		return changePassword(identity, identity, newPwd);
 	}
 	
