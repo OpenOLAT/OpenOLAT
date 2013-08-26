@@ -116,7 +116,7 @@ class RichTextElementRenderer implements ComponentRenderer {
 		List<String> onInit = config.getOnInit();
 
 		// Read write view
-		renderTextarea(sb, domID + "_TEXTAREA", teC);
+		renderTextarea(sb, domID, teC);
 
 		StringOutput configurations = new StringOutput();
 		config.appendConfigToTinyJSArray_4(configurations);
@@ -126,16 +126,19 @@ class RichTextElementRenderer implements ComponentRenderer {
 
 		sb.append("<script type='text/javascript'>/* <![CDATA[ */ ");
 		//file browser url
-		sb.append("BTinyHelper.editorMediaUris.put('").append(domID).append("_TEXTAREA','");
+		sb.append("  BTinyHelper.editorMediaUris.put('").append(domID).append("','");
 		ubu.buildURI(sb, null, null);
 		sb.append("');");
+		//remove if a instance is there
+		sb.append("  BTinyHelper.stopFormDirtyObserver('" + te.getRootForm().getDispatchFieldId() + "','" + domID + "');");
+		sb.append("  BTinyHelper.removeEditorInstance('").append(domID).append("');");
 		
-		sb.append("  jQuery('#").append(domID).append("_TEXTAREA').tinymce({\n")
-		  .append("    selector: '#").append(domID).append("_TEXTAREA',\n")
+		sb.append("  jQuery('#").append(domID).append("').tinymce({\n")
+		  .append("    selector: '#").append(domID).append("',\n")
 		  .append("    script_url: '").append(baseUrl.toString()).append("',\n")
 		  .append("    setup: function(ed){\n")
 		  .append("      ed.on('init', function(e) {\n")
-		  .append("        ").append(onInit.get(0)).append(";\n")
+		  .append("        ").append(onInit.get(0).replace(".curry(", "(")).append(";\n")
 		  .append("      });\n")
 		  .append("      ed.on('change', function(e) {\n")
 		  .append("        BTinyHelper.triggerOnChange('").append(domID).append("');\n")

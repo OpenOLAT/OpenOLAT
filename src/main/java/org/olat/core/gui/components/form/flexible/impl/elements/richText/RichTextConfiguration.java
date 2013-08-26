@@ -1584,6 +1584,8 @@ public class RichTextConfiguration implements Disposable {
 		copyValues.remove("theme_advanced_toolbar_align");
 		copyValues.remove("dialog_type");
 		copyValues.remove("mode");
+		copyValues.remove("elements");
+		
 		
 		//update value from 3 to 4
 		String tabfocus = copyValues.remove("tab_focus");

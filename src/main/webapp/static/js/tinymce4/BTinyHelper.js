@@ -71,7 +71,7 @@ var BTinyHelper = {
 	// - absolute links: media an links to external sites
 	linkConverter : function (url, node, on_save) {
 		var orig = url + '';
-		var editor = tinyMCE.activeEditor;
+		var editor = top.tinymce.activeEditor;
 		var settings = editor.settings;
 		if (!settings.convert_urls || (node && node.nodeName == 'LINK') || url.indexOf('file:') === 0) {
 			// Don't convert link href since thats the CSS files that gets loaded into the editor also skip local file URLs
@@ -118,16 +118,16 @@ var BTinyHelper = {
 		var observerKey = formId + '-' + elementId;
 		
 		// Check for dirtyness and mark buttons accordingly, each second
-		var newExecutor = jQuery.periodic({period: 500, decay:1.0, max_period: Number.MAX_VALUE}, function(executor) {
+		var newExecutor = jQuery.periodic({period: 500, decay:1.0, max_period: Number.MAX_VALUE}, function() {
 			// first check if the html editor still exists on this page, otherwhise stop executing this code
 			var elem = jQuery('#' + elementId);
-			if (!elem) {
-				executor.cancel();
+			if (elem.length == 0) {
+				newExecutor.cancel();
 				BTinyHelper.formDirtyObservers.remove(observerKey);
 				return;
 			}
-			if (tinyMCE && tinyMCE.activeEditor) {
-				if (tinyMCE.activeEditor.isDirty()) {
+			if (top.tinymce && top.tinymce.activeEditor) {
+				if (top.tinymce.activeEditor.isDirty()) {
 					setFlexiFormDirty(formId);
 				}
 			}		
@@ -139,8 +139,8 @@ var BTinyHelper = {
 	// Remove the editor instance for the given DOM node ID if such an editor exists.
 	// Remove all event handlers and release the memory
 	removeEditorInstance : function (elementId) {
-		if (tinyMCE) {
-			var oldE = tinyMCE.get(elementId);
+		if (top.tinymce) {
+			var oldE = top.tinymce.get(elementId);
 			if (oldE != null) { 
 				try { 					
 					// first try to remove and cleanup editor instance itself
@@ -152,7 +152,7 @@ var BTinyHelper = {
 				}
 				try { 					
 					// second remove editor instance from tiny editorManager 
-					tinyMCE.remove(oldE); 
+					top.tinymce.remove(oldE); 
 				} catch(e) {
 					// IE (of course) has some issues here, need to silently catch those 
 					//console.log('could not removeEditorInstance::' + e.message)
