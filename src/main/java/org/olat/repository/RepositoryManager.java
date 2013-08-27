@@ -2244,9 +2244,13 @@ public class RepositoryManager extends BasicManager {
 	public List<RepositoryEntryLight> getParticipantRepositoryEntry(Identity identity, int maxResults, RepositoryEntryOrder... orderby) {
 		StringBuilder sb = new StringBuilder(200);
 		sb.append("select v from repoentrylight as v ")
-		  .append(" inner join fetch v.olatResource as res ")
-		  .append(" where v.key in (select vm.key from participantrepoentry as vm where vm.memberId=:identityKey)")
-		  .append(" and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
+		  .append(" inner join fetch v.olatResource as res ");
+		if("mysql".equals(dbInstance.getDbVendor())) {
+			sb.append(" where exists (select vm.key from participantrepoentry as vm where v.key=vm.key and vm.memberId=:identityKey)");
+		} else {
+			sb.append(" where v.key in (select vm.key from participantrepoentry as vm where vm.memberId=:identityKey)");
+		}
+		sb.append(" and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
 		appendOrderBy(sb, "v", orderby);
 		
 		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
@@ -2263,9 +2267,13 @@ public class RepositoryManager extends BasicManager {
 	public List<RepositoryEntryLight> getTutorRepositoryEntry(Identity identity, int maxResults, RepositoryEntryOrder... orderby) {
 		StringBuilder sb = new StringBuilder(200);
 		sb.append("select v from repoentrylight as v ")
-		  .append(" inner join fetch v.olatResource as res ")
-		  .append(" where v.key in (select vm.key from tutorrepoentry as vm where vm.memberId=:identityKey)")
-		  .append(" and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
+		  .append(" inner join fetch v.olatResource as res ");
+		if("mysql".equals(dbInstance.getDbVendor())) {
+			sb.append(" where exists (select vm.key from tutorrepoentry as vm where v.key=vm.key and vm.memberId=:identityKey)");
+		} else {
+			sb.append(" where v.key in (select vm.key from tutorrepoentry as vm where vm.memberId=:identityKey)");
+		}
+		sb.append(" and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
 		appendOrderBy(sb, "v", orderby);
 		
 		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
