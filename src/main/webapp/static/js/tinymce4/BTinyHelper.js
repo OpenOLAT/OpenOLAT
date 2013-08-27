@@ -139,7 +139,7 @@ var BTinyHelper = {
 	// Remove the editor instance for the given DOM node ID if such an editor exists.
 	// Remove all event handlers and release the memory
 	removeEditorInstance : function (elementId) {
-		if (top.tinymce) {
+		if (top.tinymce && top.tinymce.editors) {
 			var oldE = top.tinymce.get(elementId);
 			if (oldE != null) { 
 				try { 					

@@ -843,7 +843,7 @@ public class FunctionalEPortfolioUtil {
 		browser.type(selectorBuffer.toString(), title);
 				
 		/* description */
-		functionalUtil.typeMCE(browser, getEPortfolioMapCss(), 0, description);
+		functionalUtil.typeMCE(browser, getEPortfolioMapCss(), description);
 		
 		/* save */
 		selectorBuffer = new StringBuffer();

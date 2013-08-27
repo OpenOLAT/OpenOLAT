@@ -39,7 +39,6 @@ import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
-import org.olat.util.FunctionalCourseUtil.AccessSettings;
 import org.olat.util.FunctionalUtil.OlatSite;
 import org.olat.util.FunctionalVOUtil;
 

@@ -1036,31 +1036,22 @@ public class FunctionalCourseUtil {
 		
 		/* fill in short title */
 		functionalUtil.idle(browser);
-		
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//input[@type='text'])[1]");
-		
-		browser.type(selectorBuffer.toString(), shortTitle);
+		String selShortTitle = "xpath=(//div[contains(@class, 'o_editor')]//form//input[@type='text'])[1]";
+		browser.type(selShortTitle, shortTitle);
 		
 		/* fill in long title */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//input[@type='text'])[2]");
-		
-		browser.type(selectorBuffer.toString(), longTitle);
+		String selLongtitle = "xpath=(//div[contains(@class, 'o_editor')]//form//input[@type='text'])[2]";
+		browser.type(selLongtitle, longTitle);
 		
 		/* fill in description */
 		functionalUtil.typeMCE(browser, description);
 		
 		/* click save */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//button)[1]");
-		browser.click(selectorBuffer.toString());
+		String selSave = "xpath=(//div[contains(@class, 'o_editor')]//form//button[contains(@class, 'b_button')])[1]";
+		browser.click(selSave);
 		functionalUtil.waitForPageToLoad(browser);
 		
-		return(true);
+		return true;
 	}
 	
 	/**
@@ -1184,13 +1175,13 @@ public class FunctionalCourseUtil {
 		functionalUtil.typeMCE(browser, message);
 		
 		/* save form */
-		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
-		.append(getCourseRunCss())
-		.append("')]//form//button[last()]");
+		StringBuilder selSave = new StringBuilder();
+		selSave.append("xpath=//div[contains(@class, '")
+		  .append(getCourseRunCss())
+		  .append("')]//form//button[last()][contains(@class,'b_button')]");
 		
-		browser.click(selectorBuffer.toString());
+		browser.click(selSave.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
 		
@@ -1520,12 +1511,12 @@ public class FunctionalCourseUtil {
 		
 		/* fill in form - description */
 		if(edit == null || ArrayUtils.contains(edit, BlogEdit.DESCRIPTION)){
-			functionalUtil.typeMCE(browser, getBlogFormCss(), 0, description);
+			functionalUtil.typeMCE(browser, "o_sel_blog_description", description);
 		}
 		
 		/* fill in form - content */
 		if(edit == null || ArrayUtils.contains(edit, BlogEdit.CONTENT)){
-			functionalUtil.typeMCE(browser, getBlogFormCss(), 1, content);
+			functionalUtil.typeMCE(browser, "o_sel_blog_content", content);
 		}
 		
 		/* save form */

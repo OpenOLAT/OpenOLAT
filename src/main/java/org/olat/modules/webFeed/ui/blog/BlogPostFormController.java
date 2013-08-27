@@ -163,6 +163,7 @@ public class BlogPostFormController extends FormBasicController {
 		// Description
 		description = uifactory.addRichTextElementForStringData("description", "feed.form.description", post.getDescription(), 8, -1, false,
 				false, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
+		description.setElementCssClass("o_sel_blog_description");
 		RichTextConfiguration descRichTextConfig = description.getEditorConfiguration();
 		// set upload dir to the media dir
 		descRichTextConfig.setFileBrowserUploadRelPath("media");
@@ -173,6 +174,7 @@ public class BlogPostFormController extends FormBasicController {
 		// Content
 		content = uifactory.addRichTextElementForStringData("content", "blog.form.content", post.getContent(), 18, -1, false, false,
 				baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
+		content.setElementCssClass("o_sel_blog_content");
 		RichTextConfiguration richTextConfig = content.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
