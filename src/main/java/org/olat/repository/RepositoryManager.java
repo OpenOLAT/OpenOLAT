@@ -56,6 +56,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -391,7 +392,7 @@ public class RepositoryManager extends BasicManager {
 		userCourseInformationsManager.deleteUserCourseInformations(entry);
 		
 		// delete all bookmarks referencing deleted entry
-		//TODO bookmark BookmarkManager.getInstance().deleteAllBookmarksFor(entry);
+		CoreSpringFactory.getImpl(MarkManager.class).deleteMarks(entry);
 		// delete all catalog entries referencing deleted entry
 		CatalogManager.getInstance().resourceableDeleted(entry);
 
