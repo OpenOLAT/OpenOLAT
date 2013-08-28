@@ -168,6 +168,8 @@ class RichTextElementRenderer implements ComponentRenderer {
 			// some special code to find out when the element is dirty. See the comments
 			// BTinyHelpers.js
 			sb.append("});");
+			sb.append("tinyMCE.get('").append(domID).append("').focus();");
+
 			
 			sb.append("} };");
 			sb.append(checkAndLoadTinyFunctionName).append("();");
