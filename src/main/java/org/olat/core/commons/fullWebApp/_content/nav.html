@@ -47,7 +47,7 @@
 #if($pageTitle)
 	<script type="text/javascript">
 	/* <![CDATA[ */ 
-		document.title = "$r.translate("page.appname") - $r.escapeDoubleQuotes($pageTitle)";
+		document.title = "$r.translate("page.appname") - $r.escapeDoubleQuotes($r.xssScan($pageTitle))";
 	/* ]]> */
 	</script>
 #end

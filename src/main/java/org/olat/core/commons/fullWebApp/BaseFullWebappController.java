@@ -855,7 +855,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 			getWindowControl().setError(translate("warn.tabsfull"));
 			return null;
 		}
-		DTabImpl dt = new DTabImpl(ores, repoOres, StringHelper.escapeHtml(title), getWindowControl());
+		DTabImpl dt = new DTabImpl(ores, repoOres, title, getWindowControl());
 		return dt;
 	}
 
@@ -891,7 +891,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 			dtabs.add(dt);
 			dtabsLinkNames.add(Integer.toString(dtabCreateCounter));
 			Link link = LinkFactory.createCustomLink("a" + dtabCreateCounter, "a" + dtabCreateCounter, "", Link.NONTRANSLATED, navVc, this);
-			link.setCustomDisplayText(((DTabImpl) dt).getNavElement().getTitle());
+			link.setCustomDisplayText(StringHelper.escapeHtml(dt.getNavElement().getTitle()));
 			link.setTitle(dt.getTitle());
 			link.setUserObject(dt);
 			// Set accessibility access key using the 's' key. You can loop through all opened tabs by
