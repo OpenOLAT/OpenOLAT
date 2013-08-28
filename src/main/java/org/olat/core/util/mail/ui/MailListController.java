@@ -448,7 +448,9 @@ public class MailListController extends BasicController implements Activateable2
 	
 	private void selectMail(UserRequest ureq, Long mailKey) {
 		DBMail mail = mailManager.getMessageByKey(mailKey);
-		selectMail(ureq, mail);
+		if(mail != null) {
+			selectMail(ureq, mail);
+		}
 	}
 	
 	private void selectMail(UserRequest ureq, DBMail mail) {
