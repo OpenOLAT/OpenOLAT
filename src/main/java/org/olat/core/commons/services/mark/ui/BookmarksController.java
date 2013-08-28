@@ -166,7 +166,11 @@ public class BookmarksController extends BasicController {
 
 		for(Mark mark:items) {
 			RepositoryEntry repositoryEntry = keyToRepositoryEntryMap.get(mark.getOLATResourceable().getResourceableId());
-			convertedList.add(new Bookmark(mark, repositoryEntry));
+			if(repositoryEntry != null) {
+				convertedList.add(new Bookmark(mark, repositoryEntry));
+			} else {
+				markManager.removeMark(mark);
+			}
 		}
 		return convertedList;
 	}

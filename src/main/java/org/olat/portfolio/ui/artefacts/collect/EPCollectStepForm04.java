@@ -149,7 +149,7 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		PortfolioStructure selectedPortfolioStructure = preSelectedStructure;
 
-		TreeNode node = mapsTreeController.getSelectedNode();
+		TreeNode node = mapsTreeController == null ? null : mapsTreeController.getSelectedNode();
 		if(node != null) {
 			Object obj = node.getUserObject();
 			if(obj == null) {

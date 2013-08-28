@@ -390,7 +390,8 @@ public class RichTextConfiguration implements Disposable {
 		plugins.add(SAFARI_PLUGIN);
 		// Start observing of diry richt text element and trigger calling of setFlexiFormDirty() method
 		// This check is initialized after the editor has fully loaded
-		addOnInitCallbackFunction(ONINIT_CALLBACK_VALUE_START_DIRTY_OBSERVER + ".curry('" + rootFormDispatchId + "','" + domID + "')");
+		addOnInitCallbackFunction(ONINIT_CALLBACK_VALUE_START_DIRTY_OBSERVER + "('" + rootFormDispatchId + "','" + domID + "')");
+		addOnInitCallbackFunction("tinyMCE.get('" + domID + "').focus()");
 	}
 
 	/**
