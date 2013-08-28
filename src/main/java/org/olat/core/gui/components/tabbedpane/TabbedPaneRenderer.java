@@ -118,6 +118,7 @@ public class TabbedPaneRenderer implements ComponentRenderer {
    * 
 	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator)
 	 */
+	@Override
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
 		TabbedPane tp = (TabbedPane)source;
 		int cnt = tp.getTabCount();
@@ -132,10 +133,11 @@ public class TabbedPaneRenderer implements ComponentRenderer {
    * 
 	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component)
 	 */
+	@Override
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		TabbedPane tp = (TabbedPane)source;
 		int cnt = tp.getTabCount();
-		if (cnt > 0) {
+		if (cnt > 0 && tp.getSelectedPane() < cnt) {
 			Component toRender = tp.getTabAt(tp.getSelectedPane());
 			//	delegate js rendering to the selected pane
 			renderer.renderBodyOnLoadJSFunctionCall(sb, toRender, rstate);
