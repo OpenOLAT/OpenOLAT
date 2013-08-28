@@ -518,7 +518,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		
 		// sleep until threads should have terminated/excepted
 		try {
-			finishCount.await(10, TimeUnit.SECONDS);
+			finishCount.await(120, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			log.error("", e);
 			Assert.fail();

@@ -212,7 +212,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		DBFactory.getInstance().commit();
 		try {
 			// we have to sleep for a short time to have different time
-			Thread.sleep(10);
+			Thread.sleep(1200);// > 1s as not all database save time up-to the milliseconds
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}
