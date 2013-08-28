@@ -641,6 +641,25 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testGetRoles_xml() throws IOException, URISyntaxException {
+		//create an author
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//get roles of author
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + author.getKey() + "/roles").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_XML, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String xmlOutput = EntityUtils.toString(response.getEntity());
+		Assert.assertTrue(xmlOutput.contains("<rolesVO>"));
+		Assert.assertTrue(xmlOutput.contains("<olatAdmin>"));
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testUpdateRoles() throws IOException, URISyntaxException {
 		//create an author
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-" + UUID.randomUUID().toString());

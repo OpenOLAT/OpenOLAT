@@ -19,6 +19,10 @@
  */
 package org.olat.user.restapi;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.olat.core.id.Roles;
 
 /**
@@ -27,6 +31,8 @@ import org.olat.core.id.Roles;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "rolesVO")
 public class RolesVO {
 	
 	private boolean olatAdmin = false;
