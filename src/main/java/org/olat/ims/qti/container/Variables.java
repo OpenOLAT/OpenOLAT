@@ -32,16 +32,18 @@ import java.util.Map;
 /**
  */
 public class Variables implements Serializable{
-	Map vars;
+
+	private static final long serialVersionUID = 4599004441875604671L;
+	private final Map<String,Variable> vars;
 	
 	public Variables() {
 		super();
-		vars = new HashMap(3);
+		vars = new HashMap<String,Variable>(3);
 	}
 
 
 	public Variable getVariable(String varName) {
-		return (Variable)vars.get(varName);
+		return vars.get(varName);
 	}
 
 	public Variable getSCOREVariable() {
@@ -60,7 +62,7 @@ public class Variables implements Serializable{
 		vars.put(var.getVarName(),var);
 	}
 	
-	
+	@Override
 	public String toString() {
 		return vars.toString()+"="+super.toString();
 	}

@@ -113,7 +113,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 			if (flow_label != null) instance.setFlowLabelClass(flow_label.attributeValue("class"));
 
 			List response_lables = response_lid.selectNodes(".//response_label");
-			List choices = QTIEditHelper.fetchChoices(response_lables);
+			List<Response> choices = QTIEditHelper.fetchChoices(response_lables);
 			instance.setResponses(choices);
 
 			Element resprocessingXML = item.element("resprocessing");

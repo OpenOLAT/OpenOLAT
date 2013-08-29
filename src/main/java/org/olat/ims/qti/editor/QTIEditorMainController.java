@@ -25,6 +25,7 @@
 
 package org.olat.ims.qti.editor;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -75,6 +76,7 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.memento.Memento;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
@@ -216,7 +218,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private InsertItemTreeModel insertTreeModel;
 	private LockResult lockEntry;
 	private boolean restrictedEdit;
-	private Map history = null;
+	private Map<String, Memento> history = null;
 	private String startedWithTitle;
 	private List<ReferenceImpl> referencees;
 	private ChangeMessageForm chngMsgFrom;
@@ -274,6 +276,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			}
 			//
 			init(ureq); // initialize the gui
+			updateWarning();
 		} else {
 			String fullName = userManager.getUserDisplayName(lockEntry.getOwner());
 			wControl.setWarning( getTranslator().translate("error.lock", new String[] { fullName,
@@ -326,7 +329,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		} else {
 			// start with a fresh history. Editor is resumed but no changes were made
 			// so far.
-			history = new HashMap();
+			history = new HashMap<String, Memento>();
 		}
 
 		if (restrictedEdit) {
@@ -337,7 +340,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 
 			mainToolC.setEnabled(CMD_TOOLS_ADD_FIB, false);
 			if (!qtiPackage.getQTIDocument().isSurvey()) mainToolC.setEnabled(CMD_TOOLS_ADD_KPRIM, false);
-			if (qtiPackage.getQTIDocument().isSurvey()) mainToolC.setEnabled(CMD_TOOLS_ADD_FREETEXT, false);
+			mainToolC.setEnabled(CMD_TOOLS_ADD_FREETEXT, false);
 		}
 		mainToolC.setEnabled(CMD_TOOLS_CHANGE_DELETE, false);
 		mainToolC.setEnabled(CMD_TOOLS_CHANGE_MOVE, false);
@@ -382,6 +385,23 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			columnLayoutCtr.hideCol1(true);
 			columnLayoutCtr.hideCol2(true);
 		}
+	}
+	
+	private void updateWarning() {
+		boolean warningEssay = false;
+		if(!qtiPackage.getQTIDocument().isSurvey()) {
+			//check if the test contains some essay
+			List<TreeNode> flattedTree = new ArrayList<TreeNode>();
+			TreeHelper.makeTreeFlat(menuTreeModel.getRootNode(), flattedTree);
+			for(TreeNode node:flattedTree) {
+				Object uo = node.getUserObject();
+				if(uo instanceof String && ((String)uo).startsWith("QTIEDIT:ESSAY")) {
+					warningEssay = true;
+					break;
+				}
+			}
+		}
+		main.contextPut("warningEssay", new Boolean(warningEssay));
 	}
 
 
@@ -454,6 +474,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				parentTargetNode.insertQTIObjectAt(subject, targetPos);
 				qtiPackage.serializeQTIDocument();
 				menuTree.setDirty(true); //force rerendering for ajax mode
+				updateWarning();
 			}
 		} else if (source == copyTree) { // catch copy operations
 			cmc.deactivate();
@@ -503,6 +524,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				menuTree.setSelectedNodeId(newNode.getIdent());
 				event(ureq, menuTree, new Event(MenuTree.COMMAND_TREENODE_CLICKED));
 				qtiPackage.serializeQTIDocument();
+				updateWarning();
 			}
 		} else if (source == insertTree) { // catch insert operations
 			cmc.deactivate();
@@ -512,6 +534,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			TreeEvent te = (TreeEvent) event;
 			if (te.getCommand().equals(TreeEvent.COMMAND_TREENODE_CLICKED)) { // insert
 				doInsert(ureq, te.getNodeId(), insertTree.getUserObject());
+				updateWarning();
 			}
 		} else if (source == exitVC) {
 			if (event.getCommand().equals(CMD_EXIT_SAVE)) {
@@ -695,7 +718,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			} else if (CMD_TOOLS_ADD_QPOOL.equals(cmd)) {
 				doSelectQItem(ureq);
 			} else if (CMD_TOOLS_EXPORT_QPOOL.equals(cmd)) {
-				doExportQItem(ureq);
+				doExportQItem();
 			} else if (cmd.startsWith(CMD_TOOLS_ADD_PREFIX)) { // add new object
 				// fetch new object
 				GenericQtiNode insertObject = null;
@@ -741,7 +764,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				if(deletableMediaFiles!=null && deletableMediaFiles.size()>0) {					
 					String msg = translate("delete.item.media", deletableMediaFiles.toString());
 					deleteMediaDialog = activateYesNoDialog(ureq, null, msg, deleteMediaDialog);
-				}		
+				}
+				updateWarning();
 			}
 			// cleanup controller
 			removeAsListenerAndDispose(deleteDialog);
@@ -811,7 +835,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				QTIChangeLogMessage clm = new QTIChangeLogMessage(changeLog, chngMsgFrom.hasInformLearners());
 				qtiPackage.commitChangelog(clm);
 				StringBuilder traceMsg = new StringBuilder(chngMsgFrom.hasInformLearners() ? "Visible for ALL \n" : "Visible for GROUP only \n");
-				Tracing.logAudit(traceMsg.append(changeLog).toString(), QTIEditorMainController.class);
+				logAudit(traceMsg.append(changeLog).toString(), null);
 				// save, remove locks and tmp files
 				saveAndExit(ureq);
 			}
@@ -896,6 +920,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 
 		event(ureq, menuTree, new Event(MenuTree.COMMAND_TREENODE_CLICKED));
 		qtiPackage.serializeQTIDocument();
+		updateWarning();
 	}
 	
 	private void doInsert(GenericQtiNode parentTargetNode, GenericQtiNode insertNode, int position) {
@@ -926,7 +951,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		listenTo(cmc);
 	}
 	
-	private void doExportQItem(UserRequest ureq) {
+	private void doExportQItem() {
 		GenericQtiNode selectedNode = menuTreeModel.getQtiNode(menuTree.getSelectedNodeId());
 		if(selectedNode instanceof ItemNode) {
 			ItemNode itemNode = (ItemNode)selectedNode;
@@ -1005,8 +1030,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		if (!qtiPackage.getQTIDocument().isSurvey()) tc.addLink(CMD_TOOLS_ADD_KPRIM, translate("tools.add.kprim"), CMD_TOOLS_ADD_KPRIM,
 				"o_mi_qtikprim");
 		tc.addLink(CMD_TOOLS_ADD_FIB, translate("tools.add.cloze"), CMD_TOOLS_ADD_FIB, "o_mi_qtifib");
-		if (qtiPackage.getQTIDocument().isSurvey()) tc.addLink(CMD_TOOLS_ADD_FREETEXT, translate("tools.add.freetext"),
-				CMD_TOOLS_ADD_FREETEXT, "o_mi_qtiessay");
+		tc.addLink(CMD_TOOLS_ADD_FREETEXT, translate("tools.add.freetext"), CMD_TOOLS_ADD_FREETEXT, "o_mi_qtiessay");
 		// change
 		tc.addHeader(translate("tools.change.header"));
 		// change actions
@@ -1059,8 +1083,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 
 		StringBuilder result = new StringBuilder();
 		result.append(translate("qti.restricted.leading"));
-		for (Iterator iter = referencees.iterator(); iter.hasNext();) {
-			ReferenceImpl element = (ReferenceImpl) iter.next();
+		for (Iterator<ReferenceImpl> iter = referencees.iterator(); iter.hasNext();) {
+			ReferenceImpl element = iter.next();
 			// FIXME:discuss:possible performance/cache problem
 			if ("CourseModule".equals(element.getSource().getResourceableTypeName())) {
 				ICourse course = CourseFactory.loadCourse(element.getSource().getResourceableId());
@@ -1154,7 +1178,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 							Memento respMem = null;
 							if (history.containsKey(key)) {
 								// question changed!
-								questMem = (Memento) history.get(key);
+								questMem = history.get(key);
 								hasChanges = true;
 							}
 							// if(!hasChanges){
@@ -1162,11 +1186,11 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 							// new prefix for responses
 							prefixKey += "/null/";
 							// list contains org.olat.ims.qti.editor.beecom.objects.Response
-							List responses = question != null ? question.getResponses() : null;
+							List<Response> responses = question != null ? question.getResponses() : null;
 							if (responses != null && responses.size() > 0) {
 								// check for changes in each response
-								for (Iterator iter = responses.iterator(); iter.hasNext();) {
-									Response resp = (Response) iter.next();
+								for (Iterator<Response> iter = responses.iterator(); iter.hasNext();) {
+									Response resp = iter.next();
 									if (history.containsKey(prefixKey + resp.getIdent())) {
 										// this response changed!
 										Memento tmpMem = (Memento) history.get(prefixKey + resp.getIdent());

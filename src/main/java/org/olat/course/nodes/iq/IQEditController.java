@@ -81,6 +81,11 @@ import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti.editor.QTIEditorPackage;
+import org.olat.ims.qti.editor.QTIEditorPackageImpl;
+import org.olat.ims.qti.editor.beecom.objects.Assessment;
+import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
@@ -566,6 +571,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source.equals(searchController)) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
@@ -573,7 +579,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				cmc.deactivate();
 				RepositoryEntry re = searchController.getSelectedEntry();
 				doIQReference(urequest, re);
-				this.updateEditController(urequest);
+				updateEditController(urequest);
+				checkEssay(re);
 			}
 		} else if (source == accessibilityCondContr) {
 			if (event == Event.CHANGED_EVENT) {
@@ -625,6 +632,26 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				doModOnyxConfigForm(modOnyxConfigForm);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		}
+	}
+	
+	private void checkEssay(RepositoryEntry re) {
+		TestFileResource fr = new TestFileResource();
+		fr.overrideResourceableId(re.getOlatResource().getResourceableId());
+		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, getTranslator());
+		Assessment ass = qtiPackage.getQTIDocument().getAssessment();
+
+		//Sections with their Items
+		List<Section> sections = ass.getSections();
+		for (Section section:sections) {
+			List<Item> items = section.getItems();
+			for (Item item:items) {
+				String ident = item.getIdent();
+				if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
+					showWarning("warning.test.with.essay");
+					break;
+				}
 			}
 		}
 	}

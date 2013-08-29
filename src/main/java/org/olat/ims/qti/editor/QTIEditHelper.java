@@ -460,8 +460,8 @@ public class QTIEditHelper {
 	 * @param response_labels
 	 * @return Map of choices.
 	 */
-	public static List fetchChoices(List response_labels) {
-		List choices = new ArrayList();
+	public static List<Response> fetchChoices(List response_labels) {
+		List<Response> choices = new ArrayList<Response>();
 		for (Iterator i = response_labels.iterator(); i.hasNext();) {
 			ChoiceResponse choice = new ChoiceResponse();
 			Element response_label = (Element) i.next();

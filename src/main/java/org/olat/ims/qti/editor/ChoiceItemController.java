@@ -108,14 +108,14 @@ public class ChoiceItemController extends DefaultController implements Controlle
 			if (sPosid != null) posid = Integer.parseInt(sPosid);
 			if (cmd.equals("up")) {
 				if (posid > 0) {
-					List elements = item.getQuestion().getResponses();
-					Object obj = elements.remove(posid);
+					List<Response> elements = item.getQuestion().getResponses();
+					Response obj = elements.remove(posid);
 					elements.add(posid - 1, obj);
 				}
 			} else if (cmd.equals("down")) {
-				List elements = item.getQuestion().getResponses();
+				List<Response> elements = item.getQuestion().getResponses();
 				if (posid < elements.size() - 1) {
-					Object obj = elements.remove(posid);
+					Response obj = elements.remove(posid);
 					elements.add(posid + 1, obj);
 				}
 			} else if (cmd.equals("editq")) {
@@ -129,7 +129,7 @@ public class ChoiceItemController extends DefaultController implements Controlle
 
 			} else if (cmd.equals("addchoice")) {
 				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
-				List choices = question.getResponses();
+				List<Response> choices = question.getResponses();
 				ChoiceResponse newChoice = new ChoiceResponse();
 				newChoice.getContent().add(new Mattext(trnsltr.translate("newresponsetext")));
 				newChoice.setCorrect(false);
@@ -142,7 +142,7 @@ public class ChoiceItemController extends DefaultController implements Controlle
 				getWindowControl().pushAsModalDialog( delYesNoCtrl.getInitialComponent());
 			} else if (cmd.equals("ssc")) { // submit sc
 				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
-				List q_choices = question.getResponses();
+				List<Response> q_choices = question.getResponses();
 				String correctChoice = ureq.getParameter("correctChoice");
 				for (int i = 0; i < q_choices.size(); i++) {
 					ChoiceResponse choice = (ChoiceResponse) q_choices.get(i);
@@ -169,7 +169,7 @@ public class ChoiceItemController extends DefaultController implements Controlle
 				
 			} else if (cmd.equals("smc")) { // submit mc
 				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
-				List choices = question.getResponses();
+				List<Response> choices = question.getResponses();
 				boolean hasZeroPointChoice = false;
 				for (int i = 0; i < choices.size(); i++) {
 					ChoiceResponse choice = (ChoiceResponse) choices.get(i);
@@ -201,7 +201,7 @@ public class ChoiceItemController extends DefaultController implements Controlle
 					// invalid input, set maxValue 0
 				}
 				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
-				List q_choices = question.getResponses();
+				List<Response> q_choices = question.getResponses();
 				for (int i = 0; i < q_choices.size(); i++) {
 					String correctChoice = ureq.getParameter("correctChoice_q" + i);
 					ChoiceResponse choice = (ChoiceResponse) q_choices.get(i);

@@ -53,6 +53,12 @@ import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.container.AssessmentContext;
+import org.olat.ims.qti.editor.QTIEditorPackage;
+import org.olat.ims.qti.editor.QTIEditorPackageImpl;
+import org.olat.ims.qti.editor.beecom.objects.Assessment;
+import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.qti.editor.beecom.objects.Section;
+import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentFactory;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
@@ -110,13 +116,36 @@ public class QTI12ResultDetailsController extends BasicController {
 		
 		String resourcePath = courseResourceableId + File.separator + nodeIdent;
 		qtiPersister = new FilePersister(assessedIdentity, resourcePath);
-		
+
 		init(ureq);
+	}
+	
+	private boolean checkEssay() {
+		TestFileResource fr = new TestFileResource();
+		fr.overrideResourceableId(repositoryEntry.getOlatResource().getResourceableId());
+		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, getTranslator());
+		Assessment ass = qtiPackage.getQTIDocument().getAssessment();
+
+		//Sections with their Items
+		List<Section> sections = ass.getSections();
+		for (Section section:sections) {
+			List<Item> items = section.getItems();
+			for (Item item:items) {
+				String ident = item.getIdent();
+				if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private void init(UserRequest ureq) {
 		main = createVelocityContainer("qtires");
 		details = createVelocityContainer("qtires_details");
+		
+		boolean hasEssay = checkEssay();
+		main.contextPut("warningEssay", new Boolean(hasEssay));
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());

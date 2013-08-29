@@ -166,14 +166,17 @@ public class ItemMetadataFormController extends FormBasicController {
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		this.setFormTitle("fieldset.legend.metadata");
+		setFormTitle("fieldset.legend.metadata");
 		
 		int t = item.getQuestion().getType();
+		if(!isSurvey && t == Question.TYPE_ESSAY) {
+			setFormWarning("warning.essay.test");
+		}
 		
 		if (isSurvey) {
-			this.setFormContextHelp("org.olat.ims.qti.editor", "qed-meta-surv-"+t+".html", "help.hover.qti-meta-"+t);
+			setFormContextHelp("org.olat.ims.qti.editor", "qed-meta-surv-"+t+".html", "help.hover.qti-meta-"+t);
 		} else {
-			this.setFormContextHelp("org.olat.ims.qti.editor", "qed-meta-test-"+t+".html", "help.hover.qti-meta-"+t);
+			setFormContextHelp("org.olat.ims.qti.editor", "qed-meta-test-"+t+".html", "help.hover.qti-meta-"+t);
 		}
 		
 		// Title

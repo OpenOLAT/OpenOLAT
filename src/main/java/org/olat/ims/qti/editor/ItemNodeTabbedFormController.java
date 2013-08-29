@@ -60,7 +60,6 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 	 * @param wControl
 	 * @param trnsltr
 	 */
-	@SuppressWarnings("unused")
 	public ItemNodeTabbedFormController(Item item, QTIEditorPackage qtiPackage, UserRequest ureq, WindowControl wControl, Translator trnsltr,
 			boolean restrictedEdit) {
 		super(ureq, wControl);
@@ -148,8 +147,8 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 		}
 		if (ctrl != null) { // if item was identified
 			tabbedPane.addTab(translate("tab.question"), ctrl.getInitialComponent());			
-			this.listenTo(ctrl);
-			if (!isSurvey) {
+			listenTo(ctrl);
+			if (!isSurvey && questionType != Question.TYPE_ESSAY) {
 				tabbedPane.addTab(translate("tab.feedback"), feedbackPanel);
 			}
 			Controller itemPreviewController = new ItemPreviewController(getWindowControl(), item, qtiPackage, getTranslator());

@@ -26,6 +26,7 @@
 package org.olat.ims.qti.editor.beecom.objects;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.dom4j.Element;
 
@@ -42,7 +43,7 @@ import org.dom4j.Element;
  */
 public class OutcomesProcessing implements QTIObject {
 
-	private HashMap outcomesProcessing = new HashMap();
+	private Map<String,String> outcomesProcessing = new HashMap<String,String>();
 	
 	// Strings used in outcomes processing
 //	public static final String DEFAULTVAL 	= "defaultval";
@@ -68,7 +69,7 @@ public class OutcomesProcessing implements QTIObject {
 		decvar.addAttribute(CUTVALUE, (String)outcomesProcessing.get(CUTVALUE));
 	}
 
-	public String getField(String key) { return (String)outcomesProcessing.get(key); }
+	public String getField(String key) { return outcomesProcessing.get(key); }
 	
 	public void setField(String key, String value) { outcomesProcessing.put(key, value); }
 

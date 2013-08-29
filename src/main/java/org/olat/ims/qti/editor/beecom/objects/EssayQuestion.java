@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.dom4j.Element;
+import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 
 /**
@@ -72,7 +73,7 @@ public class EssayQuestion extends Question implements QTIObject {
 			instance.setQuestion(matQuestion);
 	
 		// Response
-		List responses = instance.getResponses();
+		List<Response> responses = instance.getResponses();
 		EssayResponse response = new EssayResponse();
 		Element response_str = (Element)presentationXML.selectSingleNode(".//response_str"); // export uses flow
 
@@ -116,6 +117,22 @@ public class EssayQuestion extends Question implements QTIObject {
 		response_label.addAttribute("rshuffle", "Yes"); // QTI default
 
 		// No resprocessing since only used in survey mode
+		
+		Element resprocessingXML = root.addElement("resprocessing");
+		resprocessingXML.addAttribute("scoremodel","HumanRater");
+
+		Element outcomes = resprocessingXML.addElement("outcomes");
+		Element decvar = outcomes.addElement("decvar");
+		decvar.addAttribute("varname", "SCORE");
+		decvar.addAttribute("vartype", "Decimal");
+		decvar.addAttribute("defaultval", "0");
+		decvar.addAttribute("minvalue", "" + getMinValue());
+		float maxScore = QTIEditHelper.calculateMaxScore(this);
+		maxScore = maxScore > getMaxValue() ? getMaxValue() : maxScore;
+		decvar.addAttribute("maxvalue", "" + maxScore);
+		decvar.addAttribute("cutvalue", "" + maxScore);
+		
+		Element procExtension = resprocessingXML.addElement("itemproc_extension");	
 	}
 	
 
@@ -126,7 +143,7 @@ public class EssayQuestion extends Question implements QTIObject {
 	 */
 	public EssayResponse getEssayResponse(){
 		EssayResponse response = null;
-		for (Iterator iter = getResponses().iterator(); iter.hasNext();){
+		for (Iterator<Response> iter = getResponses().iterator(); iter.hasNext();){
 			response = (EssayResponse) iter.next();
 		} 
 		return response;

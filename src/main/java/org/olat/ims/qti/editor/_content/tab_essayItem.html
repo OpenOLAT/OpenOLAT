@@ -58,6 +58,11 @@
 		</tbody>
 		</table>
 		<br><br>
+#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+	$r.translate("score")
+	<input type="text" name="single_score" value="$question.getMaxValue()" size="4" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
+	<br />
+#end		
 <div class="b_button_group"><input type="submit" value="$r.translateInAttribute("submit")" class="b_button" name="olat_fosm" /></div>
 </form>
 </fieldset>
