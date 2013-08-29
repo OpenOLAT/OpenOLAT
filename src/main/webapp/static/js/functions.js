@@ -245,19 +245,20 @@ function b_initEmPxFactor() {
 
 function o_getMainWin() {
 	try {
-		if (window.opener && window.opener.OPOL) {
-			// use the opener when opener window is an OpenOLAT window
-			return window.opener;
-		} else if (window.OPOL) {
+		if (window.OPOL) {
 			// other cases the current window is the main window
 			return window;
-		}
+		} else if (window.opener && window.opener.OPOL) {
+			// use the opener when opener window is an OpenOLAT window
+			return window.opener;
+		} 
 	} catch (e) {
 		if (o_info.debug) { // add webbrowser console log
 			o_logerr('Exception while getting main window. rror::"'+showerror(e));
 		}
-		if (B_AjaxLogger.isDebugEnabled()) { // add ajax logger
-			B_AjaxLogger.logDebug('Exception while getting main window. rror::"'+showerror(e), "functions.js");
+		if (console) { // add ajax logger
+			console.log('Exception while getting main window. rror::"'+showerror(e), "functions.js");
+			console.log(e);
 		}	
 	}
 	throw "Can not find main OpenOLAT window";
