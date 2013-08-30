@@ -330,13 +330,17 @@ class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicControlle
 	}
 
 	private void doPrevious(UserRequest ureq) {
-		currentItemPosition--;
+		if(currentItemPosition > 0) {
+			currentItemPosition--;
+		}
 		currentItem = i18nItems.get(currentItemPosition);
 		initOrUpdateCurrentItem(ureq);
 	}
 
 	private void doNext(UserRequest ureq) {
-		currentItemPosition++;
+		if(currentItemPosition+1 < i18nItems.size()) {
+			currentItemPosition++;
+		}
 		currentItem = i18nItems.get(currentItemPosition);
 		initOrUpdateCurrentItem(ureq);
 	}
