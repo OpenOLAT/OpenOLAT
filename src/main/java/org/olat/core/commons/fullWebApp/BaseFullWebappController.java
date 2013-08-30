@@ -428,6 +428,9 @@ public class BaseFullWebappController extends BasicController implements Generic
 		if (sites == null && contentCtrl == null) { 
 		  // fxdiff: FXOLAT-190  RS if no sites displayed... show empty page instead
 			main.setContent(TextFactory.createTextComponentFromString("empty", "", null, false, null));
+			//set a guistack for the after login interceptor
+			GuiStack gs = getWindowControl().getWindowBackOffice().createGuiStack(new Panel("dummy"));
+			setGuiStack(gs);
 		}
 
 		// set maintenance message
