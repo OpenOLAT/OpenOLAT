@@ -33,7 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.AutoCreator;
+//import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.WizardInfoController;
@@ -80,7 +80,10 @@ public class AfterLoginInterceptionController extends BasicController {
 		vC = createVelocityContainer("afterlogin");
 		actualPanel = new Panel("actualPanel");
 		AfterLoginInterceptionManager aLIM = AfterLoginInterceptionManager.getInstance();
-		if (!aLIM.containsAnyController()) return;		
+		if (!aLIM.containsAnyController()) {
+			return;		
+		}
+		
 		List<Map<String, Object>> aftctrlsTmp = aLIM.getAfterLoginControllerList();
 		aftctrls = (List<Map<String, Object>>) ((ArrayList<Map<String, Object>>) aftctrlsTmp).clone();
 		// load all UserProps concerning afterlogin/runOnce workflow => only 1
@@ -88,37 +91,38 @@ public class AfterLoginInterceptionController extends BasicController {
 		pm = PropertyManager.getInstance();
 		ctrlPropList = pm.listProperties(ureq.getIdentity(), null, null, null, PROPERTY_CAT, null);
 
-		// loop over possible controllers and check if user already did it before
-		// configured timeout
-		for(Iterator<Map<String,Object>> mapInfosIt=aftctrls.iterator(); mapInfosIt.hasNext(); ) {
-			Map<String,Object> ctrlMap = mapInfosIt.next();
-			String ctrlName = ((AutoCreator) ctrlMap.get(CONTROLLER_KEY)).getClassName();
-			// checking for recurring entries
-			if (ctrlMap.containsKey(REDOTIMEOUT_KEY)) {
-				// redo-timeout not yet over, so don't do again
-				Long redoTimeout = Long.parseLong((String) ctrlMap.get(REDOTIMEOUT_KEY));
-				if (((Calendar.getInstance().getTimeInMillis() / 1000) - redoTimeout) < getLastRunTimeForController(ctrlName)) {
-					mapInfosIt.remove();
-				}
-			} else { // check if run already for non-recurring entries
-				if (getRunStateForController(ctrlName)) {
-					mapInfosIt.remove();
-				}
-			}
-		}
-
-		// break if nothing survived cleanup or invalid configuration
-		if (aftctrls == null || aftctrls.size() == 0) {
-			fireEvent(ureq, Event.DONE_EVENT);
-			return;
-		}
-		
-		//fxdiff BAKS-20 instantiate controllers in advance to allow back
+		// loop over possible controllers and check if user already did it before configured timeout
+		// instantiate controllers in advance to allow back
 		for(Iterator<Map<String,Object>> mapInfosIt=aftctrls.iterator(); mapInfosIt.hasNext(); ) {
 			Map<String,Object> mapInfos = mapInfosIt.next();
 			if (mapInfos.containsKey(CONTROLLER_KEY)) {
 				ControllerCreator creator = (ControllerCreator) mapInfos.get(CONTROLLER_KEY);
 				Controller ctrl = creator.createController(ureq, wControl);
+				//no controller to show
+				if (ctrl == null ){
+					mapInfosIt.remove();
+					continue;
+				}
+				
+				String ctrlName = ctrl.getClass().getName();
+
+				// check if the time between to appearance is ago
+				if (mapInfos.containsKey(REDOTIMEOUT_KEY)) {
+					// redo-timeout not yet over, so don't do again
+					Long redoTimeout = Long.parseLong((String) mapInfos.get(REDOTIMEOUT_KEY));
+					if (((Calendar.getInstance().getTimeInMillis() / 1000) - redoTimeout) < getLastRunTimeForController(ctrlName)) {
+						ctrl.dispose();
+						mapInfosIt.remove();
+						continue;
+					}
+				// check if run already for non-recurring entries
+				} else if (getRunStateForController(ctrlName)) {
+					ctrl.dispose();
+					mapInfosIt.remove();
+					continue;
+				}
+
+				// check if interception criteria is needed
 				if(ctrl instanceof SupportsAfterLoginInterceptor) {
 					SupportsAfterLoginInterceptor loginInterceptor = (SupportsAfterLoginInterceptor)ctrl;
 					if(loginInterceptor.isInterceptionRequired(ureq)) {
@@ -127,15 +131,14 @@ public class AfterLoginInterceptionController extends BasicController {
 						ctrl.dispose();
 						mapInfosIt.remove();
 					}
-				} else if (ctrl != null ){
-					mapInfos.put(CONTROLLER, ctrl);
 				} else {
-					mapInfosIt.remove();
+					mapInfos.put(CONTROLLER, ctrl);
 				}
 			} else {
 				mapInfosIt.remove();
 			}
 		}
+		
 		if (aftctrls.isEmpty()) {
 			fireEvent(ureq, Event.DONE_EVENT);
 			return;
@@ -157,7 +160,9 @@ public class AfterLoginInterceptionController extends BasicController {
 		cmc.activate();
 		listenTo(cmc);
 		// if controller could not be created, go to the next one ore close the wizzard 
-		if (actCtrl == null) activateNextOrCloseModal(ureq); 
+		if (actCtrl == null) {
+			activateNextOrCloseModal(ureq);
+		}
 	}
 
 	private Long getLastRunTimeForController(String ctrlName) {
@@ -169,7 +174,9 @@ public class AfterLoginInterceptionController extends BasicController {
 
 	private boolean getRunStateForController(String ctrlName) {
 		for (Property prop : ctrlPropList) {
-			if (prop.getName().equals(ctrlName)) { return Boolean.parseBoolean(prop.getStringValue()); }
+			if (prop.getName().equals(ctrlName)) { 
+				return Boolean.parseBoolean(prop.getStringValue());
+			}
 		}
 		return false;
 	}
