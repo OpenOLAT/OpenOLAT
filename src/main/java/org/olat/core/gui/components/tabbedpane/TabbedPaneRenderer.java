@@ -135,7 +135,7 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		TabbedPane tp = (TabbedPane)source;
 		int cnt = tp.getTabCount();
-		if (cnt > 0) {
+		if (cnt > 0 && tp.getSelectedPane() < cnt) {
 			Component toRender = tp.getTabAt(tp.getSelectedPane());
 			//	delegate js rendering to the selected pane
 			renderer.renderBodyOnLoadJSFunctionCall(sb, toRender, rstate);

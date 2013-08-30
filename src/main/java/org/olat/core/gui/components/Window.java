@@ -936,7 +936,7 @@ public class Window extends Container {
 								}
 								
 							} catch (Exception e) {
-								throw new OLATRuntimeException(Window.class,renderResult.getLogMsg(), renderResult.getRenderException());
+								throw new OLATRuntimeException("Unexpected error ", e);
 							} finally {
 								toRender.setDomReplaceable(true);
 							}
