@@ -414,11 +414,13 @@ public class FunctionalUtil {
 
 		log.info("waiting for page to load element");
 		
+		int count = 0;
 		do{
 			if(browser.isElementPresent(locator)){
 				log.info("found element after " + (currentTime - startTime) + "ms");
-				
-				return(true);
+				return true;
+			} else if(count > 2) {
+				System.out.println();
 			}
 			
 			try {
@@ -426,10 +428,10 @@ public class FunctionalUtil {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			
-			
+
 			currentTime = Calendar.getInstance().getTimeInMillis();
-		}while(waitLimit >  currentTime - startTime);
+			count++;
+		} while(waitLimit >  currentTime - startTime);
 		
 		log.warn("giving up after " + waitLimit + "ms");
 		

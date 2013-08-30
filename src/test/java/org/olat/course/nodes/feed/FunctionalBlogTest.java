@@ -84,7 +84,7 @@ public class FunctionalBlogTest {
 	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST1_CONTENT = "Please take a look at ReentrantLock class in JavaSE package java.util.concurrent.locks for further information.";
 	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_TITLE = "Creating conditions";
 	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_DESCRIPTION = "Wait until condition is fulfilled.";
-	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_CONTENT = "With the ReentrantLock class you may create new conditions like following:<br>\n<code>\nfinal Lock lock = new ReentrantLock();<br>\nfinal Condition cond  = lock.newCondition()<br>\n</code>\n";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_CONTENT = "With the ReentrantLock class you may create new conditions like following:<br>\n<code>\nfinal Lock lock = new ReentrantLock();<br>\nfinal Condition cond = lock.newCondition()<br>\n</code>\n";
 	
 	public final static String CONCURRENT_RW_BLOG_SHORT_TITLE = "blog";
 	public final static String CONCURRENT_RW_BLOG_LONG_TITLE = "blog cleared cache";

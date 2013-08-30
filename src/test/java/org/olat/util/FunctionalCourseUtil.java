@@ -1521,20 +1521,18 @@ public class FunctionalCourseUtil {
 		
 		/* save form */
 		if(edit == null || edit.length > 0){
-			selectorBuffer = new StringBuffer();
+			StringBuilder okSelector = new StringBuilder();
 
-			selectorBuffer.append("xpath=//form//div[contains(@class, '")
-			.append(getBlogFormCss())
-			.append("')]//button[last() and contains(@class, '")
-			.append(functionalUtil.getButtonDirtyCss())
-			.append("')]");
+			okSelector.append("xpath=//form//div[contains(@class, '")
+			  .append(getBlogFormCss())
+			  .append("')]//button[last()][contains(@class,'b_button')]");
 
-			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-			browser.click(selectorBuffer.toString());
+			functionalUtil.waitForPageToLoadElement(browser, okSelector.toString());
+			browser.click(okSelector.toString());
 			functionalUtil.waitForPageToLoad(browser);
 		}
 		
-		return(true);
+		return true;
 	}
 	
 	/**

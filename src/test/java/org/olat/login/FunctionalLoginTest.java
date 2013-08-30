@@ -77,9 +77,18 @@ public class FunctionalLoginTest {
 	static boolean initialized = false;
 	
 	@Before
-	public void setup(){
-		if(!initialized){
+	public void setup() {
+		/*try {
+			deploymentUrl = new URL("http", "localhost", 8080, "/olat/");
+			browser = new DefaultSelenium("127.0.0.1", 4444, "*googlechrome", "http://localhost:8080/olat/");
+			browser.start();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}*/
+		
+		if(!initialized) {
 			functionalUtil = new FunctionalUtil();
+			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 			
 			initialized = true;
