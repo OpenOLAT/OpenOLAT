@@ -313,6 +313,85 @@ public class UserWebService {
 	}
 	
 	/**
+	 * Retrieves the status of a user given its unique key identifier
+	 * @response.representation.qname {http://www.example.com}statusVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The user
+   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_STATUSVO}
+   * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The identity not found
+	 * @param identityKey The user key identifier of the user being searched
+	 * @param httpRequest The HTTP request
+	 * @return an xml or json representation of a the status being search.
+	 */
+	@GET
+	@Path("{identityKey}/status")
+	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	public Response getStatus(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		try {
+			boolean isUserManager = isUserManager(request);
+			if(!isUserManager) {
+				return Response.serverError().status(Status.FORBIDDEN).build();
+			}
+			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			if(identity == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+
+			StatusVO status = new StatusVO();
+			status.setStatus(identity.getStatus());
+			return Response.ok(status).build();
+		} catch (Throwable e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Update the roles of a user given its unique key identifier:
+	 * <ul>
+	 * 	<li>1: Permanent user</li> 
+	 * 	<li>2: activ</li> 
+	 *  <li>101: login denied</li> 
+	 *  <li>199: deleted</li> 
+	 * </ul>
+	 * 
+	 * @response.representation.qname {http://www.example.com}statusVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The user
+   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
+   * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The identity not found
+	 * @param identityKey The user key identifier of the user being searched
+	 * @param status The status to update
+	 * @param httpRequest The HTTP request
+	 * @return An xml or json representation of a the status after update.
+	 */
+	@POST
+	@Path("{identityKey}/status")
+	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	public Response updateStatus(@PathParam("identityKey") Long identityKey, StatusVO status, @Context HttpServletRequest request) {
+		try {
+			boolean isUserManager = isUserManager(request);
+			if(!isUserManager) {
+				return Response.serverError().status(Status.FORBIDDEN).build();
+			}
+			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			if(identity == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+			
+			Integer newStatus = status.getStatus();
+			identity = BaseSecurityManager.getInstance().saveIdentityStatus(identity, newStatus);
+			StatusVO reloadedStatus = new StatusVO();
+			reloadedStatus.setStatus(identity.getStatus());
+			return Response.ok(reloadedStatus).build();
+		} catch (Throwable e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
 	 * Retrieves the preferences of a user given its unique key identifier
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The preferences
@@ -678,21 +757,5 @@ public class UserWebService {
 		}
 		UserDeletionManager.getInstance().deleteIdentity(identity);
 		return Response.ok().build();
-	}
-	
-	/**
-	 * Fallback method for browsers
-	 * @response.representation.200.doc The user is removed from the group
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
-	 * @param identityKey The user key identifier
-	 * @param request The HTTP request
-	 * @return
-	 */
-	@POST
-	@Path("{identityKey}/delete")
-	@Produces(MediaType.APPLICATION_XML)
-	public Response deletePost(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		return delete(identityKey, request);
 	}
 }
