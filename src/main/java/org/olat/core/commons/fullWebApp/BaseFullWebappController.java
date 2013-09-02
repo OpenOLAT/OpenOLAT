@@ -1097,7 +1097,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 	}
 	
 	private void updateBusinessPath(UserRequest ureq, DTab tab) {
-		if(tab == null) return;
+		//dtabToBusinessPath is null if the controller is disposed
+		if(tab == null || dtabToBusinessPath == null) return;
 
 		String businessPath = tab.getController().getWindowControlForDebug().getBusinessControl().getAsString();
 		HistoryPoint point = ureq.getUserSession().getLastHistoryPoint();
