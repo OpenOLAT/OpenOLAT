@@ -157,7 +157,8 @@ public class IQEditReplaceWizard extends WizardController {
 					recipientsCC.add(ureq.getIdentity());
 				}
 				//fxdiff VCRP-16: intern mail system
-				MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
+				String businessPath = getWindowControl().getBusinessControl().getAsString();
+				MailContext context = new MailContextImpl(businessPath);
 				MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, learners, recipientsCC, mailCtr.getMailTemplate(), ureq.getIdentity());
 			}
 			fireEvent(ureq, Event.DONE_EVENT);

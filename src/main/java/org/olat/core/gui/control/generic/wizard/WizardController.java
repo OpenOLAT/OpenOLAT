@@ -45,7 +45,6 @@ import org.olat.core.gui.control.controller.BasicController;
 
 public class WizardController extends BasicController {
 	
-	protected WindowControl wControl;
 	private VelocityContainer wizardVC;
 	private WizardInfoController wic;
 	
@@ -66,16 +65,14 @@ public class WizardController extends BasicController {
 		
 		this.steps = steps;
 		
-		
 		wizardVC = createVelocityContainer("wizard");
 		finishButton = LinkFactory.createCustomLink("finish", "cmd.wizard.cancel", "cmd.wizard.finished", Link.BUTTON, this.wizardVC, this);
 		cancelButton = LinkFactory.createCustomLink("cancel", "cmd.wizard.cancel", "cmd.wizard.cancel", Link.BUTTON, this.wizardVC, this);
 		
-		this.wic = new WizardInfoController(ureq, this.steps);
+		wic = new WizardInfoController(ureq, this.steps);
 		listenTo(wic);
 		
-		this.wizardVC.put("wic", wic.getInitialComponent());
-		
+		wizardVC.put("wic", wic.getInitialComponent());
 		putInitialPanel(wizardVC);
 	}
 
