@@ -64,13 +64,13 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.6</targetJdk>
-		<org.springframework.version>3.2.3.RELEASE</org.springframework.version>
-		<org.hibernate.version>4.2.3.Final</org.hibernate.version>
+		<org.springframework.version>3.2.4.RELEASE</org.springframework.version>
+		<org.hibernate.version>4.2.5.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.17.1</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
-		<org.mysql.version>5.1.24</org.mysql.version>
+		<org.mysql.version>5.1.26</org.mysql.version>
 		<org.postgresql.version>9.1-901.jdbc4</org.postgresql.version>
-		<org.infinispan.version>5.2.5.Final</org.infinispan.version>
+		<org.infinispan.version>5.2.7.Final</org.infinispan.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -380,17 +380,30 @@
 						</exclusion>
 					</exclusions>
 				</dependency>
-				
+				<!-- webservice stack -->
 				<dependency>
 	      			<groupId>com.sun.xml.ws</groupId>
 	      			<artifactId>jaxws-rt</artifactId>
 	      			<version>2.2.6</version>
+	      			<exclusions>
+	      				<exclusion>
+	      					<groupId>javax.activation</groupId>
+	      					<artifactId>activation</artifactId>
+	      				</exclusion>
+	      			</exclusions>
 	    		</dependency>
 	    		<dependency>
 	    			<groupId>com.sun.xml.fastinfoset</groupId>
 	    			<artifactId>FastInfoset</artifactId>
 	    			<version>1.2.8</version>
 	    		</dependency>
+	    		
+	    		<!-- for docx4j -->
+	    		<dependency>
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+					<version>2.7.1</version>
+				</dependency>
 			</dependencies>
 			
 			<build>
@@ -521,6 +534,12 @@
 							<artifactId>commons-logging-api</artifactId>
 						</exclusion>
 					</exclusions>
+				</dependency>
+				
+				<dependency>
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+					<version>2.7.1</version>
 				</dependency>
 			</dependencies>
 		
@@ -1628,15 +1647,16 @@
 			<artifactId>viterows</artifactId>
 			<version>4.4</version>
 		</dependency>
+		<!-- docx4j need poi scratchpad version 3.8 -->
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>3.7</version>
+			<version>3.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
-			<version>3.7</version>
+			<version>3.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
@@ -1772,6 +1792,21 @@
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-util</artifactId>
 			<version>1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j</artifactId>
+			<version>2.8.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>fop</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>de.java2html</groupId>
