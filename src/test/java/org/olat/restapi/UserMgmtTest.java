@@ -110,6 +110,7 @@ import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.olat.user.restapi.PreferencesVO;
 import org.olat.user.restapi.RolesVO;
+import org.olat.user.restapi.StatusVO;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -690,6 +691,84 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		Assert.assertFalse(reloadRoles.isOLATAdmin());
 		Assert.assertFalse(reloadRoles.isPoolAdmin());
 		Assert.assertTrue(reloadRoles.isUserManager());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetStatus() throws IOException, URISyntaxException {
+		//create an author
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("status-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//get roles of author
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + user.getKey() + "/status").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		StatusVO status = conn.parse(response, StatusVO.class);
+		Assert.assertNotNull(status);
+		Assert.assertNotNull(status.getStatus());
+		Assert.assertEquals(2, status.getStatus().intValue());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUpdateStatus() throws IOException, URISyntaxException {
+		//create a user
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("login-denied-1-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		StatusVO status = new StatusVO();
+		status.setStatus(101);
+		
+		//get roles of author
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + user.getKey() + "/status").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, status);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		StatusVO modStatus = conn.parse(response, StatusVO.class);
+		Assert.assertNotNull(modStatus);
+		Assert.assertNotNull(modStatus.getStatus());
+		Assert.assertEquals(101, modStatus.getStatus().intValue());
+		
+		//check the roles
+		Identity reloadIdentity = securityManager.loadIdentityByKey(user.getKey());
+		Assert.assertNotNull(reloadIdentity);
+		Assert.assertNotNull(reloadIdentity.getStatus());
+		Assert.assertEquals(101, reloadIdentity.getStatus().intValue());
+		conn.shutdown();
+	}
+	
+	/**
+	 * Test if a standard user can change the status of someone else
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testUpdateStatus_denied() throws IOException, URISyntaxException {
+		//create a user
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("login-denied-2-" + UUID.randomUUID().toString());
+		Identity hacker = JunitTestHelper.createAndPersistIdentityAsUser("login-denied-2-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(hacker.getName(), JunitTestHelper.PWD));
+		
+		StatusVO status = new StatusVO();
+		status.setStatus(101);
+		
+		//get roles of author
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + user.getKey() + "/status").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, status);
+		HttpResponse response = conn.execute(method);
+		assertEquals(403, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
 		conn.shutdown();
 	}
 	
