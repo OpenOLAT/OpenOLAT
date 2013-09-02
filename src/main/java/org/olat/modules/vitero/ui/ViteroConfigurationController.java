@@ -21,6 +21,7 @@ package org.olat.modules.vitero.ui;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.TimeZone;
 
 import org.olat.core.CoreSpringFactory;
@@ -96,6 +97,9 @@ public class ViteroConfigurationController extends FormBasicController {
 			uifactory.addSpacerElement("Spacer", moduleFlc, false);
 			
 			String[] timeZoneKeys = ViteroTimezoneIDs.TIMEZONE_IDS;
+			timeZoneKeys = timeZoneKeys.clone();
+			Arrays.sort(timeZoneKeys, null);
+
 			String[] timeZoneValues = new String[timeZoneKeys.length];
 			int i=0;
 			for(String timeZoneKey:timeZoneKeys) {
@@ -104,7 +108,7 @@ public class ViteroConfigurationController extends FormBasicController {
 					timeZoneValues[i++] = timeZoneKey;
 				} else {
 					String value = timezone.getDisplayName(false, TimeZone.LONG);
-					timeZoneValues[i++] = value;
+					timeZoneValues[i++] = timeZoneKey + " ( " + value + " )";
 				}
 			}
 
