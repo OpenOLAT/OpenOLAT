@@ -75,7 +75,7 @@ public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> {
 		switch (col) {
 		case 0:
 			//subject
-			return denManager.format(event.getSubject());
+			return event.getSubject();
 		case 1:
 			return event.getBegin();
 		case 2:
@@ -86,17 +86,16 @@ public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> {
 			return denManager.formatDuration(milliSeconds, translator);
 		case 3:
 			//location
-			return denManager.format(event.getLocation());
+			return event.getLocation();
 		case 4:
 			//comment
 			return event.getComment();
 		case 5:
 			//enrolled & total
-			StringBuffer numStrBuf = new StringBuffer();
+			StringBuilder numStrBuf = new StringBuilder();
 			String[] participants = event.getParticipants(); 
-			numStrBuf.append(participants == null ? "0" : participants.length);
-			numStrBuf.append("/");
-			numStrBuf.append(event.getNumParticipants());
+			numStrBuf.append(participants == null ? "0" : participants.length)
+			  .append("/").append(event.getNumParticipants());
 			return numStrBuf.toString();
 		case 6:
 			//status

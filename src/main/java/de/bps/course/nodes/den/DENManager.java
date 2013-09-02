@@ -543,9 +543,9 @@ public class DENManager {
 		tableConfig.setResultsPerPage(15);
 		tableConfig.setShowAllLinkEnabled(true);
 		TableController tableCntrl = new TableController(tableConfig, ureq, wControl, trans);
-		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.date", 0, null, ureq.getLocale()));
+		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.date", 0, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.begin", 1, null, ureq.getLocale()));
-		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.location", 3, null, ureq.getLocale()));
+		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.location", 3, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.duration", 2, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.comment", 4, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participants.num", 5, null, ureq.getLocale()));
@@ -572,9 +572,9 @@ public class DENManager {
 		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"));
 		tableConfig.setColumnMovingOffered(true);
 		TableController tableCntrl = new TableController(tableConfig, ureq, wControl, trans);
-		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.date", 0, null, ureq.getLocale()));
+		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.date", 0, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.begin", 1, null, ureq.getLocale()));
-		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.location", 3, null, ureq.getLocale()));
+		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.location", 3, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.duration", 2, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.comment", 4, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.reserved", 5, null, ureq.getLocale()));
@@ -603,9 +603,9 @@ public class DENManager {
 		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"));
 		tableConfig.setColumnMovingOffered(true);
 		TableController tableCntrl = new TableController(tableConfig, ureq, wControl, trans);
-		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.date", 0, null, ureq.getLocale()));
+		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.date", 0, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.begin", 1, null, ureq.getLocale()));
-		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.location", 3, null, ureq.getLocale()));
+		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.location", 3, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.duration", 2, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.comment", 4, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participant.name", 5, null, ureq.getLocale()));
@@ -864,10 +864,6 @@ public class DENManager {
 		KalendarEventLink link = new KalendarEventLink("COURSE", courseNode.getIdent(), courseNode.getShortTitle(), extLink, iconCssClass);
 		kalendarEventLinks.clear();
 		kalendarEventLinks.add(link);
-	}
-	
-	public String format(String unformattedText) {
-		return "<strong>"+unformattedText+"</strong>";
 	}
 	
 	public String formatDuration(long ms, Translator translator) {

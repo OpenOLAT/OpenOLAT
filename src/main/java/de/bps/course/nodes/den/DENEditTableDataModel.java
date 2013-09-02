@@ -57,7 +57,7 @@ public class DENEditTableDataModel extends DefaultTableDataModel<KalendarEvent> 
 		KalendarEvent event = getObject(row);
 		
 		switch (col) {
-			case 0: return denManager.format(event.getSubject());
+			case 0: return event.getSubject();
 			case 1:
 				//begin
 				return event.getBegin();
@@ -70,7 +70,7 @@ public class DENEditTableDataModel extends DefaultTableDataModel<KalendarEvent> 
 				return denManager.formatDuration(milliSeconds, translator);
 			case 3:
 				//location
-				return denManager.format(event.getLocation());
+				return event.getLocation();
 			case 4: return event.getComment();
 			case 5: return event.getNumParticipants();
 		default:	return "error";
