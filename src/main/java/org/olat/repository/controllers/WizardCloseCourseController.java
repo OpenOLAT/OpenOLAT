@@ -103,16 +103,16 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 		this.repositoryEntry = repositoryEntry;
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
-		this.mainVc = createVelocityContainer("wizard");
-		this.panel = new Panel("panel");
+		mainVc = createVelocityContainer("wizard");
+		panel = new Panel("panel");
 	}
 
 	public void startWorkflow() {
 		buildStep1();
 		mainVc.put("panel", panel);
 		
-		this.setWizardTitle(translate("wizard.closecourse.title"));
-		this.setNextWizardStep(translate("close.ressource.step1"), mainVc);
+		setWizardTitle(translate("wizard.closecourse.title"));
+		setNextWizardStep(translate("close.ressource.step1"), mainVc);
 	}
 	
 	/**
@@ -178,7 +178,7 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 		//forward to step 2
 		if ( source == nextStep1 ) {
 			buildStep2(ureq);
-			this.setNextWizardStep(translate("close.ressource.step2"), mainVc);
+			setNextWizardStep(translate("close.ressource.step2"), mainVc);
 		}
 	}
 	
@@ -200,7 +200,8 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 					ccIdentities = null;
 				}
 				//fxdiff VCRP-16: intern mail system
-				MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
+				String businessPath = getWindowControl().getBusinessControl().getAsString();
+				MailContext context = new MailContextImpl(businessPath);
 				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, ownerList, ccIdentities,
 						mailNotificationCtr.getMailTemplate(), ureq.getIdentity());
 				StringBuilder errorMessage = new StringBuilder();
