@@ -530,15 +530,17 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	}
 
 	/**
+	 * 
+	 * 
 	 * @see org.olat.basesecurity.Manager#addIdentityToSecurityGroup(org.olat.core.id.Identity, org.olat.basesecurity.SecurityGroup)
 	 */
+	@Override
 	public void addIdentityToSecurityGroup(Identity identity, SecurityGroup secGroup) {
 		SecurityGroupMembershipImpl sgmsi = new SecurityGroupMembershipImpl();
 		sgmsi.setIdentity(identity);
 		sgmsi.setSecurityGroup(secGroup);
 		sgmsi.setLastModified(new Date());
-		DBFactory.getInstance().saveObject(sgmsi);
-		//TODO: tracing
+		dbInstance.getCurrentEntityManager().persist(sgmsi);
 	}
 
 	/**

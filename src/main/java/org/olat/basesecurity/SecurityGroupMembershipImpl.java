@@ -33,10 +33,16 @@ import org.olat.core.id.ModifiedInfo;
 
 /**
  * Description: <br>
+ * Relation between the security group and identity. The object is almost immutable
+ * on the hibernate mapping.
+ * 
  * 
  * @author Felix Jost
  */
 public class SecurityGroupMembershipImpl extends PersistentObject implements ModifiedInfo {
+
+	private static final long serialVersionUID = 2466302280763907357L;
+	
 	private Identity identity;
 	private SecurityGroup securityGroup;
 	private Date lastModified;
@@ -63,7 +69,8 @@ public class SecurityGroupMembershipImpl extends PersistentObject implements Mod
 	}
 
 	/**
-	 * Sets the identity.
+	 * Sets the identity. The identity cannot be changed and updated.
+	 * The identity is only inserted to the database but never updated
 	 * 
 	 * @param identity The identity to set
 	 */
@@ -72,7 +79,8 @@ public class SecurityGroupMembershipImpl extends PersistentObject implements Mod
 	}
 
 	/**
-	 * Sets the securityGroup.
+	 * Sets the securityGroup. The security group cannot be changed and
+	 * updated. It is only inserted to the dabatase but never updated.
 	 * 
 	 * @param securityGroup The securityGroup to set
 	 */
