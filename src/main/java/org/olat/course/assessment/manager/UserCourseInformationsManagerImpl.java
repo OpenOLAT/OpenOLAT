@@ -33,7 +33,11 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.SyncerExecutor;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.repository.RepositoryEntry;
@@ -55,18 +59,6 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 	private DB dbInstance;
 	@Autowired
 	private OLATResourceManager resourceManager;
-
-	private UserCourseInfosImpl createUserCourseInformations(Identity identity, OLATResource courseResource) {
-		UserCourseInfosImpl infos = new UserCourseInfosImpl();
-		infos.setIdentity(identity);
-		infos.setInitialLaunch(new Date());
-		infos.setLastModified(new Date());
-		infos.setRecentLaunch(new Date());
-		infos.setVisit(1);
-		infos.setResource(courseResource);
-		dbInstance.saveObject(infos);
-		return infos;
-	}
 
 	@Override
 	public UserCourseInfosImpl getUserCourseInformations(Long courseResourceId, Identity identity) {
@@ -125,26 +117,36 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 	 * @return
 	 */
 	@Override
-	public UserCourseInformations updateUserCourseInformations(Long courseResourceableId, Identity identity) {
-		try {
-			UserCourseInfosImpl infos = getUserCourseInformations(courseResourceableId, identity);
-			if(infos == null) {
-				OLATResource courseResource = resourceManager.findResourceable(courseResourceableId, "CourseModule");
-				infos = createUserCourseInformations(identity, courseResource);
-			} else {
-				infos.setVisit(infos.getVisit() + 1);
-				infos.setRecentLaunch(new Date());
-				infos.setLastModified(new Date());
-				dbInstance.updateObject(infos);
+	public void updateUserCourseInformations(final Long courseResourceableId, final Identity identity) {
+		OLATResourceable lockRes = OresHelper.createOLATResourceableInstance("CourseLaunchDate::Identity", identity.getKey());
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(lockRes, new SyncerExecutor(){
+			@Override
+			public void execute() {
+				try {
+					UserCourseInfosImpl infos = getUserCourseInformations(courseResourceableId, identity);
+					if(infos == null) {
+						OLATResource courseResource = resourceManager.findResourceable(courseResourceableId, "CourseModule");
+						infos = new UserCourseInfosImpl();
+						infos.setIdentity(identity);
+						infos.setInitialLaunch(new Date());
+						infos.setLastModified(new Date());
+						infos.setRecentLaunch(new Date());
+						infos.setVisit(1);
+						infos.setResource(courseResource);
+						dbInstance.getCurrentEntityManager().persist(infos);
+					} else {
+						dbInstance.getCurrentEntityManager().refresh(infos);
+						infos.setVisit(infos.getVisit() + 1);
+						infos.setRecentLaunch(new Date());
+						infos.setLastModified(new Date());
+						infos = dbInstance.getCurrentEntityManager().merge(infos);
+					}
+				} catch (Exception e) {
+					logError("Cannot update course informations for: " + identity + " from " + identity, e);
+				}
 			}
-			return infos;
-		} catch (Exception e) {
-			logError("Cannot update course informations for: " + identity + " from " + identity, e);
-			return null;
-		}
+		});
 	}
-	
-
 	
 	@Override
 	public Date getInitialLaunchDate(Long courseResourceId, Identity identity) {

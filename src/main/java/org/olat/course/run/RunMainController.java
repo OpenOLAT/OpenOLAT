@@ -76,7 +76,6 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.prefs.Preferences;
@@ -341,20 +340,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void setLaunchDates(final Identity identity) {
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(identity), new SyncerExecutor(){
-			public void execute() {
-				UserCourseInformationsManager efficiencyStatementManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-				efficiencyStatementManager.updateUserCourseInformations(uce.getCourseEnvironment().getCourseResourceableId(), getIdentity());
-			}
-		});
+		UserCourseInformationsManager efficiencyStatementManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
+		efficiencyStatementManager.updateUserCourseInformations(uce.getCourseEnvironment().getCourseResourceableId(), getIdentity());
 	}
 	
-	private OLATResourceable createOLATResourceableForLocking(Identity identity) {				
-		String type = "CourseLaunchDate::Identity";
-		OLATResourceable oLATResourceable = OresHelper.createOLATResourceableInstance(type,identity.getKey());
-		return oLATResourceable;
-	}
-
 	/**
 	 * @param locale
 	 * @return
