@@ -22,7 +22,7 @@
 		</a>
 	#end
 	<p class="o_podcast_date">$!helper.getLastModified($item)</p>
-	<p>$!helper.getItemDescriptionForBrowser($item)</p>
+	<p class="o_podcast_description">$!helper.getItemDescriptionForBrowser($item)</p>
 	
 	#if ($!item.getEnclosure())								
 		<div id="o_podcast_episode" class="o_podcast_$!helper.getMediaType($item.getEnclosure())"><a href="http://www.macromedia.com/go/getflashplayer">Get the Flash Player</a> to see this media file.</div>

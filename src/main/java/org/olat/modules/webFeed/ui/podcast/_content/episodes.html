@@ -38,9 +38,9 @@
 			#if ("$!episode.getExternalLink()" != "")
 				</a>
 			#end
-			<p>$!helper.getMediaType($episode.getEnclosure())</p>
+			<p class="o_podcast_media_type">$!helper.getMediaType($episode.getEnclosure())</p>
 			<p class="o_podcast_date">$!helper.getLastModified($episode)</p>
-			<p>$!helper.getItemDescriptionForBrowser($episode)</p>
+			<p class="o_podcast_description">$!helper.getItemDescriptionForBrowser($episode)</p>
 			
 			#if ($!episode.getEnclosure())								
 				<div id="o_podcast_episode_$velocityCount" name="o_podcast_episode_$velocityCount" class="o_podcast_$!helper.getMediaType($episode.getEnclosure())" ><a href="http://www.macromedia.com/go/getflashplayer">Get the Flash Player</a> to see this media file.</div>
