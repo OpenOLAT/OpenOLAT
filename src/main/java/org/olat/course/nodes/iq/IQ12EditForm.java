@@ -409,6 +409,8 @@ public class IQ12EditForm extends FormBasicController {
 		endDateElement.clearError();
 		if (!endDateElement.isVisible()) endDateElement.setValue("");
 		endDateElement.setVisible(startDateElement.isVisible());
+		
+		flc.setDirty(true);
 	}
 	
 	

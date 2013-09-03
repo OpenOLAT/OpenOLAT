@@ -24,7 +24,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -834,5 +836,48 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(permissions.contains("test.gpor-1_1"));
 		Assert.assertTrue(permissions.contains("test.gpor-1_2"));
 		Assert.assertFalse(permissions.contains("test.gpor-1_3"));
+	}
+
+	/**
+	 * Dummy test to make sure all works as wanted
+	 */
+	@Test
+	public void createSecurityGroupMembership() {
+		//create a user with the default provider
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("update-membership-" + UUID.randomUUID().toString());
+		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
+		securityManager.addIdentityToSecurityGroup(identity, secGroup);
+		dbInstance.commitAndCloseSession();
+
+		boolean member = securityManager.isIdentityInSecurityGroup(identity, secGroup);
+		Assert.assertTrue(member);
+	}
+	
+	/**
+	 * We remove the optimistic locking from SecurityGroupMembershipImpl mapping
+	 */
+	@Test
+	public void createAndUpdateSecurityGroupMembership_lastCommitWin() {
+		//create a user with the default provider
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("update-membership-" + UUID.randomUUID().toString());
+		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
+		
+		SecurityGroupMembershipImpl sgmsi = new SecurityGroupMembershipImpl();
+		sgmsi.setIdentity(identity);
+		sgmsi.setSecurityGroup(secGroup);
+		sgmsi.setLastModified(new Date());
+		dbInstance.getCurrentEntityManager().persist(sgmsi);
+		dbInstance.commitAndCloseSession();
+
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -1);
+		sgmsi.setLastModified(cal.getTime());
+		dbInstance.getCurrentEntityManager().merge(sgmsi);
+		dbInstance.commitAndCloseSession();
+	
+		cal.add(Calendar.DATE, -1);
+		sgmsi.setLastModified(cal.getTime());
+		dbInstance.getCurrentEntityManager().merge(sgmsi);
+		dbInstance.commitAndCloseSession();	
 	}
 }

@@ -88,6 +88,7 @@ import org.junit.runners.Suite;
 	org.olat.group.test.BusinessGroupServiceTest.class,//ok
 	org.olat.group.test.BusinessGroupDAOTest.class,//ok
 	org.olat.group.test.BusinessGroupRelationDAOTest.class,//ok
+	org.olat.group.test.BusinessGroupConcurrentTest.class,//ok
 	org.olat.group.test.ContactDAOTest.class,//ok
 	org.olat.resource.lock.pessimistic.PLockTest.class,//ok
 	org.olat.resource.references.ReferenceManagerTest.class,//ok
@@ -106,6 +107,7 @@ import org.junit.runners.Suite;
 	org.olat.instantMessaging.InstantMessageServiceTest.class,//ok
 	org.olat.course.nodes.en.EnrollmentManagerTest.class,//ok
 	org.olat.course.assessment.AssessmentManagerTest.class,//ok
+	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,//ok
 	org.olat.course.config.CourseConfigManagerImplTest.class,//ok
 	org.olat.course.groupsandrights.CourseGroupManagementTest.class,//ok
 	org.olat.course.editor.PublishProcessTest.class,//ok

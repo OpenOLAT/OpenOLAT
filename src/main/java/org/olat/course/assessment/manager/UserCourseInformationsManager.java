@@ -39,7 +39,7 @@ public interface UserCourseInformationsManager {
 	public List<UserCourseInformations> getUserCourseInformations(Identity identity, List<OLATResource> resources);
 	
 	
-	public UserCourseInformations updateUserCourseInformations(Long courseResId, Identity identity);
+	public void updateUserCourseInformations(Long courseResId, Identity identity);
 	
 	public Date getInitialLaunchDate(Long courseResourceId, Identity identity);
 	
