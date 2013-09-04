@@ -41,6 +41,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.highlight.SimpleHTMLEncoder;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.search.AbstractOlatDocument;
@@ -244,7 +245,8 @@ public class SearchResultsImpl implements SearchResults {
 	 * @throws IOException
 	 */
 	private void doHighlight(Query query, Analyzer analyzer, Document doc, ResultDocument resultDocument) throws IOException {
-		Highlighter highlighter = new Highlighter(new SimpleHTMLFormatter(HIGHLIGHT_PRE_TAG,HIGHLIGHT_POST_TAG) , new QueryScorer(query));
+		Highlighter highlighter = new Highlighter(new SimpleHTMLFormatter(HIGHLIGHT_PRE_TAG,HIGHLIGHT_POST_TAG) ,
+				new SimpleHTMLEncoder(), new QueryScorer(query));
 		// Get 3 best fragments of content and seperate with a "..."
 		try {
 			//highlight content
