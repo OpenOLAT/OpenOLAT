@@ -12,9 +12,9 @@
 	#end
 	<p class="o_podcast_date">$!helper.getLastModified()</p>
 	#if ($!feed.getAuthor())
-		<p>$r.translate("feed.author"): $feed.getAuthor()</p>
+		<p class="o_author">$r.translate("feed.author"): $feed.getAuthor()</p>
 	#end
-	<p>$!helper.getFeedDescriptionForBrowser()</p>
+	<p class="o_podcast_description">$!helper.getFeedDescriptionForBrowser()</p>
 </div>
 #if ( !$feed.isUndefined() && $helper.getFeedUrl() )
 	<div class="o_podcast_subscription">

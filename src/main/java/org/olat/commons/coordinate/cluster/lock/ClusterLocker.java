@@ -179,6 +179,7 @@ public class ClusterLocker implements Locker, GenericEventListener {
 	 * Use 'releaseLock' as method to release a lock. 
 	 * @param lock  release this lockentry 
 	 */
+	@Override
 	public void releaseLockEntry(LockEntry lockEntry) {
 		String asset = lockEntry.getKey();
 		Identity releaseRequestor = lockEntry.getOwner();
@@ -193,7 +194,7 @@ public class ClusterLocker implements Locker, GenericEventListener {
 		} else {
 			// check that entry was previously locked by the same user that now wants to release the lock.
 			Identity ownwer = li.getOwner();
-			if (releaseRequestor.getName().equals(ownwer.getName())) {
+			if (releaseRequestor.getKey().equals(ownwer.getKey())) {
 				// delete the lock
 				clusterLockManager.deleteLock(li);
 			} else {
