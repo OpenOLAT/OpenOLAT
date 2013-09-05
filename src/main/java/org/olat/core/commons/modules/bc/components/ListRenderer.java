@@ -290,7 +290,7 @@ public class ListRenderer {
 
 		//file metadata as tooltip
 		if (metaInfo != null) {
-			sb.append("<div id='o_sel_doc_tooltip_").append(pos).append("' class='b_ext_tooltip_wrapper b_briefcase_meta' style='display:none;'>");
+			sb.append("<div id='o_sel_doc_tooltip_").append(pos).append("' class='b_ext_tooltip_wrapper' style='display:none;'><div class=\"b_briefcase_meta\">");
 			if (StringHelper.containsNonWhitespace(metaInfo.getTitle())) {				
 				sb.append("<h5>").append(Formatter.escapeDoubleQuotes(metaInfo.getTitle())).append("</h5>");		
 			}
@@ -303,15 +303,20 @@ public class ListRenderer {
 				sb.append("); background-repeat:no-repeat; background-position:50% 50%;'>&nbsp;</div>");
 			}
 
-			String author = metaInfo.getAuthor();
-			if (StringHelper.containsNonWhitespace(author)) {
+			// first try author info from metadata (creator)
+			String author = metaInfo.getCreator();
+			// fallback use file author (uploader)
+			if (!StringHelper.containsNonWhitespace(author)) {
+				author = metaInfo.getAuthor();
 				if(!"-".equals(author)) {
 					author = UserManager.getInstance().getUserDisplayName(author);
 				}
+			}
+			if (StringHelper.containsNonWhitespace(author)) {
 				sb.append("<p>").append(Formatter.escapeDoubleQuotes(translator.translate("mf.author")));
 				sb.append(": ").append(Formatter.escapeDoubleQuotes(author)).append("</p>");			
 			}
-			sb.append("</div>")
+			sb.append("</div></div>")
 			  .append("<script type='text/javascript'>")
 		    .append("/* <![CDATA[ */")
 			  .append("jQuery(function() {")
