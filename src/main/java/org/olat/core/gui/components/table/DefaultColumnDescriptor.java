@@ -282,7 +282,8 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	/**
 	 * @return int
 	 */
-	protected int getDataColumn() {
+	@Override
+	public int getDataColumn() {
 		return dataColumn;
 	}
 

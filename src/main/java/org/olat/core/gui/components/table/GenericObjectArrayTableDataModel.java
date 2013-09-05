@@ -37,7 +37,7 @@ import java.util.List;
  *
  * @author gnaegi
  */
-public class GenericObjectArrayTableDataModel extends DefaultTableDataModel {
+public class GenericObjectArrayTableDataModel extends DefaultTableDataModel<Object[]> {
 
 	private int columnCount;
 
@@ -45,7 +45,7 @@ public class GenericObjectArrayTableDataModel extends DefaultTableDataModel {
 	 * @param objectArrays List of Object[] containing whatever data displayable by the table
 	 * @param columnCount Number of elements withing the Object[]
 	 */
-	public GenericObjectArrayTableDataModel(final List objectArrays, final int columnCount) {
+	public GenericObjectArrayTableDataModel(final List<Object[]> objectArrays, final int columnCount) {
 		super(objectArrays);
 		this.columnCount = columnCount;
 	}
@@ -64,7 +64,7 @@ public class GenericObjectArrayTableDataModel extends DefaultTableDataModel {
 	 * third lastModifiedDate
 	 */
 	public final Object getValueAt(final int row, final int col) {
-		Object[] objectArray = (Object[]) getObject(row);
+		Object[] objectArray = getObject(row);
 		return objectArray[col];
 	}
 	
@@ -76,7 +76,7 @@ public class GenericObjectArrayTableDataModel extends DefaultTableDataModel {
 	 * @param col
 	 */
 	public final void setValueAt(final Object o, final int row, final int col){
-		Object[] objectArray = (Object[]) getObject(row);
+		Object[] objectArray = getObject(row);
 		objectArray[col] = o;
 	}
 }

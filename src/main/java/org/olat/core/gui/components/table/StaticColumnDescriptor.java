@@ -86,6 +86,11 @@ public class StaticColumnDescriptor implements ColumnDescriptor {
 		this.translateHeaderKey = translateHeaderKey;
 	}
 	
+	@Override
+	public int getDataColumn() {
+		return -1;
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.table.ColumnDescriptor#getAlignment()
 	 */

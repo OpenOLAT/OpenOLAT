@@ -40,7 +40,12 @@ class MultiSelectColumnDescriptor implements ColumnDescriptor {
 	MultiSelectColumnDescriptor(){
 		//package visibility for constructor
 	}
-	
+
+	@Override
+	public int getDataColumn() {
+		return -1;
+	}
+
 	@Override
 	public void renderValue(final StringOutput sb, final int row, final Renderer renderer) {
 		// add checkbox
