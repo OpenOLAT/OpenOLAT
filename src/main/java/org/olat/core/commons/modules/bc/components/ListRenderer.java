@@ -314,7 +314,7 @@ public class ListRenderer {
 			// fallback use file author (uploader)
 			if (!StringHelper.containsNonWhitespace(author)) {
 				author = metaInfo.getAuthor();
-				if("-".equals(author)) {
+				if(!"-".equals(author)) {
 					author = UserManager.getInstance().getUserDisplayName(author);
 				} else {
 					author = null;
