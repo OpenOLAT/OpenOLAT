@@ -289,8 +289,8 @@ public class ListRenderer {
 		sb.append("</a>");
 
 		//file metadata as tooltip
-		boolean hasMeta = false;
 		if (metaInfo != null) {
+			boolean hasMeta = false;
 			sb.append("<div id='o_sel_doc_tooltip_").append(pos).append("' class='b_ext_tooltip_wrapper b_briefcase_meta' style='display:none;'>");
 			if (StringHelper.containsNonWhitespace(metaInfo.getTitle())) {				
 				sb.append("<h5>").append(Formatter.escapeDoubleQuotes(metaInfo.getTitle())).append("</h5>");		
@@ -302,17 +302,22 @@ public class ListRenderer {
 				sb.append("</div>");
 				hasMeta = true;
 			}
+			boolean hasThumbnail = false;
 			if(metaInfo.isThumbnailAvailable()) {
 				sb.append("<div class='b_briefcase_preview' style='width:200px; height:200px; background-image:url("); 
 				ubu.buildURI(sb, new String[] { PARAM_SERV_THUMBNAIL}, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
 				sb.append("); background-repeat:no-repeat; background-position:50% 50%;'>&nbsp;</div>");
 				hasMeta = true;
+				hasThumbnail = true;
 			}
 
 			// first try author info from metadata (creator)
+			boolean hasMetaAuthor = false;
 			String author = metaInfo.getCreator();
 			// fallback use file author (uploader)
-			if (!StringHelper.containsNonWhitespace(author)) {
+			if (StringHelper.containsNonWhitespace(author)) {
+				hasMetaAuthor = true;
+			} else {
 				author = metaInfo.getAuthor();
 				if(!"-".equals(author)) {
 					author = UserManager.getInstance().getUserDisplayName(author);
@@ -334,7 +339,9 @@ public class ListRenderer {
 				  .append("jQuery(function() {")
 					.append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({")
 					.append("	  items: 'a', tooltipClass: 'b_briefcase_meta ")
-					.append(isContainer ? "b_briefcase_folder" : "b_briefcase_file")
+					.append(isContainer ? "b_briefcase_folder " : "b_briefcase_file ")
+					.append(hasMetaAuthor ? "b_briefcase_with_meta_author " : "b_briefcase_with_uploader_author ")
+					.append(hasThumbnail ? "b_briefcase_with_thumbnail " : "b_briefcase_without_thumbnail ")
 					.append("', ")
 					.append("     content: function(){ return jQuery('#o_sel_doc_tooltip_").append(pos).append("').html(); }")
 					.append("  });")
