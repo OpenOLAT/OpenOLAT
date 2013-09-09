@@ -207,7 +207,12 @@ public class ServletUtil {
 			FileUtils.closeSafely(in);
 			FileUtils.closeSafely(bis);
 			FileUtils.closeSafely(out);
-			log.error("client browser probably abort when serving media resource", e);
+			String className = e.getClass().getSimpleName();
+			if("ClientAbortException".equals(className)) {
+				log.warn("client browser probably abort when serving media resource", e);
+			} else {
+				log.error("client browser probably abort when serving media resource", e);
+			}
 		}
 	}
 	
