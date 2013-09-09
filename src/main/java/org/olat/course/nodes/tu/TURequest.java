@@ -41,7 +41,7 @@ public class TURequest {
 	private String method;
 	private String uri;
 	private String queryString;
-	private Map parameterMap;
+	private Map<String,String[]> parameterMap;
 	private String contentType;
 	
 	private String userName, lastName, firstName, email, userIPAddress;
@@ -81,7 +81,7 @@ public class TURequest {
 	/**
 	 * @return The http request parameter map
 	 */
-	public Map getParameterMap() {
+	public Map<String,String[]> getParameterMap() {
 		return parameterMap;
 	}
 
@@ -102,7 +102,7 @@ public class TURequest {
 	/**
 	 * @param map
 	 */
-	public void setParameterMap(Map map) {
+	public void setParameterMap(Map<String,String[]> map) {
 		parameterMap = map;
 	}
 
@@ -191,7 +191,7 @@ public class TURequest {
 	}
 
 	public String getUserIPAddress() {
-		return this.userIPAddress;
+		return userIPAddress;
 	}
 	
 	public void setUserIPAddress(String address){

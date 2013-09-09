@@ -37,6 +37,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -110,7 +112,10 @@ public class IframeTunnelController extends BasicController implements Cloneable
 			String rawurl = TUConfigForm.getFullURL(proto, host, port, startUri, firstQueryString).toString();
 			myContent.contextPut("url", rawurl);
 		} else { // tunnel
+
+			final Locale loc = ureq.getLocale();
 			final Identity ident = ureq.getIdentity();
+			final String ipAddress = ureq.getUserSession().getSessionInfo().getFromIP();
 	
 			if (user != null && user.length() > 0) {
 				httpClientInstance = HttpClientFactory.getHttpClientInstance(host, port.intValue(), proto, user, pass);
@@ -118,7 +123,6 @@ public class IframeTunnelController extends BasicController implements Cloneable
 				httpClientInstance = HttpClientFactory.getHttpClientInstance(host, port.intValue(), proto, null, null);				
 			}
 			
-			final Locale loc = ureq.getLocale();
 			Mapper mapper = new Mapper() {
 				public MediaResource handle(String relPath, HttpServletRequest hreq) {
 					MediaResource mr = null;
@@ -144,19 +148,18 @@ public class IframeTunnelController extends BasicController implements Cloneable
 						if (queryString != null) cmeth.setQueryString(queryString);
 						meth = cmeth;
 						// if response is a redirect, follow it
-						if (meth == null) return null;
 						meth.setFollowRedirects(true);
 						
 					} else if (method.equals("POST")) {
 						//if (contentType == null || contentType.equals("application/x-www-form-urlencoded")) {
 							// regular post, no file upload
 						//}
-						Map params = hreq.getParameterMap();
+						Map<String,String[]> params = hreq.getParameterMap();
 						PostMethod pmeth = new PostMethod(uri);
-						Set postKeys = params.keySet();
-						for (Iterator iter = postKeys.iterator(); iter.hasNext();) {
-							String key = (String) iter.next();
-							String vals[] = (String[]) params.get(key);
+						Set<String> postKeys = params.keySet();
+						for (Iterator<String> iter = postKeys.iterator(); iter.hasNext();) {
+							String key = iter.next();
+							String vals[] = params.get(key);
 							for (int i = 0; i < vals.length; i++) {
 								pmeth.addParameter(key, vals[i]);
 							}
@@ -165,17 +168,18 @@ public class IframeTunnelController extends BasicController implements Cloneable
 						if (meth == null) return null;
 						// Redirects are not supported when using POST method!
 						// See RFC 2616, section 10.3.3, page 62
-
 					}
-	
 					
 					// Add olat specific headers to the request, can be used by external
 					// applications to identify user and to get other params
 					// test page e.g. http://cgi.algonet.se/htbin/cgiwrap/ug/test.py
-					meth.addRequestHeader("X-OLAT-USERNAME", userName);
-					meth.addRequestHeader("X-OLAT-LASTNAME", lastName);
-					meth.addRequestHeader("X-OLAT-FIRSTNAME", firstName);
-					meth.addRequestHeader("X-OLAT-EMAIL", email);
+					if("enabled".equals(CoreSpringFactory.getImpl(BaseSecurityModule.class).getUserInfosTunnelCourseBuildingBlock())) {
+						meth.addRequestHeader("X-OLAT-USERNAME", userName);
+						meth.addRequestHeader("X-OLAT-LASTNAME", lastName);
+						meth.addRequestHeader("X-OLAT-FIRSTNAME", firstName);
+						meth.addRequestHeader("X-OLAT-EMAIL", email);
+						meth.addRequestHeader("X-OLAT-USERIP", ipAddress);
+					}
 	
 					boolean ok = false;
 					try {
