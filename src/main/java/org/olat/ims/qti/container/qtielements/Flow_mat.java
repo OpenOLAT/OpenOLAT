@@ -27,6 +27,7 @@ package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.openxml.OpenXMLDocument;
 
 /**
  * Initial Date:  24.11.2004
@@ -34,6 +35,7 @@ import org.olat.core.logging.AssertException;
  */
 public class Flow_mat extends GenericQTIElement {
 
+	private static final long serialVersionUID = -8883657952172763422L;
 	/**
 	 * Comment for <code>FLOW_BLOCK</code>
 	 */
@@ -86,4 +88,14 @@ public class Flow_mat extends GenericQTIElement {
 			if (flowClass == FLOW_LIST) buffer.append("<br />");
 		}
 	}
+
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		for (int i = 0; i < getChildCount(); i++) {
+			((QTIElement)getChildAt(i)).renderOpenXML(document, ri);
+			if (flowClass == FLOW_LIST) document.appendBreak();
+		}
+	}
+	
+	
 }

@@ -29,6 +29,7 @@ import java.util.Iterator;
 
 import org.dom4j.Element;
 import org.olat.core.util.nodes.GenericNode;
+import org.olat.core.util.openxml.OpenXMLDocument;
 /**
  * Initial Date:  24.11.2004
  *
@@ -36,6 +37,7 @@ import org.olat.core.util.nodes.GenericNode;
  */
 public abstract class GenericQTIElement extends GenericNode implements QTIElement {
 
+	private static final long serialVersionUID = 6853989371155185854L;
 	private String label;
 	private String qtiident;
 	
@@ -102,9 +104,17 @@ public abstract class GenericQTIElement extends GenericNode implements QTIElemen
 	 * Generic recursive rendering.
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder, RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		for (int i = 0; i < getChildCount(); i++) {
 			((QTIElement)getChildAt(i)).render(buffer, ri);
+		}
+	}
+
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		for (int i = 0; i < getChildCount(); i++) {
+			((QTIElement)getChildAt(i)).renderOpenXML(document, ri);
 		}
 	}
 }

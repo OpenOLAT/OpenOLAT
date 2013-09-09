@@ -397,13 +397,6 @@
 	    			<artifactId>FastInfoset</artifactId>
 	    			<version>1.2.8</version>
 	    		</dependency>
-	    		
-	    		<!-- for docx4j -->
-	    		<dependency>
-					<groupId>xalan</groupId>
-					<artifactId>xalan</artifactId>
-					<version>2.7.1</version>
-				</dependency>
 			</dependencies>
 			
 			<build>
@@ -534,12 +527,6 @@
 							<artifactId>commons-logging-api</artifactId>
 						</exclusion>
 					</exclusions>
-				</dependency>
-				
-				<dependency>
-					<groupId>xalan</groupId>
-					<artifactId>xalan</artifactId>
-					<version>2.7.1</version>
 				</dependency>
 			</dependencies>
 		
@@ -1618,21 +1605,6 @@
 			<version>1.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>jaxen</groupId>
-			<artifactId>jaxen</artifactId>
-			<version>1.1.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.ibm.icu</groupId>
-					<artifactId>icu4j</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>xalan</groupId>
-					<artifactId>xalan</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>opensaml</groupId>
 			<artifactId>opensaml</artifactId>
 			<version>1.1</version>
@@ -1674,9 +1646,34 @@
 			<version>1.46</version>
 		</dependency>
 		<dependency>
-			<groupId>jdom</groupId>
+			<groupId>jaxen</groupId>
+			<artifactId>jaxen</artifactId>
+			<version>1.1.4</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.ibm.icu</groupId>
+					<artifactId>icu4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>jdom</groupId>
+					<artifactId>jdom</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.jdom</groupId>
 			<artifactId>jdom</artifactId>
-			<version>1.0</version>
+			<version>1.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>fmath</groupId>
+			<artifactId>fmath-latex-mathml</artifactId>
+			<version>0.5</version>
+			<!--  need org.jdom 1.1.3, jaxen 1.1.4 and commons-codec -->
 		</dependency>
 		<dependency>
 			<groupId>jgrapht</groupId>
@@ -1709,6 +1706,12 @@
 			<groupId>rome</groupId>
 			<artifactId>rome</artifactId>
 			<version>1.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>jdom</groupId>
+					<artifactId>jdom</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>ch.ethz</groupId>
@@ -1792,21 +1795,6 @@
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-util</artifactId>
 			<version>1.7</version>
-		</dependency>
-		<dependency>
-			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j</artifactId>
-			<version>2.8.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.xmlgraphics</groupId>
-					<artifactId>fop</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>xalan</groupId>
-					<artifactId>xalan</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>de.java2html</groupId>

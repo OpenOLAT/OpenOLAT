@@ -26,6 +26,7 @@
 package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
+import org.olat.core.util.openxml.OpenXMLDocument;
 /**
  * Initial Date:  24.11.2004
  *
@@ -33,6 +34,7 @@ import org.dom4j.Element;
  */
 public class Matbreak extends GenericQTIElement {
 
+	private static final long serialVersionUID = -8944210457424247364L;
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */
@@ -48,8 +50,13 @@ public class Matbreak extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder, RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		buffer.append("<br />");
 	}
 
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		document.appendBreak();
+	}
 }

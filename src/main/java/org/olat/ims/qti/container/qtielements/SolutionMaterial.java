@@ -28,9 +28,9 @@ package org.olat.ims.qti.container.qtielements;
 import java.util.Locale;
 
 import org.dom4j.Element;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.openxml.OpenXMLDocument;
 import org.olat.ims.qti.QTIModule;
 
 /**
@@ -40,7 +40,7 @@ import org.olat.ims.qti.QTIModule;
  */
 public class SolutionMaterial extends GenericQTIElement {
 
-	private static final String PACKAGE_QTI = Util.getPackageName(QTIModule.class);
+	private static final long serialVersionUID = 5991174054834683494L;
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */
@@ -56,14 +56,25 @@ public class SolutionMaterial extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.GenericQTIElement#render(java.lang.StringBuilder, org.olat.ims.qti.container.qtielements.RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
-		Translator translator = new PackageTranslator(PACKAGE_QTI, (Locale)ri.get(RenderInstructions.KEY_LOCALE));
 		buffer.append("<div id=\"o_qti_solutions\"><a href=\"#\" onclick=\"void(jQuery('#o_qti_solutions_inner').slideToggle(300))\" onkeypress=\"void(jQuery('#o_qti_solutions_inner').slideToggle(300))\">");
-		buffer.append(translator.translate("render.solution"));
+		buffer.append(getSolutionTitle(ri));
 		buffer.append("</a><div id=\"o_qti_solutions_inner\" style=\"display:none\"><div class=\"b_important\">");
 		super.render(buffer, ri);
 		buffer.append("</div></div></div>");
+	}
 
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		String soluceTitle = getSolutionTitle(ri);
+		document.appendHeading2(soluceTitle);
+		super.renderOpenXML(document, ri);
 	}
 	
+	private String getSolutionTitle(RenderInstructions ri) {
+		Locale locale = (Locale)ri.get(RenderInstructions.KEY_LOCALE);
+		Translator translator = Util.createPackageTranslator(QTIModule.class, locale);
+		return translator.translate("render.solution");
+	}
 }

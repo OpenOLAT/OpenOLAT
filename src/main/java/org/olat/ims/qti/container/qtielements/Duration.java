@@ -35,6 +35,8 @@ import org.olat.ims.qti.process.QTIHelper;
  */
 public class Duration extends GenericQTIElement {
 
+	private static final long serialVersionUID = -5415237835782260846L;
+
 	public static final String xmlClass = "duration";
 
 	private long duration;
@@ -47,5 +49,8 @@ public class Duration extends GenericQTIElement {
 		String sDuration = el_element.getTextTrim();
 		duration = QTIHelper.parseISODuration(sDuration);
 	}
-
+	
+	public long getDuration() {
+		return duration;
+	}
 }

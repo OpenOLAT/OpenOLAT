@@ -27,6 +27,7 @@ package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.openxml.OpenXMLDocument;
 /**
  * Initial Date:  24.11.2004
  *
@@ -34,15 +35,17 @@ import org.olat.core.logging.AssertException;
  */
 public class Matimage extends GenericQTIElement {
 
+	private static final long serialVersionUID = -623619581386456650L;
+
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */
 	public static final String xmlClass = "matimage";
 
-	String imagetype;
-	String uri;
-	int width = -1;
-	int height = -1;
+	private String imagetype;
+	private String uri;
+	private int width = -1;
+	private int height = -1;
 	
 	/**
 	 * @param el_matimage
@@ -71,6 +74,7 @@ public class Matimage extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder, RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		buffer.append("<img class=\"o_qti_item_matimage\" src=\"");
 		if (!(uri.startsWith("http://") || uri.startsWith("https://")))
@@ -81,4 +85,9 @@ public class Matimage extends GenericQTIElement {
 		buffer.append(" />");
 	}
 
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		//document.createImageEl(image);
+		
+	}
 }

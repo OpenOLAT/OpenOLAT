@@ -29,6 +29,7 @@ import org.dom4j.Element;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.openxml.OpenXMLDocument;
 
 /**
  * Initial Date:  24.11.2004
@@ -36,6 +37,8 @@ import org.olat.core.util.filter.FilterFactory;
  * @author Mike Stock
  */
 public class Mattext extends GenericQTIElement {
+
+	private static final long serialVersionUID = -8810063076249277791L;
 
 	/**
 	 * Comment for <code>xmlClass</code>
@@ -78,6 +81,7 @@ public class Mattext extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder, RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		buffer.append("<span class=\"o_qti_item_mattext\">");
 		// Add static media base URI to render media elements inline
@@ -88,5 +92,10 @@ public class Mattext extends GenericQTIElement {
 		//
 		buffer.append(withBaseUrl);
 		buffer.append("</span>");
+	}
+
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		document.appendHtmlText(content);
 	}
 }

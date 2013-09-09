@@ -25,6 +25,8 @@
 
 package org.olat.ims.qti.container.qtielements;
 
+import org.olat.core.util.openxml.OpenXMLDocument;
+
 /**
  * Initial Date:  25.11.2004
  *
@@ -43,8 +45,19 @@ public interface QTIElement {
 	public String getQTIIdent();
 	
 	/**
+	 * Render to HTML
+	 * 
 	 * @param buffer TODO
 	 * @param ri
 	 */
 	public void render(StringBuilder buffer, RenderInstructions ri);
+	
+	/**
+	 * Render to OpenXML
+	 * 
+	 * @param document The document to rendered within
+	 * @param parentElement The parent element 
+	 * @param ri
+	 */
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri);
 }

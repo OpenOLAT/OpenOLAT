@@ -34,7 +34,7 @@ import org.dom4j.Element;
  */
 public class SectionFeedback extends GenericQTIElement {
 
-	
+	private static final long serialVersionUID = -9092818535565871715L;
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */
@@ -50,6 +50,7 @@ public class SectionFeedback extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.GenericQTIElement#render(java.lang.StringBuilder, org.olat.ims.qti.container.itemelements.RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		buffer.append("<div class=\"o_qti_item_sectionfeedback\">");
 		super.render(buffer, ri);

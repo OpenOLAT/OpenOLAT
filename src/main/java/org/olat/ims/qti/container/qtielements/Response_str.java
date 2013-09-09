@@ -27,6 +27,7 @@ package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.openxml.OpenXMLDocument;
 
 /**
  * Initial Date:  24.11.2004
@@ -34,6 +35,8 @@ import org.olat.core.logging.AssertException;
  * @author Mike Stock
  */
 public class Response_str extends GenericQTIElement {
+
+	private static final long serialVersionUID = -4390873963433257395L;
 
 	/**
 	 * Comment for <code>xmlClass</code>
@@ -101,9 +104,20 @@ public class Response_str extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder, RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
+		enrichInstructions(ri) ;
+		super.render(buffer, ri);
+	}
+
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		enrichInstructions(ri);
+		super.renderOpenXML(document, ri);
+	}
+	
+	private void enrichInstructions(RenderInstructions ri) {
 		ri.put(RenderInstructions.KEY_RESPONSE_RCARDINALITY, new Integer(rCardinality));
 		ri.put(RenderInstructions.KEY_RESPONSE_IDENT, getQTIIdent());
-		super.render(buffer, ri);
 	}
 }

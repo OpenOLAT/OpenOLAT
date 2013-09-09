@@ -33,7 +33,8 @@ import org.olat.core.logging.AssertException;
  */
 public class Hint extends GenericQTIElement {
 
-	
+	private static final long serialVersionUID = -1341854486998417067L;
+
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */

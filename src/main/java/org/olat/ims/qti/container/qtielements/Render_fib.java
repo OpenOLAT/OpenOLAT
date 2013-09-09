@@ -27,6 +27,7 @@ package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.openxml.OpenXMLDocument;
 
 /**
  * Initial Date:  25.11.2004
@@ -34,6 +35,8 @@ import org.olat.core.logging.AssertException;
  * @author Mike Stock
  */
 public class Render_fib extends GenericQTIElement {
+
+	private static final long serialVersionUID = -1754178897546204287L;
 
 	/**
 	 * Comment for <code>xmlClass</code>
@@ -159,11 +162,22 @@ public class Render_fib extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder, RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
+		enrichInstructions(ri);
+		super.render(buffer, ri);
+	}
+
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		enrichInstructions(ri);
+		super.renderOpenXML(document, ri);
+	}
+	
+	private final void enrichInstructions(RenderInstructions ri) {
 		ri.put(RenderInstructions.KEY_RENDER_CLASS, "fib");
 		ri.put(RenderInstructions.KEY_FIB_ROWS, new Integer(rows));
 		ri.put(RenderInstructions.KEY_FIB_COLUMNS, new Integer(columns));
 		ri.put(RenderInstructions.KEY_FIB_MAXLENGTH, new Integer(maxchars));
-		super.render(buffer, ri);
 	}
 }

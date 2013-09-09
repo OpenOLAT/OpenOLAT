@@ -26,6 +26,7 @@
 package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
+import org.olat.core.util.openxml.OpenXMLDocument;
 
 /**
  * Initial Date:  24.11.2004
@@ -34,7 +35,7 @@ import org.dom4j.Element;
  */
 public class Objectives extends GenericQTIElement {
 
-	
+	private static final long serialVersionUID = 7065423560552233575L;
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */
@@ -50,9 +51,17 @@ public class Objectives extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.GenericQTIElement#render(java.lang.StringBuilder, org.olat.ims.qti.container.itemelements.RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		buffer.append("<div class=\"o_qti_item_objectives\">");
 		super.render(buffer, ri);
 		buffer.append("</div>");
 	}
+
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		super.renderOpenXML(document, ri);
+	}
+	
+	
 }

@@ -62,11 +62,11 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -105,6 +105,7 @@ import org.olat.ims.qti.editor.tree.InsertItemTreeModel;
 import org.olat.ims.qti.editor.tree.ItemNode;
 import org.olat.ims.qti.editor.tree.QTIEditorTreeModel;
 import org.olat.ims.qti.editor.tree.SectionNode;
+import org.olat.ims.qti.export.QTIWordExport;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIEditorResolver;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
@@ -157,6 +158,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private static final String CMD_TOOLS_ADD_SECTION = CMD_TOOLS_ADD_PREFIX + "section";
 	private static final String CMD_TOOLS_ADD_QPOOL = "cmd.import.qpool";
 	private static final String CMD_TOOLS_EXPORT_QPOOL = "cmd.export.qpool";
+	private static final String CMD_TOOLS_EXPORT_DOCX = "cmd.export.docx";
 
 	private static final String CMD_EXIT_SAVE = "exit.save";
 	private static final String CMD_EXIT_DISCARD = "exit.discard";
@@ -719,6 +721,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				doSelectQItem(ureq);
 			} else if (CMD_TOOLS_EXPORT_QPOOL.equals(cmd)) {
 				doExportQItem();
+			} else if (CMD_TOOLS_EXPORT_DOCX.equals(cmd)) {
+				doExportDocx(ureq);
 			} else if (cmd.startsWith(CMD_TOOLS_ADD_PREFIX)) { // add new object
 				// fetch new object
 				GenericQtiNode insertObject = null;
@@ -950,6 +954,13 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		cmc.activate();
 		listenTo(cmc);
 	}
+
+	private void doExportDocx(UserRequest ureq) {
+		AssessmentNode rootNode = (AssessmentNode)menuTreeModel.getRootNode();
+		VFSContainer editorContainer = qtiPackage.getBaseDir();
+		MediaResource mr = new QTIWordExport(rootNode, editorContainer, getLocale(), "UTF-8");
+		ureq.getDispatchResult().setResultingMediaResource(mr);
+	}
 	
 	private void doExportQItem() {
 		GenericQtiNode selectedNode = menuTreeModel.getQtiNode(menuTree.getSelectedNodeId());
@@ -1018,6 +1029,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		tc.addHeader(translate("tools.tools.header"));
 		tc.addLink(CMD_TOOLS_PREVIEW, translate("tools.tools.preview"), CMD_TOOLS_PREVIEW, "b_toolbox_preview");
 		tc.addLink(CMD_TOOLS_EXPORT_QPOOL, translate("tools.export.qpool"), CMD_TOOLS_EXPORT_QPOOL, "o_mi_qpool_export");
+		tc.addLink(CMD_TOOLS_EXPORT_DOCX, translate("tools.export.docx"), CMD_TOOLS_EXPORT_DOCX, "o_mi_docx_export");
 		tc.addLink(CMD_TOOLS_CLOSE_EDITOR, translate("tools.tools.closeeditor"), null, "b_toolbox_close");
 		// if (!restrictedEdit) {
 		tc.addHeader(translate("tools.add.header"));

@@ -26,12 +26,15 @@
 package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
+import org.olat.core.util.openxml.OpenXMLDocument;
 /**
  * Initial Date:  24.11.2004
  *
  * @author Mike Stock
  */
 public class Matemtext extends GenericQTIElement {
+
+	private static final long serialVersionUID = 9009295405724392093L;
 
 	/**
 	 * Comment for <code>xmlClass</code>
@@ -74,7 +77,13 @@ public class Matemtext extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder, RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		buffer.append("<strong class=\"o_qti_item_matemtext\">" + content + "</strong>");
+	}
+
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		document.appendTextParagraph(content);
 	}
 }

@@ -26,6 +26,7 @@
 package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
+import org.olat.core.util.openxml.OpenXMLDocument;
 
 /**
  * Initial Date:  24.11.2004
@@ -33,6 +34,7 @@ import org.dom4j.Element;
  */
 public class Material extends GenericQTIElement {
 
+	private static final long serialVersionUID = 8782467759662903700L;
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */
@@ -48,6 +50,7 @@ public class Material extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder, RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		super.render(buffer, ri);
 		int iFlowMatClass = RenderInstructions.RENDER_FLOW_BLOCK;
@@ -57,5 +60,16 @@ public class Material extends GenericQTIElement {
 		if (iFlowMatClass == RenderInstructions.RENDER_FLOW_LIST)
 			buffer.append("<br />");
 	}
+
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		super.renderOpenXML(document, ri);
+		Integer flowMatClass = (Integer)ri.get(RenderInstructions.KEY_FLOW_MAT);
+		if (flowMatClass != null && flowMatClass.intValue() == RenderInstructions.RENDER_FLOW_LIST) {
+			document.appendBreak();
+		}
+	}
+	
+	
 
 }

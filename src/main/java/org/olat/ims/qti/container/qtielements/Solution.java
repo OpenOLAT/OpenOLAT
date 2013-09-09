@@ -35,7 +35,8 @@ import org.olat.core.logging.AssertException;
  */
 public class Solution extends GenericQTIElement {
 
-	
+	private static final long serialVersionUID = -515412539680714487L;
+
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */

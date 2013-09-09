@@ -34,6 +34,7 @@ import org.dom4j.Element;
  */
 public class Section extends GenericQTIElement {
 
+	private static final long serialVersionUID = 6612413911827243959L;
 	public static final String xmlClass = "section";
 
 	/**

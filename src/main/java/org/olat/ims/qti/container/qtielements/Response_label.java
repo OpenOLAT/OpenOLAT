@@ -29,7 +29,10 @@ import java.util.List;
 
 import org.dom4j.Element;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.openxml.OpenXMLDocument;
+import org.olat.core.util.openxml.OpenXMLDocument.Unit;
 import org.olat.ims.qti.container.ItemInput;
+import org.w3c.dom.Node;
 
 /**
  *    Initial Date:  25.11.2004
@@ -38,6 +41,7 @@ import org.olat.ims.qti.container.ItemInput;
  */
 public class Response_label extends GenericQTIElement {
 
+	private static final long serialVersionUID = -4391486220424218044L;
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */
@@ -60,10 +64,6 @@ public class Response_label extends GenericQTIElement {
 		String responseIdent = (String) ri.get(RenderInstructions.KEY_RESPONSE_IDENT);
 		// find parent render_xxx element
 		String renderClass = (String) ri.get(RenderInstructions.KEY_RENDER_CLASS);
-		if (ri == null) {
-			throw new AssertException("Render class must be set previousely to call respnse_label.render.");
-		}
-		
 		if(renderClass == null) {
 			//we don't know what to do
 		} else if (renderClass.equals("choice")) {
@@ -135,7 +135,7 @@ public class Response_label extends GenericQTIElement {
 		} else if (renderClass.equals("kprim")) {
 			buffer.append("<tr><td align=\"center\"><input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"b_radio\" name=\"");
 			appendParameterIdent(buffer, ri);
-			buffer.append("\" value=\"" + getQTIIdent() + ":correct\"");
+			buffer.append("\" value=\"" + getQTIIdent() + ":correct");
 			if (iinput != null && !iinput.isEmpty()) {
 				List responses = iinput.getAsList(responseIdent);
 				if (responses != null && responses.contains(getQTIIdent() + ":correct")) buffer.append("\" checked=\"checked");
@@ -143,7 +143,7 @@ public class Response_label extends GenericQTIElement {
 			buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\"/>");
 			buffer.append("</td><td align=\"center\"><input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"b_radio\" name=\"");
 			appendParameterIdent(buffer, ri);
-			buffer.append("\" value=\"" + getQTIIdent() + ":wrong\"");
+			buffer.append("\" value=\"" + getQTIIdent() + ":wrong");
 			if (iinput != null && !iinput.isEmpty()) {
 				List responses = iinput.getAsList(responseIdent);
 				if (responses != null && responses.contains(getQTIIdent() + ":wrong")) buffer.append("\" checked=\"checked");
@@ -202,5 +202,56 @@ public class Response_label extends GenericQTIElement {
 	private void appendParameterIdent(StringBuilder buffer, RenderInstructions ri) {
 		buffer.append("qti").append(PARA).append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(PARA).append(
 				ri.get(RenderInstructions.KEY_RESPONSE_IDENT)).append(PARA).append(getQTIIdent());
+	}
+
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		String responseIdent = (String) ri.get(RenderInstructions.KEY_RESPONSE_IDENT);
+		String renderClass = (String) ri.get(RenderInstructions.KEY_RENDER_CLASS);
+		if(renderClass == null) {
+			//we don't know what to do
+		} else if(renderClass.equals("choice")) {
+			Node row = document.createTableRow();
+			//answer
+			Node answerCell = row.appendChild(document.createTableCell("E9EAF2", 10178, Unit.dxa));
+			document.pushCursor(answerCell);
+			super.renderOpenXML(document, ri);
+			document.popCursor(answerCell);
+
+			//checkbox
+			String response = "";
+			boolean checked = response.equals(getQTIIdent());
+			appendCheckBox(checked, row, document);
+			
+			//append row
+			document.getCursor().appendChild(row);
+		} else if (renderClass.equals("kprim")) {
+			Node row = document.createTableRow();
+			//answer
+			Node answerCell = row.appendChild(document.createTableCell("E9EAF2", 9062, Unit.dxa));
+			document.pushCursor(answerCell);
+			super.renderOpenXML(document, ri);
+			document.popCursor(answerCell);
+
+			//checkbox
+			String response = "";
+			boolean checked = response.equals(getQTIIdent());
+			appendCheckBox(checked, row, document);
+			appendCheckBox(checked, row, document);
+			
+			//append row
+			document.getCursor().appendChild(row);
+
+		} else if (renderClass.equals("fib")) {
+			
+		}
+	}
+	
+	private void appendCheckBox(boolean checked, Node row, OpenXMLDocument document) {
+		Node checkboxCell = row.appendChild(document.createTableCell(null, 1116, Unit.dxa));
+		Node responseEl = document.createCheckbox(checked);
+		Node wrapEl = document.wrapInParagraph(responseEl);
+		//Node responseEl = document.createParagraphEl("OK");
+		checkboxCell.appendChild(wrapEl);
 	}
 }

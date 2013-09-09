@@ -34,6 +34,7 @@ import org.dom4j.Element;
  */
 public class Raw extends GenericQTIElement {
 
+	private static final long serialVersionUID = 5606930481112170686L;
 	Element rawElement;
 	
 	/**

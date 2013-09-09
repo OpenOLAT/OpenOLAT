@@ -35,6 +35,7 @@ import org.dom4j.Element;
 
 public class Assessment extends GenericQTIElement {
 
+	private static final long serialVersionUID = 7393365824572314014L;
 	public static final String xmlClass = "assessment";
 
 	/**
@@ -43,5 +44,4 @@ public class Assessment extends GenericQTIElement {
 	public Assessment(Element el_element) {
 		super(el_element);
 	}
-
 }

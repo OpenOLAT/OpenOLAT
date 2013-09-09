@@ -30,7 +30,10 @@ import java.util.List;
 import org.dom4j.Element;
 import org.dom4j.tree.AbstractAttribute;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.openxml.OpenXMLDocument;
+import org.olat.core.util.openxml.OpenXMLDocument.Unit;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
+import org.w3c.dom.Node;
 
 /**
  * Initial Date: 25.11.2004
@@ -38,6 +41,8 @@ import org.olat.ims.qti.editor.beecom.parser.ItemParser;
  * @author Mike Stock
  */
 public class Render_choice extends GenericQTIElement {
+
+	private static final long serialVersionUID = 4578254743045719445L;
 
 	/**
 	 * Comment for <code>xmlClass</code>
@@ -116,36 +121,54 @@ public class Render_choice extends GenericQTIElement {
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder,
 	 *      RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
-
 		if (kprim) {
 			ri.put(RenderInstructions.KEY_RENDER_CLASS, "kprim");
 			buffer.append("<table class=\"o_qti_item_kprim\" cellpadding=\"2\" cellspacing=\"0\">");
 			buffer.append("<tr><th align=\"center\">+</th><th align=\"center\">-</th><th></th></tr>");
-
 		} else {
-			
 			if (ri.containsKey(RenderInstructions.KEY_RENDER_AUTOENUM_LIST)) {
 				ri.put(RenderInstructions.KEY_RENDER_AUTOENUM_IDX, "0");
 			} 
-			
 			ri.put(RenderInstructions.KEY_RENDER_CLASS, "choice");
 			buffer.append("<div class=\"o_qti_item_choice\">");
 		}
-		/*
-		 * // Display min/max values if (minnumber != -1 || maxnumber != -1) {
-		 * Translator translator = new PackageTranslator("org.olat.ims.qti",
-		 * (Locale)ri.get(RenderInstructions.KEY_LOCALE)); buffer.append("<p class=\"o_qti_minmax\">");
-		 * if (minnumber != -1) { buffer.append("<i>").append(translator.translate("render.item.minanswers")).append("&nbsp;")
-		 * .append(minnumber).append("</i><br />"); } if (maxnumber != -1) {
-		 * buffer.append("<i>").append(translator.translate("render.item.maxanswers")).append("&nbsp;")
-		 * .append(maxnumber).append("</i>"); } buffer.append("</p>"); }
-		 */
+
 		super.render(buffer, ri);
 		if (kprim) {
 			buffer.append("</table>");
 		} else {
 			buffer.append("</div>");
 		}
+	}
+
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		Node table = null;
+		if (kprim) {
+			ri.put(RenderInstructions.KEY_RENDER_CLASS, "kprim");
+			//open a table with 3 columns
+			table = document.appendTable(new Integer[]{9062, 1116, 1116});
+			//draw header with +/-
+			Node row = document.createTableRow();
+			Node emptyCell = row.appendChild(document.createTableCell(null, 9062, Unit.dxa));
+			emptyCell.appendChild(document.createParagraphEl(""));
+			Node plusCell = row.appendChild(document.createTableCell(null, 1116, Unit.dxa));
+			plusCell.appendChild(document.createParagraphEl("+"));
+			Node minusCell = row.appendChild(document.createTableCell(null, 1116, Unit.dxa));
+			minusCell.appendChild(document.createParagraphEl("-"));
+			table.appendChild(row);
+		} else {
+			if (ri.containsKey(RenderInstructions.KEY_RENDER_AUTOENUM_LIST)) {
+				ri.put(RenderInstructions.KEY_RENDER_AUTOENUM_IDX, "0");
+			} 
+			ri.put(RenderInstructions.KEY_RENDER_CLASS, "choice");
+			//open a table with 2 columns
+			table = document.appendTable(new Integer[]{10178, 1116});
+		}
+		document.pushCursor(table);
+		super.renderOpenXML(document, ri);
+		document.resetCursor();
 	}
 }

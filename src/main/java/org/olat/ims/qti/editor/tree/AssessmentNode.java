@@ -41,6 +41,7 @@ import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.QTIObject;
+import org.olat.ims.qti.editor.beecom.objects.Section;
 
 /**
  * Initial Date: Nov 18, 2004 <br>
@@ -81,7 +82,6 @@ public class AssessmentNode extends GenericQtiNode {
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	public Controller createRunController(UserRequest ureq, WindowControl wControl) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -122,8 +122,8 @@ public class AssessmentNode extends GenericQtiNode {
 	 * @see org.olat.ims.qti.editor.tree.IQtiNode#removeQTIObjectAt(int)
 	 */
 	public QTIObject removeQTIObjectAt(int position) {
-		List sections = assmnt.getSections();
-		return (QTIObject) sections.remove(position);
+		List<Section> sections = assmnt.getSections();
+		return sections.remove(position);
 	}
 
 	/**
@@ -153,8 +153,7 @@ public class AssessmentNode extends GenericQtiNode {
 	}
 
 	public void setMemento(Memento state) {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
 	public String createChangeMessage(Memento mem) {

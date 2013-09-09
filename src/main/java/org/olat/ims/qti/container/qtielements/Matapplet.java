@@ -27,6 +27,7 @@ package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.openxml.OpenXMLDocument;
 /**
  * Initial Date:  24.11.2004
  *
@@ -34,6 +35,7 @@ import org.olat.core.logging.AssertException;
  */
 public class Matapplet extends GenericQTIElement {
 
+	private static final long serialVersionUID = 2801306422876223480L;
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */
@@ -70,6 +72,7 @@ public class Matapplet extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder, RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		buffer.append("<object width=\"").append(width).append("\"")
 			.append(" height=\"").append(height).append("\" ");
@@ -117,4 +120,8 @@ public class Matapplet extends GenericQTIElement {
 		}
 	}
 
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		document.appendTextParagraph("Applet not supported");
+	}
 }

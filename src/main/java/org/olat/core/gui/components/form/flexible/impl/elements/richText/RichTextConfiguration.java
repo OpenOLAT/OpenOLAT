@@ -1556,11 +1556,14 @@ public class RichTextConfiguration implements Disposable {
 		} else {
 			i += appendValuesFromList(sb, "toolbar1", theme_advanced_buttons1);			
 		}
+		
+		List<String> buttons2 = new ArrayList<String>(theme_advanced_buttons2);
+		buttons2.add("inserttable");
 		if (i > 0) sb.append(",");			
-		if (theme_advanced_buttons2.size() == 0) {
+		if (buttons2.size() == 0) {
 			sb.append(THEME_ADVANCED_BUTTONS2).append(":\"\"");
 		} else {
-			i += appendValuesFromList(sb, "toolbar2", theme_advanced_buttons2);			
+			i += appendValuesFromList(sb, "toolbar2", buttons2);			
 		}
 		if (i > 0) sb.append(",");	
 		List<String> buttons3 = new ArrayList<String>(theme_advanced_buttons3);

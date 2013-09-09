@@ -28,9 +28,9 @@ package org.olat.ims.qti.container.qtielements;
 import java.util.Locale;
 
 import org.dom4j.Element;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.openxml.OpenXMLDocument;
 import org.olat.ims.qti.QTIModule;
 /**
  * Initial Date:  24.11.2004
@@ -39,7 +39,7 @@ import org.olat.ims.qti.QTIModule;
  */
 public class HintMaterial extends GenericQTIElement {
 
-	private static final String PACKAGE_QTI = Util.getPackageName(QTIModule.class);
+	private static final long serialVersionUID = 8946607035475045734L;
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */
@@ -55,14 +55,24 @@ public class HintMaterial extends GenericQTIElement {
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.GenericQTIElement#render(java.lang.StringBuilder, org.olat.ims.qti.container.qtielements.RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
-		Translator translator = new PackageTranslator(PACKAGE_QTI, (Locale)ri.get(RenderInstructions.KEY_LOCALE));
 		buffer.append("<div id=\"o_qti_hints\"><a href=\"#\" onclick=\"b_togglebox('o_qti_hints_inner', this);\" onkeypress=\"b_togglebox('o_qti_hints_inner', this);\">");
-		buffer.append(translator.translate("render.hint"));
+		buffer.append(getHintTitle(ri));
 		buffer.append("</a><div id=\"o_qti_hints_inner\" style=\"display:none\"><div><div class=\"b_important\">");
 		super.render(buffer, ri);
 		buffer.append("</div></div></div></div>");
 	}
-	
 
+	@Override
+	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
+		document.appendHeading2(getHintTitle(ri));
+		super.renderOpenXML(document, ri);
+	}
+	
+	private String getHintTitle(RenderInstructions ri) {
+		Locale locale = (Locale)ri.get(RenderInstructions.KEY_LOCALE);
+		Translator translator = Util.createPackageTranslator(QTIModule.class, locale);
+		return translator.translate("render.hint");
+	}
 }
