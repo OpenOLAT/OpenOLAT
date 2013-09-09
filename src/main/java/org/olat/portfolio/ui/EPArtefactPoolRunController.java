@@ -106,11 +106,12 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 			} else {
 				initTPFilterView(ureq);
 			}
-		}
-		
-		initViewModeController(ureq);
 
-		putInitialPanel(viewComp);
+			initViewModeController(ureq);
+			putInitialPanel(viewComp);
+		} else {
+			putInitialPanel(new Panel("empty"));
+		}
 	}
 
 	/**
