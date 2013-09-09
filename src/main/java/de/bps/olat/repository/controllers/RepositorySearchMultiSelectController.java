@@ -89,7 +89,9 @@ public class RepositorySearchMultiSelectController extends RepositorySearchContr
 		vc.put("searchform",searchForm.getInitialComponent());
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		if (selectButtonLabel != null) tableConfig.setPreferencesOffered(true, "repositorySearchResult");
+		if (selectButtonLabel != null) {
+			tableConfig.setPreferencesOffered(true, "repositorySearchResult_v2");
+		}
 		
 		removeAsListenerAndDispose(tableCtr);
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
