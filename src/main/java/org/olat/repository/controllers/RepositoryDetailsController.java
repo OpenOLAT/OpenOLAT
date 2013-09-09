@@ -591,8 +591,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				}
 				
 				if(detailsToolC.hasTool(TOOL_ORDERS)) {
-					boolean booking = !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.bookings)
-							|| acService.isResourceAccessControled(repositoryEntry.getOlatResource(), null);
+					boolean booking = acService.isResourceAccessControled(repositoryEntry.getOlatResource(), null);
 					detailsToolC.setEnabled(TOOL_ORDERS, booking);
 				}
 				

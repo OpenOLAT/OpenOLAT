@@ -61,6 +61,47 @@
 		<property name="order" value="267" />
 	</bean>
 	
+	<!--  The "orders"  (Buchungen) in Home -->
+	<bean class="org.olat.resource.accesscontrol.ui.HomeOrdersActionExtension" name="accesscontrol.actExt" init-method="initExtensionPoints">
+		<constructor-arg index="0" ref="acModule" />
+		<property name="order" value="109" />
+		<property name="actionController">	
+			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
+				<property name="factoryName" value="org.olat.resource.accesscontrol.ACUIFactory"/>
+				<property name="factoryMethod" value="createOrdersController"/>
+			</bean>
+		</property>
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
+		<property name="translationPackage" value="org.olat.home" />
+		<property name="i18nActionKey" value="menu.orders"/>
+		<property name="i18nDescriptionKey" value="menu.orders.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Access control administration -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.access" init-method="initExtensionPoints">
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.resource.accesscontrol.ui.AccessControlAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="accesscontrol" />
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.resource.accesscontrol.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="order" value="7220" />
+	</bean>
+	
 	<bean id="acReservationCleanupJob" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
     	<property name="jobDetail" ref="acReservationCleanupJobDetail"/>
     	<!-- 60 seconds -->

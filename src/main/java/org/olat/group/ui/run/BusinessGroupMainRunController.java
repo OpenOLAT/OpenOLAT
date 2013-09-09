@@ -1128,18 +1128,14 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 			//fxdiff VCRP-1,2: access control of resources
 			AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-			if(acModule.isEnabled()) {
-				if(!BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.bookings)
-						|| acService.isResourceAccessControled(businessGroup.getResource(), null)) {
-					gtnChild = new GenericTreeNode();
-					gtnChild.setTitle(translate("menutree.ac"));
-					gtnChild.setUserObject(ACTIVITY_MENUSELECT_AC);
-					gtnChild.setIdent(ACTIVITY_MENUSELECT_AC);
-					gtnChild.setAltText(translate("menutree.ac.alt"));
-					gtnChild.setIconCssClass("b_order_icon");
-					root.addChild(gtnChild);
-					//acNodeId = gtnChild.getIdent();
-				}
+			if(acModule.isEnabled() && acService.isResourceAccessControled(businessGroup.getResource(), null)) {
+				gtnChild = new GenericTreeNode();
+				gtnChild.setTitle(translate("menutree.ac"));
+				gtnChild.setUserObject(ACTIVITY_MENUSELECT_AC);
+				gtnChild.setIdent(ACTIVITY_MENUSELECT_AC);
+				gtnChild.setAltText(translate("menutree.ac.alt"));
+				gtnChild.setIconCssClass("b_order_icon");
+				root.addChild(gtnChild);
 			}
 		}
 
