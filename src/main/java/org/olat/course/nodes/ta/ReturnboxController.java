@@ -27,6 +27,7 @@ package org.olat.course.nodes.ta;
 
 import java.io.File;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -46,6 +47,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.user.UserManager;
 
 /**
  * Initial Date:  02.09.2004
@@ -67,6 +69,8 @@ public class ReturnboxController extends BasicController {
 	private SubscriptionContext subsContext;
 	private ContextualSubscriptionController contextualSubscriptionCtr;
 	
+	private final UserManager userManager;
+	
 	/**
 	 * Implements a dropbox.
 	 * @param ureq
@@ -82,6 +86,8 @@ public class ReturnboxController extends BasicController {
 
 	protected ReturnboxController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode, boolean doInit) {
 		super(ureq, wControl);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		
 		this.setBasePackage(ReturnboxController.class);
 		if (doInit) {
 			initReturnbox(ureq, wControl, config, node, userCourseEnv, previewMode);
@@ -92,7 +98,8 @@ public class ReturnboxController extends BasicController {
 		// returnbox display
 		myContent = createVelocityContainer("returnbox");
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(getReturnboxPathFor(userCourseEnv.getCourseEnvironment(), node, ureq.getIdentity()) , null);
-		OlatNamedContainerImpl namedContainer = new OlatNamedContainerImpl(ureq.getIdentity().getName(), rootFolder);
+		String fullName = userManager.getUserDisplayName(getIdentity());
+		OlatNamedContainerImpl namedContainer = new OlatNamedContainerImpl(fullName, rootFolder);
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 		returnboxFolderRunController = new FolderRunController(namedContainer, false, ureq, wControl);
 		returnboxFolderRunController.addControllerListener(this);

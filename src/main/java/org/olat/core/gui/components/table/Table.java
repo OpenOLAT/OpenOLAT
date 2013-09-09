@@ -37,6 +37,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -179,6 +180,10 @@ public class Table extends Component {
 
 	protected ColumnDescriptor getColumnDescriptorFromAllCDs(final int column) {
 		return allCDs.get(column);
+	}
+	
+	protected int getColumnCountFromAllCDs() {
+		return allCDs.size();
 	}
 
 	/**
@@ -889,14 +894,14 @@ public class Table extends Component {
 		}
 	}
 
-	private void buildFilteredTableDataModel(final String tableSearchString2) {
+	private void buildFilteredTableDataModel(final String searchString) {
 		List<Object> filteredElementList = new ArrayList<Object>();
 		log.debug("buildFilteredTableDataModel: tableDataModel.getRowCount()=" + tableDataModel.getRowCount());
 		if (tableDataModel.getRowCount() > 0) {
 			log.debug("buildFilteredTableDataModel: tableDataModel.getObject(0)=" + tableDataModel.getObject(0));
 		}
 		for (int row = 0; row < tableDataModel.getRowCount(); row++) {
-			if (matchRowWithSearchString(row, tableSearchString2)) {
+			if (matchRowWithSearchString(row, searchString)) {
 				filteredElementList.add(tableDataModel.getObject(row));
 			}
 		}
@@ -916,14 +921,18 @@ public class Table extends Component {
 			return true;
 		}
 		// loop over all columns
+		TableDataModel unfilteredModel = getUnfilteredTableDataModel();
+		
 		Filter htmlFilter = FilterFactory.getHtmlTagsFilter();
-		for (int colIndex = 0; colIndex < getUnfilteredTableDataModel().getColumnCount(); colIndex++) {
-			Object value = getUnfilteredTableDataModel().getValueAt(row, colIndex);
-			// When a CustomCellRenderer exist, use this to render cell-value to String
-			ColumnDescriptor cd = this.getColumnDescriptorFromAllCDs(colIndex);
-			if (isColumnDescriptorVisible(cd)) {
+		for (int colIndex = getColumnCountFromAllCDs(); colIndex-->0; ) {
+			ColumnDescriptor cd = getColumnDescriptorFromAllCDs(colIndex);
+			int dataColumn = cd.getDataColumn();
+			if (dataColumn >= 0 && isColumnDescriptorVisible(cd)) {
+				Object value = unfilteredModel.getValueAt(row, dataColumn);
+				// When a CustomCellRenderer exist, use this to render cell-value to String
 				if (cd instanceof CustomRenderColumnDescriptor) {
-					CustomCellRenderer customCellRenderer = ((CustomRenderColumnDescriptor)cd).getCustomCellRenderer();
+					CustomRenderColumnDescriptor cdrd = (CustomRenderColumnDescriptor)cd;
+					CustomCellRenderer customCellRenderer = cdrd.getCustomCellRenderer();
 					if (customCellRenderer instanceof CustomCssCellRenderer) {
 						// For css renderers only use the hover
 						// text, not the CSS class name and other
@@ -934,9 +943,9 @@ public class Table extends Component {
 							continue;
 						}
 					} else {
-						StringOutput sb = new StringOutput(100);
-						customCellRenderer.render(sb, null, value, ((CustomRenderColumnDescriptor) cd).getLocale(), cd.getAlignment(), null);
-						value = sb.toString();
+						StringOutput sb = StringOutputPool.allocStringBuilder(250);
+						customCellRenderer.render(sb, null, value, cdrd.getLocale(), cd.getAlignment(), null);
+						value = StringOutputPool.freePop(sb);
 					}
 				}
 				
@@ -944,10 +953,8 @@ public class Table extends Component {
 					String valueAsString = (String)value;
 					// Remove any HTML markup from the value
 					valueAsString = htmlFilter.filter(valueAsString);
-					log.debug("matchRowWithFilter: check " + valueAsString);
 					// Finally compare with search value based on a simple lowercase match
 					if (valueAsString.toLowerCase().indexOf(tableSearchString2.toLowerCase()) != -1 ) {
-						log.debug("matchRowWithFilter: found match for row=" + row + " value=" + valueAsString + " with filter=" + tableSearchString2);
 						return true;
 					}
 				}

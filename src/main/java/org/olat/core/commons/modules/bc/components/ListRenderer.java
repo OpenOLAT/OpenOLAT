@@ -290,40 +290,67 @@ public class ListRenderer {
 
 		//file metadata as tooltip
 		if (metaInfo != null) {
+			boolean hasMeta = false;
 			sb.append("<div id='o_sel_doc_tooltip_").append(pos).append("' class='b_ext_tooltip_wrapper b_briefcase_meta' style='display:none;'>");
-			if (StringHelper.containsNonWhitespace(metaInfo.getTitle())) {	
+			if (StringHelper.containsNonWhitespace(metaInfo.getTitle())) {
 				String title = StringHelper.escapeHtml(metaInfo.getTitle());
-				sb.append("<h5>").append(Formatter.escapeDoubleQuotes(title)).append("</h5>");		
+				sb.append("<h5>").append(Formatter.escapeDoubleQuotes(title)).append("</h5>");
+				hasMeta = true;
 			}
 			if (StringHelper.containsNonWhitespace(metaInfo.getComment())) {
+				sb.append("<div class=\"b_briefcase_comment\">");
 				String comment = StringHelper.escapeHtml(metaInfo.getComment());
 				sb.append(Formatter.escapeDoubleQuotes(comment));			
+				sb.append("</div>");
+				hasMeta = true;
 			}
+			boolean hasThumbnail = false;
 			if(metaInfo.isThumbnailAvailable()) {
 				sb.append("<div class='b_briefcase_preview' style='width:200px; height:200px; background-image:url("); 
 				ubu.buildURI(sb, new String[] { PARAM_SERV_THUMBNAIL}, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
 				sb.append("); background-repeat:no-repeat; background-position:50% 50%;'>&nbsp;</div>");
+				hasMeta = true;
+				hasThumbnail = true;
 			}
 
-			String author = metaInfo.getAuthor();
+			// first try author info from metadata (creator)
+			boolean hasMetaAuthor = false;
+			String author = metaInfo.getCreator();
+			// fallback use file author (uploader)
 			if (StringHelper.containsNonWhitespace(author)) {
+				hasMetaAuthor = true;
+			} else {
+				author = metaInfo.getAuthor();
 				if(!"-".equals(author)) {
 					author = UserManager.getInstance().getUserDisplayName(author);
+				} else {
+					author = null;
 				}
-				sb.append("<p>").append(Formatter.escapeDoubleQuotes(translator.translate("mf.author")));
-				sb.append(": ").append(Formatter.escapeDoubleQuotes(author)).append("</p>");			
+					
 			}
-			sb.append("</div>")
-			  .append("<script type='text/javascript'>")
-		    .append("/* <![CDATA[ */")
-			  .append("jQuery(function() {")
-				.append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({")
-				.append("	  items: 'a',")
-				.append("   content: function(){ return jQuery('#o_sel_doc_tooltip_").append(pos).append("').html(); }")
-				.append("  });")
-				.append("});")
-				.append("/* ]]> */")
-				.append("</script>");
+			if (StringHelper.containsNonWhitespace(author)) {
+				sb.append("<p class=\"b_briefcase_author\">").append(Formatter.escapeDoubleQuotes(translator.translate("mf.author")));
+				sb.append(": ").append(Formatter.escapeDoubleQuotes(author)).append("</p>");			
+				hasMeta = true;
+			}
+			sb.append("</div>");
+			if (hasMeta) {
+				// render tooltip only when it contains something
+				sb.append("<script type='text/javascript'>")
+			    .append("/* <![CDATA[ */")
+				  .append("jQuery(function() {")
+					.append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({")
+					.append("	  items: 'a', tooltipClass: 'b_briefcase_meta ")
+					.append(isContainer ? "b_briefcase_folder " : "b_briefcase_file ")
+					.append(hasMetaAuthor ? "b_briefcase_with_meta_author " : "b_briefcase_with_uploader_author ")
+					.append(hasThumbnail ? "b_briefcase_with_thumbnail " : "b_briefcase_without_thumbnail ")
+					.append("', ")
+					.append("     content: function(){ return jQuery('#o_sel_doc_tooltip_").append(pos).append("').html(); }")
+					.append("  });")
+					.append("});")
+					.append("/* ]]> */")
+					.append("</script>");
+			}
 		}
 		sb.append("</td><td>");
 		

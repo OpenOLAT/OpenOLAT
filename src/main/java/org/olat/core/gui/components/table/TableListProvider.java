@@ -1,0 +1,97 @@
+package org.olat.core.gui.components.table;
+
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
+import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.StringOutputPool;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.Filter;
+import org.olat.core.util.filter.FilterFactory;
+
+/**
+ * 
+ * Initial date: 05.09.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class TableListProvider implements ListProvider {
+
+	/**
+	 * Limit the number of search-suggestions in table-search-popup
+	 */
+	private static final int MAX_TABLE_SEARCH_RESULT_ENTRIES = 20;
+	
+	private final Table table;
+	
+	public TableListProvider(Table table) {
+		this.table = table;
+	}
+
+	@Override
+	public void getResult(String searchValue, ListReceiver receiver) {
+		Filter htmlFilter = FilterFactory.getHtmlTagsFilter();
+		Set<String> searchEntries = new TreeSet<String>();
+		int entryCounter = 1;
+		// loop over whole data-model
+		
+		TableDataModel<?> unfilteredModel = table.getUnfilteredTableDataModel();
+		
+		int rowCount = unfilteredModel.getRowCount();
+		int colCount = table.getColumnCountFromAllCDs();
+		
+		a_a:
+		for (int colIndex=0; colIndex < colCount; colIndex++) {
+			ColumnDescriptor cd = table.getColumnDescriptorFromAllCDs(colIndex);
+			int dataColumn = cd.getDataColumn();
+			if (dataColumn >= 0 && table.isColumnDescriptorVisible(cd)) {
+				for (int rowIndex=0; rowIndex < rowCount; rowIndex++) {
+					Object obj = unfilteredModel.getValueAt(rowIndex, dataColumn);
+					// When a CustomCellRenderer exist, use this to render cell-value to String
+					if (cd instanceof CustomRenderColumnDescriptor) {
+						CustomRenderColumnDescriptor crcd = (CustomRenderColumnDescriptor)cd;
+						CustomCellRenderer customCellRenderer = crcd.getCustomCellRenderer();
+						if (customCellRenderer instanceof CustomCssCellRenderer) {
+							// For css renderers only use the hover
+							// text, not the CSS class name and other
+							// markup
+							CustomCssCellRenderer cssRenderer = (CustomCssCellRenderer) customCellRenderer;
+							obj = cssRenderer.getHoverText(obj);									
+							if (!StringHelper.containsNonWhitespace((String) obj)) {
+								continue;
+							}
+						} else {
+							StringOutput sb = StringOutputPool.allocStringBuilder(250);
+							customCellRenderer.render(sb, null, obj, crcd.getLocale(), cd.getAlignment(), null);
+							obj = StringOutputPool.freePop(sb);																		
+						}
+					} 
+
+					if (obj instanceof String) {
+						String valueString = (String)obj;
+						// Remove any HTML markup from the value
+						valueString = htmlFilter.filter(valueString);
+						// Finally compare with search value based on a simple lowercase match
+						if (valueString.toLowerCase().indexOf(searchValue.toLowerCase()) != -1) {
+							if (searchEntries.add(valueString) ) {
+								// Add to receiver list same entries only once
+								if (searchEntries.size() == 1) {
+									// before first entry, add searchValue. But add only when one search match
+									receiver.addEntry( searchValue, searchValue );
+								}
+								// limit the number of entries
+								if (entryCounter++ > MAX_TABLE_SEARCH_RESULT_ENTRIES) {
+									receiver.addEntry("...", "...");
+									break a_a;
+								}
+								receiver.addEntry(valueString, valueString);
+							}								
+						}
+					}
+				}
+			}
+		}
+	}	
+}

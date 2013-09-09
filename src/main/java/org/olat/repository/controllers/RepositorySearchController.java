@@ -158,7 +158,9 @@ public class RepositorySearchController extends BasicController implements Activ
 		vc.put("searchform",searchForm.getInitialComponent());
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		if (selectButtonLabel != null) tableConfig.setPreferencesOffered(true, "repositorySearchResult");
+		if (selectButtonLabel != null) {
+			tableConfig.setPreferencesOffered(true, "repositorySearchResult_v2");
+		}
 		
 		//fxdiff VCRP-10: repository search with type filter
 		String filterTitle = translator.translate("search.filter.type");

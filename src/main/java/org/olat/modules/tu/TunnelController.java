@@ -33,7 +33,7 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.clone.CloneableController;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.ModuleConfiguration;
 
@@ -46,7 +46,6 @@ import org.olat.modules.ModuleConfiguration;
  * @author gnaegi 
  */
 public class TunnelController extends DefaultController implements CloneableController {
-	private static final String PACKAGE = Util.getPackageName(TunnelController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(TunnelController.class);
 
 	private TunnelComponent tuc;
@@ -61,7 +60,7 @@ public class TunnelController extends DefaultController implements CloneableCont
 	public TunnelController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(wControl);
 		this.config = config;
-		PackageTranslator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+		Translator trans = Util.createPackageTranslator(TunnelController.class, ureq.getLocale());
 		main = new VelocityContainer("tucMain", VELOCITY_ROOT + "/index.html", trans, null);
 		tuc = new TunnelComponent("tuc", config, ureq);
 		main.put("tuc", tuc);
@@ -71,6 +70,7 @@ public class TunnelController extends DefaultController implements CloneableCont
 	/** 
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do
 	}
@@ -78,6 +78,7 @@ public class TunnelController extends DefaultController implements CloneableCont
 	/** 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		tuc = null;
 	}
@@ -85,6 +86,7 @@ public class TunnelController extends DefaultController implements CloneableCont
 	/**
 	 * @see org.olat.core.gui.control.generic.clone.CloneableController#cloneController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public Controller cloneController(UserRequest ureq, WindowControl control) {
 		return new TunnelController(ureq, control, config);
 	}

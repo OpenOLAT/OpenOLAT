@@ -19,14 +19,11 @@
  */
 package de.bps.olat.modules.cl;
 
-import java.util.List;
-
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.HrefGenerator;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -46,6 +43,11 @@ public class ChecklistMultiSelectColumnDescriptor implements ColumnDescriptor {
 	public ChecklistMultiSelectColumnDescriptor(String headerKey, int column) {
 		this.headerKey = headerKey;
 		this.column = column;
+	}
+
+	@Override
+	public int getDataColumn() {
+		return column;
 	}
 
 	public void renderValue(StringOutput sb, int row, Renderer renderer) {

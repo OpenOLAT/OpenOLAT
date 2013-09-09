@@ -64,6 +64,12 @@ public interface ColumnDescriptor {
 	 * renderer, otherwise <code>false</code>
 	 */
 	boolean translateHeaderKey();
+	
+	/**
+	 * Return the index used to retrieve the value in the table model
+	 * @return
+	 */
+	public int getDataColumn();
 
 	/**
 	 * @return
