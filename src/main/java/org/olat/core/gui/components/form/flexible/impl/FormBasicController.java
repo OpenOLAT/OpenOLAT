@@ -32,6 +32,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
+import org.olat.core.gui.components.form.flexible.elements.InlineElement;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Disposable;
@@ -345,7 +346,7 @@ public abstract class FormBasicController extends BasicController {
 				if (fe.getCommand().equals(org.olat.core.gui.components.form.Form.EVNT_FORM_CANCELLED.getCommand())) {
 					// Set container dirty to clear error messages. Do this before calling
 					// formCancelled() to let formCancelled override the dirtiness flag
-					this.flc.setDirty(true);
+					flc.setDirty(true);
 					formResetted(ureq);
 					formCancelled(ureq);
 					return;
@@ -354,20 +355,22 @@ public abstract class FormBasicController extends BasicController {
 				 * evaluate normal inner form events
 				 */
 				FormItem fiSrc = fe.getFormItemSource();
-				// check for InlineElments remove as the tag library has been replaced
-				/*
-				if(fiSrc instanceof InlineElement){
-					if(!((InlineElement) fiSrc).isInlineEditingElement()){ //OO-137
-						this.flc.setDirty(true);
-					}
-				}*/
+				propagateDirtinessToContainer(fiSrc);
 				//
 				formInnerEvent(ureq, fiSrc, fe);
 				// no need to set container dirty, up to controller code if something is dirty
 			}
 		}
 	}
-
+	
+	protected void propagateDirtinessToContainer(FormItem fiSrc) {
+		// check for InlineElments remove as the tag library has been replaced
+		if(fiSrc instanceof InlineElement){
+			if(!((InlineElement) fiSrc).isInlineEditingElement()){ //OO-137
+				flc.setDirty(true);
+			}
+		}
+	}
 
 	/**
 	 * Set an optional form title that is rendered as a fieldset legend. If you

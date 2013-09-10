@@ -221,6 +221,11 @@ public abstract class AbstractItemListController extends FormBasicController
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc) {
+		//do nothing
+	}
 
 	@Override
 	public void event(Event event) {
