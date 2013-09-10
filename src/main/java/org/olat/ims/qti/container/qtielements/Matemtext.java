@@ -27,6 +27,7 @@ package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
 import org.olat.core.util.openxml.OpenXMLDocument;
+import org.olat.core.util.openxml.OpenXMLDocument.Style;
 /**
  * Initial Date:  24.11.2004
  *
@@ -84,6 +85,6 @@ public class Matemtext extends GenericQTIElement {
 
 	@Override
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
-		document.appendTextParagraph(content);
+		document.appendText(content, false, Style.italic);
 	}
 }

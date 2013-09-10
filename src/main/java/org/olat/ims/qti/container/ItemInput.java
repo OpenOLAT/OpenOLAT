@@ -49,14 +49,14 @@ public interface ItemInput {
 	 * @param varName
 	 * @return List the List containing the String(s)
 	 */
-	public List getAsList(String varName);
+	public List<String> getAsList(String varName);
 
 	/**
 	 * returns a map of all inputs for all response_xxx. response_xxx are keys that
 	 * have corresponding Lists of Strings with the answers for that response_xxx
 	 * @return
 	 */
-	public Map getInputMap();
+	public Map<String,List<String>> getInputMap();
 
 	/**
 	 * 

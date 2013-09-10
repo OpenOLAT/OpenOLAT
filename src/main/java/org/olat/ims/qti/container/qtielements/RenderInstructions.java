@@ -101,6 +101,13 @@ public class RenderInstructions extends HashMap<String,Object> {
 	protected static final String KEY_FIB_COLUMNS = "cols";
 	// Denotes maxlength attribute of a render_fib element
 	protected static final String KEY_FIB_MAXLENGTH = "max";
+	// Output the correct responses too
+	public static final String KEY_RENDER_CORRECT_RESPONSES = "rCorrectResponses";
+	
+	public static final String KEY_CORRECT_RESPONSES_MAP = "correctResponsesMap";
+	
+	public static final String KEY_BREAK_DELAY = "breakDelay";
+	
 	
 	// just a simple HashMap
 }

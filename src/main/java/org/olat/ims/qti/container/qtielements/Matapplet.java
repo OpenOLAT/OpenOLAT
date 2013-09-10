@@ -122,6 +122,6 @@ public class Matapplet extends GenericQTIElement {
 
 	@Override
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
-		document.appendTextParagraph("Applet not supported");
+		document.appendText("Applet not supported", true);
 	}
 }

@@ -19,7 +19,18 @@
  */
 package org.olat.core.util.openxml;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.net.URL;
+import java.util.zip.ZipOutputStream;
+
+import javax.xml.bind.Element;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.olat.restapi.UserMgmtTest;
+
+import com.sun.xml.ws.policy.privateutil.PolicyUtils.Collections;
 
 /**
  * 
@@ -28,90 +39,26 @@ import org.junit.Test;
  *
  */
 public class OpenXMLDocumentTest {
-	/*
+
 	@Test
 	public void convertHtmlCode() {
-		String html = "<p>Ceci est un <strong>test</strong> de <span style='text-decoration: underline;'>format</span>&nbsp;</p><p>sans toutefois <em>une</em> table:</p>";		
+		String html = "<table style='height: 80px;' width='446'><tbody><tr><td>1-1</td><td colspan='2' rowspan='2'>1-21-32-32-2</td><td>1-4</td></tr><tr><td>2-1</td><td>2-4</td></tr><tr><td>3-1</td><td>3-2</td><td colspan='2'>3-33-4</td></tr></tbody></table>";
 
 		OpenXMLDocument document = new OpenXMLDocument();
-		document.appendHtmlText(html);
+		document.appendHtmlText(html, false);
 		
 		OpenXMLUtils.writeTo(document.getDocument(), System.out, true);
-	}*/
+	}
+
 	
 	@Test
-	public void converLatexCode() {
-		String latex = "x^2 \\epsilon";		
-
-		OpenXMLDocument document = new OpenXMLDocument();
-		document.convertLaTeX(latex);
-		
-		
-	}
-	
-	//@Test
-	public void convert2Paragraph() {
-		String test = "<p>Hello</p><p>World</p>";
-		
-		OpenXMLDocument document = new OpenXMLDocument();
-		document.appendHtmlText(test);
-		
-		OpenXMLUtils.writeTo(document.getDocument(), System.out, true);
-		
-	}
-	
-	//@Test
-	public void convertHtmlCode() {
-		String html = "<p>Ceci est un <strong>test</strong> de <span style='text-decoration: underline;'>format</span>&nbsp;</p><p>sans toutefois <em>une</em> table:</p>";		
-
-		OpenXMLDocument document = new OpenXMLDocument();
-		document.appendHtmlText(html);
-		
-		OpenXMLUtils.writeTo(document.getDocument(), System.out, true);
-	}
-	
-	@Test
-	public void convertTableCode() {
-		String html = "<p>Ceci est une table</p><table style='height: 75px;' width='356'><tbody><tr><td>1 - 1</td><td><p>1 - 2</p></td><td>&nbsp;1-3 avec un plus de text</td></tr><tr><td>2 - 1</td><td>Avec beaucoup de text</td><td>2 - 3</td></tr><tr><td>3 - 1 mais avec du text et encore et encore</td><td>3 - 2</td><td>3 - 3</td></tr></tbody></table><p>&nbsp;</p>";
-		
-		OpenXMLDocument document = new OpenXMLDocument();
-		document.appendHtmlText(html);
-		
-		OpenXMLUtils.writeTo(document.getDocument(), System.out, true);
-	}
-	
-	/*@Test
 	public void writeDoc() throws Exception {
 		FileOutputStream fileOut = new FileOutputStream(new File("/HotCoffee/tmp/test_1_min.docx"));
 		ZipOutputStream out = new ZipOutputStream(fileOut);
 		
 		OpenXMLDocument document = new OpenXMLDocument();
-		Element text = document.createTextEl("Hello word!");
-		Element run = document.createRunEl(Collections.singletonList(text));
-		Element paragraph = document.createParagraphEl(null, Collections.singletonList(run));
-		document.getBodyElement().appendChild(paragraph);
-		
-		//add break page
-		Element breakEl = document.createPageBreakEl();
-		document.getBodyElement().appendChild(breakEl);
-		
-		//add an image
-		URL imageUrl = UserMgmtTest.class.getResource("portrait.jpg");
-		assertNotNull(imageUrl);
-		File image = new File(imageUrl.toURI());
-		Element imgEl = document.createImageEl(image);
-		Element imgRun = document.createRunEl(Collections.singletonList(imgEl));
-		Element imgParagraph = document.createParagraphEl(null, Collections.singletonList(imgRun));
-		document.getBodyElement().appendChild(imgParagraph);
-		
-		
-		Element break2El = document.createPageBreakEl();
-		document.getBodyElement().appendChild(break2El);
-		
-		Element text2 = document.createTextEl("Miko rule the world!");
-		Element run2 = document.createRunEl(Collections.singletonList(text2));
-		Element paragraph2 = document.createParagraphEl(null, Collections.singletonList(run2));
-		document.getBodyElement().appendChild(paragraph2);
+		String html = "<table style='height: 80px;' width='446'><tbody><tr><td>1-1</td><td colspan='2' rowspan='2'>1-21-32-32-2</td><td>1-4</td></tr><tr><td>2-1</td><td>2-4</td></tr><tr><td>3-1</td><td>3-2</td><td colspan='2'>3-33-4</td></tr></tbody></table>";
+		document.appendHtmlText(html, false);
 
 		OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
 		writer.createDocument(out, document);
@@ -120,7 +67,7 @@ public class OpenXMLDocumentTest {
 		fileOut.flush();
 		IOUtils.closeQuietly(out);
 		IOUtils.closeQuietly(fileOut);
-	}*/
+	}
 	
 	
 	

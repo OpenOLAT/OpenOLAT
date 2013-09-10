@@ -26,10 +26,13 @@
 package org.olat.ims.qti.container.qtielements;
 
 import java.util.List;
+import java.util.Map;
 
 import org.dom4j.Element;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLDocument;
+import org.olat.core.util.openxml.OpenXMLDocument.Style;
 import org.olat.core.util.openxml.OpenXMLDocument.Unit;
 import org.olat.ims.qti.container.ItemInput;
 import org.w3c.dom.Node;
@@ -47,18 +50,19 @@ public class Response_label extends GenericQTIElement {
 	 */
 	public static final String xmlClass = "response_label";
 	private static String PARA = "§";
+	
 	/**
 	 * @param el_element
 	 */
 	public Response_label(Element el_element) {
 		super(el_element);
-
 	}
 
 	/**
 	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder,
 	 *      RenderInstructions)
 	 */
+	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		ItemInput iinput = (ItemInput) ri.get(RenderInstructions.KEY_ITEM_INPUT);
 		String responseIdent = (String) ri.get(RenderInstructions.KEY_RESPONSE_IDENT);
@@ -206,52 +210,91 @@ public class Response_label extends GenericQTIElement {
 
 	@Override
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
-		String responseIdent = (String) ri.get(RenderInstructions.KEY_RESPONSE_IDENT);
 		String renderClass = (String) ri.get(RenderInstructions.KEY_RENDER_CLASS);
+		
+		
 		if(renderClass == null) {
 			//we don't know what to do
 		} else if(renderClass.equals("choice")) {
 			Node row = document.createTableRow();
 			//answer
-			Node answerCell = row.appendChild(document.createTableCell("E9EAF2", 10178, Unit.dxa));
+			Node answerCell = row.appendChild(document.createTableCell("E9EAF2", 4560, Unit.pct));
 			document.pushCursor(answerCell);
 			super.renderOpenXML(document, ri);
 			document.popCursor(answerCell);
 
 			//checkbox
-			String response = "";
-			boolean checked = response.equals(getQTIIdent());
-			appendCheckBox(checked, row, document);
-			
+			boolean correct = isCorrectMCResponse(ri);
+			appendCheckBox(correct, row, document);
 			//append row
 			document.getCursor().appendChild(row);
 		} else if (renderClass.equals("kprim")) {
 			Node row = document.createTableRow();
 			//answer
-			Node answerCell = row.appendChild(document.createTableCell("E9EAF2", 9062, Unit.dxa));
+			Node answerCell = row.appendChild(document.createTableCell("E9EAF2", 4120, Unit.pct));
 			document.pushCursor(answerCell);
 			super.renderOpenXML(document, ri);
 			document.popCursor(answerCell);
-
+			
 			//checkbox
-			String response = "";
-			boolean checked = response.equals(getQTIIdent());
-			appendCheckBox(checked, row, document);
-			appendCheckBox(checked, row, document);
+			boolean correct = isCorrectKPrimResponse(ri, "correct");
+			appendCheckBox(correct, row, document);
+			boolean wrong = isCorrectKPrimResponse(ri, "wrong");
+			appendCheckBox(wrong, row, document);
 			
 			//append row
 			document.getCursor().appendChild(row);
-
 		} else if (renderClass.equals("fib")) {
+			Boolean render = (Boolean)ri.get(RenderInstructions.KEY_RENDER_CORRECT_RESPONSES);
+			@SuppressWarnings("unchecked")
+			Map<String,String> iinput = (Map<String,String>)ri.get(RenderInstructions.KEY_CORRECT_RESPONSES_MAP);
 			
+			if(render != null && render.booleanValue() && iinput != null
+					&& StringHelper.containsNonWhitespace(iinput.get(getQTIIdent()))) {
+				//show the response
+				String response = iinput.get(getQTIIdent());
+				response = response.replace(";", ", ");
+				document.appendText(response, false, Style.underline);
+			} else {
+				Integer rows = (Integer)ri.get(RenderInstructions.KEY_FIB_ROWS);
+				if (rows != null && rows.intValue() > 1) {
+					document.appendFillInBlanckWholeLine(rows.intValue());
+				} else {
+					Integer maxlength = (Integer)ri.get(RenderInstructions.KEY_FIB_MAXLENGTH);
+					int length = (maxlength == null ? 8 : maxlength.intValue()) / 2;
+					document.appendFillInBlanck(length, false);
+				}
+			}
 		}
 	}
 	
 	private void appendCheckBox(boolean checked, Node row, OpenXMLDocument document) {
-		Node checkboxCell = row.appendChild(document.createTableCell(null, 1116, Unit.dxa));
+		Node checkboxCell = row.appendChild(document.createTableCell(null, 369, Unit.pct));
 		Node responseEl = document.createCheckbox(checked);
 		Node wrapEl = document.wrapInParagraph(responseEl);
 		//Node responseEl = document.createParagraphEl("OK");
 		checkboxCell.appendChild(wrapEl);
+	}
+	
+	private boolean isCorrectMCResponse(RenderInstructions ri) {
+		Boolean render = (Boolean)ri.get(RenderInstructions.KEY_RENDER_CORRECT_RESPONSES);
+		if(render == null || !render.booleanValue()) return false;
+		@SuppressWarnings("unchecked")
+		Map<String,String> iinput = (Map<String,String>)ri.get(RenderInstructions.KEY_CORRECT_RESPONSES_MAP);
+		if(iinput != null && iinput.containsKey(getQTIIdent())) {
+			return true;
+		}
+		return false;	
+	}
+	
+	private boolean isCorrectKPrimResponse(RenderInstructions ri, String add) {
+		Boolean render = (Boolean)ri.get(RenderInstructions.KEY_RENDER_CORRECT_RESPONSES);
+		if(render == null || !render.booleanValue()) return false;
+		@SuppressWarnings("unchecked")
+		Map<String,String> iinput = (Map<String,String>)ri.get(RenderInstructions.KEY_CORRECT_RESPONSES_MAP);
+		if(iinput != null && iinput.containsKey(getQTIIdent() + ":" + add)) {
+			return true;
+		}
+		return false;	
 	}
 }

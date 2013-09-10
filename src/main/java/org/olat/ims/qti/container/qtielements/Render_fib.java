@@ -27,6 +27,7 @@ package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.openxml.OpenXMLDocument;
 
 /**
@@ -179,5 +180,7 @@ public class Render_fib extends GenericQTIElement {
 		ri.put(RenderInstructions.KEY_FIB_ROWS, new Integer(rows));
 		ri.put(RenderInstructions.KEY_FIB_COLUMNS, new Integer(columns));
 		ri.put(RenderInstructions.KEY_FIB_MAXLENGTH, new Integer(maxchars));
+		ri.put(RenderInstructions.KEY_FIB_MAXLENGTH, new Integer(maxchars));
+		ri.put(RenderInstructions.KEY_BREAK_DELAY, new ConsumableBoolean(true));
 	}
 }

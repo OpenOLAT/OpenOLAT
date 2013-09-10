@@ -39,9 +39,11 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.image.Size;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -67,6 +69,21 @@ public class OpenXMLUtils {
 		double heightEmus = (heightPx / vertRezDpi) * emusPerInch;
 		
 		return new Size((int)widthEmus, (int)heightEmus, true);
+	}
+	
+	public static int getSpanAttribute(String name, Attributes attrs) {
+		name = name.toLowerCase();
+		int span = -1;
+		for(int i=attrs.getLength(); i-->0; ) {
+			String attrName = attrs.getQName(i);
+			if(name.equals(attrName.toLowerCase())) {
+				String val = attrs.getValue(i);
+				if(StringHelper.isLong(val)) {
+					return Integer.parseInt(val);
+				}
+			}	
+		}
+		return span < 1 ? 1 : span;
 	}
 	
 	public static boolean contains(Node parent, String nodeName) {

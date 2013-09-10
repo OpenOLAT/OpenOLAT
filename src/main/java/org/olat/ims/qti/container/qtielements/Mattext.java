@@ -26,6 +26,7 @@
 package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
@@ -96,6 +97,8 @@ public class Mattext extends GenericQTIElement {
 
 	@Override
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
-		document.appendHtmlText(content);
+		ConsumableBoolean br = (ConsumableBoolean)ri.get(RenderInstructions.KEY_BREAK_DELAY);
+		boolean newParagraph = br == null || !br.isTrue();
+		document.appendHtmlText(content, newParagraph);
 	}
 }

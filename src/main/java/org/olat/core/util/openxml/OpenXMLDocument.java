@@ -72,6 +72,7 @@ public class OpenXMLDocument {
 	
 	private final Document document;
 	private final Element rootElement;
+	private final Element bodyElement;
 	
 	private final OpenXMLStyles styles;
 	
@@ -85,7 +86,7 @@ public class OpenXMLDocument {
 	public OpenXMLDocument() {
 		document = OpenXMLUtils.createDocument();
 		rootElement =	createRootElement(document);
-		Element bodyElement = createBodyElement(rootElement, document);
+		bodyElement = createBodyElement(rootElement, document);
 		styles = new OpenXMLStyles();
 		cursorStack.add(bodyElement);
 	}
@@ -154,8 +155,75 @@ public class OpenXMLDocument {
 		Element paragraphEl = createParagraphEl(styleEl, Collections.singletonList(runEl));
 		getCursor().appendChild(paragraphEl);
 	}
+/*
+<w:sectPr w:rsidR="00F528BA" w:rsidRPr="00DF16C8" w:rsidSect="007347AA">
+	<w:pgSz w:w="11900" w:h="16840" />
+	<w:pgMar w:top="1417" w:right="1417" w:bottom="1134" w:left="1417" w:header="708" w:footer="708" w:gutter="0" />
+	<w:cols w:space="708" />
+	<w:docGrid w:linePitch="360" />
+</w:sectPr>
+ */
+	/**
+	 * Must be done at the end of the document
+	 */
+	public void appendPageSettings() {
+		Node lastChild = bodyElement.getLastChild();
+		if(lastChild != null && "w:sectPr".equals(lastChild.getLocalName())) {
+			return;//nothing to do, already set
+		}
+
+		Node sectionPrefs = bodyElement.appendChild(document.createElement("w:sectPr"));
+		//A4
+		Element pageSize = (Element)sectionPrefs.appendChild(document.createElement("w:pgSz"));
+		pageSize.setAttribute("w:w", "11900");
+		pageSize.setAttribute("w:h", "16840");
+		Element margins = (Element)sectionPrefs.appendChild(document.createElement("w:pgMar"));
+		margins.setAttribute("w:top", "1440");
+		margins.setAttribute("w:right", "1440");
+		margins.setAttribute("w:bottom", "1440");
+		margins.setAttribute("w:left", "1440");
+		margins.setAttribute("w:header", "708");
+		margins.setAttribute("w:footer", "708");
+		margins.setAttribute("w:gutter", "0");
+	}
 	
-	public void appendTextParagraph(String text) {
+	public void appendFillInBlanck(int length, boolean newParagraph) {
+		Element paragraphEl = getParagraphToAppendTo(newParagraph);
+		
+		Node runEl = paragraphEl.appendChild(createRunEl(null));
+		runEl.appendChild(createRunPrefsEl(Style.underline));
+
+		int tabLength = length / 5;
+		for(int i=tabLength; i-->0; ) {
+			runEl.appendChild(document.createElement("w:tab"));
+		}
+		getCursor().appendChild(paragraphEl);
+	}
+	
+/*
+<w:p w:rsidR="00F528BA" w:rsidRPr="00245F75" w:rsidRDefault="00F528BA" w:rsidP="00245F75">
+	<w:pPr>
+		<w:pBdr>
+			<w:bottom w:val="single" w:sz="4" w:space="1" w:color="auto" />
+		</w:pBdr>
+	</w:pPr>
+</w:p>
+ */
+	public void appendFillInBlanckWholeLine(int rows) {
+		for(int i=rows+1; i-->0; ) {
+			Element paragraphEl = createParagraphEl();
+			Node pargraphPrefs = paragraphEl.appendChild(document.createElement("w:pPr"));
+			Node pargraphBottomPrefs = pargraphPrefs.appendChild(document.createElement("w:pBdr"));
+			Element bottomEl = (Element)pargraphBottomPrefs.appendChild(document.createElement("w:between"));
+			bottomEl.setAttribute("w:val", "single");
+			bottomEl.setAttribute("w:sz", "4");
+			bottomEl.setAttribute("w:space", "1");
+			bottomEl.setAttribute("w:color", "auto");
+			getCursor().appendChild(paragraphEl);
+		}
+	}
+	
+	public void appendText(String text, boolean newParagraph, Style... styles) {
 		if(!StringHelper.containsNonWhitespace(text)) return;
 		
 		List<Element> textEls = new ArrayList<Element>();
@@ -169,10 +237,56 @@ public class OpenXMLDocument {
 		}
 		
 		if(textEls.size() > 0) {
-			Element runEl = createRunEl(textEls);
-			Element paragraphEl = createParagraphEl(null, Collections.singletonList(runEl));
+			Element paragraphEl = getParagraphToAppendTo(newParagraph);
+			Element runEl = document.createElement("w:r");
+			if(styles != null && styles.length > 0) {
+				runEl.appendChild(createRunPrefsEl(styles));
+			}
+			for(Element textEl:textEls) {
+				runEl.appendChild(textEl);
+			}
+			paragraphEl.appendChild(runEl);
 			getCursor().appendChild(paragraphEl);
 		}
+	}
+	
+	/**
+	 * Get a paragraph, if @param newParagraph is false, try to get the
+	 * last paragraph of the cursor. If @param newParagraph is true, create
+	 * always a new paragraph.
+	 * @param newParagraph
+	 * @return
+	 */
+	private Element getParagraphToAppendTo(boolean newParagraph) {
+		Element paragraphEl = null;
+		if(!newParagraph) {
+			paragraphEl = getCurrentParagraph();
+			//add a blank between
+			if(paragraphEl != null) {
+				Element runEl = document.createElement("w:r");
+				runEl.appendChild(createPreserveSpaceEl());
+				paragraphEl.appendChild(runEl);
+			}
+		}
+		if(paragraphEl == null) {
+			paragraphEl = createParagraphEl();
+		}
+		return paragraphEl;
+	}
+	
+	/**
+	 * Return the paragraph if and only if it's the last element. Return
+	 * null if not found.
+	 * @return
+	 */
+	private Element getCurrentParagraph() {
+		Element paragraphEl = null;
+		Node currentNode = getCursor();
+		if(currentNode != null && currentNode.getLastChild() != null
+				&& "w:p".equals(currentNode.getLastChild().getNodeName())) {
+			paragraphEl = (Element)currentNode.getLastChild();
+		}
+		return paragraphEl;
 	}
 	
 	public void appendPageBreak() {
@@ -186,11 +300,12 @@ public class OpenXMLDocument {
 		getCursor().appendChild(paragraphEl);
 	}
 	
-	public void appendHtmlText(String html) {
+	public void appendHtmlText(String html, boolean newParagraph) {
 		if(!StringHelper.containsNonWhitespace(html)) return;
 		try {
 			SAXParser parser = new SAXParser();
-			parser.setContentHandler(new HTMLToOpenXMLHandler(this));
+			Element paragraphEl = getParagraphToAppendTo(newParagraph);
+			parser.setContentHandler(new HTMLToOpenXMLHandler(this, paragraphEl));
 			parser.parse(new InputSource(new StringReader(html)));
 		} catch (SAXException e) {
 			log.error("", e);
@@ -234,11 +349,8 @@ public class OpenXMLDocument {
 		return paragraphEl;
 	}
 	
-	public Element createParagraphEl(Element styleEl) {
+	public Element createParagraphEl() {
 		Element paragraphEl = document.createElement("w:p");
-		if(styleEl != null) {
-			paragraphEl.appendChild(styleEl);
-		}
 		return paragraphEl;
 	}
 	
@@ -252,8 +364,25 @@ public class OpenXMLDocument {
 		return runEl;
 	}
 	
-	public Element createRunPrefsEl() {
+	public Element createRunPrefsEl(Style... styles) {
 		Element runPrefsEl = document.createElement("w:rPr");
+		if(styles != null && styles.length > 0) {
+			for(Style style:styles) {
+				if(style != null) {
+					switch(style) {
+						case underline: {
+							Element underlinePrefs = (Element)runPrefsEl.appendChild(document.createElement("w:u"));
+							underlinePrefs.setAttribute("w:val", "single");
+							break;
+						}
+						case italic: {
+							runPrefsEl.appendChild(document.createElement("w:i"));
+							break;
+						}
+					}
+				}
+			}
+		}
 		return runPrefsEl;
 	}
 	
@@ -276,7 +405,7 @@ public class OpenXMLDocument {
 	}
 	
 	public Element createParagraphEl(String text) {
-		Element paragraphEl = createParagraphEl((Element)null);
+		Element paragraphEl = createParagraphEl();
 		Node runEl = paragraphEl.appendChild(document.createElement("w:r"));
 
 		for(StringTokenizer tokenizer = new StringTokenizer(text, "\n\r"); tokenizer.hasMoreTokens(); ) {
@@ -398,7 +527,7 @@ public class OpenXMLDocument {
 		Node prefEl = null;
 		if(unit != null) {
 			prefEl = cellEl.appendChild(document.createElement("w:tcPr"));
-			createWidthEl("w:tcW", width, Unit.auto, cellEl);
+			createWidthEl("w:tcW", width, unit, cellEl);
 		}
 		if(StringHelper.containsNonWhitespace(background)) {
 			if(prefEl == null) {
@@ -471,8 +600,6 @@ public class OpenXMLDocument {
 		try {
 			//convert latex -> mathml
 			String mathml = ConvertFromLatexToMathML.convertToMathML(latex);
-			System.out.println("Latex: " + latex);
-			System.out.println("MathML: " + mathml);
 
 			//convert mathml to word docx
 			ByteArrayOutputStream out = new ByteArrayOutputStream(20000);
@@ -708,6 +835,11 @@ public class OpenXMLDocument {
 	private final Element createBodyElement(Element rootElement, Document doc) {
 		Element bodyEl = (Element)rootElement.appendChild(doc.createElement("w:body"));
 		return bodyEl;
+	}
+	
+	public enum Style {
+		underline,
+		italic,
 	}
 	
 	public enum Unit {

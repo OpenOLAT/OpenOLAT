@@ -50,8 +50,9 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private Element currentParagraph;
 	private Table currentTable;
 	
-	public HTMLToOpenXMLHandler(OpenXMLDocument document) {
+	public HTMLToOpenXMLHandler(OpenXMLDocument document, Element paragraph) {
 		this.factory = document;
+		this.currentParagraph = paragraph;
 	}
 	
 	/**
@@ -67,7 +68,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 				flushText();
 				addContent(currentParagraph);
 			}
-			currentParagraph = factory.createParagraphEl((Element)null);
+			currentParagraph = factory.createParagraphEl();
 		}
 		return currentParagraph;
 	}
@@ -124,7 +125,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private Element getCurrentRun() {
 		Element paragraphEl;
 		if(currentParagraph == null) {
-			paragraphEl = currentParagraph = factory.createParagraphEl((Element)null);
+			paragraphEl = currentParagraph = factory.createParagraphEl();
 		} else {
 			paragraphEl = currentParagraph;
 		}
@@ -179,7 +180,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		}
 		if(underline && !OpenXMLUtils.contains(runPrefs, "w:u")) {
 			Element underlinePrefs = (Element)runPrefs.appendChild(runPrefs.getOwnerDocument().createElement("w:u"));
-			underlinePrefs.setAttribute("val", "single");
+			underlinePrefs.setAttribute("w:val", "single");
 		}
 		if(strike && !OpenXMLUtils.contains(runPrefs, "w:strike")) {
 			runPrefs.appendChild(runPrefs.getOwnerDocument().createElement("w:strike"));
@@ -223,9 +224,11 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			closeParagraph();
 			currentTable = new Table();
 		} else if("tr".equals(tag)) {
-			currentTable.addRowEl();	
+			currentTable.addRowEl();
 		} else if("td".equals(tag) || "th".equals(tag)) {
-			currentTable.addCellEl();
+			int colspan = OpenXMLUtils.getSpanAttribute("colspan", attributes);
+			int rowspan = OpenXMLUtils.getSpanAttribute("rowspan", attributes);
+			currentTable.addCellEl(colspan, rowspan);
 		}
 	}
 
@@ -253,6 +256,9 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			flushText();
 			currentParagraph = addContent(currentParagraph);
 		} else if("tr".equals(tag)) {
+			if(currentTable != null) {
+				currentTable.closeRow();
+			}
 			textBuffer = null;
 			latex = false;
 			currentParagraph = null;
@@ -272,8 +278,12 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	public class Table {
 		private final Element tableEl;
 		private final Element gridEl;
+		
+		private int nextCol;
 		private Node currentRowEl;
 		private Element currentCellEl;
+		
+		private Span[] rowSpans = new Span[128];
 		
 		public Table() {
 			tableEl = factory.createTable();
@@ -290,13 +300,78 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		}
 		
 		public Node addRowEl() {
+			for(int i=rowSpans.length; i-->0; ) {
+				if(rowSpans[i] != null) {
+					rowSpans[i].unDone();
+				}
+			}
+			
+			nextCol = 0;
 			currentRowEl = tableEl.getOwnerDocument().createElement("w:tr");	
 			return  tableEl.appendChild(currentRowEl);
 		}
 		
-		public Node addCellEl() {
+		public void closeRow() {
+			closeCell(rowSpans.length-1);
+		}
+		
+		/*
+<w:tc>
+	<w:tcPr>
+    <w:gridSpan w:val="2" />
+    <w:vMerge w:val="restart" />
+		 */
+		public Node addCellEl(int colSpan, int rowSpan) {
+			nextCol += closeCell(nextCol);
+			
 			currentCellEl = currentRowEl.getOwnerDocument().createElement("w:tc");
+			
+			Node prefs = null;
+			if(colSpan > 1) {
+				prefs = currentCellEl.appendChild(currentCellEl.getOwnerDocument().createElement("w:tcPr"));
+				Element gridSpan = (Element)prefs.appendChild(prefs.getOwnerDocument().createElement("w:gridSpan"));
+				gridSpan.setAttribute("w:val", Integer.toString(colSpan));
+			}
+			
+			if(rowSpan > 1) {
+				prefs = prefs != null ? prefs : currentCellEl.appendChild(currentCellEl.getOwnerDocument().createElement("w:tcPr"));
+				Element vMerge = (Element)prefs.appendChild(prefs.getOwnerDocument().createElement("w:vMerge"));
+				vMerge.setAttribute("w:val", "restart");
+			}
+			
+			if(colSpan == 1 && rowSpan == 1) {
+				rowSpans[nextCol] = Span.OneOnOne;
+			} else {
+				rowSpans[nextCol] = new Span(colSpan, rowSpan);
+			}
+
+			nextCol += (colSpan <= 1 ? 1 : colSpan);
 			return currentRowEl.appendChild(currentCellEl);
+		}
+		
+		public int closeCell(int lastIndex) {
+			for(int i=lastIndex+1; i-->0; ) {
+				Span span = rowSpans[i];
+				if(span != null) {
+					if(span.getRowSpan() > 1 && !span.isDone()) {
+						currentCellEl = (Element)currentRowEl.appendChild(currentRowEl.getOwnerDocument().createElement("w:tc"));
+						Node prefs = currentCellEl.appendChild(currentCellEl.getOwnerDocument().createElement("w:tcPr"));
+
+						if(span.getColSpan() > 1) {
+							Element gridSpan = (Element)prefs.appendChild(prefs.getOwnerDocument().createElement("w:gridSpan"));
+							gridSpan.setAttribute("w:val", Integer.toString(span.getColSpan()));
+						}
+						prefs.appendChild(prefs.getOwnerDocument().createElement("w:vMerge"));
+						
+						currentCellEl.appendChild(currentCellEl.getOwnerDocument().createElement("w:p"));
+						span.decrementRowSpan();
+						return span.getColSpan();
+					} else {
+						break;
+					}
+				}
+			}
+			return 0;
 		}
 
 		public Element getCurrentCell() {
@@ -306,5 +381,40 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		public void setCurrentCell(Element currentCell) {
 			this.currentCellEl = currentCell;
 		}
+	}
+	
+	private static class Span {
+
+		public static final Span OneOnOne = new Span(1,1);
+		
+		private int colspan;
+		private int rowspan;
+		private boolean done = true;
+		
+		private Span(int colspan, int rowspan) {
+			this.colspan = colspan;
+			this.rowspan = rowspan;
+		}
+
+		public int getColSpan() {
+			return colspan;
+		}
+		
+		public int getRowSpan() {
+			return rowspan;
+		}
+		
+		public void decrementRowSpan() {
+			rowspan--;
+		}
+		
+		public boolean isDone() {
+			return done;
+		}
+		
+		public void unDone() {
+			done = false;
+		}
+		
 	}
 }

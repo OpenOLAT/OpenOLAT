@@ -61,6 +61,7 @@ public class Objectives extends GenericQTIElement {
 	@Override
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
 		super.renderOpenXML(document, ri);
+		//document.appendBreak();
 	}
 	
 	

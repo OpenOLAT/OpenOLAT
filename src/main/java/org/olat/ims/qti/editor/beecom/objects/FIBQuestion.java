@@ -27,10 +27,10 @@ package org.olat.ims.qti.editor.beecom.objects;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.dom4j.Element;
@@ -61,7 +61,7 @@ public class FIBQuestion extends Question implements QTIObject {
 
 		Element presentationXML = item.element("presentation");
 		List elementsXML =  presentationXML.element("flow").elements();
-		List responses = instance.getResponses();
+		List<Response> responses = instance.getResponses();
 		Element el_resprocessing = item.element("resprocessing");
 	
 		for(Iterator i = elementsXML.iterator(); i.hasNext();) {
@@ -83,7 +83,7 @@ public class FIBQuestion extends Question implements QTIObject {
 				fibresponse.setSizeFromColumns(render_fib.attribute("columns"));
 				fibresponse.setMaxLengthFromMaxChar(render_fib.attribute("maxchars"));
 				List el_varequals = el_resprocessing.selectNodes(".//varequal[@respident='" + ident + "']");
-				List processedSolutions = new ArrayList(); // list of already process strings
+				List<String> processedSolutions = new ArrayList<String>(); // list of already process strings
 				if (el_varequals != null) {
 					String correctBlank = "";
 					String correctBlankCaseAttribute = "No";
@@ -111,12 +111,12 @@ public class FIBQuestion extends Question implements QTIObject {
 		if (resprocessingXML != null) {
 			
 			List respconditions = resprocessingXML.elements("respcondition");
-			HashMap points = QTIEditHelper.fetchPoints(respconditions, instance.getType());
+			Map<String,Float> points = QTIEditHelper.fetchPoints(respconditions, instance.getType());
 		
 			// postprocessing choices
 			for(Iterator i = responses.iterator(); i.hasNext();) {
 				FIBResponse fibResp = (FIBResponse)i.next();		
-				Float fPoints = (Float)points.get(fibResp.getIdent());
+				Float fPoints = points.get(fibResp.getIdent());
 				if (fPoints != null) {
 					fibResp.setPoints(fPoints.floatValue());
 					fibResp.setCorrect(true);

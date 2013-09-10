@@ -39,29 +39,32 @@ import java.util.Map;
  */
 public class HttpItemInput implements ItemInput, Serializable {
 
-	private Map m;
+	private static final long serialVersionUID = 7283305686407753678L;
+	private Map<String,List<String>> m;
 	private String ident;
 
 	/**
 	 * Constructor
 	 */
 	public HttpItemInput(String itemIdent) {
-		m = new HashMap();
+		m = new HashMap<String,List<String>>();
 		ident = itemIdent;
 	}
 	
 	public void addTestVariableVal(String varName) {
-		List li = (List) m.get(varName);
+		List<String> li = m.get(varName);
 		if (li == null) {
-			li = new ArrayList();
+			li = new ArrayList<String>();
 			m.put(varName,li);
 		}
 		li.add("1.23456"); // a value which satisfies all compares
 	}
 	
 	public Object putSingle(String key, String value) {
-		List l = getAsList(key);
-		if (l == null) { l = new ArrayList();	}
+		List<String> l = getAsList(key);
+		if (l == null) {
+			l = new ArrayList<String>();
+		}
 		l.add(value.trim());
 		return m.put(key, l);	
 	}
@@ -70,7 +73,7 @@ public class HttpItemInput implements ItemInput, Serializable {
 	 * @see org.olat.qti.process.ItemInput#getAsString(java.lang.String)
 	 */
 	public String getSingle(String varName) {
-		List li = getAsList(varName);
+		List<String> li = getAsList(varName);
 		if(li==null) {			
 			return "";
 		}
@@ -81,8 +84,8 @@ public class HttpItemInput implements ItemInput, Serializable {
 	/**
 	 * @see org.olat.qti.process.ItemInput#getAsSet(java.lang.String)
 	 */
-	public List getAsList(String varName) {
-		List li = (List) m.get(varName);
+	public List<String> getAsList(String varName) {
+		List<String> li = m.get(varName);
 		return li;
 	}
 	
@@ -90,12 +93,12 @@ public class HttpItemInput implements ItemInput, Serializable {
 	 * Return the map of answers for all inputs
 	 * @return
 	 */
-	public Map getInputMap() {
+	public Map<String,List<String>> getInputMap() {
 		return m;
 	}
 	
 	public boolean contains(String varName, String value) {
-		List li = (List) m.get(varName);
+		List<String> li = m.get(varName);
 		if (li == null) {
 			/* If variable was not declared, we return false without throwing up
 				 This is necessary for example for composite multiple choice, single select
@@ -109,7 +112,7 @@ public class HttpItemInput implements ItemInput, Serializable {
 	}
 	
 	public boolean containsIgnoreCase(String varName, String value) {
-		List li = (List) m.get(varName);
+		List<String> li = m.get(varName);
 		if (li == null) {
 			/* If variable was not declared, we return false without throwing up
 			   This is necessary for example for composite multiple choice, single select
@@ -119,8 +122,8 @@ public class HttpItemInput implements ItemInput, Serializable {
 			// throw new RuntimeException("variable "+varName+" was not declared!");
 			return false;
 		}	
-		for (Iterator iter = li.iterator(); iter.hasNext();) {
-				String element = (String) iter.next();
+		for (Iterator<String> iter = li.iterator(); iter.hasNext();) {
+				String element = iter.next();
 				if (element.equalsIgnoreCase(value)) return true;	
 		}
 		return false;

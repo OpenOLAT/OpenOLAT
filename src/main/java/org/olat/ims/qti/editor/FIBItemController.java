@@ -38,7 +38,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dialog.DialogController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.editor.beecom.objects.FIBQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
@@ -108,14 +107,14 @@ public class FIBItemController extends DefaultController implements ControllerEv
 			if (sPosid != null) posid = Integer.parseInt(sPosid);
 			if (cmd.equals("up")) {
 				if (posid > 0) {
-					List elements = item.getQuestion().getResponses();
-					Object obj = elements.remove(posid);
+					List<Response> elements = item.getQuestion().getResponses();
+					Response obj = elements.remove(posid);
 					elements.add(posid - 1, obj);
 				}
 			} else if (cmd.equals("down")) {
-				List elements = item.getQuestion().getResponses();
+				List<Response> elements = item.getQuestion().getResponses();
 				if (posid < elements.size() - 1) {
-					Object obj = elements.remove(posid);
+					Response obj = elements.remove(posid);
 					elements.add(posid + 1, obj);
 				}
 			} else if (cmd.equals("editq")) {
@@ -150,7 +149,7 @@ public class FIBItemController extends DefaultController implements ControllerEv
 				FIBQuestion question = (FIBQuestion) item.getQuestion();
 				// Survey specific variables
 				if (surveyMode) {
-					List responses = question.getResponses();
+					List<Response> responses = question.getResponses();
 					for (int i = 0; i < responses.size(); i++) {
 						FIBResponse response = (FIBResponse) responses.get(i);
 						if (FIBResponse.TYPE_BLANK.equals(response.getType())) {
@@ -181,7 +180,7 @@ public class FIBItemController extends DefaultController implements ControllerEv
 					NodeBeforeChangeEvent nce = new NodeBeforeChangeEvent();
 					nce.setItemIdent(item.getIdent());
 
-					List responses = question.getResponses();
+					List<Response> responses = question.getResponses();
 					for (int i = 0; i < responses.size(); i++) {
 						FIBResponse response = (FIBResponse) responses.get(i);
 						nce.setResponseIdent(response.getIdent());
@@ -260,7 +259,7 @@ public class FIBItemController extends DefaultController implements ControllerEv
 				Object position = delYesNoCtrl.getUserObject();
 				if(position instanceof Integer) {
 					int pos = ((Integer)position).intValue();
-					List responses = item.getQuestion().getResponses();
+					List<Response> responses = item.getQuestion().getResponses();
 					if(!responses.isEmpty() && pos < responses.size()) {
 						responses.remove(pos);
 					}

@@ -100,6 +100,7 @@ public class OpenXMLDocumentWriter {
 		//word/document.xml
 		ZipEntry wordDocument = new ZipEntry("word/document.xml");
 		out.putNextEntry(wordDocument);
+		document.appendPageSettings();
 		OpenXMLUtils.writeTo(document.getDocument(), out, false);
 		out.closeEntry();
 

@@ -391,7 +391,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	
 	private void updateWarning() {
 		boolean warningEssay = false;
-		if(!qtiPackage.getQTIDocument().isSurvey()) {
+		if(qtiPackage.getQTIDocument() != null && !qtiPackage.getQTIDocument().isSurvey()) {
 			//check if the test contains some essay
 			List<TreeNode> flattedTree = new ArrayList<TreeNode>();
 			TreeHelper.makeTreeFlat(menuTreeModel.getRootNode(), flattedTree);

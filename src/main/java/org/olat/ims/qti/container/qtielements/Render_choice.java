@@ -165,7 +165,8 @@ public class Render_choice extends GenericQTIElement {
 			} 
 			ri.put(RenderInstructions.KEY_RENDER_CLASS, "choice");
 			//open a table with 2 columns
-			table = document.appendTable(new Integer[]{10178, 1116});
+			//{10178, 1116}
+			table = document.appendTable(new Integer[]{8468, 745});
 		}
 		document.pushCursor(table);
 		super.renderOpenXML(document, ri);
