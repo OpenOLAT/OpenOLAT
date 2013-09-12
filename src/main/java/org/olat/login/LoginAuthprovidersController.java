@@ -336,8 +336,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				return;
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
-				//getWindowControl().setError(translate("login.notavailable", OLATContext.getSupportaddress()));
-				DispatcherAction.redirectToServiceNotAvailable( ureq.getHttpResp() );
+				DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
 			} else {
 				// fxdiff: show useradmin-mail for pw-requests
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
