@@ -49,7 +49,7 @@ public class MailerResult {
 	public static final int TEMPLATE_GENERAL_ERROR = 6;
 	public static final int ATTACHMENT_INVALID = 7;
 
-	private List<Identity> failedIdentites = new ArrayList<Identity>();
+	private final List<Identity> failedIdentites = new ArrayList<Identity>();
 	private int returnCode = OK;
 
 	/**
@@ -58,6 +58,10 @@ public class MailerResult {
 	 */
 	public List<Identity> getFailedIdentites() {
 		return failedIdentites;
+	}
+	
+	public boolean isSuccessful() {
+		return getReturnCode() == MailerResult.OK;
 	}
 
 	/**
@@ -84,6 +88,15 @@ public class MailerResult {
 	 */
 	public void setReturnCode(int returnCode) {
 		this.returnCode = returnCode;
+	}
+	
+	public void append(MailerResult newResult) {
+		if(newResult.getReturnCode() != MailerResult.OK) {
+			setReturnCode(newResult.getReturnCode());
+		}
+		if(newResult.getFailedIdentites() != null && newResult.getFailedIdentites().size() > 0) {
+			failedIdentites.addAll(newResult.getFailedIdentites());
+		}
 	}
 	
 	@Override

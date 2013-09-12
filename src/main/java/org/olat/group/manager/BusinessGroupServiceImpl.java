@@ -55,12 +55,13 @@ import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
@@ -148,7 +149,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Autowired
 	private NotificationsManager notificationsManager;
 	@Autowired
-	private MailerWithTemplate mailer;
+	private MailManager mailManager;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -816,14 +817,14 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		deleteBusinessGroup(businessGroupTodelete);
 		dbInstance.commit();
 		// finally send email
-		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		MailTemplate mailTemplate = BGMailHelper.createDeleteGroupMailTemplate(businessGroupTodelete, deletedBy);
 		if (mailTemplate != null) {
 			String metaId = UUID.randomUUID().toString();
 			MailContext context = new MailContextImpl(businessPath);
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, users, null, mailTemplate, null, metaId);
-			//MailHelper.printErrorsAndWarnings(mailerResult, wControl, locale);
-			return mailerResult;
+			MailerResult result = new MailerResult();
+			MailBundle[] bundles = mailManager.makeMailBundles(context, users, mailTemplate, null, metaId, result);
+			result.append(mailManager.sendMessage(bundles));
+			return result;
 		}
 		return null;
 	}
@@ -880,14 +881,14 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 					ResourceReservation reservation =
 							reservationDao.createReservation(identityToAdd, "group_coach", expiration, group.getResource());
 					if(reservation != null) {
-						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addCoach, mailing, mailer);
+						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addCoach, mailing);
 						// logging
 						log.audit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identityToAdd.getName() + "' to securitygroup with key " + group.getOwnerGroup().getKey());
 					}
 				}
 			} else {
 				internalAddCoach(ureqIdentity, identityToAdd, group, events);
-				BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addCoach, mailing, mailer);
+				BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addCoach, mailing);
 			}
 			return true;
 		}
@@ -930,12 +931,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 					ResourceReservation reservation =
 							reservationDao.createReservation(identityToAdd, "group_participant", expiration, group.getResource());
 					if(reservation != null) {
-						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addParticipant, mailing, mailer);
+						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addParticipant, mailing);
 					}
 				}
 			} else {
 				internalAddParticipant(ureqIdentity, identityToAdd, group, events);
-				BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addParticipant, mailing, mailer);
+				BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addParticipant, mailing);
 			}
 			return true;
 		}
@@ -1046,7 +1047,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group, null, events);
 			}	
 			// send mail
-			BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.removeParticipant, mailing, mailer);
+			BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.removeParticipant, mailing);
 		}
 	}
 	
@@ -1183,7 +1184,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_TO_WAITING_LIST_ADDED, getClass(), LoggingResourceable.wrap(identity));
 		log.audit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName() + "' to securitygroup with key " + group.getPartipiciantGroup().getKey());
 		// send mail
-		BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.addToWaitingList, mailing, mailer);
+		BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.addToWaitingList, mailing);
 	}
 	
 	@Override
@@ -1225,7 +1226,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_FROM_WAITING_LIST_REMOVED, getClass(), LoggingResourceable.wrap(identity));
 		log.audit("Idenitity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName() + "' from securitygroup with key " + group.getOwnerGroup().getKey());
 		// send mail
-		BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.removeToWaitingList, mailing, mailer);
+		BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.removeToWaitingList, mailing);
 	}
 	
 	@Override
@@ -1389,7 +1390,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 							ThreadLocalUserActivityLogger.setStickyActionType(formerStickyActionType);
 						}
 
-						BusinessGroupMailing.sendEmail(ureqIdentity, firstWaitingListIdentity, group, MailType.graduateFromWaitingListToParticpant, mailing, mailer);				
+						BusinessGroupMailing.sendEmail(ureqIdentity, firstWaitingListIdentity, group, MailType.graduateFromWaitingListToParticpant, mailing);				
 						counter++;
 				  }
 				}

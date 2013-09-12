@@ -1,0 +1,162 @@
+package org.olat.core.util.mail;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.List;
+
+import javax.mail.Address;
+import javax.mail.internet.MimeMessage;
+
+import org.olat.core.id.Identity;
+import org.olat.core.util.mail.model.DBMail;
+import org.olat.core.util.mail.model.DBMailAttachment;
+import org.olat.core.util.mail.model.DBMailLight;
+import org.olat.core.util.notifications.PublisherData;
+import org.olat.core.util.notifications.Subscriber;
+import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.util.vfs.VFSLeaf;
+
+public interface MailManager {
+	
+
+	public SubscriptionContext getSubscriptionContext();
+	
+	public PublisherData getPublisherData();
+	
+	public Subscriber getSubscriber(Identity identity);
+	
+	/**
+	 * Subscribe to mail news
+	 * @param identity
+	 */
+	public void subscribe(Identity identity);
+	
+	
+	/**
+	 * @param key
+	 * @return The mail or null
+	 */
+	public DBMail getMessageByKey(Long key);
+	
+	public boolean hasNewMail(Identity identity);
+	
+	public VFSLeaf getAttachmentDatas(Long key);
+	
+	public VFSLeaf getAttachmentDatas(MailAttachment attachment);
+	
+	public List<DBMailAttachment> getAttachments(DBMailLight mail);
+	
+	public String saveAttachmentToStorage(String name, String mimetype, long checksum, long size, InputStream stream);
+
+	
+	/**
+	 * 
+	 * @param mail
+	 * @param read cannot be null
+	 * @param identity
+	 * @return true if the read flag has been changed
+	 */
+	public boolean setRead(DBMailLight mail, Boolean read, Identity identity);
+	
+	public DBMailLight toggleRead(DBMailLight mail, Identity identity);
+
+	/**
+	 * @param mail
+	 * @param marked cannot be null
+	 * @param identity
+	 * @return true if the marked flag has been changed
+	 */
+	public boolean setMarked(DBMailLight mail, Boolean marked, Identity identity);
+	
+	public DBMailLight toggleMarked(DBMailLight mail, Identity identity);
+	
+	/**
+	 * Set the mail as deleted for a user
+	 * @param mail
+	 * @param identity
+	 */
+	public void delete(DBMailLight mail, Identity identity, boolean deleteMetaMail);
+	
+	/**
+	 * Load all mails with the identity as from, mail which are not deleted
+	 * for this user. Recipients are loaded.
+	 * @param from
+	 * @param firstResult
+	 * @param maxResults
+	 * @return
+	 */
+	public List<DBMailLight> getOutbox(Identity from, int firstResult, int maxResults);
+	
+	public List<DBMailLight> getEmailsByMetaId(String metaId);
+	
+	/**
+	 * Load all mails with the identity as recipient, only mails which are not deleted
+	 * for this user. Recipients are NOT loaded if not explicitly wanted!
+	 * @param identity
+	 * @param unreadOnly
+	 * @param fetchRecipients
+	 * @param from
+	 * @param firstResult
+	 * @param maxResults
+	 * @return
+	 */
+	public List<DBMailLight> getInbox(Identity identity, Boolean unreadOnly, Boolean fetchRecipients, Date from, int firstResult, int maxResults);
+	
+	/**
+	 * Forward an E-Mail from the OpenOLAt mail box to the real one
+	 * @param identity
+	 * @param mail
+	 * @param result
+	 * @return
+	 */
+	public MailerResult forwardToRealInbox(Identity identity, DBMail mail, MailerResult result);
+	
+	public String getMailTemplate();
+	
+	public void setMailTemplate(String template);
+	
+	public String getDefaultMailTemplate();
+
+	
+	/**
+	 * Pack some standards inputs to separate MailBundle ready to be send
+	 * @param ctxt
+	 * @param recipientsTO
+	 * @param template
+	 * @param sender
+	 * @param metaId
+	 * @param result
+	 * @return
+	 */
+	public MailBundle[] makeMailBundles(MailContext ctxt, List<Identity> recipientsTO,
+			MailTemplate template, Identity sender, String metaId, MailerResult result);
+	
+	/**
+	 * 
+	 * @param ctxt
+	 * @param recipientTO
+	 * @param template
+	 * @param sender
+	 * @param metaId
+	 * @param result
+	 * @return
+	 */
+	public MailBundle makeMailBundle(MailContext ctxt, Identity recipientTO,
+			MailTemplate template, Identity sender, String metaId, MailerResult result);
+	
+	/**
+	 * Send the mail bundle
+	 * @param bundles
+	 * @return
+	 */
+	public MailerResult sendMessage(MailBundle... bundles);
+	
+	public MailerResult sendExternMessage(MailBundle bundle, MailerResult result);
+	
+	public MimeMessage createMimeMessage(Address from, Address[] tos, Address[] ccs, Address[] bccs, String subject, String body,
+			List<File> attachments, MailerResult result);
+	
+	public void sendMessage(MimeMessage msg, MailerResult result);
+
+}

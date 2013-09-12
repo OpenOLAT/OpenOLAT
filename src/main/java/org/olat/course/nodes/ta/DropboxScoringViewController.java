@@ -26,11 +26,10 @@
 package org.olat.course.nodes.ta;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderRunController;
@@ -59,11 +58,11 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
-import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -285,19 +284,16 @@ public class DropboxScoringViewController extends BasicController {
 					String link = BusinessControlFactory.getInstance().getAsURIString(bc, true);
 					
 					log.debug("DEBUG : Returnbox notification email with link=" + link);
-					MailTemplate mailTempl = new MailTemplate(translate("returnbox.email.subject"), translate(
-							"returnbox.email.body", new String[] { userCourseEnv.getCourseEnvironment().getCourseTitle(), node.getShortTitle(),
-									folderEvent.getFilename(), link }), null) {
+					String subject = translate("returnbox.email.subject");
+					String body = translate("returnbox.email.body", new String[] { userCourseEnv.getCourseEnvironment().getCourseTitle(), node.getShortTitle(),
+									folderEvent.getFilename(), link });
 
-						@Override
-						public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-							// nothing to do
-						}
-					};
-					//fxdiff VCRP-16: intern mail system
 					MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-					MailerResult result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, Collections.singletonList(student), null, mailTempl, null);
-					
+					MailBundle bundle = new MailBundle();
+					bundle.setContext(context);
+					bundle.setToId(student);
+					bundle.setContent(subject, body);
+					MailerResult result = CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
 					if(result.getReturnCode() > 0) {
 						am.appendToUserNodeLog(node, coach, student, "MAIL SEND FAILED TO:" + toMail + "; MailReturnCode: " + result.getReturnCode());
 						log.warn("Could not send email 'returnbox notification' to " + student + "with email=" + toMail);

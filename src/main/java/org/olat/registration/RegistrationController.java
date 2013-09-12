@@ -60,8 +60,9 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.manager.MailManager;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesConfig;
@@ -261,8 +262,8 @@ public class RegistrationController extends BasicController implements Activatea
 				String ip = ureq.getHttpReq().getRemoteAddr();
 				String body = null;
 				String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
-				MailManager mailM = MailManager.getInstance();
-				//TODO eMail Vorlagen
+				MailManager mailM = CoreSpringFactory.getImpl(MailManager.class);
+
 				String serverpath = Settings.getServerContextPathURI();
 				boolean isMailSent = false;
 				if (!foundUser) {
@@ -273,9 +274,15 @@ public class RegistrationController extends BasicController implements Activatea
 							new String[] { serverpath, tk.getRegistrationKey(), I18nManager.getInstance().getLocaleKey(ureq.getLocale()) })
 							+ SEPARATOR
 							+ getTranslator().translate("reg.wherefrom", new String [] { serverpath, today, ip });
+					
 					try {
-						MailerResult result = mailM.sendExternMessage(null, null, null, email, null, null, null, translate("reg.subject"), body, null, null);
-						if (MailerResult.OK == result.getReturnCode()) isMailSent = true;
+						MailBundle bundle = new MailBundle();
+						bundle.setTo(email);
+						bundle.setContent(translate("reg.subject"), body);
+						MailerResult result = mailM.sendExternMessage(bundle, null);
+						if (result.isSuccessful()) {
+							isMailSent = true;
+						}
 					} catch (Exception e) {
 						// nothing to do, emailSent flag is false, errors will be reported to user
 					}
@@ -286,8 +293,14 @@ public class RegistrationController extends BasicController implements Activatea
 					body = translate("login.body", identity.getName()) + SEPARATOR
 							+ getTranslator().translate("reg.wherefrom", new String[] { serverpath, today, ip });
 					try {
-						MailerResult result = mailM.sendExternMessage(null, null, null, email, null, null, null, translate("login.subject"), body, null, null);
-						if (MailerResult.OK == result.getReturnCode()) isMailSent = true;
+						MailBundle bundle = new MailBundle();
+						bundle.setTo(email);
+						bundle.setContent(translate("login.subject"), body);
+						
+						MailerResult result = mailM.sendExternMessage(bundle, null);
+						if (result.isSuccessful()) {
+							isMailSent = true;
+						}
 					} catch (Exception e) {
 						// nothing to do, emailSent flag is false, errors will be reported to user
 					}

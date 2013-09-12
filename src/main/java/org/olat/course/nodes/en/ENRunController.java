@@ -140,11 +140,11 @@ public class ENRunController extends BasicController implements GenericEventList
 
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		enrolledGroup = enrollmentManager.getBusinessGroupWhereEnrolled(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager.getCourseResource());
-		waitingListGroup = enrollmentManager.getBusinessGroupWhereInWaitingList(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
+		waitingListGroup = enrollmentManager.getBusinessGroupWhereInWaitingList(identity, enrollableGroupKeys, enrollableAreaKeys);
 		registerGroupChangedEvents(enrollableGroupKeys, enrollableAreaKeys, ureq.getIdentity());
 		// Set correct view
 		enrollVC = createVelocityContainer("enrollmultiple");
-		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
+		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys);
 		
 		tableCtr = createTableController(ureq, enrollmentManager.hasAnyWaitingList(groups));
 		
@@ -255,7 +255,7 @@ public class ENRunController extends BasicController implements GenericEventList
 
 	private void doEnrollMultipleView(UserRequest ureq) {
 		// 1. Fetch groups from database
-		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
+		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys);
 		List<Integer> members = courseGroupManager.getNumberOfMembersFromGroups(groups);
 		// 2. Build group list
 		groupListModel = new BusinessGroupTableModelWithMaxSize(groups, members, getTranslator(), ureq.getIdentity(), cancelEnrollEnabled);
@@ -299,14 +299,14 @@ public class ENRunController extends BasicController implements GenericEventList
 	 * Add as listener to BusinessGroups so we are being notified about changes.
 	 */
 	private void registerGroupChangedEvents(List<Long> enrollableGroupKeys, List<Long> enrollableAreaKeys, Identity identity) {
-		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
+		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys);
 		for (BusinessGroup group: groups) {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, identity, group);
 		}
 	}
 	
 	private void deregisterGroupChangedEvents(List<Long> enrollableGroupKeys, List<Long> enrollableAreaKeys) {
-		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
+		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys);
 		for (BusinessGroup group:groups) {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, group);
 		}

@@ -46,8 +46,9 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.manager.MailManager;
 import org.olat.registration.RegistrationController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
@@ -103,7 +104,7 @@ public class RegistrationWebService {
 		Locale locale = getLocale(request);
 		Translator translator = getTranslator(locale);
 		
-		MailManager mailM = MailManager.getInstance();
+		MailManager mailM = CoreSpringFactory.getImpl(MailManager.class);
 		UserManager userManager = UserManager.getInstance();
 		RegistrationManager rm = RegistrationManager.getInstance();
 		
@@ -127,8 +128,11 @@ public class RegistrationWebService {
 					+ SEPARATOR
 					+ translator.translate("reg.wherefrom", new String [] { serverpath, today, ip });
 			try {
-				MailerResult result = mailM.sendExternMessage(null, null, null, email, null, null, null, translator.translate("reg.subject"), body, null, null);
-				if (MailerResult.OK == result.getReturnCode()) {
+				MailBundle bundle = new MailBundle();
+				bundle.setTo(email);
+				bundle.setContent(translator.translate("reg.subject"), body);
+				MailerResult result = mailM.sendExternMessage(null, null);
+				if (result.isSuccessful()) {
 					response = Response.ok();
 				} else {
 					response = Response.serverError().status(Status.INTERNAL_SERVER_ERROR);

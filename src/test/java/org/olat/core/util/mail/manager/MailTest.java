@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.  
 * <p>
 */
-package org.olat.core.util.mail;
+package org.olat.core.util.mail.manager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -43,8 +43,15 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 	
 /**
  * Description:<br>
@@ -56,7 +63,10 @@ import org.olat.test.OlatTestCase;
  *         http://www.frentix.com
  */
 public class MailTest extends OlatTestCase {
-	private Identity id1, id2, id3, id4, id5, id6;
+	private Identity id1, id2, id3, id4, id6;
+	
+	@Autowired
+	private MailManager mailManager;
 
 	// for local debugging you can set a systemproperty to a maildomain where
 	// you immediately get the mails. If the property is not set the
@@ -78,7 +88,6 @@ public class MailTest extends OlatTestCase {
 		id2 = JunitTestHelper.createAndPersistIdentityAsUser("two");
 		id3 = JunitTestHelper.createAndPersistIdentityAsUser("three");
 		id4 = JunitTestHelper.createAndPersistIdentityAsUser("four");
-		id5 = JunitTestHelper.createAndPersistIdentityAsUser("five");
 		id6 = JunitTestHelper.createAndPersistIdentityAsUser("six");
 	}
 
@@ -130,50 +139,50 @@ public class MailTest extends OlatTestCase {
 		context.put("foo", "bar");
 		String template = "foo $foo";
 		MailerResult result = new MailerResult();
-		MailerWithTemplate.getInstance().evaluate(context, template, writer, result);
+		((MailManagerImpl)mailManager).evaluate(context, template, writer, result);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 		assertEquals("foo bar", writer.toString());
 
 		writer = new StringWriter();
 		template = "foo foo";
-		MailerWithTemplate.getInstance().evaluate(context, template, writer, result);
+		((MailManagerImpl)mailManager).evaluate(context, template, writer, result);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 		assertEquals("foo foo", writer.toString());
 
 		writer = new StringWriter();
 		template = "foo $$foo";
-		MailerWithTemplate.getInstance().evaluate(context, template, writer, result);
+		((MailManagerImpl)mailManager).evaluate(context, template, writer, result);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 		assertEquals("foo $bar", writer.toString());
 
 		writer = new StringWriter();
 		template = "foo $ foo";
-		MailerWithTemplate.getInstance().evaluate(context, template, writer, result);
+		((MailManagerImpl)mailManager).evaluate(context, template, writer, result);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 		assertEquals("foo $ foo", writer.toString());
 
 		writer = new StringWriter();
 		template = "foo $ foo";
-		MailerWithTemplate.getInstance().evaluate(context, template, writer, result);
+		((MailManagerImpl)mailManager).evaluate(context, template, writer, result);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 		assertEquals("foo $ foo", writer.toString());
 
 		writer = new StringWriter();
 		template = "foo #foo \n##sdf jubla";
-		MailerWithTemplate.getInstance().evaluate(context, template, writer, result);
+		((MailManagerImpl)mailManager).evaluate(context, template, writer, result);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 		assertEquals("foo #foo \n", writer.toString());
 
 		writer = new StringWriter();
 		template = "foo #if(true)\n#end";
-		MailerWithTemplate.getInstance().evaluate(context, template, writer, result);
+		((MailManagerImpl)mailManager).evaluate(context, template, writer, result);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 		assertEquals("foo ", writer.toString());
 
 		// illegal templates: unclosed if-else statement
 		writer = new StringWriter();
 		template = "foo #if";
-		MailerWithTemplate.getInstance().evaluate(context, template, writer, result);
+		((MailManagerImpl)mailManager).evaluate(context, template, writer, result);
 		assertEquals(MailerResult.TEMPLATE_PARSE_ERROR, result.getReturnCode());
 		assertEquals("", writer.toString());
 	}
@@ -208,20 +217,16 @@ public class MailTest extends OlatTestCase {
 		recipients.add(id1);
 		recipients.add(id2);
 		recipients.add(id3);
-		List<Identity> recipientsCC = new ArrayList<Identity>();
-		recipientsCC.add(id4);
-		recipientsCC.add(id5);
-		List<Identity> recipientsBCC = new ArrayList<Identity>();
-		recipientsBCC.add(id6);
+		Identity recipientCC = id4;
 
 		// tests with / witthout CC and BCC
 
 		MailerResult result = new MailerResult();
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
+		result = sendMailAsSeparateMails(null, recipients, null, template, id6, null);
 		assertEquals(MailerResult.OK, result.getReturnCode());
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, recipientsCC, template, id6);
+		result = sendMailAsSeparateMails(null, recipients, recipientCC, template, id6, null);
 		assertEquals(MailerResult.OK, result.getReturnCode());
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
+		result = sendMailAsSeparateMails(null, recipients, null, template, id6, null);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 	}
 
@@ -253,20 +258,16 @@ public class MailTest extends OlatTestCase {
 		recipients.add(id1);
 		recipients.add(id2);
 		recipients.add(id3);
-		List<Identity> recipientsCC = new ArrayList<Identity>();
-		recipientsCC.add(id4);
-		recipientsCC.add(id5);
-		List<Identity> recipientsBCC = new ArrayList<Identity>();
-		recipientsBCC.add(id6);
+		Identity recipientCC = id4;
 
 		// tests with / witthout CC and BCC
 
 		MailerResult result = new MailerResult();
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
+		result = sendMailAsSeparateMails(null, recipients, null, template, id6, null);
 		assertEquals(MailerResult.OK, result.getReturnCode());
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, recipientsCC, template, id6);
+		result = sendMailAsSeparateMails(null, recipients, recipientCC, template, id6, null);
 		assertEquals(MailerResult.OK, result.getReturnCode());
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
+		result = sendMailAsSeparateMails(null, recipients, null, template, id6, null);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 	}
 
@@ -307,7 +308,7 @@ public class MailTest extends OlatTestCase {
 		recipients.add(id1);
 
 		MailerResult result = new MailerResult();
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id2);
+		result = sendMailAsSeparateMails(null, recipients, null, template, id2, null);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 	}
 
@@ -336,7 +337,7 @@ public class MailTest extends OlatTestCase {
 		recipients.add(id1);
 
 		MailerResult result = new MailerResult();
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id2);
+		result = sendMailAsSeparateMails(null, recipients, null, template, id2, null);
 		assertEquals(MailerResult.ATTACHMENT_INVALID, result.getReturnCode());
 	}
 
@@ -365,50 +366,65 @@ public class MailTest extends OlatTestCase {
 		DBFactory.getInstance().intermediateCommit();
 
 		List<Identity> recipients = new ArrayList<Identity>();
-		List<Identity> recipientsCC = new ArrayList<Identity>();
+
 
 		recipients.add(illegal1);
 
 		// if only one recipient: error must be indicated
 		MailerResult result = new MailerResult();
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
+		result = sendMailAsSeparateMails(null, recipients, null, template, id6, null);
 		// mail will bounce back since address does not exist, but sent to local MTA
 		// this test is not very good, depends on smtp settings!
 		//assertEquals(MailerResult.OK, result.getReturnCode());
 
 		recipients = new ArrayList<Identity>();
 		recipients.add(illegal2);
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
+		result = sendMailAsSeparateMails(null, recipients, null, template, id6, null);
 		// mail will bounce back since address does not exist, but sent to local MTA
 		assertEquals(MailerResult.OK, result.getReturnCode());
 
 		recipients = new ArrayList<Identity>();
 		recipients.add(illegal3);
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
+		result = sendMailAsSeparateMails(null, recipients, null, template, id6, null);
 		assertEquals(MailerResult.RECIPIENT_ADDRESS_ERROR, result.getReturnCode());
 
 		// now with one valid and the invalid recipient: should return ok but have
 		// one recipient in the failed list
 		recipients.add(id1);
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
-		assertEquals(MailerResult.OK, result.getReturnCode());
+		result = sendMailAsSeparateMails(null, recipients, null, template, id6, null);
+		assertEquals(MailerResult.RECIPIENT_ADDRESS_ERROR, result.getReturnCode());
 		assertEquals(1, result.getFailedIdentites().size());
 
 		// valid recipient but invalid sender
 		recipients = new ArrayList<Identity>();
 		recipients.add(id1);
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, illegal3);
+		result = sendMailAsSeparateMails(null, recipients, null, template, illegal3, null);
 		assertEquals(MailerResult.SENDER_ADDRESS_ERROR, result.getReturnCode());
 
 		// invalid cc and bcc but valid to, mus count up the invalid accounts
 		recipients = new ArrayList<Identity>();
 		recipients.add(id1);
 		recipients.add(illegal3); // first
-		recipientsCC.add(illegal3); // second
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, recipientsCC, template, id6);
+		Identity recipientCC = illegal3; // second
+		result =sendMailAsSeparateMails(null, recipients, recipientCC, template, id6, null);
 		// mail will bounce back since address does not exist, but sent to local MTA
-		assertEquals(MailerResult.OK, result.getReturnCode());
+		assertEquals(MailerResult.RECIPIENT_ADDRESS_ERROR, result.getReturnCode());
 		assertEquals(2, result.getFailedIdentites().size());
 
+	}
+	
+	public MailerResult sendMailAsSeparateMails(MailContext mCtxt, List<Identity> recipientsTO,
+			Identity recipientCC, MailTemplate template, Identity sender, String metaId) {
+
+		MailerResult result = new MailerResult();
+		MailBundle[] bundles = mailManager.makeMailBundles(mCtxt, recipientsTO, template, sender, metaId, result);
+		result.append(mailManager.sendMessage(bundles));
+		
+		if(recipientCC != null) {
+			MailBundle ccBundle = mailManager.makeMailBundle(mCtxt, recipientCC, template, sender, metaId, result);
+			result.append(mailManager.sendMessage(ccBundle));
+		}
+
+		return result;
 	}
 }

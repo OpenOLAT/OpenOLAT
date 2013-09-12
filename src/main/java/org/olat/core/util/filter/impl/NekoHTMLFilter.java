@@ -52,10 +52,14 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 
 	@Override
 	public String filter(String original) {
+		return filter(original, false);
+	}
+	
+	public String filter(String original, boolean pretty) {
 		if (original == null) return null;
 		try {
 			SAXParser parser = new SAXParser();
-			HTMLHandler contentHandler = new HTMLHandler((int)((float)original.length() * 0.66f));
+			HTMLHandler contentHandler = new HTMLHandler((int)((float)original.length() * 0.66f), pretty);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(original)));
 			return contentHandler.toString();
@@ -75,7 +79,7 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 		if (in == null) return null;
 		try {
 			SAXParser parser = new SAXParser();
-			HTMLHandler contentHandler = new HTMLHandler((int)(1000 * 0.66f));
+			HTMLHandler contentHandler = new HTMLHandler((int)(1000 * 0.66f), false);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(in));
 			return contentHandler.getContent();
@@ -113,10 +117,12 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 		private boolean collect = true;
 		private boolean consumeBlanck = false;
 		private boolean consumeTitle = true;
+		private final boolean pretty;
 		private final StringBuilder sb;
 		private final StringBuilder title;
 		
-		public HTMLHandler(int size) {
+		public HTMLHandler(int size, boolean pretty) {
+			this.pretty = pretty;
 			sb = new StringBuilder(size);
 			title = new StringBuilder(32);
 		}
@@ -128,6 +134,13 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 				collect = false;
 			// add a single whitespace before each block element but only if not there is not already a whitespace there
 			} else {
+				if(pretty) {
+					if("li".equals(elem)) {
+						sb.append("\u00B7 ");
+					} else if("br".equals(elem)) {
+						sb.append('\n');
+					}
+				}
 				if("title".equals(elem)) {
 					consumeTitle = true;
 				}
@@ -159,6 +172,9 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 			if("script".equals(elem)) {
 				collect = true;
 			} else {
+				if(pretty && ("li".equals(elem) || "p".equals(elem))) {
+					sb.append('\n');
+				}
 				if("title".equals(elem)) {
 					consumeTitle = false;
 				}

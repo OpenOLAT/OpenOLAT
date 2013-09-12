@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -59,9 +60,9 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.manager.MailManager;
 import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.mail.model.DBMailRecipient;
@@ -118,7 +119,7 @@ public class MailListController extends BasicController implements Activateable2
 		this.metaId = metaId;
 		this.contextResolver = resolver;
 		
-		mailManager = MailManager.getInstance();
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDownloadOffered(true);
@@ -231,9 +232,9 @@ public class MailListController extends BasicController implements Activateable2
 		List<DBMailLight> mails;
 		if(outbox) {
 			if(StringHelper.containsNonWhitespace(metaId)) {
-				mails = MailManager.getInstance().getEmailsByMetaId(metaId);
+				mails = mailManager.getEmailsByMetaId(metaId);
 			} else {
-				mails = MailManager.getInstance().getOutbox(getIdentity(), 0, -1);
+				mails = mailManager.getOutbox(getIdentity(), 0, -1);
 			}
 			
 			//strip meta emails
@@ -249,7 +250,7 @@ public class MailListController extends BasicController implements Activateable2
 				}
 			}
 		} else {
-			mails = MailManager.getInstance().getInbox(getIdentity(), null, Boolean.TRUE, null, 0, -1);
+			mails = mailManager.getInbox(getIdentity(), null, Boolean.TRUE, null, 0, -1);
 		}
 		
 		//extract contexts

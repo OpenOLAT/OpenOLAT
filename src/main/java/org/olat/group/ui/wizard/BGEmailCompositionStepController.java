@@ -23,9 +23,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
-
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
@@ -41,9 +38,11 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.ContactList;
-import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.co.ContactForm;
 
@@ -55,12 +54,14 @@ public class BGEmailCompositionStepController extends StepFormBasicController   
 	
 	private ContactForm contactForm;
 	private final List<BusinessGroup> groups;
+	private final MailManager mailService;
 	private final BaseSecurity securityManager;
 	
 	public BGEmailCompositionStepController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, List<BusinessGroup> groups) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "wrapper");
 		
+		mailService = CoreSpringFactory.getImpl(MailManager.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		this.groups = groups;
 
@@ -118,16 +119,28 @@ public class BGEmailCompositionStepController extends StepFormBasicController   
 	protected void formOK(UserRequest ureq) {
 		boolean success = false;
 		try {
-			Emailer emailer = new Emailer(getIdentity(), false);
-			List<File> attachments = contactForm.getAttachments();	
+			File[] attachments = contactForm.getAttachments();	
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			success = emailer.sendEmail(context, contactForm.getEmailToContactLists(), contactForm.getSubject(), contactForm.getBody(), attachments);
+			MailBundle bundle = new MailBundle();
+			bundle.setContext(context);
+			bundle.setFromId(getIdentity());
+			bundle.setContactLists(contactForm.getEmailToContactLists());
+			bundle.setContent(contactForm.getSubject(), contactForm.getBody(), attachments);
+			
+			MailerResult result = mailService.sendMessage(bundle);
+			success = result.isSuccessful();
 			if(contactForm.isTcpFrom()) {
-				success = emailer.sendEmailCC(context, contactForm.getEmailFrom(), contactForm.getSubject(), contactForm.getBody(), attachments);
+				
+				MailBundle ccBundle = new MailBundle();
+				ccBundle.setContext(context);
+				ccBundle.setFromId(getIdentity());
+				ccBundle.setCc(contactForm.getEmailFrom());
+				ccBundle.setContent(contactForm.getSubject(), contactForm.getBody(), attachments);
+				
+				MailerResult ccResult = mailService.sendMessage(ccBundle);
+				success = ccResult.isSuccessful();
 			}
-		} catch (AddressException e) {
-			logError(null, e);
-		} catch (MessagingException e) {
+		} catch (Exception e) {
 			logError(null, e);
 		}
 		

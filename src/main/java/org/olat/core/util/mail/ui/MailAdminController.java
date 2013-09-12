@@ -19,125 +19,89 @@
  */
 package org.olat.core.util.mail.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailModule;
-import org.olat.core.util.mail.MailUIFactory;
 
 /**
  * 
- * Description:<br>
- * Small administration to set on/off the intern mail system
- * 
- * <P>
- * Initial Date:  14 avr. 2011 <br>
+ * Initial date: 12.09.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class MailAdminController extends FormBasicController  {
+public class MailAdminController extends BasicController {
 
-	private MultipleSelectionElement enabled;
-	private SingleSelection userDefaultSettingEl;
+	private final Link settingsLink, templateLink;
+	private final SegmentViewComponent segmentView;
 	
-	private String[] values = {""};
-	private String[] keys = {"on"};
+	private final VelocityContainer mainVC;
 	
-
-	private String[] userSettingValues ;
-	private String[] userSettingKeys = {"intern.only","send.copy"};
-
+	private MailSettingsAdminController settingsCtrl;
+	private MailTemplateAdminController templateCtrl;
+	
 	public MailAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, null, Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
 		
-		initForm(ureq);
+		mainVC = createVelocityContainer("segments");
+		
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		settingsLink = LinkFactory.createLink("mail.settings", mainVC, this);
+		segmentView.addSegment(settingsLink, true);
+		
+		templateLink = LinkFactory.createLink("mail.template", mainVC, this);
+		segmentView.addSegment(templateLink, false);
+		
+		mainVC.put("segments", segmentView);
+		doOpenSettings(ureq);
+		putInitialPanel(mainVC);
 	}
 
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		this.setFormTitle("mail.admin.title");
-		this.setFormDescription("mail.admin.description");
-		this.setFormContextHelp(MailUIFactory.class.getPackage().getName(), "mail-admin.html", "chelp.mail-admin.title");
-		
-		boolean internEnabled = isEnabled();
-		enabled = uifactory.addCheckboxesHorizontal("mail.admin.intern.enabled", formLayout, keys, values, null);
-		enabled.select(keys[0], internEnabled);
-		enabled.addActionListener(this, FormEvent.ONCHANGE);
-		
-		boolean realMailSetting = isUserDefaultSetting();
-		userSettingValues = new String[] {
-			translate("mail.admin.intern.only"),
-			translate("mail.admin.intern.real.mail")
-		};
-		userDefaultSettingEl = uifactory.addRadiosVertical("mail-system", "mail.admin.default.settings", formLayout, userSettingKeys, userSettingValues);
-		if(realMailSetting) {
-			userDefaultSettingEl.select(userSettingKeys[1], true);
-		} else {
-			userDefaultSettingEl.select(userSettingKeys[0], true);
-		}
-		userDefaultSettingEl.setEnabled(internEnabled);
 
-		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		buttonGroupLayout.setRootForm(mainForm);
-		formLayout.add(buttonGroupLayout);
-		
-		uifactory.addFormSubmitButton("save", formLayout);
-	}
-	
 	@Override
 	protected void doDispose() {
 		//
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		boolean on = !enabled.getSelectedKeys().isEmpty();
-		setEnabled(on);
-		
-		if(userDefaultSettingEl.isOneSelected()) {
-			boolean realMailSetting = userDefaultSettingEl.getSelected() == 1;
-			setUserDefaultSetting(realMailSetting);
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(source == segmentView) {
+			if(event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == settingsLink) {
+					doOpenSettings(ureq);
+				} else if (clickedLink == templateLink) {
+					doOpenTemplate(ureq);
+				}
+			}
 		}
-		userDefaultSettingEl.setEnabled(on);
-		
-		getWindowControl().setInfo("saved");
 	}
 
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == enabled) {
-			boolean on = !enabled.getSelectedKeys().isEmpty();
-			userDefaultSettingEl.setEnabled(on);
+	private void doOpenSettings(UserRequest ureq) {
+		if(settingsCtrl == null) {
+			settingsCtrl = new MailSettingsAdminController(ureq, getWindowControl());
+			listenTo(settingsCtrl);
 		}
-		super.formInnerEvent(ureq, source, event);
+		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
 	}
 
-	private boolean isEnabled() {
-		MailModule config = (MailModule) CoreSpringFactory.getBean("mailModule");
-		return config.isInternSystem();
-	}
-	
-	private void setEnabled(boolean enabled) {
-		MailModule config = (MailModule) CoreSpringFactory.getBean("mailModule");
-		config.setInterSystem(enabled);
-	}
-	
-	
-	private boolean isUserDefaultSetting() {
-		MailModule config = (MailModule) CoreSpringFactory.getBean("mailModule");
-		return config.isReceiveRealMailUserDefaultSetting();
-	}
-	
-	private void setUserDefaultSetting(boolean enabled) {
-		MailModule config = (MailModule) CoreSpringFactory.getBean("mailModule");
-		config.setReceiveRealMailUserDefaultSetting(enabled);
+	private void doOpenTemplate(UserRequest ureq) {
+		if(templateCtrl == null) {
+			templateCtrl = new MailTemplateAdminController(ureq, getWindowControl());
+			listenTo(templateCtrl);
+		}
+		mainVC.put("segmentCmp", templateCtrl.getInitialComponent());
 	}
 }

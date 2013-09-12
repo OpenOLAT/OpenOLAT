@@ -25,9 +25,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
-
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -60,11 +57,14 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
-import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -92,6 +92,7 @@ public class EPShareListController extends FormBasicController {
 	private final EPFrontendManager ePFMgr;
 	private final BaseSecurity securityManager;
 	private final UserManager userManager;
+	private final MailManager mailManager;
 	private final String[] targetKeys = EPMapPolicy.Type.names();
 	private final String[] targetValues = new String[targetKeys.length];
 
@@ -108,6 +109,7 @@ public class EPShareListController extends FormBasicController {
 		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		securityManager = BaseSecurityManager.getInstance();
 		userManager = UserManager.getInstance();
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		for(int i=targetKeys.length; i-->0; ) {
 			targetValues[i] = translate("map.share.to." + targetKeys[i]);
 		}
@@ -408,22 +410,24 @@ public class EPShareListController extends FormBasicController {
 			busLink = bCF.getAsURIString(cEList, true); 
 		}		
 		
-		Emailer mailer = new Emailer(ureq.getLocale());
 		boolean success = false;
 		try {
-			ArrayList<ContactList> clList = new ArrayList<ContactList>();
-			clList.add(contactList);
 			String first = getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, null);
 			String last = getIdentity().getUser().getProperty(UserConstants.LASTNAME, null);
 			String sender = first + " " + last;
 			String[] bodyArgs = new String[]{busLink, sender};
-			//fxdiff VCRP-16: intern mail system
+
 			MailContext context = new MailContextImpl(map.getOlatResource(), null, getWindowControl().getBusinessControl().getAsString()); 
-			success = mailer.sendEmail(context, clList, translate("map.share.invitation.mail.subject"), translate("map.share.invitation.mail.body", bodyArgs), null);
-		} catch (AddressException e) {
+			MailBundle bundle = new MailBundle();
+			bundle.setContext(context);
+			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+			bundle.setContactList(contactList);
+			bundle.setContent(translate("map.share.invitation.mail.subject"), translate("map.share.invitation.mail.body", bodyArgs));
+
+			MailerResult result = mailManager.sendMessage(bundle);
+			success = result.isSuccessful();
+		} catch (Exception e) {
 			logError("Error on sending invitation mail to contactlist, invalid address.", e);
-		} catch (MessagingException e) {
-			logError("Error on sending invitation mail to contactlist", e);
 		}
 		if (success) {
 			showInfo("map.share.invitation.mail.success");

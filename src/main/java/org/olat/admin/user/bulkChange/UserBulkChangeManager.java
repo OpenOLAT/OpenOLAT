@@ -54,9 +54,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.login.auth.OLATAuthManager;
@@ -269,8 +269,6 @@ public class UserBulkChangeManager extends BasicManager {
 	}
 	
 	public void sendLoginDeniedEmail(Identity identity) {
-		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-
 		String[] args = new String[] {
 				identity.getName(),//0: changed users username
 				identity.getUser().getProperty(UserConstants.EMAIL, null),// 1: changed users email address
@@ -281,15 +279,12 @@ public class UserBulkChangeManager extends BasicManager {
 		String lang = identity.getUser().getPreferences().getLanguage();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(lang);
 		Translator translator = Util.createPackageTranslator(SystemRolesAndRightsController.class, locale);
-		String subject = translator.translate("mailtemplate.login.denied.subject", args);
-		String body = translator.translate("mailtemplate.login.denied.body", args);
-		MailTemplate template = new MailTemplate(subject, body, null){
-			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-				//
-			}
-		};
-		mailer.sendRealMail(identity, template);
+
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(identity);
+		bundle.setContent(translator.translate("mailtemplate.login.denied.subject", args),
+			translator.translate("mailtemplate.login.denied.body", args));
+		CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null);
 	}
 
 	public String evaluateValueWithUserContext(String valToEval, Context vcContext) {

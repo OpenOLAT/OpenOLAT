@@ -26,6 +26,7 @@ package org.olat.repository.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
@@ -56,13 +57,14 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.core.util.mail.MailManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
@@ -96,11 +98,13 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 	private CloseRessourceOptionForm formStep2;
 	
 	private final BusinessGroupService businessGroupService;
+	private final MailManager mailManager;
 	
 	public WizardCloseCourseController(UserRequest ureq, WindowControl control, RepositoryEntry repositoryEntry) {
 		super(ureq, control, NUM_STEPS);
 		setBasePackage(RepositoryManager.class);
 		this.repositoryEntry = repositoryEntry;
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		mainVc = createVelocityContainer("wizard");
@@ -193,20 +197,21 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 				if (securityManager.isIdentityInSecurityGroup(ureq.getIdentity(), owners)) {
 					ownerList = securityManager.getIdentitiesOfSecurityGroup(owners);
 				}
-				List<Identity> ccIdentities = new ArrayList<Identity>();
-				if (mailNotificationCtr.getMailTemplate().getCpfrom()) {
-					ccIdentities.add(ureq.getIdentity());
-				} else {
-					ccIdentities = null;
-				}
-				//fxdiff VCRP-16: intern mail system
+
 				String businessPath = getWindowControl().getBusinessControl().getAsString();
 				MailContext context = new MailContextImpl(businessPath);
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, ownerList, ccIdentities,
-						mailNotificationCtr.getMailTemplate(), ureq.getIdentity());
+				String metaId = UUID.randomUUID().toString().replace("-", "");
+				MailerResult result = new MailerResult();
+				MailBundle[] bundles = mailManager.makeMailBundles(context, ownerList, mailNotificationCtr.getMailTemplate(), ureq.getIdentity(), metaId, result);
+				result.append(mailManager.sendMessage(bundles));
+				if (mailNotificationCtr.getMailTemplate().getCpfrom()) {
+					MailBundle ccBundle = mailManager.makeMailBundle(context, ureq.getIdentity(), mailNotificationCtr.getMailTemplate(), ureq.getIdentity(), metaId, result);
+					result.append(mailManager.sendMessage(ccBundle));
+				}
+				
 				StringBuilder errorMessage = new StringBuilder();
 				StringBuilder warningMessage = new StringBuilder();
-				MailHelper.appendErrorsAndWarnings(mailerResult, errorMessage, warningMessage, ureq.getLocale());
+				MailHelper.appendErrorsAndWarnings(result, errorMessage, warningMessage, ureq.getLocale());
 				if (warningMessage.length() > 0) getWindowControl().setWarning(warningMessage.toString());
 				if (errorMessage.length() > 0) getWindowControl().setError(errorMessage.toString());
 				ownerList.clear();

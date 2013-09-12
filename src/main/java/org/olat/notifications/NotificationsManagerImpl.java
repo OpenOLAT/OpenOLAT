@@ -42,7 +42,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
-import org.apache.velocity.VelocityContext;
 import org.hibernate.FlushMode;
 import org.olat.ControllerFactory;
 import org.olat.core.CoreSpringFactory;
@@ -65,9 +64,9 @@ import org.olat.core.util.event.EventFactory;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.notifications.NotificationHelper;
 import org.olat.core.util.notifications.NotificationsHandler;
 import org.olat.core.util.notifications.NotificationsManager;
@@ -501,19 +500,13 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			}
 			plaintext.append("\n\n");
 		}
-		String mailText = plaintext.toString();
-		MailTemplate mailTempl = new MailTemplate(title, mailText, null) {
 
-			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-			// nothing to do
-			}
-		};
-		
 		MailerResult result = null;
 		try {
-			// fxdiff VCRP-16: intern mail system
-			result = MailerWithTemplate.getInstance().sendRealMail(to, mailTempl);
+			MailBundle bundle = new MailBundle();
+			bundle.setToId(to);
+			bundle.setContent(title, plaintext.toString());
+			result = CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null);
 		} catch (Exception e) {
 			// FXOLAT-294 :: sending the mail will throw nullpointer exception if To-Identity has no
 			// valid email-address!, catch it...

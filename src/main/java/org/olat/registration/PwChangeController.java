@@ -29,10 +29,10 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
@@ -53,10 +53,10 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailHelper;
-import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 
@@ -73,6 +73,7 @@ public class PwChangeController extends BasicController {
 	
 	private Panel pwarea;
 	private WizardInfoController wic;
+	private final MailManager mailManager;
 	private RegistrationManager rm = RegistrationManager.getInstance();
 	private String pwKey;
 	private PwChangeForm pwf;
@@ -97,6 +98,7 @@ public class PwChangeController extends BasicController {
 	//fxdiff FXOLAT-113: business path in DMZ
 	public PwChangeController(UserRequest ureq, WindowControl wControl, String initialEmail) {
 		super(ureq, wControl);
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		myContent = createVelocityContainer("pwchange");
 		wic = new WizardInfoController(ureq, 4);
 		myContent.put("pwwizard", wic.getInitialComponent());
@@ -187,8 +189,7 @@ public class PwChangeController extends BasicController {
 				// Email requested for tempkey save the fields somewhere
 				String emailOrUsername = emailOrUsernameCtr.getEmailOrUsername();
 				emailOrUsername = emailOrUsername.trim();
-				String body = null;
-				String subject = null;
+
 				// get remote address
 				String ip = ureq.getHttpReq().getRemoteAddr();
 				String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
@@ -226,19 +227,16 @@ public class PwChangeController extends BasicController {
 					TemporaryKey tk = rm.loadTemporaryKeyByEmail(emailAdress);
 					if (tk == null) tk = rm.createTemporaryKeyByEmail(emailAdress, ip, RegistrationManager.PW_CHANGE);
 					myContent.contextPut("pwKey", tk.getRegistrationKey());
-					body = userTrans.translate("pwchange.intro", new String[] { identity.getName() })
-							+ userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(),
-									I18nManager.getInstance().getLocaleKey(ureq.getLocale()) }) + SEPARATOR
-							+ userTrans.translate("reg.wherefrom", new String[] { serverpath, today, ip });
-					subject = userTrans.translate("pwchange.subject");
-					MailTemplate mailTempl = new MailTemplate(subject, body, null) {
-						@Override
-						public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-							// nothing to do
-						}
-					};
-					//fxdiff VCRP-16: intern mail system
-					MailerResult result = MailerWithTemplate.getInstance().sendRealMail(identity, mailTempl);
+					StringBuilder body = new StringBuilder();
+					body.append(userTrans.translate("pwchange.intro", new String[] { identity.getName() }))
+					    .append(userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(), I18nManager.getInstance().getLocaleKey(ureq.getLocale()) }))
+					    .append(SEPARATOR)
+					    .append(userTrans.translate("reg.wherefrom", new String[] { serverpath, today, ip }));
+		
+					MailBundle bundle = new MailBundle();
+					bundle.setToId(identity);
+					bundle.setContent(userTrans.translate("pwchange.subject"), body.toString());
+					MailerResult result = mailManager.sendExternMessage(bundle, null);
 					if(result.getReturnCode() == 0) {
 						getWindowControl().setInfo(translate("email.sent"));
 						// prepare next step

@@ -24,8 +24,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -63,11 +63,11 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
-import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -102,6 +102,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	private List<File> attachments;
 	private List<IdentityWrapper> toValues = new ArrayList<IdentityWrapper>();
 
+	private final MailManager mailManager;
 	private final BaseSecurity securityManager;
 	private final boolean allowAttachments;
 
@@ -110,6 +111,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 				Util.createPackageTranslator(MailModule.class, ureq.getLocale())));
 		setBasePackage(MailModule.class);
 
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		securityManager = BaseSecurityManager.getInstance();
 		allowAttachments = !FolderConfig.getSendDocumentLinkOnly();
 
@@ -516,19 +518,21 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	protected void sendEmail(List<Identity> tos, String subject, String body, UserRequest ureq) {
 		File[] attachmentArray = null;
 		if (attachments != null && !attachments.isEmpty() && allowAttachments) {
-			attachmentArray = new File[attachments.size()];
-			attachmentArray = attachments.toArray(attachmentArray);
+			attachmentArray = attachments.toArray(new File[attachments.size()]);
 		}
 
-		MailTemplate mailTemplate = new MailTemplate(subject, body, attachmentArray) {
-			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-				// nothing to do;
-			}
-		};
+		MailerResult result = new MailerResult();
+		String metaId = UUID.randomUUID().toString().replace("-", "");
+		for(Identity to:tos) {
+			MailBundle bundle = new MailBundle();
+			bundle.setToId(to);
+			bundle.setMetaId(metaId);
+			bundle.setFromId(ureq.getIdentity());
+			bundle.setContent(subject, body, attachmentArray);
+			result.append(mailManager.sendMessage(bundle));
+		}
 
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, tos, null, mailTemplate, ureq.getIdentity());
-		MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getLocale());
 	}
 
 	public class FileInfo {

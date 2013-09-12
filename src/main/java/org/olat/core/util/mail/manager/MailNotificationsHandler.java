@@ -24,11 +24,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.notifications.NotificationsHandler;
@@ -90,7 +92,7 @@ public class MailNotificationsHandler extends LogDelegator implements Notificati
 		// can't be loaded when already deleted
 		if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
 			try {
-				List<DBMailLight> inbox = MailManager.getInstance().getInbox(subscriber.getIdentity(), Boolean.TRUE, Boolean.FALSE, compareDate, 0, -1);
+				List<DBMailLight> inbox = CoreSpringFactory.getImpl(MailManager.class).getInbox(subscriber.getIdentity(), Boolean.TRUE, Boolean.FALSE, compareDate, 0, -1);
 				if(!inbox.isEmpty()) {
 					Translator translator = Util.createPackageTranslator(MailModule.class, locale);
 					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(translator.translate("mail.notification.type"), "o_co_icon"), null);

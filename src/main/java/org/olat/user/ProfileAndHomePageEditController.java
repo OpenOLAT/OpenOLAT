@@ -30,13 +30,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
-import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
-import javax.mail.internet.AddressException;
+import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -54,12 +52,14 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.MultiUserEvent;
-import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.login.SupportsAfterLoginInterceptor;
 import org.olat.registration.RegistrationManager;
@@ -96,6 +96,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	protected Identity identityToModify;
 	protected HomePageConfig homePageConfig;
 	private DialogBoxController dialogCtr;
+	private final MailManager mailManager;
 	private RegistrationManager rm = RegistrationManager.getInstance();
 	private static String SEPARATOR = "\n____________________________________________________________________\n";
 
@@ -121,6 +122,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		this.isAdministrativeUser = isAdministrativeUser;
 		this.translator = Util.createPackageTranslator(ProfileAndHomePageEditController.class, ureq.getLocale());
 		this.translator = UserManager.getInstance().getPropertyHandlerTranslator(this.translator);
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 
 		this.myContent = new VelocityContainer("homepage", VELOCITY_ROOT + "/homepage.html", this.translator, this);
 		this.previewButton = LinkFactory.createButtonSmall("command.preview", this.myContent, this);
@@ -272,10 +274,10 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		// mailer configuration
 		String serverpath = Settings.getServerContextPathURI();
 		String servername = ureq.getHttpReq().getServerName();
-		Emailer mailer = new Emailer(ureq.getLocale());
-		Tracing.createLoggerFor(ProfileAndHomePageEditController.class).debug("this servername is " + servername + " and serverpath is " + serverpath);
+
+		logDebug("this servername is " + servername + " and serverpath is " + serverpath, null);
 		// load or create temporary key
-		HashMap<String, String> mailMap = new HashMap<String, String>();
+		Map<String, String> mailMap = new HashMap<String, String>();
 		mailMap.put("currentEMail", currentEmail);
 		mailMap.put("changedEMail", changedEmail);
 		
@@ -301,7 +303,14 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		subject = translate("email.change.subject");
 		// send email
 		try {
-			boolean isMailSent = mailer.sendEmail(changedEmail, subject, body);
+			
+			MailBundle bundle = new MailBundle();
+			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+			bundle.setTo(changedEmail);
+			bundle.setContent(subject, body);
+
+			MailerResult result = mailManager.sendMessage(bundle);
+			boolean isMailSent = result.isSuccessful();
 			if (isMailSent) {
 				tk.setMailSent(true);
 				// set key
@@ -314,15 +323,9 @@ public class ProfileAndHomePageEditController extends BasicController implements
 				rm.deleteTemporaryKeyWithId(tk.getRegistrationKey());
 				getWindowControl().setError(this.translator.translate("email.notsent"));
 			}
-		} catch (AddressException e) {
+		} catch (Exception e) {
 			rm.deleteTemporaryKeyWithId(tk.getRegistrationKey());
-			getWindowControl().setError(this.translator.translate("email.notsent"));
-		} catch (SendFailedException e) {
-			rm.deleteTemporaryKeyWithId(tk.getRegistrationKey());
-			getWindowControl().setError(this.translator.translate("email.notsent"));
-		} catch (MessagingException e) {
-			rm.deleteTemporaryKeyWithId(tk.getRegistrationKey());
-			getWindowControl().setError(this.translator.translate("email.notsent"));
+			getWindowControl().setError(translator.translate("email.notsent"));
 		}
 	}
 

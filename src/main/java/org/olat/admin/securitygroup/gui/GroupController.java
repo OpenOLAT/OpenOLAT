@@ -75,13 +75,14 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailNotificationEditController;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.group.ui.main.OnlineIconRenderer;
 import org.olat.instantMessaging.InstantMessagingModule;
@@ -153,6 +154,7 @@ public class GroupController extends BasicController {
 	private InstantMessagingModule imModule;
 	private InstantMessagingService imService;
 	private UserSessionManager sessionManager;
+	private MailManager mailManager;
 	
 	public Object userObject;
 
@@ -184,6 +186,7 @@ public class GroupController extends BasicController {
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
@@ -523,22 +526,21 @@ public class GroupController extends BasicController {
 
 		// send the notification mail
 		if (mailTemplate != null) {
-			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 			Identity sender = null; // means no sender in footer
-			if (this.showSenderInRemovMailFooter) {
+			if (showSenderInRemovMailFooter) {
 				sender = ureq.getIdentity();
 			}
-			List<Identity> ccIdentities = new ArrayList<Identity>();
-			if(mailTemplate.getCpfrom()) {
-				ccIdentities.add(ureq.getIdentity());// add sender to cc-list
-			} else {
-				ccIdentities = null;	
-			}
-			//fxdiff VCRP-16: intern mail system
+
 			String metaId = UUID.randomUUID().toString();
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, toBeRemoved, ccIdentities, mailTemplate, sender, metaId);
-			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
+			MailerResult result = new MailerResult();
+			MailBundle[] bundles = mailManager.makeMailBundles(context, toBeRemoved, mailTemplate, sender, metaId, result);
+			result.append(mailManager.sendMessage(bundles));
+			if(mailTemplate.getCpfrom()) {
+				MailBundle ccBundle = mailManager.makeMailBundle(context, ureq.getIdentity(), mailTemplate, sender, metaId, result);
+				result.append(mailManager.sendMessage(ccBundle));
+			}
+			MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getLocale());
 		}
 	}
 
@@ -571,22 +573,21 @@ public class GroupController extends BasicController {
 		// send the notification mail fro added users
 		StringBuilder errorMessage = new StringBuilder();
 		if (mailTemplate != null) {
-			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 			Identity sender = null; // means no sender in footer
-			if (this.showSenderInAddMailFooter) {
+			if (showSenderInAddMailFooter) {
 				sender = ureq.getIdentity();
 			}
-			List<Identity> ccIdentities = new ArrayList<Identity>();
-			if(mailTemplate.getCpfrom()) {
-				ccIdentities.add(ureq.getIdentity());// add sender to cc-list
-			} else {
-				ccIdentities = null;	
-			}
-			//fxdiff VCRP-16: intern mail system
+			
 			String metaId = UUID.randomUUID().toString();
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesAddedEvent.getAddedIdentities(), ccIdentities, mailTemplate, sender, metaId);
-			MailHelper.appendErrorsAndWarnings(mailerResult, errorMessage, infoMessage, ureq.getLocale());
+			MailerResult result = new MailerResult();
+			MailBundle[] bundles = mailManager.makeMailBundles(context, identitiesAddedEvent.getAddedIdentities(), mailTemplate, sender, metaId, result);
+			result.append(mailManager.sendMessage(bundles));
+			if(mailTemplate.getCpfrom()) {
+				MailBundle ccBundle = mailManager.makeMailBundle(context, ureq.getIdentity(), mailTemplate, sender, metaId, result);
+				result.append(mailManager.sendMessage(ccBundle));
+			}
+			MailHelper.appendErrorsAndWarnings(result, errorMessage, infoMessage, ureq.getLocale());
 		}
 		// report any errors on screen
 		if (infoMessage.length() > 0) getWindowControl().setWarning(infoMessage.toString());

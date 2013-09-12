@@ -75,7 +75,6 @@ import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.image.Size;
 import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -127,8 +126,6 @@ public class RepositoryManager extends BasicManager {
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private ACReservationDAO reservationDao;
-	@Autowired
-	private MailerWithTemplate mailer;
 
 	
 	/**
@@ -1930,12 +1927,12 @@ public class RepositoryManager extends BasicManager {
 						ResourceReservation reservation =
 								reservationDao.createReservation(identityToAdd, "repo_tutors", expiration, re.getOlatResource());
 						if(reservation != null) {
-							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing, mailer);
+							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing);
 						}
 					}
 				} else {
 					addInternalTutors(ureqIdentity, identityToAdd, re, reallyAddedId);
-					RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing, mailer);
+					RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing);
 				}
 
 			}//else silently ignore already owner identities
@@ -2021,13 +2018,13 @@ public class RepositoryManager extends BasicManager {
 						ResourceReservation reservation =
 								reservationDao.createReservation(identityToAdd, "repo_participant", expiration, re.getOlatResource());
 						if(reservation != null) {
-							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing, mailer);
+							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing);
 						}
 					}
 				} else {
 					addInternalParticipant(ureqIdentity, identityToAdd, re);
 					reallyAddedId.add(identityToAdd);
-					RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing, mailer);
+					RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing);
 				}
 			}
 		}
@@ -2067,7 +2064,7 @@ public class RepositoryManager extends BasicManager {
     	securityManager.removeIdentityFromSecurityGroup(identity, re.getParticipantGroup());
 
     	if(sendMail) {
-    		RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
+    		RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing);
     	}
 
 			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
@@ -2138,7 +2135,7 @@ public class RepositoryManager extends BasicManager {
 		}
 		
 		for(Identity identity:members) {
-			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
+			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing);
 		}
 		return allOk;
 	}

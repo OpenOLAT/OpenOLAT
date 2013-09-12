@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,8 +43,8 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
-import org.olat.core.util.mail.manager.MailManager;
 import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.model.DBMailAttachment;
 import org.olat.core.util.mail.model.DBMailRecipient;
@@ -71,7 +72,7 @@ public class MailController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
 		this.mail = mail;
 		this.back = back;
-		mailManager = MailManager.getInstance();
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		attachments = mailManager.getAttachments(mail);
 		if(!attachments.isEmpty()) {
 			mapperBaseURI = registerMapper(ureq, new MailAttachmentMapper(mailManager));

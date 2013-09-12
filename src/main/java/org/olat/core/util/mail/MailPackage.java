@@ -95,8 +95,9 @@ public class MailPackage {
 		return result;
 	}
 
-	
-	public void appendResult(MailerResult result) {
-		
+	public void appendResult(MailerResult newResult) {
+		if(result != null) {
+			result.append(newResult);
+		}
 	}
 }

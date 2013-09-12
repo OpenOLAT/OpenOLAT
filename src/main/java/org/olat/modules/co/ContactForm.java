@@ -279,12 +279,12 @@ public class ContactForm extends FormBasicController {
  			return tbody.getValue();
 	}
  	
- 	public List<File> getAttachments() {
+ 	public File[] getAttachments() {
  		List<File> attachments = new ArrayList<File>();
  		for(FormLink removeLink : attachmentLinks) {
  			attachments.add((File)removeLink.getUserObject());
  		}
- 		return attachments;
+ 		return attachments.toArray(new File[attachments.size()]);
  	}
  	
  	public void cleanUpAttachments() {

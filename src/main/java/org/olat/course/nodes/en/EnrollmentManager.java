@@ -35,12 +35,13 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
@@ -71,6 +72,8 @@ import org.springframework.stereotype.Service;
 public class EnrollmentManager extends BasicManager {
 
 	@Autowired
+	private MailManager mailManager;
+	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -87,7 +90,7 @@ public class EnrollmentManager extends BasicManager {
 		if (isLogDebugEnabled()) logDebug("doEnroll");
 		// check if the user is already enrolled (user can be enrooled only in one group)
 		if ( ( getBusinessGroupWhereEnrolled( identity, groupKeys, areaKeys, cgm.getCourseResource()) == null)
-			  && ( getBusinessGroupWhereInWaitingList( identity, groupKeys, areaKeys, cgm) == null) ) {
+			  && ( getBusinessGroupWhereInWaitingList(identity, groupKeys, areaKeys) == null) ) {
 			if (isLogDebugEnabled()) logDebug("Identity is not enrolled identity=" + identity.getName() + "  group=" + group.getName());
 			// 1. Check if group has max size defined. If so check if group is full
 			// o_clusterREVIEW cg please review it - also where does the group.getMaxParticipants().equals("") come from??
@@ -131,11 +134,14 @@ public class EnrollmentManager extends BasicManager {
 
 		// 3. Send notification mail
 		MailTemplate mailTemplate = BGMailHelper.createRemoveMyselfMailTemplate(enrolledGroup, identity);
-		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
-		MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, mailTemplate, null);
-		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(context, identity, mailTemplate, null, null, result);
+		if(bundle != null) {
+			mailManager.sendMessage(bundle);
+		}
+		MailHelper.printErrorsAndWarnings(result, wControl, trans.getLocale());
 	}
 
 	public void doCancelEnrollmentInWaitingList(final Identity identity, final BusinessGroup enrolledWaitingListGroup, final ENCourseNode enNode,
@@ -152,11 +158,14 @@ public class EnrollmentManager extends BasicManager {
 
 		// 3. Send notification mail
 		MailTemplate mailTemplate = BGMailHelper.createRemoveWaitinglistMailTemplate(enrolledWaitingListGroup, identity);
-		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
-		MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, mailTemplate, null);
-		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(context, identity, mailTemplate, null, null, result);
+		if(bundle != null) {
+			mailManager.sendMessage(bundle);
+		}
+		MailHelper.printErrorsAndWarnings(result, wControl, trans.getLocale());
 	}
 
 	// Helper Methods
@@ -207,8 +216,8 @@ public class EnrollmentManager extends BasicManager {
 	 * @return true if this identity is any waiting-list group in this course that
 	 *         has a name that is in the group names list
 	 */
-	protected BusinessGroup getBusinessGroupWhereInWaitingList(Identity identity, List<Long> groupKeys, List<Long> areaKeys, CourseGroupManager cgm) {
-		List<BusinessGroup> groups = loadGroupsFromNames(groupKeys, areaKeys, cgm);
+	protected BusinessGroup getBusinessGroupWhereInWaitingList(Identity identity, List<Long> groupKeys, List<Long> areaKeys) {
+		List<BusinessGroup> groups = loadGroupsFromNames(groupKeys, areaKeys);
 		// loop over all business-groups
 		for (BusinessGroup businessGroup:groups) {
 			if (securityManager.isIdentityInSecurityGroup(identity, businessGroup.getWaitingGroup())) { 
@@ -225,7 +234,7 @@ public class EnrollmentManager extends BasicManager {
 	 *         not found it won't be in the list. So groupNames.size() can very
 	 *         well by different than loadGroupsFromNames().size()
 	 */
-	protected List<BusinessGroup> loadGroupsFromNames(List<Long> groupKeys, List<Long> areaKeys, CourseGroupManager cgm) {
+	protected List<BusinessGroup> loadGroupsFromNames(List<Long> groupKeys, List<Long> areaKeys) {
 		List<BusinessGroup> groups = new ArrayList<BusinessGroup>(businessGroupService.loadBusinessGroups(groupKeys));
 		List<BusinessGroup> areaGroups = areaManager.findBusinessGroupsOfAreaKeys(areaKeys);
 		// add groups from areas
@@ -281,13 +290,13 @@ public class EnrollmentManager extends BasicManager {
 		}
 		// 4. Send notification mail
 		MailTemplate mailTemplate = BGMailHelper.createAddMyselfMailTemplate(group, identity);
-		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
-		MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, mailTemplate, null);
-		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
-
-
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(context, identity, mailTemplate, null, null, result);
+		if(bundle != null) {
+			mailManager.sendMessage(bundle);
+		}
+		MailHelper.printErrorsAndWarnings(result, wControl, trans.getLocale());
 		return true;
 	}
 
@@ -317,12 +326,14 @@ public class EnrollmentManager extends BasicManager {
 		}		
 		// 4. Send notification mail
 		MailTemplate mailTemplate = BGMailHelper.createAddWaitinglistMailTemplate(group, identity);
-		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
-		MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, mailTemplate, null);
-		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
-
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(context, identity, mailTemplate, null, null, result);
+		if(bundle != null) {
+			mailManager.sendMessage(bundle);
+		}
+		MailHelper.printErrorsAndWarnings(result, wControl, trans.getLocale());
 		return true;
 	}
 

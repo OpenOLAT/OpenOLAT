@@ -25,8 +25,8 @@
 
 package org.olat.course.nodes.projectbroker;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -43,12 +43,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ActionType;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
@@ -70,6 +71,7 @@ public class ProjectGroupController extends BasicController {
 
 	private ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration;
 	
+	private final MailManager mailManager;
 	private final BusinessGroupService businessGroupService;
 
 	/**
@@ -80,6 +82,7 @@ public class ProjectGroupController extends BasicController {
 	public ProjectGroupController(UserRequest ureq, WindowControl wControl, Project project, ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration) {
 		super(ureq, wControl);
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.project = project;
 		this.projectBrokerModuleConfiguration = projectBrokerModuleConfiguration;
@@ -157,20 +160,18 @@ public class ProjectGroupController extends BasicController {
 			identitiesMoveEvent.setMovedIdentities(response.getAddedIdentities());
 			identitiesMoveEvent.setNotMovedIdentities(response.getIdentitiesAlreadyInGroup());
 			// send mail for all of them
-			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 			MailTemplate mailTemplate = identitiesMoveEvent.getMailTemplate();
 			if (mailTemplate != null) {
-				List<Identity> ccIdentities = new ArrayList<Identity>();
-				if(mailTemplate.getCpfrom()) {
-					// add sender as CC 
-					ccIdentities.add(urequest.getIdentity()); 
-				} else {
-					ccIdentities = null;	
-				}
-				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesMoveEvent.getMovedIdentities(), ccIdentities, mailTemplate, null);
-				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), urequest.getLocale());
+				String metaId = UUID.randomUUID().toString().replace("-", "");
+				MailerResult result = new MailerResult();
+				MailBundle[] bundles = mailManager.makeMailBundles(context, identitiesMoveEvent.getMovedIdentities(), mailTemplate, null, metaId, result);
+				result.append(mailManager.sendMessage(bundles));
+				if(mailTemplate.getCpfrom()) {
+					MailBundle ccBundle = mailManager.makeMailBundle(context, urequest.getIdentity(), mailTemplate, null, metaId, result);
+					result.append(mailManager.sendMessage(ccBundle));
+				}
+				MailHelper.printErrorsAndWarnings(result, getWindowControl(), urequest.getLocale());
 			}
 			fireEvent(urequest, Event.CHANGED_EVENT );		
 			// Participant and waiting-list were changed => reload both

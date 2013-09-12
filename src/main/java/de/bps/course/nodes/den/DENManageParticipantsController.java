@@ -24,11 +24,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.UUID;
 
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleText;
@@ -46,13 +48,14 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.modules.co.ContactFormController;
 
 import de.bps.course.nodes.DENCourseNode;
@@ -87,13 +90,15 @@ public class DENManageParticipantsController extends BasicController {
 	private CloseableModalController manageParticipantsModalCntrl;
 	
 	private DENManager denManager;
+	private MailManager mailManager;
 	
 	public DENManageParticipantsController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, DENCourseNode courseNode) {
 		super(ureq, wControl);
 		
 		this.ores = ores;
 		this.courseNode = courseNode;
-		this.denManager = DENManager.getInstance();
+		denManager = DENManager.getInstance();
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		
 		//prepare list of enrolled participants
 		dateList = denManager.getDENEvents(ores.getResourceableId(), courseNode.getIdent());
@@ -242,31 +247,35 @@ public class DENManageParticipantsController extends BasicController {
 			}
 		} else if(source == addedNotificationCtr && event == Event.DONE_EVENT) {
 			if(addedNotificationCtr.getMailTemplate() != null) {
-			  	List<Identity> ccIdentities = new ArrayList<Identity>();
-				if(addedNotificationCtr.getMailTemplate().getCpfrom()) {
-					ccIdentities.add(ureq.getIdentity());
-				} else {
-					ccIdentities = null;
-				}
-				//fxdiff VCRP-16: intern mail system
+				Identity sender = ureq.getIdentity();
+				MailerResult result = new MailerResult();
+				String metaId = UUID.randomUUID().toString().replace("-", "");
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
-				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
+				MailBundle[] bundles = mailManager.makeMailBundles(context, added, addedNotificationCtr.getMailTemplate(), sender, metaId, result);
+				result.append(mailManager.sendMessage(bundles));
+				if(addedNotificationCtr.getMailTemplate().getCpfrom()) {
+					MailBundle ccBundles = mailManager.makeMailBundle(context, sender, addedNotificationCtr.getMailTemplate(), sender, metaId, result);
+					result.append(mailManager.sendMessage(ccBundles));
+				}
+				MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getLocale());
 			}
 			notificationCmc.deactivate();
 			added.clear();
 		} else if(source == removedNotificationCtr && event == Event.DONE_EVENT) {
 			if(removedNotificationCtr.getMailTemplate() != null) {
-			  	List<Identity> ccIdentities = new ArrayList<Identity>();
-				if(addedNotificationCtr.getMailTemplate().getCpfrom()) {
-					ccIdentities.add(ureq.getIdentity());
-				} else {
-					ccIdentities = null;
-				}
+
 				//fxdiff VCRP-16: intern mail system
+				Identity sender = ureq.getIdentity();
+				MailerResult result = new MailerResult();
+				String metaId = UUID.randomUUID().toString().replace("-", "");
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
-				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
+				MailBundle[] bundles = mailManager.makeMailBundles(context, added, addedNotificationCtr.getMailTemplate(), sender, metaId, result);
+				result.append(mailManager.sendMessage(bundles));
+				if(addedNotificationCtr.getMailTemplate().getCpfrom()) {
+					MailBundle ccBundle = mailManager.makeMailBundle(context, sender, addedNotificationCtr.getMailTemplate(), sender, metaId, result);
+					result.append(mailManager.sendMessage(ccBundle));
+				}
+				MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getLocale());
 			}
 			notificationCmc.deactivate();
 			removed.clear();

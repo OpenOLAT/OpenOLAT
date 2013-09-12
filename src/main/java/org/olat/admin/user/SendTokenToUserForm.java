@@ -22,10 +22,10 @@ package org.olat.admin.user;
 
 import java.util.Locale;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,9 +42,9 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
 
@@ -63,10 +63,12 @@ public class SendTokenToUserForm extends FormBasicController {
 	private TextElement mailText;
 	
 	private String dummyKey;
+	private MailManager mailManager;
 
 	public SendTokenToUserForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity) {
 		super(ureq, wControl);
 		user = treatedIdentity;
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		initForm(ureq);
 	}
 	
@@ -156,17 +158,12 @@ public class SendTokenToUserForm extends FormBasicController {
 			return;
 		}
 		String body = text.replace(dummyKey, tk.getRegistrationKey());
-
 		Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale) ;
-		String subject = userTrans.translate("pwchange.subject");
-		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
-			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-				// nothing to do
-			}
-		};
-		//fxdiff VCRP-16: intern mail system
-		MailerResult result = MailerWithTemplate.getInstance().sendRealMail(user, mailTempl);
+
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(user);
+		bundle.setContent(userTrans.translate("pwchange.subject"), body);
+		MailerResult result = mailManager.sendExternMessage(bundle, null);
 		if(result.getReturnCode() == 0) {
 			showInfo("email.sent");
 		} else {

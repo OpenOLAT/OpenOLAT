@@ -25,10 +25,10 @@
 
 package org.olat.course.nodes.projectbroker.service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -40,11 +40,12 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
@@ -178,16 +179,15 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
   // Private Methods	
   //////////////////
 	private MailerResult sendEmail(Identity enrolledIdentity, Project project, String subject, String body, Locale locale) {
-		MailTemplate enrolledMailTemplate = this.createMailTemplate(project, enrolledIdentity, subject, body, locale );
-		// TODO: cg/12.01.2010 in der Methode sendMailUsingTemplateContext wurden die Variablen nicht ersetzt (Fehler oder falsch angewendet?) 
-		//       als Workaround wurde die Methode sendMailAsSeparateMails verwendet
-		List<Identity> enrolledIdentityList = new ArrayList<Identity>();
-		enrolledIdentityList.add(enrolledIdentity);
-		//fxdiff VCRP-16: intern mail system
+		MailTemplate enrolledMailTemplate = createMailTemplate(project, enrolledIdentity, subject, body, locale );
 		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, enrolledIdentityList, null, enrolledMailTemplate, null);
-		log.audit("ProjectBroker: sendEmail to identity.name=" + enrolledIdentity.getName() + " , mailerResult.returnCode=" + mailerResult.getReturnCode());
-		return mailerResult;
+		MailerResult result = new MailerResult();
+		MailBundle bundle = CoreSpringFactory.getImpl(MailManager.class).makeMailBundle(context, enrolledIdentity, enrolledMailTemplate, null, null, result);
+		if(bundle != null) {
+			CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
+		}
+		log.audit("ProjectBroker: sendEmail to identity.name=" + enrolledIdentity.getName() + " , mailerResult.returnCode=" + result.getReturnCode());
+		return result;
 	}
 
 	private MailerResult sendEmailToGroup(SecurityGroup group, Identity enrolledIdentity, Project project, String subject, String body, Locale locale) {
@@ -199,11 +199,14 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 			if (identityNames.length()>0) identityNames.append(",");
 			identityNames.append(identity.getName());
 		}
-		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, projectManagerList, null, enrolledMailTemplate, null);
-		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + mailerResult.getReturnCode());
-		return mailerResult;
+		String metaId = UUID.randomUUID().toString().replace("-", "");
+		
+		MailerResult result = new MailerResult();
+		MailBundle[] bundles = CoreSpringFactory.getImpl(MailManager.class).makeMailBundles(context, projectManagerList, enrolledMailTemplate, null, metaId, result);
+		result.append(CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundles));
+		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + result.getReturnCode());
+		return result;
 	}
 
 	private MailerResult sendEmailProjectChanged(SecurityGroup group, Identity changer, Project project, String subject, String body, Locale locale) {
@@ -215,11 +218,12 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 			if (identityNames.length()>0) identityNames.append(",");
 			identityNames.append(identity.getName());
 		}
-		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, projectManagerList, null, enrolledMailTemplate, null);
-		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + mailerResult.getReturnCode());
-		return mailerResult;
+		MailerResult result = new MailerResult();
+		MailBundle[] bundles = CoreSpringFactory.getImpl(MailManager.class).makeMailBundles(context, projectManagerList, enrolledMailTemplate, null, null, result);
+		result.append(CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundles));
+		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + result.getReturnCode());
+		return result;
 	}
 
 	/**

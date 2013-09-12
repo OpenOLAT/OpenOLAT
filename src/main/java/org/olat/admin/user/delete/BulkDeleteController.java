@@ -24,12 +24,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
-
 import org.olat.admin.securitygroup.gui.UserControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -44,10 +42,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
-import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 
 public class BulkDeleteController extends BasicController {
 	
@@ -61,12 +59,15 @@ public class BulkDeleteController extends BasicController {
 	
 	private TableController tblCtrFound, tblCtrNotfound;
 	private Link btnNext;
+	
+	private final MailManager mailService;
 
 	public BulkDeleteController(UserRequest ureq, WindowControl wControl, String userlist, String reason) {
 		super(ureq, wControl);
 		
 		this.userlist = userlist;
 		this.reason = reason;
+		mailService = CoreSpringFactory.getImpl(MailManager.class);
 		
 		vc = createVelocityContainer("bulkdelete");
 		processUserList(this.userlist);
@@ -82,7 +83,7 @@ public class BulkDeleteController extends BasicController {
 			tblCtrNotfound = new TableController(null, ureq, wControl, getTranslator());
 			listenTo(tblCtrNotfound);
 			tblCtrNotfound.addColumnDescriptor(new DefaultColumnDescriptor("table.col.login", 0, null, ureq.getLocale()));
-			TableDataModel tblData = new LoginTableDataModel(lstLoginsNotfound);
+			TableDataModel<String> tblData = new LoginTableDataModel(lstLoginsNotfound);
 			tblCtrNotfound.setTableDataModel(tblData);
 			
 			vc.put("table.users.notfound", tblCtrNotfound.getInitialComponent());
@@ -153,25 +154,20 @@ public class BulkDeleteController extends BasicController {
 				reason,
 				df.format(new Date())
 		};
-		
-		String subject = translate("mail.subject");
-		String body = getTranslator().translate("mail.body", bodyArgs);
-		
+
 		ContactList cl = new ContactList(recipient);
 		cl.add(recipient);
 		cl.add(ureq.getIdentity());
-		List<ContactList> lstAddrTO = new ArrayList<ContactList>();
-		lstAddrTO.add(cl);
-		
-		Emailer mailer = new Emailer(ureq.getLocale());
+
 		try {
-			//fxdiff VCRP-16: intern mail system
-			mailer.sendEmail(null, lstAddrTO, subject, body, null);
-		} catch (AddressException e) {
-			Tracing.createLoggerFor(BulkDeleteController.class).error("Notificatoin mail for bulk deletion could not be sent");
-		} catch (MessagingException e) {
-			Tracing.createLoggerFor(BulkDeleteController.class).error("Notificatoin mail for bulk deletion could not be sent");
-		}
+			MailBundle bundle = new MailBundle();
+			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+			bundle.setContent(translate("mail.subject"), translate("mail.body", bodyArgs));
+			bundle.setContactList(cl);
+			mailService.sendMessage(bundle);
+		} catch (Exception e) {
+			logError("Notificatoin mail for bulk deletion could not be sent", null);
+		} 
 	}
 	
 	public List<Identity> getToDelete() {
@@ -184,9 +180,9 @@ public class BulkDeleteController extends BasicController {
 	}
 }
 
-class LoginTableDataModel extends DefaultTableDataModel {
+class LoginTableDataModel extends DefaultTableDataModel<String> {
 
-	public LoginTableDataModel(List logins) {
+	public LoginTableDataModel(List<String> logins) {
 		super(logins);
 	}
 
@@ -197,12 +193,10 @@ class LoginTableDataModel extends DefaultTableDataModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		String login = (String)getObject(row);
-		
+		String login = getObject(row);
 		switch (col) {
 			case 0: return login;
 			default: return "error";
 		}
 	}
-	
 }

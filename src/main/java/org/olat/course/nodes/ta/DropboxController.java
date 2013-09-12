@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -39,6 +38,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.commons.file.filechooser.FileChooserController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
@@ -59,12 +59,12 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
-import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.SubscriptionContext;
@@ -273,17 +273,13 @@ public class DropboxController extends BasicController {
 					if (sendEmail == null) sendEmail = Boolean.FALSE;
 					boolean sendMailError = false;
 					if (sendEmail.booleanValue()) {
-						MailTemplate mailTempl = new MailTemplate(translate("conf.mail.subject"), confirmation, null) {
-
-							@Override
-							public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-								// nothing to do
-							}
-						};
-							
-						//fxdiff VCRP-16: intern mail system
+						//send mail
 						MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-						MailerResult result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, Collections.singletonList(ureq.getIdentity()), null, mailTempl, null);
+						MailBundle bundle = new MailBundle();
+						bundle.setContext(context);
+						bundle.setToId(ureq.getIdentity());
+						bundle.setContent(translate("conf.mail.subject"), confirmation);
+						MailerResult result = CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
 						if(result.getFailedIdentites().size() > 0) {
 							List<Identity> disabledIdentities = new ArrayList<Identity>();
 							disabledIdentities = result.getFailedIdentites();

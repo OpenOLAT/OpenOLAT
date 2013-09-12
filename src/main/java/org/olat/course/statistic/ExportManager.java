@@ -32,20 +32,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
-import javax.mail.internet.AddressException;
-
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.ExportUtil;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -207,18 +205,16 @@ public class ExportManager extends BasicManager {
 		if (locale == null) {
 			locale = I18nManager.getInstance().getCurrentThreadLocale();
 		}
-		Translator translator = new PackageTranslator(this.getClass().getPackage().getName(), locale);
-		
-		Emailer emailer = new Emailer(locale);
-		String subject = translator.translate(emailI18nSubkey+".subject");
-		String body = translator.translate(emailI18nSubkey+".body");
+		Translator translator = Util.createPackageTranslator(ExportManager.class, locale);
 		try {
-			emailer.sendEmail(email, subject, body);
-		} catch (AddressException e) {
-			log_.error("Error sending information email to user that file was saved successfully.", e);
-		} catch (SendFailedException e) {
-			log_.error("Error sending information email to user that file was saved successfully.", e);
-		} catch (MessagingException e) {
+			MailBundle bundle = new MailBundle();
+			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+			bundle.setTo(email);
+			bundle.setContent(translator.translate(emailI18nSubkey + ".subject"),
+					translator.translate(emailI18nSubkey+".body"));
+
+			CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
+		} catch (Exception e) {
 			log_.error("Error sending information email to user that file was saved successfully.", e);
 		}
 	}

@@ -25,6 +25,7 @@
 */ 
 package org.olat.core.util.mail;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,10 +37,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
+import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -55,6 +58,26 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class MailHelper {
 	private static Map<String, Translator> translators = new HashMap<String, Translator>();
+	
+	
+	public static String getMailFooter(Locale locale) {
+		Translator trans = getTranslator(locale);
+		return trans.translate("footer.no.userdata", new String[] { Settings.getServerContextPathURI() });
+	}
+	
+	public static String getMailFooter(Identity sender) {
+		Preferences prefs = sender.getUser().getPreferences();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
+		return getMailFooter(locale, sender);
+	}
+	
+	public static String getMailFooter(MailBundle bundle) {
+		if(bundle.getFromId() instanceof Persistable) {
+			return getMailFooter(bundle.getFromId());
+		}
+		return getMailFooter(I18nModule.getDefaultLocale());
+	}
+	
 
 	/**
 	 * Create a mail footer for the given locale and sender.
@@ -81,22 +104,24 @@ public class MailHelper {
 		// username / server-url are always first [0], [1].		
 		UserManager um = UserManager.getInstance();
 		List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(MailHelper.class.getCanonicalName(), false);
-		ArrayList<String> uProps = new ArrayList<String>(userPropertyHandlers.size()+2);
-		uProps.add(sender.getUser().getProperty(UserConstants.EMAIL, null));
-		uProps.add(Settings.getServerContextPathURI());
-		
+		List<String> userPropList = new ArrayList<String>(userPropertyHandlers.size()+2);
+		userPropList.add(sender.getUser().getProperty(UserConstants.EMAIL, null));
+		userPropList.add(Settings.getServerContextPathURI());
 		for (Iterator<UserPropertyHandler> iterator = userPropertyHandlers.iterator(); iterator.hasNext();) {
-			UserPropertyHandler handler = iterator.next();
-			uProps.add(handler.getUserProperty(user, locale));			
+			userPropList.add(iterator.next().getUserProperty(user, locale));
 		}
 		// add empty strings to prevent non-replaced wildcards like "{5}" etc. in emails.
-		while (uProps.size() < 15){
-			uProps.add("");
+		while (userPropList.size() < 15){
+			userPropList.add("");
 		}
 		
-		String[] userProps = new String[]{};
-		userProps = ArrayHelper.toArray(uProps);
-		return trans.translate("footer.with.userdata", userProps);
+		String[] userPropArr = userPropList.toArray(new String[userPropList.size()]);
+		for(int i=userPropArr.length; i-->0; ) {
+			if(userPropArr[i] == null) {
+				userPropArr[i] = "";
+			}
+		}
+		return trans.translate("footer.with.userdata", userPropArr);
 	}
 	
 	public static String getTitleForFailedUsersError(Locale locale) {
@@ -130,7 +155,7 @@ public class MailHelper {
 		synchronized (translators) {  //o_clusterok   brasato:::: nice idea, but move to translatorfactory and kick out translator.setLocale() (move it to LocaleChangableTranslator)
 			Translator trans = translators.get(ident);
 			if (trans == null) {
-				trans = Util.createPackageTranslator(Emailer.class, locale);
+				trans = Util.createPackageTranslator(MailHelper.class, locale);
 				translators.put(ident, trans);
 			}
 			return trans;
@@ -223,26 +248,32 @@ public class MailHelper {
 		return EmailAddressValidator.isValidEmailAddress(mailAddress);
 	}
 	
-	/**
-	 * check for disabled mail address
-	 * @param recipients
-	 * @param result
-	 * @return
-	 */
-	public static MailerResult removeDisabledMailAddress(List<Identity> identities, MailerResult result) {
-		String value = "";
-		if (identities != null) {
-			for (Identity identity : identities) {
-				value = identity.getUser().getProperty("emailDisabled", null);
-				if (value != null && value.equals("true")) {
-					result.addFailedIdentites(identity);
-					if(result.getReturnCode() != MailerResult.RECIPIENT_ADDRESS_ERROR) {
-						result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
-					}
+	public static boolean isDisabledMailAddress(Identity identity, MailerResult result) {
+		String value = identity.getUser().getProperty("emailDisabled", null);
+		if (value != null && value.equals("true")) {
+			if(result != null) {
+				result.addFailedIdentites(identity);
+				if(result.getReturnCode() != MailerResult.RECIPIENT_ADDRESS_ERROR) {
+					result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public static List<File> checkAttachments(File[] attachments, MailerResult result) {
+		List<File> attachmentList = new ArrayList<File>();
+		if(attachments != null) {
+			for(File attachment:attachments) {
+				if(attachment == null || !attachment.exists()) {
+					result.setReturnCode(MailerResult.ATTACHMENT_INVALID);
+				} else {
+					attachmentList.add(attachment);
 				}
 			}
 		}
-		return result;
+		return attachmentList;
 	}
 }
 

@@ -19,7 +19,6 @@
  */
 package org.olat.repository;
 
-import java.util.Collections;
 import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
@@ -34,12 +33,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 
 /**
@@ -113,7 +113,7 @@ public class RepositoryMailing {
 	}
 
 	protected static void sendEmail(Identity ureqIdentity, Identity identity, RepositoryEntry re,
-			Type type, MailPackage mailing, MailerWithTemplate mailer) {
+			Type type, MailPackage mailing) {
 		
 		if(mailing != null && !mailing.isSendEmail()) {
 			return;
@@ -139,7 +139,12 @@ public class RepositoryMailing {
 		}
 
 		String metaId = mailing == null ? null : mailing.getUuid();
-		MailerResult result = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, template, ureqIdentity, metaId);
+		MailerResult result = new MailerResult();
+		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
+		MailBundle bundle = mailManager.makeMailBundle(context, identity, template, ureqIdentity, metaId, result);
+		if(bundle != null) {
+			mailManager.sendMessage(bundle);
+		}
 		if(mailing != null) {
 			mailing.appendResult(result);
 		}

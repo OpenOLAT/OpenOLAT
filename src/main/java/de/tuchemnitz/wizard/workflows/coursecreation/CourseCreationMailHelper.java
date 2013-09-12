@@ -32,17 +32,14 @@
 
 package de.tuchemnitz.wizard.workflows.coursecreation;
 
-import org.apache.velocity.VelocityContext;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.core.util.mail.MailContext;
-import org.olat.core.util.mail.MailContextImpl;
-import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 
 import de.tuchemnitz.wizard.workflows.coursecreation.model.CourseCreationConfiguration;
 
@@ -104,16 +101,11 @@ public class CourseCreationMailHelper {
 		body += translator.translate("mail.body.5");
 		body += translator.translate("mail.body.6");
 		body += translator.translate("mail.body.greetings");
-
-		MailTemplate template = new MailTemplate(subject, body, null) {
-			@Override
-			@SuppressWarnings("unused") 
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-				// nothing to do
-			}
-		};
-		//fxdiff VCRP-16: intern mail system
-		return MailerWithTemplate.getInstance().sendRealMail(ureq.getIdentity(), template);
+		
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(ureq.getIdentity());
+		bundle.setContent(subject, body);
+		return CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null);
 	}
 
 }

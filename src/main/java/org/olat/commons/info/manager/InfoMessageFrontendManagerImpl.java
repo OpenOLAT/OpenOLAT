@@ -20,15 +20,11 @@
 
 package org.olat.commons.info.manager;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
 
 import org.olat.commons.info.model.InfoMessage;
 import org.olat.commons.info.notification.InfoSubscriptionManager;
@@ -39,9 +35,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.mail.ContactList;
-import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 
 /**
  * 
@@ -53,9 +51,18 @@ import org.olat.core.util.mail.MailContextImpl;
  */
 public class InfoMessageFrontendManagerImpl extends BasicManager implements InfoMessageFrontendManager {
 	
+	private MailManager mailManager;
 	private CoordinatorManager coordinatorManager;
 	private InfoMessageManager infoMessageManager;
 	private InfoSubscriptionManager infoSubscriptionManager;
+
+	/**
+	 * [used by Spring]
+	 * @param mailManager
+	 */
+	public void setMailManager(MailManager mailManager) {
+		this.mailManager = mailManager;
+	}
 
 	/**
 	 * [used by Spring]
@@ -97,7 +104,6 @@ public class InfoMessageFrontendManagerImpl extends BasicManager implements Info
 		
 		boolean send = false;
 		if(tos != null && !tos.isEmpty()) {
-			Emailer mailer = new Emailer(from, false);
 			Set<Long> identityKeySet = new HashSet<Long>();
 			ContactList contactList = new ContactList("Infos");
 			for(Identity to:tos) {
@@ -105,7 +111,7 @@ public class InfoMessageFrontendManagerImpl extends BasicManager implements Info
 				contactList.add(to);
 				identityKeySet.add(to.getKey());
 			}
-			List<ContactList> contacts = Collections.singletonList(contactList);
+			
 			try {
 				String subject = null;
 				String body = null;
@@ -121,10 +127,15 @@ public class InfoMessageFrontendManagerImpl extends BasicManager implements Info
 				}
 				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(mailFormatter.getBusinessPath());
-				send = mailer.sendEmail(context, contacts, subject, body, null);
-			} catch (AddressException e) {
-				logError("Cannot send info messages", e);
-			} catch (MessagingException e) {
+				MailBundle bundle = new MailBundle();
+				bundle.setContext(context);
+				bundle.setFromId(from);
+				bundle.setContactList(contactList);
+				bundle.setContent(subject, body);
+				
+				MailerResult result = mailManager.sendMessage(bundle);
+				send = result.isSuccessful();
+			} catch (Exception e) {
 				logError("Cannot send info messages", e);
 			}
 		}

@@ -21,16 +21,10 @@ package org.olat.core.util.openxml;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.net.URL;
 import java.util.zip.ZipOutputStream;
-
-import javax.xml.bind.Element;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-import org.olat.restapi.UserMgmtTest;
-
-import com.sun.xml.ws.policy.privateutil.PolicyUtils.Collections;
 
 /**
  * 
@@ -50,7 +44,6 @@ public class OpenXMLDocumentTest {
 		OpenXMLUtils.writeTo(document.getDocument(), System.out, true);
 	}
 
-	
 	@Test
 	public void writeDoc() throws Exception {
 		FileOutputStream fileOut = new FileOutputStream(new File("/HotCoffee/tmp/test_1_min.docx"));
@@ -68,10 +61,4 @@ public class OpenXMLDocumentTest {
 		IOUtils.closeQuietly(out);
 		IOUtils.closeQuietly(fileOut);
 	}
-	
-	
-	
-	
-	
-
 }

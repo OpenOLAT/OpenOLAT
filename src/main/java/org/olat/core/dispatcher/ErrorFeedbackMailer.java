@@ -36,9 +36,11 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.LogFileParser;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.mail.manager.MailManager;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 
 /**
  * Description:<br>
@@ -49,6 +51,8 @@ import org.olat.core.util.mail.manager.MailManager;
  * @author guido
  */
 public class ErrorFeedbackMailer implements Dispatcher {
+	
+	private static final OLog log = Tracing.createLoggerFor(ErrorFeedbackMailer.class);
 
 	private static final ErrorFeedbackMailer INSTANCE = new ErrorFeedbackMailer();
 
@@ -86,11 +90,15 @@ public class ErrorFeedbackMailer implements Dispatcher {
 					out.append(iter.next());
 				}
 			}
-			String to = WebappHelper.getMailConfig("mailError");
-			String subject = "Feedback from Error Nr.: " + errorNr;
+
 			String body = feedback + "\n------------------------------------------\n\n --- from user: " + username
 					+ " ---" + out.toString();
-			MailManager.getInstance().sendExternMessage(ident, null, null, to, null, null, null, subject, body, null, null);
+			
+			MailBundle bundle = new MailBundle();
+			bundle.setFromId(ident);
+			bundle.setTo(WebappHelper.getMailConfig("mailError"));
+			bundle.setContent("Feedback from Error Nr.: " + errorNr, body);
+			CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null);
 		} catch (Exception e) {
 			// error in recipient email address(es)
 			handleException(request, e);
@@ -102,9 +110,8 @@ public class ErrorFeedbackMailer implements Dispatcher {
 	private void handleException(HttpServletRequest request, Exception e) {
 		String feedback = request.getParameter("textarea");
 		String username = request.getParameter("username");
-		Tracing.logError("Error sending error feedback mail to OpenOLAT error support (" + WebappHelper.getMailConfig("mailError") + ") from: "
-				+ username + " with content: " + feedback, e, this.getClass());
-
+		log.error("Error sending error feedback mail to OpenOLAT error support (" + WebappHelper.getMailConfig("mailError") + ") from: "
+				+ username + " with content: " + feedback, e);
 	}
 
 	/**

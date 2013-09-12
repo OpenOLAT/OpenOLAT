@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.util.mail.manager.MailManager;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 

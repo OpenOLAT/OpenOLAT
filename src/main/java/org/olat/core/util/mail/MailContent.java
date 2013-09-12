@@ -17,42 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.mail.ui;
+package org.olat.core.util.mail;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.core.id.Identity;
-import org.olat.core.util.mail.MailManager;
+import java.io.File;
+import java.util.List;
 
 /**
  * 
- * Description:<br>
- * overwrites <code>getIconDecorator1CssClass()</code> to display a special icon
- * if the user has unread mails in his inbox.
- * 
- * <P>
- * Initial Date: 24 mars 2011 <br>
- * 
+ * Initial date: 11.09.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- * @author strentini, sergio.trentini@frentix.com
- * 
+ *
  */
-public class MailTreeNode extends GenericTreeNode {
-
-	private static final long serialVersionUID = -2579792704194953641L;
+public interface MailContent {
 	
-	private final Identity identity;
-
-	public MailTreeNode(Identity identity) {
-		this.identity = identity;
-	}
+	public String getSubject();
 	
+	public String getBody();
+	
+	public List<File> getAttachments();
 
-	@Override
-	public String getIconDecorator1CssClass() {
-		if(CoreSpringFactory.getImpl(MailManager.class).hasNewMail(identity)) {
-			return "b_mail_new";
-		}
-		return null;
-	}
 }

@@ -28,9 +28,7 @@ package org.olat.admin.user.delete.service;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -57,9 +55,10 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.properties.Property;
@@ -101,6 +100,7 @@ public class UserDeletionManager extends BasicManager {
 	private DeletionModule deletionModule;
 	private CoordinatorManager coordinatorManager;
 	private BaseSecurity securityManager;
+	private MailManager mailManager;
 
 	/**
 	 * [used by spring]
@@ -119,6 +119,15 @@ public class UserDeletionManager extends BasicManager {
 	public void setBaseSecurityManager(BaseSecurity securityManager) {
 		this.securityManager = securityManager;
 	}
+	
+	/**
+	 * [used by Spring]
+	 * @param mailManager
+	 */
+	public void setMailManager(MailManager mailManager) {
+		this.mailManager = mailManager;
+	}
+
 
 	/**
 	 * @return Singleton.
@@ -136,7 +145,6 @@ public class UserDeletionManager extends BasicManager {
 			boolean isTemplateChanged, String keyEmailSubject, String keyEmailBody, Identity sender, Translator pT ) {
 		StringBuilder buf = new StringBuilder();
 		if (template != null) {
-			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 			template.addToContext("responseTo", deletionModule.getEmailResponseTo());
 			for (Iterator<Identity> iter = selectedIdentities.iterator(); iter.hasNext();) {
 				Identity identity = iter.next();
@@ -148,15 +156,21 @@ public class UserDeletionManager extends BasicManager {
 				} 
 				template.putVariablesInMailContext(template.getContext(), identity);
 				logDebug(" Try to send Delete-email to identity=" + identity.getName() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));
-				List<Identity> ccIdentities = new ArrayList<Identity>();
-				if(template.getCpfrom()) {
-					ccIdentities.add(sender);
-				} else {
-					ccIdentities = null;	
-				}
-				MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), ccIdentities, template, sender);
+				Identity ccIdentity = null;
 				
-				if (mailerResult.getReturnCode() != MailerResult.OK) {
+				MailerResult result = new MailerResult();
+				MailBundle bundle = mailManager.makeMailBundle(null, identity, template, sender, null, result);
+				if(bundle != null) {
+					mailManager.sendMessage(bundle);
+				}
+				if(template.getCpfrom()) {
+					MailBundle ccBundle = mailManager.makeMailBundle(null, ccIdentity, template, sender, null, result);
+					if(ccBundle != null) {
+						mailManager.sendMessage(ccBundle);
+					}
+				}
+				
+				if (result.getReturnCode() != MailerResult.OK) {
 					buf.append(pT.translate("email.error.send.failed", new String[] {identity.getUser().getProperty(UserConstants.EMAIL, null), identity.getName()} )).append("\n");
 				}
 				logAudit("User-Deletion: Delete-email send to identity=" + identity.getName() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));

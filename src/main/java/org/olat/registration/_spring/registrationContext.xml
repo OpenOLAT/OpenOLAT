@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- Registration module -->
 	<bean id="registrationModule" class="org.olat.registration.RegistrationModule" depends-on="i18nModule" >
@@ -42,6 +42,7 @@
 	
 	<bean id="selfRegistrationManager" class="org.olat.registration.RegistrationManager">
 		<property name="registrationModule" ref="registrationModule" />
+		<property name="mailManager" ref="mailManager"/>
 	</bean>
 
 	<bean id="registrationPresetUsername.byEmail"

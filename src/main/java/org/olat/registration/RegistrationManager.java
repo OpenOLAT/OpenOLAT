@@ -41,7 +41,6 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -53,8 +52,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.manager.MailManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 
@@ -72,6 +71,7 @@ public class RegistrationManager extends BasicManager {
 	protected static final int PWCHANGE_WORKFLOW_STEPS = 4;
 	
 	private RegistrationModule registrationModule;
+	private MailManager mailManager;
 
 	private RegistrationManager() {
 		// singleton
@@ -84,6 +84,14 @@ public class RegistrationManager extends BasicManager {
 		return new RegistrationManager();
 	}
 	
+	/**
+	 * [used by Spring]
+	 * @param mailManager
+	 */
+	public void setMailManager(MailManager mailManager) {
+		this.mailManager = mailManager;
+	}
+
 	/**
 	 * [used by Spring]
 	 * @param registrationModule
@@ -192,13 +200,12 @@ public class RegistrationManager extends BasicManager {
 		Locale loc = I18nModule.getDefaultLocale();
 		String[] userParams = new  String[] {newIdentity.getName(), user.getProperty(UserConstants.FIRSTNAME, loc), user.getProperty(UserConstants.LASTNAME, loc), user.getProperty(UserConstants.EMAIL, loc),
 				user.getPreferences().getLanguage(), Settings.getServerconfig("server_fqdn") + WebappHelper.getServletContextPath() };
-		Translator trans = new PackageTranslator(Util.getPackageName(RegistrationManager.class), loc);
+		Translator trans = Util.createPackageTranslator(RegistrationManager.class, loc);
 		String subject = trans.translate("reg.notiEmail.subject", userParams);
 		String body = trans.translate("reg.notiEmail.body", userParams);
 		
-		//fxdiff VCRP-16: intern mail system
-		MimeMessage msg = MailManager.getInstance().createMimeMessage(from, to, null, null, body, subject, null, result);
-		MailManager.getInstance().sendMessage(msg, result);
+		MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, body, subject, null, result);
+		mailManager.sendMessage(msg, result);
 		if (result.getReturnCode() != MailerResult.OK ) {
 			logError("Could not send registration notification message, MailerResult was ::" + result.getReturnCode(), null);			
 		}

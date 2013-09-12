@@ -19,7 +19,6 @@
  */
 package org.olat.core.util.mail.manager;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +31,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBoxExtension;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.model.DBMailLight;
@@ -79,8 +80,13 @@ public class MailManagerTest extends OlatTestCase {
 	public void testCreateEmail() {
 		Identity fromId = JunitTestHelper.createAndPersistIdentityAsUser("mail-1-" + UUID.randomUUID().toString());
 		Identity toId = JunitTestHelper.createAndPersistIdentityAsUser("mail-2-" + UUID.randomUUID().toString());
+		
+		MailBundle bundle = new MailBundle();
+		bundle.setFromId(fromId);
+		bundle.setToId(toId);
+		bundle.setContent("Hello", "Hello world");
 
-		MailerResult result = mailManager.sendMessage(null, fromId, null, toId, null, null, null, null, null, "Hello", "Hello world", null);
+		MailerResult result = mailManager.sendMessage(bundle);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(MailerResult.OK, result.getReturnCode());
 	}
@@ -90,7 +96,13 @@ public class MailManagerTest extends OlatTestCase {
 		//send a mail
 		Identity fromId = JunitTestHelper.createAndPersistIdentityAsUser("mail-3-" + UUID.randomUUID().toString());
 		Identity toId = JunitTestHelper.createAndPersistIdentityAsUser("mail-4-" + UUID.randomUUID().toString());
-		MailerResult result = mailManager.sendMessage(null, fromId, null, toId, null, null, null, null, null, "Hello inbox", "Content of inbox", null);
+		
+		MailBundle bundle = new MailBundle();
+		bundle.setFromId(fromId);
+		bundle.setToId(toId);
+		bundle.setContent("Hello inbox", "Content of inbox");
+
+		MailerResult result = mailManager.sendMessage(bundle);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(MailerResult.OK, result.getReturnCode());
 		dbInstance.commitAndCloseSession();
@@ -110,7 +122,13 @@ public class MailManagerTest extends OlatTestCase {
 		//send a mail
 		Identity fromId = JunitTestHelper.createAndPersistIdentityAsUser("mail-5-" + UUID.randomUUID().toString());
 		Identity toId = JunitTestHelper.createAndPersistIdentityAsUser("mail-6-" + UUID.randomUUID().toString());
-		MailerResult result = mailManager.sendMessage(null, fromId, null, toId, null, null, null, null, null, "Hello outbox", "Content of outbox", null);
+		
+		MailBundle bundle = new MailBundle();
+		bundle.setFromId(fromId);
+		bundle.setToId(toId);
+		bundle.setContent("Hello outbox","Content of outbox");
+		
+		MailerResult result = mailManager.sendMessage(bundle);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(MailerResult.OK, result.getReturnCode());
 		dbInstance.commitAndCloseSession();
@@ -133,7 +151,13 @@ public class MailManagerTest extends OlatTestCase {
 		Identity toId = JunitTestHelper.createAndPersistIdentityAsUser("mail-6-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
 		
-		MailerResult result = mailManager.sendMessage(null, fromId, null, toId, null, null, null, null, metaId, "Hello meta ID", "Meta ID", null);
+		MailBundle bundle = new MailBundle();
+		bundle.setFromId(fromId);
+		bundle.setToId(toId);
+		bundle.setMetaId(metaId);
+		bundle.setContent("Hello meta ID", "Meta ID");
+		
+		MailerResult result = mailManager.sendMessage(bundle);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(MailerResult.OK, result.getReturnCode());
 		dbInstance.commitAndCloseSession();
@@ -150,7 +174,7 @@ public class MailManagerTest extends OlatTestCase {
 	
 	
 	@Test
-	public void testSendCC() {
+	public void testSend_BCC() {
 		//send a mail to three ids
 		Identity fromId = JunitTestHelper.createAndPersistIdentityAsUser("mail-7-" + UUID.randomUUID().toString());
 		Identity toId_1 = JunitTestHelper.createAndPersistIdentityAsUser("mail-8-" + UUID.randomUUID().toString());
@@ -161,8 +185,13 @@ public class MailManagerTest extends OlatTestCase {
 		ccs.add(toId_1);
 		ccs.add(toId_2);
 		ccs.add(toId_3);
-		List<ContactList> ccList = Collections.singletonList(ccs);
-		MailerResult result = mailManager.sendMessage(null, fromId, null, null, null, null, null, ccList, null, "Hello ccList", "Content of ccList", null);
+
+		MailBundle bundle = new MailBundle();
+		bundle.setFromId(fromId);
+		bundle.setContactList(ccs);
+		bundle.setContent("Hello ccList", "Content of ccList");
+		
+		MailerResult result = mailManager.sendMessage(bundle);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(MailerResult.OK, result.getReturnCode());
 		dbInstance.commitAndCloseSession();
@@ -202,8 +231,14 @@ public class MailManagerTest extends OlatTestCase {
 		ccs.add(toId_2);
 		ccs.add(toId_3);
 		ccs.add(fromId);
-		List<ContactList> ccList = Collections.singletonList(ccs);
-		MailerResult result = mailManager.sendMessage(null, fromId, null, null, null, null, null, ccList, metaId, "Hello delList", "Content of delList", null);
+		
+		MailBundle bundle = new MailBundle();
+		bundle.setFromId(fromId);
+		bundle.setContactList(ccs);
+		bundle.setMetaId(metaId);
+		bundle.setContent("Hello delList", "Content of delList");
+		
+		MailerResult result = mailManager.sendMessage(bundle);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(MailerResult.OK, result.getReturnCode());
 		dbInstance.commitAndCloseSession();
@@ -243,13 +278,33 @@ public class MailManagerTest extends OlatTestCase {
 		Identity toId_2 = JunitTestHelper.createAndPersistIdentityAsUser("mail-9-" + UUID.randomUUID().toString());
 		Identity toId_3 = JunitTestHelper.createAndPersistIdentityAsUser("mail-10-" + UUID.randomUUID().toString());
 		
-		MailerResult result1 = mailManager.sendMessage(null, fromId, null, toId_1, null, null, null, null, metaId, "Hello ccList", "Content of ccList", null);
+		MailBundle bundle_1 = new MailBundle();
+		bundle_1.setFromId(fromId);
+		bundle_1.setToId(toId_1);
+		bundle_1.setMetaId(metaId);
+		bundle_1.setContent("Hello ccList", "Content of ccList");
+		
+		MailerResult result1 = mailManager.sendMessage(bundle_1);
 		Assert.assertNotNull(result1);
 		Assert.assertEquals(MailerResult.OK, result1.getReturnCode());
-		MailerResult result2 = mailManager.sendMessage(null, fromId, null, toId_2, null, null, null, null, metaId, "Hello ccList", "Content of ccList", null);
+		
+		MailBundle bundle_2 = new MailBundle();
+		bundle_2.setFromId(fromId);
+		bundle_2.setToId(toId_2);
+		bundle_2.setMetaId(metaId);
+		bundle_2.setContent("Hello ccList", "Content of ccList");
+		
+		MailerResult result2 = mailManager.sendMessage(bundle_2);
 		Assert.assertNotNull(result2);
 		Assert.assertEquals(MailerResult.OK, result2.getReturnCode());
-		MailerResult result3 = mailManager.sendMessage(null, fromId, null, toId_3, null, null, null, null, metaId, "Hello ccList", "Content of ccList", null);
+		
+		MailBundle bundle_3 = new MailBundle();
+		bundle_3.setFromId(fromId);
+		bundle_3.setToId(toId_3);
+		bundle_3.setMetaId(metaId);
+		bundle_3.setContent("Hello ccList", "Content of ccList");
+		
+		MailerResult result3 = mailManager.sendMessage(bundle_3);
 		Assert.assertNotNull(result3);
 		Assert.assertEquals(MailerResult.OK, result3.getReturnCode());
 		dbInstance.commitAndCloseSession();

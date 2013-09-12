@@ -28,7 +28,6 @@ package org.olat.repository.delete.service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,9 +47,10 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
@@ -87,6 +87,8 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
 	private static final String REPOSITORY_DELETED_ACTION = "respositoryEntryDeleted";
 	private DeletionModule deletionModule;
+	private MailManager mailManager;
+	
 
 	/**
 	 * [used by spring]
@@ -96,7 +98,14 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		this.deletionModule = deletionModule;
 		INSTANCE = this;
 	}
-
+	
+	/**
+	 * [used by Spring]
+	 * @param mailManager
+	 */
+	public void setMailManager(MailManager mailManager) {
+		this.mailManager = mailManager;
+	}
 
 	/**
 	 * @return Singleton.
@@ -223,7 +232,6 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 
 	private String sendEmailToIdentity(Identity identity, Map<Identity, List<RepositoryEntry>> identityRepositoryList, MailTemplate template, 
 			boolean isTemplateChanged, String keyEmailSubject, String keyEmailBody, Identity sender, Translator pT) {
-		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		template.addToContext("responseTo", deletionModule.getEmailResponseTo());
 		if (!isTemplateChanged) {
 			// Email template has NOT changed => take translated version of subject and body text
@@ -241,14 +249,17 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		template.addToContext("repositoryList", buf.toString());
 		template.putVariablesInMailContext(template.getContext(), identity);
 		logDebug(" Try to send Delete-email to identity=" + identity.getName() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));
-		List<Identity> ccIdentities = new ArrayList<Identity>();
+
+		
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(null, identity, template, sender, null, result);
+		result.append(mailManager.sendMessage(bundle));
 		if(template.getCpfrom()) {
-			ccIdentities.add(sender);
-		} else {
-			ccIdentities = null;	
+			MailBundle ccBundle = mailManager.makeMailBundle(null, sender, template, sender, null, result);
+			result.append(mailManager.sendMessage(ccBundle));
 		}
-		MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), ccIdentities, template, sender);
-		if (mailerResult.getReturnCode() == MailerResult.OK) {
+		
+		if (result.getReturnCode() == MailerResult.OK) {
 			// Email sended ok => set deleteEmailDate
 			for (Iterator<RepositoryEntry> repoIterator = identityRepositoryList.get(identity).iterator(); repoIterator.hasNext();) {
 				RepositoryEntry repositoryEntry = repoIterator.next();

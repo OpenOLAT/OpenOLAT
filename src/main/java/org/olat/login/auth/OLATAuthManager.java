@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -47,11 +46,11 @@ import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
-import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.ldap.LDAPError;
@@ -83,6 +82,8 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private MailManager mailManager;
 	
 	/**
 	 * 
@@ -212,15 +213,13 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		};
 		String subject = translator.translate("mail.pwd.subject", args);
 		String body = translator.translate("mail.pwd.body", args);
-		MailTemplate template = new MailTemplate(subject, body, null){
-			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-				//
-			}
-		};
+
 		MailContext context = new MailContextImpl(null, null, "[Identity:" + identity.getKey() + "]");
-		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-		mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, template, null, null);
+		MailBundle bundle = new MailBundle();
+		bundle.setContext(context);
+		bundle.setToId(identity);
+		bundle.setContent(subject, body);
+		mailManager.sendMessage(bundle);
 	}
 	
 	private boolean changeOlatPassword(Identity doer, Identity identity, String newPwd) {

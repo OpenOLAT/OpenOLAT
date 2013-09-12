@@ -30,9 +30,7 @@ import java.util.zip.CheckedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.mail.manager.MailManager;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.upgrade.model.DBMailAttachmentData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +42,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_9_0_0 extends OLATUpgrade {
-	
-	private static final OLog log = Tracing.createLoggerFor(OLATUpgrade_9_0_0.class);
 	
 	private static final int BATCH_SIZE = 20;
 	private static final String TASK_MAILS = "Upgrade mails";

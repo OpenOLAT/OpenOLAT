@@ -33,8 +33,8 @@ import javax.mail.Address;
 import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
 import javax.mail.SendFailedException;
-import javax.mail.internet.AddressException;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -54,11 +54,13 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
-import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailLoggingAction;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 
 /**
  * <b>Fires Event: </b>
@@ -100,7 +102,7 @@ import org.olat.core.util.mail.MailLoggingAction;
  */
 public class ContactFormController extends BasicController {
 	
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(ContactFormController.class);
 	//
 	private Identity emailFrom;
 	
@@ -109,6 +111,8 @@ public class ContactFormController extends BasicController {
 	private DialogBoxController noUsersErrorCtr;
 	private ArrayList<String> myButtons;
 	private Panel main;
+	
+	private MailManager mailService;
 	/**
 	 * 
 	 * @param ureq
@@ -124,6 +128,7 @@ public class ContactFormController extends BasicController {
 		
 		//init email form
 		this.emailFrom = cmsg.getFrom();
+		mailService = CoreSpringFactory.getImpl(MailManager.class);
 		
 		cntctForm = new ContactForm(ureq, windowControl, emailFrom, isReadonly,isCanceable,hasRecipientsEditable);
 		listenTo(cntctForm);
@@ -206,40 +211,35 @@ public class ContactFormController extends BasicController {
 		}
 		else if (source == cntctForm) {
 			if (event == Event.DONE_EVENT) {
-				boolean useInstitutionalEmail = false;
-				Emailer emailer = new Emailer(emailFrom, useInstitutionalEmail);
 				//
 				boolean success = false;
 				try {
-					List<File> attachments = cntctForm.getAttachments();
+					File[] attachments = cntctForm.getAttachments();
 					//fxdiff VCRP-16: intern mail system		
 					MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-					success = emailer.sendEmail(context, cntctForm.getEmailToContactLists(), cntctForm.getSubject(), cntctForm.getBody(), attachments);
+					
+					MailBundle bundle = new MailBundle();
+					bundle.setContext(context);
+					bundle.setFromId(emailFrom);
+					bundle.setContactLists(cntctForm.getEmailToContactLists());
+					bundle.setContent(cntctForm.getSubject(), cntctForm.getBody(), attachments);
+					
+					MailerResult result = mailService.sendMessage(bundle);
+					success = result.isSuccessful();
 					if(cntctForm.isTcpFrom()) {
-						success = emailer.sendEmailCC(context, cntctForm.getEmailFrom(), cntctForm.getSubject(), cntctForm.getBody(), attachments);
+						
+						MailBundle ccBundle = new MailBundle();
+						ccBundle.setContext(context);
+						ccBundle.setFromId(emailFrom);
+						ccBundle.setCc(cntctForm.getEmailFrom());
+						ccBundle.setContent(cntctForm.getSubject(), cntctForm.getBody(), attachments);
+						
+						MailerResult ccResult = mailService.sendMessage(ccBundle);
+						success = ccResult.isSuccessful();
 					}
-				} catch (AddressException e) {
+				} catch (Exception e) {
 					//error in recipient email address(es)
 					handleAddressException(success);
-					//no return here, depending on boolean success there are
-					//events to fire
-				} catch (SendFailedException e) {
-					// error in sending message
-					// CAUSE: sender email address invalid
-					if(handleSendFailedException(e) ) {
-						// exception handling says that although the message could not be 
-						// send we should proceed and finish this workflow with a failed event
-						fireEvent(ureq, Event.FAILED_EVENT);
-						return;
-					} else {
-						fireEvent(ureq, Event.FAILED_EVENT);
-						return;
-					}
-				} catch (MessagingException e) {
-					// error in message-subject || .-body
-					handleMessagingException();
-					//fireEvent(ureq, Event.FAILED_EVENT);
-					return;
 				}
 				cntctForm.setDisplayOnly(true);
 				if (success) {
@@ -282,15 +282,6 @@ public class ContactFormController extends BasicController {
 	}
 
 	/**
-	 */
-	private void handleMessagingException() {
-		String infoMessage = translate("error.msg.send.nok");
-		infoMessage += "<br />";
-		infoMessage += translate("error.msg.content.nok");
-		this.getWindowControl().setError(infoMessage);
-	}
-
-	/**
 	 * @param success
 	 */
 	private void handleAddressException(boolean success) {
@@ -315,7 +306,7 @@ public class ContactFormController extends BasicController {
 	 * return boolean true: handling was successful, exception can be ignored; 
 	 * false: handling was not successful, refuse to proceed.
 	 */
-	private boolean handleSendFailedException(SendFailedException e) {
+	public boolean handleSendFailedException(SendFailedException e) {
 		//get wrapped excpetion
 		MessagingException me = (MessagingException) e.getNextException();
 		if (me instanceof AuthenticationFailedException) {

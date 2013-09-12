@@ -23,9 +23,12 @@ package org.olat.core.util.mail.manager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +60,13 @@ import javax.persistence.TypedQuery;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.context.Context;
+import org.apache.velocity.exception.MethodInvocationException;
+import org.apache.velocity.exception.ParseErrorException;
+import org.apache.velocity.exception.ResourceNotFoundException;
+import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.helpers.Settings;
@@ -67,10 +77,16 @@ import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.filter.impl.NekoHTMLFilter;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailAttachment;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContent;
 import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerSMTPAuthenticator;
 import org.olat.core.util.mail.model.DBMail;
@@ -101,24 +117,21 @@ import org.olat.core.util.vfs.VFSManager;
  * Initial Date:  24 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MailManager extends BasicManager {
+public class MailManagerImpl extends BasicManager implements MailManager {
+
+	public static final String MAIL_TEMPLATE_FOLDER = "/customizing/mail/";
+	
+	private VelocityEngine velocityEngine;
 	
 	private final MailModule mailModule;
 	private DB dbInstance;
 	private FileStorage attachmentStorage;
 	private NotificationsManager notificationsManager;
 	
-	private static MailManager INSTANCE;
-	
-	public MailManager(MailModule mailModule) {
-		INSTANCE = this;
+	public MailManagerImpl(MailModule mailModule) {
 		this.mailModule = mailModule;
 	}
 	
-	public static MailManager getInstance() {
-		return INSTANCE;
-	}
-
 	/**
 	 * [used by Spring]
 	 * 
@@ -146,19 +159,33 @@ public class MailManager extends BasicManager {
 		PublisherData pdata = getPublisherData();
 		SubscriptionContext scontext = getSubscriptionContext();
 		notificationsManager.getOrCreatePublisher(scontext, pdata);
+		
+		Properties p = null;
+		try {
+			velocityEngine = new VelocityEngine();
+			p = new Properties();
+			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
+			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
+			velocityEngine.init(p);
+		} catch (Exception e) {
+			throw new RuntimeException("config error " + p.toString());
+		}
 	}
 	
+	@Override
 	public SubscriptionContext getSubscriptionContext() {
 		return new SubscriptionContext("Inbox", 0l, "");
 	}
-	
+
+	@Override
 	public PublisherData getPublisherData() {
 		String data = "";
 		String businessPath = "[Inbox:0]";
 		PublisherData publisherData = new PublisherData("Inbox", data, businessPath);
 		return publisherData;
 	}
-	
+
+	@Override
 	public Subscriber getSubscriber(Identity identity) {
 		SubscriptionContext context = getSubscriptionContext();
 		if(context == null) return null;
@@ -168,7 +195,8 @@ public class MailManager extends BasicManager {
 		}
 		return notificationsManager.getSubscriber(identity, publisher);
 	}
-	
+
+	@Override
 	public void subscribe(Identity identity) {
 		PublisherData data = getPublisherData();
 		SubscriptionContext context = getSubscriptionContext();
@@ -177,6 +205,7 @@ public class MailManager extends BasicManager {
 		}
 	}
 
+	@Override
 	public DBMail getMessageByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select mail from ").append(DBMailImpl.class.getName()).append(" mail")
@@ -190,7 +219,8 @@ public class MailManager extends BasicManager {
 		if(mails.isEmpty()) return null;
 		return mails.get(0);
 	}
-	
+
+	@Override
 	public List<DBMailAttachment> getAttachments(DBMailLight mail) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select attachment from ").append(DBMailAttachment.class.getName()).append(" attachment")
@@ -203,7 +233,7 @@ public class MailManager extends BasicManager {
 				.getResultList();
 	}
 	
-	public DBMailAttachment getAttachment(Long key) {
+	private DBMailAttachment getAttachment(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select attachment from ").append(DBMailAttachment.class.getName()).append(" attachment")
 			.append(" where attachment.key=:attachmentKey");
@@ -218,7 +248,8 @@ public class MailManager extends BasicManager {
 		}
 		return attachments.get(0);
 	}
-	
+
+	@Override
 	public String saveAttachmentToStorage(String name, String mimetype, long checksum, long size, InputStream stream) {
 		String hasSibling = getAttachmentSibling(name, mimetype, checksum, size);
 		if(StringHelper.containsNonWhitespace(hasSibling)) {
@@ -234,7 +265,7 @@ public class MailManager extends BasicManager {
 		return dir + uniqueName;
 	}
 	
-	public String getAttachmentSibling(String name, String mimetype, long checksum, long size) {
+	private String getAttachmentSibling(String name, String mimetype, long checksum, long size) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select attachment from ").append(DBMailAttachment.class.getName()).append(" attachment")
 			.append(" where attachment.checksum=:checksum and attachment.size=:size and attachment.name=:name");
@@ -260,7 +291,7 @@ public class MailManager extends BasicManager {
 		return attachments.get(0).getPath();
 	}
 	
-	public int countAttachment(String path) {
+	private int countAttachment(String path) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(attachment) from ").append(DBMailAttachment.class.getName()).append(" attachment")
 			.append(" where attachment.path=:path");
@@ -270,12 +301,14 @@ public class MailManager extends BasicManager {
 				.setParameter("path", path)
 				.getSingleResult().intValue();
 	}
-	
+
+	@Override
 	public VFSLeaf getAttachmentDatas(Long key) {
 		DBMailAttachment attachment = getAttachment(key);
 		return getAttachmentDatas(attachment);
 	}
-	
+
+	@Override
 	public VFSLeaf getAttachmentDatas(MailAttachment attachment) {
 		String path = attachment.getPath();
 		if(StringHelper.containsNonWhitespace(path)) {
@@ -287,7 +320,8 @@ public class MailManager extends BasicManager {
 		}
 		return null;
 	}
-	
+
+	@Override
 	public boolean hasNewMail(Identity identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(mail) from ").append(DBMailImpl.class.getName()).append(" mail")
@@ -308,6 +342,7 @@ public class MailManager extends BasicManager {
 	 * @param identity
 	 * @return true if the read flag has been changed
 	 */
+	@Override
 	public boolean setRead(DBMailLight mail, Boolean read, Identity identity) {
 		if(mail == null || read == null || identity == null) throw new NullPointerException();
 		
@@ -324,7 +359,8 @@ public class MailManager extends BasicManager {
 		}
 		return changed;
 	}
-	
+
+	@Override
 	public DBMailLight toggleRead(DBMailLight mail, Identity identity) {
 		Boolean read = null;
 		for(DBMailRecipient recipient:mail.getRecipients()) {
@@ -346,6 +382,7 @@ public class MailManager extends BasicManager {
 	 * @param identity
 	 * @return true if the marked flag has been changed
 	 */
+	@Override
 	public boolean setMarked(DBMailLight mail, Boolean marked, Identity identity) {
 		if(mail == null || marked == null || identity == null) throw new NullPointerException();
 
@@ -365,7 +402,8 @@ public class MailManager extends BasicManager {
 		}
 		return changed;
 	}
-	
+
+	@Override
 	public DBMailLight toggleMarked(DBMailLight mail, Identity identity) {
 		Boolean marked = null;
 		for(DBMailRecipient recipient:mail.getRecipients()) {
@@ -386,6 +424,7 @@ public class MailManager extends BasicManager {
 	 * @param mail
 	 * @param identity
 	 */
+	@Override
 	public void delete(DBMailLight mail, Identity identity, boolean deleteMetaMail) {
 		if(StringHelper.containsNonWhitespace(mail.getMetaId()) && deleteMetaMail) {
 			List<DBMailLight> mails = getEmailsByMetaId(mail.getMetaId());
@@ -467,6 +506,7 @@ public class MailManager extends BasicManager {
 	 * @param maxResults
 	 * @return
 	 */
+	@Override
 	public List<DBMailLight> getOutbox(Identity from, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(mail) from ").append(DBMailLightImpl.class.getName()).append(" mail")
@@ -489,7 +529,8 @@ public class MailManager extends BasicManager {
 		List<DBMailLight> mails = query.getResultList();
 		return mails;
 	}
-	
+
+	@Override
 	public List<DBMailLight> getEmailsByMetaId(String metaId) {
 		if(!StringHelper.containsNonWhitespace(metaId)) return Collections.emptyList();
 		
@@ -515,6 +556,7 @@ public class MailManager extends BasicManager {
 	 * @param maxResults
 	 * @return
 	 */
+	@Override
 	public List<DBMailLight> getInbox(Identity identity, Boolean unreadOnly, Boolean fetchRecipients, Date from, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		String fetchOption = (fetchRecipients != null && fetchRecipients.booleanValue()) ? "fetch" : "";
@@ -546,21 +588,246 @@ public class MailManager extends BasicManager {
 		List<DBMailLight> mails = query.getResultList();
 		return mails;
 	}
-	
-	public MailerResult sendMessage(MailContext context, Identity fromId, String from, Identity toId, String to,
-			Identity cc, List<ContactList> ccLists, List<ContactList> bccLists, 
-			String metaId, String subject, String body, List<File> attachments) {
-		
-		MailerResult result = new MailerResult();
-		if(mailModule.isInternSystem()) {
-			saveDBMessage(context, fromId, from, toId, to, cc, ccLists, bccLists, metaId, subject, body, attachments, result);
+
+	@Override
+	public String getMailTemplate() {
+		File baseFolder = new File(WebappHelper.getUserDataRoot(), MAIL_TEMPLATE_FOLDER);	
+		File template = new File(baseFolder, "mail_template.html");
+		if(template.exists()) {
+			InputStream in = null;
+			try {
+				in = new FileInputStream(template);
+				return IOUtils.toString(in);
+			} catch (IOException e) {
+				logError("", e);
+			} finally {
+				IOUtils.closeQuietly(in);
+			}
+		}
+		return getDefaultMailTemplate();
+	}
+
+	@Override
+	public void setMailTemplate(String template) {
+		File baseFolder = new File(WebappHelper.getUserDataRoot(), MAIL_TEMPLATE_FOLDER);
+		if(!baseFolder.exists()) {
+			baseFolder.mkdirs();
+		}
+		OutputStream out = null;
+		try {
+			File templateFile = new File(baseFolder, "mail_template.html");
+			StringReader reader = new StringReader(template);
+			out = new FileOutputStream(templateFile);
+			IOUtils.copy(reader, out);
+		} catch (IOException e) {
+			logError("", e);
+		} finally {
+			IOUtils.closeQuietly(out);
+		}
+	}
+
+	@Override
+	public String getDefaultMailTemplate() {
+		try {
+			InputStream in = MailModule.class.getResourceAsStream("_content/mail_template.html");
+			return IOUtils.toString(in);
+		} catch (IOException e) {
+			logError("Cannot read the default mail template", e);
+			return null;
+		}
+	}
+
+	@Override
+	public MailBundle[] makeMailBundles(MailContext ctxt, List<Identity> recipientsTO,
+			MailTemplate template, Identity sender, String metaId, MailerResult result) {
+		List<MailBundle> bundles = new ArrayList<MailBundle>();
+		if(recipientsTO != null) {
+			for(Identity recipient: recipientsTO) {
+				MailBundle bundle =  makeMailBundle(ctxt, recipient, template, sender, metaId, result);
+				if(bundle != null) {
+					bundles.add(bundle);
+				}
+			}
+		}
+
+		return bundles.toArray(new MailBundle[bundles.size()]);
+	}
+
+	@Override
+	public MailBundle makeMailBundle(MailContext ctxt, Identity recipientTO,
+			MailTemplate template, Identity sender, String metaId, MailerResult result) {	
+
+		MailBundle bundle;
+		if(MailHelper.isDisabledMailAddress(recipientTO, result)) {
+			bundle = null;//email disabled, nothing to do
 		} else {
-			sendExternMessage(fromId, from, toId, to, cc, ccLists, bccLists, subject, body, attachments, result);
+			MailContent msg = createWithContext(recipientTO, template, result);
+			if(msg != null && result.getReturnCode() == MailerResult.OK){
+				// send mail
+				bundle = new MailBundle();
+				bundle.setContext(ctxt);
+				bundle.setFromId(sender);
+				bundle.setToId(recipientTO);
+				bundle.setMetaId(metaId);
+				bundle.setContent(msg);
+			} else {
+				bundle = null;
+			}
+		}
+		return bundle;
+	}
+
+	@Override
+	public MailerResult sendMessage(MailBundle... bundles) {
+		MailerResult result = new MailerResult();
+		for(MailBundle bundle:bundles) {
+			MailContent content = decorateMail(bundle);
+			if(mailModule.isInternSystem()) {
+				saveDBMessage(bundle.getContext(), bundle.getFromId(), bundle.getFrom(),
+						bundle.getToId(), bundle.getTo(), bundle.getCc(),
+						bundle.getContactLists(), bundle.getMetaId(), content, result);
+			} else {
+				sendExternMessage(bundle.getFromId(), bundle.getFrom(),
+						bundle.getToId(), bundle.getTo(), bundle.getCc(),
+						bundle.getContactLists(), content, result);
+			}
 		}
 		return result;
 	}
 	
+	protected MailContent decorateMail(MailBundle bundle) {
+		MailContent content = bundle.getContent();
+
+		String template = getMailTemplate();
+		boolean htmlTemplate = containsHtml(template);
+		String body = content.getBody();
+		boolean htmlContent =  containsHtml(body);
+		if(htmlTemplate && !htmlContent) {
+			body = body.replace("\n", "<br />");
+		}
+		VelocityContext context = new VelocityContext();
+		context.put("content", body);
+		context.put("footer", MailHelper.getMailFooter(bundle));
+		context.put("server", Settings.getServerContextPathURI());
+
+		StringWriter writer = new StringWriter(2000);
+		MailerResult result = new MailerResult();
+		evaluate(context, template, writer, result);
+		
+		String decoratedBody;
+		if(result.isSuccessful()) {
+			decoratedBody = writer.toString();
+		} else {
+			decoratedBody = content.getBody();
+		}
+		return new MessageContent(content.getSubject(), decoratedBody, content.getAttachments());
+	}
 	
+	protected MailContent createWithContext(Identity recipient, MailTemplate template, MailerResult result) {
+		VelocityContext context;
+		if(template != null && template.getContext() != null) {
+			context = new VelocityContext(template.getContext());
+		} else {
+			context = new VelocityContext();
+		}
+		template.putVariablesInMailContext(context, recipient);
+
+		// merge subject template with context variables
+		StringWriter subjectWriter = new StringWriter();
+		evaluate(context, template.getSubjectTemplate(), subjectWriter, result);
+		// merge body template with context variables
+		StringWriter bodyWriter = new StringWriter();
+		evaluate(context, template.getBodyTemplate(), bodyWriter, result);
+		// check for errors - exit
+		if (result.getReturnCode() != MailerResult.OK) {
+			return null;
+		}
+		
+		String subject = subjectWriter.toString();
+		String body = bodyWriter.toString();
+		List<File> checkedFiles = MailHelper.checkAttachments(template.getAttachments(), result);
+		File[] attachments = checkedFiles.toArray(new File[checkedFiles.size()]);
+		return new MessageContent(subject, body, attachments);
+	}
+	
+	/**
+	 * Internal Helper: merges a velocity context with a template.
+	 * 
+	 * @param context
+	 * @param template
+	 * @param writer writer that contains merged result
+	 * @param mailerResult
+	 */
+	protected void evaluate(Context context, String template, StringWriter writer, MailerResult mailerResult) {
+		try {
+			boolean result = velocityEngine.evaluate(context, writer, "mailTemplate", template);
+			if (result) {
+				mailerResult.setReturnCode(MailerResult.OK);
+			} else {
+				logWarn("can't send email from user template with no reason", null);
+				mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
+			}
+		} catch (ParseErrorException e) {
+			logWarn("can't send email from user template", e);
+			mailerResult.setReturnCode(MailerResult.TEMPLATE_PARSE_ERROR);
+		} catch (MethodInvocationException e) {
+			logWarn("can't send email from user template", e);
+			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
+		} catch (ResourceNotFoundException e) {
+			logWarn("can't send email from user template", e);
+			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
+		} catch (Exception e) {
+			logWarn("can't send email from user template", e);
+			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
+		}
+	}
+	
+	private static class MessageContent implements MailContent {
+		private final String subject;
+		private final String body;
+		private final List<File> attachments;
+		
+		public MessageContent(String subject, String body, File[] attachmentArr) {
+			this.subject = subject;
+			this.body = body;
+			
+			attachments = new ArrayList<File>();
+			if(attachmentArr != null && attachmentArr.length > 0) {
+				for(File attachment:attachmentArr) {
+					if(attachment != null && attachment.exists()) {
+						attachments.add(attachment);
+					}
+				}
+			}
+		}
+		
+		public MessageContent(String subject, String body, List<File> attachmentList) {
+			this.subject = subject;
+			this.body = body;
+			if(attachmentList == null) {
+				this.attachments = new ArrayList<File>(1);
+			} else {
+				this.attachments = new ArrayList<File>(attachmentList);
+			}
+		}
+
+		@Override
+		public String getSubject() {
+			return subject;
+		}
+
+		@Override
+		public String getBody() {
+			return body;
+		}
+
+		@Override
+		public List<File> getAttachments() {
+			return attachments;
+		}
+	}
+
+	@Override
 	public MailerResult forwardToRealInbox(Identity identity, DBMail mail, MailerResult result) {
 		
 		if(result == null) {
@@ -582,6 +849,12 @@ public class MailManager extends BasicManager {
 		return result;
 	}
 	
+	@Override
+	public MailerResult sendExternMessage(MailBundle bundle, MailerResult result) {
+		return sendExternMessage(bundle.getFromId(), bundle.getFrom(), bundle.getToId(), bundle.getTo(), bundle.getCc(), bundle.getContactLists(),
+				bundle.getContent(), result);
+	}
+	
 	
 	/**
 	 * Send the message via e-mail, always.
@@ -595,13 +868,13 @@ public class MailManager extends BasicManager {
 	 * @param attachments
 	 * @return
 	 */
-	public MailerResult sendExternMessage(Identity fromId, String from, Identity toId, String to, Identity cc, List<ContactList> ccLists, List<ContactList> bccLists,
-			String subject, String body, List<File> attachments, MailerResult result) {
+	private MailerResult sendExternMessage(Identity fromId, String from, Identity toId, String to, Identity cc, List<ContactList> bccLists,
+			MailContent content, MailerResult result) {
 
 		if(result == null) {
 			result = new MailerResult();
 		}
-		MimeMessage mail = createMimeMessage(fromId, from, toId, to, cc, ccLists, bccLists, subject, body, attachments, result);
+		MimeMessage mail = createMimeMessage(fromId, from, toId, to, cc, bccLists, content, result);
 		if(mail != null) {
 			sendMessage(mail, result);
 		}
@@ -618,8 +891,7 @@ public class MailManager extends BasicManager {
 	}
 	
 	protected DBMail saveDBMessage(MailContext context, Identity fromId, String from, Identity toId, String to, 
-			Identity cc, List<ContactList> ccLists, List<ContactList> bccLists,
-			String metaId, String subject, String body, List<File> attachments, MailerResult result) {
+			Identity cc,  List<ContactList> bccLists, String metaId, MailContent content, MailerResult result) {
 		
 		try {
 			DBMailImpl mail = new DBMailImpl();
@@ -627,7 +899,7 @@ public class MailManager extends BasicManager {
 				result = new MailerResult();
 			}
 			
-			boolean makeRealMail = makeRealMail(toId, cc, ccLists, bccLists);
+			boolean makeRealMail = makeRealMail(toId, cc, bccLists);
 			Address fromAddress = null;
 			List<Address> toAddress = new ArrayList<Address>();
 			List<Address> ccAddress = new ArrayList<Address>();
@@ -664,11 +936,13 @@ public class MailManager extends BasicManager {
 			}
 			
 			mail.setMetaId(metaId);
+			String subject = content.getSubject();
 			if(subject != null && subject.length() > 500) {
 				logWarn("Cut a too long subkect in name. Size: " + subject.length(), null);
 				subject = subject.substring(0, 500);
 			}
 			mail.setSubject(subject);
+			String body = content.getBody();
 			if(body != null && body.length() > 16777210) {
 				logWarn("Cut a too long body in mail. Size: " + body.length(), null);
 				body = body.substring(0, 16000000);
@@ -750,16 +1024,14 @@ public class MailManager extends BasicManager {
 				mail.getRecipients().add(recipient);
 				createAddress(ccAddress, recipient, false, result, true);
 			}
-			
-			//add cc recipients
-			appendRecipients(mail, ccLists, toAddress, ccAddress, true, makeRealMail, result);
-			
+
 			//add bcc recipients
 			appendRecipients(mail, bccLists, toAddress, bccAddress, false, makeRealMail, result);
 			
 			dbInstance.getCurrentEntityManager().persist(mail);
 			
 			//save attachments
+			List<File> attachments = content.getAttachments();
 			if(attachments != null && !attachments.isEmpty()) {
 				for(File attachment:attachments) {
 
@@ -865,11 +1137,11 @@ public class MailManager extends BasicManager {
 		}
 	}
 	
-	private boolean makeRealMail(Identity toId, Identity cc, List<ContactList> ccLists, List<ContactList> bccLists) {
+	private boolean makeRealMail(Identity toId, Identity cc, List<ContactList> bccLists) {
 		//need real mail to???
 		boolean makeRealMail = false;
 		// can occur on self-registration
-		if (toId == null && cc == null && ccLists == null && bccLists == null) return true;
+		if (toId == null && cc == null && bccLists == null) return true;
 		
 		if(toId != null) {
 			makeRealMail |= wantRealMailToo(toId);
@@ -892,25 +1164,11 @@ public class MailManager extends BasicManager {
 			}
 		}
 		
-		//add bcc recipients
-		if(ccLists != null && !ccLists.isEmpty()) {
-			for(ContactList contactList:ccLists) {
-				for(Identity identityEmail:contactList.getIdentiEmails().values()) {
-					makeRealMail |= wantRealMailToo(identityEmail);
-				}
-				
-				if(!contactList.getStringEmails().isEmpty()) {
-					makeRealMail |= true;
-				}
-			}
-		}
-		
 		return makeRealMail;
 	}
 	
 	private MimeMessage createMimeMessage(Identity fromId, String mailFrom, Identity toId, String to, Identity ccId,
-			List<ContactList> ccLists, List<ContactList> bccLists,
-			String subject, String body, List<File> attachments, MailerResult result) {
+			List<ContactList> bccLists, MailContent content, MailerResult result) {
 		try {
 			Address from;
 			if(StringHelper.containsNonWhitespace(mailFrom)) {
@@ -945,23 +1203,6 @@ public class MailManager extends BasicManager {
 					ccList.add(ccAddress);
 				}
 			}
-
-			//add cc contact list
-			if(ccLists != null) {
-				for (ContactList contactList : ccLists) {
-					if(StringHelper.containsNonWhitespace(contactList.getName())) {
-						Address[] groupNames = InternetAddress.parse(contactList.getRFC2822Name() + ";");
-						for(Address groupName:groupNames) {
-							toList.add(groupName);
-						}
-					}
-					
-					Address[] members = contactList.getEmailsAsAddresses();
-					for(Address member:members) {
-						ccList.add(member);
-					}
-				}
-			}
 			
 			//add bcc contact lists
 			List<Address> bccList = new ArrayList<Address>();
@@ -984,7 +1225,7 @@ public class MailManager extends BasicManager {
 			Address[] tos = toList.toArray(new Address[toList.size()]);
 			Address[] ccs = ccList.toArray(new Address[ccList.size()]);
 			Address[] bccs = bccList.toArray(new Address[bccList.size()]);
-			return createMimeMessage(from, tos, ccs, bccs, subject, body, attachments, result);
+			return createMimeMessage(from, tos, ccs, bccs, content.getSubject(), content.getBody(), content.getAttachments(), result);
 		} catch (MessagingException e) {
 			logError("", e);
 			return null;
@@ -1203,7 +1444,7 @@ public class MailManager extends BasicManager {
 	 * @param bounceAdress must be a raw email, without anything else (no "bla bli <bla@bli.ch>" !)
 	 * @return
 	 */
-	public MimeMessage createMessage(Address bounceAdress) {
+	private MimeMessage createMessage(Address bounceAdress) {
 		String mailhost = WebappHelper.getMailConfig("mailhost");
 		String mailhostTimeout = WebappHelper.getMailConfig("mailTimeout");
 		boolean sslEnabled = Boolean.parseBoolean(WebappHelper.getMailConfig("sslEnabled"));
@@ -1249,7 +1490,8 @@ public class MailManager extends BasicManager {
 		String fromPlainAddress = fromAddress.getAddress();
 		return new InternetAddress(fromPlainAddress);
 	}
-	
+
+	@Override
 	public MimeMessage createMimeMessage(Address from, Address[] tos, Address[] ccs, Address[] bccs, String subject, String body,
 			List<File> attachments, MailerResult result) {
 		
@@ -1278,11 +1520,19 @@ public class MailManager extends BasicManager {
 
 			if (attachments != null && !attachments.isEmpty()) {
 				// with attachment use multipart message
-				Multipart multipart = new MimeMultipart();
+				Multipart multipart = new MimeMultipart("mixed");
 				// 1) add body part
-				BodyPart messageBodyPart = new MimeBodyPart();
-				messageBodyPart.setText(body);
-				multipart.addBodyPart(messageBodyPart);
+				if(containsHtml(body)) {
+					Multipart alternativePart = createMultipartAlternative(body);
+					MimeBodyPart wrap = new MimeBodyPart();
+					wrap.setContent(alternativePart);
+					multipart.addBodyPart(wrap);
+				} else {
+					BodyPart messageBodyPart = new MimeBodyPart();
+					messageBodyPart.setText(body);
+					multipart.addBodyPart(messageBodyPart);
+				}
+				
 				// 2) add attachments
 				for (File attachmentFile : attachments) {
 					// abort if attachment does not exist
@@ -1292,17 +1542,21 @@ public class MailManager extends BasicManager {
 								+ (attachmentFile == null ? null : attachmentFile.getAbsolutePath()), null);
 						return msg;
 					}
-					messageBodyPart = new MimeBodyPart();
+					BodyPart filePart = new MimeBodyPart();
 					DataSource source = new FileDataSource(attachmentFile);
-					messageBodyPart.setDataHandler(new DataHandler(source));
-					messageBodyPart.setFileName(attachmentFile.getName());
-					multipart.addBodyPart(messageBodyPart);
+					filePart.setDataHandler(new DataHandler(source));
+					filePart.setFileName(attachmentFile.getName());
+					multipart.addBodyPart(filePart);
 				}
 				// Put parts in message
 				msg.setContent(multipart);
 			} else {
 				// without attachment everything is easy, just set as text
-				msg.setText(body, "utf-8");
+				if(containsHtml(body)) {
+					msg.setContent(createMultipartAlternative(body));
+				} else {
+					msg.setText(body, "utf-8");
+				}
 			}
 			msg.setSentDate(new Date());
 			msg.saveChanges();
@@ -1322,6 +1576,32 @@ public class MailManager extends BasicManager {
 		}
 	}
 	
+	private Multipart createMultipartAlternative(String text)
+	throws MessagingException {
+		String pureText = new NekoHTMLFilter().filter(text, true);
+		MimeBodyPart textPart = new MimeBodyPart();
+		textPart.setText(pureText, "utf-8");
+		
+		MimeBodyPart htmlPart = new MimeBodyPart();
+		htmlPart.setText(text, "utf-8", "html");
+
+		Multipart multipart = new MimeMultipart("alternative");
+		multipart.addBodyPart(textPart);
+		multipart.addBodyPart(htmlPart);
+		return multipart;
+	}
+	
+	private boolean containsHtml(String text) {
+		if(text.contains("<html") || text.contains("<body") || text.contains("<p") || text.contains("<span")) {
+			return true;
+		}
+		if(text.contains("<HTML") || text.contains("<BODY") || text.contains("<P") || text.contains("<SPAN")) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
 	public void sendMessage(MimeMessage msg, MailerResult result){
 		try{
 			if(Settings.isJUnitTest()) {

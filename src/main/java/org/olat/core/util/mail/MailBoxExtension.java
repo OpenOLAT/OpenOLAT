@@ -38,7 +38,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.mail.manager.MailManager;
 import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.mail.ui.MailContextResolver;
 import org.olat.group.BusinessGroupService;

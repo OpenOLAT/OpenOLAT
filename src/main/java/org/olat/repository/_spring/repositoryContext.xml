@@ -61,6 +61,7 @@
 	<bean id="repositoryDeletionManager"
 		class="org.olat.repository.delete.service.RepositoryDeletionManager">
 		<constructor-arg index="0" ref="deletionModule" />
+		<property name="mailManager" ref="mailManager" />
 	</bean>
 	
 	<!-- vitero admin. panel -->

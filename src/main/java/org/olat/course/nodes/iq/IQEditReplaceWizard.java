@@ -25,8 +25,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -39,11 +41,13 @@ import org.olat.core.gui.control.generic.wizard.WizardController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -103,6 +107,8 @@ public class IQEditReplaceWizard extends WizardController {
 	private Link nextBtn, showFileButton;
 	private MailNotificationEditController mailCtr;
 	private ReferencableEntriesSearchController searchCtr;
+	
+	private MailManager mailManager;
 
 	/**
 	 * a number of identities with qti.ser entry
@@ -121,6 +127,7 @@ public class IQEditReplaceWizard extends WizardController {
 		super(ureq, wControl, STEPS);
 		
 		setBasePackage(IQEditReplaceWizard.class);
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		
 		this.course = course;
 		this.courseNode = courseNode;
@@ -150,14 +157,15 @@ public class IQEditReplaceWizard extends WizardController {
 		if(source == mailCtr && event == Event.DONE_EVENT) {
 			MailTemplate mailTemplate = mailCtr.getMailTemplate();
 			if(mailTemplate != null) {
-				List<Identity> recipientsCC = null;
-				if(mailTemplate.getCpfrom()) {
-					recipientsCC = new ArrayList<Identity>();
-					recipientsCC.add(ureq.getIdentity());
-				}
-				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, learners, recipientsCC, mailCtr.getMailTemplate(), ureq.getIdentity());
+				String metaId = UUID.randomUUID().toString().replace("-", "");
+				MailerResult result = new MailerResult();
+				MailBundle[] bundles = mailManager.makeMailBundles(context, learners, mailTemplate, getIdentity(), metaId, result);
+				result.append(mailManager.sendMessage(bundles));
+				if(mailTemplate.getCpfrom()) {
+					MailBundle ccBundle = mailManager.makeMailBundle(context, getIdentity(), mailTemplate, getIdentity(), metaId, result);
+					result.append(mailManager.sendMessage(ccBundle));
+				}
 			}
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if (source == searchCtr && event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
