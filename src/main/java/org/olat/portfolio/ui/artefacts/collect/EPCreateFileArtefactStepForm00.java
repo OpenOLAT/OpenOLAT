@@ -19,9 +19,6 @@
  */
 package org.olat.portfolio.ui.artefacts.collect;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;

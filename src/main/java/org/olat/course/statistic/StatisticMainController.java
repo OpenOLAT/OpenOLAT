@@ -28,7 +28,6 @@ package org.olat.course.statistic;
 import org.olat.core.extensions.action.ActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.GenericMainController;
 import org.olat.course.ICourse;

@@ -32,15 +32,12 @@ import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.IStatisticManager;
 import org.olat.course.statistic.StatisticDisplayController;
 import org.olat.course.statistic.StatisticResult;
 import org.olat.course.statistic.TotalAwareColumnDescriptor;
-import org.olat.shibboleth.ShibbolethModule;
 
 /**
  * Implementation of the IStatisticManager for 'home organisation' statistic

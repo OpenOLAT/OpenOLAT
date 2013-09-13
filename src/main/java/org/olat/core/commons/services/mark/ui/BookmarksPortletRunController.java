@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.ControllerFactory;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;

@@ -26,35 +26,32 @@
 
 package org.olat.commons.calendar.ui;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.logging.Tracing;
-import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
+import java.io.File;
+import java.io.IOException;
+import java.util.Locale;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.ImportCalendarManager;
-
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 
 import com.oreilly.servlet.multipart.FilePart;
 import com.oreilly.servlet.multipart.MultipartParser;
 import com.oreilly.servlet.multipart.ParamPart;
 import com.oreilly.servlet.multipart.Part;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Locale;
 
 /**
  * Description:<BR>

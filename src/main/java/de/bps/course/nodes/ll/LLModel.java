@@ -21,8 +21,6 @@ package de.bps.course.nodes.ll;
 
 import java.io.Serializable;
 
-import org.olat.core.util.StringHelper;
-
 /**
  * Description:<br>
  * Link list model to be used in course module configuration.

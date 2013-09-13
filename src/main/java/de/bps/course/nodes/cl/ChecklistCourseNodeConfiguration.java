@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.extensions.ExtensionResource;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;

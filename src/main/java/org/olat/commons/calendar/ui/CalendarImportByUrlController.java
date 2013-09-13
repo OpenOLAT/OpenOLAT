@@ -26,28 +26,25 @@
 
 package org.olat.commons.calendar.ui;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarManagerFactory;
+import org.olat.commons.calendar.ImportCalendarManager;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarManagerFactory;
-import org.olat.commons.calendar.ImportCalendarManager;
-
-
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Locale;
 
 /**
  * Description:<BR>

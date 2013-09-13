@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.configuration.Initializable;

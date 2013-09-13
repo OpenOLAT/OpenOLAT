@@ -26,26 +26,27 @@
 
 package org.olat.course.auditing;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 
-import static org.junit.Assert.*;
-
 /**
  * @author Christian Guretzki
  */
 public class UserNodeAuditManagerTest extends OlatTestCase  {
 	
-	private static Logger log = Logger.getLogger(UserNodeAuditManagerTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(UserNodeAuditManagerTest.class);
 	
 	private ICourse course;
 

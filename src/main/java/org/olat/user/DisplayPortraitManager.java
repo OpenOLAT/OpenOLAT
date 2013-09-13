@@ -27,7 +27,6 @@ package org.olat.user;
 
 import java.io.File;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.media.FileMediaResource;

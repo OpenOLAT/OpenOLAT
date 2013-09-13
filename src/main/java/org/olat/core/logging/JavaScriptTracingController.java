@@ -25,16 +25,12 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.HtmlHeaderComponent;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NothingChangedMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
 
 /**
  * <h3>Description:</h3>
