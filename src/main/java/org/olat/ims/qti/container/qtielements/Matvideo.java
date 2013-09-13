@@ -35,6 +35,8 @@ import org.olat.core.logging.AssertException;
  */
 public class Matvideo extends GenericQTIElement {
 
+	private static final long serialVersionUID = -1557450651659211060L;
+
 	/**
 	 * Comment for <code>xmlClass</code>
 	 */

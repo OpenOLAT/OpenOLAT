@@ -19,13 +19,15 @@
  */
 package org.olat.core.util.openxml;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
+import org.olat.core.util.openxml.OpenXMLDocument.Style;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -46,6 +48,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private final OpenXMLDocument factory;
 	
 	private List<Node> content = new ArrayList<Node>();
+	private Deque<StyleStatus> styleStack = new ArrayDeque<StyleStatus>();
 	
 	private Element currentParagraph;
 	private Table currentTable;
@@ -136,22 +139,35 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		return (Element)paragraphEl.appendChild(factory.createRunEl(null));
 	}
 
-	private void setTextPreferences(String cssStyles) {
+	private Style[] setTextPreferences(String cssStyles) {
 		if(cssStyles == null) {
-			setTextPreferences(false, false, false, false);
+			return setTextPreferences();
 		} else {
-			boolean bold = cssStyles.contains("bold");
-			boolean italic = cssStyles.contains("italic");
-			boolean underline = cssStyles.contains("underline");
-			boolean strike = cssStyles.contains("line-through");
-			setTextPreferences(bold, italic, underline, strike);
+			List<Style> styles = new ArrayList<Style>(4);
+			if(cssStyles.contains("bold")) styles.add(Style.bold);
+			if(cssStyles.contains("italic")) styles.add(Style.italic);
+			if(cssStyles.contains("underline")) styles.add(Style.underline);
+			if(cssStyles.contains("line-through")) styles.add(Style.strike);
+			return setTextPreferences(styles.toArray(new Style[styles.size()]));
 		}
 	}
 	
 	/**
 	 * Create a new run with preferences
 	 */
-	private void setTextPreferences(boolean bold, boolean italic, boolean underline, boolean strike) {
+	private Style[] setTextPreferences(Style... styles) {
+		Node runPrefs = getRunForTextPreferences();
+		factory.createRunPrefsEl(runPrefs, styles);
+		return styles;
+	}
+	
+	private Style[] unsetTextPreferences(Style... styles) {
+		Node runPrefs = getRunForTextPreferences();
+		factory.createRunReversePrefsEl(runPrefs, styles);
+		return styles;
+	}
+	
+	private Node getRunForTextPreferences() {
 		Element paragraphEl = getCurrentParagraph(false);
 		
 		Node runPrefs = null;
@@ -171,20 +187,20 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		if(!"w:rPr".equals(runPrefs.getNodeName())){
 			runPrefs = run.appendChild(factory.createRunPrefsEl());
 		}
-		
-		if(bold && !OpenXMLUtils.contains(runPrefs, "w:b")) {
-			runPrefs.appendChild(runPrefs.getOwnerDocument().createElement("w:b"));
+		return runPrefs;
+	}
+	
+	public Style[] getCurrentStyle() {
+		if(styleStack.isEmpty()) return null;
+		return styleStack.getLast().getStyles();
+	}
+	
+	public Style[] popStyle(String tag) {
+		StyleStatus status = styleStack.pollLast();
+		if(status != null && status.getTag().equals(tag)) {
+			return status.getStyles();
 		}
-		if(italic && !OpenXMLUtils.contains(runPrefs, "w:i")) {
-			runPrefs.appendChild(runPrefs.getOwnerDocument().createElement("w:i"));
-		}
-		if(underline && !OpenXMLUtils.contains(runPrefs, "w:u")) {
-			Element underlinePrefs = (Element)runPrefs.appendChild(runPrefs.getOwnerDocument().createElement("w:u"));
-			underlinePrefs.setAttribute("w:val", "single");
-		}
-		if(strike && !OpenXMLUtils.contains(runPrefs, "w:strike")) {
-			runPrefs.appendChild(runPrefs.getOwnerDocument().createElement("w:strike"));
-		}
+		return null;
 	}
 	
 	private void setImage(String path) {
@@ -204,19 +220,23 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		} else if("span".equalsIgnoreCase(tag)) {
 			flushText();
 
+			Style[] styles = null;
 			String cl = attributes.getValue("class");
 			if("math".equals(cl)) {
 				latex = true;
 			} else {
 				String cssStyles = attributes.getValue("style");
-				setTextPreferences(cssStyles);
+				styles = setTextPreferences(cssStyles);
 			}
+			styleStack.add(new StyleStatus(tag, styles));
 		} else if("em".equalsIgnoreCase(tag)) {
 			flushText();
-			setTextPreferences(false, true, false, false);
+			Style[] styles = setTextPreferences(Style.italic);
+			styleStack.add(new StyleStatus(tag, styles));
 		} else if("strong".equalsIgnoreCase(tag)) {
 			flushText();
-			setTextPreferences(true, false, false, false);
+			Style[] styles = setTextPreferences(Style.bold);
+			styleStack.add(new StyleStatus(tag, styles));
 		} else if("img".equals(tag)) {
 			String path = attributes.getValue("src");
 			setImage(path);
@@ -246,9 +266,19 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		if("p".equals(tag)) {
 			closeParagraph();
 		//flush text nodes to current paragraph
-		} else if("span".equals(tag) || "em".equals(tag) || "strong".equals(tag)) {
+		} else if("span".equals(tag) ) {
 			flushText();
-		} else if("table".equals(tag)) {
+			Style[] currentStyles = popStyle(tag);
+			unsetTextPreferences(currentStyles);
+		} else if("em".equalsIgnoreCase(tag)) {
+			flushText();
+			unsetTextPreferences(Style.italic);
+			popStyle(tag);
+		} else if("strong".equalsIgnoreCase(tag)) {
+			flushText();
+			unsetTextPreferences(Style.bold);
+			popStyle(tag);
+		}  else if("table".equals(tag)) {
 			if(currentTable != null) {
 				content.add(currentTable.getTableEl());
 			}
@@ -275,9 +305,26 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		}
 	}
 	
-	public class Table {
+	private static class StyleStatus {
+		private final String tag;
+		private final Style[] styles;
+		
+		public StyleStatus(String tag, Style[] styles) {
+			this.tag = tag;
+			this.styles = styles;
+		}
+		
+		public String getTag() {
+			return tag;
+		}
+		
+		public Style[] getStyles() {
+			return styles;
+		}
+	}
+	
+	private class Table {
 		private final Element tableEl;
-		private final Element gridEl;
 		
 		private int nextCol;
 		private Node currentRowEl;
@@ -287,16 +334,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		
 		public Table() {
 			tableEl = factory.createTable();
-			NodeList gridPrefs = tableEl.getElementsByTagName("w:tblGrid");
-			gridEl = (Element)gridPrefs.item(0);
 		}
 
 		public Element getTableEl() {
 			return tableEl;
-		}
-
-		public Element getGridEl() {
-			return gridEl;
 		}
 		
 		public Node addRowEl() {
@@ -377,12 +418,8 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		public Element getCurrentCell() {
 			return currentCellEl;
 		}
-
-		public void setCurrentCell(Element currentCell) {
-			this.currentCellEl = currentCell;
-		}
 	}
-	
+
 	private static class Span {
 
 		public static final Span OneOnOne = new Span(1,1);

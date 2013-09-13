@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -40,6 +41,7 @@ import java.util.zip.ZipInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.io.IOUtils;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -50,6 +52,7 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.search.service.document.file.utils.ShieldInputStream;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -77,9 +80,11 @@ public class OpenXMLDocument {
 	private final OpenXMLStyles styles;
 	
 	private int currentId = 4;
+	private String documentHeader;
 	private Map<File, DocReference> fileToImagesMap = new HashMap<File, DocReference>();
 	
 	private List<Node> cursorStack = new ArrayList<Node>();
+	private List<HeaderReference> headers = new ArrayList<HeaderReference>();
 	
 	private VFSContainer mediaContainer;
 	
@@ -89,6 +94,14 @@ public class OpenXMLDocument {
 		bodyElement = createBodyElement(rootElement, document);
 		styles = new OpenXMLStyles();
 		cursorStack.add(bodyElement);
+	}
+	
+	public String getDocumentHeader() {
+		return documentHeader;
+	}
+	
+	public void setDocumentHeader(String header) {
+		documentHeader = header;
 	}
 	
 	public VFSContainer getMediaContainer() {
@@ -109,6 +122,10 @@ public class OpenXMLDocument {
 	
 	public Collection<DocReference> getImages() {
 		return fileToImagesMap.values();
+	}
+	
+	public Collection<HeaderReference> getHeaders() {
+		return headers;
 	}
 	
 	public Node getCursor() {
@@ -135,24 +152,42 @@ public class OpenXMLDocument {
 	}
 	
 	public void appendTitle(String text) {
-		appendHeading(text, Heading.title);
+		appendHeading(text, Heading.title, null);
 	}
 	
-	public void appendHeading1(String text) {
-		appendHeading(text, Heading.heading1);
+	public void appendHeading1(String text, String additionalText) {
+		appendHeading(text, Heading.heading1, additionalText);
 	}
 	
-	public void appendHeading2(String text) {
-		appendHeading(text, Heading.heading2);
+	public void appendHeading2(String text, String additionalText) {
+		appendHeading(text, Heading.heading2, additionalText);
 	}
 	
-	private void appendHeading(String text, Heading style) {
+	private void appendHeading(String text, Heading style, String additionalText) {
 		if(!StringHelper.containsNonWhitespace(text)) return;
 
 		Element textEl = createTextEl(text);
+		List<Element> runsEl = new ArrayList<Element>(2);
 		Element runEl = createRunEl(Collections.singletonList(textEl));
+		runsEl.add(runEl);
 		Element styleEl = createParagraphStyle(style.styleId());
-		Element paragraphEl = createParagraphEl(styleEl, Collections.singletonList(runEl));
+		if(StringHelper.containsNonWhitespace(additionalText)) {
+			Element addRunEl = document.createElement("w:r");
+			Node addRunPrefsEl = addRunEl.appendChild(document.createElement("w:rPr"));
+			Element bEl = (Element)addRunPrefsEl.appendChild(document.createElement("w:b"));
+			bEl.setAttribute("w:val", "0");
+			Element colorEl = (Element)addRunPrefsEl.appendChild(document.createElement("w:color"));
+			colorEl.setAttribute("w:val", "auto");
+			Element szEl = (Element)addRunPrefsEl.appendChild(document.createElement("w:sz"));
+			szEl.setAttribute("w:val", "24");
+			Element szCsEl = (Element)addRunPrefsEl.appendChild(document.createElement("w:szCs"));
+			szCsEl.setAttribute("w:val", "24");
+
+			addRunEl.appendChild(createTextEl(additionalText));
+			runsEl.add(addRunEl);
+		}
+
+		Element paragraphEl = createParagraphEl(styleEl, runsEl);
 		getCursor().appendChild(paragraphEl);
 	}
 /*
@@ -185,6 +220,26 @@ public class OpenXMLDocument {
 		margins.setAttribute("w:header", "708");
 		margins.setAttribute("w:footer", "708");
 		margins.setAttribute("w:gutter", "0");
+		
+		if(StringHelper.containsNonWhitespace(documentHeader)) {
+			try {
+				InputStream headerIn = OpenXMLDocument.class.getResourceAsStream("_resources/header.xml");
+				String headerTemplate = IOUtils.toString(headerIn);
+				String header = headerTemplate.replace("[oodocumentitlte]", documentHeader);
+
+				String headerId = generateId();
+				Element headerRefEl = (Element)sectionPrefs.appendChild(document.createElement("w:headerReference"));
+				headerRefEl.setAttribute("w:type", "default");
+				headerRefEl.setAttribute("r:id", headerId);
+				
+				HeaderReference headerRef = new HeaderReference(headerId, header);
+				headers.add(headerRef);
+			} catch (DOMException e) {
+				log.error("", e);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
 	}
 	
 	public void appendFillInBlanck(int length, boolean newParagraph) {
@@ -293,10 +348,10 @@ public class OpenXMLDocument {
 		getCursor().appendChild(createPageBreakEl());
 	}
 	
-	public void appendBreak() {
+	public void appendBreak(boolean newParagraph) {
 		Element breakEl = createBreakEl();
-		Element runEl = createRunEl(Collections.singletonList(breakEl));
-		Element paragraphEl = createParagraphEl(null, Collections.singletonList(runEl));
+		Element paragraphEl = getParagraphToAppendTo(newParagraph);
+		paragraphEl.appendChild(createRunEl(Collections.singletonList(breakEl)));
 		getCursor().appendChild(paragraphEl);
 	}
 	
@@ -364,8 +419,12 @@ public class OpenXMLDocument {
 		return runEl;
 	}
 	
-	public Element createRunPrefsEl(Style... styles) {
+	public Node createRunPrefsEl(Style... styles) {
 		Element runPrefsEl = document.createElement("w:rPr");
+		return createRunPrefsEl(runPrefsEl, styles);
+	}
+	
+	public Node createRunPrefsEl(Node runPrefsEl, Style... styles) {
 		if(styles != null && styles.length > 0) {
 			for(Style style:styles) {
 				if(style != null) {
@@ -375,10 +434,37 @@ public class OpenXMLDocument {
 							underlinePrefs.setAttribute("w:val", "single");
 							break;
 						}
-						case italic: {
-							runPrefsEl.appendChild(document.createElement("w:i"));
+						case italic: runPrefsEl.appendChild(document.createElement("w:i")); break;
+						case bold: runPrefsEl.appendChild(document.createElement("w:b")); break;
+						case strike: runPrefsEl.appendChild(document.createElement("w:strike")); break;
+					}
+				}
+			}
+		}
+		return runPrefsEl;
+	}
+	
+	public Node createRunReversePrefsEl(Node runPrefsEl, Style... styles) {
+		if(styles != null && styles.length > 0) {
+			for(Style style:styles) {
+				if(style != null) {
+					switch(style) {
+						case underline:
+							Element underlinePrefs = (Element)runPrefsEl.appendChild(document.createElement("w:u"));
+							underlinePrefs.setAttribute("w:val", "none");
 							break;
-						}
+						case italic:
+							Element italicPrefs = (Element)runPrefsEl.appendChild(document.createElement("w:i"));
+							italicPrefs.setAttribute("w:val", "0");
+							break;
+						case bold:
+							Element boldPrefs = (Element)runPrefsEl.appendChild(document.createElement("w:b"));
+							boldPrefs.setAttribute("w:val", "0");
+							break;
+						case strike:
+							Element strikePrefs = (Element)runPrefsEl.appendChild(document.createElement("w:strike"));
+							strikePrefs.setAttribute("w:val", "0");
+							break;
 					}
 				}
 			}
@@ -448,7 +534,7 @@ public class OpenXMLDocument {
 		Element tableEl = document.createElement("w:tbl");
 		
 		//preferences table
-		Node tablePrEl = tableEl.appendChild(document.createElement("w:tblPr"));
+		Element tablePrEl = (Element)tableEl.appendChild(document.createElement("w:tblPr"));
 		createWidthEl("w:tblW", 5000, Unit.pct, tablePrEl);
 		createWidthEl("w:tblCellSpacing", 22, Unit.dxa, tablePrEl);
 		Node tableCellMarEl = tablePrEl.appendChild(document.createElement("w:tblCellMar"));
@@ -840,6 +926,8 @@ public class OpenXMLDocument {
 	public enum Style {
 		underline,
 		italic,
+		bold,
+		strike
 	}
 	
 	public enum Unit {
@@ -871,6 +959,29 @@ public class OpenXMLDocument {
 
 		public String styleId() {
 			return styleId;
+		}
+	}
+	
+	public static class HeaderReference {
+		
+		private final String id;
+		private final String header;
+		
+		public HeaderReference(String id, String header) {
+			this.id = id;
+			this.header = header;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public String getFilename() {
+			return "header" + id + ".xml";
+		}
+		
+		public String getHeader() {
+			return header;
 		}
 	}
 }

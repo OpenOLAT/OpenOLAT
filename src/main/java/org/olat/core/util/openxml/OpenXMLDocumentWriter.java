@@ -29,6 +29,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.openxml.OpenXMLDocument.HeaderReference;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -52,18 +53,20 @@ public class OpenXMLDocumentWriter {
 	public static final String SCHEMA_DC = "http://purl.org/dc/elements/1.1/";
 	public static final String SCHEMA_RELATIONSHIPS = "http://schemas.openxmlformats.org/package/2006/relationships";
 	
-	
-	
 	public static final String CT_RELATIONSHIP = "application/vnd.openxmlformats-package.relationships+xml";
 	public static final String CT_EXT_PROPERTIES = "application/vnd.openxmlformats-officedocument.extended-properties+xml";
 	public static final String CT_CORE_PROPERTIES = "application/vnd.openxmlformats-package.core-properties+xml";
 	public static final String CT_WORD_DOCUMENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 	public static final String CT_NUMBERING = "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml";
 	public static final String CT_STYLES = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
+	public static final String CT_HEADER = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
 	
 	
 	public void createDocument(ZipOutputStream out, OpenXMLDocument document)
 	throws IOException {
+		//flush header...
+		document.appendPageSettings();
+		
 		//_rels
 		ZipEntry rels = new ZipEntry("_rels/.rels");
 		out.putNextEntry(rels);
@@ -73,7 +76,7 @@ public class OpenXMLDocumentWriter {
 		//[Content_Types].xml
 		ZipEntry contentType = new ZipEntry("[Content_Types].xml");
 		out.putNextEntry(contentType);
-		createContentTypes(out);
+		createContentTypes(document, out);
 		out.closeEntry();
 		
 		//docProps/app.xml
@@ -100,16 +103,21 @@ public class OpenXMLDocumentWriter {
 		//word/document.xml
 		ZipEntry wordDocument = new ZipEntry("word/document.xml");
 		out.putNextEntry(wordDocument);
-		document.appendPageSettings();
 		OpenXMLUtils.writeTo(document.getDocument(), out, false);
 		out.closeEntry();
+		
+		//word/headerxxx.xml
+		for(HeaderReference headerRef:document.getHeaders()) {
+			ZipEntry headerDocument = new ZipEntry("word/" + headerRef.getFilename());
+			out.putNextEntry(headerDocument);
+			IOUtils.write(headerRef.getHeader(), out);
+			out.closeEntry();
+		}
 
 		//word/styles.xml
 		ZipEntry styles = new ZipEntry("word/styles.xml");
 		out.putNextEntry(styles);
 		appendPredefinedStyles(out, document.getStyles());
-		
-		//OpenXMLUtils.writeTo(document.getStyles().getDocument(), out);
 		out.closeEntry();
 	}
 	
@@ -172,6 +180,11 @@ public class OpenXMLDocumentWriter {
 				for(DocReference docRef:document.getImages()) {
 					addRelationship(docRef.getId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
 							"media/" + docRef.getFile().getName(), relationshipsEl, doc);
+				}
+				
+				for(HeaderReference headerRef:document.getHeaders()) {
+					addRelationship(headerRef.getId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/header",
+							headerRef.getFilename(), relationshipsEl, doc);
 				}
 			}
 
@@ -286,7 +299,7 @@ public class OpenXMLDocumentWriter {
 	<Override ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml" PartName="/word/styles.xml" />
 </Types>
  */
-	protected void createContentTypes(OutputStream out) {
+	protected void createContentTypes(OpenXMLDocument document, OutputStream out) {
 		Document doc = OpenXMLUtils.createDocument();
 		Element typesEl = (Element)doc.appendChild(doc.createElement("Types"));
 		typesEl.setAttribute("xmlns", SCHEMA_CONTENT_TYPES);
@@ -302,6 +315,10 @@ public class OpenXMLDocumentWriter {
 		createContentTypesOverride("/docProps/core.xml", CT_CORE_PROPERTIES, typesEl, doc);
 		createContentTypesOverride("/word/document.xml", CT_WORD_DOCUMENT, typesEl, doc);
 		createContentTypesOverride("/word/styles.xml", CT_STYLES, typesEl, doc);
+		
+		for(HeaderReference headerRef:document.getHeaders()) {
+			createContentTypesOverride("/word/" + headerRef.getFilename(), CT_HEADER, typesEl, doc);
+		}
 		OpenXMLUtils.writeTo(doc, out, false);
 	}
 	

@@ -319,11 +319,11 @@ class QTIImportProcessor {
 		
 		//there perhaps some other materials
 		if(importedFilename.toLowerCase().endsWith(".zip")) {
-			processAssessmentMaterials(item, deepClone, container);
+			processAssessmentMaterials(deepClone, container);
 		}
 	}
 	
-	protected void processAssessmentMaterials(QuestionItemImpl item, Element itemEl, VFSContainer container) {
+	private void processAssessmentMaterials(Element itemEl, VFSContainer container) {
 		List<String> materials = getMaterials(itemEl);
 
 		try {

@@ -93,7 +93,7 @@ public class Flow_mat extends GenericQTIElement {
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
 		for (int i = 0; i < getChildCount(); i++) {
 			((QTIElement)getChildAt(i)).renderOpenXML(document, ri);
-			if (flowClass == FLOW_LIST) document.appendBreak();
+			if (flowClass == FLOW_LIST) document.appendBreak(false);
 		}
 	}
 	

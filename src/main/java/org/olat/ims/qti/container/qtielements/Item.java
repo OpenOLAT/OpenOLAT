@@ -26,6 +26,7 @@
 package org.olat.ims.qti.container.qtielements;
 
 import org.dom4j.Element;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.openxml.OpenXMLDocument;
 /**
@@ -72,7 +73,19 @@ public class Item extends GenericQTIElement {
 	@Override
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
 		if (Boolean.TRUE.equals(ri.get(RenderInstructions.KEY_RENDER_TITLE))) {
-			document.appendHeading1(title);
+			StringBuilder addText = new StringBuilder();
+			String type = (String)ri.get(RenderInstructions.KEY_QUESTION_TYPE);
+			String score = (String)ri.get(RenderInstructions.KEY_QUESTION_SCORE);
+			if(StringHelper.containsNonWhitespace(type) || StringHelper.containsNonWhitespace(score)) {
+				addText.append(" ");
+				if(StringHelper.containsNonWhitespace(type)) {
+					addText.append("(").append(type).append(")");
+				}
+				if(StringHelper.containsNonWhitespace(score)) {
+					addText.append(" - ").append(score);
+				}
+			}
+			document.appendHeading1(title, addText.toString());
 		}
 
 		Objectives itemObjectives = null;

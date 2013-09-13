@@ -30,6 +30,7 @@ import org.olat.modules.qpool.ExportFormatOptions;
 public class DefaultExportFormat implements ExportFormatOptions {
 	
 	public static final ExportFormatOptions ZIP_EXPORT_FORMAT = new DefaultExportFormat("Zip");
+	public static final ExportFormatOptions DOCX_EXPORT_FORMAT = new DefaultExportFormat("Docx");
 	
 	private final String format;
 	private final Outcome outcome;

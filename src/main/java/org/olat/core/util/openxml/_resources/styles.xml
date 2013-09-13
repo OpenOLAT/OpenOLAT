@@ -298,6 +298,7 @@
 			<w:keepNext />
 			<w:keepLines />
 			<w:spacing w:before="480" />
+			<w:spacing w:after="200" />
 			<w:outlineLvl w:val="0" />
 		</w:pPr>
 		<w:rPr>
@@ -323,6 +324,7 @@
 			<w:keepNext />
 			<w:keepLines />
 			<w:spacing w:before="200" />
+			<w:spacing w:after="150" />
 			<w:outlineLvl w:val="1" />
 		</w:pPr>
 		<w:rPr>

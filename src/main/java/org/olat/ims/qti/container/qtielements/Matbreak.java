@@ -57,6 +57,6 @@ public class Matbreak extends GenericQTIElement {
 
 	@Override
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
-		document.appendBreak();
+		document.appendBreak(false);
 	}
 }

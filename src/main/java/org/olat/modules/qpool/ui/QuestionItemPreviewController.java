@@ -84,11 +84,11 @@ public class QuestionItemPreviewController extends BasicController {
 			Component content;
 			QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
 			if(spi == null) {
-				content = getRawContent(item);
+				content = getRawContent();
 			} else {
 				previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item, true);
 				if(previewCtrl == null) {
-					content = getRawContent(item);
+					content = getRawContent();
 				} else {
 					listenTo(previewCtrl);
 					content = previewCtrl.getInitialComponent();
@@ -99,9 +99,8 @@ public class QuestionItemPreviewController extends BasicController {
 		}
 	}
 	
-	private Component getRawContent(QuestionItem item) {
+	private Component getRawContent() {
 		VelocityContainer content = createVelocityContainer("raw_content");
-		
 		return content;
 	}
 

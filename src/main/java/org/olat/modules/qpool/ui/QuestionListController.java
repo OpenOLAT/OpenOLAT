@@ -332,7 +332,7 @@ public class QuestionListController extends AbstractItemListController implement
 			cleanUp();
 		} else if(source == importTestCtrl) {
 			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				doImportResource(ureq, importTestCtrl.getSelectedEntry());
+				doImportResource(importTestCtrl.getSelectedEntry());
 				getItemsTable().reset();
 			}
 			cmc.deactivate();
@@ -354,13 +354,13 @@ public class QuestionListController extends AbstractItemListController implement
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				@SuppressWarnings("unchecked")
 				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmDeleteBox.getUserObject();
-				doDelete(ureq, items);
+				doDelete(items);
 			}
 		} else if(source == confirmRemoveBox) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				@SuppressWarnings("unchecked")
 				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmRemoveBox.getUserObject();
-				doRemove(ureq, items);
+				doRemove(items);
 			}
 		} else if(source == currentDetailsCtrl) {
 			if(event instanceof QItemEvent) {
@@ -509,7 +509,7 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 	}
 	
-	private void doImportResource(UserRequest ureq, RepositoryEntry repositoryEntry) {
+	private void doImportResource(RepositoryEntry repositoryEntry) {
 		QTIQPoolServiceProvider spi
 			= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
 		List<QuestionItem> importItems = spi.importRepositoryEntry(getIdentity(), repositoryEntry, getLocale());
@@ -648,7 +648,7 @@ public class QuestionListController extends AbstractItemListController implement
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				addAuthors(ureq, runContext);
+				addAuthors(runContext);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -659,7 +659,7 @@ public class QuestionListController extends AbstractItemListController implement
 		getWindowControl().pushAsModalDialog(importAuthorsWizard.getInitialComponent());
 	}
 	
-	private void addAuthors(UserRequest ureq, StepsRunContext runContext) {
+	private void addAuthors(StepsRunContext runContext) {
 		@SuppressWarnings("unchecked")
 		List<QuestionItemShort> items = (List<QuestionItemShort>)runContext.get("items");
 		@SuppressWarnings("unchecked")
@@ -673,7 +673,7 @@ public class QuestionListController extends AbstractItemListController implement
 		confirmDeleteBox.setContextHelp("org.olat.modules.qpool.ui", "delete-item.html", "help.hover.deleteitem");
 	}
 	
-	private void doDelete(UserRequest ureq, List<QuestionItemShort> items) {
+	private void doDelete(List<QuestionItemShort> items) {
 		qpoolService.deleteItems(items);
 		getItemsTable().reset();
 		showInfo("item.deleted");
@@ -698,7 +698,7 @@ public class QuestionListController extends AbstractItemListController implement
 		confirmRemoveBox.setContextHelp("org.olat.modules.qpool.ui", "remove-item.html", "help.hover.removeitem");
 	}
 	
-	protected void doRemove(UserRequest ureq, List<QuestionItemShort> items) {
+	protected void doRemove(List<QuestionItemShort> items) {
 		getSource().removeFromSource(items);
 		getItemsTable().reset();
 		showInfo("item.deleted");

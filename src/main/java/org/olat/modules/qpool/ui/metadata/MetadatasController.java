@@ -132,32 +132,32 @@ public class MetadatasController extends BasicController {
 		} else if(event instanceof QItemEdited) {
 			QItemEdited editEvent = (QItemEdited)event;
 			if (source == generalEditCtrl) {
-				doGeneralMetadataFinishEditing(ureq);
+				doGeneralMetadataFinishEditing();
 			} else if (source == educationalEditCtrl) {
-				doEducationalMetadataFinishEditing(ureq);
+				doEducationalMetadataFinishEditing();
 			}	else if(source == questionEditCtrl) {
-				doQuestionMetadataFinishEditing(ureq);
+				doQuestionMetadataFinishEditing();
 			} else if(source == lifecycleEditCtrl) {
-				doLifecycleMetadataFinishEditing(ureq);
+				doLifecycleMetadataFinishEditing();
 			} else if(source == technicalEditCtrl) {
-				doTechnicalMetadataFinishEditing(ureq);
+				doTechnicalMetadataFinishEditing();
 			} else if(source == rightsEditCtrl) {
-				doRightsMetadataFinishEditing(ureq);
+				doRightsMetadataFinishEditing();
 			}
 			reloadData(editEvent.getItem());
 		} else if(event == Event.CANCELLED_EVENT) {
 			if (source == generalEditCtrl) {
-				doGeneralMetadataFinishEditing(ureq);
+				doGeneralMetadataFinishEditing();
 			} else if (source == educationalEditCtrl) {
-				doEducationalMetadataFinishEditing(ureq);
+				doEducationalMetadataFinishEditing();
 			} else if(source == questionEditCtrl) {
-				doQuestionMetadataFinishEditing(ureq);
+				doQuestionMetadataFinishEditing();
 			} else if(source == lifecycleEditCtrl) {
-				doLifecycleMetadataFinishEditing(ureq);
+				doLifecycleMetadataFinishEditing();
 			} else if(source == technicalEditCtrl) {
-				doTechnicalMetadataFinishEditing(ureq);
+				doTechnicalMetadataFinishEditing();
 			} else if(source == rightsEditCtrl) {
-				doRightsMetadataFinishEditing(ureq);
+				doRightsMetadataFinishEditing();
 			}
 		}
 	}
@@ -168,7 +168,7 @@ public class MetadatasController extends BasicController {
 		mainVC.put("details_general", generalEditCtrl.getInitialComponent());
 	}
 	
-	private void doGeneralMetadataFinishEditing(UserRequest ureq) {
+	private void doGeneralMetadataFinishEditing() {
 		removeAsListenerAndDispose(generalEditCtrl);
 		generalEditCtrl = null;
 		mainVC.put("details_general", generalCtrl.getInitialComponent());
@@ -181,7 +181,7 @@ public class MetadatasController extends BasicController {
 		mainVC.put("details_educational", educationalEditCtrl.getInitialComponent());
 	}
 	
-	private void doEducationalMetadataFinishEditing(UserRequest ureq) {
+	private void doEducationalMetadataFinishEditing() {
 		removeAsListenerAndDispose(educationalEditCtrl);
 		educationalEditCtrl = null;
 		mainVC.put("details_educational", educationalCtrl.getInitialComponent());
@@ -194,7 +194,7 @@ public class MetadatasController extends BasicController {
 		mainVC.put("details_question", questionEditCtrl.getInitialComponent());
 	}
 	
-	private void doQuestionMetadataFinishEditing(UserRequest ureq) {
+	private void doQuestionMetadataFinishEditing() {
 		removeAsListenerAndDispose(questionEditCtrl);
 		questionEditCtrl = null;
 		mainVC.put("details_question", questionCtrl.getInitialComponent());
@@ -206,7 +206,7 @@ public class MetadatasController extends BasicController {
 		mainVC.put("details_lifecycle", lifecycleEditCtrl.getInitialComponent());
 	}
 	
-	private void doLifecycleMetadataFinishEditing(UserRequest ureq) {
+	private void doLifecycleMetadataFinishEditing() {
 		removeAsListenerAndDispose(lifecycleEditCtrl);
 		lifecycleEditCtrl = null;
 		mainVC.put("details_lifecycle", lifecycleCtrl.getInitialComponent());
@@ -218,7 +218,7 @@ public class MetadatasController extends BasicController {
 		mainVC.put("details_technical", technicalEditCtrl.getInitialComponent());
 	}
 	
-	private void doTechnicalMetadataFinishEditing(UserRequest ureq) {
+	private void doTechnicalMetadataFinishEditing() {
 		removeAsListenerAndDispose(technicalEditCtrl);
 		technicalEditCtrl = null;
 		mainVC.put("details_technical", technicalCtrl.getInitialComponent());
@@ -230,7 +230,7 @@ public class MetadatasController extends BasicController {
 		mainVC.put("details_rights", rightsEditCtrl.getInitialComponent());
 	}
 	
-	private void doRightsMetadataFinishEditing(UserRequest ureq) {
+	private void doRightsMetadataFinishEditing() {
 		removeAsListenerAndDispose(rightsEditCtrl);
 		rightsEditCtrl = null;
 		mainVC.put("details_rights", rightsCtrl.getInitialComponent());

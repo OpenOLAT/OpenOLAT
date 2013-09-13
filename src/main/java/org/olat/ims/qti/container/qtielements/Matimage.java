@@ -42,7 +42,6 @@ public class Matimage extends GenericQTIElement {
 	 */
 	public static final String xmlClass = "matimage";
 
-	private String imagetype;
 	private String uri;
 	private int width = -1;
 	private int height = -1;
@@ -52,7 +51,6 @@ public class Matimage extends GenericQTIElement {
 	 */
 	public Matimage(Element el_matimage) {
 		super(el_matimage);
-		imagetype = el_matimage.attributeValue("imagetype");
 		uri = el_matimage.attributeValue("uri");
 		String sWidth = el_matimage.attributeValue("width");
 		if (sWidth != null && sWidth.length() > 0) {

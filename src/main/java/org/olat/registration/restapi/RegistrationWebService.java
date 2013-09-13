@@ -131,7 +131,7 @@ public class RegistrationWebService {
 				MailBundle bundle = new MailBundle();
 				bundle.setTo(email);
 				bundle.setContent(translator.translate("reg.subject"), body);
-				MailerResult result = mailM.sendExternMessage(null, null);
+				MailerResult result = mailM.sendExternMessage(bundle, null);
 				if (result.isSuccessful()) {
 					response = Response.ok();
 				} else {

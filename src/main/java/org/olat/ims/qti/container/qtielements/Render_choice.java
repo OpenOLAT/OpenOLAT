@@ -86,7 +86,7 @@ public class Render_choice extends GenericQTIElement {
 			}
 		}
 		// find Kprim questions
-		List ident = el_element.selectNodes("../../../@ident");
+		List<?> ident = el_element.selectNodes("../../../@ident");
 		if (ident != null && ident.size() == 1) {
 			try {
 				if (((AbstractAttribute) ident.get(0)).getValue().startsWith(ItemParser.ITEM_PREFIX_KPRIM)) kprim = true;
@@ -146,6 +146,7 @@ public class Render_choice extends GenericQTIElement {
 	@Override
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
 		Node table = null;
+		document.appendBreak(false);
 		if (kprim) {
 			ri.put(RenderInstructions.KEY_RENDER_CLASS, "kprim");
 			//open a table with 3 columns

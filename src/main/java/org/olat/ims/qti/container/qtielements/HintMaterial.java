@@ -66,7 +66,7 @@ public class HintMaterial extends GenericQTIElement {
 
 	@Override
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
-		document.appendHeading2(getHintTitle(ri));
+		document.appendHeading2(getHintTitle(ri), null);
 		super.renderOpenXML(document, ri);
 	}
 	

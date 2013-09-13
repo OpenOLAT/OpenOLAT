@@ -36,7 +36,7 @@ public class OpenXMLDocumentTest {
 
 	@Test
 	public void convertHtmlCode() {
-		String html = "<table style='height: 80px;' width='446'><tbody><tr><td>1-1</td><td colspan='2' rowspan='2'>1-21-32-32-2</td><td>1-4</td></tr><tr><td>2-1</td><td>2-4</td></tr><tr><td>3-1</td><td>3-2</td><td colspan='2'>3-33-4</td></tr></tbody></table>";
+		String html = "Year 0: -$2'000";
 
 		OpenXMLDocument document = new OpenXMLDocument();
 		document.appendHtmlText(html, false);

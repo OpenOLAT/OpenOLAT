@@ -66,10 +66,7 @@ public class Material extends GenericQTIElement {
 		super.renderOpenXML(document, ri);
 		Integer flowMatClass = (Integer)ri.get(RenderInstructions.KEY_FLOW_MAT);
 		if (flowMatClass != null && flowMatClass.intValue() == RenderInstructions.RENDER_FLOW_LIST) {
-			document.appendBreak();
+			document.appendBreak(false);
 		}
 	}
-	
-	
-
 }

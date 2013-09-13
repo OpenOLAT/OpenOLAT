@@ -68,7 +68,7 @@ public class SolutionMaterial extends GenericQTIElement {
 	@Override
 	public void renderOpenXML(OpenXMLDocument document, RenderInstructions ri) {
 		String soluceTitle = getSolutionTitle(ri);
-		document.appendHeading2(soluceTitle);
+		document.appendHeading2(soluceTitle, null);
 		super.renderOpenXML(document, ri);
 	}
 	

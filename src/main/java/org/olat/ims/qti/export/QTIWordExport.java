@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,16 +36,21 @@ import org.apache.commons.io.IOUtils;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.openxml.OpenXMLDocument;
+import org.olat.core.util.openxml.OpenXMLDocument.Style;
 import org.olat.core.util.openxml.OpenXMLDocumentWriter;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti.container.qtielements.RenderInstructions;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
+import org.olat.ims.qti.editor.beecom.objects.EssayQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
@@ -78,7 +84,6 @@ public class QTIWordExport implements MediaResource {
 	@Override
 	public String getContentType() {
 		return "application/zip";
-		//return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 	}
 
 	@Override
@@ -123,12 +128,12 @@ public class QTIWordExport implements MediaResource {
 
 			ZipEntry test = new ZipEntry(secureLabel + ".docx");
 			zout.putNextEntry(test);
-			exportTest(zout, false);
+			exportTest(label, zout, false);
 			zout.closeEntry();
 			
 			ZipEntry responses = new ZipEntry(secureLabel + "_responses.docx");
 			zout.putNextEntry(responses);
-			exportTest(zout, true);
+			exportTest(label, zout, true);
 			zout.closeEntry();
 		} catch (Exception e) {
 			log.error("", e);
@@ -137,12 +142,14 @@ public class QTIWordExport implements MediaResource {
 		}
 	}
 	
-	private void exportTest(OutputStream out, boolean withResponses) {
-		String mediaBaseUrl = "";
+	private void exportTest(String header, OutputStream out, boolean withResponses) {
 		ZipOutputStream zout = null;
 		try {
 			OpenXMLDocument document = new OpenXMLDocument();
 			document.setMediaContainer(mediaContainer);
+			document.setDocumentHeader(header);
+			
+			Translator translator = Util.createPackageTranslator(QTIWordExport.class, locale);
 
 			Assessment assessment = rootNode.getAssessment();
 			renderAssessment(assessment, document);
@@ -150,9 +157,16 @@ public class QTIWordExport implements MediaResource {
 			for(Section section:assessment.getSections()) {
 				renderSection(section, document);
 				List<Item> items = section.getItems();
-				for(Item item:items) {
-					renderItem(item, document, mediaBaseUrl, withResponses);
-					document.appendPageBreak();
+				for(Iterator<Item> itemIt=items.iterator(); itemIt.hasNext(); ) {
+					Item item = itemIt.next();
+					if(item.isAlient()) {
+						renderAlienItem(item, document, translator);
+					} else {
+						renderItem(item, document, withResponses, translator);
+					}
+					if(itemIt.hasNext()) {
+						document.appendPageBreak();
+					}
 				}
 			}
 			
@@ -173,8 +187,18 @@ public class QTIWordExport implements MediaResource {
 			}
 		}
 	}
+
+	public static void renderAlienItem(Item item, OpenXMLDocument document, Translator translator) {
+		String title = item.getTitle();
+		if(!StringHelper.containsNonWhitespace(title)) {
+			title = item.getLabel();
+		}
+		document.appendHeading1(title, null);
+		String notSupported = translator.translate("info.alienitem");
+		document.appendText(notSupported, true, Style.bold);
+	}
 	
-	private void renderItem(Item item, OpenXMLDocument document, String mediaBaseUrl, boolean withResponses) {
+	public static void renderItem(Item item, OpenXMLDocument document, boolean withResponses, Translator translator) {
 		Element el = DocumentFactory.getInstance().createElement("dummy");
 		item.addToElement(el);
 		Element itemEl = (Element)el.elements().get(0);
@@ -182,16 +206,25 @@ public class QTIWordExport implements MediaResource {
 			= new org.olat.ims.qti.container.qtielements.Item(itemEl);
 	
 		RenderInstructions renderInstructions = new RenderInstructions();
-		renderInstructions.put(RenderInstructions.KEY_STATICS_PATH, mediaBaseUrl + "/");
-		renderInstructions.put(RenderInstructions.KEY_LOCALE, locale);
+		renderInstructions.put(RenderInstructions.KEY_STATICS_PATH, "/");
+		renderInstructions.put(RenderInstructions.KEY_LOCALE, translator.getLocale());
 		renderInstructions.put(RenderInstructions.KEY_RENDER_TITLE, Boolean.TRUE);
-		if(withResponses) {
-			
+		if(item.getQuestion() != null) {
+
 			Map<String,String> iinput = new HashMap<String,String>();
 			
+			String questionType = null;
+			String questionScore = null;
 			Question question = item.getQuestion();
 			if(question instanceof ChoiceQuestion) {
 				ChoiceQuestion choice = (ChoiceQuestion)question;
+				if(question.getType() == Question.TYPE_SC) {
+					questionType = translator.translate("item.type.sc");
+				} else if(question.getType() == Question.TYPE_MC) {
+					questionType = translator.translate("item.type.mc");
+				} else if (question.getType() == Question.TYPE_KPRIM) {
+					questionType = translator.translate("item.type.kprim");
+				}
 				Element resprocessingXML = itemEl.element("resprocessing");
 				if(resprocessingXML != null) {
 					List<?> respconditions = resprocessingXML.elements("respcondition");
@@ -201,31 +234,39 @@ public class QTIWordExport implements MediaResource {
 					}
 				}
 			} else if(question instanceof FIBQuestion) {
+				questionType = translator.translate("item.type.sc");
 				for (Response response: question.getResponses()) {
 					FIBResponse fibResponse = (FIBResponse)response;
 					if("BLANK".equals(fibResponse.getType())) {
 						iinput.put(fibResponse.getIdent(), fibResponse.getCorrectBlank());
 					}
 				}
+			} else if(question instanceof EssayQuestion) {
+				questionType = translator.translate("item.type.essay");
+			}
+			
+			if(question != null && question.getMaxValue() > 0.0f) {
+				questionScore = AssessmentHelper.getRoundedScore(question.getMaxValue());
+				questionScore = translator.translate("item.score.long", new String[]{ questionScore });
 			}
 
-			renderInstructions.put(RenderInstructions.KEY_RENDER_CORRECT_RESPONSES, Boolean.TRUE);
+			renderInstructions.put(RenderInstructions.KEY_RENDER_CORRECT_RESPONSES, new Boolean(withResponses));
 			renderInstructions.put(RenderInstructions.KEY_CORRECT_RESPONSES_MAP, iinput);
+			renderInstructions.put(RenderInstructions.KEY_QUESTION_TYPE, questionType);
+			renderInstructions.put(RenderInstructions.KEY_QUESTION_SCORE, questionScore);
 		}
 		
 		foo.renderOpenXML(document, renderInstructions);
 	}
 	
-
-	
-	private void renderSection(Section section, OpenXMLDocument document) {
+	public static void renderSection(Section section, OpenXMLDocument document) {
 		String title = section.getTitle();
-		document.appendHeading1(title);
+		document.appendHeading1(title, null);
 		String objectives = section.getObjectives();
 		document.appendText(objectives, true);
 	}
 	
-	private void renderAssessment(Assessment assessment, OpenXMLDocument document) {
+	public static void renderAssessment(Assessment assessment, OpenXMLDocument document) {
 		String title = assessment.getTitle();
 		document.appendTitle(title);
 		String objectives = assessment.getObjectives();

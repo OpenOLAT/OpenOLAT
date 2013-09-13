@@ -48,10 +48,10 @@ import org.olat.modules.ModuleConfiguration;
  * 
  * @author guido
  */
-public class DialogElementsTableModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
+public class DialogElementsTableModel extends BaseTableDataModelWithoutFilter<DialogElement> implements TableDataModel<DialogElement> {
 
 	private static final int COLUMN_COUNT = 9;
-	private List entries = new ArrayList();
+	private List<DialogElement> entries = new ArrayList<DialogElement>();
 	protected Translator translator;
 	private DialogNodeForumCallback callback;
 	private ModuleConfiguration config;
@@ -84,7 +84,7 @@ public class DialogElementsTableModel extends BaseTableDataModelWithoutFilter im
 	 * @return
 	 */
 	public DialogElement getEntryAt(int num) {
-		return (DialogElement) this.entries.get(num);
+		return entries.get(num);
 	}
 
 	/**
@@ -154,7 +154,7 @@ public class DialogElementsTableModel extends BaseTableDataModelWithoutFilter im
 	 * 
 	 * @param entries
 	 */
-	public void setEntries(List entries) {
+	public void setEntries(List<DialogElement> entries) {
 		this.entries = entries;
 	}
 
