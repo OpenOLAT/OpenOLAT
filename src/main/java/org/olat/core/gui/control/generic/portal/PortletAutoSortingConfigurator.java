@@ -78,14 +78,12 @@ public class PortletAutoSortingConfigurator extends FormBasicController{
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-		
+		//
 	}
-	
 	
 	@Override
 	protected void formOK(UserRequest ureq) {		
-		sortingCriteria = new SortingCriteria(sortingCriteria.getSortingTermsList());
+		sortingCriteria = new SortingCriteria(sortingCriteria.getSortingTermsList(), sortingCriteria.getMaxEntries());
 		try {
 		  int maxEntries = entriesNum.getIntValue(); 
 		  sortingCriteria.setMaxEntries(maxEntries);
@@ -95,7 +93,6 @@ public class PortletAutoSortingConfigurator extends FormBasicController{
 		
 		String selectedSortingTermKey = sortingCriteriaSelection.getSelectedKey();
 		sortingCriteria.setSortingTerm(Integer.valueOf(selectedSortingTermKey).intValue());
-		
 		sortingCriteria.setAscending(sortingDirectionSelection.getSelectedKey().equals(ASCENDING));
 		
 	  fireEvent(ureq, Event.DONE_EVENT);		

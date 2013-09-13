@@ -76,8 +76,9 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	private TableController tableController;
 	private VelocityContainer portletVC;
 	
-	public InfoMessagePortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName) {
-		super(wControl, ureq, trans, portletName);
+	public InfoMessagePortletRunController(WindowControl wControl, UserRequest ureq, Translator trans,
+			String portletName, int defaultMaxentries) {
+		super(wControl, ureq, trans, portletName, defaultMaxentries);
 		
 		portletVC =  createVelocityContainer("infosPortlet");
 		showAllLink = LinkFactory.createLink("portlet.showall", portletVC, this);
@@ -112,7 +113,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 
 	@Override
 	protected SortingCriteria createDefaultSortingCriteria() {
-		SortingCriteria sortingCriteria = new SortingCriteria(this.sortingTermsList);
+		SortingCriteria sortingCriteria = new SortingCriteria(sortingTermsList, getDefaultMaxEntries());
 		sortingCriteria.setAscending(false);
 		return sortingCriteria;
 	}

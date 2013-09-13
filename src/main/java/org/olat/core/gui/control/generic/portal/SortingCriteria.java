@@ -69,8 +69,8 @@ public class SortingCriteria {
 	 * Auto sorting constructor.
 	 *
 	 */
-	public SortingCriteria(List<Integer> sortingTermsList) {		
-		this(AUTO_SORTING,6,ALPHABETICAL_SORTING,true, sortingTermsList);
+	public SortingCriteria(List<Integer> sortingTermsList, int maxEntries) {		
+		this(AUTO_SORTING, maxEntries, ALPHABETICAL_SORTING, true, sortingTermsList);
 	}
 	
 	private SortingCriteria(int sortingType, int maxEntries, int sortingTerm, boolean ascending, List<Integer> sortingTermsList) {		
@@ -81,15 +81,15 @@ public class SortingCriteria {
 		this.sortingTermsList = sortingTermsList;
 	}
 	
-	public SortingCriteria(Map<String,Integer> paramMap, List<Integer> sortingTermsList) {
-		this(sortingTermsList);
+	public SortingCriteria(Map<String,Integer> paramMap, List<Integer> sortingTermsList, int defaultMaxEntries) {
+		this(sortingTermsList, defaultMaxEntries);
 		if(paramMap!=null) {
 			if(paramMap.containsKey(SORTING_TYPE_KEY)) {
-				this.setSortingType(paramMap.get(SORTING_TYPE_KEY));
-				if(this.getSortingType()==AUTO_SORTING) {
-					this.maxEntries = paramMap.get(NUM_ENTRIES_KEY);
-					this.ascending = paramMap.get(SORTING_DIRECTION)==1;
-					this.setSortingTerm(paramMap.get(SORTING_TERM_KEY));
+				setSortingType(paramMap.get(SORTING_TYPE_KEY));
+				if(getSortingType()==AUTO_SORTING) {
+					maxEntries = paramMap.get(NUM_ENTRIES_KEY);
+					ascending = paramMap.get(SORTING_DIRECTION)==1;
+					setSortingTerm(paramMap.get(SORTING_TERM_KEY));
 				}
 			}			  
 		}
@@ -107,7 +107,7 @@ public class SortingCriteria {
 	 * 
 	 * @return a Map with the current sortingCriteria attribute values.
 	 */
-	public Map getPersistable() {
+	public Map<String, Integer> getPersistable() {
 		Map<String, Integer> returnMap = new Hashtable<String, Integer>();
 		if (AUTO_SORTING == this.getSortingType()) {
 			returnMap.put(SORTING_TYPE_KEY, AUTO_SORTING);

@@ -90,8 +90,9 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 	 * @param ureq
 	 * @param component
 	 */
-	public NotesPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName) { 
-		super(wControl, ureq, trans, portletName);		
+	public NotesPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans,
+			String portletName, int defaultMaxEntries) { 
+		super(wControl, ureq, trans, portletName, defaultMaxEntries);		
 		this.cOwner = ureq.getIdentity();
 		
 		sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);

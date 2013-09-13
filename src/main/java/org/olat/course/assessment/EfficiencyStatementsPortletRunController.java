@@ -85,8 +85,9 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 * @param ureq
 	 * @param component
 	 */
-	public EfficiencyStatementsPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName) { 
-		super(wControl, ureq, trans, portletName);
+	public EfficiencyStatementsPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans,
+			String portletName, int defaultMaxEntries) { 
+		super(wControl, ureq, trans, portletName, defaultMaxEntries);
 		this.cOwner = ureq.getIdentity();
 		
 		sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);

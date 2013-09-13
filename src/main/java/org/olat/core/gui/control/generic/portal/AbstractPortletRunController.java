@@ -59,16 +59,22 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
 	protected ArrayList<Integer> sortingTermsList = new ArrayList<Integer>();
 	private final String portletName;
 	protected final Preferences guiPreferences; 
+	private final int defaultMaxEntries;
 
 	
-	public AbstractPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName) {
+	public AbstractPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans,
+			String portletName, int defaultMaxEntries) {
 		super(ureq, wControl, trans);		
 		collator = Collator.getInstance();
-		this.portletName = portletName;		
+		this.portletName = portletName;
+		this.defaultMaxEntries = defaultMaxEntries;
 		this.guiPreferences = ureq.getUserSession().getGuiPreferences();
 	}
-
 	
+	public int getDefaultMaxEntries() {
+		return defaultMaxEntries;
+	}
+
 	/**
 	 * Handles portletToolsController events.
 	 */
@@ -100,7 +106,7 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
 			Map<Long, Integer> storedPrefs = (Map<Long, Integer>) guiPreferences.get(Map.class, getPreferenceKey(this.SORTED_ITEMS_PREF));
 			if (storedPrefs != null) {
 		    //if auto sorting choosed, remove any manually sorting info
-		    List sortedItems = new ArrayList();
+		    List<PortletEntry<T>> sortedItems = new ArrayList<PortletEntry<T>>();
 		    guiPreferences.putAndSave(Map.class, getPreferenceKey(SORTED_ITEMS_PREF), getSortedItemsMap(sortedItems));
 			}
 		}
@@ -118,10 +124,10 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
   	SortingCriteria returnSortingCriteria = null;
 
 		Preferences guiPreferences = ureq.getUserSession().getGuiPreferences();
-		Object storedPrefs = guiPreferences.get(Map.class, getPreferenceKey(SORTING_CRITERIA_PREF));
+		Map<String, Integer> storedPrefs = (Map<String, Integer>)guiPreferences.get(Map.class, getPreferenceKey(SORTING_CRITERIA_PREF));
 		
 		if (storedPrefs != null) {
-			returnSortingCriteria = new SortingCriteria((Map<String, Integer>) storedPrefs, sortingTermsList);
+			returnSortingCriteria = new SortingCriteria( storedPrefs, sortingTermsList, defaultMaxEntries);
 		} else {
 			returnSortingCriteria = createDefaultSortingCriteria();
 		}
@@ -129,7 +135,7 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
   }
 	
 	protected SortingCriteria createDefaultSortingCriteria() {
-		return new SortingCriteria(this.sortingTermsList);
+		return new SortingCriteria(sortingTermsList, defaultMaxEntries);
 	}
 	
 	/**

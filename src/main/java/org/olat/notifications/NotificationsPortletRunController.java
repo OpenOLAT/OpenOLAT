@@ -96,8 +96,9 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 	 * @param ureq
 	 * @param component
 	 */
-	public NotificationsPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName) { 		
-		super(wControl, ureq, trans, portletName);
+	public NotificationsPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans,
+			String portletName, int defaultMaxEntries) { 		
+		super(wControl, ureq, trans, portletName, defaultMaxEntries);
 		
 		sortingTermsList.add(SortingCriteria.TYPE_SORTING);
 		sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);

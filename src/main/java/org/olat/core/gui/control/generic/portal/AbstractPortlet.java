@@ -45,6 +45,7 @@ public abstract class AbstractPortlet extends AbstractConfigOnOff implements Por
 	private Map<String,String> configuration = new HashMap<String,String>();
 	private String name;
 	private Translator trans;
+	private int defaultMaxEntries = 6;
 
 	/**
 	 * @return The configuration map
@@ -73,6 +74,14 @@ public abstract class AbstractPortlet extends AbstractConfigOnOff implements Por
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public int getDefaultMaxEntries() {
+		return defaultMaxEntries;
+	}
+
+	public void setDefaultMaxEntries(int defaultMaxEntries) {
+		this.defaultMaxEntries = defaultMaxEntries;
 	}
 
 	/**
