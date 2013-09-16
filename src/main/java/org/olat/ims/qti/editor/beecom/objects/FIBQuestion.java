@@ -350,24 +350,26 @@ public class FIBQuestion extends Question implements QTIObject {
 		Element conditionvar = respcondition_fail.addElement("conditionvar");
 		Element or = conditionvar.addElement("or");
 
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			FIBResponse tmpResponse = (FIBResponse) i.next();
 			if (!tmpResponse.getType().equals(FIBResponse.TYPE_BLANK)) {
 				continue;
 			}
 			
 			String[] correctFIBs = tmpResponse.getCorrectBlank().split(";");
-			Element not = or.addElement("not");
-			Element orVal = not.addElement("or");
-			for (int j = 0; j < correctFIBs.length; j++) {
-				String correctFIB = correctFIBs[j];
-				if (correctFIB.length() > 0) {
-					Element varequal = orVal.addElement("varequal");
-					varequal.addAttribute("respident", tmpResponse.getIdent());
-					varequal.addAttribute("case", tmpResponse.getCaseSensitive());
-					varequal.addCDATA(correctFIB);
-				}
-			} // for loop correct FIB
+			if(correctFIBs.length > 1) {
+				Element not = or.addElement("not");
+				Element orVal = not.addElement("or");
+				for (int j = 0; j < correctFIBs.length; j++) {
+					String correctFIB = correctFIBs[j];
+					if (correctFIB.length() > 0) {
+						Element varequal = orVal.addElement("varequal");
+						varequal.addAttribute("respident", tmpResponse.getIdent());
+						varequal.addAttribute("case", tmpResponse.getCaseSensitive());
+						varequal.addCDATA(correctFIB);
+					}
+				} // for loop correct FIB
+			}
 		} // for loop
 
 		if (isSingleCorrect){
@@ -385,16 +387,5 @@ public class FIBQuestion extends Question implements QTIObject {
 		// remove whole respcondition if empty
 		if (or.element("not") == null)
 			resprocessingXML.remove(respcondition_fail);
-	}
-	
-	private Collection<String> splitCorrectBlank(FIBResponse tmpResponse) {
-		String[] correctFIBs = tmpResponse.getCorrectBlank().split(";");
-		Set<String> unique = new LinkedHashSet<String>();
-		for(String correctFIB:correctFIBs) {
-			if(!unique.contains(correctFIB)) {
-				unique.add(correctFIB);
-			}
-		}
-		return unique;
 	}
 }
