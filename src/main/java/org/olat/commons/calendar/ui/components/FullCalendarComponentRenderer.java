@@ -21,6 +21,7 @@ package org.olat.commons.calendar.ui.components;
 
 import static org.apache.commons.lang.StringEscapeUtils.escapeJavaScript;
 
+import java.text.DateFormat;
 import java.util.Calendar;
 
 import org.olat.core.gui.components.Component;
@@ -59,6 +60,17 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
 		cal = Calendar.getInstance();
 		cal.setTime(fcC.getCurrentDate());
 		
+		Calendar calRef = Calendar.getInstance(fcC.getTranslator().getLocale());
+		calRef.set(Calendar.DATE, 25);
+		calRef.set(Calendar.MONTH, 11);
+		calRef.set(Calendar.YEAR, 2013);
+
+		String formatted = DateFormat.getDateInstance(DateFormat.SHORT, fcC.getTranslator().getLocale()).format(calRef.getTime());
+		boolean firstMonth = (formatted.indexOf("12") < formatted.indexOf("25"));
+		
+		String amFormatted = DateFormat.getTimeInstance(DateFormat.SHORT, fcC.getTranslator().getLocale()).format(calRef.getTime());
+		boolean ampm = amFormatted.contains("AM") || amFormatted.contains("PM");
+		
 		sb.append("<script type='text/javascript'>\n")
 		  .append("/* <![CDATA[ */ \n")
 	    .append("jQuery(function() {\n")
@@ -79,6 +91,18 @@ public class FullCalendarComponentRenderer implements ComponentRenderer {
       .append("   monthNamesShort: ").append(getMonthShort(translator)).append(",\n")
       .append("   dayNames: ").append(getDayLong(translator)).append(",\n")
       .append("   dayNamesShort: ").append(getDayShort(translator)).append(",\n")
+      .append("   allDayText:'").append(translator.translate("cal.form.allday")).append("',\n")
+      .append("   axisFormat:'").append(ampm ? "h(:mm)tt" : "H(:mm)").append("',\n")
+      .append("   titleFormat: {\n")
+      .append("     month: 'MMMM yyyy',\n")
+      .append("     week: ").append(firstMonth ? "\"MMM d[ yyyy]{ '&#8212;'[ MMM] d yyyy}\"" : "\"d [ MMM] [ yyyy]{ '&#8212;' d MMM yyyy}\"").append(",\n")
+      .append("     day: ").append(firstMonth ? "'dddd, MMM d, yyyy'" : "'dddd, d MMM yyyy'").append("\n")
+      .append("   },\n")
+      .append("   columnFormat: {\n")
+      .append("     month: 'ddd',\n")
+      .append("     week: ").append(firstMonth ? "'ddd M/d'" : "'ddd d.M'").append(",\n")
+      .append("     day: ").append(firstMonth ? "'dddd M/d'" : "'dddd d.M'").append("\n")
+      .append("   },\n")
       .append("   year:").append(cal.get(Calendar.YEAR)).append(",\n")
       .append("   month:").append(cal.get(Calendar.MONTH)).append(",\n")
       .append("   date:").append(cal.get(Calendar.DAY_OF_MONTH)).append(",\n")
