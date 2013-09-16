@@ -282,6 +282,12 @@ public class StringHelper {
 		// contain non-whitespace
 		return !matcher.find();
 	}
+	
+	public static boolean isHtml(String s) {
+		if (s == null) return false;
+
+		return s.contains("<html") || s.contains("<body") || s.contains("<p") || s.contains("<span");
+	}
 
 	/**
 	 * takes an array of Identies and converts them to a String containing the

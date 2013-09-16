@@ -623,7 +623,7 @@ CREATE TABLE o_info_message (
   creationdate date,
   modificationdate date,
   title varchar2(2048 char),
-  message varchar2(2048 char),
+  message clob,
   resname varchar(50 char) NOT NULL,
   resid number(20) NOT NULL,
   ressubpath varchar2(2048 char),

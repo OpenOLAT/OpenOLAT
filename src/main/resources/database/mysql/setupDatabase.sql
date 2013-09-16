@@ -688,7 +688,7 @@ create table if not exists o_info_message (
   creationdate datetime,
   modificationdate datetime,
   title varchar(2048),
-  message varchar(2048),
+  message longtext,
   resname varchar(50) NOT NULL,
   resid bigint NOT NULL,
   ressubpath varchar(2048),

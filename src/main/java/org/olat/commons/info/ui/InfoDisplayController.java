@@ -226,9 +226,13 @@ public class InfoDisplayController extends FormBasicController {
 	}
 	
 	private InfoMessageForDisplay createInfoMessageForDisplay(InfoMessage info) {
-		String message = "";
-		if(StringHelper.containsNonWhitespace(info.getMessage())) {
+		String message = info.getMessage();
+		boolean html = StringHelper.isHtml(message);
+		if(html) {
+			message = message.toString();
+		} else if(StringHelper.containsNonWhitespace(message)) {
 			message = Formatter.escWithBR(info.getMessage()).toString();
+			message =	Formatter.formatURLsAsLinks(message);
 		}
 		
 		Formatter formatter = Formatter.getInstance(getLocale());

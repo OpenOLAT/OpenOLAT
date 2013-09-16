@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
@@ -1523,6 +1524,10 @@ public class RichTextConfiguration implements Disposable {
 		plugins4.remove("advlink");
 		plugins4.remove("xhtmlxtras");
 		plugins4.remove("advimage");
+		if(plugins4.contains("visualchars")) {
+			plugins4.remove("visualchars");
+			plugins4.add("charmap");
+		}
 		if(plugins4.remove("-olatmatheditor")) {
 			plugins4.add("olatmatheditor");
 		}
@@ -1544,37 +1549,80 @@ public class RichTextConfiguration implements Disposable {
 		if(theme_advanced_buttons3.contains(CODE_BUTTON)) {
 			plugins4.add("code");
 		}
+		
+		if(theme_advanced_buttons1.contains("forecolor,backcolor") || theme_advanced_buttons1.contains("bakcolor")) {
+			plugins4.add("textcolor");
+		}
+	
+		
+		List<String> menubar = new ArrayList<String>();
+		//if(theme_advanced_buttons3.contains("tablecontrols")) menubar.add("table");
+		//if(theme_advanced_buttons3.contains("code"))          menubar.add("tools");
+		
+		List<String> buttons1 = new ArrayList<String>(theme_advanced_buttons1);
+		if(buttons1.contains("justifyleft")) buttons1.set(buttons1.indexOf("justifyleft"), "alignleft");
+		if(buttons1.contains("justifycenter")) buttons1.set(buttons1.indexOf("justifycenter"), "aligncenter");
+		if(buttons1.contains("justifyright")) buttons1.set(buttons1.indexOf("justifyright"), "alignright");
+		if(buttons1.contains("justifyfull")) buttons1.set(buttons1.indexOf("justifyfull"), "alignjustify");
+		if(buttons1.contains(JUSTIFY_BUTTONGROUP)) {
+			int index = buttons1.indexOf(JUSTIFY_BUTTONGROUP);
+			buttons1.remove(index);
+			buttons1.add(index, "alignleft");
+			buttons1.add(index, "aligncenter");
+			buttons1.add(index, "alignright");
+			buttons1.add(index, "alignjustify");
+		}
 
-		int i = appendValuesFromList(sb, PLUGINS, plugins4);
-		// Add toolbars
-		sb.append(",\n");
-		sb.append("menubar:false,\n");
-		sb.append("image_advtab:true,\n");
+		List<String> buttons2 = new ArrayList<String>(theme_advanced_buttons2);
+		List<String> buttons3 = new ArrayList<String>(theme_advanced_buttons3);
+		if(buttons3.contains("visualchars")) buttons3.set(buttons3.indexOf("visualchars"), "charmap");
+		if(buttons3.contains("tablecontrols")) buttons3.set(buttons3.indexOf("tablecontrols"), "table");
+		buttons3.remove("cleanup");
+		
+		System.out.println("Plugins: " + plugins);
+		System.out.println("Buttons 1: " + theme_advanced_buttons1);
+		System.out.println("Buttons 1n: " +buttons1);
+		System.out.println("Buttons 2: " + theme_advanced_buttons2);
+		System.out.println("Buttons 2n: " + buttons2);
+		System.out.println("Buttons 3: " + theme_advanced_buttons3);
+		System.out.println("Buttons 3n: " + buttons3);
 
-		if (theme_advanced_buttons1.size() == 0) {
-			sb.append(THEME_ADVANCED_BUTTONS1).append(":\"\"");
+		appendValuesFromList(sb, PLUGINS, plugins4);
+		sb.append(",\n")
+		  .append("image_advtab:true,\n")
+		  .append("statusbar:true,\n");
+		
+		//menubar
+		if(menubar.isEmpty()) {
+			sb.append("menubar:false,\n");
 		} else {
-			i += appendValuesFromList(sb, "toolbar1", theme_advanced_buttons1);			
+			listToString(sb, "menubar", menubar);	
+			sb.append(",\n");
 		}
 		
-		List<String> buttons2 = new ArrayList<String>(theme_advanced_buttons2);
-		buttons2.add("inserttable");
-		if (i > 0) sb.append(",");			
+		//toolbar 1
+		if (buttons1.size() == 0) {
+			sb.append("toolbar1").append(":false,\n");
+		} else {
+			listToString(sb, "toolbar1", buttons1);
+			sb.append(",\n");	
+		}
+
 		if (buttons2.size() == 0) {
-			sb.append(THEME_ADVANCED_BUTTONS2).append(":\"\"");
+			sb.append("toolbar2").append(": false,\n");
 		} else {
-			i += appendValuesFromList(sb, "toolbar2", buttons2);			
+			listToString(sb, "toolbar2", buttons2);
+			sb.append(",\n");	
 		}
-		if (i > 0) sb.append(",");	
-		List<String> buttons3 = new ArrayList<String>(theme_advanced_buttons3);
+
 		if (buttons3.size() == 0) {
-			sb.append(THEME_ADVANCED_BUTTONS3).append(":\"\"");			
+			sb.append("toolbar3").append(":false,\n");			
 		} else {
-			i += appendValuesFromList(sb, "toolbar3", buttons3);						
+			listToString(sb, "toolbar3", buttons3);
+			sb.append(",\n");							
 		}
-		// Now add disabled buttons
-		if (i > 0 && theme_advanced_disable.size() > 0) sb.append(",");
-		i += appendValuesFromList(sb, THEME_ADVANCED_DISABLE, theme_advanced_disable);
+		
+
 		// Now add the quoted values
 		Map<String,String> copyValues = new HashMap<String,String>(quotedConfigValues);
 		//remove unused configurations in 4
@@ -1586,23 +1634,20 @@ public class RichTextConfiguration implements Disposable {
 		copyValues.remove("theme_advanced_resize_horizontal");
 		copyValues.remove("theme_advanced_resizing");
 		copyValues.remove("theme_advanced_toolbar_align");
+		copyValues.remove("theme_advanced_link_targets");
 		copyValues.remove("dialog_type");
 		copyValues.remove("mode");
 		copyValues.remove("elements");
-		
-		
 		//update value from 3 to 4
 		String tabfocus = copyValues.remove("tab_focus");
 		if(tabfocus != null) {
 			copyValues.put("tabfocus_elements", tabfocus);
 		}
-		
 		for (Map.Entry<String, String> entry : copyValues.entrySet()) {
-			if (i > 0) sb.append(",");
-			sb.append(entry.getKey()).append(": \"").append(entry.getValue()).append("\"\n");
-			i++;
+			sb.append(entry.getKey()).append(": \"").append(entry.getValue()).append("\",\n");
 		}
-
+		
+		// Now add the non-quoted values (e.g. true, false or functions)
 		Map<String,String> copyNonValues = new HashMap<String,String>(nonQuotedConfigValues);
 		copyNonValues.remove("theme_advanced_resizing");
 		copyNonValues.remove("theme_advanced_resize_horizontal");
@@ -1610,36 +1655,30 @@ public class RichTextConfiguration implements Disposable {
 		if(converter != null) {
 			copyNonValues.put("convert_urls", converter);	
 		}
-		
-		// Now add the non-quoted values (e.g. true, false or functions)
  		for (Map.Entry<String, String> entry : copyNonValues.entrySet()) {
-			if (i > 0) sb.append(",");
-			sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
-			i++;
+			sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(",\n");
 		}
- 		
- 		// Now add on init callback functions
- 		/*if (oninit.size() > 0) {
- 			if (i > 0) sb.append(",");
- 			sb.append(ONINIT_CALLBACK).append(": ");
- 			if (oninit.size() == 1) {
- 				sb.append(oninit.iterator().next());
- 			} else {
- 				Iterator<String> iter = oninit.iterator();
- 				sb.append("function(){");
- 				while (iter.hasNext()) {
-					String function = iter.next();
-					sb.append(function);
-					if(function.endsWith(")")) {
-						sb.append(";");
-					} else {
-						sb.append("();");
-					}
+
+ 		System.out.println("Quoted: " + quotedConfigValues);
+ 		System.out.println("Non quoted: " + copyNonValues);
+	}
+	
+	
+	private int listToString(StringOutput sb, String key, List<String> values) {
+		if (values.size() == 0) return 0;
+		sb.append(key).append(": \"");
+		for (String value : values) {
+			for(StringTokenizer tokenizer=new StringTokenizer(value,","); tokenizer.hasMoreTokens(); ) {
+				String token = tokenizer.nextToken();
+				if("separator".equals(token)) {
+					sb.append(" | ");
+				} else {
+					sb.append(token).append(" ");
 				}
- 				sb.append("}");
- 			}
- 			i++;
- 		}*/
+			}
+		}
+		sb.append("\"");
+		return 1;
 	}
 
 	/**
