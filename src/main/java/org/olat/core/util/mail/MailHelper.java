@@ -38,7 +38,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.user.UserManager;
@@ -94,9 +93,13 @@ public class MailHelper {
 			uProps.add("");
 		}
 		
-		String[] userProps = new String[]{};
-		userProps = ArrayHelper.toArray(uProps);
-		return trans.translate("footer.with.userdata", userProps);
+		String[] userPropArr = uProps.toArray(new String[uProps.size()]);
+		for(int i=userPropArr.length; i-->0; ) {
+			if(userPropArr[i] == null) {
+				userPropArr[i] = "";
+			}
+		}
+		return trans.translate("footer.with.userdata", userPropArr);
 	}
 	
 	public static String getTitleForFailedUsersError(Locale locale) {
