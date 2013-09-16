@@ -66,8 +66,8 @@ public class SkypePropertyHandler extends Generic127CharTextPropertyHandler {
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValidValue(java.lang.String, org.olat.core.gui.components.form.ValidationError, java.util.Locale)
 	 */
 	@Override
-	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
-		if ( ! super.isValidValue(value, validationError, locale)) return false;
+	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
+		if ( ! super.isValidValue(user, value, validationError, locale)) return false;
 		
 		if (StringHelper.containsNonWhitespace(value)) {		
 			// skype names are max 32 chars long

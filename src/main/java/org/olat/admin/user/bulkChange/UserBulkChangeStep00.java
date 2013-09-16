@@ -58,6 +58,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.user.ProfileFormController;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.GenericUnique127CharTextPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 public /**
@@ -202,7 +203,7 @@ class UserBulkChangeStep00 extends BasicStep {
 			for (Iterator<MultipleSelectionElement> iterator = checkBoxes.iterator(); iterator.hasNext();) {
 				MultipleSelectionElement checkbox = iterator.next();
 				if (checkbox.isSelected(0)) {
-					Context vcContext = ubcMan.getDemoContext(getTranslator(), isAdministrativeUser);
+					Context vcContext = ubcMan.getDemoContext(getTranslator());
 					validChange = true;
 					FormItem formItem = formItems.get(i);
 					if (formItem instanceof TextElement) {
@@ -225,8 +226,8 @@ class UserBulkChangeStep00 extends BasicStep {
 								}
 								// second check on property content
 								ValidationError valicationError = new ValidationError();
-								if (! handler.isValidValue(evaluatedInputFieldValue, valicationError, ureq.getLocale())) {
-									formItem.setErrorKey(valicationError.getErrorKey(), null);
+								if (! handler.isValidValue(null, evaluatedInputFieldValue, valicationError, ureq.getLocale())) {
+									formItem.setErrorKey(valicationError.getErrorKey(), valicationError.getArgs());
 									return false;
 								}
 								// else validation was ok, reset previous errors
@@ -324,30 +325,31 @@ class UserBulkChangeStep00 extends BasicStep {
 			// add checkboxes/formitems for userProperties defined in
 			// src/serviceconfig/org/olat/_spring/olat_userconfig.xml -> Key:
 			// org.olat.admin.user.bulkChange.UserBulkChangeStep00
-			userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-			UserPropertyHandler userPropertyHandler;
-			for (int i = 0; i < userPropertyHandlers.size(); i++) {
-				userPropertyHandler = userPropertyHandlers.get(i);
+			List<UserPropertyHandler> userPropHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+			userPropertyHandlers = new ArrayList<UserPropertyHandler>();
+			for (int i = 0; i < userPropHandlers.size(); i++) {
+				UserPropertyHandler userPropertyHandler = userPropHandlers.get(i);
+				//accept only no-unique properties
+				if(!(userPropertyHandler instanceof GenericUnique127CharTextPropertyHandler)) {
+					userPropertyHandlers.add(userPropertyHandler);
 
-				checkbox = uifactory.addCheckboxesVertical("checkbox" + i, "form.name." + userPropertyHandler.getName(), innerFormLayout, new String[] { "change" + userPropertyHandler.getName() }, new String[] { "" }, null, 1);
-				checkbox.select("change" + userPropertyHandler.getName(), false);
-				checkbox.addActionListener(listener, FormEvent.ONCLICK);
-
-				formitem = userPropertyHandler.addFormItem(getLocale(), null, usageIdentifyer, isAdministrativeUser, innerFormLayout);
-				formitem.setLabel(null, null);
-
-				targets = new HashSet<FormItem>();
-				targets.add(formitem);
-				
-				RulesFactory.createHideRule(checkbox, null, targets, innerFormLayout);
-				RulesFactory.createShowRule(checkbox, "change" + userPropertyHandler.getName(), targets, innerFormLayout);
-
-				checkBoxes.add(checkbox);
-				formItems.add(formitem);
+					checkbox = uifactory.addCheckboxesVertical("checkbox" + i, "form.name." + userPropertyHandler.getName(), innerFormLayout, new String[] { "change" + userPropertyHandler.getName() }, new String[] { "" }, null, 1);
+					checkbox.select("change" + userPropertyHandler.getName(), false);
+					checkbox.addActionListener(listener, FormEvent.ONCLICK);
+	
+					formitem = userPropertyHandler.addFormItem(getLocale(), null, usageIdentifyer, isAdministrativeUser, innerFormLayout);
+					formitem.setLabel(null, null);
+	
+					targets = new HashSet<FormItem>();
+					targets.add(formitem);
+					
+					RulesFactory.createHideRule(checkbox, null, targets, innerFormLayout);
+					RulesFactory.createShowRule(checkbox, "change" + userPropertyHandler.getName(), targets, innerFormLayout);
+	
+					checkBoxes.add(checkbox);
+					formItems.add(formitem);
+				}
 			}
-
 		}
-
 	}
-
 }

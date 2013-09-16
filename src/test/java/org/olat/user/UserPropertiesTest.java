@@ -44,16 +44,16 @@ public class UserPropertiesTest {
 		
 		URLPropertyHandler urlHandler = new URLPropertyHandler();
 		ValidationError error = new ValidationError();
-		boolean valid1 = urlHandler.isValidValue("http://www.openolat.org", error, null);
+		boolean valid1 = urlHandler.isValidValue(null, "http://www.openolat.org", error, null);
 		assertTrue(valid1);
 		
-		boolean valid2 = urlHandler.isValidValue("http://test.ch", error, null);
+		boolean valid2 = urlHandler.isValidValue(null, "http://test.ch", error, null);
 		assertTrue(valid2);
 		
-		boolean valid3 = urlHandler.isValidValue("http://localhost", error, null);
+		boolean valid3 = urlHandler.isValidValue(null, "http://localhost", error, null);
 		assertTrue(valid3);
 		
-		boolean invalid1 = urlHandler.isValidValue("http:www.openolat.org", error, null);
+		boolean invalid1 = urlHandler.isValidValue(null, "http:www.openolat.org", error, null);
 		assertFalse(invalid1);
 	}
 

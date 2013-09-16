@@ -286,9 +286,9 @@ class ImportStep00 extends BasicStep {
 							}
 							// used for call-back value depending on PropertyHandler
 							ValidationError validationError = new ValidationError();
-							if (!userPropertyHandler.isValidValue(thisValue, validationError, getLocale())) {
+							if (!userPropertyHandler.isValidValue(null, thisValue, validationError, getLocale())) {
 								textAreaElement.setErrorKey("error.lengthorformat", new String[] { String.valueOf(i + 1), translate(userPropertyHandler.i18nFormElementLabelKey()),
-										translate(validationError.getErrorKey()) });
+										translate(validationError.getErrorKey(), validationError.getArgs()) });
 								importDataError = true;
 								break;
 							}
@@ -307,6 +307,7 @@ class ImportStep00 extends BasicStep {
 								// check that no user with same email is already in list
 								Integer mailPos = importedEmails.indexOf(thisValue);
 								// fxdiff
+								//TODO unique user property
 								boolean duplicate = mailPos != -1;
 								if (!duplicate) {
 									duplicate |= tempEmailsInUse.contains(thisValue);

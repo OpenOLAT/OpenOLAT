@@ -86,6 +86,7 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 		return new Date(0);
 	}
 
+	@Override
 	public String getUserProperty(User user, Locale locale) {
 		Date date = getDateValue(user);
 		if (date != null && locale != null)
@@ -98,6 +99,7 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 	 *         the unix tstamp of this Date-Field, time in milliseconds since
 	 *         1970)
 	 */
+	@Override
 	protected String getInternalValue(User user) {
 		if (user != null) {
 			return String.valueOf(getDateValue(user).getTime());
@@ -111,13 +113,13 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 	}
 
 	@Override
-	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
+	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		// always valid, no check
 		return true;
 	}
 
 	@Override
-	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
+	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
 		// always valid, no check
 		return true;
 	}
@@ -135,5 +137,4 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 	public String getStringValue(String displayValue, Locale locale) {
 		return displayValue;
 	}
-
 }

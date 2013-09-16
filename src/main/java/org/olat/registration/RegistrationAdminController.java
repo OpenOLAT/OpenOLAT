@@ -246,7 +246,7 @@ public class RegistrationAdminController extends FormBasicController {
 				UserPropertyHandler handler = userPropertiesConfig.getPropertyHandler(propertyName);
 				if(handler != null) {
 					ValidationError validationError = new ValidationError();
-					boolean valid = handler.isValidValue(value, validationError, getLocale());
+					boolean valid = handler.isValidValue(null, value, validationError, getLocale());
 					if(!valid) {
 						propertyValueElement.setErrorKey("admin.registration.propertyValue.error", null);
 						allOk &= false;

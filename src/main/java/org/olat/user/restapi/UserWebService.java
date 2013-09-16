@@ -230,7 +230,7 @@ public class UserWebService {
 			return Response.ok(errorVos).status(Status.NOT_ACCEPTABLE).build();
 		}
 		
-		List<ErrorVO> errors = validateUser(user, request);
+		List<ErrorVO> errors = validateUser(null, user, request);
 		if(errors.isEmpty()) {
 			User newUser = UserManager.getInstance().createUser(user.getFirstName(), user.getLastName(), user.getEmail());
 			Identity id = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(user.getLogin(), user.getPassword(), newUser);
@@ -663,7 +663,7 @@ public class UserWebService {
 			}
 			
 			User retrievedUser = retrievedIdentity.getUser();
-			List<ErrorVO> errors = validateUser(user, request);
+			List<ErrorVO> errors = validateUser(retrievedUser, user, request);
 			if(errors.isEmpty()) {
 				post(retrievedUser, user, getLocale(request));
 				UserManager.getInstance().updateUser(retrievedUser);
@@ -680,40 +680,40 @@ public class UserWebService {
 		}
 	}
 	
-	private List<ErrorVO> validateUser(UserVO user, HttpServletRequest request) {
+	private List<ErrorVO> validateUser(User user, UserVO userVo, HttpServletRequest request) {
 		UserManager um = UserManager.getInstance();
 		
 		Locale locale = getLocale(request);
 		List<ErrorVO> errors = new ArrayList<ErrorVO>();
 		List<UserPropertyHandler> propertyHandlers = um.getUserPropertyHandlersFor(PROPERTY_HANDLER_IDENTIFIER, false);
-		validateProperty(UserConstants.FIRSTNAME, user.getFirstName(), propertyHandlers, errors, um, locale);
-		validateProperty(UserConstants.LASTNAME, user.getLastName(), propertyHandlers, errors, um, locale);
-		validateProperty(UserConstants.EMAIL, user.getEmail(), propertyHandlers, errors, um, locale);
+		validateProperty(user, UserConstants.FIRSTNAME, userVo.getFirstName(), propertyHandlers, errors, um, locale);
+		validateProperty(user, UserConstants.LASTNAME, userVo.getLastName(), propertyHandlers, errors, um, locale);
+		validateProperty(user, UserConstants.EMAIL, userVo.getEmail(), propertyHandlers, errors, um, locale);
 		for (UserPropertyHandler propertyHandler : propertyHandlers) {
 			if(!UserConstants.FIRSTNAME.equals(propertyHandler.getName())
 					&& !UserConstants.LASTNAME.equals(propertyHandler.getName())
 					&& !UserConstants.EMAIL.equals(propertyHandler.getName())) {
-				validateProperty(user, propertyHandler, errors, um, locale);
+				validateProperty(user, userVo, propertyHandler, errors, um, locale);
 			}
 		}
 		return errors;
 	}
 	
-	private boolean validateProperty(String name, String value, List<UserPropertyHandler> handlers, List<ErrorVO> errors, UserManager um, Locale locale) {
+	private boolean validateProperty(User user, String name, String value, List<UserPropertyHandler> handlers, List<ErrorVO> errors, UserManager um, Locale locale) {
 		for(UserPropertyHandler handler:handlers) {
 			if(handler.getName().equals(name)) {
-				return validateProperty(value, handler, errors, um, locale);
+				return validateProperty(user, value, handler, errors, um, locale);
 			}
 		}
 		return true;
 	}
 	
-	private boolean validateProperty(UserVO user, UserPropertyHandler userPropertyHandler, List<ErrorVO> errors, UserManager um, Locale locale) {
-		String value = user.getProperty(userPropertyHandler.getName());
-		return validateProperty(value, userPropertyHandler, errors, um, locale);
+	private boolean validateProperty(User user, UserVO userVo, UserPropertyHandler userPropertyHandler, List<ErrorVO> errors, UserManager um, Locale locale) {
+		String value = userVo.getProperty(userPropertyHandler.getName());
+		return validateProperty(user, value, userPropertyHandler, errors, um, locale);
 	}
 	
-	private boolean validateProperty(String value, UserPropertyHandler userPropertyHandler, List<ErrorVO> errors, UserManager um, Locale locale) {
+	private boolean validateProperty(User user, String value, UserPropertyHandler userPropertyHandler, List<ErrorVO> errors, UserManager um, Locale locale) {
 		ValidationError error = new ValidationError();
 		if(!StringHelper.containsNonWhitespace(value) && um.isMandatoryUserProperty(PROPERTY_HANDLER_IDENTIFIER, userPropertyHandler)) {
 			Translator translator = new PackageTranslator("org.olat.core", locale);
@@ -724,10 +724,10 @@ public class UserWebService {
 		
 		value = parseUserProperty(value, userPropertyHandler, locale);
 		
-		if (!userPropertyHandler.isValidValue(value, error, locale)) {
+		if (!userPropertyHandler.isValidValue(user, value, error, locale)) {
 			String pack = userPropertyHandler.getClass().getPackage().getName();
 			Translator translator = new PackageTranslator(pack, locale);
-			String translation = translator.translate(error.getErrorKey());
+			String translation = translator.translate(error.getErrorKey(), error.getArgs());
 			errors.add(new ErrorVO(pack, error.getErrorKey(), translation));
 			return false;
 		}

@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKeyImpl;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -73,8 +74,7 @@ public class ProfileFormController extends FormBasicController {
 	private Identity identity;
 
 	private boolean isAdministrativeUser;
-	
-	private List<String> propertyNames;
+
 
 	/**
 	 * Creates this controller.
@@ -148,7 +148,7 @@ public class ProfileFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("form.description");
 		
-		this.formContext.put("username", this.identity.getName());
+		formContext.put("username", identity.getName());
 
 		// Add the noneditable username field.
 		MultipleSelectionElement usernameCheckbox = uifactory.addCheckboxesHorizontal("checkbox_username", null, formLayout, new String[] {"checkbox_username"}, new String[] {""}, null);
@@ -171,7 +171,7 @@ public class ProfileFormController extends FormBasicController {
 			if (!group.equals(currentGroup)) {
 				if (currentGroup != null) {
 					SpacerElement spacerElement = uifactory.addSpacerElement("spacer_" + group, formLayout, false);
-					this.formItems.put("spacer_" + group, spacerElement);
+					formItems.put("spacer_" + group, spacerElement);
 				}
 				currentGroup = group;
 			}
@@ -198,7 +198,7 @@ public class ProfileFormController extends FormBasicController {
 			}
 			
 			// add input field to container
-			FormItem formItem = userPropertyHandler.addFormItem(getLocale(), this.identity.getUser(), this.usageIdentifier, this.isAdministrativeUser, formLayout);
+			FormItem formItem = userPropertyHandler.addFormItem(getLocale(), identity.getUser(), this.usageIdentifier, this.isAdministrativeUser, formLayout);
 			String propertyName = userPropertyHandler.getName();
 			this.formItems.put(propertyName, formItem);
 			
@@ -224,7 +224,8 @@ public class ProfileFormController extends FormBasicController {
 				String key = this.identity.getUser().getProperty("emchangeKey", null);
 				TemporaryKeyImpl tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
 				if (tempKey != null) {
-					XStream xml = new XStream();
+					XStream xml = XStreamHelper.createXStreamInstance();
+					@SuppressWarnings("unchecked")
 					HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(tempKey.getEmailAddress());
 					formItem.setExampleKey("email.change.form.info", new String[] {mails.get("changedEMail")});
 				}
@@ -232,9 +233,9 @@ public class ProfileFormController extends FormBasicController {
 		}
 		
 		// add the "about me" text field.
-		this.textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text", this.conf.getTextAboutMe(), 10, -1, false, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
-		this.textAboutMe.setMaxLength(10000);
-		this.formItems.put("form.text", this.textAboutMe);
+		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text", this.conf.getTextAboutMe(), 10, -1, false, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		textAboutMe.setMaxLength(10000);
+		formItems.put("form.text", this.textAboutMe);
 		
 		// Create submit and cancel buttons
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
@@ -289,14 +290,14 @@ public class ProfileFormController extends FormBasicController {
 	 * @return the updated identity object
 	 */
 	public Identity updateIdentityFromFormData(Identity id) {
-		User user = id.getUser();
+		identity = id;
+		User user = identity.getUser();
 		// update each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			FormItem formItem = this.formItems.get(userPropertyHandler.getName());
-
+			FormItem formItem = formItems.get(userPropertyHandler.getName());
 			userPropertyHandler.updateUserFromFormItem(user, formItem);
 		}
-		return id;
+		return identity;
 	}
 
 	/*
@@ -308,11 +309,10 @@ public class ProfileFormController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean formOK = true;
+		User user = identity.getUser();
 		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
-
-			FormItem formItem = this.formItems.get(userPropertyHandler.getName());
-
-			if (!userPropertyHandler.isValid(formItem, this.formContext)) {
+			FormItem formItem = formItems.get(userPropertyHandler.getName());
+			if (!userPropertyHandler.isValid(user, formItem, formContext)) {
 				formOK = false;
 			} else {
 				formItem.clearError();

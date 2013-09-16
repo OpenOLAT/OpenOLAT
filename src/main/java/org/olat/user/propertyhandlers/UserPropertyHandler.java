@@ -25,7 +25,6 @@ import java.util.Map;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.id.User;
 
@@ -50,7 +49,7 @@ import org.olat.core.id.User;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 
-public interface UserPropertyHandler extends ItemValidatorProvider {
+public interface UserPropertyHandler {
 
 	/**
 	 * @return The identifyer string of this UserPropertyHandler
@@ -154,7 +153,7 @@ public interface UserPropertyHandler extends ItemValidatorProvider {
 	 * @return true: the entered value is ok; false: the entered value is not
 	 *         accepted (Validation error)
 	 */
-	public boolean isValid(FormItem formItem, Map<String,String> formContext);
+	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext);
 
 	/**
 	 * Checks if the given value is a valid value for this property (e.g. syntax
@@ -169,7 +168,7 @@ public interface UserPropertyHandler extends ItemValidatorProvider {
 	 * @return true: value is valid, false: value is invalid. Check
 	 *         validationError to get the error message
 	 */
-	public boolean isValidValue(String value, ValidationError validationError, Locale locale);
+	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale);
 
 
 	/**

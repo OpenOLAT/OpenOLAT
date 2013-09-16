@@ -90,6 +90,10 @@ public abstract class UserManager extends BasicManager {
 	 * @return a persistant User.
 	 */
 	public abstract User createAndPersistUser(String firstName, String lastName, String email);
+	
+	public abstract List<Long> findUserKeyWithProperty(String propName, String propValue);
+	
+	public abstract Identity findIdentityKeyWithProperty(String propName, String propValue);
 
 	/**
 	 * Find the identity (and the user) that match the given email address. The

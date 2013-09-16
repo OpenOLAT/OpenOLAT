@@ -76,13 +76,13 @@ public class URLPropertyHandler extends Generic127CharTextPropertyHandler {
 	}
 
 	@Override
-	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
+	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		// check parent rules first: check if mandatory and empty
-		if ( ! super.isValid(formItem, formContext)) return false;
+		if ( ! super.isValid(user, formItem, formContext)) return false;
 		org.olat.core.gui.components.form.flexible.elements.TextElement uiEl = (org.olat.core.gui.components.form.flexible.elements.TextElement) formItem;
 		String value = uiEl.getValue();
 		ValidationError validationError = new ValidationError();
-		boolean valid = isValidValue(value, validationError, formItem.getTranslator().getLocale());
+		boolean valid = isValidValue(user, value, validationError, formItem.getTranslator().getLocale());
 		if(!valid) {
 			uiEl.setErrorKey(validationError.getErrorKey(), new String[]{});
 		}
@@ -93,8 +93,8 @@ public class URLPropertyHandler extends Generic127CharTextPropertyHandler {
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValidValue(java.lang.String, org.olat.core.gui.components.form.ValidationError, java.util.Locale)
 	 */
 	@Override
-	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
-		if ( ! super.isValidValue(value, validationError, locale)) return false;
+	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
+		if ( ! super.isValidValue(user, value, validationError, locale)) return false;
 		
 		boolean allOk = true;
 		if (StringHelper.containsNonWhitespace(value)) {			

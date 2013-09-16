@@ -63,7 +63,7 @@ public class GenericYesNoPropertyHandler extends AbstractUserPropertyHandler {
 
 		// pre-select yes/no
 		String internalValue = getInternalValue(user);
-		if (isValidValue(internalValue, null, null)) {
+		if (isValidValue(user, internalValue, null, null)) {
 			if (VAL_YES.equals(internalValue))
 				sElem.select(KEY_YES, true);
 			if (VAL_NO.equals(internalValue))
@@ -87,7 +87,7 @@ public class GenericYesNoPropertyHandler extends AbstractUserPropertyHandler {
 	}
 
 	@Override
-	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
+	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		// the formItem is always valid. if no radio-button is selected, the
 		// value is just "NO"
 		// this is also ok if item is mandatory...
@@ -106,7 +106,7 @@ public class GenericYesNoPropertyHandler extends AbstractUserPropertyHandler {
 	}
 
 	@Override
-	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
+	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
 		// a value is valid if it is either val_no or val_yes
 		return (VAL_NO.equals(value) || VAL_YES.equals(value));
 	}

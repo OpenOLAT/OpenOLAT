@@ -1578,14 +1578,6 @@ public class RichTextConfiguration implements Disposable {
 		if(buttons3.contains("visualchars")) buttons3.set(buttons3.indexOf("visualchars"), "charmap");
 		if(buttons3.contains("tablecontrols")) buttons3.set(buttons3.indexOf("tablecontrols"), "table");
 		buttons3.remove("cleanup");
-		
-		System.out.println("Plugins: " + plugins);
-		System.out.println("Buttons 1: " + theme_advanced_buttons1);
-		System.out.println("Buttons 1n: " +buttons1);
-		System.out.println("Buttons 2: " + theme_advanced_buttons2);
-		System.out.println("Buttons 2n: " + buttons2);
-		System.out.println("Buttons 3: " + theme_advanced_buttons3);
-		System.out.println("Buttons 3n: " + buttons3);
 
 		appendValuesFromList(sb, PLUGINS, plugins4);
 		sb.append(",\n")
@@ -1658,9 +1650,6 @@ public class RichTextConfiguration implements Disposable {
  		for (Map.Entry<String, String> entry : copyNonValues.entrySet()) {
 			sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(",\n");
 		}
-
- 		System.out.println("Quoted: " + quotedConfigValues);
- 		System.out.println("Non quoted: " + copyNonValues);
 	}
 	
 	

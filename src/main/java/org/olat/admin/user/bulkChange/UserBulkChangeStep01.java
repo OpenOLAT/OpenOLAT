@@ -231,6 +231,8 @@ class UserBulkChangeStep01 extends BasicStep {
 				RulesFactory.createHideRule(chkAuthor, null, targets, innerFormLayout);
 				RulesFactory.createShowRule(chkAuthor, "Author", targets, innerFormLayout);
 			}
+			
+			//TODO unique user property (doesn't bulk change unique property)
 
 			
 			// sysadmin

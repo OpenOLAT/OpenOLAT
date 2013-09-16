@@ -72,8 +72,8 @@ public class ICQPropertyHandler extends Generic127CharTextPropertyHandler {
 	 *      org.olat.core.gui.components.form.ValidationError, java.util.Locale)
 	 */
 	@Override
-	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
-		if (!super.isValidValue(value, validationError, locale)) {
+	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
+		if (!super.isValidValue(user, value, validationError, locale)) {
 			return false;
 		}
 
@@ -126,7 +126,7 @@ public class ICQPropertyHandler extends Generic127CharTextPropertyHandler {
 	 *      java.util.Map)
 	 */
 	@Override
-	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
+	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		// FXOLAT-343 ::
 		// there's no official icq-api to check if a user exists..
 		// the previous check failed (nov 2011), urls changed etc...

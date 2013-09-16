@@ -102,7 +102,7 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 					UserBulkChangeManager ubcMan = UserBulkChangeManager.getInstance();
 					Context vcContext = new VelocityContext();
 					if (user==null){
-						vcContext = ubcMan.getDemoContext(locale2, isAdministrativeUser);
+						vcContext = ubcMan.getDemoContext(locale2);
 					}
 					//should be used if user-argument !=null --> move to right place
 					else {
@@ -112,7 +112,7 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 					}
 					value = value.replace("$", "$!");
 					String evaluatedValue = ubcMan.evaluateValueWithUserContext(value, vcContext);
-					return EmailProperty.this.isValidValue(evaluatedValue, validationError, locale2);
+					return EmailProperty.this.isValidValue(user, evaluatedValue, validationError, locale2);
 				}
 			});
 		} 
@@ -124,8 +124,8 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
 	 */
 	@Override
-	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
-		if (!super.isValid(formItem, formContext)) {
+	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
+		if (!super.isValid(user, formItem, formContext)) {
 			return false;
 		}
 		org.olat.core.gui.components.form.flexible.elements.TextElement textElement = (org.olat.core.gui.components.form.flexible.elements.TextElement)formItem;
@@ -148,13 +148,13 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 		return true; 
 	}
 
-	@Override
 	/**
 	 * check for valid email
 	 */
-	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
+	@Override
+	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
 		// check for length
-		if (!super.isValidValue(value, validationError, locale)) {
+		if (!super.isValidValue(user, value, validationError, locale)) {
 			return false; 
 		}
 

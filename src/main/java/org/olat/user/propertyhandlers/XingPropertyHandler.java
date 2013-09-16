@@ -49,8 +49,8 @@ public class XingPropertyHandler extends Generic127CharTextPropertyHandler {
 	 *      org.olat.core.gui.components.form.ValidationError, java.util.Locale)
 	 */
 	@Override
-	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
-		if (!super.isValidValue(value, validationError, locale)) {
+	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
+		if (!super.isValidValue(user, value, validationError, locale)) {
 			return false;
 		}
 		if (StringHelper.containsNonWhitespace(value)) {
@@ -98,7 +98,7 @@ public class XingPropertyHandler extends Generic127CharTextPropertyHandler {
 	 *      java.util.Map)
 	 */
 	@Override
-	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
+	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		TextElement textElement = (TextElement) formItem;
 		if (StringHelper.containsNonWhitespace(textElement.getValue())) {
 			return textElement.getValue().length() <= XING_NAME_MAX_LENGTH;

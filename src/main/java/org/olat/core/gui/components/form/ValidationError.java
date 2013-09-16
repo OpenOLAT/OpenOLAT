@@ -31,6 +31,7 @@ package org.olat.core.gui.components.form;
  */
 public class ValidationError {
 	private String errorKey;
+	private String[] args;
 
 	/**
 	 * @return The i18n key for this error or NULL for no error
@@ -45,4 +46,14 @@ public class ValidationError {
 	public void setErrorKey(String errorKey) {
 		this.errorKey = errorKey;
 	}
+
+	public String[] getArgs() {
+		return args;
+	}
+
+	public void setArgs(String[] args) {
+		this.args = args;
+	}
+	
+	
 }

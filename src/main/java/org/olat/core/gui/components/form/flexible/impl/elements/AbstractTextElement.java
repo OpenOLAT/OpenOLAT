@@ -348,11 +348,11 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		Locale locale = getTranslator().getLocale();
 		ValidationError validationErrorCallback = new ValidationError();
 		boolean isValid = itemValidatorProvider.isValidValue(value, validationErrorCallback, locale);
-		if (isValid) return true;
-		else {
-			setErrorKey(validationErrorCallback.getErrorKey(), null);
+		if (isValid) {
+			return true;
+		} else {
+			setErrorKey(validationErrorCallback.getErrorKey(), validationErrorCallback.getArgs());
 			return false; 
 		}
 	}
-	
 }

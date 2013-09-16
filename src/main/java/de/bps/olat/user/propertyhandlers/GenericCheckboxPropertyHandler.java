@@ -45,6 +45,7 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
  * 
  * @see org.olat.user.propertyhandlers.UserPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
  */
+	@Override
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser,
 			FormItemContainer formItemContainer) {
 		SelectionElement sElem = null;
@@ -65,6 +66,7 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
  * 
  * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.components.form.flexible.FormItem)
  */
+	@Override
 	public String getStringValue(FormItem formItem) {
 		String value = "";
 		if(((org.olat.core.gui.components.form.flexible.elements.SelectionElement) formItem).isSelected(0))
@@ -79,6 +81,7 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
  * 
  * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(java.lang.String, java.util.Locale)
  */
+	@Override
 	public String getStringValue(String displayValue, Locale locale) {
 		return displayValue;
 	}
@@ -88,7 +91,8 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
  * 
  * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
  */
-	public boolean isValid(FormItem formItem, Map<String, String> formContext) {
+	@Override
+	public boolean isValid(User user, FormItem formItem, Map<String, String> formContext) {
 		return true;
 	}
 
@@ -96,7 +100,8 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
  * 
  * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValidValue(java.lang.String, org.olat.core.gui.components.form.ValidationError, java.util.Locale)
  */
-	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
+	@Override
+	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
 		return true;
 	}
 
@@ -104,6 +109,7 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
  * 
  * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormItem(org.olat.core.id.User, org.olat.core.gui.components.form.flexible.FormItem)
  */
+	@Override
 	public void updateUserFromFormItem(User user, FormItem formItem) {
 		String internalValue = getStringValue(formItem);
 		setInternalValue(user, internalValue);

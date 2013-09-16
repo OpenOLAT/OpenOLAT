@@ -338,7 +338,8 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		TemporaryKey tk = rm.loadTemporaryKeyByEmail(serMailMap);
 		if (tk == null) {
 			XStream xml = new XStream();
-			HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(serMailMap);
+			@SuppressWarnings("unchecked")
+			Map<String, String> mails = (Map<String, String>) xml.fromXML(serMailMap);
 			String currentEMail = mails.get("currentEMail");
 			List<TemporaryKey> tks = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
 			if (tks != null) {
@@ -346,7 +347,8 @@ public class ProfileAndHomePageEditController extends BasicController implements
 					tks = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
 					int countCurrentEMail = 0;
 					for (TemporaryKey temporaryKey : tks) {
-						HashMap<String, String> tkMails = (HashMap<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
+						@SuppressWarnings("unchecked")
+						Map<String, String> tkMails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
 						if (tkMails.get("currentEMail").equals(currentEMail)) {
 							if (countCurrentEMail > 0) {
 								// clean

@@ -168,8 +168,8 @@ public class UserBulkChangeManager extends BasicManager {
 					ValidationError validationError = new ValidationError();
 					// do validation checks with users current locale!
 					Locale locale = transWithFallback.getLocale();
-					if (!propHandler.isValidValue(evaluatedInputFieldValue, validationError, locale)) {
-						errorDesc = transWithFallback.translate(validationError.getErrorKey()) + " (" + evaluatedInputFieldValue + ")";
+					if (!propHandler.isValidValue(identity.getUser(), evaluatedInputFieldValue, validationError, locale)) {
+						errorDesc = transWithFallback.translate(validationError.getErrorKey(), validationError.getArgs()) + " (" + evaluatedInputFieldValue + ")";
 						updateError = true;
 						break;
 					}
@@ -328,12 +328,12 @@ public class UserBulkChangeManager extends BasicManager {
 		}
 	}
 
-	public Context getDemoContext(Locale locale, boolean isAdministrativeUser) {
+	public Context getDemoContext(Locale locale) {
 		Translator propertyTrans = Util.createPackageTranslator(UserPropertyHandler.class, locale);
-		return getDemoContext(propertyTrans, isAdministrativeUser);
+		return getDemoContext(propertyTrans);
 	}
 	
-	public Context getDemoContext(Translator propertyTrans, boolean isAdministrativeUser) {
+	public Context getDemoContext(Translator propertyTrans) {
 		Context vcContext = new VelocityContext();
 		List<UserPropertyHandler> userPropertyHandlers2;
 		userPropertyHandlers2 = UserManager.getInstance().getAllUserPropertyHandlers();
@@ -344,6 +344,4 @@ public class UserBulkChangeManager extends BasicManager {
 		}
 		return vcContext;
 	}
-
-
 }

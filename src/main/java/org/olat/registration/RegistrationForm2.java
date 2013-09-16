@@ -211,7 +211,7 @@ public class RegistrationForm2 extends FormBasicController {
 		// validate each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
-			if (!userPropertyHandler.isValid(fi, null)) {
+			if (!userPropertyHandler.isValid(null, fi, null)) {
 				return false;
 			}
 		}

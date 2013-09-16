@@ -144,6 +144,32 @@ public class UserManagerImpl extends UserManager {
 		}
 		return false;
 	}
+	
+	@Override
+	public List<Long> findUserKeyWithProperty(String propName, String propValue) {
+		StringBuilder sb = new StringBuilder("select user.key from ").append(UserImpl.class.getName()).append(" user ")
+			.append(" where user.properties['").append(propName).append("'] =:propValue");
+
+		List<Long> userKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("propValue", propValue).getResultList();
+		return userKeys;
+	}
+	
+	@Override
+	public Identity findIdentityKeyWithProperty(String propName, String propValue) {
+		StringBuilder sb = new StringBuilder("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
+			.append(" inner join identity.user user ")
+			.append(" where user.properties['").append(propName).append("'] =:propValue");
+
+		List<Identity> userKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("propValue", propValue).getResultList();
+		if(userKeys.isEmpty()) {
+			return null;
+		}
+		return userKeys.get(0);
+	}
 
 	/**
 	 * @see org.olat.user.UserManager#findIdentityByEmail(java.lang.String)

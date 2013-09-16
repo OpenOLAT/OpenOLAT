@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.commons.lang.time.DateUtils;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.id.User;
 
 /**
  * <h3>Description:</h3> The FutureDatePropertyHandler offers the functionality
@@ -42,8 +43,8 @@ public class FutureDatePropertyHandler extends DatePropertyHandler {
 	 *      java.util.Map)
 	 */
 	@Override
-	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
-		boolean isValidDate = super.isValid(formItem, formContext);
+	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
+		boolean isValidDate = super.isValid(user, formItem, formContext);
 		if (!isValidDate)
 			return false;
 

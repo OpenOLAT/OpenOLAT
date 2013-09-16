@@ -253,8 +253,8 @@ class NewUserForm extends FormBasicController {
 		// validate special rules for each user property
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {			
 			//we assume here that there are only textElements for the user properties
-			FormItem formItem = this.flc.getFormComponent(userPropertyHandler.getName());
-			if ( ! userPropertyHandler.isValid(formItem, null) || formItem.hasError()) {
+			FormItem formItem = flc.getFormComponent(userPropertyHandler.getName());
+			if ( ! userPropertyHandler.isValid(null, formItem, null) || formItem.hasError()) {
 				return false;				
 			}
 			formItem.clearError();
@@ -267,7 +267,6 @@ class NewUserForm extends FormBasicController {
 
 			// TODO:fj offer a method in basesecurity to threadsafely generate a new
 			// user!!!
-
 			Identity exists = um.findIdentityByEmail(email);
 			if (exists != null) {
 				// Oups, email already taken, display error

@@ -83,6 +83,7 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormItem(org.olat.core.id.User, org.olat.core.gui.components.form.flexible.FormItem)
 	 */
+	@Override
 	public void updateUserFromFormItem(User user, FormItem formItem) {
 		String internalValue = getStringValue(formItem);
 		setInternalValue(user, internalValue);
@@ -91,6 +92,7 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.components.form.flexible.FormItem)
 	 */
+	@Override
 	public String getStringValue(FormItem formItem) {
 		return ((org.olat.core.gui.components.form.flexible.elements.SingleSelection) formItem).getSelectedKey();
 	}
@@ -98,6 +100,7 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(java.lang.String, java.util.Locale)
 	 */
+	@Override
 	public String getStringValue(String displayValue, Locale locale) {
 		// This should be refactored, but currently the bulk change does not work
 		// otherwhise. When changing this here, the isValidValue must also to
@@ -112,6 +115,7 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	 *  
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
 	 */
+	@Override
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser,	FormItemContainer formItemContainer) {
 		org.olat.core.gui.components.form.flexible.elements.SingleSelection	genderElem = null;
 		//genderElem = FormUIFactory.getInstance().addDropdownSingleselect(getName(), i18nFormElementLabelKey(), formItemContainer, keys, getTranslatedValues(locale), null);
@@ -141,8 +145,8 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
 	 */
-	
-	public boolean isValid(FormItem formItem, Map<String,String> formContext) {
+	@Override
+	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		if (formItem.isMandatory()) {
 			org.olat.core.gui.components.form.flexible.elements.SingleSelection sse = (org.olat.core.gui.components.form.flexible.elements.SingleSelection) formItem;
 			// when mandatory, the - must not be selected
@@ -158,7 +162,8 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValidValue(java.lang.String, org.olat.core.gui.components.form.ValidationError, java.util.Locale)
 	 */
-	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
+	@Override
+	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
 		if (value != null) {
 			for (int i = 0; i < keys.length; i++) {
 				String key = keys[i];
