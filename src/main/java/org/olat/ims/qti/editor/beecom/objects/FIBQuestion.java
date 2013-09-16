@@ -28,10 +28,8 @@ package org.olat.ims.qti.editor.beecom.objects;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.dom4j.Element;
 import org.olat.ims.qti.editor.QTIEditHelper;
