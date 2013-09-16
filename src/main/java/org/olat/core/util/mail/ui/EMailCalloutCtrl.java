@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailModule;
 import org.olat.user.UserManager;
 
@@ -102,13 +103,18 @@ public class EMailCalloutCtrl extends FormBasicController {
 		if(StringHelper.isLong(mail)) {
 			identity = BaseSecurityManager.getInstance().loadIdentityByKey(Long.parseLong(mail));
 		}
-		if(identity == null) {
-			identity = UserManager.getInstance().findIdentityByEmail(mail);
+		if(MailHelper.isValidEmailAddress(mail)) {
+			if(identity == null) {
+				identity = UserManager.getInstance().findIdentityByEmail(mail);
+			}
+			if(identity == null) {
+				identity = new EMailIdentity(mail, getLocale());
+			}
 		}
-		if(identity == null) {
-			identity = new EMailIdentity(mail, getLocale());
+		
+		if(identity != null) {
+			fireEvent(ureq, new SingleIdentityChosenEvent(identity));
 		}
-		fireEvent(ureq, new SingleIdentityChosenEvent(identity));
 	}
 
 	@Override
