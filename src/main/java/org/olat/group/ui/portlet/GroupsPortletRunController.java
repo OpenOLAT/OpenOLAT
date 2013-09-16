@@ -91,8 +91,9 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	 * @param ureq
 	 * @param component
 	 */
-	public GroupsPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName) {
-		super(wControl, ureq, trans, portletName);
+	public GroupsPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans,
+			String portletName, int defaultMaxEntries) {
+		super(wControl, ureq, trans, portletName, defaultMaxEntries);
 
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		

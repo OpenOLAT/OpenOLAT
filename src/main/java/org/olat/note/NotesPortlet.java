@@ -51,9 +51,10 @@ public class NotesPortlet extends AbstractPortlet {
 	 */
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Translator translator = Util.createPackageTranslator(NotesPortlet.class, ureq.getLocale());
-		Portlet p = new NotesPortlet();
+		NotesPortlet p = new NotesPortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
+		p.setDefaultMaxEntries(getDefaultMaxEntries());
 		p.setTranslator(translator);
 		return p;
 	}
@@ -76,9 +77,9 @@ public class NotesPortlet extends AbstractPortlet {
 	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest)
 	 */
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
-		if(this.runCtr != null) runCtr.dispose();
-		this.runCtr = new NotesPortletRunController(wControl, ureq, getTranslator(), this.getName());
-		return this.runCtr.getInitialComponent();
+		if(runCtr != null) runCtr.dispose();
+		runCtr = new NotesPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
+		return runCtr.getInitialComponent();
 	}
 
 	/**
@@ -107,7 +108,7 @@ public class NotesPortlet extends AbstractPortlet {
 
 	public PortletToolController<Note> getTools(UserRequest ureq, WindowControl wControl) {
 		if (runCtr == null) {
-			this.runCtr = new NotesPortletRunController(wControl, ureq, getTranslator(), this.getName());
+			runCtr = new NotesPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
 		}
 	  return runCtr.createSortingTool(ureq, wControl);
 	}

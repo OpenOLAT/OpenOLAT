@@ -54,9 +54,10 @@ public class GroupsPortlet extends AbstractPortlet {
 	 */
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Translator translator = Util.createPackageTranslator(BGControllerFactory.class, ureq.getLocale());
-		Portlet p = new GroupsPortlet();
+		GroupsPortlet p = new GroupsPortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
+		p.setDefaultMaxEntries(getDefaultMaxEntries());
 		p.setTranslator(translator);
 		return p;
 	}
@@ -83,7 +84,7 @@ public class GroupsPortlet extends AbstractPortlet {
 		if(runCtr != null) {
 			runCtr.dispose();
 		}
-		runCtr = new GroupsPortletRunController(wControl, ureq, getTranslator(), this.getName());
+		runCtr = new GroupsPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
 		return runCtr.getInitialComponent();
 	}
 
@@ -114,7 +115,7 @@ public class GroupsPortlet extends AbstractPortlet {
 	public PortletToolController<BusinessGroupEntry> getTools(UserRequest ureq, WindowControl wControl) {
 		//portlet was not yet visible
 		if ( runCtr == null ) {
-			runCtr = new GroupsPortletRunController(wControl, ureq, getTranslator(), this.getName());
+			runCtr = new GroupsPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
 		}
 	  return runCtr.createSortingTool(ureq, wControl);
 	}

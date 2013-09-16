@@ -52,9 +52,10 @@ public class NotificationsPortlet extends AbstractPortlet {
 	 */
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Translator translator = Util.createPackageTranslator(NotificationsPortlet.class, ureq.getLocale());
-		Portlet p = new NotificationsPortlet();
+		NotificationsPortlet p = new NotificationsPortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
+		p.setDefaultMaxEntries(getDefaultMaxEntries());
 		p.setTranslator(translator);
 		return p;
 	}
@@ -78,7 +79,7 @@ public class NotificationsPortlet extends AbstractPortlet {
 	 */
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(this.runCtr != null) runCtr.dispose();
-		this.runCtr = new NotificationsPortletRunController(wControl, ureq, getTranslator(), this.getName());
+		this.runCtr = new NotificationsPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
 		return this.runCtr.getInitialComponent();
 	}
 
@@ -108,9 +109,8 @@ public class NotificationsPortlet extends AbstractPortlet {
 	
 	public PortletToolController<Subscriber> getTools(UserRequest ureq, WindowControl wControl) {
 		if (runCtr == null) {
-			this.runCtr = new NotificationsPortletRunController(wControl, ureq, getTranslator(), this.getName());
+			this.runCtr = new NotificationsPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
 		}
 	  return runCtr.createSortingTool(ureq, wControl);
 	}
-
 }

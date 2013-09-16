@@ -56,16 +56,17 @@ public class InfoMessagePortlet extends AbstractPortlet {
 	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> portletConfig) {
 		Translator translator = Util.createPackageTranslator(InfoMessagePortlet.class, ureq.getLocale());
-		Portlet p = new InfoMessagePortlet();
+		InfoMessagePortlet p = new InfoMessagePortlet();
 		p.setName(getName());			
 		p.setTranslator(translator);
+		p.setDefaultMaxEntries(getDefaultMaxEntries());
 		return p;
 	}
 
 	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(runCtrl != null) runCtrl.dispose();
-		runCtrl = new InfoMessagePortletRunController(wControl, ureq, getTranslator(), getName());
+		runCtrl = new InfoMessagePortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
 		return runCtrl.getInitialComponent();
 	}
 	
@@ -90,7 +91,7 @@ public class InfoMessagePortlet extends AbstractPortlet {
 	@Override
 	public PortletToolController<InfoSubscriptionItem> getTools(UserRequest ureq, WindowControl wControl) {
 		if (runCtrl == null ) {
-			runCtrl = new InfoMessagePortletRunController(wControl, ureq, getTranslator(), getName());
+			runCtrl = new InfoMessagePortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
 		}
 	  return runCtrl.createSortingTool(ureq, wControl);
 	}

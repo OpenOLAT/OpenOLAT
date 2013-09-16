@@ -52,9 +52,10 @@ public class EfficiencyStatementsPortlet extends AbstractPortlet {
 	 */
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Translator translator = Util.createPackageTranslator(EfficiencyStatementsPortlet.class, ureq.getLocale());
-		Portlet p = new EfficiencyStatementsPortlet();
+		EfficiencyStatementsPortlet p = new EfficiencyStatementsPortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
+		p.setDefaultMaxEntries(getDefaultMaxEntries());
 		p.setTranslator(translator);
 		return p;
 	}
@@ -77,9 +78,9 @@ public class EfficiencyStatementsPortlet extends AbstractPortlet {
 	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest)
 	 */
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
-		if(this.runCtr != null) runCtr.dispose();
-		this.runCtr = new EfficiencyStatementsPortletRunController(wControl, ureq, getTranslator(), this.getName());
-		return this.runCtr.getInitialComponent();
+		if(runCtr != null) runCtr.dispose();
+		runCtr = new EfficiencyStatementsPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
+		return runCtr.getInitialComponent();
 	}
 
 	/**
@@ -108,7 +109,7 @@ public class EfficiencyStatementsPortlet extends AbstractPortlet {
 	
 	public PortletToolController<UserEfficiencyStatementLight> getTools(UserRequest ureq, WindowControl wControl) {
 		if (runCtr == null) {
-			this.runCtr = new EfficiencyStatementsPortletRunController(wControl, ureq, getTranslator(), this.getName());
+			runCtr = new EfficiencyStatementsPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
 		}
 	  return runCtr.createSortingTool(ureq, wControl);	
 	}

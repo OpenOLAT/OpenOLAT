@@ -52,18 +52,21 @@ public class RepositoryPortlet extends AbstractPortlet {
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl,
 	 *      org.olat.core.gui.UserRequest, java.util.Map)
 	 */
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Translator translator = Util.createPackageTranslator(RepositoryPortlet.class, ureq.getLocale());
-		Portlet p = new RepositoryPortlet();
-		p.setName(this.getName());
+		RepositoryPortlet p = new RepositoryPortlet();
+		p.setName(getName());
 		p.setConfiguration(configuration);
 		p.setTranslator(translator);
+		p.setDefaultMaxEntries(getDefaultMaxEntries());
 		return p;
 	}
 
 	/**
 	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
 	 */
+	@Override
 	public String getTitle() {
 		if (CONFIG_KEY_ROLE_STUDENT.equals(getConfiguration().get(CONFIG_KEY_ROLE))) {
 			return getTranslator().translate("repositoryPortlet.student.title");			
@@ -75,6 +78,7 @@ public class RepositoryPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
 	 */
+	@Override
 	public String getDescription() {
 		if (CONFIG_KEY_ROLE_STUDENT.equals(getConfiguration().get(CONFIG_KEY_ROLE))) {
 			return getTranslator().translate("repositoryPortlet.student.description");			
@@ -87,16 +91,19 @@ public class RepositoryPortlet extends AbstractPortlet {
 	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.core.gui.control.WindowControl,
 	 *      org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
-		if(this.runCtr != null) runCtr.dispose();
+		if(runCtr != null) runCtr.dispose();
+		int maxEntries = getDefaultMaxEntries();
 		boolean studentView = CONFIG_KEY_ROLE_STUDENT.equals(getConfiguration().get(CONFIG_KEY_ROLE));
-		this.runCtr = new RepositoryPortletRunController(wControl, ureq, getTranslator(), this.getName(), studentView);
-		return this.runCtr.getInitialComponent();
+		runCtr = new RepositoryPortletRunController(wControl, ureq, getTranslator(), getName(), maxEntries, studentView);
+		return runCtr.getInitialComponent();
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.Disposable#dispose(boolean)
 	 */
+	@Override
 	public void dispose() {
 		disposeRunComponent();
 	}
@@ -104,6 +111,7 @@ public class RepositoryPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
 	 */
+	@Override
 	public String getCssClass() {
 		if (CONFIG_KEY_ROLE_STUDENT.equals(getConfiguration().get(CONFIG_KEY_ROLE))) {
 			return "o_portlet_repository_student";						
@@ -115,6 +123,7 @@ public class RepositoryPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.Portlet#disposeRunComponent(boolean)
 	 */
+	@Override
 	public void disposeRunComponent() {
 		if (this.runCtr != null) {
 			this.runCtr.dispose();
@@ -122,11 +131,12 @@ public class RepositoryPortlet extends AbstractPortlet {
 		}
 	}
 	
+	@Override
 	public PortletToolController<RepositoryEntryLight> getTools(UserRequest ureq, WindowControl wControl) {
 		//portlet was not yet visible
 		if ( runCtr == null ) {
 			boolean studentView = CONFIG_KEY_ROLE_STUDENT.equals(getConfiguration().get(CONFIG_KEY_ROLE));
-			this.runCtr = new RepositoryPortletRunController(wControl, ureq, getTranslator(), this.getName(), studentView);
+			runCtr = new RepositoryPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries(), studentView);
 		}
 	  return runCtr.createSortingTool(ureq, wControl);
 	}

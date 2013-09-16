@@ -109,6 +109,7 @@
 	<bean id="RepositoryPortletStudent" class="org.olat.repository.portlet.RepositoryPortlet" scope="prototype">
 		<property name="name" value="RepositoryPortletStudent" />
 		<property name="enabled" value="${portlet.repository.student.enabled}" />
+		<property name="defaultMaxEntries" value="${portlet.repository.student.entries}" />
 		<property name="configuration">
 			<map>
 				<entry key="role" value="student" />
@@ -119,6 +120,7 @@
 	<bean id="RepositoryPortletTeacher" class="org.olat.repository.portlet.RepositoryPortlet" scope="prototype">
 		<property name="name" value="RepositoryPortletTeacher" />
 		<property name="enabled" value="${portlet.repository.teacher.enabled}" />
+		<property name="defaultMaxEntries" value="${portlet.repository.teacher.entries}" />
 		<property name="configuration">
 			<map>
 				<entry key="role" value="teacher" />

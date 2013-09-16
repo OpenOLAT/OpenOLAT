@@ -80,8 +80,9 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * @param portletName
 	 * @param studentView true: show courses where I'm student; false: show courses where I'm teacher
 	 */
-	public RepositoryPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName, boolean studentView) {
-		super(wControl, ureq, trans, portletName);
+	public RepositoryPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName,
+			int defaultMaxEntries, boolean studentView) {
+		super(wControl, ureq, trans, portletName, defaultMaxEntries);
 		this.studentView = studentView;	
 		
 		sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);				
