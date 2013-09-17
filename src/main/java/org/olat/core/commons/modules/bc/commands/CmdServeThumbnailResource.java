@@ -54,6 +54,11 @@ public class CmdServeThumbnailResource implements FolderCommand {
 		String path = ureq.getModuleURI();
 		MediaResource mr = null;
 		VFSLeaf vfsfile = (VFSLeaf)folderComponent.getRootContainer().resolve(path);
+		if(vfsfile == null) {
+			//double decoding of ++
+			vfsfile = (VFSLeaf)FolderCommandHelper.tryDoubleDecoding(ureq, folderComponent);
+		}
+		
 		if(vfsfile instanceof MetaTagged) {
 			MetaInfo info = ((MetaTagged)vfsfile).getMetaInfo();
 			if(info != null && info.isThumbnailAvailable()) {

@@ -41,6 +41,32 @@ import org.olat.core.util.vfs.VFSManager;
 public class FolderCommandHelper {
 	
 	/**
+	 * The moduleURI from the UserRequest has been decoded (URL decoded). Which means that
+	 * encoded character as + came as %B2, decoded from Tomcat as + and by OpenOLAT after
+	 * as blank.
+	 * @param ureq
+	 * @param folderComponent
+	 * @return
+	 */
+	public static VFSItem tryDoubleDecoding(UserRequest ureq, FolderComponent folderComponent) {
+		VFSItem vfsfile = null;
+		
+		//double decoding of ++
+		String requestUri = ureq.getHttpReq().getRequestURI();
+		String uriPrefix = ureq.getUriPrefix();
+		if(uriPrefix.length() < requestUri.length()) {
+			requestUri = requestUri.substring(uriPrefix.length());
+			int nextPath = requestUri.indexOf('/');
+			if(nextPath > 0 && nextPath < requestUri.length()) {
+				String path = requestUri.substring(nextPath + 1, requestUri.length());
+				vfsfile = folderComponent.getRootContainer().resolve(path);
+			}
+		}
+		
+		return vfsfile;
+	}
+	
+	/**
 	 * Check if the FolderComponent is ok
 	 * @param wControl
 	 * @param fc

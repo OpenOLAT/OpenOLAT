@@ -68,6 +68,10 @@ public class CmdServeResource implements FolderCommand {
 		String path = ureq.getModuleURI();
 		MediaResource mr = null;
 		VFSItem vfsitem = folderComponent.getRootContainer().resolve(path);
+		if(vfsitem == null) {
+			//double decoding of ++
+			vfsitem = FolderCommandHelper.tryDoubleDecoding(ureq, folderComponent);
+		}
 
 		if (vfsitem == null) {
 			mr = new NotFoundMediaResource(path);
