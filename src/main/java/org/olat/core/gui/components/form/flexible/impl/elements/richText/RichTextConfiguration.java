@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -1549,11 +1550,12 @@ public class RichTextConfiguration implements Disposable {
 		if(theme_advanced_buttons3.contains(CODE_BUTTON)) {
 			plugins4.add("code");
 		}
-		
+		if(quotedConfigValues.containsKey("content_css")) {
+			plugins4.add("importcss");
+		}
 		if(theme_advanced_buttons1.contains("forecolor,backcolor") || theme_advanced_buttons1.contains("bakcolor")) {
 			plugins4.add("textcolor");
 		}
-	
 		
 		List<String> menubar = new ArrayList<String>();
 		//if(theme_advanced_buttons3.contains("tablecontrols")) menubar.add("table");
@@ -1613,7 +1615,6 @@ public class RichTextConfiguration implements Disposable {
 			listToString(sb, "toolbar3", buttons3);
 			sb.append(",\n");							
 		}
-		
 
 		// Now add the quoted values
 		Map<String,String> copyValues = new HashMap<String,String>(quotedConfigValues);
@@ -1635,9 +1636,6 @@ public class RichTextConfiguration implements Disposable {
 		if(tabfocus != null) {
 			copyValues.put("tabfocus_elements", tabfocus);
 		}
-		for (Map.Entry<String, String> entry : copyValues.entrySet()) {
-			sb.append(entry.getKey()).append(": \"").append(entry.getValue()).append("\",\n");
-		}
 		
 		// Now add the non-quoted values (e.g. true, false or functions)
 		Map<String,String> copyNonValues = new HashMap<String,String>(nonQuotedConfigValues);
@@ -1647,6 +1645,18 @@ public class RichTextConfiguration implements Disposable {
 		if(converter != null) {
 			copyNonValues.put("convert_urls", converter);	
 		}
+		
+		String contentCss = copyValues.remove("content_css");
+		if(contentCss != null) {
+			copyNonValues.put("importcss_append", "true");
+			//copyNonValues.put("importcss_merge_classes", "false");
+			copyValues.put("importcss_file_filter", Settings.createServerURI() + contentCss);
+		}
+		
+		for (Map.Entry<String, String> entry : copyValues.entrySet()) {
+			sb.append(entry.getKey()).append(": \"").append(entry.getValue()).append("\",\n");
+		}
+		
  		for (Map.Entry<String, String> entry : copyNonValues.entrySet()) {
 			sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(",\n");
 		}
