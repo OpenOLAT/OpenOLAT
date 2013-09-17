@@ -309,21 +309,24 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public BusinessGroup setLastUsageFor(final Identity identity, final BusinessGroup group) {
 		BusinessGroup reloadedBusinessGroup = businessGroupDAO.loadForUpdate(group.getKey());
-		reloadedBusinessGroup.setLastUsage(new Date());
-		if(identity != null) {
-			List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-			if(group.getOwnerGroup() != null) {
-				secGroups.add(group.getOwnerGroup());
+		BusinessGroup mergedGroup = null;
+		if(reloadedBusinessGroup != null) {
+			reloadedBusinessGroup.setLastUsage(new Date());
+			if(identity != null) {
+				List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+				if(group.getOwnerGroup() != null) {
+					secGroups.add(group.getOwnerGroup());
+				}
+				if(group.getPartipiciantGroup() != null) {
+					secGroups.add(group.getPartipiciantGroup());
+				}
+				if(group.getWaitingGroup() != null) {
+					secGroups.add(group.getWaitingGroup());
+				}
+				securityManager.touchMembership(identity, secGroups);
 			}
-			if(group.getPartipiciantGroup() != null) {
-				secGroups.add(group.getPartipiciantGroup());
-			}
-			if(group.getWaitingGroup() != null) {
-				secGroups.add(group.getWaitingGroup());
-			}
-			securityManager.touchMembership(identity, secGroups);
+			mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
 		}
-		BusinessGroup mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
 		dbInstance.commit();
 		return mergedGroup;
 	}
