@@ -22,9 +22,9 @@
 		<h5>$r.translate("podcast.subscribe.to.this.feed")</h5>
 		$r.render("feedUrlComponent")
 		<p>
-			<a href="$!helper.getITunesUrl()" target="_blank"><img src="http://media-art-culture.net/images/icons/ico_itunes.png" /></a>
-			<a href="$!helper.getYahooUrl()" target="_blank"><img src="http://us.i1.yimg.com/us.yimg.com/i/us/my/addtomyyahoo4.gif" /></a>
-			<a href="$!helper.getGoogleUrl()" target="_blank"><img src="http://buttons.googlesyndication.com/fusion/add.gif" /></a>
+			<a href="$!helper.getITunesUrl()" target="_blank"><img src="$r.staticLink("images/addto/itunes.png")" /></a>
+			<a href="$!helper.getYahooUrl()" target="_blank"><img src="$r.staticLink("images/addto/yahoo.gif")" /></a>
+			<a href="$!helper.getGoogleUrl()" target="_blank"><img src="$r.staticLink("images/addto/google.gif")" /></a>
 		</p>
 	</div>
 #end	
