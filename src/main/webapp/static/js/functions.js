@@ -477,37 +477,39 @@ function o_ainvoke(r) {
 							var inscripts = '';//jQuery(hfrag).find('script');//hfrag.extractScripts();
 							
 							var replaceElement = false;
-							var newc = jQuery("#o_c"+ciid);
+							var newcId = "o_c"+ciid;
+							var newc = jQuery('#' + newcId);
 							if (newc == null || (newc.length == 0)) {
 								//not a container, perhaps an element
-								newc = jQuery("#o_fi"+ciid);
+								newcId = "o_fi"+ciid;
+								newc = jQuery('#' + newcId);
 								replaceElement = true;
 							} 
 							if (newc != null) {
-								if(civis){ // needed only for ie 6/7 bug where an empty div requires space on screen
+								if(civis) { // needed only for ie 6/7 bug where an empty div requires space on screen
 									newc.css('display','');//.style.display="";//reset?
-								}else{
+								} else {
 									newc.css('display','none'); //newc.style.display="none";
 								}
-								// do dom replacement
-								// remove listeners !! ext overwrite or prototype replace does NOT remove listeners !!
-//								newc.descendants().each(function(el){if (el.stopObserving) el.stopObserving()});
 								
 								if(replaceElement) {
 									newc.replaceWith(hdrco);	
 								} else {
-									newc.empty();
 									try{
-										newc.html(hdrco);//Ext.DomHelper.overwrite(newc, hdrco, false);
+										newc.empty().html(hdrco);
+										//check if the operation is a success especially for IE8
+										if(hdrco.length > 0 && newc.get(0).innerHTML == "") {
+											newc.get(0).innerHTML = hdrco;
+										}
 									} catch(e) {
 										if(console) console.log(e);
 										if(console) console.log('Fragment',hdrco);
 									}
-									b_changedDomEl.push('o_c'+ciid);
+									b_changedDomEl.push(newcId);
 								}
 								newc = null;
 								
-								// exeucte inline scripts
+								// execute inline scripts
 								if (inscripts != "") {
 									inscripts.each( function(val){
 										BLoader.executeGlobalJS(val, 'o_ainvoker::inscripts');}
