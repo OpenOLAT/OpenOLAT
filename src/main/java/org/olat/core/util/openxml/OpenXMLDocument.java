@@ -172,6 +172,12 @@ public class OpenXMLDocument {
 		runsEl.add(runEl);
 		Element styleEl = createParagraphStyle(style.styleId());
 		if(StringHelper.containsNonWhitespace(additionalText)) {
+			//add an "insecable" blank between the title and the additional text
+			Element blankRunEl = document.createElement("w:r");
+			blankRunEl.appendChild(createPreserveSpaceEl());
+			runsEl.add(blankRunEl);
+			
+			//add additional text
 			Element addRunEl = document.createElement("w:r");
 			Node addRunPrefsEl = addRunEl.appendChild(document.createElement("w:rPr"));
 			Element bEl = (Element)addRunPrefsEl.appendChild(document.createElement("w:b"));

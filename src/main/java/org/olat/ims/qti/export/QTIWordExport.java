@@ -48,12 +48,14 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti.container.qtielements.RenderInstructions;
 import org.olat.ims.qti.editor.QTIEditHelper;
+import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.EssayQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.qti.editor.beecom.objects.OutcomesProcessing;
 import org.olat.ims.qti.editor.beecom.objects.Question;
 import org.olat.ims.qti.editor.beecom.objects.Response;
 import org.olat.ims.qti.editor.beecom.objects.Section;
@@ -149,10 +151,11 @@ public class QTIWordExport implements MediaResource {
 			document.setMediaContainer(mediaContainer);
 			document.setDocumentHeader(header);
 			
-			Translator translator = Util.createPackageTranslator(QTIWordExport.class, locale);
+			Translator translator = Util.createPackageTranslator(QTIWordExport.class, locale,
+					Util.createPackageTranslator(QTIEditorMainController.class, locale));
 
 			Assessment assessment = rootNode.getAssessment();
-			renderAssessment(assessment, document);
+			renderAssessment(assessment, document, translator);
 
 			for(Section section:assessment.getSections()) {
 				renderSection(section, document);
@@ -266,9 +269,17 @@ public class QTIWordExport implements MediaResource {
 		document.appendText(objectives, true);
 	}
 	
-	public static void renderAssessment(Assessment assessment, OpenXMLDocument document) {
+	public static void renderAssessment(Assessment assessment, OpenXMLDocument document, Translator translator) {
 		String title = assessment.getTitle();
 		document.appendTitle(title);
+		
+		OutcomesProcessing outcomesProcessing = assessment.getOutcomes_processing();
+		if (outcomesProcessing != null) {
+			String cutValue = outcomesProcessing.getField(OutcomesProcessing.CUTVALUE);
+			String cutValueLabel = translator.translate("cut_value");
+			document.appendText(cutValueLabel + ": " + cutValue, true);
+		}	
+
 		String objectives = assessment.getObjectives();
 		document.appendText(objectives, true);
 	}

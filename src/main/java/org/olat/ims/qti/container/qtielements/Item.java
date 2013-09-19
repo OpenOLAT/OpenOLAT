@@ -77,7 +77,6 @@ public class Item extends GenericQTIElement {
 			String type = (String)ri.get(RenderInstructions.KEY_QUESTION_TYPE);
 			String score = (String)ri.get(RenderInstructions.KEY_QUESTION_SCORE);
 			if(StringHelper.containsNonWhitespace(type) || StringHelper.containsNonWhitespace(score)) {
-				addText.append(" ");
 				if(StringHelper.containsNonWhitespace(type)) {
 					addText.append("(").append(type).append(")");
 				}
