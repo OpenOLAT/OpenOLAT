@@ -819,10 +819,17 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public RepositoryEntry setLastUsageNowFor(final RepositoryEntry re) {
 		if (re == null) return null;
+		Date newUsage = new Date();
+		Date lastUsage = re.getLastUsage();
+		//update every minute and not shorter
+		if(lastUsage != null && (newUsage.getTime() - lastUsage.getTime()) < 60000) {
+			return re;
+		}
+		
 		RepositoryEntry reloadedRe = loadForUpdate(re);
-		reloadedRe.setLastUsage(new Date());
-		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commit();
+		reloadedRe.setLastUsage(newUsage);
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		dbInstance.commit();
 		return updatedRe;
 	}
 
