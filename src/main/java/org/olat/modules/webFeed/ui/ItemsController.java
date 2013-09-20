@@ -261,6 +261,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param item
 	 */
 	private void createCommentsAndRatingsLink(UserRequest ureq, Feed feed, Item item) {
+		if(feed == null || item == null) return;//check against concurrent changes
 		if (CoreSpringFactory.containsBean(CommentAndRatingService.class)) {
 			if(commentsLinks == null) {
 				commentsLinks = new HashMap<Item,Controller>();
@@ -430,8 +431,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 			Item item = (Item) ((Link) source).getUserObject();
 			// Reload first, could be stale
 			item = feedManager.getItem(feed, item.getGuid());					
-			displayItemController(ureq, item);
-
+			if(item != null) {
+				displayItemController(ureq, item);
+			}
 		} else if (source == makeInternalButton) {
 			if (feed.isUndefined()) {
 				feedManager.updateFeedMode(Boolean.FALSE, feed);				
@@ -697,9 +699,12 @@ public class ItemsController extends BasicController implements Activateable2 {
 			if (event == UserCommentsAndRatingsController.EVENT_COMMENT_LINK_CLICKED) {
 				// go to details page
 				Item item = (Item) commentsRatingsCtr.getUserObject();
-				ItemController myItemCtr = displayItemController(ureq, item);
-				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(ItemController.ACTIVATION_KEY_COMMENTS);
-				myItemCtr.activate(ureq, entries, null);
+				item = feedManager.getItem(feed, item.getGuid());	
+				if(item != null) {
+					ItemController myItemCtr = displayItemController(ureq, item);
+					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(ItemController.ACTIVATION_KEY_COMMENTS);
+					myItemCtr.activate(ureq, entries, null);
+				}
 			}
 		}
 		

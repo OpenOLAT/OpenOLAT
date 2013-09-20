@@ -147,6 +147,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private WikiSecurityCallback securityCallback;
 	private WikiArticleSearchForm searchOrCreateArticleForm;
 	private Controller searchCtrl;
+	private Panel mainPanel;
 	
 	public static final String ACTION_COMPARE = "compare";
 	public static final String ACTION_SHOW = "view.version";
@@ -178,19 +179,26 @@ public class WikiMainController extends BasicController implements CloneableCont
 		this.ident = ureq.getIdentity();
 		WikiPage page = null;
 		Wiki wiki = getWiki();
+		if(wiki == null) {
+			VelocityContainer vc = createVelocityContainer("deleted");
+			mainPanel = putInitialPanel(vc);
+			return;
+		}
+		
 		if (!ores.getResourceableTypeName().equals("BusinessGroup")) {
 			addLoggingResourceable(LoggingResourceable.wrap(ores, OlatResourceableType.genRepoEntry));
 		}
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 		// init the first page either startpage or an other page identified by initial page name
-		if (initialPageName != null && wiki.pageExists(WikiManager.generatePageId(initialPageName))) page = wiki.getPage(initialPageName, true);
-		else {
+		if (initialPageName != null && wiki.pageExists(WikiManager.generatePageId(initialPageName))) {
+			page = wiki.getPage(initialPageName, true);
+		} else {
 			page = wiki.getPage(WikiPage.WIKI_INDEX_PAGE);
 			if (initialPageName != null) showError("wiki.error.page.not.found");
 		}
 		this.pageId = page.getPageId();
 		
-		WikiPage menuPage = getWiki().getPage(WikiPage.WIKI_MENU_PAGE);
+		WikiPage menuPage = wiki.getPage(WikiPage.WIKI_MENU_PAGE);
 		tabs = new TabbedPane("userTabP", ureq.getLocale());
 		tabs.addListener(this);
 		// init the tabbed pane container
@@ -317,7 +325,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		}
 		updatePageContext(ureq, page);
 		setTabsEnabled(true); //apply security settings to tabs by may disabling edit tab
-		putInitialPanel(content);
+		mainPanel = putInitialPanel(content);
 		
 		//set pageId to the latest used
 		this.pageId = page.getPageId();
@@ -327,18 +335,22 @@ public class WikiMainController extends BasicController implements CloneableCont
 	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
+
+		Wiki wiki = getWiki();
+		if(wiki == null) {
+			return;
+		}
 		
 		ContextEntry ce = entries.get(0);
 		String typ = ce.getOLATResourceable().getResourceableTypeName();
 		if("az".equals(typ)) {
-			openAtoZPage(ureq, getWiki());
+			openAtoZPage(ureq, wiki);
 		} else if ("lastChanges".equals(typ)) {
-			openLastChangesPage(ureq, getWiki());
+			openLastChangesPage(ureq, wiki);
 		} else if ("index".equals(typ)) {
-			WikiPage page = openIndexPage(ureq, getWiki());
+			WikiPage page = openIndexPage(ureq, wiki);
 			pageId = page.getPageId();
 		} else if ("Forum".equals(typ)) {
-			Wiki wiki = getWiki();
 			Long forumKey = ce.getOLATResourceable().getResourceableId();
 			for(WikiPage page:wiki.getAllPagesWithContent()) {
 				if(forumKey.longValue() == page.getForumKey()) {
@@ -362,7 +374,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 			if(path.startsWith("page=")) {
 				path = path.substring(5, path.length());
 			}
-			Wiki wiki = getWiki();
 			String activatePageId = WikiManager.generatePageId(FilterUtil.normalizeWikiLink(path));
 			if(wiki.pageExists(activatePageId)) {
 				WikiPage page = wiki.getPage(activatePageId, true);
@@ -388,6 +399,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 		setTabsEnabled(true);
 		//to make shure we use the lateste page, reload from cache
 		Wiki wiki = getWiki();
+		if(wiki == null) {
+			mainPanel.setContent(createVelocityContainer("deleted"));
+			return;
+		}
 		WikiPage page = null;
 		
 		//FIXME:gs images and media should also be wiki pages -> see jamwiki
@@ -421,7 +436,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 				breadCrumpCtr.addLink(page.getPageName(), page.getPageName());
 				tabs.setSelectedPane(0);
 			} else if (event instanceof RequestNewPageEvent) {
-				page = handleRequestNewPageEvent(ureq, (RequestNewPageEvent) event);
+				page = handleRequestNewPageEvent(ureq, (RequestNewPageEvent)event, wiki);
 			} else  if (event instanceof ErrorEvent) {
 				showWarning(event.getCommand());
 			} else if (event instanceof RequestMediaEvent) {
@@ -487,7 +502,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		} else if (source == manageMediaButton){
 			if(wiki.getMediaFileListWithMetadata().size() > 0){
 				mediaMgntContent = createVelocityContainer("media");
-				refreshTableDataModel(ureq);
+				refreshTableDataModel(ureq, wiki);
 				mediaMgntContent.put("mediaMgmtTable", mediaTableCtr.getInitialComponent());
 				
 				removeAsListenerAndDispose(cmc);
@@ -614,7 +629,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	}
 
 
-	private void refreshTableDataModel(UserRequest ureq) {
+	private void refreshTableDataModel(UserRequest ureq, Wiki wiki) {
 		
 		removeAsListenerAndDispose(mediaTableCtr);
 		mediaTableCtr = new TableController(new TableGuiConfiguration(), ureq, getWindowControl(), getTranslator());
@@ -623,7 +638,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		mediaTableCtr.setMultiSelect(true);
 		mediaTableCtr.addMultiSelectAction(ACTION_DELETE_MEDIAS, ACTION_DELETE_MEDIAS);
 		
-		List<VFSItem> filelist = getWiki().getMediaFileListWithMetadata();
+		List<VFSItem> filelist = wiki.getMediaFileListWithMetadata();
 		Map files = new HashMap();
 		for (Iterator<VFSItem> iter = filelist.iterator(); iter.hasNext();) {
 			VFSLeaf elem = (VFSLeaf) iter.next();
@@ -661,22 +676,22 @@ public class WikiMainController extends BasicController implements CloneableCont
 		mediaTableCtr.modelChanged();
 	}
 
-	private WikiPage handleRequestNewPageEvent(UserRequest ureq, RequestNewPageEvent requestPage) {
+	private WikiPage handleRequestNewPageEvent(UserRequest ureq, RequestNewPageEvent requestPage, Wiki wiki) {
 		if(!securityCallback.mayEditAndCreateArticle()){
 			if (ureq.getUserSession().getRoles().isGuestOnly()) showInfo("guest.no.edit");
 			showInfo("no.edit");
 			return null;
 		}
 		// first check if no page exist 
-		WikiPage page = getWiki().findPage(requestPage.getCommand());
+		WikiPage page = wiki.findPage(requestPage.getCommand());
 		if (page.getPageName().equals(Wiki.NEW_PAGE)) {
 			// create new page
 			log.debug("Page does not exist, create a new one...");
 			page = new WikiPage(requestPage.getCommand());
 			page.setCreationTime(System.currentTimeMillis());
 			page.setInitalAuthor(ureq.getIdentity().getKey().longValue());
-			getWiki().addPage(page);
-			WikiManager.getInstance().saveWikiPage(ores, page, false, getWiki());
+			wiki.addPage(page);
+			WikiManager.getInstance().saveWikiPage(ores, page, false, wiki);
 			log.debug("Safe new page=" + page);
 			log.debug("Safe new pageId=" + page.getPageId());
 		} 
@@ -687,8 +702,13 @@ public class WikiMainController extends BasicController implements CloneableCont
 		return page;
 	}
 	
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		Wiki wiki = getWiki();
+		if(wiki == null) {
+			mainPanel.setContent(createVelocityContainer("deleted"));
+			return;
+		}
 		//reload page from cache
 		WikiPage page = wiki.getPage(pageId, true);
 		//set recent page id to the page currently used

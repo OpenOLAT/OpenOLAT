@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyGroup;
@@ -42,14 +43,14 @@ public class Roster {
 	
 	public Roster(Long identityKey) {
 		this.identityKey = identityKey;
-		entries = new ArrayList<Buddy>();
-		groups = new ArrayList<BuddyGroup>();
+		entries = new CopyOnWriteArrayList<Buddy>();
+		groups = new CopyOnWriteArrayList<BuddyGroup>();
 	}
 	
 	public Roster(List<Buddy> entries, Long identityKey) {
 		this.identityKey = identityKey;
 		this.entries = entries;
-		groups = new ArrayList<BuddyGroup>();
+		groups = new CopyOnWriteArrayList<BuddyGroup>();
 	}
 	
 	public List<BuddyGroup> getGroups() {
