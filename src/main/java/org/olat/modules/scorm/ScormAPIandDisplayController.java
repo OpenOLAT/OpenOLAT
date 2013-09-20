@@ -104,10 +104,12 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 *          "review"
 	 * @param credit_mode add null for the default value or "credit", "no-credit"
 	 * @param attemptsIncremented Is the attempts counter already incremented 
+	 * @param deliveryOptions This delivery options can override the default from the SCORM module
 	 */
 	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback,
 			File cpRoot, Long scormResourceId, String courseIdNodeId, String lesson_mode, String credit_mode,
-			boolean previewMode, String assessableType, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
+			boolean previewMode, String assessableType, boolean activate, boolean fullWindow, boolean attemptsIncremented,
+			DeliveryOptions deliveryOptions) {
 		super(ureq, wControl);
 		
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
@@ -169,7 +171,10 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, Long.valueOf(courseId));
 		}
 		ScormPackageConfig packageConfig = ScormMainManager.getInstance().getScormPackageConfig(cpRoot);
-		DeliveryOptions deliveryOptions = packageConfig == null ? null : packageConfig.getDeliveryOptions();
+		if((deliveryOptions == null || (deliveryOptions.getInherit() != null && deliveryOptions.getInherit().booleanValue()))
+				&& packageConfig != null) {
+			deliveryOptions = packageConfig.getDeliveryOptions();
+		}
 		iframectr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME,  courseOres, deliveryOptions);
 		listenTo(iframectr);
 		myContent.contextPut("frameId", SCORM_CONTENT_FRAME);

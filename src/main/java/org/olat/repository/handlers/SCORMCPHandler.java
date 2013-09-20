@@ -114,10 +114,9 @@ public class SCORMCPHandler extends FileHandler implements RepositoryHandler {
 		if (re!=null) {
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
 		}
-		//fxdiff FXOLAT-116: SCORM improvements
+		
 		MainLayoutController realController = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, wControl, true, null, cpRoot,
-				res.getResourceableId(), null, "browse", "no-credit", false, null, false, false, false);
-		//fxdiff VCRP-1: access control of learn resources
+				res.getResourceableId(), null, "browse", "no-credit", false, null, false, false, false, null);
 		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, realController);
 		return wrapper; 
 	}

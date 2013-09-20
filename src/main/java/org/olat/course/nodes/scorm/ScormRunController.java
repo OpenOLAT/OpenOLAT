@@ -89,6 +89,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	private boolean isPreview;
 	private boolean isAssessable;
 	private String assessableType;
+	private DeliveryOptions deliveryOptions;
 
 	/**
 	 * Use this constructor to launch a CP via Repository reference key set in
@@ -111,6 +112,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		this.userCourseEnv = userCourseEnv;
 		this.config = config;
 		this.scormNode = scormNode;
+		deliveryOptions = (DeliveryOptions)config.get(ScormEditController.CONFIG_DELIVERY_OPTIONS);
 
 		addLoggingResourceable(LoggingResourceable.wrap(scormNode));
 		init(ureq);
@@ -268,8 +270,8 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		if (isPreview) {
 			courseId = new Long(CodeHelper.getRAMUniqueID()).toString();
 			scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
-					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, true, null, doActivate,
-					fullWindow, false);
+					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
+					true, null, doActivate, fullWindow, false, deliveryOptions);
 		} else {
 			boolean attemptsIncremented = false;
 			//increment user attempts only once!
@@ -284,18 +286,20 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			if (isAssessable) {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow, attemptsIncremented);
+						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow,
+						attemptsIncremented, deliveryOptions);
 				// <OLATCE-289>
 				// scormNode.incrementUserAttempts(userCourseEnv);
 				// </OLATCE-289>
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow, attemptsIncremented);
+						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow,
+						attemptsIncremented, deliveryOptions);
 			} else {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
-						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, assessableType, doActivate,
-						fullWindow, attemptsIncremented);
+						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
+						false, assessableType, doActivate, fullWindow, attemptsIncremented, deliveryOptions);
 			}
 			
 		}

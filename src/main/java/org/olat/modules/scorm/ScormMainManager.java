@@ -125,12 +125,14 @@ public class ScormMainManager extends BasicManager {
 	 * @param credit_mode add null for the default value or "credit", "no-credit"
 	 */
 	//fxdiff FXOLAT-116: SCORM improvements
-	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback, 
-			File cpRoot, Long scormResourceId, String courseId, String lesson_mode, String credit_mode,
-			boolean previewMode, String assessableType, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
+	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl,
+			boolean showMenu, ScormAPICallback apiCallback, File cpRoot, Long scormResourceId, String courseId,
+			String lesson_mode, String credit_mode, boolean previewMode, String assessableType, boolean activate,
+			boolean fullWindow, boolean attemptsIncremented, DeliveryOptions deliveryOptions) {
 		
-		ScormAPIandDisplayController ctrl= new ScormAPIandDisplayController(ureq, wControl, showMenu, apiCallback, cpRoot, scormResourceId, courseId, lesson_mode, credit_mode,
-				previewMode, assessableType, activate, fullWindow, attemptsIncremented);
+		ScormAPIandDisplayController ctrl= new ScormAPIandDisplayController(ureq, wControl, showMenu, apiCallback, cpRoot,
+				scormResourceId, courseId, lesson_mode, credit_mode, previewMode, assessableType, activate, fullWindow,
+				attemptsIncremented, deliveryOptions);
 		
 		DeliveryOptions config = ctrl.getDeliveryOptions();
 		boolean configAllowRawContent = (config == null || config.rawContent());
