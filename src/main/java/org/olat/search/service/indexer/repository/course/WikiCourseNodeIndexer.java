@@ -60,6 +60,7 @@ public class WikiCourseNodeIndexer extends FolderIndexer implements CourseNodeIn
 		String repoEntryName = "*name not available*";
     try {
   		RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
+  		if(repositoryEntry == null) return;
   		repoEntryName = repositoryEntry.getDisplayname();
 			Wiki wiki = WikiManager.getInstance().getOrLoadWiki(courseNode.getReferencedRepositoryEntry().getOlatResource());
 			// loop over all wiki pages
