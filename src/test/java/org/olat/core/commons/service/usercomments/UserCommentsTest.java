@@ -67,8 +67,8 @@ public class UserCommentsTest extends OlatTestCase {
 		serviceWithSubPath.init(ident1, ores, "blubli", true, false);				
 
 		//check if there is any comments
-		assertEquals(Long.valueOf(0), service.getUserCommentsManager().countComments());
-		assertEquals(Long.valueOf(0), serviceWithSubPath.getUserCommentsManager().countComments());
+		assertEquals(0, service.getUserCommentsManager().countComments());
+		assertEquals(0, serviceWithSubPath.getUserCommentsManager().countComments());
 
 		// add comments
 		UserCommentsManager ucm = service.getUserCommentsManager();
@@ -77,15 +77,15 @@ public class UserCommentsTest extends OlatTestCase {
 	  UserComment comment1 = ucm.createComment(ident1, "Hello World");
 	  UserComment comment2 = ucm2.createComment(ident1, "Hello World with subpath");
 	  // count must be 1 now. count without subpath should not include the results with subpath
-		assertEquals(Long.valueOf(1), service.getUserCommentsManager().countComments());
-		assertEquals(Long.valueOf(1), serviceWithSubPath.getUserCommentsManager().countComments());
+		assertEquals(1, service.getUserCommentsManager().countComments());
+		assertEquals(1, serviceWithSubPath.getUserCommentsManager().countComments());
 		// 
 	  UserComment comment3 = ucm.createComment(ident2, "Hello World");
 	  Assert.assertNotNull(comment3);
 	  UserComment comment4 = ucm2.createComment(ident2, "Hello World with subpath");
 	  Assert.assertNotNull(comment4);
-	  Assert.assertEquals(Long.valueOf(2), service.getUserCommentsManager().countComments());
-	  Assert.assertEquals(Long.valueOf(2), serviceWithSubPath.getUserCommentsManager().countComments());
+	  Assert.assertEquals(2, service.getUserCommentsManager().countComments());
+	  Assert.assertEquals(2, serviceWithSubPath.getUserCommentsManager().countComments());
 		// Same with get method
 		List<UserComment> commentList = ucm.getComments();
 		assertEquals(2, commentList.size());
@@ -94,13 +94,13 @@ public class UserCommentsTest extends OlatTestCase {
 		// Create a reply to the first comments
 		ucm.replyTo(comment1, ident2, "Reply 1");
 		ucm2.replyTo(comment2, ident2, "Reply 1 with subpath");
-		Assert.assertEquals(Long.valueOf(3), service.getUserCommentsManager().countComments());
-		Assert.assertEquals(Long.valueOf(3), serviceWithSubPath.getUserCommentsManager().countComments());
+		Assert.assertEquals(3, service.getUserCommentsManager().countComments());
+		Assert.assertEquals(3, serviceWithSubPath.getUserCommentsManager().countComments());
 		// Delete first created coment with one reply each
 		ucm.deleteComment(comment1, true);
 		ucm2.deleteComment(comment2, true);
-		Assert.assertEquals(Long.valueOf(1), service.getUserCommentsManager().countComments());
-		Assert.assertEquals(Long.valueOf(1), serviceWithSubPath.getUserCommentsManager().countComments());
+		Assert.assertEquals(1, service.getUserCommentsManager().countComments());
+		Assert.assertEquals(1, serviceWithSubPath.getUserCommentsManager().countComments());
 		// Create reply to a comment that does not exis anymore -> should not create anything
 		Assert.assertNull(ucm.replyTo(comment1, ident2, "Reply 1"));
 		Assert.assertNull(ucm2.replyTo(comment2, ident2, "Reply 1 with subpath"));
@@ -110,35 +110,35 @@ public class UserCommentsTest extends OlatTestCase {
 		// Recreate a reply to the first comments
 		ucm.replyTo(comment1, ident2, "Reply 1");
 		ucm2.replyTo(comment2, ident2, "Reply 1 with subpath");
-		assertEquals(Long.valueOf(3), service.getUserCommentsManager().countComments());
-		assertEquals(Long.valueOf(3), serviceWithSubPath.getUserCommentsManager().countComments());
+		assertEquals(3, service.getUserCommentsManager().countComments());
+		assertEquals(3, serviceWithSubPath.getUserCommentsManager().countComments());
 		// Delete first created coment without the reply
 		ucm.deleteComment(comment1, false);
 		ucm2.deleteComment(comment2, false);
-		assertEquals(Long.valueOf(2), service.getUserCommentsManager().countComments());
-		assertEquals(Long.valueOf(2), serviceWithSubPath.getUserCommentsManager().countComments());
+		assertEquals(2, service.getUserCommentsManager().countComments());
+		assertEquals(2, serviceWithSubPath.getUserCommentsManager().countComments());
 		
 		// Delete all comments without subpath
 		assertEquals(2, ucm.deleteAllComments());
-		assertEquals(Long.valueOf(0), service.getUserCommentsManager().countComments());
-		assertEquals(Long.valueOf(2), serviceWithSubPath.getUserCommentsManager().countComments());
+		assertEquals(0, service.getUserCommentsManager().countComments());
+		assertEquals(2, serviceWithSubPath.getUserCommentsManager().countComments());
 		
 		//add a comment without subpath
 		comment1 = ucm.createComment(ident1, "Hello World");
 		
 		// Delete all comments with subpath
 		assertEquals(2, ucm2.deleteAllComments());
-		assertEquals(1, service.getUserCommentsManager().countComments().longValue());
-		assertEquals(0, serviceWithSubPath.getUserCommentsManager().countComments().longValue());
+		assertEquals(1, service.getUserCommentsManager().countComments());
+		assertEquals(0, serviceWithSubPath.getUserCommentsManager().countComments());
 
 		//add a comment with subpath
 		comment2 = ucm2.createComment(ident2, "Hello World with subpath 2");
 		
 		// Delete ignoring subpath
-		assertEquals(1, service.getUserCommentsManager().countComments().longValue());
-		assertEquals(1, serviceWithSubPath.getUserCommentsManager().countComments().longValue());
+		assertEquals(1, service.getUserCommentsManager().countComments());
+		assertEquals(1, serviceWithSubPath.getUserCommentsManager().countComments());
 		assertEquals(2, ucm2.deleteAllCommentsIgnoringSubPath());
-		assertEquals(0, service.getUserCommentsManager().countComments().longValue());
-		assertEquals(0, serviceWithSubPath.getUserCommentsManager().countComments().longValue());
+		assertEquals(0, service.getUserCommentsManager().countComments());
+		assertEquals(0, serviceWithSubPath.getUserCommentsManager().countComments());
 	}
 }

@@ -25,12 +25,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingLoggingAction;
 import org.olat.core.commons.services.commentAndRating.UserCommentsManager;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
@@ -77,28 +75,20 @@ public class UserCommentsManagerImpl extends UserCommentsManager {
 	 * @see org.olat.core.commons.services.commentAndRating.UserCommentsManager#countComments()
 	 */
 	@Override
-	public Long countComments() {
-		DBQuery query;
+	public long countComments() {
+		TypedQuery<Number> query;
 		if (getOLATResourceableSubPath() == null) {
 			// special query when sub path is null
-			query = DBFactory
-					.getInstance()
-					.createQuery(
-							"select count(*) from UserCommentImpl where resName=:resname AND resId=:resId AND resSubPath is NULL");
+			query = DBFactory.getInstance().getCurrentEntityManager()
+					.createQuery("select count(*) from UserCommentImpl where resName=:resname AND resId=:resId AND resSubPath is NULL", Number.class);
 		} else {
-			query = DBFactory
-					.getInstance()
-					.createQuery(
-							"select count(*) from UserCommentImpl where resName=:resname AND resId=:resId AND resSubPath=:resSubPath");
-			query.setString("resSubPath", getOLATResourceableSubPath());
+			query = DBFactory.getInstance().getCurrentEntityManager()
+					.createQuery("select count(*) from UserCommentImpl where resName=:resname AND resId=:resId AND resSubPath=:resSubPath", Number.class)
+					.setParameter("resSubPath", getOLATResourceableSubPath());
 		}
-		query.setString("resname", getOLATResourceable()
-				.getResourceableTypeName());
-		query.setLong("resId", getOLATResourceable().getResourceableId());
-		query.setCacheable(true);
-		//
-		Long count = (Long) query.list().get(0);
-		return count;
+		return query.setParameter("resname", getOLATResourceable().getResourceableTypeName())
+			.setParameter("resId", getOLATResourceable().getResourceableId())
+			.getSingleResult().longValue();
 	}
 	
 	/**
@@ -116,12 +106,13 @@ public class UserCommentsManagerImpl extends UserCommentsManager {
 			.append(" where comment.resName=:resname AND comment.resId=:resId")
 			.append(" group by comment.resSubPath");
 		
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setString("resname", getOLATResourceable().getResourceableTypeName());
-		query.setLong("resId", getOLATResourceable().getResourceableId());
+		TypedQuery<Object[]> query = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("resname", getOLATResourceable().getResourceableTypeName())
+				.setParameter("resId", getOLATResourceable().getResourceableId());
 		
 		Set<String> countMap = new HashSet<String>();
-		List<Object[]> counts = query.list();
+		List<Object[]> counts = query.getResultList();
 		List<UserCommentsCount> countList = new ArrayList<UserCommentsCount>();
 		for(Object[] count:counts) {
 			Object subPath = count[0] == null ? "" : count[0];
@@ -133,7 +124,6 @@ public class UserCommentsManagerImpl extends UserCommentsManager {
 		return countList;
 	}
 
-
 	/**
 	 * @see org.olat.core.commons.services.commentAndRating.UserCommentsManager#createComment(org.olat.core.id.Identity,
 	 *      java.lang.String)
@@ -142,7 +132,7 @@ public class UserCommentsManagerImpl extends UserCommentsManager {
 	public UserComment createComment(Identity creator, String commentText) {
 		UserComment comment = new UserCommentImpl(getOLATResourceable(),
 				getOLATResourceableSubPath(), creator, commentText);
-		DBFactory.getInstance().saveObject(comment);
+		DBFactory.getInstance().getCurrentEntityManager().persist(comment);
 		// do Logging
 		ThreadLocalUserActivityLogger.log(CommentAndRatingLoggingAction.COMMENT_CREATED, getClass(),
 				CoreLoggingResourceable.wrap(getOLATResourceable(), OlatResourceableType.feedItem));
@@ -185,7 +175,7 @@ public class UserCommentsManagerImpl extends UserCommentsManager {
 		UserCommentImpl reply = new UserCommentImpl(getOLATResourceable(),
 				getOLATResourceableSubPath(), creator, replyCommentText);
 		reply.setParent(originalComment);
-		DBFactory.getInstance().saveObject(reply);
+		DBFactory.getInstance().getCurrentEntityManager().persist(reply);
 		return reply;
 	}
 
@@ -194,27 +184,19 @@ public class UserCommentsManagerImpl extends UserCommentsManager {
 	 */
 	@Override
 	public List<UserComment> getComments() {
-		DBQuery query;
+		TypedQuery<UserComment> query;
 		if (getOLATResourceableSubPath() == null) {
 			// special query when sub path is null
-			query = DBFactory
-					.getInstance()
-					.createQuery(
-							"select comment from UserCommentImpl as comment where resName=:resname AND resId=:resId AND resSubPath is NULL");
+			query = DBFactory.getInstance().getCurrentEntityManager()
+					.createQuery("select comment from UserCommentImpl as comment where resName=:resname AND resId=:resId AND resSubPath is NULL", UserComment.class);
 		} else {
-			query = DBFactory
-					.getInstance()
-					.createQuery(
-							"select comment from UserCommentImpl as comment where resName=:resname AND resId=:resId AND resSubPath=:resSubPath");
-			query.setString("resSubPath", getOLATResourceableSubPath());
+			query = DBFactory.getInstance().getCurrentEntityManager()
+					.createQuery("select comment from UserCommentImpl as comment where resName=:resname AND resId=:resId AND resSubPath=:resSubPath", UserComment.class)
+					.setParameter("resSubPath", getOLATResourceableSubPath());
 		}
-		query.setString("resname", getOLATResourceable()
-				.getResourceableTypeName());
-		query.setLong("resId", getOLATResourceable().getResourceableId());
-		query.setCacheable(true);
-		//
-		List<UserComment> results = query.list();
-		return results;
+		return query.setParameter("resname", getOLATResourceable().getResourceableTypeName())
+		     .setParameter("resId", getOLATResourceable().getResourceableId())
+		     .getResultList();
 	}
 
 	/**
@@ -234,9 +216,7 @@ public class UserCommentsManagerImpl extends UserCommentsManager {
 		}
 		// Update DB entry
 		comment.setComment(newCommentText);
-		DB db = DBFactory.getInstance();
-		db.updateObject(comment);
-		return comment;
+		return DBFactory.getInstance().getCurrentEntityManager().merge(comment);
 	}
 
 	/**
@@ -257,9 +237,10 @@ public class UserCommentsManagerImpl extends UserCommentsManager {
 		}
 		DB db = DBFactory.getInstance();
 		// First deal with all direct replies
-		DBQuery query = db.createQuery("select comment from UserCommentImpl as comment where parent=:parent");
-		query.setEntity("parent", comment);
-		List<UserComment> replies = query.list();
+		List<UserComment> replies = db.getCurrentEntityManager()
+				.createQuery("select comment from UserCommentImpl as comment where parent=:parent", UserComment.class)
+				.setParameter("parent", comment)
+				.getResultList();
 		if (deleteReplies) {
 			// Since we have a many-to-one we first have to recursively delete
 			// the replies to prevent foreign key constraints
