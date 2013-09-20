@@ -25,18 +25,17 @@
 
 package org.olat.repository.site;
 
-import java.util.List;
-
-import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
- * TODO: Felix Jost Class Description for HomeSite
+ * Site fot the learn ressources
  * 
  * <P>
  * Initial Date:  12.07.2005 <br>
@@ -45,51 +44,22 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  */
 public class RepositorySiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-	/**
-	 * 
-	 */
 	public RepositorySiteDef() {
 		// for classloader
 	}
 
 	/**
-	 * @see org.olat.core.extensions.OLATExtension#getName()
-	 */
-	public String getName() {
-		return "homesite";
-	}
-
-	
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionResources()
-	 */
-	public List getExtensionResources() {
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionCSS()
-	 */
-	public ExtensionResource getExtensionCSS() {
-		// no ressources, part of main css
-		return null;
-	}
-	
-	/**
 	 * site is open to both normal users and guest users
-	 * 
-	 * @see org.olat.navigation.SiteDefinition#createSite(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
-		SiteInstance si = null;
-		if(!ureq.getUserSession().getRoles().isInvitee()) {
+	@Override
+	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
+			return new RepositorySite(this, ureq.getLocale());
+		} else if(!ureq.getUserSession().getRoles().isInvitee()) {
 			//for all excepts invitees
-			si = new RepositorySite(ureq.getLocale());
+			return new RepositorySite(this, ureq.getLocale());
 		}
-		return si;
+		return null;
 	}
-
 }
 

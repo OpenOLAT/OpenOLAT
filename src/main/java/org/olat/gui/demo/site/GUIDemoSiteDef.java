@@ -25,20 +25,17 @@
 
 package org.olat.gui.demo.site;
 
-import java.util.List;
-
-import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.core.helpers.Settings;
 
 /**
  * 
  * Description:<br>
- * TODO: Lavinia Dumitrescu Class Description for GUIDemoSiteDef
+ * Site definition for the gui demo
  * 
  * <P>
  * Initial Date:  11.09.2007 <br>
@@ -46,50 +43,13 @@ import org.olat.core.helpers.Settings;
  */
 public class GUIDemoSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-
-	/**
-	 * 
-	 */
 	public GUIDemoSiteDef() {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getName()
-	 */
-	public String getName() {
-		return "testsite";
+	@Override
+	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		return new GUIDemoSite(this);
 	}
-
-	
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionResources()
-	 */
-	public List getExtensionResources() {
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionCSS()
-	 */
-	public ExtensionResource getExtensionCSS() {
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.navigation.SiteDefinition#createSite(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
-		SiteInstance si = null;
-		if (Settings.isDebuging() && ureq.getUserSession().getRoles().isOLATAdmin()) {
-			// only open for olat-admins
-			si = new GUIDemoSite(ureq.getLocale());
-		} 
-		return si;
-	}
-
 }
 

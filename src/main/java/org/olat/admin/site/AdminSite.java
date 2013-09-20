@@ -33,9 +33,11 @@ import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
-import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
+import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -53,15 +55,15 @@ import org.olat.util.logging.activity.LoggingResourceable;
  *
  * @author Felix Jost
  */
-public class AdminSite implements SiteInstance {
+public class AdminSite extends AbstractSiteInstance {
 	private static final OLATResourceable ORES_OLATADMINS = OresHelper.lookupType(SystemAdminMainController.class);
 
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
-	public AdminSite(Locale loc) {
+	public AdminSite(SiteDefinition siteDef, Locale loc) {
+		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
-		
 		origNavElem = new DefaultNavElement(trans.translate("topnav.admin"), trans.translate("topnav.admin.alt"), "o_site_admin");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
@@ -73,11 +75,8 @@ public class AdminSite implements SiteInstance {
 		return curNavElem;
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#createController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
-		//fxdiff BAKS-7 Resume function
+	@Override
+	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(AdminSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);

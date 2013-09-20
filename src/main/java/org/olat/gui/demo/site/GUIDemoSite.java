@@ -25,15 +25,15 @@
 
 package org.olat.gui.demo.site;
 
-import java.util.Locale;
-
 import org.olat.ControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
-import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
+import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.gui.demo.GUIDemoMainController;
@@ -46,7 +46,7 @@ import org.olat.gui.demo.GUIDemoMainController;
  * Initial Date:  11.09.2007 <br>
  * @author Lavinia Dumitrescu
  */
-public class GUIDemoSite implements SiteInstance {
+public class GUIDemoSite extends AbstractSiteInstance {
 	private static final OLATResourceable ORES_TESTING = OresHelper.lookupType(GUIDemoMainController.class);
 	
 	private NavElement origNavElem;
@@ -54,7 +54,8 @@ public class GUIDemoSite implements SiteInstance {
 	/**
 	 * 
 	 */
-	public GUIDemoSite(Locale loc) {
+	public GUIDemoSite(SiteDefinition siteDef) {
+		super(siteDef);
 		origNavElem = new DefaultNavElement("gui_demo", "gui demo", "o_site_guidemo");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
@@ -66,10 +67,8 @@ public class GUIDemoSite implements SiteInstance {
 		return curNavElem;
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#createController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
+	@Override
+	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		MainLayoutController c = ControllerFactory.createLaunchController(ORES_TESTING, ureq, wControl, true);
 		return c;
 	}

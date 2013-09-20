@@ -26,12 +26,15 @@
 
 package org.olat.core.gui.control.navigation;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractConfigOnOff;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
 
 /**
  * @author Christian Guretzki
  */
-public abstract class AbstractSiteDefinition extends AbstractConfigOnOff {
+public abstract class AbstractSiteDefinition extends AbstractConfigOnOff implements SiteDefinition {
 	
 	private int order;
 	
@@ -39,8 +42,29 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff {
 		this.order = order;
 	}
 	
+	@Override
 	public int getOrder() {
 		return order;
+	}
+
+	@Override
+	public final SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
+		SiteConfiguration config = getSiteConfiguration();
+		
+		String secCallbackBeanId = config.getSecurityCallbackBeanId();
+		SiteSecurityCallback siteSecCallback = (SiteSecurityCallback)CoreSpringFactory.getBean(secCallbackBeanId);
+		if (siteSecCallback != null && !siteSecCallback.isAllowedToViewSite(ureq)) {
+			return null;
+		}
+		return createSite(ureq, wControl, config);
+	}
+	
+	protected abstract SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config);
+	
+	protected SiteConfiguration getSiteConfiguration() {
+		SiteDefinitions siteModule = CoreSpringFactory.getImpl(SiteDefinitions.class);
+		SiteConfiguration config = siteModule.getConfigurationSite(this);
+		return config;
 	}
 }
 

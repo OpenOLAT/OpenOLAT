@@ -25,14 +25,13 @@
 
 package org.olat.admin.site;
 
-import java.util.List;
-
-import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial Date:  Jan 16, 2006
@@ -43,49 +42,19 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  */
 public class UserAdminSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-	/**
-	 * Default constructor
-	 */
 	public UserAdminSiteDef() {
-		super();
+		//
 	}
 
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getName()
-	 */
-	public String getName() {
-		return "useradminsite";
-	}
-
-	
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionResources()
-	 */
-	public List getExtensionResources() {	
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionCSS()
-	 */
-	public ExtensionResource getExtensionCSS() {
-		// no ressources, part of main css
-		return null;
-	}
-	
-	/**
-	 * @see org.olat.navigation.SiteDefinition#createSite(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
-		SiteInstance si = null;
-		if (ureq.getUserSession().getRoles().isUserManager()) {
+	@Override
+	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
+			return new UserAdminSite(this, ureq.getLocale());
+		} else if (ureq.getUserSession().getRoles().isUserManager()) {
 			// only open for olat-usermanagers
-			si = new UserAdminSite(ureq.getLocale());
+			return new UserAdminSite(this, ureq.getLocale());
 		} 
-		return si;
+		return null;
 	}
-
 }
 

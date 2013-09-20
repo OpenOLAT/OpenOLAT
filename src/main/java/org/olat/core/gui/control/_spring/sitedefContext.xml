@@ -7,40 +7,87 @@
   
 	
 	<!-- OLAT sites -->
-	<bean id="olatsites" class="org.olat.core.gui.control.navigation.SiteDefinitions" />
+	<bean id="olatsites" class="org.olat.core.gui.control.navigation.SiteDefinitions" init-method="init">
+		<property name="persistedProperties">
+		  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+		    <constructor-arg index="0" ref="coordinatorManager"/>
+		    <constructor-arg index="1" ref="olatsites" />
+		  </bean>
+		</property>	
+	</bean>
 	
 	<!-- classes implementing the SiteDefinition interface -->
 
 	<!-- Disable site by adding '<property name="enabled" value="false"/>' -->
-	<bean id="olatsites_home" class="org.olat.home.HomeSiteDef" scope="prototype" >
+	<bean id="olatsites_home" class="org.olat.home.HomeSiteDef">
 	   <property name="order" value="${site.home.order}" />
 	   <property name="enabled" value="${site.minimalhome.enabled}"/>
 	</bean>
-	<bean id="olatsites_groups" class="org.olat.group.site.GroupsSiteDef" scope="prototype" >
+	<bean id="olatsites_groups" class="org.olat.group.site.GroupsSiteDef">
 	   <property name="order" value="4" />
 	   <property name="enabled" value="${site.groups.enable}"/>
 	</bean>
-	<bean id="olatsites_catalog" class="org.olat.catalog.site.CatalogSiteDef" scope="prototype" >
+	
+	<bean id="coursesite_infos_1" class="org.olat.course.site.CourseSiteDef"/>
+	
+	<bean id="coursesite_infos_2" class="org.olat.course.site.CourseSiteDef2"/>
+
+	<!--
+	<bean id="olatsites_catalog" class="org.olat.catalog.site.CatalogSiteDef">
 	   <property name="order" value="5" />
 	   <property name="enabled" value="${site.catalog.enable}"/>
 	</bean>
-	<bean id="olatsites_repository" class="org.olat.repository.site.RepositorySiteDef" scope="prototype" >
+	-->
+	<bean id="olatsites_repository" class="org.olat.repository.site.RepositorySiteDef">
 	   <property name="order" value="6" />
 	   <property name="enabled" value="${site.repository.enable}"/>
 	</bean>
-	<bean id="olatsites_qpool" class="org.olat.modules.qpool.site.QuestionPoolSiteDef" scope="prototype" >
+	<bean id="olatsites_qpool" class="org.olat.modules.qpool.site.QuestionPoolSiteDef">
 	   <property name="order" value="7" />
 	   <property name="enabled" value="${site.questionpool.enable}"/>
 	</bean>
-	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef" scope="prototype" >
+	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef">
 	   <property name="order" value="9" />
 	</bean>
-	<bean id="olatsites_admin" class="org.olat.admin.site.AdminSiteDef" scope="prototype">
+	<bean id="olatsites_admin" class="org.olat.admin.site.AdminSiteDef">
 	   <property name="order" value="10" />
 	</bean>
-	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef" scope="prototype" >
+	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
 	   <property name="order" value="11" />
 	   <property name="enabled" value="${guidemo.enabled}"/>
+	</bean>
+	
+	<!--  security callback -->
+	<bean id="adminSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.AdminSecurityCallback"/>
+	
+	<bean id="defaultSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.DefaultSecurityCallbackImpl"/>
+	
+	<bean id="disabledSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.DisabledSecurityCallback"/>
+	
+	<bean id="managersSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.ManagersSecurityCallback"/>
+	
+	<bean id="registredSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserSecurityCallback"/>
+
+	
+	<bean id="restrictToAuthorSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="author"/>
+	</bean>
+	
+	<bean id="restrictToUserManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="usermanager"/>
+	</bean>
+	
+	<bean id="restrictToGroupManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="groupmanager"/>
+	</bean>
+	
+	<bean id="restrictToPoolAdminSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="pooladmin"/>
+	</bean>
+	
+	<!-- Alternative controllers -->
+	<bean id="courseSiteForbiddenAlt" class="org.olat.core.gui.control.navigation.SiteAlternativeControllerCreator">
+		<property name="className" value="org.olat.course.site.ui.ForbiddenCourseSiteController"/>
 	</bean>
 
 </beans>

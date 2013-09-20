@@ -23,9 +23,11 @@ import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
-import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
+import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -41,14 +43,14 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
  */
-public class HomeSite implements SiteInstance {
+public class HomeSite extends AbstractSiteInstance {
 
 	private DefaultNavElement curNavElem;
 	private NavElement origNavElem;
 
-	public HomeSite(UserRequest ureq) {
+	public HomeSite(UserRequest ureq, SiteDefinition siteDef) {
+		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, ureq.getLocale());
-		
 		if(ureq.getUserSession().getRoles().isGuestOnly()){
 			origNavElem = new DefaultNavElement(trans.translate("topnav.guesthome"), trans.translate("topnav.guesthome.alt"), "o_site_home");
 		}else{
@@ -58,12 +60,8 @@ public class HomeSite implements SiteInstance {
 		origNavElem.setAccessKey("h".charAt(0));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.navigation.SiteInstance#createController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
-	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
+	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(HomeSite.class, ureq.getIdentity().getKey());
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);

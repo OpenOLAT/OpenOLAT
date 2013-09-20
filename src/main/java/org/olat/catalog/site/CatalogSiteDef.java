@@ -24,6 +24,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 
@@ -34,15 +35,11 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  */
 public class CatalogSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-	/**
-	 * @see org.olat.navigation.SiteDefinition#createSite(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
-	public SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
+	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		CatalogModule catModule = CoreSpringFactory.getImpl(CatalogModule.class);
 		if(catModule.isCatalogSiteEnabled()) {
-			SiteInstance si = new CatalogSite(ureq.getLocale());
+			SiteInstance si = new CatalogSite(this, ureq.getLocale());
 			return si;
 		}
 		return null;

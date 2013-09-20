@@ -27,29 +27,139 @@
 package org.olat.core.gui.control.navigation;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
+import org.olat.core.configuration.AbstractOLATModule;
+import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.site.model.CourseSiteConfiguration;
+import org.olat.course.site.model.LanguageConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * Description:<br>
- * TODO: Felix Jost Class Description for Sites
+ * This is the module for sites definition and configuration
  * 
  * <P>
  * Initial Date:  12.07.2005 <br>
  *
  * @author Felix Jost
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SiteDefinitions {
-	private static OLog log = Tracing.createLoggerFor(SiteDefinitions.class);
+public class SiteDefinitions extends AbstractOLATModule {
 
-	private List<SiteDefinition> siteDefList;
-	private Object lockObject = new Object();
+	private Map<String,SiteDefinition> siteDefMap;
+	private Map<String,SiteConfiguration> siteConfigMap = new ConcurrentHashMap<String,SiteConfiguration>();
+	
+	private String configSite1;
+	private String configSite2;
+	private String sitesSettings;
+	
+	@Autowired
+	private List<SiteDefinition> configurers;
+	
+	private static final XStream xStream = XStreamHelper.createXStreamInstance();
+	static {
+		xStream.alias("coursesite", CourseSiteConfiguration.class);
+		xStream.alias("languageConfig", LanguageConfiguration.class);
+		xStream.alias("siteconfig", SiteConfiguration.class);
+	}
+	
+	public String getConfigCourseSite1() {
+		return configSite1;
+	}
+
+	public void setConfigCourseSite1(String config) {
+		setStringProperty("site.1.config", config, true);
+	}
+
+	public String getConfigCourseSite2() {
+		return configSite2;
+	}
+
+	public void setConfigCourseSite2(String config) {
+		setStringProperty("site.2.config", config, true);
+	}
+	
+	public SiteConfiguration getConfigurationSite(String id) {
+		SiteConfiguration config = siteConfigMap.get(id);
+		if(config == null) {
+			config = new SiteConfiguration();
+			config.setId(id);
+			siteConfigMap.put(id, config);
+		}
+		return config;
+	}
+	
+	public SiteConfiguration getConfigurationSite(SiteDefinition siteDef) {
+		for(Map.Entry<String, SiteDefinition> entry: siteDefMap.entrySet()) {
+			if(entry.getValue() == siteDef) {
+				return getConfigurationSite(entry.getKey());
+			}
+		}
+		return null;
+	}
+	
+	public CourseSiteConfiguration getConfigurationCourseSite1() {
+		if(StringHelper.containsNonWhitespace(configSite1)) {
+			return (CourseSiteConfiguration)xStream.fromXML(configSite1);
+		}
+		return null;
+	}
+
+	public void setConfigurationCourseSite1(CourseSiteConfiguration config) {
+		if(config == null) {
+			setConfigCourseSite1("");
+		} else {
+			String configStr = xStream.toXML(config);
+			setConfigCourseSite1(configStr);
+		}
+	}
+
+	public CourseSiteConfiguration getConfigurationCourseSite2() {
+		if(StringHelper.containsNonWhitespace(configSite2)) {
+			return (CourseSiteConfiguration)xStream.fromXML(configSite2);
+		}
+		return null;
+	}
+
+	public void setConfigurationCourseSite2(CourseSiteConfiguration config) {
+		if(config == null) {
+			setConfigCourseSite2("");
+		} else {
+			String configStr = xStream.toXML(config);
+			setConfigCourseSite2(configStr);
+		}
+	}
+
+	public String getSitesSettings() {
+		return sitesSettings;
+	}
+
+	public void setSitesSettings(String config) {
+		setStringProperty("sites.config", config, true);
+	}
+	
+	public List<SiteConfiguration> getSitesConfiguration() {
+		if(StringHelper.containsNonWhitespace(sitesSettings)) {
+			return new ArrayList<SiteConfiguration>(siteConfigMap.values());
+		}
+		return Collections.emptyList();
+	}
+
+	public void setSitesConfiguration(List<SiteConfiguration> configs) {
+		String configStr = xStream.toXML(configs);
+		setSitesSettings(configStr);
+	}
 
 	/**
 	 * 
@@ -59,42 +169,151 @@ public class SiteDefinitions {
 		// and we won't to define spring depends-on
 	}
 	
-	private void initSiteDefinitionList() {
-		siteDefList = new ArrayList<SiteDefinition>();
-		Map<Integer,SiteDefinition> sortedMap = new TreeMap<Integer, SiteDefinition>(); 
-		Map<String, SiteDefinition> siteDefMap = CoreSpringFactory.getBeansOfType(SiteDefinition.class);
-		Collection<SiteDefinition> siteDefValues = siteDefMap.values();
-		for (SiteDefinition siteDefinition : siteDefValues) {
-			if (siteDefinition.isEnabled()) {
-				int key = siteDefinition.getOrder();
-				while (sortedMap.containsKey(key) ) {
-					// a key with this value already exist => add 1000 because offset must be outside of other values.
-					key += 1000;
-				}
-				if ( key != siteDefinition.getOrder() ) {
-					log.warn("SiteDefinition-Configuration Problem: Dublicate order-value for siteDefinition=" + siteDefinition + ", append siteDefinition at the end");
-				}
-				sortedMap.put(key, siteDefinition);
-			} else {
-				log.debug("Disabled siteDefinition=" + siteDefinition);
+	@Override
+	public void init() {
+		String sitesObj = getStringPropertyValue("sites.config", true);
+		if(StringHelper.containsNonWhitespace(sitesObj)) {
+			sitesSettings = sitesObj;
+			
+			@SuppressWarnings("unchecked")
+			List<SiteConfiguration> configs = (List<SiteConfiguration>)xStream.fromXML(sitesSettings);
+			for(SiteConfiguration siteConfig:configs) {
+				siteConfigMap.put(siteConfig.getId(), siteConfig);
 			}
 		}
 		
-		for (Integer key : sortedMap.keySet()) {
-			siteDefList.add(sortedMap.get(key));	
+		String site1Obj = getStringPropertyValue("site.1.config", true);
+		if(StringHelper.containsNonWhitespace(site1Obj)) {
+			configSite1 = site1Obj;
+		}
+		
+		String site2Obj = getStringPropertyValue("site.2.config", true);
+		if(StringHelper.containsNonWhitespace(site2Obj)) {
+			configSite2 = site2Obj;
 		}
 	}
 
-	public List<SiteDefinition> getSiteDefList() {
-		if (siteDefList == null) { // first try non-synchronized for better performance
-			synchronized(lockObject) {
-				if (siteDefList == null) { // check again in synchronized-block, only one may create list
-					initSiteDefinitionList();
+	@Override
+	public void setPersistedProperties(PersistedProperties persistedProperties) {
+		this.moduleConfigProperties = persistedProperties;
+		
+	}
+
+	@Override
+	protected void initDefaultProperties() {
+		//do nothing
+	}
+
+	@Override
+	protected void initFromChangedProperties() {
+		init();
+	}
+
+	private Map<String,SiteDefinition> getAndInitSiteDefinitionList() {
+		if (siteDefMap == null) { // first try non-synchronized for better performance
+			synchronized(this) {
+				if (siteDefMap == null) {
+					Map<String,SiteDefinition> siteDefs = CoreSpringFactory.getBeansOfType(SiteDefinition.class);
+					siteDefMap = new ConcurrentHashMap<String,SiteDefinition>(siteDefs);
+
+					List<SiteConfiguration> configs = getSitesConfiguration();
+					Map<String,SiteConfiguration> siteConfigs = new HashMap<String,SiteConfiguration>();
+					for(SiteConfiguration siteConfig:configs) {
+						siteConfigs.put(siteConfig.getId(), siteConfig);
+					}
+					
+					for(Map.Entry<String, SiteDefinition> entry: siteDefs.entrySet()) {
+						String id = entry.getKey();
+						SiteConfiguration config;
+						if(siteConfigs.containsKey(id)) {
+							config = siteConfigs.get(id);
+						} else {
+							SiteDefinition siteDef = entry.getValue();
+							config = new SiteConfiguration();
+							config.setId(id);
+							config.setEnabled(siteDef.isEnabled());
+							config.setOrder(siteDef.getOrder());
+							
+							String securityCallbackBeanId = "defaultSiteSecurityCallback";
+							if("olatsites_useradmin".equals(id)) {
+								securityCallbackBeanId = "restrictToUserManagerSiteSecurityCallback";
+							} else if("olatsites_admin".equals(id)) {
+								securityCallbackBeanId = "adminSiteSecurityCallback";
+							} else if("olatsites_groups".equals(id) || "olatsites_home".equals(id)) {
+								securityCallbackBeanId = "registredSiteSecurityCallback";
+							}
+							config.setSecurityCallbackBeanId(securityCallbackBeanId);	
+						}
+						siteConfigMap.put(config.getId(), config);
+					}
 				}
 			}
-			
 		}
-		return new ArrayList<SiteDefinition>(siteDefList);
+		return siteDefMap;
+	}
+
+	public List<SiteDefinition> getSiteDefList() {
+		Map<String,SiteDefinition> allDefList = getAndInitSiteDefinitionList();
+		List<SiteDefinitionOrder> enabledOrderedSites = new ArrayList<SiteDefinitionOrder>(allDefList.size());
+		for(Map.Entry<String,SiteDefinition> siteDefEntry:allDefList.entrySet()) {
+			String id = siteDefEntry.getKey();
+			SiteDefinition siteDef = siteDefEntry.getValue();
+			if(siteConfigMap.containsKey(id)) {
+				SiteConfiguration config = siteConfigMap.get(id);
+				if(config.isEnabled()) {
+					enabledOrderedSites.add(new SiteDefinitionOrder(siteDef, config));
+				}
+			} else if(siteDef.isEnabled()) {
+				enabledOrderedSites.add(new SiteDefinitionOrder(siteDef));
+			}
+		}
+		Collections.sort(enabledOrderedSites, new SiteDefinitionOrderComparator());
+
+		List<SiteDefinition> sites = new ArrayList<SiteDefinition>(allDefList.size());
+		for(SiteDefinitionOrder orderedSiteDef: enabledOrderedSites) {
+			sites.add(orderedSiteDef.getSiteDef());
+		}
+		return sites;
+	}
+	
+	public Map<String,SiteDefinition> getAllSiteDefinitionsList() {
+		Map<String,SiteDefinition> allDefList = getAndInitSiteDefinitionList();
+		return new HashMap<String,SiteDefinition>(allDefList);
+	}
+	
+	private static class SiteDefinitionOrder {
+		private final int order;
+		private final SiteDefinition siteDef;
+		
+		public SiteDefinitionOrder(SiteDefinition siteDef) {
+			this.siteDef = siteDef;
+			this.order = siteDef.getOrder();
+		}
+		
+		public SiteDefinitionOrder(SiteDefinition siteDef, SiteConfiguration config) {
+			this.siteDef = siteDef;
+			this.order = config.getOrder();
+		}
+		
+		public int getOrder() {
+			return order;
+		}
+		
+		public SiteDefinition getSiteDef() {
+			return siteDef;
+		}
+
+	}
+	
+	private static class SiteDefinitionOrderComparator implements Comparator<SiteDefinitionOrder> {
+
+		@Override
+		public int compare(SiteDefinitionOrder s1, SiteDefinitionOrder s2) {
+			int o1 = s1.getOrder();
+			int o2 = s2.getOrder();
+			return o1 - o2;
+		}
+
 	}
 }
 

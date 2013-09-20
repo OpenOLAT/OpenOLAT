@@ -22,6 +22,7 @@ package org.olat.home;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 
@@ -34,18 +35,11 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  */
 public class HomeSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-	/**
-	 * @see org.olat.core.gui.control.navigation.SiteDefinition#createSite(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
-	public SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
-		//fxdiff FXOLAT-151: better check invitation
+	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		if(ureq.getUserSession().getRoles().isInvitee()) {
 			return null;
 		}
-		
-		return new HomeSite(ureq);
+		return new HomeSite(ureq, this);
 	}
-
 }

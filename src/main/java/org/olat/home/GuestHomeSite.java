@@ -32,9 +32,11 @@ import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
-import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
+import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
@@ -43,7 +45,7 @@ import org.olat.core.util.resource.OresHelper;
  * Initial Date:  19.07.2005 <br>
  * @author Felix Jost
  */
-public class GuestHomeSite implements SiteInstance {
+public class GuestHomeSite extends AbstractSiteInstance {
 	private static final OLATResourceable ORES_GUEST = OresHelper.lookupType(GuestHomeMainController.class);
 	
 	private NavElement origNavElem;
@@ -51,7 +53,8 @@ public class GuestHomeSite implements SiteInstance {
 	/**
 	 * 
 	 */
-	public GuestHomeSite(Locale loc) {	
+	public GuestHomeSite(SiteDefinition siteDef, Locale loc) {
+		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
 		origNavElem = new DefaultNavElement(trans.translate("topnav.guesthome"), trans.translate("topnav.guesthome.alt"), "o_site_home");		
 		curNavElem = new DefaultNavElement(origNavElem);
@@ -63,11 +66,9 @@ public class GuestHomeSite implements SiteInstance {
 	public NavElement getNavElement() {
 		return curNavElem;
 	}
-
-	/**
-	 * @see org.olat.navigation.SiteInstance#createController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
+	
+	@Override
+	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		MainLayoutController c = ControllerFactory.createLaunchController(ORES_GUEST, ureq, wControl, true);
 		return c;
 	}

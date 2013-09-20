@@ -32,9 +32,11 @@ import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
-import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
+import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -50,17 +52,15 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Felix Jost
  */
-public class GroupsSite implements SiteInstance {
+public class GroupsSite extends AbstractSiteInstance {
 	private static final OLATResourceable ORES_GROUPS = OresHelper.createOLATResourceableInstance("BGMainController", 0l);
 
 	// refer to the definitions in org.olat
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
-	/**
-	 * 
-	 */
-	public GroupsSite(Locale loc) {
+	public GroupsSite(SiteDefinition siteDef, Locale loc) {
+		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
 		origNavElem = new DefaultNavElement(trans.translate("topnav.buddygroups"), trans.translate("topnav.buddygroups.alt"), "o_site_groups");
 		origNavElem.setAccessKey("g".charAt(0));
@@ -74,12 +74,8 @@ public class GroupsSite implements SiteInstance {
 		return curNavElem;
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#createController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
-		//fxdiff BAKS-7 Resume function
+	@Override
+	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(GroupsSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);

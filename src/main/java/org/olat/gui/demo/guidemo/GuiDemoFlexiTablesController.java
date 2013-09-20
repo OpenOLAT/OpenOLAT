@@ -63,7 +63,7 @@ import org.olat.core.gui.translator.Translator;
  */
 public class GuiDemoFlexiTablesController extends FormBasicController {
 	
-	private FlexiTableDataModel tableDataModel;
+	private FlexiTableDataModel<Row> tableDataModel;
 	
 	public GuiDemoFlexiTablesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "flexitable");
@@ -86,7 +86,7 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
     // column 7 : Link
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header7", 6));
 
-		tableDataModel = new FlexiTableDataModelImpl(new SampleFlexiTableModel(this, formLayout), tableColumnModel);
+		tableDataModel = new FlexiTableDataModelImpl<Row>(new SampleFlexiTableModel(this, formLayout), tableColumnModel);
 		uifactory.addTableElement(ureq, getWindowControl(), "gui-demo", tableDataModel, formLayout);
 		uifactory.addFormSubmitButton("ok", formLayout);
 	}

@@ -25,18 +25,17 @@
 
 package org.olat.admin.site;
 
-import java.util.List;
-
-import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 
 /**
  * Description:<br>
- * TODO: Felix Jost Class Description for HomeSite
+ * Administration site
+ * 
  * <P>
  * Initial Date:  12.07.2005 <br>
  *
@@ -44,49 +43,17 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  */
 public class AdminSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-	/**
-	 * 
-	 */
 	public AdminSiteDef() {
-		super();
+		//
 	}
 
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getName()
-	 */
-	public String getName() {
-		return "adminsite";
-	}
-
-	
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionResources()
-	 */
-	public List getExtensionResources() {
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionCSS()
-	 */
-	public ExtensionResource getExtensionCSS() {
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.navigation.SiteDefinition#createSite(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
-		SiteInstance si = null;
+	@Override
+	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
 			// only open for olat-admins
-			si = new AdminSite(ureq.getLocale());
+			return new AdminSite(this, ureq.getLocale());
 		} 
-		return si;
+		return null;
 	}
-
 }
 

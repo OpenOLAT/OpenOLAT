@@ -20,6 +20,7 @@
 package org.olat.modules.openmeetings.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -40,8 +41,6 @@ import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.model.RoomType;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 

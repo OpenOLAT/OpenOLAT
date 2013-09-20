@@ -28,8 +28,10 @@ package org.olat.group.site;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -43,16 +45,15 @@ public class GroupsSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		super();
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteDefinition#createSite(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
-		SiteInstance si = null;
-		if (!ureq.getUserSession().getRoles().isGuestOnly() && !ureq.getUserSession().getRoles().isInvitee()) {
+	@Override
+	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
+			return new GroupsSite(this, ureq.getLocale());
+		} else if (!ureq.getUserSession().getRoles().isGuestOnly()
+				&& !ureq.getUserSession().getRoles().isInvitee()) {
 			// all except guests and invitees see this site
-			si = new GroupsSite(ureq.getLocale());
+			return new GroupsSite(this, ureq.getLocale());
 		}
-		return si;
+		return null;
 	}
 }

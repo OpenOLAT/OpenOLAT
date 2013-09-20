@@ -22,8 +22,10 @@ package org.olat.modules.qpool.site;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -33,16 +35,16 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  */
 public class QuestionPoolSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-	/**
-	 * @see org.olat.navigation.SiteDefinition#createSite(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
-	public SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
-		if(ureq.getUserSession() != null && ureq.getUserSession().getRoles() != null
-				&& (ureq.getUserSession().getRoles().isAuthor() || ureq.getUserSession().getRoles().isPoolAdmin())) {
-			SiteInstance si = new QuestionPoolSite(ureq.getLocale());
-			return si;
+	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
+			//already checked
+			return new QuestionPoolSite(this, ureq.getLocale());
+		} else if(ureq.getUserSession() != null
+				&& ureq.getUserSession().getRoles() != null
+				&& (ureq.getUserSession().getRoles().isAuthor()
+				|| ureq.getUserSession().getRoles().isPoolAdmin())) {
+			return new QuestionPoolSite(this, ureq.getLocale());
 		}
 		return null;
 	}
