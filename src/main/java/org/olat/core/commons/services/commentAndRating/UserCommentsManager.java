@@ -106,7 +106,7 @@ public abstract class UserCommentsManager extends BasicManager {
 	 * @return The number of comments for the configured resource. 0 if no
 	 *         comments are available.
 	 */
-	public abstract Long countComments();
+	public abstract long countComments();
 	
 	/**
 	 * @return The number of comments for the configured resource and its sub path. 0 if no

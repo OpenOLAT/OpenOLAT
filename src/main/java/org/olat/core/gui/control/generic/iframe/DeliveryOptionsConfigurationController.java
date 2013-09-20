@@ -238,6 +238,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		encodingContentEl.setEnabled(!inherit);
 		encodingJSEl.setEnabled(!inherit);
 		standardModeEl.setEnabled(!inherit);
+		heightEl.setEnabled(!inherit);
 		if(inherit) {
 			//disabled all
 			jsOptionEl.setEnabled(false);

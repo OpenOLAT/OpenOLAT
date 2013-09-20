@@ -175,22 +175,25 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		newUriEventPanel = new Panel("newUriEvent");
 		newUriEventPanel.setContent(eventVC);
 		
-
 		main = new Panel("iframemain");
 		
 		main.setContent(myContent);
 		myContent.contextPut("frameId", frameId);
 		myContent.put("newUriEvent", newUriEventPanel);
 		// add default iframe height
-		myContent.contextPut("iframeHeight", 600); // used as fallback
-	
-		myContent.contextPut("adjustAutoHeight", Boolean.TRUE);
-		
+		if(options == null || DeliveryOptions.CONFIG_HEIGHT_AUTO.equals(options.getHeight())
+				|| options.getHeight() == null) {
+			myContent.contextPut("iframeHeight", 600); // used as fallback
+			myContent.contextPut("adjustAutoHeight", Boolean.TRUE);
+		} else {
+			myContent.contextPut("iframeHeight", options.getHeight());
+			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);
+		}
+
 		// Add us as cycle listener to be notified when current dispatch cycle is
 		// finished. we then need to add the css which is not yet defined at this
 		// point
 		getWindowControl().getWindowBackOffice().addCycleListener(this);
-		//
 		putInitialPanel(main);
 	}
 
