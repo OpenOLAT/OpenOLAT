@@ -408,17 +408,41 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#getRoles(org.olat.core.id.Identity)
 	 */
+	@Override
 	public Roles getRoles(Identity identity) {
-		boolean isAdmin = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN);
-		boolean isAuthor = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-		boolean isGroupManager = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GROUPMANAGER);
-		boolean isUserManager = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_USERMANAGER);
-		boolean isGuestOnly = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY);
-		boolean isInstitutionalResourceManager = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE,
-				Constants.ORESOURCE_INSTORESMANAGER);
-		boolean isPoolAdmin = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_POOLS);
-		boolean isInvitee = isIdentityInvited(identity);
-		return new Roles(isAdmin, isUserManager, isGroupManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, isPoolAdmin, isInvitee);
+		
+		boolean isGuestOnly = false;
+		boolean isInvitee = false;
+
+		List<String> rolesStr = getRolesAsString(identity);
+		boolean admin = rolesStr.contains(Constants.GROUP_ADMIN);
+		boolean author = admin || rolesStr.contains(Constants.GROUP_AUTHORS);
+		boolean groupManager = admin || rolesStr.contains(Constants.GROUP_GROUPMANAGERS);
+		boolean userManager = admin || rolesStr.contains(Constants.GROUP_USERMANAGERS);
+		boolean resourceManager = rolesStr.contains(Constants.GROUP_INST_ORES_MANAGER);
+		boolean poolManager = admin || rolesStr.contains(Constants.GROUP_POOL_MANAGER);
+		
+		if(!rolesStr.contains(Constants.GROUP_OLATUSERS)) {
+			isInvitee = isIdentityInvited(identity);
+			isGuestOnly = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY);
+		}
+		
+		return new Roles(admin, userManager, groupManager, author, isGuestOnly, resourceManager, poolManager, isInvitee);
+	}
+
+	@Override
+	public List<String> getRolesAsString(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ngroup.groupName from ").append(NamedGroupImpl.class.getName()).append(" as ngroup ")
+		  .append(" inner join ngroup.securityGroup sgi ")
+		  .append(" where exists (")
+		  .append("   select sgmsi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi where sgmsi.identity.key=:identityKey and sgmsi.securityGroup=sgi")
+		  .append(" )");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 
 	@Override
@@ -1153,13 +1177,18 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#findSecurityGroupByName(java.lang.String)
 	 */
+	@Override
 	public SecurityGroup findSecurityGroupByName(String securityGroupName) {
-		List group = DBFactory.getInstance().find(
-				"select sgi from" 
-				+ " org.olat.basesecurity.NamedGroupImpl as ngroup," 
-				+ " org.olat.basesecurity.SecurityGroupImpl as sgi"
-				+ " where ngroup.groupName = ? and ngroup.securityGroup = sgi", new Object[] { securityGroupName },
-				new Type[] { StandardBasicTypes.STRING });
+		StringBuilder sb = new StringBuilder();
+		sb.append("select sgi from ").append(NamedGroupImpl.class.getName()).append(" as ngroup, ")
+		  .append(SecurityGroupImpl.class.getName()).append("  as sgi ")
+		  .append(" where ngroup.groupName=:groupName and ngroup.securityGroup=sgi");
+
+		List<SecurityGroup> group = this.dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), SecurityGroup.class)
+				.setParameter("groupName", securityGroupName)
+				.getResultList();
+
 		int size = group.size();
 		if (size == 0) return null;
 		if (size != 1) throw new AssertException("non unique name in namedgroup: " + securityGroupName);

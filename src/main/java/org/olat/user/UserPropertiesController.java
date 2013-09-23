@@ -77,7 +77,7 @@ public class UserPropertiesController extends BasicController {
 		super(ureq, wControl);
 		PropertyManager pm = PropertyManager.getInstance();
 		this.displayedIdentity = displayedIdentity;
-		List l = pm.listProperties(displayedIdentity, null, null, null, null);
+		List<Property> l = pm.listProperties(displayedIdentity, null, null, null, null);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(getTranslator().translate("error.no.props.found"));
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
@@ -162,13 +162,13 @@ public class UserPropertiesController extends BasicController {
  *  
  */
 
-class PropTableDataModel extends DefaultTableDataModel {
+class PropTableDataModel extends DefaultTableDataModel<Property> {
 
 	/**
 	 * Table model holding list of properties.
 	 * @param objects
 	 */
-	public PropTableDataModel(List objects) {
+	public PropTableDataModel(List<Property> objects) {
 		super(objects);
 	}
 
@@ -176,7 +176,7 @@ class PropTableDataModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public final Object getValueAt(int row, int col) {
-		Property p = (Property) getObject(row);
+		Property p = getObject(row);
 		switch (col) {
 			case 0 :
 				String cat = p.getCategory();

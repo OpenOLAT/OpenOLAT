@@ -21,25 +21,18 @@ package org.olat.course.site;
 
 import java.util.Locale;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.messages.MessageController;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StateSite;
-import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -58,8 +51,7 @@ import org.olat.repository.RepositoryManager;
  * based on Intranet-Site (goodsolutions) 
  * more config-options (see NetworkSiteDef / olat_extensions.xml) 
  * 
- * TODO:RH: maybe move back to SiteDef / Site for generic usage.
- * use repositoryuifactory instead of manually do things like, incrementing, building businesspath, etc...
+ * TODO:RH: use repositoryuifactory instead of manually do things like, incrementing, building businesspath, etc...
  * 
  * <P>
  * Initial Date: 19.07.2005 <br>
@@ -73,7 +65,6 @@ public class CourseSite extends AbstractSiteInstance {
 
 	private final String repositorySoftKey;
 	private boolean showToolController;
-	private AutoCreator alternativeControllerIfNotLaunchable;
 	private SiteSecurityCallback siteSecCallback;
 
 	/**
@@ -81,13 +72,13 @@ public class CourseSite extends AbstractSiteInstance {
 	 * @param alternativeControllerIfNotLaunchable
 	 * @param titleKeyPrefix
 	 */
-	public CourseSite(SiteDefinition siteDef, Locale loc, String repositorySoftKey, boolean showToolController, AutoCreator alternativeController, SiteSecurityCallback siteSecCallback, String titleKeyPrefix, String navIconCssClass) {
+	public CourseSite(SiteDefinition siteDef, Locale loc, String repositorySoftKey, boolean showToolController,
+			SiteSecurityCallback siteSecCallback, String titleKeyPrefix, String navIconCssClass) {
 		super(siteDef);
 		this.repositorySoftKey = repositorySoftKey;
 		origNavElem = new DefaultNavElement(titleKeyPrefix, titleKeyPrefix, navIconCssClass);
 		curNavElem = new DefaultNavElement(origNavElem);
 		this.showToolController = showToolController;
-		this.alternativeControllerIfNotLaunchable = alternativeController;
 		this.siteSecCallback = siteSecCallback;
 	}
 
@@ -104,7 +95,7 @@ public class CourseSite extends AbstractSiteInstance {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
 		if(entry == null) {
-			return getAlternativeController(ureq, wControl);
+			return getAlternativeController(ureq, wControl, config);
 		}
 
 		MainLayoutController c;
@@ -144,21 +135,7 @@ public class CourseSite extends AbstractSiteInstance {
 		} else {
 			// access restricted (not in group / author) -> show controller
 			// defined in olat_extensions (type autoCreator)
-			c = getAlternativeController(ureq, wControl);
-		}
-		return c;
-	}
-	
-	protected MainLayoutController getAlternativeController(UserRequest ureq, WindowControl wControl) {
-		MainLayoutController c;
-		if (alternativeControllerIfNotLaunchable != null) {
-			c = (MainLayoutController) alternativeControllerIfNotLaunchable
-					.createController(ureq, wControl);
-		} else {
-			Translator pT = Util.createPackageTranslator(CourseSite.class, ureq.getLocale());
-			MessageController msgController = MessageUIFactory.createErrorMessage(ureq, wControl, pT.translate("course.site.no.access.title"), pT.translate("course.site.no.access.text"));			
-			Controller main3colsCtr = new LayoutMain3ColsController(ureq, wControl, null, null, msgController.getInitialComponent(), null);
-			c = (MainLayoutController) main3colsCtr;
+			c = getAlternativeController(ureq, wControl, config);
 		}
 		return c;
 	}

@@ -123,6 +123,10 @@ public class PersonalSettingsController extends BasicController implements Activ
 				userConfig.addTab(translate("tab.disclaimer"), disclaimerCtr.getInitialComponent());
 			}
 			
+			Controller rolesCtrl = new UserRolesController(ureq, getWindowControl());
+			userConfig.addTab(translate("tab.roles"), rolesCtrl.getInitialComponent());
+			listenTo(rolesCtrl);
+			
 			putInitialPanel(userConfig);
 			
 			logDebug("PersonalSettingsController constructed, set velocity page to index.html", PersonalSettingsController.class.getSimpleName());	

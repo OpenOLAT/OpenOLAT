@@ -60,8 +60,8 @@ public class TestUserAdder {
 	
   private void createAdditionalTestUsers(List<DefaultUser> additionalTestUsers) {
 		if (additionalTestUsers != null) {
-			for (Iterator iter = additionalTestUsers.iterator(); iter.hasNext();) {
-				DefaultUser user = (DefaultUser) iter.next();
+			for (Iterator<DefaultUser> iter = additionalTestUsers.iterator(); iter.hasNext();) {
+				DefaultUser user = iter.next();
 				userModule.createUser(user);
 				log.info("created additional test-user username=" + user.getUserName());
 			}

@@ -334,7 +334,7 @@ public class SitesConfigurationController extends FormBasicController {
 					config.setSecurityCallbackBeanId(null);
 				}
 				if(altControllerEl.isOneSelected() && !"none".equals(altControllerEl.getSelectedKey())) {
-					config.setAlternativeControllerBeanId(secCallbackEl.getSelectedKey());
+					config.setAlternativeControllerBeanId(altControllerEl.getSelectedKey());
 				} else {
 					config.setAlternativeControllerBeanId(null);
 				}

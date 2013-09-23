@@ -22,7 +22,6 @@ package org.olat.course.site;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
@@ -99,10 +98,8 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		
 		LanguageConfiguration langConfig = getLanguageConfiguration(ureq, courseConfig);
 		String icon = courseConfig.getNavIconCssClass();
-
-		AutoCreator alternativeController = (AutoCreator)CoreSpringFactory.getBean("courseSiteForbiddenAlt");
 		return new CourseSite(this, ureq.getLocale(), langConfig.getRepoSoftKey(), showToolController,
-				alternativeController, siteSecCallback, langConfig.getTitle(), icon);
+				siteSecCallback, langConfig.getTitle(), icon);
 	}
 	
 	protected LanguageConfiguration getLanguageConfiguration(UserRequest ureq, CourseSiteConfiguration config) {
@@ -120,6 +117,10 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		
 		if(myLangConfig == null) {
 			myLangConfig = defaultLangConfig;
+		}
+		
+		if(myLangConfig == null && config.getConfigurations().size() > 0) {
+			myLangConfig = config.getConfigurations().get(0);
 		}
 		
 		return myLangConfig;

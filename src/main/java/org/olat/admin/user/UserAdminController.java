@@ -127,7 +127,7 @@ public class UserAdminController extends BasicController implements Activateable
 		myIdentity = identity;
 				
 		if (allowedToManageUser(ureq, myIdentity)) {			
-			myContent = this.createVelocityContainer("udispatcher");
+			myContent = createVelocityContainer("udispatcher");
 			backLink = LinkFactory.createLinkBack(myContent, this);
 			userShortDescrCtr = new UserShortDescription(ureq, wControl, identity);
 			myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());

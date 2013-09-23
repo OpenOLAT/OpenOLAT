@@ -37,6 +37,7 @@ import org.olat.properties.Property;
  */
 public class PropFoundEvent extends Event {
 
+	private static final long serialVersionUID = -5998337372128356860L;
 	private Property prop;
 	
 	/**

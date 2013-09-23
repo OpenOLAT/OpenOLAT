@@ -21,7 +21,6 @@ package org.olat.course.site;
 
 import java.util.Locale;
 
-import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 
@@ -35,8 +34,8 @@ import org.olat.core.gui.control.navigation.SiteSecurityCallback;
  */
 public class CourseSite2 extends CourseSite {
 	
-	public CourseSite2(SiteDefinition siteDef, Locale loc, String repositorySoftKey, boolean showToolController,  AutoCreator alternativeController, SiteSecurityCallback secCallback, String title, String navIconCssClass) {
-		super(siteDef, loc, repositorySoftKey, showToolController, alternativeController, secCallback, title, navIconCssClass);
+	public CourseSite2(SiteDefinition siteDef, Locale loc, String repositorySoftKey, boolean showToolController, SiteSecurityCallback secCallback, String title, String navIconCssClass) {
+		super(siteDef, loc, repositorySoftKey, showToolController, secCallback, title, navIconCssClass);
 	}
 
 }

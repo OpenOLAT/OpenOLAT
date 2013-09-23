@@ -22,15 +22,12 @@ package org.olat.core.gui.control.navigation;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.messages.MessageController;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
-import org.olat.course.site.CourseSite;
+import org.olat.course.site.ui.ForbiddenCourseSiteController;
 
 /**
  * The standard behavior for the site
@@ -73,16 +70,18 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 		MainLayoutController c;
 		if (StringHelper.containsNonWhitespace(altControllerId)) {
 			AutoCreator creator = (AutoCreator)CoreSpringFactory.getBean(altControllerId);
-			c = (MainLayoutController)creator.createController(ureq, wControl);
+			Controller ac = creator.createController(ureq, wControl);
+			if(ac instanceof MainLayoutController) {
+				c = (MainLayoutController)ac;
+			} else {
+				c = new LayoutMain3ColsController(ureq, wControl, null, null, ac.getInitialComponent(), null);
+			}
 		} else {
-			Translator pT = Util.createPackageTranslator(CourseSite.class, ureq.getLocale());
-			MessageController ctrl = MessageUIFactory.createErrorMessage(ureq, wControl,
-					pT.translate("course.site.no.access.title"), pT.translate("course.site.no.access.text"));			
+			Controller ctrl = new ForbiddenCourseSiteController(ureq, wControl);			
 			c = new LayoutMain3ColsController(ureq, wControl, null, null, ctrl.getInitialComponent(), null);
 		}
 		return c;
 	}
-	
 
 	@Override
 	public boolean isKeepState() {

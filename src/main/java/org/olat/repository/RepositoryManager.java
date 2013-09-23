@@ -2292,6 +2292,21 @@ public class RepositoryManager extends BasicManager {
 		return repoEntries;
 	}
 	
+	public int countLearningResourcesAsOwner(Identity identity) {
+		StringBuilder sb = new StringBuilder(200);
+		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
+			.append(" inner join v.olatResource as res ")
+			.append(" inner join v.ownerGroup as ownerGroup")
+			.append(" where v.access>=0 ")
+	  	.append(" and exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+	    .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=ownerGroup)");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.getSingleResult().intValue();
+	}
+	
 	/**
 	 * Gets all learning resources where the user is coach of a learning group or
 	 * where he is in a rights group or where he is in the repository entry owner 

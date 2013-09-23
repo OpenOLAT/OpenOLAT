@@ -150,6 +150,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	private final PortfolioModule portfolioModule;
 	private final CatalogModule catalogModule;
 	private final RepositoryModule repositoryModule;
+	private final RepositoryManager repositoryManager;
 
 	/**
 	 * The check for author rights is executed on construction time and then
@@ -167,7 +168,8 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);
 		catalogModule = CoreSpringFactory.getImpl(CatalogModule.class);
 		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
-
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		
 		// use i18n from RepositoryManager level
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
 
@@ -286,7 +288,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		node = new GenericTreeNode(translate("search.generic"), "search.generic");
 		node.setCssClass("o_sel_repo_search_generic");
 		rootNode.addChild(node);
-		if (bIsAuthor) {
+		if (bIsAuthor || repositoryManager.countLearningResourcesAsOwner(getIdentity()) > 0) {
 			GenericTreeNode myEntriesTn = new GenericTreeNode(translate("search.my"), "search.my");
 			myEntriesTn.setCssClass("o_sel_repo_my");
 			myEntriesNodeId = myEntriesTn.getIdent();
@@ -298,7 +300,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			node.setCssClass("o_sel_repo_my_student");
 			rootNode.addChild(node);
 			// for authors or users with group rights also show the teacher portlet
-			if(bIsAuthor || RepositoryManager.getInstance().hasLearningResourcesAsTeacher(getIdentity())) {
+			if(bIsAuthor || repositoryManager.hasLearningResourcesAsTeacher(getIdentity())) {
 				node = new GenericTreeNode(translate("search.mycourses.teacher"), "search.mycourses.teacher");
 				node.setCssClass("o_sel_repo_my_teacher");
 				rootNode.addChild(node);

@@ -349,7 +349,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			addToHistory(ureq, bwControl);
 			// now subtract users that are in the author group to get the co-authors
 			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_AUTHORS)};
-			List identitiesFromAuthorGroup = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(null, null, true, secGroup , null, null, null, null);
+			List<Identity> identitiesFromAuthorGroup = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(null, null, true, secGroup , null, null, null, null);
 			myCtr.removeIdentitiesFromSearchResult(ureq, identitiesFromAuthorGroup);
 			contentCtr = myCtr;
 			listenTo(contentCtr);

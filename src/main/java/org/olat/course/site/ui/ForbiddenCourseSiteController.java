@@ -21,6 +21,7 @@ package org.olat.course.site.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -31,10 +32,13 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ForbiddenCourseSiteController extends BasicController {
+public class ForbiddenCourseSiteController extends BasicController  {
 	
 	public ForbiddenCourseSiteController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		VelocityContainer mainVC = createVelocityContainer("forbidden");
+		putInitialPanel(mainVC);
 	}
 	
 	@Override
@@ -46,9 +50,4 @@ public class ForbiddenCourseSiteController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-
-	
-	
-
 }

@@ -88,6 +88,14 @@ public interface BaseSecurity {
 	public Roles getRoles(Identity identity);
 	
 	/**
+	 * Get the list of roles as string without inheritence (an admin
+	 * has only admin role and not the user manager role...).
+	 * @param identity
+	 * @return
+	 */
+	public List<String> getRolesAsString(Identity identity);
+	
+	/**
 	 * Update the roles
 	 * @param actingIdentity The identity who is performing the change
 	 * @param updatedIdentity The identity that is changed
