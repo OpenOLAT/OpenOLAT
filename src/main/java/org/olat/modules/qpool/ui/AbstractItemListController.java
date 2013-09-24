@@ -198,10 +198,14 @@ public abstract class AbstractItemListController extends FormBasicController
 				SelectionEvent se = (SelectionEvent)event;
 				if("rSelect".equals(se.getCommand())) {
 					ItemRow row = model.getObject(se.getIndex());
-					doClick(ureq, row);
+					if(row != null) {
+						doClick(ureq, row);
+					}
 				} else if("select-item".equals(se.getCommand())) {
 					ItemRow row = getModel().getObject(se.getIndex());
-					doSelect(ureq, row);
+					if(row != null) {
+						doSelect(ureq, row);
+					}
 				}
 			}
 		} else if(source instanceof FormLink) {
