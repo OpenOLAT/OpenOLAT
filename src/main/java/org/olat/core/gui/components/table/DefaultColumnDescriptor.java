@@ -148,7 +148,6 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 				StringHelper.escapeHtml(sb, (String)val);
 				break;
 			case antisamy:
-				System.out.println(val);
 				sb.append(new OWASPAntiSamyXSSFilter().filter(val));
 				break;
 			default : StringHelper.escapeHtml(sb, (String)val);

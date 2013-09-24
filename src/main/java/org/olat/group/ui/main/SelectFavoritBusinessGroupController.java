@@ -20,6 +20,7 @@
 package org.olat.group.ui.main;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.control.WindowControl;
@@ -59,7 +60,9 @@ public class SelectFavoritBusinessGroupController extends AbstractBusinessGroupL
 		groupListCtr.addColumnDescriptor( new ResourcesColumnDescriptor(this, mainVC, getTranslator()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.tutorsCount.i18n(), Cols.tutorsCount.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), null, getLocale()));
+		DefaultColumnDescriptor freeplacesCol = new DefaultColumnDescriptor(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), null, getLocale());
+		freeplacesCol.setEscapeHtml(EscapeMode.none);
+		groupListCtr.addColumnDescriptor(freeplacesCol);
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_SELECT, "select", translate("select")));
 		return 9;

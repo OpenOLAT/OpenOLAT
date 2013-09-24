@@ -27,6 +27,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -39,9 +40,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.control.Controller;
@@ -130,7 +133,8 @@ public class GroupSearchController extends StepFormBasicController {
 		//group rights
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groupName.i18n(), Cols.groupName.ordinal()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.description.i18n(), Cols.description.ordinal()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.description.i18n(), Cols.description.ordinal(),
+				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy)));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.courses.i18n(), Cols.courses.ordinal()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tutor.i18n(), Cols.tutor.ordinal()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.participant.i18n(), Cols.participant.ordinal()));

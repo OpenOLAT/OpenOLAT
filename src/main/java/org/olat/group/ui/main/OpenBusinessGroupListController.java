@@ -21,6 +21,7 @@ package org.olat.group.ui.main;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
@@ -60,7 +61,9 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 		}
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new ResourcesColumnDescriptor(this, mainVC, getTranslator()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH, getLocale()));
+		DefaultColumnDescriptor freePlacesCol = new DefaultColumnDescriptor(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH, getLocale());
+		freePlacesCol.setEscapeHtml(EscapeMode.none);
+		groupListCtr.addColumnDescriptor(freePlacesCol);
 		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
 		groupListCtr.addColumnDescriptor(new RoleColumnDescriptor(getLocale()));

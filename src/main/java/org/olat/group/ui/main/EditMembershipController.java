@@ -29,6 +29,7 @@ import java.util.UUID;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -240,9 +241,8 @@ public class EditMembershipController extends FormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.groups", 0));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.tutorsCount", 1));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.participantsCount", 2));
-		//tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.freePlace", 3));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.header.freePlace", 3,
-				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(false)));
+				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.none)));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.tutors", 4));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.participants", 5));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.waitingList", 6));

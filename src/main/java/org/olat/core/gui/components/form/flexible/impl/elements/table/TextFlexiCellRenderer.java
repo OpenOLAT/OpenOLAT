@@ -28,11 +28,13 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
 /**
  * Render value with toString. Render Date value with Formatter depending on locale.
@@ -40,13 +42,13 @@ import org.olat.core.util.StringHelper;
  */
 public class TextFlexiCellRenderer implements FlexiCellRenderer {
 	
-	private final boolean escapeHtml;
+	private final EscapeMode escapeHtml;
 	
 	public TextFlexiCellRenderer() {
-		escapeHtml = true;
+		escapeHtml = EscapeMode.html;
 	}
 	
-	public TextFlexiCellRenderer(boolean escapeHtml) {
+	public TextFlexiCellRenderer(EscapeMode escapeHtml) {
 		this.escapeHtml = escapeHtml;
 	}
 	
@@ -65,10 +67,20 @@ public class TextFlexiCellRenderer implements FlexiCellRenderer {
 			target.append( formatter.formatDateAndTime((Date)cellValue) );
 		} else if(cellValue instanceof String) {
 			String str = (String)cellValue;
-			if(escapeHtml) {
-				StringHelper.escapeHtml(target, str);
+			if(escapeHtml != null) {
+				switch(escapeHtml) {
+					case antisamy:
+						target.append(new OWASPAntiSamyXSSFilter().filter(str));
+						break;
+					case html:
+						StringHelper.escapeHtml(target, str);
+						break;
+					case none:
+						target.append(str);
+						break;
+				}
 			} else {
-				target.append(str);
+				StringHelper.escapeHtml(target, str);
 			}
 		} else if (cellValue != null) {
 			target.append( cellValue.toString() );
