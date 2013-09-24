@@ -43,6 +43,7 @@ import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
@@ -71,6 +72,8 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType;
 import org.olat.group.ui.main.CourseMembership;
+import org.olat.group.ui.main.EditSingleMembershipController;
+import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -88,6 +91,7 @@ import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
  */
 public class CourseOverviewController extends BasicController  {
 	private static final String TABLE_ACTION_LAUNCH = "reTblLaunch";
+	private static final String TABLE_ACTION_EDIT = "edit";
 	private static final String TABLE_ACTION_UNSUBSCRIBE = "unsubscribe";
 	
 	private final VelocityContainer vc;
@@ -99,6 +103,7 @@ public class CourseOverviewController extends BasicController  {
 	private DialogBoxController confirmSendMailBox;
 	private CourseLeaveDialogBoxController removeFromCourseDlg;
 	private ReferencableEntriesSearchController repoSearchCtr;
+	private EditSingleMembershipController editSingleMemberCtrl;
 	
 	private final Identity editedIdentity;
 	
@@ -132,6 +137,7 @@ public class CourseOverviewController extends BasicController  {
 		if(isLastVisitVisible) {
 			courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.lastTime.i18n(), MSCols.lastTime.ordinal(), null, getLocale()));
 		}
+		courseListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "table.header.edit", translate("table.header.edit")));
 		courseListCtr.addColumnDescriptor(new BooleanColumnDescriptor(MSCols.allowLeave.i18n(), MSCols.allowLeave.ordinal(), TABLE_ACTION_UNSUBSCRIBE, translate("table.header.leave"), null));
 
 		courseListCtr.setMultiSelect(true);
@@ -278,6 +284,8 @@ public class CourseOverviewController extends BasicController  {
 					NewControllerFactory.getInstance().launch("[RepositoryEntry:" + item.getRepoKey() + "]", ureq, getWindowControl());
 				} else if (TABLE_ACTION_UNSUBSCRIBE.equals(te.getActionId())){
 					doLeave(ureq, Collections.singletonList(item));
+				} else if (TABLE_ACTION_EDIT.equals(te.getActionId())){
+					doOpenEdit(ureq, item);
 				}
 			} else if (event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent mse = (TableMultiSelectEvent)event;
@@ -303,10 +311,23 @@ public class CourseOverviewController extends BasicController  {
 					doConfirmSendEmail(ureq, res, type);
 				}
 			}
+		} else if(source == editSingleMemberCtrl) {
+			cmc.deactivate();
+			if(event instanceof MemberPermissionChangeEvent) {
+				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
+				RepositoryEntry re = editSingleMemberCtrl.getRepositoryEntry();
+				doConfirmChangePermission(ureq, e, re);
+			}
 		} else if(source == confirmSendMailBox) {
 			boolean sendMail = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
-			ConfirmSendMail groupsEv = (ConfirmSendMail)confirmSendMailBox.getUserObject();
-			doAddToRepositoryEntry(ureq, groupsEv.getEntries(), groupsEv.getType(), sendMail);
+			Object confirmation = confirmSendMailBox.getUserObject();
+			if(confirmation instanceof ConfirmAdd) {
+				ConfirmAdd addInfos = (ConfirmAdd)confirmation;
+				doAddToRepositoryEntry(ureq, addInfos.getEntries(), addInfos.getType(), sendMail);
+			} else if(confirmation instanceof ConfirmEdit) {
+				ConfirmEdit editInfos = (ConfirmEdit)confirmation;
+				doChangePermission(ureq, editInfos.getChangeEvent(), editInfos.getEntry(), sendMail);
+			}
 			updateModel();
 		} else if(source == removeFromCourseDlg) {
 			if(event == Event.DONE_EVENT) {
@@ -333,6 +354,46 @@ public class CourseOverviewController extends BasicController  {
 		cmc = null;
 	}
 	
+	private void doOpenEdit(UserRequest ureq, CourseMemberView member) {
+		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(member.getRepoKey());
+		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), editedIdentity, repoEntry, null);
+		listenTo(editSingleMemberCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
+				true, translate("edit.member"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doConfirmChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, RepositoryEntry re) {
+		boolean groupChangesEmpty = e.getGroupChanges() == null || e.getGroupChanges().isEmpty();
+		boolean repoChangesEmpty = e.getRepoOwner() == null && e.getRepoParticipant() == null && e.getRepoTutor() == null;
+		if(groupChangesEmpty && repoChangesEmpty) {
+			//nothing to do
+			return;
+		}
+
+		boolean mailMandatory = repositoryModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+		if(mailMandatory) {
+			doChangePermission(ureq, e, re, true);
+		} else {
+			confirmSendMailBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.send.mail"), confirmSendMailBox);
+			confirmSendMailBox.setUserObject(new ConfirmEdit(e, re));
+		}
+	}
+	
+	private void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, RepositoryEntry re, boolean sendMail) {
+		MailPackage mailing = new MailPackage(sendMail);
+		if(re != null) {
+			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
+			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), re, changes, mailing);
+		}
+
+		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), mailing);
+		//make sure all is committed before loading the model again (I see issues without)
+		DBFactory.getInstance().commitAndCloseSession();
+		updateModel();
+	}
+	
 	private void doSearchRepoEntries(UserRequest ureq, SearchType type, String title) {
 		removeAsListenerAndDispose(repoSearchCtr);
 		removeAsListenerAndDispose(cmc);
@@ -356,7 +417,7 @@ public class CourseOverviewController extends BasicController  {
 			updateModel();
 		} else {
 			confirmSendMailBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.send.mail"), confirmSendMailBox);
-			confirmSendMailBox.setUserObject(new ConfirmSendMail(type, res));
+			confirmSendMailBox.setUserObject(new ConfirmAdd(type, res));
 		}
 	}
 	
@@ -503,11 +564,11 @@ public class CourseOverviewController extends BasicController  {
 		}
 	}
 	
-	private static class ConfirmSendMail {
+	private static class ConfirmAdd {
 		private final SearchType type;
 		private final Collection<RepositoryEntry> entries;
 		
-		public ConfirmSendMail(SearchType type, Collection<RepositoryEntry> entries) {
+		public ConfirmAdd(SearchType type, Collection<RepositoryEntry> entries) {
 			this.type = type;
 			this.entries = entries;
 		}
@@ -518,6 +579,24 @@ public class CourseOverviewController extends BasicController  {
 
 		public Collection<RepositoryEntry> getEntries() {
 			return entries;
+		}
+	}
+	
+	private class ConfirmEdit {
+		private final RepositoryEntry entry;
+		private final MemberPermissionChangeEvent e;
+		
+		public ConfirmEdit(MemberPermissionChangeEvent e, RepositoryEntry entry) {
+			this.e = e;
+			this.entry = entry;
+		}
+
+		public RepositoryEntry getEntry() {
+			return entry;
+		}
+
+		public MemberPermissionChangeEvent getChangeEvent() {
+			return e;
 		}
 	}
 
