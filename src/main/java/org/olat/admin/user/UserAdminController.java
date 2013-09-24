@@ -28,6 +28,7 @@ package org.olat.admin.user;
 import java.util.List;
 
 import org.olat.admin.policy.PolicyController;
+import org.olat.admin.user.course.CourseOverviewController;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -92,6 +93,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_EDIT_UROLES			= "edit.uroles";
 	private static final String NLS_EDIT_UQUOTA			= "edit.uquota";
 	private static final String NLS_VIEW_GROUPS 		= "view.groups";
+	private static final String NLS_VIEW_COURSES		= "view.courses";
 	private static final String NLS_VIEW_SUBSCRIPTIONS 		= "view.subscriptions";
 	
 	private VelocityContainer myContent;
@@ -105,6 +107,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private Link backLink;
 	private ProfileAndHomePageEditController userProfileCtr;
+	private CourseOverviewController courseCtr;
 	private GroupOverviewController grpCtr;
 
 
@@ -310,6 +313,10 @@ public class UserAdminController extends BasicController implements Activateable
 		grpCtr = new GroupOverviewController(ureq, getWindowControl(), identity, canStartGroups);
 		listenTo(grpCtr);
 		userTabP.addTab(translate(NLS_VIEW_GROUPS), grpCtr.getInitialComponent());
+		
+		courseCtr = new CourseOverviewController(ureq, getWindowControl(), identity);
+		listenTo(courseCtr);
+		userTabP.addTab(translate(NLS_VIEW_COURSES), courseCtr.getInitialComponent());
 
 		Boolean canSubscriptions = BaseSecurityModule.USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS;
 		if (canSubscriptions.booleanValue() || isOlatAdmin) {

@@ -302,7 +302,7 @@ public class GroupOverviewController extends BasicController {
 		listenTo(removeFromGrpDlg);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), removeFromGrpDlg.getInitialComponent(),
-				true, "");
+				true, translate("unsubscribe.title"));
 		cmc.activate();
 		listenTo(cmc);
 	}
