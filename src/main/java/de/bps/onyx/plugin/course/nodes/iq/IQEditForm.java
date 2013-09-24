@@ -28,9 +28,11 @@
 */
 package de.bps.onyx.plugin.course.nodes.iq;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Scanner;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -208,6 +210,7 @@ public class IQEditForm extends FormBasicController {
 		//Surveys do not have a solution
 		if(!isSurvey){
 			allowShowSolutionBox = uifactory.addCheckboxesVertical("allowShowSolution", "qti.form.allowShowSolution", formLayout, allowShowSolution, valuesShowSolution, null, 1);
+			allowShowSolutionBox.addActionListener(this, FormEvent.ONCLICK);
 			if(confAllowShowSolution!=null){
 				allowShowSolutionBox.select(ALLOW, confAllowShowSolution);
 			} else if (isSelfTest){
@@ -221,6 +224,7 @@ public class IQEditForm extends FormBasicController {
 		String[] valuesSuspesion = new String[] { "" };
 		allowSuspensionBox = uifactory.addCheckboxesVertical("allowSuspension", "qti.form.allowSuspension", formLayout, allowSuspension,
 				valuesSuspesion, null, 1);
+		allowSuspensionBox.addActionListener(this, FormEvent.ONCLICK);
 		if (confAllowSuspension != null) {
 			allowSuspensionBox.select(ALLOW, confAllowSuspension);
 		} else if (isSelfTest) {
@@ -474,13 +478,21 @@ public class IQEditForm extends FormBasicController {
 	/**
 	 * @return Returns the points needes to pass an onyx test.
 	 */
-	public Integer getCutValue() {
-		final Scanner cutValueScanner = new Scanner(cutValue.getValue());
-		if (cutValueScanner.hasNextInt()) {
-			return new Integer(cutValueScanner.nextInt());
-		} else {
-			return null;
+	public Float getCutValue() {
+		String val = cutValue.getValue();
+		Float f = Float.NaN;
+		try {
+			f = Float.valueOf(val);
+		} catch (Exception e) {
+			try {
+				NumberFormat nf = NumberFormat.getInstance(Locale.GERMAN);
+				f = Float.valueOf(nf.parse(val).floatValue());
+			} catch (ParseException e1) {
+				//ooops
+			}
 		}
+		cutValue.setValue(f.toString());
+		return f;
 	}
 
 	/**

@@ -630,15 +630,10 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	}
 	
 	private void doModOnyxConfigForm(IQEditForm modConfigForm) {
-		String qtiType = null;
-		if (moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI) != null) {
-			qtiType = (String) moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI);
-		}
-	
 		moduleConfiguration.set(CONFIG_KEY_TEMPLATE, modConfigForm.getTemplate());
 		if (!(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY))) {
 			moduleConfiguration.set(CONFIG_KEY_ATTEMPTS, modConfigForm.getAttempts());
-			moduleConfiguration.set(CONFIG_KEY_CUTVALUE, modConfigForm.getCutValue() != null ? Float.parseFloat("" + modConfigForm.getCutValue()) : null);
+			moduleConfiguration.set(CONFIG_KEY_CUTVALUE, modConfigForm.getCutValue());
 		}
 		moduleConfiguration.set(CONFIG_KEY_DATE_DEPENDENT_RESULTS, new Boolean(modConfigForm.isShowResultsDateDependent()));
 		moduleConfiguration.set(CONFIG_KEY_RESULTS_START_DATE, modConfigForm.getShowResultsStartDate());
