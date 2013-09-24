@@ -241,6 +241,8 @@ public class SiteDefinitions extends AbstractOLATModule {
 								securityCallbackBeanId = "adminSiteSecurityCallback";
 							} else if("olatsites_groups".equals(id) || "olatsites_home".equals(id)) {
 								securityCallbackBeanId = "registredSiteSecurityCallback";
+							} else if("olatsites_qpool".equals(id)) {
+								securityCallbackBeanId = "restrictToAuthorSiteSecurityCallback";
 							}
 							config.setSecurityCallbackBeanId(securityCallbackBeanId);	
 						}
