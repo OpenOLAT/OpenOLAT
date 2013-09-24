@@ -231,7 +231,7 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	}
 
 	public void setProtocol(String protocol) {
-		setStringProperty(PROTOCOL, protocol, true);
+		setStringProperty(PROTOCOL, protocol == null ? "" : protocol, true);
 	}
 
 	public int getPort() {
@@ -247,7 +247,7 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	}
 
 	public void setBaseUrl(String baseUrl) {
-		setStringProperty(BASE_URL, baseUrl, true);
+		setStringProperty(BASE_URL, baseUrl == null ? "" : baseUrl, true);
 	}
 	
 	public String getContextPath() {
@@ -255,7 +255,7 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	}
 
 	public void setContextPath(String contextPath) {
-		setStringProperty(CONTEXT_PATH, contextPath, true);
+		setStringProperty(CONTEXT_PATH, contextPath == null ? "" : contextPath, true);
 	}
 
 	public String getDisplayName() {
