@@ -31,9 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
-import org.olat.group.ui.main.BusinessGroupDeleteDialogBoxController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
@@ -57,7 +55,7 @@ public class CourseLeaveDialogBoxController extends FormBasicController {
 	
 	public CourseLeaveDialogBoxController(UserRequest ureq, WindowControl wControl, Identity leavingIdentity,
 			List<RepositoryEntry> repoEntries, List<BusinessGroup> groupsToLeave, List<BusinessGroup> groupsToDelete) {
-		super(ureq, wControl, null, Util.createPackageTranslator(BusinessGroupDeleteDialogBoxController.class, ureq.getLocale()));
+		super(ureq, wControl);
 		this.leavingIdentity = leavingIdentity;
 		this.repoEntriesToLeave = repoEntries;
 		this.groupsToLeave = groupsToLeave;

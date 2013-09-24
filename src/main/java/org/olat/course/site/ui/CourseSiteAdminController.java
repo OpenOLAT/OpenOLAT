@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.NewControllerFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,11 +38,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -51,6 +56,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 
 /**
@@ -73,11 +79,13 @@ public class CourseSiteAdminController extends FormBasicController {
 	private ReferencableEntriesSearchController selectCtrl;
 	
 	private CourseSiteConfiguration siteConfiguration;
+	private final RepositoryManager repositoryManager;
 	
 	public CourseSiteAdminController(UserRequest ureq, WindowControl wControl, CourseSiteConfiguration siteConfiguration) {
 		super(ureq, wControl);
 		
 		this.siteConfiguration = siteConfiguration;
+		this.repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 
 		initForm(ureq);
 	}
@@ -99,10 +107,11 @@ public class CourseSiteAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CSCols.defLanguage.i18nKey(), CSCols.defLanguage.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CSCols.language.i18nKey(), CSCols.language.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CSCols.title.i18nKey(), CSCols.title.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CSCols.course.i18nKey(), CSCols.course.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CSCols.courseId.i18nKey(), CSCols.courseId.ordinal(), false, null));
+		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("openre", new TextFlexiCellRenderer());
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(CSCols.courseTitle.i18nKey(), CSCols.courseTitle.ordinal(), "openre", renderer));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select"));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("remove", translate("remove"), "remove"));
-
 
 		String page = velocity_root + "/lang_options.html";
 		tableLayout = FormLayoutContainer.createCustomFormLayout("site.options.lang", getTranslator(), page);
@@ -119,11 +128,14 @@ public class CourseSiteAdminController extends FormBasicController {
 				langToConfigMap.put(langConfig.getLanguage(), langConfig);
 			}
 		}
+		
 		for(String langKey:I18nModule.getEnabledLanguageKeys()) {
 			if(langToConfigMap.containsKey(langKey)) {
-				configs.add(new LanguageConfigurationRow(langToConfigMap.get(langKey), tableLayout));
+				LanguageConfiguration langConfig = langToConfigMap.get(langKey);
+				RepositoryEntry re = repositoryManager.lookupRepositoryEntryBySoftkey(langConfig.getRepoSoftKey(), false);
+				configs.add(new LanguageConfigurationRow(langConfig, re, tableLayout));
 			} else {
-				configs.add(new LanguageConfigurationRow(new LanguageConfiguration(langKey), tableLayout));
+				configs.add(new LanguageConfigurationRow(new LanguageConfiguration(langKey), null, tableLayout));
 			}
 		}
 
@@ -131,7 +143,7 @@ public class CourseSiteAdminController extends FormBasicController {
 		
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "languageTable", model, getTranslator(), tableLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
-		tableEl.setCustomizeColumns(false);
+		tableEl.setCustomizeColumns(true);
 
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsLayout);
@@ -153,7 +165,7 @@ public class CourseSiteAdminController extends FormBasicController {
 				LanguageConfigurationRow row = (LanguageConfigurationRow)selectCtrl.getUserObject();
 				RepositoryEntry re = selectCtrl.getSelectedEntry();
 				row.setRepositoryEntry(re);
-				tableEl.getComponent().setDirty(true);
+				tableEl.reset();
 			}
 		}
 	}
@@ -175,12 +187,20 @@ public class CourseSiteAdminController extends FormBasicController {
 				if("remove".equals(se.getCommand())) {
 					LanguageConfigurationRow row = model.getObject(se.getIndex());
 					doReset(row);
+					okButton.getComponent().setDirty(true);
+					okButton.setCustomEnabledLinkCSS("b_button b_button_dirty");
 				} else if("select".equals(se.getCommand())) {
 					LanguageConfigurationRow row = model.getObject(se.getIndex());
 					doSelecCourse(ureq, row);
+					okButton.getComponent().setDirty(true);
+					okButton.setCustomEnabledLinkCSS("b_button b_button_dirty");
+				} else if("openre".equals(se.getCommand())) {
+					LanguageConfigurationRow row = model.getObject(se.getIndex());
+					RepositoryEntry re = row.getRepositoryEntry();
+					if(re != null) {
+						NewControllerFactory.getInstance().launch("[RepositoryEntry:" + re.getKey() + "]", ureq, getWindowControl());
+					}
 				}
-				okButton.getComponent().setDirty(true);
-				okButton.setCustomEnabledLinkCSS("b_button b_button_dirty");
 			}
 		} else if(source == okButton) {
 			okButton.setCustomEnabledLinkCSS("b_button");
@@ -229,13 +249,16 @@ public class CourseSiteAdminController extends FormBasicController {
 		private LanguageConfiguration langConfig;
 		private TextElement titleEl;
 		private MultipleSelectionElement defLangEl;
+		private RepositoryEntry repoEntry;
 		
-		public LanguageConfigurationRow(LanguageConfiguration configuration, FormItemContainer formLayout) {
+		public LanguageConfigurationRow(LanguageConfiguration configuration, RepositoryEntry repoEntry,
+				FormItemContainer formLayout) {
 			this.langConfig = configuration;
-			titleEl = uifactory.addTextElement("site.title." + configuration.getLanguage(), null, 32,
-					configuration.getTitle(), tableLayout);
-			defLangEl = uifactory.addCheckboxesHorizontal("site.def." + configuration.getLanguage(), formLayout,
-					new String[]{ "x"}, new String[]{ "" }, null);
+			this.repoEntry = repoEntry;
+			titleEl = uifactory.addTextElement("site.title." + configuration.getLanguage(), "site.title",
+					null, 32, configuration.getTitle(), tableLayout);
+			defLangEl = uifactory.addCheckboxesHorizontal("site.def." + configuration.getLanguage(), null,
+					formLayout, new String[]{ "x"}, new String[]{ "" }, null);
 			
 			if(configuration.isDefaultConfiguration()) {
 				defLangEl.select("x", true);
@@ -265,10 +288,22 @@ public class CourseSiteAdminController extends FormBasicController {
 		public String getSoftKey() {
 			return langConfig.getRepoSoftKey();
 		}
+
+		public String getRepoEntryDisplayName() {
+			return repoEntry == null ? null : repoEntry.getDisplayname();
+		}
 		
+		public RepositoryEntry getRepositoryEntry() {
+			return repoEntry;
+		}
+
 		public void setRepositoryEntry(RepositoryEntry re) {
+			repoEntry= re;
 			langConfig.setTitle(re.getDisplayname());
 			langConfig.setRepoSoftKey(re.getSoftkey());
+			if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+				titleEl.setValue(re.getDisplayname());
+			}
 		}
 		
 		public void reset() {
@@ -289,7 +324,8 @@ public class CourseSiteAdminController extends FormBasicController {
 		defLanguage("site.default.language"),
 		language("site.language"),
 		title("site.title"),
-		course("site.course");
+		courseId("site.course.id"),
+		courseTitle("site.course.title");
 		
 		private final String i18n;
 		
@@ -317,18 +353,11 @@ public class CourseSiteAdminController extends FormBasicController {
 		public Object getValueAt(int row, int col) {
 			LanguageConfigurationRow id = getObject(row);
 			switch(CSCols.values()[col]) {
-				case defLanguage: {
-					return id.getDefLangEl();
-				}
-				case language: {
-					return id.getLanguage();
-				}
-				case title: {
-					return id.getTitleEl();
-				}
-				case course: {
-					return id.getSoftKey();
-				}
+				case defLanguage: return id.getDefLangEl();
+				case language: return id.getLanguage();
+				case title: return id.getTitleEl();
+				case courseId: return id.getSoftKey();
+				case courseTitle: return id.getRepoEntryDisplayName();
 				default: return "???";
 			}
 		}

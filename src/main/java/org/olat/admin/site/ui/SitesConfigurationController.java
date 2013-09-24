@@ -277,7 +277,7 @@ public class SitesConfigurationController extends FormBasicController {
 				}
 			}
 			
-			enableSiteEl = uifactory.addCheckboxesHorizontal("site.enable." + id, "site.enable", formLayout, new String[]{ "x" }, new String[]{ "" }, null);
+			enableSiteEl = uifactory.addCheckboxesHorizontal("site.enable." + id, null, formLayout, new String[]{ "x" }, new String[]{ "" }, null);
 			enableSiteEl.addActionListener(SitesConfigurationController.this, FormEvent.ONCHANGE);
 			
 			altControllerEl = uifactory.addDropdownSingleselect("site.alternative." + id, "site.alternative", formLayout, altKeys, altValues, null);

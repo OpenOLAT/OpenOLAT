@@ -528,7 +528,7 @@ public class CourseOverviewController extends BasicController  {
 			if(groupNames.length() > 0) groupNames.append(", ");
 			groupNames.append(group.getName());
 		}
-		showInfo("unsubscribe.successful", groupNames.toString());	
+		showInfo("unsubscribe.successful");	
 	}
 	
 	private boolean isRepoMember(RepositoryEntry repoEntry) {
