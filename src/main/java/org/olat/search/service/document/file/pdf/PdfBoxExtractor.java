@@ -71,7 +71,8 @@ public class PdfBoxExtractor implements PdfExtractor {
 				try {
 					document.decrypt("");
 				} catch (Exception e) {
-					throw new DocumentAccessException("PDF is encrypted. Can not read content file=" + leaf.getName());
+					log.warn("PDF is encrypted. Can not read content file=" + leaf.getName());
+					return new FileContent(leaf.getName(), leaf.getName());
 				}
 			}	
 			String title = getTitle(document);
