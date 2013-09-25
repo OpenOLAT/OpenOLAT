@@ -170,11 +170,11 @@ public class FIBItemController extends DefaultController implements ControllerEv
 						// min_value, max_value, valuation_method
 						question.setMinValue(ureq.getParameter("min_value"));
 						question.setMaxValue(ureq.getParameter("max_value"));
-						question.setSingleCorrect(ureq.getParameter("valuation_method").equals("single"));
+						question.setSingleCorrect("single".equals(ureq.getParameter("valuation_method")));
 						if (question.isSingleCorrect()) {
 							question.setSingleCorrectScore(ureq.getParameter("single_score"));
 						}	else {
-							question.setSingleCorrectScore(0);
+							question.setSingleCorrectScore(0.0f);
 						}
 					}
 
