@@ -119,6 +119,8 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 				CourseSiteDef courseSiteDef = (CourseSiteDef)siteDef;
 				CourseSiteConfiguration config = courseSiteDef.getCourseSiteconfiguration();
 				LanguageConfiguration langConfig = courseSiteDef.getLanguageConfiguration(ureq, config);
+				if(langConfig == null) continue;
+				
 				String softKey = langConfig.getRepoSoftKey();
 				if(re.getSoftkey() != null && re.getSoftkey().equals(softKey)) {
 					return courseSiteDef;

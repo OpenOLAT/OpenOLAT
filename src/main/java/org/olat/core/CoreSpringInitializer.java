@@ -36,7 +36,8 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 public class CoreSpringInitializer implements ApplicationContextInitializer<ConfigurableWebApplicationContext> {
 	
 	private static final OLog log = Tracing.createLoggerFor(CoreSpringInitializer.class);
-  
+
+	@Override
 	public void initialize(ConfigurableWebApplicationContext ctx) {
   	//detect activemq
   	String jmsProvider;

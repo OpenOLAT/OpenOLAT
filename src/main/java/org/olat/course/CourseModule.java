@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
@@ -46,6 +47,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.site.CourseSiteContextEntryControllerCreator;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
@@ -139,16 +141,19 @@ public class CourseModule extends AbstractOLATModule {
 	/**
 	 * @see org.olat.core.configuration.OLATModule#init(com.anthonyeden.lib.config.Configuration)
 	 */
+	@Override
 	public void init() {
 		// skip all the expensive course demo setup and deployment when we are in junit mode.
 		if (Settings.isJUnitTest()) return;
+		
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(RepositoryEntry.class.getSimpleName(),
+				new CourseSiteContextEntryControllerCreator());
 		
 		logInfo("Initializing the OpenOLAT course system");		
 		
 		// Cleanup, otherwise this subjects will have problems in normal OLAT
 		// operation
-		DBFactory.getInstance(false).intermediateCommit();
-				
+		DBFactory.getInstance(false).intermediateCommit();		
 	}
 
 	private void deployCoursesFromCourseExportFiles( ) {
@@ -278,7 +283,7 @@ public class CourseModule extends AbstractOLATModule {
 		try {
 			propertyManager.deleteProperty(prop);
 			repositoryManager.deleteRepositoryEntryAndBasesecurity(re);
-			courseFactory.deleteCourse(re.getOlatResource());
+			CourseFactory.deleteCourse(re.getOlatResource());
 			OLATResource ores = olatResourceManager.findResourceable(re.getOlatResource());
 			olatResourceManager.deleteOLATResource(ores);
 		} catch (Exception e) {
@@ -395,8 +400,7 @@ public class CourseModule extends AbstractOLATModule {
 
 	@Override
 	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	@Override

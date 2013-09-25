@@ -97,6 +97,11 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 		}
 		return res;
 	}
+	
+	public static String resolveProperty(String name) {
+    String rv = beanFactory.resolveEmbeddedValue("${" + name + "}");
+    return rv;
+	}
 
 	/**
 	 * @param beanName

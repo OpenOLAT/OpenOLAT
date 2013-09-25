@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -146,9 +147,8 @@ public class CourseSiteAdminController extends FormBasicController {
 
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsLayout);
-		//okButton = uifactory.addFormLink("save", "save", null, buttonsLayout, Link.BUTTON);
-		
-		uifactory.addFormSubmitButton("save", "save", formLayout);
+		okButton = uifactory.addFormLink("save", "save", null, buttonsLayout, Link.BUTTON);
+		//uifactory.addFormSubmitButton("save", "save", formLayout);
 	}
 	
 	@Override
@@ -319,7 +319,6 @@ public class CourseSiteAdminController extends FormBasicController {
 			boolean defLang = defLangEl.isAtLeastSelected(1);
 			langConfig.setDefaultConfiguration(defLang);
 			String title = titleEl.getValue();
-			System.out.println(title);
 			langConfig.setTitle(title);
 			return langConfig;
 		}

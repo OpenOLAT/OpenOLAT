@@ -42,6 +42,12 @@ public class LanguageConfiguration {
 		this.language = language;
 	}
 	
+	public LanguageConfiguration(String language, String repoSoftKey, boolean defaultConfiguration) {
+		this.language = language;
+		this.repoSoftKey = repoSoftKey;
+		this.defaultConfiguration = defaultConfiguration;
+	}
+	
 	public boolean isDefaultConfiguration() {
 		return defaultConfiguration;
 	}
