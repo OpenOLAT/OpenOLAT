@@ -21,26 +21,33 @@
 package org.olat.core.gui.control.navigation.callback;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.gui.control.navigation.SiteViewSecurityCallback;
 
 /**
- * <h3>Description:</h3>
- * Default Callback for LibrarySite, allows to view/launch every user except a guest.
- * IMPORTANT: This Callback is also used for permissions in search!
+ * Guest can see the site, but only registred can launch it
  * 
- * Initial Date:  13.04.2010 <br>
- * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
+ * 
+ * Initial date: 25.09.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class RegistredUserSecurityCallback implements SiteSecurityCallback {
+public class RegistredUserGuestTeaserSecurityCallback implements SiteViewSecurityCallback {
 
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToLaunchSite(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
 		if (ureq.getUserSession().getRoles() == null
 				|| ureq.getUserSession().getRoles().isInvitee()
 				|| ureq.getUserSession().getRoles().isGuestOnly()) {
+			return false;
+		} else {
+			return true; 
+		}
+	}
+
+	@Override
+	public boolean isAllowedToViewSite(UserRequest ureq) {
+		if (ureq.getUserSession().getRoles() == null
+				|| ureq.getUserSession().getRoles().isInvitee()) {
 			return false;
 		} else {
 			return true; 

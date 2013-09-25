@@ -122,7 +122,9 @@ public class SitesAdminController  extends BasicController  {
 		if(orderCtrl == null) {
 			orderCtrl = new SitesConfigurationController(ureq, getWindowControl());
 			listenTo(orderCtrl);
-		} 
+		} else {
+			orderCtrl.reload(ureq);
+		}
 		mainVC.put("segmentCmp", orderCtrl.getInitialComponent());
 	}
 	

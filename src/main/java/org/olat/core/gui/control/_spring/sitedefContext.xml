@@ -67,7 +67,10 @@
 	<bean id="managersSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.ManagersSecurityCallback"/>
 	
 	<bean id="registredSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserSecurityCallback"/>
-
+	
+	<!-- for development purpose
+	<bean id="registredSiteWithTeaserSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserGuestTeaserSecurityCallback"/>
+	-->
 	
 	<bean id="restrictToAuthorSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
 		<property name="limitToRole" value="author"/>

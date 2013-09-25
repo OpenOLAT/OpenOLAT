@@ -33,20 +33,7 @@ public class SiteSecurityCallbackWithRolesRestriction implements SiteSecurityCal
 	private String limitToRole;
 	
 	@Override
-	public boolean isAllowedToViewSite(UserRequest ureq) {
-		return isAllowed(ureq);
-	}
-
-	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		return isAllowed(ureq);
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.navigation.SiteDefinition#createSite(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	private boolean isAllowed(UserRequest ureq) {
 		if (limitToRole != null) {
 			String theRole = limitToRole.toLowerCase();
 			Roles roles = ureq.getUserSession().getRoles();

@@ -17,26 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.control.navigation.callback;
+package org.olat.core.gui.control.navigation;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 
 /**
  * <h3>Description:</h3>
- * default SecurityCallback giving access to anyone
+ * SiteSecurityCallback used to define who can see a the presence of a site.
  * 
  * Initial Date:  24.11.2009 <br>
  * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
  */
-public class DefaultSecurityCallbackImpl implements SiteSecurityCallback {
-
+public interface SiteViewSecurityCallback extends SiteSecurityCallback {
+	
 	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToLaunchSite(org.olat.core.gui.UserRequest)
+	 * decides if the Site itself will be visible as a tab
+	 * @param ureq
+	 * @return
 	 */
-	@Override
-	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		return true;
-	}
+	public boolean isAllowedToViewSite(UserRequest ureq);
 
 }

@@ -84,9 +84,6 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		
 		String secCallbackBeanId = config.getSecurityCallbackBeanId();
 		SiteSecurityCallback siteSecCallback = (SiteSecurityCallback)CoreSpringFactory.getBean(secCallbackBeanId);
-		if (siteSecCallback != null && !siteSecCallback.isAllowedToViewSite(ureq)) {
-			return null;
-		}
 
 		boolean canSeeToolController = ureq.getUserSession().getRoles().isAuthor()
 				|| ureq.getUserSession().getRoles().isOLATAdmin()
@@ -110,7 +107,8 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		for(LanguageConfiguration langConfig:config.getConfigurations()) {
 			if(langConfig.isDefaultConfiguration()) {
 				defaultLangConfig = langConfig;
-			} else if(language.equals(langConfig.getLanguage())) {
+			}
+			if(language.equals(langConfig.getLanguage())) {
 				myLangConfig = langConfig;
 			}
 		}

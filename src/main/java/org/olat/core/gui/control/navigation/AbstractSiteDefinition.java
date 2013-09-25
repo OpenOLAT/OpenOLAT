@@ -52,8 +52,10 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff impleme
 		SiteConfiguration config = getSiteConfiguration();
 		
 		String secCallbackBeanId = config.getSecurityCallbackBeanId();
-		SiteSecurityCallback siteSecCallback = (SiteSecurityCallback)CoreSpringFactory.getBean(secCallbackBeanId);
-		if (siteSecCallback != null && !siteSecCallback.isAllowedToViewSite(ureq)) {
+		Object siteSecCallback = CoreSpringFactory.getBean(secCallbackBeanId);
+		if (siteSecCallback instanceof SiteViewSecurityCallback && !((SiteViewSecurityCallback)siteSecCallback).isAllowedToViewSite(ureq)) {
+			return null;
+		} else if (siteSecCallback instanceof SiteSecurityCallback && !((SiteSecurityCallback)siteSecCallback).isAllowedToLaunchSite(ureq)) {
 			return null;
 		}
 		return createSite(ureq, wControl, config);

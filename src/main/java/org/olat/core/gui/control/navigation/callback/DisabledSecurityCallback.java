@@ -39,13 +39,4 @@ public class DisabledSecurityCallback implements SiteSecurityCallback {
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
 		return false;
 	}
-
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToViewSite(org.olat.core.gui.UserRequest)
-	 */
-	@Override
-	public boolean isAllowedToViewSite(UserRequest ureq) {
-		return false;
-	}
-
 }

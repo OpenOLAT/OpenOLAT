@@ -54,8 +54,9 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 		SiteConfiguration config = siteDefinitions.getConfigurationSite(siteDef);
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			String secCallbackBeanId = config.getSecurityCallbackBeanId();
-			SiteSecurityCallback siteSecCallback = (SiteSecurityCallback)CoreSpringFactory.getBean(secCallbackBeanId);
-			if (siteSecCallback != null && !siteSecCallback.isAllowedToLaunchSite(ureq)) {
+			Object siteSecCallback = (SiteSecurityCallback)CoreSpringFactory.getBean(secCallbackBeanId);
+			if (siteSecCallback instanceof SiteSecurityCallback
+					&& !((SiteSecurityCallback)siteSecCallback).isAllowedToLaunchSite(ureq)) {
 				return getAlternativeController(ureq, wControl, config);
 			}
 		}

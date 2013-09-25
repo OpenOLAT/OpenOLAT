@@ -25,7 +25,7 @@ import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 
 /**
  * <h3>Description:</h3>
- * AdminOnly Callback for LibrarySite, allows to view/launch only for users with admin-role.
+ * Administrator callback allows to view/launch only for users with admin-role.
  * IMPORTANT: This Callback is also used for permissions in search!
  * 
  * Initial Date:  13.04.2010 <br>
@@ -43,14 +43,5 @@ public class AdminSecurityCallback implements SiteSecurityCallback {
 		} else {
 			return false; 
 		}
-	}
-
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToViewSite(org.olat.core.gui.UserRequest)
-	 */
-	@Override
-	public boolean isAllowedToViewSite(UserRequest ureq) {
-		// viewing the site without access makes no sense as long as there is no alternativeControllerIfNotLaunchable.
-		return isAllowedToLaunchSite(ureq); 
 	}
 }

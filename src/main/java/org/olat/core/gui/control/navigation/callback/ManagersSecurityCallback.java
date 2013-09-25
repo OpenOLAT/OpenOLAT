@@ -50,13 +50,4 @@ public class ManagersSecurityCallback implements SiteSecurityCallback {
 			return false; 
 		}
 	}
-
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToViewSite(org.olat.core.gui.UserRequest)
-	 */
-	@Override
-	public boolean isAllowedToViewSite(UserRequest ureq) {
-		// viewing the site without access makes no sense as long as there is no alternativeControllerIfNotLaunchable.
-		return isAllowedToLaunchSite(ureq); 
-	}
 }

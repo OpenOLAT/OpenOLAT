@@ -49,6 +49,7 @@ import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.gui.control.navigation.SiteViewSecurityCallback;
 import org.olat.core.util.StringHelper;
 
 import edu.emory.mathcs.backport.java.util.Collections;
@@ -74,14 +75,18 @@ public class SitesConfigurationController extends FormBasicController {
 	
 	private SiteDefModel model;
 	private FlexiTableElement tableEl;
+	private FormItemContainer formLayout;
+	
+	private boolean needAlternative = false;
+	private final Map<String,SiteSecurityCallback> securityCallbacks;
 	
 	public SitesConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "sites_order");
 		
 		sitesModule = CoreSpringFactory.getImpl(SiteDefinitions.class);
 		siteDefs = sitesModule.getAllSiteDefinitionsList();
-		
-		Map<String,SiteSecurityCallback> securityCallbacks = CoreSpringFactory.getBeansOfType(SiteSecurityCallback.class);
+
+		securityCallbacks = CoreSpringFactory.getBeansOfType(SiteSecurityCallback.class);
 		//security callbacks
 		secKeys = new String[securityCallbacks.size()];
 		secValues = new String[securityCallbacks.size()];
@@ -93,6 +98,10 @@ public class SitesConfigurationController extends FormBasicController {
 				secValues[count++] = translation;
 			} else {
 				secValues[count++] = secEntry.getKey();
+			}
+			
+			if(secEntry.getValue() instanceof SiteViewSecurityCallback) {
+				needAlternative = true;
 			}
 		}
 		
@@ -118,42 +127,28 @@ public class SitesConfigurationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		this.formLayout = formLayout;
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SiteCols.enabled.i18nKey(), SiteCols.enabled.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SiteCols.title.i18nKey(), SiteCols.title.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SiteCols.type.i18nKey(), SiteCols.type.ordinal(), false, null));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SiteCols.secCallback.i18nKey(), SiteCols.secCallback.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SiteCols.altController.i18nKey(), SiteCols.altController.ordinal()));
+		if(needAlternative) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SiteCols.altController.i18nKey(), SiteCols.altController.ordinal()));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SiteCols.defaultOrder.i18nKey(), SiteCols.defaultOrder.ordinal(), false, null));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("up", SiteCols.up.ordinal(), "up",
 				new StaticFlexiCellRenderer(" ", "up", "b_small_table_icon b_move_up_icon")));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("down", SiteCols.down.ordinal(), "down",
 				new StaticFlexiCellRenderer(" ", "up", "b_small_table_icon b_move_down_icon")));
-		
-		//b_move_up_icon
-		//.b_move_down_ico
 
 		model = new SiteDefModel(columnsModel);
 		
-		List<SiteDefRow> configs = new ArrayList<SiteDefRow>();
-		for(Map.Entry<String, SiteDefinition> entryDef:siteDefs.entrySet()) {
-			String id = entryDef.getKey();
-			SiteDefinition siteDef = entryDef.getValue();
-			SiteInstance site = siteDef.createSite(ureq, getWindowControl());
-			String title = "-";
-			if(site != null) {
-				title = site.getNavElement().getTitle();
-			}
-			SiteConfiguration config = sitesModule.getConfigurationSite(id);
-			SiteDefRow row = new SiteDefRow(siteDef, config, title, formLayout);
-			configs.add(row);
-		}
-		Collections.sort(configs, new RowOrderComparator());
-		model.setObjects(configs);
-		
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "sitesTable", model, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
+		
+		reload(ureq);
 	}
 	
 	@Override
@@ -178,6 +173,19 @@ public class SitesConfigurationController extends FormBasicController {
 					tableEl.getComponent().setDirty(true);
 				}
 			}
+		} else if(source instanceof SingleSelection) {
+			if(source.getName().startsWith("site.security.") && source.getUserObject() instanceof SiteDefRow) {
+				SiteDefRow row = (SiteDefRow)source.getUserObject();
+				String selectCallbackId = row.getSecurityCallbackEl().getSelectedKey();
+				boolean needAlt = (securityCallbacks.containsKey(selectCallbackId)
+						&& securityCallbacks.get(selectCallbackId) instanceof SiteViewSecurityCallback);
+				
+				if(row.getAlternativeControllerEl().isVisible() != needAlt) {
+					row.getAlternativeControllerEl().setVisible(needAlt);
+					tableEl.reset();
+				}
+			}
+			doSaveSettings();
 		} else if(source instanceof MultipleSelectionElement || source instanceof SingleSelection) {
 			doSaveSettings();
 		}
@@ -187,6 +195,24 @@ public class SitesConfigurationController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	protected void reload(UserRequest ureq) {
+		List<SiteDefRow> configs = new ArrayList<SiteDefRow>();
+		for(Map.Entry<String, SiteDefinition> entryDef:siteDefs.entrySet()) {
+			String id = entryDef.getKey();
+			SiteDefinition siteDef = entryDef.getValue();
+			SiteInstance site = siteDef.createSite(ureq, getWindowControl());
+			String title = "-";
+			if(site != null) {
+				title = site.getNavElement().getTitle();
+			}
+			SiteConfiguration config = sitesModule.getConfigurationSite(id);
+			SiteDefRow row = new SiteDefRow(siteDef, config, title, formLayout);
+			configs.add(row);
+		}
+		Collections.sort(configs, new RowOrderComparator());
+		model.setObjects(configs);
 	}
 	
 	private void moveUp(SiteDefRow row) {
@@ -269,10 +295,15 @@ public class SitesConfigurationController extends FormBasicController {
 			
 			secCallbackEl = uifactory.addDropdownSingleselect("site.security." + id, "site.security", formLayout, secKeys, secValues, null);
 			secCallbackEl.addActionListener(SitesConfigurationController.this, FormEvent.ONCHANGE);
+			secCallbackEl.setUserObject(this);
+			
+			boolean needAlt = false;
 			if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 				for(String secKey:secKeys) {
 					if(secKey.equals(config.getSecurityCallbackBeanId())) {
 						secCallbackEl.select(secKey, true);
+						needAlt = (securityCallbacks.containsKey(secKey)
+								&& securityCallbacks.get(secKey) instanceof SiteViewSecurityCallback);
 					}
 				}
 			}
@@ -282,6 +313,7 @@ public class SitesConfigurationController extends FormBasicController {
 			
 			altControllerEl = uifactory.addDropdownSingleselect("site.alternative." + id, "site.alternative", formLayout, altKeys, altValues, null);
 			altControllerEl.addActionListener(SitesConfigurationController.this, FormEvent.ONCHANGE);
+			altControllerEl.setVisible(needAlt);
 			if(StringHelper.containsNonWhitespace(config.getAlternativeControllerBeanId())) {
 				for(String altKey:altKeys) {
 					if(altKey.equals(config.getAlternativeControllerBeanId())) {

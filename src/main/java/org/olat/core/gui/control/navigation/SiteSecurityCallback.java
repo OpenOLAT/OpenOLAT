@@ -23,19 +23,12 @@ import org.olat.core.gui.UserRequest;
 
 /**
  * <h3>Description:</h3>
- * SiteSecurityCallback used with CourseSite to define who can see/launch a course loaded in a site.
+ * SiteSecurityCallback used to define who can see and launch a site.
  * 
  * Initial Date:  24.11.2009 <br>
  * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
  */
 public interface SiteSecurityCallback {
-	
-	/**
-	 * decides if the Site itself will be visible as a tab
-	 * @param ureq
-	 * @return
-	 */
-	public boolean isAllowedToViewSite(UserRequest ureq);
 	
 	/**
 	 * decides if the content (mostly a course) of the site will be loadable by a specified user.
