@@ -1513,10 +1513,7 @@ public class RichTextConfiguration implements Disposable {
 			return nonQuotedConfigValues.get(key);
 		}
 	}
-	
-	
-	
-	
+
 	void appendConfigToTinyJSArray_4(StringOutput sb) {
 		// Add plugins first
 		List<String> plugins4 = new ArrayList<String>(plugins);
@@ -1547,7 +1544,7 @@ public class RichTextConfiguration implements Disposable {
 		plugins4.add("link");
 		plugins4.add("image");
 		plugins4.add("emoticons");
-		if(theme_advanced_buttons3.contains(CODE_BUTTON)) {
+		if(theme_advanced_buttons3.contains(CODE_BUTTON) || quotedConfigValues.containsKey(THEME_ADVANCED_BUTTONS3_ADD)) {
 			plugins4.add("code");
 		}
 		if(quotedConfigValues.containsKey("content_css")) {
@@ -1556,10 +1553,7 @@ public class RichTextConfiguration implements Disposable {
 		if(theme_advanced_buttons1.contains("forecolor,backcolor") || theme_advanced_buttons1.contains("bakcolor")) {
 			plugins4.add("textcolor");
 		}
-		
-		List<String> menubar = new ArrayList<String>();
-		//if(theme_advanced_buttons3.contains("tablecontrols")) menubar.add("table");
-		//if(theme_advanced_buttons3.contains("code"))          menubar.add("tools");
+		plugins4.add("visualchars");
 		
 		List<String> buttons1 = new ArrayList<String>(theme_advanced_buttons1);
 		if(buttons1.contains("justifyleft")) buttons1.set(buttons1.indexOf("justifyleft"), "alignleft");
@@ -1577,9 +1571,19 @@ public class RichTextConfiguration implements Disposable {
 
 		List<String> buttons2 = new ArrayList<String>(theme_advanced_buttons2);
 		List<String> buttons3 = new ArrayList<String>(theme_advanced_buttons3);
-		if(buttons3.contains("visualchars")) buttons3.set(buttons3.indexOf("visualchars"), "charmap");
-		if(buttons3.contains("tablecontrols")) buttons3.set(buttons3.indexOf("tablecontrols"), "table");
+		if(buttons3.contains("tablecontrols")) {
+			buttons3.set(buttons3.indexOf("tablecontrols"), "table");
+		}
 		buttons3.remove("cleanup");
+		buttons3.remove("visualaid");
+		//buttons3.remove("insertdate,inserttime");
+		//buttons3.add("inserttime");
+		
+		//rrrrr
+		if(quotedConfigValues.containsKey(THEME_ADVANCED_BUTTONS3_ADD)
+				&& quotedConfigValues.get(THEME_ADVANCED_BUTTONS3_ADD).contains("code")) {
+			buttons3.add("code");
+		}
 
 		appendValuesFromList(sb, PLUGINS, plugins4);
 		sb.append(",\n")
@@ -1587,13 +1591,8 @@ public class RichTextConfiguration implements Disposable {
 		  .append("statusbar:true,\n");
 		
 		//menubar
-		if(menubar.isEmpty()) {
-			sb.append("menubar:false,\n");
-		} else {
-			listToString(sb, "menubar", menubar);	
-			sb.append(",\n");
-		}
-		
+		sb.append("menubar:false,\n");
+
 		//toolbar 1
 		if (buttons1.size() == 0) {
 			sb.append("toolbar1").append(":false,\n");
@@ -1646,11 +1645,17 @@ public class RichTextConfiguration implements Disposable {
 			copyNonValues.put("convert_urls", converter);	
 		}
 		
+		String dateFormat = copyValues.remove(INSERTDATETIME_DATEFORMAT);
+		if(dateFormat != null) {
+			copyValues.put("insertdatetime_dateformat", dateFormat);
+			copyNonValues.put("insertdatetime_formats", "['" + dateFormat + "','%H:%M:%S']");
+		}
+		
 		String contentCss = copyValues.remove("content_css");
 		if(contentCss != null) {
 			copyNonValues.put("importcss_append", "true");
 			//copyNonValues.put("importcss_merge_classes", "false");
-			copyValues.put("importcss_file_filter", Settings.createServerURI() + contentCss);
+			copyValues.put("content_css", Settings.createServerURI() + contentCss);
 		}
 		
 		for (Map.Entry<String, String> entry : copyValues.entrySet()) {
