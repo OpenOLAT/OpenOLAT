@@ -45,7 +45,8 @@ import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.extensions.Extension;
-import org.olat.core.extensions.action.ActionExtension;
+import org.olat.core.extensions.ExtensionElement;
+import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -228,8 +229,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		//in any case release delete user gui lock (reaquired if user deletion is again clicked)
 		releaseDeleteUserLock();
 		
-		if (uobject instanceof ActionExtension) {
-			ActionExtension ae = (ActionExtension) uobject;
+		if (uobject instanceof GenericActionExtension) {
+			GenericActionExtension ae = (GenericActionExtension) uobject;
 			//fxdiff BAKS-7 Resume function
 			TreeNode node = ((GenericTreeModel)olatMenuTree.getTreeModel()).findNodeByUserObject(uobject);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("AE", new Long(node.getPosition()));
@@ -713,8 +714,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		for (int i = 0; i < cnt; i++) {
 			Extension anExt = extm.getExtension(i);
 			// 1) general menu extensions
-			ActionExtension ae = (ActionExtension) anExt.getExtensionFor(UserAdminMainController.class.getName() + EXTENSIONPOINT_MENU_MENUQUERIES, ureq);
-			if (ae != null && anExt.isEnabled()) {
+			ExtensionElement ee = anExt.getExtensionFor(UserAdminMainController.class.getName() + EXTENSIONPOINT_MENU_MENUQUERIES, ureq);
+			if (ee instanceof GenericActionExtension && anExt.isEnabled()) {
+				GenericActionExtension ae = (GenericActionExtension)ee;
 				gtnChild = new GenericTreeNode();
 				String menuText = ae.getActionText(getLocale());
 				gtnChild.setTitle(menuText);

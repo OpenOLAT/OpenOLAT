@@ -23,7 +23,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import java.io.File;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;

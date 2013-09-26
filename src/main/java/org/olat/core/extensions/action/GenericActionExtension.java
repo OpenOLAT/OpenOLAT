@@ -112,7 +112,7 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 	 * @see org.olat.core.extensions.action.ActionExtension#createController(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl, java.lang.Object)
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	public Controller createController(UserRequest ureq, WindowControl wControl, Object arg) {
 		return actionControllerCreator.createController(ureq, wControl);
 	}

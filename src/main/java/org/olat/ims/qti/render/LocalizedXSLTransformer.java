@@ -51,7 +51,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.dom.DOMDocument;
 import org.dom4j.io.DocumentSource;
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;

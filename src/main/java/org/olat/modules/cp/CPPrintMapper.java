@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.batik.css.parser.ParseException;
 import org.apache.batik.css.parser.Parser;
 import org.cyberneko.html.parsers.SAXParser;
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.media.MediaResource;

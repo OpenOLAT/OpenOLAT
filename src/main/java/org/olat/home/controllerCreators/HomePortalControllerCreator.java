@@ -21,7 +21,7 @@ package org.olat.home.controllerCreators;
 
 import org.olat.commons.rss.RSSUtil;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.HtmlHeaderComponent;

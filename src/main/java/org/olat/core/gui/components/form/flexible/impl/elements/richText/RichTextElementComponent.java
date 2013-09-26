@@ -23,7 +23,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.controllers.linkchooser.LinkChooserController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.ComponentRenderer;

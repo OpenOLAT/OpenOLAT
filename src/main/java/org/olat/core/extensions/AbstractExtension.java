@@ -105,8 +105,8 @@ abstract public class AbstractExtension extends AbstractConfigOnOff implements E
 			}
 		} else {
 			// load a default callback
-			@SuppressWarnings("unused")
 			ActionExtensionSecurityCallback aescDefault = new ActionExtensionSecurityCallback() {
+				@Override
 				public boolean isAllowedToLaunchActionController(UserRequest ureq) {
 					return true;
 				}
@@ -166,6 +166,9 @@ abstract public class AbstractExtension extends AbstractConfigOnOff implements E
 		}
 		return getExtensionFor(extensionPoint);
 	}
+	
+	protected abstract ExtensionElement getExtensionFor(String extensionPoint);
+	
 	
 	public boolean isSecCallbackNameSet(){
 		return secCallbackName != null;

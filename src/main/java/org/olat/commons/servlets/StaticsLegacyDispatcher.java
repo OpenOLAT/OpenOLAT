@@ -33,9 +33,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.commons.servlets.pathhandlers.PathHandler;
 import org.olat.commons.servlets.util.ResourceDescriptor;
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.logging.Tracing;
 
 /**

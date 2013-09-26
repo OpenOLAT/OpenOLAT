@@ -29,7 +29,7 @@ package org.olat.core.gui.render;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.components.Component;

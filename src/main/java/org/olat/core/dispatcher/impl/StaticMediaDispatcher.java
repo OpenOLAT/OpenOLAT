@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.defaults.dispatcher;
+package org.olat.core.dispatcher.impl;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;

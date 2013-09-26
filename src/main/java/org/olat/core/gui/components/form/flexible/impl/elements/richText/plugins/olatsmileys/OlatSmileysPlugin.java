@@ -23,7 +23,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugin
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 

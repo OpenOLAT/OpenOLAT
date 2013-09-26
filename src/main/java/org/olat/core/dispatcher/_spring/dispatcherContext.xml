@@ -171,7 +171,7 @@
 		
 	<!--  static files delivery. See org.olat.core.dispatcher.mapper.package.html for more infos -->
 	<bean id="staticsrawbean"
-		class="org.olat.core.defaults.dispatcher.StaticMediaDispatcher"
+		class="org.olat.core.dispatcher.impl.StaticMediaDispatcher"
 		>
 		<constructor-arg index="0">
 			<value>/raw/</value>
@@ -208,7 +208,7 @@
 	</bean>
 	 -->
 
-	<bean id="redirect2defaultbean" class = "org.olat.core.defaults.dispatcher.RedirectToDefaultDispatcher" />
+	<bean id="redirect2defaultbean" class = "org.olat.core.dispatcher.impl.RedirectToDefaultDispatcher" />
 	<!-- uncomment this and comment above line if automatic guest login should be enabled -->
 	<!--
 	<bean id="redirect2defaultbean" class = "org.olat.dispatcher.RedirectToAutoGuestLoginDispatcher" />

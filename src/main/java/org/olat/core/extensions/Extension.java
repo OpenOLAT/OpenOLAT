@@ -39,17 +39,9 @@ import org.olat.core.gui.UserRequest;
  */
 public interface Extension extends ConfigOnOff, Comparable<Extension> {
 
-	/**
-	 * @param extensionPoint
-	 * @return the handler for the extension (an ExtensionElement)
-	 * do a check here, if the extension is enabled and return null if not!
-	 * @deprecated fxdiff: better use method getExtensionFor(String extensionPoint, UserRequest ureq) to check per user!
-	 */
-	public ExtensionElement getExtensionFor(String extensionPoint);
 	
 	/**
-	 * fxdiff: FXOLAT-79
-	 * check with userrequest if extension will be available to this user!
+	 * Check with userrequest if extension will be available to this user!
 	 * also does isEnabled(). this is better than to loop over all extensions and do checks locally!
 	 * returns null if not allowed to access or disabled
 	 * @param extensionPoint

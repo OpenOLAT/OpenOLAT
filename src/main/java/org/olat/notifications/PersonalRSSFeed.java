@@ -26,7 +26,7 @@ import java.util.Locale;
 
 import org.olat.commons.rss.RSSUtil;
 import org.olat.commons.servlets.RSSServlet;
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;

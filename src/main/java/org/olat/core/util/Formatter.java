@@ -43,7 +43,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
 

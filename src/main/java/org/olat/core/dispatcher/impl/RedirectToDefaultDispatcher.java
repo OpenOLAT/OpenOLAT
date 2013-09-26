@@ -24,7 +24,7 @@
 * <p>
 */ 
 
-package org.olat.core.defaults.dispatcher;
+package org.olat.core.dispatcher.impl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
