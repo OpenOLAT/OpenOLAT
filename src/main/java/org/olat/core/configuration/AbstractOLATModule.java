@@ -207,6 +207,7 @@ public abstract class AbstractOLATModule extends LogDelegator implements Generic
 	protected void setStringProperty(String propertyName, String value, boolean saveConfiguration) {
 		// delegate to new property based config style
 		moduleConfigProperties.setStringProperty(propertyName, value, saveConfiguration);
+		logAudit("change system property: " + propertyName, value);
 	}
 	/**
 	 * Retrun an int value for a certain propertyName
@@ -232,6 +233,7 @@ public abstract class AbstractOLATModule extends LogDelegator implements Generic
 	protected void setIntProperty(String propertyName, int value, boolean saveConfiguration) {
 		// delegate to new property based config style
 		moduleConfigProperties.setIntProperty(propertyName, value, saveConfiguration);
+		logAudit("change system property: " + propertyName, Integer.toString(value));
 	}
 	/**
 	 * Return a boolean value for certain propertyName
@@ -257,6 +259,7 @@ public abstract class AbstractOLATModule extends LogDelegator implements Generic
 	protected void setBooleanProperty(String propertyName, boolean value, boolean saveConfiguration) {
 		// delegate to new property based config style
 		moduleConfigProperties.setBooleanProperty(propertyName, value, saveConfiguration);
+		logAudit("change system property: " + propertyName,  Boolean.toString(value));
 	}
 	/**
 	 * Save the properties configuration to disk and notify other nodes about
@@ -317,5 +320,4 @@ public abstract class AbstractOLATModule extends LogDelegator implements Generic
 			initFromChangedProperties();				
 		}		
 	}
-
 }
