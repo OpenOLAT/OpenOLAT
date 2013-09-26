@@ -107,7 +107,7 @@ public class Tracing {
 	private static long __performanceRefNum__ = 0;
 	
 	// VM local cache to have one logger object per class
-	private static final Map<Class, OLog> loggerLookupMap = new ConcurrentHashMap<Class, OLog>();
+	private static final Map<Class<?>, OLog> loggerLookupMap = new ConcurrentHashMap<Class<?>, OLog>();
 
 	/**
 	 * per-thread singleton holding the actual HttpServletRequest which is the
@@ -133,7 +133,7 @@ public class Tracing {
 	 * @param loggingClass
 	 * @return
 	 */
-	public static OLog createLoggerFor(Class loggingClass) {
+	public static OLog createLoggerFor(Class<?> loggingClass) {
 		// Share logger object to reduce memory footprint
 		OLog logger = loggerLookupMap.get(loggingClass);
     if (logger == null) {
@@ -165,7 +165,7 @@ public class Tracing {
 	 * @return Log entry identifier.
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logError(String logMsg, Throwable cause, Class callingClass) {
+	public static long logError(String logMsg, Throwable cause, Class<?> callingClass) {
 		long refNum = getErrorRefNum();
 		getLogger(callingClass).error(assembleThrowableMessage(ERROR, 'E',refNum, callingClass, logMsg, cause));
 		return refNum;
@@ -177,7 +177,7 @@ public class Tracing {
 	 * @return
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logError(String logMsg, Class callingClass) {
+	public static long logError(String logMsg, Class<?> callingClass) {
 		return logError(logMsg, null, callingClass);
 	}
 
@@ -189,7 +189,7 @@ public class Tracing {
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 * @return
 	 */
-	public static long logWarn(String logMsg, Throwable cause, Class callingClass) {
+	public static long logWarn(String logMsg, Throwable cause, Class<?> callingClass) {
 		long refNum = getWarnRefNum();
 		getLogger(callingClass).warn(assembleThrowableMessage(WARN, 'W', refNum, callingClass, logMsg, cause));
 		return refNum;
@@ -201,7 +201,7 @@ public class Tracing {
 	 * @return
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logWarn(String logMsg, Class callingClass) {
+	public static long logWarn(String logMsg, Class<?> callingClass) {
 		return logWarn(logMsg, null, callingClass);
 	}
 
@@ -216,7 +216,7 @@ public class Tracing {
 	 * @return
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logDebug(String logMsg, String userObj, Class callingClass) {
+	public static long logDebug(String logMsg, String userObj, Class<?> callingClass) {
 		long refNum = getDebugRefNum();
 		if (isDebugEnabled(callingClass)) {
 			getLogger(callingClass).debug(assembleMsg(DEBUG, 'D', refNum, callingClass, userObj, logMsg));
@@ -232,7 +232,7 @@ public class Tracing {
 	 * @return
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logDebug(String logMsg, Class callingClass) {
+	public static long logDebug(String logMsg, Class<?> callingClass) {
 		return logDebug(logMsg, null, callingClass);
 	}
 
@@ -242,7 +242,7 @@ public class Tracing {
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 * @return
 	 */
-	public static long logInfo(String logMsg, String userObject, Class callingClass) {
+	public static long logInfo(String logMsg, String userObject, Class<?> callingClass) {
 		long refNum = getInfoRefNum();
 		getLogger(callingClass).info(assembleMsg(INFO, 'I', refNum, callingClass, userObject, logMsg));
 		return refNum;
@@ -254,7 +254,7 @@ public class Tracing {
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 * @return
 	 */
-	public static long logInfo(String logMsg, Class callingClass) {
+	public static long logInfo(String logMsg, Class<?> callingClass) {
 		return logInfo(logMsg, null, callingClass);
 
 	}
@@ -267,7 +267,7 @@ public class Tracing {
 	 * @return Log entry identifier.
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logAudit(String logMsg, Class callingClass) {
+	public static long logAudit(String logMsg, Class<?> callingClass) {
 		return logAudit(logMsg, null, callingClass);
 	}
 
@@ -280,7 +280,7 @@ public class Tracing {
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 * @return Log entry identifier.
 	 */
-	public static long logAudit(String logMsg, String userObj, Class callingClass) {
+	public static long logAudit(String logMsg, String userObj, Class<?> callingClass) {
 		long refNum = getAuditRefNum();
 		getLogger(callingClass).info(assembleMsg(AUDIT, 'A', refNum, callingClass, userObj, logMsg));
 		return refNum;
@@ -293,7 +293,7 @@ public class Tracing {
 	 * @param callingClass
 	 * @return Log entry identifier.
 	 */
-	public static long logPerformance(String logMsg, Class callingClass) {
+	public static long logPerformance(String logMsg, Class<?> callingClass) {
 		long refNum = getPerformanceRefNum();
 		getLogger(callingClass).info(assembleMsg(PERFORMANCE, 'P', refNum, callingClass, null, logMsg));
 		return refNum;
@@ -343,7 +343,7 @@ public class Tracing {
 		return ++__performanceRefNum__;
 	}
 
-	private static String assembleMsg(String category, char prefix, long refNum, Class callingClass, String userObj, String logMsg) {
+	private static String assembleMsg(String category, char prefix, long refNum, Class<?> callingClass, String userObj, String logMsg) {
 
 		HttpServletRequest ureq = null;
 		if(tld != null){
@@ -402,7 +402,7 @@ public class Tracing {
 		return sb.toString();
 	}
 
-	private static String assembleThrowableMessage(String category, char prefix,long refNum, Class callingClass, String logMsg, Throwable cause) {
+	private static String assembleThrowableMessage(String category, char prefix,long refNum, Class<?> callingClass, String logMsg, Throwable cause) {
 
 		HttpServletRequest ureq = null;
 		if(tld != null){
@@ -505,7 +505,7 @@ public class Tracing {
 	 * @param clazz
 	 * @return the log4 logger
 	 */
-	public static Logger getLogger(Class clazz) {
+	public static Logger getLogger(Class<?> clazz) {
 		return Logger.getLogger(clazz.getName());
 	}
 
@@ -516,7 +516,7 @@ public class Tracing {
 	 * @deprecated please use OLog log = createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 * @return
 	 */
-	public static boolean isDebugEnabled(Class clazz) {
+	public static boolean isDebugEnabled(Class<?> clazz) {
 		return Logger.getLogger(clazz).isDebugEnabled();
 	}
 
@@ -533,7 +533,7 @@ public class Tracing {
 	/**
 	 * @return list all current loggers
 	 */
-	public static List getLoggers() {
+	public static List<Logger> getLoggers() {
 		return Collections.list(LogManager.getCurrentLoggers());
 	}
 
@@ -543,8 +543,8 @@ public class Tracing {
 	 * @param logLevel
 	 */
 	public static void setLevelForAllLoggers(Level logLevel) {
-		List loggers = getLoggers();
-		Iterator iter = loggers.iterator();
+		List<Logger> loggers = getLoggers();
+		Iterator<Logger> iter = loggers.iterator();
 		while (iter.hasNext()) {
 			Logger lo = (Logger) iter.next();
 			lo.setLevel(logLevel);
@@ -569,12 +569,10 @@ public class Tracing {
 	 * 
 	 * @return
 	 */
-	public static List getLoggersSortedByName() {
-		List loggers = getLoggers();
-		Collections.sort(loggers, new Comparator() {
-			public int compare(Object o1, Object o2) {
-				Logger a = (Logger) o1;
-				Logger b = (Logger) o2;
+	public static List<Logger> getLoggersSortedByName() {
+		List<Logger> loggers = getLoggers();
+		Collections.sort(loggers, new Comparator<Logger>() {
+			public int compare(Logger a, Logger b) {
 				return a.getName().compareTo(b.getName());
 			}
 		});

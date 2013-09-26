@@ -77,7 +77,7 @@ import org.olat.testutils.codepoints.server.Codepoint;
 public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBrokerManager {
 
 	private static final String ATTACHEMENT_DIR_NAME = "projectbroker_attach";
-	private CacheWrapper projectCache;
+	private CacheWrapper<String,ProjectBroker> projectCache;
 	
 	protected ProjectBrokerManagerImpl() {
 		// cache name should not be too long e.g. 'projectbroker' is too long, use 'pb' instead.
@@ -266,8 +266,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 
 	public int getNbrSelectedProjects(Identity identity, List<Project> projectList) {
 		int selectedCounter = 0;
-		for (Iterator iterator = projectList.iterator(); iterator.hasNext();) {
-			Project project = (Project) iterator.next();
+		for (Iterator<Project> iterator = projectList.iterator(); iterator.hasNext();) {
+			Project project = iterator.next();
 			if (BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getProjectParticipantGroup()) ||
 					BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getCandidateGroup()) ) {
 				selectedCounter++;
@@ -343,11 +343,11 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, new SyncerExecutor() {
 			public void execute() {
 				ProjectBroker projectBroker = getOrLoadProjectBoker(projectBrokerId);
-				for (Iterator iterator = projectBroker.getProjects().iterator(); iterator.hasNext();) {
-					Project project = (Project) iterator.next();
+				for (Iterator<Project> iterator = projectBroker.getProjects().iterator(); iterator.hasNext();) {
+					Project project = iterator.next();
 					// loop over all identities
-					for (Iterator iterator2 = chosenIdentities.iterator(); iterator2.hasNext();) {
-						Identity identity = (Identity) iterator2.next();
+					for (Iterator<Identity> iterator2 = chosenIdentities.iterator(); iterator2.hasNext();) {
+						Identity identity = iterator2.next();
 						BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, project.getCandidateGroup());
 						logAudit("ProjectBroker: AutoSignOut: identity=" + identity + " from project=" + project);
 					}
@@ -405,8 +405,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		// delete all projects of a project-broker
 		List<Project> deleteProjectList = new ArrayList<Project>();
 		deleteProjectList.addAll(projectBroker.getProjects());
-		for (Iterator iterator = deleteProjectList.iterator(); iterator.hasNext();) {
-			Project project = (Project) iterator.next();
+		for (Iterator<Project> iterator = deleteProjectList.iterator(); iterator.hasNext();) {
+			Project project = iterator.next();
 			deleteProject(project, true, courseEnvironment, courseNode);
 			logAudit("ProjectBroker: Deleted project=" + project );
 		}
@@ -545,8 +545,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	 * @return
 	 */
 	public boolean isParticipantInAnyProject(Identity identity, List<Project> projectList) {
-		for (Iterator iterator = projectList.iterator(); iterator.hasNext();) {
-			Project project = (Project) iterator.next();
+		for (Iterator<Project> iterator = projectList.iterator(); iterator.hasNext();) {
+			Project project = iterator.next();
 			if ( BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getProjectParticipantGroup()) ) {
 				return true;
 			}
@@ -605,8 +605,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		List<Project> myProjects = new ArrayList<Project>();
 		List<Project> allProjects = getProjectListBy(projectBrokerId);
 		//TODO: for better performance should be done with sql query instead of a loop
-		for (Iterator iterator = allProjects.iterator(); iterator.hasNext();) {
-			Project project = (Project) iterator.next();
+		for (Iterator<Project> iterator = allProjects.iterator(); iterator.hasNext();) {
+			Project project = iterator.next();
 			if (BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getProjectParticipantGroup()) ) {
 				myProjects.add(project);
 			}
@@ -624,8 +624,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		List<Project> myProjects = new ArrayList<Project>();
 		List<Project> allProjects = getProjectListBy(projectBrokerId);
 		//TODO: for better performance should be done with sql query instead of a loop
-		for (Iterator iterator = allProjects.iterator(); iterator.hasNext();) {
-			Project project = (Project) iterator.next();
+		for (Iterator<Project> iterator = allProjects.iterator(); iterator.hasNext();) {
+			Project project = iterator.next();
 			if (BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getProjectLeaderGroup()) ) {
 				myProjects.add(project);
 			}

@@ -175,7 +175,7 @@ public class ScormResultDetailsController extends BasicController {
 		}
 	}
 	
-	public class CmiTableDataModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
+	public class CmiTableDataModel extends BaseTableDataModelWithoutFilter<CmiData> {
 		private final List<CmiData> datas;
 		private final Translator translator;
 		private final Pattern pattern = Pattern.compile("[0-9]");
@@ -242,7 +242,7 @@ public class ScormResultDetailsController extends BasicController {
 	 * Initial Date:  07.01.2010 <br>
 	 * @author thomasw
 	 */
-	public class SummaryTableDataModelMultiResults implements TableDataModel {
+	public class SummaryTableDataModelMultiResults implements TableDataModel<List<CmiData>> {
 		
 		private final Map<Date, List<CmiData>> objects;
 		
@@ -327,9 +327,8 @@ public class ScormResultDetailsController extends BasicController {
 			return cmiObject;
 		}
 
-		@Override
-		@SuppressWarnings({"unused","rawtypes"}) 
-		public void setObjects(List objects) {
+		@Override 
+		public void setObjects(List<List<CmiData>> objects) {
 			//
 		}
 	}

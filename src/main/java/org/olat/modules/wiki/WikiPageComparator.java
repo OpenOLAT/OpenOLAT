@@ -42,6 +42,8 @@ import org.olat.core.util.i18n.I18nManager;
  */
 public class WikiPageComparator implements Comparator<WikiPage>, Serializable {
 
+	private static final long serialVersionUID = -107955969426497718L;
+
 	/**
 	 * Compares the name of page 'a' to that of page 'b' with respect to the
 	 * current locale (different languages have different alphabets and hence

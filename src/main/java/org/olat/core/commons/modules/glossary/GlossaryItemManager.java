@@ -75,7 +75,7 @@ public class GlossaryItemManager extends BasicManager {
 	public static final String REGISTER_ONOFF = "register.index.enabled";
 	public static final String EDIT_USERS = "edit.by.users.enabled";
 	private static final OLATResourceable glossaryEventBus = OresHelper.createOLATResourceableType("glossaryEventBus");
-	CacheWrapper glossaryCache;
+	private CacheWrapper<String, ArrayList<GlossaryItem>> glossaryCache;
 	private CoordinatorManager coordinatorManager;
 
 	/**
@@ -232,9 +232,7 @@ public class GlossaryItemManager extends BasicManager {
 		XStreamHelper.writeObject(xstream, glossaryFile, glossaryItemArr);
 	}
 
-	
 	//FIXME: VFSItem should be capable of returning an identifier, instead of casting to LocalFolderImpl implement a getIdentifier for it!
-	@SuppressWarnings("unchecked")
 	public ArrayList<GlossaryItem> getGlossaryItemListByVFSItem(final VFSContainer glossaryFolder){		
 		final String glossaryKey = ((LocalFolderImpl)glossaryFolder).getBasefile().toString();
 		if (glossaryCache == null) {
@@ -261,7 +259,7 @@ public class GlossaryItemManager extends BasicManager {
 			}
 		});
 		//return value from cache, as it was put in there before
-		return (ArrayList<GlossaryItem>) glossaryCache.get(glossaryKey);
+		return glossaryCache.get(glossaryKey);
 	}
 
 	/**

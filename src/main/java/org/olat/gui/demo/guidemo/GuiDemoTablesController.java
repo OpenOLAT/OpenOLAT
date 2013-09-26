@@ -52,7 +52,7 @@ public class GuiDemoTablesController extends BasicController {
 	
 	VelocityContainer vcMain;
 	TableController table;
-	TableDataModel model;
+	TableDataModel<List<Object>> model;
 	
 	public GuiDemoTablesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq,wControl);
@@ -103,16 +103,16 @@ class ImageCellRenderer implements CustomCellRenderer {
 	
 }
 
-class SampleTableModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
+class SampleTableModel extends BaseTableDataModelWithoutFilter<List<Object>> {
 	
 	private int COLUMN_COUNT = 7;
-	private List entries;
+	private List<List<Object>> entries;
 	
 	public SampleTableModel() {
 		int iEntries = 50;
-		this.entries = new ArrayList(iEntries);
+		this.entries = new ArrayList<List<Object>>(iEntries);
 		for (int i=0; i < iEntries; i++) {
-			List row = new ArrayList(5);
+			List<Object> row = new ArrayList<Object>(5);
 			row.add("Lorem" + i);
 			row.add("Ipsum" + i);
 			row.add("Dolor" + i);
@@ -132,7 +132,7 @@ class SampleTableModel extends BaseTableDataModelWithoutFilter implements TableD
 	}
 
 	public Object getValueAt(int row, int col) {
-		List entry = (List)entries.get(row);
+		List<Object> entry = entries.get(row);
 		return entry.get(col);
 	}
 

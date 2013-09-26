@@ -55,7 +55,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
@@ -77,7 +76,6 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class ClusterAdminControllerCluster extends BasicController {
 	private static final OLATResourceable ORES_TEST = OresHelper.createOLATResourceableInstanceWithoutCheck(ClusterAdminControllerCluster.class.getName(), new Long(123));
-	private static final OLATResourceable ORES_CACHE_TEST = OresHelper.createOLATResourceableInstance("subcachetypetest", new Long(123));
 	
 	ClusterEventBus clusBus;
 
@@ -261,13 +259,13 @@ public class ClusterAdminControllerCluster extends BasicController {
 			double avgmilis = avg / 1000000;
 			getWindowControl().setInfo("sending "+cnt+" messages took "+inmilis+" ms, avg per messages was "+avg+" ns = "+avgmilis+" ms");
 		} else if (source == testCachePut) {
-			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(this.getClass().getSimpleName(), "cachetest");
+			CacheWrapper<String,String> cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(this.getClass().getSimpleName(), "cachetest");
 			// we explicitly use put and not putSilent to show that a put invalidates (and thus removes) this key of this cache in all other cluster nodes. 
 			cw.update("akey", "hello");
 			updateCacheInfo();
 		} else if (source == testCachePut2) {
 			// we explicitly use put and not putSilent to show that a put invalidates (and thus removes) this key of this cache in all other cluster nodes.
-			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(this.getClass().getSimpleName(), "cachetest");
+			CacheWrapper<String,String> cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(this.getClass().getSimpleName(), "cachetest");
 			cw.update("akey", "world");
 			updateCacheInfo();
 		} else if (source == testSFUPerf) {
@@ -302,7 +300,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 				if ("JSESSIONID".equals(cookie.getName())) {
 					String redirectedButInvalidSessionId = cookie.getValue();
 					redirectedButInvalidSessionId = redirectedButInvalidSessionId.substring(0, redirectedButInvalidSessionId.length()-2) + nodeIdStr;
-					Tracing.logInfo("redirecting session to node "+nodeIdStr+", new sessionid="+redirectedButInvalidSessionId, getClass());
+					logInfo("redirecting session to node "+nodeIdStr+", new sessionid="+redirectedButInvalidSessionId, null);
 					cookie.setValue(redirectedButInvalidSessionId);
 					replaceCookie(ureq.getHttpReq(), ureq.getHttpResp(), cookie);
 
@@ -361,7 +359,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 	}
 	
 	void updateCacheInfo() {
-		CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(this.getClass().getSimpleName(), "cachetest");
+		CacheWrapper<String,String> cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(this.getClass().getSimpleName(), "cachetest");
 		Object val = cw.get("akey");
 		cachetest.contextPut("cacheval", val==null? "-null-": val);
 		// org.olat.commons.coordinate.cluster.jms.ClusterAdminController:cachetest::0@subcachetypetest::123

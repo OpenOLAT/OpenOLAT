@@ -95,7 +95,7 @@ public class WikiManager extends BasicManager {
 	public static final String UPDATE_COMMENT = "update.comment";
 	
   //o_clusterNOK cache : 08.04.08/cg Not tested in cluster-mode 
-	CacheWrapper wikiCache;
+	CacheWrapper<String,Wiki> wikiCache;
 	
 	OLATResourceManager resourceManager;
 	FileResourceManager fileResourceManager;
@@ -173,20 +173,20 @@ public class WikiManager extends BasicManager {
 			start = System.currentTimeMillis();
 		}
 		VFSContainer rootContainer = getWikiRootContainer(ores);
-		VFSContainer unzippedDir = (VFSContainer) rootContainer.resolve(getFileResourceManager().ZIPDIR);
+		VFSContainer unzippedDir = (VFSContainer) rootContainer.resolve(FileResourceManager.ZIPDIR);
 		if (unzippedDir == null) { // check for _unzipped_ dir from imported wiki's
 			if (rootContainer.createChildContainer(WIKI_RESOURCE_FOLDER_NAME) == null) throwError(ores);
 			if (rootContainer.createChildContainer(WikiContainer.MEDIA_FOLDER_NAME) == null) throwError(ores);
 			if (rootContainer.createChildContainer(VERSION_FOLDER_NAME) == null) throwError(ores);
 		} else { // _unzipped_ dir found: move elements to wiki folder and delete
 			// unzipped dir and zip files
-			List files = unzippedDir.getItems();
+			List<VFSItem> files = unzippedDir.getItems();
 			VFSContainer wikiCtn = rootContainer.createChildContainer(WIKI_RESOURCE_FOLDER_NAME);
 			VFSContainer mediaCtn = rootContainer.createChildContainer(WikiContainer.MEDIA_FOLDER_NAME);
 			if (rootContainer.createChildContainer(VERSION_FOLDER_NAME) == null) throwError(ores);
 			if (wikiCtn == null) throwError(ores);
 			// copy files to wiki and media folder
-			for (Iterator iter = files.iterator(); iter.hasNext();) {
+			for (Iterator<VFSItem> iter = files.iterator(); iter.hasNext();) {
 				VFSLeaf leaf = ((VFSLeaf) iter.next());
 				if (leaf.getName().endsWith(WikiManager.WIKI_FILE_SUFFIX) || leaf.getName().endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
 					wikiCtn.copyFrom(leaf);
@@ -198,15 +198,15 @@ public class WikiManager extends BasicManager {
 				}
 			}
 			unzippedDir.delete();
-			List zipFiles = rootContainer.getItems(new VFSItemSuffixFilter(new String[] { "zip" }));
+			List<VFSItem> zipFiles = rootContainer.getItems(new VFSItemSuffixFilter(new String[] { "zip" }));
 			// delete all zips
-			for (Iterator iter = zipFiles.iterator(); iter.hasNext();) {
+			for (Iterator<VFSItem> iter = zipFiles.iterator(); iter.hasNext();) {
 				VFSLeaf element = (VFSLeaf) iter.next();
 				element.delete();
 			}
 			//reset forum key and author references keys back to default as users and forums may not exist
-			List propertyLeafs = wikiCtn.getItems(new VFSItemSuffixFilter(new String[] { WikiManager.WIKI_PROPERTIES_SUFFIX }));
-			for (Iterator iter = propertyLeafs.iterator(); iter.hasNext();) {
+			List<VFSItem> propertyLeafs = wikiCtn.getItems(new VFSItemSuffixFilter(new String[] { WikiManager.WIKI_PROPERTIES_SUFFIX }));
+			for (Iterator<VFSItem> iter = propertyLeafs.iterator(); iter.hasNext();) {
 				VFSLeaf element = (VFSLeaf) iter.next();
 				WikiPage page = Wiki.assignPropertiesToPage(element);
 				page.setForumKey(0);
@@ -241,7 +241,7 @@ public class WikiManager extends BasicManager {
 		if (wikiCache == null) {
 			wikiCache =  coordinator.getCoordinator().getCacher().getCache(WikiManager.class.getSimpleName(), "wiki");
 		}
-		Wiki wiki = (Wiki) wikiCache.get(wikiKey);
+		Wiki wiki = wikiCache.get(wikiKey);
 		if (wiki != null) {
 			logDebug("loading wiki from cache. Ores: " + ores.getResourceableId());
 			return wiki;
@@ -269,8 +269,8 @@ public class WikiManager extends BasicManager {
 				// folders should be present, create the wiki
 				wiki = new Wiki(getWikiRootContainer(ores));
 				// filter for xyz.properties files
-				List wikiLeaves = folder.getItems(new VFSItemSuffixFilter(new String[] { WikiManager.WIKI_PROPERTIES_SUFFIX }));
-				for (Iterator iter = wikiLeaves.iterator(); iter.hasNext();) {
+				List<VFSItem> wikiLeaves = folder.getItems(new VFSItemSuffixFilter(new String[] { WikiManager.WIKI_PROPERTIES_SUFFIX }));
+				for (Iterator<VFSItem> iter = wikiLeaves.iterator(); iter.hasNext();) {
 					VFSLeaf propertiesFile = (VFSLeaf) iter.next();
 					WikiPage page = Wiki.assignPropertiesToPage(propertiesFile);
 					if (page == null) {
@@ -328,7 +328,7 @@ public class WikiManager extends BasicManager {
 			}
 		});
 		//at this point there will be something in the cache
-		return (Wiki) wikiCache.get(wikiKey);
+		return wikiCache.get(wikiKey);
 
 	}
 		
@@ -429,9 +429,9 @@ public class WikiManager extends BasicManager {
 		if (item != null) item.delete();
 		
 		//delete all version files of the page
-		List leafs = versionsContainer.getItems(new VFSLeafFilter());
+		List<VFSItem> leafs = versionsContainer.getItems(new VFSLeafFilter());
 		if (leafs.size() > 0) {
-			for (Iterator iter = leafs.iterator(); iter.hasNext();) {
+			for (Iterator<VFSItem> iter = leafs.iterator(); iter.hasNext();) {
 				VFSLeaf leaf = (VFSLeaf) iter.next();
 				String filename = leaf.getName();
 				if (filename.startsWith(page.getPageId())) {

@@ -54,13 +54,13 @@ public class WikiToZipUtils {
 	 * @param vfsLeaves
 	 * @return
 	 */
-	private static String createIndexPageForExport(List vfsLeaves) {
+	private static String createIndexPageForExport(List<VFSItem> vfsLeaves) {
 		boolean hasProperties = false;
 		StringBuilder sb = new StringBuilder();
 		sb.append("<html><head>");
 		sb.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">");
 		sb.append("</head><body><ul>");
-		for (Iterator iter = vfsLeaves.iterator(); iter.hasNext();) {
+		for (Iterator<VFSItem> iter = vfsLeaves.iterator(); iter.hasNext();) {
 			VFSLeaf element = (VFSLeaf) iter.next();
 			// destination.copyFrom(element);
 			if (element.getName().endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {

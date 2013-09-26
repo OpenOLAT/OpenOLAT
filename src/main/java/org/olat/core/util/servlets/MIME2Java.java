@@ -26,6 +26,7 @@ package org.olat.core.util.servlets;
 
 
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * MIME2Java is a convenience class which handles conversions between MIME charset names
@@ -478,11 +479,11 @@ import java.util.Hashtable;
  */
 public class MIME2Java {
 
-    static private Hashtable s_enchash;
-    static private Hashtable s_revhash;
+    static private Map<String,String> s_enchash;
+    static private Map<String,String> s_revhash;
 
     static {
-        s_enchash = new Hashtable();
+        s_enchash = new Hashtable<String,String>();
         //    <preferred MIME name>, <Java encoding name>
         s_enchash.put("UTF-8", "UTF8");
         s_enchash.put("US-ASCII",        "8859_1");    // ?
@@ -526,7 +527,7 @@ public class MIME2Java {
                                                 // j:CNS11643 -> EUC-TW?
                                                 // ISO-2022-CN? ISO-2022-CN-EXT?
 
-        s_revhash = new Hashtable();
+        s_revhash = new Hashtable<String,String>();
         //    <Java encoding name>, <preferred MIME name>
         s_revhash.put("UTF8", "UTF-8");
         //s_revhash.put("8859_1", "US-ASCII");    // ?

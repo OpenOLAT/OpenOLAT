@@ -639,7 +639,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		mediaTableCtr.addMultiSelectAction(ACTION_DELETE_MEDIAS, ACTION_DELETE_MEDIAS);
 		
 		List<VFSItem> filelist = wiki.getMediaFileListWithMetadata();
-		Map files = new HashMap();
+		Map<String,MediaFileElement> files = new HashMap<String,MediaFileElement>();
 		for (Iterator<VFSItem> iter = filelist.iterator(); iter.hasNext();) {
 			VFSLeaf elem = (VFSLeaf) iter.next();
 			if(elem.getName().endsWith(METADATA_SUFFIX)) {  //*.metadata files go here
@@ -669,7 +669,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			}
 		}
 		
-		mediaFilesTableModel = new MediaFilesTableModel(new ArrayList(files.values()), getTranslator());
+		mediaFilesTableModel = new MediaFilesTableModel(new ArrayList<MediaFileElement>(files.values()), getTranslator());
 		mediaFilesTableModel.addColumnDescriptors(mediaTableCtr);
 		mediaTableCtr.setTableDataModel(mediaFilesTableModel);
 		mediaTableCtr.setSortColumn(3, false);
@@ -770,7 +770,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_DELETE_MEDIA)) {
-					List list = new ArrayList(1);
+					List<MediaFileElement> list = new ArrayList<MediaFileElement>(1);
 					list.add(mediaFilesTableModel.getObject(te.getRowId()));
 					deleteMediaFile(list, ureq);
 				} else if (te.getActionId().equals(ACTION_SHOW_MEDIA)) {
@@ -918,10 +918,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 	}
 
 
-	private void deleteMediaFile(List toDelete, UserRequest ureq) {
-		for (Iterator iter = toDelete.iterator(); iter.hasNext();) {
+	private void deleteMediaFile(List<MediaFileElement> toDelete, UserRequest ureq) {
+		for (Iterator<MediaFileElement> iter = toDelete.iterator(); iter.hasNext();) {
 			VFSContainer mediaFolder = WikiManager.getInstance().getMediaFolder(ores);
-			MediaFileElement element = (MediaFileElement) iter.next();
+			MediaFileElement element = iter.next();
 			if(log.isDebug()) log.debug("deleting media file: "+element.getFilename());
 			if(!element.getFilename().endsWith(METADATA_SUFFIX)) {
 				VFSLeaf file = (VFSLeaf)mediaFolder.resolve(element.getFilename());
