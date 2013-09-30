@@ -31,12 +31,15 @@ import java.io.InputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
  * @author Felix Jost
  */
 public class RedirectMediaResource implements MediaResource {
+	
+	private static final OLog log = Tracing.createLoggerFor(RedirectMediaResource.class);
 
 	private String redirectURL;
 
@@ -84,11 +87,11 @@ public class RedirectMediaResource implements MediaResource {
 		} catch (IOException e) {
 			// if redirect failed, we do nothing; the browser may have stopped the
 			// tcp/ip or whatever
-			Tracing.logError("redirect failed: url=" + redirectURL,e, RedirectMediaResource.class);
+			log.error("redirect failed: url=" + redirectURL, e);
 		} catch (IllegalStateException ise){
 			// redirect failed, to find out more about the strange null null exception
 			// FIXME:pb:a decide if this catch has to be removed again, after finding problem.
-			Tracing.logError("redirect failed: url=" + redirectURL,ise, RedirectMediaResource.class);
+			log.error("redirect failed: url=" + redirectURL, ise);
 			//introduced only more debug information but behavior is still the same
 			throw(ise);
 		}

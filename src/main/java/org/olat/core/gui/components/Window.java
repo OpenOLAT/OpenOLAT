@@ -751,7 +751,7 @@ public class Window extends Container {
 					}
 					
 					wbackofficeImpl.fireCycleEvent(AFTER_INLINE_RENDERING);
-					ServletUtil.serveStringResource(request, response, result);
+					ServletUtil.serveStringResource(response, result);
 					StringOutputPool.free(result);
 					if (isDebugLog) {
 						long diff = System.currentTimeMillis() - debug_start;

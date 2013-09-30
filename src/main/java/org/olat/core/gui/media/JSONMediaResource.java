@@ -41,8 +41,7 @@ import org.olat.core.logging.Tracing;
  */
 public class JSONMediaResource extends DefaultMediaResource {
 	private static final OLog log = Tracing.createLoggerFor(JSONMediaResource.class);
-	private static final String ENCODING_DEFAULT = "iso-8859-1";
-
+	
 	private String encoding = "";
 	private JSONArray jsonArray;
 	private JSONObject jsonObject;

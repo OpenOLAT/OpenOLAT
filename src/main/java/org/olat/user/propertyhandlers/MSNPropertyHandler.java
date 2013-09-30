@@ -23,12 +23,12 @@ package org.olat.user.propertyhandlers;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.poi.util.IOUtils;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -120,21 +120,15 @@ public class MSNPropertyHandler extends Generic127CharTextPropertyHandler {
 		boolean result;
 		TextElement textElement = (TextElement)formItem;
 		if (StringHelper.containsNonWhitespace(textElement.getValue())) {
-			
 			// Use an HttpClient to fetch a profile information page from MSN.
-			HttpClient httpClient = HttpClientFactory.getHttpClientInstance();
-			HttpClientParams httpClientParams = httpClient.getParams();
-			httpClientParams.setConnectionManagerTimeout(2500);
-			httpClient.setParams(httpClientParams);
-			HttpMethod httpMethod = new GetMethod(MSN_NAME_VALIDATION_URL);
-			NameValuePair idParam = new NameValuePair(MSN_NAME_URL_PARAMETER, textElement.getValue());
-			httpMethod.setQueryString(new NameValuePair[] {idParam});
-			// Don't allow redirects since otherwise, we won't be able to get the correct status
-			httpMethod.setFollowRedirects(false);
+			CloseableHttpClient httpClient = HttpClientFactory.getHttpClientInstance(false);
 			try {
+				URIBuilder uriBuilder = new URIBuilder(MSN_NAME_VALIDATION_URL);
+				uriBuilder.addParameter(MSN_NAME_URL_PARAMETER, textElement.getValue());
+				HttpGet httpMethod = new HttpGet(uriBuilder.build());
 				// Get the user profile page
-				httpClient.executeMethod(httpMethod);
-				int httpStatusCode = httpMethod.getStatusCode();
+				HttpResponse response = httpClient.execute(httpMethod);
+				int httpStatusCode = response.getStatusLine().getStatusCode();
 				// Looking at the HTTP status code tells us whether a user with the given MSN name exists.
 				if (httpStatusCode == HttpStatus.SC_MOVED_PERMANENTLY) {
 					// If the user exists, we get a 301...
@@ -154,6 +148,8 @@ public class MSNPropertyHandler extends Generic127CharTextPropertyHandler {
 				textElement.setExampleKey("form.example.msnname.notvalidated", null);
 				log.warn("MSN name validation: Exception: " + e.getMessage());
 				result = true;
+			} finally {
+				IOUtils.closeQuietly(httpClient);
 			}
 		} else {
 			result = true;

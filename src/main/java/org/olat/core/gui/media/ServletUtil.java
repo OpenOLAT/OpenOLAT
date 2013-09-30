@@ -486,7 +486,7 @@ public class ServletUtil {
 		}
 	}
 
-	public static void serveStringResource(HttpServletRequest httpReq, HttpServletResponse response, StringOutput result) {
+	public static void serveStringResource(HttpServletResponse response, StringOutput result) {
 		setStringResourceHeaders(response);
 		// log the response headers prior to sending the output
 		boolean isDebug = log.isDebug();

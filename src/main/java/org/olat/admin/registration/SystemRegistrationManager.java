@@ -24,22 +24,26 @@
 */
 package org.olat.admin.registration;
 
-import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.PermissionOnResourceable;
@@ -160,36 +164,35 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 	}
 
 	public String getLocationCoordinates(String textLocation){
-		String csvCoordinates = null;
-		
 		if (textLocation == null || textLocation.length()==0) {
 			return null;
 		}
 		
-		HttpClient client = HttpClientFactory.getHttpClientInstance();
-		String url = "http://maps.google.com/maps/geo";
-		NameValuePair[] nvps = new NameValuePair[5];
-		nvps[0] = new NameValuePair("q",textLocation);
-		nvps[1] = new NameValuePair("output","csv");
-		nvps[2] = new NameValuePair("oe","utf8");
-		nvps[3] = new NameValuePair("sensor","false");
-		nvps[4] = new NameValuePair("key","ABQIAAAAq5BZJrKbG-xh--W4MrciXRQZTOqTGVCcmpRMgrUbtlJvJ3buAhSfG7H7hgE66BCW17_gLyhitMNP4A");
-		
-		GetMethod getCall = new GetMethod(url);
-		getCall.setQueryString(nvps);
-		
+		String csvCoordinates = null;
+		CloseableHttpClient client = null;
 		try {
-			client.executeMethod(getCall);
+			client = HttpClientFactory.getHttpClientInstance(true);
+			URIBuilder uriBuilder = new URIBuilder("http://maps.google.com/maps/geo");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>(5);
+			nvps.add(new BasicNameValuePair("q",textLocation));
+			nvps.add(new BasicNameValuePair("output","csv"));
+			nvps.add(new BasicNameValuePair("oe","utf8"));
+			nvps.add(new BasicNameValuePair("sensor","false"));
+			nvps.add(new BasicNameValuePair("key","ABQIAAAAq5BZJrKbG-xh--W4MrciXRQZTOqTGVCcmpRMgrUbtlJvJ3buAhSfG7H7hgE66BCW17_gLyhitMNP4A"));
+			uriBuilder.addParameters(nvps);
+
+			HttpGet getCall = new HttpGet(uriBuilder.build());
+			HttpResponse response = client.execute(getCall);
 			String resp = null;
-			if(getCall.getStatusCode() == 200){
-				resp = getCall.getResponseBodyAsString();
+			if(response.getStatusLine().getStatusCode() == 200){
+				resp = EntityUtils.toString(response.getEntity());
 				String[] split = resp.split(",");
 				csvCoordinates = split[2]+","+split[3];
 			}
-		} catch (HttpException e) {
+		} catch (Exception e) {
 			//
-		} catch (IOException e) {
-			//
+		} finally {
+			IOUtils.closeQuietly(client);
 		}
 		return csvCoordinates;
 	}
@@ -207,7 +210,8 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 	 * nothing will be sent.
 	 */
 	protected void sendRegistrationData() {
-		PutMethod method = null;
+		HttpPut method = null;
+		CloseableHttpClient client = null;
 		try {
 			// Do it optimistic and try to generate the XML message. If the message
 			// doesn't contain anything, the user does not want to register this
@@ -230,23 +234,23 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 			}
 			builder.queryParam("product", PRODUCT);
 
-			HttpClient client = HttpClientFactory.getHttpClientInstance();
+			client = HttpClientFactory.getHttpClientInstance(true);
 			String url = builder.build().toString();
-			method = new PutMethod(url);
-			client.executeMethod(method);
-			int status = method.getStatusCode();
+			method = new HttpPut(url);
+			HttpResponse response = client.execute(method);
+			int status = response.getStatusLine().getStatusCode();
 			if(status == HttpStatus.SC_CREATED) {
 				logInfo("Successfully registered OLAT installation on openolat.org server, thank you for your support!", null);
-				String registrationKey = IOUtils.toString(method.getResponseBodyAsStream());
+				String registrationKey = EntityUtils.toString(response.getEntity());
 				registrationModule.setSecretKey(registrationKey);
 			} else if (status == HttpStatus.SC_NOT_MODIFIED || status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED) {
 				logInfo("Successfully registered OLAT installation on openolat.org server, thank you for your support!", null);
-			} else if (method.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-				logError("Registration server not found: " + method.getStatusLine().toString(), null);
-			} else if(method.getStatusCode() == HttpStatus.SC_NO_CONTENT){
-				logInfo(method.getResponseBodyAsString(), method.getStatusText());
+			} else if (status == HttpStatus.SC_NOT_FOUND) {
+				logError("Registration server not found: " + response.getStatusLine().toString(), null);
+			} else if(status == HttpStatus.SC_NO_CONTENT){
+				logInfo(EntityUtils.toString(response.getEntity()), response.getStatusLine().toString());
 			} else {
-				logError("Unexpected HTTP Status: " + method.getStatusLine().toString() + " during registration call", null);
+				logError("Unexpected HTTP Status: " + response.getStatusLine().toString() + " during registration call", null);
 			}
 		} catch (Exception e) {
 			logError("Unexpected exception during registration call", e);
@@ -255,6 +259,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 			if(method != null) {
 				method.releaseConnection();
 			}
+			IOUtils.closeQuietly(client);
 		}
 	}
 

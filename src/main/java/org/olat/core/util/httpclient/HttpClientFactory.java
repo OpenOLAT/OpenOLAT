@@ -19,14 +19,26 @@
  */
 package org.olat.core.util.httpclient;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnectionManager;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.params.HttpConnectionParams;
-import org.apache.commons.httpclient.protocol.Protocol;
+
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.RedirectStrategy;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
 
 /**
  * <h3>Description:</h3>
@@ -40,71 +52,72 @@ import org.apache.commons.httpclient.protocol.Protocol;
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
 public class HttpClientFactory {
+
+	private static final EasySSLSocketFactory sslFactory = new EasySSLSocketFactory();
+	private static final Registry<ConnectionSocketFactory> socketRegistry;
 	static {
-		// register https as an available protocol using the SSL socket factory that
-		// accepts self signed certificates
-		Protocol.registerProtocol("https", new Protocol("https", new EasySSLProtocolSocketFactory(), 443));
+		socketRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+				.register("http", PlainConnectionSocketFactory.getSocketFactory())
+				.register("https", sslFactory).build();	
 	}
 	
 	/**
 	 * [used by Spring]
 	 */
 	public void destroy() {
-		MultiThreadedHttpConnectionManager.shutdownAll();
+		//nothing to do
 	}
 
 	/**
-	 * A HttpClient without basic authentication and no host or port setting. Can
-	 * only be used to retrieve absolute URLs
 	 * 
-	 * @return HttpClient
+	 * @param redirect If redirect is allowed
+	 * @return CloseableHttpClient
 	 */
-	public static HttpClient getHttpClientInstance() {
-		return getHttpClientInstance(null, null);
+	public static CloseableHttpClient getHttpClientInstance(boolean redirect) {
+		return getHttpClientInstance(null, -1, null, null, redirect);
 	}
 
 	/**
-	 * A HttpClient with basic authentication and no host or port setting. Can
-	 * only be used to retrieve absolute URLs
 	 * 
-	 * @param user can be NULL
-	 * @param password can be NULL
-	 * @return HttpClient
+	 * @param host For basic authentication
+	 * @param port For basic authentication
+	 * @param user For basic authentication
+	 * @param password For basic authentication
+	 * @param redirect If redirect is allowed
+	 * @return CloseableHttpClient
 	 */
-	public static HttpClient getHttpClientInstance(String user, String password) {
-		HttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
-		HttpConnectionParams params = connectionManager.getParams();
-		// wait max 10 seconds to establish connection
-		params.setConnectionTimeout(10000);
-		// a read() call on the InputStream associated with this Socket
-		// will block for only this amount
-		params.setSoTimeout(10000);
-		HttpClient c = new HttpClient(connectionManager);
+	public static CloseableHttpClient getHttpClientInstance(String host, int port, String user, String password, boolean redirect) {
+		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(socketRegistry);
+		SocketConfig.Builder socketConfigBuilder = SocketConfig.copy(SocketConfig.DEFAULT);
+		socketConfigBuilder.setSoTimeout(10000);
+		cm.setDefaultSocketConfig(socketConfigBuilder.build());
 
-		// use basic authentication if available
-		if (user != null && user.length() > 0) {
-			AuthScope authScope = new AuthScope(null, -1, null);
-			Credentials credentials = new UsernamePasswordCredentials(user, password);
-			c.getState().setCredentials(authScope, credentials);
+		HttpClientBuilder clientBuilder = HttpClientBuilder.create()
+				.setConnectionManager(cm).setMaxConnTotal(10)
+				.setDefaultCookieStore(new BasicCookieStore());
+		if(redirect) {
+			clientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
+		} else {
+			clientBuilder.setRedirectStrategy(new NoRedirectStrategy());
 		}
-		return c;
+		if (user != null && user.length() > 0) {
+			CredentialsProvider provider = new BasicCredentialsProvider();
+			provider.setCredentials(new AuthScope(host, port), new UsernamePasswordCredentials(user, password));
+			clientBuilder.setDefaultCredentialsProvider(provider);
+		}
+		
+		return clientBuilder.build();
 	}
+	
+	private static class NoRedirectStrategy implements RedirectStrategy {
+		@Override
+		public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) {
+			return false;
+		}
 
-	/**
-	 * A HttpClient with basic authentication and host or port setting. Can only
-	 * be used to retrieve relative URLs
-	 * 
-	 * @param host must not be NULL
-	 * @param port must not be NULL
-	 * @param protocol must not be NULL
-	 * @param user can be NULL
-	 * @param password can be NULL
-	 * @return HttpClient
-	 */
-	public static HttpClient getHttpClientInstance(String host, int port, String protocol, String user, String password) {
-		HttpClient c = getHttpClientInstance(user, password);
-		c.getHostConfiguration().setHost(host, port, protocol);
-		return c;
+		@Override
+		public HttpUriRequest getRedirect(HttpRequest request, HttpResponse response, HttpContext context) {
+			return null;
+		}
 	}
-
 }

@@ -21,14 +21,16 @@ package org.olat.core.commons.modules.glossary.morphService;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.olat.core.gui.media.HttpRequestMediaResource;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.HttpClientFactory;
@@ -118,39 +120,37 @@ public class MorphologicalServiceDEImpl implements MorphologicalService {
 	}
 
 	private InputStream retreiveXMLReply(String partOfSpeech, String word) {
-		HttpClient client = HttpClientFactory.getHttpClientInstance();
-		HttpMethod method = new GetMethod(MORPHOLOGICAL_SERVICE_ADRESS);
-		NameValuePair posValues = new NameValuePair(PART_OF_SPEECH_PARAM, partOfSpeech);
-		NameValuePair wordValues = new NameValuePair(GLOSS_TERM_PARAM, word);
-		if (log.isDebug()) {
-			String url = MORPHOLOGICAL_SERVICE_ADRESS + "?" + PART_OF_SPEECH_PARAM + "=" + partOfSpeech + "&" + GLOSS_TERM_PARAM + "=" + word;
-			log.debug("Send GET request to morph-service with URL: " + url);
-		}
-		method.setQueryString(new NameValuePair[] { posValues, wordValues });
 		try {
-			client.executeMethod(method);
-			int status = method.getStatusCode();
+			URIBuilder uriBuilder = new URIBuilder(MORPHOLOGICAL_SERVICE_ADRESS);
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>(2);
+			nvps.add(new BasicNameValuePair(PART_OF_SPEECH_PARAM, partOfSpeech));
+			nvps.add(new BasicNameValuePair(GLOSS_TERM_PARAM, word));
+			
+			CloseableHttpClient client = HttpClientFactory.getHttpClientInstance(true);
+			HttpGet method = new HttpGet(uriBuilder.build());
+			
+			HttpResponse response = client.execute(method);
+			int status = response.getStatusLine().getStatusCode();
 			if (status == HttpStatus.SC_NOT_MODIFIED || status == HttpStatus.SC_OK) {
 				if (log.isDebug()) {
 					log.debug("got a valid reply!");
 				}
-			} else if (method.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-				log.error("Morphological Service unavailable (404)::" + method.getStatusLine().toString());
+			} else if (status == HttpStatus.SC_NOT_FOUND) {
+				log.error("Morphological Service unavailable (404)::" + response.getStatusLine().toString());
 			} else {
-				log.error("Unexpected HTTP Status::" + method.getStatusLine().toString());
+				log.error("Unexpected HTTP Status::" + response.getStatusLine().toString());
 			}
+			
+			Header responseHeader = response.getFirstHeader("Content-Type");
+			if (responseHeader == null) {
+				// error
+				log.error("URL not found!");
+			}
+			return response.getEntity().getContent();
 		} catch (Exception e) {
 			log.error("Unexpected exception trying to get flexions!", e);
+			return null;
 		}
-		Header responseHeader = method.getResponseHeader("Content-Type");
-		if (responseHeader == null) {
-			// error
-			log.error("URL not found!");
-		}
-		HttpRequestMediaResource mr = new HttpRequestMediaResource(method);
-		InputStream inputStream = mr.getInputStream();
-
-		return inputStream;
 	}
 
 	/**

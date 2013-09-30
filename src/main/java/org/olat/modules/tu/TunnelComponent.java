@@ -26,16 +26,22 @@
 package org.olat.modules.tu;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -50,7 +56,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.SimpleHtmlParser;
-import org.olat.core.util.httpclient.HttpClientFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.tu.TUConfigForm;
 import org.olat.course.nodes.tu.TURequest;
 import org.olat.modules.ModuleConfiguration;
@@ -61,21 +67,17 @@ import org.olat.modules.ModuleConfiguration;
 public class TunnelComponent extends Component implements AsyncMediaResponsible {
 	private static final OLog log = Tracing.createLoggerFor(TunnelComponent.class);
 	private static final ComponentRenderer RENDERER = new TunnelRenderer();
-	private static final String USERAGENT_NAME = "OLAT tunneling module 1.1";
 
 	private String proto;
 	private String host;
 	private Integer port;
-	private String user;
-	private String pass;
-	private String query=null;
-	private HttpClient httpClientInstance = null;
+	private String query;
+	private HttpClient httpClientInstance;
 	private ModuleConfiguration config;
-	private String htmlHead = null;
-	private String jsOnLoad = null;
-	private String htmlContent = null;
+	private String htmlHead;
+	private String jsOnLoad;
+	private String htmlContent;
 	private boolean firstCall = true;
-	private Locale loc;
 	
 	private String startUri;
 
@@ -84,28 +86,24 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 	 * @param config
 	 * @param ureq
 	 */
-	public TunnelComponent(String name, ModuleConfiguration config, UserRequest ureq) {
+	public TunnelComponent(String name, ModuleConfiguration config, HttpClient httpClientInstance, UserRequest ureq) {
 		super(name);
 		this.config = config;
+		this.httpClientInstance = httpClientInstance;
 		int configVersion = config.getConfigurationVersion();
 		
 		//since config version 1  
 		proto = (String) config.get(TUConfigForm.CONFIGKEY_PROTO);
 		host = (String) config.get(TUConfigForm.CONFIGKEY_HOST);
 		port = (Integer) config.get(TUConfigForm.CONFIGKEY_PORT);
-		user = (String) config.get(TUConfigForm.CONFIGKEY_USER);
-		pass = (String) config.get(TUConfigForm.CONFIGKEY_PASS);
-		httpClientInstance = HttpClientFactory.getHttpClientInstance(host, port.intValue(), proto, user, pass);
-		httpClientInstance.getParams().setParameter("http.useragent", USERAGENT_NAME);
+		
 		startUri = (String) config.get(TUConfigForm.CONFIGKEY_URI);
 		if(configVersion==2) {
 			//query string is available since config version 2
 			query = (String) config.get(TUConfigForm.CONFIGKEY_QUERY);
 		}
-		loc = ureq.getLocale();
-		
 		fetchFirstResource(ureq);	
-}
+	}
 
 	/**
 	 * @return String
@@ -113,10 +111,8 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 	public String getType() {
 		return "hw";
 	}
-
 	
 	private void fetchFirstResource(UserRequest ureq) {
-
 		TURequest tureq = new TURequest(); //config, ureq);
 		tureq.setContentType(null); // not used
 		tureq.setMethod("GET");
@@ -131,12 +127,12 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 		}
 		fillTURequestWithUserInfo(tureq,ureq);
 
-		HttpMethod meth = fetch(tureq, httpClientInstance);
-		if (meth == null) {
+		HttpResponse response = fetch(tureq, httpClientInstance);
+		if (response == null) {
 			setFetchError();
 		}else{
 
-			Header responseHeader = meth.getResponseHeader("Content-Type");
+			Header responseHeader = response.getFirstHeader("Content-Type");
 			String mimeType;
 			if (responseHeader == null) {
 				setFetchError();
@@ -150,7 +146,7 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 				// inline rendering, update hreq for next content request
 				String body;
 				try {
-					body = meth.getResponseBodyAsString();
+					body = EntityUtils.toString(response.getEntity());
 				} catch (IOException e) {
 					log.warn("Problems when tunneling URL::" + tureq.getUri(), e);
 					htmlContent = "Error: cannot display inline :"+tureq.getUri()+": Unknown transfer problem '";
@@ -160,7 +156,6 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 				if (!parser.isValidHtml()) { // this is not valid HTML, deliver
 					// asynchronuous
 				}
-				meth.releaseConnection();
 				htmlHead = parser.getHtmlHead();
 				jsOnLoad = parser.getJsOnLoad();
 				htmlContent = parser.getHtmlContent();
@@ -182,9 +177,9 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 		if("enabled".equals(CoreSpringFactory.getImpl(BaseSecurityModule.class).getUserInfosTunnelCourseBuildingBlock())) {
 			String userName = userRequest.getIdentity().getName();
 			User u = userRequest.getIdentity().getUser();
-			String lastName = u.getProperty(UserConstants.LASTNAME, loc);
-			String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);
-			String email = u.getProperty(UserConstants.EMAIL, loc);
+			String lastName = u.getProperty(UserConstants.LASTNAME, null);
+			String firstName = u.getProperty(UserConstants.FIRSTNAME, null);
+			String email = u.getProperty(UserConstants.EMAIL, null);
 			String userIPAdress = userRequest.getUserSession().getSessionInfo().getFromIP();
 			
 			tuRequest.setEmail(email);
@@ -215,13 +210,13 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 
 		fillTURequestWithUserInfo(tureq,ureq);
 
-		HttpMethod meth = fetch(tureq, httpClientInstance);
-		if (meth == null) {
+		HttpResponse response = fetch(tureq, httpClientInstance);
+		if (response == null) {
 			setFetchError();
 			return null;
 		}
 
-		Header responseHeader = meth.getResponseHeader("Content-Type");
+		Header responseHeader = response.getFirstHeader("Content-Type");
 		if (responseHeader == null) {
 			setFetchError();
 			return null;
@@ -233,7 +228,7 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 			// inline rendering, update hreq for next content request
 			String body;
 			try {
-				body = meth.getResponseBodyAsString();
+				body = EntityUtils.toString(response.getEntity());
 			} catch (IOException e) {
 				log.warn("Problems when tunneling URL::" + tureq.getUri(), e);
 				return null;
@@ -241,14 +236,15 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 			SimpleHtmlParser parser = new SimpleHtmlParser(body);
 			if (!parser.isValidHtml()) { // this is not valid HTML, deliver
 				// asynchronuous
-				return new HttpRequestMediaResource(meth);
+				return new HttpRequestMediaResource(response);
 			}
-			meth.releaseConnection();
 			htmlHead = parser.getHtmlHead();
 			jsOnLoad = parser.getJsOnLoad();
 			htmlContent = parser.getHtmlContent();
 			setDirty(true);
-		} else return new HttpRequestMediaResource(meth); // this is a async browser
+		} else {
+			return new HttpRequestMediaResource(response); // this is a async browser
+		}
 		// refetch
 		return null;
 	}
@@ -265,60 +261,64 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 	 * @param client
 	 * @return HttpMethod
 	 */
-	public HttpMethod fetch(TURequest tuReq, HttpClient client) {
-
-		String modulePath = tuReq.getUri();
-
-		HttpMethod meth = null;
-		String method = tuReq.getMethod();
-		if (method.equals("GET")) {
-			GetMethod cmeth = new GetMethod(modulePath);
-			String queryString = tuReq.getQueryString();
-			if (queryString != null) cmeth.setQueryString(queryString);
-			meth = cmeth;
-			// if response is a redirect, follow it
-			meth.setFollowRedirects(true);
-			
-		} else if (method.equals("POST")) {
-			String type = tuReq.getContentType();
-			if (type == null || type.equals("application/x-www-form-urlencoded")) {
-				//regular post, no file upload
-			}
-
-			PostMethod pmeth = new PostMethod(modulePath);
-			Set<String> postKeys = tuReq.getParameterMap().keySet();
-			for (Iterator<String> iter = postKeys.iterator(); iter.hasNext();) {
-				String key = iter.next();
-				String vals[] = tuReq.getParameterMap().get(key);
-				for (int i = 0; i < vals.length; i++) {
-					pmeth.addParameter(key, vals[i]);
-				}
-				meth = pmeth;
-			}
-			if (meth == null) return null;
-			// Redirects are not supported when using POST method!
-			// See RFC 2616, section 10.3.3, page 62
-		}
-		
-		// Add olat specific headers to the request, can be used by external
-		// applications to identify user and to get other params
-		// test page e.g. http://cgi.algonet.se/htbin/cgiwrap/ug/test.py
-
-		if("enabled".equals(CoreSpringFactory.getImpl(BaseSecurityModule.class).getUserInfosTunnelCourseBuildingBlock())) {
-			meth.addRequestHeader("X-OLAT-USERNAME", tuReq.getUserName());
-			meth.addRequestHeader("X-OLAT-LASTNAME", tuReq.getLastName());
-			meth.addRequestHeader("X-OLAT-FIRSTNAME", tuReq.getFirstName());
-			meth.addRequestHeader("X-OLAT-EMAIL", tuReq.getEmail());
-			meth.addRequestHeader("X-OLAT-USERIP", tuReq.getUserIPAddress());
-		}
+	public HttpResponse fetch(TURequest tuReq, HttpClient client) {
 
 		try {
-			client.executeMethod(meth);
-			return meth;
+			String modulePath = tuReq.getUri();
+			
+			URIBuilder builder = new URIBuilder();
+			builder.setScheme(proto).setHost(host).setPort(port.intValue());
+			if (modulePath == null) {
+				modulePath = (startUri == null) ? "" : startUri;
+			}
+			if (modulePath.length() > 0 && modulePath.charAt(0) != '/') {
+				modulePath = "/" + modulePath;
+			}
+			if(StringHelper.containsNonWhitespace(modulePath)) {
+				builder.setPath(modulePath);
+			}
+	
+			HttpUriRequest meth = null;
+			String method = tuReq.getMethod();
+			if (method.equals("GET")) {
+				String queryString = tuReq.getQueryString();
+				if (queryString != null) {
+					builder.setCustomQuery(queryString);
+				}
+				meth = new HttpGet(builder.build());
+	
+			} else if (method.equals("POST")) {
+				Map<String,String[]> params = tuReq.getParameterMap();
+				HttpPost pmeth = new HttpPost(builder.build());
+				List<BasicNameValuePair> pairs = new ArrayList<BasicNameValuePair>();
+				for (String key: params.keySet()) {
+					String vals[] = params.get(key);
+					for(String val:vals) {
+						pairs.add(new BasicNameValuePair(key, val));
+					}
+				}
+	
+				HttpEntity entity = new UrlEncodedFormEntity(pairs, "UTF-8");
+				pmeth.setEntity(entity);
+				meth = pmeth;
+			}
+			
+			// Add olat specific headers to the request, can be used by external
+			// applications to identify user and to get other params
+			// test page e.g. http://cgi.algonet.se/htbin/cgiwrap/ug/test.py
+			if("enabled".equals(CoreSpringFactory.getImpl(BaseSecurityModule.class).getUserInfosTunnelCourseBuildingBlock())) {
+				meth.addHeader("X-OLAT-USERNAME", tuReq.getUserName());
+				meth.addHeader("X-OLAT-LASTNAME", tuReq.getLastName());
+				meth.addHeader("X-OLAT-FIRSTNAME", tuReq.getFirstName());
+				meth.addHeader("X-OLAT-EMAIL", tuReq.getEmail());
+				meth.addHeader("X-OLAT-USERIP", tuReq.getUserIPAddress());
+			}
+
+			return client.execute(meth);
 		} catch (Exception e) {
-			meth.releaseConnection();
+			log.error("", e);
+			return null;
 		}
-		return null;
 	}
 
 	/**

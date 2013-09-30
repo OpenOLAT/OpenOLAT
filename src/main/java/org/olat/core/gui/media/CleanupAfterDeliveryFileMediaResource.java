@@ -36,8 +36,6 @@ import java.io.File;
  */
 public class CleanupAfterDeliveryFileMediaResource extends FileMediaResource {
 
-	private File file;
-
 	/**
 	 * file assumed to exist, but if it does not exist or cannot be read,
 	 * getInputStream() will return null and the class will behave properly.
@@ -46,14 +44,13 @@ public class CleanupAfterDeliveryFileMediaResource extends FileMediaResource {
 	 */
 	public CleanupAfterDeliveryFileMediaResource(File file) {
 		super(file, true);
-		this.file = file;
 	}
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#release()
 	 */
+	@Override
 	public void release() {
 		file.delete();
 	}
-
 }
