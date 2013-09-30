@@ -1570,6 +1570,10 @@ public class RichTextConfiguration implements Disposable {
 		}
 
 		List<String> buttons2 = new ArrayList<String>(theme_advanced_buttons2);
+		if(buttons2.contains(PASTE_PLUGIN_BUTTONGROUP)) {
+			buttons2.set(buttons2.indexOf(PASTE_PLUGIN_BUTTONGROUP), "pastetext,pasteword");
+		}
+		
 		List<String> buttons3 = new ArrayList<String>(theme_advanced_buttons3);
 		if(buttons3.contains("tablecontrols")) {
 			buttons3.set(buttons3.indexOf("tablecontrols"), "table");
