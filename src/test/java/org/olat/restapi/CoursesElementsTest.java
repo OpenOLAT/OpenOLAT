@@ -124,7 +124,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create an structure node
 		URI newStructureUri = getElementsUri(course).path("structure").build();
-		HttpPost newStructureMethod = conn.createPost(newStructureUri, MediaType.APPLICATION_JSON, true);
+		HttpPost newStructureMethod = conn.createPost(newStructureUri, MediaType.APPLICATION_JSON);
 		HttpEntity newStructureEnttiy = MultipartEntityBuilder.create()
 				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
 				.addTextBody("parentNodeId", course.getEditorRootNodeId())
@@ -152,7 +152,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		File page = new File(pageUrl.toURI());
 		
 		URI newPageUri = getElementsUri(course).path("singlepage").build();
-		HttpPost newPageMethod = conn.createPost(newPageUri, MediaType.APPLICATION_JSON, true);
+		HttpPost newPageMethod = conn.createPost(newPageUri, MediaType.APPLICATION_JSON);
 		HttpEntity entity = MultipartEntityBuilder.create()
 				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
 				.addBinaryBody("file", page, ContentType.APPLICATION_OCTET_STREAM, page.getName())
@@ -177,7 +177,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create a folder node
 		URI newFolderUri = getElementsUri(course).path("folder").build();
-		HttpPost newFolderMethod = conn.createPost(newFolderUri, MediaType.APPLICATION_JSON, true);
+		HttpPost newFolderMethod = conn.createPost(newFolderUri, MediaType.APPLICATION_JSON);
 		
 		String rule = "hasLanguage(\"de\")";
 		conn.addEntity(newFolderMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
@@ -202,7 +202,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create a forum node
 		URI newForumUri = getElementsUri(course).path("forum").build();
-		HttpPost newForumMethod = conn.createPost(newForumUri, MediaType.APPLICATION_JSON, true);
+		HttpPost newForumMethod = conn.createPost(newForumUri, MediaType.APPLICATION_JSON);
 		conn.addEntity(newForumMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
 				new BasicNameValuePair("position", "3"),
 				new BasicNameValuePair("shortTitle", "Forum-0"),
@@ -221,7 +221,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create a task node
 		URI newTaskUri = getElementsUri(course).path("task").build();
-		HttpPost newTaskMethod = conn.createPost(newTaskUri, MediaType.APPLICATION_JSON, true);
+		HttpPost newTaskMethod = conn.createPost(newTaskUri, MediaType.APPLICATION_JSON);
 		conn.addEntity(newTaskMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
 				new BasicNameValuePair("position", "4"),
 				new BasicNameValuePair("shortTitle", "Task-0"),
@@ -242,7 +242,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 		//create a test node
 		URI newTestUri = getElementsUri(course).path("test").build();
-		HttpPost newTestMethod = conn.createPost(newTestUri, MediaType.APPLICATION_JSON, true);
+		HttpPost newTestMethod = conn.createPost(newTestUri, MediaType.APPLICATION_JSON);
 		conn.addEntity(newTestMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
 				new BasicNameValuePair("testResourceableId", course.getEditorRootNodeId()),
 				new BasicNameValuePair("position", "5"),
@@ -265,7 +265,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create an assessment node
 		URI newAssessmentUri = getElementsUri(course).path("assessment").build();
-		HttpPost newAssessmentMethod = conn.createPost(newAssessmentUri, MediaType.APPLICATION_JSON, true);
+		HttpPost newAssessmentMethod = conn.createPost(newAssessmentUri, MediaType.APPLICATION_JSON);
 		conn.addEntity(newAssessmentMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
 				new BasicNameValuePair("position", "5"),
 				new BasicNameValuePair("shortTitle", "Assessment-0"),
@@ -283,7 +283,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create an contact node
 		URI newContactUri = getElementsUri(course).path("contact").build();
-		HttpPost newContactMethod = conn.createPost(newContactUri, MediaType.APPLICATION_JSON, true);
+		HttpPost newContactMethod = conn.createPost(newContactUri, MediaType.APPLICATION_JSON);
 		conn.addEntity(newContactMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
 				new BasicNameValuePair("position", "6"),
 				new BasicNameValuePair("shortTitle", "Contact-0"),
@@ -788,7 +788,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//update the root node
 		URI rootUri = getElementsUri(course).path("structure").path(course.getEditorRootNodeId()).build();
-		HttpPost updateMethod = conn.createPost(rootUri, MediaType.APPLICATION_JSON, true);
+		HttpPost updateMethod = conn.createPost(rootUri, MediaType.APPLICATION_JSON);
 		HttpEntity entity = MultipartEntityBuilder.create()
 				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
 				.addTextBody("shortTitle", "Structure-0b")
@@ -844,7 +844,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//update the root node
 		URI rootUri = getElementsUri(course).path("structure").path(course.getEditorRootNodeId()).build();
-		HttpPost newStructureMethod = conn.createPost(rootUri, MediaType.APPLICATION_JSON, true);
+		HttpPost newStructureMethod = conn.createPost(rootUri, MediaType.APPLICATION_JSON);
 		HttpEntity entity = MultipartEntityBuilder.create()
 				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
 				.addBinaryBody("file", page, ContentType.APPLICATION_OCTET_STREAM, page.getName())

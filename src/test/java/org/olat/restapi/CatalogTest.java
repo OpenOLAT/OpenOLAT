@@ -395,7 +395,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		entry.setType(CatalogEntry.TYPE_NODE);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
-		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
 		method.addHeader("Content-Type", MediaType.APPLICATION_JSON);
     conn.addJsonEntity(method, entry);
 
@@ -424,7 +424,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entryToMove2.getKey().toString()).queryParam("newParentKey", subEntry13move.getKey().toString()).build();
 
-		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
 		method.addHeader("Content-Type", MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(method, entry);
 
@@ -449,7 +449,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
-		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
 		conn.addEntity(method, new BasicNameValuePair("name", "Entry-2-b"),
 				new BasicNameValuePair("description", "Entry-description-2-b"),
 				new BasicNameValuePair("type", String.valueOf(CatalogEntry.TYPE_NODE)));
@@ -473,7 +473,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
-		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
 		conn.addEntity(method, new BasicNameValuePair("name", "Entry-2-c"),
 				new BasicNameValuePair("description", "Entry-description-2-c"),
 				new BasicNameValuePair("type", String.valueOf(CatalogEntry.TYPE_NODE)));
@@ -497,7 +497,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entryToMove1.getKey().toString()).build();
-		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
 		conn.addEntity(method, new BasicNameValuePair("newParentKey", subEntry13move.getKey().toString()));
 
 		HttpResponse response = conn.execute(method);
@@ -521,7 +521,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
-		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -617,7 +617,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 			.path("owners").path(id1.getUser().getKey().toString()).build();
-		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
 	
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());

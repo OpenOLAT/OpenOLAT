@@ -489,7 +489,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString())
 				.path("calendars").path(calendar.getId()).path("events").build();
-		HttpPost postEventMethod = conn.createPost(eventUri, MediaType.APPLICATION_JSON, true);
+		HttpPost postEventMethod = conn.createPost(eventUri, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(postEventMethod, event);
 		HttpResponse postEventResponse = conn.execute(postEventMethod);
 		assertEquals(200, postEventResponse.getStatusLine().getStatusCode());
@@ -575,7 +575,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString())
 				.path("calendars").path("user_" + calendarWrapper.getKalendar().getCalendarID())
 				.path("events").path(kalEvent.getID()).build();
-		HttpDelete delEventMethod = conn.createDelete(eventUri, MediaType.APPLICATION_JSON, true);
+		HttpDelete delEventMethod = conn.createDelete(eventUri, MediaType.APPLICATION_JSON);
 		HttpResponse delEventResponse = conn.execute(delEventMethod);
 		assertEquals(200, delEventResponse.getStatusLine().getStatusCode());
 		EntityUtils.consume(delEventResponse.getEntity());

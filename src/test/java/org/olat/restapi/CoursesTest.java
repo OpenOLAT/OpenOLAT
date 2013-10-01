@@ -312,7 +312,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/courses").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
 		HttpEntity entity = MultipartEntityBuilder.create()

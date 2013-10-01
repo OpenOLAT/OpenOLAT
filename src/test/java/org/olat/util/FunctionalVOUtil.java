@@ -36,7 +36,6 @@ import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -81,8 +80,6 @@ public class FunctionalVOUtil {
 	
 	private String allElementsCourseDisplayname;
 	private String allElementsCourseFilename;
-
-	private HttpClient client;
 	private String waitLimit;
 	
 	public FunctionalVOUtil(String username, String password){
@@ -91,8 +88,7 @@ public class FunctionalVOUtil {
 		
 		setAllElementsCourseDisplayname(ALL_ELEMENTS_COURSE_DISPLAYNAME);
 		setAllElementsCourseFilename(ALL_ELEMENTS_COURSE_FILENAME);
-		
-		client = new HttpClient();
+
 		waitLimit = WAIT_LIMIT;
 	}
 	
@@ -197,7 +193,7 @@ public class FunctionalVOUtil {
 			roles.setUserManager(true);
 			
 			request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("users/" + currentUser.getKey() + "/roles").build();
-			HttpPost postMethod = restConnection.createPost(request, MediaType.APPLICATION_JSON, true);
+			HttpPost postMethod = restConnection.createPost(request, MediaType.APPLICATION_JSON);
 			restConnection.addJsonEntity(postMethod, roles);
 			response = restConnection.execute(postMethod);
 			assertEquals(200, response.getStatusLine().getStatusCode());
@@ -334,7 +330,7 @@ public class FunctionalVOUtil {
 		config.setWaitingListVisible(waitingListVisible);
 		
 		/* post modified configuration */
-		HttpPost postMethod = restConnection.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost postMethod = restConnection.createPost(request, MediaType.APPLICATION_JSON);
 		restConnection.addJsonEntity(postMethod, config);
 		
 		HttpResponse response = restConnection.execute(postMethod);
@@ -365,7 +361,7 @@ public class FunctionalVOUtil {
 		assertTrue(conn.login(getUsername(), getPassword()));
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/courses").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
 		HttpEntity entity = MultipartEntityBuilder.create()
 				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
@@ -622,14 +618,6 @@ public class FunctionalVOUtil {
 
 	public void setAllElementsCourseFilename(String allElementsCourseFilename) {
 		this.allElementsCourseFilename = allElementsCourseFilename;
-	}
-
-	public HttpClient getClient() {
-		return client;
-	}
-
-	public void setClient(HttpClient client) {
-		this.client = client;
 	}
 
 	public String getWaitLimit() {

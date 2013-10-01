@@ -217,7 +217,7 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course1.getResourceableId().toString()).path("calendar").path("events")
 				.path(kalEvent.getID()).build();
-		HttpDelete delEventMethod = conn.createDelete(eventUri, MediaType.APPLICATION_JSON, true);
+		HttpDelete delEventMethod = conn.createDelete(eventUri, MediaType.APPLICATION_JSON);
 		HttpResponse delEventResponse = conn.execute(delEventMethod);
 		assertEquals(200, delEventResponse.getStatusLine().getStatusCode());
 		EntityUtils.consume(delEventResponse.getEntity());

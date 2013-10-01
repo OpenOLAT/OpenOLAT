@@ -188,7 +188,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		repoVo.setManagedFlags("booking,delete");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").path(re.getKey().toString()).build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(method, repoVo);
 		
 		HttpResponse response = conn.execute(method);
@@ -234,7 +234,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		repoVo.setLifecycle(cycleVo);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").path(re.getKey().toString()).build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(method, repoVo);
 		
 		HttpResponse response = conn.execute(method);
@@ -527,7 +527,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("owners").path(owner.getKey().toString()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
@@ -617,7 +617,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("coaches").path(coach.getKey().toString()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
@@ -706,7 +706,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("participants").path(participant.getKey().toString()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());

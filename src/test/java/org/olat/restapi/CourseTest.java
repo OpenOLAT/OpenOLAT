@@ -196,7 +196,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
@@ -300,13 +300,13 @@ public class CourseTest extends OlatJerseyTestCase {
 		//test
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/authors/" + auth1.getKey()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 		
 		URI request2 = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/authors/" + auth2.getKey()).build();
-		HttpDelete method2 = conn.createDelete(request2, MediaType.APPLICATION_JSON, true);
+		HttpDelete method2 = conn.createDelete(request2, MediaType.APPLICATION_JSON);
 		HttpResponse response2 = conn.execute(method2);
 		assertEquals(200, response2.getStatusLine().getStatusCode());
 		EntityUtils.consume(response2.getEntity());

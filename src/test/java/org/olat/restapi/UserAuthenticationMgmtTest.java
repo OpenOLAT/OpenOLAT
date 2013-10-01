@@ -162,7 +162,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		
 		//delete an authentication token
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth/" + authentication.getKey()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_XML, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_XML);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		

@@ -314,7 +314,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testFindUsersByLogin() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
+		RestConnection conn = new RestConnection(getContextURI().toURL(), "administrator", "openolat");
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
@@ -605,7 +605,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 		//delete an authentication token
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + idToDelete.getKey()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_XML, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_XML);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
@@ -674,7 +674,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//get roles of author
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + author.getKey() + "/roles").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(method, roles);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -727,7 +727,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//get roles of author
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + user.getKey() + "/status").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(method, status);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -763,7 +763,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//get roles of author
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + user.getKey() + "/status").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(method, status);
 		HttpResponse response = conn.execute(method);
 		assertEquals(403, response.getStatusLine().getStatusCode());
@@ -813,7 +813,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//get roles of author
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + prefsId.getKey() + "/preferences").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(method, prefsVo);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -1228,7 +1228,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//upload portrait
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey() + "/portrait").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		conn.addMultipart(method, "portrait.jpg", portrait);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());

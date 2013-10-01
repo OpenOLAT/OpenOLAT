@@ -225,7 +225,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("FolderToDelete").build();
-		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		

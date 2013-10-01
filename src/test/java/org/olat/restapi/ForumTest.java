@@ -320,7 +320,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		//upload portrait
 		URI attachUri = getForumUriBuilder().path("posts").path(message.getKey().toString()).path("attachments").build();
-		HttpPost attachMethod = conn.createPost(attachUri, MediaType.APPLICATION_JSON, true);
+		HttpPost attachMethod = conn.createPost(attachUri, MediaType.APPLICATION_JSON);
 		conn.addMultipart(attachMethod, "portrait.jpg", portrait);
 		HttpResponse attachResponse = conn.execute(attachMethod);
 		assertEquals(200, attachResponse.getStatusLine().getStatusCode());
@@ -364,7 +364,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		URI attachUri = getForumUriBuilder().path("posts").path(message.getKey().toString()).path("attachments").build();
 		byte[] portraitBytes = IOUtils.toByteArray(portraitStream);
 		byte[] portrait64 = Base64.encodeBase64(portraitBytes, true);
-		HttpPost attachMethod = conn.createPost(attachUri, MediaType.APPLICATION_JSON, true);
+		HttpPost attachMethod = conn.createPost(attachUri, MediaType.APPLICATION_JSON);
 		
 		attachMethod.addHeader("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 		conn.addEntity(attachMethod, new BasicNameValuePair("file", new String(portrait64)),
@@ -531,7 +531,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		//upload portrait
 		URI attachUri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
-		HttpPost attachMethod = conn.createPost(attachUri, MediaType.APPLICATION_JSON, true);
+		HttpPost attachMethod = conn.createPost(attachUri, MediaType.APPLICATION_JSON);
 		conn.addMultipart(attachMethod, "portrait.jpg", portrait);
 		HttpResponse attachCode = conn.execute(attachMethod);
 		assertEquals(200, attachCode.getStatusLine().getStatusCode());
@@ -539,7 +539,7 @@ public class ForumTest extends OlatJerseyTestCase {
 
 		//upload portrait a second time
 		URI attach2Uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
-		HttpPost attach2Method = conn.createPost(attach2Uri, MediaType.APPLICATION_JSON, true);
+		HttpPost attach2Method = conn.createPost(attach2Uri, MediaType.APPLICATION_JSON);
 		conn.addMultipart(attach2Method, "portrait.jpg", portrait);
 		HttpResponse attach2Code = conn.execute(attach2Method);
 		assertEquals(200, attach2Code.getStatusLine().getStatusCode());

@@ -404,7 +404,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		vo.setType(g1.getType());
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey()).build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
@@ -468,7 +468,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		configVo.setOwnersVisible(Boolean.TRUE);
 		configVo.setParticipantsVisible(Boolean.FALSE);
 		URI configRequest = UriBuilder.fromUri(getContextURI()).path("groups").path(newGroupVo.getKey().toString()).path("configuration").build();
-		HttpPost configMethod = conn.createPost(configRequest, MediaType.APPLICATION_JSON, true);
+		HttpPost configMethod = conn.createPost(configRequest, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(configMethod, configVo);
 		HttpResponse configResponse = conn.execute(configMethod);
 		assertTrue(configResponse.getStatusLine().getStatusCode() == 200 || configResponse.getStatusLine().getStatusCode() == 201);
@@ -504,7 +504,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
@@ -611,7 +611,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	public void testRemoveParticipant() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/participants/" + part2.getKey()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		
 
@@ -655,7 +655,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	public void testRemoveTutor() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/owners/" + owner2.getKey()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		
 

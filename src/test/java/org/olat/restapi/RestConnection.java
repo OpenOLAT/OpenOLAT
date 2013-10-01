@@ -33,6 +33,7 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
@@ -97,7 +98,6 @@ public class RestConnection {
 				.build();
 	}
 	
-	
 	public RestConnection(URL url) {
 		PORT = url.getPort();
 		HOST = url.getHost();
@@ -107,9 +107,15 @@ public class RestConnection {
 		httpclient = HttpClientBuilder.create()
 				.setDefaultCookieStore(cookieStore)
 				.build();
-		//HttpClientParams.setCookiePolicy(httpclient.getParams(), CookiePolicy.RFC_2109);
 	}
 	
+	/**
+	 * Build a client with basic authentication delegated
+	 * to the connection manager
+	 * @param url
+	 * @param user
+	 * @param password
+	 */
 	public RestConnection(URL url, String user, String password) {
 		PORT = url.getPort();
 		HOST = url.getHost();
@@ -142,20 +148,8 @@ public class RestConnection {
 	}
 
 	public void shutdown() {
-		try {
-			httpclient.close();
-		} catch (IOException e) {
-			log.error("", e);
-		}
+		IOUtils.closeQuietly(httpclient);
 	}
-	
-	/*public void setCredentials(String username, String password) {
-		
-		
-		httpclient.getCredentialsProvider().setCredentials(
-        new AuthScope("localhost", PORT),
-        new UsernamePasswordCredentials(username, password));
-	}*/
 	
 	public boolean login(String username, String password) throws IOException, URISyntaxException {
 		URI uri = getContextURI().path("auth").path(username).queryParam("password", password).build();
@@ -239,15 +233,15 @@ public class RestConnection {
 		return get;
 	}
 
-	public HttpPost createPost(URI uri, String accept, boolean cookie) {
+	public HttpPost createPost(URI uri, String accept) {
 		HttpPost get = new HttpPost(uri);
-		decorateHttpMessage(get,accept, "en", cookie);
+		decorateHttpMessage(get,accept, "en", true);
 		return get;
 	}
 	
-	public HttpDelete createDelete(URI uri, String accept, boolean cookie) {
+	public HttpDelete createDelete(URI uri, String accept) {
 		HttpDelete del = new HttpDelete(uri);
-		decorateHttpMessage(del, accept, "en", cookie);
+		decorateHttpMessage(del, accept, "en", true);
 		return del;
 	}
 	

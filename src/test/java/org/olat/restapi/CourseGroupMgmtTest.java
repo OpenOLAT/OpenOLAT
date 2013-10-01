@@ -251,7 +251,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		vo.setType(g1.getType());
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getOlatResource().getResourceableId() + "/groups/" + g1.getKey()).build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(method, vo);
 		HttpResponse response = conn.execute(method);
 		EntityUtils.consume(response.getEntity());
@@ -269,7 +269,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getOlatResource().getResourceableId() + "/groups/" + g1.getKey()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		EntityUtils.consume(response.getEntity());
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -283,7 +283,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("rest-c-g-3", "A6B7C8"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getOlatResource().getResourceableId() + "/groups/" + g2.getKey()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		EntityUtils.consume(response.getEntity());
 		
