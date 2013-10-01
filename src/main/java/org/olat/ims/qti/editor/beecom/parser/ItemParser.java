@@ -54,6 +54,8 @@ public class ItemParser implements IParser {
 	public static final String ITEM_PREFIX_ESSAY = "QTIEDIT:ESSAY:";
 	public static final String ITEM_PREFIX_KPRIM = "QTIEDIT:KPRIM:";
 	
+	public static final String[] OO_ITEM_PREFIX = { ITEM_PREFIX_SCQ, ITEM_PREFIX_MCQ, ITEM_PREFIX_FIB, ITEM_PREFIX_ESSAY, ITEM_PREFIX_KPRIM };
+	
 	private ParserManager parserManager = new ParserManager();
 
 	/**

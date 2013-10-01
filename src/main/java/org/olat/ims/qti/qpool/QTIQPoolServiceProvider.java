@@ -271,6 +271,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		for(QuestionItemFull fullItem:fullItems) {
 			Element itemEl = processor.exportToQTIEditor(fullItem, editorContainer);
 			Item item = (Item)new ParserManager().parse(itemEl);
+			item.setIdent(QTIEditHelper.generateNewIdent(item.getIdent()));
 			section.getItems().add(item);
 		}
 	}
@@ -311,11 +312,20 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		processor.assembleTest(fullItems, zout);	
 	}
 	
+	/**
+	 * Export to QTI editor an item from the pool. The ident of the item
+	 * is always regenerated as an UUID.
+	 * @param qitem
+	 * @param editorContainer
+	 * @return
+	 */
 	public Item exportToQTIEditor(QuestionItemShort qitem, VFSContainer editorContainer) {
 		QTIExportProcessor processor = new QTIExportProcessor(qpoolFileStorage);
 		QuestionItemFull fullItem = questionItemDao.loadById(qitem.getKey());
 		Element itemEl = processor.exportToQTIEditor(fullItem, editorContainer);
-	  return (Item)new ParserManager().parse(itemEl);
+	  Item exportedItem = (Item)new ParserManager().parse(itemEl);
+	  exportedItem.setIdent(QTIEditHelper.generateNewIdent(exportedItem.getIdent()));
+	  return exportedItem;
 	}
 
 	@Override

@@ -86,6 +86,7 @@ public class TreeHelper {
 	}
 
 	public static int indexOf(TreeNode childNode, INode parentNode) {
+		if(parentNode == null) return -1;
 		for(int i=parentNode.getChildCount(); i-->0; ) {
 			INode n = parentNode.getChildAt(i);
 			if(n.getIdent().equals(childNode.getIdent())) {

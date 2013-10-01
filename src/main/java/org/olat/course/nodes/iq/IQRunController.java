@@ -54,6 +54,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
@@ -184,14 +185,13 @@ public class IQRunController extends BasicController implements GenericEventList
 		RepositoryEntry re = courseNode.getReferencedRepositoryEntry();
 		//re could be null, but if we are here it should not be null!
 		Roles userRoles = ureq.getUserSession().getRoles();
-		boolean showAll = false;
-		showAll = userRoles.isAuthor() || userRoles.isOLATAdmin();
+		boolean showAll = userRoles.isAuthor() || userRoles.isOLATAdmin();
 		//get changelog
 		Formatter formatter = Formatter.getInstance(ureq.getLocale());
 		ImsRepositoryResolver resolver = new ImsRepositoryResolver(re.getKey());
 		QTIChangeLogMessage[] qtiChangeLog = resolver.getDocumentChangeLog();
 		StringBuilder qtiChangelog = new StringBuilder();
-		Date msgDate = null;
+
 		if(qtiChangeLog.length>0){
 			//there are resource changes
 			Arrays.sort(qtiChangeLog);
@@ -199,15 +199,17 @@ public class IQRunController extends BasicController implements GenericEventList
 				//show latest change first
 				if(!showAll && qtiChangeLog[i].isPublic()){
 					//logged in person is a normal user, hence public messages only
-					msgDate=new Date(qtiChangeLog[i].getTimestmp());
+					Date msgDate = new Date(qtiChangeLog[i].getTimestmp());
 					qtiChangelog.append("\nChange date: ").append(formatter.formatDateAndTime(msgDate)).append("\n");
-					qtiChangelog.append(qtiChangeLog[i].getLogMessage());
+					String msg = StringHelper.escapeHtml(qtiChangeLog[i].getLogMessage());
+					qtiChangelog.append(msg);
 					qtiChangelog.append("\n********************************\n");
 				}else if (showAll){
 					//logged in person is an author, olat admin, owner, show all messages
-					msgDate=new Date(qtiChangeLog[i].getTimestmp());
+					Date msgDate = new Date(qtiChangeLog[i].getTimestmp());
 					qtiChangelog.append("\nChange date: ").append(formatter.formatDateAndTime(msgDate)).append("\n");
-					qtiChangelog.append(qtiChangeLog[i].getLogMessage());
+					String msg = StringHelper.escapeHtml(qtiChangeLog[i].getLogMessage());
+					qtiChangelog.append(msg);
 					qtiChangelog.append("\n********************************\n");
 				}//else non public messages are not shown to normal user
 			}

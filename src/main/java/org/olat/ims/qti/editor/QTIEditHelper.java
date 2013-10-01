@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
@@ -67,6 +68,7 @@ import org.olat.ims.qti.editor.beecom.objects.QTIObject;
 import org.olat.ims.qti.editor.beecom.objects.Question;
 import org.olat.ims.qti.editor.beecom.objects.Response;
 import org.olat.ims.qti.editor.beecom.objects.Section;
+import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.resources.IMSEntityResolver;
@@ -114,6 +116,21 @@ public class QTIEditHelper {
 			itemCount += sectionIter.next().getItems().size();
 		}
 		return itemCount;
+	}
+	
+	public static String generateNewIdent(String currentIdent) {
+		String newIdent = null;
+		if(currentIdent != null) {
+			for(String ooPrefix:ItemParser.OO_ITEM_PREFIX) {
+				if(currentIdent.startsWith(ooPrefix)) {
+					newIdent = ooPrefix + UUID.randomUUID().toString().replace("-", "");
+				}	
+			}
+		}
+		if(newIdent == null) {
+			newIdent = UUID.randomUUID().toString().replace("-", "");
+		}
+		return newIdent;
 	}
 	
 	/**

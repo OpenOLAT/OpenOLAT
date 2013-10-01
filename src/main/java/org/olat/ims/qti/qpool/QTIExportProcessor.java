@@ -52,6 +52,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
@@ -106,6 +107,10 @@ public class QTIExportProcessor {
 			//write qti.xml
 			Element sectionEl = createSectionBasedAssessment("Assessment");
 			for(Element itemEl:itemAndMaterials.getItemEls()) {
+				//generate new ident per item
+				String ident = getAttributeValue(itemEl, "ident");
+				String exportIdent = QTIEditHelper.generateNewIdent(ident);
+				itemEl.addAttribute("ident", exportIdent);
 				sectionEl.add(itemEl);
 			}
 			zout.putNextEntry(new ZipEntry("qti.xml"));
@@ -162,6 +167,12 @@ public class QTIExportProcessor {
 			collectResources(itemEl, container, materials);
 			materials.addItemEl(itemEl);
 		}
+	}
+	
+	private String getAttributeValue(Element el, String attrName) {
+		if(el == null) return null;
+		Attribute attr = el.attribute(attrName);
+		return (attr == null) ? null : attr.getStringValue();
 	}
 
 	private void collectResources(Element el, VFSContainer container, ItemsAndMaterials materials) {

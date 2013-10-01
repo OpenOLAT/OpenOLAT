@@ -75,6 +75,9 @@ junit and integration tests in OpenOLAT 8
 	mvn -Parquillian surefire:test
 
 You can add "clean-mysql-dbsetup" to the profils to drop / restore the database
+The Selenium tests can be run with different browser but with some limitations:
+- Chrome cannot do an upload
+- Selenium need Firefox version 17
 
 * Execute a single selenium functional integration test in Eclipse
 -----------------------------------------

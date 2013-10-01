@@ -586,15 +586,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		multiSelectedIndex.clear();
 		//selection format row_{formDispId}-{index}
-		if(selections.length > 0) {
-			int index = selections[0].lastIndexOf('-');
-			if(index > 0) {
-				for(String selection:selections) {	
-					if(index > 0 && index+1 < selection.length()) {
-						String rowStr = selection.substring(index+1);
-						int row = Integer.parseInt(rowStr);
-						multiSelectedIndex.add(new Integer(row));
-					}
+		if(selections != null && selections.length > 0) {
+			for(String selection:selections) {	
+				int index = selection.lastIndexOf('-');
+				if(index > 0 && index+1 < selection.length()) {
+					String rowStr = selection.substring(index+1);
+					int row = Integer.parseInt(rowStr);
+					multiSelectedIndex.add(new Integer(row));
 				}
 			}
 		}
