@@ -64,16 +64,29 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	 */
 	@Override
 	public String getValue() {
-		Filter xssFilter = FilterFactory.getXSSFilter(value.length() + 1);
-		return super.getValue(xssFilter);
+		String val = getRawValue();
+		Filter xssFilter = FilterFactory.getXSSFilter(val.length() + 1);
+		return xssFilter.filter(val);
 	}
 	
+	@Override
+	public String getValue(Filter filter) {
+		String val = getRawValue();
+		return filter.filter(val);
+	}
+
 	/**
+	 * This apply a filter to remove some buggy conditional comment
+	 * of Word
 	 * 
 	 * @see org.olat.core.gui.components.form.flexible.elements.RichTextElement#getRawValue()
 	 */
-	public String getRawValue(){
-		return this.value;
+	@Override
+	public String getRawValue() {
+		if(value != null) {
+			value = value.replace("<!--[endif] -->", "<![endif]-->");
+		}
+		return value;
 	}
 	
 	/**
