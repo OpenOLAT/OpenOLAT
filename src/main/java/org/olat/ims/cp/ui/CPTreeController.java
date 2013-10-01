@@ -425,6 +425,8 @@ public class CPTreeController extends BasicController {
 		if(asChild) {
 			cpMgm.moveElement(cp, droppedNodeIdent, targetNodeIdent, 0);
 			cpMgm.writeToFile(cp);
+		} else if(targetNode.getParent() == null) {
+			//root -> do nothing
 		} else {
 			TreeNode parentTargetNode = (TreeNode)targetNode.getParent();
 			int index = TreeHelper.indexOf(targetNode, parentTargetNode);
