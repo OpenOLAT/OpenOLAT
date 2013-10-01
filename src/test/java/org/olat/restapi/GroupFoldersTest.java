@@ -40,12 +40,12 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -334,9 +334,10 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("rest-one", "A6B7C8"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/New_folder_1_1/").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("foldername", new StringBody("New folder 1 2 3"));
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addTextBody("foldername", "New folder 1 2 3")
+				.build();
 		method.setEntity(entity);
 
 		HttpResponse response = conn.execute(method);
@@ -346,7 +347,6 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		assertNotNull(file.getHref());
 		assertNotNull(file.getTitle());
 		assertEquals("New folder 1 2 3", file.getTitle());
-		
 	}
 	
 	protected <T> T parse(InputStream body, Class<T> cl) {

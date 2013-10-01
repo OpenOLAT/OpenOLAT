@@ -37,14 +37,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.olat.restapi.RestConnection;
@@ -366,14 +366,16 @@ public class FunctionalVOUtil {
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/courses").build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("file", new FileBody(cp));
-		entity.addPart("filename", new StringBody(filename));
-		entity.addPart("resourcename", new StringBody(resourcename));
-		entity.addPart("displayname", new StringBody(displayname));
-		entity.addPart("access", new StringBody("3"));
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
-		entity.addPart("softkey", new StringBody(softKey));
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", cp, ContentType.APPLICATION_OCTET_STREAM, cp.getName())
+				.addTextBody("filename", filename)
+				.addTextBody("resourcename", resourcename)
+				.addTextBody("displayname", displayname)
+				.addTextBody("access", "3")
+				.addTextBody("softkey", softKey)
+				.build();
 		method.setEntity(entity);
 		
 		HttpResponse response = conn.execute(method);
@@ -498,12 +500,14 @@ public class FunctionalVOUtil {
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/entries").build();
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("file", new FileBody(wiki));
-		entity.addPart("filename", new StringBody("wiki.zip"));
-		entity.addPart("resourcename", new StringBody("Wiki"));
-		entity.addPart("displayname", new StringBody("Wiki"));
-		entity.addPart("access", new StringBody("3"));
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", wiki, ContentType.APPLICATION_OCTET_STREAM, wiki.getName())
+				.addTextBody("filename", "wiki.zip")
+				.addTextBody("resourcename", "Wiki")
+				.addTextBody("displayname", "Wiki")
+				.addTextBody("access", "3")
+				.build();
 		method.setEntity(entity);
 		
 		HttpResponse response = restConnection.execute(method);
@@ -539,12 +543,14 @@ public class FunctionalVOUtil {
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/entries").build();
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("file", new FileBody(blog));
-		entity.addPart("filename", new StringBody(filename));
-		entity.addPart("resourcename", new StringBody(resourcename));
-		entity.addPart("displayname", new StringBody(displayname));
-		entity.addPart("access", new StringBody("3"));
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", blog, ContentType.APPLICATION_OCTET_STREAM, blog.getName())
+				.addTextBody("filename", filename)
+				.addTextBody("resourcename", resourcename)
+				.addTextBody("displayname", displayname)
+				.addTextBody("access", "3")
+				.build();
 		method.setEntity(entity);
 		
 		HttpResponse response = restConnection.execute(method);

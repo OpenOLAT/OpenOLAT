@@ -41,14 +41,14 @@ import javax.ws.rs.core.UriBuilder;
 
 import junit.framework.Assert;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.junit.After;
@@ -125,12 +125,14 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		//create an structure node
 		URI newStructureUri = getElementsUri(course).path("structure").build();
 		HttpPost newStructureMethod = conn.createPost(newStructureUri, MediaType.APPLICATION_JSON, true);
-		MultipartEntity newStructureEnttiy = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		newStructureEnttiy.addPart("parentNodeId", new StringBody(course.getEditorRootNodeId()));
-		newStructureEnttiy.addPart("position", new StringBody("0"));
-		newStructureEnttiy.addPart("shortTitle", new StringBody("Structure-0"));
-		newStructureEnttiy.addPart("longTitle", new StringBody("Structure-long-0"));
-		newStructureEnttiy.addPart("objectives", new StringBody("Structure-objectives-0"));
+		HttpEntity newStructureEnttiy = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addTextBody("parentNodeId", course.getEditorRootNodeId())
+				.addTextBody("position", "0")
+				.addTextBody("shortTitle", "Structure-0")
+				.addTextBody("longTitle", "Structure-long-0")
+				.addTextBody("objectives", "Structure-objectives-0")
+				.build();
 		newStructureMethod.setEntity(newStructureEnttiy);
 
 		HttpResponse newStructureResponse = conn.execute(newStructureMethod);
@@ -144,7 +146,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		assertEquals(structureNode.getLearningObjectives(), "Structure-objectives-0");
 		assertEquals(structureNode.getParentId(), course.getEditorRootNodeId());
 		
-		
 		//create single page
 		URL pageUrl = CoursesElementsTest.class.getResource("singlepage.html");
 		assertNotNull(pageUrl);
@@ -152,14 +153,16 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		URI newPageUri = getElementsUri(course).path("singlepage").build();
 		HttpPost newPageMethod = conn.createPost(newPageUri, MediaType.APPLICATION_JSON, true);
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("file", new FileBody(page));
-		entity.addPart("filename", new StringBody(page.getName()));
-		entity.addPart("parentNodeId", new StringBody(course.getEditorRootNodeId()));
-		entity.addPart("position", new StringBody("1"));
-		entity.addPart("shortTitle", new StringBody("Single-Page-0"));
-		entity.addPart("longTitle", new StringBody("Single-Page-long-0"));
-		entity.addPart("objectives", new StringBody("Single-Page-objectives-0"));
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", page, ContentType.APPLICATION_OCTET_STREAM, page.getName())
+				.addTextBody("filename", page.getName())
+				.addTextBody("parentNodeId", course.getEditorRootNodeId())
+				.addTextBody("position", "1")
+				.addTextBody("shortTitle","Single-Page-0")
+				.addTextBody("longTitle", "Single-Page-long-0")
+				.addTextBody("objectives", "Single-Page-objectives-0")
+				.build();
 		newPageMethod.setEntity(entity);
 		
 		HttpResponse newPageCode = conn.execute(newPageMethod);
@@ -171,7 +174,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		assertEquals(pageNode.getLongTitle(), "Single-Page-long-0");
 		assertEquals(pageNode.getLearningObjectives(), "Single-Page-objectives-0");
 		assertEquals(structureNode.getParentId(), course.getEditorRootNodeId());
-		
 		
 		//create a folder node
 		URI newFolderUri = getElementsUri(course).path("folder").build();
@@ -365,14 +367,16 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		URI newPageUri = getElementsUri(course).path("singlepage").build();
 		HttpPut newPageMethod = conn.createPut(newPageUri, MediaType.APPLICATION_JSON, true);
-		MultipartEntity newPageEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		newPageEntity.addPart("file", new FileBody(page));
-		newPageEntity.addPart("filename", new StringBody(page.getName()));
-		newPageEntity.addPart("parentNodeId", new StringBody(course.getEditorRootNodeId()));
-		newPageEntity.addPart("position", new StringBody("1"));
-		newPageEntity.addPart("shortTitle", new StringBody("Single-Page-0"));
-		newPageEntity.addPart("longTitle", new StringBody("Single-Page-long-0"));
-		newPageEntity.addPart("objectives", new StringBody("Single-Page-objectives-0"));
+		HttpEntity newPageEntity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", page, ContentType.APPLICATION_OCTET_STREAM, page.getName())
+				.addTextBody("filename", page.getName())
+				.addTextBody("parentNodeId",course.getEditorRootNodeId())
+				.addTextBody("position", "1")
+				.addTextBody("shortTitle", "Single-Page-0")
+				.addTextBody("longTitle", "Single-Page-long-0")
+				.addTextBody("objectives", "Single-Page-objectives-0")
+				.build();
 		newPageMethod.setEntity(newPageEntity);
 		
 		HttpResponse newPageCode = conn.execute(newPageMethod);
@@ -537,11 +541,13 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 		URI repoEntriesUri = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut qtiRepoMethod = conn.createPut(repoEntriesUri, MediaType.APPLICATION_JSON, true);
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("file", new FileBody(qtiFile));
-		entity.addPart("filename", new StringBody("qti-demo.zip"));
-		entity.addPart("resourcename", new StringBody("QTI demo"));
-		entity.addPart("displayname", new StringBody("QTI demo"));
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", qtiFile, ContentType.APPLICATION_OCTET_STREAM, qtiFile.getName())
+				.addTextBody("filename", "qti-demo.zip")
+				.addTextBody("resourcename", "QTI demo")
+				.addTextBody("displayname", "QTI demo")
+				.build();
 		qtiRepoMethod.setEntity(entity);
 		
 		HttpResponse qtiRepoCode = conn.execute(qtiRepoMethod);
@@ -611,11 +617,13 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 		URI repoEntriesUri2 = UriBuilder.fromUri(getContextURI()).path("repo").path("entries").build();
 		HttpPut surveyRepoMethod = conn.createPut(repoEntriesUri2, MediaType.APPLICATION_JSON, true);
-		MultipartEntity surveyEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		surveyEntity.addPart("file", new FileBody(surveyFile));
-		surveyEntity.addPart("filename", new StringBody("questionnaire-demo.zip"));
-		surveyEntity.addPart("resourcename", new StringBody("Questionnaire demo"));
-		surveyEntity.addPart("displayname", new StringBody("Questionnaire demo"));
+		HttpEntity surveyEntity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", surveyFile, ContentType.APPLICATION_OCTET_STREAM, surveyFile.getName())
+				.addTextBody("filename", "questionnaire-demo.zip")
+				.addTextBody("resourcename", "Questionnaire demo")
+				.addTextBody("displayname", "Questionnaire demo")
+				.build();
 		surveyRepoMethod.setEntity(surveyEntity);
 		HttpResponse surveyRepoCode = conn.execute(surveyRepoMethod);
 		assertTrue(surveyRepoCode.getStatusLine().getStatusCode() == 200 || surveyRepoCode.getStatusLine().getStatusCode() == 201);
@@ -781,10 +789,12 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		//update the root node
 		URI rootUri = getElementsUri(course).path("structure").path(course.getEditorRootNodeId()).build();
 		HttpPost updateMethod = conn.createPost(rootUri, MediaType.APPLICATION_JSON, true);
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("shortTitle", new StringBody("Structure-0b"));
-		entity.addPart("longTitle", new StringBody("Structure-long-0b"));
-		entity.addPart("objectives", new StringBody("Structure-objectives-0b"));
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addTextBody("shortTitle", "Structure-0b")
+				.addTextBody("longTitle", "Structure-long-0b")
+				.addTextBody("objectives", "Structure-objectives-0b")
+				.build();
 		updateMethod.setEntity(entity);
 		
 		HttpResponse newStructureResponse = conn.execute(updateMethod);
@@ -835,17 +845,18 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		//update the root node
 		URI rootUri = getElementsUri(course).path("structure").path(course.getEditorRootNodeId()).build();
 		HttpPost newStructureMethod = conn.createPost(rootUri, MediaType.APPLICATION_JSON, true);
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("file", new FileBody(page));
-		entity.addPart("filename", new StringBody(page.getName()));
-		entity.addPart("parentNodeId", new StringBody(course.getEditorRootNodeId()));
-		entity.addPart("position", new StringBody("1"));
-		entity.addPart("shortTitle", new StringBody("Structure-0-with-file"));
-		entity.addPart("longTitle", new StringBody("Structure-long-0-with-file"));
-		entity.addPart("objectives", new StringBody("Structure-objectives-0-with-file"));
-		entity.addPart("displayType", new StringBody("file"));
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", page, ContentType.APPLICATION_OCTET_STREAM, page.getName())
+				.addTextBody("filename", page.getName())
+				.addTextBody("parentNodeId", course.getEditorRootNodeId())
+				.addTextBody("position", "1")
+				.addTextBody("shortTitle", "Structure-0-with-file")
+				.addTextBody("longTitle", "Structure-long-0-with-file")
+				.addTextBody("objectives", "Structure-objectives-0-with-file")
+				.addTextBody("displayType", "file")
+				.build();
 		newStructureMethod.setEntity(entity);
-		
 		
 		HttpResponse newStructureCode = conn.execute(newStructureMethod);
 		assertTrue(newStructureCode.getStatusLine().getStatusCode() == 200 || newStructureCode.getStatusLine().getStatusCode() == 201);

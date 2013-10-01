@@ -43,8 +43,6 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.cookie.Cookie;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
@@ -66,24 +64,6 @@ import com.oreilly.servlet.Base64Encoder;
 public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	
 
-	private RestConnection conn;
-	
-	@Before
-	public void startup() {
-		conn = new RestConnection();
-	}
-	
-  @After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-		}
-	}
 	
 	/**
 	 * Test if a session cookie is created
@@ -92,10 +72,14 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void testCookieAuthentication() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		
 		assertTrue(conn.login("administrator", "openolat"));
 		List<Cookie> cookies = conn.getCookieStore().getCookies();
 		assertNotNull(cookies);
 		assertFalse(cookies.isEmpty());
+		
+		conn.shutdown();
 	}
 	
 	/**
@@ -105,10 +89,13 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void testTokenAuthentication() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		String securityToken = conn.getSecurityToken();
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		
+		conn.shutdown();
 	}
 	
 	
@@ -202,6 +189,7 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testBasicAuthentication() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		//path is protected
 		URI uri = UriBuilder.fromUri(getContextURI()).path("/users/version").build();
 		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
@@ -210,18 +198,21 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String securityToken = conn.getSecurityToken(response);
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testWebStandardAuthentication() throws IOException, URISyntaxException {
-		conn.setCredentials("administrator", "openolat");
-
 		URI uri = UriBuilder.fromUri(getContextURI()).path("/users/version").build();
+		RestConnection conn = new RestConnection(uri.toURL(), "administrator", "openolat");
 		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
 		HttpResponse response = conn.execute(method);
 		
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String securityToken = conn.getSecurityToken(response);
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		
+		conn.shutdown();
 	}
 }

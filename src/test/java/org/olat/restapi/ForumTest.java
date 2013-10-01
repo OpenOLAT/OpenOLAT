@@ -55,7 +55,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
@@ -81,8 +80,6 @@ public class ForumTest extends OlatJerseyTestCase {
 	private static Forum forum;
 	private static Message m1, m2, m3, m4 ,m5;
 	private static Identity id1;
-
-	private RestConnection conn;
 	
 	@Autowired
 	private ForumManager forumManager;
@@ -90,57 +87,45 @@ public class ForumTest extends OlatJerseyTestCase {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		conn = new RestConnection();
 
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-zero");
 		
-		ForumManager fm = ForumManager.getInstance();
-		forum = ForumManager.getInstance().addAForum();
+		forum = forumManager.addAForum();
 		
-		m1 = fm.createMessage();
+		m1 = forumManager.createMessage();
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
-		fm.addTopMessage(id1, forum, m1);
+		forumManager.addTopMessage(id1, forum, m1);
 		
-		m2 = fm.createMessage();
+		m2 = forumManager.createMessage();
 		m2.setTitle("Thread-2");
 		m2.setBody("Body of Thread-2");
-		fm.addTopMessage(id1, forum, m2);
+		forumManager.addTopMessage(id1, forum, m2);
 		
 		DBFactory.getInstance().intermediateCommit();
 		
-		m3 = fm.createMessage();
+		m3 = forumManager.createMessage();
 		m3.setTitle("Message-1.1");
 		m3.setBody("Body of Message-1.1");
-		fm.replyToMessage(m3, id1, m1);
+		forumManager.replyToMessage(m3, id1, m1);
 		
-		m4 = fm.createMessage();
+		m4 = forumManager.createMessage();
 		m4.setTitle("Message-1.1.1");
 		m4.setBody("Body of Message-1.1.1");
-		fm.replyToMessage(m4, id1, m3);
+		forumManager.replyToMessage(m4, id1, m3);
 		
-		m5 = fm.createMessage();
+		m5 = forumManager.createMessage();
 		m5.setTitle("Message-1.2");
 		m5.setBody("Body of Message-1.2");
-		fm.replyToMessage(m5, id1, m1);
+		forumManager.replyToMessage(m5, id1, m1);
 
 		DBFactory.getInstance().intermediateCommit();
-	}
-	
-  @After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-		}
 	}
 	
 	@Test
 	public void testGetThreads() throws IOException, URISyntaxException  {
+		RestConnection conn = new RestConnection();
+		
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = getForumUriBuilder().path("threads").build();
@@ -152,10 +137,13 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		assertNotNull(threads);
 		assertFalse(threads.isEmpty());	
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetThreadsWithPaging() throws IOException, URISyntaxException  {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = getForumUriBuilder().path("threads")
@@ -167,11 +155,14 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		assertNotNull(threads);
 		assertNotNull(threads.getMessages());
-		assertTrue(threads.getTotalCount() >= 2);	
+		assertTrue(threads.getTotalCount() >= 2);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetThread() throws IOException, URISyntaxException  {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).build();
@@ -182,11 +173,14 @@ public class ForumTest extends OlatJerseyTestCase {
 		List<MessageVO> threads = parseMessageArray(body);
 		
 		assertNotNull(threads);
-		assertFalse(threads.isEmpty());	
+		assertFalse(threads.isEmpty());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetThreadWithPaging() throws IOException, URISyntaxException  {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
@@ -198,11 +192,14 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		assertNotNull(threads);
 		assertNotNull(threads.getMessages());
-		assertTrue(threads.getTotalCount() >= 2);	
+		assertTrue(threads.getTotalCount() >= 2);
+		
+		conn.shutdown();
 	}
 
 	@Test
 	public void testNewThread() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = getForumUriBuilder().path("threads").queryParam("authorKey", id1.getKey())
@@ -227,10 +224,13 @@ public class ForumTest extends OlatJerseyTestCase {
 			}
 		}
 		assertTrue(saved);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testNewMessage() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
@@ -257,10 +257,12 @@ public class ForumTest extends OlatJerseyTestCase {
 			}
 		}
 		assertTrue(saved);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetAttachment() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		//set a attachment
 
 		VFSContainer container = forumManager.getMessageContainer(m1.getForum().getKey(), m1.getKey());
@@ -293,10 +295,12 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertEquals(200, downloadResponse.getStatusLine().getStatusCode());
 		//String contentType = downloadResponse.getEntity().getContentType().getValue();
 		//doesn't work with grizzly assertEquals("image/jpeg", contentType);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUploadAttachment() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
@@ -321,7 +325,6 @@ public class ForumTest extends OlatJerseyTestCase {
 		HttpResponse attachResponse = conn.execute(attachMethod);
 		assertEquals(200, attachResponse.getStatusLine().getStatusCode());
 		
-		
 		//check if the file exists
 		ForumManager fm = ForumManager.getInstance();
 		VFSContainer container = fm.getMessageContainer(message.getForumKey(), message.getKey());
@@ -335,10 +338,13 @@ public class ForumTest extends OlatJerseyTestCase {
 		BufferedImage image = ImageIO.read(uploadedStream);
 		FileUtils.closeSafely(uploadedStream);
 		assertNotNull(image);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUpload64Attachment() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
@@ -380,10 +386,13 @@ public class ForumTest extends OlatJerseyTestCase {
 		BufferedImage image = ImageIO.read(uploadedStream);
 		FileUtils.closeSafely(uploadedStream);
 		assertNotNull(image);
+
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testReplyWithTwoAttachments() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 
 		ReplyVO vo = new ReplyVO();
@@ -448,10 +457,12 @@ public class ForumTest extends OlatJerseyTestCase {
 		VFSItem uploadedPage = container.resolve("singlepage64.html");
 		assertNotNull(uploadedPage);
 		assertTrue(uploadedPage instanceof VFSLeaf);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUploadAttachmentWithFile64VO() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
@@ -494,14 +505,13 @@ public class ForumTest extends OlatJerseyTestCase {
 		BufferedImage image = ImageIO.read(uploadedStream);
 		FileUtils.closeSafely(uploadedStream);
 		assertNotNull(image);
+		
+		conn.shutdown();
 	}
-	
-	
-	
-	
 	
 	@Test
 	public void testUploadAttachmentAndRename() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
@@ -527,7 +537,6 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertEquals(200, attachCode.getStatusLine().getStatusCode());
 		EntityUtils.consume(attachCode.getEntity());
 
-
 		//upload portrait a second time
 		URI attach2Uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
 		HttpPost attach2Method = conn.createPost(attach2Uri, MediaType.APPLICATION_JSON, true);
@@ -545,6 +554,8 @@ public class ForumTest extends OlatJerseyTestCase {
 		List<FileVO> files = parseFileArray(loadBody);
 		assertNotNull(files);
 		assertEquals(2, files.size());
+		
+		conn.shutdown();
 	}
 	
 	private UriBuilder getForumUriBuilder() {

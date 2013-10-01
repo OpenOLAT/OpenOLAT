@@ -43,8 +43,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.util.EntityUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -63,20 +61,10 @@ import com.oreilly.servlet.Base64Encoder;
  */
 public class AuthenticationTest extends OlatJerseyTestCase {
 
-	private RestConnection conn;
-	
-	@Before
-	public void startup() {
-		conn = new RestConnection();
-	}
-	
-	@After
-	public void tearDown() {
-		conn = new RestConnection();
-	}
-	
 	@Test
 	public void testSessionCookieLogin() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("administrator").queryParam("password", "openolat").build();
 		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, true);
 		HttpResponse code = conn.execute(method);
@@ -84,13 +72,18 @@ public class AuthenticationTest extends OlatJerseyTestCase {
 		String response = EntityUtils.toString(code.getEntity());
 		assertTrue(response.startsWith("<hello"));
 		assertTrue(response.endsWith("Hello administrator</hello>"));
+	
 		List<Cookie> cookies = conn.getCookieStore().getCookies();
 		assertNotNull(cookies);
 		assertTrue(cookies.size() > 0);
+		
+		conn.shutdown();
   }
 	
 	@Test
 	public void testSessionCookieLoginHttpClient4() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("administrator").queryParam("password", "openolat").build();
 
 		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, true);
@@ -104,26 +97,38 @@ public class AuthenticationTest extends OlatJerseyTestCase {
 		assertNotNull(cookies);
 		assertFalse(cookies.isEmpty());
 		assertNotNull(response.getFirstHeader(RestSecurityHelper.SEC_TOKEN));
+		
+		conn.shutdown();
   }
 	
 	@Test
 	public void testWrongPassword() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("administrator").queryParam("password", "blabla").build();
 		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, true);
 		HttpResponse code = conn.execute(method);
 		assertEquals(401, code.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUnkownUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("treuitr").queryParam("password", "blabla").build();
 		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, true);
 		HttpResponse code = conn.execute(method);
 		assertEquals(401, code.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testBasicAuthentication() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		
 		//path is protected
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path("version").build();
 		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
@@ -132,17 +137,20 @@ public class AuthenticationTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String securityToken = conn.getSecurityToken(response);
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testWebStandardAuthentication() throws IOException, URISyntaxException {
-		conn.setCredentials("administrator", "openolat");
-
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path("version").build();
+		RestConnection conn = new RestConnection(uri.toURL(), "administrator", "openolat");
 		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String securityToken = conn.getSecurityToken(response);
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		
+		conn.shutdown();
 	}
 }

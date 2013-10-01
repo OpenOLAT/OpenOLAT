@@ -46,14 +46,14 @@ import javax.ws.rs.core.UriBuilder;
 
 import junit.framework.Assert;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -313,14 +313,18 @@ public class CoursesTest extends OlatJerseyTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/courses").build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("file", new FileBody(cp));
-		entity.addPart("filename", new StringBody("Very_small_course.zip"));
-		entity.addPart("resourcename", new StringBody("Very small course"));
-		entity.addPart("displayname", new StringBody("Very small course"));
-		entity.addPart("access", new StringBody("3"));
+
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
-		entity.addPart("softkey", new StringBody(softKey));
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", cp, ContentType.APPLICATION_OCTET_STREAM, cp.getName())
+				.addTextBody("filename", "Very_small_course.zip")
+				.addTextBody("foldername", "New folder 1 2 3")
+				.addTextBody("resourcename", "Very small course")
+				.addTextBody("displayname", "Very small course")
+				.addTextBody("access", "3")
+				.addTextBody("softkey", softKey)
+				.build();
 		method.setEntity(entity);
 		
 		HttpResponse response = conn.execute(method);

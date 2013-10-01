@@ -41,6 +41,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -48,14 +49,14 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.params.CookiePolicy;
-import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -84,17 +85,16 @@ public class RestConnection {
 	private String PROTOCOL = "http";
 	private String CONTEXT_PATH = "olat";
 
-	private final DefaultHttpClient httpclient;
+	private final BasicCookieStore cookieStore = new BasicCookieStore();;
+	private final CloseableHttpClient httpclient;
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
 	private String securityToken;
 	
 	public RestConnection() {
-		httpclient = new DefaultHttpClient();
-		HttpClientParams.setCookiePolicy(httpclient.getParams(), CookiePolicy.RFC_2109);
-		
-		//CookieStore cookieStore = new BasicCookieStore();
-		//httpclient.setCookieStore(cookieStore);
+		httpclient = HttpClientBuilder.create()
+				.setDefaultCookieStore(cookieStore)
+				.build();
 	}
 	
 	
@@ -104,12 +104,30 @@ public class RestConnection {
 		PROTOCOL = url.getProtocol();
 		CONTEXT_PATH = url.getPath();
 		
-		httpclient = new DefaultHttpClient();
-		HttpClientParams.setCookiePolicy(httpclient.getParams(), CookiePolicy.RFC_2109);
+		httpclient = HttpClientBuilder.create()
+				.setDefaultCookieStore(cookieStore)
+				.build();
+		//HttpClientParams.setCookiePolicy(httpclient.getParams(), CookiePolicy.RFC_2109);
+	}
+	
+	public RestConnection(URL url, String user, String password) {
+		PORT = url.getPort();
+		HOST = url.getHost();
+		PROTOCOL = url.getProtocol();
+		CONTEXT_PATH = url.getPath();
+		
+		CredentialsProvider provider = new BasicCredentialsProvider();
+		provider.setCredentials(new AuthScope(HOST, PORT), new UsernamePasswordCredentials(user, password));
+		
+		httpclient = HttpClientBuilder.create()
+				.setDefaultCookieStore(new BasicCookieStore())
+				.setDefaultCredentialsProvider(provider)
+				.setDefaultCookieStore(cookieStore)
+				.build();
 	}
 	
 	public CookieStore getCookieStore() {
-		return httpclient.getCookieStore();
+		return cookieStore;
 	}
 	
 	public String getSecurityToken() {
@@ -124,20 +142,22 @@ public class RestConnection {
 	}
 
 	public void shutdown() {
-		httpclient.getConnectionManager().shutdown();
+		try {
+			httpclient.close();
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 	
-	public void setCredentials(String username, String password) {
+	/*public void setCredentials(String username, String password) {
+		
+		
 		httpclient.getCredentialsProvider().setCredentials(
         new AuthScope("localhost", PORT),
         new UsernamePasswordCredentials(username, password));
-	}
+	}*/
 	
 	public boolean login(String username, String password) throws IOException, URISyntaxException {
-		httpclient.getCredentialsProvider().setCredentials(
-        new AuthScope("localhost", PORT),
-        new UsernamePasswordCredentials(username, password));
-
 		URI uri = getContextURI().path("auth").path(username).queryParam("password", password).build();
 		HttpGet httpget = new HttpGet(uri);
 		HttpResponse response = httpclient.execute(httpget);
@@ -187,17 +207,17 @@ public class RestConnection {
 		if(obj == null) return;
 		
 		String objectStr = stringuified(obj);
-		HttpEntity myEntity = new StringEntity(objectStr, MediaType.APPLICATION_JSON, "UTF-8");
+		HttpEntity myEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
 		put.setEntity(myEntity);
 	}
 	
 	public void addMultipart(HttpEntityEnclosingRequestBase post, String filename, File file)
 	throws UnsupportedEncodingException {
 		
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("filename", new StringBody(filename));
-		FileBody fileBody = new FileBody(file, "application/octet-stream");
-		entity.addPart("file", fileBody);
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addTextBody("filename", filename)
+				.addBinaryBody("file", file, ContentType.APPLICATION_OCTET_STREAM, filename).build();
 		post.setEntity(entity);
 	}
 	
@@ -233,7 +253,7 @@ public class RestConnection {
 	
 	private void decorateHttpMessage(HttpMessage msg, String accept, String langage, boolean cookie) {
 		if(cookie) {
-			HttpClientParams.setCookiePolicy(msg.getParams(), CookiePolicy.RFC_2109);
+			//HttpClientParams.setCookiePolicy(msg.getParams(), CookiePolicy.RFC_2109);
 		}
 		if(StringHelper.containsNonWhitespace(accept)) {
 			msg.addHeader("Accept", accept);
@@ -253,10 +273,7 @@ public class RestConnection {
 	 * @return http://localhost:9998
 	 */
 	public UriBuilder getBaseURI() throws URISyntaxException  {
-		URI uri;
-
-		uri = new URI(PROTOCOL, null, HOST, PORT, null, null, null);
-		
+		URI uri = new URI(PROTOCOL, null, HOST, PORT, null, null, null);
 		return UriBuilder.fromUri(uri);
 	}
 	
@@ -274,7 +291,7 @@ public class RestConnection {
 			mapper.writeValue(w, obj);
 			return w.toString();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
@@ -286,7 +303,7 @@ public class RestConnection {
 			U obj = mapper.readValue(body, cl);
 			return obj;
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
@@ -297,9 +314,8 @@ public class RestConnection {
 			U obj = mapper.readValue(body, cl);
 			return obj;
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
-
 }
