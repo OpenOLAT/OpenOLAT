@@ -5,7 +5,7 @@
 	#set($artefacts = "artefacts$velocityCount")
 	#set($checkResults = "checkResults$velocityCount")
 	<div class="b_eportfolio_structure">
-	<h5>$structEl.title</h5>
+	<h5>$r.escapeHtml($structEl.title)</h5>
 	#if($r.available($addBtn))
 		$r.render($addBtn)
 	#end

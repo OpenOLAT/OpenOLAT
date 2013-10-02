@@ -6,7 +6,7 @@
 		</h5>
 		<div class="o_peekview_author">
 			#set($user=$message.getCreator().getUser())
-			$user.getProperty("firstName", null) $user.getProperty("lastName", null)
+			$r.escapeHtml($user.getProperty("firstName", null)) $r.escapeHtml($user.getProperty("lastName", null))
 			($formatter.formatDateAndTime($message.getCreationDate()))
 		</div>
 		$r.formatLatexFormulas($message.getBody())

@@ -22,6 +22,7 @@ package org.olat.core.util.mail.ui;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -33,8 +34,8 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -50,32 +51,32 @@ public class MailFromCellRenderer implements CustomCellRenderer {
 	private final Translator translator;
 	private VelocityContainer container;
 	private final Controller listeningController;
+	private final UserManager userManager;
 	
 	public MailFromCellRenderer(Controller listeningController, VelocityContainer container, Translator translator) {
 		this.listeningController = listeningController;
 		this.container = container;
 		this.translator = translator;
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if(val instanceof Identity) {
 			Identity identity = (Identity)val;
-			User user = identity.getUser();
-			String fullName = user.getProperty(UserConstants.LASTNAME, null) + " " + user.getProperty(UserConstants.FIRSTNAME, null);
-			
+			String fullName = userManager.getUserDisplayName(identity);
 			if(renderer == null) {
-				sb.append(fullName);
+				sb.appendHtmlEscaped(fullName);
 			} else {
 				Link link = LinkFactory.createLink("bp_" + UUID.randomUUID().toString(), container, listeningController);
-				link.setCustomDisplayText(fullName);
+				link.setCustomDisplayText(StringHelper.escapeHtml(fullName));
 				link.setUserObject("[Identity:" + identity.getKey() + "]");
 				URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
 				RenderResult renderResult = new RenderResult();
 				link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
 			}
 		} else if (val instanceof String) {
-			sb.append("<span>").append((String)val).append("</span>");
+			sb.append("<span>").appendHtmlEscaped((String)val).append("</span>");
 		}
 	}
 }

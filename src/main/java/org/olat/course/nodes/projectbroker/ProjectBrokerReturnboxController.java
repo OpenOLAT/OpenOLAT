@@ -35,7 +35,6 @@ import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.ModuleConfiguration;
 
 /**
  *
@@ -55,11 +54,11 @@ public class ProjectBrokerReturnboxController extends ReturnboxController  {
 	 * @param userCourseEnv
 	 * @param previewMode
 	 */
-	public ProjectBrokerReturnboxController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, 
+	public ProjectBrokerReturnboxController(UserRequest ureq, WindowControl wControl, 
 			CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode, Project project) {
-		super(ureq, wControl, config, node, userCourseEnv, previewMode, false);
+		super(ureq, wControl, node, userCourseEnv, previewMode, false);
 		this.project = project;
-		initReturnbox(ureq, wControl, config, node, userCourseEnv, previewMode);
+		initReturnbox(ureq, wControl, node, userCourseEnv, previewMode);
 	}
 	
 	/**

@@ -353,7 +353,7 @@ public class KalendarEntryForm extends FormBasicController {
 				buf.append(" ");
 				buf.append(getTranslator().translate("cal.form.created.by"));
 				buf.append(" ");
-				buf.append(event.getCreatedBy());
+				buf.append(StringHelper.escapeHtml(event.getCreatedBy()));
 			} 
 		} else {
 			buf.append("-");

@@ -119,7 +119,6 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == mapStyle){
@@ -159,13 +158,13 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 	protected void doDispose() {
 		// nothing to dispose
 	}
-	
+
+	@Override
 	public FormItem getInitialFormItem() {
 		return flc;
 	}
 	
 	@Override
-	@SuppressWarnings("unused")
 	protected void formOK(UserRequest ureq) {
 		//
 	}

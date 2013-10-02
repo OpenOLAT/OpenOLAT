@@ -68,7 +68,7 @@ public class EPPageViewController extends BasicController {
 		this.page = page;
 		this.secCallback = secCallback;
 
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		
 		commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
 		commentAndRatingService.init(getIdentity(), map.getOlatResource(), page.getKey().toString(), false, ureq.getUserSession().getRoles().isGuestOnly());
@@ -166,8 +166,6 @@ public class EPPageViewController extends BasicController {
 		//
 	}
 
-
-	@SuppressWarnings("unused")
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//

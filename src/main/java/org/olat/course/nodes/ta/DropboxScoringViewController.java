@@ -58,6 +58,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -77,6 +78,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
+import org.olat.user.UserManager;
 
 /**
  * Initial Date:  02.09.2004
@@ -146,10 +148,14 @@ public class DropboxScoringViewController extends BasicController {
 		myContent.contextPut("hasReturnbox", (hasReturnbox != null) ? hasReturnbox : hasDropboxValue);
 
 		// dropbox display
-		String assesseeName = userCourseEnv.getIdentityEnvironment().getIdentity().getName();
+		Identity assessee = userCourseEnv.getIdentityEnvironment().getIdentity();
+		String assesseeName = assessee.getName();
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		String assesseeFullName = StringHelper.escapeHtml(userManager.getUserDisplayName(assessee));
+
 		OlatRootFolderImpl rootDropbox = new OlatRootFolderImpl(getDropboxFilePath(assesseeName), null);
 		rootDropbox.setLocalSecurityCallback( getDropboxVfsSecurityCallback());
-		OlatNamedContainerImpl namedDropbox = new OlatNamedContainerImpl(getDropboxRootFolderName(assesseeName), rootDropbox);
+		OlatNamedContainerImpl namedDropbox = new OlatNamedContainerImpl(assesseeFullName, rootDropbox);
 		namedDropbox.setLocalSecurityCallback(getDropboxVfsSecurityCallback());
 	
 		dropboxFolderRunController = new FolderRunController(namedDropbox, false, ureq, getWindowControl());
@@ -159,9 +165,9 @@ public class DropboxScoringViewController extends BasicController {
 
 		// returnbox display
 		OlatRootFolderImpl rootReturnbox = new OlatRootFolderImpl(getReturnboxFilePath(assesseeName), null);
-		rootReturnbox.setLocalSecurityCallback( getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath(),userCourseEnv, node) ); //
-		OlatNamedContainerImpl namedReturnbox = new OlatNamedContainerImpl(getReturnboxRootFolderName(assesseeName), rootReturnbox);
-		namedReturnbox.setLocalSecurityCallback( getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath(),userCourseEnv, node));
+		rootReturnbox.setLocalSecurityCallback( getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath()) );
+		OlatNamedContainerImpl namedReturnbox = new OlatNamedContainerImpl(assesseeFullName, rootReturnbox);
+		namedReturnbox.setLocalSecurityCallback(getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath()));
 
 		returnboxFolderRunController = new FolderRunController(namedReturnbox, false, ureq, getWindowControl());
 		listenTo(returnboxFolderRunController);
@@ -194,16 +200,8 @@ public class DropboxScoringViewController extends BasicController {
 		return new ReadOnlyAndDeleteCallback();
 	}
 
-	protected VFSSecurityCallback getReturnboxVfsSecurityCallback(String returnboxRelPath, UserCourseEnvironment userCourseEnv2, CourseNode node2) {
-		return new ReturnboxFullAccessCallback(returnboxRelPath,userCourseEnv2, node2);
-	}
-
-	protected String getDropboxRootFolderName(String assesseeName) {
-		return assesseeName;
-	}
-
-	protected String getReturnboxRootFolderName(String assesseeName) {
-		return assesseeName;
+	protected VFSSecurityCallback getReturnboxVfsSecurityCallback(String returnboxRelPath) {
+		return new ReturnboxFullAccessCallback(returnboxRelPath);
 	}
 
 	/**
@@ -405,7 +403,7 @@ class ReturnboxFullAccessCallback implements VFSSecurityCallback {
 
 	private Quota quota;
 
-	public ReturnboxFullAccessCallback(String relPath, UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
+	public ReturnboxFullAccessCallback(String relPath) {
 		QuotaManager qm = QuotaManager.getInstance();
 		quota = qm.getCustomQuota(relPath);
 		if (quota == null) { // if no custom quota set, use the default quotas...

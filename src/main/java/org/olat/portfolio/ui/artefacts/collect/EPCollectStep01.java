@@ -27,7 +27,6 @@ package org.olat.portfolio.ui.artefacts.collect;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
@@ -38,7 +37,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**
  * Description:<br>
- * TODO: rhaag Class Description for EPCollectStep01
+ * Step which collects the tags. Presents a list of the 50 most used tags
  * 
  * <P>
  * Initial Date:  27.07.2010 <br>
@@ -78,8 +77,7 @@ public class EPCollectStep01 extends BasicStep {
 	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new EPCollectStepForm01(ureq, windowControl, form, stepsRunContext, FormBasicController.LAYOUT_DEFAULT, null, artefact);
+		StepFormController stepI = new EPCollectStepForm01(ureq, windowControl, form, stepsRunContext, artefact);
 		return stepI;
 	}
-
 }

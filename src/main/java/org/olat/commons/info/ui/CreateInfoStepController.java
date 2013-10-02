@@ -49,7 +49,7 @@ public class CreateInfoStepController extends StepFormBasicController {
 		
 		this.runContext = runContext;
 		
-		infoEditFormController = new InfoEditFormController(ureq, wControl, rootForm);
+		infoEditFormController = new InfoEditFormController(ureq, wControl, rootForm, true);
 		listenTo(infoEditFormController);
 		
 		initForm(ureq);

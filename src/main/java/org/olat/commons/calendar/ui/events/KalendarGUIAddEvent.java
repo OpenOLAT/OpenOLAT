@@ -67,6 +67,7 @@ public class KalendarGUIAddEvent extends FormEvent {
 		super(CMD_ADD, item);
 		this.calendarID = calendarID;
 		this.startDate = startDate;
+		this.endDate = endDate;
 		this.allDayEvent = allDayEvent;
 	}
 

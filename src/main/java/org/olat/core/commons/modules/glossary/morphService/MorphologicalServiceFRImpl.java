@@ -57,11 +57,8 @@ public class MorphologicalServiceFRImpl extends LogDelegator implements Morpholo
 
 	private String replyStatus = "";
 
-	/**
-	 * 
-	 */ 
 	public MorphologicalServiceFRImpl() {
-	// TODO Auto-generated constructor stub
+		//
 	}
 
 	/**
@@ -69,7 +66,8 @@ public class MorphologicalServiceFRImpl extends LogDelegator implements Morpholo
 	 * @see org.olat.core.commons.modules.glossary.morphService.FlexionServiceClient#getFlexions(java.lang.String,
 	 *      java.lang.String)
 	 */
-	public ArrayList<String> getFlexions(String word) {
+	@Override
+	public List<String> getFlexions(String word) {
 		InputStream xmlReplyStream = retreiveXMLReply(word);
 		XStream xstream = XStreamHelper.createXStreamInstance();
 		xstream.alias("xml", FlexionReply.class);
@@ -127,6 +125,7 @@ public class MorphologicalServiceFRImpl extends LogDelegator implements Morpholo
 	 * 
 	 * @see org.olat.core.commons.modules.glossary.morphService.FlexionServiceClient#getReplyStatus()
 	 */
+	@Override
 	public String getReplyStatus() {
 		return replyStatus;
 	}
@@ -144,6 +143,7 @@ public class MorphologicalServiceFRImpl extends LogDelegator implements Morpholo
 	 * 
 	 * @see org.olat.core.commons.modules.glossary.morphService.FlexionServiceManager#getFlexionServiceDescriptor()
 	 */
+	@Override
 	public String getMorphServiceDescriptor() {
 		return SERVICE_NAME;
 	}
@@ -158,7 +158,7 @@ public class MorphologicalServiceFRImpl extends LogDelegator implements Morpholo
 
 
 	@Override
-	public ArrayList<String> getFlexions(String partOfSpeech, String word) {
+	public List<String> getFlexions(String partOfSpeech, String word) {
 		return getFlexions(word);
 	}
 

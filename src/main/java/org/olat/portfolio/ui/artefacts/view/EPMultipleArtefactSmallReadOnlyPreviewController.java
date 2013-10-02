@@ -88,7 +88,7 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 			if (special) {
 				artCtrl = artHandler.getSpecialMapViewController(ureq, getWindowControl(), artefact);
 			} else {
-				artCtrl = new EPArtefactViewReadOnlyController(ureq, getWindowControl(), artefact, secCallback, struct);
+				artCtrl = new EPArtefactViewReadOnlyController(ureq, getWindowControl(), artefact, secCallback);
 			}
 			if (artCtrl != null){
 				artefactCtrls.add(artCtrl);
@@ -169,7 +169,6 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// no events to handle yet

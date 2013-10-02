@@ -31,7 +31,8 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class EPReflexionChangeEvent extends Event {
-	
+
+	private static final long serialVersionUID = -2751202942774501947L;
 	private String refContent;
 	private AbstractArtefact refArtefact;
 	

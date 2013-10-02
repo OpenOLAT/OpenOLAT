@@ -104,6 +104,7 @@ public class PaypalAccessController extends FormBasicController implements FormC
 		
 		String description = link.getOffer().getDescription();
 		if(StringHelper.containsNonWhitespace(description)) {
+			description = StringHelper.escapeHtml(description);
 			uifactory.addStaticTextElement("offer.description", description, formLayout);
 		}
 		

@@ -27,6 +27,7 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.notifications.NotificationsHandler;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Publisher;
@@ -125,9 +126,10 @@ public class EPNotificationsHandler implements NotificationsHandler {
 	private TitleItem getTitleItemForMap(EPMapShort amap) {
 		StringBuilder sbTitle = new StringBuilder();
 		if (amap != null) {
-			sbTitle.append(amap.getTitle());
+			sbTitle.append(StringHelper.escapeHtml(amap.getTitle()));
 			EPFrontendManager epMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-			sbTitle.append(" (").append(epMgr.getFirstOwnerAsString(amap)).append(")");
+			String firstOwner = epMgr.getFirstOwnerAsString(amap);
+			sbTitle.append(" (").append(StringHelper.escapeHtml(firstOwner)).append(")");
 		}
 		return new TitleItem(sbTitle.toString(), "o_EPStructuredMapTemplate_icon");
 	}

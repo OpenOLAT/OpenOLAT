@@ -35,14 +35,12 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
 
 public class CalendarExportController extends DefaultController {
 
-	private static final String PACKAGE = Util.getPackageName(CalendarManager.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
 
 	private Translator translator;
@@ -50,21 +48,19 @@ public class CalendarExportController extends DefaultController {
 
 	public CalendarExportController(Locale locale, WindowControl wControl, String icalFeedLink) {
 		super(wControl);
-		translator = new PackageTranslator(PACKAGE, locale);
+		translator = Util.createPackageTranslator(CalendarManager.class, locale);
 		
 		colorVC = new VelocityContainer("calEdit", VELOCITY_ROOT + "/calIcalFeed.html", translator, this);
 		colorVC.contextPut("icalFeedLink", icalFeedLink);
-		
 
 		setInitialComponent(colorVC);
 	}
 	
 	public void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
-
 
 	protected void doDispose() {
 		// nothing to dispose
 	}
-
 }

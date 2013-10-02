@@ -31,7 +31,8 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class EPArtefactClicked extends Event {
-	
+
+	private static final long serialVersionUID = 7396012394011453648L;
 	private final PortfolioStructure structure;
 	
 	public EPArtefactClicked(String cmd, PortfolioStructure structure) {

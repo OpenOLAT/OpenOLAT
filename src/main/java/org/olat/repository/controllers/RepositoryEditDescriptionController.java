@@ -138,6 +138,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		if(repositoryEntry.getInitialAuthor() != null) {
 			initalAuthor = userManager.getUserDisplayName(initalAuthor);
 		}
+		initalAuthor = StringHelper.escapeHtml(initalAuthor);
 		uifactory.addStaticTextElement("cif.initialAuthor", initalAuthor, descCont);
 		// Add resource type
 		String typeName = null;

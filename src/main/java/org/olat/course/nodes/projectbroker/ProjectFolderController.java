@@ -58,7 +58,7 @@ import org.olat.modules.ModuleConfiguration;
 public class ProjectFolderController extends BasicController {
 
 	private ModuleConfiguration config;
-	private boolean hasDropbox, hasScoring, hasReturnbox;
+	private boolean hasDropbox, hasReturnbox;
 	private VelocityContainer content;
 	private DropboxController dropboxController;
 	private Controller dropboxEditController;
@@ -88,7 +88,6 @@ public class ProjectFolderController extends BasicController {
 //			if (hasScoring){
 //				hasScoring = ne.isCapabilityAccessible("scoring");
 //			}
-			hasScoring = false;
 			// no call 'ne.isCapabilityAccessible(ProjectBrokerCourseNode.ACCESS_DROPBOX);' because no dropbox/returnbox conditions
 			if (!hasDropbox && !hasReturnbox ) {
 				// nothing to show => Show text message no folder
@@ -112,7 +111,7 @@ public class ProjectFolderController extends BasicController {
 					}
 					if (hasReturnbox) {
 						if (!ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(ureq.getIdentity(), project)) {
-							returnboxController = new ProjectBrokerReturnboxController(ureq, wControl, config, ne.getCourseNode(), userCourseEnv, previewMode,project);
+							returnboxController = new ProjectBrokerReturnboxController(ureq, wControl, ne.getCourseNode(), userCourseEnv, previewMode,project);
 							content.put("returnboxController", returnboxController.getInitialComponent());
 							content.contextPut("hasReturnbox", Boolean.TRUE);
 						}
@@ -164,11 +163,8 @@ public class ProjectFolderController extends BasicController {
 	private void readConfig(ModuleConfiguration modConfig) {
 		Boolean bValue = (Boolean)modConfig.get(ProjectBrokerCourseNode.CONF_DROPBOX_ENABLED);
 		hasDropbox = (bValue != null) ? bValue.booleanValue() : false;
-		bValue = (Boolean)modConfig.get(ProjectBrokerCourseNode.CONF_SCORING_ENABLED);
-		hasScoring = (bValue != null) ? bValue.booleanValue() : false;
 		bValue = (Boolean)modConfig.get(ProjectBrokerCourseNode.CONF_RETURNBOX_ENABLED);
 		hasReturnbox = (bValue != null) ? bValue.booleanValue() : false;
-		
 	}
 	
 	/**

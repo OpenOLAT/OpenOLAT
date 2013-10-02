@@ -20,7 +20,7 @@
 
 package org.olat.core.commons.modules.glossary.morphService;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Description:<br>
@@ -43,7 +43,7 @@ public interface MorphologicalService {
 	 * @param word	a single word or a wordgroup
 	 * @return list of flexions found with a morphological service
 	 */
-	public ArrayList<String> getFlexions(String partOfSpeech, String word);
+	public List<String> getFlexions(String partOfSpeech, String word);
 	
 	/**
 	 * same as getFlexions(String partOfSpeech, String word) 
@@ -51,7 +51,7 @@ public interface MorphologicalService {
 	 * @param word
 	 * @return
 	 */
-	public ArrayList<String> getFlexions(String word);
+	public List<String> getFlexions(String word);
 	
 	/**
 	 * returns part-of-speech for a given word or wordgroup

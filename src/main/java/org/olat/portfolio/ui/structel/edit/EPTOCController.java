@@ -201,7 +201,7 @@ public class EPTOCController extends BasicController {
 				if (artefactClicked != null) {
 					AbstractArtefact artefact = artefactClicked;
 					PortfolioStructure parentStruct = getArtefactParentStruct(artefactClicked);
-					PortfolioStructure mergedStruct = ePFMgr.removeArtefactFromStructure(artefact, parentStruct);
+					ePFMgr.removeArtefactFromStructure(artefact, parentStruct);
 					// refresh the view
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				} else if (structureClicked != null) {

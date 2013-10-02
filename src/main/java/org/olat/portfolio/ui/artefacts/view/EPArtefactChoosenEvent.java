@@ -32,6 +32,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  */
 public class EPArtefactChoosenEvent extends Event {
 
+	private static final long serialVersionUID = 3621326017804909627L;
 	private AbstractArtefact artefact;
 
 	public EPArtefactChoosenEvent(AbstractArtefact artefact) {

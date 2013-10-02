@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.LogDelegator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -97,7 +98,7 @@ public class AutoCompleterListReceiver extends LogDelegator implements ListRecei
 				}
 			}
 			// add value to be displayed
-			object.put(VALUE, displayText);
+			object.put(VALUE, StringHelper.escapeHtml(displayText));
 			// add optional css class
 			if (iconCssClass == null) {
 				object.put(CSS_CLASS, CSS_CLASS_EMPTY);								

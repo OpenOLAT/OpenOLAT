@@ -40,6 +40,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.user.propertyhandlers.GenderPropertyHandler;
 
 /**
@@ -143,8 +144,8 @@ public class DisplayPortraitController extends BasicController {
 		myContent.contextPut("hasPortrait", (portrait != null) ? Boolean.TRUE : Boolean.FALSE);
 		myContent.contextPut("identityKey", portraitIdent.getKey().toString());
 		myContent.contextPut("displayUserFullName", displayUserFullName);
-		myContent.contextPut("firstname", portraitIdent.getUser().getProperty(UserConstants.FIRSTNAME, null));
-		myContent.contextPut("lastname",portraitIdent.getUser().getProperty(UserConstants.LASTNAME, null));
+		myContent.contextPut("firstname", StringHelper.escapeHtml(portraitIdent.getUser().getProperty(UserConstants.FIRSTNAME, null)));
+		myContent.contextPut("lastname",StringHelper.escapeHtml(portraitIdent.getUser().getProperty(UserConstants.LASTNAME, null)));
 		
 		
 		putInitialPanel(myContent);

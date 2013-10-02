@@ -117,7 +117,6 @@ public class EPCollectRestrictionResultController extends BasicController {
 	}
 	
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}

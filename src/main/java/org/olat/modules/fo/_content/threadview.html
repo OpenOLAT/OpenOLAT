@@ -63,11 +63,10 @@
 				</div>
 			</div>
 		</div>
-
 		<div class="o_forum_message_content_wrapper ">
 			<div class="o_forum_message_content b_clearfix ">
 				<div class="o_forum_message_creator">
-					<strong>$message.get("firstname") $message.get("lastname")</strong>
+					<strong>$r.escapeHtml($message.get("firstname")) $r.escapeHtml($message.get("lastname"))</strong>
 					<br />
 					<br />
 					#if($r.available($message.get("portraitComponentVCName")))
@@ -86,7 +85,7 @@
 							#foreach( $attachment in $message.get("attachments") )
 								#set($fname = $attachment.getName())
 								#set( $fsize = $attachment.getSize() / 1024 )
-								<li><a href="$r.commandURI("attachment_${velocityCount}_${count}")$fname" target="_blank" class="b_filetype_file $myself.renderFileIconCssClass($fname)">$fname ($fsize KB)</a></li>
+								<li><a href="$r.commandURI("attachment_${velocityCount}_${count}")$fname" target="_blank" class="b_filetype_file $myself.renderFileIconCssClass($fname)">$r.escapeHtml($fname) ($fsize KB)</a></li>
 							#end 
 							</ul>
 						</div>
@@ -95,7 +94,7 @@
 					#if(($message.get("isModified")) || ($message.get("isMoved")))
 						<div class="o_forum_message_modified">
 							#if($message.get("isModified"))
-					   			$r.translate("msg.modified"): $message.get("modfname") $message.get("modlname") $message.get("modified")
+					   			$r.translate("msg.modified"): $r.escapeHtml($message.get("modfname")) $r.escapeHtml($message.get("modlname")) $message.get("modified")
 					   		#end
 					   		#if($message.get("isMoved"))
 					   			$r.translate("msg.moved")

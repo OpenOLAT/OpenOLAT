@@ -28,6 +28,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
@@ -144,7 +145,7 @@ public class IMBuddyListController extends BasicController {
 		String linkId = "buddy_" + group.getGroupKey() + "_" + buddy.getIdentityKey();
 		if(buddiesListContent.getComponent(linkId) == null) {
 			Link buddyLink = LinkFactory.createCustomLink(linkId, "cmd.buddy", "", Link.NONTRANSLATED, buddiesListContent, this);
-			buddyLink.setCustomDisplayText(buddy.getName());
+			buddyLink.setCustomDisplayText(StringHelper.escapeHtml(buddy.getName()));
 			String css = getStatusCss(buddy);
 			buddyLink.setCustomEnabledLinkCSS(css);
 			buddyLink.setUserObject(buddy);
@@ -153,7 +154,7 @@ public class IMBuddyListController extends BasicController {
 		String linkIdAlt = "buddy_" + buddy.getIdentityKey();
 		if(buddiesListContent.getComponent(linkIdAlt) == null) {
 			Link buddyLink = LinkFactory.createCustomLink(linkIdAlt, "cmd.buddy", "", Link.NONTRANSLATED, buddiesListContent, this);
-			buddyLink.setCustomDisplayText(buddy.getName());
+			buddyLink.setCustomDisplayText(StringHelper.escapeHtml(buddy.getName()));
 			String css = getStatusCss(buddy);
 			buddyLink.setCustomEnabledLinkCSS(css);
 			buddyLink.setUserObject(buddy);

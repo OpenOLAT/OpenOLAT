@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -231,9 +232,8 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 	// nothing to do
 	}
 
-	@SuppressWarnings("unchecked")
 	private static void removeDuplicate(ArrayList<String> arlList) {
-		HashSet h = new HashSet(arlList);
+		Set<String> h = new HashSet<String>(arlList);
 		arlList.clear();
 		arlList.addAll(h);
 	}

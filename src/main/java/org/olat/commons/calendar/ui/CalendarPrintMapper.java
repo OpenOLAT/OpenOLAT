@@ -95,7 +95,7 @@ public class CalendarPrintMapper implements Mapper {
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<html><head><title>");
-		sb.append("Hello");
+		sb.append("Calendar");
 		sb.append("</title>");
 		sb.append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
 		sb.append("<link href=\"").append(themeBaseUri).append("layout.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
@@ -243,7 +243,7 @@ public class CalendarPrintMapper implements Mapper {
 			sb.append("<div class=\"o_cal_location\"><span>\n");
 			sb.append(translator.translate("cal.form.location") + ": ");
 			if (!hidden) {
-				sb.append(event.getLocation());
+				sb.append(StringHelper.escapeHtml(event.getLocation()));
 			}
 			sb.append("</span></div>\n");
 		}

@@ -325,9 +325,9 @@ public class ListRenderer {
 					author = UserManager.getInstance().getUserDisplayName(author);
 				} else {
 					author = null;
-				}
-					
+				}		
 			}
+			author = StringHelper.escapeHtml(author);
 			if (StringHelper.containsNonWhitespace(author)) {
 				sb.append("<p class=\"b_briefcase_author\">").append(Formatter.escapeDoubleQuotes(translator.translate("mf.author")));
 				sb.append(": ").append(Formatter.escapeDoubleQuotes(author)).append("</p>");			

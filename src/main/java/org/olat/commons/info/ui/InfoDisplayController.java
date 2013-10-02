@@ -393,7 +393,8 @@ public class InfoDisplayController extends FormBasicController {
 				removeAsListenerAndDispose(editDialogBox);
 				editController = new InfoEditController(ureq, getWindowControl(), msg);
 				listenTo(editController);
-				editDialogBox = new CloseableModalController(getWindowControl(), translate("edit"), editController.getInitialComponent());
+				editDialogBox = new CloseableModalController(getWindowControl(), translate("edit"),
+						editController.getInitialComponent(), true, translate("edit.title"), true);
 				editDialogBox.activate();
 				listenTo(editDialogBox);
 			}

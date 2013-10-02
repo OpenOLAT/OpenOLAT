@@ -39,7 +39,7 @@
 						#if($glossaryItem.authorCmd)
 							<a href="$r.commandURI($glossaryItem.authorCmd)" target="o_glossary_profil" onclick="return o2cl()">$glossaryItem.authorName</a>
 						#else
-							<a href="$glossaryItem.authorLink" class="">$glossaryItem.authorName</a>#end
+							<a href="$glossaryItem.authorLink" class="">$r.escapeHtml($glossaryItem.authorName)</a>#end
 							${glossaryItem.creationDate}
 							#if($glossaryItem.hasModifier()), #end</span>
 					#end
@@ -48,7 +48,7 @@
 						#if($glossaryItem.modifierCmd)
 							<a href="$r.commandURI($glossaryItem.modifierCmd)" target="o_glossary_profil" onclick="return o2cl()" >$glossaryItem.modifierName</a>
 						#else
-							<a href="$glossaryItem.modifierLink" class="">$glossaryItem.modifierName</a>
+							<a href="$glossaryItem.modifierLink" class="">$r.escapeHtml($glossaryItem.modifierName)</a>
 						#end
 						$glossaryItem.lastModificationDate</span>
 					#end

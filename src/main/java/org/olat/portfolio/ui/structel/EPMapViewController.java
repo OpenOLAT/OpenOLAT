@@ -40,6 +40,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.CourseFactory;
@@ -159,7 +160,7 @@ public class EPMapViewController extends BasicController implements Activateable
 			EPTargetResource resource = ((EPStructuredMap)map).getTargetResource();
 			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(resource.getOLATResourceable(), false);
 			if(repoEntry != null) {
-				mainVc.contextPut("courseName", repoEntry.getDisplayname());
+				mainVc.contextPut("courseName", StringHelper.escapeHtml(repoEntry.getDisplayname()));
 				String url = Settings.getServerContextPathURI();
 				url += "/url/RepositoryEntry/" + repoEntry.getKey() + "/CourseNode/" + resource.getSubPath();
 				mainVc.contextPut("courseLink", url);

@@ -32,7 +32,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -40,7 +39,7 @@ import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
-import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -57,25 +56,25 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 	private AbstractArtefact artefact;
 	private EPSecurityCallback secCallback;
 
-	protected EPArtefactViewReadOnlyController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, EPSecurityCallback secCallback, PortfolioStructure struct) {
+	protected EPArtefactViewReadOnlyController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, EPSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.artefact = artefact;
 		this.secCallback = secCallback;
 		vC = createVelocityContainer("smallSingleArtefact");
 		vC.contextPut("artefact", artefact);
 		Identity artIdent = artefact.getAuthor();
-		String fullName = artIdent.getUser().getProperty(UserConstants.FIRSTNAME, null)+" "+artIdent.getUser().getProperty(UserConstants.LASTNAME, null);
-		
+		String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(artIdent);
 		String description = FilterFactory.getHtmlTagAndDescapingFilter().filter(artefact.getDescription());
+		description = StringHelper.xssScan(description);
 		description = Formatter.truncate(description, 50);
 		vC.contextPut("description", description);
-		vC.contextPut("authorName", fullName);
+		vC.contextPut("authorName", StringHelper.escapeHtml(fullName));
 		if (secCallback.canView()){
 			detailsLink = LinkFactory.createCustomLink("small.details.link", "open", "small.details.link", Link.LINK, vC, this);
 			detailsLink.setElementCssClass("o_sel_artefact_details");
 		}
 		
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		List<String> tags = ePFMgr.getArtefactTags(artefact);
 		vC.contextPut("tags", StringHelper.formatAsCSVString(tags));
 		

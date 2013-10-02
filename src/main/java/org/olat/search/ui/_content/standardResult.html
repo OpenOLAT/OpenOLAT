@@ -27,7 +27,7 @@
     <div class="o_search_result_details" style="display: none" id="o_search_result_$id">
 		#if (!$author.equals("") ) 
 			<div class="o_search_result_author">
-		    	<strong>$r.translate("label.search.author"):</strong> $author.
+		    	<strong>$r.translate("label.search.author"):</strong> $r.escapeHtml($author).
 			</div>
 		#end
 		#if ($result.lastChange )

@@ -37,7 +37,6 @@ import org.olat.home.HomeSite;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-@SuppressWarnings("unused")
 public class EPOtherMapsExtension {
 
 	public EPOtherMapsExtension() {

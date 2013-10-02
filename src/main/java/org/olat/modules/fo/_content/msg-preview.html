@@ -3,9 +3,7 @@
 		<div class="o_forum_message_header_wrapper" >
 			<div class="o_forum_message_header b_clearfix">
 				<div class="o_forum_message_title">
-					<strong>
-						$message.getTitle()
-					</strong>
+					<strong>$r.escapeHtml($message.getTitle())</strong>
 				</div>
 			</div>
 		</div>

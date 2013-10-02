@@ -158,7 +158,6 @@ public class EPStructureElementsController extends BasicController {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//

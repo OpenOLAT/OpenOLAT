@@ -62,7 +62,7 @@ public class GlossaryFlexionController extends FormBasicController {
 	private FormItem flexButton;
 	private MultipleSelectionElement existingFlexions;
 	private MorphologicalService morphService;
-	private ArrayList<String> flexionsMSResult = null;
+	private List<String> flexionsMSResult = null;
 	private FormLink selectAllLink;
 	private FormLink deselectAllLink;
 	private String morphServicePresetIdent;
@@ -177,7 +177,6 @@ public class GlossaryFlexionController extends FormBasicController {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("flexions.title");
     
@@ -204,7 +203,8 @@ public class GlossaryFlexionController extends FormBasicController {
 		}		
 		
 		//combining flexion list from already existing and newly fetched
-		ArrayList<String> glossItemFlexions = (ArrayList<String>) glossaryItem.getGlossFlexions().clone();
+		@SuppressWarnings("unchecked")
+		List<String> glossItemFlexions = (List<String>) glossaryItem.getGlossFlexions().clone();
 		if (glossItemFlexions.size() != 0 || flexionsMSResult != null) {
 			String[] existingKeys = ArrayHelper.toArray(glossItemFlexions);
 			if (flexionsMSResult != null) glossItemFlexions.addAll(flexionsMSResult);
@@ -233,9 +233,8 @@ public class GlossaryFlexionController extends FormBasicController {
 	 * internal method to remove Duplicates from list
 	 * @param arlList
 	 */
-	@SuppressWarnings("unchecked")
-	private static void removeDuplicate(ArrayList<String> arlList) {
-		HashSet<String> h = new HashSet<String>(arlList);
+	private static void removeDuplicate(List<String> arlList) {
+		Set<String> h = new HashSet<String>(arlList);
 		arlList.clear();
 		arlList.addAll(h);
 	}

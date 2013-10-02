@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Event;
  */
 public class GotoDateEvent extends Event {
 
+	private static final long serialVersionUID = -6916106022637446581L;
 	private Date gotoDate;
 
 	public GotoDateEvent(Date gotoDate) {

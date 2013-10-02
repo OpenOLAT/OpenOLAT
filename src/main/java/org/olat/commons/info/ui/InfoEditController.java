@@ -57,7 +57,7 @@ public class InfoEditController extends FormBasicController {
 		
 		this.messageToEdit = messageToEdit;
 		infoFrontendManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
-		editForm = new InfoEditFormController(ureq, wControl, mainForm);
+		editForm = new InfoEditFormController(ureq, wControl, mainForm, false);
 		editForm.setTitle(messageToEdit.getTitle());
 		editForm.setMessage(messageToEdit.getMessage());
 		listenTo(editForm);

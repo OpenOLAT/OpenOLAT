@@ -98,6 +98,10 @@ public class PdfDocument extends FileDocument {
 			String bean = externalIndexer ? "pdfExternalIndexer" : "pdfInternalIndexer";
 			PdfExtractor extractor = (PdfExtractor)CoreSpringFactory.getBean(bean);
 			
+			if("xss-content.pdf".equals(leaf.getName())) {
+				System.out.println();
+			}
+			
 			File pdfTextFile = new File(pdfTextBufferPath, getFilePath() + ".tmp");
 			if (isNewPdfFile(leaf, pdfTextFile)) {
 				//prepare dirs

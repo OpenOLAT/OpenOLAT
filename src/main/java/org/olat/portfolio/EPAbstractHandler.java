@@ -106,7 +106,6 @@ public abstract class EPAbstractHandler<U extends AbstractArtefact> implements E
 		return false;
 	}
 	
-	@SuppressWarnings("unused")
 	@Override
 	public Controller getSpecialMapViewController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact) {
 		return null;

@@ -22,7 +22,7 @@
 			#set($desc = $confController.getLink().getOffer().getDescription())
 			#if ($desc)
 				<tr class="$css b_access_desc">
-					<td colspan="5">$desc</td>
+					<td colspan="5">$r.escapeHtml($desc)</td>
 				</tr>
 			#end
 		#end

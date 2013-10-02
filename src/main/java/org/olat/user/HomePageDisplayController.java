@@ -42,6 +42,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -76,9 +77,11 @@ public class HomePageDisplayController extends BasicController {
 		// use property handler translator for translating of user fields
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
 		VelocityContainer mainVC = createVelocityContainer("homepagedisplay");
-
+		
+		String fullname = StringHelper.escapeHtml(userManager.getUserDisplayName(homeIdentity));
 		mainVC.contextPut("deleted", homeIdentity.getStatus().equals(Identity.STATUS_DELETED));
 		mainVC.contextPut("user", homeIdentity.getUser());
+		mainVC.contextPut("userFullname", fullname);
 		mainVC.contextPut("locale", getLocale());
 		
 		// add configured property handlers and the homepage config
@@ -104,8 +107,8 @@ public class HomePageDisplayController extends BasicController {
 			ImPreferences prefs = imService.getImPreferences(homeIdentity);
 			if(prefs.isVisibleToOthers()) {
 				User user = homeIdentity.getUser();
-				String fName = user.getProperty(UserConstants.FIRSTNAME, getLocale());
-				String lName = user.getProperty(UserConstants.LASTNAME, getLocale());
+				String fName = StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, getLocale()));
+				String lName = StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, getLocale()));
 				imLink = LinkFactory.createCustomLink("im.link", "im.link", "im.link", Link.NONTRANSLATED, mainVC, this);
 				imLink.setCustomDisplayText(translate("im.link", new String[] {fName,lName}));
 				Buddy buddy = imService.getBuddyById(homeIdentity.getKey());

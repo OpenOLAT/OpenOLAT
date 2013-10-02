@@ -45,7 +45,6 @@ public class ArtefactTypeImageCellRenderer implements CustomCellRenderer {
 	/**
 	 * @see org.olat.core.gui.components.table.CustomCellRenderer#render(org.olat.core.gui.render.StringOutput, org.olat.core.gui.render.Renderer, java.lang.Object, java.util.Locale, int, java.lang.String)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if (val instanceof AbstractArtefact){

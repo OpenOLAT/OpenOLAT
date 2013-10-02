@@ -393,7 +393,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 			Map<String, String> autoCont = getAutoCompleteContent();
 			if (autoCont != null) {
 				for (String item : autoCont.keySet()) {
-					array.put(autoCont.get(item));
+					array.put(StringHelper.escapeHtml(autoCont.get(item)));
 				}
 			}
 		} catch (Exception e) {

@@ -309,7 +309,8 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 				} else if(actionid.equals(TABLE_ACTION_EDIT)) {
 					doEdit(ureq, businessGroup);
 				} else if(actionid.equals(TABLE_ACTION_LEAVE)) {
-					leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", businessGroup.getName()), leaveDialogBox);
+					String groupName = StringHelper.escapeHtml(businessGroup.getName());
+					leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", groupName), leaveDialogBox);
 					leaveDialogBox.setUserObject(businessGroup);
 				} else if (actionid.equals(TABLE_ACTION_ACCESS)) {
 					doAccess(ureq, businessGroup);

@@ -32,7 +32,8 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class EPStructureEvent extends Event {
-	
+
+	private static final long serialVersionUID = 1732568799650825946L;
 	public static final String SELECT = "select";
 	public static final String SELECT_WITH_COMMENTS = "selectWithComments";
 	public static final String CLOSE = "close";

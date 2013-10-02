@@ -43,26 +43,22 @@ public class InfoEditFormController extends FormBasicController {
 
 	private TextElement title;
 	private RichTextElement message;
+	private final boolean showTitle;
 	
-	public InfoEditFormController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		initForm(ureq);
-	}
-	
-	public InfoEditFormController(UserRequest ureq, WindowControl wControl, Form mainForm) {
+	public InfoEditFormController(UserRequest ureq, WindowControl wControl, Form mainForm, boolean showTitle) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, mainForm);
+		this.showTitle = showTitle;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("edit.title");
+		if(showTitle) {
+			setFormTitle("edit.title");
+		}
 		
 		title = uifactory.addTextElement("info_title", "edit.info_title", 512, "", formLayout);
 		title.setMandatory(true);
-		//message = uifactory.addTextAreaElement("edit.info_message", 6, 80, "", formLayout);
-		//message.setMandatory(true);
-		//message.setMaxLength(2000);
 		
 		message = uifactory.addRichTextElementForStringDataMinimalistic("edit.info_message", "edit.info_message", "", 6, 80, false,
 				formLayout, ureq.getUserSession(), getWindowControl());

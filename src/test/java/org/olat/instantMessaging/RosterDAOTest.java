@@ -144,30 +144,4 @@ public class RosterDAOTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedEntries);
 		Assert.assertTrue(reloadedEntries.isEmpty());
 	}
-	
-	@Test
-	public void testClearRosterEntries() {
-		//create an entry
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-4-" + UUID.randomUUID().toString(), System.currentTimeMillis());
-		for(int i=0; i<10; i++) {
-			Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-roster-4-" + UUID.randomUUID().toString());
-			rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false, false);
-		}
-		dbInstance.commitAndCloseSession();
-		
-		//check the presence of the entries
-		List<RosterEntryImpl> entries = rosterDao.getRoster(chatResource, 0, -1);
-		Assert.assertNotNull(entries);
-		Assert.assertEquals(10, entries.size());
-		dbInstance.commitAndCloseSession();
-		
-		//delete the entry
-		rosterDao.clear();
-		dbInstance.commitAndCloseSession();
-		
-		//check the absence of the entry
-		List<RosterEntryImpl> reloadedEntries = rosterDao.getRoster(chatResource, 0, -1);
-		Assert.assertNotNull(reloadedEntries);
-		Assert.assertTrue(reloadedEntries.isEmpty());
-	}
 }

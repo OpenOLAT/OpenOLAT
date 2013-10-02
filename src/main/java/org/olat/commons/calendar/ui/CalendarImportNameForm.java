@@ -71,7 +71,7 @@ public class CalendarImportNameForm extends FormBasicController {
 		} else {
 			CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
 			String calID = ImportCalendarManager.getImportedCalendarID(identity, calendarName.getValue());
-			if (calManager.calendarExists(calManager.TYPE_USER, calID)) {
+			if (calManager.calendarExists(CalendarManager.TYPE_USER, calID)) {
 				calendarName.setErrorKey("cal.import.calname.exists.error", null);
 				return false;
 			}

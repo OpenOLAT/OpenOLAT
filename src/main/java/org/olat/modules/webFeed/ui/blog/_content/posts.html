@@ -40,7 +40,7 @@
 			#set ( $info = $helper.getInfo($post) )
 			#if ( $info )
 				<p class="o_item_info">
-				$info#if($helper.isModified($post)), <span class="o_item_info_mod">$helper.getModifierInfo($post)</span>#end
+				$info#if($helper.isModified($post)), <span class="o_item_info_mod">$r.escapeHtml($helper.getModifierInfo($post))</span>#end
 				</p>
 			#end
 			<p></p>

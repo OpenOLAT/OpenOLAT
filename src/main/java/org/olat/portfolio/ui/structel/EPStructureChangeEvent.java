@@ -31,6 +31,8 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class EPStructureChangeEvent extends Event {
+	
+	private static final long serialVersionUID = -7091171722782650074L;
 
 	private PortfolioStructure portfolioStructure;
 

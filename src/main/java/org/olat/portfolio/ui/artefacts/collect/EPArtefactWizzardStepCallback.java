@@ -71,7 +71,6 @@ public class EPArtefactWizzardStepCallback implements StepRunnerCallback {
 	 *      org.olat.core.gui.control.generic.wizard.StepsRunContext)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	public Step execute(UserRequest ureq2, WindowControl wControl, StepsRunContext runContext) {
 		boolean hasChanges = false;
 		if (runContext.containsKey("artefact")) {

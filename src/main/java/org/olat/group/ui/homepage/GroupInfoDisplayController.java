@@ -28,6 +28,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 
 /**
@@ -45,7 +46,7 @@ public class GroupInfoDisplayController extends BasicController {
 		super(ureq, wControl);
 		content = createVelocityContainer("groupinfodisplay");
 		content.contextPut("description", businessGroup.getDescription());
-		content.contextPut("name", businessGroup.getName());
+		content.contextPut("name", StringHelper.escapeHtml(businessGroup.getName()));
 		
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		int numParticipants = 0;

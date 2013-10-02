@@ -85,9 +85,11 @@ public class XingPropertyHandler extends Generic127CharTextPropertyHandler {
 		// FXOLAT-343 ::  can't search by user-email on xing... just link to xing-homepage
 		String xingname = getUserProperty(user, locale);
 		if (StringHelper.containsNonWhitespace(xingname)) {
-			StringBuffer stringBuffer = new StringBuffer();
-			stringBuffer.append("<a href=\"http://www.xing.com\" target=\"_blank\">" + xingname + "</a>");
-			return stringBuffer.toString();
+			StringBuilder sb = new StringBuilder();
+			sb.append("<a href=\"http://www.xing.com\" target=\"_blank\">")
+			  .append(StringHelper.escapeHtml(xingname))
+			  .append("</a>");
+			return sb.toString();
 		} else {
 			return null;
 		}

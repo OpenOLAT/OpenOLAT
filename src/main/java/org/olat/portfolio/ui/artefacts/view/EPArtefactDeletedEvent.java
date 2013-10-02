@@ -37,6 +37,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  */
 public class EPArtefactDeletedEvent extends Event {
 
+	private static final long serialVersionUID = -3990634156779087562L;
 	public static final String ARTEFACT_DELETED = "artefactDeleted";
 	private final Long oldArtefactKey;
 	private final AbstractArtefact artefact;

@@ -110,10 +110,6 @@ public class RosterDAO {
 		return query.getResultList();
 	}
 	
-	public void clear() {
-		dbInstance.getCurrentEntityManager().createNamedQuery("clearIMRosterEntry").executeUpdate();
-	}
-	
 	public void deleteEntry(Identity identity, OLATResourceable ores) {
 		dbInstance.getCurrentEntityManager().createNamedQuery("deleteIMRosterEntryByIdentityAndResource")
 				.setParameter("identityKey", identity.getKey())

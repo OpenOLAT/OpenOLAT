@@ -21,7 +21,7 @@
 					<div class="o_instantmessaging_avatar o_portrait_dummy_small"></div>					 
 				#end 
 								
-				<div class="o_instantmessaging_from">${message.from}</div>				
+				<div class="o_instantmessaging_from">$r.escapeHtml(${message.from})</div>				
 
 				## end link to visiting card
 				#if(!$message.anonym) </a> #end

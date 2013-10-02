@@ -80,7 +80,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		this(ureq, wControl, false, true);
 	}
 	
-	public OlatTopNavController(UserRequest ureq, WindowControl wControl, boolean impressum,	boolean search) {
+	public OlatTopNavController(UserRequest ureq, WindowControl wControl, boolean impressum, boolean search) {
 		super(ureq, wControl);
 		
 		topNavVC = createVelocityContainer("topnav");
@@ -118,7 +118,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			impressumLink.setTarget("_blank");
 		}
 		
-		if(ureq.getIdentity() != null && !isGuest && !isInvitee) {
+		if(search && ureq.getIdentity() != null && !isGuest && !isInvitee) {
 			SearchServiceUIFactory searchUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
 			searchC = searchUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD, null);
 			searchC.setResourceContextEnable(false);

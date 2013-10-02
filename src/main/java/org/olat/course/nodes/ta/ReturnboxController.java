@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
 import org.olat.core.util.notifications.SubscriptionContext;
@@ -46,7 +47,6 @@ import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.user.UserManager;
 
 /**
@@ -80,25 +80,25 @@ public class ReturnboxController extends BasicController {
 	 * @param userCourseEnv
 	 * @param previewMode
 	 */
-	public ReturnboxController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode) {
-		this(ureq, wControl, config, node, userCourseEnv, previewMode, true);
+	public ReturnboxController(UserRequest ureq, WindowControl wControl, CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode) {
+		this(ureq, wControl, node, userCourseEnv, previewMode, true);
 	}
 
-	protected ReturnboxController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode, boolean doInit) {
+	protected ReturnboxController(UserRequest ureq, WindowControl wControl, CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode, boolean doInit) {
 		super(ureq, wControl);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		
 		this.setBasePackage(ReturnboxController.class);
 		if (doInit) {
-			initReturnbox(ureq, wControl, config, node, userCourseEnv, previewMode);
+			initReturnbox(ureq, wControl, node, userCourseEnv, previewMode);
 		}
 	}
 
-	protected void initReturnbox(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode) {
+	protected void initReturnbox(UserRequest ureq, WindowControl wControl, CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode) {
 		// returnbox display
 		myContent = createVelocityContainer("returnbox");
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(getReturnboxPathFor(userCourseEnv.getCourseEnvironment(), node, ureq.getIdentity()) , null);
-		String fullName = userManager.getUserDisplayName(getIdentity());
+		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(getIdentity()));
 		OlatNamedContainerImpl namedContainer = new OlatNamedContainerImpl(fullName, rootFolder);
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 		returnboxFolderRunController = new FolderRunController(namedContainer, false, ureq, wControl);
@@ -152,14 +152,15 @@ public class ReturnboxController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
+		//
 	}
-	
-	
+
 	
 	/**
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
+		//
 	}
 }

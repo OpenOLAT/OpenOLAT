@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
@@ -67,10 +68,9 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 	
 	private static OLog logger = Tracing.createLoggerFor(EPCollectStepForm01.class);
 
-	public EPCollectStepForm01(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout,
-			String customLayoutPageName, AbstractArtefact artefact) {
+	public EPCollectStepForm01(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, AbstractArtefact artefact) {
 		super(ureq, wControl, rootForm, runContext, FormBasicController.LAYOUT_CUSTOM, "step01tagging");
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 
 		this.artefact = artefact;
 		initForm(this.flc, this, ureq);
@@ -93,7 +93,7 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 		int i = 0;
 		for (Iterator<Entry<String, String>> iterator = allUsersTags.entrySet().iterator(); iterator.hasNext();) {
 			Entry<String, String> entry = iterator.next();
-			String tag = entry.getKey();
+			String tag = StringHelper.escapeHtml(entry.getKey());
 			FormLink tagLink = uifactory.addFormLink("tagU" + i, tag, null, formLayout, Link.NONTRANSLATED);
 			tagLink.setUserObject(entry.getValue());
 			userTagLinks.add(tagLink);
@@ -147,8 +147,7 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-			
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {	
 		if (source == tagListElement) {
 			// nothing to do here, update dataModel on FormOK
 		} else if (source instanceof FormLink) {
@@ -160,10 +159,12 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 			if (link.getName().startsWith("tag")) {
 				List<String> currentTagsInComponent = tagListElement.getValueList();
 				String newTagFromLink = (String) link.getUserObject();
+				newTagFromLink = StringHelper.escapeHtml(newTagFromLink);
+				newTagFromLink = StringHelper.escapeJavaScript(newTagFromLink);
 				currentTagsInComponent.add(newTagFromLink);
 				addToRunContext(RUNCTX_TAGLIST_KEY, currentTagsInComponent);
 				// refresh gui
-				this.flc.setDirty(true);
+				flc.setDirty(true);
 				initForm(ureq);
 			}
 		}

@@ -97,10 +97,10 @@ public class EPMapRunController extends BasicController implements Activateable2
 		this.create = create;
 		this.option = option;
 		this.choosenOwner = choosenOwner;
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		
 		Component viewComp = new Panel("empty");
-		PortfolioModule portfolioModule = (PortfolioModule)CoreSpringFactory.getBean("portfolioModule");
+		PortfolioModule portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);
 		if (portfolioModule.isEnabled()){
 			init(ureq);
 			viewComp = vC;
@@ -116,13 +116,16 @@ public class EPMapRunController extends BasicController implements Activateable2
 			createMapLink.setElementCssClass("o_sel_create_map");
 		}
 		
-		String documentType = null;
+		String documentType;
 		switch(option) {
 			case MY_DEFAULTS_MAPS:
 				documentType = "type.d*." + EPDefaultMap.class.getSimpleName();
 				break;
 			case MY_EXERCISES_MAPS:
 				documentType = "type.*." + EPStructuredMap.class.getSimpleName();
+				break;
+			default:
+				documentType = null;
 				break;
 		}
 		

@@ -28,6 +28,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.notifications.items.SubscriptionListItem;
 import org.olat.portfolio.model.notification.EPArtefactNotification;
 import org.olat.portfolio.model.notification.EPCommentNotification;
@@ -64,7 +65,7 @@ public class EPNotificationManager {
 		List<SubscriptionListItem> items = new ArrayList<SubscriptionListItem>();
 		for (EPNotification notification : notifications) {
 			SubscriptionListItem item = null;	
-			String[] title = new String[] { notification.getTitle() };
+			String[] title = new String[] { StringHelper.escapeHtml(notification.getTitle()) };
 			if ("page".equals(notification.getType())) {
 				String bPath = rootBusinessPath + "[EPPage:" + notification.getPageKey() + "]";
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
@@ -93,9 +94,9 @@ public class EPNotificationManager {
 			Long pageKey =  link.getPageKey();
 			String targetTitle= link.getStructureTitle();
 			String[] title = new String[] {
-					userManager.getUserDisplayName(link.getAuthor()),
-					link.getArtefactTitle(),
-					targetTitle
+					StringHelper.escapeHtml(userManager.getUserDisplayName(link.getAuthor())),
+					StringHelper.escapeHtml(link.getArtefactTitle()),
+					StringHelper.escapeHtml(targetTitle)
 			};
 
 			String bPath = rootBusinessPath + "[EPPage:" + pageKey + "]";

@@ -61,7 +61,6 @@ public class EPAddArtefactController extends BasicController {
 
 	private Link uploadBtn;
 	private Link liveBlogBtn;
-	private Link importBtn; // not yet available, for v2 when import/export exists
 	private EPFrontendManager ePFMgr;
 	private VelocityContainer addPage = null;
 	private Link textBtn;
@@ -102,8 +101,6 @@ public class EPAddArtefactController extends BasicController {
 			liveBlogBtn.setCustomDisplayText(translate("add.artefact.blog"));
 			liveBlogBtn.setElementCssClass("o_sel_add_liveblog_artfeact");
 		}
-		
-		importBtn = LinkFactory.createLink("add.artefact.import", addPage, this); // not yet available, for v2 when import/export exists
 	}
 	
 	private void initAddLinkPopup(UserRequest ureq) {
@@ -138,7 +135,7 @@ public class EPAddArtefactController extends BasicController {
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	protected void event(UserRequest ureq, Component source, @SuppressWarnings("unused") Event event) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == addBtn) {
 			if (calloutCtr==null){
 				initAddLinkPopup(ureq);

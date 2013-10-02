@@ -182,7 +182,6 @@ public class ArtefactWizzardStepsController extends BasicController {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == addLink) {
 			// someone triggered the 'add to my portfolio' workflow by its link

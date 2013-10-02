@@ -130,13 +130,16 @@ public class FloatingResizableDialogController extends BasicController {
 			wrapper.put("layout", jsAndCssComp);
 		}
 		
+		String escapedTitle = StringHelper.escapeHtml(title);
+		escapedTitle = StringHelper.escapeJavaScript(title);
+		
 		panelName = "o_extjsPanel_" + (uniquePanelName == null ? hashCode() : uniquePanelName);
 		wrapper.contextPut("panelName", panelName);
 		wrapper.contextPut("width", this.width);
 		wrapper.contextPut("height", this.height);
 		wrapper.contextPut("offsetX", this.offsetX);
 		wrapper.contextPut("offsetY", this.offsetY);
-		wrapper.contextPut("title", title);
+		wrapper.contextPut("title", escapedTitle);
 		wrapper.contextPut("collabsibleContentPanelTitel", StringEscapeUtils.escapeHtml(collabsibleContentPanelTitel));
 		wrapper.contextPut("resizable", resizable);
 		wrapper.contextPut("constrain", constrain);

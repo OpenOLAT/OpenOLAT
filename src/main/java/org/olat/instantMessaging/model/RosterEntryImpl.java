@@ -49,7 +49,6 @@ import org.olat.core.id.Persistable;
 	@NamedQuery(name="loadIMRosterEntryForUpdate", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname",
 		lockMode=LockModeType.PESSIMISTIC_WRITE),
 	@NamedQuery(name="loadIMRosterEntryByResource", query="select entry from imrosterentry entry where entry.resourceId=:resid and entry.resourceTypeName=:resname"),
-	@NamedQuery(name="clearIMRosterEntry", query="delete from imrosterentry entry"),
 	@NamedQuery(name="deleteIMRosterEntryByIdentityAndResource", query="delete from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname")
 })
 public class RosterEntryImpl implements Persistable, CreateInfo {

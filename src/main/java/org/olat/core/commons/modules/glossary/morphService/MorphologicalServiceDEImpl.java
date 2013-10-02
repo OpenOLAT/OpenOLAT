@@ -65,14 +65,15 @@ public class MorphologicalServiceDEImpl implements MorphologicalService {
 	 * 
 	 */ 
 	public MorphologicalServiceDEImpl() {
-	// TODO Auto-generated constructor stub
+		// 
 	}
 
 	/**
 	 * 
 	 * @see org.olat.core.commons.modules.glossary.morphService.FlexionServiceClient#getFlexions(java.lang.String)
 	 */
-	public ArrayList<String> getFlexions(String word) {
+	@Override
+	public List<String> getFlexions(String word) {
 		return getFlexions(assumePartOfSpeech(word), word);
 	}
 
@@ -81,7 +82,8 @@ public class MorphologicalServiceDEImpl implements MorphologicalService {
 	 * @see org.olat.core.commons.modules.glossary.morphService.FlexionServiceClient#getFlexions(java.lang.String,
 	 *      java.lang.String)
 	 */
-	public ArrayList<String> getFlexions(String partOfSpeech, String word) {
+	@Override
+	public List<String> getFlexions(String partOfSpeech, String word) {
 		InputStream xmlReplyStream = retreiveXMLReply(partOfSpeech, word);
 		XStream xstream = XStreamHelper.createXStreamInstance();
 		xstream.alias("xml", FlexionReply.class);
@@ -106,6 +108,7 @@ public class MorphologicalServiceDEImpl implements MorphologicalService {
 	 * 
 	 * @see org.olat.core.commons.modules.glossary.morphService.FlexionServiceClient#assumePartOfSpeech(java.lang.String)
 	 */
+	@Override
 	public String assumePartOfSpeech(String glossTerm) {
 		if (glossTerm.contains(",")) {
 			// assume the form "House, beautiful"

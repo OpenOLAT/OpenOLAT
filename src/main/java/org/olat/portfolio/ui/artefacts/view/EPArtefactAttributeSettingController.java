@@ -58,7 +58,6 @@ public class EPArtefactAttributeSettingController extends FormBasicController {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("display.option.intro");
 
@@ -83,7 +82,6 @@ public class EPArtefactAttributeSettingController extends FormBasicController {
 	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof MultipleSelectionElement){
 			MultipleSelectionElement chkBox = (MultipleSelectionElement) source;

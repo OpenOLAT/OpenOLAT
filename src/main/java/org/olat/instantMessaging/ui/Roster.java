@@ -38,19 +38,11 @@ import org.olat.instantMessaging.model.BuddyGroup;
 public class Roster {
 	
 	private final Long identityKey;
-	private final List<Buddy> entries;
-	private final List<BuddyGroup> groups;
+	private final List<Buddy> entries = new CopyOnWriteArrayList<Buddy>();
+	private final List<BuddyGroup> groups = new CopyOnWriteArrayList<BuddyGroup>();
 	
 	public Roster(Long identityKey) {
 		this.identityKey = identityKey;
-		entries = new CopyOnWriteArrayList<Buddy>();
-		groups = new CopyOnWriteArrayList<BuddyGroup>();
-	}
-	
-	public Roster(List<Buddy> entries, Long identityKey) {
-		this.identityKey = identityKey;
-		this.entries = entries;
-		groups = new CopyOnWriteArrayList<BuddyGroup>();
 	}
 	
 	public List<BuddyGroup> getGroups() {

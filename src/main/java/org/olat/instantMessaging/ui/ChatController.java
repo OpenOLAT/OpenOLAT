@@ -155,7 +155,8 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 
 		chatPanelCtr = new FloatingResizableDialogController(ureq, getWindowControl(), mainVC,
-				roomName , width, height, offsetX, offsetY, rosterCtrl == null ? null : rosterCtrl.getInitialComponent(),
+				roomName , width, height, offsetX, offsetY,
+				rosterCtrl == null ? null : rosterCtrl.getInitialComponent(),
 				translate("groupchat.roster"), true, false, true, String.valueOf(hashCode()));
 		listenTo(chatPanelCtr);
 		chatPanelCtr.setElementCSSClass("o_instantmessaging_chat_dialog");

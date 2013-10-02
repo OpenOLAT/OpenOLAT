@@ -33,7 +33,8 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class EPTagBrowseEvent extends Event {
-	
+
+	private static final long serialVersionUID = -6127870154016020474L;
 	private final List<AbstractArtefact> artefacts;
 	
 	public EPTagBrowseEvent(List<AbstractArtefact> artefacts) {

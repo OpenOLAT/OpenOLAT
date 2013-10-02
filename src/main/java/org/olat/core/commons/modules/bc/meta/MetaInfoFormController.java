@@ -177,22 +177,27 @@ public class MetaInfoFormController extends FormBasicController {
 		}
 
 		// title
-		title = uifactory.addTextElement("title", "mf.title", -1, (meta != null ? meta.getTitle() : null), formLayout);
+		String t = StringHelper.escapeHtml(meta != null ? meta.getTitle() : null);
+		title = uifactory.addTextElement("title", "mf.title", -1, t, formLayout);
 
 		// comment/description
 		comment = uifactory.addTextAreaElement("comment", "mf.comment", -1, 3, 1, true, (meta != null ? meta.getComment() : null), formLayout);
 
 		// creator
-		creator = uifactory.addTextElement("creator", "mf.creator", -1, (meta != null ? meta.getCreator() : null), formLayout);
+		String c = StringHelper.escapeHtml(meta != null ? meta.getCreator() : null);
+		creator = uifactory.addTextElement("creator", "mf.creator", -1, c, formLayout);
 
 		// publisher
-		publisher = uifactory.addTextElement("publisher", "mf.publisher", -1, (meta != null ? meta.getPublisher() : null), formLayout);
+		String p = StringHelper.escapeHtml(meta != null ? meta.getPublisher() : null);
+		publisher = uifactory.addTextElement("publisher", "mf.publisher", -1, p, formLayout);
 
 		// source/origin
-		source = uifactory.addTextElement("source", "mf.source", -1, (meta != null ? meta.getSource() : null), formLayout);
+		String s = StringHelper.escapeHtml(meta != null ? meta.getSource() : null);
+		source = uifactory.addTextElement("source", "mf.source", -1, s, formLayout);
 
 		// city
-		city = uifactory.addTextElement("city", "mf.city", -1, (meta != null ? meta.getCity() : null), formLayout);
+		String ci = StringHelper.escapeHtml(meta != null ? meta.getCity() : null);
+		city = uifactory.addTextElement("city", "mf.city", -1, ci, formLayout);
 
 		// publish date
 		FormLayoutContainer publicationDate = FormLayoutContainer.createHorizontalFormLayout("publicationDateLayout", getTranslator());
@@ -277,7 +282,7 @@ public class MetaInfoFormController extends FormBasicController {
 			}
 			
 			// username
-			String author = meta == null ? "" : meta.getHTMLFormattedAuthor();
+			String author = StringHelper.escapeHtml(meta == null ? "" : meta.getHTMLFormattedAuthor());
 			uifactory.addStaticTextElement("mf.author", author, formLayout);
 
 			// filesize

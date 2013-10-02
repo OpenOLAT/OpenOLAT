@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
@@ -88,7 +89,7 @@ public class MemberInfoController extends FormBasicController {
 			Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), identity, true, false);
 			listenTo(dpc); // auto dispose
 			layoutCont.put("image", dpc.getInitialComponent());
-			layoutCont.contextPut("fullname", userManager.getUserDisplayName(identity));
+			layoutCont.contextPut("fullname", StringHelper.escapeHtml(userManager.getUserDisplayName(identity)));
 		}
 		
 		//user properties

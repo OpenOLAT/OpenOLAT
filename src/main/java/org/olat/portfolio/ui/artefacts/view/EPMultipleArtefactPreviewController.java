@@ -180,7 +180,6 @@ public class EPMultipleArtefactPreviewController extends BasicController impleme
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == artAttribBtn) {
 			if (artAttribCalloutCtr == null){

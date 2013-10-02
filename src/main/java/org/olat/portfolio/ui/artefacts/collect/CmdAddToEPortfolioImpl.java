@@ -117,7 +117,6 @@ public class CmdAddToEPortfolioImpl extends BasicController implements CmdAddToE
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// none

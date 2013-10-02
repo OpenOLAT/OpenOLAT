@@ -357,6 +357,18 @@ public class StringHelper {
 	public static final String xssScan(String str) {
 		return new OWASPAntiSamyXSSFilter().filter(str);
 	}
+	
+	public static final String escapeJavaScript(String str) {
+		return StringEscapeUtils.escapeJavaScript(str);
+	}
+	
+	public static final void escapeJavaScript(Writer writer, String str) {
+		try {
+			StringEscapeUtils.escapeJavaScript(writer, str);
+		} catch (IOException e) {
+			log.error("Error escaping JavaScript", e);
+		}
+	}
 
 	/**
 	 * @param cellValue

@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.user.UserManager;
@@ -119,7 +120,7 @@ public class DialogBoxUIFactory {
 			throw new AssertException("do not create a 'is locked message' if lock was succesfull! concerns lock:"+lockEntry.getOwner());
 		}
 		String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lockEntry.getOwner());
-		String[] i18nParams = new String[] { fullName,
+		String[] i18nParams = new String[] { StringHelper.escapeHtml(fullName),
 				Formatter.getInstance(ureq.getLocale()).formatTime(new Date(lockEntry.getLockAquiredTime())) };
 		String lockMsg = translator.translate(i18nLockMsgKey, i18nParams);
 		

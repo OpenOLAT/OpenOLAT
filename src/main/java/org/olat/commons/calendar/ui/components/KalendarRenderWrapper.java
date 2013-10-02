@@ -79,6 +79,7 @@ public class KalendarRenderWrapper {
 	 */
 	public KalendarRenderWrapper(Kalendar kalendar, KalendarConfig config, int access) {
 		this.kalendar = kalendar;
+		this.kalendarConfig = config;
 		this.access = access;
 	}
 

@@ -194,7 +194,7 @@ public class MessageEditController extends FormBasicController {
 					+ "/msg-preview.html");
 			uifactory.addSpacerElement("spacer1", formLayout, false);
 			formLayout.add(replyMsgLayout);
-			replyMsgLayout.setLabel("label.replytomsg", new String[] { replyMessage.getTitle() });
+			replyMsgLayout.setLabel("label.replytomsg", new String[] { StringHelper.escapeHtml(replyMessage.getTitle()) });
 			Identity identity = replyMessage.getCreator();
 			replyMsgLayout.contextPut("identity", identity);
 			replyMsgLayout.contextPut("messageBody", replyMessage.getBody());
@@ -239,8 +239,8 @@ public class MessageEditController extends FormBasicController {
 		
 		FormLayoutContainer tmpLayout;
 		if (attachLayout == null) {
-			tmpLayout = FormLayoutContainer.createCustomFormLayout("attachLayout", getTranslator(), Util.getPackageVelocityRoot(this.getClass())
-					+ "/attachments-editview.html");
+			String editPage = Util.getPackageVelocityRoot(this.getClass()) + "/attachments-editview.html";
+			tmpLayout = FormLayoutContainer.createCustomFormLayout("attachLayout", getTranslator(), editPage);
 			formLayout.add(tmpLayout);
 		} else {
 			tmpLayout = (FormLayoutContainer) attachLayout;

@@ -87,6 +87,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 	private static final String CMD_MODIFIER = "cmd.modifier.";
 	private static final String REGISTER_LINK = "register.link.";
 	private final Formatter formatter;
+	private final UserManager userManager;
 
 	public GlossaryMainController(WindowControl control, UserRequest ureq, VFSContainer glossaryFolder, OLATResourceable res,
 			GlossarySecurityCallback glossarySecCallback, boolean eventProfil) {
@@ -99,6 +100,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 		glistVC = createVelocityContainer("glossarylist");
 
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		formatter = Formatter.getInstance(getLocale());
 
 		glossaryItemList = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
@@ -228,6 +230,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 	private void openProfil(UserRequest ureq, String pos, boolean author) {
 		int id = Integer.parseInt(pos);
 		
+		@SuppressWarnings("unchecked")
 		List<GlossaryItemWrapper> wrappers = (List<GlossaryItemWrapper>)glistVC.getContext().get("editAndDelButtonList");
 		for(GlossaryItemWrapper wrapper:wrappers) {
 			if(id == wrapper.getId()) {
@@ -337,8 +340,8 @@ public class GlossaryMainController extends BasicController implements Activatea
 			// try to get lock for this glossary
 			lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(resourceable, ureq.getIdentity(), "GlossaryEdit");
 			if (!lockEntry.isSuccess()) {
-				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lockEntry.getOwner());
-				showInfo("glossary.locked", fullName);
+				String fullName = userManager.getUserDisplayName(lockEntry.getOwner());
+				showInfo("glossary.locked", StringHelper.escapeHtml(fullName));
 				glistVC.contextPut("editModeEnabled", Boolean.FALSE);
 			}
 		}

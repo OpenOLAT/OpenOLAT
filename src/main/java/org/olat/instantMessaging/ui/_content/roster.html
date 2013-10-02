@@ -7,7 +7,7 @@
 	<ul>
 	#foreach($entry in $roster.entries)
 		<li class="#if($entry.vip) o_instantmessaging_vip #end #if($entry.anonym) o_instantmessaging_anonymous #end">
-			<span>${entry.name}</span>
+			<span>$r.escapeHtml(${entry.name})</span>
 		</li>			
 	#end
 	</ul>

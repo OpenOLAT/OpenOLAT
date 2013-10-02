@@ -42,6 +42,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
@@ -483,7 +484,7 @@ public class VelocityRenderDecorator {
 	 * Escapes the characters in a String for JavaScript use.
 	 */
 	public String escapeJavaScript(String str) {
-		return StringEscapeUtils.escapeJavaScript(str);
+		return StringHelper.escapeJavaScript(str);
 	}
 	
 	/**
@@ -495,7 +496,7 @@ public class VelocityRenderDecorator {
 		if(str == null) {
 			return "";
 		}
-		return StringEscapeUtils.escapeHtml(str);
+		return StringHelper.escapeHtml(str);
 	}
 	
 	public String xssScan(String str) {

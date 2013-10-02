@@ -128,7 +128,6 @@ public class EPCollectStepForm03 extends StepFormBasicController {
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("step3.short.descr");
 		setFormContextHelp("org.olat.portfolio.ui.artefacts.collect", "reflexion.html", "step3.chelp.hover");

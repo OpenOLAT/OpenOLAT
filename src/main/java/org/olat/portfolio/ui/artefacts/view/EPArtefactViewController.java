@@ -239,15 +239,23 @@ public class EPArtefactViewController extends FormBasicController {
 				
 		// create edit buttons the adapt meta-data
 		if (!(viewOnlyMode || artefactChooseMode || artefactInClosedMap)){
-			String reflexion = FilterFactory.getHtmlTagAndDescapingFilter().filter(artefact.getReflexion());
+			String reflexion = artefact.getReflexion();
+			reflexion = FilterFactory.getHtmlTagAndDescapingFilter().filter(reflexion);
+			reflexion = StringHelper.xssScan(reflexion);
 			reflexion = Formatter.truncate(reflexion, 50);
-			if (reflexion == null || !StringHelper.containsNonWhitespace(reflexion)) reflexion = "&nbsp; "; // show a link even if empty
+			if (!StringHelper.containsNonWhitespace(reflexion)) {
+				reflexion = "&nbsp; "; // show a link even if empty
+			}
 			reflexionBtn = uifactory.addFormLink("reflexionBtn", reflexion, null, formLayout, Link.NONTRANSLATED);
 			reflexionBtn.setCustomEnabledLinkCSS("b_inline_editable b_ep_nolink");
 			
-			String description = FilterFactory.getHtmlTagAndDescapingFilter().filter(artefact.getDescription());
+			String description = artefact.getDescription();
+			description = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
 			description = Formatter.truncate(description, 50);
-			if (description == null || !StringHelper.containsNonWhitespace(description)) description = "&nbsp; "; // show a link even if empty
+			description = StringHelper.xssScan(description);
+			if (!StringHelper.containsNonWhitespace(description)) {
+				description = "&nbsp; "; // show a link even if empty
+			}
 			descriptionBtn = uifactory.addFormLink("descriptionBtn", description, null, formLayout, Link.NONTRANSLATED);
 			descriptionBtn.setCustomEnabledLinkCSS("b_inline_editable b_ep_nolink");
 		}

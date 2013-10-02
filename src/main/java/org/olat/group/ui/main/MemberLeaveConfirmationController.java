@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupModule;
 import org.olat.user.UserManager;
 
@@ -68,7 +69,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 			StringBuilder sb = new StringBuilder(identities.size() * 25);
 			for(Identity id:identities) {
 				if(sb.length() > 0) sb.append(" / ");
-				sb.append(userManager.getUserDisplayName(id));
+				sb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(id)));
 			}
 			((FormLayoutContainer)formLayout).contextPut("identities", sb.toString());
 		}

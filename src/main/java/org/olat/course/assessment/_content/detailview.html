@@ -13,7 +13,7 @@ $r.render("backLink")
 <table class="b_table">
 	<tr>
 		<td>
-			<span class="b_with_small_icon_left b_user_icon">$user.getProperty("firstName", $locale) $user.getProperty("lastName", $locale)</span>
+			<span class="b_with_small_icon_left b_user_icon">$r.escapeHtml($user.getProperty("firstName", $locale)) $r.escapeHtml($user.getProperty("lastName", $locale))</span>
 		</td>
 		<td>
 			$user.getProperty("email", $locale)
@@ -21,10 +21,10 @@ $r.render("backLink")
 			 / $user.getProperty("institutionalEmail", $locale)
 			#end
 			#if ($user.getProperty("institutionalName", $locale))
-				<br />$user.getProperty("institutionalName", $locale)
+				<br />$r.escapeHtml($user.getProperty("institutionalName", $locale))
 			#end
 			#if ($user.getProperty("institutionalUserIdentifier", $locale))
-				<br />$user.getProperty("institutionalUserIdentifier", $locale)
+				<br />$r.escapeHtml($user.getProperty("institutionalUserIdentifier", $locale))
 			#end
 		</td>
 	</tr>

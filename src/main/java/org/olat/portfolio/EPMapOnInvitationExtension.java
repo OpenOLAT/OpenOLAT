@@ -40,7 +40,6 @@ import org.olat.portfolio.model.structel.PortfolioStructureMap;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-@SuppressWarnings("unused")
 public class EPMapOnInvitationExtension {
 
 	public EPMapOnInvitationExtension() {

@@ -38,7 +38,6 @@ import org.olat.portfolio.model.structel.EPDefaultMap;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-@SuppressWarnings("unused")
 public class EPMyMapsExtension {
 
 	public EPMyMapsExtension() {

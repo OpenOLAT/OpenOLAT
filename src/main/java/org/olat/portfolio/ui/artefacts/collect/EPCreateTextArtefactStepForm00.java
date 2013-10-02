@@ -86,7 +86,7 @@ public class EPCreateTextArtefactStepForm00 extends StepFormBasicController {
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, @SuppressWarnings("unused") Controller listener, UserRequest ureq) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		VFSItem contFile = vfsTemp.resolve(EPArtefactManager.ARTEFACT_CONTENT_FILENAME);
 		if (contFile == null) {

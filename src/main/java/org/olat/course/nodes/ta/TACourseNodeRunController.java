@@ -97,10 +97,9 @@ public class TACourseNodeRunController extends BasicController {
 			content.contextPut("hasDropbox", Boolean.TRUE);
 		}
 		if (hasReturnbox) {
-			returnboxController = new ReturnboxController(ureq, wControl, config, ne.getCourseNode(), userCourseEnv, previewMode);
+			returnboxController = new ReturnboxController(ureq, wControl, ne.getCourseNode(), userCourseEnv, previewMode);
 			content.put("returnboxController", returnboxController.getInitialComponent());
 			content.contextPut("hasReturnbox", Boolean.TRUE);
-			
 		}
 
 		if (hasSolution) {

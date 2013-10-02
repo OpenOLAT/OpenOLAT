@@ -76,6 +76,7 @@ public class FreeAccessController extends FormBasicController implements FormCon
 		
 		String description = link.getOffer().getDescription();
 		if(StringHelper.containsNonWhitespace(description)) {
+			description = StringHelper.escapeHtml(description);
 			uifactory.addStaticTextElement("offer.description", description, formLayout);
 		}
 		

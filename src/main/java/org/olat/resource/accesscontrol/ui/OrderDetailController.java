@@ -52,7 +52,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
@@ -66,6 +65,7 @@ import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.Order;
 import org.olat.resource.accesscontrol.model.OrderLine;
 import org.olat.resource.accesscontrol.model.OrderPart;
+import org.olat.user.UserManager;
 
 public class OrderDetailController extends FormBasicController {
 	
@@ -126,14 +126,16 @@ public class OrderDetailController extends FormBasicController {
 			OrderItemWrapper wrapper = tableModel.getObject(0);
 			if(wrapper.getItem().getOffer().getResource() != null) {
 				//resource is null if the resource has been deleted
-				String linkName = wrapper.getDisplayName();
+				String linkName = StringHelper.escapeHtml(wrapper.getDisplayName());
 				selectResourceLink = uifactory.addFormLink("resource", linkName, translate("order.item"), mainLayout, Link.NONTRANSLATED);
 				selectResourceLink.setUserObject(wrapper);
 			}
 		}
+		
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 
 		User user = order.getDelivery().getUser();
-		String delivery = user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null);
+		String delivery = StringHelper.escapeHtml(userManager.getUserDisplayName(user));
 		uifactory.addStaticTextElement("delivery", "order.delivery", delivery, mainLayout);
 
 		if(formLayout instanceof FormLayoutContainer) {

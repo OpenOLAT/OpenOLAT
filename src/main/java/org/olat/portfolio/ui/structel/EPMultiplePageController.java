@@ -79,7 +79,7 @@ public class EPMultiplePageController extends BasicController implements Activat
 		this.pageList = pageList;
 		this.pageListByKeys = new ArrayList<Long>(pageList.size());
 		this.secCallback = secCallback;
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 
 		vC = createVelocityContainer("multiPages");
 
@@ -111,10 +111,10 @@ public class EPMultiplePageController extends BasicController implements Activat
 			changelogLink.setUserObject(PAGENUM_CL);
 
 			int i = 1;
-			ArrayList<Link> pageLinkList = new ArrayList<Link>();
+			List<Link> pageLinkList = new ArrayList<Link>();
 			for (PortfolioStructure page : pageList) {
 				pageListByKeys.add(page.getKey());
-				String pageTitle =StringHelper.escapeHtml(((EPPage) page).getTitle());
+				String pageTitle =StringHelper.escapeHtml(page.getTitle());
 				String shortPageTitle = Formatter.truncate(pageTitle, 20);
 				Link pageLink = LinkFactory
 						.createCustomLink("pageLink" + i, "pageLink" + i, shortPageTitle, Link.LINK + Link.NONTRANSLATED, vC, this);
@@ -267,7 +267,7 @@ public class EPMultiplePageController extends BasicController implements Activat
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, @SuppressWarnings("unused") Event event) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
 			Link link = (Link) source;
 			int pageNum = PAGENUM_TOC;

@@ -32,6 +32,8 @@ import org.olat.portfolio.model.structel.PortfolioStructureMap;
  */
 public class EPMapCreatedEvent extends EPMapEvent {
 
+	private static final long serialVersionUID = -3783757567973482399L;
+
 	public EPMapCreatedEvent(PortfolioStructureMap resMap) {
 		super("EPMapCreated", resMap);
 	}

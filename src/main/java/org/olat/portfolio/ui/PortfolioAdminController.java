@@ -71,7 +71,7 @@ public class PortfolioAdminController extends FormBasicController  {
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, @SuppressWarnings("unused") UserRequest ureq) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutContainer = (FormLayoutContainer)formLayout;
 			
@@ -119,7 +119,6 @@ public class PortfolioAdminController extends FormBasicController  {
 		//auto-disposed
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
