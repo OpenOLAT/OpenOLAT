@@ -73,6 +73,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
@@ -409,7 +410,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		if (!(event instanceof RequestNewPageEvent) && !(event instanceof RequestMediaEvent) && !(event instanceof RequestImageEvent)) {
 			page = wiki.getPage(pageId, true);
 			//set recent page id to the page currently used
-			if (page != null) this.pageId = page.getPageId();
+			if (page != null) pageId = page.getPageId();
 		}
 		
 		if (source == content) {
@@ -807,7 +808,9 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 		else if (source == searchOrCreateArticleForm) {
 			String query = searchOrCreateArticleForm.getQuery();
-			if (query == null) query = WikiPage.WIKI_INDEX_PAGE;
+			if (!StringHelper.containsNonWhitespace(query)) {
+				query = WikiPage.WIKI_INDEX_PAGE;
+			}
 			page = wiki.findPage(query);
 			pageId = page.getPageId();
 			if (page.getPageName().equals(Wiki.NEW_PAGE)) setTabsEnabled(false);

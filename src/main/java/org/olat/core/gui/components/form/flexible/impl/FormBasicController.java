@@ -306,7 +306,6 @@ public abstract class FormBasicController extends BasicController {
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == mainForm.getInitialComponent()) {

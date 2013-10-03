@@ -164,6 +164,13 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 		
 		return output;
 	}
+	
+	public int getNumOfErrors() {
+		if (cr != null) {
+			return cr.getNumberOfErrors();
+		}
+		return -1;
+	}
 
 	/**
 	 * get Errors/Messages from filter. 

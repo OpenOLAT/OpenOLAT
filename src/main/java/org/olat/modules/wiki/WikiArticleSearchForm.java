@@ -28,10 +28,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -47,7 +47,7 @@ public class WikiArticleSearchForm extends FormBasicController {
 
 	public WikiArticleSearchForm(UserRequest ureq, WindowControl control) {
 		super(ureq, control, "articleSearch");
-		initForm(this.flc, this, ureq);
+		initForm(ureq);
 	}
 
 	/**
@@ -67,20 +67,34 @@ public class WikiArticleSearchForm extends FormBasicController {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
-	@SuppressWarnings("unused") 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		searchQuery = uifactory.addTextElement("search", null, 250, null, formLayout);
 		searchQuery.setDisplaySize(40);
 		
-		FormSubmit submit = new FormSubmit("subm", "navigation.create.article");
-		formLayout.add(submit);
-	}
-	
-	public String getQuery() {
-		String query = searchQuery.getValue();
-		searchQuery.setValue(null);
-		return query;
+		uifactory.addFormSubmitButton("subm", "navigation.create.article", formLayout);
 	}
 
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		String val = searchQuery.getValue();
+		searchQuery.clearError();
+		if(!StringHelper.containsNonWhitespace(val)) {
+			searchQuery.setErrorKey("form.legende.mandatory", null);
+			allOk = false;
+		} else if(StringHelper.xssScanForErrors(val)) {
+			searchQuery.setErrorKey("form.legende.mandatory", null);
+			searchQuery.setValue("");
+			allOk = false;
+		}
+
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	public String getQuery() {
+		String query = searchQuery.getValue();
+		return query;
+	}
 }
