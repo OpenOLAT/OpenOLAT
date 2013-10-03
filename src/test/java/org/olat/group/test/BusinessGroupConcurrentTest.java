@@ -161,6 +161,7 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 				errorCount.incrementAndGet();
 			} finally {
 				doneSignal.countDown();
+				dbInstance.closeSession();
 			}
 		}
 	}

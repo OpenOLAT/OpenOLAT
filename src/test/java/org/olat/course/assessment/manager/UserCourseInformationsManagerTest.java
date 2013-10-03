@@ -147,6 +147,7 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 				log.error("", e);
 			} finally {
 				doneSignal.countDown();
+				dbInstance.closeSession();
 			}
 		}
 	}

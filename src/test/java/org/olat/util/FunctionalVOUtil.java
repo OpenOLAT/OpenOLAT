@@ -119,11 +119,9 @@ public class FunctionalVOUtil {
 	 */
 	public List<UserVO> createTestUsers(URL deploymentUrl, int count) throws IOException, URISyntaxException{
 		RestConnection restConnection = new RestConnection(deploymentUrl);
-
-		restConnection.login(getUsername(), getPassword());
+		assertTrue(restConnection.login(getUsername(), getPassword()));
 		
-		List<UserVO> user = new ArrayList<UserVO>();
-		
+		List<UserVO> user = new ArrayList<UserVO>(count);
 		for(int i = 0; i < count; i++){
 			UserVO vo = new UserVO();
 			String username = ("selenium_" + i + "_" + UUID.randomUUID().toString()).substring(0, 24);
@@ -145,14 +143,13 @@ public class FunctionalVOUtil {
 			method.addHeader("Accept-Language", "en");
 
 			HttpResponse response = restConnection.execute(method);
-			assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+			int responseCode = response.getStatusLine().getStatusCode();
+			assertTrue(responseCode == 200 || responseCode == 201);
 			InputStream body = response.getEntity().getContent();
-			
 			UserVO current = restConnection.parse(body, UserVO.class);
 			Assert.assertNotNull(current);
 			
 			current.setPassword(vo.getPassword());
-			
 			user.add(current);
 		}
 

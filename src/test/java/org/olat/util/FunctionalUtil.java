@@ -105,8 +105,6 @@ public class FunctionalUtil {
 	public final static String OLAT_SITE_HOME_CSS = "o_site_home";
 	public final static String OLAT_SITE_GROUPS_CSS = "o_site_groups";
 	public final static String OLAT_SITE_LEARNING_RESOURCES_CSS = "o_site_repository";
-	//TODO:JK: remove
-	//public final static String OLAT_SITE_GROUP_ADMINISTRATION_CSS = "o_site_groupsmanagement";
 	public final static String OLAT_SITE_USER_MANAGEMENT_CSS = "o_site_useradmin";
 	public final static String OLAT_SITE_ADMINISTRATION_CSS = "o_site_admin";
 
@@ -166,8 +164,6 @@ public class FunctionalUtil {
 	private String olatSiteHomeCss;
 	private String olatSiteGroupsCss;
 	private String olatSiteLearningResourcesCss;
-	//TODO:JK: remove
-	//private String olatSiteGroupAdministrationCss;
 	private String olatSiteUserManagementCss;
 	private String olatSiteAdministrationCss;
 	
@@ -229,9 +225,6 @@ public class FunctionalUtil {
 
 			username = "administrator";
 			password = "openolat";
-			
-			//TODO:JK: Auto-generated catch block
-			e.printStackTrace();
 		}
 		
 		deploymentUrl = DEPLOYMENT_URL;
@@ -248,8 +241,6 @@ public class FunctionalUtil {
 		olatSiteHomeCss = OLAT_SITE_HOME_CSS;
 		olatSiteGroupsCss = OLAT_SITE_GROUPS_CSS;
 		olatSiteLearningResourcesCss = OLAT_SITE_LEARNING_RESOURCES_CSS;
-		//TODO:JK: remove
-		//olatSiteGroupAdministrationCss = OLAT_SITE_GROUP_ADMINISTRATION_CSS;
 		olatSiteUserManagementCss = OLAT_SITE_USER_MANAGEMENT_CSS;
 		olatSiteAdministrationCss = OLAT_SITE_ADMINISTRATION_CSS;
 		
@@ -420,13 +411,13 @@ public class FunctionalUtil {
 				log.info("found element after " + (currentTime - startTime) + "ms");
 				return true;
 			} else if(count > 2) {
-				System.out.println();
+				log.info("Waiting for: " + locator);
 			}
 			
 			try {
 				Thread.sleep(POLL_INTERVAL);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				log.error("", e);
 			}
 
 			currentTime = Calendar.getInstance().getTimeInMillis();
@@ -748,8 +739,7 @@ public class FunctionalUtil {
 				try {
 					Thread.sleep(POLL_INTERVAL);
 				} catch (InterruptedException e) {
-					//TODO:JK: Auto-generated catch block
-					e.printStackTrace();
+					log.error("", e);
 				}
 			}
 			
@@ -1503,18 +1493,6 @@ public class FunctionalUtil {
 	public void setOlatSiteLearningResourcesCss(String olatSiteLearningResourcesCss) {
 		this.olatSiteLearningResourcesCss = olatSiteLearningResourcesCss;
 	}
-
-	//TODO:JK: remove
-	/*
-	public String getOlatSiteGroupAdministrationCss() {
-		return olatSiteGroupAdministrationCss;
-	}
-
-	public void setOlatSiteGroupAdministrationCss(
-			String olatSiteGroupAdministrationCss) {
-		this.olatSiteGroupAdministrationCss = olatSiteGroupAdministrationCss;
-	}
-	*/
 	
 	public String getOlatSiteUserManagementCss() {
 		return olatSiteUserManagementCss;

@@ -36,19 +36,20 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -86,7 +87,8 @@ public class RestConnection {
 	private String PROTOCOL = "http";
 	private String CONTEXT_PATH = "olat";
 
-	private final BasicCookieStore cookieStore = new BasicCookieStore();;
+	private final BasicCookieStore cookieStore = new BasicCookieStore();
+	private final BasicCredentialsProvider provider = new BasicCredentialsProvider();
 	private final CloseableHttpClient httpclient;
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
@@ -95,6 +97,7 @@ public class RestConnection {
 	public RestConnection() {
 		httpclient = HttpClientBuilder.create()
 				.setDefaultCookieStore(cookieStore)
+				.setDefaultCredentialsProvider(provider)
 				.build();
 	}
 	
@@ -106,6 +109,7 @@ public class RestConnection {
 		
 		httpclient = HttpClientBuilder.create()
 				.setDefaultCookieStore(cookieStore)
+				.setDefaultCredentialsProvider(provider)
 				.build();
 	}
 	
@@ -122,11 +126,9 @@ public class RestConnection {
 		PROTOCOL = url.getProtocol();
 		CONTEXT_PATH = url.getPath();
 		
-		CredentialsProvider provider = new BasicCredentialsProvider();
 		provider.setCredentials(new AuthScope(HOST, PORT), new UsernamePasswordCredentials(user, password));
 		
 		httpclient = HttpClientBuilder.create()
-				.setDefaultCookieStore(new BasicCookieStore())
 				.setDefaultCredentialsProvider(provider)
 				.setDefaultCookieStore(cookieStore)
 				.build();
@@ -153,6 +155,11 @@ public class RestConnection {
 	
 	public boolean login(String username, String password) throws IOException, URISyntaxException {
 		URI uri = getContextURI().path("auth").path(username).queryParam("password", password).build();
+		
+		//provider credentials
+		provider.setCredentials(new AuthScope(HOST, PORT), new UsernamePasswordCredentials(username, password));
+		provider.setCredentials(new AuthScope(uri.getHost(), uri.getPort()), new UsernamePasswordCredentials(username, password));
+
 		HttpGet httpget = new HttpGet(uri);
 		HttpResponse response = httpclient.execute(httpget);
 		
@@ -161,10 +168,10 @@ public class RestConnection {
 			securityToken = header.getValue();
 		}
 		
-    HttpEntity entity = response.getEntity();
-    int code = response.getStatusLine().getStatusCode();
-    EntityUtils.consume(entity);
-    return code == 200;
+	    HttpEntity entity = response.getEntity();
+	    int code = response.getStatusLine().getStatusCode();
+	    EntityUtils.consume(entity);
+	    return code == 200;
 	}
 	
 	public <T> T get(URI uri, Class<T> cl) throws IOException, URISyntaxException {
@@ -245,9 +252,12 @@ public class RestConnection {
 		return del;
 	}
 	
-	private void decorateHttpMessage(HttpMessage msg, String accept, String langage, boolean cookie) {
+	private void decorateHttpMessage(HttpRequestBase msg, String accept, String langage, boolean cookie) {
 		if(cookie) {
-			//HttpClientParams.setCookiePolicy(msg.getParams(), CookiePolicy.RFC_2109);
+			RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
+				.setCookieSpec(CookieSpecs.BROWSER_COMPATIBILITY)
+				.build();
+			msg.setConfig(config);
 		}
 		if(StringHelper.containsNonWhitespace(accept)) {
 			msg.addHeader("Accept", accept);

@@ -314,7 +314,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testFindUsersByLogin() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection(getContextURI().toURL(), "administrator", "openolat");
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
