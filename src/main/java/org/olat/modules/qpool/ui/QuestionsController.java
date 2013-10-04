@@ -41,6 +41,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
@@ -60,6 +61,9 @@ import org.olat.modules.qpool.ui.events.QPoolEvent;
  */
 public class QuestionsController extends BasicController implements Activateable2, StackedControllerAware {
 	
+	private static final String SPLIT_VIEW_NORTH_HEIGHT = "northHeight";
+	private static final String SPLIT_VIEW_WEST_WIDTH = "westWidth";
+	
 	private Link deleteItem, selectItem;
 	private QuestionListController listCtrl;
 	private final QuestionItemPreviewController previewCtrl;
@@ -70,12 +74,12 @@ public class QuestionsController extends BasicController implements Activateable
 	private DialogBoxController confirmDeleteBox;
 	
 	private final QPoolService qpoolService;
-	private QuestionItemsSource source;
+	private QuestionItemsSource dataSource;
 	
 	public QuestionsController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
 		super(ureq, wControl);
 		
-		this.source = source;
+		this.dataSource = source;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
 		listCtrl = new QuestionListController(ureq, wControl, source, key);
@@ -103,6 +107,11 @@ public class QuestionsController extends BasicController implements Activateable
 		JSAndCSSComponent jsAndCssComp = new JSAndCSSComponent("layouting", js, null);
 		mainVC.put("layout", jsAndCssComp);
 		
+		Object northHeight = ureq.getUserSession().getGuiPreferences().get(source.getClass(), SPLIT_VIEW_NORTH_HEIGHT);
+		Object westWidth = ureq.getUserSession().getGuiPreferences().get(source.getClass(), SPLIT_VIEW_WEST_WIDTH);
+		mainVC.contextPut(SPLIT_VIEW_NORTH_HEIGHT, northHeight == null ? "" : northHeight);
+		mainVC.contextPut(SPLIT_VIEW_WEST_WIDTH, westWidth == null ? "" : westWidth);
+		
 		initVelocityContainer(mainVC);
 		putInitialPanel(mainVC);
 	}
@@ -124,7 +133,7 @@ public class QuestionsController extends BasicController implements Activateable
 		String type = entry.getOLATResourceable().getResourceableTypeName();
 		if("QuestionItem".equals(type)) {
 			Collection<Long> key = Collections.singletonList(entry.getOLATResourceable().getResourceableId());
-			List<QuestionItemView> items = source.getItems(key);
+			List<QuestionItemView> items = dataSource.getItems(key);
 			if(!items.isEmpty()) {
 				doUpdateDetails(ureq, items.get(0));
 				doSelect(ureq, detailsCtrl.getItem(), detailsCtrl.isCanEdit());
@@ -137,14 +146,14 @@ public class QuestionsController extends BasicController implements Activateable
 	}
 
 	public void updateSource(UserRequest ureq, QuestionItemsSource source) {
-		this.source = source;
+		this.dataSource = source;
 		listCtrl.updateSource(source);
 		detailsCtrl.refresh();
 		previewCtrl.refresh(ureq);
 	}
 	
 	public void updateSource(UserRequest ureq) {
-		listCtrl.updateSource(source);
+		listCtrl.updateSource(dataSource);
 		detailsCtrl.refresh();
 		previewCtrl.refresh(ureq);
 	}
@@ -165,6 +174,15 @@ public class QuestionsController extends BasicController implements Activateable
 			doSelect(ureq, detailsCtrl.getItem(), detailsCtrl.isCanEdit());
 		} else if(deleteItem == source) {
 			doConfirmDelete(ureq, detailsCtrl.getItem());
+		} else if(source == mainVC) {
+			String size = ureq.getModuleURI();
+			if("saveNorthHeight".equals(event.getCommand()) && StringHelper.isLong(size)) {
+				ureq.getUserSession().getGuiPreferences().putAndSave(this.dataSource.getClass(), SPLIT_VIEW_NORTH_HEIGHT, size);
+				mainVC.contextPut(SPLIT_VIEW_NORTH_HEIGHT, size);
+			} else if("saveWestWidth".equals(event.getCommand()) && StringHelper.isLong(size)) {
+				ureq.getUserSession().getGuiPreferences().putAndSave(this.dataSource.getClass(), SPLIT_VIEW_WEST_WIDTH, size);
+				mainVC.contextPut(SPLIT_VIEW_WEST_WIDTH, size);
+			}
 		}
 	}
 
@@ -206,7 +224,7 @@ public class QuestionsController extends BasicController implements Activateable
 		QuestionItem item = previewCtrl.getItem();
 		if(item != null) {
 			Collection<Long> key = Collections.singletonList(item.getKey());
-			List<QuestionItemView> items = source.getItems(key);
+			List<QuestionItemView> items = dataSource.getItems(key);
 			if(items.size() > 0) {
 				QuestionItemView itemView = items.get(0);
 				doUpdateDetails(ureq, itemView);
