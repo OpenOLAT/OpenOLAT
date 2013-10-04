@@ -29,27 +29,41 @@ jQuery(function() {
 	## padding arount table = relative position of table (space for search field) + height of action buttons below table + some extra space
 	var dataTablesPos = jQuery('.dataTables_wrapper').position()
 	var panePadding = (dataTablesPos ? dataTablesPos.top : 0) + jQuery('.o_qpool_button_bar_box').height() + 80;
+	
+	var northHeight = '$northHeight';
+	var westWidth = '$westWidth';
+	var centerWidth = '50%';
+	if(northHeight == null || northHeight == "") {
+		northHeight = '50%';
+	}
+	if(westWidth == null || westWidth == "") {
+		westWidth = '50%';
+	} else {
+		centerWidth = width - westWidth;
+	}
 
 	jQuery('#qpoolcontainer').width(width).height(maxHeight).layout({
-		north: { size: '50%' },
-		center: { size: '50%' },
+		north: { size: northHeight },
+		center: { size: centerWidth },
+		west: { size: westWidth },
+		south: {},
 		north__onresize: function (pane, ui) {
 			var paneHeight = ui.height();
 			jQuery('#$tableId').each(function(index, el) {
-				var table = jQuery(el).dataTable();
-				var oSettings = table.fnSettings();
+				var oSettings = jQuery(el).dataTable().fnSettings();
 				oSettings.oScroll.sY = (paneHeight - panePadding) + "px";
 				jQuery('div.dataTables_scrollBody', jQuery('#qitems')).height(paneHeight - panePadding);
 			});
+			jQuery.post('$r.commandURI("saveNorthHeight")' + paneHeight);
 		},
-		west: { size: '50%' },
-		south: {}
+		west__onresize: function (pane, ui) {
+			jQuery.post('$r.commandURI("saveWestWidth")' + ui.width());
+		}
 	});
 	
 	jQuery('#$tableId').each(function(index, el) {
 		var paneHeight = jQuery('#qitems').height();
-		var table = jQuery(el).dataTable();
-		var oSettings = table.fnSettings();
+		var oSettings = jQuery(el).dataTable().fnSettings();
 		oSettings.oScroll.sY = (paneHeight - panePadding) + "px";
 		jQuery('div.dataTables_scrollBody', jQuery('#qitems')).height(paneHeight - panePadding);
 	});
