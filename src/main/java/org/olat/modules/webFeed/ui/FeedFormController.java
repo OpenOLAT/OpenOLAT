@@ -244,8 +244,6 @@ class FeedFormController extends FormBasicController {
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	// formLayout == this.flc && listener == this !!!
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		this.setFormTitle("feed.edit");
 		// this.setFormContextHelp(packageName, pageName, hoverTextKey);

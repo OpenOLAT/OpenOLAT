@@ -81,7 +81,7 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
 		OpenMeetingsRoom defaultSettings = getDefaultValues();
-		editForm = new OpenMeetingsEditFormController(ureq, getWindowControl(), ores, courseNode, course.getCourseTitle(), defaultSettings);
+		editForm = new OpenMeetingsEditFormController(ureq, getWindowControl(), ores, courseNode, defaultSettings);
 		listenTo(editForm);
 		editVc.put("editRooms", editForm.getInitialComponent());
 	}

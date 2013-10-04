@@ -143,10 +143,10 @@ public class EfficiencyStatementController extends BasicController {
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));		
 		userDataVC = createVelocityContainer("efficiencystatement");
 		if(efficiencyStatement != null) {
-			userDataVC.contextPut("courseTitle", efficiencyStatement.getCourseTitle());
+			userDataVC.contextPut("courseTitle", StringHelper.escapeHtml(efficiencyStatement.getCourseTitle()));
 			userDataVC.contextPut("date", StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), ureq.getLocale()));
 		} else if(courseRepo != null) {
-			userDataVC.contextPut("courseTitle", courseRepo.getDisplayname());
+			userDataVC.contextPut("courseTitle", StringHelper.escapeHtml(courseRepo.getDisplayname()));
 		}
 		
 		if(courseRepoKey != null && links) {

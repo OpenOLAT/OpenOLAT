@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -45,13 +46,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.folder.FolderHelper;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.user.UserManager;
 
 /**
  * This is the metadata flexiform controller with or without upload capability.
@@ -70,7 +71,8 @@ public class MetaInfoFormController extends FormBasicController {
 	private SingleSelection locked;
 	// Fields needed for upload dialog
 	private boolean isSubform;
-	Set<FormItem> metaFields;
+	private Set<FormItem> metaFields;
+	private final UserManager userManager;
 
 	/**
 	 * Use this controller for editing meta data of an existing file.
@@ -84,6 +86,7 @@ public class MetaInfoFormController extends FormBasicController {
 		this.item = item;
 		// load the metainfo
 		meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl) item);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		initForm(ureq);
 	}
 
@@ -97,6 +100,7 @@ public class MetaInfoFormController extends FormBasicController {
 	 */
 	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm) {
 		super(ureq, control, FormBasicController.LAYOUT_DEFAULT, null, parentForm);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		this.isSubform = true;
 		initForm(ureq);
 	}
@@ -114,6 +118,7 @@ public class MetaInfoFormController extends FormBasicController {
 		this.isSubform = true;
 		this.item = vfsItem;
 		this.meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl)vfsItem);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		initForm(ureq);
 	}
 	
@@ -153,7 +158,7 @@ public class MetaInfoFormController extends FormBasicController {
 			// show metadata
 			// and hide link
 			setMetaFieldsVisible(true);
-			this.flc.setDirty(true);
+			flc.setDirty(true);
 			moreMetaDataLink.setVisible(false);
 		}
 	}
@@ -177,27 +182,28 @@ public class MetaInfoFormController extends FormBasicController {
 		}
 
 		// title
-		String t = StringHelper.escapeHtml(meta != null ? meta.getTitle() : null);
-		title = uifactory.addTextElement("title", "mf.title", -1, t, formLayout);
+		String titleVal = StringHelper.escapeHtml(meta != null ? meta.getTitle() : null);
+		title = uifactory.addTextElement("title", "mf.title", -1, titleVal, formLayout);
 
 		// comment/description
-		comment = uifactory.addTextAreaElement("comment", "mf.comment", -1, 3, 1, true, (meta != null ? meta.getComment() : null), formLayout);
+		String commentVal =  StringHelper.xssScan(meta != null ? meta.getComment() : null);
+		comment = uifactory.addTextAreaElement("comment", "mf.comment", -1, 3, 1, true, commentVal, formLayout);
 
 		// creator
-		String c = StringHelper.escapeHtml(meta != null ? meta.getCreator() : null);
-		creator = uifactory.addTextElement("creator", "mf.creator", -1, c, formLayout);
+		String creatorVal = StringHelper.escapeHtml(meta != null ? meta.getCreator() : null);
+		creator = uifactory.addTextElement("creator", "mf.creator", -1, creatorVal, formLayout);
 
 		// publisher
-		String p = StringHelper.escapeHtml(meta != null ? meta.getPublisher() : null);
-		publisher = uifactory.addTextElement("publisher", "mf.publisher", -1, p, formLayout);
+		String publisherVal = StringHelper.escapeHtml(meta != null ? meta.getPublisher() : null);
+		publisher = uifactory.addTextElement("publisher", "mf.publisher", -1, publisherVal, formLayout);
 
 		// source/origin
-		String s = StringHelper.escapeHtml(meta != null ? meta.getSource() : null);
-		source = uifactory.addTextElement("source", "mf.source", -1, s, formLayout);
+		String sourceVal = StringHelper.escapeHtml(meta != null ? meta.getSource() : null);
+		source = uifactory.addTextElement("source", "mf.source", -1, sourceVal, formLayout);
 
 		// city
-		String ci = StringHelper.escapeHtml(meta != null ? meta.getCity() : null);
-		city = uifactory.addTextElement("city", "mf.city", -1, ci, formLayout);
+		String cityVal = StringHelper.escapeHtml(meta != null ? meta.getCity() : null);
+		city = uifactory.addTextElement("city", "mf.city", -1, cityVal, formLayout);
 
 		// publish date
 		FormLayoutContainer publicationDate = FormLayoutContainer.createHorizontalFormLayout("publicationDateLayout", getTranslator());
@@ -205,22 +211,25 @@ public class MetaInfoFormController extends FormBasicController {
 		formLayout.add(publicationDate);
 
 		String[] pubDate = (meta != null ? meta.getPublicationDate() : new String[] { "", "" });
-		publicationMonth = uifactory.addTextElement("publicationMonth", "mf.month", 2, pubDate[1], publicationDate);
+		publicationMonth = uifactory.addTextElement("publicationMonth", "mf.month", 2, StringHelper.escapeHtml(pubDate[1]), publicationDate);
 		publicationMonth.setMaxLength(2);
 		publicationMonth.setDisplaySize(2);
 
-		publicationYear = uifactory.addTextElement("publicationYear", "mf.year", 4, pubDate[0], publicationDate);
+		publicationYear = uifactory.addTextElement("publicationYear", "mf.year", 4, StringHelper.escapeHtml(pubDate[0]), publicationDate);
 		publicationYear.setMaxLength(4);
 		publicationYear.setDisplaySize(4);
 
 		// number of pages
-		pages = uifactory.addTextElement("pages", "mf.pages", -1, (meta != null ? meta.getPages() : null), formLayout);
+		String pageVal = StringHelper.escapeHtml(meta != null ? meta.getPages() : null);
+		pages = uifactory.addTextElement("pages", "mf.pages", -1, pageVal, formLayout);
 
 		// language
-		language = uifactory.addTextElement("language", "mf.language", -1, (meta != null ? meta.getLanguage() : null), formLayout);
+		String langVal = StringHelper.escapeHtml(meta != null ? meta.getLanguage() : null);
+		language = uifactory.addTextElement("language", "mf.language", -1, langVal, formLayout);
 
 		// url/link
-		url = uifactory.addTextElement("url", "mf.url", -1, (meta != null ? meta.getUrl() : null), formLayout);
+		String urlVal = StringHelper.escapeHtml(meta != null ? meta.getUrl() : null);
+		url = uifactory.addTextElement("url", "mf.url", -1, urlVal, formLayout);
 
 		/* static fields */
 		String sizeText, typeText;
@@ -268,11 +277,11 @@ public class MetaInfoFormController extends FormBasicController {
 				String lockedDetails = "";
 				if(lockedById != null) {
 					Identity lockedIdentity = meta.getLockedByIdentity();
-					String user = lockedIdentity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()) + " " +
-						lockedIdentity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale());
+					String user = userManager.getUserDisplayName(lockedIdentity);
+					user = StringHelper.escapeHtml(user);
 					String date = "";
 					if (meta.getLockedDate() != null) {
-						date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(meta.getLockedDate());
+						date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, getLocale()).format(meta.getLockedDate());
 					}
 					lockedDetails = getTranslator().translate("mf.locked.description", new String[]{user, date});
 				} else {
@@ -286,14 +295,14 @@ public class MetaInfoFormController extends FormBasicController {
 			uifactory.addStaticTextElement("mf.author", author, formLayout);
 
 			// filesize
-			uifactory.addStaticTextElement("mf.size", sizeText, formLayout);
+			uifactory.addStaticTextElement("mf.size", StringHelper.escapeHtml(sizeText), formLayout);
 
 			// last modified date
 			String lastModified = meta == null ? "" : StringHelper.formatLocaleDate(meta.getLastModified(), getLocale());
 			uifactory.addStaticTextElement("mf.lastModified", lastModified, formLayout);
 
 			// file type
-			uifactory.addStaticTextElement("mf.type", typeText, formLayout);
+			uifactory.addStaticTextElement("mf.type", StringHelper.escapeHtml(typeText), formLayout);
 
 			String downloads = meta == null ? "" : String.valueOf(meta.getDownloadCount());
 			uifactory.addStaticTextElement("mf.downloads", downloads, formLayout);

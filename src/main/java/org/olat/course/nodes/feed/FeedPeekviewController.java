@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
 import org.olat.modules.webFeed.managers.FeedManager;
@@ -98,7 +99,7 @@ public class FeedPeekviewController extends BasicController implements Controlle
 				// add link to item
 				// Add link to jump to course node
 				Link nodeLink = LinkFactory.createLink("nodeLink_" + item.getGuid(), peekviewVC, this);
-				nodeLink.setCustomDisplayText(item.getTitle());
+				nodeLink.setCustomDisplayText(StringHelper.escapeHtml(item.getTitle()));
 				nodeLink.setCustomEnabledLinkCSS("b_with_small_icon_left o_feed_item_icon o_gotoNode");
 				nodeLink.setUserObject(item.getGuid());
 			}
@@ -109,8 +110,7 @@ public class FeedPeekviewController extends BasicController implements Controlle
 		allItemsLink.setCustomEnabledLinkCSS("b_float_right");
 		// Add Formatter for proper date formatting
 		peekviewVC.contextPut("formatter", Formatter.getInstance(getLocale()));
-		//
-		this.putInitialPanel(peekviewVC);
+		putInitialPanel(peekviewVC);
 	}
 
 	/**

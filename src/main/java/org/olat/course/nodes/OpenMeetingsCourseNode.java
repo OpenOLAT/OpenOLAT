@@ -132,8 +132,7 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 
 		// create run controller
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
-		String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
-		Controller runCtr = new OpenMeetingsRunController(ureq, wControl, null, ores, getIdent(), courseTitle, admin, moderator);
+		Controller runCtr = new OpenMeetingsRunController(ureq, wControl, null, ores, getIdent(), admin, moderator);
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_openmeetings_icon");
 		return new NodeRunConstructionResult(controller);
 	}
@@ -147,7 +146,7 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new OpenMeetingsPeekViewController(ureq, wControl, userCourseEnv, getIdent());
+		return new OpenMeetingsPeekViewController(ureq, wControl);
 	}
 
 	@Override

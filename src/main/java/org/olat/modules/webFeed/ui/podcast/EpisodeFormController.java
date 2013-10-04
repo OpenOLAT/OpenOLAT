@@ -244,7 +244,6 @@ public class EpisodeFormController extends FormBasicController {
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		this.setFormTitle("feed.edit.item");
 		this.setFormContextHelp(this.getClass().getPackage().getName(), "episode_form_help.html", "chelp.hover.episode");

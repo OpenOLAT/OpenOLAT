@@ -144,7 +144,7 @@ public class ResultsSearchController extends SearchInputController {
 			hideDidYouMeanWords();
 			SearchResults results = doSearch(ureq, didYouMeanWord, condQueries, getParentContext(), getDocumentType(), key, 0, RESULT_PER_PAGE, false);
 			resultCtlr.setSearchResults(ureq, results);
-			persistSearch(ureq);
+			persistSearch();
 		} else if (source == extendedSearchLink) {
 			extendedSearch = true;
 			advancedSearchController.setSearchString(getSearchString());
@@ -197,7 +197,7 @@ public class ResultsSearchController extends SearchInputController {
 			resultCtlr.nextSearchResults(ureq, results);
 		}
 		
-		persistSearch(ureq);
+		persistSearch();
 	}
 
 	@Override

@@ -77,7 +77,6 @@ public class CreateBlogController extends DefaultController implements IAddContr
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Component source, Event event) {
 	// Nothing to catch
 	}
@@ -85,6 +84,7 @@ public class CreateBlogController extends DefaultController implements IAddContr
 	/**
 	 * @see org.olat.repository.controllers.IAddController#getTransactionComponent()
 	 */
+	@Override
 	public Component getTransactionComponent() {
 		// No additional workflow for feed creation
 		return null;

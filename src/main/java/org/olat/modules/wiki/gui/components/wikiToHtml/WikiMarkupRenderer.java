@@ -29,7 +29,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Locale;
 
-import org.jamwiki.parser.AbstractParser;
 import org.jamwiki.parser.ParserDocument;
 import org.jamwiki.parser.ParserInput;
 import org.jamwiki.parser.jflex.JFlexParser;
@@ -97,9 +96,6 @@ public class WikiMarkupRenderer implements ComponentRenderer {
 		String uri = out.toString();
 		
 		ParserDocument parsedDoc = null;
-
-		
-		
 		String uniqueId = "o_wiki"+wikiComp.getDispatchID();
 		try {
 			uri = URLDecoder.decode(uri, "utf-8");
@@ -113,7 +109,7 @@ public class WikiMarkupRenderer implements ComponentRenderer {
 			sb.append(uniqueId);
 			sb.append("\">");
 		
-			AbstractParser parser = new JFlexParser(input);
+			JFlexParser parser = new JFlexParser(input);
 			parsedDoc = parser.parseHTML(wikiComp.getWikiContent());
 		} catch (UnsupportedEncodingException e) {
 			//encoding utf-8 should be ok
@@ -137,6 +133,7 @@ public class WikiMarkupRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderingState)
 	 */
+	@Override
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {
 		//

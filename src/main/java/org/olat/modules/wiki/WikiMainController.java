@@ -62,7 +62,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -120,7 +119,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class WikiMainController extends BasicController implements CloneableController, Activateable2 {
 	
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(WikiMainController.class);
 
 	private TabbedPane tabs;
 	private WikiPage selectedPage;
@@ -138,7 +137,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private BreadCrumbController breadCrumpCtr;
 	private DialogBoxController removePageDialogCtr, archiveWikiDialogCtr;
 	private List<ChangeInfo> diffs = new ArrayList<ChangeInfo>(2);
-	private Identity ident;
 	private SubscriptionContext subsContext;
 	private LockResult lockEntry;
 	private Link archiveLink, closePreviewButton, deletePageButton, manageMediaButton, toMainPageLink, a2zLink, changesLink, editMenuButton, revertVersionButton;
@@ -177,7 +175,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 		this.ores = ores;
 		this.securityCallback = securityCallback;
 		this.subsContext = securityCallback.getSubscriptionContext();
-		this.ident = ureq.getIdentity();
 		WikiPage page = null;
 		Wiki wiki = getWiki();
 		if(wiki == null) {
@@ -541,7 +538,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			 * tabbed pane change to edit tab
 			 **********************************************************************/
 			wikiEditForm.resetUpdateComment();
-			editContent.contextPut("mayDeleteArticle", Boolean.valueOf(ident.getKey().equals(Long.valueOf(page.getInitalAuthor() )) || securityCallback.mayEditWikiMenu() ));
+			editContent.contextPut("mayDeleteArticle", Boolean.valueOf(getIdentity().getKey().equals(Long.valueOf(page.getInitalAuthor() )) || securityCallback.mayEditWikiMenu() ));
 			editContent.contextPut("linkList", wiki.getListOfAllPageNames());
 			editContent.contextPut("fileList", wiki.getMediaFileList());
 			// try to edit acquire lock for this page
@@ -800,7 +797,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		} else if (source == archiveWikiDialogCtr) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				//convert wiki into IMS content package and copy to users home folder
-				WikiToCPExport utils = new WikiToCPExport(ores, ident, getTranslator());
+				WikiToCPExport utils = new WikiToCPExport(ores, getIdentity(), getTranslator());
 				utils.archiveWikiToCP();
 				showInfo("wiki.exported.done.infomessage");
 			}
@@ -862,9 +859,9 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 						editContent.contextPut("isDirty", Boolean.valueOf(false));
 						page.setContent(wikiEditForm.getWikiContent());
-						page.setModifyAuthor(ident.getKey().longValue());
+						page.setModifyAuthor(getIdentity().getKey().longValue());
 						page.setUpdateComment(wikiEditForm.getUpdateComment());
-						if(page.getInitalAuthor() == 0) page.setInitalAuthor(ident.getKey().longValue());
+						if(page.getInitalAuthor() == 0) page.setInitalAuthor(getIdentity().getKey().longValue());
 						//menu page only editable by admin and owner set new content if changed
 						if (page.getPageName().equals(WikiPage.WIKI_MENU_PAGE)) wikiMenuComp.setWikiContent(page.getContent());
 						WikiManager.getInstance().saveWikiPage(ores, page, true, wiki);

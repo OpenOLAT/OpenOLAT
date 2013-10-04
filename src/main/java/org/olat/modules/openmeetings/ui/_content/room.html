@@ -3,7 +3,7 @@
 #elseif($noroom)
  <div class="b_warning">$r.translate("room.notfound.error")</div>
 #else
-	<h3 class="b_with_small_icon_left o_openmeetings_icon">$roomName</h3>
+	<h3 class="b_with_small_icon_left o_openmeetings_icon">$r.escapeHtml($roomName)</h3>
 	#if($roomComment)
 		<div class="b_note">$roomComment</div>
 	#end

@@ -131,7 +131,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		
 		// 1) score configuration
 		if (hasScore.isSelected(0)) {
-			sc.setSumOfScoreNodes(new ArrayList(scoreNodeIdents.getSelectedKeys()));
+			sc.setSumOfScoreNodes(new ArrayList<String>(scoreNodeIdents.getSelectedKeys()));
 		}else {
 			//reset
 			sc.setSumOfScoreNodes(null);
@@ -145,7 +145,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 			sc.setPassedCutValue(passedCutValue.getIntValue());
 		} else if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_INHERIT)) {
 			sc.setPassedType(ScoreCalculator.PASSED_TYPE_INHERIT);
-			sc.setPassedNodes(new ArrayList(passedNodeIdents.getSelectedKeys()));
+			sc.setPassedNodes(new ArrayList<String>(passedNodeIdents.getSelectedKeys()));
 		}
 		
 
@@ -166,8 +166,8 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 	public List<String> getInvalidNodeDescriptions() {
 		List<String> testElemWithNoResource = new ArrayList<String>();
 		List<String> selectedNodesIds = new ArrayList<String>(scoreNodeIdents.getSelectedKeys());		
-		for (Iterator nodeIter = assessableNodesList.iterator(); nodeIter.hasNext();) {
-			CourseNode node = (CourseNode) nodeIter.next();
+		for (Iterator<CourseNode> nodeIter = assessableNodesList.iterator(); nodeIter.hasNext();) {
+			CourseNode node = nodeIter.next();
 			if (selectedNodesIds.contains(node.getIdent())) {				
 				StatusDescription isConfigValid = node.isConfigValid();
 				if (isConfigValid != null && isConfigValid.isError()) {

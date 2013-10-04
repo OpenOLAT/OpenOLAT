@@ -67,7 +67,6 @@ public class WikiArtefactDetailsController extends BasicController {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -105,23 +104,19 @@ public class WikiArtefactDetailsController extends BasicController {
 	public static class DummyDataHandler implements DataHandler {
 
 		@Override
-		@SuppressWarnings("unused")
 		public boolean exists(String virtualWiki, String topic) {
 			return true;
 		}
 
 		@Override
-		@SuppressWarnings("unused")
 		public Topic lookupTopic(String virtualWiki, String topicName, boolean deleteOK, Object transactionObject) throws Exception {
 			return null;
 		}
 
 		@Override
-		@SuppressWarnings("unused")
 		public WikiFile lookupWikiFile(String virtualWiki, String topicName) throws Exception {
 			return null;
 		}
 	}
-	
 }
 

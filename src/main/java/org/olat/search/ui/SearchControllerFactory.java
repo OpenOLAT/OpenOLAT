@@ -124,9 +124,11 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 				if ("CourseNode".equals(tokenType)) {
 					String repoKey = allTokens.get(0).split("[:]")[1];
 					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(Long.parseLong(repoKey));
-					ICourse course = CourseFactory.loadCourse(re.getOlatResource());
-					CourseNode courseNode = course.getRunStructure().getNode(tokenKey);
-					return courseNode.getShortTitle();
+					if(re != null) {
+						ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+						CourseNode courseNode = course.getRunStructure().getNode(tokenKey);
+						return courseNode.getShortTitle();
+					}
 				}
 				if ("Identity".equals(tokenType)) {
 					IdentityShort identity  = BaseSecurityManager.getInstance().loadIdentityShortByKey(Long.parseLong(tokenKey));

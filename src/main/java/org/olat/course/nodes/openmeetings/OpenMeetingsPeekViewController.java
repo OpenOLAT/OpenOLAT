@@ -25,7 +25,6 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -39,8 +38,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class OpenMeetingsPeekViewController extends BasicController {
 
 
-	public OpenMeetingsPeekViewController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, String subIdentifier) {
+	public OpenMeetingsPeekViewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		Panel emptyPanel = new Panel("empty");

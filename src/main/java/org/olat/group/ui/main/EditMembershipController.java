@@ -46,6 +46,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.member.PermissionHelper;
 import org.olat.course.member.PermissionHelper.BGPermission;
 import org.olat.course.member.PermissionHelper.RepoPermission;
@@ -217,6 +218,7 @@ public class EditMembershipController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			String name = repoEntry == null ? businessGroup.getName() : repoEntry.getDisplayname();
+			name = StringHelper.escapeHtml(name);
 			String title = translate("edit.member.title", new String[]{ name });
 			layoutCont.contextPut("editTitle", title);
 		}

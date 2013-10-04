@@ -14,7 +14,7 @@
 			#set($css = $confController.getLink().getMethod().getMethodCssClass())
 			<tr class="$css">
 				<td><span class="b_with_small_icon_left ${css}_icon">$confController.name</span></td>
-				<td><span class="b_access_infos">$confController.infos</span></td>
+				<td><span class="b_access_infos">$r.escapeHtml($confController.infos)</span></td>
 				<td><div class="b_form_element">$r.render("from_$confController.link.key")</div></td>
 				<td><div class="b_form_element">$r.render("to_$confController.link.key")</div></td>
 				<td>#if($r.available("del_$confController.link.key")) $r.render("del_$confController.link.key") #end</td>

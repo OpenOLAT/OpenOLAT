@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.OpenMeetingsCourseNode;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
@@ -59,7 +60,6 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	
 	private final String[] recordingKeys = {"xx"};
 	
-	private String courseTitle;
 	private final OLATResourceable course;
 	private final OpenMeetingsCourseNode courseNode;
 	private final OpenMeetingsManager openMeetingsManager;
@@ -70,12 +70,11 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	private OpenMeetingsRoom defaultSettings;
 
 	public OpenMeetingsEditFormController(UserRequest ureq, WindowControl wControl, OLATResourceable course,
-			OpenMeetingsCourseNode courseNode, String courseTitle, OpenMeetingsRoom defaultSettings) {
+			OpenMeetingsCourseNode courseNode, OpenMeetingsRoom defaultSettings) {
 		super(ureq, wControl, null, Util.createPackageTranslator(OpenMeetingsRoomEditController.class, ureq.getLocale()));
 		
 		this.course = course;
 		this.courseNode = courseNode;
-		this.courseTitle = courseTitle;
 		this.defaultSettings = defaultSettings;
 		if(defaultSettings != null) {
 			defaultSettings.setName(courseNode.getShortTitle());
@@ -124,7 +123,7 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	private void updateUI() {
 		boolean hasRoom = room != null;
 		setFormDescription(hasRoom ? null : "create.room.desc");
-		roomNameEl.setValue(hasRoom ? room.getName() : "");
+		roomNameEl.setValue(hasRoom ? StringHelper.escapeHtml(room.getName()) : "");
 		roomNameEl.setVisible(hasRoom);
 		if(hasRoom) {
 			String typeStr = translate(RoomType.getType(room.getType()).i18nKey());
@@ -197,7 +196,7 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	protected void doEditRoom(UserRequest ureq) {
 		try {
 			cleanupPopups();
-			editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), null, course, courseNode.getIdent(), courseTitle, defaultSettings,  true);
+			editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), null, course, courseNode.getIdent(), defaultSettings);
 			listenTo(editController);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent(), true, translate("edit.room"));

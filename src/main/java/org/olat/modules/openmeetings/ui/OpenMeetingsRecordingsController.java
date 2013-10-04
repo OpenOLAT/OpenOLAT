@@ -135,7 +135,7 @@ public class OpenMeetingsRecordingsController extends BasicController {
 		} else if (source == confirmRemoveRecording) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
 				OpenMeetingsRecording recording = (OpenMeetingsRecording)confirmRemoveRecording.getUserObject();
-				doDelete(ureq, recording);
+				doDelete(recording);
 			}
 		}
 	}
@@ -153,7 +153,7 @@ public class OpenMeetingsRecordingsController extends BasicController {
 		cmc.activate();
 	}
 
-	private void doDelete(UserRequest ureq, OpenMeetingsRecording recording) {
+	private void doDelete(OpenMeetingsRecording recording) {
 		openMeetingsManager.deleteRecording(recording);
 		loadModel();
 	}

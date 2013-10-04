@@ -68,7 +68,7 @@ public class OpenMeetingsRunController extends BasicController {
 	private final String subIdentifier;
 
 	public OpenMeetingsRunController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
-			String subIdentifier, String resourceName, boolean admin, boolean moderator) {
+			String subIdentifier, boolean admin, boolean moderator) {
 		super(ureq, wControl);
 		
 		this.admin = admin;
@@ -170,9 +170,9 @@ public class OpenMeetingsRunController extends BasicController {
 		} else if (source == startGuestLink) {
 			doStartAsGuest(ureq);
 		} else if(source == openLink) {
-			doOpen(ureq);
+			doOpen();
 		} else if(source == closeLink) {
-			doClose(ureq);
+			doClose();
 		} else if(source == recordingLink) {
 			doOpenRecordings(ureq);
 		} else if(source == membersLink) {
@@ -188,7 +188,7 @@ public class OpenMeetingsRunController extends BasicController {
 			if(event == Event.DONE_EVENT) {
 				String firstName = guestController.getFirstName();
 				String lastName = guestController.getLastName();
-				redirectToGuestRoom(ureq, firstName, lastName);
+				redirectToGuestRoom(firstName, lastName);
 			}
 			cmc.deactivate();
 			cleanupPopups();
@@ -224,7 +224,7 @@ public class OpenMeetingsRunController extends BasicController {
 		cmc = null;
 	}
 	
-	private void doOpen(UserRequest ureq) {
+	private void doOpen() {
 		try {
 			room = openMeetingsManager.openRoom(room);
 		} catch (OpenMeetingsException e) {
@@ -233,7 +233,7 @@ public class OpenMeetingsRunController extends BasicController {
 		updateState();
 	}
 	
-	private void doClose(UserRequest ureq) {
+	private void doClose() {
 		try {
 			room = openMeetingsManager.closeRoom(room);
 		} catch (OpenMeetingsException e) {
@@ -269,7 +269,7 @@ public class OpenMeetingsRunController extends BasicController {
 	
 	private void doEdit(UserRequest ureq) {
 		cleanupPopups();
-		editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), group, ores, subIdentifier, "", null, true);
+		editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), group, ores, subIdentifier, null);
 		listenTo(editController);
 
 		String edit = translate("edit.room");
@@ -288,7 +288,7 @@ public class OpenMeetingsRunController extends BasicController {
 		cmc.activate();
 	}
 	
-	private void redirectToGuestRoom(UserRequest ureq, String firstName, String lastName) {	
+	private void redirectToGuestRoom(String firstName, String lastName) {	
 		if(room == null && room.getRoomId() <= 0) {
 			showError("room.notfound.error");
 		} else {

@@ -261,12 +261,12 @@ public class SearchInputController extends FormBasicController {
 			oldSearchString = props.getProperty("s");
 		}
 		
-		persistSearch(ureq);
+		persistSearch();
 		
 		if (DisplayOption.BUTTON.equals(displayOption) || DisplayOption.BUTTON_WITH_LABEL.equals(displayOption)) {
 			//no search, only popup
 			createResultsSearchController(ureq);
-			popupResultsSearchController(ureq);
+			popupResultsSearchController();
 			if(resultCtlr.getPersistedSearch() != null && !resultCtlr.getPersistedSearch().isEmpty()) {
 				resultCtlr.doSearch(ureq);
 			}
@@ -279,7 +279,7 @@ public class SearchInputController extends FormBasicController {
 
 				createResultsSearchController(ureq);
 				resultCtlr.setSearchString(searchString);
-				popupResultsSearchController(ureq);
+				popupResultsSearchController();
 				resultCtlr.doSearch(ureq);
 			}
 		}
@@ -309,7 +309,7 @@ public class SearchInputController extends FormBasicController {
 		}
 	}
 	
-	protected void persistSearch(UserRequest ureq) {
+	protected final void persistSearch() {
 		if(getResourceUrl() != null) {
 			String uri = getResourceUrl();
 			Properties props = prefs.get(uri);
@@ -362,7 +362,7 @@ public class SearchInputController extends FormBasicController {
 		}
 	}
 	
-	private void popupResultsSearchController(UserRequest ureq) {
+	private void popupResultsSearchController() {
 		String title = translate("search.title");
 		searchDialogBox = new CloseableModalController(getWindowControl(), title, resultCtlr.getInitialComponent());
 		searchDialogBox.activate();

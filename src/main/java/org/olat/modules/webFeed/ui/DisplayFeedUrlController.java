@@ -96,7 +96,7 @@ public class DisplayFeedUrlController extends FormBasicController {
 	 * @see org.olat.modules.webFeed.ui.podcast.FeedFormController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		feedUrl = uifactory.addTextAreaElement("feedUrl", "feed.url.label", 5000, 1, 1, true, helper.getFeedUrl(), this.flc);
 		// no editing. selecting allowed only

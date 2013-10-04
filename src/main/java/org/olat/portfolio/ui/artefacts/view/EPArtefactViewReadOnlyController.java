@@ -19,6 +19,7 @@
  */
 package org.olat.portfolio.ui.artefacts.view;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -76,7 +77,11 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 		
 		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		List<String> tags = ePFMgr.getArtefactTags(artefact);
-		vC.contextPut("tags", StringHelper.formatAsCSVString(tags));
+		List<String> escapedTags = new ArrayList<String>(tags.size());
+		for(String tag:tags) {
+			escapedTags.add(StringHelper.escapeHtml(tag));
+		}
+		vC.contextPut("tags", StringHelper.formatAsCSVString(escapedTags));
 		
 		putInitialPanel(vC);	
 	}

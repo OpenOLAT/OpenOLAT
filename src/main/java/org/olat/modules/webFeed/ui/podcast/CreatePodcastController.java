@@ -77,7 +77,6 @@ public class CreatePodcastController extends DefaultController implements IAddCo
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Component source, Event event) {
 	// Nothing to catch
 	}
