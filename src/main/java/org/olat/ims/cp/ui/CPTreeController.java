@@ -234,9 +234,7 @@ public class CPTreeController extends BasicController {
 		CPManager cpMgm = CPManager.getInstance();
 		cpMgm.updatePage(cp, page);
 		cpMgm.writeToFile(cp);
-		if (page.isOrgaPage()) {
-			updateTree();
-		}
+		updateTree();
 		selectTreeNodeByCPPage(page);
 	}
 
