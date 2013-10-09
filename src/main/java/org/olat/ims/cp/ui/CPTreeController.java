@@ -183,6 +183,7 @@ public class CPTreeController extends BasicController {
 			CPManager cpMgm = CPManager.getInstance();
 			newIdentifier = cpMgm.copyElement(cp, page.getIdentifier());
 			cpMgm.writeToFile(cp);
+			updateTree();
 		}
 		return newIdentifier;
 	}
@@ -329,8 +330,7 @@ public class CPTreeController extends BasicController {
 				showInfo("cptreecontroller.orga.cannot.be.copied");
 			} else {
 				String newIdentifier = copyPage(currentPage);
-				// this.getInitialComponent().setDirty(true);
-				contentCtr.displayPage(ureq, newIdentifier);
+				contentCtr.displayPageWithMetadataEditor(ureq, newIdentifier);
 			}
 		} else if (source == deleteLink) {
 			if (currentPage.isOrgaPage()) {
