@@ -29,6 +29,7 @@ import org.olat.course.condition.interpreter.AbstractFunction;
 import org.olat.course.condition.interpreter.ArgumentParseException;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -76,8 +77,13 @@ public class GetPassedFunction extends AbstractFunction {
 					"error.notfound.coursenodeid", "solution.copypastenodeid")); }
 			if (!cev.isAssessable(childId)) { return handleException(new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name,
 					childId, "error.notassessable.coursenodid", "solution.takeassessablenode")); }
-			// remember the reference to the node id for this condtion
-			cev.addSoftReference("courseNodeId", childId);
+			// Remember the reference to the node id for this condition for cycle testing. 
+			// Allow testing against own passed (self-referencing) except for ST
+			// course nodes as passed is calculated on these node. Do not allow
+			// dependencies to parents as they create cycles.
+			if (!childId.equals(cev.getCurrentCourseNodeId()) || cev.getNode(cev.getCurrentCourseNodeId()) instanceof STCourseNode) {
+				cev.addSoftReference("courseNodeId", childId);				
+			}
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
 		}
