@@ -1206,7 +1206,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -1218,7 +1217,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// FIXME:fj:b is this needed in some cases?: currentCourseNode = cn;
 			getWindowControl().makeFlat();
 
-			// add loggin information for case course gets started via jumpin
+			// add logging information for case course gets started via jump-in
 			// link/search
 			addLoggingResourceable(LoggingResourceable.wrap(course));
 			if (cn != null) {
@@ -1254,9 +1253,16 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				//the wrong link to the wrong person
 			}
 		} else if(RepositoryDetailsController.ACTIVATE_EDITOR.equals(type)) {
-			boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
-			if(!managed) {
-				doEdit(ureq);
+			// Nothing to do if already in editor. Can happen when editor is
+			// triggered externally, e.g. from the details page while user has
+			// the editor already open
+			if (!isInEditor) {
+				boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
+				if(!managed) {
+					doEdit(ureq);
+				}
+			} else {
+				logDebug("Activate called for editor but editor for course::" + courseRepositoryEntry.getResourceableId() + " is already opened. Reuse current editor instance.",  null);
 			}
 		}
 	}
