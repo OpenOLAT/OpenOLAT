@@ -168,7 +168,7 @@ public class CPEditMainController extends MainLayoutBasicController {
 				contentCtr.displayPage(ureq, nodeId);
 			} else if (event.getCommand().equals("New Page")) {
 				String newIdentifier = treeCtr.addNewHTMLPage();
-				contentCtr.displayPage(ureq, newIdentifier);
+				contentCtr.displayPageWithMetadataEditor(ureq, newIdentifier);
 			} else if (event instanceof NewCPPageEvent) {
 				contentCtr.displayPage(ureq, ((NewCPPageEvent) event).getCPPage().getIdentifier());
 			}
