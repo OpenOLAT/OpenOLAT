@@ -43,11 +43,12 @@
 	}
 	
 	## Check for dirtyness and mark buttons accordingly, each second
-	jQuery.periodic({period: 1000, decay:1.0, max_period: Number.MAX_VALUE}, function(executor) {
+	jQuery.periodic({period: 1000, decay:1.0, max_period: Number.MAX_VALUE}, function() {
+		var executor = this;
 		## first check if the html editor still exists on this page, otherwhise stop executing this code
 		var elem = jQuery('#$f.getItemId("rtfElement")');
-		if (!elem) {
-			executor.stop();
+		if (elem.length == 0) {
+			executor.cancel();
 		} else if (tinyMCE && tinyMCE.activeEditor) {
 			if (tinyMCE.activeEditor.isDirty()) {
 				o2c=1;
