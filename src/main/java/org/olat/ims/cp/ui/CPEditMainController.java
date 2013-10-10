@@ -170,7 +170,7 @@ public class CPEditMainController extends MainLayoutBasicController {
 				String newIdentifier = treeCtr.addNewHTMLPage();
 				contentCtr.displayPageWithMetadataEditor(ureq, newIdentifier);
 			} else if (event instanceof NewCPPageEvent) {
-				contentCtr.displayPage(ureq, ((NewCPPageEvent) event).getCPPage().getIdentifier());
+				contentCtr.displayPageWithMetadataEditor(ureq, ((NewCPPageEvent) event).getCPPage().getIdentifier());
 			}
 		} else if (source == contentCtr) {
 			// event from contentController

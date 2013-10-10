@@ -98,6 +98,7 @@ public class CPTreeController extends BasicController {
 		treeCtr.setDropEnabled(true);
 		treeCtr.setDropSiblingEnabled(true);
 		treeCtr.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");
+		treeCtr.setExpandSelectedNode(false);
 		treeCtr.addListener(this);
 
 		setLinks();
@@ -248,10 +249,7 @@ public class CPTreeController extends BasicController {
 		String nodeIdentifier = treeModel.getIdentifierForNodeID(nodeId);
 		CPPage page = new CPPage(nodeIdentifier, cp);
 		page.setTitle(title);
-		if (page.isOrgaPage()) {
-			updateTree();
-		}
-		updatePage(page);
+		updatePage(page); // will update also tree
 	}
 
 	/**
@@ -372,17 +370,17 @@ public class CPTreeController extends BasicController {
 				uploadCtr = null;
 			}
 		} else if (source == uploadCtr) {
-			if (event instanceof NewCPPageEvent) {
-				// TODO:GW Is it necessary to set component dirty?
-				// getInitialComponent().setDirty(true);
-				fireEvent(ureq, event);
-			}
-			// Dispose the cmc and the podcastFormCtr.
+			// Dispose the cmc and the podcastFormCtr first so modal dialog is free for metadata dialog
 			cmc.deactivate();
 			removeAsListenerAndDispose(cmc);
 			cmc = null;
 			removeAsListenerAndDispose(uploadCtr);
 			uploadCtr = null;
+			// Forward event to main controller
+			if (event instanceof NewCPPageEvent) {
+				fireEvent(ureq, event);
+				updateTree();
+			}
 		} else if (source == dialogCtr) {
 			// event from dialog (really-delete-dialog)
 			if (event != Event.CANCELLED_EVENT) {
