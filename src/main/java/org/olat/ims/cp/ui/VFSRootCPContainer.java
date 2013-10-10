@@ -111,14 +111,12 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 	
 	@Override
 	public VFSItem resolve(String path) {
-		// 1) try to resolve directly from root (editor initialization)
-		if (!path.startsWith("/")) {
-			VFSItem item = rootContainer.resolve(path);
-			if (item != null) {
-				return item;
-			}
-			
+		// 1) try to resolve directly from root (HTML editor instance)
+		VFSItem item = rootContainer.resolve(path);
+		if (item != null) {
+			return item;
 		}
+		
 		// 2) try to resolve from virtual containers (events from link chooser)
 		for(VFSItem root:roots) {
 			if(root instanceof VFSContainer) {
@@ -126,7 +124,7 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 				String dir = container.getName();
 				if (path.startsWith("/" + dir + "/")) {
 					// remove virtual directory name from path to resolve from real container
-					VFSItem item = container.resolve(path.substring(dir.length() + 1));
+					item = container.resolve(path.substring(dir.length() + 1));
 					if(item != null) {
 						return item;
 					}
