@@ -20,16 +20,30 @@
 	</div>
 </div>
 <script type="text/javascript">
-jQuery(function() {
-	var width = jQuery('#b_col3_content_inner').width();
-	var winHeight = jQuery(window).height();
-	var headerHeight = jQuery('#b_header').height() + jQuery('#b_nav_main').height();
-	var footerHeight = jQuery('#b_footer').height() + jQuery('#qbuttons').height();
-	var maxHeight = winHeight - headerHeight - footerHeight - 50;
+## global variable to initialize the qPool view
+var qPoolInit = function() {	
+	if (jQuery('#qpoolcontainer').length == 0) {
+		## detatch on-resize code and remove global method code
+		jQuery(window).off("resize", qPoolInit);
+		delete window.qPoolInit;
+	}
+	
 	## padding arount table = relative position of table (space for search field) + height of action buttons below table + some extra space
 	var dataTablesPos = jQuery('.dataTables_wrapper').position()
-	var panePadding = (dataTablesPos ? dataTablesPos.top : 0) + jQuery('.o_qpool_button_bar_box').height() + 80;
-	
+	var panePadding = (dataTablesPos ? dataTablesPos.top : 0) + jQuery('.o_qpool_button_bar_box').height() + jQuery('.b_table_footer').height() + 80;
+
+	## Calculate max height to use full browser height minus the header. Footer can be pushed below to max for table space
+	var winHeight = jQuery(window).height();
+	var containerTop = jQuery('#qpoolcontainer').offset().top;
+	var buttonsHeight = jQuery('#qbuttons').height()
+	var maxHeight = winHeight - containerTop - buttonsHeight;
+	## Add footer when enouth space
+	if (maxHeight > 1000) {
+		maxHeight -= jQuery('#b_footer').height() + 50;
+	}
+
+	## Calculate width and height for layouter
+	var width = jQuery('#b_col3_content_inner').width();
 	var northHeight = '$northHeight';
 	var westWidth = '$westWidth';
 	var centerWidth = '50%';
@@ -67,5 +81,11 @@ jQuery(function() {
 		oSettings.oScroll.sY = (paneHeight - panePadding) + "px";
 		jQuery('div.dataTables_scrollBody', jQuery('#qitems')).height(paneHeight - panePadding);
 	});
+}
+
+## initialize pool view when done with rendering and execute again on window resize
+jQuery(function() {
+	qPoolInit();
+	jQuery(window).on("resize", qPoolInit);
 });
 </script>

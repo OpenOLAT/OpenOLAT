@@ -371,11 +371,14 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		qtistatus.setQuestionProgressLabel(
 					translator.translate(
 								"question.progress.answered", new String[] {
-										""+ai.getAssessmentContext().getItemsAnsweredCount(),
+										""+answered,
 										qtistatus.getMaxQuestions()
 								}
 					)
 		);
+		// tell velocity if all questions are answered or there are unanswered questions  
+		int maxQuestions = Integer.parseInt(qtistatus.getMaxQuestions());
+		myContent.contextPut("allQuestionsAnswered", answered == maxQuestions);
 	}
 	
 	@Override

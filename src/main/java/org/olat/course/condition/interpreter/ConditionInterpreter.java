@@ -137,6 +137,7 @@ public class ConditionInterpreter {
 		env.addFunction(GetRecentCourseLaunchDateFunction.name, new GetRecentCourseLaunchDateFunction(userCourseEnv));
 
 		env.addFunction(GetAttemptsFunction.name, new GetAttemptsFunction(userCourseEnv));
+		env.addFunction(GetLastAttemptDateFunction.name, new GetLastAttemptDateFunction(userCourseEnv));
 
 		// enrollment building block specific functions
 		env.addFunction(GetInitialEnrollmentDateFunction.name, new GetInitialEnrollmentDateFunction(userCourseEnv));

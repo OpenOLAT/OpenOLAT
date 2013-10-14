@@ -58,15 +58,18 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 		super(name);
 		this.rootContainer = rootContainer;
 		
+		// real directory that contains all the files
 		String contentTitle = translator.translate("cpfileuploadcontroller.pages");
 		VFSCPContainer cpContainer = new VFSCPContainer(contentTitle, cp);
 		roots.add(cpContainer);
 		
+		// virtual directory showing only the media files
 		String mediaTitle = translator.translate("cpfileuploadcontroller.media");
 		VFSContainer mediaContainer = new VFSMediaFilesContainer(mediaTitle, cloneContainer(rootContainer));
 		mediaContainer.setDefaultItemFilter(new VFSMediaFilter(true));
 		roots.add(mediaContainer);
 
+		// virtual directory showing only the page (html) files
 		String rawTitle = translator.translate("cpfileuploadcontroller.raw");
 		VFSContainer rawContainer = new VFSMediaFilesContainer(rawTitle, cloneContainer(rootContainer));
 		rawContainer.setDefaultItemFilter(new VFSMediaFilter(false));
@@ -108,12 +111,23 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 	
 	@Override
 	public VFSItem resolve(String path) {
+		// 1) try to resolve directly from root (HTML editor instance)
+		VFSItem item = rootContainer.resolve(path);
+		if (item != null) {
+			return item;
+		}
+		
+		// 2) try to resolve from virtual containers (events from link chooser)
 		for(VFSItem root:roots) {
 			if(root instanceof VFSContainer) {
 				VFSContainer container = (VFSContainer)root;
-				VFSItem item = container.resolve(path);
-				if(item != null) {
-					return item;
+				String dir = container.getName();
+				if (path.startsWith("/" + dir + "/")) {
+					// remove virtual directory name from path to resolve from real container
+					item = container.resolve(path.substring(dir.length() + 1));
+					if(item != null) {
+						return item;
+					}
 				}
 			}
 		}

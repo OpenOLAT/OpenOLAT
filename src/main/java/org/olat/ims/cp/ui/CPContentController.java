@@ -103,6 +103,7 @@ public class CPContentController extends BasicController {
 	/**
 	 * Displays the correct edit page when node with the given id is selected.
 	 * 
+	 * @param ureq
 	 * @param nodeID
 	 */
 	protected void displayPage(UserRequest ureq, String nodeID) {
@@ -126,6 +127,17 @@ public class CPContentController extends BasicController {
 		}
 		fireEvent(ureq, new Event("Page loaded"));
 	}
+	
+	/**
+	 * Displays the page editor and shows the metadata editor to rename the page
+	 * @param ureq
+	 * @param nodeID
+	 */
+	protected void displayPageWithMetadataEditor(UserRequest ureq, String nodeID) {
+		displayPage(ureq, nodeID);
+		displayMetadataEditor(ureq);
+	}
+	
 
 	/**
 	 * Set the content to display given the file path

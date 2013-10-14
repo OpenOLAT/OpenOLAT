@@ -81,8 +81,11 @@ public class GetRecentEnrollmentDateFunction extends AbstractFunction {
 					"error.notfound.coursenodeid", "solution.copypastenodeid")); }
 			if (!cev.isEnrollmentNode(nodeId)) { return handleException(new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name,
 					nodeId, "error.notenrollment.coursenodeid", "solution.chooseenrollment")); }
-			// remember the reference to the node id for this condtion
-			cev.addSoftReference("courseNodeId", nodeId);
+			// Remember the reference to the node id for this condition for cycle testing. 
+			// Allow self-referencing but do not allow dependencies to parents as they create cycles.
+			if (!nodeId.equals(cev.getCurrentCourseNodeId())) {
+				cev.addSoftReference("courseNodeId", nodeId);				
+			}
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
 		}
