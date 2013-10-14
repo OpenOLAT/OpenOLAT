@@ -85,6 +85,7 @@ import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
@@ -762,19 +763,20 @@ public class ForumController extends BasicController implements GenericEventList
 		int numOfChildren = countNumOfChildren(currentMsg, threadMsgs);
 		boolean children = fm.hasChildren(currentMsg);
 		boolean userIsMsgCreator = ureq.getIdentity().getKey().equals(currentMsg.getCreator().getKey());
-
+		String currentMsgTitle = StringHelper.escapeHtml(currentMsg.getTitle());
+		
 		if (focallback.mayDeleteMessageAsModerator()) {
 			// user is forum-moderator -> may delete every message on every level
 			if (numOfChildren == 0) {
-				yesno = activateYesNoDialog(ureq, null, translate("reallydeleteleaf", currentMsg.getTitle()), yesno);
+				yesno = activateYesNoDialog(ureq, null, translate("reallydeleteleaf", currentMsgTitle), yesno);
 			} else if (numOfChildren == 1) {
-				yesno = activateYesNoDialog(ureq, null, translate("reallydeletenode1", currentMsg.getTitle()), yesno);
+				yesno = activateYesNoDialog(ureq, null, translate("reallydeletenode1", currentMsgTitle), yesno);
 			} else {
-				yesno = activateYesNoDialog(ureq, null, getTranslator().translate("reallydeletenodeN", new String[] { currentMsg.getTitle(), Integer.toString(numOfChildren) }), yesno);
+				yesno = activateYesNoDialog(ureq, null, getTranslator().translate("reallydeletenodeN", new String[] { currentMsgTitle, Integer.toString(numOfChildren) }), yesno);
 			}
 		} else if ((userIsMsgCreator) && (children == false)) {
 			// user may delete his own message if it has no children
-			yesno = activateYesNoDialog(ureq, null, translate("reallydeleteleaf", currentMsg.getTitle()), yesno);
+			yesno = activateYesNoDialog(ureq, null, translate("reallydeleteleaf", currentMsgTitle), yesno);
 		} else if ((userIsMsgCreator) && (children == true)) {
 			// user may not delete his own message because it has at least one child
 			showWarning("may.not.delete.msg.as.author");

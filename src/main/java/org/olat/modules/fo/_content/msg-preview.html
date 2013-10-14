@@ -11,7 +11,7 @@
 		<div class="o_forum_message_content_wrapper ">
 			<div class="o_forum_message_content b_clearfix ">
 				<div class="o_forum_message_creator b_float_left">
-					<strong>$identity.getUser().getProperty("firstName", $locale) $identity.getUser().getProperty("lastName", $locale)</strong>
+					<strong>$r.escapeHtml($identity.getUser().getProperty("firstName", $locale)) $r.escapeHtml($identity.getUser().getProperty("lastName", $locale))</strong>
 					<br />
 					<br />
 					$r.render("portrait")

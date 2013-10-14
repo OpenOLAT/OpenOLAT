@@ -33,6 +33,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 
 /**
@@ -60,7 +61,8 @@ public class BGCopySingleGroupStep extends BasicStep {
 
 	@Override
 	public FormItem getStepTitle() {
-		String title = getTranslator().translate("copy.wizard.bgstep", new String[]{ groupToCopy.getName() });
+		String groupName = StringHelper.escapeHtml(groupToCopy.getName());
+		String title = getTranslator().translate("copy.wizard.bgstep", new String[]{ groupName });
 		FormLink fl = new FormLinkImpl("copy.wizard." + groupToCopy.getKey(), null, title, Link.FLEXIBLEFORMLNK + Link.NONTRANSLATED);
 		fl.setTranslator(getTranslator());
 		return fl;
