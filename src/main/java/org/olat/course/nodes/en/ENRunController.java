@@ -30,6 +30,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -277,7 +278,9 @@ public class ENRunController extends BasicController implements GenericEventList
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.desc", 1, null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.partipiciant", 2, null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(hasAnyWaitingList,new DefaultColumnDescriptor("grouplist.table.waitingList", 3, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.state", 4, null, ureq.getLocale()));
+		DefaultColumnDescriptor stateColdEsc = new DefaultColumnDescriptor("grouplist.table.state", 4, null, ureq.getLocale());
+		stateColdEsc.setEscapeHtml(EscapeMode.none);
+		tableCtr.addColumnDescriptor(stateColdEsc);
 		BooleanColumnDescriptor columnDesc = new BooleanColumnDescriptor("grouplist.table.enroll", 5, CMD_ENROLL_IN_GROUP,
 		  	translate(CMD_ENROLL_IN_GROUP), translate("grouplist.table.no_action"));
 		columnDesc.setSortingAllowed(false);

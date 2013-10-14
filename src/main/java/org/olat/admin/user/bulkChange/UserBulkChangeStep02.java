@@ -41,10 +41,12 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -252,16 +254,16 @@ class UserBulkChangeStep02 extends BasicStep {
 			int colPos = 0;
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colPos++));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("form.name.pwd", colPos++));
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("form.name.language", colPos++));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "form.name.language", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(false)));
 			for (int j = 0; j < userPropertyHandlers.size(); j++) {
 				UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(j);
-				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
+				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(false)));
 			}
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.role.useradmin", colPos++));
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.role.groupadmin", colPos++));
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.role.author", colPos++));
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.role.admin", colPos++));
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.role.status", colPos++));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.useradmin", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(false)));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.groupadmin", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(false)));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.author", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(false)));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.admin", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(false)));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.status", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(false)));
 
 			FlexiTableDataModel<List<String>> tableDataModel = new FlexiTableDataModelImpl<List<String>>(new OverviewModel(mergedDataChanges, colPos), tableColumnModel);
 			uifactory.addTableElement(ureq, getWindowControl(), "newUsers", tableDataModel, formLayoutVertical);
