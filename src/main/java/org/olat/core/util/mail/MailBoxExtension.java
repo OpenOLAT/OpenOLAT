@@ -127,7 +127,7 @@ public class MailBoxExtension extends BasicManager implements MailContextResolve
 			mailManager.delete(inMail, identity, true);
 		}
 
-		Collection<DBMailLight> outbox = new HashSet<DBMailLight>(mailManager.getOutbox(identity, 0, 0));
+		Collection<DBMailLight> outbox = new HashSet<DBMailLight>(mailManager.getOutbox(identity, 0, 0, false));
 		for(DBMailLight outMail:outbox) {
 			mailManager.delete(outMail, identity, true);
 		}

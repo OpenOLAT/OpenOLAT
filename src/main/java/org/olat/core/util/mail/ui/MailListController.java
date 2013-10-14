@@ -233,7 +233,7 @@ public class MailListController extends BasicController implements Activateable2
 			if(StringHelper.containsNonWhitespace(metaId)) {
 				mails = MailManager.getInstance().getEmailsByMetaId(metaId);
 			} else {
-				mails = MailManager.getInstance().getOutbox(getIdentity(), 0, -1);
+				mails = MailManager.getInstance().getOutbox(getIdentity(), 0, -1, true);
 			}
 			
 			//strip meta emails
