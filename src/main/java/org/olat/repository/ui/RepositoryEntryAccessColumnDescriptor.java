@@ -52,29 +52,30 @@ public class RepositoryEntryAccessColumnDescriptor implements CustomCellRenderer
 		//fxdiff VCRP-1,2: access control of resources
 			if(re.isMembersOnly()) {
 				sb.append(translator.translate("table.header.access.membersonly")); 
-			}
-			switch (re.getAccess()) {
-				case RepositoryEntry.ACC_OWNERS:
-					sb.append(translator.translate("table.header.access.owner"));
-					break;
-				case RepositoryEntry.ACC_OWNERS_AUTHORS:
-					sb.append(translator.translate("table.header.access.author"));
-					break;
-				case RepositoryEntry.ACC_USERS:
-					sb.append(translator.translate("table.header.access.user"));
-					break;
-				case RepositoryEntry.ACC_USERS_GUESTS: {
-					if(!guestLoginEnabled) {
+			} else {
+				switch (re.getAccess()) {
+					case RepositoryEntry.ACC_OWNERS:
+						sb.append(translator.translate("table.header.access.owner"));
+						break;
+					case RepositoryEntry.ACC_OWNERS_AUTHORS:
+						sb.append(translator.translate("table.header.access.author"));
+						break;
+					case RepositoryEntry.ACC_USERS:
 						sb.append(translator.translate("table.header.access.user"));
-					} else {
-						sb.append(translator.translate("table.header.access.guest"));
+						break;
+					case RepositoryEntry.ACC_USERS_GUESTS: {
+						if(!guestLoginEnabled) {
+							sb.append(translator.translate("table.header.access.user"));
+						} else {
+							sb.append(translator.translate("table.header.access.guest"));
+						}
+						break;
 					}
-					break;
+					default:						
+						// OLAT-6272 in case of broken repo entries with no access code
+						// return error instead of nothing
+						sb.append("ERROR");
 				}
-				default:						
-					// OLAT-6272 in case of broken repo entries with no access code
-					// return error instead of nothing
-					sb.append("ERROR");
 			}
 		}
 	}

@@ -210,9 +210,9 @@ public class CoursesWebService {
 	@PUT
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle, @QueryParam("title") String title,
-			@QueryParam("softKey") String softKey, @QueryParam("externalId") String externalId,
-			@QueryParam("externalRef") String externalRef, @QueryParam("managedFlags") String managedFlags,
-			@QueryParam("sharedFolderSoftKey") String sharedFolderSoftKey,
+			@QueryParam("softKey") String softKey, @QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly, 
+			@QueryParam("externalId") String externalId, @QueryParam("externalRef") String externalRef,
+			@QueryParam("managedFlags") String managedFlags, @QueryParam("sharedFolderSoftKey") String sharedFolderSoftKey,
 			@QueryParam("copyFrom") Long copyFrom,
 			@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
@@ -221,12 +221,15 @@ public class CoursesWebService {
 		CourseConfigVO configVO = new CourseConfigVO();
 		configVO.setSharedFolderSoftKey(sharedFolderSoftKey);
 		
+		int accessInt = (access == null ? RepositoryEntry.ACC_OWNERS : access.intValue());
+		boolean membersOnlyBool = (membersOnly == null ? false : membersOnly.booleanValue());
+		
 		ICourse course;
 		UserRequest ureq = getUserRequest(request);
 		if(copyFrom != null) {
-			course = copyCourse(copyFrom, ureq, shortTitle, title, softKey, externalId, externalRef, managedFlags, configVO);
+			course = copyCourse(copyFrom, ureq, shortTitle, title, softKey, accessInt, membersOnlyBool, externalId, externalRef, managedFlags, configVO);
 		} else {
-			course = createEmptyCourse(ureq.getIdentity(), shortTitle, title, softKey, externalId, externalRef, managedFlags, configVO);
+			course = createEmptyCourse(ureq.getIdentity(), shortTitle, title, softKey, accessInt, membersOnlyBool, externalId, externalRef, managedFlags, configVO);
 		}
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
@@ -255,8 +258,9 @@ public class CoursesWebService {
 
 		CourseConfigVO configVO = new CourseConfigVO();
 		ICourse course = createEmptyCourse(ureq.getIdentity(), courseVo.getTitle(),
-				courseVo.getTitle(), courseVo.getSoftKey(), courseVo.getExternalId(),
-				courseVo.getExternalRef(), courseVo.getManagedFlags(), configVO);
+				courseVo.getTitle(), courseVo.getSoftKey(), RepositoryEntry.ACC_OWNERS, false,
+				courseVo.getExternalId(), courseVo.getExternalRef(), courseVo.getManagedFlags(),
+				configVO);
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
@@ -287,9 +291,11 @@ public class CoursesWebService {
 			if(length > 0) {
 				Long accessRaw = partsReader.getLongValue("access");
 				int access = accessRaw != null ? accessRaw.intValue() : RepositoryEntry.ACC_OWNERS;
+				String membersOnlyRaw = partsReader.getValue("membersOnly");
+				boolean membersonly = "true".equals(membersOnlyRaw);
 				String softKey = partsReader.getValue("softkey");
 				String displayName = partsReader.getValue("displayname");
-				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey, access);
+				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey, access, membersonly);
 				CourseVO vo = ObjectFactory.get(course);
 				return Response.ok(vo).build();
 			}
@@ -305,7 +311,7 @@ public class CoursesWebService {
 	}
 	
 	public static ICourse importCourse(UserRequest ureq, Identity identity, File fCourseImportZIP,
-			String displayName, String softKey, int access) {
+			String displayName, String softKey, int access, boolean membersOnly) {
 		
 		log.info("REST Import course " + displayName + " START");
 		
@@ -344,7 +350,7 @@ public class CoursesWebService {
 
 		//make the repository
 		RepositoryEntry re = createCourseRepositoryEntry(identity, displayName, softKey, null, null, null, newCourseResource);
-		prepareSecurityGroup(identity, re, access);
+		prepareSecurityGroup(identity, re, access, membersOnly);
 		
 		//update tree
 		course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(course.getCourseTitle(), 25)); //do not use truncate!
@@ -418,15 +424,24 @@ public class CoursesWebService {
 	}
 	
 	public static ICourse copyCourse(Long copyFrom, UserRequest ureq, String name, String longTitle,
-			String softKey, String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
+			String softKey, int access, boolean membersOnly, String externalId, String externalRef, String managedFlags,
+			CourseConfigVO courseConfigVO) {
 		String shortTitle = name;
 		//String learningObjectives = name + " (Example of creating a new course)";
 		
 		OLATResourceable originalOresTrans = OresHelper.createOLATResourceableInstance(CourseModule.class, copyFrom);
 		RepositoryEntry src = RepositoryManager.getInstance().lookupRepositoryEntry(originalOresTrans, false);
+		if(src == null) {
+			src = RepositoryManager.getInstance().lookupRepositoryEntry(copyFrom, false);
+		}
 		OLATResource originalOres = OLATResourceManager.getInstance().findResourceable(src.getOlatResource());
 		boolean isAlreadyLocked = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src).isLocked(originalOres);
 		LockResult lockResult = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src).acquireLock(originalOres, ureq.getIdentity());
+		
+		//check range of access
+		if(access < 1 || access > RepositoryEntry.ACC_USERS_GUESTS) {
+			access = RepositoryEntry.ACC_OWNERS;
+		}
 		
 		if(lockResult == null || (lockResult != null && lockResult.isSuccess()) && !isAlreadyLocked) {
 
@@ -469,7 +484,7 @@ public class CoursesWebService {
 			OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResourceable);
 			preparedEntry.setOlatResource(ores);
 			// create security group
-			prepareSecurityGroup(ureq.getIdentity(), preparedEntry, RepositoryEntry.ACC_OWNERS);
+			prepareSecurityGroup(ureq.getIdentity(), preparedEntry, access, membersOnly);
 			// copy image if available
 			RepositoryManager.getInstance().copyImage(src, preparedEntry);
 			
@@ -490,7 +505,7 @@ public class CoursesWebService {
 	 * @return
 	 */
 	public static ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, CourseConfigVO courseConfigVO) {
-		return createEmptyCourse(initialAuthor, shortTitle, longTitle, null, null, null, null, courseConfigVO);
+		return createEmptyCourse(initialAuthor, shortTitle, longTitle, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, courseConfigVO);
 	}
 	
 	/**
@@ -506,7 +521,7 @@ public class CoursesWebService {
 	 * @return
 	 */
 	public static ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle,
-			String softKey, String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
+			String softKey, int access, boolean membersOnly, String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
 		String learningObjectives = shortTitle + " (Example of creating a new course)";
 
 		try {
@@ -515,7 +530,7 @@ public class CoursesWebService {
 			RepositoryEntry addedEntry = createCourseRepositoryEntry(initialAuthor, shortTitle,  softKey, externalId, externalRef, managedFlags, oresable);
 			// create an empty course
 			CourseFactory.createEmptyCourse(oresable, shortTitle, longTitle, learningObjectives);
-			prepareSecurityGroup(initialAuthor, addedEntry, RepositoryEntry.ACC_OWNERS);
+			prepareSecurityGroup(initialAuthor, addedEntry, access, membersOnly);
 			return prepareCourse(addedEntry, courseConfigVO);
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
@@ -550,7 +565,7 @@ public class CoursesWebService {
 		return addedEntry;//!!!no update at this point
 	}
 	
-	private static void prepareSecurityGroup(Identity identity, RepositoryEntry addedEntry, int access) {
+	private static void prepareSecurityGroup(Identity identity, RepositoryEntry addedEntry, int access, boolean membersOnly) {
 		// create security group
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
@@ -579,7 +594,14 @@ public class CoursesWebService {
 		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
 		addedEntry.setParticipantGroup(participantGroup);
 		// Do set access for owner at the end, because unfinished course should be invisible
-		addedEntry.setAccess(access);
+		
+		if(membersOnly) {
+			addedEntry.setMembersOnly(true);
+			addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
+		} else {
+			addedEntry.setAccess(access);
+		}
+		
 		RepositoryManager.getInstance().saveRepositoryEntry(addedEntry);
 	}
 	
