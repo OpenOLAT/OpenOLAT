@@ -133,14 +133,21 @@ public class MailManagerTest extends OlatTestCase {
 		Assert.assertEquals(MailerResult.OK, result.getReturnCode());
 		dbInstance.commitAndCloseSession();
 		
-		//retrieve the inbox of toId
-		List<DBMailLight> sendedMails = mailManager.getOutbox(fromId, 0, -1);
+		//retrieve the outbox of toId (with lazy loading)
+		List<DBMailLight> sendedMails = mailManager.getOutbox(fromId, 0, -1, false);
 		Assert.assertNotNull(sendedMails);
 		Assert.assertEquals(1, sendedMails.size());
 		
 		DBMailLight sendedMail = sendedMails.get(0);
 		Assert.assertNotNull(sendedMail);
 		Assert.assertEquals("Hello outbox", sendedMail.getSubject());
+		
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve the outbox of toId (with fetch)
+		List<DBMailLight> sendedMailsWithFetch = mailManager.getOutbox(fromId, 0, -1, true);
+		Assert.assertNotNull(sendedMailsWithFetch);
+		Assert.assertEquals(1, sendedMailsWithFetch.size());
 	}
 	
 	@Test
@@ -260,7 +267,7 @@ public class MailManagerTest extends OlatTestCase {
 		List<DBMailLight> deletedMails_3 = mailManager.getInbox(toId_3, null, null, null, 0, -1);
 		Assert.assertNotNull(deletedMails_3);
 		Assert.assertTrue(deletedMails_3.isEmpty());
-		List<DBMailLight> deletedMails_4 = mailManager.getOutbox(fromId, 0, -1);
+		List<DBMailLight> deletedMails_4 = mailManager.getOutbox(fromId, 0, -1, true);
 		Assert.assertNotNull(deletedMails_4);
 		Assert.assertTrue(deletedMails_4.isEmpty());
 		//check mail by meta id

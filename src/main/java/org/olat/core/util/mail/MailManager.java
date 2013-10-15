@@ -113,7 +113,7 @@ public interface MailManager {
 	 * @param maxResults
 	 * @return
 	 */
-	public List<DBMailLight> getOutbox(Identity from, int firstResult, int maxResults);
+	public List<DBMailLight> getOutbox(Identity from, int firstResult, int maxResults, boolean fetchRecipients);
 	
 	public List<DBMailLight> getEmailsByMetaId(String metaId);
 	

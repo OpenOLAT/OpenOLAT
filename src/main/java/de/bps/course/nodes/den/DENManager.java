@@ -38,6 +38,7 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
@@ -608,11 +609,15 @@ public class DENManager {
 		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.location", 3, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.duration", 2, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.comment", 4, null, ureq.getLocale()));
-		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participant.name", 5, null, ureq.getLocale()));
+		DefaultColumnDescriptor dcd = new DefaultColumnDescriptor("dates.table.participant.name", 5, null, ureq.getLocale());
+		dcd.setEscapeHtml(EscapeMode.none);
+		tableCntrl.addColumnDescriptor(dcd);
 		
 		boolean isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		if(isAdministrativeUser) {
-			tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participant.username", 6, null, ureq.getLocale()));
+			DefaultColumnDescriptor ucd = new DefaultColumnDescriptor("dates.table.participant.username", 6, null, ureq.getLocale());
+			ucd.setEscapeHtml(EscapeMode.none);
+			tableCntrl.addColumnDescriptor(ucd);
 		}
 		
 		tableCntrl.addColumnDescriptor(new BooleanColumnDescriptor("participants", 7, DENListTableDataModel.CHANGE_ACTION,

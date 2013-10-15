@@ -507,13 +507,13 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 	 * @return
 	 */
 	@Override
-	public List<DBMailLight> getOutbox(Identity from, int firstResult, int maxResults) {
+	public List<DBMailLight> getOutbox(Identity from, int firstResult, int maxResults, boolean fetchRecipients) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(mail) from ").append(DBMailLightImpl.class.getName()).append(" mail")
 			.append(" inner join fetch mail.from fromRecipient")
 			.append(" inner join fromRecipient.recipient fromRecipientIdentity")
-			.append(" inner join mail.recipients recipient")
-			.append(" inner join recipient.recipient recipientIdentity")
+			.append(" inner join ").append(fetchRecipients ? "fetch" : "").append(" mail.recipients recipient")
+			.append(" inner join ").append(fetchRecipients ? "fetch" : "").append(" recipient.recipient recipientIdentity")
 			.append(" where fromRecipientIdentity.key=:fromKey and fromRecipient.deleted=false and recipientIdentity.key!=:fromKey")
 			.append(" order by mail.creationDate desc");
 
