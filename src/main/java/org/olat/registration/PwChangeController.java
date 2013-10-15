@@ -107,7 +107,8 @@ public class PwChangeController extends BasicController {
 			// no temporarykey is given, we assume step 1
 			//fxdiff FXOLAT-113: business path in DMZ
 			createEmailForm(ureq, wControl, initialEmail);
-			putInitialPanel(myContent);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, myContent, null);
+			putInitialPanel(layoutCtr.getInitialComponent());
 		} else {
 			// we check if given key is a valid temporary key
 			tempKey = rm.loadTemporaryKeyByRegistrationKey(pwKey);
