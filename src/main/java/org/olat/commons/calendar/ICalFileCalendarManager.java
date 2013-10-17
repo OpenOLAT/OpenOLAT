@@ -324,6 +324,9 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 	 */
 	public KalendarConfig findKalendarConfigForIdentity(Kalendar kalendar, UserRequest ureq) {
 		Preferences guiPreferences = ureq.getUserSession().getGuiPreferences();
+		if(guiPreferences == null) {
+			return null;
+		}
 		return (KalendarConfig)guiPreferences.get(KalendarConfig.class, kalendar.getCalendarID());
 	}
 
