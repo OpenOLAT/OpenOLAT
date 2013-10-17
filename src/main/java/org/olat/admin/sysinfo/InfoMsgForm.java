@@ -86,18 +86,18 @@ public class InfoMsgForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		msg = uifactory.addRichTextElementForStringData("msg", "infomsg", infomsg, 20, 70, false, true, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		msg = uifactory.addRichTextElementForStringData("msg", "infomsg", infomsg, 20, 70, true, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		msg.setMaxLength(1024);
 		
 		RichTextConfiguration richTextConfig = msg.getEditorConfiguration();
 		// manually enable the source edit button
-		richTextConfig.setQuotedConfigValue(RichTextConfiguration.THEME_ADVANCED_BUTTONS3_ADD, RichTextConfiguration.SEPARATOR_BUTTON + "," + RichTextConfiguration.CODE_BUTTON);
+		richTextConfig.enableCode();
 		//allow script tags...
-		richTextConfig.setQuotedConfigValue(RichTextConfiguration.INVALID_ELEMENTS, RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
-		richTextConfig.setQuotedConfigValue(RichTextConfiguration.EXTENDED_VALID_ELEMENTS, "script[src,type,defer]");
+		richTextConfig.setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
+		richTextConfig.setExtendedValidElements("script[src,type,defer]");
 		// add style buttons to make alert style available
 		richTextConfig.setContentCSSFromTheme(getWindowControl().getWindowBackOffice().getWindow().getGuiTheme());
-		richTextConfig.setQuotedConfigValue(RichTextConfiguration.THEME_ADVANCED_BUTTONS1_ADD, RichTextConfiguration.SEPARATOR_BUTTON + "," + RichTextConfiguration.STYLESELECT_BUTTON);
+		richTextConfig.enableStyleSelection();
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);

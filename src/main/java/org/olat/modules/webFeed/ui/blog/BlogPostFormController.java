@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.OlatMovieViewerPlugin;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -161,26 +160,24 @@ public class BlogPostFormController extends FormBasicController {
 		title.setNotEmptyCheck("feed.form.field.is_mandatory");
 
 		// Description
-		description = uifactory.addRichTextElementForStringData("description", "feed.form.description", post.getDescription(), 8, -1, false,
+		description = uifactory.addRichTextElementForStringData("description", "feed.form.description", post.getDescription(), 8, -1,
 				false, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
 		description.setElementCssClass("o_sel_blog_description");
 		RichTextConfiguration descRichTextConfig = description.getEditorConfiguration();
 		// set upload dir to the media dir
 		descRichTextConfig.setFileBrowserUploadRelPath("media");
-		// disable XSS unsave buttons for movie
-		descRichTextConfig.disableButton(OlatMovieViewerPlugin.BUTTONS);
-		descRichTextConfig.setMediaEnabled(false, 0);
+		// disable XSS unsave buttons for movie (no media in standard profile)
+		descRichTextConfig.disableMedia();
 
 		// Content
-		content = uifactory.addRichTextElementForStringData("content", "blog.form.content", post.getContent(), 18, -1, false, false,
+		content = uifactory.addRichTextElementForStringData("content", "blog.form.content", post.getContent(), 18, -1, false,
 				baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
 		content.setElementCssClass("o_sel_blog_content");
 		RichTextConfiguration richTextConfig = content.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
-		// disable XSS unsave buttons for movie
-		richTextConfig.disableButton(OlatMovieViewerPlugin.BUTTONS);
-		richTextConfig.setMediaEnabled(false, 0);
+		// disable XSS unsave buttons for movie (no media in standard profile)
+		richTextConfig.disableMedia();
 
 		Calendar cal = Calendar.getInstance(ureq.getLocale());
 		if (post.getPublishDate() != null) {

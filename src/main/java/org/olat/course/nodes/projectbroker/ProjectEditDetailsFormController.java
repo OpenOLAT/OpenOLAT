@@ -182,7 +182,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		projectLeaders.setEnabled(false);
 		
 		// add the learning objectives rich text input element
-		projectDescription = uifactory.addRichTextElementForStringData("description", "detailsform.description.label", project.getDescription(), 10, -1, false, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		projectDescription = uifactory.addRichTextElementForStringData("description", "detailsform.description.label", project.getDescription(), 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		projectDescription.setMaxLength(2500);		
 
 		stateLayout = FormLayoutContainer.createHorizontalFormLayout("stateLayout", getTranslator());

@@ -124,13 +124,13 @@ public class HTMLEditorControllerWithoutFile extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		htmlElement = uifactory.addRichTextElementForStringData("rtfElement", null, body, -1, -1, false, true ,baseContainer, customLinkTreeModel, formLayout, ureq.getUserSession(), getWindowControl());
-		//
+		htmlElement = uifactory.addRichTextElementForStringData("rtfElement", null, body, -1, -1, true ,baseContainer, customLinkTreeModel, formLayout, ureq.getUserSession(), getWindowControl());
+
 		// Add resize handler
 		RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 
 		editorConfiguration.addOnInitCallbackFunction("b_resizetofit_htmleditor");
-		editorConfiguration.setNonQuotedConfigValue(RichTextConfiguration.HEIGHT, "b_initialEditorHeight()");
-		//
+		editorConfiguration.enableEditorHeight();
+
 		// The buttons
 		save = uifactory.addFormLink("savebuttontext", formLayout, Link.BUTTON);
 		save.addActionListener(this, FormEvent.ONCLICK);

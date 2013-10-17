@@ -755,13 +755,13 @@ public class FormUIFactory {
 	 * @return The rich text element instance
 	 */
 	public RichTextElement addRichTextElementForStringData(String name, final String i18nLabel, String initialHTMLValue, final int rows,
-			final int cols, boolean externalToolbar, boolean fullProfile, VFSContainer baseContainer, CustomLinkTreeModel customLinkTreeModel,
+			final int cols, boolean fullProfile, VFSContainer baseContainer, CustomLinkTreeModel customLinkTreeModel,
 			FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
 		// Create richt text element with bare bone configuration
 		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), wControl.getWindowBackOffice());
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
-		rte.getEditorConfiguration().setConfigProfileFormEditor(fullProfile, usess, externalToolbar, wControl.getWindowBackOffice().getWindow().getGuiTheme(), baseContainer, customLinkTreeModel);			
+		rte.getEditorConfiguration().setConfigProfileFormEditor(fullProfile, usess, false, wControl.getWindowBackOffice().getWindow().getGuiTheme(), baseContainer, customLinkTreeModel);			
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;

@@ -149,7 +149,7 @@ public class MessageEditController extends FormBasicController {
 		msgTitle = uifactory.addTextElement("msgTitle", "msg.title", 100, message.getTitle(), formLayout);
 		msgTitle.setMandatory(true);
 		msgTitle.setNotEmptyCheck("error.field.not.empty");
-		msgBody = uifactory.addRichTextElementForStringData("msgBody", "msg.body", message.getBody(), 15, -1, false, true, null, null,
+		msgBody = uifactory.addRichTextElementForStringData("msgBody", "msg.body", message.getBody(), 15, -1, true, null, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		msgBody.setMandatory(true);
 		msgBody.setNotEmptyCheck("error.field.not.empty");

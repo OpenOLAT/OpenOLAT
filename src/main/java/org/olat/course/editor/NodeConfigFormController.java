@@ -153,7 +153,7 @@ public class NodeConfigFormController extends FormBasicController {
 		title = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, (displayTitle==null? "": displayTitle), formLayout);
 		
 		// add the learning objectives rich text input element
-		objectives = uifactory.addRichTextElementForStringData("nodeConfigForm.learningobjectives", "nodeConfigForm.learningobjectives", (learningObjectives==null?"":learningObjectives), 10, -1, false, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		objectives = uifactory.addRichTextElementForStringData("nodeConfigForm.learningobjectives", "nodeConfigForm.learningobjectives", (learningObjectives==null?"":learningObjectives), 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		objectives.setMaxLength(4000);
 		
 		String[] values = new String[]{

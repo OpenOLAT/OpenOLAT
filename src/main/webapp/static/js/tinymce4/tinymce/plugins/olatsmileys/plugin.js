@@ -56,7 +56,6 @@
 			// Register button
 			ed.addButton('olatsmileys', {
                 title : 'Smileys',
-                //cmd : 'mceSmileys',
                 image : url + '/img/smiley-smile.gif',
                 type: 'panelbutton',
         		popoverAlign: 'bc-tl',
@@ -74,6 +73,25 @@
         		},
         		tooltip: 'Smileys'
             });
+			
+			// Register button
+			ed.addMenuItem('olatsmileys', {
+                text : 'Smileys',
+                image : url + '/img/smiley-smile.gif',
+                context: 'insert',
+                menu: [{
+					type: 'container',
+					html: getHtml(),
+					onclick: function(e) {
+        				var type = jQuery(e.target).attr('class');
+        				if (type) {
+        					var tag = '<img src="' + top.tinymce.activeEditor.getParam("olatsmileys_transparentImage") + '" class="' + type + '">';
+        					ed.insertContent(tag);
+        					this.parent().cancel();//close parent menu
+        				}
+        			}
+        		}]
+            });
 		},
 
 		// Plugin info function
@@ -83,7 +101,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : "1.1"
+				version : "1.1.1"
 			};
 		}
 	});

@@ -189,7 +189,7 @@ public class ItemMetadataFormController extends FormBasicController {
 		uifactory.addStaticTextElement("type", "form.imd.type", typeName, formLayout);
 
 		// Description
-		desc = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", item.getObjectives(), 8, -1, false, true, null, null,
+		desc = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", item.getObjectives(), 8, -1, true, null, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		RichTextConfiguration richTextConfig = desc.getEditorConfiguration();
 		// set upload dir to the media dir
@@ -253,7 +253,7 @@ public class ItemMetadataFormController extends FormBasicController {
 			showHints = uifactory.addRadiosHorizontal("showHints", "form.imd.solutionhints.show", formLayout, yesnoKeys, yesnoValues);
 			showHints.addActionListener(this, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			
-			hint = uifactory.addRichTextElementForStringData("hint", "form.imd.solutionhints", item.getQuestion().getHintText(), 8, -1, false,
+			hint = uifactory.addRichTextElementForStringData("hint", "form.imd.solutionhints", item.getQuestion().getHintText(), 8, -1, 
 					true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
 			// set upload dir to the media dir
 			hint.getEditorConfiguration().setFileBrowserUploadRelPath("media");
@@ -268,7 +268,7 @@ public class ItemMetadataFormController extends FormBasicController {
 			showSolution = uifactory.addRadiosHorizontal("showSolution", "form.imd.correctsolution.show", formLayout, yesnoKeys, yesnoValues);
 			showSolution.addActionListener(this, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			solution = uifactory.addRichTextElementForStringData("solution", "form.imd.correctsolution", item.getQuestion().getSolutionText(), 8,
-					-1, false, true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
+					-1, true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
 			// set upload dir to the media dir
 			solution.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			if (itemControl.isSolution()) {

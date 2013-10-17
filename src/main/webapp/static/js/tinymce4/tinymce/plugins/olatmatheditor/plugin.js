@@ -137,7 +137,13 @@
 					});
 				}
 			});
-			
+			ed.addMenuItem('olatmatheditor', {
+				text : translator().translate('olatmatheditor.desc'),
+				//cmd : 'mceJsmath',
+				image : url + '/img/sigma.png',
+				onclick: showDialog,
+				context: 'insert',
+			});
 			ed.on('init', function() {
 			     if (ed.settings.content_css !== false) {
 			    	 ed.dom.loadCSS(url + "/css/content.css");
@@ -200,7 +206,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : "1.1"
+				version : "1.1.1"
 			};
 		}
 	});

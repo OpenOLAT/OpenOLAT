@@ -224,7 +224,7 @@ public class FeedbackFormController extends FormBasicController {
 		masteryEditLayout.setLabel("item_feedback_mastery", null);
 		overallFeedbackLayout.add(masteryEditLayout);
 		RichTextElement masteryFeedback = uifactory.addRichTextElementForStringData("richTextElement", "item_feedback_mastery", masteryMat
-				.renderAsHtml(mediaBaseUrl), 4, -1, true, true, baseContainer, null, masteryEditLayout, ureq.getUserSession(), getWindowControl());
+				.renderAsHtml(mediaBaseUrl), 4, -1, true, baseContainer, null, masteryEditLayout, ureq.getUserSession(), getWindowControl());
 		FormLink editLink = uifactory.addFormLink("editLink", masteryEditLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
 		((Link) editLink.getComponent()).setCustomDisplayText("");
 		((Link) editLink.getComponent()).setCustomEnabledLinkCSS("b_small_icon b_edit_icon qti_edit_link");
@@ -237,7 +237,7 @@ public class FeedbackFormController extends FormBasicController {
 		failureEditLayout.setLabel("item_feedback_fail", null);
 		overallFeedbackLayout.add(failureEditLayout);
 		RichTextElement failureFeedback = uifactory.addRichTextElementForStringData("richTextElement", "item_feedback_fail", failureMat
-				.renderAsHtml(mediaBaseUrl), 4, -1, true, true, baseContainer, null, failureEditLayout, ureq.getUserSession(), getWindowControl());
+				.renderAsHtml(mediaBaseUrl), 4, -1, true, baseContainer, null, failureEditLayout, ureq.getUserSession(), getWindowControl());
 		failureFeedback.setLabel("item_feedback_fail", null);
 		FormLink failureLink = uifactory.addFormLink("editLink", failureEditLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
 		((Link) failureLink.getComponent()).setCustomDisplayText("");
@@ -256,7 +256,7 @@ public class FeedbackFormController extends FormBasicController {
 				responseFeedbackMat = responseFeedbackMat == null ? new Material() : responseFeedbackMat;
 				identities.put(responseFeedbackMat, response.getIdent());
 				RichTextElement responseHintText = uifactory.addRichTextElementForStringData("feedback_" + i, null, responseFeedbackMat
-						.renderAsHtml(mediaBaseUrl), 4, -1, true, true, baseContainer, null, responseLevelHintsLayout, ureq.getUserSession(),
+						.renderAsHtml(mediaBaseUrl), 4, -1, true, baseContainer, null, responseLevelHintsLayout, ureq.getUserSession(),
 						getWindowControl());
 				FormLink link = uifactory.addFormLink("link_" + i, responseLevelHintsLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
 				((Link) link.getComponent()).setCustomDisplayText("");
@@ -287,8 +287,8 @@ public class FeedbackFormController extends FormBasicController {
 		link.addActionListener(this, FormEvent.ONCLICK);
 		textElements.put(mat, textElement);
 		//allow scripts...
-		textElement.getEditorConfiguration().setQuotedConfigValue(RichTextConfiguration.INVALID_ELEMENTS, RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
-		textElement.getEditorConfiguration().setQuotedConfigValue(RichTextConfiguration.EXTENDED_VALID_ELEMENTS, "script[src,type,defer]");
+		textElement.getEditorConfiguration().setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
+		textElement.getEditorConfiguration().setExtendedValidElements("script[src,type,defer]");
 		
 		materialsByText.put(textElement, mat);
 		materialsByLink.put(link, mat);

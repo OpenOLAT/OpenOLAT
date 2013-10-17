@@ -236,7 +236,7 @@ public class HTMLEditorController extends FormBasicController {
 			// Add resize handler
 			RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 
 			editorConfiguration.addOnInitCallbackFunction("b_resizetofit_htmleditor");
-			editorConfiguration.setNonQuotedConfigValue(RichTextConfiguration.HEIGHT, "b_initialEditorHeight()");
+			editorConfiguration.enableEditorHeight();
 			//
 			// The buttons
 			save = uifactory.addFormLink("savebuttontext", formLayout, Link.BUTTON);

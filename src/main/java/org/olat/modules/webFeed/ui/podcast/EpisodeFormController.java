@@ -252,7 +252,7 @@ public class EpisodeFormController extends FormBasicController {
 		title.setMandatory(true);
 		title.setNotEmptyCheck("feed.form.field.is_mandatory");
 
-		desc = uifactory.addRichTextElementForStringData("desc", "feed.form.description", episode.getDescription(), 12, -1, false,
+		desc = uifactory.addRichTextElementForStringData("desc", "feed.form.description", episode.getDescription(), 12, -1,
 				false, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
 		RichTextConfiguration richTextConfig = desc.getEditorConfiguration();
 		// set upload dir to the media dir

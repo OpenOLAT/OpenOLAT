@@ -233,7 +233,7 @@ public class ProfileFormController extends FormBasicController {
 		}
 		
 		// add the "about me" text field.
-		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text", this.conf.getTextAboutMe(), 10, -1, false, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text", this.conf.getTextAboutMe(), 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		textAboutMe.setMaxLength(10000);
 		formItems.put("form.text", this.textAboutMe);
 		

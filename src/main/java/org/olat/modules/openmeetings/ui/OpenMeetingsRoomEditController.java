@@ -181,7 +181,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 
 		String comment = room == null ? (defaultSettings == null ? null : defaultSettings.getComment()) : room.getComment();
 		commentEl = uifactory.addRichTextElementForStringData("roomcomment", "room.comment", comment == null ? "" : comment,
-				10, -1, false, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+				10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonContainer);

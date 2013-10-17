@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '2.1'
+				version : '2.1.1'
 			};
 		},
 
@@ -347,7 +347,6 @@
 
 			ed.addButton('olatmovieviewer', {
 				title : translator().translate('olatmovieviewer.desc'),
-				//cmd : 'mceOlatMovieViewer',
 				image : url + '/images/movieviewer.gif',
 				onclick: showDialog,
 				onPostRender: function() {
@@ -363,17 +362,11 @@
 				}
 			});
 			
-			/* Link toolbar buttons to dialogs
-			ed.addCommand('mceOlatMovieViewer', function() {
-				ed.windowManager.open({
-					file : url + '/olatmovieviewer.htm',
-					width : 630,
-					height : 670,
-					inline : 1
-				}, {
-					plugin_url : url
-				});
-			});*/
+			ed.addMenuItem('olatmovieviewer', {
+				text : translator().translate('olatmovieviewer.desc'),
+				image : url + '/images/movieviewer.gif',
+				onclick: showDialog,
+			});
 
 			// Load Content CSS upon initialization
 			ed.on('init', function() {

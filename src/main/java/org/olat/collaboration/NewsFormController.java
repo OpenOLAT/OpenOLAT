@@ -94,7 +94,7 @@ public class NewsFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("news.content");
-		newsInputElement = uifactory.addRichTextElementForStringData("news.content", "news.content", this.news, 10, -1, false, false, null,
+		newsInputElement = uifactory.addRichTextElementForStringData("news.content", "news.content", this.news, 10, -1, false, null,
 				null, formLayout, ureq.getUserSession(), getWindowControl());
 		newsInputElement.setMandatory(true);
 

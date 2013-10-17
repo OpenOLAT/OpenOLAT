@@ -124,7 +124,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 		editButton.setCustomEnabledLinkCSS("b_float_right b_button b_small");
 		formLayout.add(editButton);
 		
-		noteField = uifactory.addRichTextElementForStringData("noteField", null, n.getNoteText(), 20, -1, false, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		noteField = uifactory.addRichTextElementForStringData("noteField", null, n.getNoteText(), 20, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		noteField.setEnabled(false);
 		noteField.setMaxLength(4000);
 

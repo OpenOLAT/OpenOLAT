@@ -1,7 +1,7 @@
 tinymce.addI18n('pl',{
 "Cut": "Wytnij",
 "Header 2": "Nag\u0142\u00f3wek 2",
-"Your browser doesn't support direct access to the clipboard. Please use the Ctrl+X\/C\/V keyboard shortcuts instead.": "Twoja przegl\u0105darka nie zapewnia bezpo\u015bredniego dost\u0119pu do schowka. U\u017cyj zamiast tego kombinacji klawiszy Ctrl+X\/C\/V.",
+"Your browser doesn't support direct access to the clipboard. Please use the Ctrl+X\/C\/V keyboard shortcuts instead.": "Twoja przegl\u0105darka nie obs\u0142uguje bezpo\u015bredniego dost\u0119pu do schowka. U\u017cyj zamiast tego kombinacji klawiszy Ctrl+X\/C\/V.",
 "Div": "Div",
 "Paste": "Wklej",
 "Close": "Zamknij",

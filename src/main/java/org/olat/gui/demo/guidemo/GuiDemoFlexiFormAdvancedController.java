@@ -128,12 +128,12 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		uifactory.addTextAreaElement("guidemo.form.textarea", 0, 2, null, formLayout);
 
 		// Add some rich text elements
-		richTextElement = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple", "guidemo.form.richtext.simple", "click <i>to</i> <b>edit</b>. This one has an event listener and an <b>external menu with auto hide</b>", -1, -1, true, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		richTextElement = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple", "guidemo.form.richtext.simple", "click <i>to</i> <b>edit</b>. This one has an event listener and an <b>external menu with auto hide</b>", -1, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		//richTextElement.addActionListener(this, FormEvent.ONCHANGE);
 
-		richTextElement2 = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple2", null, "one <i>with</i> <b>height</b> and <span style='color:red'>no</span> event listener and an <b>internal</b> menu", 10, 40, false, true, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		richTextElement2 = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple2", null, "one <i>with</i> <b>height</b> and <span style='color:red'>no</span> event listener and an <b>internal</b> menu", 10, 40, true, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 
-		disabledRichTextElement = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple3", "guidemo.form.richtext.simple", "this <i>is</i> <b>disabled</b>", -1, -1, true, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		disabledRichTextElement = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple3", "guidemo.form.richtext.simple", "this <i>is</i> <b>disabled</b>", -1, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		disabledRichTextElement.setEnabled(false);
 
 		// Button layout

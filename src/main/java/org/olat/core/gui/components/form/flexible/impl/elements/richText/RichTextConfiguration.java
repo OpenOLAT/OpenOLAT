@@ -21,13 +21,16 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.olat.core.CoreSpringFactory;
@@ -37,6 +40,8 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPluginFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmatheditor.OlatMathEditorPlugin;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.OlatMovieViewerPlugin;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.themes.Theme;
@@ -327,7 +332,7 @@ public class RichTextConfiguration implements Disposable {
 	private List<String> theme_advanced_buttons1 = new ArrayList<String>();
 	private List<String> theme_advanced_buttons2 = new ArrayList<String>();
 	private List<String> theme_advanced_buttons3 = new ArrayList<String>();
-	private List<String> theme_advanced_disable = new ArrayList<String>();
+	private List<String> theme_advanced_disable = new ArrayList<String>(1);
 
 	// Supported image and media suffixes
 	public static final String[] IMAGE_SUFFIXES_VALUES = { "jpg", "gif", "jpeg", "png" };
@@ -360,6 +365,8 @@ public class RichTextConfiguration implements Disposable {
 	private String domID;
 	
 	private Mapper contentMapper;
+	
+	private TinyConfig tinyConfig;
 
 	/**
 	 * Constructor, only used by RichText element itself. Use
@@ -430,6 +437,8 @@ public class RichTextConfiguration implements Disposable {
 		setContextMenuEnabled(false);
 		// Don't allow javascript or iframes
 		setQuotedConfigValue(INVALID_ELEMENTS, INVALID_ELEMENTS_FORM_MINIMALISTIC_VALUE_UNSAVE);
+		
+		tinyConfig = TinyConfig.minimalisticConfig;
 	}
 
 
@@ -492,6 +501,9 @@ public class RichTextConfiguration implements Disposable {
 			}		
 			// Don't allow javascript or iframes			
 			setQuotedConfigValue(INVALID_ELEMENTS, INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE);
+			
+			tinyConfig = TinyConfig.editorFullConfig;
+			
 		} else {
 			// Line 1
 			theme_advanced_buttons1.add(FONT_BASIC_FORMATTING_BUTTON_GROUP);
@@ -530,7 +542,14 @@ public class RichTextConfiguration implements Disposable {
 			}		
 			// Don't allow javascript or iframes, if the file browser is there allow also media elements (the full values)
 			setQuotedConfigValue(INVALID_ELEMENTS, (baseContainer == null ? INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE : INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE));
+
+			tinyConfig = TinyConfig.editorConfig;
 		}
+		
+		if (baseContainer != null) {
+			tinyConfig = tinyConfig.enableImageAndMedia();
+		}
+		
 		// Setup file and link browser
 		if (baseContainer != null) {
 			setFileBrowserCallback(baseContainer, customLinkTreeModel, IMAGE_SUFFIXES_VALUES, MEDIA_SUFFIXES_VALUES, FLASH_PLAYER_SUFFIXES_VALUES);
@@ -619,6 +638,8 @@ public class RichTextConfiguration implements Disposable {
 			setFileBrowserCallback(baseContainer, customLinkTreeModel, IMAGE_SUFFIXES_VALUES, MEDIA_SUFFIXES_VALUES, FLASH_PLAYER_SUFFIXES_VALUES);
 			setDocumentMediaBase(baseContainer, relFilePath, usess);			
 		}
+		
+		tinyConfig = TinyConfig.fileEditorConfig;
 	}
 
 	/**
@@ -669,7 +690,7 @@ public class RichTextConfiguration implements Disposable {
 		}
 	}
 	
-	public List<String> getOnInit() {
+	protected List<String> getOnInit() {
 		return oninit;
 	}
 
@@ -681,7 +702,7 @@ public class RichTextConfiguration implements Disposable {
 	 * see http://bugs.olat.org/jira/browse/OLAT-6242
 	 * @param tabFocusEnabled
 	 */
-	public void setTabFocusEnabled(boolean tabFocusEnabled){
+	private void setTabFocusEnabled(boolean tabFocusEnabled){
 		if (tabFocusEnabled){
 			setQuotedConfigValue(TABFOCUS_SETTINGS, TABFOCUS_SETTINGS_PREV_NEXT);
 			plugins.add(TABFOCUS_PLUGIN);
@@ -699,7 +720,7 @@ public class RichTextConfiguration implements Disposable {
 	 *            true: use inline popups; false: use browser window popup
 	 *            windows
 	 */
-	public void setModalWindowsEnabled(boolean modalWindowsEnabled, boolean inlinePopupsEnabled) {
+	private void setModalWindowsEnabled(boolean modalWindowsEnabled, boolean inlinePopupsEnabled) {
 		// in both cases opt in, default values are set to non-inline windows that
 		// are not modal
 		if (modalWindowsEnabled) {
@@ -726,7 +747,7 @@ public class RichTextConfiguration implements Disposable {
 	 *            The alignment of the toolbar, use
 	 *            THEME_ADVANCED_TOOLBAR_ALIGN_VALUE_* values
 	 */
-	public void setToolbar(String position, boolean autoHide, String alignment) {
+	private void setToolbar(String position, boolean autoHide, String alignment) {
 		if (position.equals(THEME_ADVANCED_TOOLBAR_LOCATION_VALUE_EXTERNAL) || position.equals(THEME_ADVANCED_TOOLBAR_LOCATION_VALUE_BOTTOM)
 				|| position.equals(THEME_ADVANCED_TOOLBAR_LOCATION_VALUE_TOP)) {
 			// valid config
@@ -753,7 +774,7 @@ public class RichTextConfiguration implements Disposable {
 	 * 
 	 * @param resizeingEnabled
 	 */
-	public void setResizeingEnabled(boolean resizeingEnabled) {
+	private void setResizeingEnabled(boolean resizeingEnabled) {
 		if (resizeingEnabled) {
 			// enable resizeing, but limit to vertical resizeing
 			setNonQuotedConfigValue(THEME_ADVANCED_RESIZEING, VALUE_TRUE);
@@ -772,14 +793,14 @@ public class RichTextConfiguration implements Disposable {
 	 * Regardless of the doctype, tiny will always generate XHTML code.
 	 * 
 	 * @param docType
-	 */
-	public void setDocType(String docType) {
+	 *
+	private void setDocType(String docType) {
 		setQuotedConfigValue(DOCTYPE, docType);
 		if (docType.equals(DOCTYPE_VALUE_XHTML_1_0_TRANSITIONAL)) {
 			// use tile images for faster loading, does not work with all doctypes
 			setNonQuotedConfigValue(BUTTON_TILE_MAP, VALUE_TRUE);
 		}
-	}
+	}*/
 
 	/**
 	 * Set the language for editor interface. If no translation can be found,
@@ -787,7 +808,7 @@ public class RichTextConfiguration implements Disposable {
 	 * 
 	 * @param loc
 	 */
-	public void setLanguage(Locale loc) {
+	private void setLanguage(Locale loc) {
 		// tiny does not support country or vairant codes, only language code
 		String langKey = loc.getLanguage();
 
@@ -811,7 +832,7 @@ public class RichTextConfiguration implements Disposable {
 	 *            the class that identifies the non-editable fields or NULL to
 	 *            use the default value 'mceNonEditable'
 	 */
-	public void setNoneditableContentEnabled(boolean noneditableContentEnabled, String nonEditableCSSClass) {
+	private void setNoneditableContentEnabled(boolean noneditableContentEnabled, String nonEditableCSSClass) {
 		if (noneditableContentEnabled) {
 			plugins.add(NONEDITABLE_PLUGIN);
 			if (nonEditableCSSClass != null && !nonEditableCSSClass.equals(NONEDITABLE_NONEDITABLE_CLASS_VALUE_MCENONEDITABLE)) {
@@ -831,7 +852,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setTableEnabled(boolean tableEnabled, int row) {
+	private void setTableEnabled(boolean tableEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (tableEnabled) {
 			plugins.add(TABLE_PLUGIN);
@@ -858,7 +879,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setAdvancedPasteEnabled(boolean pasteEnabled, boolean showPasteButtons, boolean cleanupOnPastEnabled, boolean convertWordLists, int row) {
+	private void setAdvancedPasteEnabled(boolean pasteEnabled, boolean showPasteButtons, boolean cleanupOnPastEnabled, boolean convertWordLists, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (pasteEnabled) {
 			plugins.add(PASTE_PLUGIN);
@@ -880,7 +901,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setMediaEnabled(boolean mediaEnabled, int row) {
+	private void setMediaEnabled(boolean mediaEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (mediaEnabled) {
 			plugins.add(MEDIA_PLUGIN);
@@ -891,6 +912,19 @@ public class RichTextConfiguration implements Disposable {
 		}
 	}
 	
+	public void disableMedia() {
+		List<String> buttonRow = getButtonRowFor(0);
+		plugins.remove(MEDIA_PLUGIN);
+		buttonRow.remove(MEDIA_PLUGIN_BUTTON);
+		disableButton(OlatMovieViewerPlugin.BUTTONS);
+		tinyConfig = tinyConfig.disableMedia();
+	}
+	
+	public void disableMathEditor() {
+		disableButton(OlatMathEditorPlugin.BUTTONS);
+		tinyConfig = tinyConfig.disableMathEditor();
+	}
+	
 	/**
 	 * Enable / disable the advanced image plugin
 	 * 
@@ -899,7 +933,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setAdvancedImageEditingEnabled(boolean advimageEnabled, int row) {
+	private void setAdvancedImageEditingEnabled(boolean advimageEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (advimageEnabled) {
 			buttonRow.add(IMAGE_BUTTON);
@@ -918,7 +952,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setAdvancedLinkEditingEnabled(boolean advlinkEnabled, int row) {
+	private void setAdvancedLinkEditingEnabled(boolean advlinkEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (advlinkEnabled) {
 			buttonRow.add(LINK_UNLINK_BUTTON);
@@ -935,7 +969,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param contextMenuEnabled
 	 *            true: plugin enabled; false: plugin disabled
 	 */
-	public void setContextMenuEnabled(boolean contextMenuEnabled) {
+	private void setContextMenuEnabled(boolean contextMenuEnabled) {
 		if (contextMenuEnabled) {
 			plugins.add(CONTEXTMENU_PLUGIN);
 		} else {
@@ -950,8 +984,8 @@ public class RichTextConfiguration implements Disposable {
 	 *            true: plugin enabled; false: plugin disabled
 	 * @param row
 	 *            The row where to place the plugin buttons
-	 */
-	public void setDirectionalityEnabled(boolean directionalityEnabled, int row) {
+	 *
+	private void setDirectionalityEnabled(boolean directionalityEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (directionalityEnabled) {
 			plugins.add(DIRECIONALITY_PLUGIN);
@@ -960,7 +994,7 @@ public class RichTextConfiguration implements Disposable {
 			plugins.remove(DIRECIONALITY_PLUGIN);
 			buttonRow.remove(DIRECIONALITY_PLUGIN_BUTTONGROUP);
 		}
-	}
+	}*/
 
 	/**
 	 * Enable / disable the full-screen plugin
@@ -973,7 +1007,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */	
-	public void setFullscreenEnabled(boolean fullScreenEnabled, boolean inNewWindowEnabled, int row) {
+	private void setFullscreenEnabled(boolean fullScreenEnabled, boolean inNewWindowEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (fullScreenEnabled) {
 			plugins.add(FULLSCREEN_PLUGIN);
@@ -994,7 +1028,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setVisualCharsEnabled(boolean visualCharsEnabled, int row) {
+	private void setVisualCharsEnabled(boolean visualCharsEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (visualCharsEnabled) {
 			plugins.add(VISUALCHARS_PLUGIN);
@@ -1013,7 +1047,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setPrintEnabled(boolean printEnabled, int row) {
+	private void setPrintEnabled(boolean printEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (printEnabled) {
 			plugins.add(PRINT_PLUGIN);
@@ -1033,8 +1067,8 @@ public class RichTextConfiguration implements Disposable {
 	 *            true: plugin enabled; false: plugin disabled
 	 * @param row
 	 *            The row where to place the plugin buttons
-	 */
-	public void setPreviewEnabled(boolean previewEnabled, int row) {
+	 *
+	private void setPreviewEnabled(boolean previewEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (previewEnabled) {
 			plugins.add(PREVIEW_PLUGIN);
@@ -1043,7 +1077,7 @@ public class RichTextConfiguration implements Disposable {
 			plugins.remove(PREVIEW_PLUGIN);
 			buttonRow.remove(PREVIEW_PLUGIN_BUTTON);
 		}
-	}
+	}*/
 
 	/**
 	 * Enable / disable the fonts buttons
@@ -1053,7 +1087,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the buttons
 	 */
-	public void setFontsEnabled(boolean fontsEnabled, int row) {
+	private void setFontsEnabled(boolean fontsEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (fontsEnabled) {
 			buttonRow.add(FONT_BUTTONGROUP);
@@ -1070,7 +1104,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the buttons
 	 */
-	public void setColorsEnabled(boolean colorsEnabled, int row) {
+	private void setColorsEnabled(boolean colorsEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (colorsEnabled) {
 			buttonRow.add(COLOR_BUTTONGROUP);
@@ -1087,7 +1121,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the buttons
 	 */
-	public void setCopyPasteEnabled(boolean copyPasteEnabled, int row) {
+	private void setCopyPasteEnabled(boolean copyPasteEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (copyPasteEnabled) {
 			buttonRow.add(COPY_PASTE_BUTTONGROUP);
@@ -1104,7 +1138,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setSearchReplaceEnabled(boolean searchReplaceEnabled, int row) {
+	private void setSearchReplaceEnabled(boolean searchReplaceEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (searchReplaceEnabled) {
 			plugins.add(SEARCH_REPLACE_PLUGIN);
@@ -1126,7 +1160,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setXhtmlXtrasEnabled(boolean xhtmlXtrasEnabled, boolean elementAttributesEnabled, int row) {
+	private void setXhtmlXtrasEnabled(boolean xhtmlXtrasEnabled, boolean elementAttributesEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (xhtmlXtrasEnabled) {
 			plugins.add(XHTMLXTRAS_PLUGIN);
@@ -1150,7 +1184,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setInsertDateTimeEnabled(boolean insertDateTimeEnabled, Locale locale, int row) {
+	private void setInsertDateTimeEnabled(boolean insertDateTimeEnabled, Locale locale, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (insertDateTimeEnabled) {
 			plugins.add(INSERTDATETIME_PLUGIN);
@@ -1174,7 +1208,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	public void setSaveButtonEnabled(boolean saveButtonEnabled, int row) {
+	private void setSaveButtonEnabled(boolean saveButtonEnabled, int row) {
 		List<String> buttonRow = getButtonRowFor(row);
 		if (saveButtonEnabled) {
 			plugins.add(SAVE_PLUGIN);
@@ -1197,7 +1231,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param profil
 	 *            The profile in which context the plugin is used
 	 */
-	public void setCustomPluginEnabled(boolean customPluginEnabled, TinyMCECustomPlugin customPlugin, int profil) {
+	private void setCustomPluginEnabled(boolean customPluginEnabled, TinyMCECustomPlugin customPlugin, int profil) {
 		// custom plugins must have a '-' in front of the plugin name
 		String pluginName = "-" + customPlugin.getPluginName();
 		String buttons = customPlugin.getPluginButtons();
@@ -1240,7 +1274,7 @@ public class RichTextConfiguration implements Disposable {
 	 *            coma separated list of GUIname=target or NULL to reset the
 	 *            list
 	 */
-	public void setLinkTargets(String targetList) {
+	private void setLinkTargets(String targetList) {
 		// displayname=targetname,displayname2=targetname2
 		if (targetList != null) {
 			quotedConfigValues.put(THEME_ADVANCED_LINK_TARGETS, targetList);
@@ -1256,7 +1290,7 @@ public class RichTextConfiguration implements Disposable {
 	 *            path to CSS separated by comma or NULL to not use any specific
 	 *            CSS files
 	 */
-	public void setContentCSS(String cssPath) {
+	private void setContentCSS(String cssPath) {
 		if (cssPath != null) {
 			quotedConfigValues.put(CONTENT_CSS, cssPath);
 		} else {
@@ -1289,7 +1323,7 @@ public class RichTextConfiguration implements Disposable {
 	 * 
 	 * @param disabledButtons
 	 */
-	public void disableButton(String disabledButtons) {
+	private void disableButton(String disabledButtons) {
 		theme_advanced_disable.add(disabledButtons);
 	}
 
@@ -1298,10 +1332,10 @@ public class RichTextConfiguration implements Disposable {
 	 * area is empty. By default this is a &lt;p&gt; element
 	 * 
 	 * @param rootElement
-	 */
+	 
 	public void setForcedRootElement(String rootElement) {
 		setQuotedConfigValue(FORCED_ROOT_BLOCK, rootElement);
-	}
+	}*/
 
 	/**
 	 * Disable the standard root element if no such wrapper element should be
@@ -1325,7 +1359,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param supportedMediaSuffixes
 	 *            Array of allowed media suffixes (mov, wav etc.)
 	 */
-	public void setFileBrowserCallback(VFSContainer vfsContainer, CustomLinkTreeModel customLinkTreeModel, String[] supportedImageSuffixes, String[] supportedMediaSuffixes, String[] supportedFlashPlayerSuffixes) {
+	private void setFileBrowserCallback(VFSContainer vfsContainer, CustomLinkTreeModel customLinkTreeModel, String[] supportedImageSuffixes, String[] supportedMediaSuffixes, String[] supportedFlashPlayerSuffixes) {
 		// Add dom ID variable using prototype curry method
 		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
 		linkBrowserImageSuffixes = supportedImageSuffixes;
@@ -1359,7 +1393,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param usess
 	 *            The user session
 	 */
-	public void setDocumentMediaBase(final VFSContainer documentBaseContainer, String relFilePath, UserSession usess) {
+	private void setDocumentMediaBase(final VFSContainer documentBaseContainer, String relFilePath, UserSession usess) {
 		linkBrowserRelativeFilePath = relFilePath;
 		// get a usersession-local mapper for the file storage (and tinymce's references to images and such)
 		contentMapper = new VFSContainerMapper(documentBaseContainer);
@@ -1413,11 +1447,28 @@ public class RichTextConfiguration implements Disposable {
 	 * @param value
 	 *            The configuration value
 	 */
-	public void setQuotedConfigValue(String key, String value) {
+	private void setQuotedConfigValue(String key, String value) {
 		// remove non-quoted config values with same key
 		if (nonQuotedConfigValues.containsKey(key)) nonQuotedConfigValues.remove(key);
 		// add or overwrite new value
 		quotedConfigValues.put(key, value);
+	}
+	
+	public void setInvalidElements(String elements) {
+		setQuotedConfigValue(RichTextConfiguration.INVALID_ELEMENTS, elements);
+	}
+	
+	public void setExtendedValidElements(String elements) {
+		setQuotedConfigValue(RichTextConfiguration.EXTENDED_VALID_ELEMENTS, elements);
+	}
+	
+	public void enableCode() {
+		setQuotedConfigValue(RichTextConfiguration.THEME_ADVANCED_BUTTONS3_ADD, RichTextConfiguration.SEPARATOR_BUTTON + "," + RichTextConfiguration.CODE_BUTTON);
+		tinyConfig = tinyConfig.enableCode();
+	}
+	
+	public void enableStyleSelection() {
+		setQuotedConfigValue(RichTextConfiguration.THEME_ADVANCED_BUTTONS1_ADD, RichTextConfiguration.SEPARATOR_BUTTON + "," + RichTextConfiguration.STYLESELECT_BUTTON);
 	}
 
 	/**
@@ -1429,11 +1480,16 @@ public class RichTextConfiguration implements Disposable {
 	 * @param value
 	 *            The configuration value
 	 */
-	public void setNonQuotedConfigValue(String key, String value) {
+	//TODO
+	private void setNonQuotedConfigValue(String key, String value) {
 		// remove quoted config values with same key
 		if (quotedConfigValues.containsKey(key)) quotedConfigValues.remove(key);
 		// add or overwrite new value
 		nonQuotedConfigValues.put(key, value);
+	}
+	
+	public void enableEditorHeight() {
+		setNonQuotedConfigValue(RichTextConfiguration.HEIGHT, "b_initialEditorHeight()");
 	}
 
 	
@@ -1500,23 +1556,9 @@ public class RichTextConfiguration implements Disposable {
 		return linkBrowserCustomTreeModel;
 	}
 
-
-	/**
-	 * Get the config value for the given key
-	 * @param key
-	 * @return
-	 */
-	public String getConfigValue(String key) {
-		if (quotedConfigValues.containsKey(key)) {
-			return quotedConfigValues.get(key);
-		} else {
-			return nonQuotedConfigValues.get(key);
-		}
-	}
-
-	void appendConfigToTinyJSArray_4(StringOutput sb) {
+	protected void appendConfigToTinyJSArray_4(StringOutput out) {
 		// Add plugins first
-		List<String> plugins4 = new ArrayList<String>(plugins);
+		Set<String> plugins4 = new HashSet<String>(plugins);
 		plugins4.remove("safari");
 		plugins4.remove("inlinepopups");
 		plugins4.remove("advlink");
@@ -1589,35 +1631,7 @@ public class RichTextConfiguration implements Disposable {
 			buttons3.add("code");
 		}
 
-		appendValuesFromList(sb, PLUGINS, plugins4);
-		sb.append(",\n")
-		  .append("image_advtab:true,\n")
-		  .append("statusbar:true,\n");
-		
-		//menubar
-		sb.append("menubar:false,\n");
 
-		//toolbar 1
-		if (buttons1.size() == 0) {
-			sb.append("toolbar1").append(":false,\n");
-		} else {
-			listToString(sb, "toolbar1", buttons1);
-			sb.append(",\n");	
-		}
-
-		if (buttons2.size() == 0) {
-			sb.append("toolbar2").append(": false,\n");
-		} else {
-			listToString(sb, "toolbar2", buttons2);
-			sb.append(",\n");	
-		}
-
-		if (buttons3.size() == 0) {
-			sb.append("toolbar3").append(":false,\n");			
-		} else {
-			listToString(sb, "toolbar3", buttons3);
-			sb.append(",\n");							
-		}
 
 		// Now add the quoted values
 		Map<String,String> copyValues = new HashMap<String,String>(quotedConfigValues);
@@ -1658,10 +1672,37 @@ public class RichTextConfiguration implements Disposable {
 		String contentCss = copyValues.remove("content_css");
 		if(contentCss != null) {
 			copyNonValues.put("importcss_append", "true");
-			//copyNonValues.put("importcss_merge_classes", "false");
 			copyValues.put("content_css", Settings.createServerURI() + contentCss);
 		}
-		
+
+		StringOutput sb = new StringOutput();
+		appendValuesFromList(sb, PLUGINS, plugins4);
+		sb.append(",\n")
+		  .append("image_advtab:true,\n")
+		  .append("statusbar:true,\n")
+		  .append("menubar:false,\n");
+		//toolbars
+		if (buttons1.size() == 0) {
+			sb.append("toolbar1").append(":false,\n");
+		} else {
+			listToString(sb, "toolbar1", buttons1);
+			sb.append(",\n");	
+		}
+
+		if (buttons2.size() == 0) {
+			sb.append("toolbar2").append(": false,\n");
+		} else {
+			listToString(sb, "toolbar2", buttons2);
+			sb.append(",\n");	
+		}
+
+		if (buttons3.size() == 0) {
+			sb.append("toolbar3").append(":false,\n");			
+		} else {
+			listToString(sb, "toolbar3", buttons3);
+			sb.append(",\n");							
+		}
+
 		for (Map.Entry<String, String> entry : copyValues.entrySet()) {
 			sb.append(entry.getKey()).append(": \"").append(entry.getValue()).append("\",\n");
 		}
@@ -1669,8 +1710,40 @@ public class RichTextConfiguration implements Disposable {
  		for (Map.Entry<String, String> entry : copyNonValues.entrySet()) {
 			sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(",\n");
 		}
+ 		
+ 		//new with menu
+ 		StringOutput tinyMenuSb = new StringOutput();
+ 		tinyMenuSb.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
+ 		  .append("image_advtab:true,\n")
+		  .append("statusbar:true,\n")
+		  .append("menubar:").append(tinyConfig.hasMenu()).append(",\n");
+
+		if (tinyConfig.getTool1() != null) {
+			tinyMenuSb.append("toolbar1: '").append(tinyConfig.getTool1()).append("',\n");
+			if (tinyConfig.getTool2() != null) {
+				tinyMenuSb.append("toolbar2: '").append(tinyConfig.getTool2()).append("',\n");
+			}
+		}
+		
+		if(tinyConfig.hasMenu()) {
+			tinyMenuSb.append("menu:{\n");
+			boolean first = true;
+			for (String menuItem: tinyConfig.getMenu()) {
+				if(!first) tinyMenuSb.append("\n,");
+				if(first) first = false;
+				tinyMenuSb.append(menuItem);
+			}
+			tinyMenuSb.append("\n},\n");
+		}
+		
+		for (Map.Entry<String, String> entry : copyValues.entrySet()) {
+			tinyMenuSb.append(entry.getKey()).append(": \"").append(entry.getValue()).append("\",\n");
+		}
+ 		for (Map.Entry<String, String> entry : copyNonValues.entrySet()) {
+ 			tinyMenuSb.append(entry.getKey()).append(": ").append(entry.getValue()).append(",\n");
+		}
+ 		out.append(tinyMenuSb);
 	}
-	
 	
 	private int listToString(StringOutput sb, String key, List<String> values) {
 		if (values.size() == 0) return 0;
@@ -1696,7 +1769,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param sb
 	 *            The string buffer where to append the array values
 	 */
-	void appendConfigToTinyJSArray(StringOutput sb) {
+	protected void appendConfigToTinyJSArray(StringOutput sb) {
 		// Add plugins first
 		int i = appendValuesFromList(sb, PLUGINS, plugins);
 		// Add toolbars
@@ -1765,7 +1838,7 @@ public class RichTextConfiguration implements Disposable {
 	 * 
 	 * @param The string buffer where to append the js load commands
 	 */
-	void appendLoadCustomModulesFromConfig(StringOutput sb) {
+	protected void appendLoadCustomModulesFromConfig(StringOutput sb) {
 		for (TinyMCECustomPlugin plugin : enabledCustomPlugins) {
 			String pluginName = plugin.getPluginName();
 			String pluginURL = plugin.getPluginURL();
@@ -1785,7 +1858,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param values
 	 * @return
 	 */
-	private int appendValuesFromList(StringOutput sb, String key, List<String> values) {
+	private int appendValuesFromList(StringOutput sb, String key, Collection<String> values) {
 		if (values.size() == 0) return 0;
 		sb.append(key).append(": \"");
 		int i = 0;

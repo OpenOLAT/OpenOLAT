@@ -120,7 +120,7 @@ public class MaterialFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		richText = uifactory.addRichTextElementForStringData("mce", null, htmlContent, 14, -1, false, true, qtiPackage.getBaseDir(), null,
+		richText = uifactory.addRichTextElementForStringData("mce", null, htmlContent, 14, -1, true, qtiPackage.getBaseDir(), null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 
 		RichTextConfiguration richTextConfig = richText.getEditorConfiguration();
@@ -129,10 +129,10 @@ public class MaterialFormController extends FormBasicController {
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
 		// manually enable the source edit button
-		richTextConfig.setQuotedConfigValue(RichTextConfiguration.THEME_ADVANCED_BUTTONS3_ADD, RichTextConfiguration.SEPARATOR_BUTTON + "," + RichTextConfiguration.CODE_BUTTON);
+		richTextConfig.enableCode();
 		//allow script tags...
-		richTextConfig.setQuotedConfigValue(RichTextConfiguration.INVALID_ELEMENTS, RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
-		richTextConfig.setQuotedConfigValue(RichTextConfiguration.EXTENDED_VALID_ELEMENTS, "script[src,type,defer]");
+		richTextConfig.setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
+		richTextConfig.setExtendedValidElements("script[src,type,defer]");
 		
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
