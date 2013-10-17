@@ -41,59 +41,59 @@ public interface TemporaryKey {
 	/**
 	 * @return email address
 	 */
-	public abstract String getEmailAddress();
+	public String getEmailAddress();
 	/**
 	 * @param string
 	 */
-	public abstract void setEmailAddress(String string);
+	public void setEmailAddress(String string);
 	/**
 	 * @return The ip address the registration request came from
 	 */
-	public abstract String getIpAddress();
+	public String getIpAddress();
 	/**
 	 * @param string
 	 */
-	public abstract void setIpAddress(String string);
+	public void setIpAddress(String string);
 
 	/**
 	 * @return Creation date
 	 */
-	public abstract Date getCreationDate();
+	public Date getCreationDate();
 
 	/**
 	 * @return The key itself
 	 */
-	public abstract String getRegistrationKey();
+	public String getRegistrationKey();
 	/**
 	 * @param string
 	 */
-	public abstract void setRegistrationKey(String string);
+	public void setRegistrationKey(String string);
 	/**
 	 * @return Wether email has been sent.
 	 */
-	public abstract boolean isMailSent();
+	public boolean isMailSent();
 	/**
 	 * @param b
 	 */
-	public abstract void setMailSent(boolean b);
+	public void setMailSent(boolean b);
 	/**
 	 * @return Object key.
 	 */
-	public abstract Long getKey();
+	public Long getKey();
 	/**
 	 * @param long1
 	 */
-	public abstract void setKey(Long long1);
+	public void setKey(Long long1);
 	/**
 	 * @param date
 	 */
-	public abstract void setCreationDate(Date date);
+	public void setCreationDate(Date date);
 	/**
 	 * @return Registration action.
 	 */
-	public abstract String getRegAction();
+	public String getRegAction();
 	/**
 	 * @param string
 	 */
-	public abstract void setRegAction(String string);
+	public void setRegAction(String string);
 }
