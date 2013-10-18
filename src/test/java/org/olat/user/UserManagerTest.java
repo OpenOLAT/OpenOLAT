@@ -19,6 +19,7 @@
  */
 package org.olat.user;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +32,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,13 +53,38 @@ public class UserManagerTest extends OlatTestCase {
 	@Autowired
 	private BaseSecurity securityManager;
 	
+	
 	@Test
-	public void findIdentitiesByEmail() {
+	public void findIdentityByEmail_email() {
 		//create a user
-		String name = "createid-" + UUID.randomUUID().toString();
-		String email = name + "@frentix.com";
-		User user = userManager.createUser("first" + name, "last" + name, email);
-		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, Encoder.encrypt("secret"));
+		Identity id = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+
+		//get the identity by email
+		String email = id.getUser().getProperty(UserConstants.EMAIL, null);
+		Identity foundIdentity = userManager.findIdentityByEmail(email);
+		Assert.assertNotNull(foundIdentity);
+		Assert.assertEquals(id, foundIdentity);
+	}
+	
+	@Test
+	public void findIdentityByEmail_institutionalEmail() {
+		//create a user
+		Identity id = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+
+		//get the identity by email
+		String email = id.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+		Identity foundIdentity = userManager.findIdentityByEmail(email);
+		Assert.assertNotNull(foundIdentity);
+		Assert.assertEquals(id, foundIdentity);
+	}
+	
+	@Test
+	public void findIdentitiesByEmail_email() {
+		//create a user
+		Identity id1 = createUser(UUID.randomUUID().toString());
+		Identity id2 = createUser(UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
 		
 		//get empty (must survive)
@@ -65,11 +92,45 @@ public class UserManagerTest extends OlatTestCase {
 		Assert.assertNotNull(emptyIdentities);
 		Assert.assertTrue(emptyIdentities.isEmpty());
 		
-		//get the identity
-		List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(email));
+		//get the identities by emails
+		List<String> emails = new ArrayList<String>();
+		emails.add(id1.getUser().getProperty(UserConstants.EMAIL, null));
+		emails.add(id2.getUser().getProperty(UserConstants.EMAIL, null));
+		
+		List<Identity> identities = userManager.findIdentitiesByEmail(emails);
 		Assert.assertNotNull(identities);
-		Assert.assertEquals(1, identities.size());
-		Assert.assertTrue(identities.contains(identity));	
+		Assert.assertEquals(2, identities.size());
+		Assert.assertTrue(identities.contains(id1));
+		Assert.assertTrue(identities.contains(id2));
 	}
+	
+	@Test
+	public void findIdentitiesByEmail_institutionalEmail() {
+		//create a user
+		Identity id1 = createUser(UUID.randomUUID().toString());
+		Identity id2 = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
 
+		//get the identities by emails
+		List<String> emails = new ArrayList<String>();
+		emails.add(id1.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null));
+		emails.add(id2.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null));
+		
+		List<Identity> identities = userManager.findIdentitiesByEmail(emails);
+		Assert.assertNotNull(identities);
+		Assert.assertEquals(2, identities.size());
+		Assert.assertTrue(identities.contains(id1));
+		Assert.assertTrue(identities.contains(id2));
+	}
+	
+	private Identity createUser(String uuid) {
+		String name = "createid-" + uuid;
+		String email = name + "@frentix.com";
+		String institutEmail = name + "@openolat.com";
+		User user = userManager.createUser("first" + name, "last" + name, email);
+		user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutEmail);
+		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, Encoder.encrypt("secret"));
+		Assert.assertNotNull(identity);
+		return identity;
+	}
 }

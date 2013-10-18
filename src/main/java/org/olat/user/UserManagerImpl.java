@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -204,14 +203,16 @@ public class UserManagerImpl extends UserManager {
 	@Override
 	public List<Identity> findIdentitiesByEmail(List<String> emailList) {
 		List<String> emails = new ArrayList<String>(emailList);
-		for(Iterator<String> emailIt=emails.iterator(); emailIt.hasNext(); ) {
-			String email = emailIt.next();
+		for (int i=0; i<emails.size(); i++) {
+			String email = emails.get(i).toLowerCase();
 			if (!MailHelper.isValidEmailAddress(email)) {
-				emailIt.remove();
+				emails.remove(i);
 				logWarn("Invalid email address: " + email, null);
 			}
+			else {
+				emails.set(i, email);
+			}
 		}
-		
 		if(emails.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -225,7 +226,7 @@ public class UserManagerImpl extends UserManager {
 		if(mysql) {
 			emailSb.append(" user.properties['").append(UserConstants.EMAIL).append("']  in (:emails) ");
 		} else {
-			emailSb.append(" lower(user.properties['").append(UserConstants.EMAIL).append("']) = lower(:emails)");
+			emailSb.append(" lower(user.properties['").append(UserConstants.EMAIL).append("']) in (:emails)");
 		}
 
 		List<Identity> identities = dbInstance.getCurrentEntityManager()
@@ -237,7 +238,7 @@ public class UserManagerImpl extends UserManager {
 		if(mysql) {
 			institutionalSb.append(" user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("'] in (:emails) ");
 		} else {
-			institutionalSb.append(" lower(user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("']) = lower(:emails)");
+			institutionalSb.append(" lower(user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("']) in (:emails)");
 		}
 		if(!identities.isEmpty()) {
 			institutionalSb.append(" and identity not in (:identities) ");
