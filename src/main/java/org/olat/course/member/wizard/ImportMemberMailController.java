@@ -71,7 +71,7 @@ public class ImportMemberMailController extends StepFormBasicController {
 			mailTemplate = BusinessGroupMailing.getDefaultTemplate(defaultGroupType, group, getIdentity());
 		} else if(defaultRepoType != null) {
 			mailTemplate = RepositoryMailing.getDefaultTemplate(defaultRepoType, repoEntry, getIdentity());
-		} else if(hasCouresRights(e)) {
+		} else if(hasCourseRights(e)) {
 			mailTemplate = RepositoryMailing.createAddParticipantMailTemplate(repoEntry, getIdentity());
 		} else {
 			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.addParticipant, null, getIdentity());
@@ -81,8 +81,8 @@ public class ImportMemberMailController extends StepFormBasicController {
 		initForm (ureq);
 	}
 	
-	private boolean hasCouresRights(MemberPermissionChangeEvent e) {
-		return ((e.getRepoOwner() != null && e.getRepoOwner().booleanValue())
+	private boolean hasCourseRights(MemberPermissionChangeEvent e) {
+		return e != null && ((e.getRepoOwner() != null && e.getRepoOwner().booleanValue())
 				|| (e.getRepoParticipant() != null && e.getRepoParticipant().booleanValue())
 				|| (e.getRepoTutor() != null && e.getRepoTutor().booleanValue()));
 	}

@@ -49,7 +49,7 @@ import org.olat.group.ui.main.MemberPermissionChangeEvent;
 public class RepositoryMailing {
 	
 	public static Type getDefaultTemplateType(MemberPermissionChangeEvent event) {
-		if(event.size() == 1) {
+		if(event != null && event.size() == 1) {
 			if(event.getRepoTutor() != null && event.getRepoTutor().booleanValue()) {
 				return Type.addTutor;
 			} else if(event.getRepoParticipant() != null && event.getRepoParticipant().booleanValue()) {

@@ -46,7 +46,7 @@ import org.olat.group.ui.main.MemberPermissionChangeEvent;
 public class BusinessGroupMailing {
 
 	public static MailType getDefaultTemplateType(MemberPermissionChangeEvent event) {
-		if(event.size() == 1) {
+		if(event != null && event.size() == 1) {
 			List<BusinessGroupMembershipChange> changes = event.getGroupChanges();
 			if(changes.size() == 1) {
 				BusinessGroupMembershipChange change = changes.get(0);
