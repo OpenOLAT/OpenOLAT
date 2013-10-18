@@ -38,6 +38,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 
 /**
  * Description:<br>
@@ -73,6 +74,7 @@ class JSDateChooserRenderer implements ComponentRenderer {
 
 		String triggerId = "trigger_" + jsdcc.getFormDispatchId();
 		Translator sourceTranslator = jsdcc.getElementTranslator();
+		Translator dateTranslator = Util.createPackageTranslator(JSDateChooserRenderer.class, translator.getLocale());
 
 		//add pop js for date chooser, if componente is enabled
 		if (source.isEnabled()) {
@@ -89,6 +91,29 @@ class JSDateChooserRenderer implements ComponentRenderer {
 				.append("jQuery(function(){ jQuery('#").append(receiverId).append("').datepicker({\n")
 				.append("  dateFormat:'").append(format).append("',\n")
 				.append("  firstDay:1,\n")
+				.append("  monthNames:[")
+				  .append("'").append(dateTranslator.translate("month.long.jan")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.feb")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.mar")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.apr")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.mai")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.jun")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.jul")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.aug")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.sep")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.oct")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.nov")).append("',")
+				  .append("'").append(dateTranslator.translate("month.long.dec")).append("'")
+				.append("],\n")
+				.append("  dayNamesMin:[")
+				  .append("'").append(dateTranslator.translate("day.short.so")).append("',")
+				  .append("'").append(dateTranslator.translate("day.short.mo")).append("',")
+				  .append("'").append(dateTranslator.translate("day.short.di")).append("',")
+				  .append("'").append(dateTranslator.translate("day.short.mi")).append("',")
+				  .append("'").append(dateTranslator.translate("day.short.do")).append("',")
+				  .append("'").append(dateTranslator.translate("day.short.fr")).append("',")
+				  .append("'").append(dateTranslator.translate("day.short.sa")).append("'")
+				.append("],\n")
 				.append("  showOtherMonths:true,\n")
 				.append("  onSelect:function(){\n")
 				.append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("')")

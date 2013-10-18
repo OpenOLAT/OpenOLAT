@@ -33,7 +33,6 @@ import java.util.Map;
 
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.shibboleth.util.AttributeTranslator;
 
@@ -70,6 +69,8 @@ public class ShibbolethModule extends AbstractOLATModule {
 	private static String languageParamName;
 	private static List<String> operators;
 	private static String defaultUIDAttribute;
+	private static String loginTemplate;
+	private static String loginTemplateDefault;
 
 	public static final String MULTIVALUE_SEPARATOR = ";";
 	private static Map<String, String> userMapping;
@@ -89,17 +90,17 @@ public class ShibbolethModule extends AbstractOLATModule {
 	protected void initDefaultProperties() {
 		enableShibbolethLogins = getBooleanConfigParameter(CONF_ENABLE, false);
 		if (enableShibbolethLogins) {
-			Tracing.logInfo("Shibboleth logins enabled.", ShibbolethModule.class);
+			logInfo("Shibboleth logins enabled.");
 		} else {
-			Tracing.logInfo("Shibboleth logins disabled.", ShibbolethModule.class);
+			logInfo("Shibboleth logins disabled.");
 		}
 		
 		useLanguageInReq  = getBooleanConfigParameter(CONF_USELANGUAGEINREQ, true);
 		languageParamName = getStringConfigParameter(CONF_LANGUAGEPARAMNAM, "en", true);
 		if(useLanguageInReq) {
-			Tracing.logInfo("Language code is sent as parameter in the AAI request with lang: "+languageParamName, ShibbolethModule.class);
+			logInfo("Language code is sent as parameter in the AAI request with lang: "+languageParamName);
 		} else {
-			Tracing.logInfo("Language code is not sent with AAI request.", ShibbolethModule.class);
+			logInfo("Language code is not sent with AAI request.");
 		}
 		
 		defaultUIDAttribute = getStringConfigParameter(CONF_UNIQUEIDENTIFIER, "Shib-SwissEP-UniqueID", false);
@@ -191,12 +192,11 @@ public class ShibbolethModule extends AbstractOLATModule {
 
 	@Override
 	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
+		// 
 	}
 	
 	public void setUserMapping(Map<String, String> userMapping) {
-		this.userMapping = userMapping;
+		ShibbolethModule.userMapping = userMapping;
 	}
 
 	/**
@@ -255,6 +255,22 @@ public class ShibbolethModule extends AbstractOLATModule {
 	 */
 	public static String getPreferedLanguage() {
 		return userMapping.get(CONF_OLATUSERMAPPING_PREFERED_LANGUAGE);
+	}
+
+	public static String getLoginTemplate() {
+		return loginTemplate;
+	}
+
+	public static void setLoginTemplate(String loginTemplate) {
+		ShibbolethModule.loginTemplate = loginTemplate;
+	}
+
+	public static String getLoginTemplateDefault() {
+		return loginTemplateDefault;
+	}
+
+	public static void setLoginTemplateDefault(String loginTemplateDefault) {
+		ShibbolethModule.loginTemplateDefault = loginTemplateDefault;
 	}
 
 	@Override

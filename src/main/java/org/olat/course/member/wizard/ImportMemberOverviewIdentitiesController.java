@@ -44,7 +44,6 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.mail.MailHelper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -93,7 +92,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			warnLayout.setRootForm(mainForm);
 			formLayout.add(warnLayout);
 			
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			for(String notfound:notfounds) {
 				if(sb.length() > 0) sb.append(", ");
 				sb.append(notfound);
@@ -160,40 +159,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			}
 		}
 		
-		//search by names
-		List<Identity> identities = securityManager.findIdentitiesByName(identList);
-		for(Identity identity:identities) {
-			identList.remove(identity.getName());
-			if (!PersistenceHelper.containsPersistable(oks, identity)
-					&& !securityManager.isIdentityInSecurityGroup(identity, anonymousSecGroup)) {
-				oks.add(identity);
-			}
-		}
-		
-		//search by email
-		List<String> emails = new ArrayList<String>();
-		for(String ident:identList) {
-			if(MailHelper.isValidEmailAddress(ident)) {
-				emails.add(ident);
-			}
-		}
-		List<Identity> mailIdentities = userManager.findIdentitiesByEmail(emails);
-		for(Identity identity:mailIdentities) {
-			String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
-			if(email != null) {
-				identList.remove(email);
-			}
-			String institutEmail = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
-			if(institutEmail != null) {
-				identList.remove(institutEmail);
-			}
-			if (!PersistenceHelper.containsPersistable(oks, identity)
-					&& !securityManager.isIdentityInSecurityGroup(identity, anonymousSecGroup)) {
-				oks.add(identity);
-			}
-		}
-		
-		//search by institutionalUserIdentifier
+		//search by institutionalUserIdentifier, case sensitive
 		List<Identity> institutIdentities = securityManager.findIdentitiesByNumber(identList);
 		for(Identity identity:institutIdentities) {
 			String userIdent = identity.getUser().getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
@@ -205,8 +171,39 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 				oks.add(identity);
 			}
 		}
+		// make a lowercase copy of identList for processing username and email
+		List<String> identListLowercase = new ArrayList<String>(identList.size());
+		for (String ident:identList) {
+			identListLowercase.add(ident.toLowerCase());
+		}
+		//search by names, must be lower case
+		List<Identity> identities = securityManager.findIdentitiesByName(identListLowercase);
+		for(Identity identity:identities) {
+			identListLowercase.remove(identity.getName());
+			if (!PersistenceHelper.containsPersistable(oks, identity)
+					&& !securityManager.isIdentityInSecurityGroup(identity, anonymousSecGroup)) {
+				oks.add(identity);
+			}
+		}
 		
-		notfounds.addAll(identList);
+		//search by email, case insensitive
+		List<Identity> mailIdentities = userManager.findIdentitiesByEmail(identListLowercase);
+		for(Identity identity:mailIdentities) {
+			String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
+			if(email != null) {
+				identListLowercase.remove(email.toLowerCase());
+			}
+			String institutEmail = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+			if(institutEmail != null) {
+				identListLowercase.remove(institutEmail.toLowerCase());
+			}
+			if (!PersistenceHelper.containsPersistable(oks, identity)
+					&& !securityManager.isIdentityInSecurityGroup(identity, anonymousSecGroup)) {
+				oks.add(identity);
+			}
+		}
+		
+		notfounds.addAll(identListLowercase);
 	}
 
 	public boolean validate() {

@@ -86,7 +86,8 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 
 		if (!ShibbolethModule.isEnableShibbolethLogins()) throw new OLATSecurityException(
 				"Tried to access shibboleth wayf but shibboleth is not enabled.");
-		loginComp = createVelocityContainer("shibbolethlogin");
+		
+		loginComp = createVelocityContainer(ShibbolethModule.getLoginTemplate());
 		
 		if (LoginModule.isGuestLoginLinksEnabled()) {
 			anoLink = LinkFactory.createLink("menu.guest", loginComp, this);

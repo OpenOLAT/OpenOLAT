@@ -91,7 +91,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	private Link backLink, cancelButton;
 	private RepositoryEntry selectedEntry;
 	private List<RepositoryEntry> selectedEntries;
-	private boolean enableSearchforAllReferencalbeInSearchForm = false;
+	private Can enableSearchforAllInSearchForm;
 	private Link loginLink;
 	private SearchType searchType;
 	private RepositoryEntryFilter filter;
@@ -181,7 +181,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		vc.contextPut("isAuthor", Boolean.valueOf(roles.isAuthor()));
 		vc.contextPut("withCancel", new Boolean(withCancel));
 		enableBackToSearchFormLink(false); // default, must be enabled explicitly
-		enableSearchforAllReferencalbeInSearchForm(false); // default
+		enableSearchforAllXXAbleInSearchForm(null); // default
 		putInitialPanel(vc);
 	}
 
@@ -208,12 +208,12 @@ public class RepositorySearchController extends BasicController implements Activ
 
 	/**
 	 * @param enable true: searches done by the search form will find all resources
-	 * that are referencable by the current user; false: searches done by the search 
+	 * that are referencable/copyable by the current user; false: searches done by the search 
 	 * form will find all resources that have at least BAR setting in the BARG configuration
 	 * list
 	 */
-	public void enableSearchforAllReferencalbeInSearchForm(boolean enable) {
-		enableSearchforAllReferencalbeInSearchForm = enable;
+	public void enableSearchforAllXXAbleInSearchForm(Can enable) {
+		enableSearchforAllInSearchForm = enable;
 	}
 	
 	/**
@@ -297,13 +297,16 @@ public class RepositorySearchController extends BasicController implements Activ
 		
 		List<RepositoryEntry> entries;
 		if(searchForm.isAdminSearch()) {
-			entries = rm.queryResourcesLimitType(null, restrictedTypes, name, author, desc);
-		} else {
+			entries = rm.queryResourcesLimitType(null, restrictedTypes, name, author, desc, true, false);
+		} else if(enableSearchforAllInSearchForm == Can.referenceable){
 			entries = rm.queryReferencableResourcesLimitType(ident, roles, restrictedTypes, name, author, desc);
+		} else if(enableSearchforAllInSearchForm == Can.copyable){
+			entries = rm.queryCopyableResourcesLimitType(ident, roles, restrictedTypes, name, author, desc);
+		} else {
+			entries = new ArrayList<RepositoryEntry>();
 		}
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
-		//fxdiff VCRP-10: repository search with type filter
 		if(updateFilters) {
 			updateFilters(entries, null);
 		}
@@ -346,7 +349,32 @@ public class RepositorySearchController extends BasicController implements Activ
 		List<RepositoryEntry> entries = rm.queryReferencableResourcesLimitType(owner, roles, restrictedTypes, null, null, null);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
-		//fxdiff VCRP-10: repository search with type filter
+		tableCtr.setFilters(null, null);
+		tableCtr.modelChanged();
+		displaySearchResults(null);
+	}
+	
+	/**
+	 * Do search for all resources that the user can copy either because he 
+	 * is the owner of the resource or because he has author rights and the resource
+	 * is set to at least BA in the BARG settings and the resource has the flag
+	 * 'canCopy' set to true.
+	 * @param owner The current identity
+	 * @param limitTypes List of Types to limit the search
+	 * @param roles The users roles
+	 */
+	public void doSearchForCopyableResourcesLimitType(Identity owner, String[] limitTypes, Roles roles) {
+		RepositoryManager rm = RepositoryManager.getInstance();
+		List<String> restrictedTypes = new ArrayList<String>();
+		if(limitTypes == null) {
+			restrictedTypes = null;
+		}
+		else {
+			restrictedTypes.addAll(Arrays.asList(limitTypes));
+		}
+		List<RepositoryEntry> entries = rm.queryCopyableResourcesLimitType(owner, roles, restrictedTypes, null, null, null);
+		filterRepositoryEntries(entries);
+		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);
 		tableCtr.modelChanged();
 		displaySearchResults(null);
@@ -579,7 +607,7 @@ public class RepositorySearchController extends BasicController implements Activ
 				} else if(searchType == SearchType.myAsTeacher) {
 					doSearchMyCoursesTeacher(urequest, typeFilter.getType(), false);
 				} else if(searchType == SearchType.searchForm) {
-					if(enableSearchforAllReferencalbeInSearchForm) {
+					if(enableSearchforAllInSearchForm != null) {
 						doSearchAllReferencables(urequest, typeFilter.getType(), false);
 					} else {
 						doSearch(urequest, typeFilter.getType(), false);
@@ -593,7 +621,7 @@ public class RepositorySearchController extends BasicController implements Activ
 				} else if(searchType == SearchType.myAsTeacher) {
 					doSearchMyCoursesTeacher(urequest);
 				} else if(searchType == SearchType.searchForm) {
-					if(enableSearchforAllReferencalbeInSearchForm) {
+					if(enableSearchforAllInSearchForm != null) {
 						doSearchAllReferencables(urequest, null, false);
 					} else {
 						doSearch(urequest, null, false);
@@ -619,7 +647,7 @@ public class RepositorySearchController extends BasicController implements Activ
 			if (event == Event.DONE_EVENT) {
 				if (searchForm.hasId())	{
 					doSearchById(searchForm.getId());
-				} else if (enableSearchforAllReferencalbeInSearchForm) {
+				} else if (enableSearchforAllInSearchForm != null) {
 					doSearchAllReferencables(urequest, null, true);
 				} else {
 					doSearch(urequest, null, true);
@@ -687,5 +715,10 @@ public class RepositorySearchController extends BasicController implements Activ
 		myAsStudent,
 		myAsTeacher,
 		searchForm,
+	}
+	
+	public enum Can {
+		referenceable,
+		copyable
 	}
 }

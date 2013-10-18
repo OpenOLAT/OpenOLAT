@@ -27,11 +27,11 @@ package org.olat.shibboleth;
 import java.util.Locale;
 
 import org.olat.basesecurity.AuthHelper;
+import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -40,7 +40,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationController;
-import org.olat.core.dispatcher.DispatcherAction;
 
 /**
  * 
@@ -57,8 +56,6 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 	private VelocityContainer loginComp;	
 	private Link shibLink;
 	private Link guestLink;
-	private Panel mainPanel;
-
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -75,7 +72,7 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 				
 		if (!ShibbolethModule.isEnableShibbolethLogins()) throw new OLATSecurityException("Shibboleth is not enabled.");
 		
-		loginComp = createVelocityContainer("default_shibbolethlogin");				
+		loginComp = createVelocityContainer(ShibbolethModule.getLoginTemplateDefault());				
 		shibLink = LinkFactory.createLink("shib.redirect", loginComp, this);	
 		
 		if (LoginModule.isGuestLoginLinksEnabled()) {
@@ -83,19 +80,17 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 			guestLink.setCustomEnabledLinkCSS("o_login_guests b_with_small_icon_left");
 		}
 		
-		mainPanel = putInitialPanel(loginComp);
+		putInitialPanel(loginComp);
 	}
 
 	@Override
 	public void changeLocale(Locale newLocale) {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	@Override
