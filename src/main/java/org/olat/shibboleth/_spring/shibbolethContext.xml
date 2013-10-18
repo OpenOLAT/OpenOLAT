@@ -3,11 +3,14 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<!-- module -->
 <bean id="shibbolethModule" class="org.olat.shibboleth.ShibbolethModule">
 <property name="attributeTranslator" ref="attributeTranslator" />
+<!-- Define the template of the ShibbolethAuthenticationController.java (without .html) -->
+<property name="loginTemplate" value="shibbolethlogin" />
+<!-- Define the template of the DefaultShibbolethAuthenticationController.java (without .html) -->
+<property name="loginTemplateDefault" value="default_shibbolethlogin" />
 <property name="operators">
 	<list>
 		<value>isin</value>
