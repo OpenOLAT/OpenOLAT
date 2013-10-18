@@ -42,6 +42,7 @@ import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Recur;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.WeekDayList;
+import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.ExDate;
 import net.fortuna.ical4j.model.property.RRule;
 
@@ -157,6 +158,101 @@ public class CalendarUtils {
 		}
 		Collections.sort(results);
 		return results;
+	}
+	
+	protected static DateList getRecurringsInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent) {
+		DateList recurDates = null;
+			String recurrenceRule = kEvent.getRecurrenceRule();
+			if(recurrenceRule != null && !recurrenceRule.equals("")) {
+				try {
+					Recur recur = new Recur(recurrenceRule);
+					net.fortuna.ical4j.model.Date periodStartDate = CalendarUtils.createDate(periodStart);
+					net.fortuna.ical4j.model.Date periodEndDate = CalendarUtils.createDate(periodEnd);
+					net.fortuna.ical4j.model.Date eventStartDate = CalendarUtils.createDate(kEvent.getBegin());
+					recurDates = recur.getDates(eventStartDate, periodStartDate, periodEndDate, Value.DATE);
+				} catch (ParseException e) {
+					log.error("cannot restore recurrence rule: " + recurrenceRule, e);
+				}
+				
+				String recurrenceExc = kEvent.getRecurrenceExc();
+				if(recurrenceExc != null && !recurrenceExc.equals("")) {
+					try {
+						ExDate exdate = new ExDate();
+						// expected date+time format: 
+						// 20100730T100000
+						// unexpected all-day format:
+						// 20100730
+						// see OLAT-5645
+						if (recurrenceExc.length()>8) {
+							exdate.setValue(recurrenceExc);
+						} else {
+							exdate.getParameters().replace(Value.DATE);
+							exdate.setValue(recurrenceExc);
+						}
+						for( Object date : exdate.getDates() ) {
+							if(recurDates.contains(date)) recurDates.remove(date);
+						}
+					} catch (ParseException e) {
+						log.error("cannot restore excluded dates for this recurrence: " + recurrenceExc, e);
+					}
+				}
+			}
+		
+		return recurDates;
+	}
+	
+	/**
+	 * @see org.olat.commons.calendar.CalendarManager#getRecurringDatesInPeriod(java.util.Date, java.util.Date, org.olat.commons.calendar.model.KalendarEvent)
+	 */
+	public static List<KalendarRecurEvent> getRecurringDatesInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent, TimeZone userTz) {
+		List<KalendarRecurEvent> lstDates = new ArrayList<KalendarRecurEvent>();
+		DateList recurDates = getRecurringsInPeriod(periodStart, periodEnd, kEvent);
+		if(recurDates == null) return lstDates;
+		
+		for( Object obj : recurDates ) {
+			net.fortuna.ical4j.model.Date date = (net.fortuna.ical4j.model.Date)obj;
+			
+			KalendarRecurEvent recurEvent;
+			
+			java.util.Calendar eventStartCal = java.util.Calendar.getInstance();
+			eventStartCal.clear();
+			eventStartCal.setTime(kEvent.getBegin());
+			
+			java.util.Calendar eventEndCal = java.util.Calendar.getInstance();
+			eventEndCal.clear();
+			eventEndCal.setTime(kEvent.getEnd());
+			
+			java.util.Calendar recurStartCal = java.util.Calendar.getInstance();
+			recurStartCal.clear();
+			if(userTz == null) {
+				recurStartCal.setTimeInMillis(date.getTime());
+			} else {
+				recurStartCal.setTimeInMillis(date.getTime() - userTz.getOffset(date.getTime()));
+			}
+			long duration = kEvent.getEnd().getTime() - kEvent.getBegin().getTime();
+
+			java.util.Calendar beginCal = java.util.Calendar.getInstance();
+			beginCal.clear();
+			beginCal.set(
+					recurStartCal.get(java.util.Calendar.YEAR), 
+					recurStartCal.get(java.util.Calendar.MONTH), 
+					recurStartCal.get(java.util.Calendar.DATE), 
+					eventStartCal.get(java.util.Calendar.HOUR_OF_DAY), 
+					eventStartCal.get(java.util.Calendar.MINUTE), 
+					eventStartCal.get(java.util.Calendar.SECOND)
+					);
+			
+			java.util.Calendar endCal = java.util.Calendar.getInstance();
+			endCal.clear();
+			endCal.setTimeInMillis(beginCal.getTimeInMillis() + duration);
+			if(kEvent.getBegin().compareTo(beginCal.getTime()) == 0) continue; //prevent doubled events
+			Date recurrenceEnd = CalendarUtils.getRecurrenceEndDate(kEvent.getRecurrenceRule());
+			if(kEvent.isAllDayEvent() && recurrenceEnd != null && recurStartCal.getTime().after(recurrenceEnd)) continue; //workaround for ical4j-bug in all day events
+			recurEvent = new KalendarRecurEvent(kEvent.getID(), kEvent.getSubject(), new Date(beginCal.getTimeInMillis()), new Date(endCal.getTimeInMillis()));
+			recurEvent.setSourceEvent(kEvent);
+			lstDates.add(recurEvent);
+		}
+		return lstDates;
 	}
 	
 	public static List<KalendarEvent> listEventsForPeriod(Kalendar calendar, Date periodStart, Date periodEnd) {

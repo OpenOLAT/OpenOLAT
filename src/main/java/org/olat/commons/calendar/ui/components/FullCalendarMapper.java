@@ -22,13 +22,20 @@ package org.olat.commons.calendar.ui.components;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+
+import net.fortuna.ical4j.model.TimeZone;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.commons.calendar.CalendarModule;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarRecurEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
@@ -118,6 +125,14 @@ public class FullCalendarMapper implements Mapper {
 					JSONObject jsonEvent = getJSONEvent(event, cal);
 					ja.put(jsonEvent);
 				}
+				if (StringHelper.containsNonWhitespace(event.getRecurrenceRule())) {
+					TimeZone tz = CoreSpringFactory.getImpl(CalendarModule.class).getDefaultTimeZone();
+					List<KalendarRecurEvent> kalList = CalendarUtils.getRecurringDatesInPeriod (from, to, event, tz);
+					for (KalendarRecurEvent recurEvent:kalList) {
+						JSONObject jsonEvent = getJSONEvent(recurEvent, cal);
+						ja.put(jsonEvent);
+					}
+				}
 			}
 		}
 	}
@@ -145,5 +160,4 @@ public class FullCalendarMapper implements Mapper {
 			return formatDateTime.format(date);
 		}
 	}
-
 }
