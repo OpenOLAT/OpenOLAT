@@ -109,7 +109,7 @@ public class RepositorySearchMultiSelectController extends RepositorySearchContr
 		vc.contextPut("withCancel", Boolean.valueOf(withCancel));
 		
 		enableBackToSearchFormLink(false); // default, must be enabled explicitly
-		enableSearchforAllReferencalbeInSearchForm(false); // default
+		enableSearchforAllXXAbleInSearchForm(null); // default
 		
 		putInitialPanel(vc);
 	}

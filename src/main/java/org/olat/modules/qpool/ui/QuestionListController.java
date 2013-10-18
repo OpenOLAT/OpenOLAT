@@ -71,6 +71,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.RepositoryDetailsController;
+import org.olat.repository.controllers.RepositorySearchController.Can;
 
 /**
  * 
@@ -530,7 +531,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(importTestCtrl);
 		String[] allowed = new String[]{ TestFileResource.TYPE_NAME, SurveyFileResource.TYPE_NAME };
 		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, allowed,
-				translate("import.repository"), false, false, false, false, true);
+				null, translate("import.repository"), false, false, false, false, true, Can.copyable);
 		listenTo(importTestCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

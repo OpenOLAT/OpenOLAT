@@ -1175,11 +1175,36 @@ public class RepositoryManager extends BasicManager {
 			// if user has no author right he can not reference to any resource at all
 			return new ArrayList<RepositoryEntry>();
 		}
-		return queryResourcesLimitType(identity, resourceTypes, displayName, author, desc);
+		return queryResourcesLimitType(identity, resourceTypes, displayName, author, desc, true, false);
+	}
+	
+	/**
+	 * Search for resources that can be copied by an author. This is the case:
+	 * 1) the user is the owner of the resource
+	 * 2) the user is author and the resource is at least visible to authors (BA) 
+	 *    and the resource is set to canCopy
+	 * @param identity The user initiating the query
+	 * @param roles The current users role set
+	 * @param resourceTypes Limit search result to this list of repo types. Can be NULL
+	 * @param displayName Limit search to this repo title. Can be NULL
+	 * @param author Limit search to this user (Name, firstname, loginname). Can be NULL
+	 * @param desc Limit search to description. Can be NULL
+	 * @return List of repository entries
+	 */	
+	public List<RepositoryEntry> queryCopyableResourcesLimitType(Identity identity, Roles roles, List<String> resourceTypes,
+			String displayName, String author, String desc) {
+		if (identity == null) {
+			throw new AssertException("identity can not be null!");
+		}
+		if (!roles.isAuthor()) {
+			// if user has no author right he can not reference to any resource at all
+			return new ArrayList<RepositoryEntry>();
+		}
+		return queryResourcesLimitType(identity, resourceTypes, displayName, author, desc, false, true);
 	}
 		
 	public List<RepositoryEntry> queryResourcesLimitType(Identity identity, List<String> resourceTypes,
-			String displayName, String author, String desc) {
+			String displayName, String author, String desc, boolean checkCanReference, boolean checkCanCopy) {
 			
 		// cleanup some data: use null values if emtpy
 		if (resourceTypes != null && resourceTypes.size() == 0) resourceTypes = null;
@@ -1214,7 +1239,15 @@ public class RepositoryManager extends BasicManager {
 		int access;
 		if(identity != null) {
 			access = RepositoryEntry.ACC_OWNERS_AUTHORS;
-			query.append(" sgmsi.identity = :identity  or (v.access>=:access and v.canReference = true) ");
+			
+			query.append(" sgmsi.identity = :identity  or (v.access>=:access  ");
+			if(checkCanReference) {
+				query.append(" and v.canReference = true ");
+			}
+			if(checkCanCopy) {
+				query.append(" and v.canCopy = true ");
+			}
+			query.append(")");
 		} else {
 			access = RepositoryEntry.ACC_OWNERS;
 			query.append(" v.access>=:access ");

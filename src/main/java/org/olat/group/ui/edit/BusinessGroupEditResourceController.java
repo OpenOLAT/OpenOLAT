@@ -59,6 +59,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryEntryFilter;
+import org.olat.repository.controllers.RepositorySearchController.Can;
 
 /**
  * Description:<BR>
@@ -137,7 +138,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 			RepositoryEntryFilter filter = new ManagedEntryfilter();
 			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 					new String[]{ CourseModule.getCourseTypeName() }, filter,
-					translate("resources.add"), true, true, true, true, true);
+					translate("resources.add"), true, true, true, true, true, Can.referenceable);
 			listenTo(repoSearchCtr);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
 			listenTo(cmc);
