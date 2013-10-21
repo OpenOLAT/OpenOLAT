@@ -56,8 +56,8 @@ class DisplayOrDownloadComponentRenderer implements ComponentRenderer {
 			// use javascript to open a new file that loads the file.
 			sb.append("<script type='text/javascript'>");
 			sb.append("/* <![CDATA[ */ ");
-			sb.append("Ext.onReady(function() {");
-			sb.append("window.open('").append(fileUrl).append("', 'downloadwindow','');");
+			sb.append("jQuery(function() {");
+			sb.append("  window.open('").append(fileUrl).append("', 'downloadwindow','');");
 			sb.append("});");
 			sb.append("/* ]]> */");
 			sb.append("</script>");
