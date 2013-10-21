@@ -71,7 +71,9 @@ public class CalendarDetailsController extends BasicController {
 		mainVC.put("edit", editButton);
 		mainVC.contextPut("date", formatDate());
 		mainVC.contextPut("subject", event.getSubject());
-		mainVC.contextPut("location", event.getLocation());
+		if(StringHelper.containsNonWhitespace(event.getLocation())) {
+			mainVC.contextPut("location", event.getLocation());
+		}
 		mainVC.contextPut("links", renderEventLinks());
 		putInitialPanel(mainVC);
 	}
