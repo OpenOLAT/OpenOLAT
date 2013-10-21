@@ -44,11 +44,13 @@ public class TinyConfig {
 	protected static final TinyConfig fileEditorConfig;
 	protected static final TinyConfig minimalisticConfig;
 
+	//min profile
 	static {
 		String plugins =  "textcolor,olatsmileys,paste,link,quotespliter,importcss,tabfocus,visualchars,noneditable";
 		String toolbar1 = "undo redo | bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | forecolor backcolor | bullist numlist | link unlink | olatsmileys";
 		minimalisticConfig = new TinyConfig(plugins, toolbar1, null, null, null, toolbar1, null);
 	}
+	//standard profile
 	static {
 		String plugins =   "contextmenu,textcolor,olatsmileys,paste,link,charmap,quotespliter,olatmatheditor,importcss,tabfocus,visualchars,noneditable";
 		String toolbar1 =  "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | formatselect fontselect fontsizeselect forecolor backcolor";
@@ -58,12 +60,13 @@ public class TinyConfig {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
 			  "view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
-			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | alignjustify alignright aligncenter alignleft | removeformat'}",
+			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}",
 			  "tools: {title: 'Tools', items: 'code'}"//added
 		};
-		String tools1 = "bold italic underline | formatselect fontselect fontsizeselect forecolor backcolor | bullist numlist indent outdent | link unlink";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect fontselect fontsizeselect forecolor backcolor | bullist numlist indent outdent | link unlink";
 		editorConfig = new TinyConfig(plugins, toolbar1, toolbar2, null, menu, tools1, null);
 	}
+	//full profile
 	static {
 		String plugins =   "contextmenu,textcolor,olatsmileys,paste,link,charmap,quotespliter,olatmatheditor,importcss,tabfocus,visualchars,noneditable,table";
 		String toolbar1 =  "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | formatselect fontselect fontsizeselect forecolor backcolor";
@@ -74,13 +77,14 @@ public class TinyConfig {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
 			  "view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
-			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | alignjustify alignright aligncenter alignleft | removeformat'}",
+			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}",
 			  "table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}",
 			  "tools: {title: 'Tools', items: 'code'}"//added
 		};
-		String tools1 = "bold italic underline | formatselect fontselect fontsizeselect forecolor backcolor | bullist numlist indent outdent | link unlink";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect fontselect fontsizeselect forecolor backcolor | bullist numlist indent outdent | link unlink";
 		editorFullConfig = new TinyConfig(plugins, toolbar1, toolbar2, toolbar3, menu, tools1, null);
 	}
+	//file profile
 	static {
 		String plugins =   "textcolor,save,link,charmap,image,olatmatheditor,importcss,insertdatetime,code,table,tabfocus,visualchars,print,noneditable,fullscreen,contextmenu,olatmovieviewer,searchreplace,olatsmileys,paste,media";
 		String toolbar1 =  "save cancel | bold italic underline strikethrough | alignjustify alignright aligncenter alignleft  | styleselect formatselect fontselect fontsizeselect forecolor backcolor";
@@ -88,17 +92,17 @@ public class TinyConfig {
 		String toolbar3 =  "table | removeformat visualchars | print fullscreen code | insertdate inserttime hr charmap olatmatheditor olatsmileys";
 		
 		String[] menu = {
-				"file: {title: 'File', items: 'newdocument print'}",
+				"file: {title: 'File', items: 'print'}",
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
 			  "view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
-			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | alignjustify alignright aligncenter alignleft | formats | removeformat'}",
+			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
 			  "table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}",
 			  "tools: {title: 'Tools', items: 'code'}"
 		};
 		//String tools1 = "save cancel | bullist numlist indent outdent | link unlink | olatsmileys";
 		//String tools2 = "bold italic underline | styleselect fontselect fontsizeselect forecolor backcolor";
-		String tools1 = "save cancel | bold italic underline | styleselect fontselect fontsizeselect forecolor backcolor | bullist numlist indent outdent | link unlink";
+		String tools1 = "bold italic underline | styleselect fontselect fontsizeselect forecolor backcolor | bullist numlist indent outdent | link unlink";
 		fileEditorConfig = new TinyConfig(plugins, toolbar1, toolbar2, toolbar3, menu, tools1, null);
 	}
 
