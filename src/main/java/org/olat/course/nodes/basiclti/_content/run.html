@@ -1,7 +1,7 @@
 <div class="b_iframe_wrapper">
-	<iframe  id="IMSBasicLTIFrame" src="$mapperUri"  marginwidth="0" marginheight="0" #if($width) width="${width}px" #end height="#if($height)${height}#else{400}#{end}px" style="#if($width) width:${width}px;#end #if($height)height:${height}px;#{end}"></iframe>
+	<iframe  id="IMSBasicLTIFrame" src="$mapperUri"  marginwidth="0" marginheight="0" #if($width!='auto') width="${width}px" #end height="#if($height!='auto')${height}#else 400#{end}px" style="#if($width!='auto') width:${width}px;#end #if($height!='auto')height:${height}px;#{end}"></iframe>
 </div>
-#if(!$height)
+#if(!$height || 'auto' == $height)
 	<script type="text/javascript">
 	/* <![CDATA[ */ 
 		## no window.onresize due to IE bug which triggers recurstion: http://snook.ca/archives/javascript/ie6_fires_onresize/
