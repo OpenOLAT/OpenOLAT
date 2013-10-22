@@ -1,9 +1,11 @@
 <div class="o_cal_time">$date</div>
 <div class="o_cal_wv_event_tooltip_content">
 	$r.escapeHtml($subject)
+	#if($location)
 	<div class="o_cal_location">
 		<b>$r.translate("cal.form.location"):</b> $r.escapeHtml($location)
 	</div>
+	#end
 	<div class="o_cal_links">
 	#foreach($link in $links)
 		#if($link.intern)

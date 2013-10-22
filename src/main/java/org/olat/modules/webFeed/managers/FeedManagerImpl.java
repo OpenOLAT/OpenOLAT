@@ -1019,7 +1019,9 @@ public class FeedManagerImpl extends FeedManager {
 			item = item.resolve(itemId);
 			item = item.resolve(MEDIA_DIR);
 			item = item.resolve(fileName);
-			mediaResource = new VFSMediaResource((VFSLeaf) item);
+			if(item instanceof VFSLeaf) {
+				mediaResource = new VFSMediaResource((VFSLeaf)item);
+			}
 		} catch (NullPointerException e) {
 			log.debug("Media resource could not be created from file: ", fileName);
 		}
@@ -1037,7 +1039,9 @@ public class FeedManagerImpl extends FeedManager {
 		try {
 			VFSItem item = getFeedMediaContainer(feed);
 			item = item.resolve(fileName);
-			mediaResource = new VFSMediaResource((VFSLeaf) item);
+			if(item instanceof VFSLeaf) {
+				mediaResource = new VFSMediaResource((VFSLeaf)item);
+			}
 		} catch (NullPointerException e) {
 			log.debug("Media resource could not be created from file: ", fileName);
 		}

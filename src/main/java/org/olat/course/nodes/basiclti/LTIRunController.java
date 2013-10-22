@@ -32,7 +32,6 @@ import java.util.Map;
 
 import org.imsglobal.basiclti.BasicLTIUtil;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,12 +39,9 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -279,7 +275,12 @@ public class LTIRunController extends BasicController {
 	 * @param ureq
 	 */
 	private void doRun(UserRequest ureq) {
-		run = createVelocityContainer("run");
+		if (newWindow) {
+			// Use other container for popup opening. Rest of code is the same
+			run = createVelocityContainer("runPopup");			
+		} else {			
+			run = createVelocityContainer("run");
+		}
 		// push title and learning objectives, only visible on intro page
 		run.contextPut("menuTitle", courseNode.getShortTitle());
 		run.contextPut("displayTitle", courseNode.getLongTitle());
@@ -290,10 +291,6 @@ public class LTIRunController extends BasicController {
 		startPage.contextPut("displayTitle", courseNode.getLongTitle());
 		
 		startButton = LinkFactory.createButton("start", startPage, this);
-	    if(newWindow) {
-	    	startButton.setTarget("_help");
-	    }
-
 
 		Boolean assessable = config.getBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		if(assessable != null && assessable.booleanValue()) {
@@ -322,21 +319,9 @@ public class LTIRunController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == startButton) {
 			courseNode.incrementUserAttempts(userCourseEnv);
-			if(newWindow) {
-				//wrap the content controller into a full header layout
-				ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, new ControllerCreator() {
-					@Override
-					public Controller createController(UserRequest lureq,	WindowControl lwControl) {
-						return new LTIPopedController(lureq, lwControl);
-					}
-				});
-				//open in new browser window
-				PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
-				pbw.open(ureq);
-			} else {
-				doBasicLTI(ureq, run);
-				mainPanel.setContent(run);
-			}
+			// container is "run" or "runPopup" depending in configuration
+			doBasicLTI(ureq, run);
+			mainPanel.setContent(run);
 		} else if (source == acceptLink) {
 			storeDataExchangeAcceptance();
 			doRun(ureq);
@@ -377,6 +362,7 @@ public class LTIRunController extends BasicController {
 		String debug = (String) config.get(LTIConfigForm.CONFIG_KEY_DEBUG);
 		String serverUri = Settings.createServerURI();
 		String sourcedId = courseEnv.getCourseResourceableId() + "_" + courseNode.getIdent() + "_" + getIdentity().getKey();
+		container.contextPut("sourcedId", sourcedId);
 		OLATResource courseResource = courseEnv.getCourseGroupManager().getCourseResource();
 		
 		Mapper talkbackMapper = new TalkBackMapper();

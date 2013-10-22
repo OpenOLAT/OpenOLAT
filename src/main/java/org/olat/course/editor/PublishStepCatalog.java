@@ -272,8 +272,9 @@ class PublishStepCatalog extends BasicStep {
 						}
 					}
 					closeAddCatalog();
+				} else if (event == Event.CANCELLED_EVENT) {
+					closeAddCatalog();
 				}
-				
 			} else {
 				super.event(ureq, source, event);
 			}

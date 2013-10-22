@@ -28,8 +28,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -100,9 +100,11 @@ public class CatalogEntryAddController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == okButton) {
-			GenericTreeNode node = (GenericTreeNode) selectionTree.getSelectedNode();
-			Long newParentId = Long.parseLong(node.getIdent());
-			insertNode(ureq, newParentId);
+			TreeNode node = selectionTree.getSelectedNode();
+			if(node != null) {//no selection is allowed
+				Long newParentId = Long.parseLong(node.getIdent());
+				insertNode(ureq, newParentId);
+			}
 		} else if(source == cancelButton) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		}

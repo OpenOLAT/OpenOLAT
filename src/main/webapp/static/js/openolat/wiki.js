@@ -10,22 +10,20 @@ if (clientPC.indexOf('opera') != -1) {
 }
 
 function changeAnchorTargets(id) {
-	var div = document.getElementById(id);
-	var anchors = div.getElementsByTagName('a');
-	for (var i=0; i < anchors.length; i++){
-		var anchor = jQuery(anchors[i]);
+	jQuery('a', jQuery('#' + id)).each(function(index, el) {
+		var anchor = jQuery(el);
 		var openInNewWindow = false;
 		//set interwiki and externallink link to open in new window 
-		if (anchor.attr("class")) {
-			if (anchor.attr("class") == "externallink") {
-				if(anchor.attr("href").indexOf("mailto:") != -1) {
-					anchor.attr("class", "b_link_mailto");
-					openInNewWindow = false;
-				} else {
-					openInNewWindow = true;
-				}
+		if (anchor.hasClass("externallink")) {
+			if(anchor.attr("href").indexOf("mailto:") != -1) {
+				anchor.addClass("b_link_mailto");
+				openInNewWindow = false;
+			} else {
+				openInNewWindow = true;
 			}
-			if (anchor.attr("class") == "interwiki") openInNewWindow = true;
+		}
+		if (anchor.hasClass("interwiki")) {
+			openInNewWindow = true;
 		}
 		//open media links in new window, but only if file exists
 		if (anchor.attr("title")) {
@@ -36,16 +34,18 @@ function changeAnchorTargets(id) {
 				if (href.indexOf(":1/") != -1) {
 					var pre = href.substr(0, href.indexOf(":1/"));
 					var post = href.substr(href.indexOf(":1/")+3, href.length);
-					anchor.setAttribute("href", pre+":0/"+post);
+					anchor.attr("href", pre+":0/"+post);
 				}
 			} else if (anchor.attr("class") == "edit" && anchor.attr("title").indexOf("Media:") != -1) { //media file not found
 				href = href.substr(0, href.indexOf("Edit:topic"));
 				href = href+"Upload";
-				anchor.setAttribute("href", href);
+				anchor.attr("href", href);
 			}
 		}
-		if (openInNewWindow) anchor.target = "_blank";
-	}
+		if (openInNewWindow) {
+			anchor.attr('target',"_blank");
+		}
+	});
 }
 
 
