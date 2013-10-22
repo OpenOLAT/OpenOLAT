@@ -218,11 +218,16 @@ class FeedFormController extends FormBasicController {
 	 * @param newResource
 	 */
 	private void setImage(MediaResource newResource) {
+		if(newResource == null) {
+			unsetImage();
+			return;
+		}
+		
 		image.setMediaResource(newResource);
 		image.setMaxWithAndHeightToFitWithin(150, 150);
 		imageContainer.setVisible(true);
 		// This is needed. ImageContainer is not displayed otherwise.
-		this.getInitialComponent().setDirty(true);
+		getInitialComponent().setDirty(true);
 		imageDeleted = false;
 		file.setLabel(null, null);
 	}
