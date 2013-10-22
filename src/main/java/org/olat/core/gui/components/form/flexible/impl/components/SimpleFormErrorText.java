@@ -45,20 +45,19 @@ import org.olat.core.gui.translator.Translator;
  */
 public class SimpleFormErrorText extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new ComponentRenderer() {
-		@SuppressWarnings("unused")
+
+		@Override
 		public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderingState rstate) {
-		// TODO Auto-generated method stub
-
+			//
 		}
 
-		@SuppressWarnings("unused")
+		@Override
 		public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		// TODO Auto-generated method stub
-
+			//
 		}
 
-		@SuppressWarnings("unused")
+		@Override
 		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
 			SimpleFormErrorText stc = (SimpleFormErrorText) source;
@@ -70,7 +69,7 @@ public class SimpleFormErrorText extends FormBaseComponentImpl {
 
 	};
 
-	String text;
+	private final String text;
 
 	public SimpleFormErrorText(String name, String text) {
 		super(name);

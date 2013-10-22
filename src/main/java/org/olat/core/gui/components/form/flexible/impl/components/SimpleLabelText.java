@@ -46,7 +46,7 @@ import org.olat.core.util.StringHelper;
  */
 public class SimpleLabelText extends FormBaseComponentImpl {
 
-	String text;
+	private final String text;
 
 	public SimpleLabelText(String name, String text) {
 		super(name);
@@ -54,19 +54,19 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 	}
 
 	private static final ComponentRenderer RENDERER = new ComponentRenderer() {
-		
-		@SuppressWarnings("unused")
+
+		@Override
 		public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderingState rstate) {
 		// not used for label
 		}
-		
-		@SuppressWarnings("unused")
+
+		@Override
 		public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		// not used for label
 		}
 
-		@SuppressWarnings("unused")
+		@Override
 		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
 			SimpleLabelText stc = (SimpleLabelText) source;

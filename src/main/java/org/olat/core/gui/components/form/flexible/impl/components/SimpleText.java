@@ -46,29 +46,25 @@ import org.olat.core.gui.translator.Translator;
 public class SimpleText extends FormBaseComponentImpl {
 
 	private static final ComponentRenderer RENDERER = new ComponentRenderer() {
-		@SuppressWarnings("unused")
+		@Override
 		public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderingState rstate) {
-		// TODO Auto-generated method stub
+			//
 	
 		}
-		@SuppressWarnings("unused")
+		@Override
 		public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		// TODO Auto-generated method stub
-	
+			//
 		}
-		@SuppressWarnings("unused")
+		@Override
 		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
 			SimpleText stc = (SimpleText)source;
 			sb.append(stc.text);
 		}
-	
 	};
 	
-	
-
-	String text;
+	private final String text;
 	
 	public SimpleText(String name, String text) {
 		super(name);
@@ -83,6 +79,4 @@ public class SimpleText extends FormBaseComponentImpl {
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
-
-
 }

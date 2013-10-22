@@ -172,6 +172,11 @@ public class Form extends LogDelegator {
 	private Map<String, String> requestMultipartFileMimeTypes = new HashMap<String,String>();
 	private int requestError = REQUEST_ERROR_NO_ERROR;
 	
+	// replayableID Counter
+	private long replayIdCount;
+	// Map to replayableID real dispatchID
+	private Map<String,Long> replayIdMap = new HashMap<String,Long>();
+	
 	private Form(Controller listener) {
 		// internal use only
 		
@@ -816,10 +821,6 @@ public class Form extends LogDelegator {
 		return multipartEnabled;
 	}
 	
-	
-	// replayableID Counter
-	private long replayIdCount;
-	
 	/**
 	 * Make replayID distinct for distinct forms by inserting the 
 	 * number of Form Objects created during the current session at
@@ -864,8 +865,6 @@ public class Form extends LogDelegator {
 		// max 10000 forms can appear in a  load test run
 	}
 	
-	// Map to replayableID real dispatchID
-	private  HashMap<String,Long> replayIdMap = new HashMap<String,Long>();
 	
 	/**
 	 * Get the replayableID for a component, for use only in urlReplay mode.

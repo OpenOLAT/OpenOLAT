@@ -45,7 +45,7 @@ import org.olat.core.gui.translator.Translator;
  */
 public class SimpleExampleText extends FormBaseComponentImpl {
 
-	String text;
+	private final String text;
 
 	public SimpleExampleText(String name, String text) {
 		super(name);
@@ -53,19 +53,19 @@ public class SimpleExampleText extends FormBaseComponentImpl {
 	}
 
 	private static final ComponentRenderer RENDERER = new ComponentRenderer() {
-		
-		@SuppressWarnings("unused")
+
+		@Override
 		public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderingState rstate) {
 		// not used for example
 		}
-		
-		@SuppressWarnings("unused")
+
+		@Override
 		public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		// not used for example
 		}
 
-		@SuppressWarnings("unused")
+		@Override
 		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
 			SimpleExampleText stc = (SimpleExampleText) source;
