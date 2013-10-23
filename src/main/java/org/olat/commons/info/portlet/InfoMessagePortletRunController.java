@@ -32,6 +32,7 @@ import org.olat.commons.info.manager.InfoMessageFrontendManager;
 import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
@@ -76,6 +77,8 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	private TableController tableController;
 	private VelocityContainer portletVC;
 	
+	private boolean newInfos = false;
+	
 	public InfoMessagePortletRunController(WindowControl wControl, UserRequest ureq, Translator trans,
 			String portletName, int defaultMaxentries) {
 		super(wControl, ureq, trans, portletName, defaultMaxentries);
@@ -109,6 +112,8 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), InfoMessageFrontendManager.oresFrontend);
 
 		putInitialPanel(portletVC);
+
+		getWindowControl().getWindowBackOffice().addCycleListener(this);
 	}
 
 	@Override
@@ -120,6 +125,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 
 	@Override
 	public synchronized void doDispose() {
+		getWindowControl().getWindowBackOffice().removeCycleListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, InfoMessageFrontendManager.oresFrontend);
 		super.doDispose();
 	}
@@ -127,7 +133,12 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	@Override
 	public void event(Event event) {
 		if("new_info_message".equals(event.getCommand())) {
-			reloadModel(sortingCriteria);
+			newInfos = true;
+		} else if (event == Window.BEFORE_INLINE_RENDERING) {
+			if(newInfos) {
+				reloadModel(sortingCriteria);
+				newInfos = false;
+			}
 		}
 	}
 

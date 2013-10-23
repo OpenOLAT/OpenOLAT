@@ -71,7 +71,7 @@ public class HomePortalControllerCreator extends AutoCreator  {
 		return new HomePortalController(ureq, lwControl);
 	}
 	
-	public class HomePortalController extends BasicController {
+	public static class HomePortalController extends BasicController {
 		
 		private final VelocityContainer welcome;
 		private final Link portalBackButton;
