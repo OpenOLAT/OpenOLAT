@@ -31,7 +31,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
@@ -1622,10 +1621,6 @@ public class RichTextConfiguration implements Disposable {
 		}
 		buttons3.remove("cleanup");
 		buttons3.remove("visualaid");
-		//buttons3.remove("insertdate,inserttime");
-		//buttons3.add("inserttime");
-		
-		//rrrrr
 		if(quotedConfigValues.containsKey(THEME_ADVANCED_BUTTONS3_ADD)
 				&& quotedConfigValues.get(THEME_ADVANCED_BUTTONS3_ADD).contains("code")) {
 			buttons3.add("code");
@@ -1674,7 +1669,7 @@ public class RichTextConfiguration implements Disposable {
 			copyNonValues.put("importcss_append", "true");
 			copyValues.put("content_css", Settings.createServerURI() + contentCss);
 		}
-
+		/*
 		StringOutput sb = new StringOutput();
 		appendValuesFromList(sb, PLUGINS, plugins4);
 		sb.append(",\n")
@@ -1709,7 +1704,7 @@ public class RichTextConfiguration implements Disposable {
 		
  		for (Map.Entry<String, String> entry : copyNonValues.entrySet()) {
 			sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(",\n");
-		}
+		}*/
  		
  		//new with menu
  		StringOutput tinyMenuSb = new StringOutput();
@@ -1744,7 +1739,7 @@ public class RichTextConfiguration implements Disposable {
 		}
  		out.append(tinyMenuSb);
 	}
-	
+	/*
 	private int listToString(StringOutput sb, String key, List<String> values) {
 		if (values.size() == 0) return 0;
 		sb.append(key).append(": \"");
@@ -1760,7 +1755,7 @@ public class RichTextConfiguration implements Disposable {
 		}
 		sb.append("\"");
 		return 1;
-	}
+	}*/
 
 	/**
 	 * append all configurations to the given string buffer as js array

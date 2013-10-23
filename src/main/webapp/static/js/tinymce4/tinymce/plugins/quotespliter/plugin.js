@@ -8,7 +8,8 @@
 		init : function(ed, url) {
 			// Add a split comment
 
-			ed.on('KeyDown', function(ed, e) {
+			ed.on('KeyDown', function(e) {
+				console.log(e);
 				if (e == null || e.keyCode != 13 || !ed.selection.isCollapsed()) return;
 				var focusEl = ed.selection.getNode();
 				if(focusEl == null) return;
@@ -72,7 +73,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : "1.0"
+				version : "1.1"
 			};
 		}
 	});

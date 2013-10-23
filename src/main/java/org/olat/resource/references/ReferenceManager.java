@@ -36,6 +36,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -181,7 +182,7 @@ public class ReferenceManager extends BasicManager {
 			if (source.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
 				try {
 					ICourse course = CourseFactory.loadCourse(source);
-					result.append(translator.translate("ref.course", new String[] { course.getCourseTitle() }));
+					result.append(translator.translate("ref.course", new String[] { StringHelper.escapeHtml(course.getCourseTitle()) }));
 				} catch (Exception e) {
 					log.error("", e);
 					result.append(translator.translate("ref.course", new String[] { "<strike>" + source.getKey().toString() + "</strike>" }));
