@@ -194,7 +194,7 @@ public class InfoDisplayController extends FormBasicController {
 		deleteLinks.clear();
 
 		List<InfoMessage> msgs = infoMessageManager.loadInfoMessageByResource(ores, resSubPath, businessPath, after, null, 0, maxResults);
-		List<InfoMessageForDisplay> infoDisplays = new ArrayList<InfoMessageForDisplay>();
+		List<InfoMessageForDisplay> infoDisplays = new ArrayList<InfoMessageForDisplay>(msgs.size());
 		for(InfoMessage info:msgs) {
 			previousDisplayKeys.add(info.getKey());
 			infoDisplays.add(createInfoMessageForDisplay(info));
