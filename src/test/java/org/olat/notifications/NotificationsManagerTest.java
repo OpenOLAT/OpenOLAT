@@ -305,6 +305,34 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testGetAllValidSubscribers_paged() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("valid1paged-" + UUID.randomUUID().toString());
+		//create a publisher
+		for(int i=0; i<10; i++) {
+			String identifier = UUID.randomUUID().toString().replace("-", "");
+			SubscriptionContext context = new SubscriptionContext("AllSubs", new Long(130 + i), identifier);
+			PublisherData publisherData = new PublisherData("testGetAllValidSubscribers", "e.g. forumdata=keyofforum", null);
+			Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
+			Assert.assertNotNull(publisher);
+			
+			dbInstance.commitAndCloseSession();
+			//add subscriber
+			notificationManager.subscribe(id, context, publisherData);
+			dbInstance.commitAndCloseSession();
+		}
+		
+		//get all subscribers
+		List<Subscriber> allSubscribers = ((NotificationsManagerImpl)notificationManager).getAllValidSubscribers(0, -1);
+		Assert.assertNotNull(allSubscribers);
+		Assert.assertFalse(allSubscribers.isEmpty());
+		
+		//get all subcribers pages
+		List<Subscriber> partialSubscribers = ((NotificationsManagerImpl)notificationManager).getAllValidSubscribers(0, 8);
+		Assert.assertNotNull(partialSubscribers);
+		Assert.assertEquals(8, partialSubscribers.size());
+	}
+	
+	@Test
 	public void testGetSubscriberIdentities() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("valid1b-" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("valid1b-" + UUID.randomUUID().toString());

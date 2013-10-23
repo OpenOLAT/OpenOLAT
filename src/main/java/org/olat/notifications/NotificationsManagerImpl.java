@@ -25,11 +25,13 @@
 
 package org.olat.notifications;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -234,6 +236,22 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 				.getResultList();
 	}
 	
+	protected List<Subscriber> getAllValidSubscribers(int firstResult, int maxResults) {
+		StringBuilder q = new StringBuilder();
+		q.append("select sub from ").append(SubscriberImpl.class.getName()).append(" sub")
+		 .append(" inner join fetch sub.publisher as pub")
+		 .append(" where pub.state=").append(PUB_STATE_OK).append(" order by sub.identity.name, sub.key");
+		TypedQuery<Subscriber> query = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(q.toString(), Subscriber.class);
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
+	}
+	
 	@Override
 	public List<SubscriptionInfo> getSubscriptionInfos(Identity identity, String publisherType) {
 		StringBuilder sb = new StringBuilder();
@@ -271,13 +289,9 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	public void notifyAllSubscribersByEmail() {
 		logAudit("starting notification cronjob for email sending", null);
 		WorkThreadInformations.setLongRunningTask("sendNotifications");
-		List<Subscriber> subs = getAllValidSubscribers();
-		// ordered by identity.name!
-		
+
 		List<SubscriptionItem> items = new ArrayList<SubscriptionItem>();
 		List<Subscriber> subsToUpdate = null;
-		StringBuilder mailLog = new StringBuilder();
-		StringBuilder mailErrorLog = new StringBuilder();
 		
 		boolean veto = false;
 		Subscriber latestSub = null;
@@ -288,16 +302,25 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		Date defaultCompareDate = getDefaultCompareDate();
 		long start = System.currentTimeMillis();
 		
+		Set<Long> subs = new HashSet<Long>();
+		
 		// loop all subscriptions, as its ordered by identity, they get collected for each identity
-		for(Subscriber sub : subs){
+		for(AllSubscriberIterator subscriberIt= new AllSubscriberIterator(); subscriberIt.hasNext(); ){
 			try {
+				Subscriber sub = subscriberIt.next();
 				ident = sub.getIdentity();
+				
+				if(subs.contains(sub.getKey())) {
+					System.out.println("ERROR");
+				} else {
+					subs.add(sub.getKey());
+				}
 
 				if (latestSub == null || (!ident.equalsByPersistableKey(latestSub.getIdentity()))) { 
 					// first time or next identity => prepare for a new user and send old data.
 					
 					// send a mail
-					notifySubscribersByEmail(latestSub, items, subsToUpdate, translator, start, veto, mailLog, mailErrorLog);
+					notifySubscribersByEmail(latestSub, items, subsToUpdate, translator, start, veto);
 					
 					// prepare for new user
 					start = System.currentTimeMillis();
@@ -368,20 +391,14 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		} // for
 		
 		// done, purge last entry
-		notifySubscribersByEmail(latestSub, items, subsToUpdate, translator, start, veto, mailLog, mailErrorLog);
-		
-		// purge logs
-		if (mailErrorLog.length() > 0) {
-			logAudit("error sending email to the following identities: "+mailErrorLog.toString(),null);
-		}
-		logAudit("sent email to the following identities: "+mailLog.toString(), null);
+		notifySubscribersByEmail(latestSub, items, subsToUpdate, translator, start, veto);
 		WorkThreadInformations.unsetLongRunningTask("sendNotifications");
 	}
 	
-	private void notifySubscribersByEmail(Subscriber latestSub, List<SubscriptionItem> items, List<Subscriber> subsToUpdate, Translator translator, long start, boolean veto, StringBuilder mailLog, StringBuilder mailErrorLog) {
+	private void notifySubscribersByEmail(Subscriber latestSub, List<SubscriptionItem> items, List<Subscriber> subsToUpdate, Translator translator, long start, boolean veto) {
 		if(veto) {
 			if(latestSub != null) {
-				mailLog.append(latestSub.getIdentity().getName()).append(" already received email within prefs interval, ");
+				logAudit(latestSub.getIdentity().getName() + " already received notification email within prefs interval");
 			}
 		} else if (items.size() > 0) {
 			Identity curIdent = latestSub.getIdentity();
@@ -397,12 +414,12 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			  	p.setLongValue(new Date().getTime());
 				  pm.updateProperty(p);
 			  }
-
-				mailLog.append(curIdent.getName()).append(' ')
-					.append(items.size()).append(' ')
-					.append((System.currentTimeMillis() - start)).append("ms, ");
+			  
+			  StringBuilder mailLog = new StringBuilder();
+			  mailLog.append("Notifications mailed for ").append(curIdent.getName()).append(' ').append(items.size()).append(' ').append((System.currentTimeMillis() - start)).append("ms");
+			  logAudit(mailLog.toString());
 			} else {
-				mailErrorLog.append(curIdent.getName()).append(", ");
+				logAudit("Error sending notification email to : " + curIdent.getName());
 			}
 		}
 		//collecting the SubscriptionItem can potentially make a lot of DB calls
@@ -1146,6 +1163,47 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	public List<String> getEnabledNotificationIntervals() {
 		return notificationIntervals;
+	}
+	
+	/**
+	 * Iterate through the valid subscribers
+	 * 
+	 * Initial date: 23.10.2013<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
+	private class AllSubscriberIterator implements Iterator<Subscriber> {
+		private final static int BATCH_SIZE = 500;
+		
+		private int count = 0;
+		private Deque<Subscriber> subscribers = new ArrayDeque<Subscriber>(BATCH_SIZE + 25);
+
+		public void fillTheStack() {
+			List<Subscriber> batch = getAllValidSubscribers(count, BATCH_SIZE);
+			subscribers.addAll(batch);
+			count += batch.size();
+		}
+
+		@Override
+		public boolean hasNext() {
+			if(subscribers.size() == 0) {
+				fillTheStack();
+			}
+			return subscribers.size() > 0;
+		}
+
+		@Override
+		public Subscriber next() {
+			if(subscribers.size() == 0) {
+				fillTheStack();
+			}
+			return subscribers.pollFirst();
+		}
+
+		@Override
+		public void remove() {
+			//not implemented
+		}
 	}
 }
 
