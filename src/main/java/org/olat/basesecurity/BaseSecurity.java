@@ -471,6 +471,8 @@ public interface BaseSecurity {
 
 	public Policy createAndPersistPolicyWithResource(SecurityGroup secGroup, String permission, Date from, Date to, OLATResource olatResource);
 
+
+	public Policy findPolicy(SecurityGroup secGroup, String permission, OLATResource olatResource);
 	
 	/**
 	 * Create and persist an invitation with its security group and security token.

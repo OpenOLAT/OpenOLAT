@@ -449,10 +449,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		}
 		//9. copy relations
 		if(copyRelations) {
-			List<OLATResource> resources = businessGroupRelationDAO.findResources(Collections.singletonList(sourceBusinessGroup), 0, -1);
-			for(OLATResource resource:resources) {
-				businessGroupRelationDAO.addRelationToResource(newGroup, resource);
-			}	
+			List<RepositoryEntry> resources = businessGroupRelationDAO.findRepositoryEntries(Collections.singletonList(sourceBusinessGroup), 0, -1);
+			addResourcesTo(Collections.singletonList(newGroup), resources);
 		}
 		return newGroup;
 	}
