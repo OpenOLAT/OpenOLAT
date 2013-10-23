@@ -47,7 +47,7 @@ function tick () {
 						timestampLastPoll = now;
 						pollcount++;
 						pollgrowth = Math.ceil((this.period+pollgrowth)*(100+growthrate)/100) - this.period;
-						o_info.ajaxpp = jQuery.ajax({method:'POST', url:'$mapuri/', success:onPollSuccess, failure: onPollFailure});
+						o_info.ajaxpp = jQuery.ajax({method:'POST', url:'$mapuri/', success:onPollSuccess, error:onPollFailure});
 						//var idl = (now - o_info.lastClickTime)/1000;
 						//log("sent poll request. idle="+idl+"s gr="+growthrate+" g="+pollgrowth+" c="+pollcount+" eff="+Math.floor(idl/pollcount*1000));
 					}
