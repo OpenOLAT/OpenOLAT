@@ -27,8 +27,10 @@ package org.olat.search.service.spell;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -36,13 +38,9 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.spell.Dictionary;
-import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.LuceneDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
-import org.apache.lucene.search.spell.SuggestMode;
-import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.logging.OLog;
@@ -68,10 +66,14 @@ public class SearchSpellChecker {
 	private String spellDictionaryPath;
 	private SpellChecker spellChecker;
 	private boolean isSpellCheckEnabled = true;
-	
+	private ExecutorService searchExecutor;
 	
 	public SearchSpellChecker() {
-		//called by Spring
+		//
+	}
+	
+	public void setSearchExecutor(ExecutorService searchExecutor) {
+		this.searchExecutor = searchExecutor;
 	}
 	
 	/**
@@ -82,66 +84,31 @@ public class SearchSpellChecker {
 	 */
   public Set<String> check(String query) {
   	try {
-  		if(spellChecker==null) { //lazy initialization
-  			try {
-  				synchronized(spellDictionaryPath) {//o_clusterOK by:pb if service is only configured on one vm, which is recommended way
-  				  File spellDictionaryFile = new File(spellDictionaryPath);
-  				  Directory spellIndexDirectory = FSDirectory.open(spellDictionaryFile);
-  					if (spellChecker==null && DirectoryReader.indexExists(spellIndexDirectory) && isSpellCheckEnabled ) {
-  					  spellChecker = new SpellChecker(spellIndexDirectory);
-  					  spellChecker.setAccuracy(0.7f);
-  				  }
-  				}
-  	 		} catch (IOException e) {
-  	 			log.warn("Can not initialze SpellChecker",e);
-  			}
-  		} 
-  		if (spellChecker != null) {
-  			String[] words = spellChecker.suggestSimilar(query,5);
-  			// Remove dublicate 
-  			Set<String> filteredList = new TreeSet<String>();
-  			for (String word : words) {
-  				filteredList.add(word);
-				}
-
-			  return filteredList;
-  		}
-  		
-		} catch (IOException e) {
+  		CheckCallable run = new CheckCallable(query, this);
+  		Future<Set<String>> futureResults = searchExecutor.submit(run);
+  		return futureResults.get();
+		} catch (Exception e) {
 			log.warn("Can not spell check",e);
-			return null;
+			return new HashSet<String>();
 		}
-		return null;
   }
   
-
-  public Set<String> directCheck(String query) {
-		try {
-			File indexPathIO = new File(indexPath);
-			Directory spellIndexDirectory = FSDirectory.open(indexPathIO);
-			DirectoryReader indexReader = DirectoryReader.open(spellIndexDirectory);
-
-			String[] fields = new String[]{ OlatDocument.TITLE_FIELD_NAME, OlatDocument.DESCRIPTION_FIELD_NAME, OlatDocument.AUTHOR_FIELD_NAME, OlatDocument.CONTENT_FIELD_NAME};
-			Set<String> filteredList = new TreeSet<String>();
-			for(String field:fields) {
-				Term term = new Term(field, query);
-				DirectSpellChecker spellChecker = new DirectSpellChecker();
-				spellChecker.setAccuracy(0.7f);
-				spellChecker.setMaxInspections(10);
-				spellChecker.setMaxEdits(2);
-				//spellChecker.setDistance(new NGramDistance(4));
-				
-				SuggestWord[] words = spellChecker.suggestSimilar(term, 5, indexReader, SuggestMode.SUGGEST_ALWAYS, 0.7f);
-				for (SuggestWord word : words) {
-					filteredList.add(word.string);
+  protected SpellChecker getSpellChecker() {
+  	if(spellChecker==null) { //lazy initialization
+			try {
+				synchronized(spellDictionaryPath) {//o_clusterOK by:pb if service is only configured on one vm, which is recommended way
+				  File spellDictionaryFile = new File(spellDictionaryPath);
+				  Directory spellIndexDirectory = FSDirectory.open(spellDictionaryFile);
+					if (spellChecker==null && DirectoryReader.indexExists(spellIndexDirectory) && isSpellCheckEnabled ) {
+					  spellChecker = new SpellChecker(spellIndexDirectory);
+					  spellChecker.setAccuracy(0.7f);
+				  }
 				}
+	 		} catch (IOException e) {
+	 			log.warn("Can not initialze SpellChecker",e);
 			}
-			
-			return filteredList;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
 		}
+  	return spellChecker;
   }
   	
   /**
@@ -157,37 +124,43 @@ public class SearchSpellChecker {
 		    if (log.isDebug()) startSpellIndexTime = System.currentTimeMillis();
 	      Directory indexDir = FSDirectory.open(new File(indexPath));
 		    indexReader = DirectoryReader.open(indexDir);
-	      // 1. Create content spellIndex 
+	      
+		    // 1. Create content spellIndex 
 		    File spellDictionaryFile = new File(spellDictionaryPath);
 	      FSDirectory contentSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + CONTENT_PATH));//true
 	      SpellChecker contentSpellChecker = new SpellChecker(contentSpellIndexDirectory);
 	      Dictionary contentDictionary = new LuceneDictionary(indexReader, OlatDocument.CONTENT_FIELD_NAME);
-
 				Analyzer analyzer = new StandardAnalyzer(SearchService.OO_LUCENE_VERSION);
-	      IndexWriterConfig indexWriterConfig = new IndexWriterConfig(SearchService.OO_LUCENE_VERSION, analyzer);
+	      IndexWriterConfig contentIndexWriterConfig = new IndexWriterConfig(SearchService.OO_LUCENE_VERSION, analyzer);
+	      contentSpellChecker.indexDictionary(contentDictionary, contentIndexWriterConfig, true);
 	      
-	      contentSpellChecker.indexDictionary(contentDictionary, indexWriterConfig, true);
 	      // 2. Create title spellIndex 
 	      FSDirectory titleSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + TITLE_PATH));//true
 	      SpellChecker titleSpellChecker = new SpellChecker(titleSpellIndexDirectory);
 	      Dictionary titleDictionary = new LuceneDictionary(indexReader, OlatDocument.TITLE_FIELD_NAME);
-	      titleSpellChecker.indexDictionary(titleDictionary, indexWriterConfig, true);
+	      IndexWriterConfig titleIndexWriterConfig = new IndexWriterConfig(SearchService.OO_LUCENE_VERSION, analyzer);
+	      titleSpellChecker.indexDictionary(titleDictionary, titleIndexWriterConfig, true);
+	      
 	      // 3. Create description spellIndex 
 	      FSDirectory descriptionSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + DESCRIPTION_PATH));//true
 	      SpellChecker descriptionSpellChecker = new SpellChecker(descriptionSpellIndexDirectory);
 	      Dictionary descriptionDictionary = new LuceneDictionary(indexReader, OlatDocument.DESCRIPTION_FIELD_NAME);
-	      descriptionSpellChecker.indexDictionary(descriptionDictionary, indexWriterConfig, true);
+	      IndexWriterConfig descIndexWriterConfig = new IndexWriterConfig(SearchService.OO_LUCENE_VERSION, analyzer);
+	      descriptionSpellChecker.indexDictionary(descriptionDictionary, descIndexWriterConfig, true);
 	      // 4. Create author spellIndex 
+	      
 	      FSDirectory authorSpellIndexDirectory = FSDirectory.open(new File(spellDictionaryPath + AUTHOR_PATH));//true
 	      SpellChecker authorSpellChecker = new SpellChecker(authorSpellIndexDirectory);
 	      Dictionary authorDictionary = new LuceneDictionary(indexReader, OlatDocument.AUTHOR_FIELD_NAME);
-	      authorSpellChecker.indexDictionary(authorDictionary, indexWriterConfig, true);
+	      IndexWriterConfig authorIndexWriterConfig = new IndexWriterConfig(SearchService.OO_LUCENE_VERSION, analyzer);
+	      authorSpellChecker.indexDictionary(authorDictionary, authorIndexWriterConfig, true);
 	      
 	      // Merge all part spell indexes (content,title etc.) to one common spell index
 	      Directory spellIndexDirectory = FSDirectory.open(spellDictionaryFile);//true
 	      
 	      //clean up the main index
-	      IndexWriter merger = new IndexWriter(spellIndexDirectory, indexWriterConfig);
+	      IndexWriterConfig spellIndexWriterConfig = new IndexWriterConfig(SearchService.OO_LUCENE_VERSION, analyzer);
+	      IndexWriter merger = new IndexWriter(spellIndexDirectory, spellIndexWriterConfig);
 	      merger.deleteAll();
 	      merger.commit();
 	      

@@ -100,7 +100,6 @@ public class OlatFullIndexer {
 
 	private MainIndexer mainIndexer;
 	private double ramBufferSizeMB;
-	private boolean useCompoundFile;
 	
 	/**
 	 * 
@@ -117,7 +116,6 @@ public class OlatFullIndexer {
     numberIndexWriter = searchModuleConfig.getNumberIndexWriter();
     documentsPerInterval = searchModuleConfig.getDocumentsPerInterval();
     ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
-    useCompoundFile = searchModuleConfig.getUseCompoundFile();
     fullIndexerStatus = new FullIndexerStatus(numberIndexWriter);    
     stopIndexing = true;
     documentQueue = new Vector<Document>();
@@ -148,7 +146,6 @@ public class OlatFullIndexer {
 	
 	public LogMergePolicy newLogMergePolicy() {
 		LogMergePolicy logmp = new LogDocMergePolicy();
-		logmp.setUseCompoundFile(useCompoundFile);
 		logmp.setCalibrateSizeByDeletes(true);
 		logmp.setMergeFactor(INDEX_MERGE_FACTOR);
 		return logmp;

@@ -30,13 +30,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -46,9 +46,6 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.CoreSpringFactory;
@@ -73,7 +70,6 @@ import org.olat.search.service.indexer.Index;
 import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.search.service.indexer.MainIndexer;
 import org.olat.search.service.searcher.JmsSearchProvider;
-import org.olat.search.service.searcher.SearchResultsImpl;
 import org.olat.search.service.spell.SearchSpellChecker;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -104,6 +100,8 @@ public class SearchServiceImpl implements SearchService {
 	/** Counts number of search queries since last restart. */
 	private long queryCount = 0;
 	private Object createIndexSearcherLock = new Object();
+	
+	private ExecutorService searchExecutor;
 
 	private String fields[] = {
 			AbstractOlatDocument.TITLE_FIELD_NAME, AbstractOlatDocument.DESCRIPTION_FIELD_NAME,
@@ -133,12 +131,24 @@ public class SearchServiceImpl implements SearchService {
 		searchProvider.setSearchService(this);
 	}
 	
+	public void setSearchExecutor(ExecutorService searchExecutor) {
+		this.searchExecutor = searchExecutor;
+	}
+
 	/**
 	 * [user by Spring]
 	 * @param lifeIndexer
 	 */
 	public void setLifeIndexer(LifeFullIndexer lifeIndexer) {
 		this.lifeIndexer = lifeIndexer;
+	}
+	
+	protected MainIndexer getMainIndexer() {
+		return mainIndexer;
+	}
+	
+	protected Analyzer getAnalyzer() {
+		return analyzer;
 	}
 	
 	/**
@@ -189,6 +199,7 @@ public class SearchServiceImpl implements SearchService {
 		searchSpellChecker.setIndexPath(searchModuleConfig.getFullIndexPath());
 		searchSpellChecker.setSpellDictionaryPath(searchModuleConfig.getSpellCheckDictionaryPath());
 		searchSpellChecker.setSpellCheckEnabled(searchModuleConfig.getSpellCheckEnabled());
+		searchSpellChecker.setSearchExecutor(searchExecutor);
 		
 	  indexer = new Index(searchModuleConfig, searchSpellChecker, mainIndexer, lifeIndexer);
 
@@ -218,35 +229,14 @@ public class SearchServiceImpl implements SearchService {
 			int firstResult, int maxResults, boolean doHighlighting)
 	throws ServiceNotAvailableException, ParseException {
 		try {
-			if (!existIndex()) {
-				log.warn("Index does not exist, can't search for queryString: "+queryString);
-				throw new ServiceNotAvailableException("Index does not exist");
-			}
-			
-			log.info("queryString=" + queryString);
-			IndexSearcher searcher = getIndexSearcher();
-			BooleanQuery query = createQuery(queryString, condQueries);
-			if (log.isDebug()) log.debug("query=" + query);
-			
-	    long startTime = System.currentTimeMillis();
-	    int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
-
-	    TopDocs docs = searcher.search(query, n);
-	    long queryTime = System.currentTimeMillis() - startTime;
-	    if (log.isDebug()) log.debug("hits.length()=" + docs.totalHits);
-	    SearchResultsImpl searchResult = new SearchResultsImpl(mainIndexer, searcher, docs, query, analyzer, identity, roles, firstResult, maxResults, doHighlighting, false);
-	    searchResult.setQueryTime(queryTime);
-	    searchResult.setNumberOfIndexDocuments(docs.totalHits);
-	    queryCount++;
-	    return searchResult;
-		} catch (ServiceNotAvailableException naex) {
-			// pass exception 
-			throw new ServiceNotAvailableException(naex.getMessage());
-		} catch (ParseException pex) {
-			throw new ParseException("can not parse query=" + queryString);
-		} catch (Exception ex) {
-			log.warn("Exception in search", ex);
-			throw new ServiceNotAvailableException(ex.getMessage());
+			SearchCallable run = new SearchCallable(queryString,  condQueries, identity, roles, firstResult, maxResults, doHighlighting, this);
+			Future<SearchResults> futureResults = searchExecutor.submit(run);
+			SearchResults results = futureResults.get();
+			queryCount++;
+			return results;
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
 		}
  	}
 	
@@ -255,54 +245,18 @@ public class SearchServiceImpl implements SearchService {
 			int firstResult, int maxResults, SortKey... orderBy)
 	throws ServiceNotAvailableException, ParseException, QueryException {
 		try {
-			if (!existIndex()) {
-				log.warn("Index does not exist, can't search for queryString: "+queryString);
-				throw new ServiceNotAvailableException("Index does not exist");
-			}
-			
-			log.info("queryString=" + queryString);
-			IndexSearcher searcher = getIndexSearcher();
-			BooleanQuery query = createQuery(queryString, condQueries);
-
-	    int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
-	    TopDocs docs;
-	    if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
-	    	SortField[] sortFields = new SortField[orderBy.length];
-	    	for(int i=0; i<orderBy.length; i++) {
-	    		sortFields[i] = new SortField(orderBy[i].getKey(), SortField.Type.STRING_VAL, orderBy[i].isAsc());
-	    	}
-	    	Sort sort = new Sort(sortFields);
-	    	docs = searcher.search(query, n, sort);
-	    } else {
-	    	docs = searcher.search(query, n);
-	    }
-
-			int numOfDocs = Math.min(n, docs.totalHits);
-			Set<String> retrievedFields = new HashSet<String>();
-			retrievedFields.add(AbstractOlatDocument.DB_ID_NAME);
-			
-			List<Long> res = new ArrayList<Long>();
-	    for (int i=firstResult; i<numOfDocs && res.size() < maxResults; i++) {
-	    	Document doc = searcher.doc(docs.scoreDocs[i].doc, retrievedFields);
-	    	String dbKeyStr = doc.get(AbstractOlatDocument.DB_ID_NAME);
-	    	if(StringHelper.containsNonWhitespace(dbKeyStr)) {
-	    		res.add(Long.parseLong(dbKeyStr));
-	    	}
-	    }
-	    queryCount++;
-	    return res;
-		} catch (ServiceNotAvailableException naex) {
-			// pass exception 
-			throw new ServiceNotAvailableException(naex.getMessage());
-		} catch (ParseException pex) {
-			throw new ParseException("can not parse query=" + queryString);
-		} catch (Exception ex) {
-			log.warn("Exception in search", ex);
-			throw new ServiceNotAvailableException(ex.getMessage());
+			SearchOrderByCallable run = new SearchOrderByCallable(queryString,  condQueries, orderBy, firstResult, maxResults, this);
+			Future<List<Long>> futureResults = searchExecutor.submit(run);
+			List<Long> results = futureResults.get();
+			queryCount++;
+			return results;
+		} catch (Exception e) {
+			log.error("", e);
+			return new ArrayList<Long>(1);
 		}
 	}
 	
-	private BooleanQuery createQuery(String queryString, List<String> condQueries)
+	protected BooleanQuery createQuery(String queryString, List<String> condQueries)
 	throws ParseException {
 		BooleanQuery query = new BooleanQuery();
 		if(StringHelper.containsNonWhitespace(queryString)) {
@@ -383,7 +337,7 @@ public class SearchServiceImpl implements SearchService {
 		return true;
 	}
 	
-	private IndexSearcher getIndexSearcher() throws ServiceNotAvailableException, IOException {
+	protected IndexSearcher getIndexSearcher() throws ServiceNotAvailableException, IOException {
 		if(searcher == null) {
 			synchronized (createIndexSearcherLock) {//o_clusterOK by:fj if service is only configured on one vm, which is recommended way
 				if (searcher == null) {
@@ -454,7 +408,7 @@ public class SearchServiceImpl implements SearchService {
 	 * Check if index exist.
 	 * @return true : Index exists.
 	 */
-	private boolean existIndex()
+	protected boolean existIndex()
 	throws IOException {
 		try {
 			File indexFile = new File(searchModuleConfig.getFullIndexPath());
