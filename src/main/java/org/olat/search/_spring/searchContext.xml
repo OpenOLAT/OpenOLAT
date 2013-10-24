@@ -23,6 +23,17 @@
 		<constructor-arg index="3" ref="schedulerFactoryBean"/>
 		<property name="lifeIndexer" ref="jmsIndexer"/>
 		<property name="metadataFields" ref="SearchMetadataFieldsProvider" />
+		<property name="searchExecutor" ref="searchExecutor" />
+	</bean>
+	
+		<bean id="searchExecutor" class="org.springframework.core.task.support.ExecutorServiceAdapter">
+		<constructor-arg index="0" ref="searchSpringExecutor" />
+	</bean>
+	
+	<bean id="searchSpringExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="2" />
+		<property name="maxPoolSize" value="3" />
+		<property name="queueCapacity" value="100" />
 	</bean>
 
 	<bean id="org.olat.search.service.disabled" class="org.olat.search.service.SearchServiceDisabled"

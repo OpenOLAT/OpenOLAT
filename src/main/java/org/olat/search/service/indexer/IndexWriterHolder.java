@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -39,38 +38,38 @@ public class IndexWriterHolder {
 	private static final OLog log = Tracing.createLoggerFor(IndexWriterHolder.class);
 	
 	private Directory indexPath;
-	private IndexWriterConfig config;
+	private JmsIndexer indexer;
 	
 	private AtomicInteger counter = new AtomicInteger(0);
 	private IndexWriter writerRef;
 
-	public IndexWriterHolder(Directory indexPath, IndexWriterConfig config)
+	public IndexWriterHolder(Directory indexPath, JmsIndexer indexer)
 	throws IOException {
 		this.indexPath = indexPath;
-		this.config = config;
+		this.indexer = indexer;
 	}
 	
 	public synchronized void ensureIndexExists() {
-		if(!DirectoryReader.indexExists(indexPath)) {
-			IndexWriter writer = null;
-			try {
+		IndexWriter writer = null;
+		try {
+			if(!DirectoryReader.indexExists(indexPath)) {
 				writer = getAndLock();
-			} catch (IOException e) {
-				log.error("",  e);
-			} finally {
-				release(writer);
 			}
+		} catch (IOException e) {
+			log.error("",  e);
+		} finally {
+			release(writer);
 		}
 	}
 
 	public synchronized IndexWriter getAndLock() throws IOException {
 		if(writerRef == null) {
 			long start = System.currentTimeMillis();
-			IndexWriter indexWriter = new IndexWriter(indexPath, config);
+			IndexWriter indexWriter = new IndexWriter(indexPath, indexer.newIndexWriterConfig());
 			if(!DirectoryReader.indexExists(indexPath)) {
 				indexWriter.commit();//make sure it exists
 			}
-			System.out.println("Opening writer takes (ms): " + (System.currentTimeMillis() - start));
+			log.info("Opening writer takes (ms): " + (System.currentTimeMillis() - start));
 			writerRef = indexWriter;
 		}
 		counter.incrementAndGet();
@@ -86,7 +85,7 @@ public class IndexWriterHolder {
 					indexWriter.commit();
 					indexWriter.close();
 					writerRef = null;
-					System.out.println("Close writer takes (ms): " + (System.currentTimeMillis() - start));
+					log.info("Close writer takes (ms): " + (System.currentTimeMillis() - start));
 				}
 			} catch (IOException e) {
 				log.error("", e);

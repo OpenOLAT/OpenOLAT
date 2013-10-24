@@ -83,7 +83,6 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	private IndexWriterHolder permanentIndexWriter;
 	
 	private double ramBufferSizeMB;
-	private boolean useCompoundFile;
 	private boolean indexingNode;
 	
 	private List<LifeIndexer> indexers = new ArrayList<LifeIndexer>();
@@ -91,7 +90,6 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	public JmsIndexer(SearchModule searchModuleConfig) {
 		indexingNode = searchModuleConfig.isSearchServiceEnabled();
     ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
-    useCompoundFile = searchModuleConfig.getUseCompoundFile();
 		permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
 	}
 
@@ -173,7 +171,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			File tempIndexDir = new File(permanentIndexPath);
 			Directory indexPath = FSDirectory.open(tempIndexDir);
 			if(indexingNode) {
-				permanentIndexWriter = new IndexWriterHolder (indexPath, newIndexWriterConfig());
+				permanentIndexWriter = new IndexWriterHolder (indexPath, this);
 				permanentIndexWriter.ensureIndexExists();
 			}
 			reader = DirectoryReader.open(indexPath);
@@ -184,7 +182,6 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	
 	public LogMergePolicy newLogMergePolicy() {
 		LogMergePolicy logmp = new LogDocMergePolicy();
-		logmp.setUseCompoundFile(useCompoundFile);
 		logmp.setCalibrateSizeByDeletes(true);
 		logmp.setMergeFactor(INDEX_MERGE_FACTOR);
 		return logmp;
