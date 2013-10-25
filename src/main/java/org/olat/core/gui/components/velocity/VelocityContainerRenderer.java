@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.components.velocity;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.velocity.context.Context;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -74,6 +75,9 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		ctx.put("r", vrdec);
 		VelocityHelper vh = VelocityHelper.getInstance();
 		vh.mergeContent(pagePath, ctx, target, theme);
+		//free the decorator
+		ctx.remove("r");
+		IOUtils.closeQuietly(vrdec);
 		
 		//set all not rendered component as not dirty
 		for(Component cmp: vc.getComponents()) {

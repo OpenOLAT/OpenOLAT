@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.render.velocity;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -50,12 +52,12 @@ import org.olat.core.util.i18n.I18nManager;
 /**
  * @author Felix Jost
  */
-public class VelocityRenderDecorator {
+public class VelocityRenderDecorator implements Closeable{
 	public static final String PARAM_CHELP_BUNDLE = "chelpbundle";
-	private final VelocityContainer vc;
-	private final Renderer renderer;
+	private VelocityContainer vc;
+	private Renderer renderer;
 	private final boolean isIframePostEnabled;
-	private final StringOutput target;
+	private StringOutput target;
 
 	/**
 	 * @param renderer
@@ -68,6 +70,13 @@ public class VelocityRenderDecorator {
 		this.isIframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 	}
 
+	@Override
+	public void close() throws IOException {
+		vc = null;
+		target = null;
+		renderer = null;
+	}
+
 	/**
 	 * 
 	 * @param prefix e.g. abc for "abc647547326" and so on
@@ -78,6 +87,12 @@ public class VelocityRenderDecorator {
 		StringOutput sb = new StringOutput(16);
 		sb.append("o_s").append(prefix).append(vc.getDispatchID());
 		return sb;
+	}
+	
+	public static String getId(String prefix, VelocityContainer vc) {
+		StringOutput sb = StringOutputPool.allocStringBuilder(24);
+		sb.append("o_s").append(prefix).append(vc.getDispatchID());
+		return StringOutputPool.freePop(sb);
 	}
 
 	/**

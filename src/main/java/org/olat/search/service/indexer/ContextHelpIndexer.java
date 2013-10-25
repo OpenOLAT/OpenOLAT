@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.lucene.document.Document;
 import org.apache.velocity.context.Context;
 import org.olat.core.commons.contextHelp.ContextHelpModule;
@@ -138,6 +139,7 @@ public class ContextHelpIndexer extends AbstractHierarchicalIndexer {
 				Document document = ContextHelpDocument.createDocument(searchResourceContext, bundleName, page, pageTranslator, ctx, pagePath);
 				indexWriter.addDocument(document);
 			}
+			IOUtils.closeQuietly(vrdec);
 			
 	  }
 		long indexTime = System.currentTimeMillis() - startTime;
