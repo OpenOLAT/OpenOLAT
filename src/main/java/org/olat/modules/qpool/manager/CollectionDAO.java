@@ -137,7 +137,7 @@ public class CollectionDAO {
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");
 		}
-		if(PersistenceHelper.appendGroupBy(sb, "item", orderBy)) {
+		if(!PersistenceHelper.appendGroupBy(sb, "item", orderBy)) {
 			sb.append(" order by item.key asc ");
 		}
 		
