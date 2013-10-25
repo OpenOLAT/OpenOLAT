@@ -1,7 +1,7 @@
 <div class="b_iframe_wrapper">
 	<script type="text/javascript">
 	/* <![CDATA[ */ 
-		window.open("$mapperUri", "_win_$sourcedId", "location=yes#if($width!='auto'),width=${width}#end #if($height!='auto'),height=${height}#{end}");             	             
+		window.open("${mapperUri}?$r.uuid", "_win_$sourcedId", "location=yes#if($width!='auto'),width=${width}#end #if($height!='auto'),height=${height}#{end}");             	             
 	/* ]]> */
 	</script>
 </div>
@@ -9,5 +9,5 @@
 	$r.translate("popup.info")
 </p>
 <p>
-	<a href="$mapperUri" target="_win_$sourcedId">$r.translate("popup.link")</a>
+	<a href="${mapperUri}?$r.uuid" target="_win_$sourcedId">$r.translate("popup.link")</a>
 </p>

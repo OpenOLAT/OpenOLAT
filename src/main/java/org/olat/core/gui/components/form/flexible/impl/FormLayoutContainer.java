@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.FormMultipartItem;
 import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Disposable;
+import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -401,6 +402,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 
 	public Component getComponent(String name) {
 		return formLayoutContainer.getComponent(name);
+	}
+	
+	public String getId(String prefix) {
+		return VelocityRenderDecorator.getId(prefix, formLayoutContainer);
 	}
 	
 	/**

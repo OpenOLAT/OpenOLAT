@@ -87,7 +87,6 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	private static final OLog log = Tracing.createLoggerFor(AssessmentNotificationsHandler.class);
 	
 	private static final String CSS_CLASS_USER_ICON = "o_icon_user";
-	//private static final String CSS_CLASSS_IQTEST_ICON = "o_iqtest_icon";
 	private static AssessmentNotificationsHandler INSTANCE;
 	private Map<Long,SubscriptionContext> subsContexts = new HashMap<Long,SubscriptionContext>();
 

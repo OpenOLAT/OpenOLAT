@@ -38,12 +38,10 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.winmgr.JSCommand;
-import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 
 /**
  * 
@@ -250,8 +248,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 	}
 	
 	protected String getSearchValue(UserRequest ureq) {
-		VelocityRenderDecorator r = (VelocityRenderDecorator) ((VelocityContainer)flc.getComponent()).getContext().get("r");
-		String searchValue = ureq.getParameter(r.getId(JSNAME_INPUTFIELD).toString());
+		String searchValue = ureq.getParameter(flc.getId(JSNAME_INPUTFIELD));
 		return searchValue;
 	}
 

@@ -19,11 +19,16 @@
  */
 package org.olat.ims.lti.ui;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
+import org.imsglobal.basiclti.BasicLTIUtil;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
+import org.olat.ims.lti.LTIManager;
 
 /**
  * 
@@ -33,14 +38,30 @@ import org.olat.core.gui.media.StringMediaResource;
  */
 public class PostDataMapper implements Mapper {
 	
-	private final String postData;
+	private final Map<String,String> unsignedProps;
+	private final String url;
+	private final String oauthKey;
+	private final String oauthSecret;
+	private final boolean debug;
 	
-	public PostDataMapper(String postData) {
-		this.postData = postData;
+	/**
+	 * 
+	 * @param unsignedProps
+	 * @param url
+	 * @param debug
+	 */
+	public PostDataMapper(Map<String,String> unsignedProps, String url, String oauthKey, String oauthSecret, boolean debug) {
+		this.unsignedProps = unsignedProps;
+		this.url = url;
+		this.oauthKey = oauthKey;
+		this.oauthSecret = oauthSecret;
+		this.debug = debug;
 	}
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
+		Map<String,String> props = CoreSpringFactory.getImpl(LTIManager.class).sign(unsignedProps, url, oauthKey, oauthSecret);
+		String postData = BasicLTIUtil.postLaunchHTML(props, url, debug);
 		StringMediaResource mediares = new StringMediaResource();
 		mediares.setData(postData);
 		mediares.setContentType("text/html");

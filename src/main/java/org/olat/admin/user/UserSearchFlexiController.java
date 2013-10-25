@@ -51,7 +51,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.FlexiAutoCompleterController;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
-import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -237,8 +236,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	}
 	
 	protected String getSearchValue(UserRequest ureq) {
-		VelocityRenderDecorator r = (VelocityRenderDecorator) ((VelocityContainer)autoCompleterContainer.getComponent()).getContext().get("r");
-		String searchValue = ureq.getParameter(r.getId(JSNAME_INPUTFIELD).toString());
+		String searchValue = ureq.getParameter(autoCompleterContainer.getId(JSNAME_INPUTFIELD));
 		return searchValue;
 	}
 

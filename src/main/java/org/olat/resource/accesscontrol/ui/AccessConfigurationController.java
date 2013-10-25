@@ -265,7 +265,7 @@ public class AccessConfigurationController extends FormBasicController {
 			Link add = LinkFactory.createLink("create." + handler.getType(), mapCreateVC, this);
 			add.setCustomDisplayText(handler.getMethodName(getLocale()));
 			add.setUserObject(method);
-			add.setCustomEnabledLinkCSS("b_with_small_icon_left " + method.getMethodCssClass() + "_icon");
+			add.setCustomEnabledLinkCSS(("b_with_small_icon_left " + method.getMethodCssClass() + "_icon").intern());
 			addMethods.add(add);
 			mapCreateVC.put(add.getComponentName(), add);
 		}

@@ -223,7 +223,7 @@ public class CourseLinkProviderController extends BasicController implements Lin
 			LinkTreeNode node = new LinkTreeNode(courseNode.getShortTitle(), course, courseNode);
 			node.setAltText(courseNode.getLongTitle());
 			node.setIdent(course.getResourceableId() + "_" + courseNode.getIdent());
-			node.setIconCssClass("o_" + courseNode.getType() + "_icon");
+			node.setIconCssClass(("o_" + courseNode.getType() + "_icon").intern());
 			node.setUserObject(course);
 			for (int i = 0; i < courseNode.getChildCount(); i++) {
 				CourseNode childNode = (CourseNode)courseNode.getChildAt(i);

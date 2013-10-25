@@ -46,7 +46,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
  */
 public abstract class JobWithDB extends QuartzJobBean {
 	// A logger instantiated for the immplementing class of this abstract class
-	protected OLog log = Tracing.createLoggerFor(this.getClass());
+	protected final OLog log = Tracing.createLoggerFor(this.getClass());
 	
 	@Override
 	protected final void executeInternal(JobExecutionContext arg0)
@@ -57,7 +57,7 @@ public abstract class JobWithDB extends QuartzJobBean {
 			ThreadLocalUserActivityLoggerInstaller.initEmptyUserActivityLogger();
 			
 			executeWithDB(arg0);
-			DBFactory.getInstance(false).commitAndCloseSession();
+			DBFactory.getInstance().commitAndCloseSession();
 			success = true;
 		} catch(JobExecutionException e) {
 			// for documentation purpose only
@@ -66,7 +66,7 @@ public abstract class JobWithDB extends QuartzJobBean {
 			//clean up logging
 			ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
 			if (!success) {
-				DBFactory.getInstance(false).rollbackAndCloseSession();
+				DBFactory.getInstance().rollbackAndCloseSession();
 			}
 
 		}

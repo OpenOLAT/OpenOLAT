@@ -134,7 +134,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 						infos.setVisit(1);
 						infos.setResource(courseResource);
 						dbInstance.getCurrentEntityManager().persist(infos);
-					} else {
+					} else if(needUpdate(infos)) {
 						dbInstance.getCurrentEntityManager().refresh(infos);
 						infos.setVisit(infos.getVisit() + 1);
 						infos.setRecentLaunch(new Date());
@@ -146,6 +146,21 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 				}
 			}
 		});
+	}
+	
+	/**
+	 * Don't update the course infos if it was always updated
+	 * a minute ago or less. It's again the Parkinson behavior
+	 * where people double/triple click on a REST url which
+	 * opens a course several times.
+	 * @return
+	 */
+	private final boolean needUpdate(UserCourseInfosImpl infos) {
+		Date lastModified = infos.getLastModified();
+		if(System.currentTimeMillis() - lastModified.getTime()  < 60000) {
+			return false;
+		}
+		return true;
 	}
 	
 	@Override

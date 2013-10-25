@@ -21,6 +21,8 @@ package org.olat.admin.sysinfo.model;
 
 import java.util.Date;
 
+import javax.servlet.http.HttpSession;
+
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 
@@ -37,6 +39,7 @@ public class UserSessionView {
 	private String login, authProvider;
 	private String fromFQN;
 	private Date lastClickTime;
+	private Date lastAccessTime;
 	private long sessionDuration;
 	private String mode;
 	
@@ -75,6 +78,16 @@ public class UserSessionView {
 				mode = sessInfo.getWebMode();
 			}
 		}
+		
+		HttpSession se = sessInfo.getSession();
+		if(se != null) {
+			try {
+				lastAccessTime = new Date(se.getLastAccessedTime());
+			} catch (Exception e) {
+				lastAccessTime = null;
+			}
+		}
+		
 	}
 	
 	public UserSession getUserSession() {
@@ -111,8 +124,12 @@ public class UserSessionView {
 	
 	public Date getLastClickTime() {
 		return lastClickTime;
-	} 
+	}
 	
+	public Date getLastAccessTime() {
+		return lastAccessTime;
+	}
+
 	public long getSessionDuration() {
 		return sessionDuration;
 	}

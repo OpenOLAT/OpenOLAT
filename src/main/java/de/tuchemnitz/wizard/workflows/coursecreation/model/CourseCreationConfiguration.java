@@ -32,6 +32,7 @@
 
 package de.tuchemnitz.wizard.workflows.coursecreation.model;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.velocity.context.Context;
 import org.olat.catalog.CatalogEntry;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
@@ -365,6 +366,9 @@ public class CourseCreationConfiguration {
 		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(fr, vc, wOut);			
 		context.put("r", vrdec);
 		VelocityHelper.getInstance().mergeContent(vc.getPage(), context, wOut, null);
+		//free the decorator
+		context.remove("r");
+		IOUtils.closeQuietly(vrdec);
 		return WysiwygFactory.createXHtmlFileContent(wOut.toString(), courseTitle);
 	}
 	

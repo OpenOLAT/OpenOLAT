@@ -171,10 +171,14 @@ public class AssessmentHelper {
 		if (node instanceof AssessableCourseNode) {
 			if (node instanceof STCourseNode) {
 				STCourseNode scn = (STCourseNode) node;
-				if (scn.hasPassedConfigured() || scn.hasScoreConfigured()) { return true; }
+				if (scn.hasPassedConfigured() || scn.hasScoreConfigured()) {
+					return true;
+				}
 			} else if (node instanceof ScormCourseNode) {
 				ScormCourseNode scormn = (ScormCourseNode) node;
-				if (scormn.hasScoreConfigured()) { return true; }
+				if (scormn.hasPassedConfigured() || scormn.hasScoreConfigured()) {
+					return true;
+				}
 			} else if (node instanceof ProjectBrokerCourseNode) {
 				return false;// TODO:cg 28.01.2010 ProjectBroker : no assessment-tool in V1.0 return always false
 			} else {

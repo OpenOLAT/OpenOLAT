@@ -141,8 +141,7 @@ public class AutoCompleterController extends BasicController {
 				if (key == null) {
 					// Fallback to submitted input field: the input field does not contain
 					// the key but the search value itself
-					VelocityRenderDecorator r = (VelocityRenderDecorator) myContent.getContext().get("r");
-					String searchValue = ureq.getParameter(r.getId(JSNAME_INPUTFIELD).toString());
+					String searchValue = ureq.getParameter(VelocityRenderDecorator.getId(JSNAME_INPUTFIELD, myContent));
 					if (searchValue == null) {
 						// log error because something went wrong in the code and send empty list as result
 						logError("Auto complete JS code must always send 'key' or the autocomplete parameter!", null);						

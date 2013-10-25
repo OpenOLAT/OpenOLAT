@@ -70,11 +70,8 @@ public class UserSessionTableModel extends DefaultTableDataModel<UserSessionView
 				case 5: return usess.getLastClickTime();
 				case 6: return usess.getSessionDuration();
 				case 7: return usess.getMode();
-				case 8: {
-					//can chat?
-					return myIdentityKey.equals(usess.getIdentityKey())
-							? Boolean.FALSE : Boolean.TRUE;
-				}
+				case 8: return myIdentityKey.equals(usess.getIdentityKey()) ? Boolean.FALSE : Boolean.TRUE;
+				case 9: return usess.getLastAccessTime();
 				default: return "Error";
 			}
 		} else { // not signed on

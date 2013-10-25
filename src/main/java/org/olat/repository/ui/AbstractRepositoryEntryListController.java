@@ -272,7 +272,7 @@ public abstract class AbstractRepositoryEntryListController extends BasicControl
 				for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
 					if(resource.getKey().equals(resourceAccess.getResource().getKey())) {
 						for(PriceMethodBundle bundle:resourceAccess.getMethods()) {
-							String type = bundle.getMethod().getMethodCssClass() + "_icon";
+							String type = (bundle.getMethod().getMethodCssClass() + "_icon").intern();
 							String price = bundle.getPrice() == null || bundle.getPrice().isEmpty() ? "" : PriceFormat.fullFormat(bundle.getPrice());
 							types.add(new PriceMethod(price, type));
 						}
