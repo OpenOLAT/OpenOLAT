@@ -85,14 +85,15 @@ public class UserSessionController extends BasicController implements StackedCon
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.last", 0, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.first", 1, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.identity", 2, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.authprovider", 3, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.fqdn", 4, null, ureq.getLocale()));		
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.access", 5, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.duration", 6, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.mode", 7, null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.last", 0, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.first", 1, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.identity", 2, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.authprovider", 3, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.fqdn", 4, null, getLocale()));		
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.lastClick", 5, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.access", 9, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.duration", 6, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.mode", 7, null, getLocale()));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("sess.details", "sess.details", translate("sess.details")));
 		tableCtr.addColumnDescriptor(new BooleanColumnDescriptor("sess.chat", 8, "sess.chat", translate("sess.chat"), null));
 

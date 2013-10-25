@@ -73,6 +73,7 @@ public class UserSessionDetailsController extends BasicController {
 
 		long creatTime = -1;
 		long lastAccessTime = -1; 
+		long lastClickTime = -1;
 		
 		boolean success = false;
 		if (isAuth) {
@@ -80,16 +81,18 @@ public class UserSessionDetailsController extends BasicController {
 				HttpSession se = sessInfo.getSession();
 				creatTime = se.getCreationTime();
 				lastAccessTime = se.getLastAccessedTime();
+				lastClickTime = sessInfo.getLastClickTime();
 				success = true;
 			} catch (Exception ise) {
 				// nothing to do
 			}
 		}
-		
+
 		if (success) {
 			Formatter f = Formatter.getInstance(ureq.getLocale());
 			sesDetails.contextPut("created", f.formatDateAndTime(new Date(creatTime)));
 			sesDetails.contextPut("lastaccess", f.formatDateAndTime(new Date(lastAccessTime)));
+			sesDetails.contextPut("lastclick", f.formatDateAndTime(new Date(lastClickTime)));
 		} else {
 			sesDetails.contextPut("created", " -- this session has been invalidated --");
 			sesDetails.contextPut("lastaccess", " -- this session has been invalidated --");
