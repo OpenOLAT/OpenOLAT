@@ -313,9 +313,9 @@ public class LTIRunController extends BasicController {
 			doBasicLTI(ureq, run);
 			mainPanel.setContent(run);
 		}
-
 	}
 	
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == startButton) {
 			courseNode.incrementUserAttempts(userCourseEnv);
@@ -350,8 +350,6 @@ public class LTIRunController extends BasicController {
 		}
 		return querySb.toString();
 	}
-	
-
 
 	private void doBasicLTI(UserRequest ureq, VelocityContainer container) {
 		String url = getUrl();
@@ -385,17 +383,12 @@ public class LTIRunController extends BasicController {
 		container.contextPut("width", width);
 		LTIContext context = new LTICourseNodeContext(courseEnv, courseNode, ltiRoles,
 				sourcedId, backMapperUri, outcomeMapperUri, custom, target, width, height);
-		Map<String,String> props = ltiManager.forgeLTIProperties(getIdentity(), getLocale(), context, sendname, sendmail);
-		props = ltiManager.sign(props, url, oauth_consumer_key, oauth_secret);
-
-		String postData = BasicLTIUtil.postLaunchHTML(props, url, "true".equals(debug));
-		Mapper contentMapper = new PostDataMapper(postData);
-		logDebug("Basic LTI Post data: " + postData, null);
+		Map<String,String> unsignedProps = ltiManager.forgeLTIProperties(getIdentity(), getLocale(), context, sendname, sendmail);
+		Mapper contentMapper = new PostDataMapper(unsignedProps, url, oauth_consumer_key, oauth_secret, "true".equals(debug));
 
 		String mapperUri = registerMapper(ureq, contentMapper);
 		container.contextPut("mapperUri", mapperUri + "/");
 	}
-
 	
 	private String getLTIRoles() {
 		if (roles.isGuestOnly()) {
@@ -432,25 +425,5 @@ public class LTIRunController extends BasicController {
 	 */
 	protected void doDispose() {
 		//
-	}
-	
-	private class LTIPopedController extends BasicController {
-		
-		public LTIPopedController(UserRequest ureq, WindowControl wControl) {
-			super(ureq, wControl);
-			VelocityContainer run = createVelocityContainer("run");
-			doBasicLTI(ureq,  run);
-			putInitialPanel(run);
-		}
-
-		@Override
-		protected void event(UserRequest ureq, Component source, Event event) {
-			//
-		}
-
-		@Override
-		protected void doDispose() {
-			//
-		}
 	}
 }
