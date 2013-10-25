@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.contextHelp.ContextHelpModule;
@@ -103,6 +104,10 @@ public class VelocityRenderDecorator implements Closeable{
 		StringOutput sb = new StringOutput(16);
 		sb.append("o_c").append(vc.getDispatchID());
 		return sb;
+	}
+	
+	public String getUuid() {
+		return UUID.randomUUID().toString().replace("-", "");
 	}
 	
 	/**
