@@ -29,8 +29,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
@@ -164,8 +167,20 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 				order = sortingCriteria.isAscending() ? BusinessGroupOrder.creationDateAsc : BusinessGroupOrder.creationDateDesc;
 			}
 			
-			List<BusinessGroupLazy> groupList = businessGroupService.findBusinessGroups(getIdentity(), sortingCriteria.getMaxEntries(), order);
-			List<PortletEntry<BusinessGroupEntry>> entries = convertShortBusinessGroupToPortletEntryList(groupList, false);
+			int maxEntries = sortingCriteria.getMaxEntries();
+			List<BusinessGroupLazy> groupList = businessGroupService.findBusinessGroups(getIdentity(), maxEntries * 2, order);
+			Set<BusinessGroupLazy> removeDuplicates = new HashSet<BusinessGroupLazy>(maxEntries);
+			for(Iterator<BusinessGroupLazy> it=groupList.iterator(); it.hasNext(); ) {
+				BusinessGroupLazy group = it.next();
+				if(removeDuplicates.contains(group)) {
+					it.remove();
+				} else {
+					removeDuplicates.add(group);
+				}
+			}
+			
+			List<BusinessGroupLazy> uniqueList = groupList.subList(0, Math.min(maxEntries, groupList.size())); 
+			List<PortletEntry<BusinessGroupEntry>> entries = convertShortBusinessGroupToPortletEntryList(uniqueList, false);
 			groupListModel.setObjects(entries);
 			tableCtr.modelChanged();
 		} else {
