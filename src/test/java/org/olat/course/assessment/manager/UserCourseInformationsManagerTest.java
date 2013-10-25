@@ -19,18 +19,16 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.restapi.repository.course.CoursesWebService;
@@ -45,9 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class UserCourseInformationsManagerTest extends OlatTestCase {
-	
-	private static final OLog log = Tracing.createLoggerFor(UserCourseInformationsManagerTest.class);
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -55,7 +51,7 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	
 	@Test
 	public void createUpdateCourseInfos() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-2-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-1-" + UUID.randomUUID().toString());
 		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
 		dbInstance.commitAndCloseSession();
 		
@@ -76,78 +72,39 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void updateSetLaunchDates_concurrent() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-1-" + UUID.randomUUID().toString());
+	public void getInitialLaunchDate() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-2-" + UUID.randomUUID().toString());
 		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
 		dbInstance.commitAndCloseSession();
-
-		int numOfThreads = 25;
-		final CountDownLatch doneSignal = new CountDownLatch(numOfThreads);
 		
-		SetLaunchDatesThread[] threads = new SetLaunchDatesThread[numOfThreads];
-		for(int i=numOfThreads; i-->0; ) {
-			threads[i] = new SetLaunchDatesThread(user, course.getResourceableId(), doneSignal);
-		}
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user);
+		dbInstance.commitAndCloseSession();
 		
-		for(int i=numOfThreads; i-->0; ) {
-			threads[i].start();
-		}
-
-		try {
-			boolean interrupt = doneSignal.await(240, TimeUnit.SECONDS);
-			Assert.assertTrue("Test takes too long (more than 10s)", interrupt);
-		} catch (InterruptedException e) {
-			Assert.fail("" + e.getMessage());
-		}
-		
-		int countError = 0;
-		for(int i=numOfThreads; i-->0; ) {
-			countError += threads[i].getErrorCount();
-		}
-		Assert.assertEquals(0, countError);
-
-		UserCourseInformations infos = userCourseInformationsManager.getUserCourseInformations(course.getResourceableId(), user);
-		Assert.assertEquals(1250, infos.getVisit());
+		Date launchDate = userCourseInformationsManager.getInitialLaunchDate(course.getResourceableId(), user);
+		Assert.assertNotNull(launchDate);
 	}
 	
-	
-	private class SetLaunchDatesThread extends Thread {
+	@Test
+	public void getInitialLaunchDates() {
+		Identity user1 = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-3-" + UUID.randomUUID().toString());
+		Identity user2 = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-4-" + UUID.randomUUID().toString());
+		ICourse course = CoursesWebService.createEmptyCourse(user1, "course-launch-dates", "course long name", null);
+		dbInstance.commitAndCloseSession();
 		
-		private AtomicInteger errorCounter = new AtomicInteger();
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user1);
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user2);
+		dbInstance.commitAndCloseSession();
 		
-		private final Identity user;
-		private final Long courseResourceableId;
-		private final CountDownLatch doneSignal;
-		
-		public SetLaunchDatesThread(Identity user, Long courseResourceableId, CountDownLatch doneSignal) {
-			this.user = user;
-			this.doneSignal = doneSignal;
-			this.courseResourceableId = courseResourceableId;
-		}
-		
-		public int getErrorCount() {
-			return errorCounter.get();
-		}
-	
-		@Override
-		public void run() {
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				log.error("", e);
-			}
-			
-			UserCourseInformationsManager infoManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-			try {
-				for(int i=0; i<50; i++) {
-					infoManager.updateUserCourseInformations(courseResourceableId, user);
-				}
-			} catch (Exception e) {
-				errorCounter.incrementAndGet();
-				log.error("", e);
-			} finally {
-				doneSignal.countDown();
-			}
-		}
+		List<Identity> users = new ArrayList<Identity>();
+		users.add(user1);
+		users.add(user2);
+
+		Map<Long,Date> launchDates = userCourseInformationsManager.getInitialLaunchDates(course.getResourceableId(), users);
+		Assert.assertNotNull(launchDates);
+		Assert.assertEquals(2, launchDates.size());
+		Assert.assertTrue(launchDates.containsKey(user1.getKey()));
+		Assert.assertNotNull(launchDates.get(user1.getKey()));
+		Assert.assertTrue(launchDates.containsKey(user2.getKey()));
+		Assert.assertNotNull(launchDates.get(user2.getKey()));
 	}
 }

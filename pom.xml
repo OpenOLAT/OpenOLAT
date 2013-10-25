@@ -1708,7 +1708,7 @@
 		<dependency>
 			<groupId>org.sakaiproject.basiclti</groupId>
 			<artifactId>basiclti-util</artifactId>
-			<version>2.2-SNAPSHOT</version>
+			<version>2.10.SP1</version>
 		</dependency>
 		<!-- J2EE dependencies but provided -->
 		<dependency>
