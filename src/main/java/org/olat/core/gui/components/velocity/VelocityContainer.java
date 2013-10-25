@@ -161,7 +161,7 @@ public class VelocityContainer extends Container {
 	 * @param page The page to set
 	 */
 	public void setPage(String page) {
-		this.page = page;
+		this.page = page.intern();//prevent thausends of same strings
 		setDirty(true);
 	}
 
