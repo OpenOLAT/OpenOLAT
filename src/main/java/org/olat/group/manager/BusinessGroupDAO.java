@@ -461,7 +461,7 @@ public class BusinessGroupDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select gp from lazybusinessgroup gp where gp.memberId=:identityKey)");
 
-		if(ordering != null && ordering.length > 0) {
+		if(ordering != null && ordering.length > 0 && ordering[0] != null) {
 			sb.append(" order by ");
 			for(BusinessGroupOrder o:ordering) {
 				switch(o) {

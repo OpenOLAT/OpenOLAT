@@ -274,19 +274,10 @@ public class FolderRunController extends BasicController implements Activateable
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == folderCommandController) {			
 			if (event == FolderCommand.FOLDERCOMMAND_FINISHED) {
-				if ( ! folderCommand.runsModal()) {
+				if (!folderCommand.runsModal() && cmc != null) {
 					cmc.deactivate();
 				}
 				folderComponent.updateChildren();
-        //TODO: LD check status and show error if STATUS_FAILED - check why this desn't work!!!
-				/*if(folderCommandController instanceof FolderCommand) {
-					int status = ((FolderCommand)folderCommandController).getStatus();
-					if(status == FolderCommandStatus.STATUS_FAILED) {						
-						showError("folder.command.failed");
-						return;
-					}
-				}*/
-				
 				// do logging
 				if (source instanceof CmdCreateFile) {
 					ThreadLocalUserActivityLogger
