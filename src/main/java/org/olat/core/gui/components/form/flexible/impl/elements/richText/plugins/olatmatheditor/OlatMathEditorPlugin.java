@@ -23,9 +23,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugin
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 
 /**
@@ -48,91 +46,10 @@ public class OlatMathEditorPlugin extends TinyMCECustomPlugin {
 	
 	/** The TinyMCE button name for this plugin */
 	public static final String BUTTONS = "olatmatheditor";
-	
-	/** Tells TinyMCE which menu bar to add this plugin button to */
-	private static final String BUTTONS_LOCATION = RichTextConfiguration.THEME_ADVANCED_BUTTONS2_ADD;
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginButtons()
-	 */
-	@Override
-	public String getPluginButtons() {
-		return BUTTONS;
-	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginButtonsLocation()
-	 */
-	@Override
-	public String getPluginButtonsLocation() {
-		return BUTTONS_LOCATION;
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginName()
-	 */
 	@Override
 	public String getPluginName() {
 		return PLUGIN_NAME;
-	}
-
-	/**
-	 * Decides in which configurations the math editor plugin is available (default: in all "full" profiles).
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#isEnabledForProfile(int)
-	 */
-	@Override
-	public boolean isEnabledForProfile(int profile) {
-		// Check first if properly installed. Disable otherwhise
-		if (!BaseChiefController.isJsMathEnabled()) return false;		
-		// Check configuration now
-		switch (profile) {
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_MINIMALISTIC:
-			return false;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_SIMPLE:
-			return true;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_SIMPLE_WITH_MEDIABROWSER:
-			return true;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_FULL:
-			return true;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_FULL_WITH_MEDIABROWSER:
-			return true;
-		case RichTextConfiguration.CONFIG_PROFILE_FILE_EDITOR_FULL:
-			return true;
-		case RichTextConfiguration.CONFIG_PROFILE_FILE_EDITOR_FULL_WITH_MEDIABROWSER:
-			return true;
-		default:
-			// not enabled by default
-			return false;
-		}
-	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginButtonsRowForProfile(int)
-	 */
-	@Override
-	public int getPluginButtonsRowForProfile(int profile) {
-		if (!BaseChiefController.isJsMathEnabled()) return -1;		
-		// Check configuration now
-		switch (profile) {
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_MINIMALISTIC:
-			return -1;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_SIMPLE:
-			return 2;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_SIMPLE_WITH_MEDIABROWSER:
-			return 2;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_FULL:
-			return 3;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_FULL_WITH_MEDIABROWSER:
-			return 3;
-		case RichTextConfiguration.CONFIG_PROFILE_FILE_EDITOR_FULL:
-			return 3;
-		case RichTextConfiguration.CONFIG_PROFILE_FILE_EDITOR_FULL_WITH_MEDIABROWSER:
-			return 3;
-		default:
-			// not enabled by default
-			return -1;
-		}
 	}
 	
 	@Override

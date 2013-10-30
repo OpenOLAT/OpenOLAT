@@ -60,7 +60,7 @@ public class InfoEditFormController extends FormBasicController {
 		title = uifactory.addTextElement("info_title", "edit.info_title", 512, "", formLayout);
 		title.setMandatory(true);
 		
-		message = uifactory.addRichTextElementForStringDataMinimalistic("edit.info_message", "edit.info_message", "", 6, 80, false,
+		message = uifactory.addRichTextElementForStringDataMinimalistic("edit.info_message", "edit.info_message", "", 6, 80,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		message.setMandatory(true);
 		message.setMaxLength(2000);

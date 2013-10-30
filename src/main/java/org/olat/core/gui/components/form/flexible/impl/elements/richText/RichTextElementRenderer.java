@@ -83,29 +83,21 @@ class RichTextElementRenderer implements ComponentRenderer {
 		if (!source.isEnabled()) {
 			// Read only view
 			sb.append("<div ");
-			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), domID, te
-					.getAction()));
+			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction()));
 			sb.append(" id=\"");
 			sb.append(domID);
-			sb
-					.append("_disabled\" readonly class=\"b_form_element_disabled\" style=\"");
+			sb.append("_disabled\" readonly class=\"b_form_element_disabled\" style=\"");
 			if (cols != -1) {
-				sb.append(" width:");
-				sb.append(cols);
-				sb.append("em;");
+				sb.append(" width:").append(cols).append("em;");
 			}
 			if (rows != -1) {
-				sb.append(" min-height:");
-				sb.append(rows);
-				sb.append("em;");
+				sb.append(" min-height:").append(rows).append("em;");
 			}
 			sb.append("\" >");
 			sb.append(Formatter.formatLatexFormulas(value));
 			sb.append("</div>");
 		} else if(teC.isUseTiny4()) {
 			renderTinyMCE_4(sb, domID, teC, ubu);
-		} else {
-			renderTinyMCE_3(sb, domID, teC, ubu);
 		}
 	}
 	
@@ -148,56 +140,6 @@ class RichTextElementRenderer implements ComponentRenderer {
 		  .append("  });\n");
 
 		sb.append("/* ]]> */</script>");
-	}
-	
-	private void renderTinyMCE_3(StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu) {
-		RichTextElementImpl te = teC.getRichTextElementImpl();
-		// Read write view
-		renderTextarea(sb, domID, teC);
-	
-		// Load TinyMCE code. 
-		sb.append("<script type='text/javascript'>/* <![CDATA[ */ ");
-		// Execute code within an anonymous function (closure) to not leak
-		// variables to global scope (OLAT-5755)
-		sb.append("(function(){");
-		// Stop existing form dirty observers first
-		sb.append("BTinyHelper.stopFormDirtyObserver('" + te.getRootForm().getDispatchFieldId() + "','" + domID + "');");
-		// Now add component dispatch URL as a tiny helper variable to open the
-		// media browser in new window at a later point from javascript
-		sb.append("BTinyHelper.editorMediaUris.put('").append(domID).append("','");
-		ubu.buildURI(sb, null, null);
-		sb.append("');");	
-		
-		// Wait until the browser has fully loaded the tiny js file and the
-		// window.tinyMCE object is available. Loop until its there.
-		sb.append("if(jQuery.isNumeric(o_info.tinyLoaderId)) window.clearTimeout(o_info.tinyLoaderId);");
-		// To actually load tiny we use a function that is executed deferred
-		// and retries to initialize the tiny instance as long as it might
-		// take to load the tiny code. To not get confused with several tiny
-		// instances on the screen we use a custom method name per rich text element
-		String checkAndLoadTinyFunctionName = "o_checkTinyLoaded" + domID;
-		sb.append("var ").append(checkAndLoadTinyFunctionName).append(" = function() { ");
-		sb.append("if(jQuery.type(window.tinyMCE) === 'undefined') o_info.tinyLoaderId = ").append(checkAndLoadTinyFunctionName).append(".delay(0.01); else {");
-		// Add custom modules just before initializing tiny		
-		RichTextConfiguration richTextConfiguration = te.getEditorConfiguration();
-		richTextConfiguration.appendLoadCustomModulesFromConfig(sb);
-		// First see if there is an existing editor instance for this DOM element. 
-		// If yes, remove the editor first to prevent clashes with the new created 
-		// editor instance.
-		sb.append("BTinyHelper.removeEditorInstance('").append(domID).append("');");
-		// Now initialize IntyMCE with the generated configuration
-		sb.append("tinyMCE.init({");
-		richTextConfiguration.appendConfigToTinyJSArray(sb);
-		// Add set dirty form only if enabled. For the RichTextElement we need
-		// some special code to find out when the element is dirty. See the comments
-		// BTinyHelpers.js
-		sb.append("});");
-		
-		sb.append("} };");
-		sb.append(checkAndLoadTinyFunctionName).append("();");
-		sb.append("})();");
-		sb.append("/* ]]> */</script>");
-		// Done with loading of TinyMCE code
 	}
 	
 	private void renderTextarea(StringOutput sb, String domID, RichTextElementComponent teC) {

@@ -67,7 +67,7 @@ public class EPCreateMapController extends FormBasicController {
 		titleEl.setMandatory(true);
 
 		String description = "";
-		descEl = uifactory.addRichTextElementForStringDataMinimalistic("map.description", "map.description", description, 7, -1, false,
+		descEl = uifactory.addRichTextElementForStringDataMinimalistic("map.description", "map.description", description, 7, -1,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		descEl.setNotLongerThanCheck(2047, "map.description.too.long");
 

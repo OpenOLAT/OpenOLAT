@@ -167,7 +167,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 		String desc = (repositoryEntry.getDescription() != null ? repositoryEntry.getDescription() : " ");
 		description = uifactory.addRichTextElementForStringDataMinimalistic("cif.description", "cif.description",
-				desc, 10, -1, false, descCont, ureq.getUserSession(), getWindowControl());
+				desc, 10, -1, descCont, ureq.getUserSession(), getWindowControl());
 		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
 		description.setMandatory(true);
 

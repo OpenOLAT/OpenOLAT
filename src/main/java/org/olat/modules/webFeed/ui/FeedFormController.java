@@ -260,7 +260,7 @@ class FeedFormController extends FormBasicController {
 		title.setNotEmptyCheck("feed.form.field.is_mandatory");
 
 		description = uifactory.addRichTextElementForStringDataMinimalistic("description", "feed.form.description", feed
-				.getDescription(), 5, -1, false, formLayout, ureq.getUserSession(), getWindowControl());
+				.getDescription(), 5, -1, formLayout, ureq.getUserSession(), getWindowControl());
 		description.setMandatory(true);
 		description.setMaxLength(4000);
 		description.setNotEmptyCheck("feed.form.field.is_mandatory");

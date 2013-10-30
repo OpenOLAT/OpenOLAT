@@ -72,13 +72,13 @@ public class EPReflexionViewController extends FormBasicController {
 
 		if (canSeeArtefactReflexion){
 			artRef = uifactory.addRichTextElementForStringDataMinimalistic("reflexion.artefact", "reflexion.artefact", artefactReflexion, 12, -1,
-					false, formLayout, ureq.getUserSession(), getWindowControl());
+					formLayout, ureq.getUserSession(), getWindowControl());
 			artRef.setEnabled(false);
 		}
 		
 		if (StringHelper.containsNonWhitespace(linkReflexion)){
 			linkRef = uifactory.addRichTextElementForStringDataMinimalistic("reflexion.link", "reflexion.link", linkReflexion, 12, -1,
-					false, formLayout, ureq.getUserSession(), getWindowControl());
+					formLayout, ureq.getUserSession(), getWindowControl());
 			linkRef.setEnabled(false);
 		}
 		

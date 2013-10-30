@@ -89,7 +89,7 @@ public class UserCommentFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener,
 			UserRequest ureq) {
 		commentElem = uifactory.addRichTextElementForStringDataMinimalistic(
-				"commentElem", null, "", -1, -1, false, formLayout, ureq
+				"commentElem", null, "", -1, -1, formLayout, ureq
 						.getUserSession(), getWindowControl());
 		commentElem.setMaxLength(4000);
 		FormLayoutContainer buttonContainer = FormLayoutContainer

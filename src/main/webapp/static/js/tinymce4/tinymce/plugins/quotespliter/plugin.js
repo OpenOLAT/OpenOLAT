@@ -9,7 +9,6 @@
 			// Add a split comment
 
 			ed.on('KeyDown', function(e) {
-				console.log(e);
 				if (e == null || e.keyCode != 13 || !ed.selection.isCollapsed()) return;
 				var focusEl = ed.selection.getNode();
 				if(focusEl == null) return;

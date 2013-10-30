@@ -704,12 +704,12 @@ public class FormUIFactory {
 	 * @return The rich text element instance
 	 */
 	public RichTextElement addRichTextElementForStringDataMinimalistic(String name, final String i18nLabel, String initialHTMLValue, final int rows,
-			final int cols, boolean externalToolbar, FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
+			final int cols, FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
 		// Create richt text element with bare bone configuration
 		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), wControl.getWindowBackOffice());
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
-		rte.getEditorConfiguration().setConfigProfileFormEditorMinimalistic(usess, externalToolbar, wControl.getWindowBackOffice().getWindow().getGuiTheme());			
+		rte.getEditorConfiguration().setConfigProfileFormEditorMinimalistic(usess, wControl.getWindowBackOffice().getWindow().getGuiTheme());			
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;
@@ -761,7 +761,7 @@ public class FormUIFactory {
 		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), wControl.getWindowBackOffice());
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
-		rte.getEditorConfiguration().setConfigProfileFormEditor(fullProfile, usess, false, wControl.getWindowBackOffice().getWindow().getGuiTheme(), baseContainer, customLinkTreeModel);			
+		rte.getEditorConfiguration().setConfigProfileFormEditor(fullProfile, usess, wControl.getWindowBackOffice().getWindow().getGuiTheme(), baseContainer, customLinkTreeModel);			
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;
@@ -804,8 +804,7 @@ public class FormUIFactory {
 	 * @return The richt text element instance
 	 */
 	public RichTextElement addRichTextElementForFileData(String name,
-			final String i18nLabel, String initialValue, final int rows,
-			final int cols, boolean externalToolbar,
+			final String i18nLabel, String initialValue, final int rows, int cols,
 			VFSContainer baseContainer, String relFilePath,
 			CustomLinkTreeModel customLinkTreeModel,
 			FormItemContainer formLayout, UserSession usess,
@@ -816,7 +815,6 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
 		rte.getEditorConfiguration().setConfigProfileFileEditor(usess,
-				externalToolbar,
 				wControl.getWindowBackOffice().getWindow().getGuiTheme(),
 				baseContainer, relFilePath, customLinkTreeModel);
 		// Add to form and finish

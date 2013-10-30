@@ -48,14 +48,11 @@ public class TinyConfig {
 	static {
 		String plugins =  "textcolor,hr,olatsmileys,paste,link,quotespliter,tabfocus,visualchars,noneditable";
 		String toolbar1 = "undo redo | bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | forecolor backcolor | bullist numlist | link unlink | olatsmileys";
-		minimalisticConfig = new TinyConfig(plugins, toolbar1, null, null, null, toolbar1, null);
+		minimalisticConfig = new TinyConfig(plugins, null, toolbar1);
 	}
 	//standard profile
 	static {
 		String plugins =   "contextmenu,textcolor,hr,olatsmileys,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable";
-		String toolbar1 =  "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | formatselect fontselect fontsizeselect forecolor backcolor";
-		String toolbar2 =  "bullist numlist | indent outdent | undo redo | removeformat visualchars | sup sub | hr charmap | link unlink | image olatmatheditor olatsmileys";
-		
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
@@ -63,15 +60,11 @@ public class TinyConfig {
 			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}"
 		};
 		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer image charmap olatsmileys hr link | code";
-		editorConfig = new TinyConfig(plugins, toolbar1, toolbar2, null, menu, tools1, null);
+		editorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//full profile
 	static {
 		String plugins =   "contextmenu,textcolor,hr,olatsmileys,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable,table";
-		String toolbar1 =  "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | formatselect fontselect fontsizeselect forecolor backcolor";
-		String toolbar2 =  "cut copy paste pastetext | bullist numlist  | indent outdent  | undo redo  | sup sub  | link unlink  | image";
-		String toolbar3 =  "table | removeformat visualchars  | hr charmap olatmatheditor olatsmileys";
-		
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
@@ -80,48 +73,31 @@ public class TinyConfig {
 			  "table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
 		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer image charmap olatsmileys hr link | code";
-		editorFullConfig = new TinyConfig(plugins, toolbar1, toolbar2, toolbar3, menu, tools1, null);
+		editorFullConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//file profile
 	static {
-		String plugins =   "textcolor,hr,link,charmap,image,olatmatheditor,importcss,insertdatetime,code,table,tabfocus,visualchars,visualblocks,print,noneditable,fullscreen,contextmenu,olatmovieviewer,searchreplace,olatsmileys,paste,media";
-		String toolbar1 =  "save cancel | bold italic underline strikethrough | alignjustify alignright aligncenter alignleft  | styleselect formatselect fontselect fontsizeselect forecolor backcolor";
-		String toolbar2 =  "cut copy paste pastetext | search replace  | bullist numlist  | indent outdent  | undo redo  | cite ins del abbr actronym attribs  | sup sub  | link unlink anchor  | image media olatmovieviewer ";
-		String toolbar3 =  "table | removeformat visualchars | print fullscreen code | insertdate inserttime hr charmap olatmatheditor olatsmileys";
-		
+		String plugins =   "textcolor,hr,link,charmap,image,olatmatheditor,importcss,insertdatetime,code,table,tabfocus,visualchars,visualblocks,noneditable,fullscreen,contextmenu,olatmovieviewer,searchreplace,olatsmileys,paste,media";
 		String[] menu = {
-				"file: {title: 'File', items: 'print'}",
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
 			  "view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
 			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
 			  "table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		//String tools1 = "save cancel | bullist numlist indent outdent | link unlink | olatsmileys";
-		//String tools2 = "bold italic underline | styleselect fontselect fontsizeselect forecolor backcolor";
 		String tools1 = "bold italic underline | styleselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer image charmap olatsmileys hr link | code";
-		fileEditorConfig = new TinyConfig(plugins, toolbar1, toolbar2, toolbar3, menu, tools1, null);
+		fileEditorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 
 	private final String plugins;
 	
 	private final String[] menu;
 	private final String tool1;
-	private final String tool2;
 	
-	private final String toolbar1;
-	private final String toolbar2;
-	private final String toolbar3;
-	
-	public TinyConfig(String plugins, String toolbar1, String toolbar2, String toolbar3, String[] menu, String tool1, String tool2) {
+	public TinyConfig(String plugins, String[] menu, String tool1) {
 		this.plugins = plugins;
-		this.toolbar1 = toolbar1;
-		this.toolbar2 = toolbar2;
-		this.toolbar3 = toolbar3;
-		
 		this.menu = menu;
 		this.tool1 = tool1;
-		this.tool2 = tool2;
 	}
 	
 	public String getPlugins() {
@@ -140,30 +116,14 @@ public class TinyConfig {
 		return tool1;
 	}	
 	
-	public String getTool2() {
-		return tool2;
-	}
-
-	public String getToolbar1() {
-		return toolbar1;
-	}
-
-	public String getToolbar2() {
-		return toolbar2;
-	}
-
-	public String getToolbar3() {
-		return toolbar3;
-	}
-	
 	public TinyConfig enableCode() {
-		return enableFeature("code", true);
+		return enableFeature("code");
 	}
 	
 	public TinyConfig enableImageAndMedia() {
-		return enableFeature("image", true)
-				.enableFeature("media", false)
-				.enableFeature("olatmovieviewer", false);
+		return enableFeature("image")
+				.enableFeature("media")
+				.enableFeature("olatmovieviewer");
 	}
 	
 	/**
@@ -178,40 +138,19 @@ public class TinyConfig {
 		return disableFeature("olatmatheditor");
 	}
 	
-	public TinyConfig enableFeature(String feature, boolean separator) {
+	public TinyConfig enableFeature(String feature) {
 		if(plugins.contains(feature)) {
 			return this;
 		} else {
-			String button = (separator ? " | " : "") + feature;
 			String clonedPlugins =  plugins + "," + feature;
-			String clonedToolbar1 = toolbar1;
-			String clonedToolbar2 = toolbar2;
-			String clonedToolbar3 = toolbar3;
-			if(clonedToolbar3 != null) {
-				clonedToolbar3 += button;
-			} else if(clonedToolbar2 != null) {
-				clonedToolbar2 += button;
-			} else if(clonedToolbar1 != null) {
-				clonedToolbar1 += button;
-			}
-			return new TinyConfig(clonedPlugins, clonedToolbar1, clonedToolbar2, clonedToolbar3, menu, tool1, tool2);
+			return new TinyConfig(clonedPlugins, menu, tool1);
 		}
 	}
 	
 	private TinyConfig disableFeature(String feature) {
 		if(plugins.contains(feature)) {
 			String clonedPlugins =  plugins.replace("," + feature, "");
-			String clonedToolbar1 = toolbar1;
-			String clonedToolbar2 = toolbar2;
-			String clonedToolbar3 = toolbar3;
-			if(clonedToolbar3 != null && clonedToolbar3.contains(feature)) {
-				clonedToolbar3 = clonedToolbar3.replace(feature, "");
-			} else if(clonedToolbar2 != null && clonedToolbar2.contains(feature)) {
-				clonedToolbar2 = clonedToolbar2.replace(feature, "");
-			} else if(clonedToolbar1 != null && clonedToolbar1.contains(feature)) {
-				clonedToolbar1 = clonedToolbar1.replace(feature, "");
-			}
-			return new TinyConfig(clonedPlugins, clonedToolbar1, clonedToolbar2, clonedToolbar3, menu, tool1, tool2);
+			return new TinyConfig(clonedPlugins, menu, tool1);
 		} else {
 			return this;
 		}
@@ -219,6 +158,6 @@ public class TinyConfig {
 	
 	@Override
 	public TinyConfig clone() {
-		return new TinyConfig(plugins, toolbar1, toolbar2, toolbar3, menu, tool1, tool2);
+		return new TinyConfig(plugins, menu, tool1);
 	}
 }

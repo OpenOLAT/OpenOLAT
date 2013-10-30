@@ -92,7 +92,7 @@ public class EPCreateTextArtefactStepForm00 extends StepFormBasicController {
 		if (contFile == null) {
 			vfsTemp.createChildLeaf(EPArtefactManager.ARTEFACT_CONTENT_FILENAME);
 		}
-		content = uifactory.addRichTextElementForFileData("content", "artefact.content", artFulltextContent, 15, -1, false, vfsTemp,
+		content = uifactory.addRichTextElementForFileData("content", "artefact.content", artFulltextContent, 15, -1, vfsTemp,
 				EPArtefactManager.ARTEFACT_CONTENT_FILENAME, null, formLayout, ureq.getUserSession(), getWindowControl());
 		content.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		content.setMandatory(true);

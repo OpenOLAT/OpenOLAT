@@ -21,9 +21,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugin
 
 import java.util.Map;
 
-import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
-import org.olat.core.gui.render.StringOutput;
-
 /**
  * Description:<br>
  * Implement this abstract class to provide a TinyMCE plugin to the rich text
@@ -45,67 +42,15 @@ import org.olat.core.gui.render.StringOutput;
  * @author gnaegi
  */
 public abstract class TinyMCECustomPlugin {
-	// path relative to plugin editor file
-	private static final String REL_EDITOR_PATH = "/editor_plugin.js";
+	
 	// Optional plugin parameters
 	private Map<String, String> pluginParameters;
-
-	/**
-	 * Method to determine in which use scenarios this plugin should be used.
-	 * See the RichtTextConfiguration.CONFIG_PROFILE_* variables for valid
-	 * values
-	 * 
-	 * @param profile the current profile
-	 * @return true: plugin is enabled for this profile; false: plugin is not enabled.
-	 */
-	abstract public boolean isEnabledForProfile(int profile);
-
-	/**
-	 * Get the row where the button should be located for the given profile
-	 * 
-	 * @param profile
-	 * @return
-	 */
-	public abstract int getPluginButtonsRowForProfile(int profile);
 
 	/**
 	 * @return The name of the plugin, must be URL save. E.g. 'myplugin'
 	 */
 	abstract public String getPluginName();
-
-	/**
-	 * Get the buttons that must be enabled for this plugin. Return NULL when
-	 * the plugin does not provide an button at all
-	 * <p>
-	 * Example: "mybutton"
-	 * @return The button name or NULL if no button is available
-	 */
-	abstract public String getPluginButtons();
-
-	/**
-	 * Get the button location where the button should be added. Use the
-	 * appropriate button locations available in
-	 * RichTextConfiguration.THEME_ADVANCED_BUTTONS*
-	 * <p>
-	 * Example: "theme_advanced_buttons2_add_before"
-	 * @return the button position or NULL if no button is available
-	 */
-	abstract public String getPluginButtonsLocation();
-
-
-	/**
-	 * Get the full path (URL) to the plugin editor js file. Normally this is
-	 * done by convention, but you can override this method in case you have
-	 * another setup.
-	 * 
-	 * @return URL where to load the plugin from
-	 */
-	public String getPluginURL() {
-		StringOutput sb = new StringOutput();
-		StaticMediaDispatcher.renderStaticURI(sb, "js/tinymce/openolat/plugins/" + getPluginName() + REL_EDITOR_PATH, true);
-		return sb.toString();
-	}
-
+	
 	/**
 	 * Get the optional plugin parameters if available. 
 	 * @return the parameter map or NULL if not available

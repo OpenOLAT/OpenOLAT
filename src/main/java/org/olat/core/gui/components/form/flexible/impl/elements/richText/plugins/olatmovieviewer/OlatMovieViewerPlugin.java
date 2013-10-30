@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 import org.olat.core.util.WebappHelper;
 
@@ -50,83 +49,12 @@ import org.olat.core.util.WebappHelper;
 public class OlatMovieViewerPlugin extends TinyMCECustomPlugin {
 	public static final String PLUGIN_NAME = "olatmovieviewer";
 	public static final String BUTTONS = "olatmovieviewer";
-	private static final String BUTTONS_LOCATION = "theme_advanced_buttons2_add";
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginName()
-	 */
+	@Override
 	public String getPluginName() {
 		return PLUGIN_NAME;
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#isEnabledForProfile(int)
-	 */
-	public boolean isEnabledForProfile(int profile) {
-		// The movie player plugin is always available, even when no
-		// mediabrowser is available since it does not need the mediabrowser
-		// (users have to enter remote URL's)
-		switch (profile) {
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_MINIMALISTIC:
-			return false;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_SIMPLE:
-			return false;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_SIMPLE_WITH_MEDIABROWSER:
-			return true;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_FULL:
-			return false;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_FULL_WITH_MEDIABROWSER:
-			return true;
-		case RichTextConfiguration.CONFIG_PROFILE_FILE_EDITOR_FULL:
-			return true;
-		case RichTextConfiguration.CONFIG_PROFILE_FILE_EDITOR_FULL_WITH_MEDIABROWSER:
-			return true;
-		default:
-			// not enabled by default
-			return false;
-		}
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginButtonsRowForProfile(int)
-	 */
-	@Override
-	public int getPluginButtonsRowForProfile(int profile) {
-		switch (profile) {
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_MINIMALISTIC:
-			return -1;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_SIMPLE:
-			return -1;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_SIMPLE_WITH_MEDIABROWSER:
-			return 2;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_FULL:
-			return -1;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_FULL_WITH_MEDIABROWSER:
-			return 2;
-		case RichTextConfiguration.CONFIG_PROFILE_FILE_EDITOR_FULL:
-			return 2;
-		case RichTextConfiguration.CONFIG_PROFILE_FILE_EDITOR_FULL_WITH_MEDIABROWSER:
-			return 2;
-		default:
-			// not enabled by default
-			return -1;
-		}
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginButtons()
-	 */
-	public String getPluginButtons() {
-		return BUTTONS;
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginButtonsLocation()
-	 */
-	public String getPluginButtonsLocation() {
-		return BUTTONS_LOCATION;
-	}
-
+	
 	@Override
 	public Map<String, String> getPluginParameters() {
 
@@ -137,16 +65,14 @@ public class OlatMovieViewerPlugin extends TinyMCECustomPlugin {
 		}
 
 		// Get static URI for transparent GIF.
-		params.put("transparentImage", StaticMediaDispatcher
-				.createStaticURIFor("images/transparent.gif", false));
-		
-		params.put("playerScript", StaticMediaDispatcher
-				.createStaticURIFor("movie/player.js", false));
+		params.put("transparentImage", StaticMediaDispatcher.createStaticURIFor("images/transparent.gif", false));
+		params.put("playerScript", StaticMediaDispatcher.createStaticURIFor("movie/player.js", false));
 
 		setPluginParameters(params);
 		return params;
 	}
-	
+
+	@Override
 	public void setPluginParameters(Map<String,String> pluginParameters) {
 		//use only one source for the servlet context path
 		if(pluginParameters.containsKey("movieViewerUrl") && !pluginParameters.get("movieViewerUrl").startsWith(WebappHelper.getServletContextPath())) {
@@ -154,5 +80,4 @@ public class OlatMovieViewerPlugin extends TinyMCECustomPlugin {
 		}
 		super.setPluginParameters(pluginParameters);
 	}
-
 }

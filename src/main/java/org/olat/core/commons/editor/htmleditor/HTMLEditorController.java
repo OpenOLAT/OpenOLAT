@@ -86,7 +86,7 @@ public class HTMLEditorController extends FormBasicController {
 	public static final String CLOSE_HEAD_OPEN_BODY = "</head><body>";
 	// Editor version metadata to check if file has already been edited with this editor
 	public static final String GENERATOR = "olat-tinymce-";
-	public static final String GENERATOR_VERSION = "3";
+	public static final String GENERATOR_VERSION = "4";
 	public static final String GENERATOR_META = "<meta name=\"generator\" content=\"" + GENERATOR + GENERATOR_VERSION + "\" />\n";
 	// Default char set for new files is UTF-8
 	public static final String UTF_8 = "utf-8";
@@ -231,7 +231,7 @@ public class HTMLEditorController extends FormBasicController {
 			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
 			vc.contextPut("fileToLargeError", fileToLargeError);
 		} else {
-			htmlElement = uifactory.addRichTextElementForFileData("rtfElement", null, body, -1, -1, false, baseContainer, fileName, customLinkTreeModel, formLayout, ureq.getUserSession(), getWindowControl());
+			htmlElement = uifactory.addRichTextElementForFileData("rtfElement", null, body, -1, -1, baseContainer, fileName, customLinkTreeModel, formLayout, ureq.getUserSession(), getWindowControl());
 			//
 			// Add resize handler
 			RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 

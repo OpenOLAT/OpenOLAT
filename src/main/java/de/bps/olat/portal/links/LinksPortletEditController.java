@@ -88,7 +88,7 @@ public class LinksPortletEditController extends FormBasicController {
 		title = uifactory.addTextElement("link.title", "link.title", 200, portletLink.getTitle(), formLayout);
 		title.setMandatory(true);
 		title.setNotEmptyCheck("link.title.not.empty");
-		desc = uifactory.addRichTextElementForStringDataMinimalistic("link.desc", "link.desc", portletLink.getDescription(), 5, -1, false, formLayout, ureq.getUserSession(), getWindowControl());
+		desc = uifactory.addRichTextElementForStringDataMinimalistic("link.desc", "link.desc", portletLink.getDescription(), 5, -1, formLayout, ureq.getUserSession(), getWindowControl());
 		linkURL = uifactory.addTextElement("link.url", "link.url", 1024, portletLink.getUrl(), formLayout);
 		linkURL.setMandatory(true);
 		linkURL.setNotEmptyCheck("link.url.not.empty");

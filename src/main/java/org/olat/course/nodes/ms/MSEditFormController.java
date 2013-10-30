@@ -211,12 +211,12 @@ public class MSEditFormController extends FormBasicController {
 		// Create the rich text fields.
 		String infoUser = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		if (infoUser == null) infoUser = new String("");
-		infotextUser = uifactory.addRichTextElementForStringDataMinimalistic("infotextUser", "form.infotext.user", infoUser, 10, -1, false,
+		infotextUser = uifactory.addRichTextElementForStringDataMinimalistic("infotextUser", "form.infotext.user", infoUser, 10, -1,
 				formLayout, ureq.getUserSession(), getWindowControl());
 
 		String infoCoach = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
 		if (infoCoach == null) infoCoach = new String("");
-		infotextCoach = uifactory.addRichTextElementForStringDataMinimalistic("infotextCoach", "form.infotext.coach", infoCoach, 10, -1, false,
+		infotextCoach = uifactory.addRichTextElementForStringDataMinimalistic("infotextCoach", "form.infotext.coach", infoCoach, 10, -1,
 				formLayout, ureq.getUserSession(), getWindowControl());
 
 		

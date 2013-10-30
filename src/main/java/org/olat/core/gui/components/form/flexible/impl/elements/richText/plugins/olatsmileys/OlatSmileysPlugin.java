@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 
 /**
@@ -44,8 +43,10 @@ public class OlatSmileysPlugin extends TinyMCECustomPlugin {
 	/** The TinyMCE button name for this plugin */
 	public static final String BUTTONS = "olatsmileys";
 	
-	/** Tells TinyMCE which menu bar to add this plugin button to */
-	private static final String BUTTONS_LOCATION = RichTextConfiguration.THEME_ADVANCED_BUTTONS2_ADD;
+	@Override
+	public String getPluginName() {
+		return PLUGIN_NAME;
+	}
 	
 	/**
 	 * Creates a map for this plugin's parameters which can be read by the plugin's JavaScript code.
@@ -66,67 +67,4 @@ public class OlatSmileysPlugin extends TinyMCECustomPlugin {
 		setPluginParameters(params);
 		return params;
 	}
-
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginButtons()
-	 */
-	@Override
-	public String getPluginButtons() {
-		return BUTTONS;
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginButtonsLocation()
-	 */
-	@Override
-	public String getPluginButtonsLocation() {
-		return BUTTONS_LOCATION;
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginName()
-	 */
-	@Override
-	public String getPluginName() {
-		return PLUGIN_NAME;
-	}
-
-	/**
-	 * Decides in which configurations the math editor plugin is available (default: in all "full" profiles).
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#isEnabledForProfile(int)
-	 */
-	@Override
-	public boolean isEnabledForProfile(int profile) {
-		return true;
-	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginButtonsRowForProfile(int)
-	 */
-	@Override
-	public int getPluginButtonsRowForProfile(int profile) {
-		switch (profile) {
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_MINIMALISTIC:
-			return 1;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_SIMPLE:
-			return 2;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_SIMPLE_WITH_MEDIABROWSER:
-			return 2;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_FULL:
-			return 3;
-		case RichTextConfiguration.CONFIG_PROFILE_FORM_EDITOR_FULL_WITH_MEDIABROWSER:
-			return 3;
-		case RichTextConfiguration.CONFIG_PROFILE_FILE_EDITOR_FULL:
-			return 3;
-		case RichTextConfiguration.CONFIG_PROFILE_FILE_EDITOR_FULL_WITH_MEDIABROWSER:
-			return 3;
-		default:
-			// not enabled by default
-			return 1;
-		}
-	}
-
-
 }

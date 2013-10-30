@@ -88,7 +88,7 @@ public class BGAreaFormController extends FormBasicController {
 		
 		// add the description field
 		description = uifactory.addRichTextElementForStringDataMinimalistic("area.form.description", "area.form.description", "", 10, -1,
-				false, formLayout, ureq.getUserSession(), getWindowControl());
+				formLayout, ureq.getUserSession(), getWindowControl());
 
 		if (bgArea != null) {
 			name.setValue(bgArea.getName());
