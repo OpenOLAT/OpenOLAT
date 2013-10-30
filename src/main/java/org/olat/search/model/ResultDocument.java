@@ -26,7 +26,6 @@
 package org.olat.search.model;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.util.StringHelper;
 
 /**
  * Lucene document mapper.
@@ -56,10 +55,7 @@ public class ResultDocument extends AbstractOlatDocument {
 	}
 
 	public String getHighlightTitle() {
-		if(StringHelper.containsNonWhitespace(highlightTitle)) {
-			return highlightTitle;
-		}
-		return getTitle();
+		return highlightTitle;
 	}
 
 	public void setHighlightTitle(String highlightTitle) {

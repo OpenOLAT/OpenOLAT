@@ -49,7 +49,9 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.search.SearchResults;
 import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.model.ResultDocument;
@@ -276,6 +278,11 @@ public class SearchResultsImpl implements SearchResults {
 			
 			//highlight title
 			String title = doc.get(AbstractOlatDocument.TITLE_FIELD_NAME);
+			title = title.trim();
+			if(title.length() > 128) {
+				title = FilterFactory.getHtmlTagsFilter().filter(title);
+				title = Formatter.truncate(title, 128);
+			}
 			tokenStream = analyzer.tokenStream(AbstractOlatDocument.TITLE_FIELD_NAME, new StringReader(title));
 			String highlightTitle = highlighter.getBestFragments(tokenStream, title, 3, " ");
 			resultDocument.setHighlightTitle(highlightTitle);

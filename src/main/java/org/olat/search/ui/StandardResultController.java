@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.search.model.ResultDocument;
 import org.olat.user.UserManager;
 
@@ -83,20 +84,32 @@ public class StandardResultController extends FormBasicController implements Res
 			formLayoutCont.contextPut("author", author);
 		}
 		
-		String highlightLabel = document.getHighlightTitle();
-		docHighlightLink = uifactory.addFormLink("open_doc_highlight", highlightLabel, highlightLabel, formLayout, Link.NONTRANSLATED);
 		String icon = document.getCssIcon();
 		if(!StringHelper.containsNonWhitespace(icon)) {
 			icon = "o_sp_icon";
 		}
-		String cssClass = "b_with_small_icon_left " + icon;
-		((Link)docHighlightLink.getComponent()).setCustomEnabledLinkCSS(cssClass);
-		((Link)docHighlightLink.getComponent()).setCustomDisabledLinkCSS(cssClass);
+		String cssClass = ("b_with_small_icon_left " + icon).intern();
 		
 		String label = document.getTitle();
+		if(label != null) {
+			label = label.trim();
+		}
+		if(label.length() > 128) {
+			label = FilterFactory.getHtmlTagsFilter().filter(label);
+			label = Formatter.truncate(label, 128);
+		}
+		label = StringHelper.escapeHtml(label);
 		docLink = uifactory.addFormLink("open_doc", label, label, formLayout, Link.NONTRANSLATED);
 		((Link)docLink.getComponent()).setCustomEnabledLinkCSS(cssClass);
 		((Link)docLink.getComponent()).setCustomDisabledLinkCSS(cssClass);
+		
+		String highlightLabel = document.getHighlightTitle();
+		if(!StringHelper.containsNonWhitespace(highlightLabel)) {
+			highlightLabel = label;
+		}
+		docHighlightLink = uifactory.addFormLink("open_doc_highlight", highlightLabel, highlightLabel, formLayout, Link.NONTRANSLATED);
+		((Link)docHighlightLink.getComponent()).setCustomEnabledLinkCSS(cssClass);
+		((Link)docHighlightLink.getComponent()).setCustomDisabledLinkCSS(cssClass);
 	}
 
 	@Override

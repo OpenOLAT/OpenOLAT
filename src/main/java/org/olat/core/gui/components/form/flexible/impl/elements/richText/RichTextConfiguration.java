@@ -742,7 +742,6 @@ public class RichTextConfiguration implements Disposable {
  		for (Map.Entry<String, String> entry : copyNonValues.entrySet()) {
  			tinyMenuSb.append(entry.getKey()).append(": ").append(entry.getValue()).append(",\n");
 		}
- 		System.out.println(tinyMenuSb);
  		out.append(tinyMenuSb);
 	}
 
