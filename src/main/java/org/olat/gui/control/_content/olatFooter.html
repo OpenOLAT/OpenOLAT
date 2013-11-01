@@ -5,7 +5,7 @@
 	<span id="b_counter">($r.render("userCounter") $r.translate("other.users.online"))</span>
 </div>
 <div id="b_footer_version">
-	<a href="http://www.openolat.org" title="Homepage of the Open Source LMS OpenOLAT $appVersion (Build $changeSet)" target="_blank">$appName&nbsp;$appVersion&nbsp($node)</a>
+	<a href="http://www.openolat.org" title="Homepage of the Open Source LMS OpenOLAT $appVersion (Build $revisionNumber:$changeSet)" target="_blank">$appName&nbsp;$appVersion&nbsp($node)</a>
 </div>	
 #if($r.available("shareLink"))
 	$r.render("shareLink")

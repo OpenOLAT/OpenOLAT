@@ -85,6 +85,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	private static String buildJdk;
 	private static String changeSet;
 	private static String changeSetDate;
+	private static String revisionNumber;
 	private static String implementationVersion;
 	
 
@@ -117,6 +118,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 				props.load(meta);
 				changeSet = props.getProperty("Build-Change-Set");
 				changeSetDate = props.getProperty("Build-Change-Set-Date");
+				revisionNumber = props.getProperty("Build-Revision-Number");
 				implementationVersion = props.getProperty("Implementation-Version");
 				buildJdk = props.getProperty("Build-Jdk");
 			} catch (IOException e) {
@@ -463,6 +465,10 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 
 	public static String getChangeSetDate() {
 		return changeSetDate;
+	}
+	
+	public static String getRevisionNumber() {
+		return revisionNumber;
 	}
 
 	public static String getImplementationVersion() {

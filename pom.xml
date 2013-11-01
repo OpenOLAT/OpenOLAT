@@ -1125,7 +1125,7 @@
 				<updatePolicy>never</updatePolicy>
 			</releases>
 			<snapshots>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 				<updatePolicy>daily</updatePolicy>
 			</snapshots>
 		</repository>
@@ -1142,6 +1142,16 @@
 				<enabled>true</enabled>
 				<updatePolicy>daily</updatePolicy>
 			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>openolat-plugin-repo</id>
+			<name>OpenOLAT Public Maven Repository Group</name>
+			<url>http://nexus.openolat.org/nexus/content/groups/public</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
 		</pluginRepository>
 	</pluginRepositories>
 	<build>
@@ -1190,9 +1200,9 @@
     </testResources>
 		<plugins>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
+				<groupId>org.openolat.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>1.2</version>
+				<version>1.2.0</version>
 				<executions>
 					<execution>
 						<phase>validate</phase>
@@ -1236,6 +1246,7 @@
 							<manifestEntries>
 								<Build-Change-Set>${changeSet}</Build-Change-Set>
 								<Build-Change-Set-Date>${changeSetDate}</Build-Change-Set-Date>
+								<Build-Revision-Number>${revisionNumber}</Build-Revision-Number>
 								<Implementation-Build>${buildNumber}</Implementation-Build>
 							</manifestEntries>
 						</archive>
