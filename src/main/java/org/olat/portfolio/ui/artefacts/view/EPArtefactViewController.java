@@ -304,8 +304,8 @@ public class EPArtefactViewController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		super.formInnerEvent(ureq, source, event);
 		if (source == deleteBtn) {
-			delYesNoDialog = activateYesNoDialog(ureq, translate("delete.artefact"), translate("delete.artefact.text", artefact.getTitle()),
-					delYesNoDialog);
+			String text = translate("delete.artefact.text", StringHelper.escapeHtml(artefact.getTitle()));
+			delYesNoDialog = activateYesNoDialog(ureq, translate("delete.artefact"), text, delYesNoDialog);
 		} else if (source == chooseBtn){
 			fireEvent(ureq, new EPArtefactChoosenEvent(artefact));
 		} else if (source == detailsLink) {

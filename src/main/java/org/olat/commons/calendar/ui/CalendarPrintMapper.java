@@ -94,12 +94,18 @@ public class CalendarPrintMapper implements Mapper {
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("<html><head><title>");
-		sb.append("Calendar");
-		sb.append("</title>");
-		sb.append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
-		sb.append("<link href=\"").append(themeBaseUri).append("layout.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
-		sb.append("</title></head><body class='o_cal_print' onload='window.focus();window.print()'>");
+		sb.append("<html><head><title>")
+		  .append("Calendar")
+		  .append("</title>")
+		  .append("<meta http-equiv='Content-type' content='text/html; charset=utf-8' />")
+		  .append("<meta http-equiv='cache-control' content='no-cache' />")
+		  .append("<meta http-equiv='pragma' content='no-cache' />")
+		  .append("<meta http-equiv='expires' content='0' />")
+		  .append("<meta http-equiv='pragma-directive' content='no-cache' />")
+		  .append("<meta http-equiv='cache-directive' content='no-cache' />")
+		  .append("<link href='").append(themeBaseUri).append("all/content.css' rel='stylesheet' type='text/css' />\n")
+		  .append("<link href='").append(themeBaseUri).append("layout.css' rel='stylesheet' type='text/css' />\n")
+		  .append("</head><body class='o_cal_print' onload='window.focus();window.print()'>");
 		
 		//collect all events
 		List<KalendarEventRenderWrapper> sortedEventsWithin = new ArrayList<KalendarEventRenderWrapper>();
@@ -278,7 +284,7 @@ public class CalendarPrintMapper implements Mapper {
 		for(KalendarRenderWrapper calendarWrapper:calendarWrappers) {
 			String cssClass = calendarWrapper.getKalendarConfig().getCss();
 			sb.append("<div class='o_cal_config_row'><div class='o_cal_config_calendar ").append(cssClass).append("'>")
-			  .append(calendarWrapper.getKalendarConfig().getDisplayName())
+			  .append(StringHelper.escapeHtml(calendarWrapper.getKalendarConfig().getDisplayName()))
 			  .append("</div></div>");
 		}
 	}

@@ -64,6 +64,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.info.InfoCourseNodeConfiguration;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -100,6 +101,7 @@ public class InfoDisplayController extends FormBasicController {
 	private Date after = null;
 	private Date afterConfig = null;
 	
+	private final UserManager userManager;
 	private final InfoMessageFrontendManager infoMessageManager;
 	
 	private LockResult lockEntry;
@@ -114,6 +116,7 @@ public class InfoDisplayController extends FormBasicController {
 		this.resSubPath = resSubPath;
 		this.businessPath = businessPath;
 		
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		infoMessageManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
 		maxResults = maxResultsConfig = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_LENGTH, 10);
 		duration = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_DURATION, 90);
@@ -239,19 +242,14 @@ public class InfoDisplayController extends FormBasicController {
 		
 		String modifier = null;
 		if(info.getModifier() != null) {
-			User user = info.getModifier().getUser();
-			String formattedName = user.getProperty(UserConstants.FIRSTNAME, null)
-				+ " " + user.getProperty(UserConstants.LASTNAME, null);
+			String formattedName = userManager.getUserDisplayName(info.getModifier());
 			String creationDate = formatter.formatDateAndTime(info.getModificationDate());
-			modifier = translate("display.modifier", new String[]{formattedName, creationDate});
+			modifier = translate("display.modifier", new String[]{StringHelper.escapeHtml(formattedName), creationDate});
 		}
 
-		User author = info.getAuthor().getUser();
-		String authorName = author.getProperty(UserConstants.FIRSTNAME, null)
-			+ " " + author.getProperty(UserConstants.LASTNAME, null);
-		
+		String authorName = userManager.getUserDisplayName(info.getAuthor());
 		String creationDate = formatter.formatDateAndTime(info.getCreationDate());
-		String infos = translate("display.info", new String[]{authorName, creationDate});
+		String infos = translate("display.info", new String[]{StringHelper.escapeHtml(authorName), creationDate});
 
 		return new InfoMessageForDisplay(info.getKey(), info.getTitle(), message, infos, modifier);
 	}

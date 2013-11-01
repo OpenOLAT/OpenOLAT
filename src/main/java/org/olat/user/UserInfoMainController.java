@@ -58,10 +58,10 @@ import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
@@ -89,7 +89,6 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	private static final String CMD_CALENDAR = "calendar";
 	private static final String CMD_FOLDER = "folder";
 	private static final String CMD_CONTACT = "contact";
-	private static final String CMD_WEBLOG = "weblog";
 	private static final String CMD_PORTFOLIO = "portfolio";
 
 	private MenuTree menuTree;
@@ -122,17 +121,12 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		this.chosenIdentity = chosenIdentity;
 
 		main = new Panel("userinfomain");
-
 		main.setContent(createComponent(ureq, CMD_HOMEPAGE, chosenIdentity));
-
-		StringBuilder sb = new StringBuilder();
-		sb.append(chosenIdentity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()));
-		sb.append(" ");
-		sb.append(chosenIdentity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()));
-		this.firstLastName = sb.toString();
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		firstLastName = userManager.getUserDisplayName(chosenIdentity);
 
 		// Navigation menu
-		this.menuTree = new MenuTree("menuTree");
+		menuTree = new MenuTree("menuTree");
 		GenericTreeModel tm = buildTreeModel(firstLastName);
 		menuTree.setTreeModel(tm);
 		menuTree.setSelectedNodeId(tm.getRootNode().getChildAt(0).getIdent());
@@ -271,10 +265,11 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 				calendarWrapper.getKalendarConfig().setCss(config.getCss());
 				calendarWrapper.getKalendarConfig().setVis(config.isVis());
 			}
-			if (ureq.getUserSession().getRoles().isOLATAdmin() || identity.getName().equals(ureq.getIdentity().getName()))
+			if (ureq.getUserSession().getRoles().isOLATAdmin() || identity.getName().equals(ureq.getIdentity().getName())) {
 				calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-			else
+			} else {
 				calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+			}
 			List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
 			calendars.add(calendarWrapper);
 			removeAsListenerAndDispose(calendarController);
@@ -287,7 +282,8 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			String chosenUserFolderRelPath = FolderConfig.getUserHome(identity.getName()) + "/public";
 
 			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(chosenUserFolderRelPath, null);
-			OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(firstLastName, rootFolder);
+			String rootFolderName = StringHelper.escapeHtml(firstLastName);
+			OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(rootFolderName, rootFolder);
 			
 			//decided in plenum to have read only view in the personal visit card, even for admin
 			VFSSecurityCallback secCallback = new ReadOnlyCallback();
@@ -308,10 +304,6 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			contactFormController = new ContactFormController(ureq, getWindowControl(), true,true,false,false,cmsg);
 			listenTo(contactFormController);
 			myContent.put("userinfo", contactFormController.getInitialComponent());
-		} else if (menuCommand.equals(CMD_WEBLOG)) {
-//			weblogController = new WeblogMainController(ureq, getWindowControl(), chosenIdentity);
-//			listenTo(weblogController);
-//			myContent.put("userinfo", weblogController.getInitialComponent());
 		} else if (menuCommand.equals(CMD_PORTFOLIO)) {
 			removeAsListenerAndDispose(portfolioController);
 			portfolioController = EPUIFactory.createPortfolioMapsVisibleToOthersController(ureq, getWindowControl(), chosenIdentity);

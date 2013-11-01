@@ -699,9 +699,9 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 		MailContent content = bundle.getContent();
 
 		String template = getMailTemplate();
-		boolean htmlTemplate = containsHtml(template);
+		boolean htmlTemplate = isHtmlEmail(template);
 		String body = content.getBody();
-		boolean htmlContent =  containsHtml(body);
+		boolean htmlContent =  isHtmlEmail(body);
 		if(htmlTemplate && !htmlContent) {
 			body = body.replace("\n", "<br />");
 		}
@@ -1522,7 +1522,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 				// with attachment use multipart message
 				Multipart multipart = new MimeMultipart("mixed");
 				// 1) add body part
-				if(containsHtml(body)) {
+				if(isHtmlEmail(body)) {
 					Multipart alternativePart = createMultipartAlternative(body);
 					MimeBodyPart wrap = new MimeBodyPart();
 					wrap.setContent(alternativePart);
@@ -1552,7 +1552,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 				msg.setContent(multipart);
 			} else {
 				// without attachment everything is easy, just set as text
-				if(containsHtml(body)) {
+				if(isHtmlEmail(body)) {
 					msg.setContent(createMultipartAlternative(body));
 				} else {
 					msg.setText(body, "utf-8");
@@ -1591,7 +1591,8 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 		return multipart;
 	}
 	
-	private boolean containsHtml(String text) {
+	@Override
+	public boolean isHtmlEmail(String text) {
 		if(text.contains("<html") || text.contains("<body") || text.contains("<p") || text.contains("<span")) {
 			return true;
 		}

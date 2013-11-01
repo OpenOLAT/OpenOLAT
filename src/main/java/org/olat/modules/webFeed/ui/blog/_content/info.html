@@ -13,6 +13,6 @@
 		</div>
 	#end	
 	#if ($feed.getAuthor() && $feed.getAuthor() != "")
-		<p class="o_author">$r.translate("feed.author") $feed.getAuthor(). $r.translate("feed.last.change") $!helper.getLastModified()</p>
+		<p class="o_author">$r.translate("feed.author") $r.escapeHtml($helper.getFeedAuthor()). $r.translate("feed.last.change") $!helper.getLastModified()</p>
 	#end
 </div>

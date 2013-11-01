@@ -5,7 +5,7 @@
 			$r.render("nodeLink_${post.getGuid()}")
 		</h5>
 		<div class="o_peekview_author">
-			$!post.getAuthor() ($formatter.formatDateAndTime($post.getPublishDate()))
+			$r.escapeHtml($!post.getAuthor()) ($formatter.formatDateAndTime($post.getPublishDate()))
 		</div>
 		$!helper.getItemDescriptionForBrowser($post)
 	</div>

@@ -12,7 +12,7 @@
 	#end
 	<p class="o_podcast_date">$!helper.getLastModified()</p>
 	#if ($!feed.getAuthor())
-		<p class="o_author">$r.translate("feed.author"): $feed.getAuthor()</p>
+		<p class="o_author">$r.translate("feed.author"): $r.escapeHtml($helper.getFeedAuthor())</p>
 	#end
 	<p class="o_podcast_description">$!helper.getFeedDescriptionForBrowser()</p>
 </div>

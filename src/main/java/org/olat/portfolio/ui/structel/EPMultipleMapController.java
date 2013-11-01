@@ -44,6 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.portfolio.EPLoggingAction;
 import org.olat.portfolio.EPSecurityCallback;
@@ -381,7 +382,8 @@ public class EPMultipleMapController extends BasicController implements Activate
 				}
 				buttonLabels.add(translate("copy.without.artefacts"));
 				buttonLabels.add(translate("copy.cancel"));
-				copyMapCtrl = activateGenericDialog(ureq, translate("copy.map.title"), translate(introKey, selMap.getTitle()), buttonLabels , copyMapCtrl);
+				String text = translate(introKey, StringHelper.escapeHtml(selMap.getTitle()));
+				copyMapCtrl = activateGenericDialog(ureq, translate("copy.map.title"), text, buttonLabels , copyMapCtrl);
 				copyMapCtrl.setUserObject(selMap);
 			} else if (srcLink.getComponentName().startsWith(SHARE_LINK_PREFIX)) {
 				popUpShareBox(ureq, selMap);
@@ -406,7 +408,8 @@ public class EPMultipleMapController extends BasicController implements Activate
 	}
 	
 	private void deleteMap(UserRequest ureq, PortfolioStructureMap map) {
-		delMapCtrl = activateYesNoDialog(ureq, translate("delete.map.title"), translate("delete.map.intro", map.getTitle()), delMapCtrl);
+		String intro = translate("delete.map.intro", StringHelper.escapeHtml(map.getTitle()));
+		delMapCtrl = activateYesNoDialog(ureq, translate("delete.map.title"), intro, delMapCtrl);
 		delMapCtrl.setUserObject(map);
 	}
 	

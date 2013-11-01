@@ -70,8 +70,4 @@ public class InfoMessageForDisplay {
 	public String getModifier() {
 		return modifier;
 	}
-	
-	
-	
-	
 }

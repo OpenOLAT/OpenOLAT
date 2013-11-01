@@ -46,6 +46,7 @@ import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -90,20 +91,22 @@ public class UserCommentDisplayController extends BasicController {
 		this.allComments = allComments;
 		this.securityCallback = securityCallback;
 		// Init view
-		this.userCommentDisplayVC = createVelocityContainer("userCommentDisplay");
-		this.userCommentDisplayVC.contextPut("formatter", Formatter.getInstance(getLocale()));
-		this.userCommentDisplayVC.contextPut("securityCallback", securityCallback);
-		this.userCommentDisplayVC.contextPut("comment", userComment);
+		userCommentDisplayVC = createVelocityContainer("userCommentDisplay");
+		userCommentDisplayVC.contextPut("formatter", Formatter.getInstance(getLocale()));
+		userCommentDisplayVC.contextPut("securityCallback", securityCallback);
+		userCommentDisplayVC.contextPut("comment", userComment);
 		// Creator information
 		User user = userComment.getCreator().getUser();
 		TextComponent creator = TextFactory.createTextComponentFromI18nKey("creator", null, null, null, true, userCommentDisplayVC);
-		creator.setText(translate("comments.comment.creator", new String[]{user.getProperty(UserConstants.FIRSTNAME, null), user.getProperty(UserConstants.LASTNAME, null)}));
+		String firstName = StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null));
+		String lastName = StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null));
+		creator.setText(translate("comments.comment.creator", new String[]{firstName, lastName}));
 		// Portrait
 		if (CoreSpringFactory.containsBean(UserAvatarDisplayControllerCreator.class.getName())) {
 			UserAvatarDisplayControllerCreator avatarControllerCreator = (UserAvatarDisplayControllerCreator) CoreSpringFactory.getBean(UserAvatarDisplayControllerCreator.class);
 			Controller avatarCtr = avatarControllerCreator.createController(ureq, getWindowControl(), userComment.getCreator(), false, true);
 			listenTo(avatarCtr);
-			this.userCommentDisplayVC.put("avatarCtr", avatarCtr.getInitialComponent());
+			userCommentDisplayVC.put("avatarCtr", avatarCtr.getInitialComponent());
 		}
 		// Delete link
 		if(securityCallback.canDeleteComment(userComment)) {

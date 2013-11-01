@@ -51,12 +51,12 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
@@ -94,7 +94,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
 	
-	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, "members");
 		
 		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new AvatarMapper());
@@ -185,14 +185,15 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			if(duplicateCatcher.contains(identity.getKey())) continue;
 			
 			Member member = createMember(identity);
-			FormLink idLink = uifactory.addFormLink("id_" + identity.getKey(), member.getFullName(), null, formLayout, Link.NONTRANSLATED);
+			String fullname = StringHelper.escapeHtml(member.getFullName());
+			FormLink idLink = uifactory.addFormLink("id_" + identity.getKey(), fullname, null, formLayout, Link.NONTRANSLATED);
 			idLink.setUserObject(member);
 			idLinks.add(idLink);
 			formLayout.add(idLink.getComponent().getComponentName(), idLink);
 			memberLinks.add(idLink);
 			
 			if(withEmail) {
-				FormLink emailLink = uifactory.addFormLink("mail_" + identity.getKey(), member.getFullName(), null, formLayout, Link.NONTRANSLATED);
+				FormLink emailLink = uifactory.addFormLink("mail_" + identity.getKey(), fullname, null, formLayout, Link.NONTRANSLATED);
 				emailLink.setUserObject(member);
 				emailLink.setCustomEnabledLinkCSS("b_small_icon o_cmembers_mail");
 				formLayout.add(emailLink.getComponent().getComponentName(), emailLink);
@@ -243,25 +244,25 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		} else if (emailLinks.contains(source)) {
 			FormLink emailLink = (FormLink)source;
 			Member member = (Member)emailLink.getUserObject();
-			ContactList memberList = new ContactList(translate("members.to", new String[]{member.getFullName(), this.userCourseEnv.getCourseEnvironment().getCourseTitle()}));
+			ContactList memberList = new ContactList(translate("members.to", new String[]{member.getFullName(), userCourseEnv.getCourseEnvironment().getCourseTitle()}));
 			memberList.add(member.getIdentity());
 			sendEmailToMember(memberList, ureq);
 		} else if (source == coachesEmailLink) {
-			ContactList coachList = new ContactList(translate("coaches.to", new String[]{this.userCourseEnv.getCourseEnvironment().getCourseTitle()}));
+			ContactList coachList = new ContactList(translate("coaches.to", new String[]{userCourseEnv.getCourseEnvironment().getCourseTitle()}));
 			for(FormLink coachLink:coachesLinks) {
 				Member member = (Member)coachLink.getUserObject();
 				coachList.add(member.getIdentity());
 			}
 			sendEmailToMember(coachList, ureq);
 		} else if (source == ownersEmailLink) {
-			ContactList ownerList = new ContactList(translate("owners.to", new String[]{this.userCourseEnv.getCourseEnvironment().getCourseTitle()}));
+			ContactList ownerList = new ContactList(translate("owners.to", new String[]{userCourseEnv.getCourseEnvironment().getCourseTitle()}));
 			for(FormLink ownerLink:ownerLinks) {
 				Member member = (Member)ownerLink.getUserObject();
 				ownerList.add(member.getIdentity());
 			}
 			sendEmailToMember(ownerList, ureq);
 		} else if (source == participantsEmailLink) {
-			ContactList participantList = new ContactList(translate("participants.to", new String[]{this.userCourseEnv.getCourseEnvironment().getCourseTitle()}));
+			ContactList participantList = new ContactList(translate("participants.to", new String[]{userCourseEnv.getCourseEnvironment().getCourseTitle()}));
 			for(FormLink participantLink:participantsLinks) {
 				Member member = (Member)participantLink.getUserObject();
 				participantList.add(member.getIdentity());

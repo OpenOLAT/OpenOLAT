@@ -26,9 +26,6 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.course.ICourse;
-import org.olat.course.nodes.MembersCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -44,10 +41,8 @@ public class MembersCourseNodeEditController extends ActivateableTabbableDefault
 	
 	private TabbedPane myTabbedPane;
 
-	public MembersCourseNodeEditController(UserRequest ureq, WindowControl wControl, MembersCourseNode courseNode, ICourse course,
-			UserCourseEnvironment euce) {
+	public MembersCourseNodeEditController(UserRequest ureq, WindowControl wControl) {
 		super(ureq,wControl);
-
 	}
 	
 	@Override

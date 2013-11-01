@@ -110,7 +110,8 @@ public class FeedMainController extends BasicController implements Activateable2
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		setTranslator(uiFactory.getTranslator());
 		feed = feedManager.getFeed(ores);
-		helper = new FeedViewHelper(feed, getIdentity(), uiFactory.getTranslator(), courseId, nodeId, callback);
+		String authorFullname = userManager.getUserDisplayName(feed.getAuthor());
+		helper = new FeedViewHelper(feed, getIdentity(), authorFullname, uiFactory.getTranslator(), courseId, nodeId, callback);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), feed);
 		display(ureq, wControl, displayConfig);
 		// do logging

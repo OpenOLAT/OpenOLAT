@@ -139,6 +139,8 @@ public interface MailManager {
 	 */
 	public MailerResult forwardToRealInbox(Identity identity, DBMail mail, MailerResult result);
 	
+	public boolean isHtmlEmail(String text);
+	
 	public String getMailTemplate();
 	
 	public void setMailTemplate(String template);

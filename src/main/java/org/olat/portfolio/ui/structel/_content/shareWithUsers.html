@@ -1,7 +1,7 @@
 <div class="b_eportfolio_share_with_user b_clearfix">
 	<p>
 	#foreach($identity in $identities)
-		<span class="b_deletableentry_wrapper"><span class="b_deletableentry">$identity.name</span>$r.render($identity.removeLinkName)</span>
+		<span class="b_deletableentry_wrapper"><span class="b_deletableentry">$r.escapeHtml($identity.name)</span>$r.render($identity.removeLinkName)</span>
 	#end
 	</p>
 	$r.render("choose.identity")

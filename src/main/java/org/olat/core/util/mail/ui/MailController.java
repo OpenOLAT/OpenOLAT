@@ -110,7 +110,8 @@ public class MailController extends FormBasicController {
 		uifactory.addStaticTextElement("date", "mail.sendDate", date, formLayout);
 		
 		uifactory.addSpacerElement("spacer2", formLayout, false);
-		uifactory.addStaticTextElement("body", "mail.body", formattedBody(), formLayout);
+		String formattedBody = formattedBody();
+		uifactory.addStaticTextElement("body", "mail.body", formattedBody, formLayout);
 		
 		if(!attachments.isEmpty()) {
 			uifactory.addSpacerElement("spacer3", formLayout, false);
@@ -146,18 +147,18 @@ public class MailController extends FormBasicController {
 	
 	private String formattedBody() {
 		String body = mail.getBody();
-		if(!StringHelper.containsNonWhitespace(body)) return "";
-		
-		if(body.indexOf("<") >= 0 && body.indexOf("/>") >= 0) {
-			//html
-			return body;
+		String formattedBody;
+		if(!StringHelper.containsNonWhitespace(body)) {
+			formattedBody = "";
+		} else if(mailManager.isHtmlEmail(body)) {
+			//html -> don't replace
+			formattedBody = body;
+		} else {
+			//if windows
+			formattedBody = body.replace("\n\r", "<br />").replace("\n", "<br />");
 		}
-
-		body = body.replace("\n\r", "<br />");//if windows
-		body = body.replace("\n", "<br />");
-		return new OWASPAntiSamyXSSFilter().filter(body);
+		return new OWASPAntiSamyXSSFilter().filter(formattedBody);
 	}
-	
 
 	@Override
 	protected void doDispose() {

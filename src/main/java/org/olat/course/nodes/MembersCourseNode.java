@@ -86,7 +86,7 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, UserCourseEnvironment euce) {
-		MembersCourseNodeEditController childTabCntrllr = new MembersCourseNodeEditController(ureq, wControl, this, course, euce);
+		MembersCourseNodeEditController childTabCntrllr = new MembersCourseNodeEditController(ureq, wControl);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, course.getCourseEnvironment()
 				.getCourseGroupManager(), euce, childTabCntrllr);
@@ -96,7 +96,7 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		
-		MembersCourseNodeRunController infoCtrl = new MembersCourseNodeRunController(ureq, wControl, this, userCourseEnv);
+		MembersCourseNodeRunController infoCtrl = new MembersCourseNodeRunController(ureq, wControl, userCourseEnv);
 		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, infoCtrl, this, "o_cmembers_icon");
 		return new NodeRunConstructionResult(titledCtrl);
 	}

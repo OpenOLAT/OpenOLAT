@@ -44,6 +44,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPUIFactory;
@@ -236,8 +237,9 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 					fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, struct));
 				} else if (CMD_MOVE.equals(action)){
 					showMoveTree(ureq, artefact);
-				} else if (CMD_DELETEARTEFACT.equals(action)){
-					deleteDialogController = activateYesNoDialog(ureq, translate("delete.artefact"),translate("delete.artefact.text",artefact.getTitle()), deleteDialogController);
+				} else if (CMD_DELETEARTEFACT.equals(action)) {
+					String text = translate("delete.artefact.text", StringHelper.escapeHtml(artefact.getTitle()));
+					deleteDialogController = activateYesNoDialog(ureq, translate("delete.artefact"), text, deleteDialogController);
 					deleteDialogController.setUserObject(artefact);
 				}
 			}

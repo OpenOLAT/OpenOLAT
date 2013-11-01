@@ -27,7 +27,7 @@
 package org.olat.core.util.mail;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +59,9 @@ public class ContactList extends LogDelegator {
 	private String name;
 	private String description;
 	//container for addresses contributed as strings
-	private Map<String, String> stringEmails = new Hashtable<String, String>();
+	private Map<String, String> stringEmails = new HashMap<String, String>();
 	//container for addresses contributed as identites
-	private Map<String, Identity> identiEmails = new Hashtable<String, Identity>();
+	private Map<String, Identity> identiEmails = new HashMap<String, Identity>();
 	private boolean emailPrioInstitutional = false;
 
 	/**

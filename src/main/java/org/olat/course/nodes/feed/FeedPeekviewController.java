@@ -22,6 +22,7 @@ package org.olat.course.nodes.feed;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
@@ -41,6 +42,7 @@ import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.resource.OLATResource;
+import org.olat.user.UserManager;
 
 /**
  * <h3>Description:</h3> The feed peekview controller displays the configurable
@@ -79,11 +81,13 @@ public class FeedPeekviewController extends BasicController implements Controlle
 		this.nodeId = nodeId;
 		FeedManager feedManager = FeedManager.getInstance();
 		Feed feed = feedManager.getFeed(olatResource);
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
 		peekviewVC.contextPut("wrapperCssClass", wrapperCssClass != null ? wrapperCssClass : "");
 		// add gui helper
-		FeedViewHelper helper = new FeedViewHelper(feed, getIdentity(), getTranslator(), courseId, nodeId, callback);
+		String authorFullname = userManager.getUserDisplayName(feed.getAuthor());
+		FeedViewHelper helper = new FeedViewHelper(feed, getIdentity(), authorFullname, getTranslator(), courseId, nodeId, callback);
 		peekviewVC.contextPut("helper", helper);
 		// add items, only as many as configured
 		List<Item> allItems = feed.getFilteredItems(callback, getIdentity());
