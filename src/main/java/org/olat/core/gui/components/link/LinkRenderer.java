@@ -271,12 +271,8 @@ public class LinkRenderer implements ComponentRenderer {
 			//on click execute the "same" javascript as in o_ainvoke(r,true) for
 			//case 3:
 			hasExtJsSb = true;
-			StringBuilder sbj = new StringBuilder();
-			// examples:
-			// o_lnk400.on({'click',removeBusyAfterDownload,document,{formId:"ofo_100"}};);
-			sbj.append("if (").append(elementId).append(") ").append(elementId)
-				.append(".click({delay: 1200},removeBusyAfterDownload);");
-			extJsSb.append(sbj.toString());
+			extJsSb.append("if (").append(elementId).append(") ")
+		    .append(elementId).append(".click(function() {setTimeout(removeBusyAfterDownload,1200)});");
 		}
 		
 		//disabled or not, all tags should be closed here
@@ -290,11 +286,13 @@ public class LinkRenderer implements ComponentRenderer {
 		}
 	}
 
+	@Override
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {
 		//
 	}
 
+	@Override
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		//
 	}

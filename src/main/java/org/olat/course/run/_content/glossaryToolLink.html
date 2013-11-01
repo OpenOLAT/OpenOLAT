@@ -5,4 +5,7 @@ $r.render("command.glossary.on") / $r.translate("command.glossary.off")
 $r.translate("command.glossary.on") / $r.render("command.glossary.off")
 #end
 </span>
-<a href="$r.commandURI("command.glossary")" target="o_glossary" onclick="return o2cl()" class="b_toolbox_link">$r.translate("command.glossary")</a>
+<a id="o_sel_course_glossary" href="$r.commandURI("command.glossary")" target="o_glossary" onclick="return o2cl()" class="b_toolbox_link">$r.translate("command.glossary")</a>
+<script>// <![CDATA[
+	jQuery('#o_sel_course_glossary').each(function(index, el){ jQuery(el).click(function() { setTimeout(removeBusyAfterDownload, 1200)}) });
+// ]]></script>

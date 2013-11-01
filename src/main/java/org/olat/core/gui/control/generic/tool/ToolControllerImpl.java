@@ -69,7 +69,6 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 		// init content; we do not need a translator here (null argument below)
 		content = new VelocityContainer("toolcontent", VELOCITY_ROOT + "/index.html", null, this);
 		content.contextPut("entries", entries);
-		setDragEnabled(false);
 		setInitialComponent(content);
 	}
 
@@ -262,13 +261,6 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 	 */
 	protected void doDispose() {
 	// nothing to do yet
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.tool.ToolController#setDragEnabled(boolean)
-	 */
-	public void setDragEnabled(boolean dragEnabled) {
-		content.contextPut("offerdrag", Boolean.valueOf(dragEnabled));
 	}
 
 	/**
