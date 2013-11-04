@@ -38,6 +38,7 @@ import org.olat.admin.user.bulkChange.UserBulkChangeStep00;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.PermissionOnResourceable;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -364,23 +365,27 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		// get group memberships from form
 		List<SecurityGroup> groupsList = new ArrayList<SecurityGroup>();
 		if (searchform.getRole("admin")) {
-			SecurityGroup group = secMgr.findSecurityGroupByName(org.olat.basesecurity.Constants.GROUP_ADMIN);
+			SecurityGroup group = secMgr.findSecurityGroupByName(Constants.GROUP_ADMIN);
 			groupsList.add(group);
 		}
 		if (searchform.getRole("author")) {
-			SecurityGroup group = secMgr.findSecurityGroupByName(org.olat.basesecurity.Constants.GROUP_AUTHORS);
+			SecurityGroup group = secMgr.findSecurityGroupByName(Constants.GROUP_AUTHORS);
 			groupsList.add(group);
 		}
 		if (searchform.getRole("groupmanager")) {
-			SecurityGroup group = secMgr.findSecurityGroupByName(org.olat.basesecurity.Constants.GROUP_GROUPMANAGERS);
+			SecurityGroup group = secMgr.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS);
 			groupsList.add(group);
 		}
 		if (searchform.getRole("usermanager")) {
-			SecurityGroup group = secMgr.findSecurityGroupByName(org.olat.basesecurity.Constants.GROUP_USERMANAGERS);
+			SecurityGroup group = secMgr.findSecurityGroupByName(Constants.GROUP_USERMANAGERS);
 			groupsList.add(group);
 		}
 		if (searchform.getRole("oresmanager")) {
-			SecurityGroup group = secMgr.findSecurityGroupByName(org.olat.basesecurity.Constants.GROUP_INST_ORES_MANAGER);
+			SecurityGroup group = secMgr.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
+			groupsList.add(group);
+		}
+		if (searchform.getRole("poolmanager")) {
+			SecurityGroup group = secMgr.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
 			groupsList.add(group);
 		}
 		
@@ -645,7 +650,7 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		items = new HashMap<String,FormItem>(); 
 		
 		roleKeys = new String[] {
-				"admin", "author", "groupmanager", "usermanager", "oresmanager"
+				"admin", "author", "groupmanager", "usermanager", "oresmanager", "poolmanager"
 		};
 		
 		roleValues = new String[]{
@@ -653,7 +658,8 @@ class UsermanagerUserSearchForm extends FormBasicController {
 				translate("search.form.constraint.author"),
 				translate("search.form.constraint.groupmanager"),
 				translate("search.form.constraint.usermanager"),
-				translate("search.form.constraint.oresmanager")
+				translate("search.form.constraint.oresmanager"),
+				translate("search.form.constraint.poolmanager")
 		};
 		
 		statusKeys = new String[] { 
@@ -733,7 +739,6 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		return null;
 	}
 
-	//fxdiff BAKS-7 Resume function
 	protected void setStringValue(String key, String value) {
 		FormItem f = items.get(key);
 		if (f == null) return;
@@ -742,7 +747,7 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		}
 	}
 	
-	protected boolean getRole (String key) {
+	protected boolean getRole(String key) {
 		return roles.isSelected(Arrays.asList(roleKeys).indexOf(key));
 	}
 	
@@ -764,7 +769,6 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		return apl.toArray(new String[apl.size()]);
 	}
 
-	//fxdiff BAKS-7 Resume function
 	protected StateMapped getStateEntry() {
 		StateMapped state = new StateMapped();
 		if(items != null) {
@@ -790,7 +794,6 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		return state;
 	}
 
-	//fxdiff BAKS-7 Resume function
 	protected void setStateEntry(StateMapped state) {
 		for(Map.Entry<String, String> entry:state.getDelegate().entrySet()) {
 			String key = entry.getKey();
