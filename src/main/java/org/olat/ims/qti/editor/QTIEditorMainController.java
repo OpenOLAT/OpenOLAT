@@ -668,6 +668,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					getWindowControl().setWarning(translate("error.preview"));
 				}
 			} else if (cmd.equals(CMD_TOOLS_CHANGE_DELETE)) { // prepare delete
+				if(deleteDialog != null) return;//multi return in Firefox
 
 				GenericQtiNode clickedNode = menuTreeModel.getQtiNode(menuTree.getSelectedNodeId());
 				String msg = "";
