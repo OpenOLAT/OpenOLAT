@@ -30,6 +30,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractConfigOnOff;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 
 /**
  * @author Christian Guretzki
@@ -52,13 +53,15 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff impleme
 		SiteConfiguration config = getSiteConfiguration();
 		
 		String secCallbackBeanId = config.getSecurityCallbackBeanId();
-		Object siteSecCallback = CoreSpringFactory.getBean(secCallbackBeanId);
-		if (siteSecCallback instanceof SiteViewSecurityCallback) {
-			if(!((SiteViewSecurityCallback)siteSecCallback).isAllowedToViewSite(ureq)) {
+		if(StringHelper.containsNonWhitespace(secCallbackBeanId)) {
+			Object siteSecCallback = CoreSpringFactory.getBean(secCallbackBeanId);
+			if (siteSecCallback instanceof SiteViewSecurityCallback) {
+				if(!((SiteViewSecurityCallback)siteSecCallback).isAllowedToViewSite(ureq)) {
+					return null;
+				}
+			} else if (siteSecCallback instanceof SiteSecurityCallback && !((SiteSecurityCallback)siteSecCallback).isAllowedToLaunchSite(ureq)) {
 				return null;
 			}
-		} else if (siteSecCallback instanceof SiteSecurityCallback && !((SiteSecurityCallback)siteSecCallback).isAllowedToLaunchSite(ureq)) {
-			return null;
 		}
 		return createSite(ureq, wControl, config);
 	}
