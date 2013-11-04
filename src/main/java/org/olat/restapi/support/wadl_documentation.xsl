@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  wadl_documentation.xsl (2007-12-19)
+  wadl_documentation.xsl (2008-12-09)
 
   An XSLT stylesheet for generating HTML documentation from WADL,
   by Mark Nottingham <mnot@yahoo-inc.com>.
 
-  Copyright (c) 2006-2007 Yahoo! Inc.
+  Copyright (c) 2006-2008 Yahoo! Inc.
   
   This work is licensed under the Creative Commons Attribution-ShareAlike 2.5 
   License. To view a copy of this license, visit 
@@ -47,7 +47,7 @@
         doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
     />
 
-    <xsl:variable name="wadl-ns">http://research.sun.com/wadl/2006/10</xsl:variable>
+    <xsl:variable name="wadl-ns">http://wadl.dev.java.net/2009/02</xsl:variable>
 
     
     <!-- expand @hrefs, @types into a full tree -->
@@ -78,23 +78,24 @@
         </xsl:element>
     </xsl:template>
     
-    <xsl:template match="wadl:resource[@type]" mode="expand">
+    <xsl:template match="wadl:resource[@type]" mode="expand" priority="1">
         <xsl:param name="base"></xsl:param>
         <xsl:variable name="uri" select="substring-before(@type, '#')"/>
         <xsl:variable name="id" select="substring-after(@type, '#')"/>
         <xsl:element name="resource" namespace="{$wadl-ns}">
+			<xsl:attribute name="path"><xsl:value-of select="@path"/></xsl:attribute>
             <xsl:choose>
                 <xsl:when test="$uri">
                     <xsl:variable name="included" select="document($uri, /)"/>
                     <xsl:copy-of select="$included/descendant::wadl:resource_type[@id=$id]/@*"/>
-                    <xsl:attribute name="id"><xsl:value-of select="@type"/></xsl:attribute>
+                    <xsl:attribute name="id"><xsl:value-of select="@type"/>#<xsl:value-of select="@path"/></xsl:attribute>
                     <xsl:apply-templates select="$included/descendant::wadl:resource_type[@id=$id]/*" mode="expand">
                         <xsl:with-param name="base" select="$uri"/>
                     </xsl:apply-templates>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:copy-of select="//resource_type[@id=$id]/@*"/>
-                    <xsl:attribute name="id"><xsl:value-of select="$base"/>#<xsl:value-of select="@type"/></xsl:attribute>
+                    <xsl:attribute name="id"><xsl:value-of select="$base"/>#<xsl:value-of select="@type"/>#<xsl:value-of select="@path"/></xsl:attribute>
                     <xsl:apply-templates select="//wadl:resource_type[@id=$id]/*" mode="expand">
                         <xsl:with-param name="base" select="$base"/>                        
                     </xsl:apply-templates>
@@ -125,6 +126,8 @@
                     <!-- xsl:attribute name="id"><xsl:value-of select="generate-id()"/></xsl:attribute -->
                     <xsl:attribute name="element"><xsl:value-of select="//wadl:*[@id=$id]/@element"/></xsl:attribute>
                     <xsl:attribute name="mediaType"><xsl:value-of select="//wadl:*[@id=$id]/@mediaType"/></xsl:attribute>                    
+                    <xsl:attribute name="status"><xsl:value-of select="//wadl:*[@id=$id]/@status"/></xsl:attribute>                    
+                    <xsl:attribute name="name"><xsl:value-of select="//wadl:*[@id=$id]/@name"/></xsl:attribute>                    
                     <xsl:apply-templates select="//wadl:*[@id=$id]/*" mode="expand">
                         <xsl:with-param name="base" select="$base"/>
                     </xsl:apply-templates>
@@ -246,13 +249,6 @@
                         font-size: 1.1em;
                         color: #99a;
                         margin: 0.5em 0em 0.25em 0em;
-                    }
-                    code {
-                        font-size: 1.2em;
-                        color: #111166;
-                    }
-                    pre {
-                        padding-left: 2em;
                     }
                     dd {
                         margin-left: 1em;
@@ -633,8 +629,7 @@
         <xsl:choose>
             <xsl:when test="node()[1]=text() and $inline=0">
                 <p>
-                    <!-- xsl:apply-templates select="node()" mode="copy" / -->
-                    <xsl:value-of select="node()" disable-output-escaping="yes"/>
+                    <xsl:apply-templates select="node()" mode="copy"/>
                 </p>
             </xsl:when>
             <xsl:otherwise>
@@ -794,7 +789,5 @@
             <xsl:apply-templates select="@*|node()" mode="copy"/>
         </xsl:copy>
     </xsl:template>    
-    
-    <!--   disable-output-escaping="yes" -->
 
 </xsl:stylesheet>

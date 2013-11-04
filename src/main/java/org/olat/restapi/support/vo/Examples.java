@@ -69,6 +69,8 @@ public class Examples {
   	SAMPLE_GROUPVO.setKey(123467l);
   	SAMPLE_GROUPVO.setName("My group");
   	SAMPLE_GROUPVO.setDescription("My group description");
+  	SAMPLE_GROUPVO.setExternalId("External Identifier");
+  	SAMPLE_GROUPVO.setManagedFlags("title,description");
   	SAMPLE_GROUPVO.setMinParticipants(0);
   	SAMPLE_GROUPVO.setMaxParticipants(0);
   	SAMPLE_GROUPVOes.setGroups(new GroupVO[]{SAMPLE_GROUPVO});
@@ -76,6 +78,7 @@ public class Examples {
   	SAMPLE_GROUPINFOVO.setKey(123467l);
   	SAMPLE_GROUPINFOVO.setName("My group");
   	SAMPLE_GROUPINFOVO.setDescription("My group description");
+  	SAMPLE_GROUPINFOVO.setExternalId("External identifier");
   	SAMPLE_GROUPINFOVO.setMinParticipants(0);
   	SAMPLE_GROUPINFOVO.setMaxParticipants(0);
   	SAMPLE_GROUPINFOVO.setNews("<p>Hello world</p>");
@@ -92,6 +95,9 @@ public class Examples {
   	SAMPLE_REPOENTRYVO.setResourcename("fdhasl");
   	SAMPLE_REPOENTRYVO.setResourceableId(4368567l);
   	SAMPLE_REPOENTRYVO.setResourceableTypeName("CourseModule");
+  	SAMPLE_REPOENTRYVO.setExternalId("External identifier");
+  	SAMPLE_REPOENTRYVO.setExternalRef("External reference");
+  	SAMPLE_REPOENTRYVO.setManagedFlags("title.description");
   	SAMPLE_REPOENTRYVOes.setRepositoryEntries(new RepositoryEntryVO[]{SAMPLE_REPOENTRYVO});
   	SAMPLE_REPOENTRYVOes.setTotalCount(1);
   	
@@ -119,8 +125,13 @@ public class Examples {
   	SAMPLE_KEYVALUEVOes.getPairs().add(SAMPLE_KEYVALUEVO);
   	
   	SAMPLE_COURSEVO.setKey(777l);
+  	SAMPLE_COURSEVO.setRepoEntryKey(27684l);
+  	SAMPLE_COURSEVO.setSoftKey("internal_fx_cp");
   	SAMPLE_COURSEVO.setDisplayName("Demo course");
   	SAMPLE_COURSEVO.setTitle("Demo course");
+  	SAMPLE_COURSEVO.setExternalId("External identifier");
+  	SAMPLE_COURSEVO.setExternalRef("External reference");
+  	SAMPLE_COURSEVO.setManagedFlags("title,description");
   	SAMPLE_COURSEVOes.setTotalCount(0);
   	SAMPLE_COURSEVOes.setCourses(new CourseVO[]{SAMPLE_COURSEVO});
   	
