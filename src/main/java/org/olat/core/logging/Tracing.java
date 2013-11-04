@@ -368,7 +368,13 @@ public class Tracing {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		if (!Settings.isDebuging()) {
+		if (Settings.isDebuging()) {
+			// Short version for console output during debugging
+			if (userObj != null) {
+				sb.append(userObj);
+			}
+			
+		} else {
 			sb.append(PREFIX);
 			sb.append(category);
 			sb.append(SEPARATOR);
