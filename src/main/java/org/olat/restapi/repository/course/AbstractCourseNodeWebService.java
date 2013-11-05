@@ -230,7 +230,7 @@ public abstract class AbstractCourseNodeWebService {
 			ModuleConfiguration moduleConfig = updatedNode.getModuleConfiguration();
 			delegateConfig.configure(course, updatedNode, moduleConfig);
 		}
-
+		course.getEditorTreeModel().nodeConfigChanged(updatedNode);		
 		CourseEditorTreeNode editorNode = course.getEditorTreeModel().getCourseEditorNodeContaining(updatedNode);
 		CourseNodeVO vo = get(updatedNode);
 		vo.setParentId(editorNode.getParent() == null ? null: editorNode.getParent().getIdent());

@@ -171,6 +171,7 @@ public class CourseWebService {
 	@Path("publish")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response publishCourse(@PathParam("courseId") Long courseId, @QueryParam("locale") Locale locale,
+			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly,
 			@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -183,7 +184,10 @@ public class CourseWebService {
 		} else if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		CourseFactory.publishCourse(course, ureq.getIdentity(), locale);
+		
+		int newAccess = access == null ? RepositoryEntry.ACC_USERS : access.intValue();
+		boolean members = membersOnly == null ? false : membersOnly.booleanValue();
+		CourseFactory.publishCourse(course, newAccess, members, ureq.getIdentity(), locale);
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}

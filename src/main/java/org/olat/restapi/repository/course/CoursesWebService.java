@@ -373,7 +373,7 @@ public class CoursesWebService {
 		
 		//publish
 		log.info("REST Publish course " + displayName + " START");
-		CourseFactory.publishCourse(course, identity, ureq.getLocale());
+		CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  identity, ureq.getLocale());
 		log.info("REST Publish course " + displayName + " END");
 
 		return course;

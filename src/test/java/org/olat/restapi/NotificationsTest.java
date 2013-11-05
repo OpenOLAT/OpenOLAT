@@ -365,7 +365,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		forumNode.setNoAccessExplanation("You don't have access");
 		Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
 		course.getEditorTreeModel().addCourseNode(forumNode, course.getRunStructure().getRootNode());
-		CourseFactory.publishCourse(course, id, Locale.ENGLISH);
+		CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false, id, Locale.ENGLISH);
 		dbInstance.intermediateCommit();
 		
 		//add message and publisher
@@ -415,7 +415,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		String relPath = BCCourseNode.getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), folderNode);
 		VFSContainer folder = BCCourseNode.getNodeFolderContainer(folderNode, course.getCourseEnvironment());
 		course.getEditorTreeModel().addCourseNode(folderNode, course.getRunStructure().getRootNode());
-		CourseFactory.publishCourse(course, id, Locale.ENGLISH);
+		CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false, id, Locale.ENGLISH);
 		dbInstance.intermediateCommit();
 		
 		//add message and publisher

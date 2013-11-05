@@ -47,6 +47,7 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.modules.fo.restapi.MessageVOes;
+import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.OlatJerseyTestCase;
 
@@ -84,7 +85,7 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 		forumNode.setNoAccessExplanation("You don't have access");
 		course1.getEditorTreeModel().addCourseNode(forumNode, course1.getRunStructure().getRootNode());
 		
-		CourseFactory.publishCourse(course1, admin, Locale.ENGLISH);
+		CourseFactory.publishCourse(course1, RepositoryEntry.ACC_USERS, false, admin, Locale.ENGLISH);
 		
 		DBFactory.getInstance().intermediateCommit();
 	}
