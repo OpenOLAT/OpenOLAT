@@ -336,9 +336,8 @@ public class QuestionItemDAO {
 	
 	public int countFavoritItems(SearchQuestionItemParams params) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(item) from questionitem item")
-		  .append(" where item.markCreatorKey=:identityKey")
-		  .append(" )");
+		sb.append("select count(item) from qitemview item")
+		  .append(" where item.markCreatorKey=:identityKey");
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.append(" and item.format=:format");
 		}
