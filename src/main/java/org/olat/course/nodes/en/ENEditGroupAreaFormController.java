@@ -395,7 +395,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == chooseGroupsLink) {
 			removeAsListenerAndDispose(groupChooseC);
-			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group",
+			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group", true,
 					cev.getCourseGroupManager(), getKeys(easyGroupList));
 			listenTo(groupChooseC);
 
@@ -428,7 +428,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			removeAsListenerAndDispose(areaChooseC);
 
 			// already areas -> choose areas
-			areaChooseC = new AreaSelectionController (ureq, getWindowControl() , "area",
+			areaChooseC = new AreaSelectionController (ureq, getWindowControl() , "area", true,
 					cev.getCourseGroupManager(), getKeys(easyAreaList));
 			listenTo(areaChooseC);
 

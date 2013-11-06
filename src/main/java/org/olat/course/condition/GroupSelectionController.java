@@ -69,12 +69,12 @@ public class GroupSelectionController extends FormBasicController {
 	private boolean createEnable;
 
 	public GroupSelectionController(UserRequest ureq, WindowControl wControl, String title,
-			CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
+			boolean allowCreate, CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
 		super(ureq, wControl, "group_or_area_selection");
 		this.courseGrpMngr = courseGrpMngr;
 
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseGrpMngr.getCourseResource(), false);
-		createEnable = !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
+		createEnable = allowCreate && !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		// unique names from list to array
 		loadNamesAndKeys();
 		initForm(ureq);

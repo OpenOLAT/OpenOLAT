@@ -62,15 +62,16 @@ public class AreaSelectionController extends FormBasicController {
 	private final CourseGroupManager courseGrpMngr;
 	private NewAreaController areaCreateCntrllr;
 	private CloseableModalController cmc;
-	
+	private final boolean createEnable;
 
 	private String[] areaNames;
 	private String[] areaKeys;
 
 	public AreaSelectionController(UserRequest ureq, WindowControl wControl, String title,
-			CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
+			boolean allowCreate, CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
 		super(ureq, wControl, "group_or_area_selection");
 		this.courseGrpMngr = courseGrpMngr;
+		this.createEnable = allowCreate;
 
 		loadNamesAndKeys();
 		initForm(ureq);
@@ -128,14 +129,17 @@ public class AreaSelectionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer boundTo, Controller listener, UserRequest ureq) {
-		// easy creation only possible if a default group context available
-		createNew = new FormLinkImpl("create");
-		//is a button
-		createNew.setCustomEnabledLinkCSS("b_button");
-		createNew.setCustomDisabledLinkCSS("b_button b_disabled");
-		// create new group/area on the right side
-		boundTo.add(createNew);
+		if(createEnable) {
+			// easy creation only possible if a default group context available
+			createNew = new FormLinkImpl("create");
+			//is a button
+			createNew.setCustomEnabledLinkCSS("b_button");
+			createNew.setCustomDisabledLinkCSS("b_button b_disabled");
+			// create new group/area on the right side
+			boundTo.add(createNew);
+		}
 
+		
 		entrySelector = uifactory.addCheckboxesVertical("entries",  null, boundTo, areaKeys, areaNames, null, 1);
 		// submitCancel after checkboxes
 		//

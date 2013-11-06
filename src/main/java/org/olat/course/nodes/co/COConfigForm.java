@@ -577,7 +577,7 @@ public class COConfigForm extends FormBasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(groupChooseC);
 			
-			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group",
+			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group", true,
 					cev.getCourseGroupManager(), getKeys(easyGroupList));
 			listenTo(groupChooseC);
 
@@ -603,7 +603,7 @@ public class COConfigForm extends FormBasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(areaChooseC);
 			
-			areaChooseC = new AreaSelectionController (ureq, getWindowControl(), "area",
+			areaChooseC = new AreaSelectionController (ureq, getWindowControl(), "area", true,
 					cev.getCourseGroupManager(), getKeys(easyAreaList));
 			listenTo(areaChooseC);
 

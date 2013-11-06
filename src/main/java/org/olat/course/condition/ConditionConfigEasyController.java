@@ -331,7 +331,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			removeAsListenerAndDispose(groupChooseC);
 			
 			List<Long> groupKeys = getKeys(easyGroupList);
-			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group",
+			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group", true,
 					courseEditorEnv.getCourseGroupManager(), groupKeys);
 			listenTo(groupChooseC);
 
@@ -355,7 +355,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(areaChooseC);
 			
-			areaChooseC = new AreaSelectionController(ureq, getWindowControl(), "area",
+			areaChooseC = new AreaSelectionController(ureq, getWindowControl(), "area", true,
 					courseEditorEnv.getCourseGroupManager(), getKeys(easyAreaList));
 			listenTo(areaChooseC);
 			
