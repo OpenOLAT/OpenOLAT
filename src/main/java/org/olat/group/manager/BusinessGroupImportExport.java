@@ -75,7 +75,8 @@ public class BusinessGroupImportExport {
 	private BusinessGroupModule groupModule;
 	
 	
-	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile, BusinessGroupEnvironment env, boolean backwardsCompatible) {
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile,
+			BusinessGroupEnvironment env, boolean runtimeDatas, boolean backwardsCompatible) {
 		if (groups == null || groups.isEmpty()) {
 			return; // nothing to do... says Florian.
 		}
@@ -106,22 +107,14 @@ public class BusinessGroupImportExport {
 			if(backwardsCompatible && env != null) {
 				groupName = env.getGroupName(group.getKey());
 			}
-			Group newGroup = exportGroup(fExportFile, group, groupName, backwardsCompatible);
+			Group newGroup = exportGroup(fExportFile, group, groupName, runtimeDatas, backwardsCompatible);
 			root.getGroups().getGroups().add(newGroup);
 		}
 		saveGroupConfiguration(fExportFile, root);
 	}
 	
-	public void exportGroup(BusinessGroup group, File fExportFile, boolean backwardsCompatible) {
-		OLATGroupExport root = new OLATGroupExport();
-		Group newGroup = exportGroup(fExportFile, group, null, backwardsCompatible);
-		root.setGroups(new GroupCollection());
-		root.getGroups().setGroups(new ArrayList<Group>());
-		root.getGroups().getGroups().add(newGroup);
-		saveGroupConfiguration(fExportFile, root);
-	}
-	
-	private Group exportGroup(File fExportFile, BusinessGroup group, String groupName, boolean backwardsCompatible) {
+	private Group exportGroup(File fExportFile, BusinessGroup group, String groupName,
+			boolean runtimeDatas, boolean backwardsCompatible) {
 		Group newGroup = new Group();
 		newGroup.key = backwardsCompatible ? null : group.getKey();
 		newGroup.name = StringHelper.containsNonWhitespace(groupName) ? groupName : group.getName();
@@ -169,7 +162,9 @@ public class BusinessGroupImportExport {
 		}
 
 		log.debug("fExportFile.getParent()=" + fExportFile.getParent());
-		ct.archive(fExportFile.getParent());
+		if(runtimeDatas) {
+			ct.archive(fExportFile.getParent());
+		}
 		// export membership
 		List<BGArea> bgAreas = areaManager.findBGAreasOfBusinessGroup(group);
 		newGroup.areaRelations = new ArrayList<String>();

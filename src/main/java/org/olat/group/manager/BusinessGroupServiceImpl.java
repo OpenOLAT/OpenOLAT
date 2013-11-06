@@ -1715,8 +1715,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	
 	@Override
 	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile,
-			BusinessGroupEnvironment env, boolean backwardsCompatible) {
-		businessGroupImportExport.exportGroups(groups, areas, fExportFile, env, backwardsCompatible);
+			BusinessGroupEnvironment env, boolean runtimeDatas, boolean backwardsCompatible) {
+		businessGroupImportExport.exportGroups(groups, areas, fExportFile, env, runtimeDatas, backwardsCompatible);
 	}
 
 	@Override

@@ -522,22 +522,23 @@ public class CourseFactory extends BasicManager {
 	 * @param fTargetZIP
 	 * @return true if successfully exported, false otherwise.
 	 */
-	public static void exportCourseToZIP(OLATResourceable sourceRes, File fTargetZIP, boolean backwardsCompatible) {
+	public static void exportCourseToZIP(OLATResourceable sourceRes, File fTargetZIP, boolean runtimeDatas, boolean backwardsCompatible) {
 		PersistingCourseImpl sourceCourse = (PersistingCourseImpl) loadCourse(sourceRes);
 
 		// add files to ZIP
 		File fExportDir = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
 		fExportDir.mkdirs();
+		log.info("Export folder: " + fExportDir);
 		synchronized (sourceCourse) { //o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
 			OLATResource courseResource = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-			sourceCourse.exportToFilesystem(courseResource, fExportDir, backwardsCompatible);
-			Codepoint.codepoint(CourseFactory.class, "longExportCourseToZIP");
+			sourceCourse.exportToFilesystem(courseResource, fExportDir, runtimeDatas, backwardsCompatible);
 			Set<String> fileSet = new HashSet<String>();
 			String[] files = fExportDir.list();
 			for (int i = 0; i < files.length; i++) {
 				fileSet.add(files[i]);
 			}
 			ZipUtil.zip(fileSet, fExportDir, fTargetZIP, false);
+			log.info("Delete export folder: " + fExportDir);
 			FileUtils.deleteDirsAndFiles(fExportDir, true, true);
 		}
 	}

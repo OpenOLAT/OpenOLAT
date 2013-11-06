@@ -191,7 +191,8 @@ public interface CourseGroupManager {
 	 * 
 	 * @param fExportDirectory
 	 */
-	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper env, boolean backwardsCompatible);
+	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper env,
+			boolean runtimeDatas, boolean backwardsCompatible);
 
 	/**
 	 * Import course internal groups fa previous export.

@@ -276,7 +276,8 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	}
 
 	@Override
-	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper env, boolean backwardsCompatible) {
+	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper env,
+			boolean runtimeDatas, boolean backwardsCompatible) {
 		throw new AssertException("unsupported");
 	}
 
