@@ -166,7 +166,7 @@ public class CreateNewCourseController extends BasicController implements IAddCo
 		
 		File fExportDir = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());
 		fExportDir.mkdirs();
-		sourceCgm.exportCourseBusinessGroups(fExportDir, env, false);
+		sourceCgm.exportCourseBusinessGroups(fExportDir, env, false, false);
 
 		course = CourseFactory.loadCourse(newEntry.getOlatResource().getResourceableId());
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();

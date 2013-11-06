@@ -201,7 +201,7 @@ public class PreviewSettingsForm extends FormBasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose (groupChooser);
 			
-			groupChooser = new GroupSelectionController(ureq, getWindowControl(), "group", courseGroupManager, getKeys(group));
+			groupChooser = new GroupSelectionController(ureq, getWindowControl(), "group", false, courseGroupManager, getKeys(group));
 			listenTo(groupChooser);	
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), groupChooser.getInitialComponent());
 			listenTo(cmc);
@@ -210,7 +210,7 @@ public class PreviewSettingsForm extends FormBasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose (areaChooser);
 			
-			areaChooser = new AreaSelectionController(ureq, getWindowControl(), "area", courseGroupManager, getKeys(area));
+			areaChooser = new AreaSelectionController(ureq, getWindowControl(), "area", false, courseGroupManager, getKeys(area));
 			listenTo(areaChooser);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), areaChooser.getInitialComponent());
 			listenTo(cmc);
@@ -221,15 +221,33 @@ public class PreviewSettingsForm extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == groupChooser) {
+			if(Event.DONE_EVENT == event) {
+				group.setValue(StringHelper.formatAsCSVString(groupChooser.getSelectedNames()));
+				group.setUserObject(groupChooser.getSelectedKeys());
+			}
 			cmc.deactivate();
-			group.setValue(StringHelper.formatAsCSVString(groupChooser.getSelectedNames()));
-			group.setUserObject(groupChooser.getSelectedKeys());
+			cleanUp();
 		} else if (source == areaChooser) {
+			if(Event.DONE_EVENT == event) {
+				area.setValue(StringHelper.formatAsCSVString(areaChooser.getSelectedNames()));
+				area.setUserObject(areaChooser.getSelectedKeys());
+			}
 			cmc.deactivate();
-			area.setValue(StringHelper.formatAsCSVString(areaChooser.getSelectedNames()));
-			area.setUserObject(areaChooser.getSelectedKeys());
+			cleanUp();
+		} else if(source == cmc) {
+			cleanUp();
 		}
 	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(groupChooser);
+		removeAsListenerAndDispose(areaChooser);
+		cmc = null;
+		groupChooser = null;
+		areaChooser = null;
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
