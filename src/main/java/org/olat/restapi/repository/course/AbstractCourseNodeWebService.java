@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -205,6 +206,7 @@ public abstract class AbstractCourseNodeWebService {
 
 		ICourse course = editSession.getCourse();
 		
+		TreeNode updateEditorNode = course.getEditorTreeModel().getNodeById(nodeId);
 		CourseNode updatedNode = course.getEditorTreeModel().getCourseNode(nodeId);
 		if(StringHelper.containsNonWhitespace(shortTitle)) {
 			updatedNode.setShortTitle(shortTitle);
@@ -230,7 +232,7 @@ public abstract class AbstractCourseNodeWebService {
 			ModuleConfiguration moduleConfig = updatedNode.getModuleConfiguration();
 			delegateConfig.configure(course, updatedNode, moduleConfig);
 		}
-		course.getEditorTreeModel().nodeConfigChanged(updatedNode);		
+		course.getEditorTreeModel().nodeConfigChanged(updateEditorNode);		
 		CourseEditorTreeNode editorNode = course.getEditorTreeModel().getCourseEditorNodeContaining(updatedNode);
 		CourseNodeVO vo = get(updatedNode);
 		vo.setParentId(editorNode.getParent() == null ? null: editorNode.getParent().getIdent());

@@ -177,6 +177,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.CoursesForumsTest.class,
 	org.olat.restapi.CoursesResourcesFoldersTest.class,
 	org.olat.restapi.CoursesTest.class,
+	org.olat.restapi.CoursePublishTest.class,
 	org.olat.restapi.CoursesInfosTest.class,
 	org.olat.restapi.CourseTest.class,
 	org.olat.restapi.FolderTest.class,

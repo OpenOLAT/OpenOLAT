@@ -1177,9 +1177,9 @@ public class CourseFactory extends BasicManager {
 		int numOfChildren = node.getChildCount();
 		for (int i = 0; i < numOfChildren; i++) {
 			INode child = node.getChildAt(i);
-			if (child instanceof TreeNode) {
+			if (child instanceof TreeNode && publishTreeModel.isVisible(child)) {
 				nodeToPublish.add(child.getIdent());
-				visitPublishModel((TreeNode) child, publishTreeModel, nodeToPublish);
+				visitPublishModel((TreeNode)child, publishTreeModel, nodeToPublish);
 			}
 		}
 	}
