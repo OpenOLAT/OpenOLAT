@@ -336,12 +336,12 @@ public class RichTextConfiguration implements Disposable {
 	 * @param loc
 	 */
 	private void setLanguage(Locale loc) {
-		// tiny does not support country or vairant codes, only language code
+		// tiny does not support country or variant codes, only language code
 		String langKey = loc.getLanguage();
 
 		String contextRoot = WebappHelper.getContextRoot();
 		if(StringHelper.containsNonWhitespace(contextRoot)) {
-			File file = new File(contextRoot, "static/js/tinymce/tinymce/langs/" + langKey + ".js");
+			File file = new File(contextRoot, "static/js/tinymce4/tinymce/langs/" + langKey + ".js");
 			if(!file.exists()) {
 				langKey = "en";
 			}
