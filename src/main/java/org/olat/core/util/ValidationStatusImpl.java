@@ -38,19 +38,16 @@ import java.util.logging.Level;
 public class ValidationStatusImpl implements ValidationStatus {
 
 	private Level level = ValidationStatus.NOERROR;
-	private ValidationAction action;
 	public static ValidationStatus NOERROR = new ValidationStatusImpl();
 	
 	private ValidationStatusImpl() {
 		//
 	}
+	
 	public ValidationStatusImpl(Level level){
-		this(level, null);
-	}
-	public ValidationStatusImpl(Level level, ValidationAction action) {
 		this.level = level;
-		this.action = action;
 	}
+
 	/**
 	 * @see org.olat.core.util.ValidationStatus#isError()
 	 */
@@ -76,7 +73,5 @@ public class ValidationStatusImpl implements ValidationStatus {
 		return level;
 	}
 
-	public ValidationAction getAction(){
-		return action;
-	}
+
 }

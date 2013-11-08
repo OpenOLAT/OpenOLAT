@@ -70,10 +70,10 @@ public abstract class OLATResourceableEvent extends MultiUserEvent {
 	 * @param olatResourceables
 	 * @return True if target is contained list.
 	 */
-	public boolean targetContainedIn(List olatResourceables) {
+	public boolean targetContainedIn(List<OLATResourceable> olatResourceables) {
 		boolean found = false;
-		for (Iterator it_ores = olatResourceables.iterator(); it_ores.hasNext();) {
-			OLATResourceable aor = (OLATResourceable) it_ores.next();
+		for (Iterator<OLATResourceable> it_ores = olatResourceables.iterator(); it_ores.hasNext();) {
+			OLATResourceable aor = it_ores.next();
 			String derived = OresHelper.createStringRepresenting(aor);
 			if (derived.equals(derivedOres)) {
 				found = true;

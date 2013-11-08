@@ -36,6 +36,7 @@ import org.olat.core.id.OLATResourceable;
  */
 public class OLATResourceableDeletedEvent extends OLATResourceableEvent {
 
+	private static final long serialVersionUID = 1997108305915897759L;
 	private static final String COMMAND_DELETED = "deleted";
 	
 	/**

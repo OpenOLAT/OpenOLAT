@@ -38,12 +38,11 @@ public class GenericTreeNode extends GenericNode implements TreeNode, Serializab
 	private static final long serialVersionUID = -2381133733726739228L;
 	
 	private Object userObject;
-	private String title = null;
-	private String altText = null;
-	private String imageURI = null;
+	private String title;
+	private String altText;
 	private boolean accessible = true; // can be clicked?
 	private boolean selected = false;
-	private TreeNode delegate = null; // if this node is clicked, delegate to that
+	private TreeNode delegate; // if this node is clicked, delegate to that
 	private String cssClass;
 	private String iconCssClass;
 	private String iconDecorator1CssClass;
@@ -112,22 +111,6 @@ public class GenericTreeNode extends GenericNode implements TreeNode, Serializab
 	 */
 	public void setAltText(String altText) {
 		this.altText = altText;
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getImageURI()
-	 * @deprecated see org.olat.core.gui.components.tree.TreeNode#getImageURI()
-	 */
-	public String getImageURI() {
-		return imageURI;
-	}
-
-	/**
-	 * @deprecated see org.olat.core.gui.components.tree.TreeNode#getImageURI()
-	 * @param imageURI
-	 */
-	public void setImageURI(String imageURI) {
-		this.imageURI = imageURI;
 	}
 
 	/**

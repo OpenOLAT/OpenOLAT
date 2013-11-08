@@ -34,7 +34,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationAction;
 import org.olat.core.util.ValidationStatus;
 import org.olat.course.condition.ConditionEditController;
 
@@ -199,10 +198,6 @@ public class StatusDescription implements ValidationStatus {
 		retVal.isForUnit = this.isForUnit;
 		retVal.resolveIssueViewIdentifier = this.resolveIssueViewIdentifier;
 		return retVal;
-	}
-
-	public ValidationAction getAction() {
-		return null;
 	}
 
 }

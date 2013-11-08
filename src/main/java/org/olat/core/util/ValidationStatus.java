@@ -50,7 +50,5 @@ public interface ValidationStatus {
 	public boolean isInfo();
 
 	public Level getLevel();
-	
-	public ValidationAction getAction();
 
 }
