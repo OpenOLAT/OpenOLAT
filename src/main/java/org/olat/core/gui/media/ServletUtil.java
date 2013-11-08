@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -49,6 +50,7 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -70,7 +72,12 @@ public class ServletUtil {
 		}
 	}
 	
-	
+	public static void printOutRequestHeaders(HttpServletRequest request) {
+		for(Enumeration<String> headers=request.getHeaderNames(); headers.hasMoreElements(); ) {
+			String header = headers.nextElement();
+			log.info(header + " :: " + request.getHeader(header));
+		}
+	}
 	
 	/**
 	 * @param httpReq
@@ -544,6 +551,65 @@ public class ServletUtil {
 		// HTTP 1.0
 		response.setHeader("Pragma", "no-cache");
 		response.setDateHeader("Expires", 0);
+	}
+	
+	/**
+	 * Return a context-relative path, beginning with a "/", that represents the
+	 * canonical version of the specified path
+	 * <p>
+	 * ".." and "." elements are resolved out. If the specified path attempts to
+	 * go outside the boundaries of the current context (i.e. too many ".." path
+	 * elements are present), return <code>null</code> instead.
+	 * <p>
+	 * 
+	 * @author Mike Stock
+	 * 
+	 * @param path Path to be normalized
+	 * @return the normalized path
+	 */
+	public static String normalizePath(String path) {
+		if (path == null) return null;
+
+		// Create a place for the normalized path
+		String normalized = path;
+
+		try { // we need to decode potential UTF-8 characters in the URL
+			normalized = new String(normalized.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertException("utf-8 encoding must be supported on all java platforms...");
+		}
+
+		if (normalized.equals("/.")) return "/";
+
+		// Normalize the slashes and add leading slash if necessary
+		if (normalized.indexOf('\\') >= 0) normalized = normalized.replace('\\', '/');
+		if (!normalized.startsWith("/")) normalized = "/" + normalized;
+
+		// Resolve occurrences of "//" in the normalized path
+		while (true) {
+			int index = normalized.indexOf("//");
+			if (index < 0) break;
+			normalized = normalized.substring(0, index) + normalized.substring(index + 1);
+		}
+
+		// Resolve occurrences of "/./" in the normalized path
+		while (true) {
+			int index = normalized.indexOf("/./");
+			if (index < 0) break;
+			normalized = normalized.substring(0, index) + normalized.substring(index + 2);
+		}
+
+		// Resolve occurrences of "/../" in the normalized path
+		while (true) {
+			int index = normalized.indexOf("/../");
+			if (index < 0) break;
+			if (index == 0) return (null); // Trying to go outside our context
+			int index2 = normalized.lastIndexOf('/', index - 1);
+			normalized = normalized.substring(0, index2) + normalized.substring(index + 3);
+		}
+
+		// Return the normalized path that we have completed
+		return (normalized);
 	}
 	
 	//fxdiff FXOLAT-118: accept range to deliver videos for iPad

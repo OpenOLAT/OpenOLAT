@@ -34,7 +34,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -156,7 +156,7 @@ public class PwChangeController extends BasicController {
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == pwchangeHomelink) {
-			DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());				
+			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());				
 		}
 	}
 

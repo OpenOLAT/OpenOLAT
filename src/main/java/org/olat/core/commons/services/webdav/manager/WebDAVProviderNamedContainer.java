@@ -17,8 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.webdav;
+package org.olat.core.commons.services.webdav.manager;
 
+import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;

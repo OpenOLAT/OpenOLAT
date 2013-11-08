@@ -1,5 +1,3 @@
-package org.olat.core.util.httpclient;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,8 @@ package org.olat.core.util.httpclient;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.olat.core.util.httpclient;
+
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

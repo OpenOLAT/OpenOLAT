@@ -25,7 +25,7 @@ import java.util.Locale;
 import org.apache.commons.lang.ArrayUtils;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -161,7 +161,7 @@ class ContextHelpMainController extends MainLayoutBasicController implements Gen
 			if (bundleName == null) {
 				// Help page not found, try it with static legacy help files
 				String legacyHelpUrl = StaticMediaDispatcher.createStaticURIFor("help/" + ureq.getNonParsedUri());
-				DispatcherAction.redirectTo(ureq.getHttpResp(), legacyHelpUrl);
+				DispatcherModule.redirectTo(ureq.getHttpResp(), legacyHelpUrl);
 				return;
 			}
 			

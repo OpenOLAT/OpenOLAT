@@ -26,12 +26,15 @@
 
 package org.olat.core.dispatcher.mapper;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.LogDelegator;
@@ -63,7 +66,10 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 	 * @param hreq
 	 * @param hres
 	 */
-	public void execute(HttpServletRequest hreq, HttpServletResponse hres, String pathInfo) {
+	@Override
+	public void execute(HttpServletRequest hreq, HttpServletResponse hres) throws IOException {
+
+		String pathInfo = DispatcherModule.subtractContextPath(hreq);
 		final boolean isDebugLog = isLogDebugEnabled();
 		StringBuilder debugMsg = null;
 		long debug_start = 0;
@@ -74,7 +80,7 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 		
 		// e.g. non-cacheable: 	23423/bla/blu.html
 		// e.g. cacheable: 		my.mapper.path/bla/blu.html
-		String subInfo = pathInfo.substring(DispatcherAction.PATH_MAPPED.length());
+		String subInfo = pathInfo.substring(DispatcherModule.PATH_MAPPED.length());
 		int slashPos = subInfo.indexOf('/');
 		
 		String smappath;
@@ -83,6 +89,9 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 		} else {
 			smappath = subInfo.substring(0, slashPos);
 		}
+		
+		//legacy???
+		DBFactory.getInstance().commitAndCloseSession();
 
 		// e.g. non-cacheable: 	23423
 		// e.g. cacheable: 		my.mapper.path
@@ -92,14 +101,13 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 			logWarn(
 					"Call to mapped resource, but mapper does not exist for path::"
 							+ pathInfo, null);
-			DispatcherAction.sendNotFound(pathInfo, hres);
+			DispatcherModule.sendNotFound(pathInfo, hres);
 			return;
 		}
 		String mod = slashPos > 0 ? subInfo.substring(slashPos) : "";
 		if (mod.indexOf("..") != -1) {
-			logWarn("Illegal mapper path::" + mod + " contains '..'",
-					null);
-			DispatcherAction.sendForbidden(pathInfo, hres);
+			logWarn("Illegal mapper path::" + mod + " contains '..'", null);
+			DispatcherModule.sendForbidden(pathInfo, hres);
 			return;
 		}
 		// /bla/blu.html

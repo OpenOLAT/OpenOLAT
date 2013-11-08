@@ -22,12 +22,13 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.core.util.servlets;
+package org.olat.core.commons.services.webdav.servlets;
 
 
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -240,7 +241,7 @@ public final class RequestUtil {
         if ((header == null) || (header.length() < 1))
             return (new Cookie[0]);
 
-        ArrayList cookies = new ArrayList();
+        List<Cookie> cookies = new ArrayList<Cookie>();
         while (header.length() > 0) {
             int semicolon = header.indexOf(';');
             if (semicolon < 0)
@@ -264,7 +265,7 @@ public final class RequestUtil {
             }
         }
 
-        return ((Cookie[]) cookies.toArray(new Cookie[cookies.size()]));
+        return cookies.toArray(new Cookie[cookies.size()]);
 
     }
 
@@ -286,7 +287,7 @@ public final class RequestUtil {
      *
      * @exception IllegalArgumentException if the data is malformed
      */
-    public static void parseParameters(Map map, String data, String encoding)
+    public static void parseParameters(Map<String,String[]> map, String data, String encoding)
         throws UnsupportedEncodingException {
 
         if ((data != null) && (data.length() > 0)) {
@@ -396,7 +397,7 @@ public final class RequestUtil {
      * Put name and value pair in map.  When name already exist, add value
      * to array of values.
      */
-    private static void putMapEntry( Map map, String name, String value) {
+    private static void putMapEntry( Map<String,String[]> map, String name, String value) {
         String[] newValues = null;
         String[] oldValues = (String[]) map.get(name);
         if (oldValues == null) {
@@ -430,7 +431,7 @@ public final class RequestUtil {
      *
      * @exception UnsupportedEncodingException if the data is malformed
      */
-    public static void parseParameters(Map map, byte[] data, String encoding)
+    public static void parseParameters(Map<String,String[]> map, byte[] data, String encoding)
         throws UnsupportedEncodingException {
 
         if (data != null && data.length > 0) {

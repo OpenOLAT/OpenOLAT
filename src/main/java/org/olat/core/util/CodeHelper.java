@@ -44,7 +44,7 @@ public class CodeHelper {
 	private static Integer nodeId;
 	
 	private CodeHelper(Integer nodeId) {
-		this.nodeId = nodeId;
+		CodeHelper.nodeId = nodeId;
 		ramid = new AtomicLong( ((long)nodeId) * 1000000000 );
 	}
 	

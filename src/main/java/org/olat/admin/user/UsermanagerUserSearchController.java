@@ -46,7 +46,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.core.commons.services.webdav.WebDAVManager;
+import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -691,7 +691,7 @@ class UsermanagerUserSearchForm extends FormBasicController {
 				));
 			}
 		}
-		if(WebDAVManager.getInstance().isEnabled()) {
+		if(CoreSpringFactory.getImpl(WebDAVModule.class).isEnabled()) {
 			authKeyList.add(WebDAVAuthManager.PROVIDER_WEBDAV);
 			authValueList.add(translate("search.form.constraint.auth.WEBDAV"));
 		}

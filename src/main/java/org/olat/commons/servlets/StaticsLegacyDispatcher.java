@@ -34,8 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.commons.servlets.pathhandlers.PathHandler;
 import org.olat.commons.servlets.util.ResourceDescriptor;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
-import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
+import org.olat.core.dispatcher.DispatcherModule;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -80,7 +80,8 @@ public class StaticsLegacyDispatcher implements Dispatcher {
 		/**
      * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
      */
-		public void execute(HttpServletRequest req, HttpServletResponse resp, String uriPrefix) {
+		@Override
+		public void execute(HttpServletRequest req, HttpServletResponse resp) {
     		try {
         		String method = req.getMethod();
 		        if (method.equals("GET")) {
@@ -88,14 +89,14 @@ public class StaticsLegacyDispatcher implements Dispatcher {
 		        } else if (method.equals("HEAD")) {
 		            doHead(req, resp);
 		        } else {
-		        		DispatcherAction.sendNotFound(req.getRequestURI(), resp);
+		        		DispatcherModule.sendNotFound(req.getRequestURI(), resp);
 		        }
     		} catch (IOException e) {
 					/*
 					 * silently ignore forward errors (except in debug mode), since IE
 					 * causes tons of such messages by its double GET request
 					 */
-					if (Tracing.isDebugEnabled(DispatcherAction.class)) {
+					if (Tracing.isDebugEnabled(DispatcherModule.class)) {
 						Tracing.logDebug("could not execute legacy statics method:" + e.toString() + ",msg:" + e.getMessage(),
 								StaticsLegacyDispatcher.class);
 					}
@@ -294,7 +295,7 @@ public class StaticsLegacyDispatcher implements Dispatcher {
         if ((result == null) || (result.equals(""))) {
             result = "/";
         }
-        return StaticMediaDispatcher.normalizePath(result);
+        return ServletUtil.normalizePath(result);
     }
 
 

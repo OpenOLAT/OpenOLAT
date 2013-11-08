@@ -24,28 +24,16 @@
 * <p>
 */
 
-package org.olat.core.commons.service.webdav;
-
-import static org.junit.Assert.assertEquals;
+package org.olat.core.commons.services.webdav;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.UUID;
 
 import javax.servlet.Servlet;
 
-import junit.framework.Assert;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
 import org.junit.BeforeClass;
-import org.junit.Test;
-import org.olat.core.commons.services.webdav.SecureWebdavServlet;
-import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.test.JunitTestHelper;
+import org.olat.core.servlets.OpenOLATServlet;
 import org.olat.test.OlatTestCase;
 
 import com.sun.grizzly.http.embed.GrizzlyWebServer;
@@ -54,13 +42,13 @@ import com.sun.grizzly.http.servlet.ServletAdapter;
 /**
  * 
  * Description:<br>
- * Abstract class which start and stop a grizzly server for every test
+ * Abstract class which start and stop a grizzly server for every test run
  * 
  * <P>
  * Initial Date:  14 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class WebDAVTestCase extends OlatTestCase {
+public abstract class WebDAVTestCase extends OlatTestCase {
 	private static final OLog log = Tracing.createLoggerFor(WebDAVTestCase.class);
 
 	public final static int PORT = 9997;
@@ -79,7 +67,7 @@ public class WebDAVTestCase extends OlatTestCase {
 				ServletAdapter sa = new ServletAdapter();
 				Servlet servletInstance = null;
 				try {
-					servletInstance = new SecureWebdavServlet();
+					servletInstance = new OpenOLATServlet();
 				} catch (Exception ex) {
 					log.error("Cannot instantiate the Grizzly Servlet Container", ex);
 				}
@@ -98,22 +86,5 @@ public class WebDAVTestCase extends OlatTestCase {
 		} catch (IOException ex) {
 			log.error("Cannot start the Grizzly Web Container for WebDAV");
 		}
-	}
-	
-	@Test
-	public void testPropFind()
-	throws IOException, URISyntaxException {
-		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("webdav-1-" + UUID.randomUUID().toString());
-		
-		//list root content of its webdav folder
-		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(user.getName(), "A6B7C8");
-		URI uri = conn.getContextURI().build();
-		HttpResponse response = conn.propfind(uri);
-		assertEquals(207, response.getStatusLine().getStatusCode());
-		
-		String xml = EntityUtils.toString(response.getEntity());
-		Assert.assertTrue(xml.indexOf("/webdav/coursefolders/") > 0);
 	}
 }

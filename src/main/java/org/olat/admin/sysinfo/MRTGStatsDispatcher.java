@@ -42,6 +42,7 @@ import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -51,10 +52,11 @@ import org.olat.commons.coordinate.cluster.jms.SimpleProbe;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBQueryImpl;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
@@ -79,6 +81,9 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * @author patrickb
  */
 public class MRTGStatsDispatcher implements Dispatcher {
+	
+	private static final OLog log = Tracing.createLoggerFor(MRTGStatsDispatcher.class);
+	
 	// default allows monitoring only from localhost
 	// "*" means allow from any host (not recommended in real world setups)
 	private String monitoringHost = "127.0.0.1"; 
@@ -117,18 +122,20 @@ public class MRTGStatsDispatcher implements Dispatcher {
 			doInSyncInsideProbe_.logifSlowerThan(1000, Level.WARNING);
 			dbQueryListProbe_.logifSlowerThan(1300, Level.WARNING);
 		} catch(RuntimeException re) {
-			Tracing.logInfo("Certain MRTG Statistics will not be available since Codepoints are disabled", getClass());
+			log.info("Certain MRTG Statistics will not be available since Codepoints are disabled");
 		} catch (CommunicationException e) {
-			Tracing.logInfo("Certain MRTG Statistics will not be available since Codepoints are disabled", getClass());
+			log.info("Certain MRTG Statistics will not be available since Codepoints are disabled");
 		}
 	}
 	
 	/**
 	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
-	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
-		if(Tracing.isDebugEnabled(MRTGStatsDispatcher.class)){
-			Tracing.logDebug("serving MRTGStats on uriPrefix [[["+uriPrefix+"]]]", MRTGStatsDispatcher.class);
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) {
+		if(log.isDebug()){
+			String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
+			log.debug("serving MRTGStats on uriPrefix [[["+uriPrefix+"]]]");
 		}
 		returnMRTGStats(request, response);
 	}
@@ -162,8 +169,8 @@ public class MRTGStatsDispatcher implements Dispatcher {
 	private void returnMRTGStats(HttpServletRequest request, HttpServletResponse response) {
 		if (!request.getRemoteAddr().equals(monitoringHost) && !monitoringHost.equals("*")) { 
 			// limit to allowed hosts
-			Tracing.logAudit("Trying to access stats from other host than configured (" + monitoringHost + ") : " + request.getRemoteAddr(), SysinfoController.class);
-			DispatcherAction.sendForbidden(request.getPathInfo(), response);
+			log.audit("Trying to access stats from other host than configured (" + monitoringHost + ") : " + request.getRemoteAddr());
+			DispatcherModule.sendForbidden(request.getPathInfo(), response);
 		}
 		String command = request.getParameter("cmd");
 		if (command == null) command = "users";
@@ -234,7 +241,8 @@ public class MRTGStatsDispatcher implements Dispatcher {
 
 		} else if (command.equals("proc")) { // get VM process stats
 			// Number of concurrent dispatching OLAT threads (concurrent user requests)
-			result.append(DispatcherAction.getConcurrentCounter()).append("\n"); 
+			SessionStatsManager statsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
+			result.append(statsManager.getConcurrentCounter()).append("\n"); 
 			// Number of active threads
 			ThreadGroup group = Thread.currentThread().getThreadGroup();
 			Thread[] threads = new Thread[ group.activeCount() ]; 
@@ -528,7 +536,7 @@ public class MRTGStatsDispatcher implements Dispatcher {
 			});
 			for (Iterator<Entry<String, org.olat.core.commons.persistence.SimpleProbe>> it = list.iterator(); it.hasNext();) {
 				Entry<String, org.olat.core.commons.persistence.SimpleProbe> entry = it.next();
-				Tracing.logInfo("MRTGStats: table '"+entry.getKey()+"' uses up "+entry.getValue().getSum()+"ms of a total of "+sum+"ms, which is "+Math.round(1000.0*entry.getValue().getSum()/sum)/10+"%", getClass());
+				log.info("MRTGStats: table '"+entry.getKey()+"' uses up "+entry.getValue().getSum()+"ms of a total of "+sum+"ms, which is "+Math.round(1000.0*entry.getValue().getSum()/sum)/10+"%");
 				entry.getValue().reset();
 			}
 		} else if (command.equals("LifeCycleEntry")) { // LifeCycleEntry

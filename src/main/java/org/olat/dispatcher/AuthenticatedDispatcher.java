@@ -35,7 +35,7 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.WindowSettings;
@@ -81,14 +81,16 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	}
 
 	/**
-	 * Main method called by DispatcherAction. This processess all requests for
+	 * Main method called by OpenOLATServlet. This processess all requests for
 	 * authenticated users.
 	 * 
 	 * @param request
 	 * @param response
 	 * @param uriPrefix
 	 */
-	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) {
+		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 		long startExecute = 0;
 		if ( log.isDebug() ) {
 			startExecute = System.currentTimeMillis();
@@ -108,7 +110,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			if(log.isDebug()){
 				log.debug("Bad Request "+request.getPathInfo());
 			}
-			DispatcherAction.sendBadRequest(request.getPathInfo(), response);
+			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
 		
@@ -124,7 +126,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			}
 			String guestAccess = ureq.getParameter(GUEST);
 			if (guestAccess == null || !LoginModule.isGuestLoginLinksEnabled()) {
-				DispatcherAction.redirectToDefaultDispatcher(response);
+				DispatcherModule.redirectToDefaultDispatcher(response);
 				return;
 			} else if (guestAccess.equals(TRUE)) {
 				// try to log in as anonymous
@@ -139,9 +141,9 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				int loginStatus = AuthHelper.doAnonymousLogin(ureq, guestLoc);
 				if ( loginStatus != AuthHelper.LOGIN_OK) {
 					if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-						DispatcherAction.redirectToServiceNotAvailable(response);
+						DispatcherModule.redirectToServiceNotAvailable(response);
 					}
-					DispatcherAction.redirectToDefaultDispatcher(response); // error, redirect to login screen
+					DispatcherModule.redirectToDefaultDispatcher(response); // error, redirect to login screen
 					return;
 				}
 				// else now logged in as anonymous user, continue
@@ -164,13 +166,13 @@ public class AuthenticatedDispatcher implements Dispatcher {
 						}
 					}
 				}
-				DispatcherAction.redirectToDefaultDispatcher(response);
+				DispatcherModule.redirectToDefaultDispatcher(response);
 				return;
 			}
 			
 			SessionInfo sessionInfo = usess.getSessionInfo();
 			if (sessionInfo==null) {
-				DispatcherAction.redirectToDefaultDispatcher(response);
+				DispatcherModule.redirectToDefaultDispatcher(response);
 				return;
 			}
 			
@@ -183,60 +185,22 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				// to avoid a endless redirect, remove the guest parameter if any
 				// this can happen if a guest has cookies disabled
 				String url = new URIHelper(origUrl).removeParameter(GUEST).toString();
-				DispatcherAction.redirectTo(response, url);
-				return;
-			}
-			String businessPath = (String) usess.removeEntryFromNonClearedStore(AUTHDISPATCHER_BUSINESSPATH);
-			if (businessPath != null) {
-				BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
-				ChiefController cc = (ChiefController) Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
-				WindowControl wControl = cc.getWindowControl();
-
-				String wSettings = (String) usess.removeEntryFromNonClearedStore(WINDOW_SETTINGS);
-				if(wSettings != null) {
-					WindowSettings settings = WindowSettings.parse(wSettings);
-					wControl.getWindowBackOffice().setWindowSettings(settings);
-				}
-
-			  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
-			  NewControllerFactory.getInstance().launch(ureq, bwControl);	
-				// render the window
-				Window w = cc.getWindow();
-				w.dispatchRequest(ureq, true); // renderOnly
-				return;
-			}
-			
-			if (ureq.isValidDispatchURI()) {
-				// valid uri for dispatching (has timestamp, componentid and windowid)
-				Windows ws = Windows.getWindows(ureq);
-				Window window = ws.getWindow(ureq);
-				if (window == null) {
-					// If no window, this is probably a stale link. send not
-					// found
-					// note: do not redirect to login since this wastes a new
-					// window each time since we are in an authenticated session
-					// -> a content packaging with wrong links e.g. /css/my.css
-					// wastes all the windows
-					DispatcherAction.sendNotFound(request.getRequestURI(), response);
-					return;
-				}
-				long startDispatchRequest = 0;
-				if (log.isDebug()) {
-					startDispatchRequest = System.currentTimeMillis();
-				}
-				window.dispatchRequest(ureq);
-				if ( log.isDebug() ) {
-					long durationDispatchRequest = System.currentTimeMillis() - startDispatchRequest;
-					log.debug("Perf-Test: window=" + window);
-					log.debug("Perf-Test: durationDispatchRequest=" + durationDispatchRequest);
-				}
+				DispatcherModule.redirectTo(response, url);
 			} else {
-				System.out.println("ERROR");
+				String businessPath = (String) usess.removeEntryFromNonClearedStore(AUTHDISPATCHER_BUSINESSPATH);
+				if (businessPath != null) {
+					processBusinessPath(businessPath, ureq, usess);
+				} else if (ureq.isValidDispatchURI()) {
+					// valid uri for dispatching (has timestamp, componentid and windowid)
+					processValidDispatchURI(ureq, usess, request, response);
+				} else {
+					log.error("Invalid URI in AuthenticatedDispatcher: " + request.getRequestURI());
+				}
 			}
 		} catch (Throwable th) {
 			// Do not log as Warn or Error here, log as ERROR in MsgFactory => ExceptionWindowController throws an OLATRuntimeException 
 			log.debug("handleError in AuthenticatedDispatcher throwable=" + th);
-			DispatcherAction.handleError();
+			DispatcherModule.handleError();
 			ChiefController msgcc = MsgFactory.createMessageChiefController(ureq, th);
 			// the controller's window must be failsafe also
 			msgcc.getWindow().dispatchRequest(ureq, true);
@@ -249,5 +213,47 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				log.debug("Perf-Test: durationExecute=" + durationExecute);
 			}
 		}
+	}
+	
+	private void processValidDispatchURI(UserRequest ureq, UserSession usess, HttpServletRequest request, HttpServletResponse response) {
+		Windows ws = Windows.getWindows(ureq);
+		Window window = ws.getWindow(ureq);
+		if (window == null) {
+			//probably a 
+			if(usess.isSavedSession() && !usess.getHistoryStack().isEmpty()) {
+				DispatcherModule.redirectToDefaultDispatcher(response);
+			} else {
+				DispatcherModule.sendNotFound(request.getRequestURI(), response);
+			}
+		} else {
+			long startDispatchRequest = 0;
+			if (log.isDebug()) {
+				startDispatchRequest = System.currentTimeMillis();
+			}
+			window.dispatchRequest(ureq);
+			if ( log.isDebug() ) {
+				long durationDispatchRequest = System.currentTimeMillis() - startDispatchRequest;
+				log.debug("Perf-Test: window=" + window);
+				log.debug("Perf-Test: durationDispatchRequest=" + durationDispatchRequest);
+			}
+		}
+	}
+	
+	private void processBusinessPath(String businessPath, UserRequest ureq, UserSession usess) {
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
+		ChiefController cc = (ChiefController) Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
+		WindowControl wControl = cc.getWindowControl();
+
+		String wSettings = (String) usess.removeEntryFromNonClearedStore(WINDOW_SETTINGS);
+		if(wSettings != null) {
+			WindowSettings settings = WindowSettings.parse(wSettings);
+			wControl.getWindowBackOffice().setWindowSettings(settings);
+		}
+
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
+		NewControllerFactory.getInstance().launch(ureq, bwControl);	
+		// render the window
+		Window w = cc.getWindow();
+		w.dispatchRequest(ureq, true); // renderOnly
 	}
 }

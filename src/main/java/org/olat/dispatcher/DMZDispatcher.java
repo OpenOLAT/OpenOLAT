@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.Windows;
@@ -113,7 +113,7 @@ public class DMZDispatcher implements Dispatcher {
 					String newSessionId = sessionCookie.getValue().substring(0, sessionCookie.getValue().length()-2);
 					response.setHeader("Set-Cookie", "JSESSIONID="+newSessionId+"; Path="+request.getContextPath()+(request.isSecure()?"":"; Secure"));
 				}
-				DispatcherAction.redirectTo(response, rejectUrl);
+				DispatcherModule.redirectTo(response, rejectUrl);
 				return true;
 			}
 		}
@@ -121,60 +121,23 @@ public class DMZDispatcher implements Dispatcher {
 	}
 	
 	/**
-	 * Main method called by DispatcherAction. This processess all requests for
+	 * Main method called by OpenOLATServlet. This processess all requests for
 	 * users who are not authenticated.
 	 * 
 	 * @param request
 	 * @param response
 	 * @param uriPrefix
 	 */
-	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) {
 		if (rejectRequest(request, response)) {
 			return;
 		}
-		
-		
-		/*
-		 * (here it was assumed that an url containing /m/ is that of a
-		 * mapper of olat, which is anyway not a good assumption.
-		 * 
-		 * Removing this check can not create a security issue because a crafted
-		 * request just needs to have referer null to bypass this check.
-		 * 
-		 * 
-		 * 
-		 
-		String referer = request.getHeader("referer");
-		if(referer != null && referer.indexOf(DispatcherAction.PATH_MAPPED) > -1) {
-			//TODO:gs may no longer needed as bad rel links are catched in dispatcherAction
-			//OLAT-3334
-			//ignore /dmz/ requests issued from "content" delivered by 
-			// /m/98129834/folder0/folder1/folder3/bla.hmtl
-			// this can happen if for example a CP contains a relative link pointing back like
-			// ../../../../../../presentation/cool.js where the "up navigation" exceeds the
-			// the /folder0/folder1/folder3 path and even jumps over /m/98129834.
-			//The DMZ is reached, the session invalidated and next click shows login screen.
-			//
-			//Because /g/ mapped content is considered to be save against such errors, there
-			// is no check for PATH_GLOBAL_MAPPED. Typically /g/ mapped paths are 
-			// application wide defined and not brought in by users. Hence it should 
-			// be discovered during developing or testing.
-			//
-			String msg = "BAD LINK IN [["+referer+"]]";
-			Tracing.logWarn(msg, DMZDispatcher.class);
-			DispatcherAction.sendNotFound(msg, response);
-			return;
-		}
-		
-		*
-		*
-		*/
 
 		UserRequest ureq = null;
-
+		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 		try {
 			// upon creation URL is checked for
-
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 		} catch (NumberFormatException nfe) {
 			// MODE could not be decoded
@@ -186,7 +149,7 @@ public class DMZDispatcher implements Dispatcher {
 			if (log.isDebug()) {
 				log.debug("Bad Request " + request.getPathInfo());
 			}
-			DispatcherAction.sendBadRequest(request.getPathInfo(), response);
+			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
 		//set load performance mode depending on logged in user or global parameter
@@ -214,13 +177,11 @@ public class DMZDispatcher implements Dispatcher {
 				}
 				// chief controller creator for sub path, e.g. 
 				subPathccc = dmzServicesByPath.get(sub);
-				
-				UserSession usess = ureq.getUserSession();
-				Windows ws = Windows.getWindows(usess);
-				synchronized (ws) { //o_clusterOK by:fj per user session
-					ChiefController occ;
-					if(subPathccc != null){
-						occ = subPathccc.createChiefController(ureq);
+				if(subPathccc != null) {
+					UserSession usess = ureq.getUserSession();
+					Windows ws = Windows.getWindows(usess);
+					synchronized (ws) { //o_clusterOK by:fj per user session
+						ChiefController occ = subPathccc.createChiefController(ureq);
 						Window window = occ.getWindow();
 						window.setUriPrefix(uriPrefix);
 						ws.registerWindow(window);
@@ -277,18 +238,19 @@ public class DMZDispatcher implements Dispatcher {
 					
 					// request new windows since it is a new usersession, the old one was purged
 					ws = Windows.getWindows(usess);
-				} else {
-					if (validDispatchUri) {
+				} else if (validDispatchUri) {
 						window = ws.getWindow(ureq);
-					} else {
-						// e.g. /dmz/ -> start screen, clear previous session data
-						window = null; 
-						CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(usess);
-						usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
-						I18nManager.updateLocaleInfoToThread(usess);//update locale infos
-						// request new windows since it is a new usersession, the old one was purged
-						ws = Windows.getWindows(usess);
-					}
+				} else if (dmzOnly) {
+					// e.g. /dmz/ -> start screen, clear previous session data
+					window = null; 
+					CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(usess);
+					usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
+					I18nManager.updateLocaleInfoToThread(usess);//update locale infos
+					// request new windows since it is a new usersession, the old one was purged
+					ws = Windows.getWindows(usess);
+				} else {
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+					return;
 				}
 				
 				if (window == null) {

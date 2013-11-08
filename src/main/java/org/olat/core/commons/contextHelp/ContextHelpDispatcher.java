@@ -29,7 +29,7 @@ import org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator;
 import org.olat.core.commons.fullWebApp.BaseFullWebappPopupBrowserWindow;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.Windows;
@@ -67,15 +67,16 @@ public class ContextHelpDispatcher extends LogDelegator implements Dispatcher {
 	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest,
 	 *      javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
-	public void execute(HttpServletRequest request,
-			HttpServletResponse response, String uriPrefix) {
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) {
 		UserRequest ureq = null;
 		
 		try {
+			String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 			if (!ContextHelpModule.isContextHelpEnabled()) {
 				// disabled context help - redirect immediately
-				DispatcherAction.sendNotFound(ureq.getNonParsedUri(), response);
+				DispatcherModule.sendNotFound(ureq.getNonParsedUri(), response);
 				return;
 			}
 

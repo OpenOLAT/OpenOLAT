@@ -65,42 +65,6 @@ public class URIHelper {
 	}
 
 	/**
-	 * Add a single parameter.
-	 */
-	public URIHelper addParameter(String name, String value) {
-		// ignore undefined  values
-		if (name == null || value == null) return this;
-
-		modified = true;
-		params.put(name, value);
-		return this;
-	}
-
-  /**
-   * Add parameters from a map.
-   */
-	public URIHelper addParameters(Map newParams) {
-		// nothing to do if there are no parameters
-		if (newParams == null || newParams.isEmpty()) return this;
-
-		modified = true;
-		for (Iterator i = newParams.keySet().iterator(); i.hasNext();) {
-			String name = (String) i.next();
-			Object value = newParams.get(name);
-
-			if (value == null) continue;
-
-			if (value instanceof Object[]) {
-				// add the first array element
-				params.put(name,  ((Object[])value)[0].toString());
-			} else {
-				params.put(name, value.toString());
-			}
-		}
-		return this;
-	}
-
-	/**
 	 * Remove a single parameter, if exists.
 	 */
 	public URIHelper removeParameter(String name) {

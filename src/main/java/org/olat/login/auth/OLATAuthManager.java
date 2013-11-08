@@ -33,6 +33,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -84,6 +85,8 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	private BaseSecurity securityManager;
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private WebDAVAuthManager webDAVAuthManager;
 	
 	/**
 	 * 
@@ -125,14 +128,24 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		if (securityManager.checkCredentials(authentication, password))	{
 			Algorithm algorithm = Algorithm.find(authentication.getAlgorithm());
 			if(Algorithm.md5.equals(algorithm)) {
-				authentication = securityManager.updateCredentials(authentication, password, LoginModule.getDefaultHashAlgorithm());
+				Algorithm defAlgorithm = LoginModule.getDefaultHashAlgorithm();
+				authentication = securityManager.updateCredentials(authentication, password, defAlgorithm);
 			}
-			return authentication.getIdentity();
+			Identity identity = authentication.getIdentity();
+			if(identity != null && webDAVAuthManager != null) {
+				webDAVAuthManager.upgradePassword(identity, login, password);
+			}
+			return identity;
 		}
 		log.audit("Error authenticating user "+login+" via provider OLAT", OLATAuthenticationController.class.getName());
 		return null;
 	}
-	
+
+	@Override
+	public void upgradePassword(Identity identity, String login, String password) {
+		//nothing to do
+	}
+
 	private Identity findIdentInChangingEmailWorkflow(String login){
 		XStream xml = XStreamHelper.createXStreamInstance();
 		

@@ -23,7 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.DefaultController;
@@ -85,7 +85,7 @@ public class ChangeEMailController extends DefaultController {
 			if (tempKey == null) {
 				// registration key not available
 				userRequest.getUserSession().putEntryInNonClearedStore("error.change.email", pT.translate("error.change.email"));
-				DispatcherAction.redirectToDefaultDispatcher(userRequest.getHttpResp());
+				DispatcherModule.redirectToDefaultDispatcher(userRequest.getHttpResp());
 				return;
 			} else {
 				if (!isLinkTimeUp()) {
@@ -93,16 +93,16 @@ public class ChangeEMailController extends DefaultController {
 						if ((userRequest.getUserSession().getEntry(CHANGE_EMAIL_ENTRY) == null) 
 								|| (!userRequest.getUserSession().getEntry(CHANGE_EMAIL_ENTRY).equals(CHANGE_EMAIL_ENTRY))) {
 							userRequest.getUserSession().putEntryInNonClearedStore(CHANGE_EMAIL_ENTRY, CHANGE_EMAIL_ENTRY);
-							DispatcherAction.redirectToDefaultDispatcher(userRequest.getHttpResp());
+							DispatcherModule.redirectToDefaultDispatcher(userRequest.getHttpResp());
 							return;
 						} else {
 							if (userRequest.getIdentity() == null) {
-								DispatcherAction.redirectToDefaultDispatcher(userRequest.getHttpResp());
+								DispatcherModule.redirectToDefaultDispatcher(userRequest.getHttpResp());
 								return;
 							}
 						}
 					} catch (ClassCastException e) {
-						DispatcherAction.redirectToDefaultDispatcher(userRequest.getHttpResp());
+						DispatcherModule.redirectToDefaultDispatcher(userRequest.getHttpResp());
 						return;
 					}
 				} else {
@@ -117,7 +117,7 @@ public class ChangeEMailController extends DefaultController {
 					}
 					// delete registration key
 					rm.deleteTemporaryKeyWithId(tempKey.getRegistrationKey());
-					DispatcherAction.redirectToDefaultDispatcher(userRequest.getHttpResp());
+					DispatcherModule.redirectToDefaultDispatcher(userRequest.getHttpResp());
 					return;
 				}
 			}

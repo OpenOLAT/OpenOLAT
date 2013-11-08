@@ -121,7 +121,7 @@ public class URLEncoder {
     }
 
     public void addSafeCharacter( char c ) {
-	safeCharacters.set( c );
+    	safeCharacters.set( c );
     }
 
     public String encode( String path ) {

@@ -25,7 +25,6 @@
 
 package org.olat.commons.servlets;
 
-import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
 
@@ -35,11 +34,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.pdfbox.io.IOUtils;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.rss.RSSUtil;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -59,14 +59,13 @@ import com.sun.syndication.io.SyndFeedOutput;
  * @author Florian Gnägi
  */
 public class RSSServlet extends HttpServlet {
-
+	
+	private static final long serialVersionUID = -674630331334472714L;
+	private static final OLog log = Tracing.createLoggerFor(RSSServlet.class);
 	public static final String DEFAULT_ENCODING = "UTF-8";
-
 	private static int outputBufferSize = 2048;
 	private static int inputBufferSize = 2048;
-	// TODO:GW How shall we cache the feed?
-	// private CacheWrapper timerCache;
-	private static final OLog log = Tracing.createLoggerFor(RSSServlet.class);
+
 
 	/**
 	 * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
@@ -126,11 +125,11 @@ public class RSSServlet extends HttpServlet {
 			if (pathInfo.indexOf(RSSUtil.RSS_PREFIX_PERSONAL) == 0) {
 				feed = getPersonalFeed(pathInfo);
 				if (feed == null) {
-					DispatcherAction.sendNotFound(pathInfo, response);
+					DispatcherModule.sendNotFound(pathInfo, response);
 					return;
 				}
 			} else {
-				DispatcherAction.sendNotFound(pathInfo, response);
+				DispatcherModule.sendNotFound(pathInfo, response);
 				return;
 			}
 
@@ -166,20 +165,15 @@ public class RSSServlet extends HttpServlet {
 		} catch (FeedException e) {
 			// throw olat exception for nice logging
 			log.warn("Error when generating RSS stream for path::" + request.getPathInfo(), e);
-			DispatcherAction.sendNotFound("none", response);
+			DispatcherModule.sendNotFound("none", response);
 		} catch (Exception e) {
 			log.warn("Unknown Exception in rssservlet", e);
-			DispatcherAction.sendNotFound("none", response);
+			DispatcherModule.sendNotFound("none", response);
 		} catch (Error e) {
 			log.warn("Unknown Error in rssservlet", e);
-			DispatcherAction.sendNotFound("none", response);
+			DispatcherModule.sendNotFound("none", response);
 		} finally {
-			try {
-				if (writer != null) writer.close();
-			} catch (IOException e) {
-				// writer didn't close properly – ignore
-			}
-			
+			IOUtils.closeQuietly(writer);
 			DBFactory.getInstance(false).commitAndCloseSession();
 		}
 	}
@@ -217,16 +211,9 @@ public class RSSServlet extends HttpServlet {
 			return null;
 		}
 
-		// FIXME:GW Make some sensible verifications here (expire date etc.) and
-		// return a cached file if it exists
-		SyndFeed cachedFeed = null;
-		if (cachedFeed != null) {
-			// return the cache entry
-			return cachedFeed;
-		} else {
-			// create rss feed for user notifications
-			SyndFeed feed = new PersonalRSSFeed(identity, idToken);
-			return feed;
-		}
+		// create rss feed for user notifications
+		SyndFeed feed = new PersonalRSSFeed(identity, idToken);
+		//TODO implements some caching
+		return feed;
 	}
 }

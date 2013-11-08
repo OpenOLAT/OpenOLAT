@@ -59,6 +59,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.dispatcher.Dispatcher;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.ServletUtil;
@@ -336,7 +337,8 @@ public class CatalogExportModuleDispatcher implements Dispatcher {
 		return f;
 	}
 
-	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) {
 		if(!this.reInitialize())
 			Tracing.logError("Some Failsaves in reInitialization needed !", CatalogExportModuleDispatcher.class);
 			try {

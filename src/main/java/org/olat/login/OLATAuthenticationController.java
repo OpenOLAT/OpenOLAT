@@ -257,7 +257,6 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	}
 	
 	@Override
-	//fxdiff FXOLAT-113: business path in DMZ
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -279,69 +278,9 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	}
 
 	/**
-	 * @param login
-	 * @param pass
-	 * @return Identity if authentication was successfull, null otherwise.
-	 * @deprecated should not be part of the controller
-	 *//*
-	public static Identity authenticate(String login, String pass) {
-		if (pass == null) return null; // do never accept empty passwords
-		Identity ident = BaseSecurityManager.getInstance().findIdentityByName(login);
-		return authenticate(ident, login, pass);
-	}*/
-	
-	/**
-	 * @param login
-	 * @param pass
-	 * @return Identity if authentication was successfull, null otherwise.
-	 * @deprecated should not be part of the controller
-	 *//*
-	public static Identity authenticate(Identity ident, String login, String pass) {
-		// check for email instead of username if ident is null
-		if (ident == null && LoginModule.allowLoginUsingEmail()) {
-			if (MailHelper.isValidEmailAddress(login)){
-  	 	 	ident = UserManager.getInstance().findIdentityByEmail(login);
-  	 	}
-			// check for email changed with verification workflow
-			if (ident == null) {
-				ident = findIdentInChangingEmailWorkflow(login);
-			}
-		}
-
-		if (ident == null) {
-			return null;
-		}
-		
-		// find OLAT authentication provider
-		String auth = BaseSecurityManager.getInstance().findCredentials(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-		if (auth != null && auth.equals(Encoder.encrypt(pass)))	return ident;
-		
-		Tracing.createLoggerFor(OLATAuthenticationController.class).audit(
-				"Error authenticating user "+login+" via provider OLAT",
-				OLATAuthenticationController.class.getName()
-		);
-		
-		return null;
-	}
-	
-	private static Identity findIdentInChangingEmailWorkflow(String login){
-		RegistrationManager rm = RegistrationManager.getInstance();
-		List<TemporaryKey> tk = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
-		if (tk != null) {
-			for (TemporaryKey temporaryKey : tk) {
-				XStream xml = new XStream();
-				HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
-				if (login.equals(mails.get("changedEMail"))) {
-					return BaseSecurityManager.getInstance().findIdentityByName(mails.get("currentEMail"));
-				}
-			}
-		}
-		return null;		
-	}*/
-
-	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		//
 	}

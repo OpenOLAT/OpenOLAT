@@ -37,13 +37,8 @@ package org.olat.core.util.vfs;
  */
 public class VFSStatus {
 
-	/**
-	 * 
-	 */
 	public VFSStatus() {
-		super();
-		// TODO Auto-generated constructor stub
+		//
 	}
-
 }
 

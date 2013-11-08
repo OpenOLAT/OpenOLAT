@@ -118,9 +118,10 @@ public class ErrorFeedbackMailer implements Dispatcher {
 	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest,
 	 *      javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
-	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) {
 		sendMail(request);
-		DispatcherAction.redirectToDefaultDispatcher(response);
+		DispatcherModule.redirectToDefaultDispatcher(response);
 	}
 
 }

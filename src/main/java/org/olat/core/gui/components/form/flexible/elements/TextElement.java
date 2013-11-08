@@ -47,8 +47,7 @@ public interface TextElement extends FormItem{
 	public String getValue();
 
 	/**
-	 * Get the value and filter it using the given filter. To use multiple
-	 * filters, use the ChainedFilter instead of a single filter.
+	 * Get the value and filter it using the given filter.
 	 * 
 	 * @param filter
 	 * @return

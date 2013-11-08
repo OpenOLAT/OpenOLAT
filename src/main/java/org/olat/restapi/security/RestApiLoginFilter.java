@@ -95,6 +95,8 @@ public class RestApiLoginFilter implements Filter {
 	public void destroy() {
 		//
 	}
+	
+	
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -152,7 +154,7 @@ public class RestApiLoginFilter implements Filter {
 			throw new ServletException("Only accept HTTP Request");
 		}
 	}
-	//fxdiff Basic Authentication
+
 	private boolean isBasicAuthenticated(HttpServletRequest request, HttpServletResponse response, String requestURI) {
 		String authHeader = request.getHeader("Authorization");
 		if (authHeader != null) {

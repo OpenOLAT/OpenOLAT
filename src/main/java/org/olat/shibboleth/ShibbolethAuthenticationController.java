@@ -34,7 +34,7 @@ import javax.servlet.http.Cookie;
 
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -154,7 +154,7 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 				return;
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 				//getWindowControl().setError(translate("login.notavailable", OLATContext.getSupportaddress()));
-				DispatcherAction.redirectToServiceNotAvailable( ureq.getHttpResp() );
+				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 			} else {
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
 			}	

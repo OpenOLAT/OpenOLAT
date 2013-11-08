@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.model.PersistedMapper;
@@ -90,7 +90,7 @@ public class MapperServiceImpl implements MapperService {
 		mapperKeyToMapper.put(mapperKey, mapper);
 		mapperToMapperKey.put(mapper, mapperKey);
 		if(session == null || session.getSessionInfo() == null) {
-			return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + mapid;
+			return WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + mapid;
 		}
 		
 		String sessionId = session.getSessionInfo().getSession().getId();
@@ -105,7 +105,7 @@ public class MapperServiceImpl implements MapperService {
 		if(mapper instanceof Serializable) {
 			mapperDao.persistMapper(sessionId, mapid, (Serializable)mapper, -1);
 		}
-		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + mapid;
+		return WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + mapid;
 	}	
 
 	/**
@@ -138,7 +138,7 @@ public class MapperServiceImpl implements MapperService {
 
 		mapperKeyToMapper.put(mapperKey, mapper);
 		mapperToMapperKey.put(mapper, mapperKey);
-		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + encryptedMapId;
+		return WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + encryptedMapId;
 	}
 
 	@Override
@@ -147,9 +147,9 @@ public class MapperServiceImpl implements MapperService {
 			return null;
 		}
 		
-		int index = id.indexOf(DispatcherAction.PATH_MAPPED);
+		int index = id.indexOf(DispatcherModule.PATH_MAPPED);
 		if(index >= 0) {
-			id = id.substring(index + DispatcherAction.PATH_MAPPED.length(), id.length());
+			id = id.substring(index + DispatcherModule.PATH_MAPPED.length(), id.length());
 		}
 		
 		MapperKey mapperKey = new MapperKey(session, id);

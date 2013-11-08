@@ -30,7 +30,7 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.Windows;
@@ -100,27 +100,29 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 	 * @param response
 	 * @param uriPrefix
 	 */
-	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) {
 		UserRequest ureq = null;
 
 		try {
+			String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 				
 			if (! request.getMethod().equals(METHOD_POST)) {
 				log.warn("Wrong HTTP method, only POST allowed, but current method::" + request.getMethod());
-				DispatcherAction.redirectToDefaultDispatcher(response); 
+				DispatcherModule.redirectToDefaultDispatcher(response); 
 				return;
 			}
 			String userName = ureq.getParameter(PARAM_USERNAME);
 			if (! StringHelper.containsNonWhitespace(userName)) {
 				log.warn("Missing username parameter, use '" + PARAM_USERNAME + "' to submit the login name");
-				DispatcherAction.redirectToDefaultDispatcher(response); 
+				DispatcherModule.redirectToDefaultDispatcher(response); 
 				return;
 			}
 			String pwd = ureq.getParameter(PARAM_PASSWORD);
 			if ( ! StringHelper.containsNonWhitespace(pwd)) {
 				log.warn("Missing password parameter, use '" + PARAM_PASSWORD + "' to submit the password");
-				DispatcherAction.redirectToDefaultDispatcher(response); 
+				DispatcherModule.redirectToDefaultDispatcher(response); 
 				return;					
 			}
 			
@@ -130,8 +132,8 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 			if (identity == null) {
 				log.info("Could not authenticate user '" + userName + "', wrong password or user name");
 				// redirect to OLAT loginscreen, add error parameter so that the loginform can mark itself as errorfull
-				String loginUrl = WebappHelper.getServletContextPath() + DispatcherAction.getPathDefault() + "?" + OLATAuthenticationController.PARAM_LOGINERROR + "=true";
-				DispatcherAction.redirectTo(response, loginUrl); 
+				String loginUrl = WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + "?" + OLATAuthenticationController.PARAM_LOGINERROR + "=true";
+				DispatcherModule.redirectTo(response, loginUrl); 
 				return;									
 			}
 			
@@ -149,7 +151,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 					if(request.getParameter("redirect") != null) {
 						//redirect parameter like: /olat/url/RepositoryEntry/917504/CourseNode/81254724902921
 						String redirect = request.getParameter("redirect");
-						DispatcherAction.redirectTo(response, redirect);
+						DispatcherModule.redirectTo(response, redirect);
 					} else if(StringHelper.containsNonWhitespace(restPart)) {
 						//redirect like: http://www.frentix.com/olat/remotelogin/RepositoryEntry/917504/CourseNode/81254724902921
 						try {
@@ -173,16 +175,16 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 						//UserSession usess = UserSession.getUserSession(request);
 						usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH, businessPath);
 						String url = getRedirectToURL(usess);
-						DispatcherAction.redirectTo(response, url);
+						DispatcherModule.redirectTo(response, url);
 					} else {
 						//redirect
 						ServletUtil.serveResource(request, response, ureq.getDispatchResult().getResultingMediaResource());
 					}
 				} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-						DispatcherAction.redirectToServiceNotAvailable(response);
+						DispatcherModule.redirectToServiceNotAvailable(response);
 				} else {
 					// error, redirect to login screen
-					DispatcherAction.redirectToDefaultDispatcher(response); 
+					DispatcherModule.redirectToDefaultDispatcher(response); 
 				}	
 			}
 		} catch (Throwable th) {
@@ -206,6 +208,6 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 		StringOutput sout = new StringOutput(30);
 		ubu.buildURI(sout, null, null);
 		
-		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_AUTHENTICATED + sout.toString();
+		return WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + sout.toString();
 	}
 }

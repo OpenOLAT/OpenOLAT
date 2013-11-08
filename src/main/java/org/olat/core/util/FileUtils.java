@@ -480,7 +480,6 @@ public class FileUtils {
 	 * @param target OutputStream, left open.
 	 * @return true if the copy was successful.
 	 */
-	@Deprecated
 	public static boolean copy(InputStream source, OutputStream target) {
 		try {
 

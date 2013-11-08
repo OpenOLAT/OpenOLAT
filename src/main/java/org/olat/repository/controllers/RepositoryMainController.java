@@ -391,7 +391,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	 * @param subViewIdentifyer optional view identifyer for a sub controller
 	 */
 	private void activateContent(UserRequest ureq, Object userObject, List<ContextEntry> entries, StateEntry state) {
-		log.info("activateContent userObject=" + userObject);
 		if (userObject.equals("search.home")) { // the
 			// home
 			main.setPage(VELOCITY_ROOT + "/index.html");

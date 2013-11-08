@@ -17,41 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.filter;
+package org.olat.core.commons.services.webdav;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.olat.core.dispatcher.Dispatcher;
 
 /**
  * 
- * Description:<br>
- * The filter chain allows you to use muliple filters in a chain.
- * <P>
- * Initial Date: 13.07.2009 <br>
+ * Hide the actual implementation under this interface
  * 
- * @author gnaegi
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix
+ *
  */
-public class ChainedFilter implements Filter {
-	private final List<Filter> chain = new ArrayList<Filter>();
+public interface WebDAVDispatcher extends Dispatcher {
 
-	/**
-	 * @see org.olat.core.util.filter.Filter#filter(java.lang.String)
-	 */
-	public String filter(final String original) {
-		String filteredValue = original;
-		for (Filter filter : chain) {
-			filteredValue = filter.filter(filteredValue);
-		}
-		return filteredValue;
-	}
-
-	/**
-	 * Add a filter to the filter chain
-	 * 
-	 * @param filter
-	 */
-	public void addFilter(final Filter filter) {
-		chain.add(filter);
-	}
+	public void doRootOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException;
+    
+	public void doWebdavOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException;
 
 }

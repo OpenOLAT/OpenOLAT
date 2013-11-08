@@ -44,7 +44,7 @@ import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.mark.MarkManager;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
@@ -402,7 +402,7 @@ public class CatalogController extends BasicController implements Activateable2 
 		 * login link clicked
 		 */		
 		else if (source == loginLink){
-			DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
+			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 		}
 		
 		

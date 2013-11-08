@@ -264,8 +264,7 @@ public class UserRequestImpl implements UserRequest {
 		}
 
 		nonParsedUri = decodedUri.substring(uriPrefix.length()); // guaranteed to
-		// exist by
-		// DispatcherAction
+		// exist by OpenOLATServlet
 
 		// parse parameters
 		int nextSlash = nonParsedUri.indexOf('/');

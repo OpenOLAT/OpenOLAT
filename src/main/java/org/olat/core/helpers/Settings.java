@@ -88,6 +88,8 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	private static String crossOriginFilter;
 	private static File guiCustomThemePath;
 	
+	private String legacyContextPath;
+	
 	/**
 	 * [used by spring]
 	 */
@@ -317,6 +319,14 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 		Settings.serverconfig = serverconfig;
 	}
 
+	public String getLegacyContext() {
+		return legacyContextPath;
+	}
+
+	public void setLegacyContext(String legacyContextPath) {
+		this.legacyContextPath = legacyContextPath;
+	}
+
 	/**
 	 * [spring]
 	 * @param debug
@@ -328,6 +338,7 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	/**
 	 * @see org.olat.core.configuration.ServiceLifeCycle#init()
 	 */
+	@Override
 	public void init() {
 		// Initialize the user configuration and the spring default configuration
 		//
@@ -340,6 +351,7 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	/**
 	 * @see org.olat.core.configuration.ServiceLifeCycle#destroy()
 	 */
+	@Override
 	public void destroy() {
 		if (persistedProperties != null) {
 			persistedProperties.destroy();

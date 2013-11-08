@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.service.webdav;
+package org.olat.core.commons.services.webdav;
 
 import java.net.URI;
 

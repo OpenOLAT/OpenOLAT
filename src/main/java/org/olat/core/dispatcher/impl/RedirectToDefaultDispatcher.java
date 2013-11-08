@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 
 /**
  * Description:<br>
@@ -48,8 +48,9 @@ public class RedirectToDefaultDispatcher implements Dispatcher {
 	/**
 	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
-	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
-		DispatcherAction.redirectToDefaultDispatcher(response);
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) {
+		DispatcherModule.redirectToDefaultDispatcher(response);
 	}
 
 }

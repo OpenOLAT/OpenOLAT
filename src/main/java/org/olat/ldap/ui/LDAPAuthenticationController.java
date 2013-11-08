@@ -32,7 +32,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -319,7 +319,7 @@ protected void event(UserRequest ureq, Component source, Event event) {
 				//update last login date and register active user
 				UserDeletionManager.getInstance().setIdentityAsActiv(authenticatedIdentity);
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
-				DispatcherAction.redirectToServiceNotAvailable( ureq.getHttpResp() );
+				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 			} else {
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
 			}

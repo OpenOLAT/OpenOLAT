@@ -20,6 +20,7 @@
 package org.olat.admin.site.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +52,6 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.gui.control.navigation.SiteViewSecurityCallback;
 import org.olat.core.util.StringHelper;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Configuration of the list of sites: order, security callback, alternative controllers...

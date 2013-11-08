@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -227,7 +227,7 @@ public class RepositorySearchController extends BasicController implements Activ
 			displaySearchForm();
 			return;
 		}else if (source == loginLink){
-			DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
+			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 		}
 	}
 	

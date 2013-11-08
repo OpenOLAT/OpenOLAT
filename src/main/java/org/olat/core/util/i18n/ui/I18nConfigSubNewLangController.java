@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -215,7 +215,7 @@ class I18nConfigSubNewLangController extends FormBasicController {
 		currUser = UserManager.getInstance().loadUserByKey(currUser.getKey());
 		currUser.getPreferences().setLanguage(localeKey);
 		UserManager.getInstance().updateUser(currUser);
-		DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
+		DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 	}
 
 	@Override

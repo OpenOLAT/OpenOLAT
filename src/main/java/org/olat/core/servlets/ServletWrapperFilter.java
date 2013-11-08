@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
@@ -86,7 +86,7 @@ public class ServletWrapperFilter implements Filter {
 			success = true;
 		} catch (Throwable e) {
 			log.error("Exception in ServletWrapperFilter", e);
-			DispatcherAction.sendBadRequest(request.getPathInfo(), response);
+			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 		} finally {
 			// execute the cleanup code for this request
 			Tracing.setUreq(null);

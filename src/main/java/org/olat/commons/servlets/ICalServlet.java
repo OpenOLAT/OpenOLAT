@@ -35,17 +35,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.data.CalendarOutputter;
+import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ValidationException;
 
-
+import org.apache.poi.util.IOUtils;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.ICalTokenGenerator;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.i18n.I18nManager;
 
 
 /**
@@ -57,6 +59,9 @@ import org.olat.core.logging.Tracing;
  * @author Udit Sajjanhar
  */
 public class ICalServlet extends HttpServlet {
+
+	private static final long serialVersionUID = -155266285395912535L;
+	private static final OLog log = Tracing.createLoggerFor(ICalServlet.class);
 	private static int outputBufferSize = 2048;
 	private static int inputBufferSize = 2048;
 
@@ -71,17 +76,17 @@ public class ICalServlet extends HttpServlet {
 	 */
 	public void init(ServletConfig servletConfig) throws ServletException {
 		super.init(servletConfig);
-		Tracing.logInfo("init statics servlet", ICalServlet.class);
+		log.info("init statics servlet");
 		try {
 			String bufSize = servletConfig.getInitParameter("input");
 			inputBufferSize = Integer.parseInt(bufSize);
 			bufSize = servletConfig.getInitParameter("output");
 			inputBufferSize = Integer.parseInt(bufSize);
 		} catch (Exception e) {
-			Tracing.logWarn("problem with config parameters for ical servlets:", e, ICalServlet.class);
+			log.warn("problem with config parameters for ical servlets:", e);
 		}
-		Tracing.logInfo("input buffer size: " + inputBufferSize, ICalServlet.class);
-		Tracing.logInfo("output buffer size: " + inputBufferSize, ICalServlet.class);
+		log.info("input buffer size: " + inputBufferSize);
+		log.info("output buffer size: " + inputBufferSize);
 	}
 
 	/**
@@ -99,6 +104,7 @@ public class ICalServlet extends HttpServlet {
 		}finally {
 			//consume the userrequest.
 			Tracing.setUreq(null);
+			I18nManager.remove18nInfoFromThread();
 		}
 	}
 
@@ -109,9 +115,10 @@ public class ICalServlet extends HttpServlet {
 		Calendar icalDoc = null;
 		
 		ServletOutputStream ostream = null;
+		final boolean debug = log.isDebug();
 		try {
 			String pathInfo = request.getPathInfo();
-			Tracing.logDebug("doGet pathInfo=" + pathInfo, ICalServlet.class);
+			if(debug) log.debug("doGet pathInfo=" + pathInfo);
 			if ((pathInfo == null) || (pathInfo.equals(""))) { 
 				return; // error
 			}
@@ -119,11 +126,11 @@ public class ICalServlet extends HttpServlet {
 			if (checkPath(pathInfo)) {
 				icalDoc = getIcalDocument(pathInfo);
 				if (icalDoc == null) {
-					DispatcherAction.sendNotFound(pathInfo, response);
+					DispatcherModule.sendNotFound(pathInfo, response);
 					return;
 				}
 			} else {
-				DispatcherAction.sendNotFound(pathInfo, response);
+				DispatcherModule.sendNotFound(pathInfo, response);
 				return;
 			}
 			
@@ -141,23 +148,17 @@ public class ICalServlet extends HttpServlet {
 			calOut.output(icalDoc, ostream);
 		} catch (ValidationException e) {
 			// throw olat exception for nice logging
-			Tracing.logWarn("Validation Error when generate iCal stream for path::" + request.getPathInfo(), e, this.getClass());
-			DispatcherAction.sendNotFound("none", response);
+			log.warn("Validation Error when generate iCal stream for path::" + request.getPathInfo(), e);
+			DispatcherModule.sendNotFound("none", response);
 		} catch (IOException e) {
 			// throw olat exception for nice logging
-			Tracing.logWarn("IOException Error when generate iCal stream for path::" + request.getPathInfo(), e, this.getClass());
-			DispatcherAction.sendNotFound("none", response);
+			log.warn("IOException Error when generate iCal stream for path::" + request.getPathInfo(), e);
+			DispatcherModule.sendNotFound("none", response);
 		} catch (Exception e) {
-			Tracing.logWarn("Unknown Error in icalservlet", e, this.getClass());
-			DispatcherAction.sendNotFound("none", response);
-		}
-		finally {
-			try{
-				ostream.close();
-			} catch (Exception e) {
-				// ignore
-			}
-			
+			log.warn("Unknown Error in icalservlet", e);
+			DispatcherModule.sendNotFound("none", response);
+		} finally {
+			IOUtils.closeQuietly(ostream);
 			DBFactory.getInstance(false).commitAndCloseSession();
 		}
 	}
@@ -228,7 +229,7 @@ public class ICalServlet extends HttpServlet {
     
     // check the authentication token
     if (!checkPathAuthenticity(calendarType, userName, authToken, calendarID)) {
-  		Tracing.logWarn("Authenticity Check failed for the ical feed path: " + pathInfo, this.getClass());
+  		log.warn("Authenticity Check failed for the ical feed path: " + pathInfo);
       return null;
     }
 

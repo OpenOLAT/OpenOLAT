@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.admin.sysinfo.InfoMessageManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.util.session.UserSessionManager;
 
@@ -67,7 +67,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
 	@Override
-	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
+	public void execute(HttpServletRequest request, HttpServletResponse response) {
 		String cmd = request.getParameter(PARAMETER_CMD);
 		if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE) || cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)) {
 			handleSetMaintenanceOrInfoMessage(request, response, cmd);
@@ -75,7 +75,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 			if (CoreSpringFactory.getImpl(AdminModule.class).checkSessionAdminToken(request, response)) {
 				handleSessionsCommand(request, response, cmd);
 			} else {
-				DispatcherAction.sendForbidden(request.getPathInfo(), response);
+				DispatcherModule.sendForbidden(request.getPathInfo(), response);
 			}
 		}
 	}
@@ -179,7 +179,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 				ServletUtil.serveStringResource(request, response, "Ok, new maintenanceMessage is::" + message);
 			}
 		} else {
-			DispatcherAction.sendForbidden(request.getPathInfo(), response);
+			DispatcherModule.sendForbidden(request.getPathInfo(), response);
 		}
 	}
 

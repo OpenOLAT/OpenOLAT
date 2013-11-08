@@ -34,7 +34,6 @@ import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.admin.sysinfo.model.SessionsStats;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WorkThreadInformations;
@@ -247,8 +246,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		vo.setAuthenticatedPollCountLastFiveMinutes(statsLast5Minutes.getAuthenticatedPollerCalls());
 		vo.setRequestLastMinute(statsLastMinute.getRequests());
 		vo.setRequestLastFiveMinutes(statsLast5Minutes.getRequests());
-		long dispatchThreads = DispatcherAction.getConcurrentCounter();
-		vo.setConcurrentDispatchThreads(dispatchThreads);	
+		vo.setConcurrentDispatchThreads(sessionStatsManager.getConcurrentCounter());	
 		return vo;
 	}
 	

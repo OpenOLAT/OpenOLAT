@@ -43,7 +43,7 @@ import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.services.webdav.WebDAVManager;
+import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
@@ -238,8 +238,9 @@ public class FolderRunController extends BasicController implements Activateable
 		folderComponent.setCanMail(ureq.getUserSession().getRoles().isGuestOnly() ? false : canMail); // guests can never send mail
 		folderComponent.addListener(this);
 		folderContainer.put("foldercomp", folderComponent);
-		if (WebDAVManager.getInstance().isEnabled() && displayWebDAVLink)
+		if (CoreSpringFactory.getImpl(WebDAVModule.class).isEnabled() && displayWebDAVLink) {
 			folderContainer.contextPut("webdavlink", FolderManager.getWebDAVLink());
+		}
 
 		selTree = new SelectionTree("seltree", getTranslator());
 		selTree.addListener(this);

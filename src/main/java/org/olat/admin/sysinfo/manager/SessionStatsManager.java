@@ -21,6 +21,7 @@ package org.olat.admin.sysinfo.manager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.admin.sysinfo.model.SessionStatsSample;
 import org.olat.admin.sysinfo.model.SessionsStats;
@@ -45,6 +46,7 @@ public class SessionStatsManager implements Sampler {
 	private	UserSessionManager sessionManager;
 	
 	private SessionStatsSample currentSample;
+	private AtomicInteger concurrentCounter = new AtomicInteger(0);
 	private List<SessionStatsSample> sessionStatsSamples = new ArrayList<SessionStatsSample>();
 
 	public List<SessionStatsSample> getSessionViews() {
@@ -70,6 +72,21 @@ public class SessionStatsManager implements Sampler {
 			currentSample = new SessionStatsSample(sessionManager.getNumberOfAuthenticatedUserSessions());
 		}
 		currentSample.incrementRequest();
+	}
+	
+	/**
+	 * @return the number of requests currently handled
+	 */
+	public int getConcurrentCounter() {
+		return concurrentCounter.intValue();
+	}
+	
+	public void incrementConcurrentCounter() {
+		concurrentCounter.incrementAndGet();
+	}
+	
+	public void decrementConcurrentCounter() {
+		concurrentCounter.decrementAndGet();
 	}
 	
 	public synchronized long getNumOfSessions() {

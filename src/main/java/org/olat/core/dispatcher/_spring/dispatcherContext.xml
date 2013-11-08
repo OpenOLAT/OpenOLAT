@@ -8,20 +8,15 @@
 	<!-- Configure the main url dispatcher: here: url http://host:port/webappname/ leads to http://host:port/webappname/go
 		configures DispatcherActions to be called on certain paths -->
 	<bean id="mainUrlDispatcher"
-		class="org.olat.core.dispatcher.DispatcherAction"  >
-		<property name="defaultDispatcherName" value="/dmz/" />
+		class="org.olat.core.dispatcher.DispatcherModule"  >
 		<property name="dispatchers">
 			<map>
-				<!-- <entry key="/go/"><ref bean="demodispatcher" /></entry>-->
 				<entry key="/dmz/">
 					<ref bean="dmzbean" />
 				</entry>
 				<entry key="/url/">
 					<!-- if you change /url make sure you also modify olatcore/src/main/java/org/olat/core/gui/components/form/flexible/impl/elements/richText/_static/js/BTinyHelper.js accordingly -->
 					<ref bean="restdispatcher" />
-				</entry>
-				<entry key="/">
-					<ref bean="redirect2defaultbean" />
 				</entry>
 				<entry key="/remotelogin/">
 					<ref bean="remoteloginbean" />
@@ -42,9 +37,6 @@
 				<entry key="/admin.html">
 					<ref bean="adminbean" />
 				</entry>
-				<entry key="/raw/">
-					<ref bean="staticsrawbean" />
-				</entry>
 				<entry key="/help/">
 					<ref bean="contexthelpbean" />
 				</entry>
@@ -63,12 +55,6 @@
 				<entry key="/blog/">
 					<ref bean="blogMediaBean" />
 				</entry>
-				<!-- uncomment this if the xml catolog export should be enabled
-					<entry key="/catalog.xml">
-					<ref bean="catexport" />
-					</entry>
-				-->
-
 			</map>
 		</property>
 	</bean>
@@ -201,28 +187,11 @@
 
 	<bean id="adminbean"
 		class="org.olat.admin.AdminModuleDispatcher" />
-	<!-- uncomment this if the xml catolog export should be enabled -->
-	<!-- 
-	<bean id ="catexport" class = "org.olat.dispatcher.CatalogExportModuleDispatcher" >
-		<constructor-arg index="0">5</constructor-arg>
-	</bean>
-	 -->
-
-	<bean id="redirect2defaultbean" class = "org.olat.core.dispatcher.impl.RedirectToDefaultDispatcher" />
-	<!-- uncomment this and comment above line if automatic guest login should be enabled -->
-	<!--
-	<bean id="redirect2defaultbean" class = "org.olat.dispatcher.RedirectToAutoGuestLoginDispatcher" />
-	-->
-
 
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />
 
 	<!-- blog media dispatcher -->
 	<bean id="blogMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />
-
-
-
-
 
 </beans>

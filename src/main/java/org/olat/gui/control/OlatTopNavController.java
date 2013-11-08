@@ -29,7 +29,7 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.impressum.ImpressumMainController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -151,7 +151,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 				openInNewBrowserWindow(ureq, layoutCtrlr);
 				//
 			} else if (source == loginLink) {
-				DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
+				DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 			} else if (source == topNavVC) {
 			if (command.equals(ACTION_LOGOUT)) {
 				AuthHelper.doLogout(ureq);

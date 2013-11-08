@@ -33,7 +33,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.webdav.WebDAVManager;
+import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -103,8 +103,8 @@ public class PersonalSettingsController extends BasicController implements Activ
 				listenTo(pwdc);
 				userConfig.addTab(translate("tab.pwd"), pwdc.getInitialComponent());
 			}
-			
-			if(WebDAVManager.getInstance().isEnabled()) {
+
+			if(CoreSpringFactory.getImpl(WebDAVModule.class).isEnabled()) {
 				pwdav = new WebDAVPasswordController(ureq, getWindowControl());
 				userConfig.addTab(translate("tab.pwdav"), pwdav.getInitialComponent());
 				listenTo(pwdav);

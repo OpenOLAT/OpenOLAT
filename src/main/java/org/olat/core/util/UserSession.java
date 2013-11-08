@@ -82,6 +82,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 */
 	private transient Map<String,Object> nonClearedStore = new HashMap<String,Object>();
 	private boolean authenticated = false;
+	private boolean savedSession = false;
 	private transient Preferences guiPreferences;
 	private transient EventBus singleUserSystemBus;
 	private List<String> chats;
@@ -103,6 +104,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		store = new HashMap<String,Object>(4);
 		nonClearedStore = new HashMap<String,Object>();
 		singleUserSystemBus = CoordinatorManager.getInstance().getCoordinator().createSingleUserInstance();
+		savedSession = true;
 		return this;
 	}
 
@@ -115,6 +117,14 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	
 	public void setAuthenticated(boolean authenticated) {
 		this.authenticated = authenticated;
+	}
+
+	public boolean isSavedSession() {
+		return savedSession;
+	}
+
+	public void setSavedSession(boolean savedSession) {
+		this.savedSession = savedSession;
 	}
 
 	public Map<String,Object> getStore() {

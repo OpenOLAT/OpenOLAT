@@ -26,6 +26,7 @@
 
 package org.olat.core.dispatcher.mapper;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.ServletUtil;
@@ -87,7 +88,7 @@ public class GlobalMapperRegistry implements Dispatcher {
 			throw new AssertException("Could not register global named mapper, name already used::" + globalName);
 		}
 		pathToMapper.put(globalName, mapper);
-		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_GLOBAL_MAPPED + globalName ;			
+		return WebappHelper.getServletContextPath() + DispatcherModule.PATH_GLOBAL_MAPPED + globalName ;			
 	}
 
 
@@ -95,12 +96,14 @@ public class GlobalMapperRegistry implements Dispatcher {
 	 * @param hreq
 	 * @param hres
 	 */
-	public void execute(HttpServletRequest hreq, HttpServletResponse hres, String pathInfo) {
+	@Override
+	public void execute(HttpServletRequest hreq, HttpServletResponse hres) throws IOException {
+		String pathInfo = DispatcherModule.subtractContextPath(hreq);
 		// e.g. 23423/bla/blu.html
-		String subInfo = pathInfo.substring(DispatcherAction.PATH_GLOBAL_MAPPED.length());
+		String subInfo = pathInfo.substring(DispatcherModule.PATH_GLOBAL_MAPPED.length());
 		int slashPos = subInfo.indexOf('/');
 		if (slashPos == -1) {
-			DispatcherAction.sendNotFound("not found", hres);
+			DispatcherModule.sendNotFound("not found", hres);
 			return;
 		}
 		

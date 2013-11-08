@@ -27,8 +27,8 @@ package org.olat.admin.jmx.datasources;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 
+import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.util.session.UserSessionManager;
 
@@ -44,7 +44,7 @@ public class ThreadAndControllerInfo {
 	private static MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
 
 	public int getConcurrentThreads() {
-		return DispatcherAction.getConcurrentCounter();
+		return CoreSpringFactory.getImpl(SessionStatsManager.class).getConcurrentCounter();
 	}
 	
 	public int getControllerCount() {

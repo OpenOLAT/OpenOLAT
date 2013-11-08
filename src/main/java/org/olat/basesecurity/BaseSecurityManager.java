@@ -1445,7 +1445,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				Authentication auth = findAuthentication(ident, provider);
 				if(auth == null) {
 					if(algorithm != null) {
-						String salt = Encoder.getSalt();
+						String salt = algorithm.isSalted() ? Encoder.getSalt() : null;
 						String hash = Encoder.encrypt(credentials, salt, algorithm);
 						auth = new AuthenticationImpl(ident, provider, authUserName, hash, salt, algorithm.name());
 					} else {
@@ -1534,7 +1534,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 
 	@Override
 	public Authentication updateCredentials(Authentication authentication, String password, Algorithm algorithm) {
-		String salt = Encoder.getSalt();
+		String salt = algorithm.isSalted() ? Encoder.getSalt() : null;
 		String newCredentials = Encoder.encrypt(password, salt, algorithm);
 		authentication.setSalt(salt);
 		authentication.setCredential(newCredentials);

@@ -20,7 +20,7 @@
 package org.olat.core.commons.fullWebApp;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -66,7 +66,7 @@ public class DefaultTopNavController extends BasicController {
 			if (command.equals("logout")) {
 				CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(ureq.getUserSession());
 			} else if (command.equals("login")) {
-				DispatcherAction
+				DispatcherModule
 						.redirectToDefaultDispatcher(ureq.getHttpResp());
 			}
 		}

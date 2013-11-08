@@ -77,7 +77,7 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.cluster.jms.JMSTest.class,//ok
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,//ok
 	org.olat.commons.coordinate.CoordinatorTest.class,//ok
-	org.olat.core.commons.service.webdav.WebDAVTestCase.class,//ok
+	org.olat.core.commons.services.webdav.WebDAVTestCase.class,//ok
 	org.olat.core.commons.services.webdav.manager.WebDAVManagerTest.class,//ok
 	org.olat.core.commons.taskExecutor.PersistentTaskDAOTest.class,//ok
 	org.olat.core.commons.taskExecutor.TaskExecutorManagerTest.class,//ok

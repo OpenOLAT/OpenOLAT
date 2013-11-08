@@ -17,22 +17,26 @@
  * 12.10.2011 by frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.service.webdav;
+package org.olat.core.commons.services.webdav;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.params.CookiePolicy;
-import org.apache.http.client.params.HttpClientParams;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.olat.restapi.security.RestSecurityHelper;
 
 /**
@@ -46,22 +50,27 @@ import org.olat.restapi.security.RestSecurityHelper;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class WebDAVConnection {
+public class WebDAVConnection implements Closeable {
 	
 	private int port = WebDAVTestCase.PORT;
 	private String host = WebDAVTestCase.HOST;
 	private String protocol = WebDAVTestCase.PROTOCOL;
 	private String contextPath = WebDAVTestCase.CONTEXT_PATH;
+	
+	private final BasicCookieStore cookieStore = new BasicCookieStore();
+	private final CredentialsProvider provider = new BasicCredentialsProvider();
 
-	private final DefaultHttpClient httpclient;
+	private final CloseableHttpClient httpclient;
 
 	public WebDAVConnection() {
-		httpclient = new DefaultHttpClient();
-		HttpClientParams.setCookiePolicy(httpclient.getParams(), CookiePolicy.RFC_2109);
+		httpclient = HttpClientBuilder.create()
+				.setDefaultCookieStore(cookieStore)
+				.setDefaultCredentialsProvider(provider)
+				.build();
 	}
 	
 	public CookieStore getCookieStore() {
-		return httpclient.getCookieStore();
+		return cookieStore;
 	}
 	
 	public String getSecurityToken(HttpResponse response) {
@@ -71,14 +80,14 @@ public class WebDAVConnection {
 		return header == null ? null : header.getValue();
 	}
 
-	public void shutdown() {
-		httpclient.getConnectionManager().shutdown();
+	public void close() {
+		IOUtils.closeQuietly(httpclient);
 	}
 	
 	public void setCredentials(String username, String password) {
-		httpclient.getCredentialsProvider().setCredentials(
-        new AuthScope("localhost", port),
-        new UsernamePasswordCredentials(username, password));
+		provider.setCredentials(
+				new AuthScope(host, port, "OLAT WebDAV Access", "Basic"),
+				new UsernamePasswordCredentials(username, password));
 	}
 	
 	public HttpResponse propfind(URI uri) throws IOException, URISyntaxException {

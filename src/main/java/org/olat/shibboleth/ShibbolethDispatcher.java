@@ -42,7 +42,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.control.ChiefController;
@@ -89,14 +89,15 @@ public class ShibbolethDispatcher implements Dispatcher{
 	}
 
 	/**
-	 * Main method called by DIspatcherAction.
+	 * Main method called by OpenOLATServlet.
 	 * This processess all shibboleth requests.
 	 * 
 	 * @param req
 	 * @param resp
 	 * @param uriPrefix
 	 */
-	public void execute(HttpServletRequest req,	HttpServletResponse resp, String uriPrefix) {
+	@Override
+	public void execute(HttpServletRequest req,	HttpServletResponse resp) {
 		if(translator==null) {
 			translator = Util.createPackageTranslator(ShibbolethDispatcher.class, I18nModule.getDefaultLocale());
 		}
@@ -109,6 +110,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 		} catch (UnsupportedEncodingException e) {
 			throw new AssertException("UTF-8 encoding not supported!!!!");
 		}
+		String uriPrefix = DispatcherModule.getLegacyUriPrefix(req);
 		uri = uri.substring(uriPrefix.length()); // guaranteed to exist by DispatcherAction	
 			
 		Map<String, String> attributesMap = getShibbolethAttributesFromRequest(req);		
@@ -131,7 +133,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 			if(log.isDebug()){
 				log.debug("Bad Request "+req.getPathInfo());
 			}
-			DispatcherAction.sendBadRequest(req.getPathInfo(), resp);
+			DispatcherModule.sendBadRequest(req.getPathInfo(), resp);
 			return;
 		}		
 		
@@ -145,9 +147,9 @@ public class ShibbolethDispatcher implements Dispatcher{
 		int loginStatus = AuthHelper.doLogin(auth.getIdentity(), ShibbolethDispatcher.PROVIDER_SHIB, ureq);
 		if (loginStatus != AuthHelper.LOGIN_OK) {
 			if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-				DispatcherAction.redirectToServiceNotAvailable(resp);
+				DispatcherModule.redirectToServiceNotAvailable(resp);
 			} else {
-				DispatcherAction.redirectToDefaultDispatcher(resp); // error, redirect to login screen
+				DispatcherModule.redirectToDefaultDispatcher(resp); // error, redirect to login screen
 			}
 			return;
 		}
@@ -172,7 +174,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 				RedirectMediaResource rmr = (RedirectMediaResource)mr;
 				rmr.prepare(resp);
 			} else {
-				DispatcherAction.redirectToDefaultDispatcher(resp); // error, redirect to login screen
+				DispatcherModule.redirectToDefaultDispatcher(resp); // error, redirect to login screen
 			}
 		}
 	}
@@ -238,9 +240,9 @@ public class ShibbolethDispatcher implements Dispatcher{
 
 	private final void redirectToShibbolethRegistration(HttpServletResponse response) {
 		try {
-			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherAction.getPathDefault() + ShibbolethModule.PATH_REGISTER_SHIBBOLETH + "/");
+			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + ShibbolethModule.PATH_REGISTER_SHIBBOLETH + "/");
 		} catch (IOException e) {
-			log.error("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherAction.getPathDefault(),e);
+			log.error("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault(),e);
 		}
 	}
 

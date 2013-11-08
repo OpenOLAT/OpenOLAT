@@ -36,7 +36,6 @@ import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.admin.sysinfo.model.SessionsStats;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -122,7 +121,7 @@ public class SysinfoController extends FormBasicController {
 		//controllers
 		int controllerCnt = DefaultController.getControllerCount();
 		uifactory.addStaticTextElement("controllercount", "runtime.controllercount", Integer.toString(controllerCnt), runtimeCont);
-		int numOfDispatchingThreads = DispatcherAction.getConcurrentCounter();
+		int numOfDispatchingThreads = sessionStatsManager.getConcurrentCounter();
 		uifactory.addStaticTextElement("dispatchingthreads", "runtime.dispatchingthreads", Integer.toString(numOfDispatchingThreads), runtimeCont);
 		
 		//sessions and clicks

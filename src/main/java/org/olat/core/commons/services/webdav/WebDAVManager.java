@@ -22,8 +22,7 @@ package org.olat.core.commons.services.webdav;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
 import org.olat.core.util.UserSession;
 
 /**
@@ -36,18 +35,10 @@ import org.olat.core.util.UserSession;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public abstract class WebDAVManager extends BasicManager implements ConfigOnOff{
+public interface WebDAVManager {
 	
-	protected static WebDAVManager INSTANCE;
 
-	/**
-	 * Factory method
-	 * 
-	 * @return
-	 */
-	public static final WebDAVManager getInstance() {
-		return INSTANCE;
-	}
+	public static final String REQUEST_USERSESSION_KEY = "__usess";
 
 	/**
 	 * Handles authentication of OLAT users for the WevDAV servlet.
@@ -57,8 +48,7 @@ public abstract class WebDAVManager extends BasicManager implements ConfigOnOff{
 	 * @return True if user is successfully authenticated as a valid OLAT user,
 	 *         false otherwise.
 	 */
-	protected abstract boolean handleAuthentication(HttpServletRequest req,
-			HttpServletResponse resp);
+	public boolean handleAuthentication(HttpServletRequest req, HttpServletResponse resp);
 
 	/**
 	 * Calculate the user session object for a request
@@ -66,11 +56,8 @@ public abstract class WebDAVManager extends BasicManager implements ConfigOnOff{
 	 * @param req
 	 * @return
 	 */
-	protected abstract UserSession getUserSession(HttpServletRequest req);
-
-	/**
-	 * @return true: webDAV support is enabled; false: webDAV is disabled
-	 */
-	public abstract boolean isEnabled();
+	public UserSession getUserSession(HttpServletRequest req);
+	
+	public WebResourceRoot getWebDAVRoot(HttpServletRequest req);
 
 }

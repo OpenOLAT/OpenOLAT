@@ -38,7 +38,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -336,7 +336,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				return;
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
-				DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
+				DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 			} else {
 				// fxdiff: show useradmin-mail for pw-requests
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));

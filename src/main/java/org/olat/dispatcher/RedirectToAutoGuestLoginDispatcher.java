@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.Windows;
@@ -63,11 +63,13 @@ public class RedirectToAutoGuestLoginDispatcher implements Dispatcher {
 	/**
 	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
-	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) {
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for 
+			String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 		}catch(NumberFormatException nfe){
 			//MODE could not be decoded
@@ -79,15 +81,15 @@ public class RedirectToAutoGuestLoginDispatcher implements Dispatcher {
 			if(log.isDebug()){
 				log.debug("Bad Request "+request.getPathInfo());
 			}
-			DispatcherAction.sendBadRequest(request.getPathInfo(), response);
+			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
 		int loginStatus = AuthHelper.doAnonymousLogin(ureq,I18nManager.getInstance().getLocaleOrDefault(ureq.getParameter("lang")) );
 		if ( loginStatus != AuthHelper.LOGIN_OK) {
 			if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-				DispatcherAction.redirectToServiceNotAvailable(response);
+				DispatcherModule.redirectToServiceNotAvailable(response);
 			}
-			DispatcherAction.redirectToDefaultDispatcher(response); // error, redirect to login screen
+			DispatcherModule.redirectToDefaultDispatcher(response); // error, redirect to login screen
 			return;
 		}
 			

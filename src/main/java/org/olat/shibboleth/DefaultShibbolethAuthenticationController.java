@@ -27,7 +27,7 @@ package org.olat.shibboleth;
 import java.util.Locale;
 
 import org.olat.basesecurity.AuthHelper;
-import org.olat.core.dispatcher.DispatcherAction;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -96,14 +96,14 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == shibLink) {
-			DispatcherAction.redirectTo(ureq.getHttpResp(), WebappHelper.getServletContextPath() + "/shib/");
+			DispatcherModule.redirectTo(ureq.getHttpResp(), WebappHelper.getServletContextPath() + "/shib/");
 		}	else if (source == guestLink) {
 			int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				return;
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 				//getWindowControl().setError(translate("login.notavailable", OLATContext.getSupportaddress()));
-				DispatcherAction.redirectToServiceNotAvailable( ureq.getHttpResp() );
+				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 			} else {
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
 			}	

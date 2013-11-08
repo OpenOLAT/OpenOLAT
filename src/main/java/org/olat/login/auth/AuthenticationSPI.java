@@ -30,5 +30,7 @@ import org.olat.core.id.Identity;
 public interface AuthenticationSPI {
 	
 	public Identity authenticate(Identity identity, String login, String password);
+	
+	public void upgradePassword(Identity identity, String login, String password);
 
 }

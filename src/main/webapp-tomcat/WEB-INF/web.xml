@@ -32,8 +32,13 @@
     	<param-name>contextInitializerClasses</param-name>
     	<param-value>org.olat.core.CoreSpringInitializer</param-value>
 	</context-param>
-   
-
+   <!-- 
+	<filter>
+		<filter-name>SpyFilter</filter-name>
+		<filter-class>org.olat.core.servlets.SpyFilter</filter-class>
+	</filter>
+	-->
+	
 	
 	<!-- 2. Filters -->
 	<filter>
@@ -55,6 +60,12 @@
 		<filter-name>RESTApiLoginFilter</filter-name>
 		<filter-class>org.olat.restapi.security.RestApiLoginFilter</filter-class>
 	</filter>
+	<!-- 
+	<filter-mapping>
+		<filter-name>SpyFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	-->
 	
 	<!-- Use FakeHTTPSFilter for requests to WSService and TraineeStatusService (dynamic WSDL for ONYX) -->
 	<filter-mapping>
@@ -141,9 +152,14 @@
     
 	<!-- OLAT servlet -->
 	<servlet>
-		<servlet-name>olatservlet</servlet-name>
-		<servlet-class>org.olat.core.servlets.OLATServlet</servlet-class>
-		
+		<servlet-name>openolatservlet</servlet-name>
+		<servlet-class>org.olat.core.servlets.OpenOLATServlet</servlet-class>
+		<!-- Set the load order -->
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>rawservlet</servlet-name>
+		<servlet-class>org.olat.core.servlets.StaticServlet</servlet-class>
 		<!-- Set the load order -->
 		<load-on-startup>1</load-on-startup>
 	</servlet>
@@ -158,39 +174,6 @@
 		<servlet-name>TraineeStatusService</servlet-name>  
 		<servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>  
 		<load-on-startup>2</load-on-startup>  
-	</servlet>
-
-	<!-- WebDAV servlet -->
-	<servlet>
-		<servlet-name>webdav</servlet-name>
-		<servlet-class>org.olat.core.commons.services.webdav.SecureWebdavServlet</servlet-class>
-
-		<init-param>
-			<param-name>debug</param-name>
-			<param-value>0</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>input</param-name>
-			<param-value>32768</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>output</param-name>
-			<param-value>32768</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>listings</param-name>
-			<param-value>true</param-value>
-		</init-param>
-
-		<!-- Uncomment this to enable read and write access -->
-		<init-param>
-			<param-name>readonly</param-name>
-			<param-value>false</param-value>
-		</init-param>
-		<load-on-startup>3</load-on-startup>
 	</servlet>
 	
 	<!-- Jersey REST Servlet -->
@@ -247,19 +230,18 @@
 	<!-- 5.Servlet-Mapping -->
 	<!-- The mapping for the OLAT servlet -->
 	<servlet-mapping>
-		<servlet-name>olatservlet</servlet-name>
+		<servlet-name>openolatservlet</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
 		
 	<servlet-mapping>
-		<servlet-name>olatservlet</servlet-name>
+		<servlet-name>openolatservlet</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
 	
-	<!-- The mapping for the webdav servlet -->
 	<servlet-mapping>
-		<servlet-name>webdav</servlet-name>
-		<url-pattern>/webdav/*</url-pattern>
+		<servlet-name>rawservlet</servlet-name>
+		<url-pattern>/raw/*</url-pattern>
 	</servlet-mapping>
 	
 	<!-- The mapping to the REST API -->

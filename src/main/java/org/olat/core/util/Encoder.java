@@ -54,18 +54,25 @@ public class Encoder {
 	private static final OLog log = Tracing.createLoggerFor(Encoder.class);
 	
 	public enum Algorithm {
-		md5("MD5", 1),
-		sha1("SHA-1", 100),
-		sha256("SHA-256", 100),
-		sha512("SHA-512", 100),
-		pbkdf2("PBKDF2WithHmacSHA1", 20000);
+		md5("MD5", 1, true),
+		md5_noSalt("MD5", 1, false),
+		sha1("SHA-1", 100, true),
+		sha256("SHA-256", 100, true),
+		sha512("SHA-512", 100, true),
+		pbkdf2("PBKDF2WithHmacSHA1", 20000, true);
 
+		private final boolean salted;
 		private final int iterations;
 		private final String algorithm;
 		
-		private Algorithm(String algorithm, int iterations) {
+		private Algorithm(String algorithm, int iterations, boolean salted) {
 			this.algorithm = algorithm;
 			this.iterations = iterations;
+			this.salted = salted;
+		}
+		
+		public boolean isSalted() {
+			return salted;
 		}
 		
 		public String getAlgorithm() {

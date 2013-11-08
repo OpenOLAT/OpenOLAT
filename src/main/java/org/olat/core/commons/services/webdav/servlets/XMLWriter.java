@@ -1,29 +1,21 @@
-/**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.
-*/
-package org.olat.core.util.servlets;
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+package org.olat.core.commons.services.webdav.servlets;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -69,7 +61,7 @@ public class XMLWriter {
     /**
      * Writer.
      */
-    protected Writer writer = null;
+    protected final Writer writer;
 
 
     // ----------------------------------------------------------- Constructors
@@ -79,6 +71,7 @@ public class XMLWriter {
      * Constructor.
      */
     public XMLWriter() {
+        this(null);
     }
 
 
@@ -98,25 +91,9 @@ public class XMLWriter {
      *
      * @return String containing the generated XML
      */
+    @Override
     public String toString() {
         return buffer.toString();
-    }
-
-
-    /**
-     * Write property to the XML.
-     *
-     * @param namespace Namespace
-     * @param namespaceInfo Namespace info
-     * @param name Property name
-     * @param value Property value
-     */
-    public void writeProperty(String namespace, String namespaceInfo,
-                              String name, String value) {
-        writeElement(namespace, namespaceInfo, name, OPENING);
-        buffer.append(value);
-        writeElement(namespace, namespaceInfo, name, CLOSING);
-
     }
 
 
@@ -131,17 +108,6 @@ public class XMLWriter {
         writeElement(namespace, name, OPENING);
         buffer.append(value);
         writeElement(namespace, name, CLOSING);
-    }
-
-
-    /**
-     * Write property to the XML.
-     *
-     * @param namespace Namespace
-     * @param name Property name
-     */
-    public void writeProperty(String namespace, String name) {
-        writeElement(namespace, name, NO_CONTENT);
     }
 
 
@@ -243,6 +209,7 @@ public class XMLWriter {
     public void sendData()
         throws IOException {
         if (writer != null) {
+        	//System.out.println(buffer.toString());
             writer.write(buffer.toString());
             buffer = new StringBuilder();
         }
