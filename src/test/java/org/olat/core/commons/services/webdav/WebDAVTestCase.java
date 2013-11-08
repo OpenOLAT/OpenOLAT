@@ -54,7 +54,6 @@ public abstract class WebDAVTestCase extends OlatTestCase {
 	public final static int PORT = 9997;
 	public final static String HOST = "localhost";
 	public final static String PROTOCOL = "http";
-	public final static String CONTEXT_PATH = "webdav";
 
 	private static GrizzlyWebServer webServer;
 	
@@ -77,7 +76,6 @@ public abstract class WebDAVTestCase extends OlatTestCase {
 				sa.addInitParameter("output", "32768");
 				sa.addInitParameter("listings", "true");
 				sa.addInitParameter("readonly", "false");
-				sa.setContextPath("/" + CONTEXT_PATH);
 				webServer.addGrizzlyAdapter(sa, new String[]{""});
 
 				log.info("Starting the Grizzly Web Container for WebDAV...");

@@ -55,7 +55,6 @@ public class WebDAVConnection implements Closeable {
 	private int port = WebDAVTestCase.PORT;
 	private String host = WebDAVTestCase.HOST;
 	private String protocol = WebDAVTestCase.PROTOCOL;
-	private String contextPath = WebDAVTestCase.CONTEXT_PATH;
 	
 	private final BasicCookieStore cookieStore = new BasicCookieStore();
 	private final CredentialsProvider provider = new BasicCredentialsProvider();
@@ -103,12 +102,5 @@ public class WebDAVConnection implements Closeable {
 	public UriBuilder getBaseURI() throws URISyntaxException  {
 		URI uri = new URI(protocol, null, host, port, null, null, null);
 		return UriBuilder.fromUri(uri);
-	}
-	
-	/**
-	 * @return http://localhost:9997/webdav
-	 */
-	public UriBuilder getContextURI()  throws URISyntaxException {
-		return getBaseURI().path(contextPath);
 	}
 }

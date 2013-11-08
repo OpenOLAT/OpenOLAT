@@ -54,12 +54,14 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		//list root content of its webdav folder
 		WebDAVConnection conn = new WebDAVConnection();
 		conn.setCredentials(user.getName(), "A6B7C8");
-		URI uri = conn.getContextURI().build();
+		URI uri = conn.getBaseURI().build();
 		HttpResponse response = conn.propfind(uri);
 		assertEquals(207, response.getStatusLine().getStatusCode());
 		
 		String xml = EntityUtils.toString(response.getEntity());
-		Assert.assertTrue(xml.indexOf("/webdav/coursefolders/") > 0);
+		Assert.assertTrue(xml.indexOf("<D:multistatus") > 0);//Windows need the D namespace
+		Assert.assertTrue(xml.indexOf("<D:href>/</D:href>") > 0);//check the root
+		Assert.assertTrue(xml.indexOf("<D:href>/webdav/</D:href>") > 0);//check the webdav folder
 		
 		IOUtils.closeQuietly(conn);
 	}

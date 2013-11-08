@@ -59,7 +59,6 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.ServletUtil;
