@@ -128,7 +128,7 @@ import org.xml.sax.SAXException;
  * @version $Id$
  */
 
-public class WebdavDispatcher
+public class WebDAVDispatcherImpl
     extends DefaultDispatcher implements WebDAVDispatcher, Dispatcher {
 
     private static final long serialVersionUID = 1L;
@@ -259,7 +259,7 @@ public class WebdavDispatcher
 
     // --------------------------------------------------------- Public Methods
 
-    public WebdavDispatcher() {
+    public WebDAVDispatcherImpl() {
     	//
     }
 
@@ -1000,7 +1000,7 @@ public class WebdavDispatcher
         String path = getRelativePath(req);
         WebResourceRoot resources = getResources(req);
     	if (resources.canWrite(path)) {
-    		copyResource(req, resp, false);
+    		copyResource(req, resp);
     	} else {
     		resp.sendError(WebdavStatus.SC_FORBIDDEN);
     	}
@@ -1025,7 +1025,7 @@ public class WebdavDispatcher
             return;
         }
         
-        if (copyResource(req, resp, true)) {
+        if (copyResource(req, resp)) {
             deleteResource(path, req, resp, false);
         }
     }
@@ -1586,8 +1586,6 @@ public class WebdavDispatcher
     private boolean isLocked(String path, String ifHeader) {
 
         // Checking resource locks
-    	
-    	System.out.println("isLocked: " + path + " :: " + ifHeader);
 
         LockInfo lock = resourceLocks.get(path);
         Enumeration<String> tokenList = null;
@@ -1647,7 +1645,7 @@ public class WebdavDispatcher
      * @param resp Servlet response
      * @return boolean true if the copy is successful
      */
-    private boolean copyResource(HttpServletRequest req, HttpServletResponse resp, boolean move)
+    private boolean copyResource(HttpServletRequest req, HttpServletResponse resp)
     throws IOException {
 
         // Parsing destination header

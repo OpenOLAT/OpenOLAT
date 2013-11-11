@@ -160,6 +160,7 @@ public class WebDAVManagerImpl implements WebDAVManager {
 		rootContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 
 		VFSResourceRoot fdc = new VFSResourceRoot(null, rootContainer);
+		fdc.setUserSession(usess);
 		return fdc;
 	}
 

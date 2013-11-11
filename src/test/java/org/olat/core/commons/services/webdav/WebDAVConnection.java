@@ -26,18 +26,23 @@ import java.net.URISyntaxException;
 
 import javax.ws.rs.core.UriBuilder;
 
+import junit.framework.Assert;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.olat.restapi.security.RestSecurityHelper;
+import org.apache.http.util.EntityUtils;
 
 /**
  * 
@@ -72,28 +77,52 @@ public class WebDAVConnection implements Closeable {
 		return cookieStore;
 	}
 	
-	public String getSecurityToken(HttpResponse response) {
-		if(response == null) return null;
-		
-		Header header = response.getFirstHeader(RestSecurityHelper.SEC_TOKEN);
-		return header == null ? null : header.getValue();
-	}
-
-	public void close() {
-		IOUtils.closeQuietly(httpclient);
-	}
-	
 	public void setCredentials(String username, String password) {
 		provider.setCredentials(
 				new AuthScope(host, port, "OLAT WebDAV Access", "Basic"),
 				new UsernamePasswordCredentials(username, password));
 	}
 	
-	public HttpResponse propfind(URI uri) throws IOException, URISyntaxException {
-		HttpPropFind propFind = new HttpPropFind(uri);
-		propFind.addHeader("Depth", "1");
-		HttpResponse response = httpclient.execute(propFind);
-		return response;	
+	public HttpResponse execute(HttpUriRequest request)
+	throws IOException, URISyntaxException {
+		HttpResponse response = httpclient.execute(request);
+		return response;
+	}
+	
+	public String propfind(URI uri, int depth) throws IOException, URISyntaxException {
+		HttpPropFind propfind = new HttpPropFind(uri);
+		propfind.addHeader("Depth", Integer.toString(depth));
+		HttpResponse response = execute(propfind);
+		Assert.assertEquals(207, response.getStatusLine().getStatusCode());
+		return EntityUtils.toString(response.getEntity());
+	}
+	
+	public HttpOptions createOptions(URI uri) throws IOException, URISyntaxException {
+		HttpOptions options = new HttpOptions(uri);
+		return options;	
+	}
+	
+	public HttpPut createPut(URI uri) {
+		HttpPut put = new HttpPut(uri);
+		put.addHeader("Accept", "*/*");
+		return put;
+	}
+	
+	public HttpPropPatch createPropPatch(URI uri) {
+		HttpPropPatch proppatch = new HttpPropPatch(uri);
+		proppatch.addHeader("Accept", "*/*");
+		return proppatch;
+	}
+	
+	public HttpGet createGet(URI uri) {
+		HttpGet get = new HttpGet(uri);
+		get.addHeader("Accept", "*/*");
+		return get;
+	}
+	
+	@Override
+	public void close() {
+		IOUtils.closeQuietly(httpclient);
 	}
 	
 	/**

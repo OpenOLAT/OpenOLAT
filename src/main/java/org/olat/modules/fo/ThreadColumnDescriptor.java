@@ -26,19 +26,19 @@
 package org.olat.modules.fo;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.traversal.GenericTraversalNode;
-import org.olat.core.util.traversal.TreeComparator;
-import org.olat.core.util.traversal.TreeWalker;
 
 /**
  * Specialized ColumnDescriptor to display title of Forum messages in a indented
@@ -73,16 +73,14 @@ public class ThreadColumnDescriptor extends DefaultColumnDescriptor {
 	 *
 	 * @author gnaegi
 	 */
-	private class MessageTreeComparator implements TreeComparator {
-		private class MessageComparator implements Comparator {
+	private static class MessageTreeComparator implements TreeComparator {
+		private class MessageComparator implements Comparator<GenericTraversalNode> {
 
 			/**
 			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 			 */
-			public int compare(Object a, Object b) {
+			public int compare(GenericTraversalNode ga, GenericTraversalNode gb) {
 				boolean asc = true; //ascending;
-				GenericTraversalNode ga = (GenericTraversalNode) a;
-				GenericTraversalNode gb = (GenericTraversalNode) b;
 				Message ma = (Message) ga.getItem();
 				Message mb = (Message) gb.getItem();
 				Date da = ma.getCreationDate();
@@ -111,10 +109,8 @@ public class ThreadColumnDescriptor extends DefaultColumnDescriptor {
 			msgcomp = new MessageComparator();
 		}
 
-		/**
-		 * @see org.olat.core.util.traversal.TreeComparator#sort(int, java.util.List)
-		 */
-		public void sort(int depth, List children) {
+		@Override
+		public void sort(int depth, List<GenericTraversalNode> children) {
 			/*
 			 * if (depth > 1) { msgcomp.setAscending(true); } else {
 			 * msgcomp.setAscending(false); }
@@ -223,6 +219,169 @@ public class ThreadColumnDescriptor extends DefaultColumnDescriptor {
 	 */
 	public void otherColumnDescriptorSorted() {
 		toIndent = false;
+	}
+	
+	private static class TreeWalker {
+		private Map<Object,GenericTraversalNode> nodemap = new HashMap<Object,GenericTraversalNode>();
+		private TreeComparator treecomp;
+		private Visitor v;
+		private GenericTraversalNode rootNode;
+		private int visitNumber = 0;
+
+		/**
+		 * @param treecomp
+		 * @param v the visitor, may be null
+		 */
+		public TreeWalker(TreeComparator treecomp, Visitor v) {
+			this.treecomp = treecomp;
+			this.v = v;
+			rootNode = new GenericTraversalNode(null);
+		}
+
+		/**
+		 * 
+		 */
+		public void traverse() {
+			doTraverse(rootNode, 0);
+		}
+
+		private void doTraverse(GenericTraversalNode node, int depth) {
+			if (depth > 0) { // we are not at the artificial root
+				node.setDepth(depth);
+				node.setVisitNumber(++visitNumber);
+				// preorder traversal
+				if (v != null) v.visit(node);
+			}
+			List<GenericTraversalNode> children = node.getChildren();
+			treecomp.sort(depth + 1, children);
+			for(Iterator<GenericTraversalNode> it = children.iterator(); it.hasNext(); ) {
+				GenericTraversalNode c = it.next();
+				doTraverse(c, depth + 1);
+			}
+		}
+
+		/**
+		 * @param childitem the child
+		 * @param parentitem the parent, may be null if top level
+		 */
+		public void addRelationship(Object childitem, Object parentitem) {
+			GenericTraversalNode gnp;
+			GenericTraversalNode gnc = getGenericTraversalNode(childitem);
+			if (parentitem != null) {
+				gnp = getGenericTraversalNode(parentitem);
+			} else {
+				gnp = rootNode;
+			}
+			gnp.addChild(gnc);
+
+		}
+
+		/**
+		 * @param item
+		 * @return GenericTraversalNode
+		 */
+		public GenericTraversalNode getGenericTraversalNode(Object item) {
+			GenericTraversalNode n = (GenericTraversalNode) nodemap.get(item);
+			if (n == null) { // not existing, so create
+				n = new GenericTraversalNode(item);
+				nodemap.put(item, n);
+			}
+			return n;
+		}
+
+	}
+	
+	private static class GenericTraversalNode {
+		private Object item;
+		private int depth;
+		private List<GenericTraversalNode> children;
+		private int visitNumber;
+
+		/**
+		 * @param item
+		 */
+		public GenericTraversalNode(Object item) {
+			children = new ArrayList<GenericTraversalNode>();
+			this.item = item;
+		}
+
+		/**
+		 * add the child.
+		 * 
+		 * @param n
+		 */
+		public void addChild(GenericTraversalNode n) {
+			if (!children.add(n)) { throw new RuntimeException("duplicate child in List"); }
+		}
+
+		/**
+		 * Returns the children.
+		 * 
+		 * @return List
+		 */
+		public List<GenericTraversalNode> getChildren() {
+			return children;
+		}
+
+		/**
+		 * Returns the depth.
+		 * 
+		 * @return int
+		 */
+		public int getDepth() {
+			return depth;
+		}
+
+		/**
+		 * Returns the item.
+		 * 
+		 * @return Object
+		 */
+		public Object getItem() {
+			return item;
+		}
+
+		/**
+		 * Sets the depth.
+		 * 
+		 * @param depth The depth to set
+		 */
+		public void setDepth(int depth) {
+			this.depth = depth;
+		}
+
+		/**
+		 * Returns the visitNumber.
+		 * 
+		 * @return int
+		 */
+		public int getVisitNumber() {
+			return visitNumber;
+		}
+
+		/**
+		 * Sets the visitNumber.
+		 * 
+		 * @param visitNumber The visitNumber to set
+		 */
+		public void setVisitNumber(int visitNumber) {
+			this.visitNumber = visitNumber;
+		}
+
+	}
+	
+	public interface Visitor {
+
+		public void visit(GenericTraversalNode node);
+	}
+	
+	public interface TreeComparator {
+		/**
+		 * sorts the children of a node with depth 'depth' in a tree. depth = 1 = root children
+		 * @param depth
+		 * @param children
+		 */
+		public void sort(int depth, List<GenericTraversalNode> children);
 	}
 }
 

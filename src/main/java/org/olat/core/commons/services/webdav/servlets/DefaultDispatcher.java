@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.servlets.URLEncoder;
 
 
@@ -364,7 +365,7 @@ public abstract class DefaultDispatcher implements Serializable {
         // Find content type.
         String contentType = resource.getMimeType();
         if (contentType == null) {
-            contentType = request.getServletContext().getMimeType(resource.getName());
+            contentType = WebappHelper.getMimeType(resource.getName());
             resource.setMimeType(contentType);
         }
 
@@ -508,9 +509,7 @@ public abstract class DefaultDispatcher implements Serializable {
                     // Silent catch
                 }
                 if (ostream != null) {
-                    if (!checkSendfile(request, response, resource,
-                            contentLength, null))
-                        copy(resource, renderResult, ostream);
+                  copy(resource, renderResult, ostream);
                 } else {
                     copy(resource, renderResult, writer, encoding);
                 }
@@ -549,9 +548,7 @@ public abstract class DefaultDispatcher implements Serializable {
                         // Silent catch
                     }
                     if (ostream != null) {
-                        if (!checkSendfile(request, response, resource,
-                                range.end - range.start + 1, range))
-                            copy(resource, ostream, range);
+                        copy(resource, ostream, range);
                     } else {
                         // we should not get here
                         throw new IllegalStateException();
@@ -782,34 +779,6 @@ public abstract class DefaultDispatcher implements Serializable {
     }
 
     // -------------------------------------------------------- protected Methods
-
-
-    /**
-     * Check if sendfile can be used.
-     */
-    private boolean checkSendfile(HttpServletRequest request,
-                                  HttpServletResponse response,
-                                  WebResource resource,
-                                  long length, Range range) {
-       /* if (sendfileSize > 0
-            && resource.isFile()
-            && length > sendfileSize
-            && (resource.getCanonicalPath() != null)
-            && (Boolean.TRUE == request.getAttribute(Globals.SENDFILE_SUPPORTED_ATTR))
-            && (request.getClass().getName().equals("org.apache.catalina.connector.RequestFacade"))
-            && (response.getClass().getName().equals("org.apache.catalina.connector.ResponseFacade"))) {
-            request.setAttribute(Globals.SENDFILE_FILENAME_ATTR, resource.getCanonicalPath());
-            if (range == null) {
-                request.setAttribute(Globals.SENDFILE_FILE_START_ATTR, Long.valueOf(0L));
-                request.setAttribute(Globals.SENDFILE_FILE_END_ATTR, Long.valueOf(length));
-            } else {
-                request.setAttribute(Globals.SENDFILE_FILE_START_ATTR, Long.valueOf(range.start));
-                request.setAttribute(Globals.SENDFILE_FILE_END_ATTR, Long.valueOf(range.end + 1));
-            }
-            return true;
-        }*/
-        return false;
-    }
 
 
     /**

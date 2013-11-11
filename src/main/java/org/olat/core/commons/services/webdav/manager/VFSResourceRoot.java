@@ -33,6 +33,8 @@ import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.notifications.NotificationsManager;
@@ -53,6 +55,8 @@ import org.olat.core.util.vfs.version.VersionsManager;
  *
  */
 public class VFSResourceRoot implements WebResourceRoot  {
+	
+	private static final OLog log = Tracing.createLoggerFor(VFSResourceRoot.class);
 	
 	private final Identity identity;
 	private final VFSContainer base;
@@ -208,12 +212,11 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		
 		try {
 			byte[] content = IOUtils.toByteArray(is);
-			System.out.println("Write: " + path + " -> " + content.length);
 			ByteArrayInputStream in = new ByteArrayInputStream(content);
-			
 			FileUtils.copy(in, childLeaf.getOutputStream(false));
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("", e);
+			return false;
 		}
 
 		VFSContainer folder = childLeaf.getParentContainer();

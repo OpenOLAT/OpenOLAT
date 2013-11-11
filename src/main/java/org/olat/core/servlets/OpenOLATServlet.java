@@ -34,7 +34,7 @@ import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.webdav.WebDAVDispatcher;
-import org.olat.core.commons.services.webdav.servlets.WebdavDispatcher;
+import org.olat.core.commons.services.webdav.servlets.WebDAVDispatcherImpl;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
@@ -104,7 +104,7 @@ public class OpenOLATServlet extends HttpServlet {
 		dispatchers.put(DispatcherModule.PATH_MAPPED, new MapperDispatcher());
 		dispatchers.put(DispatcherModule.PATH_GLOBAL_MAPPED,  GlobalMapperRegistry.getInstance());
 		
-		webDAVDispatcher = new WebdavDispatcher();
+		webDAVDispatcher = new WebDAVDispatcherImpl();
 		dispatchers.put(DispatcherModule.WEBDAV_PATH, webDAVDispatcher);
 		
 		Settings settings = CoreSpringFactory.getImpl(Settings.class);

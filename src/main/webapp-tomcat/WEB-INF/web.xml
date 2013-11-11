@@ -60,11 +60,12 @@
 		<filter-name>RESTApiLoginFilter</filter-name>
 		<filter-class>org.olat.restapi.security.RestApiLoginFilter</filter-class>
 	</filter>
+	
 	<!-- 
-	<filter-mapping>
+	<filter>
 		<filter-name>SpyFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
+		<filter-class>org.olat.core.servlets.SpyFilter</filter-class>
+	</filter>
 	-->
 	
 	<!-- Use FakeHTTPSFilter for requests to WSService and TraineeStatusService (dynamic WSDL for ONYX) -->
@@ -92,6 +93,12 @@
 		<filter-name>RESTApiLoginFilter</filter-name>
 		<url-pattern>/restapi/*</url-pattern>
 	</filter-mapping>
+	<!--
+	<filter-mapping>
+		<filter-name>SpyFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	-->
 	
 	<!-- 3. Listeners -->
     <listener>
