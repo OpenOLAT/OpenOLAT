@@ -26,13 +26,20 @@
 
 package org.olat.test;
 
-import java.io.IOException;
+import static io.undertow.servlet.Servlets.defaultContainer;
+import static io.undertow.servlet.Servlets.deployment;
+import static io.undertow.servlet.Servlets.filter;
+import static io.undertow.servlet.Servlets.servlet;
+import io.undertow.Undertow;
+import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.DeploymentManager;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
+import javax.servlet.DispatcherType;
+import javax.servlet.ServletException;
 import javax.ws.rs.core.UriBuilder;
 
 import org.codehaus.jackson.JsonFactory;
@@ -49,13 +56,10 @@ import org.olat.restapi.support.vo.FileVO;
 import org.olat.restapi.support.vo.LinkVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.sun.grizzly.http.embed.GrizzlyWebServer;
-import com.sun.grizzly.http.servlet.ServletAdapter;
-
 /**
  * 
  * Description:<br>
- * Abstract class which start and stop a grizzly server for every test
+ * Abstract class which start and stop an undertow server
  * 
  * <P>
  * Initial Date:  14 apr. 2010 <br>
@@ -75,7 +79,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 	public final static String PROTOCOL = "http";
 
 	private static boolean webServerStarted = false;
-	private static GrizzlyWebServer webServer;
+	private static Undertow webServer;
 	
 	@Autowired
 	private RestModule restModule;
@@ -85,28 +89,38 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 	 */
 	public OlatJerseyTestCase() {
 		super();
-		instantiateGrizzlyWebServer();
+		instantiateServer();
 	}
 	
 	/**
-	 * Instantiates the Grizzly Web Server
+	 * Instantiates the server
 	 */
-	private void instantiateGrizzlyWebServer() {
+	private void instantiateServer() {
 		if(webServer == null) {
-			webServer = new GrizzlyWebServer(PORT);
-			webServer.useAsynchronousWrite(false);
-			ServletAdapter sa = new ServletAdapter();
-			Servlet servletInstance = null;
 			try {
-				servletInstance = (HttpServlet)Class.forName("com.sun.jersey.spi.container.servlet.ServletContainer").newInstance();
-			} catch (Exception ex) {
-				log.error("Cannot instantiate the Grizzly Servlet Container", ex);
+				DeploymentInfo servletBuilder = deployment()
+				        .setClassLoader(OlatJerseyTestCase.class.getClassLoader())
+				        .setContextPath("/" + CONTEXT_PATH)
+				        .setDeploymentName("rest.war")
+				        .addServlets(
+				                servlet("REST Servlet",  com.sun.jersey.spi.container.servlet.ServletContainer.class)
+		        		        		.addInitParam("javax.ws.rs.Application", OlatRestApplication.class.getName())
+				                        .addMapping("/*"))
+				        .addFilters(filter("REST security filter", RestApiLoginFilter.class))
+				        .addFilterUrlMapping("REST security filter", "/*", DispatcherType.REQUEST);
+
+				DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
+				manager.deploy();
+
+				webServer = Undertow.builder()
+				        .addListener(PORT, HOST)
+				        .setHandler(manager.start())
+				        .build();
+				webServer.start();
+				webServerStarted = true;
+			} catch (ServletException e) {
+				log.error("", e);
 			}
-			sa.setServletInstance(servletInstance);
-			sa.addFilter(new RestApiLoginFilter(), "jerseyfilter", null);
-			sa.addInitParameter("javax.ws.rs.Application", OlatRestApplication.class.getName());
-			sa.setContextPath("/" + CONTEXT_PATH);
-			webServer.addGrizzlyAdapter(sa, new String[]{""});
 		}
 	}
 	
@@ -121,17 +135,13 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
   @Before
   public void setUp() throws Exception {
   	//always enabled the REST API for testing
-		restModule.setEnabled(true);
-  	
-		try {
-			if(!webServerStarted) {
-				log.info("Starting the Grizzly Web Container...");
-				webServer.start();
-				webServerStarted=true;
-			}
-		} catch (IOException ex) {
-			log.error("Cannot start the Grizzly Web Container");
-		}
+	restModule.setEnabled(true);
+
+	if(!webServerStarted) {
+		log.info("Starting the Grizzly Web Container...");
+		webServer.start();
+		webServerStarted=true;
+	}
   }
 	
 	protected List<ErrorVO> parseErrorArray(InputStream body) {
@@ -139,7 +149,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<ErrorVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
@@ -149,7 +159,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<LinkVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
@@ -159,7 +169,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<FileVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

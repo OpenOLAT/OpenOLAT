@@ -910,7 +910,7 @@ public class WebDAVDispatcherImpl
                 resourceInputStream = req.getInputStream();
             }
 
-            if (resources.write(path, resourceInputStream, true)) {
+            if (resources.write(path, resourceInputStream, true, null)) {
                 if (resource.exists()) {
                     resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
                 } else {
@@ -1000,7 +1000,7 @@ public class WebDAVDispatcherImpl
         String path = getRelativePath(req);
         WebResourceRoot resources = getResources(req);
     	if (resources.canWrite(path)) {
-    		copyResource(req, resp);
+    		copyResource(req, resp, false);
     	} else {
     		resp.sendError(WebdavStatus.SC_FORBIDDEN);
     	}
@@ -1025,7 +1025,7 @@ public class WebDAVDispatcherImpl
             return;
         }
         
-        if (copyResource(req, resp)) {
+        if (copyResource(req, resp, true)) {
             deleteResource(path, req, resp, false);
         }
     }
@@ -1645,7 +1645,7 @@ public class WebDAVDispatcherImpl
      * @param resp Servlet response
      * @return boolean true if the copy is successful
      */
-    private boolean copyResource(HttpServletRequest req, HttpServletResponse resp)
+    private boolean copyResource(HttpServletRequest req, HttpServletResponse resp, boolean moved)
     throws IOException {
 
         // Parsing destination header
@@ -1718,7 +1718,7 @@ public class WebDAVDispatcherImpl
 
         Hashtable<String,Integer> errorList = new Hashtable<String,Integer>();
 
-        boolean result = copyResource(req, errorList, path, destinationPath);
+        boolean result = copyResource(req, errorList, path, destinationPath, moved);
 
         if ((!result) || (!errorList.isEmpty())) {
             if (errorList.size() == 1) {
@@ -1807,7 +1807,7 @@ public class WebDAVDispatcherImpl
      * @param dest Destination path
      */
     private boolean copyResource(HttpServletRequest req, Hashtable<String,Integer> errorList,
-            String source, String dest) {
+            String source, String dest, boolean moved) {
 
         if (log.isDebug()) log.debug("Copy: " + source + " To: " + dest);
         
@@ -1835,10 +1835,11 @@ public class WebDAVDispatcherImpl
                     childSrc += "/";
                 }
                 childSrc += entry.getName();
-                copyResource(req, errorList, childSrc, childDest);
+                copyResource(req, errorList, childSrc, childDest, moved);
             }
         } else if (sourceResource.isFile()) {
-            if (!resources.write(dest, sourceResource.getInputStream(), false)) {
+        	WebResource movedFrom = moved ? sourceResource : null; 
+            if (!resources.write(dest, sourceResource.getInputStream(), false, movedFrom)) {
                 errorList.put(source, new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
                 return false;
             }
@@ -2111,8 +2112,7 @@ public class WebDAVDispatcherImpl
                 generatedXML.writeProperty
                     ("D", "getcontentlength",
                      String.valueOf(resource.getContentLength()));
-                String contentType = req.getServletContext().getMimeType(
-                        resource.getName());
+                String contentType = req.getServletContext().getMimeType(resource.getName());
                 if (contentType != null) {
                     generatedXML.writeProperty("D", "getcontenttype",
                             contentType);

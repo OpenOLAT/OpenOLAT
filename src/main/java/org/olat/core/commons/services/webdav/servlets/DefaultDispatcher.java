@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.servlets.URLEncoder;
 
 
@@ -365,7 +364,7 @@ public abstract class DefaultDispatcher implements Serializable {
         // Find content type.
         String contentType = resource.getMimeType();
         if (contentType == null) {
-            contentType = WebappHelper.getMimeType(resource.getName());
+            contentType = request.getServletContext().getMimeType(resource.getName());
             resource.setMimeType(contentType);
         }
 

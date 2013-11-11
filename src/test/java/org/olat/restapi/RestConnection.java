@@ -70,7 +70,7 @@ import org.olat.restapi.security.RestSecurityHelper;
 /**
  * 
  * Description:<br>
- * Manage a connection to the grizzly server used by the unit test
+ * Manage a connection to the server used by the unit test
  * with some helpers methods.
  * 
  * <P>

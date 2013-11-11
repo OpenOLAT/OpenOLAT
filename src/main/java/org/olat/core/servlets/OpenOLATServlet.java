@@ -178,7 +178,7 @@ public class OpenOLATServlet extends HttpServlet {
 		String subContext = DispatcherModule.getFirstPath(req);
 		if("/".equals(subContext)) {
 			webDAVDispatcher.doRootOptions(req, resp);
-		} else if("webdav".equals(subContext)) {
+		} else if("/webdav".equals(subContext) || "/webdav/".equals(subContext)) {
 			webDAVDispatcher.doWebdavOptions(req, resp);
 		} else {
 			super.doOptions(req, resp);
@@ -252,9 +252,8 @@ public class OpenOLATServlet extends HttpServlet {
 			Dispatcher dispatcher = dispatchers.get(dispatcherName);
 			dispatcher.execute(request, response);
 		} else {
-			String uri = request.getRequestURI();
 			//root -> redirect to dmz
-			if("/".equals(uri)) {
+			if("/".equals(dispatcherName) || "/dmz".equals(dispatcherName)) {
 				String dmzUri = WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault();
 				response.sendRedirect(dmzUri);
 			} else {

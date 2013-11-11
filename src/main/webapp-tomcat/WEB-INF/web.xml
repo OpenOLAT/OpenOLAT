@@ -32,14 +32,7 @@
     	<param-name>contextInitializerClasses</param-name>
     	<param-value>org.olat.core.CoreSpringInitializer</param-value>
 	</context-param>
-   <!-- 
-	<filter>
-		<filter-name>SpyFilter</filter-name>
-		<filter-class>org.olat.core.servlets.SpyFilter</filter-class>
-	</filter>
-	-->
-	
-	
+
 	<!-- 2. Filters -->
 	<filter>
 		<filter-name>OnyxHttpsFilter</filter-name>

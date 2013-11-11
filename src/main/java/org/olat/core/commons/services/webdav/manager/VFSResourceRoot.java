@@ -170,7 +170,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	}
 
 	@Override
-	public boolean write(String path, InputStream is, boolean overwrite) {
+	public boolean write(String path, InputStream is, boolean overwrite, WebResource movedFrom) {
 		VFSLeaf childLeaf;
 		VFSItem file = resolveFile(path);
 		if (file instanceof VFSLeaf) {
@@ -232,6 +232,15 @@ public class VFSResourceRoot implements WebResourceRoot  {
 				infos.setAuthor(identity);
 				infos.clearThumbnails();
 				infos.write();
+			}
+		}
+		
+		if(movedFrom instanceof VFSResource) {
+			VFSResource vfsResource = (VFSResource)movedFrom;
+			if(vfsResource.getItem() instanceof Versionable
+					&& ((Versionable)vfsResource.getItem()).getVersions().isVersioned()) {
+				VFSLeaf currentVersion = (VFSLeaf)vfsResource.getItem();
+				VersionsManager.getInstance().move(currentVersion, childLeaf, identity);
 			}
 		}
 		

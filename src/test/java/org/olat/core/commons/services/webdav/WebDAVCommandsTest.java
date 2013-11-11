@@ -22,6 +22,7 @@ package org.olat.core.commons.services.webdav;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -33,6 +34,7 @@ import junit.framework.Assert;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPut;
@@ -42,8 +44,14 @@ import org.apache.http.util.EntityUtils;
 import org.apache.poi.util.IOUtils;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.CoursePublishTest;
@@ -132,6 +140,110 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	}
 	
 	@Test
+	public void testMkcol_public()
+	throws IOException, URISyntaxException {
+		//create a user
+		Identity user = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-2a-" + UUID.randomUUID().toString());
+
+		//create a file
+		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		Assert.assertTrue(vfsPublic.exists());
+
+		
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(user.getName(), "A6B7C8");
+
+		//author check course folder
+		URI publicUri = conn.getBaseURI().path("webdav").path("home").path("public").build();
+		String publicXml = conn.propfind(publicUri, 2);
+		Assert.assertTrue(publicXml.indexOf("<D:href>/webdav/home/public/</D:href>") > 0);
+
+		//make a folder
+		URI newUri = UriBuilder.fromUri(publicUri).path("newFolder").build();
+		int returnMkcol = conn.mkcol(newUri);
+		Assert.assertEquals(201, returnMkcol);
+		
+		//check if folder exists
+		VFSItem newItem = vfsPublic.resolve("newFolder");
+		Assert.assertNotNull(newItem);
+		Assert.assertTrue(newItem instanceof VFSContainer);
+		Assert.assertTrue(newItem.exists());
+	
+		IOUtils.closeQuietly(conn);
+	}
+	
+	@Test
+	public void testMove_public()
+	throws IOException, URISyntaxException {
+		//create a user
+		Identity user = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-2b-" + UUID.randomUUID().toString());
+
+		//create a file
+		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		createFile(vfsPublic, "test.txt");
+		VFSContainer subPublic = vfsPublic.createChildContainer("moveto");
+
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(user.getName(), "A6B7C8");
+
+		//author check course folder
+		URI publicUri = conn.getBaseURI().path("webdav").path("home").path("public").build();
+		URI fileUri = UriBuilder.fromUri(publicUri).path("test.txt").build();
+		String destination = UriBuilder.fromUri(publicUri).path("moveto").path("test.txt").build().toString();
+		int returnMove = conn.move(fileUri, destination);
+		Assert.assertEquals(201, returnMove);
+
+		//check move
+		VFSItem movedItem = subPublic.resolve("test.txt");
+		Assert.assertNotNull(movedItem);
+		Assert.assertTrue(movedItem instanceof VFSLeaf);
+		Assert.assertTrue(movedItem.exists());
+
+		VFSItem sourceItem = vfsPublic.resolve("test.txt");
+		Assert.assertNull(sourceItem);
+	
+		IOUtils.closeQuietly(conn);
+	}
+	
+	@Test
+	public void testCopy_public()
+	throws IOException, URISyntaxException {
+		//create a user
+		Identity user = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-2b-" + UUID.randomUUID().toString());
+
+		//create a file
+		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		createFile(vfsPublic, "test.txt");
+		VFSContainer subPublic = vfsPublic.createChildContainer("copyto");
+
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(user.getName(), "A6B7C8");
+
+		//author check course folder
+		URI publicUri = conn.getBaseURI().path("webdav").path("home").path("public").build();
+		URI fileUri = UriBuilder.fromUri(publicUri).path("test.txt").build();
+		String destination = UriBuilder.fromUri(publicUri).path("copyto").path("copy.txt").build().toString();
+		int returnMove = conn.copy(fileUri, destination);
+		Assert.assertEquals(201, returnMove);
+
+		//check move
+		VFSItem movedItem = subPublic.resolve("copy.txt");
+		Assert.assertNotNull(movedItem);
+		Assert.assertTrue(movedItem instanceof VFSLeaf);
+		Assert.assertTrue(movedItem.exists());
+
+		VFSItem sourceItem = vfsPublic.resolve("test.txt");
+		Assert.assertNotNull(sourceItem);
+		Assert.assertTrue(sourceItem instanceof VFSLeaf);
+		Assert.assertTrue(sourceItem.exists());
+	
+		IOUtils.closeQuietly(conn);
+	}
+	
+	@Test
 	public void testPut_course()
 	throws IOException, URISyntaxException {
 		//create a user
@@ -166,7 +278,9 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	}
 	
 	/**
-	 * PROPPATCH is essential for Windows
+	 * PROPPATCH is essential for Windows, the content of the response
+	 * is not important but it must not return an error.
+	 * 
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
@@ -192,6 +306,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		put.setEntity(entity);
 		HttpResponse putResponse = conn.execute(put);
 		Assert.assertEquals(201, putResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(putResponse.getEntity());
 		
 		//PROPPATCH
 		URI patchUri = UriBuilder.fromUri(privateUri).path("test.txt").build();
@@ -222,12 +337,19 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		IOUtils.closeQuietly(conn);
 	}
 	
+	/**
+	 * In the this test, an author and its assistant try to concurrently
+	 * lock a file.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	@Test
 	public void testLock()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-3-" + UUID.randomUUID().toString());
-		Identity assistant = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-4-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-4-" + UUID.randomUUID().toString());
+		Identity assistant = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-5-" + UUID.randomUUID().toString());
 		deployTestCourse(author, assistant);
 
 		WebDAVConnection authorConn = new WebDAVConnection();
@@ -245,12 +367,87 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		String assistantPublicXml = assistantConn.propfind(courseUri, 2);
 		Assert.assertTrue(assistantPublicXml.indexOf("<D:href>/webdav/coursefolders/Kurs/_courseelementdata/</D:href>") > 0);
 
-		//author lock the course folder
+		//PUT a file to lock
+		URI putUri = UriBuilder.fromUri(courseUri).path("Kurs").path("test.txt").build();
+		HttpPut put = authorConn.createPut(putUri);
+		InputStream dataStream = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
+		InputStreamEntity entity = new InputStreamEntity(dataStream, -1);
+		put.setEntity(entity);
+		HttpResponse putResponse = authorConn.execute(put);
+		Assert.assertEquals(201, putResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(putResponse.getEntity());
+
+		//author lock the file in the course folder
+		String authorLockToken = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+		String authorResponseLockToken = authorConn.lock(putUri, authorLockToken);
+		Assert.assertNotNull(authorResponseLockToken);
 		
+		//coauthor try to lock the same file
+		String coauthorLockToken = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+		int coauthorLock = assistantConn.lockTry(putUri, coauthorLockToken);
+		Assert.assertEquals(423, coauthorLock);// it's lock
 		
+		//author unlock the file
+		int unlockCode = authorConn.unlock(putUri, authorResponseLockToken);
+		Assert.assertEquals(204, unlockCode);
+		
+		//coauthor try a second time to lock the file
+		String coauthorLockToken_2 = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+		int coauthorLock_2 = assistantConn.lockTry(putUri, coauthorLockToken_2);
+		Assert.assertEquals(200, coauthorLock_2);// it's lock
 		
 		IOUtils.closeQuietly(authorConn);
 		IOUtils.closeQuietly(assistantConn);
+	}
+	
+	@Test
+	public void testDelete()
+	throws IOException, URISyntaxException {
+		//create a user
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("webdav-6-" + UUID.randomUUID().toString());
+		
+		//create a file
+		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		createFile(vfsPublic, "testDelete.txt");
+		
+		//check
+		VFSItem item = vfsPublic.resolve("testDelete.txt");
+		Assert.assertTrue(item instanceof VFSLeaf);
+		Assert.assertTrue(item.exists());
+		Assert.assertTrue(((VFSLeaf)item).getSize() > 0);
+
+		//delete the file
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(user.getName(), "A6B7C8");
+	
+		//check public folder
+		URI checkUri = conn.getBaseURI().path("webdav").path("home").path("public").path("testDelete.txt").build();
+		String publicXml = conn.propfind(checkUri, 1);
+		Assert.assertTrue(publicXml.indexOf("<D:multistatus") > 0);//Windows need the D namespace
+		Assert.assertTrue(publicXml.indexOf("<D:href>/webdav/home/public/testDelete.txt</D:href>") > 0);//check the root
+
+		//delete the file
+		HttpDelete delete = conn.createDelete(checkUri);
+		HttpResponse deleteResponse = conn.execute(delete);
+		Assert.assertEquals(204, deleteResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(deleteResponse.getEntity());
+		
+		//check if really deleted
+		VFSItem reloadTestLeaf = vfsPublic.resolve("testDelete.txt");
+		Assert.assertNull(reloadTestLeaf);
+
+		IOUtils.closeQuietly(conn);
+	}
+	
+	private void createFile(VFSContainer container, String filename) throws IOException {
+		VFSLeaf testLeaf = container.createChildLeaf(filename);
+		InputStream in = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
+		OutputStream out = testLeaf.getOutputStream(false);
+		FileUtils.copy(in, out);
+		out.flush();
+		IOUtils.closeQuietly(in);
+		IOUtils.closeQuietly(out);
 	}
 	
 	private void deployTestCourse(Identity author, Identity coAuthor) throws URISyntaxException {

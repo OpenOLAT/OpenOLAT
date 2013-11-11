@@ -26,18 +26,20 @@
 
 package org.olat.core.commons.services.webdav;
 
-import java.io.IOException;
+import static io.undertow.servlet.Servlets.defaultContainer;
+import static io.undertow.servlet.Servlets.deployment;
+import static io.undertow.servlet.Servlets.servlet;
+import io.undertow.Undertow;
+import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.DeploymentManager;
 
-import javax.servlet.Servlet;
+import javax.servlet.ServletException;
 
 import org.junit.BeforeClass;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.servlets.OpenOLATServlet;
 import org.olat.test.OlatTestCase;
-
-import com.sun.grizzly.http.embed.GrizzlyWebServer;
-import com.sun.grizzly.http.servlet.ServletAdapter;
 
 /**
  * 
@@ -55,33 +57,33 @@ public abstract class WebDAVTestCase extends OlatTestCase {
 	public final static String HOST = "localhost";
 	public final static String PROTOCOL = "http";
 
-	private static GrizzlyWebServer webServer;
+	private static Undertow webServer;
 	
 	@BeforeClass
 	public static void setUp() throws Exception {
+
+		
 		try {
 			if(webServer == null) {
-				webServer = new GrizzlyWebServer(PORT);
-				webServer.useAsynchronousWrite(false);
-				ServletAdapter sa = new ServletAdapter();
-				Servlet servletInstance = null;
-				try {
-					servletInstance = new OpenOLATServlet();
-				} catch (Exception ex) {
-					log.error("Cannot instantiate the Grizzly Servlet Container", ex);
-				}
-				sa.setServletInstance(servletInstance);
-				sa.addInitParameter("debug", "0");
-				sa.addInitParameter("input", "32768");
-				sa.addInitParameter("output", "32768");
-				sa.addInitParameter("listings", "true");
-				sa.addInitParameter("readonly", "false");
-				webServer.addGrizzlyAdapter(sa, new String[]{""});
+				DeploymentInfo servletBuilder = deployment()
+	                    .setClassLoader(WebDAVTestCase.class.getClassLoader())
+	                    .setContextPath("/")
+	                    .setDeploymentName("test.war")
+	                    .addServlets(
+	                            servlet("MessageServlet", OpenOLATServlet.class)
+	                                    .addInitParam("message", "Hello World")
+	                                    .addMapping("/*"));
 
-				log.info("Starting the Grizzly Web Container for WebDAV...");
-				webServer.start();
+	            DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
+	            manager.deploy();
+
+	            webServer = Undertow.builder()
+	                    .addListener(PORT, HOST)
+	                    .setHandler(manager.start())
+	                    .build();
+	            webServer.start();
 			}
-		} catch (IOException ex) {
+		} catch (ServletException ex) {
 			log.error("Cannot start the Grizzly Web Container for WebDAV");
 		}
 	}

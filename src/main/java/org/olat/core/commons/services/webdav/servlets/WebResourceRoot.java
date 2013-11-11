@@ -82,7 +82,7 @@ public interface WebResourceRoot {
      *
      * @return  <code>true</code> if and only if the new Resource is written
      */
-    boolean write(String path, InputStream is, boolean overwrite);
+    boolean write(String path, InputStream is, boolean overwrite, WebResource movedFrom);
     
     public boolean delete(WebResource resourceo);
 

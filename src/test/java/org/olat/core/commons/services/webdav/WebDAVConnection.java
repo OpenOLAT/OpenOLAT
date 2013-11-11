@@ -21,6 +21,7 @@ package org.olat.core.commons.services.webdav;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -29,15 +30,18 @@ import javax.ws.rs.core.UriBuilder;
 import junit.framework.Assert;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -97,6 +101,75 @@ public class WebDAVConnection implements Closeable {
 		return EntityUtils.toString(response.getEntity());
 	}
 	
+	public int mkcol(URI uri) throws IOException, URISyntaxException {
+		HttpMkcol mkcol = new HttpMkcol(uri);
+		HttpResponse response = execute(mkcol);
+		int returnCode = response.getStatusLine().getStatusCode();
+		EntityUtils.consume(response.getEntity());
+		return returnCode;
+	}
+	
+	public int move(URI uri, String destination) throws IOException, URISyntaxException {
+		HttpMove move = new HttpMove(uri);
+		move.setHeader("Destination", destination);
+		HttpResponse response = execute(move);
+		int returnCode = response.getStatusLine().getStatusCode();
+		EntityUtils.consume(response.getEntity());
+		return returnCode;
+	}
+	
+	public int copy(URI uri, String destination) throws IOException, URISyntaxException {
+		HttpCopy copy = new HttpCopy(uri);
+		copy.setHeader("Destination", destination);
+		HttpResponse response = execute(copy);
+		int returnCode = response.getStatusLine().getStatusCode();
+		EntityUtils.consume(response.getEntity());
+		return returnCode;
+	}
+	
+	public String lock(URI uri, String lockToken) throws IOException, URISyntaxException {
+		HttpLock lock = new HttpLock(uri);
+		decorateLockRequest(lock, lockToken);
+		HttpResponse response = execute(lock);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Header responseToken = response.getFirstHeader("Lock-Token");
+		Assert.assertNotNull(responseToken);
+		EntityUtils.consume(response.getEntity());
+		return responseToken.getValue();
+	}
+	
+	public int lockTry(URI uri, String lockToken) throws IOException, URISyntaxException {
+		HttpLock lock = new HttpLock(uri);
+		decorateLockRequest(lock, lockToken);
+		HttpResponse response = execute(lock);
+		int returnCode = response.getStatusLine().getStatusCode();
+		EntityUtils.consume(response.getEntity());
+		return returnCode;
+	}
+	
+	private void decorateLockRequest(HttpLock lock, String lockToken) throws UnsupportedEncodingException {
+		lock.addHeader("Lock-Token", lockToken);
+		StringBuilder sb = new StringBuilder();
+		sb.append("<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
+		  .append("<D:lockinfo xmlns:D='DAV:'>")
+		  .append("  <D:lockscope><D:exclusive/></D:lockscope>")
+		  .append("  <D:locktype><D:write/></D:locktype>")
+		  .append("  <D:owner>")
+		  .append("       <D:href>").append(lock.getURI().toString()).append("</D:href>")
+		  .append("  </D:owner>")
+		  .append(" </D:lockinfo>");
+		lock.setEntity(new StringEntity(sb.toString()));
+	}
+	
+	public int unlock(URI uri, String lockToken) throws IOException, URISyntaxException {
+		HttpUnlock unlock = new HttpUnlock(uri);
+		unlock.addHeader("Lock-Token", lockToken);
+		HttpResponse response = execute(unlock);
+		int returnCode = response.getStatusLine().getStatusCode();
+		EntityUtils.consume(response.getEntity());
+		return returnCode;
+	}
+	
 	public HttpOptions createOptions(URI uri) throws IOException, URISyntaxException {
 		HttpOptions options = new HttpOptions(uri);
 		return options;	
@@ -106,6 +179,11 @@ public class WebDAVConnection implements Closeable {
 		HttpPut put = new HttpPut(uri);
 		put.addHeader("Accept", "*/*");
 		return put;
+	}
+	
+	public HttpDelete createDelete(URI uri) {
+		HttpDelete delete = new HttpDelete(uri);
+		return delete;
 	}
 	
 	public HttpPropPatch createPropPatch(URI uri) {
