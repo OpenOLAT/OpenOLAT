@@ -254,6 +254,18 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		}
 	}
 	
+	private void updateStandardMode() {
+		boolean standard = standardModeEl.isSelected(0);
+		if(standard) {
+			jsOptionEl.select(jsKeys[0], true);
+			cssOptionEl.select(cssKeys[0], true);
+			glossarEl.select("on", false);
+			if(heightEl.isSelected(0)) {
+				heightEl.select("600", true);
+			}
+		}
+	}
+	
 	private void setValues(DeliveryOptions cfg) {
 		Boolean mode = (cfg == null ? null : cfg.getStandardMode());
 		if(mode == null || mode.booleanValue()) {
@@ -340,6 +352,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(standardModeEl == source) {
 			updateEnabled();
+			updateStandardMode();
 		} else if(jsOptionEl == source) {
 			updateEnabled();
 		} else if(inheritEl == source) {
