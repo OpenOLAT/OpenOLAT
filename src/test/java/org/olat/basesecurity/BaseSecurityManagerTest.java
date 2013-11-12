@@ -818,6 +818,23 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void isIdentityPermittedOnResourceable_null() {
+		//create an identity, a security group, a resource and give the identity some
+		//permissions on the resource
+		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("test-ipornc-null-" + UUID.randomUUID().toString());
+		securityManager.addIdentityToSecurityGroup(id, secGroup);
+		securityManager.createAndPersistPolicy(secGroup, "test.ipornc-null", resource);
+		dbInstance.commitAndCloseSession();
+		
+		//check that null doesn't return an exception but false
+		boolean hasIpor = securityManager.isIdentityPermittedOnResourceable(null, "test.ipornc-null", resource, false);
+		Assert.assertFalse(hasIpor);
+
+	}
+	
+	@Test
 	public void getIdentityPermissionsOnResourceable() {
 		//create an identity, a security group, a resource and give the identity some
 		//permissions on the resource

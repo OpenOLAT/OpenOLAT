@@ -369,17 +369,19 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			.getResultList();
 		return permissions;
 	}
-	
+
+	@Override
 	public boolean isIdentityPermittedOnResourceable(Identity identity, String permission, OLATResourceable olatResourceable) {
 		return isIdentityPermittedOnResourceable(identity, permission, olatResourceable, true);
 	}
-	
 
 	/**
 	 * @see org.olat.basesecurity.Manager#isIdentityPermittedOnResourceable(org.olat.core.id.Identity, java.lang.String, org.olat.core.id.OLATResourceable boolean)
 	 */
+	@Override
 	public boolean isIdentityPermittedOnResourceable(Identity identity, String permission, OLATResourceable olatResourceable, boolean checkTypeRight) {
-		IdentityImpl iimpl = getImpl(identity);
+		if(identity == null || identity.getKey() == null) return false;//no identity, no permission
+
 		Long oresid = olatResourceable.getResourceableId();
 		if (oresid == null) oresid = new Long(0); //TODO: make a method in
 		// OLATResorceManager, since this
@@ -396,7 +398,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			query = DBFactory.getInstance().getCurrentEntityManager().createNamedQuery("isIdentityPermittedOnResourceable", Number.class);
 		}
 		
-		Number count = query.setParameter("identitykey", iimpl.getKey())
+		Number count = query.setParameter("identitykey", identity.getKey())
 				.setParameter("permission", permission)
 				.setParameter("resid", oresid)
 				.setParameter("resname", oresName)
@@ -941,14 +943,6 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	  	DBFactory.getInstance().deleteObject(invitation);
 	  	DBFactory.getInstance().intermediateCommit();
 	  }
-	}
-
-	private IdentityImpl getImpl(Identity identity) {
-		// since we are a persistingmanager, we also only accept real identities
-		if (!(identity instanceof IdentityImpl)) throw new AssertException("identity was not of type identityimpl, but "
-				+ identity.getClass().getName());
-		IdentityImpl iimpl = (IdentityImpl) identity;
-		return iimpl;
 	}
 
 	/**
