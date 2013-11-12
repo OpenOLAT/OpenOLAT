@@ -74,6 +74,12 @@ public class RichTextConfiguration implements Disposable {
 	private static final String LANGUAGE = "language";
 	// Layout and theme
 	private static final String CONTENT_CSS = "content_css";
+	private static final String CONVERT_URLS = "convert_urls";
+	private static final String IMPORTCSS_APPEND = "importcss_append";
+	private static final String IMPORT_SELECTOR_CONVERTER = "importcss_selector_converter";
+	private static final String IMPORT_SELECTOR_CONVERTER_VALUE_REMOVE_EMOTICONS ="function(selector) { if (selector.indexOf('img.b_emoticons') != -1) {return false;} else { return this.convertSelectorToFormat(selector); }}";
+	private static final String IMPORTCSS_GROUPS = "importcss_groups";
+	private static final String IMPORTCSS_GROUPS_VALUE_MENU = "[{title: 'Paragraph', filter: /^(p)\\./},{title: 'Div', filter: /^(div|p)\\./},{title: 'Table', filter: /^(table|th|td|tr)\\./},{title: 'Url', filter: /^(a)\\./},{title: 'Style'}]";
 	private static final String HEIGHT = "height";
 	// Window appearance
 	private static final String DIALOG_TYPE = "dialog_type";
@@ -336,12 +342,12 @@ public class RichTextConfiguration implements Disposable {
 	 * @param loc
 	 */
 	private void setLanguage(Locale loc) {
-		// tiny does not support country or vairant codes, only language code
+		// tiny does not support country or variant codes, only language code
 		String langKey = loc.getLanguage();
 
 		String contextRoot = WebappHelper.getContextRoot();
 		if(StringHelper.containsNonWhitespace(contextRoot)) {
-			File file = new File(contextRoot, "static/js/tinymce/tinymce/langs/" + langKey + ".js");
+			File file = new File(contextRoot, "static/js/tinymce4/tinymce/langs/" + langKey + ".js");
 			if(!file.exists()) {
 				langKey = "en";
 			}
@@ -705,13 +711,18 @@ public class RichTextConfiguration implements Disposable {
 		Map<String,String> copyNonValues = new HashMap<String,String>(nonQuotedConfigValues);
 		String converter = copyNonValues.remove(URLCONVERTER_CALLBACK);
 		if(converter != null) {
-			copyNonValues.put("convert_urls", converter);	
+			copyNonValues.put(CONVERT_URLS, converter);	
 		}
 		
-		String contentCss = copyValues.remove("content_css");
+		String contentCss = copyValues.remove(CONTENT_CSS);
 		if(contentCss != null) {
-			copyNonValues.put("importcss_append", "true");
+			// add styles from content css and add them to format menu
+			copyNonValues.put(IMPORTCSS_APPEND, "true");
 			copyValues.put("content_css", Settings.createServerURI() + contentCss);
+			// filter emoticons classes from content css
+			copyNonValues.put(IMPORT_SELECTOR_CONVERTER, IMPORT_SELECTOR_CONVERTER_VALUE_REMOVE_EMOTICONS);
+			// group imported css classes to paragraph, div, table and style menu
+			copyNonValues.put(IMPORTCSS_GROUPS, IMPORTCSS_GROUPS_VALUE_MENU);
 		}
 
  		//new with menu

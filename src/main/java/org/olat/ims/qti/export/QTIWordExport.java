@@ -232,8 +232,11 @@ public class QTIWordExport implements MediaResource {
 				if(resprocessingXML != null) {
 					List<?> respconditions = resprocessingXML.elements("respcondition");
 					Map<String,Float> points = QTIEditHelper.fetchPoints(respconditions, choice.getType());
-					for(String point:points.keySet()) {
-						iinput.put(point, point);
+					for(Map.Entry<String,Float> entryPoint:points.entrySet()) {
+						Float val = entryPoint.getValue();
+						if(val != null && val.floatValue() > 0.0f) {
+							iinput.put(entryPoint.getKey(), entryPoint.getKey());
+						}
 					}
 				}
 			} else if(question instanceof FIBQuestion) {

@@ -81,6 +81,11 @@ $ico_minus : '../openolat/images/tree_parent_open.png'  !default;
 $defaultfont : 'Helvetica Neue', Helvetica, Arial, sans-serif !default;
 /* the font used in :  navigation (tabs + tree), headings */
 $headerfont : Century Gothic, Apple Gothic, sans-serif !default;
+/* other fonts */
+$topnavfont : $headerfont !default;
+$navmainfont : $headerfont !default;
+$treefont : $headerfont !default;
+
 /* the overall default font-size */ 
 $defaultfontsize : 80% !default;
 

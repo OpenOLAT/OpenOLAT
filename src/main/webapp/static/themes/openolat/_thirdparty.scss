@@ -55,24 +55,33 @@
 /*
  * autocomplete
  */
-.ui-autocomplete.ui-corner-all {
-	border: 1px solid #eee;
-	@include o-border-radius($di_border_radius);
-}
-
-.ui-autocomplete a.ui-corner-all {
-	border: none;
-}
-
-.ui-autocomplete a.ui-corner-all.ui-state-focus {
-	background: $basecolor_ultra_light;
-	
-	.b_form_auto_completer_item {
-		background-color: $basecolor_ultra_light;
-	}
+.ui-autocomplete-input {
+	line-height: 1.5em;
+	font-size: 98%;
 }
 .ui-autocomplete {
 	z-index: 10000;
+	&.ui-menu {
+		padding: 1px;
+	}
+	&.ui-corner-all {
+		border: 1px solid $basecolor;
+		border-top: none;
+		@include o-border-radius-all(0,0,$di_border_radius,$di_border_radius);
+		@include o-box-shadow(0px,3px,6px,rgba(0,0,0,0.3));
+	}
+	a.ui-corner-all {
+		border: none;
+		margin: -1px;
+		@include o-border-radius(0);
+		&.ui-state-focus {
+			background: $selectcolor_ultra_light;
+		}
+	}	
+	.b_error_icon { 
+		color: $nokcolor; 
+		font-style: italic;
+	}
 }
 
 /*

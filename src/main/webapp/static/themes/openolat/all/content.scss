@@ -37,10 +37,7 @@ body {
 
 *:focus,*:active { outline:none; }
 
-#b_header #b_topnav,#b_nav_main, div.b_tree { font-family: $headerfont; }
-
 /** ----------------- HEADERS ----------------- **/
-
 h1,h2,h3,h4,h5,h6 {font-family: $headerfont;  font-weight:bold; margin: 0 0 0.5em 0; }
 h1 { font-size: 200% }                        /* 24px */
 h2 { font-size: 166.67% }                     /* 20px */
@@ -64,15 +61,15 @@ a img {
 	outline: none;	
 }
 
-/* special links */
-a.b_link_extern { background: transparent url('../../openolat/images/external_link_trimmed.png') no-repeat right top; padding-right:13px;}
-a.b_link_mailto { background: transparent url('../../openolat/images/mail_small.png') no-repeat left center; padding-left:18px;}
-a.b_link_forward { background: transparent url('../../openolat/images/arrow_right.png') no-repeat right center; padding-right:18px;}
-
-
 /* TEXT FORMATTING */
 cite, blockquote { font-style:italic }
-blockquote { margin: 0 0 1em 1.5em }
+blockquote { 
+	padding: 8px 10px 6px;
+	color: #646464;
+	background:#F7F7F7; 
+	border: 1px solid #EEEEEE;
+	font-size: 120%; 
+}
 
 strong,b { font-weight: bold }
 em,i { font-style:italic }
@@ -101,151 +98,117 @@ dd { margin: 0 0 1em 2em }
 /** ----------------- CONTENT CLASSES ----------------- **/
 
 /* content boxes */
-.b_info { background: #E9EAEF url(../../openolat/images/information-white.png) no-repeat 5px 5px; padding: 5px 5px 5px 30px; border:1px solid #C5C4C4; @include o-border-radius(4px);}
-.b_note {background: #E2E2E2; padding: 1em; border: 2px #B5B5B5 solid; @include o-border-radius(4px);}
-.b_important {background: #FFF1A4; padding: 1em; border: 2px #F4D000 solid; @include o-border-radius(4px);}
-.b_warning {background: #FFD5AA; padding: 1em; border: 2px #FF9E3E solid; @include o-border-radius(4px);}
-.b_error {background: #FF4019; padding: 1em; border: 2px #ff0600 solid; @include o-border-radius(4px);}
+.b_info { 
+	padding: 5px 5px 5px 30px; 
+	background: #E9EAEF url(../../openolat/images/information-white.png) no-repeat 5px 5px; 
+	border:1px solid #C5C4C4; 
+	@include o-border-radius(4px);
+}
+p.b_info, div.b_info {margin: 1em 0;} /* tiny needs something here */
 
-div.b_note, div.b_important, div.b_warning, div.b_info, div.b_error { margin: 1em 0;}
-.b_border_box { border: 1px solid $basegray_light; padding: 1em;}
-/* font  */
-.b_disabled { color: $basegray_light; }
-.b_deleted { text-decoration: line-through; }	
-.b_selected { font-weight: bold; }	
+.b_note {
+	padding: 1em; 
+	background: #E2E2E2; 
+	border: 2px #B5B5B5 solid; 
+	@include o-border-radius(4px);
+}
+p.b_note, div.b_note {margin: 1em 0;} /* tiny needs something here */
+
+.b_important {
+	padding: 1em; 
+	background: #FFF1A4; 
+	border: 2px #F4D000 solid; 
+	@include o-border-radius(4px);
+}
+p.b_important, div.b_important {margin: 1em 0;} /* tiny needs something here */
+
+.b_warning {
+	padding: 1em; 
+	background: #FFD5AA; 
+	border: 2px #FF9E3E solid; 
+	@include o-border-radius(4px);
+}
+p.b_warning, div.b_warning {margin: 1em 0;} /* tiny needs something here */
+
+.b_error {
+	padding: 1em; 
+	background: #FF6A66; 
+	color: #fff; 
+	border: 2px #ff0600 solid; 
+	@include o-border-radius(4px);
+	.b_error_icon { 
+		padding: 9px 0 9px 41px; 
+		background: url(../../openolat/images/icon_error_32.png) no-repeat; 
+	}
+	table.b_grid td, table.b_grid th, table.b_border td, table.b_border th { border: 1px solid #fff;}
+}
+p.b_error, div.b_error {margin: 1em 0;} /* tiny needs something here */
+
+.b_border_box { 
+	border: 1px solid $basegray_light; 
+	padding: 1em;
+	@include o-border-radius(2px); 
+}
+p.b_border_box, div.b_border_box {margin: 1em 0;} /* tiny needs something here */
+
+
+/* nice table formatting */
+table {
+	&.b_grid {
+		background: transparent;
+		border-collapse: separate;
+		td, th { 
+			padding: 2px 5px;
+			border: 1px solid #888;
+		}
+		thead th {
+			background: #ccc;
+		}	
+		tbody th {
+			background: #eee;
+		}
+	}
+	&.b_border {
+		background: transparent;
+		border-collapse: collapse;
+		td, th { 
+			padding: 2px 5px;
+			border: 1px solid #888;
+		}	
+	}
+	&.b_full { 
+		width: 99.5%; 
+	}
+}
+
+/* font styles  */
+.b_selected, p.b_selected, div.b_selected { font-weight: bold; }	
+.b_dimmed, p.b_dimmed, div.b_dimmed { @include o-opacity(40); }
+.b_disabled, p.b_disabled, div.b_disabled { color: $basegray_light; }
+.b_deleted, p.b_deleted, div.b_deleted { text-decoration: line-through; }	
+
 /* font sizes relative to parent object */
-.b_small, small { font-size: 90% }
-.b_xsmall, sup, sub { font-size: 80% }
-.b_large { font-size: 110% }
-.b_xlarge, big { font-size: 120% }
+.b_xsmall, sup, sub, p.b_xsmall, div.b_xsmall { font-size: 80% }
+.b_small, small, p.b_small, div.b_small { font-size: 90% }
+.b_large, p.b_large, div.b_large { font-size: 110% }
+.b_xlarge, big, p.b_xlarge, div.b_xlarge  { font-size: 120% }
+
 /* text alignment: normal flow in a LTR language is left, in a RTL language it is right */
 .b_align_normal { text-align: left; }
 .b_align_center { text-align: center; }
 .b_align_inverse { text-align: right; }
-.b_quote_wrapper { position: relative; margin: 20px; }
-.b_quote_author { background: url(../../openolat/images/forum/quote.gif) no-repeat left bottom; padding: 10px 5px 15px 11px;position: relative;top: 1px;font-style: italic;color: #A2A2A2;}
-blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: black;padding: 8px 10px 6px;color: #646464;background:#fff; }
-.b_border_box { border: 1px solid #ccc; padding: 1em; @include o-border-radius(2px); }
-.b_warning { padding: 1em; border: 2px #ffc659 solid; @include o-border-radius(4px); @include o-gradient2(#ffe49c,#fff4da); }
-.b_error { padding: 1em; border: 2px #ff0600 solid; @include o-border-radius(4px); @include o-gradient2(#ff4019,#ff7e5f); }
-.b_error .b_error_icon { padding: 9px 0 9px 41px; background: url(../../openolat/images/icon_error_32.png) no-repeat; }
-.b_dimmed { @include o-opacity(40); }
+
+/* colors (used in repo and else where) */
 .o_ochre { color: #c8a959; }
+.o_blue { color: #12223F; }
 
-/* nice table formatting */
-table.b_grid {
-	td, th { 
-		padding: 2px 5px;
-		border: 1px solid #888;
-	}
-	thead th {
-		background: #ccc;
-	}	
-	tbody th {
-		background: #eee;
-	}
-}
+/* special links */
+a.b_link_extern { background: transparent url('../../openolat/images/external_link_trimmed.png') no-repeat right top; padding-right:13px;}
+a.b_link_mailto { background: transparent url('../../openolat/images/mail_small.png') no-repeat left center; padding-left:18px;}
+a.b_link_forward { background: transparent url('../../openolat/images/arrow_right.png') no-repeat right center; padding-right:18px;}
 
 	
-
-/* =============================================================================== **/
-	
-	/* HELP, context sensitive */
-	div.b_contexthelp_wrapper { position: relative; }
-	a.b_contexthelp { display: block; width: 16px; height: 16px; background: url(../../openolat/images/help.png) no-repeat; line-height: 0; cursor: help; }
-	div.b_contexthelp_wrapper a.b_contexthelp { position: absolute; top: 0; right: 0; }
-	fieldset a.b_contexthelp, fieldset div.b_contexthelp_wrapper a.b_contexthelp { position: absolute; top: -1.5em; right: -0.8em; }
-	#b_contexthelp {}
-	#b_contexthelp_content { padding: 0;}
-	#b_ch_topnav_search div.b_form_element_wrapper.b_form_horizontal { margin:2px 0 0 0; }
-	#b_contexthelp_rating { 
-		text-align: center; margin-top: 20px; padding: 10px; border-top: 1px #ACAAAA solid; 
-		 h4{ font-size: 90%; margin: 0; font-style: italic; }
-		 table {
-			 display: inline-block; 
-			 td { width: 50%; }
-		 }
-	}
-	.b_contexthelp_icon {background-image: url(../../openolat/images/help.png); }
-	
-	
-	
-	
-	/* USER COMMENTS */
-	div.b_ratings_and_comments { 
-		margin: 4em 0 1.5em 0; padding-bottom: 0.5em; border-bottom: 1px solid #eee; font-size: 0.9em; position: relative; 
-		div.b_rating_wrapper { position: absolute; right: 0; bottom: 0; width: 150px; height: 4em; }
-		div.b_rating { background: none; border: none;  padding: 0; margin: 0; position: absolute; left: 0; bottom: 2px; width: 100%}
-		div.b_rating_personal { background: #fff; z-index: 5; }
-	}
-	
-	div.b_ratings_and_comments a.b_comments, div.b_eportfolio_map a.b_comments { background: url(../../openolat/images/comment.png) 3px 50% no-repeat; padding: 3px 0 1px 23px; vertical-align: middle; min-height: 18px;}
-
-	div.b_comments { 
-		font-size: 0.9em;
-		
-		div.b_comment_wrapper { 
-			border:1px solid #eee; padding: 10px 10px 5px 10px; margin-bottom: 2em; background: #fbfbfb;
-			@include o-border-radius(4px);
-			div.b_avatar img { border: 1px solid #aaa; }
-			h5 { font-size: 1em; background: url(../../openolat/images/user.png) 0 50% no-repeat; padding: 1px 0 1px 20px; vertical-align: middle; min-height: 16px;}
-			span.b_date { color: #aaaaaa; font-weight: normal; display: block; margin-top: 5px;}
-			
-			// wrapper in wrapper in wrapper in ....
-			div.b_comment_wrapper { margin-left: 7px; background: #fff; div.b_comment_wrapper { background: #fbfbfb; div.b_comment_wrapper { background: #fff;} } }
-		}
-		blockquote.b_comment { padding: 3px 0 0 0px; margin: 0;}
-		div.b_form { 
-			padding: 10px; border:1px solid #eee; margin: 2em 0 2em 0; 
-			@include o-gradient-white();
-			@include o-border-radius(4px); 
-			h5 { font-size: 1em; margin-bottom: 0.5em;}
-			div.b_button_group { text-align: center; }
-		}		
-	}
-	
-	.b_comment_icon {background-image: url(../../openolat/images/comment.png);}
-	#b_comment_form_link {font-size: 0.9em; position: relative; top: -15px; left: 23px;}
-	
-	/* DATE COMPONENT */
-	div.b_datecomp { 
-		width: 2.5em; height: 3em; position: relative; margin-right: 5px;  font-weight: normal; color: white; text-align: center; vertical-align: middle; border: 1px solid #000; font-size: 85%;
-		div {width: 100%;  position: absolute; left: 0;}
-		div.b_year {height: 1em; top: -1.5em; font-size: 80%; font-weight: normal; color: #000; }
-		div.b_month {background: #BE5B5D; height: 40%; top: 0; font-size: 80%; font-weight: normal; color: white; }
-		div.b_day {background: #fff; height: 60%; bottom: 0; font-size: 120%; font-weight: bold; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #aaaaaa; }
-	}
-	
-	
-	/* RATING */
-	div.b_rating {
-		margin: 10px; padding: 5px; font-size: 80%; white-space: nowrap; text-align: left; background: #EEE; border: 1px solid #ACAAAA; 
-		@include o-border-radius(4px);
-		div.b_rating_title { font-weight: bold; }
-		div.b_rating_items { 
-			vertical-align: middle; line-height: 18px; 
-			a { float: left; display: inline; width: 16px; height: 16px; background-repeat: no-repeat; background-position: 0 0; margin: 1px 4px 1px 0}
-			a.b_rating_item_on { background-image: url(../../openolat/images/star.png); }
-			a.b_rating_item_off { background-image: url(../../openolat/images/star_grey.png); }
-			a:hover {cursor: default;}
-			&.b_enabled a:hover {cursor: pointer;}
-			&.b_enabled a.b_rating_item_off:hover { background-image: url(../../openolat/images/star.png);}
-		}
-		div.b_rating_explanation { clear: both; font-size: 90%; }
-	}
-	
-
-/* AJAX AUTOCOMPLETER only color styles override */
-div.b_form_auto_completer input { border: 1px solid #ACAAAA; background: #F6F6F6; line-height: 1.3em; margin: 0px; padding: 0; }
-div.b_form_auto_completer input:focus { border: 1px solid #504D4E; background: #FFF; }
-div.b_form_auto_completer_item { background-color:#FFF; text-align: left; padding-top: 2px; padding-bottom: 2px;}
-div.b_form_auto_completer_item.x-combo-selected { background-color: $basecolor_ultra_light; border-left:0 ! important; border-right:0 ! important;}
-div.b_form_auto_completer_item span.b_key { color: #999; margin-right: 2px; }
-div.b_form_auto_completer_item span.b_value { }
-div.b_form_auto_completer_item.b_error_icon { color: $nokcolor; font-style: italic;}
-
-
-/* ---------- smilies / emoticons in tinyMCE ------------------------ */
+/* ---------- smilies / emoticons in tinyMCE (excluded in editor styles) ------------------------ */
 /* i know, these are icons... but they must be in content.css, 'cause tinyMCE needs 'em... */
 img.b_emoticons_angel     {background : url(../../openolat/images/emoticons/smiley-angel.png) no-repeat; width: 16px; height: 16px;}
 img.b_emoticons_angry     {background : url(../../openolat/images/emoticons/smiley-mad.png) no-repeat; width: 16px; height: 16px;}
@@ -267,28 +230,3 @@ img.b_emoticons_wink      {background : url(../../openolat/images/emoticons/smil
 img.b_emoticons_worried   {background : url(../../openolat/images/emoticons/smiley-roll-blue.png) no-repeat; width: 16px; height: 16px;}
 img.b_emoticons_up   	  {background : url(../../openolat/images/emoticons/thumb-up.png) no-repeat; width: 16px; height: 16px;}
 img.b_emoticons_down   	  {background : url(../../openolat/images/emoticons/thumb.png) no-repeat; width: 16px; height: 16px;}
-
-/** ---------------------- EXT JS PATCHES  ------------------ **/
-/* (are needed here in content.css ,  e.g.  glossary tooltip in iframes...) */
-div.b_ext_elem ol, div.b_ext_elem ul, div.b_ext_elem li {list-style: none; padding: 0; margin: 0}
-div.b_ext_elem.x-tree .x-panel-body { background: transparent;}
-div.b_ext_tooltip_wrapper {padding: 1px;}
-.x-window-mc {font-size: 100%;}
-
-/* EXT TREE */
-div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {background-image: url('../'+$ico_minus); background-position: 50% 50%;}
-div.b_ext_elem .x-tree-lines .x-tree-elbow-plus {background-image: url('../'+$ico_plus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {background-image: url('../'+$ico_minus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-lines .x-tree-elbow-end-plus {background-image: url('../'+$ico_plus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon { background-image: url(../../openolat/images/folder.png); }
-div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon { background-image: url(../../openolat/images/folder_open.png); }
-div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon { background-image: url(../../openolat/images/docs/document_plain.png); }
-div.b_ext_elem .x-tree-selected a.x-tree-node-anchor { border: 1px dotted #444; text-decoration: none; }
-div.b_ext_elem .x-tree-node .x-tree-selected { background-color:#FFC266; }
-	
-/* fix margins in tooltip */
-.x-tip, .x-tip-body {
-	dl, dd {margin:0 !important;}
-	dl { padding: 1px; }
-}
-
