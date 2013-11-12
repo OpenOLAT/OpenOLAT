@@ -54,6 +54,10 @@ span.o_forum_status_sticky_closed_icon {background-image: url(../openolat/images
 span.o_forum_status_sticky_icon {background-image: url(../openolat/images/forum/sticky-note-pin.png)}
 span.o_forum_status_closed_icon {background-image: url(../openolat/images/forum/forum_locked.png)}
 
+.b_quote_wrapper { position: relative; margin: 20px; }
+.b_quote_author { background: url(../openolat/images/forum/quote.gif) no-repeat left bottom; padding: 10px 5px 15px 11px;position: relative;top: 1px;font-style: italic;color: #A2A2A2;}
+blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229); padding: 8px 10px 6px;color: #646464; background:#fff; font-size: 100%; }
+
 div.o_forum_peekview { 
 	margin: 1em 0 1em 0;
 	h5 { font-size: 1em; position: relative; left: -20px;}

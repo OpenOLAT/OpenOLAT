@@ -183,11 +183,10 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 	}
 	position:relative;
 	
-	//background:transparent url('../openolat/images/openolat_logo_header.png') no-repeat 20px 20px;
-	
 	/* the top-navigation */
 	#b_topnav {
 		position:absolute;
+		font-family: $topnavfont;
 		right:0px;
 		top:0px;
 		padding:4px 15px 0px 0px;

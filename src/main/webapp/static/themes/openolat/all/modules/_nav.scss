@@ -5,6 +5,7 @@
 /** ----------------- MAIN NAVIGATION ( TABS ) ----------------- **/
 #b_nav_main {
 	float: left;
+	font-family: $navmainfont;	
 	
 	@if $enablebiz == true {
 		margin-top:-27px;
@@ -109,9 +110,11 @@
 		}//end li
 	}//end ul
 }
-	
-	
-	
+
+/* sometimes used for linking of logo */
+.b_clickable:hover {
+  cursor: pointer;
+}	
 	
 /** ----------------- SUB NAVIGATION (TREE) ----------------- **/
 
@@ -119,6 +122,7 @@
 div.b_tree {
 	position: relative;
 	font-size: 100%;
+	font-family: $treefont;
 	padding: 0;
 	
 	ul { 
