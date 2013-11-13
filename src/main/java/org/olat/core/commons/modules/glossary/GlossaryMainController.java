@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -207,7 +208,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 					if (deleteDialogCtr != null) {
 						deleteDialogCtr.dispose();
 					}
-					deleteDialogCtr = activateYesNoDialog(ureq, null, translate("glossary.delete.dialog", currentGlossaryItem.getGlossTerm()),
+					deleteDialogCtr = activateYesNoDialog(ureq, null, translate("glossary.delete.dialog", StringEscapeUtils.escapeHtml(currentGlossaryItem.getGlossTerm())),
 							deleteDialogCtr);
 				} 
 			} else if (button.getCommand().startsWith(REGISTER_LINK)) {
