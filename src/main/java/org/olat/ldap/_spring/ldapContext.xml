@@ -81,7 +81,7 @@
 		<!-- if ldapSyncCronSync=true, specify cron expression: http://quartz.sourceforge.net/javadoc/org/quartz/CronTrigger.html  -->
 		<property name="ldapSyncCronSyncExpression" value="${ldap.ldapSyncCronSyncExpression}" /> <!--  run every hour -->		
 		<!-- Configuration for syncing user attributes during login or cron and batch sync -->		
-		<property name="ldapUserObjectClass" value="${ldap.ldapUserObjectClass}"/>
+		<property name="ldapUserFilter" value="${ldap.ldapUserFilter}"/>
 		<property name="ldapUserCreatedTimestampAttribute" value="${ldap.ldapUserCreatedTimestampAttribute}"/>
 		<property name="ldapUserLastModifiedTimestampAttribute" value="${ldap.ldapUserLastModifiedTimestampAttribute}"/>
 		<property name="ldapUserPasswordAttribute" value="${ldap.ldapUserPassordAttribute}"/>
