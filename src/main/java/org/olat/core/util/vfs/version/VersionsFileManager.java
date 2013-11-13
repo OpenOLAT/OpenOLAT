@@ -22,6 +22,7 @@ package org.olat.core.util.vfs.version;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -761,6 +762,11 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			if (absolutPath.startsWith(getCanonicalRoot())) {
 				relPath = absolutPath.substring(getCanonicalRoot().length());
 			}
+			
+			Path path = impl.getBasefile().toPath();
+			Path relativePath = getCanonicalRootFile().toPath().relativize(path);
+			String relPath2 = "/" + relativePath.toString();
+			log.debug(relPath + " :: " + relPath2);
 		}
 		return relPath;
 	}
@@ -797,11 +803,15 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		return null;
 	}
 
-	public String getCanonicalRoot() {
+	public File getCanonicalRootFile() {
 		if(rootFolder == null) {
 			rootFolder = new File(FolderConfig.getCanonicalRoot());
 		}
-		return rootFolder.getAbsolutePath();
+		return rootFolder;
+	}
+	
+	public String getCanonicalRoot() {
+		return getCanonicalRootFile().getAbsolutePath();
 	}
 	
 	public File getRootVersionsFile() {
