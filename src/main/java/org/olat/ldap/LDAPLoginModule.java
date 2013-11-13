@@ -101,7 +101,7 @@ public class LDAPLoginModule implements Initializable {
 	// Propagate the password changes onto the LDAP server
 	private static boolean propagatePasswordChangedOnLdapServer;
 	// Configuration for syncing user attributes
-	private static String ldapUserObjectClass;
+	private static String ldapUserFilter;
 	private static String ldapUserCreatedTimestampAttribute;
 	private static String ldapUserLastModifiedTimestampAttribute;
 	private static String ldapUserPasswordAttribute;
@@ -162,7 +162,13 @@ public class LDAPLoginModule implements Initializable {
 			setEnableLDAPLogins(false);
 			return;
 		}
-		if (!checkConfigParameterIsNotEmpty(ldapUserObjectClass)) return;
+		if (ldapUserFilter != null) {
+			if (!ldapUserFilter.startsWith("(") || !ldapUserFilter.endsWith(")")) {
+				log.error("Wrong configuration 'ldapUserFilter'. Set filter to emtpy value or enclose filter in brackets like '(objectClass=person)'. Disabling LDAP");
+				setEnableLDAPLogins(false);
+				return;
+			}
+		}
 		if (!checkConfigParameterIsNotEmpty(ldapUserCreatedTimestampAttribute)) return;
 		if (!checkConfigParameterIsNotEmpty(ldapUserLastModifiedTimestampAttribute)) return;
 		if (userAttrMap == null || userAttrMap.size() == 0) {
@@ -477,8 +483,13 @@ public class LDAPLoginModule implements Initializable {
 		ldapSyncOnStartup = ldapStartSyncs;
 	}
 
-	public void setLdapUserObjectClass(String objectClass) {
-		ldapUserObjectClass = objectClass.trim();
+	public void setLdapUserFilter(String filter) {
+		if (StringHelper.containsNonWhitespace(filter)) {
+			ldapUserFilter = filter.trim();			
+		} else {
+			// set explicitly to null for no filter
+			ldapUserFilter = null;
+		}
 	}
 
 	public void setLdapSystemDN(String ldapSystemDN) {
@@ -629,8 +640,11 @@ public class LDAPLoginModule implements Initializable {
 		return connectionTimeout;
 	}
 
-	public static String getLdapUserObjectClass() {
-		return ldapUserObjectClass;
+	/**
+	 * @return A filter expression enclosed in () brackets to filter for valid users or NULL for no filtering
+	 */
+	public static String getLdapUserFilter() {
+		return ldapUserFilter;
 	}
 
 	public static String getLdapUserLastModifiedTimestampAttribute() {
