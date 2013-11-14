@@ -207,7 +207,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 					if (deleteDialogCtr != null) {
 						deleteDialogCtr.dispose();
 					}
-					deleteDialogCtr = activateYesNoDialog(ureq, null, translate("glossary.delete.dialog", currentGlossaryItem.getGlossTerm()),
+					deleteDialogCtr = activateYesNoDialog(ureq, null, translate("glossary.delete.dialog", StringHelper.escapeHtml(currentGlossaryItem.getGlossTerm())),
 							deleteDialogCtr);
 				} 
 			} else if (button.getCommand().startsWith(REGISTER_LINK)) {
