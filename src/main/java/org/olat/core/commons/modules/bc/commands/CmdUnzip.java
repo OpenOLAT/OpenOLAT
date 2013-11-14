@@ -34,7 +34,6 @@ import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -45,6 +44,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.Quota;
@@ -84,8 +84,8 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 			VFSItem vfsItem = currentContainer.resolve(sItem);
 			if (vfsItem instanceof VFSLeaf) {
 				try {
-					boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-					lockedFiles.addAll(checkLockedFiles((VFSLeaf)vfsItem, currentContainer, ureq.getIdentity(), isAdmin));
+					Roles roles = ureq.getUserSession().getRoles();
+					lockedFiles.addAll(checkLockedFiles((VFSLeaf)vfsItem, currentContainer, ureq.getIdentity(), roles));
 				} catch (Exception e) {
 					String name = vfsItem == null ? "NULL" : vfsItem.getName();
 					getWindowControl().setError(translator.translate("FileUnzipFailed", new String[]{name}));
@@ -94,7 +94,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		}
 		
 		if(!lockedFiles.isEmpty()) {
-			String msg = MetaInfoHelper.renderLockedMessageAsHtml(trans, null, lockedFiles);
+			String msg = FolderCommandHelper.renderLockedMessageAsHtml(trans, null, lockedFiles);
 			List<String> buttonLabels = Collections.singletonList(trans.translate("ok"));
 			lockedFiledCtr = activateGenericDialog(ureq, trans.translate("lock.title"), msg, buttonLabels, lockedFiledCtr);
 			return null;
@@ -129,7 +129,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		return null;
 	}
 	
-	private List<String> checkLockedFiles(VFSLeaf vfsItem, VFSContainer currentContainer, Identity identity, boolean isAdmin) {
+	private List<String> checkLockedFiles(VFSLeaf vfsItem, VFSContainer currentContainer, Identity identity, Roles roles) {
 		String name = vfsItem.getName();
 		if (!name.toLowerCase().endsWith(".zip")) {
 			return Collections.emptyList();
@@ -146,7 +146,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		if(zipContainer == null) {
 			return Collections.emptyList();
 		} else if (zipContainer instanceof VFSContainer) {
-			return ZipUtil.checkLockedFileBeforeUnzipNonStrict(vfsItem, (VFSContainer)zipContainer, identity, isAdmin);
+			return ZipUtil.checkLockedFileBeforeUnzipNonStrict(vfsItem, (VFSContainer)zipContainer, identity, roles);
 		} else {
 			//replace a file with a folder ???
 			return Collections.emptyList();

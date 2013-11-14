@@ -28,7 +28,6 @@ package org.olat.core.commons.modules.bc.components;
 
 import java.util.Iterator;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
@@ -44,6 +43,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -114,7 +114,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 		target.append("<form  method=\"post\" id=\"" + formName + "\" action=\"");
 		ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] {FolderRunController.FORM_ACTION }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		target.append("\" onsubmit=\"if ( b_briefcase_isChecked('").append(formName)
-			.append("', '").append(Formatter.escapeSingleAndDoubleQuotes(StringEscapeUtils.escapeHtml(translator.translate("alert")).toString())) 
+			.append("', '").append(Formatter.escapeSingleAndDoubleQuotes(StringHelper.escapeHtml(translator.translate("alert")).toString())) 
 			.append("')) { if(o_info.linkbusy) return false; else o_beforeserver(); return true; } else {return false; }\"");
 		if (iframePostEnabled) { // add ajax iframe target
 			StringOutput so = new StringOutput();
@@ -230,7 +230,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 					target.append("<input type=\"submit\" class=\"b_button\" name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MAIL);
 					target.append("\" value=\"");
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("send")));
+					target.append(StringHelper.escapeHtml(translator.translate("send")));
 					target.append("\"/>");
 				}
 				
@@ -239,7 +239,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 					target.append("<input type=\"submit\" class=\"b_button\" name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DEL);
 					target.append("\" value=\"");
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("del")));
+					target.append(StringHelper.escapeHtml(translator.translate("del")));
 					target.append("\"/>");
 				}
 
@@ -248,12 +248,12 @@ public class FolderComponentRenderer implements ComponentRenderer {
 					target.append("<input type=\"submit\" class=\"b_button\" name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MOVE);
 					target.append("\" value=\"");
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("move")));
+					target.append(StringHelper.escapeHtml(translator.translate("move")));
 					// copy
 					target.append("\"/><input type=\"submit\" class=\"b_button\" name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_COPY);
 					target.append("\" value=\"");
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("copy")));
+					target.append(StringHelper.escapeHtml(translator.translate("copy")));
 					target.append("\"/>");
 				}
 									
@@ -262,12 +262,12 @@ public class FolderComponentRenderer implements ComponentRenderer {
 					target.append("<input type=\"submit\" class=\"b_button\" name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_ZIP);
 					target.append("\" value=\"");
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("zip")));
+					target.append(StringHelper.escapeHtml(translator.translate("zip")));
 					//unzip
 					target.append("\"/><input type=\"submit\" class=\"b_button\" name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_UNZIP);
 					target.append("\" value=\"");
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("unzip")));
+					target.append(StringHelper.escapeHtml(translator.translate("unzip")));
 					target.append("\"/>");				
 				}
 				target.append("</div>");

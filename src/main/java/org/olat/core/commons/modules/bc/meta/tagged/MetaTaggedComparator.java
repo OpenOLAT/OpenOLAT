@@ -24,7 +24,6 @@ import java.util.Comparator;
 import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaTitleComparator;
 
 /**
  * Compares the title of two meta tagged objects.

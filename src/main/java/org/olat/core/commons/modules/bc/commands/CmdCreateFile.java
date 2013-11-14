@@ -28,6 +28,7 @@ package org.olat.core.commons.modules.bc.commands;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.PlainTextEditorController;
@@ -95,14 +96,14 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			throw new AssertException("Illegal attempt to create file in: " + folderComponent.getCurrentContainerPath());
 		}		
 		
-		mainVC = this.createVelocityContainer("createFilePanel");		
-		mainPanel = this.putInitialPanel(mainVC);
+		mainVC = createVelocityContainer("createFilePanel");		
+		mainPanel = putInitialPanel(mainVC);
 		
 		this.folderComponent = folderComponent;
 		mainVC.put("foldercomp", folderComponent);
 		
-		createFileForm = new CreateFileForm(ureq, wControl, translator, folderComponent);
-		this.listenTo(createFileForm);		
+		createFileForm = new CreateFileForm(ureq, wControl, translator);
+		listenTo(createFileForm);		
 		mainVC.put("createFileForm", createFileForm.getInitialComponent());
 		
 		//check for quota
@@ -173,7 +174,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 					editorCtr = new PlainTextEditorController(ureq, getWindowControl(), (VFSLeaf)writableRootContainer.resolve(relFilePath), "utf-8", true, true, null);
 				}
 
-				this.listenTo(editorCtr);
+				listenTo(editorCtr);
 				
 				mainPanel.setContent(editorCtr.getInitialComponent());
 			}
@@ -199,10 +200,12 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	 */
 	private class CreateFileForm extends AbstractCreateItemForm {			
 		
+		private final MetaInfoFactory metaInfoFactory;
 				
-		public CreateFileForm(UserRequest ureq, WindowControl wControl, Translator translator, FolderComponent folderComponent) {			
+		public CreateFileForm(UserRequest ureq, WindowControl wControl, Translator translator) {			
 			super(ureq, wControl, translator, i18nkeyMap);	
 			textElement.setExampleKey("cfile.name.example", null);
+			metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		}		
 						
 		@Override
@@ -211,17 +214,17 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			VFSContainer currentContainer = folderComponent.getCurrentContainer();
 			VFSItem item = currentContainer.createChildLeaf(getItemName());
 			if (item == null) {				
-				this.fireEvent(ureq, Event.FAILED_EVENT);
+				fireEvent(ureq, Event.FAILED_EVENT);
 				return;
 			}
 			if (item instanceof OlatRelPathImpl) {
 				// update meta data
-				MetaInfo meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
+				MetaInfo meta = metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
 				meta.setAuthor(ureq.getIdentity());
 				meta.write();
 			}	
 			fileName = getItemName();			
-	    fireEvent(ureq, Event.DONE_EVENT);  
+			fireEvent(ureq, Event.DONE_EVENT);  
 		}
 		
 		protected boolean validateFormLogic(UserRequest ureq) {

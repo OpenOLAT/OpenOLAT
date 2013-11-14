@@ -97,7 +97,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
   }
 	
 	// meta data
-  private String uuid;
+	private String uuid;
 	private Long authorIdentKey = null;
 	private Long lockedByIdentKey = null;
 	private String comment = "";
@@ -117,39 +117,16 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 
 	// make it a factory
 	public MetaInfoFileImpl() { 
-		super();
+		
 	}
 
 	public MetaInfoFileImpl(File metaFile) { 
-		super();
 		this.metaFile = metaFile;
 		parseSAX(metaFile);
 	}
 	
-	/**
-	 * [spring]
-	 * @param thumbnailService
-	 */
-	public void setThumbnailService(ThumbnailService thumbnailService) {
-		this.thumbnailService = thumbnailService;
-	}
-
-	/**
-	 * Lazy initialization: A meta file is created based on file data
-	 * if no meta file can be found for the given path.
-	 * 
-	 * IMPORTANT: MetaInfa.getInstance can only create an instance, if the
-	 * referred bcPath exists. It needs this bcPath to determine wether it
-	 * is looking for a file or a folder meta info object.
-	 * 
-	 * @param bcPath
-	 * @return MetaInfo instance or null if no instance could be created.
-	 */
-	public MetaInfo createMetaInfoFor(OlatRelPathImpl olatRelPathImpl) {
-		MetaInfoFileImpl meta = new MetaInfoFileImpl();
-		meta.setThumbnailService(thumbnailService);
-		if (!meta.init(olatRelPathImpl)) return null;
-		return meta;
+	public MetaInfoFileImpl(OlatRelPathImpl olatRelPathImpl) { 
+		init(olatRelPathImpl);
 	}
 
 	private boolean init(OlatRelPathImpl olatRelPathImpl) {
@@ -167,6 +144,10 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			write();
 		}
 		return true;
+	}
+
+	public void setThumbnailService(ThumbnailService thumbnailService) {
+		this.thumbnailService = thumbnailService;
 	}
 
 	private File getOriginFile(OlatRelPathImpl olatRelPathImpl) {

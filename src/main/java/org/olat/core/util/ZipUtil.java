@@ -46,10 +46,11 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -59,6 +60,7 @@ import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.version.Versionable;
 
 /**
@@ -375,11 +377,13 @@ public class ZipUtil {
 	 * @param isAdmin
 	 * @return the list of files which already exist
 	 */
-	public static List<String> checkLockedFileBeforeUnzip(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity, boolean isAdmin) {
+	public static List<String> checkLockedFileBeforeUnzip(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity, Roles isAdmin) {
 		List<String> lockedFiles = new ArrayList<String>();
 		
 		InputStream in = zipLeaf.getInputStream();
 		ZipInputStream oZip = new ZipInputStream(in);
+		
+		VFSLockManager vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 		
 		try {
 			// unzip files
@@ -416,7 +420,7 @@ public class ZipUtil {
 						}
 						
 						VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
-						if(MetaInfoHelper.isLocked(newEntry, identity, isAdmin)) {
+						if(vfsLockManager.isLockedForMe(newEntry, identity, isAdmin)) {
 							lockedFiles.add(name);
 						}
 					}
@@ -439,14 +443,16 @@ public class ZipUtil {
 	 * @param zipLeaf
 	 * @param targetDir
 	 * @param identity
-	 * @param isAdmin
+	 * @param roles
 	 * @return
 	 */
-	public static List<String> checkLockedFileBeforeUnzipNonStrict(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity, boolean isAdmin) {
+	public static List<String> checkLockedFileBeforeUnzipNonStrict(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity, Roles roles) {
 		List<String> lockedFiles = new ArrayList<String>();
 		
 		InputStream in = zipLeaf.getInputStream();
 		net.sf.jazzlib.ZipInputStream oZip = new net.sf.jazzlib.ZipInputStream(in);
+
+		VFSLockManager vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 		
 		try {
 			// unzip files
@@ -483,7 +489,7 @@ public class ZipUtil {
 						}
 						
 						VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
-						if(MetaInfoHelper.isLocked(newEntry, identity, isAdmin)) {
+						if(vfsLockManager.isLockedForMe(newEntry, identity, roles)) {
 							lockedFiles.add(name);
 						}
 					}

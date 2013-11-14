@@ -36,6 +36,8 @@ import org.olat.core.gui.control.Event;
  */
 public class FolderEvent extends Event {
 
+	private static final long serialVersionUID = -1183725651534985733L;
+
 	private String filename;
 	
 	public static final String UPLOAD_EVENT = "upload";

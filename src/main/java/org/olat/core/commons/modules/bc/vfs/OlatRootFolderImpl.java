@@ -30,6 +30,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
@@ -121,7 +122,7 @@ public class OlatRootFolderImpl extends LocalFolderImpl implements OlatRelPathIm
 	 * @see org.olat.core.commons.modules.bc.meta.tagged.MetaTagged#getMetaInfo()
 	 */
 	public MetaInfo getMetaInfo() {
-		return MetaInfoFactory.createMetaInfoFor(this);
+		return CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(this);
 	}
 	
 }

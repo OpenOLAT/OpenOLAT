@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -73,7 +74,7 @@ public class FolderManager  extends BasicManager {
 			// is a file
 			long lastModified = ((VFSLeaf)relPath).getLastModified();
 			if (lastModified > newerThan) {
-				MetaInfo meta = MetaInfoFactory.createMetaInfoFor(relPath);
+				MetaInfo meta = CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(relPath);
 				String bcrootPath = relPath.getRelPath();
 				String bcRelPath = bcrootPath.substring(basePathlen);
 				fileInfos.add(new FileInfo(bcRelPath, meta, new Date(lastModified)));

@@ -26,15 +26,16 @@
 
 package org.olat.core.commons.modules.bc.commands;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
-import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -44,10 +45,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.vfs.OlatRelPathImpl;
+import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLockManager;
 
 public class CmdDelete extends BasicController implements FolderCommand {
 
@@ -60,8 +62,13 @@ public class CmdDelete extends BasicController implements FolderCommand {
 	private DialogBoxController dialogCtr;
 	private DialogBoxController lockedFiledCtr;
 	
+	private final Roles roles;
+	private final VFSLockManager lockManager;
+	
 	protected CmdDelete(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		roles = ureq.getUserSession().getRoles();
+		lockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 
 	public Controller execute(FolderComponent fc, UserRequest ureq, WindowControl wContr, Translator trans) {
@@ -70,17 +77,28 @@ public class CmdDelete extends BasicController implements FolderCommand {
 		this.fileSelection = new FileSelection(ureq, fc.getCurrentContainerPath());
 
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
-		List<String> lockedFiles = MetaInfoHelper.hasLockedFiles(currentContainer, fileSelection, ureq);
+		List<String> lockedFiles = hasLockedFiles(currentContainer, fileSelection);
 		if (lockedFiles.isEmpty()) {
 			String msg = trans.translate("del.confirm") + "<p>" + fileSelection.renderAsHtml() + "</p>";		
 			// create dialog controller
 			dialogCtr = activateYesNoDialog(ureq, trans.translate("del.header"), msg, dialogCtr);
 		} else {
-			String msg = MetaInfoHelper.renderLockedMessageAsHtml(trans, currentContainer, lockedFiles);
+			String msg = FolderCommandHelper.renderLockedMessageAsHtml(trans, currentContainer, lockedFiles);
 			List<String> buttonLabels = Collections.singletonList(trans.translate("ok"));
 			lockedFiledCtr = activateGenericDialog(ureq, trans.translate("lock.title"), msg, buttonLabels, lockedFiledCtr);
 		}
 		return this;
+	}
+	
+	public List<String> hasLockedFiles(VFSContainer container, FileSelection selection) {
+		List<String> lockedFiles = new ArrayList<String>();
+		for (String file : selection.getFiles()) {
+			VFSItem item = container.resolve(file);
+			if (lockManager.isLockedForMe(item, getIdentity(), roles)) {
+				lockedFiles.add(file);
+			}
+		}
+		return lockedFiles;
 	}
 
 	public int getStatus() { return status; }
@@ -104,10 +122,12 @@ public class CmdDelete extends BasicController implements FolderCommand {
 				for (String file : files) {
 					VFSItem item = currentContainer.resolve(file);
 					if (item != null && (item.canDelete() == VFSConstants.YES)) {
-						if (item instanceof OlatRelPathImpl) {
+						if (item instanceof MetaTagged) {
 							// delete all meta info
-							MetaInfo meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
-							if (meta != null) meta.deleteAll();
+							MetaInfo meta = ((MetaTagged)item).getMetaInfo();
+							if (meta != null) {
+								meta.deleteAll();
+							}
 						}
 						// delete the item itself
 						item.delete();

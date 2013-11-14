@@ -49,8 +49,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.logging.OLog;
@@ -60,6 +60,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.course.ICourse;
@@ -323,7 +324,9 @@ public class CourseResourceFolderWebService {
 			}
 
 			//check if it's locked
-			if(existingVFSItem instanceof MetaTagged && MetaInfoHelper.isLocked(existingVFSItem, ureq)) {
+			boolean locked = CoreSpringFactory.getImpl(VFSLockManager.class)
+					.isLockedForMe(existingVFSItem, ureq.getIdentity(), ureq.getUserSession().getRoles());
+			if(locked) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 			

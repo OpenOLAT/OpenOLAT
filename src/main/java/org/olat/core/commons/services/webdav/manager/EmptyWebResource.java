@@ -32,10 +32,15 @@ import org.olat.core.commons.services.webdav.servlets.WebResource;
  */
 public class EmptyWebResource implements WebResource {
 	
-	public static final EmptyWebResource EMPTY_WEB_RESOURCE = new EmptyWebResource();
+	private final String path;
 	
-	public EmptyWebResource() {
-		//
+	public EmptyWebResource(String path) {
+		this.path = path;
+	}
+
+	@Override
+	public String getPath() {
+		return path;
 	}
 
 	@Override

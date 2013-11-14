@@ -38,7 +38,6 @@ import org.olat.core.commons.modules.bc.commands.FolderCommandHelper;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -107,7 +106,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	private final boolean allowAttachments;
 
 	public SendDocumentsByEMailController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, null, Util.createPackageTranslator(MetaInfoFormController.class, ureq.getLocale(),
+		super(ureq, wControl, null, Util.createPackageTranslator(MetaInfo.class, ureq.getLocale(),
 				Util.createPackageTranslator(MailModule.class, ureq.getLocale())));
 		setBasePackage(MailModule.class);
 

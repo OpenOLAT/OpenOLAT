@@ -42,12 +42,16 @@
 		<property name="webDAVModule" ref="webdavModule" />
 	</bean>
 	
+	<bean id="webDAVDispatcher" class="org.olat.core.commons.services.webdav.servlets.WebDAVDispatcherImpl">
+		<property name="lockManager" ref="vfsLockManager" />
+		<property name="webDAVManager" ref="webDAVManager" />
+	</bean>
+	
 	<bean id="webDAVAuthenticationSpi" class="org.olat.core.commons.services.webdav.manager.WebDAVAuthManager" >
 		<property name="securityManager" ref="baseSecurityManager" />
 		<property name="olatAuthenticationSpi" ref="olatAuthenticationSpi" />
 		<property name="webDAVModule" ref="webdavModule" />
 	</bean>
-
 	
 	<bean id="webdav_briefcase" class="org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider" scope="prototype" />
 	<bean id="webdav_coursefolders" class="org.olat.course.CoursefolderWebDAVProvider" scope="prototype" />

@@ -48,11 +48,15 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.CoursePublishTest;
 import org.olat.test.JunitTestHelper;
@@ -71,6 +75,8 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private VFSLockManager lockManager;
 	
 	/**
 	 * Check the DAV, Ms-Author and Allow header
@@ -400,6 +406,116 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		IOUtils.closeQuietly(assistantConn);
 	}
 	
+	/**
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testLock_propfind_lockedInOpenOLAT()
+	throws IOException, URISyntaxException {
+		//create a user
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-4-" + UUID.randomUUID().toString());
+		Identity assistant = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-5-" + UUID.randomUUID().toString());
+		RepositoryEntry re = deployTestCourse(author, assistant);
+		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+		Assert.assertNotNull(course);
+		
+		//the assistant lock the file as in OpenOLAT GUI
+		VFSContainer folderContainer = course.getCourseFolderContainer();
+		createFile(folderContainer, "tolock.txt");
+		VFSItem itemToLock = folderContainer.resolve("tolock.txt");
+		Assert.assertNotNull(itemToLock);
+		boolean locked = lockManager.lock(itemToLock, assistant, new Roles(false, false, false, true, false, false, false));
+		Assert.assertTrue(locked);
+		
+		//author make a propfind in the locked resource
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(author.getName(), "A6B7C8");
+		
+		URI toLockUri = conn.getBaseURI().path("webdav").path("coursefolders").path("Kurs").path("tolock.txt").build();
+		String propfindXml = conn.propfind(toLockUri, 2);
+
+		Assert.assertTrue(propfindXml.indexOf("<D:lockscope><D:exclusive/></D:lockscope>") > 0);//not really a test
+		Assert.assertTrue(propfindXml.indexOf("/Identity/" + assistant.getKey() + "</D:owner>") > 0);
+		Assert.assertTrue(propfindXml.indexOf("<D:locktoken><D:href>opaquelocktoken:") > 0);
+		
+		LockInfo lock = lockManager.getLock(itemToLock);
+		Assert.assertNotNull(lock);
+		Assert.assertNotNull(lock.getScope());
+		Assert.assertNotNull(lock.getType());
+		Assert.assertNotNull(lock.getOwner());
+		Assert.assertTrue(lock.getOwner().length() > 0);
+		Assert.assertTrue(lock.isVfsLock());
+		Assert.assertFalse(lock.isWebDAVLock());
+		Assert.assertEquals(assistant.getKey(), lock.getLockedBy());
+		Assert.assertFalse(lock.isTokensEmpty());
+
+		IOUtils.closeQuietly(conn);
+	}
+	
+	/**
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testLock_guilike_lockedWithWebdAV()
+	throws IOException, URISyntaxException {
+		//create a user
+		Identity user = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-2c-" + UUID.randomUUID().toString());
+
+		//create a file
+		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		VFSItem item = createFile(vfsPublic, "test.txt");
+		
+		//lock the item with WebDAV
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(user.getName(), "A6B7C8");
+
+		//author check file 
+		URI textUri = conn.getBaseURI().path("webdav").path("home").path("public").path("test.txt").build();
+		String textPropfind = conn.propfind(textUri, 0);
+		System.out.println(textPropfind);
+		
+		//author lock the file
+		String lockToken = conn.lock(textUri, UUID.randomUUID().toString());
+		Assert.assertNotNull(lockToken);
+
+		//check vfs lock
+		Roles adminRoles = new Roles(true, false, false, false, false, false, false);
+		boolean lockedForMe = lockManager.isLockedForMe(item, user, adminRoles);
+		Assert.assertTrue(lockedForMe);
+		LockInfo lock = lockManager.getLock(item);
+		Assert.assertNotNull(lock);
+		Assert.assertNotNull(lock.getScope());
+		Assert.assertNotNull(lock.getType());
+		Assert.assertNotNull(lock.getOwner());
+		Assert.assertTrue(lock.getOwner().length() > 0);
+		Assert.assertFalse(lock.isVfsLock());
+		Assert.assertTrue(lock.isWebDAVLock());
+		Assert.assertEquals(user.getKey(), lock.getLockedBy());
+		Assert.assertFalse(lock.isTokensEmpty());
+		
+		//try to unlock which should not be possible
+		boolean unlocked = lockManager.unlock(item, user, adminRoles);
+		Assert.assertFalse(unlocked);
+		//check that nothing changed
+		LockInfo lockAfterUnlock = lockManager.getLock(item);
+		Assert.assertNotNull(lockAfterUnlock);
+		Assert.assertNotNull(lockAfterUnlock.getScope());
+		Assert.assertNotNull(lockAfterUnlock.getType());
+		Assert.assertNotNull(lockAfterUnlock.getOwner());
+		Assert.assertTrue(lockAfterUnlock.getOwner().length() > 0);
+		Assert.assertFalse(lockAfterUnlock.isVfsLock());
+		Assert.assertTrue(lockAfterUnlock.isWebDAVLock());
+		Assert.assertEquals(user.getKey(), lockAfterUnlock.getLockedBy());
+		Assert.assertFalse(lockAfterUnlock.isTokensEmpty());
+		
+		IOUtils.closeQuietly(conn);
+	}
+	
 	@Test
 	public void testDelete()
 	throws IOException, URISyntaxException {
@@ -440,7 +556,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		IOUtils.closeQuietly(conn);
 	}
 	
-	private void createFile(VFSContainer container, String filename) throws IOException {
+	private VFSItem createFile(VFSContainer container, String filename) throws IOException {
 		VFSLeaf testLeaf = container.createChildLeaf(filename);
 		InputStream in = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
 		OutputStream out = testLeaf.getOutputStream(false);
@@ -448,9 +564,10 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		out.flush();
 		IOUtils.closeQuietly(in);
 		IOUtils.closeQuietly(out);
+		return container.resolve(filename);
 	}
 	
-	private void deployTestCourse(Identity author, Identity coAuthor) throws URISyntaxException {
+	private RepositoryEntry deployTestCourse(Identity author, Identity coAuthor) throws URISyntaxException {
 		URL courseWithForumsUrl = CoursePublishTest.class.getResource("myCourseWS.zip");
 		Assert.assertNotNull(courseWithForumsUrl);
 		File courseWithForums = new File(courseWithForumsUrl.toURI());
@@ -462,5 +579,6 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		}
 		
 		dbInstance.commitAndCloseSession();
+		return re;
 	}
 }

@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,7 +40,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -95,25 +94,28 @@ public class FileArtefactDetailsController extends BasicController {
 	
 	private void initFileView(VFSItem file, UserRequest ureq){
 		vC = createVelocityContainer("fileDetails");
-		MetaInfo meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl) file);
-		vC.contextPut("meta", meta);
 		DownloadComponent downlC = new DownloadComponent("download", (VFSLeaf) file);
-		vC.put("download", downlC);			
+		vC.put("download", downlC);	
 		vC.contextPut("filename", fArtefact.getFilename());
-		// show a preview thumbnail if possible
-		if (meta.isThumbnailAvailable()) {
-			VFSLeaf thumb = meta.getThumbnail(200, 200);
-			if(thumb != null) {
-				mr = new VFSMediaResource(thumb);
-			}
-			if(mr != null) {
-				String thumbMapper = registerMapper(ureq, new Mapper() {
-					@Override
-					public MediaResource handle(String relPath, HttpServletRequest request) {
-						return mr;
-					}
-				});					
-				vC.contextPut("thumbMapper", thumbMapper);
+		
+		if(file instanceof MetaTagged) {
+			MetaInfo meta = ((MetaTagged)file).getMetaInfo();
+			vC.contextPut("meta", meta);
+			// show a preview thumbnail if possible
+			if (meta.isThumbnailAvailable()) {
+				VFSLeaf thumb = meta.getThumbnail(200, 200);
+				if(thumb != null) {
+					mr = new VFSMediaResource(thumb);
+				}
+				if(mr != null) {
+					String thumbMapper = registerMapper(ureq, new Mapper() {
+						@Override
+						public MediaResource handle(String relPath, HttpServletRequest request) {
+							return mr;
+						}
+					});					
+					vC.contextPut("thumbMapper", thumbMapper);
+				}
 			}
 		}
 		if (!readOnlyMode){
@@ -125,7 +127,6 @@ public class FileArtefactDetailsController extends BasicController {
 		viewPanel.setContent(vC);
 	}
 	
-	@SuppressWarnings("unused")
 	private void initUploadView(UserRequest ureq){
 		vC = createVelocityContainer("fileDetailsUpload");
 		uploadLink = LinkFactory.createLink("upload.link", vC, this);

@@ -23,6 +23,9 @@ import java.io.InputStream;
  * from {@link java.io.File}.
  */
 public interface WebResource {
+	
+	String getPath();
+	
     /**
      * See {@link java.io.File#lastModified()}.
      */

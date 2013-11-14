@@ -93,13 +93,13 @@ public class RevisionListController extends BasicController {
 	private final boolean isAdmin;
 	private final UserManager userManager;
 
-	public RevisionListController(UserRequest ureq, WindowControl wControl, Versionable versionedFile) {
-		this(ureq, wControl, versionedFile, null, null);
+	public RevisionListController(UserRequest ureq, WindowControl wControl, Versionable versionedFile, boolean readOnly) {
+		this(ureq, wControl, versionedFile, null, null, readOnly);
 	}
 
-	public RevisionListController(UserRequest ureq, WindowControl wControl, Versionable versionedFile, String title, String description) {
+	public RevisionListController(UserRequest ureq, WindowControl wControl, Versionable versionedFile,
+			String title, String description, boolean readOnly) {
 		super(ureq, wControl);
-		
 		isAdmin = CoreSpringFactory.getImpl(BaseSecurityModule.class)
 				.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
@@ -146,10 +146,13 @@ public class RevisionListController extends BasicController {
 		revisionListTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("version.date", 3, null, ureq.getLocale()));
 		revisionListTableCtr.addColumnDescriptor(new StaticColumnDescriptor(CMD_DOWNLOAD, "version.download", getTranslator().translate(
 				"version.download")));
-		revisionListTableCtr.addColumnDescriptor(new StaticColumnDescriptor(CMD_RESTORE, "version.restore", getTranslator().translate(
-				"version.restore")));
-
-		revisionListTableCtr.addMultiSelectAction("delete", CMD_DELETE);
+		//read only cannot restore / delete
+		if(!readOnly) {
+			revisionListTableCtr.addColumnDescriptor(new StaticColumnDescriptor(CMD_RESTORE, "version.restore", getTranslator().translate(
+					"version.restore")));
+			revisionListTableCtr.addMultiSelectAction("delete", CMD_DELETE);
+		}
+		
 		revisionListTableCtr.addMultiSelectAction("cancel", CMD_CANCEL);
 		revisionListTableCtr.setMultiSelect(true);
 		loadModel(versionedLeaf);

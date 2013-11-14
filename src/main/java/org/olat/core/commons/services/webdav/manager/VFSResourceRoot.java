@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.apache.pdfbox.io.IOUtils;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
@@ -36,7 +35,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.VFSConstants;
@@ -60,7 +58,6 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	
 	private final Identity identity;
 	private final VFSContainer base;
-	private UserSession userSession;
 	
 	public VFSResourceRoot(Identity identity, VFSContainer root) {
 		this.identity = identity;
@@ -73,10 +70,6 @@ public class VFSResourceRoot implements WebResourceRoot  {
 
 	public VFSContainer getRoot() {
 		return base;
-	}
-	
-	public void setUserSession(UserSession userSession) {
-		this.userSession = userSession;
 	}
 	
 	@Override
@@ -109,7 +102,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	public boolean canRename(String name) {
 		VFSItem item = resolveFile(name);
 		if (item != null && VFSConstants.YES.equals(item.canRename())) {
-			return !MetaInfoHelper.isLocked(item, userSession);
+			return true;
 		} else {
 			return false;
 		}
@@ -119,7 +112,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	public boolean canDelete(String path) {
 		VFSItem item = resolveFile(path);
 		if (item != null && VFSConstants.YES.equals(item.canDelete())) {
-			return !MetaInfoHelper.isLocked(item, userSession);
+			return true;
 		} else {
 			return false;
 		}
@@ -129,9 +122,9 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	public WebResource getResource(String path) {
 		VFSItem file = resolveFile(path);
 		if(file == null) {
-			return EmptyWebResource.EMPTY_WEB_RESOURCE;
+			return new EmptyWebResource(path);
 		}
-		return new VFSResource(file);
+		return new VFSResource(file, path);
 	}
 
 	@Override
@@ -253,8 +246,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		if(resource instanceof VFSResource) {
 			VFSResource vfsResource = (VFSResource)resource;
 			VFSItem item = vfsResource.getItem();
-			if (item != null && VFSConstants.YES.equals(item.canDelete())
-					&& !MetaInfoHelper.isLocked(item, userSession)) {
+			if (item != null && VFSConstants.YES.equals(item.canDelete())) {
 				VFSStatus status = item.delete();
 				deleted = (status == VFSConstants.YES || status == VFSConstants.SUCCESS);
 			}

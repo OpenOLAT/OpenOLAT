@@ -24,13 +24,12 @@ import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -85,13 +84,18 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 		if (source instanceof VFSItem) {
 			VFSItem fileSource = (VFSItem) source;
 			((FileArtefact) artefact).setFilename(fileSource.getName());
-			MetaInfo meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl) fileSource);
-			if (StringHelper.containsNonWhitespace(meta.getTitle())) {
+			
+			MetaInfo meta = null;
+			if(fileSource instanceof MetaTagged) {
+				meta = ((MetaTagged)fileSource).getMetaInfo();
+			}
+
+			if (meta != null && StringHelper.containsNonWhitespace(meta.getTitle())) {
 				artefact.setTitle(meta.getTitle());
 			} else {
 				artefact.setTitle(fileSource.getName());
 			}
-			if (StringHelper.containsNonWhitespace(meta.getComment())) {
+			if (meta != null && StringHelper.containsNonWhitespace(meta.getComment())) {
 				artefact.setDescription(meta.getComment());
 			}
 			artefact.setSignature(60);
@@ -102,7 +106,7 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 			String finalBusinessPath = null;
 			String sourceInfo = null;
 			// used to rebuild businessPath and source for a file:
-			if (pathElements[1].equals("homes") && pathElements[2].equals(meta.getAuthor())) {
+			if (pathElements[1].equals("homes") && meta != null && pathElements[2].equals(meta.getAuthor())) {
 				// from users briefcase
 				String lastParts = "/";
 				for (int i = 4; i < (pathElements.length - 1); i++) {

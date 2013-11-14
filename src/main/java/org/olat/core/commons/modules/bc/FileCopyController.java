@@ -22,6 +22,7 @@ package org.olat.core.commons.modules.bc;
 
 import static java.util.Arrays.asList;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.FileLinkChooserController;
 import org.olat.core.commons.controllers.linkchooser.LinkChooserController;
 import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
@@ -30,9 +31,6 @@ import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
-import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.version.RevisionListController;
 import org.olat.core.commons.modules.bc.version.VersionCommentController;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
@@ -46,12 +44,14 @@ import org.olat.core.gui.control.generic.modal.ButtonClickedEvent;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
@@ -76,17 +76,19 @@ public class FileCopyController extends LinkChooserController {
 	private CloseableModalController commentVersionDialogBox;
 	private VersionCommentController unlockCtr;
 	private CloseableModalController unlockDialogBox;
-	private MetaInfoFormController metaDataCtr;
 	
 	private VFSLeaf newFile;
 	private VFSLeaf sourceLeaf;
 	private VFSLeaf existingVFSItem;
 	private String renamedFilename;
 	
+	private final VFSLockManager vfsLockManager;
+	
 	public FileCopyController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
 			FolderComponent folderComponent) {
 		super(ureq, wControl, rootDir, null, null, "", null);
 		this.folderComponent = folderComponent;
+		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 	
 	@Override
@@ -149,7 +151,9 @@ public class FileCopyController extends LinkChooserController {
 						} else {
 							
 							removeAsListenerAndDispose(commentVersionCtr);
-							commentVersionCtr = new VersionCommentController(ureq,getWindowControl(), askForLock(existingVFSItem, ureq), true);
+							
+							boolean locked = vfsLockManager.isLocked(existingVFSItem);
+							commentVersionCtr = new VersionCommentController(ureq,getWindowControl(), locked, true);
 							listenTo(commentVersionCtr);
 							
 							removeAsListenerAndDispose(commentVersionDialogBox);
@@ -160,7 +164,7 @@ public class FileCopyController extends LinkChooserController {
 						}
 					} else {
 						//if the file is locked, ask for unlocking it
-						if(existingVFSItem instanceof MetaTagged && ((MetaTagged)existingVFSItem).getMetaInfo().isLocked()) {
+						if(vfsLockManager.isLocked(existingVFSItem)) {
 							
 							removeAsListenerAndDispose(unlockCtr);
 							unlockCtr = new VersionCommentController(ureq,getWindowControl(), true, false);
@@ -213,12 +217,10 @@ public class FileCopyController extends LinkChooserController {
 			}
 		} else if (source == commentVersionCtr) {
 			String comment = commentVersionCtr.getComment();
-			if(existingVFSItem instanceof MetaTagged) {
-				MetaInfo info = ((MetaTagged)existingVFSItem).getMetaInfo();
-				if(info.isLocked() && !commentVersionCtr.keepLocked()) {
-					info.setLocked(false);
-					info.write();
-				}
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean locked = vfsLockManager.isLocked(existingVFSItem);
+			if(locked && !commentVersionCtr.keepLocked()) {
+				vfsLockManager.unlock(existingVFSItem, getIdentity(), roles);
 			}
 			
 			commentVersionDialogBox.deactivate();
@@ -236,10 +238,7 @@ public class FileCopyController extends LinkChooserController {
 		} else if (source == unlockCtr) {
 			// Overwrite...
 			if(!unlockCtr.keepLocked()) {
-				MetaInfo info = ((MetaTagged)existingVFSItem).getMetaInfo();
-				info.setLocked(false);
-				info.setLockedBy(null);
-				info.write();
+				vfsLockManager.unlock(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles());
 			}
 			
 			unlockDialogBox.deactivate();
@@ -266,7 +265,8 @@ public class FileCopyController extends LinkChooserController {
 					if(maxNumOfRevisions < 0 || maxNumOfRevisions > versions.getRevisions().size()) {
 						
 						removeAsListenerAndDispose(commentVersionCtr);
-						commentVersionCtr = new VersionCommentController(ureq,getWindowControl(), askForLock(existingVFSItem, ureq), true);
+						boolean locked = vfsLockManager.isLocked(existingVFSItem);
+						commentVersionCtr = new VersionCommentController(ureq,getWindowControl(), locked, true);
 						listenTo(commentVersionCtr);
 						
 						removeAsListenerAndDispose(commentVersionDialogBox);
@@ -278,7 +278,7 @@ public class FileCopyController extends LinkChooserController {
 					} else {
 						
 						removeAsListenerAndDispose(revisionListCtr);
-						revisionListCtr = new RevisionListController(ureq,getWindowControl(),versionable);
+						revisionListCtr = new RevisionListController(ureq,getWindowControl(),versionable, false);
 						listenTo(revisionListCtr);
 						
 						removeAsListenerAndDispose(revisionListDialogBox);
@@ -303,10 +303,7 @@ public class FileCopyController extends LinkChooserController {
 		if (item instanceof OlatRootFileImpl) {
 			OlatRootFileImpl relPathItem = (OlatRootFileImpl) item;
 			// create meta data
-			MetaInfo meta = MetaInfoFactory.createMetaInfoFor(relPathItem);
-			if (metaDataCtr != null) {
-				meta = metaDataCtr.getMetaInfo(meta);
-			}
+			MetaInfo meta = CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(relPathItem);
 			meta.setAuthor(ureq.getIdentity());
 			meta.clearThumbnails();//if overwrite an older file
 			meta.write();
@@ -318,20 +315,10 @@ public class FileCopyController extends LinkChooserController {
 		fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
 	}
 	
-	private boolean askForLock(VFSItem item, UserRequest ureq) {
-		if(item instanceof MetaTagged) {
-			MetaInfo info = ((MetaTagged)item).getMetaInfo();
-			if(info.isLocked() && !MetaInfoHelper.isLocked(item, ureq)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	private void fileAlreadyExists(UserRequest ureq) {
 		renamedFilename =  proposedRenamedFilename(existingVFSItem);
-
-		if (existingVFSItem instanceof MetaTagged && MetaInfoHelper.isLocked(existingVFSItem, ureq)) {
+		boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles());
+		if (locked) {
 			//the file is locked and cannot be overwritten
 			removeAsListenerAndDispose(lockedFileDialog);
 			lockedFileDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), translate("ul.lockedFile.title"),
@@ -376,7 +363,7 @@ public class FileCopyController extends LinkChooserController {
 				String description = translate("ul.tooManyRevisions.description", new String[]{Integer.toString(maxNumOfRevisions), Integer.toString(versions.getRevisions().size())});
 				
 				removeAsListenerAndDispose(revisionListCtr);
-				revisionListCtr = new RevisionListController(ureq, getWindowControl(), versionable, title, description);
+				revisionListCtr = new RevisionListController(ureq, getWindowControl(), versionable, title, description, false);
 				listenTo(revisionListCtr);
 				
 				removeAsListenerAndDispose(revisionListDialogBox);

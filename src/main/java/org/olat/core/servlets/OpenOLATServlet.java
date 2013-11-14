@@ -34,7 +34,6 @@ import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.webdav.WebDAVDispatcher;
-import org.olat.core.commons.services.webdav.servlets.WebDAVDispatcherImpl;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
@@ -104,7 +103,7 @@ public class OpenOLATServlet extends HttpServlet {
 		dispatchers.put(DispatcherModule.PATH_MAPPED, new MapperDispatcher());
 		dispatchers.put(DispatcherModule.PATH_GLOBAL_MAPPED,  GlobalMapperRegistry.getInstance());
 		
-		webDAVDispatcher = new WebDAVDispatcherImpl();
+		webDAVDispatcher = CoreSpringFactory.getImpl(WebDAVDispatcher.class);
 		dispatchers.put(DispatcherModule.WEBDAV_PATH, webDAVDispatcher);
 		
 		Settings settings = CoreSpringFactory.getImpl(Settings.class);
@@ -243,6 +242,15 @@ public class OpenOLATServlet extends HttpServlet {
 		}
 		
 		final String dispatcherName = DispatcherModule.getFirstPath(request);
+		if(dispatcherName != null && !dispatcherName.startsWith("/webdav")) {
+			String userAgent = request.getHeader("User-Agent");
+			if(userAgent != null && userAgent.indexOf("BitKinex") >= 0) {
+				//BitKinex isn't allow to see this context
+				response.sendError(HttpServletResponse.SC_FORBIDDEN);
+				return;
+			}
+		}
+		
 		if(legacyContext != null && legacyContext.equals(dispatcherName)) {
 			String uri = request.getRequestURI();
 			String redirectUri = uri.substring(legacyContext.length() - 1, uri.length());

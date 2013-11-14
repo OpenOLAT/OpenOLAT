@@ -17,11 +17,13 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.modules.bc.meta;
+package org.olat.core.commons.modules.bc.meta.tagged;
 
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.Locale;
+
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
 
 /**
  * Compares the title of two MetaInfo objects based on a given collator

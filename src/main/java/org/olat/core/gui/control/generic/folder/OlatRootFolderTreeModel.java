@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -61,10 +62,12 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 
 	private VFSItemFilter filter;
 	private Comparator<VFSItem> comparator;
+	private final MetaInfoFactory metaInfoFactory;
 
 	public OlatRootFolderTreeModel(OlatRootFolderImpl root) {
 		setRootNode(createNode(root));
 		getRootNode().getChildCount();
+		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		// fxdiff: 
 		//makeChildren(getRootNode(), root);
 	}
@@ -74,6 +77,7 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 		setRootNode(createNode(root));
 		getRootNode().getChildCount();
 		//makeChildren(getRootNode(), root);
+		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 	}
 
 	public OlatRootFolderTreeModel(OlatRootFolderImpl root,
@@ -83,6 +87,7 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 		setRootNode(createNode(root));
 		getRootNode().getChildCount();
 		//makeChildren(getRootNode(), root);
+		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 	}
 
 	/**
@@ -117,7 +122,7 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 	 */
 	private OlatRootFolderTreeNode createNode(OlatRelPathImpl item) {
 		OlatRootFolderTreeNode node = new OlatRootFolderTreeNode(item, this);
-		MetaInfo meta = MetaInfoFactory.createMetaInfoFor(item);
+		MetaInfo meta = metaInfoFactory.createMetaInfoFor(item);
 		if (meta != null) {
 			String title = meta.getTitle();
 			if (StringHelper.containsNonWhitespace(title)) {

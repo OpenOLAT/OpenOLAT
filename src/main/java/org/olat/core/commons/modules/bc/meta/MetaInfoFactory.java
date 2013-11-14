@@ -24,23 +24,25 @@
 */
 package org.olat.core.commons.modules.bc.meta;
 
+import org.olat.core.commons.services.thumbnail.ThumbnailService;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 
 
 public class MetaInfoFactory {
 	
-	private static MetaInfo metaInfo;
-
+	private ThumbnailService thumbnailService;
+	
 	/**
 	 * [spring]
-	 * @param metaInfo
+	 * @param thumbnailService
 	 */
-	private MetaInfoFactory(MetaInfo metaInfo) {
-		MetaInfoFactory.metaInfo = metaInfo;
+	public void setThumbnailService(ThumbnailService thumbnailService) {
+		this.thumbnailService = thumbnailService;
 	}
 
-	public static MetaInfo createMetaInfoFor(OlatRelPathImpl path) {
-		return metaInfo.createMetaInfoFor(path);
+	public MetaInfo createMetaInfoFor(OlatRelPathImpl path) {
+		MetaInfoFileImpl meta = new MetaInfoFileImpl(path);
+		meta.setThumbnailService(thumbnailService);
+		return meta;
 	}
-
 }

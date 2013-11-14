@@ -36,14 +36,21 @@ import org.olat.core.util.vfs.VFSLeaf;
 public class VFSResource implements WebResource {
 	
 	private final VFSItem item;
+	private final String path;
 	private String mimeType;
     private volatile String weakETag;
-	
-	public VFSResource(VFSItem item) {
+
+	public VFSResource(VFSItem item, String path) {
 		this.item = item;
+		this.path = path;
 	}
 	
-	protected VFSItem getItem() {
+	@Override
+	public String getPath() {
+		return path;
+	}
+	
+	public VFSItem getItem() {
 		return item;
 	}
 

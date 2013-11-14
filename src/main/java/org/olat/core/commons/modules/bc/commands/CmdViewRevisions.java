@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.modules.bc.commands;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.modules.bc.version.RevisionListController;
@@ -32,6 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.version.Versionable;
 
 /**
@@ -54,9 +56,12 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 	private RevisionListController revisionListCtr;
 	private VelocityContainer mainVC;
 	private VFSItem currentItem;
+	
+	private final VFSLockManager vfsLockManager;
 
 	public CmdViewRevisions(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
@@ -88,8 +93,9 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 
 		setTranslator(translator);
 		mainVC = createVelocityContainer("revisions");
-
-		revisionListCtr = new RevisionListController(ureq, wControl, (Versionable) currentItem);
+		
+		boolean locked = vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles());
+		revisionListCtr = new RevisionListController(ureq, wControl, (Versionable)currentItem, locked);
 		listenTo(revisionListCtr);
 		mainVC.put("revisionList", revisionListCtr.getInitialComponent());
 

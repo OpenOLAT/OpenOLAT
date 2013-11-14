@@ -30,6 +30,7 @@ package org.olat.core.commons.modules.bc.commands;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -142,9 +143,11 @@ private static Map<String,String> i18nkeyMap;
 	 *
 	 */
   private class CreateFolderForm extends AbstractCreateItemForm {			
-				
+		private final MetaInfoFactory metaInfoFactory;
+	  
 		public CreateFolderForm(UserRequest ureq, WindowControl wControl, Translator translator) {			
-			super(ureq, wControl, translator, i18nkeyMap);					
+			super(ureq, wControl, translator, i18nkeyMap);
+			metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		}		
 		
 		@Override
@@ -158,7 +161,7 @@ private static Map<String,String> i18nkeyMap;
 			}
 			if (item instanceof OlatRelPathImpl) {
 				// update meta data
-				MetaInfo meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
+				MetaInfo meta = metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
 				meta.setAuthor(ureq.getIdentity());
 				meta.write();
 			}		

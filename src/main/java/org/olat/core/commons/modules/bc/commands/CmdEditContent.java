@@ -29,15 +29,13 @@ package org.olat.core.commons.modules.bc.commands;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.PlainTextEditorController;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.version.VersionCommentController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -52,6 +50,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.util.ContainerAndFile;
 
@@ -64,9 +63,11 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 
 	private VersionCommentController unlockCtr;
 	private CloseableModalController unlockDialogBox;
+	private final VFSLockManager vfsLockManager;
 	
 	protected CmdEditContent(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 
 	/**
@@ -101,9 +102,9 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 			return null;
 		}
 		
-		if(MetaInfoHelper.isLocked(currentItem, ureq)) {
+		if(vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles())) {
 			List<String> lockedFiles = Collections.singletonList(currentItem.getName());
-			String msg = MetaInfoHelper.renderLockedMessageAsHtml(translator, folderComponent.getCurrentContainer(), lockedFiles);
+			String msg = FolderCommandHelper.renderLockedMessageAsHtml(translator, folderComponent.getCurrentContainer(), lockedFiles);
 			List<String> buttonLabels = Collections.singletonList(translator.translate("ok"));
 			lockedFiledCtr = activateGenericDialog(ureq, translator.translate("lock.title"), msg, buttonLabels, lockedFiledCtr);
 			return null;
@@ -171,7 +172,8 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == editorc) {
 			if (event == Event.DONE_EVENT) {
-				if(currentItem instanceof MetaTagged && ((MetaTagged)currentItem).getMetaInfo().isLocked()) {
+				boolean lock = vfsLockManager.isLocked(currentItem);
+				if(lock) {
 					unlockCtr = new VersionCommentController(ureq,getWindowControl(), true, false);
 					listenTo(unlockCtr);
 					unlockDialogBox = new CloseableModalController(getWindowControl(), translate("ok"), unlockCtr.getInitialComponent());
@@ -193,9 +195,7 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 		} else if (source == unlockCtr) {
 			if(!unlockCtr.keepLocked()) {
-				MetaInfo info = ((MetaTagged)currentItem).getMetaInfo();
-				info.setLocked(false);
-				info.write();
+				vfsLockManager.unlock(currentItem, getIdentity(), ureq.getUserSession().getRoles());
 			}
 			cleanUpUnlockDialog();
 			fireEvent(ureq, FOLDERCOMMAND_FINISHED);

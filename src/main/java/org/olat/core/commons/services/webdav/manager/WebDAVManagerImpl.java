@@ -123,7 +123,6 @@ public class WebDAVManagerImpl implements WebDAVManager {
 		usess.getSessionInfo().setLastClickTime();
 		VFSResourceRoot fdc = (VFSResourceRoot)usess.getEntry("_DIRCTX");
 		if (fdc != null) {
-			fdc.setUserSession(usess);
 			return fdc;
 		}
 		
@@ -136,7 +135,6 @@ public class WebDAVManagerImpl implements WebDAVManager {
 		rootContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 
 		fdc = new VFSResourceRoot(identity, rootContainer);
-		fdc.setUserSession(usess);
 		usess.putEntry("_DIRCTX", fdc);
 		return fdc;
 	}
@@ -159,8 +157,7 @@ public class WebDAVManagerImpl implements WebDAVManager {
 		VirtualContainer rootContainer = new VirtualContainer("");
 		rootContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 
-		VFSResourceRoot fdc = new VFSResourceRoot(null, rootContainer);
-		fdc.setUserSession(usess);
+		VFSResourceRoot fdc = new VFSResourceRoot(usess.getIdentity(), rootContainer);
 		return fdc;
 	}
 

@@ -29,10 +29,9 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
@@ -52,8 +51,8 @@ public abstract class FileDocument extends OlatDocument {
 	protected void init(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
 		// Load metadata for this file
 		MetaInfo meta = null;
-		if (leaf instanceof OlatRelPathImpl) {
-			meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl)leaf);
+		if (leaf instanceof MetaTagged) {
+			meta = ((MetaTagged)leaf).getMetaInfo();
 		}
 		
 		// Set all know attributes

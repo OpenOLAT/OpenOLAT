@@ -127,6 +127,9 @@ public class WebDAVConnection implements Closeable {
 		return returnCode;
 	}
 	
+	/**
+	 * @return The lock token returned by the server
+	 */
 	public String lock(URI uri, String lockToken) throws IOException, URISyntaxException {
 		HttpLock lock = new HttpLock(uri);
 		decorateLockRequest(lock, lockToken);
@@ -138,6 +141,9 @@ public class WebDAVConnection implements Closeable {
 		return responseToken.getValue();
 	}
 	
+	/**
+	 * @return the return code of the request
+	 */
 	public int lockTry(URI uri, String lockToken) throws IOException, URISyntaxException {
 		HttpLock lock = new HttpLock(uri);
 		decorateLockRequest(lock, lockToken);

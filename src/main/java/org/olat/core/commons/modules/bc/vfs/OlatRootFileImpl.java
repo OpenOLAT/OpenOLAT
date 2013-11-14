@@ -28,6 +28,7 @@ package org.olat.core.commons.modules.bc.vfs;
 
 import java.io.File;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
@@ -61,7 +62,7 @@ public class OlatRootFileImpl extends LocalFileImpl implements OlatRelPathImpl, 
 	 * @see org.olat.core.commons.modules.bc.meta.tagged.MetaTagged#getMetaInfo()
 	 */
 	public MetaInfo getMetaInfo() {
-		return MetaInfoFactory.createMetaInfoFor(this);
+		return CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(this);
 	}
 	
 	@Override

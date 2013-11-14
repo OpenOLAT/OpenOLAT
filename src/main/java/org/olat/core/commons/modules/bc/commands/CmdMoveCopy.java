@@ -29,12 +29,12 @@ package org.olat.core.commons.modules.bc.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
-import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tree.SelectionTree;
@@ -53,6 +53,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
@@ -70,10 +71,13 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 	private FileSelection fileSelection;
 	private SelectionTree selTree;
 	private boolean move;
+	
+	private final VFSLockManager vfsLockManager;
 
 	protected CmdMoveCopy(WindowControl wControl, boolean move) {
 		super(wControl);
 		this.move = move;
+		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 	
 	public Controller execute(FolderComponent fc, UserRequest ureq, WindowControl windowControl, Translator trans) {
@@ -148,10 +152,12 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 				
 				boolean targetIsRelPath = (target instanceof OlatRelPathImpl);
 				for (VFSItem vfsSource:sources) {
-					if (targetIsRelPath && (vfsSource instanceof OlatRelPathImpl)) {
+					if (targetIsRelPath && (target instanceof OlatRelPathImpl) && (vfsSource instanceof MetaTagged)) {
 						// copy the metainfo first
-						MetaInfo meta = MetaInfoFactory.createMetaInfoFor((OlatRelPathImpl)vfsSource);
-						meta.moveCopyToDir((OlatRelPathImpl)target, move);
+						MetaInfo meta = ((MetaTagged)vfsSource).getMetaInfo();
+						if(meta != null) {
+							meta.moveCopyToDir((OlatRelPathImpl)target, move);
+						}
 					}
 					
 					VFSItem targetFile = target.resolve(vfsSource.getName());
@@ -220,7 +226,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 					return null;
 				}
 			}
-			if (MetaInfoHelper.isLocked(vfsSource, ureq)) {
+			if (vfsLockManager.isLockedForMe(vfsSource, ureq.getIdentity(), ureq.getUserSession().getRoles())) {
 				abortFailed(ureq, "lock.title");
 				return null;
 			}
@@ -257,5 +263,4 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 	public boolean runsModal() {
 		return false;
 	}
-
 }

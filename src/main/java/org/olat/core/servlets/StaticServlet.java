@@ -51,6 +51,18 @@ public class StaticServlet extends HttpServlet {
 	public static String NOVERSION = "_noversion_";
 
 	@Override
+	protected void service(HttpServletRequest req, HttpServletResponse resp)
+	throws ServletException, IOException {
+		String userAgent = req.getHeader("User-Agent");
+		if(userAgent != null && userAgent.indexOf("BitKinex") >= 0) {
+			//BitKinex isn't allow to see this context
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+		} else {
+			super.service(req, resp);
+		}
+	}
+
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		final boolean debug = log.isDebug();

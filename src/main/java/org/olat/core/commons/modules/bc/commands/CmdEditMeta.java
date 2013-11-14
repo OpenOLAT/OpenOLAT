@@ -26,10 +26,12 @@
 
 package org.olat.core.commons.modules.bc.commands;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -42,16 +44,22 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLockManager;
 
 public class CmdEditMeta extends BasicController implements FolderCommand {
 
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
+	
+	private MetaInfoController metaCtr;
 	private MetaInfoFormController metaInfoCtr;
 	private VFSItem currentItem;
 	private Translator translator;
 
+	private final VFSLockManager vfsLockManager;
+
 	protected CmdEditMeta(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 
 	/**
@@ -76,16 +84,24 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 		status = FolderCommandHelper.sanityCheck(wControl, folderComponent);
 		if(status == FolderCommandStatus.STATUS_SUCCESS) {
 			currentItem = folderComponent.getCurrentContainerChildren().get(Integer.parseInt(pos));
-			status = FolderCommandHelper.sanityCheck2(wControl, folderComponent, ureq, currentItem);
 		}
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
 		}	
-		
-		if (metaInfoCtr != null) metaInfoCtr.dispose();
-		metaInfoCtr = new MetaInfoFormController(ureq, wControl, currentItem);
-		listenTo(metaInfoCtr);
-		putInitialPanel(metaInfoCtr.getInitialComponent());
+
+		removeAsListenerAndDispose(metaCtr);
+		removeAsListenerAndDispose(metaInfoCtr);
+
+		if(vfsLockManager.isLockedForMe(currentItem, getIdentity(), ureq.getUserSession().getRoles())) {
+			//readonly
+			metaCtr = new MetaInfoController(ureq, wControl, currentItem);
+			listenTo(metaCtr);
+			putInitialPanel(metaCtr.getInitialComponent());
+		} else {
+			metaInfoCtr = new MetaInfoFormController(ureq, wControl, currentItem);
+			listenTo(metaInfoCtr);
+			putInitialPanel(metaInfoCtr.getInitialComponent());
+		}
 		return this;
 	}
 
@@ -108,36 +124,32 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 	 *      org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == metaInfoCtr) {
-			if (event == Event.DONE_EVENT) {
-				MetaInfo meta = metaInfoCtr.getMetaInfo();
-				meta.write();
-				String fileName = metaInfoCtr.getFilename();
-				
-				if (metaInfoCtr.isFileRenamed()) {
-					// IMPORTANT: First rename the meta data because underlying file
-					// has to exist in order to work properly on it's meta data.
-					VFSContainer container = currentItem.getParentContainer();
-					if(container.resolve(fileName) != null) {
-						getWindowControl().setError(translator.translate("TargetNameAlreadyUsed"));
+		if (source == metaInfoCtr && event == Event.DONE_EVENT) {
+			MetaInfo meta = metaInfoCtr.getMetaInfo();
+			meta.write();
+			String fileName = metaInfoCtr.getFilename();
+			
+			if (metaInfoCtr.isFileRenamed()) {
+				// IMPORTANT: First rename the meta data because underlying file
+				// has to exist in order to work properly on it's meta data.
+				VFSContainer container = currentItem.getParentContainer();
+				if(container.resolve(fileName) != null) {
+					getWindowControl().setError(translator.translate("TargetNameAlreadyUsed"));
+					status = FolderCommandStatus.STATUS_FAILED;
+				} else {
+					if (meta != null) {
+						meta.rename(fileName);
+					}
+					if(VFSConstants.NO.equals(currentItem.rename(fileName))) {
+						getWindowControl().setError(translator.translate("FileRenameFailed", new String[]{fileName}));
 						status = FolderCommandStatus.STATUS_FAILED;
-					} else {
-						if (meta != null) {
-							meta.rename(fileName);
-						}
-						if(VFSConstants.NO.equals(currentItem.rename(fileName))) {
-							getWindowControl().setError(translator.translate("FileRenameFailed", new String[]{fileName}));
-							status = FolderCommandStatus.STATUS_FAILED;
-						}
 					}
 				}
-				fireEvent(ureq, new FolderEvent(FolderEvent.EDIT_EVENT, fileName));
-				fireEvent(ureq, FOLDERCOMMAND_FINISHED);
-
-			} else if (event == Event.CANCELLED_EVENT) {
-				fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 			}
-
+			fireEvent(ureq, new FolderEvent(FolderEvent.EDIT_EVENT, fileName));
+			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
+		} else if (event == Event.CANCELLED_EVENT) {
+			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 		}
 	}
 

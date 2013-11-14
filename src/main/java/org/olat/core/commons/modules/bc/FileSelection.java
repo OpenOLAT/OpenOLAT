@@ -58,23 +58,16 @@ public class FileSelection {
 	 * 
 	 * @return
 	 */
-	public List getInvalidFileNames() {
-		List invalidFileNames = new ArrayList();
-		List filesList = getFiles();
-		Iterator fileIterator = filesList.iterator();
-		while(fileIterator.hasNext()) {
-			String fileName = (String)fileIterator.next();
+	public List<String> getInvalidFileNames() {
+		List<String> invalidFileNames = new ArrayList<String>();
+		List<String> filesList = getFiles();
+		for(String fileName:filesList) {
 			if(!FileUtils.validateFilename(fileName)) {
 				invalidFileNames.add(fileName);
 			}
 		}
 		return invalidFileNames;
 	}
-	
-	/*
-	public boolean isCurrentContainerRelPathInvalid() {
-		return false;
-	}*/
 	
 	/**
 	 * Parse paths and build BriefcasePath wrappers.
@@ -103,6 +96,4 @@ public class FileSelection {
 		sb.append("</ul>");
 		return sb.toString();
 	}
-	
-
 }

@@ -19,11 +19,13 @@
  */
 package org.olat.core.commons.modules.bc.commands;
 
+import java.util.List;
+
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -39,6 +41,27 @@ import org.olat.core.util.vfs.VFSManager;
  * @author srosse
  */
 public class FolderCommandHelper {
+	
+	public static String renderLockedMessageAsHtml(Translator trans, VFSContainer container, List<String> files) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(trans.translate("lock.description")).append("<p>").append(renderAsHtml(container, files)).append("</p>");
+		return sb.toString();
+	}
+
+	/**
+	 * Render pathset as HTML.
+	 * 
+	 * @return HTML Fragment.
+	 */
+	private static String renderAsHtml(VFSContainer container, List<String> files) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<ul>");
+		for (String file : files) {
+			sb.append("<li>").append(file).append("</li>");
+		}
+		sb.append("</ul>");
+		return sb.toString();
+	}
 	
 	/**
 	 * The moduleURI from the UserRequest has been decoded (URL decoded). Which means that
@@ -73,7 +96,7 @@ public class FolderCommandHelper {
 	 * @return
 	 */
 	public static final int sanityCheck(WindowControl wControl, FolderComponent fc) {
-		if(!VFSManager.exists(fc.getCurrentContainer())) {
+		if(fc.getCurrentContainer() == null || !fc.getCurrentContainer().exists()) {
 			wControl.setError(fc.getTranslator().translate("FileDoesNotExist"));
 			return FolderCommandStatus.STATUS_FAILED;
 		}
@@ -81,20 +104,17 @@ public class FolderCommandHelper {
 	}
 		
 	/**
-	 * Check if an item exists and is not locked
+	 * Check if an item exists
 	 * @param wControl
 	 * @param fc
 	 * @param ureq
 	 * @param currentItem
 	 * @return
 	 */
-	public static final int sanityCheck2(WindowControl wControl, FolderComponent fc, UserRequest ureq, VFSItem currentItem) {
+	public static final int sanityCheck2(WindowControl wControl, FolderComponent fc,
+			UserRequest ureq, VFSItem currentItem) {
 		if(!VFSManager.exists(currentItem)) {
 			wControl.setError(fc.getTranslator().translate("FileDoesNotExist"));
-			return FolderCommandStatus.STATUS_FAILED;
-		}
-		if(MetaInfoHelper.isLocked(currentItem, ureq)) {
-			wControl.setError(fc.getTranslator().translate("lock.title"));
 			return FolderCommandStatus.STATUS_FAILED;
 		}
 		return FolderCommandStatus.STATUS_SUCCESS;		
