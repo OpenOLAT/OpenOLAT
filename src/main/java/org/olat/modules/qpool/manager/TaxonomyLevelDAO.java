@@ -88,6 +88,28 @@ public class TaxonomyLevelDAO {
 		return mergedField;
 	}
 	
+	public boolean delete(TaxonomyLevel field) {
+		int used = countItemUsing(field);
+		int children = countChildren(field);
+		if(used == 0 && children == 0) {
+			TaxonomyLevel impl = loadLevelById(field.getKey());
+			if(impl != null) {
+				dbInstance.getCurrentEntityManager().remove(impl);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public int countChildren(TaxonomyLevel field) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(taxonomyLevel) from qtaxonomylevel taxonomyLevel where taxonomyLevel.parentField.key=:taxonomyLevelKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("taxonomyLevelKey", field.getKey())
+				.getSingleResult().intValue();
+	}
+	
 	public int countItemUsing(TaxonomyLevel field) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(item) from questionitem item where item.taxonomyLevel.key=:taxonomyLevelKey");

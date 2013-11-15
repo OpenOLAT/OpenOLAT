@@ -68,7 +68,7 @@ public class TaxonomyTreeModel extends GenericTreeModel {
 				GenericTreeNode parentNode = fieldKeyToNode.get(parentKey);
 				if(parentNode == null) {
 					parentNode = new GenericTreeNode(parentField.getField(), parentField);
-					fieldKeyToNode.put(key, parentNode);
+					fieldKeyToNode.put(parentKey, parentNode);
 				}
 				parentNode.addChild(node);
 			}
