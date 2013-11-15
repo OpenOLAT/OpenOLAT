@@ -19,14 +19,11 @@
  */
 package org.olat.core.commons.services.webdav.manager;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.pdfbox.io.IOUtils;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
@@ -204,10 +201,8 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		}
 		
 		try {
-			byte[] content = IOUtils.toByteArray(is);
-			ByteArrayInputStream in = new ByteArrayInputStream(content);
-			FileUtils.copy(in, childLeaf.getOutputStream(false));
-		} catch (IOException e) {
+	        FileUtils.copy(is, childLeaf.getOutputStream(false));
+		} catch (Exception e) {
 			log.error("", e);
 			return false;
 		}

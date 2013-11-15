@@ -1441,6 +1441,37 @@ public class WebDAVDispatcherImpl
         writer.write(generatedXML.toString());
         writer.close();
     }
+    
+    /*private boolean doUnlockMavericks(HttpServletRequest req, HttpServletResponse resp) {
+    	//workaround for Mac OS X Mavericks which forget the Lock-Token
+        String sysLockTokenHeader = req.getHeader("Lock-Token"); 
+        if(sysLockTokenHeader == null) {
+        	String userAgent = req.getHeader("User-Agent");
+			if(userAgent != null && userAgent.indexOf("WebDAVFS/3") >= 0) {
+				//Mavericks forgot the token
+				
+				final String path = getRelativePath(req);
+		        final WebResourceRoot resources = getResources(req);
+		        final WebResource resource = resources.getResource(path);
+		        LockInfo lock = lockManager.getResourceLock(resource);
+		        UserSession usess = webDAVManager.getUserSession(req);
+		        if(lock != null && lock.isWebDAVLock()
+		        		&& lock.getLockedBy().equals(usess.getIdentity().getKey())
+		        		&& lock.getTokensSize() == 1) {
+		        	
+		        	String lastToken = lock.getTokens().get(0);
+		        	lock.removeToken(lastToken);
+		        	
+		        	lockManager.removeResourceLock(resource);
+		            // Removing any lock-null resource which would be present
+		            lockManager.removeLockNullResource(resource);
+		        }
+		        resp.setStatus(WebdavStatus.SC_NO_CONTENT);
+				return true;
+			}
+        }
+        return false;
+    }*/
 
 
     /**
@@ -1448,6 +1479,10 @@ public class WebDAVDispatcherImpl
      */
     public void doUnlock(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
+    	
+    	/*if(doUnlockMavericks(req, resp)) {
+    		return;
+    	}*/
 
         if (isLocked(req)) {
             resp.sendError(WebdavStatus.SC_LOCKED);
@@ -1478,7 +1513,7 @@ public class WebDAVDispatcherImpl
                 }
             }
 
-            if (lock.isTokensEmpty()) {
+            if (lock.getTokensSize() == 0) {
                 lockManager.removeResourceLock(resource);
                 // Removing any lock-null resource which would be present
                 lockManager.removeLockNullResource(resource);
@@ -1502,7 +1537,7 @@ public class WebDAVDispatcherImpl
                     }
                 }
 
-                if (lock.isTokensEmpty()) {
+                if (lock.getTokensSize() == 0) {
                     lockManager.removeCollectionLock(lock);
                     // Removing any lock-null resource which would be present
                     lockManager.removeLockNullResource(resource);

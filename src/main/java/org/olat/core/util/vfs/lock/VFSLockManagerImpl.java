@@ -242,7 +242,6 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	    		lock.setWebResource(resource);
 	    		lock.setCreationDate(info.getLockedDate());
 	    		lock.setOwner(Settings.getServerContextPathURI() + "/Identity/" + info.getLockedBy());
-	    		lock.setExpiresAt(Long.MAX_VALUE);
 	    		lock.setDepth(1);
 	    		lock.addToken(generateLockToken(lock, info.getLockedBy()));
 	    		fileLocks.put(file, lock);
@@ -267,7 +266,6 @@ public class VFSLockManagerImpl implements VFSLockManager {
     		LockInfo lock = new LockInfo(info.getLockedBy(), false, true);
     		lock.setCreationDate(info.getLockedDate());
     		lock.setOwner(Settings.getServerContextPathURI() + "/Identity/" + info.getLockedBy());
-    		lock.setExpiresAt(Long.MAX_VALUE);
     		lock.setDepth(1);
     		lock.addToken(generateLockToken(lock, info.getLockedBy()));
     		fileLocks.put(file, lock);

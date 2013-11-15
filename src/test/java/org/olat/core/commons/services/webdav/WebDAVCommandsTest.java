@@ -449,7 +449,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertTrue(lock.isVfsLock());
 		Assert.assertFalse(lock.isWebDAVLock());
 		Assert.assertEquals(assistant.getKey(), lock.getLockedBy());
-		Assert.assertFalse(lock.isTokensEmpty());
+		Assert.assertEquals(1, lock.getTokensSize());
 
 		IOUtils.closeQuietly(conn);
 	}
@@ -496,7 +496,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertFalse(lock.isVfsLock());
 		Assert.assertTrue(lock.isWebDAVLock());
 		Assert.assertEquals(user.getKey(), lock.getLockedBy());
-		Assert.assertFalse(lock.isTokensEmpty());
+		Assert.assertEquals(1, lock.getTokensSize());
 		
 		//try to unlock which should not be possible
 		boolean unlocked = lockManager.unlock(item, user, adminRoles);
@@ -511,7 +511,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertFalse(lockAfterUnlock.isVfsLock());
 		Assert.assertTrue(lockAfterUnlock.isWebDAVLock());
 		Assert.assertEquals(user.getKey(), lockAfterUnlock.getLockedBy());
-		Assert.assertFalse(lockAfterUnlock.isTokensEmpty());
+		Assert.assertEquals(1, lock.getTokensSize());
 		
 		IOUtils.closeQuietly(conn);
 	}
