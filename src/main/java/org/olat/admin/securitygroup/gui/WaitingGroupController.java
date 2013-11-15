@@ -28,8 +28,9 @@ package org.olat.admin.securitygroup.gui;
 import java.util.List;
 
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.table.ColumnDescriptor;
+import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
@@ -41,7 +42,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
-import org.olat.user.UserManager;
+import org.olat.group.ui.main.OnlineIconRenderer;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -64,8 +65,6 @@ public class WaitingGroupController extends GroupController {
 	private MailNotificationEditController transferMailCtr;
 	private CloseableModalController cmc;
 	private List<Identity> toTransfer;
-	
-	private final UserManager userManager;
 
 	/**
 	 * @param ureq
@@ -78,13 +77,12 @@ public class WaitingGroupController extends GroupController {
 	public WaitingGroupController(UserRequest ureq, WindowControl wControl, boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences,
 			boolean allowDownload, boolean mandatoryEmail, SecurityGroup waitingListGroup) {
 		super(ureq, wControl, mayModifyMembers, keepAtLeastOne, enableTablePreferences, false, allowDownload, mandatoryEmail, waitingListGroup);
-		
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller sourceController, Event event) {
 		if (sourceController == tableCtr) {
 			if (event.getCommand().equals(Table.COMMAND_MULTISELECT)) {
@@ -144,38 +142,48 @@ public class WaitingGroupController extends GroupController {
 	 */
 	@Override
 	protected void initGroupTable(TableController tableCtr, UserRequest ureq, boolean enableTablePreferences, boolean enableUserSelection) {
-		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		// first the login name
-		DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.user.login", 0, COMMAND_VCARD, ureq.getLocale());
-		cd0.setIsPopUpWindowAction(true,"height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
-		tableCtr.addColumnDescriptor(cd0);		
+		if (isAdministrativeUser) {
+			// first the login name, but only if administrative user
+			DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.user.login", 0, COMMAND_VCARD, ureq.getLocale());
+			cd0.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
+			tableCtr.addColumnDescriptor(cd0);
+		}
+		if(chatEnabled) {
+			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.online", 1, COMMAND_IM, getLocale(),
+					ColumnDescriptor.ALIGNMENT_LEFT, new OnlineIconRenderer()));
+		}
+		
+		int visibleColId = 0;
 		// followed by the users fields
-		int colId = 0;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
-			tableCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(i+1, null, ureq.getLocale()));	
-			if(visible) {
-			  colId++;
+			boolean visible = userManager.isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
+			ColumnDescriptor cd = userPropertyHandler.getColumnDescriptor(i + 3, COMMAND_VCARD, ureq.getLocale());
+			// make all user attributes clickable to open visiting card
+			if (cd instanceof DefaultColumnDescriptor) {
+				DefaultColumnDescriptor dcd = (DefaultColumnDescriptor) cd;
+				dcd.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
+				
+			}
+			tableCtr.addColumnDescriptor(visible, cd);
+			if (visible) {
+				visibleColId++;
 			}
 		}
 		
 		// in the end
 		if (enableTablePreferences) {
-			tableCtr.addColumnDescriptor(true, new DefaultColumnDescriptor("table.subject.addeddate", userPropertyHandlers.size() + 1, null, ureq.getLocale()));
-			colId++;			
-      //Sort Waiting-list by addedDate
-			tableCtr.setSortColumn(colId,true);	
+			tableCtr.addColumnDescriptor(true, new DefaultColumnDescriptor("table.subject.addeddate", 2, COMMAND_VCARD, ureq.getLocale()));
+			tableCtr.setSortColumn(++visibleColId,true);	
 		}
 		
 		if (mayModifyMembers) {
 			tableCtr.addMultiSelectAction("action.waitinglist.move", COMMAND_MOVE_USER_WAITINGLIST);
 			tableCtr.addMultiSelectAction("action.remove", COMMAND_REMOVEUSER);
 			tableCtr.setMultiSelect(true);
-		}
-		else {
-			// neither offer a table delete column nor allow adduser link
-		}    	
+		}   	
 	}
 	
 	/**

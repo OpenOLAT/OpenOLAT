@@ -25,6 +25,7 @@ import java.util.Locale;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupShort;
 
 /**
@@ -45,7 +46,7 @@ public class GroupCellRenderer implements CustomCellRenderer {
 					if(group.getName() == null) {
 						sb.append(group.getKey());
 					} else {
-						sb.append(group.getName());
+						sb.append(StringHelper.escapeHtml(group.getName()));
 					}
 				}
 			}

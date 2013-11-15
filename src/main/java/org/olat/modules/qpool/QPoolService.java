@@ -158,6 +158,8 @@ public interface QPoolService {
 	
 	public TaxonomyLevel updateTaxonomyLevel(String newField, TaxonomyLevel level);
 	
+	public boolean delete(TaxonomyLevel level);
+	
 	
 	//pool administration
 	public void createPool(Identity identity, String name, boolean publicPool);

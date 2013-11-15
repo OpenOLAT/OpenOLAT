@@ -147,10 +147,10 @@ public class GroupController extends BasicController {
 	protected static final String usageIdentifyer = IdentitiesOfGroupTableDataModel.class.getCanonicalName();
 	protected boolean isAdministrativeUser;
 	protected boolean mandatoryEmail;
-	private boolean chatEnabled;
+	protected boolean chatEnabled;
 
 	protected BaseSecurity securityManager;
-	private UserManager userManager;
+	protected UserManager userManager;
 	private InstantMessagingModule imModule;
 	private InstantMessagingService imService;
 	private UserSessionManager sessionManager;

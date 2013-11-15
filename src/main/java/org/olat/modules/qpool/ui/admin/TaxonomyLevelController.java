@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.ui.admin;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,7 +33,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.ui.QuestionsController;
 
@@ -48,11 +52,14 @@ public class TaxonomyLevelController extends FormBasicController {
 	private StaticTextElement pathEl, fieldEl;
 	private CloseableModalController cmc;
 	private TaxonomyLevelEditController editCtrl;
+	private DialogBoxController confirmDeleteCtrl;
 	
 	private TaxonomyLevel taxonomyLevel;
+	private final QPoolService qpoolService;
 	
 	public TaxonomyLevelController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);
 		//make it invisible, no level to show
 		flc.setVisible(false);
@@ -72,8 +79,7 @@ public class TaxonomyLevelController extends FormBasicController {
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		editButton = uifactory.addFormLink("edit", buttonsCont, Link.BUTTON);
-		//TODO define behavior of the delete (cascade, reattach...)
-		//deleteButton = uifactory.addFormLink("delete", buttonsCont, Link.BUTTON);
+		deleteButton = uifactory.addFormLink("delete", buttonsCont, Link.BUTTON);
 	}
 	
 	public TaxonomyLevel getTaxonomyLevel() {
@@ -106,7 +112,7 @@ public class TaxonomyLevelController extends FormBasicController {
 		if(editButton == source) {
 			doEditLevel(ureq);
 		} else if(deleteButton == source) {
-			
+			doConfirmDelete(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -122,6 +128,10 @@ public class TaxonomyLevelController extends FormBasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if(source == confirmDeleteCtrl) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				doDelete(ureq);
+			}
 		}
 	}
 	
@@ -130,6 +140,21 @@ public class TaxonomyLevelController extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		editCtrl = null;
 		cmc = null;
+	}
+	
+	private void doConfirmDelete(UserRequest ureq) {
+		String title = translate("delete.taxonomyLevel");
+		String text = translate("delete.taxonomyLevel.confirm", new String[]{ taxonomyLevel.getField() });
+		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
+	}
+	
+	private void doDelete(UserRequest ureq) {
+		if(qpoolService.delete(taxonomyLevel)) {
+			showInfo("taxonomyLevel.deleted");
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else {
+			showError("taxonomyLevel.notdeleted");
+		}
 	}
 
 	private void doEditLevel(UserRequest ureq) {

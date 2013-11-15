@@ -195,4 +195,21 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		int numOfItems = taxonomyLevelDao.countItemUsing(level);
 		Assert.assertEquals(2, numOfItems);
 	}
+	
+	
+	@Test
+	public void countChildren_TaxonomyLevel() {
+		TaxonomyLevel galaxy = taxonomyLevelDao.createAndPersist(null, "Galaxy");
+		TaxonomyLevel andromeda = taxonomyLevelDao.createAndPersist(galaxy, "Andromeda");
+		TaxonomyLevel ngc = taxonomyLevelDao.createAndPersist(galaxy, "NGC 2502");
+		Assert.assertNotNull(andromeda);
+		Assert.assertNotNull(ngc);
+		dbInstance.commitAndCloseSession();
+		
+		//check count
+		int numOfChildrenGalaxy = taxonomyLevelDao.countChildren(galaxy);
+		Assert.assertEquals(2, numOfChildrenGalaxy);
+		int numOfChildrenAdnromeda = taxonomyLevelDao.countChildren(andromeda);
+		Assert.assertEquals(0, numOfChildrenAdnromeda);
+	}
 }

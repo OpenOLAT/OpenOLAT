@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 
 /**
@@ -59,7 +60,7 @@ public class BGMergeStepFormController extends StepFormBasicController {
 		String[] theValues = new String[groups.size()];
 		int i=0;
 		for(BusinessGroup group:groups) {
-			theValues[i] = group.getName();
+			theValues[i] = StringHelper.escapeHtml(group.getName());
 			theKeys[i++] = group.getKey().toString();
 		}
 		targetGroupEl = uifactory.addRadiosVertical("target.group", "merge.target.group", formLayout, theKeys, theValues);

@@ -34,7 +34,6 @@ import org.olat.repository.RepositoryEntryLight;
  */
 public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryLight> {
 	private RepositoryEntryLight value;
-	private String description;
 
 	public RepositoryPortletEntry(RepositoryEntryLight repoEntry) {
 		value = new REShort(repoEntry);
@@ -53,11 +52,7 @@ public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryLight
 	}
 	
 	public String getDescription() {
-		return description;
-	}
-	
-	public void setDescription(String description) {
-		this.description = description;
+		return value.getDescription();
 	}
 
 	private static class REShort implements RepositoryEntryLight {

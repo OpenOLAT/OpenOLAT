@@ -41,6 +41,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.model.BusinessGroupSelectionEvent;
@@ -159,7 +160,10 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 				if(TABLE_ACTION_UNLINK.equals(actionid)) {
 					Long businessGroupKey = groupListModel.getObject(te.getRowId()).getBusinessGroupKey();
 					BusinessGroup group = businessGroupService.loadBusinessGroup(businessGroupKey);
-					String text = getTranslator().translate("group.remove", new String[] { group.getName(), re.getDisplayname() });
+					String text = getTranslator().translate("group.remove", new String[] {
+							StringHelper.escapeHtml(group.getName()),
+							StringHelper.escapeHtml(re.getDisplayname())
+					});
 					confirmRemoveResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
 					confirmRemoveResource.setUserObject(group);
 				}
@@ -195,7 +199,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		StringBuilder sb = new StringBuilder();
 		StringBuilder managedSb = new StringBuilder();
 		for(BGTableItem item:selectedItems) {
-			String gname = item.getBusinessGroupName() == null ? "???" : item.getBusinessGroupName();
+			String gname = item.getBusinessGroupName() == null ? "???" : StringHelper.escapeHtml(item.getBusinessGroupName());
 			if(BusinessGroupManagedFlag.isManaged(item.getManagedFlags(), BusinessGroupManagedFlag.resources)) {
 				if(managedSb.length() > 0) managedSb.append(", ");
 				managedSb.append(gname);
@@ -208,7 +212,10 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		if(managedSb.length() > 0) {
 			showWarning("error.managed.group", managedSb.toString());
 		} else {
-			String text = getTranslator().translate("group.remove", new String[] { sb.toString(), re.getDisplayname() });
+			String text = getTranslator().translate("group.remove", new String[] { 
+					sb.toString(),
+					StringHelper.escapeHtml(re.getDisplayname())
+			});
 			confirmRemoveMultiResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
 			confirmRemoveMultiResource.setUserObject(selectedItems);
 		}

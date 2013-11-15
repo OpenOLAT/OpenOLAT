@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -81,7 +82,7 @@ public class PortletManualSortingConfigurator<T> extends BasicController {
     this.tableDataModel = tableDataModel;
 		this.sortedItems = sortedItems; //select the items in table!!!
 		
-		mainVC = this.createVelocityContainer("manualSorting");
+		mainVC = createVelocityContainer("manualSorting");
 		tablePanel = new Panel("table");
 		mainVC.put("table", tablePanel);
 		
@@ -93,21 +94,23 @@ public class PortletManualSortingConfigurator<T> extends BasicController {
 		listenTo(tableController);
 		int maxNumColumns = tableDataModel.getColumnCount();
 		int columnCounter=0; 
-		tableController.addColumnDescriptor(new DefaultColumnDescriptor("table.manual.sorting.title", columnCounter++, null, ureq.getLocale()));
+		tableController.addColumnDescriptor(new DefaultColumnDescriptor("table.manual.sorting.title", columnCounter++, null, getLocale()));
 		if(maxNumColumns==2){ 
-			tableController.addColumnDescriptor(new DefaultColumnDescriptor("table.manual.sorting.date", columnCounter++, null, ureq.getLocale()));
+			tableController.addColumnDescriptor(new DefaultColumnDescriptor("table.manual.sorting.date", columnCounter++, null, getLocale()));
 		} else {
-			tableController.addColumnDescriptor(new DefaultColumnDescriptor("table.manual.sorting.description", columnCounter++, null, ureq.getLocale()));
+			DefaultColumnDescriptor descCol = new DefaultColumnDescriptor("table.manual.sorting.description", columnCounter++, null, getLocale());
+			descCol.setEscapeHtml(EscapeMode.antisamy);
+			tableController.addColumnDescriptor(descCol);
 		}
 		if(maxNumColumns==4) {
-		  tableController.addColumnDescriptor(new DefaultColumnDescriptor("table.manual.sorting.type", columnCounter++, null, ureq.getLocale()));
+		  tableController.addColumnDescriptor(new DefaultColumnDescriptor("table.manual.sorting.type", columnCounter++, null, getLocale()));
 		}
 		tableController.addMultiSelectAction("action.choose", ACTION_MULTISELECT_CHOOSE);
 		tableController.addMultiSelectAction("action.cancel", ACTION_MULTISELECT_CANCEL);
 		tableController.setTableDataModel(tableDataModel);
 		tablePanel.setContent(tableController.getInitialComponent());
 		
-		this.putInitialPanel(mainVC);
+		putInitialPanel(mainVC);
 	}
 
 	@Override
@@ -128,7 +131,7 @@ public class PortletManualSortingConfigurator<T> extends BasicController {
 				//sortedItems = tableDataModel.getObjects(multiselectionEvent.getSelection());
 				sortedItems = tableController.getSelectedSortedObjects(multiselectionEvent.getSelection(), tableDataModel);		
 				if(sortedItems.size()==0) {
-					this.showWarning("portlet.sorting.manual.empty_sel");
+					showWarning("portlet.sorting.manual.empty_sel");
 				} else {
 				  fireEvent(ureq, event);
 				}

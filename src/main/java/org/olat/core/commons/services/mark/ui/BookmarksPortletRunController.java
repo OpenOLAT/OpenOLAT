@@ -62,6 +62,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
@@ -375,7 +376,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 					return bm.getTitle();
 				case 1:
 					String desc = bm.getDescription();
-					return (desc == null ? "n/a" : desc);
+					return (desc == null ? "n/a" : FilterFactory.getHtmlTagsFilter().filter(desc));
 				case 2:
 					String resType = bm.getDisplayrestype();
 					return (resType == null ? "n/a" : ControllerFactory.translateResourceableTypeName(resType, locale));

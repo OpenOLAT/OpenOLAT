@@ -33,7 +33,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -45,14 +44,11 @@ import org.olat.user.UserManager;
  * Factory to create a user table controller
  */
 public class UserControllerFactory {
-	private static final String PACKAGE = Util.getPackageName(UserControllerFactory.class);
 
-
-	
 	public static TableController createTableControllerFor(TableGuiConfiguration tableConfig, List<Identity> identities, UserRequest ureq,
 			WindowControl wControl, String actionCommand) {
 		Locale loc = ureq.getLocale();
-		Translator trans = new PackageTranslator(PACKAGE, loc);
+		Translator trans = Util.createPackageTranslator(UserControllerFactory.class, loc);
 		trans = UserManager.getInstance().getPropertyHandlerTranslator(trans);
 		TableController tableCtr = new TableController(tableConfig, ureq, wControl, trans);
 		Roles roles = ureq.getUserSession().getRoles();

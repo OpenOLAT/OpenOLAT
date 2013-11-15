@@ -752,4 +752,9 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public TaxonomyLevel updateTaxonomyLevel(String newField, TaxonomyLevel level) {
 		return taxonomyLevelDao.update(newField, level);
 	}
+
+	@Override
+	public boolean delete(TaxonomyLevel level) {
+		return taxonomyLevelDao.delete(level);
+	}
 }

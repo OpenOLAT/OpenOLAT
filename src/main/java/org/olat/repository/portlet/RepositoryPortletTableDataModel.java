@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
 import org.olat.core.gui.control.generic.portal.PortletEntry;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.repository.RepositoryEntryLight;
 
 /**
@@ -53,7 +54,8 @@ public class RepositoryPortletTableDataModel extends PortletDefaultTableDataMode
 			case 0:
 				return repoEntry.getValue().getDisplayname();
 			case 1:
-				return repoEntry.getDescription(); 
+				String desc = repoEntry.getDescription();
+				return FilterFactory.getHtmlTagsFilter().filter(desc);
 			case 2:
 				return repoEntry.getValue();
 			default:

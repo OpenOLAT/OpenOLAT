@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 
 /**
@@ -57,7 +58,7 @@ public class BGMergeConfirmationStepFormController extends StepFormBasicControll
 		for(BusinessGroup group:groups) {
 			if(!selectedGroup.equals(group)) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(group.getName());	
+				sb.append(StringHelper.escapeHtml(group.getName()));	
 			}
 		}
 		String text = translate("merge.confirmation", new String[]{sb.toString()});
