@@ -747,7 +747,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		
 		StringBuilder managedNames = new StringBuilder();
 		for(BusinessGroup group:groups) {
-			String gname = group.getName() == null ? "???" : group.getName();
+			String gname = group.getName() == null ? "???" : StringHelper.escapeHtml(group.getName());
 			if(StringHelper.containsNonWhitespace(group.getManagedFlagsString())) {
 				if(managedNames.length() > 0) managedNames.append(", ");
 				managedNames.append(gname);
