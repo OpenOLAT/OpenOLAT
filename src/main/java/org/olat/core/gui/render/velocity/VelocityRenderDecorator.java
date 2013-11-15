@@ -527,6 +527,14 @@ public class VelocityRenderDecorator implements Closeable{
 		return filter.filter(str);
 	}
 	
+	public String filterHtml(String str) {
+		if(str == null) {
+			return "";
+		}
+		return FilterFactory.getHtmlTagsFilter().filter(str);
+	}
+	
+	
 	/**
 	 * @param key
 	 * @return
