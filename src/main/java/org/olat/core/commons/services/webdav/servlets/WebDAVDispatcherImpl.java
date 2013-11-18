@@ -134,7 +134,7 @@ public class WebDAVDispatcherImpl
     extends DefaultDispatcher implements WebDAVDispatcher, Dispatcher {
 
     private static final long serialVersionUID = 1L;
-    private static final OLog log = Tracing.createLoggerFor(DefaultDispatcher.class);
+    private static final OLog log = Tracing.createLoggerFor(WebDAVDispatcherImpl.class);
 
 
     // -------------------------------------------------------------- Constants
@@ -1046,6 +1046,10 @@ public class WebDAVDispatcherImpl
                 lock.setDepth(maxDepth);
             }
         }
+        
+        if(log.isDebug()) {
+        	log.debug("Lock the ressource: " + path + " with depth:" + lock.getDepth());
+        }
 
         // Parsing timeout header
 
@@ -1499,6 +1503,9 @@ public class WebDAVDispatcherImpl
         }
 
         // Checking resource locks
+        if(log.isDebug()) {
+        	log.debug("Unlock the ressource: " + path);
+        }
 
         LockInfo lock = lockManager.getResourceLock(resource);
         if (lock != null) {
@@ -1578,7 +1585,11 @@ public class WebDAVDispatcherImpl
         }
         
         UserSession usess = webDAVManager.getUserSession(req);
-        return lockManager.isLocked(resource, ifHeader + lockTokenHeader, usess.getIdentity(), usess.getRoles());
+        boolean locked = lockManager.isLocked(resource, ifHeader + lockTokenHeader, usess.getIdentity(), usess.getRoles());
+        if(locked && log.isDebug()) {
+        	log.debug("Ressource is locked: " + req.getPathInfo());
+        }
+        return locked;
     }
 
     /**
