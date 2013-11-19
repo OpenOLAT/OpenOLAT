@@ -637,6 +637,9 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 
 	@Override
 	public boolean removeIdentityFromSecurityGroups(List<Identity> identities, List<SecurityGroup> secGroups) {
+		if(identities == null || identities.isEmpty()) return true;//nothing to do
+		if(secGroups == null || secGroups.isEmpty()) return true;//nothing to do
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("delete from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as msi ")
 		  .append("  where msi.identity.key in (:identityKeys) and msi.securityGroup.key in (:secGroupKeys)");
