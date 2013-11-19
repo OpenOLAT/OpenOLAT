@@ -240,6 +240,36 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertEquals(id2, members.get(0));
 	}
 	
+	@Test
+	public void testRemoveFromSecurityGroup_list() {
+		//create a security group with 2 identites
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "rm-3-sec-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "rm-4-sec-" + UUID.randomUUID().toString());
+		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
+		securityManager.addIdentityToSecurityGroup(id1, secGroup);
+		securityManager.addIdentityToSecurityGroup(id2, secGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//remove the first one
+		List<Identity> ids = new ArrayList<Identity>();
+		ids.add(id1);
+		ids.add(id2);
+		securityManager.removeIdentityFromSecurityGroups(ids, Collections.singletonList(secGroup));
+		dbInstance.commitAndCloseSession();
+		
+		int countMembers = securityManager.countIdentitiesOfSecurityGroup(secGroup);
+		Assert.assertEquals(0, countMembers);
+		List<Identity> members = securityManager.getIdentitiesOfSecurityGroup(secGroup);
+		Assert.assertNotNull(members);
+		Assert.assertTrue(members.isEmpty());
+		
+		//check if robust against null and empty
+		securityManager.removeIdentityFromSecurityGroups(ids, Collections.<SecurityGroup>emptyList());
+		securityManager.removeIdentityFromSecurityGroups(Collections.<Identity>emptyList(), Collections.singletonList(secGroup));
+		securityManager.removeIdentityFromSecurityGroups(ids, null);
+		securityManager.removeIdentityFromSecurityGroups(null, Collections.singletonList(secGroup));
+	}
+	
 	/**
 	 * 
 	 */
