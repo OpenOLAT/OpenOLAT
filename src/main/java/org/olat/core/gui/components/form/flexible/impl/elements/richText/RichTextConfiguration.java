@@ -160,6 +160,7 @@ public class RichTextConfiguration implements Disposable {
 		setQuotedConfigValue(ONCHANGE_CALLBACK, ONCHANGE_CALLBACK_VALUE_TEXT_AREA_ON_CHANGE);
 		// set custom url converter to deal with framework and content urls properly
 		setNonQuotedConfigValue(URLCONVERTER_CALLBACK, URLCONVERTER_CALLBACK_VALUE_BRASATO_URL_CONVERTER);
+		setNonQuotedConfigValue("allow_script_urls", "true");
 		// use modal windows, all OLAT workflows are implemented to work this way
 		setModalWindowsEnabled(true, true);
 		// Start observing of diry richt text element and trigger calling of setFlexiFormDirty() method
@@ -709,9 +710,9 @@ public class RichTextConfiguration implements Disposable {
 
 		// Now add the non-quoted values (e.g. true, false or functions)
 		Map<String,String> copyNonValues = new HashMap<String,String>(nonQuotedConfigValues);
-		String converter = copyNonValues.remove(URLCONVERTER_CALLBACK);
+		String converter = copyNonValues.get(URLCONVERTER_CALLBACK);
 		if(converter != null) {
-			copyNonValues.put(CONVERT_URLS, converter);	
+			copyNonValues.put(CONVERT_URLS, "true");
 		}
 		
 		String contentCss = copyValues.remove(CONTENT_CSS);
@@ -753,6 +754,7 @@ public class RichTextConfiguration implements Disposable {
  		for (Map.Entry<String, String> entry : copyNonValues.entrySet()) {
  			tinyMenuSb.append(entry.getKey()).append(": ").append(entry.getValue()).append(",\n");
 		}
+ 		//System.out.println(tinyMenuSb);
  		out.append(tinyMenuSb);
 	}
 
