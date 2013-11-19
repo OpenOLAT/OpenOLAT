@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.LockModeType;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
@@ -62,8 +63,8 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
@@ -1541,7 +1542,14 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 */
 	@Override
 	public void deleteAuthentication(Authentication auth) {
-		dbInstance.getCurrentEntityManager().remove(auth);
+		if(auth == null || auth.getKey() == null) return;//nothing to do
+		try {
+			AuthenticationImpl authRef = dbInstance.getCurrentEntityManager()
+					.getReference(AuthenticationImpl.class, auth.getKey());
+			dbInstance.getCurrentEntityManager().remove(authRef);
+		} catch (EntityNotFoundException e) {
+			logError("", e);
+		}
 	}
 
 	/**
