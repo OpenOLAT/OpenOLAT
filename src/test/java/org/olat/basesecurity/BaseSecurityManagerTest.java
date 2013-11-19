@@ -40,6 +40,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.Encoder;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -896,5 +897,41 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		sgmsi.setLastModified(cal.getTime());
 		dbInstance.getCurrentEntityManager().merge(sgmsi);
 		dbInstance.commitAndCloseSession();	
+	}
+	
+	@Test
+	public void deleteAuthentication() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("auth-del-" + UUID.randomUUID().toString());
+		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", identity.getName(), "secret", Encoder.Algorithm.sha512);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth);
+		
+		//reload and check
+		Authentication reloadedAuth = securityManager.findAuthentication(identity, "del-test");
+		Assert.assertNotNull(reloadedAuth);
+		Assert.assertEquals(auth, reloadedAuth);
+		dbInstance.commitAndCloseSession();
+		
+		//delete
+		securityManager.deleteAuthentication(auth);
+	}
+	
+	@Test
+	public void deleteAuthentication_checkTransactionSurvive() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("auth-del-" + UUID.randomUUID().toString());
+		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", identity.getName(), "secret", Encoder.Algorithm.sha512);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth);
+		
+		//delete
+		securityManager.deleteAuthentication(auth);
+		dbInstance.commitAndCloseSession();
+		
+		//delete deleted auth
+		securityManager.deleteAuthentication(auth);
+		//check that the transaction is not in "rollback" mode
+		Identity reloadedId = securityManager.loadIdentityByKey(identity.getKey());
+		Assert.assertEquals(identity, reloadedId);
+		dbInstance.commitAndCloseSession();
 	}
 }
