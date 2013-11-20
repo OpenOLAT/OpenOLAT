@@ -922,12 +922,12 @@ public class RepositoryManager extends BasicManager {
 		}
 		reloadedRe.setLifecycle(cycle);
 		
-		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		if(cycleToDelete != null) {
-			DBFactory.getInstance().getCurrentEntityManager().remove(cycleToDelete);
+			dbInstance.getCurrentEntityManager().remove(cycleToDelete);
 		}
 		
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		return updatedRe;
 	}
 

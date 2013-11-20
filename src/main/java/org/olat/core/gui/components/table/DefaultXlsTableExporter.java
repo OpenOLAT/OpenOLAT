@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -109,6 +110,9 @@ public class DefaultXlsTableExporter implements TableExporter {
 				String cellValue = so.toString();
 				cellValue = StringHelper.stripLineBreaks(cellValue);
 				cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
+				if(StringHelper.containsNonWhitespace(cellValue)) {
+					cellValue = StringEscapeUtils.unescapeHtml(cellValue);
+				}
 				Cell cell = dataRow.createCell(c);
 				cell.setCellValue(cellValue);
 			}

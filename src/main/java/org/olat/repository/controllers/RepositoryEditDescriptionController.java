@@ -388,11 +388,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 			
 			if("none".equals(type)) {
-				RepositoryEntryLifecycle cycle = repositoryEntry.getLifecycle();
 				repositoryEntry.setLifecycle(null);
-				if(cycle != null && cycle.isPrivateCycle()) {
-					lifecycleDao.deleteLifecycle(cycle);
-				}
 			} else if("public".equals(type)) {
 				String key = publicDatesEl.getSelectedKey();
 				if(StringHelper.isLong(key)) {
