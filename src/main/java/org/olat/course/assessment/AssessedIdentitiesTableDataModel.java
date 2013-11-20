@@ -97,7 +97,10 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 		colCount = 0; // default
 		colMapping = new ArrayList<String>();
 		// store all configurable column positions in a lookup array
-		colMapping.add(colCount++, COL_NAME);		
+		if(isAdministrativeUser) {
+			colMapping.add(colCount++, COL_NAME);	
+		}
+		
 		Iterator <UserPropertyHandler> propHandlerIterator =  userPropertyHandlers.iterator();
 		userPropertyNameList = new ArrayList<String>();
 		while (propHandlerIterator.hasNext()) {
