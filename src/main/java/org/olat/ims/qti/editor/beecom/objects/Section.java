@@ -433,8 +433,8 @@ public class Section implements QTIObject {
 	 * @return
 	 */
 	public boolean containsEssayQuestions(){
-		for(Iterator i= this.items.iterator(); i.hasNext();) {
-			Item item = (Item)i.next();
+		for(Iterator<Item> i= items.iterator(); i.hasNext();) {
+			Item item = i.next();
 			if(item!=null && item.getQuestion().getType() == Question.TYPE_ESSAY) {
 				return true;
 			}

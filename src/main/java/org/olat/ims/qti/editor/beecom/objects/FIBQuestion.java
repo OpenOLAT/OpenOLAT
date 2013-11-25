@@ -112,7 +112,7 @@ public class FIBQuestion extends Question implements QTIObject {
 			Map<String,Float> points = QTIEditHelper.fetchPoints(respconditions, instance.getType());
 		
 			// postprocessing choices
-			for(Iterator i = responses.iterator(); i.hasNext();) {
+			for(Iterator<Response> i = responses.iterator(); i.hasNext();) {
 				FIBResponse fibResp = (FIBResponse)i.next();		
 				Float fPoints = points.get(fibResp.getIdent());
 				if (fPoints != null) {
@@ -125,7 +125,7 @@ public class FIBQuestion extends Question implements QTIObject {
 			// of answers is possible (which sets points by a setvar action="Set")
 			if (resprocessingXML.selectNodes(".//setvar[@action='Add']").size() == 0) {
 				instance.setSingleCorrect(true);
-				Collection values = points.values();
+				Collection<Float> values = points.values();
 				if (values.size() > 0)
 					instance.setSingleCorrectScore(((Float)(values.iterator().next())).floatValue());
 			} else {
@@ -147,7 +147,7 @@ public class FIBQuestion extends Question implements QTIObject {
 		presentationXML.addAttribute("label", "notset");
 		// presentation
 		Element flowXML = presentationXML.addElement("flow");
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			FIBResponse fibcontent = (FIBResponse) i.next();
 			if (fibcontent.getType().equals(FIBResponse.TYPE_CONTENT)) {
 				Material mat = fibcontent.getContent();
@@ -235,7 +235,7 @@ public class FIBQuestion extends Question implements QTIObject {
 
 		Element conditionvar = correct.addElement("conditionvar");
 		Element and = conditionvar.addElement("and");
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			FIBResponse fib = (FIBResponse) i.next();
 			if (fib.getType().equals(FIBResponse.TYPE_BLANK)) {
 				String[] correctFIBs = fib.getCorrectBlank().split(";");
@@ -271,7 +271,7 @@ public class FIBQuestion extends Question implements QTIObject {
 	 * @param resprocessingXML
 	 */
 	private void buildRespconditionFIBMulti(Element resprocessingXML) {
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			FIBResponse fib = (FIBResponse) i.next();
 			if (!fib.getType().equals(FIBResponse.TYPE_BLANK)) continue;
 			float points = fib.getPoints();
@@ -309,7 +309,7 @@ public class FIBQuestion extends Question implements QTIObject {
 		Element conditionvar = respcondition_correct.addElement("conditionvar");
 		Element and = conditionvar.addElement("and");
 
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			FIBResponse tmpResponse = (FIBResponse) i.next();
 			if (!tmpResponse.getType().equals(FIBResponse.TYPE_BLANK)) continue;
 			String[] correctFIBs = tmpResponse.getCorrectBlank().split(";");

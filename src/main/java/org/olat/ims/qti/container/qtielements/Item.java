@@ -29,6 +29,7 @@ import org.dom4j.Element;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.openxml.OpenXMLDocument;
+import org.olat.ims.qti.editor.beecom.objects.Question;
 /**
  * Initial Date:  25.11.2004
  *
@@ -103,6 +104,19 @@ public class Item extends GenericQTIElement {
 		}
 		if (itemPresentation != null) {
 			itemPresentation.renderOpenXML(document, ri);
+		}
+
+		Boolean renderResponse = (Boolean)ri.get(RenderInstructions.KEY_RENDER_CORRECT_RESPONSES);
+		Integer type = (Integer)ri.get(RenderInstructions.KEY_QUESTION_OO_TYPE);
+		if(renderResponse != null && renderResponse.booleanValue() &&
+				type != null && type.intValue() == Question.TYPE_ESSAY) {
+
+			for(int i=getChildCount(); i-->0; ) {
+				QTIElement el = (QTIElement)getChildAt(i);
+				if(el instanceof ItemFeedback && "Solution".equals(el.getQTIIdent())) {
+					el.renderOpenXML(document, ri);
+				}
+			}
 		}
 	}
 }

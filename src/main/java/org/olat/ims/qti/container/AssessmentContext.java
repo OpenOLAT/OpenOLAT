@@ -62,7 +62,7 @@ public class AssessmentContext implements Serializable {
 	private Output output;
 
 	// the sectioncontexts of this assessment
-	private List sectionContexts;
+	private List<SectionContext> sectionContexts;
 
 	// the current section beeing chosen by the user or forced by the system
 	private int currentSectionContextPos;
@@ -164,7 +164,7 @@ public class AssessmentContext implements Serializable {
 	}
 
 	private void initSections(Element assessment, Switches sw) {
-		sectionContexts = new ArrayList(2);
+		sectionContexts = new ArrayList<SectionContext>(2);
 
 		//<!ELEMENT sectionref (#PCDATA)>
 		//<!ATTLIST sectionref %I_LinkRefId; >
@@ -247,7 +247,7 @@ public class AssessmentContext implements Serializable {
 	 */
 	public SectionContext getCurrentSectionContext() {
 		if (currentSectionContextPos == -1) return null;
-		SectionContext sc = (SectionContext) sectionContexts.get(currentSectionContextPos);
+		SectionContext sc = sectionContexts.get(currentSectionContextPos);
 		return sc;
 	}
 
@@ -401,8 +401,8 @@ public class AssessmentContext implements Serializable {
 	 */
 	public float getMaxScore() {
 		float count = 0.0f;
-		for (Iterator iter = sectionContexts.iterator(); iter.hasNext();) {
-			SectionContext sc = (SectionContext) iter.next();
+		for (Iterator<SectionContext> iter = sectionContexts.iterator(); iter.hasNext();) {
+			SectionContext sc = iter.next();
 			float maxScore = sc.getMaxScore();
 			if (maxScore == -1) return -1;
 			else count += maxScore;
@@ -417,8 +417,8 @@ public class AssessmentContext implements Serializable {
 		if (scoremodel == null || scoremodel.equalsIgnoreCase("SumOfScores")) { // sumofScores
 
 			float count = 0;
-			for (Iterator iter = sectionContexts.iterator(); iter.hasNext();) {
-				SectionContext sc = (SectionContext) iter.next();
+			for (Iterator<SectionContext> iter = sectionContexts.iterator(); iter.hasNext();) {
+				SectionContext sc = iter.next();
 				count += sc.getScore();
 			}
 			return count;
@@ -426,8 +426,8 @@ public class AssessmentContext implements Serializable {
 			float tmpscore = 0.0f;
 			// calculate correct number of sections: an section is correct if its
 			// correct items reach the section's cutvalue
-			for (Iterator iter = sectionContexts.iterator(); iter.hasNext();) {
-				SectionContext sc = (SectionContext) iter.next();
+			for (Iterator<SectionContext> iter = sectionContexts.iterator(); iter.hasNext();) {
+				SectionContext sc = iter.next();
 				float sscore = sc.getScore();
 				if (sscore >= cutvalue) tmpscore++; // count items correct
 			}
@@ -451,8 +451,8 @@ public class AssessmentContext implements Serializable {
 	 */
 	public int getItemsPresentedCount() {
 		int count = 0;
-		for (Iterator iter = sectionContexts.iterator(); iter.hasNext();) {
-			SectionContext sc = (SectionContext) iter.next();
+		for (Iterator<SectionContext> iter = sectionContexts.iterator(); iter.hasNext();) {
+			SectionContext sc = iter.next();
 			count += sc.getItemsPresentedCount();
 		}
 		return count;
@@ -463,8 +463,8 @@ public class AssessmentContext implements Serializable {
 	 */
 	public int getItemsAnsweredCount() {
 		int count = 0;
-		for (Iterator iter = sectionContexts.iterator(); iter.hasNext();) {
-			SectionContext sc = (SectionContext) iter.next();
+		for (Iterator<SectionContext> iter = sectionContexts.iterator(); iter.hasNext();) {
+			SectionContext sc = iter.next();
 			count += sc.getItemsAnsweredCount();
 		}
 		return count;
@@ -475,8 +475,8 @@ public class AssessmentContext implements Serializable {
 	 */
 	public int getItemsAttemptedCount() {
 		int count = 0;
-		for (Iterator iter = sectionContexts.iterator(); iter.hasNext();) {
-			SectionContext sc = (SectionContext) iter.next();
+		for (Iterator<SectionContext> iter = sectionContexts.iterator(); iter.hasNext();) {
+			SectionContext sc = iter.next();
 			count += sc.getItemsAttemptedCount();
 		}
 		return count;

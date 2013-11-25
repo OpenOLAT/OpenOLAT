@@ -117,7 +117,7 @@ public class Response_label extends GenericQTIElement {
 				appendParameterIdent(buffer, ri);
 				buffer.append("\" value=\"").append(getQTIIdent());
 				if (iinput != null) {
-					List responses = iinput.getAsList(responseIdent);
+					List<String> responses = iinput.getAsList(responseIdent);
 					if (responses != null && responses.contains(getQTIIdent())) buffer.append("\" checked=\"checked");
 				}
 				buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\" />");
@@ -141,7 +141,7 @@ public class Response_label extends GenericQTIElement {
 			appendParameterIdent(buffer, ri);
 			buffer.append("\" value=\"" + getQTIIdent() + ":correct");
 			if (iinput != null && !iinput.isEmpty()) {
-				List responses = iinput.getAsList(responseIdent);
+				List<String> responses = iinput.getAsList(responseIdent);
 				if (responses != null && responses.contains(getQTIIdent() + ":correct")) buffer.append("\" checked=\"checked");
 			}
 			buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\"/>");
@@ -149,7 +149,7 @@ public class Response_label extends GenericQTIElement {
 			appendParameterIdent(buffer, ri);
 			buffer.append("\" value=\"" + getQTIIdent() + ":wrong");
 			if (iinput != null && !iinput.isEmpty()) {
-				List responses = iinput.getAsList(responseIdent);
+				List<String> responses = iinput.getAsList(responseIdent);
 				if (responses != null && responses.contains(getQTIIdent() + ":wrong")) buffer.append("\" checked=\"checked");
 			}
 			buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\"/>");

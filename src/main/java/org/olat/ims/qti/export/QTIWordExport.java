@@ -260,6 +260,7 @@ public class QTIWordExport implements MediaResource {
 			renderInstructions.put(RenderInstructions.KEY_CORRECT_RESPONSES_MAP, iinput);
 			renderInstructions.put(RenderInstructions.KEY_QUESTION_TYPE, questionType);
 			renderInstructions.put(RenderInstructions.KEY_QUESTION_SCORE, questionScore);
+			renderInstructions.put(RenderInstructions.KEY_QUESTION_OO_TYPE, new Integer(question.getType()));
 		}
 		
 		foo.renderOpenXML(document, renderInstructions);

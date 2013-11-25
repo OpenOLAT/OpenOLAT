@@ -132,7 +132,17 @@ public class EssayQuestion extends Question implements QTIObject {
 		decvar.addAttribute("maxvalue", "" + maxScore);
 		decvar.addAttribute("cutvalue", "" + maxScore);
 		
-		Element procExtension = resprocessingXML.addElement("itemproc_extension");	
+		Element procExtension = resprocessingXML.addElement("itemproc_extension");
+		
+		// hint
+		if (getHintText() != null) {
+			QTIEditHelper.addHintElement(root, getHintText());
+		}
+
+		// solution
+		if (getSolutionText() != null) {
+			QTIEditHelper.addSolutionElement(root, getSolutionText());
+		}
 	}
 	
 

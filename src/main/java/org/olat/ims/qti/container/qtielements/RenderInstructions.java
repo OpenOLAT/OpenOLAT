@@ -106,6 +106,8 @@ public class RenderInstructions extends HashMap<String,Object> {
 	
 	public static final String KEY_CORRECT_RESPONSES_MAP = "correctResponsesMap";
 	
+	public static final String KEY_QUESTION_OO_TYPE = "rQuestionOpenOLATType";
+	
 	public static final String KEY_QUESTION_TYPE = "rQuestionType";
 	
 	public static final String KEY_QUESTION_SCORE = "rQuestionScore";

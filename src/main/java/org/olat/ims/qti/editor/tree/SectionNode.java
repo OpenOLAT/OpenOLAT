@@ -39,6 +39,7 @@ import org.olat.core.util.memento.Memento;
 import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.SectionController;
+import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.QTIObject;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 
@@ -99,24 +100,26 @@ public class SectionNode extends GenericQtiNode {
 	 * @see org.olat.ims.qti.editor.tree.IQtiNode#insertQTIObjectAt(org.olat.ims.qti.editor.beecom.objects.QTIObject, int)
 	 */
 	public void insertQTIObjectAt(QTIObject object, int position) {
-		List items = section.getItems();
-		items.add(position, object);
+		List<Item> items = section.getItems();
+		if(object instanceof Item) {
+			items.add(position, (Item)object);
+		}
 	}
 
 	/**
 	 * @see org.olat.ims.qti.editor.tree.IQtiNode#removeQTIObjectAt(int)
 	 */
 	public QTIObject removeQTIObjectAt(int position) {
-		List items = section.getItems();
-		return (QTIObject)items.remove(position);
+		List<Item> items = section.getItems();
+		return items.remove(position);
 	}
 
 	/**
 	 * @see org.olat.ims.qti.editor.tree.IQtiNode#getQTIObjectAt(int)
 	 */
 	public QTIObject getQTIObjectAt(int position) {
-		List items = section.getItems();
-		return (QTIObject)items.get(position);
+		List<Item> items = section.getItems();
+		return items.get(position);
 	}
 
 	/**

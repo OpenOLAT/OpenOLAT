@@ -91,7 +91,9 @@ public class ItemMetadataFormController extends FormBasicController {
 		} else if (source == showHints) {
 			toggle(hint);
 		} else if (source == showSolution) {
-			toggle(solution);
+			if(item.getQuestion().getType() != Question.TYPE_ESSAY) {
+				toggle(solution);
+			}
 		}
 	}
 
@@ -145,8 +147,10 @@ public class ItemMetadataFormController extends FormBasicController {
 			itemControl.setFeedback(itemControl.getFeedback() == Control.CTRL_UNDEF ? Control.CTRL_NO : itemControl.getFeedback());
 			itemControl.setHint(showHints.getSelected() == 0 ? Control.CTRL_YES : Control.CTRL_NO);
 			itemControl.setSolution(showSolution.getSelected() == 0 ? Control.CTRL_YES : Control.CTRL_NO);
-			q.setHintText(conditionalCommentFilter.filter(hint.getRawValue())); // trust authors, don't to XSS filtering
-			q.setSolutionText(conditionalCommentFilter.filter(solution.getRawValue())); // trust authors, don't to XSS filtering
+			String hintRawValue = hint.getRawValue();
+			q.setHintText(conditionalCommentFilter.filter(hintRawValue)); // trust authors, don't to XSS filtering
+			String solutionRawValue = solution.getRawValue();
+			q.setSolutionText(conditionalCommentFilter.filter(solutionRawValue)); // trust authors, don't to XSS filtering
 			if (limitTime.getSelectedKey().equals("y")) {
 				item.setDuration(new Duration(1000 * timeSec.getIntValue() + 1000 * 60 * timeMin.getIntValue()));
 			} else {
@@ -275,7 +279,8 @@ public class ItemMetadataFormController extends FormBasicController {
 				showSolution.select("y", true);
 			} else {
 				showSolution.select("n", true);
-				solution.setVisible(false);
+				//solution always visible for essay
+				solution.setVisible((q.getType() == Question.TYPE_ESSAY));
 			}
 		}
 		// Submit Button
@@ -313,7 +318,7 @@ public class ItemMetadataFormController extends FormBasicController {
 	 */
 	private void toggle(FormItem formItem) {
 		formItem.setVisible(!formItem.isVisible());
-		this.flc.setDirty(true);
+		flc.setDirty(true);
 	}
 
 }

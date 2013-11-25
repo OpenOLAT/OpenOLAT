@@ -123,7 +123,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 				Map<String,Float> points = QTIEditHelper.fetchPoints(respconditions, instance.getType());
 
 				// postprocessing choices
-				for (Iterator i = choices.iterator(); i.hasNext();) {
+				for (Iterator<Response> i = choices.iterator(); i.hasNext();) {
 					ChoiceResponse choice = (ChoiceResponse) i.next();
 					Float fPoints = points.get(choice.getIdent());
 					if (fPoints != null) {
@@ -138,14 +138,14 @@ public class ChoiceQuestion extends Question implements QTIObject {
 					// of answers is possible (which sets points by a setvar action="Set")
 					if (resprocessingXML.selectNodes(".//setvar[@action='Add']").size() == 0) {
 						instance.setSingleCorrect(true);
-						Collection values = points.values();
+						Collection<Float> values = points.values();
 						if (values.size() > 0) instance.setSingleCorrectScore(((Float) (values.iterator().next())).floatValue());
 					} else {
 						instance.setSingleCorrect(false);
 					}
 				} else if (instance.getType() == TYPE_SC) {
 					instance.setSingleCorrect(true);
-					Collection values = points.values();
+					Collection<Float> values = points.values();
 					if (values.size() > 0) {
 						instance.setSingleCorrectScore(((Float) (values.iterator().next())).floatValue());
 					} else {
@@ -209,7 +209,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 		render_choice.addAttribute("minnumber", getType() == TYPE_SC ? "1" : "0");
 		render_choice.addAttribute("maxnumber", getType() == TYPE_SC ? "1" : String.valueOf(getResponses().size()));
 
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			ChoiceResponse tmpChoice = (ChoiceResponse) i.next();
 			Element flow_label = render_choice.addElement("flow_label");
 			// Add horizontal or vertical alignment. All flow_labels get the
@@ -289,7 +289,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 		respcondition_correct.addAttribute("continue", "Yes");
 
 		Element conditionvar = respcondition_correct.addElement("conditionvar");
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			// fetch correct answer (there should be a single instance)
 			ChoiceResponse tmpChoice = (ChoiceResponse) i.next();
 			if (!tmpChoice.isCorrect()) continue;
@@ -332,7 +332,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 		Element and = conditionvar.addElement("and");
 		Element not = conditionvar.addElement("not");
 		Element or = not.addElement("or");
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			ChoiceResponse tmpChoice = (ChoiceResponse) i.next();
 			Element varequal;
 			if (tmpChoice.isCorrect()) { // correct answers
@@ -373,7 +373,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 	 * @param resprocessingXML
 	 */
 	private void buildRespconditionMCMulti_mastery(Element resprocessingXML) {
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			ChoiceResponse tmpChoice = (ChoiceResponse) i.next();
 			float points = tmpChoice.getPoints();
 			if (points == 0) continue;
@@ -405,7 +405,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 		Element not = conditionvar.addElement("not");
 		Element or = not.addElement("or");
 
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			ChoiceResponse tmpChoice = (ChoiceResponse) i.next();
 			Element varequal;
 			if (tmpChoice.getPoints() > 0) {
@@ -437,7 +437,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 	 */
 	
 	private void buildRespconditionKprim(Element resprocessingXML) {
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			ChoiceResponse choice = (ChoiceResponse) i.next();
 			if (choice.isCorrect()) {
 				addRespcondition(resprocessingXML, choice.getIdent() + ":correct", true, String.valueOf(choice.getPoints()));
@@ -455,7 +455,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 		Element conditionvar = respcondition_correct.addElement("conditionvar");
 		Element and = conditionvar.addElement("and");
 
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			ChoiceResponse choice = (ChoiceResponse) i.next();
 			Element varequal;
 			varequal = and.addElement("varequal");
@@ -485,7 +485,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 		Element not = conditionvar.addElement("not");
 		Element and = not.addElement("and");
 
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			ChoiceResponse choice = (ChoiceResponse) i.next();
 			Element varequal;
 			varequal = and.addElement("varequal");
@@ -544,7 +544,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 		Element conditionvar = respcondition_fail.addElement("conditionvar");
 		Element or = conditionvar.addElement("or");
 
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			ChoiceResponse tmpChoice = (ChoiceResponse) i.next();
 			Element varequal;
 			// Add this response to the fail case
@@ -583,7 +583,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 	 * @param resprocessingXML
 	 */
 	private void buildRespconditionOlatFeedback(Element resprocessingXML) {
-		for (Iterator i = getResponses().iterator(); i.hasNext();) {
+		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			Element respcondition = resprocessingXML.addElement("respcondition");
 			respcondition.addAttribute("title", "_olat_resp_feedback");
 			respcondition.addAttribute("continue", "Yes");

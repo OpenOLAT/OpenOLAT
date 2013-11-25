@@ -186,12 +186,12 @@ public class ItemNode extends GenericQtiNode {
 		qtiState.put("QUESTION.HINTTEXT", question.getHintText());
 		Material questMaterial = question.getQuestion();
 		qtiState.put("QUESTION.MATERIAL.ASTEXT", questMaterial.renderAsText());
-		List ids = new ArrayList();
-		List asTexts = new ArrayList();
-		List feedbacks = new ArrayList();
-		List responses = question.getResponses();
-		for (Iterator iter = responses.iterator(); iter.hasNext();) {
-			Response resp = (Response) iter.next();
+		List<String> ids = new ArrayList<String>();
+		List<String> asTexts = new ArrayList<String>();
+		List<String> feedbacks = new ArrayList<String>();
+		List<Response> responses = question.getResponses();
+		for (Iterator<Response> iter = responses.iterator(); iter.hasNext();) {
+			Response resp = iter.next();
 			if (isFIB) {
 				if (FIBResponse.TYPE_BLANK.equals(((FIBResponse) resp).getType())) {
 					asTexts.add(formatFIBResponseAsText((FIBResponse) resp));

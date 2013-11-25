@@ -53,7 +53,7 @@ public class SectionContext implements Serializable {
 	// to serialize it (too long) and can reattach it later
 	private Element el_section;
 	private Objectives objectives;
-	private List itemContexts;
+	private List<ItemContext> itemContexts;
 
 	private float totalScore; // only floats and integers supported at the moment
 	private int cutvalue;
@@ -294,7 +294,7 @@ public class SectionContext implements Serializable {
 		}
 
 		// now wrap all item contexts
-		itemContexts = new ArrayList(10);
+		itemContexts = new ArrayList<ItemContext>(10);
 		for (Iterator iter = el_items.iterator(); iter.hasNext();) {
 			Element item = (Element) iter.next();
 			item.detach();
@@ -372,7 +372,7 @@ public class SectionContext implements Serializable {
 	/**
 	 * @return List of ItemContext instances
 	 */
-	public List getItemContextsToRender() {
+	public List<ItemContext> getItemContextsToRender() {
 		return itemContexts;
 	}
 
@@ -382,16 +382,16 @@ public class SectionContext implements Serializable {
 	private void calcScore() {
 		totalScore = 0;
 		if (scoremodel == null || scoremodel.equalsIgnoreCase("SumOfScores")) { // sumofScores
-			for (Iterator iter = itemContexts.iterator(); iter.hasNext();) {
-				ItemContext ict = (ItemContext) iter.next();
+			for (Iterator<ItemContext> iter = itemContexts.iterator(); iter.hasNext();) {
+				ItemContext ict = iter.next();
 				totalScore += ict.getScore();
 			}
 		} else if (scoremodel.equalsIgnoreCase("NumberCorrect")) {
 			totalScore = 0;
 			int tmpscore = 0;
 			// correct number of items: an item is correct if it reaches the cutvalue
-			for (Iterator iter = itemContexts.iterator(); iter.hasNext();) {
-				ItemContext ict = (ItemContext) iter.next();
+			for (Iterator<ItemContext> iter = itemContexts.iterator(); iter.hasNext();) {
+				ItemContext ict = iter.next();
 
 				Variable var = ict.getVariables().getSCOREVariable();
 				if (var == null) {
@@ -443,7 +443,7 @@ public class SectionContext implements Serializable {
 	 * 
 	 * @return List
 	 */
-	public List getSectionItemContexts() {
+	public List<ItemContext> getSectionItemContexts() {
 		return itemContexts;
 	}
 
@@ -454,8 +454,8 @@ public class SectionContext implements Serializable {
 	 * @return ItemContext
 	 */
 	public ItemContext getItemContext(String sIdent) {
-		for (Iterator it_icts = getSectionItemContexts().iterator(); it_icts.hasNext();) {
-			ItemContext itc = (ItemContext) it_icts.next();
+		for (Iterator<ItemContext> it_icts = getSectionItemContexts().iterator(); it_icts.hasNext();) {
+			ItemContext itc = it_icts.next();
 			if (itc.getIdent().equals(sIdent)) { return itc; }
 		}
 
@@ -545,7 +545,7 @@ public class SectionContext implements Serializable {
 	 * @return Element
 	 */
 	public ItemContext getCurrentItemContext() {
-		return (ItemContext) itemContexts.get(currentItemContextPos);
+		return itemContexts.get(currentItemContextPos);
 	}
 
 	/**
@@ -578,7 +578,7 @@ public class SectionContext implements Serializable {
 	 * @return
 	 */
 	public ItemContext getItemContext(int pos) {
-		return (ItemContext) itemContexts.get(pos);
+		return itemContexts.get(pos);
 	}
 
 	/**

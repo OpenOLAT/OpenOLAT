@@ -192,9 +192,9 @@ public class ResultsBuilder {
 			sec_score.addElement("score_cut").addText(strVal);
 
 			// iterate over all items in this section context
-			List itemsc = secc.getSectionItemContexts();
-			for (Iterator it_it = itemsc.iterator(); it_it.hasNext();) {
-				ItemContext itemc = (ItemContext) it_it.next();
+			List<ItemContext> itemsc = secc.getSectionItemContexts();
+			for (Iterator<ItemContext> it_it = itemsc.iterator(); it_it.hasNext();) {
+				ItemContext itemc = it_it.next();
 				Element itres = secres.addElement("item_result");
 				itres.addAttribute("ident_ref", itemc.getIdent());
 				itres.addAttribute("asi_title", itemc.getEl_item().attributeValue("title"));
@@ -247,14 +247,14 @@ public class ResultsBuilder {
 					if (itemInp == null) { // user did not answer this question at all
 						res_response.addElement("response_value").addText(trans.translate("ResBuilder.NoAnswer"));
 					} else {
-						List userAnswer = itemInp.getAsList(ident);
+						List<String> userAnswer = itemInp.getAsList(ident);
 						if (userAnswer == null) { // user did not answer this question at
 																			// all
 							res_response.addElement("response_value").addText(trans.translate("ResBuilder.NoAnswer"));
 						} else { // the user chose at least one option of an answer (did not
 										 // simply click send)
-							for (Iterator it_ans = userAnswer.iterator(); it_ans.hasNext();) {
-								res_response.addElement("response_value").addText((String) it_ans.next());
+							for (Iterator<String> it_ans = userAnswer.iterator(); it_ans.hasNext();) {
+								res_response.addElement("response_value").addText(it_ans.next());
 							}
 						}
 					}
@@ -269,7 +269,7 @@ public class ResultsBuilder {
 				 * cases (just "varequal" "not" elements) use correct_response.
 				 */
 
-				Map corr_answers = new HashMap(); // keys: respIdents, values: HashSet
+				Map<String,Set<String>> corr_answers = new HashMap<>(); // keys: respIdents, values: HashSet
 																					// of correct answers for this
 																					// respIdent
 				List respconds = el_item.selectNodes(".//respcondition");
@@ -339,22 +339,22 @@ public class ResultsBuilder {
 								 */
 								Element vareq = (Element) it_vareq.next();
 								String respIdent = vareq.attributeValue("respident");
-								Set respIdent_corr_answers = (Set) corr_answers.get(respIdent);
-								if (respIdent_corr_answers == null) respIdent_corr_answers = new HashSet(3);
+								Set<String> respIdent_corr_answers = corr_answers.get(respIdent);
+								if (respIdent_corr_answers == null) respIdent_corr_answers = new HashSet<String>(3);
 								respIdent_corr_answers.add(vareq.getText());
 								corr_answers.put(respIdent, respIdent_corr_answers);
 							} // for varequal
 						} // else varequal
 					} // add/set setvar
 				} // for resprocessing
-				Set resp_ids = corr_answers.keySet();
-				for (Iterator idents = resp_ids.iterator(); idents.hasNext();) {
-					String respIdent = (String) idents.next();
-					Set respIdent_corr_answers = (Set) corr_answers.get(respIdent);
+				Set<String> resp_ids = corr_answers.keySet();
+				for (Iterator<String> idents = resp_ids.iterator(); idents.hasNext();) {
+					String respIdent = idents.next();
+					Set<String> respIdent_corr_answers = corr_answers.get(respIdent);
 					Element res_response = (Element) res_responsehash.get(respIdent);
 					Element res_respform = res_response.element("response_form");
-					for (Iterator iter = respIdent_corr_answers.iterator(); iter.hasNext();) {
-						String answer = (String) iter.next();
+					for (Iterator<String> iter = respIdent_corr_answers.iterator(); iter.hasNext();) {
+						String answer = iter.next();
 						res_respform.addElement("correct_response").addText(answer);
 					}
 				}

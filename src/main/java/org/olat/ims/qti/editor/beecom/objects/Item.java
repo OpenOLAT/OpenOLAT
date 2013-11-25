@@ -50,7 +50,7 @@ public class Item implements QTIObject {
 	private List itempreconditions = new ArrayList(); // occurs 0 to many
 	private List itempostconditions = new ArrayList(); // occurs 0 to many
 	private String objectives = null; // occurs 0 to many, 1st processed
-	private List itemcontrols = new ArrayList(); // occurs 0 to many
+	private List<Control> itemcontrols = new ArrayList<Control>(); // occurs 0 to many
 	private List itemrubrics = new ArrayList(); // occurs 0 to many
 	private List rubrics = new ArrayList(); // occurs 0 to many
 	private List itemfeedbacks = new ArrayList(); // occurs 0 to many
@@ -86,8 +86,8 @@ public class Item implements QTIObject {
 		QTIEditHelper.addObjectives(item, objectives);
 
 		//ITEMCONTROL
-		for (Iterator i = this.itemcontrols.iterator(); i.hasNext();) {
-			((QTIObject) i.next()).addToElement(item);
+		for (Iterator<Control> i = itemcontrols.iterator(); i.hasNext();) {
+			i.next().addToElement(item);
 		}
 
 		// QUESTION
@@ -116,8 +116,8 @@ public class Item implements QTIObject {
 		mat = getQuestion().getQuestion();
 		if (mat.getId().equals(matId)) return mat;
 		// look at responses
-		for (Iterator iter = getQuestion().getResponses().iterator(); iter.hasNext();) {
-			Response element = (Response) iter.next();
+		for (Iterator<Response> iter = getQuestion().getResponses().iterator(); iter.hasNext();) {
+			Response element = iter.next();
 			mat = element.getContent();
 			if (mat.getId().equals(matId)) return mat;
 		}
@@ -151,7 +151,7 @@ public class Item implements QTIObject {
 	 * 
 	 * @return List
 	 */
-	public List getItemcontrols() {
+	public List<Control> getItemcontrols() {
 		return itemcontrols;
 	}
 
@@ -277,7 +277,7 @@ public class Item implements QTIObject {
 	 * 
 	 * @param itemcontrols The itemcontrols to set
 	 */
-	public void setItemcontrols(List itemcontrols) {
+	public void setItemcontrols(List<Control> itemcontrols) {
 		this.itemcontrols = itemcontrols;
 	}
 
