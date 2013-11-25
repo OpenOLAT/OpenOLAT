@@ -38,7 +38,7 @@ import org.olat.core.gui.translator.Translator;
  *
  * @author gnaegi
  */
-public class NodeAssessmentTableDataModel extends DefaultTableDataModel {
+public class NodeAssessmentTableDataModel extends DefaultTableDataModel<Map<String,Object>> {
 		private Translator trans;
 		private boolean nodesSelectable;
 	
@@ -67,7 +67,7 @@ public class NodeAssessmentTableDataModel extends DefaultTableDataModel {
      * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
      */
     public Object getValueAt(int row, int col) {
-    	Map<String,Object> nodeData = (Map<String, Object>) getObject(row);
+    	Map<String,Object> nodeData = getObject(row);
     	switch (col) {
 				case 0:
 					// rendered using the indentedNodeRenderer

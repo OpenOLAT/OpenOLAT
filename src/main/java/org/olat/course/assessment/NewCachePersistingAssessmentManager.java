@@ -38,12 +38,10 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.manager.BasicManager;
@@ -791,22 +789,6 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 */
 	public void deregisterFromAssessmentChangeEvents(GenericEventListener gel) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(gel, ores);
-	}
-
-	// package local for perf. reasons
-	void courseLog(ILoggingAction action, CourseNode cn, LoggingResourceable... details) {
-		if (Settings.isJUnitTest()) return;
-		ICourse course = CourseFactory.loadCourse(ores);
-		
-		LoggingResourceable[] infos = new LoggingResourceable[2+details.length];
-		infos[0] = LoggingResourceable.wrap(course);
-		infos[1] = LoggingResourceable.wrap(cn);
-		for (int i = 0; i < details.length; i++) {
-			LoggingResourceable lri = details[i];
-			infos[i+2] = lri;
-		}
-		
-		ThreadLocalUserActivityLogger.log(action, getClass(), details);
 	}
 	  
   /**

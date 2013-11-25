@@ -31,7 +31,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.commons.taskExecutor.LongRunnable;
+import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;

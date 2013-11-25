@@ -87,6 +87,7 @@ import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.NodeTableDataModel.Cols;
+import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -193,8 +194,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private Link showAllCourseNodesButton;
 	private Link filterCourseNodesButton;
 	
-	private BulkAssessmentMainController bamc;
 	private EfficiencyStatementAssessmentController esac;
+	private BulkAssessmentOverviewController bulkAssOverviewCtrl;
 	private final StackedController stackPanel;
 
 	private OLATResourceable ores;
@@ -347,22 +348,22 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				if (cmd.equals(CMD_INDEX)) {
 					main.setContent(index);
 				} else if (cmd.equals(CMD_USERFOCUS)) {
-					this.mode = MODE_USERFOCUS;
-					this.identitiesList = getAllAssessableIdentities();
+					mode = MODE_USERFOCUS;
+					identitiesList = getAllAssessableIdentities();
 					//fxdiff FXOLAT-108: improve results table of tests
 					doUserChooseWithData(ureq, identitiesList, null, null);
 				} else if (cmd.equals(CMD_GROUPFOCUS)) {
-					this.mode = MODE_GROUPFOCUS;
+					mode = MODE_GROUPFOCUS;
 					doGroupChoose(ureq);
 				} else if (cmd.equals(CMD_NODEFOCUS)) {
-					this.mode = MODE_NODEFOCUS;
+					mode = MODE_NODEFOCUS;
 					doNodeChoose(ureq);
 				} else if (cmd.equals(CMD_BULKFOCUS)){
-					this.mode = MODE_BULKFOCUS;
-					doBulkChoose(ureq);
+					mode = MODE_BULKFOCUS;
+					doBulkAssessment_v2(ureq);
 				} else if (cmd.equals(CMD_EFF_STATEMENT)){
 					if(callback.mayRecalculateEfficiencyStatements()) {
-						this.mode = MODE_EFF_STATEMENT;
+						mode = MODE_EFF_STATEMENT;
 						doEfficiencyStatement(ureq);
 					}
 				}
@@ -907,13 +908,10 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		main.setContent(nodeChoose);
 	}
 	
-	private void doBulkChoose(UserRequest ureq) {
-		ICourse course = CourseFactory.loadCourse(ores);
-		List<Identity> allowedIdentities = getAllAssessableIdentities();
-		removeAsListenerAndDispose(bamc);
-		bamc = new BulkAssessmentMainController(ureq, getWindowControl(), course, allowedIdentities);
-		listenTo(bamc);
-		main.setContent(bamc.getInitialComponent());
+	private void doBulkAssessment_v2(UserRequest ureq) {
+		bulkAssOverviewCtrl = new BulkAssessmentOverviewController(ureq, getWindowControl(), ores);
+
+		main.setContent(bulkAssOverviewCtrl.getInitialComponent());
 	}
 	
 	private void doEfficiencyStatement(UserRequest ureq) {

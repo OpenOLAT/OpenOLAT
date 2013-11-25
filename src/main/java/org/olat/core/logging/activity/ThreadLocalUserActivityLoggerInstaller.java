@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.RunnableWithException;
+import org.olat.core.util.UserSession;
 
 /**
  * Helper class to install the IUserActivityLogger with the ThreadLocalUserActivityLogger.
@@ -92,7 +93,6 @@ public class ThreadLocalUserActivityLoggerInstaller {
 				logger = originalLogger;
 			}
 		}
-		if(logger==null) throw new IllegalStateException("PostCondition logger != null violated:");
 		
 		// set the new logger
 		if (originalLogger==null) {
@@ -120,6 +120,11 @@ public class ThreadLocalUserActivityLoggerInstaller {
 	 */
 	public static void initUserActivityLogger(HttpServletRequest request) {
 		ThreadLocalUserActivityLogger.userActivityLogger_.set(new UserActivityLoggerImpl(request));
+	}
+	
+	public static IUserActivityLogger initUserActivityLogger(UserSession session) {
+		ThreadLocalUserActivityLogger.userActivityLogger_.set(new UserActivityLoggerImpl(session));
+		return ThreadLocalUserActivityLogger.userActivityLogger_.get();
 	}
 
 	/**

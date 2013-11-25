@@ -23,7 +23,7 @@ package de.bps.course.nodes.vc.provider.adobe;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.scheduler.JobWithDB;
+import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;

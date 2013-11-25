@@ -79,8 +79,8 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.CoordinatorTest.class,//ok
 	org.olat.core.commons.services.webdav.WebDAVCommandsTest.class,//ok
 	org.olat.core.commons.services.webdav.manager.WebDAVManagerTest.class,//ok
-	org.olat.core.commons.taskExecutor.PersistentTaskDAOTest.class,//ok
-	org.olat.core.commons.taskExecutor.TaskExecutorManagerTest.class,//ok
+	org.olat.core.commons.services.taskexecutor.PersistentTaskDAOTest.class,//ok
+	org.olat.core.commons.services.taskexecutor.TaskExecutorManagerTest.class,//ok
 	org.olat.admin.user.delete.service.UserDeletionManagerTest.class,//ok
 	org.olat.group.BusinessGroupManagedFlagsTest.class,//ok
 	org.olat.group.test.BGRightManagerTest.class,//ok
@@ -142,13 +142,13 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.manager.TaxonomyLevelDAOTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolServiceTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
-	org.olat.core.commons.service.mark.MarksTest.class,
+	org.olat.core.commons.services.mark.MarksTest.class,
 //	org.olat.test.OlatJerseyTestCase.class, // NO TEST METHODS 
 	org.olat.test.SpringInitDestroyVerficationTest.class,
 	org.olat.course.statistic.TestLoggingVersionManagerImpl.class,
 	//org.olat.course.statistic.weekly.TestWeeklyStatisticManager_fillGaps.class, don't know what it tests
-	org.olat.core.commons.service.usercomments.UserCommentsTest.class,
-	org.olat.core.commons.service.usercomments.UserRatingsTest.class,
+	org.olat.core.commons.services.usercomments.UserCommentsTest.class,
+	org.olat.core.commons.services.usercomments.UserRatingsTest.class,
 	org.olat.course.auditing.UserNodeAuditManagerTest.class,
 	org.olat.shibboleth.util.ShibbolethAttributeTest.class,
 	org.olat.core.CoreSpringFactoryTest.class,
@@ -161,8 +161,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.openmeetings.OpenMeetingsTest.class,
 	org.olat.modules.openmeetings.manager.OpenMeetingsDAOTest.class,
 	org.olat.commons.info.InfoManagerTest.class,
-	org.olat.core.commons.service.tagging.SimpleTagProposalManagerTest.class,
-	org.olat.core.commons.service.tagging.TaggingManagerTest.class,
+	org.olat.core.commons.services.tagging.SimpleTagProposalManagerTest.class,
+	org.olat.core.commons.services.tagging.TaggingManagerTest.class,
 	org.olat.core.dispatcher.mapper.MapperDAOTest.class,
 	org.olat.core.dispatcher.mapper.MapperServiceTest.class,
 	org.olat.restapi.AuthenticationTest.class,
@@ -223,7 +223,7 @@ import org.junit.runners.Suite;
 	 * as well as the tests on hudson run agains a jar version of olatcore where the test source
 	 * tree is not available
 	 */
-	org.olat.core.commons.scheduler.SchedulerTest.class,
+	org.olat.core.commons.services.scheduler.SchedulerTest.class,
 	org.olat.course.TestDeployableRepositoryExport.class,
 	org.olat.upgrade.UpgradeDefinitionTest.class
 })

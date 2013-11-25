@@ -41,6 +41,7 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 public class AssessmentChangedEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = 4656566906763550944L;
 	/** Changed attempts value **/
 	public static final String TYPE_ATTEMPTS_CHANGED = "attempts";
 	/** Changed score, passed, and attempts value **/

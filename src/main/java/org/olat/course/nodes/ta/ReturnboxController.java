@@ -34,13 +34,11 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
@@ -58,8 +56,6 @@ import org.olat.user.UserManager;
 
 public class ReturnboxController extends BasicController {
 
-	private static final String PACKAGE = Util.getPackageName(ReturnboxController.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
 	public static final String RETURNBOX_DIR_NAME = "returnboxes";
 	
 	// config
@@ -88,7 +84,7 @@ public class ReturnboxController extends BasicController {
 		super(ureq, wControl);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		
-		this.setBasePackage(ReturnboxController.class);
+		setBasePackage(ReturnboxController.class);
 		if (doInit) {
 			initReturnbox(ureq, wControl, node, userCourseEnv, previewMode);
 		}
@@ -134,7 +130,6 @@ public class ReturnboxController extends BasicController {
 		return courseEnv.getCourseBaseContainer().getRelPath() + File.separator + RETURNBOX_DIR_NAME + File.separator + cNode.getIdent();
 	}
 	
-	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
@@ -142,20 +137,10 @@ public class ReturnboxController extends BasicController {
 		if (source == myContent) {
       if (event.getCommand().equals("cc")) {
 				getWindowControl().pop();
-				myContent.setPage(VELOCITY_ROOT + "/dropbox.html");
+				myContent.setPage(velocity_root + "/dropbox.html");
 			}
 		}
-
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-		//
-	}
-
-	
 	/**
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)

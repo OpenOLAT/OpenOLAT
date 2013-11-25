@@ -1286,9 +1286,22 @@ create table o_ex_task (
    lastmodified date not null,
    e_name varchar2(255 char) not null,
    e_status varchar2(16 char) not null,
+   e_status_before_edit varchar2(16 char),
    e_executor_node varchar2(16 char),
    e_executor_boot_id varchar2(64 char),
    e_task clob not null,
+   e_scheduled date,
+   e_ressubpath varchar2(2048 char),
+   fk_resource_id number(20),
+   fk_identity_id number(20),
+   primary key (id)
+);
+
+create table o_ex_task_modifier (
+   id number(20) not null,
+   creationdate date not null,
+   fk_task_id number(20) not null,
+   fk_identity_id number(20) not null,
    primary key (id)
 );
 
@@ -2123,6 +2136,16 @@ alter table o_note  add constraint FKC2D855C263219E27 foreign key (owner_id) ref
 create index resid_idx2 on o_note (resourcetypeid);
 create index owner_idx on o_note (owner_id);
 create index restype_idx2 on o_note (resourcetypename);
+
+-- ex_task
+alter table o_ex_task add constraint idx_ex_task_ident_id foreign key (fk_identity_id) references o_bs_identity(id);
+create index idx_ex_task_ident_idx on o_ex_task (fk_identity_id);
+alter table o_ex_task add constraint idx_ex_task_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
+create index idx_ex_task_rsrc_idx on o_ex_task (fk_resource_id);
+alter table o_ex_task_modifier add constraint idx_ex_task_mod_ident_id foreign key (fk_identity_id) references o_bs_identity(id);
+create index idx_ex_task_mod_ident_idx on o_ex_task_modifier (fk_identity_id);
+alter table o_ex_task_modifier add constraint idx_ex_task_mod_task_id foreign key (fk_task_id) references o_ex_task(id);
+create index idx_ex_task_mod_task_idx on o_ex_task_modifier (fk_task_id);
 
 -- lifecycle
 create index  lc_pref_idx on o_lifecycle (persistentref);

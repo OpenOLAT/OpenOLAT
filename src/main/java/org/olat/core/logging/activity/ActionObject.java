@@ -89,6 +89,7 @@ public enum ActionObject {
 	testsuccess,
 	tools,
 	toolsempty,
-	waitingperson;
+	waitingperson,
+	bulkassessment;
 
 }

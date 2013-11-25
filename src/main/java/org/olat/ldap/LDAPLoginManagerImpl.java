@@ -61,7 +61,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.taskExecutor.TaskExecutorManager;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;

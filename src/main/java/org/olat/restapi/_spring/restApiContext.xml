@@ -96,7 +96,7 @@
 		<property name="jobClass" value="org.olat.restapi.security.RestTokenJob" />
 	</bean>
 	<bean id="restTokenJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
-		<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 	
 	<!-- Definition of the providers -->

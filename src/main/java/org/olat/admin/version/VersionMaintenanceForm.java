@@ -26,7 +26,7 @@ import java.util.Locale;
 
 import org.olat.admin.SystemAdminMainController;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.taskExecutor.TaskExecutorManager;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;

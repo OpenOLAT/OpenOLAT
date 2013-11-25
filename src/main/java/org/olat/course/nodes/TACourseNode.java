@@ -34,9 +34,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
@@ -85,6 +87,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  *   Initial Date:  30.08.2004
@@ -94,6 +97,8 @@ import org.olat.repository.RepositoryEntry;
  */
 
 public class TACourseNode extends GenericCourseNode implements AssessableCourseNode {
+	private static final long serialVersionUID = -7266553843441305310L;
+
 	private static final String PACKAGE_TA = Util.getPackageName(TACourseNodeRunController.class);
 
 	private static final String PACKAGE = Util.getPackageName(TACourseNode.class);
@@ -340,9 +345,16 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 		// Delete all properties...
 		pm.deleteNodeProperties(this, null);
 		File fTaskFolder = new File(FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course, this));
-		if (fTaskFolder.exists()) FileUtils.deleteDirsAndFiles(fTaskFolder, true, true);
+		if (fTaskFolder.exists()) {
+			FileUtils.deleteDirsAndFiles(fTaskFolder, true, true);
+		}
 		File fDropBox = new File(FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
-		if (fDropBox.exists()) FileUtils.deleteDirsAndFiles(fDropBox, true, true);		
+		if (fDropBox.exists()) {
+			FileUtils.deleteDirsAndFiles(fDropBox, true, true);
+		}
+		
+		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(resource, getIdent());
 	}
 
 	/**

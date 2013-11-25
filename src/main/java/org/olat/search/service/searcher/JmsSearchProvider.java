@@ -46,7 +46,7 @@ import javax.jms.TextMessage;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.taskExecutor.TaskExecutorManager;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;

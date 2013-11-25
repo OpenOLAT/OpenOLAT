@@ -28,7 +28,7 @@ package org.olat.admin.user.delete.service;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import org.olat.core.commons.taskExecutor.TaskExecutorManager;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.user.UserDataDeletable;

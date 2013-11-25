@@ -25,7 +25,7 @@
 package org.olat.admin.registration;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.scheduler.JobWithDB;
+import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -42,7 +42,7 @@ import org.quartz.JobExecutionException;
 public class SystemRegistrationJob extends JobWithDB {
 
 	/**
-	 * @see org.olat.core.commons.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
+	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
 	 */
 	@SuppressWarnings("unused")
 	@Override

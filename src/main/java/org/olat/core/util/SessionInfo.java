@@ -27,6 +27,7 @@
 package org.olat.core.util;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.servlet.http.HttpSession;
 
@@ -71,6 +72,19 @@ public class SessionInfo implements Serializable {
 		setSession(session);
 		secure = false;
 		creationTime = session.getCreationTime();
+	}
+	
+	/**
+	 * Constructor for background session
+	 * 
+	 * @param login
+	 * @param session
+	 */
+	public SessionInfo(Long identityKey, String login) {
+		this.identityKey = identityKey;
+		setLogin(login);
+		secure = false;
+		creationTime = new Date().getTime();
 	}
 	
 	/**

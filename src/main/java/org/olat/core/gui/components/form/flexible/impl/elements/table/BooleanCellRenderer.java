@@ -33,22 +33,22 @@ import org.olat.core.gui.translator.Translator;
  */
 public class BooleanCellRenderer implements FlexiCellRenderer {
 	
-	private final FlexiCellRenderer delegate;
-	private final FlexiCellRenderer delegateAlt;
+	private final FlexiCellRenderer trueDelegate;
+	private final FlexiCellRenderer falseDelegate;
 	
-	public BooleanCellRenderer(FlexiCellRenderer delegate, FlexiCellRenderer delegateAlt) {
-		this.delegate = delegate;
-		this.delegateAlt = delegateAlt;
+	public BooleanCellRenderer(FlexiCellRenderer trueDelegate, FlexiCellRenderer falseDelegate) {
+		this.trueDelegate = trueDelegate;
+		this.falseDelegate = falseDelegate;
 	}
 
 	@Override
 	public void render(StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if(cellValue != null && Boolean.TRUE.equals(cellValue)) {
-			if(delegate != null) {
-				delegate.render(target, cellValue, row, source, ubu, translator);
+			if(trueDelegate != null) {
+				trueDelegate.render(target, cellValue, row, source, ubu, translator);
 			}
-		} else if(delegateAlt != null) {
-			delegateAlt.render(target, cellValue, row, source, ubu, translator);
+		} else if(falseDelegate != null) {
+			falseDelegate.render(target, cellValue, row, source, ubu, translator);
 		}
 	}
 }

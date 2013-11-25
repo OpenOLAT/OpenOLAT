@@ -28,6 +28,8 @@ package org.olat.course.nodes;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
@@ -58,6 +60,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  * Initial Date: Jun 16, 2004
@@ -243,6 +246,9 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 		// Delete all properties: score, passed, log, comment, coach_comment
 		pm.deleteNodeProperties(this, null);
+		
+		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(resource, getIdent());
 	}
 
 	/**

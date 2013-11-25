@@ -82,6 +82,17 @@ public class TextFlexiCellRenderer implements FlexiCellRenderer {
 			} else {
 				StringHelper.escapeHtml(target, str);
 			}
+		} else if (cellValue instanceof Date) {
+			Formatter formatter = Formatter.getInstance(translator.getLocale());
+			String date =  formatter.formatDateAndTime((Date)cellValue);
+			target.append(date);
+		} else if(cellValue instanceof Boolean) {
+			Boolean bool = (Boolean)cellValue;
+			if(bool.booleanValue()) {
+				target.append("<input type='checkbox' value='' checked='checked' disabled='disabled' />");
+			} else {
+				target.append("<input type='checkbox' value='' disabled='disabled' />");
+			}
 		} else if (cellValue != null) {
 			target.append( cellValue.toString() );
 		}

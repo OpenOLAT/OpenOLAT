@@ -49,6 +49,10 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		this(headerKey, columnIndex, false, null);
 	}
 	
+	public DefaultFlexiColumnModel(String headerKey, int columnIndex, FlexiCellRenderer renderer) {
+		this(true, headerKey, columnIndex, false, null, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
+	}
+	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, String action) {
 		this(headerKey, columnIndex, false, null);
 		this.action = action;

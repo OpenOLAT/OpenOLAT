@@ -902,7 +902,8 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel, FormItemContainer formLayout) {
+	public FlexiTableElement addTableElement(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel,
+			FormItemContainer formLayout) {
 		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, wControl, name,tableModel);
 		formLayout.add(fte);
 		return fte;

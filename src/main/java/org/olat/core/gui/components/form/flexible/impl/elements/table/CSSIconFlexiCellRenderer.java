@@ -59,18 +59,23 @@ import org.olat.core.util.StringHelper;
  */
 public class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
 	
-	private String cssClass;
-	private FlexiCellRenderer delegate;
+	private final String cssClass;
+	private final FlexiCellRenderer delegate;
 	
 	public CSSIconFlexiCellRenderer() {
-		//
+		this(null, null);
 	}
 	
 	public CSSIconFlexiCellRenderer(String cssClass) {
-		this.cssClass = cssClass;
+		this(cssClass, null);
 	}
 	
 	public CSSIconFlexiCellRenderer(FlexiCellRenderer delegate) {
+		this(null, delegate);
+	}
+	
+	public CSSIconFlexiCellRenderer(String cssClass, FlexiCellRenderer delegate) {
+		this.cssClass = cssClass;
 		this.delegate = delegate;
 	}
 

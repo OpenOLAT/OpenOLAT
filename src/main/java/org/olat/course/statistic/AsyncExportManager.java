@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.olat.core.commons.taskExecutor.TaskExecutorManager;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;

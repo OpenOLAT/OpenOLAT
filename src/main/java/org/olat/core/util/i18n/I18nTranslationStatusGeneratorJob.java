@@ -27,7 +27,7 @@ package org.olat.core.util.i18n;
 import java.io.File;
 import java.util.Set;
 
-import org.olat.core.commons.scheduler.JobWithDB;
+import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -48,7 +48,7 @@ public class I18nTranslationStatusGeneratorJob extends JobWithDB {
 	private static final File statsFile = new File(WebappHelper.getContextRoot() + "/static/translation_status.html");
 	
 	/**
-	 * @see org.olat.core.commons.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
+	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
 	 */
 	@SuppressWarnings("unused")
 	@Override

@@ -20,7 +20,7 @@
 package org.olat.core.dispatcher.mapper.manager;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.scheduler.JobWithDB;
+import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.quartz.JobExecutionContext;
 

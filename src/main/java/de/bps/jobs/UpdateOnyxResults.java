@@ -28,7 +28,7 @@
 */
 package de.bps.jobs;
 
-import org.olat.core.commons.scheduler.JobWithDB;
+import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 

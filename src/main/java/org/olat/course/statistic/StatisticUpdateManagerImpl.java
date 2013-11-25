@@ -31,7 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.taskExecutor.TaskExecutorManager;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;

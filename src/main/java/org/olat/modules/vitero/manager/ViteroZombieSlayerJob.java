@@ -20,7 +20,7 @@
 package org.olat.modules.vitero.manager;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.scheduler.JobWithDB;
+import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.modules.vitero.ViteroModule;
 import org.quartz.JobExecutionContext;
 

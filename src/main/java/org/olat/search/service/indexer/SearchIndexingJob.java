@@ -24,9 +24,7 @@
 */
 package org.olat.search.service.indexer;
 
-import org.olat.core.commons.scheduler.JobWithDB;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
+import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.search.SearchService;
 import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.SearchServiceImpl;
@@ -44,11 +42,10 @@ import org.quartz.UnableToInterruptJobException;
  * @author Christian Guretzki
  */
 public class SearchIndexingJob extends JobWithDB implements InterruptableJob {
-	private OLog log = Tracing.createLoggerFor(SearchIndexingJob.class);
-	
+
 	/**
 	 * 
-	 * @see org.olat.core.commons.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
+	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
 	 */
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {

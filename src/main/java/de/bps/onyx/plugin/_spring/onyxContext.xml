@@ -45,7 +45,7 @@
 	
 <bean id="updateOnyxResults.disabled" class="org.springframework.scheduling.quartz.JobDetailBean">
 	<!-- NOTE: reusing the notifications.DummyJob here -->
-	<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
+	<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 </bean>
 
 </beans>

@@ -20,7 +20,7 @@
 package org.olat.ldap;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.scheduler.JobWithDB;
+import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -36,7 +36,7 @@ import org.quartz.JobExecutionException;
 public class LDAPUserSynchronizerJob extends JobWithDB {
 
 	/**
-	 * @see org.olat.core.commons.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
+	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
 	 */
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
 		try {

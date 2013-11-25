@@ -33,6 +33,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  */
 public class EfficiencyStatementArtefact extends AbstractArtefact {
 
+	private static final long serialVersionUID = 896728271562859702L;
 	public static final String ARTEFACT_TYPE = "EfficiencyStatement";
 	
 	@Override

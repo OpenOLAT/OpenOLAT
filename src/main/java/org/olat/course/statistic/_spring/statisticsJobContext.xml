@@ -34,7 +34,7 @@
 	<!-- dummy bean -->
 	<bean id="org.olat.statistics.job.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
 		<!-- NOTE: reusing the notifications.DummyJob here -->
-		<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 
 </beans>

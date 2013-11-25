@@ -140,7 +140,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 	// no events to catch
 	}
@@ -149,6 +149,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableFilterCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {

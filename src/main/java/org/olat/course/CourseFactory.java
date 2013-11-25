@@ -49,6 +49,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.stack.StackedController;
@@ -390,6 +391,10 @@ public class CourseFactory extends BasicManager {
 		if(course != null) {
 			CourseConfigManagerImpl.getInstance().deleteConfigOf(course);
 		}
+		
+		//clean up tasks
+		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(resource);
 		
 		// delete course group- and rightmanagement
 		CourseGroupManager courseGroupManager = PersistingCourseGroupManager.getInstance(res);

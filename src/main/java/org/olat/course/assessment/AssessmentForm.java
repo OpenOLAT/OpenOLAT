@@ -53,7 +53,7 @@ public class AssessmentForm extends FormBasicController {
 	
 	private TextElement score;
 	private IntegerElement attempts;
-	private StaticTextElement cutVal, minVal, maxVal;
+	private StaticTextElement cutVal;
 	private SingleSelection passed;
 	private TextElement userComment, coachComment;
 
@@ -230,8 +230,8 @@ public class AssessmentForm extends FormBasicController {
 			//fxdiff VCRP-4: assessment overview with max score
 			String minStr = AssessmentHelper.getRoundedScore(min);
 			String maxStr = AssessmentHelper.getRoundedScore(max);
-			minVal = uifactory.addStaticTextElement("minval", "form.min", ((min == null) ? translate("form.valueUndefined") : minStr), formLayout);
-			maxVal = uifactory.addStaticTextElement("maxval", "form.max", ((max == null) ? translate("form.valueUndefined") : maxStr), formLayout);
+			uifactory.addStaticTextElement("minval", "form.min", ((min == null) ? translate("form.valueUndefined") : minStr), formLayout);
+			uifactory.addStaticTextElement("maxval", "form.max", ((max == null) ? translate("form.valueUndefined") : maxStr), formLayout);
 
 			// Use init variables from wrapper, already loaded from db
 			scoreValue = scoreEval.getScore();

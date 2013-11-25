@@ -33,7 +33,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
@@ -84,6 +86,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  *  
@@ -334,17 +337,26 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		Long projectBrokerId = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectBrokerId(cpm, this);
 		File fDropBox = new File(FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
-		if (fDropBox.exists()) FileUtils.deleteDirsAndFiles(fDropBox, true, true);
+		if (fDropBox.exists()) {
+			FileUtils.deleteDirsAndFiles(fDropBox, true, true);
+		}
 		File fReturnBox = new File(FolderConfig.getCanonicalRoot() + ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
-		if (fReturnBox.exists()) FileUtils.deleteDirsAndFiles(fReturnBox, true, true);
+		if (fReturnBox.exists()) {
+			FileUtils.deleteDirsAndFiles(fReturnBox, true, true);
+		}
 		File attachmentDir = new File(FolderConfig.getCanonicalRoot() + ProjectBrokerManagerFactory.getProjectBrokerManager().getAttachmentBasePathRelToFolderRoot(course.getCourseEnvironment(), this));
-		if (attachmentDir.exists()) FileUtils.deleteDirsAndFiles(attachmentDir, true, true);
+		if (attachmentDir.exists()) {
+			FileUtils.deleteDirsAndFiles(attachmentDir, true, true);
+		}
 		// Delete project-broker, projects and project-groups
 		if (projectBrokerId != null) {
 			ProjectBrokerManagerFactory.getProjectBrokerManager().deleteProjectBroker(projectBrokerId, course.getCourseEnvironment(), this);
 		}
 		// Delete all properties...
 		cpm.deleteNodeProperties(this, null);
+		
+		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(resource, getIdent());
 	}
 
 	/**

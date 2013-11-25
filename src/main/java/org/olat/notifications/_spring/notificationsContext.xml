@@ -92,7 +92,7 @@
 	
 	<!-- dummy bean -->
 	<bean id="org.olat.notifications.job.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
-		<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 
 </beans>

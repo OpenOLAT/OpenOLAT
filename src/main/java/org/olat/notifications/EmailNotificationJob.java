@@ -24,7 +24,7 @@
 */
 package org.olat.notifications;
 
-import org.olat.core.commons.scheduler.JobWithDB;
+import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -42,7 +42,7 @@ public class EmailNotificationJob extends JobWithDB {
 	
 	/**
 	 * 
-	 * @see org.olat.core.commons.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
+	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
 	 */
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {

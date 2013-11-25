@@ -187,6 +187,15 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		runtimeParent_ = null;
 		initWithRequest(hReq);
 	}
+	
+	UserActivityLoggerImpl(UserSession session) {
+		propageToThreadLocal_ = false;
+		runtimeParent_ = null;
+		session_ = session;
+		if (session_!=null) {
+			identity_ = session_.getIdentity();
+		}
+	}
 
 	/**
 	 * Internal initialization method for the OLATServlet.doPost case
@@ -200,9 +209,6 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		session_ = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(hReq);
 		if (session_!=null) {
 			identity_ = session_.getIdentity();
-		}
-		if (session_==null) {
-			System.out.println("session is null");
 		}
 	}
 	
@@ -616,7 +622,12 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			return;
 		}
 		
-		if (session_.getSessionInfo()==null ||
+		final String sessionId;
+		if (session_.getSessionInfo() !=null &&
+				session_.getSessionInfo().getSession()==null) {
+			//background taks
+			sessionId = Thread.currentThread().getName();
+		} else if (session_.getSessionInfo()==null ||
 				session_.getSessionInfo().getSession()==null ||
 				session_.getSessionInfo().getSession().getId()==null ||
 				session_.getSessionInfo().getSession().getId().length()==0) {
@@ -625,8 +636,9 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 					crudAction.name()+":"+actionVerb.name()+", "+actionObject+", "+
 					convertLoggingResourceableListToString(resourceInfos), new Exception());
 			return;
+		} else {
+			sessionId = session_.getSessionInfo().getSession().getId();
 		}
-		final String sessionId = session_.getSessionInfo().getSession().getId();
 
 		Identity identity = session_.getIdentity();
 		if (identity==null) {

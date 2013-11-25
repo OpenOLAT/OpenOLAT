@@ -52,7 +52,7 @@ import org.olat.core.logging.activity.StringResourceableType;
  * Initial Date:  20.10.2009 <br>
  * @author Stefan
  */
-/* package protected */ class AssessmentLoggingAction extends BaseLoggingAction {
+public class AssessmentLoggingAction extends BaseLoggingAction {
 
 	// note that these assessment logging actions can both be
 	// triggered by a user (when running a test) or a tutor (when assessing a user).
@@ -76,6 +76,9 @@ import org.olat.core.logging.activity.StringResourceableType;
 	public static final ILoggingAction ASSESSMENT_COACHCOMMENT_UPDATED = 
 		new AssessmentLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.testcomment).setTypeList(
 				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiCoachComment).addOptional(StringResourceableType.targetIdentity));
+	public static final ILoggingAction ASSESSMENT_BULK = 
+			new AssessmentLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.bulkassessment).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node));
 
 	
 	/**
