@@ -82,7 +82,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private String checkRegexp;
 	private String checkRegexpErrorKey;
 	private ItemValidatorProvider itemValidatorProvider;
-	private boolean originalInitialised=false;
+	protected boolean originalInitialised=false;
 	
 	
 	@Override
