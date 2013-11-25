@@ -1,13 +1,6 @@
-<h3>$r.translate("contactform.title")</h3>
-<fieldset>
-	<legend>$r.translate("form.fieldset.to")</legend>
-	$r.render("destinationDropdown")
-</fieldset>
-<fieldset>
-	<legend>$r.translate("form.fieldset.message")</legend>
-	#if ($r.available("contactForm"))
-		$r.render("contactForm")
-	#else
-		$nobodyErrorMessage
-	#end
-</fieldset>
+<h4 class="b_with_small_icon_left b_mail_icon">$r.translate("contactform.title")</h4>
+#if ($r.available("contactForm"))
+	$r.render("contactForm")
+#else
+	$nobodyErrorMessage
+#end

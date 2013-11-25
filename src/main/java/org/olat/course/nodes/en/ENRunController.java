@@ -27,6 +27,7 @@ package org.olat.course.nodes.en;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -74,8 +75,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class ENRunController extends BasicController implements GenericEventListener {
 	
-	private OLog log = Tracing.createLoggerFor(this.getClass());
-	
+	private static final OLog log = Tracing.createLoggerFor(ENRunController.class);
+
+	private static final String CMD_VISIT_CARD = "cmd.visit.card";
 	private static final String CMD_ENROLL_IN_GROUP = "cmd.enroll.in.group";
 	private static final String CMD_ENROLLED_CANCEL = "cmd.enrolled.cancel";
 	
@@ -223,6 +225,14 @@ public class ENRunController extends BasicController implements GenericEventList
 					}
 					// events are already fired BusinessGroupManager level :: BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group,  ureq.getIdentity());
 					// but async
+				} else if(CMD_VISIT_CARD.equals(actionid)) {
+					String businessPath;
+					if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), choosenGroup)) {
+						businessPath = "[BusinessGroup:" + choosenGroup.getKey() + "]";
+					} else {
+						businessPath = "[GroupCard:" + choosenGroup.getKey() + "]";
+					}
+					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 				}
 			}
 		}
@@ -274,11 +284,11 @@ public class ENRunController extends BasicController implements GenericEventList
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(tableCtr);
 		
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.name", 0, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.desc", 1, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.partipiciant", 2, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(hasAnyWaitingList,new DefaultColumnDescriptor("grouplist.table.waitingList", 3, null, ureq.getLocale()));
-		DefaultColumnDescriptor stateColdEsc = new DefaultColumnDescriptor("grouplist.table.state", 4, null, ureq.getLocale());
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.name", 0, CMD_VISIT_CARD, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.desc", 1, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.partipiciant", 2, null, getLocale()));
+		tableCtr.addColumnDescriptor(hasAnyWaitingList,new DefaultColumnDescriptor("grouplist.table.waitingList", 3, null, getLocale()));
+		DefaultColumnDescriptor stateColdEsc = new DefaultColumnDescriptor("grouplist.table.state", 4, null, getLocale());
 		stateColdEsc.setEscapeHtml(EscapeMode.none);
 		tableCtr.addColumnDescriptor(stateColdEsc);
 		BooleanColumnDescriptor columnDesc = new BooleanColumnDescriptor("grouplist.table.enroll", 5, CMD_ENROLL_IN_GROUP,

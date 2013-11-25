@@ -19,7 +19,8 @@
  */
 package org.olat.group;
 
-import java.util.Date;
+import java.util.Collections;
+import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -29,8 +30,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.group.ui.homepage.GroupInfoMainController;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessControlModule;
 
 /**
  * 
@@ -46,21 +45,13 @@ public class BusinessGroupCardContextEntryControllerCreator extends DefaultConte
 	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		OLATResourceable ores = ce.getOLATResourceable();
-
 		Long gKey = ores.getResourceableId();
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		Controller ctrl = null;
 		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
 		if(bgroup != null) {
-			// check if allowed to start (must be member or admin)
-			//fxdiff VCRP-1,2: access control of resources
-			if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
-					|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup)) {
-				// only olatadmins or admins of this group can administer this group
-				ctrl = new GroupInfoMainController(ureq, wControl, bgroup);
-			}
+			return new GroupInfoMainController(ureq, wControl, bgroup);
 		}
-		return ctrl;
+		return null;
 	}
 
 	/**
@@ -70,8 +61,12 @@ public class BusinessGroupCardContextEntryControllerCreator extends DefaultConte
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		OLATResourceable ores = ce.getOLATResourceable();
 		Long gKey = ores.getResourceableId();
-		BusinessGroup bgroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(gKey);
-		return bgroup == null ? "" : bgroup.getName();
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		List<BusinessGroupShort> bgroup = bgs.loadShortBusinessGroups(Collections.singletonList(gKey));
+		if(bgroup.size() == 1) {
+			return bgroup.get(0).getName();
+		}
+		return null;
 	}
 
 	@Override
@@ -79,23 +74,7 @@ public class BusinessGroupCardContextEntryControllerCreator extends DefaultConte
 		OLATResourceable ores = ce.getOLATResourceable();
 		Long gKey = ores.getResourceableId();
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
-		if (bgroup == null) {
-			return false;
-		}	
-		return ureq.getUserSession().getRoles().isOLATAdmin() ||
-				ureq.getUserSession().getRoles().isGroupManager() ||
-				bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup);
-	}
-	
-	private boolean isAccessControlled(BusinessGroup bgroup) {
-		AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		if(acModule.isEnabled()) {
-			ACService acService = CoreSpringFactory.getImpl(ACService.class);
-			if(acService.isResourceAccessControled(bgroup.getResource(), new Date())) {
-				return true;
-			}
-		}
-		return false;
+		List<BusinessGroupShort> bgroup = bgs.loadShortBusinessGroups(Collections.singletonList(gKey));
+		return (bgroup.size() == 1);
 	}
 }
