@@ -272,15 +272,20 @@ public class PropertyTest extends OlatTestCase {
 		for (int i = 0; i < count; i++) {
 			Property p = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty" + i, new Float(1.1), new Long(123456), "stringValue", "textValue");
 			pm.saveProperty(p);
-			dbInstance.closeSession();
+			
+			if(i % 50 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
 		}
+		dbInstance.commitAndCloseSession();
+		
 		stop = System.currentTimeMillis();
 		log.info("CREATE generic property test: " + (stop-start) + " ms (" + (count * 1000 / (stop-start)) + "/sec)");
 		// some find identitites tests
 		List<Identity> ids = pm.findIdentitiesWithProperty(null, null, "cat", "TestProperty", false);
-		Assert.assertNotNull(ids);
-		Assert.assertFalse(ids.isEmpty());
-		Assert.assertTrue(ids.contains(identity));
+		Assert.assertNotNull("Identities cannot be null", ids);
+		Assert.assertFalse("Identities cannot be empty", ids.isEmpty());
+		Assert.assertTrue("Identities must contains reference identity", ids.contains(identity));
 		
 		// create course and user properties
 		log.info("Preparing user/group properties test. Creating additional properties..");
@@ -288,8 +293,12 @@ public class PropertyTest extends OlatTestCase {
 		for (int i = 0; i < count; i++) {
 			Property pUser = pm.createUserPropertyInstance(identity, "cat", "TestProperty" + i, new Float(1.1), new Long(123456), "stringValue", "textValue");
 			pm.saveProperty(pUser);
-			dbInstance.commitAndCloseSession();
+			if(i % 50 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
 		}
+		dbInstance.commitAndCloseSession();
+		
 		stop = System.currentTimeMillis();
 		log.info("Ready : " + (stop-start) + " ms (" + (2* count * 1000 / (stop-start)) + "/sec)");
 		log.info("Starting find tests. DB holds " + count * 3 + " records.");
@@ -299,7 +308,7 @@ public class PropertyTest extends OlatTestCase {
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
 			Property p = pm.findProperty(identity, group, res, "cat", "TestProperty" + i);
-			assertNotNull(p);
+			assertNotNull("Must find the p (count=" + i + ")", p);
 			dbInstance.commitAndCloseSession();
 		}
 		stop = System.currentTimeMillis();
@@ -310,7 +319,7 @@ public class PropertyTest extends OlatTestCase {
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
 			Property p = pm.findUserProperty(identity, "cat", "TestProperty" + i);
-			assertNotNull(p);
+			assertNotNull("Must find the p (count=" + i + ")", p);
 			dbInstance.commitAndCloseSession();
 		}
 		stop = System.currentTimeMillis();
