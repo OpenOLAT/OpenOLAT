@@ -376,7 +376,7 @@ public class HTMLEditorController extends FormBasicController {
 		String content = htmlElement.getRawValue();
 		// If preface was null -> append own head and save it in utf-8. Preface
 		// is the header that was in the file when we opened the file
-		StringBuffer fileContent = new StringBuffer();
+		StringBuilder fileContent = new StringBuilder();
 		if (preface == null) {
 			fileContent.append(DOCTYPE).append(OPEN_HTML).append(OPEN_HEAD);
 			fileContent.append(GENERATOR_META).append(UTF8CHARSET);
