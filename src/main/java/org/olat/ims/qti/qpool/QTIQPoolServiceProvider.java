@@ -150,6 +150,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		factories.add(new QTI12ItemFactory(Type.mc));
 		factories.add(new QTI12ItemFactory(Type.kprim));
 		factories.add(new QTI12ItemFactory(Type.fib));
+		factories.add(new QTI12ItemFactory(Type.essay));
 		return factories;
 	}
 
@@ -207,6 +208,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 			case mc: item = QTIEditHelper.createMCItem(trans); break;
 			case kprim: item = QTIEditHelper.createKPRIMItem(trans); break;
 			case fib: item = QTIEditHelper.createFIBItem(trans); break;
+			case essay: item = QTIEditHelper.createEssayItem(trans); break;
 			default: return null;
 		}
 		item.setLabel(title);

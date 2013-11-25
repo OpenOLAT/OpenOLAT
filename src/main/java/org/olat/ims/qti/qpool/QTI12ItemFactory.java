@@ -56,6 +56,7 @@ public class QTI12ItemFactory implements QItemFactory {
 			case mc: return "QTI 1.2 " + trans.translate("item.type.mc");
 			case kprim: return "QTI 1.2 " + trans.translate("item.type.kprim");
 			case fib: return "QTI 1.2 " + trans.translate("item.type.fib");
+			case essay: return "QTI 1.2 " + trans.translate("item.type.essay");
 			default: return type.name();
 		}
 	}
@@ -72,6 +73,7 @@ public class QTI12ItemFactory implements QItemFactory {
 		sc,
 		mc,
 		kprim,
-		fib
+		fib,
+		essay
 	}
 }
