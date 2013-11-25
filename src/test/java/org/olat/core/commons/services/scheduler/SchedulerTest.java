@@ -46,7 +46,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
  * @author guido
  */
 @ContextConfiguration(loader = MockServletContextWebContextLoader.class, locations = {
-	"classpath:org/olat/core/commons/scheduler/scheduler.xml"})
+	"classpath:org/olat/core/commons/services/scheduler/scheduler.xml"})
 	
 public class SchedulerTest extends AbstractJUnit4SpringContextTests {
 
