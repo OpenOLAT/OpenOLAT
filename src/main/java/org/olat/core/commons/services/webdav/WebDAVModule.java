@@ -44,11 +44,13 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 	private static final OLog log = Tracing.createLoggerFor(WebDAVModule.class);
 
 	private static final String WEBDAV_ENABLED = "webdav.enabled";
+	private static final String WEBDAV_LINKS_ENABLED = "webdav.links.enabled";
 	private static final String DIGEST_AUTH_ENABLED = "auth.digest.enabled";
 	
 	private Map<String, WebDAVProvider> webdavProviders;
 
 	private boolean enabled;
+	private boolean linkEnabled;
 	private boolean digestAuthenticationEnabled;
 	
 	@Override
@@ -57,6 +59,11 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 		String enabledObj = getStringPropertyValue(WEBDAV_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
+		}
+		
+		String linkEnabledObj = getStringPropertyValue(WEBDAV_LINKS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(linkEnabledObj)) {
+			linkEnabled = "true".equals(linkEnabledObj);
 		}
 		
 		String digestEnabledObj = getStringPropertyValue(DIGEST_AUTH_ENABLED, true);
@@ -68,6 +75,7 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 	@Override
 	protected void initDefaultProperties() {
 		enabled = getBooleanConfigParameter(WEBDAV_ENABLED, true);
+		linkEnabled = getBooleanConfigParameter(WEBDAV_LINKS_ENABLED, true);
 		digestAuthenticationEnabled = getBooleanConfigParameter(DIGEST_AUTH_ENABLED, true);
 	}
 
@@ -91,12 +99,21 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 		setStringProperty(WEBDAV_ENABLED, enabledStr, true);
 	}
 	
+	public boolean isLinkEnabled() {
+		return linkEnabled;
+	}
+
+	public void setLinkEnabled(boolean linkEnabled) {
+		String enabledStr = linkEnabled ? "true" : "false";
+		setStringProperty(WEBDAV_LINKS_ENABLED, enabledStr, true);
+	}
+
 	public boolean isDigestAuthenticationEnabled() {
 		return digestAuthenticationEnabled;
 	}
 	
-	public void setDigestAuthenticationEnabled(boolean enabled) {
-		String enabledStr = enabled ? "true" : "false";
+	public void setDigestAuthenticationEnabled(boolean digestAuthenticationEnabled) {
+		String enabledStr = digestAuthenticationEnabled ? "true" : "false";
 		setStringProperty(DIGEST_AUTH_ENABLED, enabledStr, true);
 	}
 

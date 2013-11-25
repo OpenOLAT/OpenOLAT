@@ -51,8 +51,18 @@ public class FolderManager  extends BasicManager {
 	 * Get this path as a full WebDAV link
 	 * @return Full link representation.
 	 */
-	public static String getWebDAVLink() {
-		return Settings.getServerContextPathURI() + "/webdav";
+	public static String getWebDAVHttp() {
+		if(Settings.isInsecurePortAvailable()) {
+			return Settings.getInsecureServerContextPathURI() + "/webdav";
+		}
+		return null;
+	}
+	
+	public static String getWebDAVHttps() {
+		if(Settings.isSecurePortAvailable()) {
+			return Settings.getSecureServerContextPathURI() + "/webdav";
+		}
+		return null;
 	}
 	
 	/**

@@ -53,14 +53,9 @@
 			</bean>
 		</property>
 		<!-- OLAT Tomcat server configuration parameters. This is used e.g. to assemble absolute URIS where needed. -->
-		<property name="serverconfig">
-			<map>
-				<entry key="server_name" value="REPLACE" />
-				<entry key="server_fqdn" value="${server.domainname}" />
-				<entry key="server_securePort" value="${server.port.ssl}" />
-				<entry key="server_insecurePort" value="${server.port}" />
-			</map>
-		</property>	
+		<property name="serverDomainName" value="${server.domainname}" />
+		<property name="serverSecurePort" value="${server.port.ssl}" />
+		<property name="serverInsecurePort" value="${server.port}" />
 		<property name="legacyContext" value="${server.legacy.context}" />		
 		<!-- true enable debug mode, not for production mode but for productive hours ;) -->
 		<property name="debug" value="${olat.debug}" />

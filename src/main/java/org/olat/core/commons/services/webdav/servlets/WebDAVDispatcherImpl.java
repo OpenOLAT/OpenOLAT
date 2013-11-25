@@ -45,16 +45,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.webdav.WebDAVDispatcher;
 import org.olat.core.commons.services.webdav.WebDAVManager;
+import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.WorkThreadInformations;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.VFSLockManagerImpl;
@@ -226,9 +223,7 @@ public class WebDAVDispatcherImpl
     
     private VFSLockManagerImpl lockManager;
     private WebDAVManager webDAVManager;
-
-
-    // --------------------------------------------------------- Public Methods
+    private WebDAVModule webDAVModule;
 
     public WebDAVDispatcherImpl() {
     	//
@@ -249,8 +244,14 @@ public class WebDAVDispatcherImpl
 	public void setWebDAVManager(WebDAVManager webDAVManager) {
 		this.webDAVManager = webDAVManager;
 	}
-
-    // ------------------------------------------------------ Protected Methods
+	
+	/**
+	 * [used by Spring]
+	 * @param webDAVModule
+	 */
+	public void setWebDAVModule(WebDAVModule webDAVModule) {
+		this.webDAVModule = webDAVModule;
+	}
 
 	@Override
 	protected WebResourceRoot getResources(HttpServletRequest req) {
@@ -277,46 +278,20 @@ public class WebDAVDispatcherImpl
         }
         return documentBuilder;
     }
-    
-    public void service(HttpServletRequest req, HttpServletResponse resp)
-    throws ServletException, IOException {
-    	try {
-    		Tracing.setUreq(req);
-    		I18nManager.attachI18nInfoToThread(req);
-    		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(req);
-    		WorkThreadInformations.set("Serve request: " + req.getRequestURI());
-    		
-    		resp.setCharacterEncoding("UTF-8");
-	
-			if (webDAVManager == null) {
-	            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-			} else if (webDAVManager.handleAuthentication(req, resp)) {
-				webdavService(req, resp);
-			} else {
-				//the method handleAuthentication will send the challenges for authentication
-			}
-    	} finally {
-  			WorkThreadInformations.unset();
-  			ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
-  			I18nManager.remove18nInfoFromThread();
-  			Tracing.setUreq(null);
-  			DBFactory.getInstanceForClosing().closeSession();
-  		}
-    }
 
-    @Override
+	@Override
 	public void execute(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
 		if (webDAVManager == null) {
-            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-		} else if (webDAVManager.handleAuthentication(req, resp)) {
+			resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+		} else if(webDAVModule == null || !webDAVModule.isEnabled()) {
+  		resp.sendError(WebdavStatus.SC_FORBIDDEN);
+  	} else if (webDAVManager.handleAuthentication(req, resp)) {
 			webdavService(req, resp);
 		} else {
 			//the method handleAuthentication will send the challenges for authentication
 		}
 	}
-
-
 
 	/**
      * Handles the special WebDAV methods.

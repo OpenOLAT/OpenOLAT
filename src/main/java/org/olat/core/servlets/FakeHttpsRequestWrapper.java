@@ -60,11 +60,9 @@ public class FakeHttpsRequestWrapper extends HttpServletRequestWrapper {
 	public int getServerPort() {
 		int serverPort;
 		if(isSecure()) {
-			String port = Settings.getServerconfig("server_securePort");
-			serverPort = Integer.parseInt(port);
+			serverPort = Settings.getServerSecurePort();
 		} else {
-			String port = Settings.getServerconfig("server_insecurePort");
-			serverPort = Integer.parseInt(port);
+			serverPort = Settings.getServerInsecurePort();
 		}
 		return serverPort;
 	}

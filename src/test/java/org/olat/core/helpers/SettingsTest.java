@@ -27,9 +27,9 @@ package org.olat.core.helpers;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
+
+import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.core.configuration.PersistedProperties;
@@ -48,10 +48,10 @@ import org.olat.core.util.event.GenericEventListener;
 public class SettingsTest {
 	private static String serverFqnd = "www.myolat.org";
 	private static String contextPath = "/olat";
-	private static String httpDefaultPort ="80";
-	private static String httpOtherPort ="8080";
-	private static String httpsDefaultPort ="443";
-	private static String httpsOtherPort ="8443";
+	private static int httpDefaultPort = 80;
+	private static int httpOtherPort = 8080;
+	private static int httpsDefaultPort = 443;
+	private static int httpsOtherPort = 8443;
 
 	
 	/**
@@ -60,24 +60,26 @@ public class SettingsTest {
 	@Test
 	public void testCreateServerURI() {
 		Settings settings = createHttpDefaultPortSettings();
-		String serverUri = settings.createServerURI();
+		Assert.assertNotNull(settings);
+		
+		String serverUri = Settings.createServerURI();
 		String expectedValue = "http://"+serverFqnd;
 		assertEquals("no :port appended if default http port 80 is used.",expectedValue, serverUri);		
 		
 		settings = createHttpOtherPortSettings();
-		serverUri = settings.createServerURI();
+		serverUri = Settings.createServerURI();
 		expectedValue = "http://"+serverFqnd+":"+httpOtherPort;
 		assertEquals("other :port appended.", expectedValue, serverUri);
 		
 		
 		settings = createHttpsDefaultPortSettings();
-		serverUri = settings.createServerURI();
+		serverUri = Settings.createServerURI();
 		expectedValue = "https://"+serverFqnd;
 		assertEquals("no :port appended if default https port 443 is used.",expectedValue, serverUri);
 		
 		
 		settings = createHttpsOtherPortSettings();
-		serverUri = settings.createServerURI();
+		serverUri = Settings.createServerURI();
 		expectedValue = "https://"+serverFqnd+":"+httpsOtherPort;
 		assertEquals("other :port appended.",expectedValue, serverUri);
 	}
@@ -87,26 +89,26 @@ public class SettingsTest {
 	 */
 	@Test
 	public void testGetServerContextPathURI(){
-
 		Settings settings = createHttpDefaultPortSettings();
-		String serverUriWithContext = settings.getServerContextPathURI();
+		Assert.assertNotNull(settings);
+		
+		String serverUriWithContext = Settings.getServerContextPathURI();
 		String expectedValue = "http://"+serverFqnd+contextPath;
 		assertEquals("no :port appended if default http port 80 is used.",expectedValue, serverUriWithContext);		
 		
 		settings = createHttpOtherPortSettings();
-		serverUriWithContext = settings.getServerContextPathURI();
+		serverUriWithContext = Settings.getServerContextPathURI();
 		expectedValue = "http://"+serverFqnd+":"+httpOtherPort+contextPath;
 		assertEquals("other :port appended.", expectedValue, serverUriWithContext);
 		
 		
 		settings = createHttpsDefaultPortSettings();
-		serverUriWithContext = settings.getServerContextPathURI();
+		serverUriWithContext = Settings.getServerContextPathURI();
 		expectedValue = "https://"+serverFqnd+contextPath;
 		assertEquals("no :port appended if default https port 443 is used.",expectedValue, serverUriWithContext);
 		
-		
 		settings = createHttpsOtherPortSettings();
-		serverUriWithContext = settings.getServerContextPathURI();
+		serverUriWithContext = Settings.getServerContextPathURI();
 		expectedValue = "https://"+serverFqnd+":"+httpsOtherPort+contextPath;
 		assertEquals("other :port appended.",expectedValue, serverUriWithContext);
 	}
@@ -117,74 +119,59 @@ public class SettingsTest {
 	@Test
 	public void testGetURIScheme(){
 		Settings settings = createHttpDefaultPortSettings();
-		String serverUriScheme = settings.getURIScheme();
+		Assert.assertNotNull(settings);
+		
+		String serverUriScheme = Settings.getURIScheme();
 		String expectedValue = "http:";
 		assertEquals("no :port appended if default http port 80 is used.",expectedValue, serverUriScheme);		
 		
 		settings = createHttpOtherPortSettings();
-		serverUriScheme = settings.getURIScheme();
+		serverUriScheme = Settings.getURIScheme();
 		expectedValue = "http:";
 		assertEquals("other :port appended.", expectedValue, serverUriScheme);
 		
-		
 		settings = createHttpsDefaultPortSettings();
-		serverUriScheme = settings.getURIScheme();
+		serverUriScheme = Settings.getURIScheme();
 		expectedValue = "https:";
 		assertEquals("no :port appended if default https port 443 is used.",expectedValue, serverUriScheme);
 		
-		
 		settings = createHttpsOtherPortSettings();
-		serverUriScheme = settings.getURIScheme();
+		serverUriScheme = Settings.getURIScheme();
 		expectedValue = "https:";
 		assertEquals("other :port appended.",expectedValue, serverUriScheme);
 	}
 	
 	private Settings createHttpDefaultPortSettings(){
-		Map<String,String> addToServerconfig = new HashMap<String,String>();
-		addToServerconfig.put("server_securePort", "0");//${server.port.ssl}
-		addToServerconfig.put("server_insecurePort", SettingsTest.httpDefaultPort);//${server.port}
-		Settings settings = createCommonSettingsForPortTests(addToServerconfig);
+		Settings settings = createCommonSettingsForPortTests(0, SettingsTest.httpDefaultPort);
 		return settings;
 	}
 	
 	private Settings createHttpOtherPortSettings(){
-		Map<String,String> addToServerconfig = new HashMap<String,String>();
-		addToServerconfig.put("server_securePort", "0");//${server.port.ssl}
-		addToServerconfig.put("server_insecurePort", SettingsTest.httpOtherPort);//${server.port}
-		Settings settings = createCommonSettingsForPortTests(addToServerconfig);
+		Settings settings = createCommonSettingsForPortTests(0, SettingsTest.httpOtherPort);
 		return settings;
 	}
 	
 	private Settings createHttpsDefaultPortSettings(){
-		Map<String,String> addToServerconfig = new HashMap<String,String>();
-		addToServerconfig.put("server_securePort", SettingsTest.httpsDefaultPort);//${server.port.ssl}
-		addToServerconfig.put("server_insecurePort", "0");//${server.port}
-		Settings settings = createCommonSettingsForPortTests(addToServerconfig);
+		Settings settings = createCommonSettingsForPortTests(SettingsTest.httpsDefaultPort, 0);
 		return settings;
 	}
 	
 	private Settings createHttpsOtherPortSettings(){
-		Map<String,String> addToServerconfig = new HashMap<String,String>();
-		addToServerconfig.put("server_securePort", SettingsTest.httpsOtherPort);//${server.port.ssl}
-		addToServerconfig.put("server_insecurePort", "0");//${server.port}
-		Settings settings = createCommonSettingsForPortTests(addToServerconfig);
+		Settings settings = createCommonSettingsForPortTests(SettingsTest.httpsOtherPort, 0);
 		return settings;
 	}
 	
-	private Settings createCommonSettingsForPortTests(Map<String,String> addToServerconfig){
+	private Settings createCommonSettingsForPortTests(int securePort, int insecurePort){
 		Settings settings = new Settings();
 		PersistedProperties persistedPropertiesHttp = new PersistedProperties(new DummyListener());
 		Properties defaultPropertiesHttp = new Properties();
 		defaultPropertiesHttp.setProperty("dummykey", "dummyvalue");
 		persistedPropertiesHttp.setDefaultProperties(defaultPropertiesHttp);
 		settings.setPersistedProperties(persistedPropertiesHttp);
-				
-		Map<String,String> serverconfig = new HashMap<String,String>(addToServerconfig);
-		serverconfig.put("server_fqdn", SettingsTest.serverFqnd);//${server.domainname}
-		serverconfig.put("serverContextPath", SettingsTest.contextPath);//${server.contextpath}
+		settings.setServerSecurePort(securePort);
+		settings.setServerInsecurePort(insecurePort);
+		settings.setServerDomainName(SettingsTest.serverFqnd);//${server.domainname}
 		WebappHelper.setServletContextPath(SettingsTest.contextPath);
-		settings.setServerconfig(serverconfig);
-		
 		return settings;
 	}
 	

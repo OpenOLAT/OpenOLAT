@@ -116,7 +116,7 @@ public class LTIManagerImpl implements LTIManager {
 	public Map<String,String> sign(Map<String,String> props, String url, String oauthKey, String oauthSecret) {
 		String oauth_consumer_key = oauthKey;
 		String oauth_consumer_secret = oauthSecret;
-		String tool_consumer_instance_guid = Settings.getServerconfig("server_fqdn");
+		String tool_consumer_instance_guid = Settings.getServerDomainName();
 		String tool_consumer_instance_description = null;
 		String tool_consumer_instance_url = null;
 		String tool_consumer_instance_name = WebappHelper.getInstanceId();
@@ -279,7 +279,7 @@ public class LTIManagerImpl implements LTIManager {
 		}
 		if (!StringHelper.containsNonWhitespace(personSourceId)) {
 			// fallback to the serverDomainName:identityId as case 3)
-			personSourceId = Settings.getServerconfig("server_fqdn") + ":" + identity.getKey();
+			personSourceId = Settings.getServerDomainName() + ":" + identity.getKey();
 		}
 		return personSourceId;
 	}

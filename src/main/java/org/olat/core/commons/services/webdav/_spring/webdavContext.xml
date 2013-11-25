@@ -29,7 +29,8 @@
 		<property name="targetMethod" value="init" />
 		<property name="arguments">
 			<value>
-				webdav.enabled=${webdav.links.enabled}
+				webdav.enabled=${webdav.enabled}
+				webdav.links.enabled=${webdav.links.enabled}
 				auth.digest.enabled=${auth.digest.enabled}
 			</value>
 		</property>
@@ -45,6 +46,7 @@
 	<bean id="webDAVDispatcher" class="org.olat.core.commons.services.webdav.servlets.WebDAVDispatcherImpl">
 		<property name="lockManager" ref="vfsLockManager" />
 		<property name="webDAVManager" ref="webDAVManager" />
+		<property name="webDAVModule" ref="webdavModule" />
 	</bean>
 	
 	<bean id="webDAVAuthenticationSpi" class="org.olat.core.commons.services.webdav.manager.WebDAVAuthManager" >

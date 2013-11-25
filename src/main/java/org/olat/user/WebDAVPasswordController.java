@@ -82,7 +82,8 @@ public class WebDAVPasswordController extends FormBasicController {
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutContainer = (FormLayoutContainer)formLayout;
-			layoutContainer.contextPut("webdavLink", FolderManager.getWebDAVLink());
+			layoutContainer.contextPut("webdavhttp", FolderManager.getWebDAVHttp());
+			layoutContainer.contextPut("webdavhttps", FolderManager.getWebDAVHttps());
 			
 			accessDataFlc = FormLayoutContainer.createDefaultFormLayout("flc_access_data", getTranslator());
 			layoutContainer.add(accessDataFlc);

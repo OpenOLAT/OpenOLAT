@@ -153,7 +153,7 @@ public class PaypalModule extends AbstractOLATModule implements GenericEventList
 		if(StringHelper.containsNonWhitespace(deviceIpAddress)) {
 			return deviceIpAddress;
 		}	
-		String host = Settings.getServerconfig("server_fqdn");
+		String host = Settings.getServerDomainName();
 		InetAddress addr = InetAddress.getByName(host);
 		String ipAddrStr = addr.getHostAddress();
 		return ipAddrStr;

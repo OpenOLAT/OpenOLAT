@@ -199,7 +199,7 @@ public class RegistrationManager extends BasicManager {
 		User user = newIdentity.getUser();
 		Locale loc = I18nModule.getDefaultLocale();
 		String[] userParams = new  String[] {newIdentity.getName(), user.getProperty(UserConstants.FIRSTNAME, loc), user.getProperty(UserConstants.LASTNAME, loc), user.getProperty(UserConstants.EMAIL, loc),
-				user.getPreferences().getLanguage(), Settings.getServerconfig("server_fqdn") + WebappHelper.getServletContextPath() };
+				user.getPreferences().getLanguage(), Settings.getServerDomainName() + WebappHelper.getServletContextPath() };
 		Translator trans = Util.createPackageTranslator(RegistrationManager.class, loc);
 		String subject = trans.translate("reg.notiEmail.subject", userParams);
 		String body = trans.translate("reg.notiEmail.body", userParams);

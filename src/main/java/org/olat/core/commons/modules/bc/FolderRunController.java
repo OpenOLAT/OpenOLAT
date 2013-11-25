@@ -208,7 +208,7 @@ public class FolderRunController extends BasicController implements Activateable
 
 		super(ureq, wControl);
 
-		folderContainer = this.createVelocityContainer("run");
+		folderContainer = createVelocityContainer("run");
 		editQuotaButton = LinkFactory.createButtonSmall("editQuota", folderContainer, this);
 		
 		BusinessControl bc = getWindowControl().getBusinessControl();
@@ -238,8 +238,12 @@ public class FolderRunController extends BasicController implements Activateable
 		folderComponent.setCanMail(ureq.getUserSession().getRoles().isGuestOnly() ? false : canMail); // guests can never send mail
 		folderComponent.addListener(this);
 		folderContainer.put("foldercomp", folderComponent);
-		if (CoreSpringFactory.getImpl(WebDAVModule.class).isEnabled() && displayWebDAVLink) {
-			folderContainer.contextPut("webdavlink", FolderManager.getWebDAVLink());
+		if (displayWebDAVLink) {
+			WebDAVModule webDAVModule = CoreSpringFactory.getImpl(WebDAVModule.class);
+			if (webDAVModule.isEnabled() && webDAVModule.isLinkEnabled() && displayWebDAVLink) {
+				folderContainer.contextPut("webdavhttp", FolderManager.getWebDAVHttp());
+				folderContainer.contextPut("webdavhttps", FolderManager.getWebDAVHttps());
+			}
 		}
 
 		selTree = new SelectionTree("seltree", getTranslator());

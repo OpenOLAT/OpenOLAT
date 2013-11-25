@@ -37,7 +37,7 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class WebDAVAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement enableEl, enableDigestEl;
+	private MultipleSelectionElement enableModuleEl, enableLinkEl, enableDigestEl;
 	private final WebDAVModule webDAVModule;
 	
 	public WebDAVAdminController(UserRequest ureq, WindowControl wControl) {
@@ -53,13 +53,20 @@ public class WebDAVAdminController extends FormBasicController {
 		setFormDescription("admin.webdav.description");
 		setFormContextHelp(WebDAVAdminController.class.getPackage().getName(), "webdavconfig.html", "help.hover.webdavconfig");
 		
-		enableEl = uifactory.addCheckboxesHorizontal("webdavLink", "webdav.link", formLayout, new String[]{"xx"}, new String[]{""}, null);
-		enableEl.select("xx", webDAVModule.isEnabled());
-		enableEl.addActionListener(this, FormEvent.ONCHANGE);
+		boolean enabled = webDAVModule.isEnabled();
+		enableModuleEl = uifactory.addCheckboxesHorizontal("webdavModule", "webdav.module", formLayout, new String[]{"xx"}, new String[]{""}, null);
+		enableModuleEl.select("xx", enabled);
+		enableModuleEl.addActionListener(this, FormEvent.ONCHANGE);
+		
+		enableLinkEl = uifactory.addCheckboxesHorizontal("webdavLink", "webdav.link", formLayout, new String[]{"xx"}, new String[]{""}, null);
+		enableLinkEl.select("xx", webDAVModule.isLinkEnabled());
+		enableLinkEl.addActionListener(this, FormEvent.ONCHANGE);
+		enableLinkEl.setEnabled(enabled);
 		
 		enableDigestEl = uifactory.addCheckboxesHorizontal("webdavDigest", "webdav.digest", formLayout, new String[]{"xx"}, new String[]{""}, null);
 		enableDigestEl.select("xx", webDAVModule.isDigestAuthenticationEnabled());
 		enableDigestEl.addActionListener(this, FormEvent.ONCHANGE);
+		enableDigestEl.setEnabled(enabled);
 	}
 
 	@Override
@@ -69,9 +76,14 @@ public class WebDAVAdminController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == enableEl) {
-			boolean enabled = enableEl.isAtLeastSelected(1);
+		if(source == enableModuleEl) {
+			boolean enabled = enableModuleEl.isAtLeastSelected(1);
 			webDAVModule.setEnabled(enabled);
+			enableLinkEl.setEnabled(enabled);
+			enableDigestEl.setEnabled(enabled);
+		} else if(source == enableLinkEl) {
+			boolean enabled = enableLinkEl.isAtLeastSelected(1);
+			webDAVModule.setLinkEnabled(enabled);
 		} else if(source == enableDigestEl) {
 			boolean enabled = enableDigestEl.isAtLeastSelected(1);
 			webDAVModule.setDigestAuthenticationEnabled(enabled);
