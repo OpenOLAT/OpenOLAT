@@ -120,7 +120,6 @@ import org.junit.runners.Suite;
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,
 	org.olat.search.service.document.file.PDFDocumentTest.class,
 	org.olat.search.service.document.file.OfficeDocumentTest.class,
-	org.olat.catalog.CatalogManagerTest.class,//ok
 	org.olat.notifications.NotificationsManagerTest.class,//fail
 	org.olat.registration.RegistrationManagerTest.class,//ok
 	org.olat.course.nodes.projectbroker.ProjectBrokerManagerTest.class,

@@ -27,9 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
@@ -41,6 +38,8 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.test.OlatTestCase;
 
@@ -58,26 +57,9 @@ import org.olat.test.OlatTestCase;
  */
 public class UserPropertiesPerformanceTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(UserPropertiesPerformanceTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(UserPropertiesPerformanceTest.class);
 	
-	@Before
-	public void startup() {
-		System.out.println("test started "+this.getClass().getName());
-	}
 
-
-	/**
-	 * TearDown is called after each test
-	 */
-	@After
-	public void tearDown() {
-		try {
-			DB db = DBFactory.getInstance();
-			db.closeSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-		}
-	}
 
 	/**
 	 * Create 50'000 users and after each step of 10'000 perform some search

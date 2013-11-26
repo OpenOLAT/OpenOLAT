@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,6 +46,8 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.test.JMSCodePointServerJunitHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -63,7 +64,7 @@ import org.olat.testutils.codepoints.client.TemporaryPausedThread;
  */
 public class ICalFileCalendarManagerTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(ICalFileCalendarManagerTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(ICalFileCalendarManagerTest.class);
 	private static String  CODEPOINT_SERVER_ID = "ICalFileCalendarManagerTest";
 	private static Identity test = null;
 
@@ -555,7 +556,6 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	@After public void tearDown() throws Exception {
 		try {
 			JMSCodePointServerJunitHelper.stopServer();
-			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("tearDown failed: ", e);
 		}

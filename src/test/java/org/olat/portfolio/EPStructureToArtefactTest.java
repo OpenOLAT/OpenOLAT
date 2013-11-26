@@ -30,7 +30,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -74,11 +73,6 @@ public class EPStructureToArtefactTest extends OlatTestCase {
 		if(!isInitialized) {
 			ident1 = JunitTestHelper.createAndPersistIdentityAsUser("artuse-1");
 		}
-	}
-	
-	@After
-	public void tearDown() {
-		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test

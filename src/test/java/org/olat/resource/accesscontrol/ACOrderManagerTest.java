@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -100,11 +99,6 @@ public class ACOrderManagerTest extends OlatTestCase {
 			ident7 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
 			ident8 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
 		}
-	}
-	
-	@After
-	public void tearDown() {
-		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test

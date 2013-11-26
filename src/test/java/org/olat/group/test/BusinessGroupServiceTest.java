@@ -31,7 +31,6 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -41,7 +40,6 @@ import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -174,16 +172,6 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			dbInstance.commitAndCloseSession();
 
 			initialize = true;
-	}
-	
-	@After
-	public void tearDown() throws Exception {
-		try {
-			DBFactory.getInstance().commitAndCloseSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-			throw e;
-		}
 	}
 	
 	@Test

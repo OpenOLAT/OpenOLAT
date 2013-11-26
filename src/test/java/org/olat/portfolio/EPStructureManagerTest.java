@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -96,17 +95,11 @@ public class EPStructureManagerTest extends OlatTestCase {
 		}
 	}
 	
-	@After
-	public void tearDown() {
-		dbInstance.commitAndCloseSession();
-	}
-	
 	@Test
 	public void testManagers() {
 		assertNotNull(dbInstance);
 		assertNotNull(epStructureManager);
 	}
-	
 	
 	@Test
 	public void testGetStructureElementsForUser(){

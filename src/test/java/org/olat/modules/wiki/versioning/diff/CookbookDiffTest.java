@@ -31,7 +31,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.modules.wiki.versioning.ChangeInfo;
@@ -45,14 +44,13 @@ public class CookbookDiffTest {
 
 	private CookbookDifferenceService differenceService;
 
-
-	@Before public void setup() throws Exception {
+	@Before
+	public void setup() {
 		differenceService = new CookbookDifferenceService();
 	}
 
-	@After public void tearDown() throws Exception {}
-
-	@Test public void testAddText() {
+	@Test
+	public void testAddText() {
 		String text1 = "Line1\nLine2\nDies ist ein Text.";
 		String text2 = text1 + "Text2";
 		List<ChangeInfo> diffList = differenceService.diff(text1,text2);

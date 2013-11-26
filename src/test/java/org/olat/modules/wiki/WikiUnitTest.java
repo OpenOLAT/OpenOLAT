@@ -31,10 +31,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.wiki.versioning.ChangeInfo;
 import org.olat.test.OlatTestCase;
@@ -50,10 +47,8 @@ import org.olat.test.OlatTestCase;
 public class WikiUnitTest extends OlatTestCase {
 	private static final String WIKI_CONTENT = "==heading==\n'''bold'''\n[[Image:test.jpg|bla]]";
 
-
-	@Before public void setup() throws Exception {/***/}
-
-	@Test public void testWikiStuff() {
+	@Test
+	public void testWikiStuff() {
 		WikiManager wikiMgr = WikiManager.getInstance();
 		OLATResourceable ores = wikiMgr.createWiki();
 		Wiki wiki = wikiMgr.getOrLoadWiki(ores);
@@ -98,9 +93,4 @@ public class WikiUnitTest extends OlatTestCase {
 		//clean up
 		wikiMgr.deleteWiki(ores);
 	}
-	
-	@After public void tearDown() throws Exception {
-		DBFactory.getInstance().closeSession();
-	}
-
 }

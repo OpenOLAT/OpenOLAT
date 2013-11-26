@@ -27,13 +27,12 @@
 package org.olat.registration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 import java.util.UUID;
 
-import org.junit.After;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.test.OlatTestCase;
@@ -174,12 +173,4 @@ public class RegistrationManagerTest extends OlatTestCase {
 		assertFalse(registrationManager.validateEmailUsername("aoi@cyberia.ch"));
 		assertTrue(registrationManager.validateEmailUsername("aoi@blog.cyberiacafe.ch"));
 	}
-
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	@After public void tearDown() throws Exception {
-		DBFactory.getInstance().closeSession();
-	}
-
 }

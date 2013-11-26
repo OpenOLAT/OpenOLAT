@@ -32,13 +32,13 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -55,7 +55,7 @@ public class NoteTest extends OlatTestCase implements OLATResourceable {
 
 	private long RESOURCE_ID = 42;
 	private String RESOURCE_TYPE = "org.olat.note.NoteTest";
-	private static Logger log = Logger.getLogger(NoteTest.class);
+	private static OLog log = Tracing.createLoggerFor(NoteTest.class);
 	private static boolean isInitialized = false;
 	private static Identity identity = null;
 	private static org.olat.resource.OLATResource res = null;
@@ -65,7 +65,8 @@ public class NoteTest extends OlatTestCase implements OLATResourceable {
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	@Before public void setup() {
+	@Before
+	public void setup() {
 		if (NoteTest.isInitialized == false) {
 			try {
 				nm = NoteManager.getInstance();
@@ -83,23 +84,9 @@ public class NoteTest extends OlatTestCase implements OLATResourceable {
 			}
 		}
 	}
-	
-	/**
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	@After public void tearDown() {
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("tearDown failed: ", e);
-		}
-	}
 
-	/**
-	 * 
-	 *
-	 */
-	@Test public void testGenericLoadDeleteNote() {
+	@Test
+	public void testGenericLoadDeleteNote() {
 	    Long resourceTypeId = res.getResourceableId(); 
 	    String resourceTypeName = res.getResourceableTypeName();
 	    Note n = nm.loadNoteOrCreateInRAM(identity, resourceTypeName, resourceTypeId);

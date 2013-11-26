@@ -25,14 +25,16 @@
 */
 package org.olat.modules.ims.cp;
 
-import org.apache.log4j.Logger;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -40,7 +42,6 @@ import org.olat.ims.cp.CPManager;
 import org.olat.ims.cp.ContentPackage;
 import org.olat.ims.cp.objects.CPItem;
 import org.olat.ims.cp.objects.CPOrganization;
-import org.olat.modules.fo.ForumManagerTest;
 import org.olat.test.OlatTestCase;
 
 /**
@@ -55,7 +56,7 @@ public class CPManagerTest extends OlatTestCase {
 
 	private static final String ITEM_ID = "this_is_a_great_inital_item_identifier";
 	private static final String PAGE_TITLE = "fancy page";
-	private static final Logger log = Logger.getLogger(ForumManagerTest.class.getName());
+	private static final OLog log = Tracing.createLoggerFor(CPManagerTest.class);
 	private CPManager mgr = null;
 	private ContentPackage cp;
 
@@ -79,11 +80,6 @@ public class CPManagerTest extends OlatTestCase {
 	@After
 	public void tearDown() {
 		cp.getRootDir().delete();
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-		}
 	}
 	
 	@Test

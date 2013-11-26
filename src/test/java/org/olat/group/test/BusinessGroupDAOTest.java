@@ -32,11 +32,9 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
-import org.junit.After;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
@@ -83,16 +81,6 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	private ACService acService;
 	@Autowired
 	private MarkManager markManager;
-	
-	@After
-	public void tearDown() throws Exception {
-		try {
-			DBFactory.getInstance().commitAndCloseSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-			throw e;
-		}
-	}
 	
 	@Test
 	public void should_service_present() {

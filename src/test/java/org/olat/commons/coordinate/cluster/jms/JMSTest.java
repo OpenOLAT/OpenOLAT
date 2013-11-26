@@ -30,7 +30,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.UUID;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
@@ -63,11 +62,6 @@ public class JMSTest extends OlatTestCase {
 			DBFactory.getInstance().closeSession();
 			isInitialized = true;
 		}
-	}
-	
-	@After
-	public void tearDown() throws Exception {
-		DBFactory.getInstance().closeSession();
 	}
 
 	/**

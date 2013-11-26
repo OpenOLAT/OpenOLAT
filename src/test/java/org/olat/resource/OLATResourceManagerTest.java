@@ -248,7 +248,6 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 	 */
 	@After public void tearDown() throws Exception {
 		JMSCodePointServerJunitHelper.stopServer();
-		DBFactory.getInstance().closeSession();
 	}
 
 

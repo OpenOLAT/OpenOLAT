@@ -36,8 +36,6 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -45,6 +43,8 @@ import org.olat.basesecurity.Policy;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -64,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BGRightManagerTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(BGRightManagerTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(BGRightManagerTest.class);
 	private Identity id1, id2, id3, id4;
 
 	@Autowired
@@ -92,21 +92,6 @@ public class BGRightManagerTest extends OlatTestCase {
 			Assert.assertNotNull(id4);
 		} catch (Exception e) {
 			log.error("Exception in setUp(): " + e);
-		}
-	}
-
-	/**
-	 * TearDown is called after each test.
-	 * 
-	 * @throws Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-			throw e;
 		}
 	}
 

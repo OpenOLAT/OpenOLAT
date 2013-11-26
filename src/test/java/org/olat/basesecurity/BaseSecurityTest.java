@@ -37,7 +37,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.junit.After;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -713,18 +712,6 @@ public class BaseSecurityTest extends OlatTestCase {
 		
 
 		System.out.println("end testGetIdentitiesByPowerSearchWithDate");
-	}
-	
-	
-	@After
-	public void tearDown() throws Exception {
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} catch (Error err) {
-			err.printStackTrace();
-		}
 	}
 
 	////////////////////

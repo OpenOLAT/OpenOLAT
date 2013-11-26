@@ -31,13 +31,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
@@ -57,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseGroupManagementTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(CourseGroupManagementTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(CourseGroupManagementTest.class);
 	private Identity id1, id2, id3;
 	
 	@Autowired
@@ -81,16 +81,6 @@ public class CourseGroupManagementTest extends OlatTestCase {
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("Exception in setUp(): " + e);
-		}
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-			throw e;
 		}
 	}
 	

@@ -35,15 +35,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -59,7 +55,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FileDocumentFactoryTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(FileDocumentFactoryTest.class.getName());
 	// variables for test fixture
 	
 	@Autowired
@@ -69,23 +64,11 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	@Before public void setup()throws Exception {
+	@Before
+	public void setup()throws Exception {
 		//clear database from errors
 		rootPath = "/search_junit_test_folder";
 	}
-
-	/**
-	 * TearDown is called after each test
-	 */
-	@After public void tearDown() {
-		try {
-			DB db = DBFactory.getInstance();
-			db.closeSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-		}
-	}
-	
 	
 	@Test public void testIsFileSupported() {
 		assertTrue("html must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.html"))));

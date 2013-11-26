@@ -53,7 +53,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
@@ -64,6 +63,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -82,6 +83,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http:
  */
 public class RepositoryEntriesTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(RepositoryEntriesTest.class);
 
 	@Autowired
 	private BaseSecurity securityManager;
@@ -307,7 +310,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testImportTest() throws IOException, URISyntaxException {
-		Logger log = Logger.getLogger(getClass().getName());
 		URL cpUrl = RepositoryEntriesTest.class.getResource("qti-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
@@ -344,7 +346,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testImportQuestionnaire() throws IOException, URISyntaxException {
-		Logger log = Logger.getLogger(getClass().getName());
 		URL cpUrl = RepositoryEntriesTest.class.getResource("questionnaire-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
@@ -381,7 +382,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testImportWiki() throws IOException, URISyntaxException {
-		Logger log = Logger.getLogger(getClass().getName());
 		URL cpUrl = RepositoryEntriesTest.class.getResource("wiki-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
@@ -417,7 +417,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testImportBlog() throws IOException, URISyntaxException {
-		Logger log = Logger.getLogger(getClass().getName());
 		URL cpUrl = RepositoryEntriesTest.class.getResource("blog-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());

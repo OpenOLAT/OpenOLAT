@@ -34,12 +34,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -50,7 +49,7 @@ import org.olat.user.UserManager;
 
 public class ForumManagerTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(ForumManagerTest.class.getName()); 
+	private static OLog log = Tracing.createLoggerFor(ForumManagerTest.class); 
 
 	public Identity u1;
 	public Identity u2;
@@ -114,18 +113,9 @@ public class ForumManagerTest extends OlatTestCase {
 		 	log.error("Exception in setUp(): "+e);	
 		}
 	}
-
-	/**
-	 * TearDown is called after each test
-	 */
-	@After public void tearDown(){
-		try{
-			DBFactory.getInstance().closeSession();
-		}
-		catch(Exception e) {log.error("Exception in tearDown(): "+e);}
-	}
 	
-	@Test public void testGetMessagesByForumID() throws Exception {
+	@Test
+	public void testGetMessagesByForumID() throws Exception {
 		log.debug("Start testGetMessagesByForumID()");
 		
 		ForumManager foma = ForumManager.getInstance();

@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -81,11 +80,6 @@ public class EPArtefactManagerTest extends OlatTestCase {
 		if(!isInitialized) {
 			ident1 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString());
 		}
-	}
-	
-	@After
-	public void tearDown() {
-		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test

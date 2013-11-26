@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -105,11 +104,6 @@ public class EPFrontendManagerTest extends OlatTestCase {
 			ident2 = JunitTestHelper.createAndPersistIdentityAsUser("frtuse-2");
 			ident3 = JunitTestHelper.createAndPersistIdentityAsUser("frtuse-3");
 		}
-	}
-	
-	@After
-	public void tearDown() {
-		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test

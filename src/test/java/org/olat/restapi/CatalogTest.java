@@ -48,7 +48,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -148,12 +147,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		
 		DBFactory.getInstance().intermediateCommit();
 	}
-	
-	@After
-	public void tearDown() throws Exception {
-		DBFactory.getInstance().closeSession();
-	}
-	
+
 	@Test
 	public void testGetRoots() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();

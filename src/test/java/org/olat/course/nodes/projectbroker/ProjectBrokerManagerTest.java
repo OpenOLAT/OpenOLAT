@@ -43,8 +43,6 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.SecurityGroupImpl;
@@ -71,8 +69,7 @@ import org.olat.test.OlatTestCase;
  */
 
 public class ProjectBrokerManagerTest extends OlatTestCase {
-	//
-	private static Logger log = Logger.getLogger(ProjectBrokerManagerTest.class.getName());
+
 	/*
 	 * ::Test Setup::
 	 */
@@ -357,21 +354,6 @@ private Project createProject(String name, Identity creator, Long projectBrokerI
 	Project project = ProjectBrokerManagerFactory.getProjectBrokerManager().createAndSaveProjectFor(name + "title", name + "description1", projectBrokerId, projectGroup);
 	return project;
 }
-
-	/**
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	@After public void tearDown() throws Exception {
-// TODO: Does not cleanup Demo-course because other Test which use Demo-Course too, will be have failures
-//		ICourse course = CourseFactory.loadCourse(resourceableId);
-//		CourseFactory.deleteCourse(course);
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("tearDown failed: ", e);
-		}
-	}
-	
 
 }
 

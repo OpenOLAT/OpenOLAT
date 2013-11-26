@@ -55,7 +55,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
@@ -149,7 +148,6 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 			if(conn != null) {
 				conn.shutdown();
 			}
-      DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("Exception in tearDown(): " + e);
       throw e;

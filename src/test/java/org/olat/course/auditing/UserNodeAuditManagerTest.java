@@ -75,12 +75,7 @@ public class UserNodeAuditManagerTest extends OlatTestCase  {
 	public void tearDown() throws Exception {			
 		//remove demo course on file system
 		//FIXME: this does not remove all data from the database, see repositoryManger
-		CourseFactory.deleteCourse(course);		
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("tearDown failed: ", e);
-		}
+		CourseFactory.deleteCourse(course);
 	}
 	
 	/**

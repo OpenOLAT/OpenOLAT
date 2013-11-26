@@ -24,8 +24,6 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 
@@ -37,7 +35,6 @@ import org.olat.core.util.filter.FilterFactory;
  * Initial Date:  17.07.2009 <br>
  * @author gnaegi
  */
-@RunWith(JUnit4.class)
 public class AddBaseURLToMediaRelativeURLFilterTest {
 
 	protected Filter filter;

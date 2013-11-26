@@ -104,7 +104,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@After public void tearDown() {
 		try {
 			JMSCodePointServerJunitHelper.stopServer();
-			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("tearDown failed", e);
 		}

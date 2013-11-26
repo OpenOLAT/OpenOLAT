@@ -25,11 +25,9 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
-import org.junit.After;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupShort;
@@ -58,15 +56,6 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BaseSecurity securityManager;
-	
-	@After
-	public void shutdown() {
-		try {
-			DBFactory.getInstance().commitAndCloseSession();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
 	@Test
 	public void should_service_present() {

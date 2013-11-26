@@ -60,7 +60,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -278,16 +277,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 		dbInstance.commitAndCloseSession();
 		setuped = true;
-	}
-	
-  @After
-	public void tearDown() throws Exception {
-		try {
-      dbInstance.closeSession();
-		} catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-		}
 	}
 
 	@Test

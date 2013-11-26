@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -89,16 +88,6 @@ public class BGAreaManagerTest extends OlatTestCase {
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("Exception in setUp(): " + e);
-		}
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-			throw e;
 		}
 	}
 	

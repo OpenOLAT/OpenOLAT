@@ -253,7 +253,6 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 			if(conn != null) {
 				conn.shutdown();
 			}
-      DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("Exception in tearDown(): " + e);
       e.printStackTrace();

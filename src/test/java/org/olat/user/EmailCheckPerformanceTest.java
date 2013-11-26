@@ -22,14 +22,12 @@ package org.olat.user;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -56,38 +54,11 @@ public class EmailCheckPerformanceTest extends OlatTestCase {
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	@Before public void setup()throws Exception {
+	@Before
+	public void setup()throws Exception {
 			createUsers();
 	}
 
-	/**
-	 * TearDown is called after each test
-	 */
-	@After public void tearDown() {
-		try {
-			DB db = DBFactory.getInstance();
-			db.closeSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-		}
-	}
-
-	
-	
-//	@Test public void testExistEmailAddress() throws Exception {
-//		System.out.println("testExistEmailAddress...");
-//		int MAX_LOOP = 100;
-//		long startTime = System.currentTimeMillis();
-//		for (int i = 0; i<MAX_LOOP; i++) {
-//			boolean test = ManagerFactory.getManager().existEmailAddress("test_" + i + "@test.ti");
-//			if (test == true) {
-//				System.out.println("TEST EMAIL EXIST 1");
-//			}
-//		}
-//		long endTime = System.currentTimeMillis();
-//		testExistEmailAddressTime = (endTime - startTime);
-//		log.info("testExistEmailAddress takes time=" + (endTime - startTime) );	
-//	}
 
 	@Test public void testUserManger() throws Exception {
 		System.out.println("testUserManger start...");

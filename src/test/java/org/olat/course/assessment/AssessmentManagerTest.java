@@ -40,13 +40,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -72,7 +72,7 @@ import org.olat.test.OlatTestCase;
  */
 public class AssessmentManagerTest extends OlatTestCase  {
 	
-	private static Logger log = Logger.getLogger(AssessmentManagerTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(AssessmentManagerTest.class);
 	
 	private AssessmentManager assessmentManager;	
 	private ICourse course;
@@ -105,15 +105,6 @@ public class AssessmentManagerTest extends OlatTestCase  {
 			log.info("setUp done ------------------------");					
 		} catch (RuntimeException e) {
 			log.error("Exception in setUp(): " + e);
-		}
-	}
-	
-	@After
-	public void tearDown() throws Exception {
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("tearDown failed: ", e);
 		}
 	}
 	

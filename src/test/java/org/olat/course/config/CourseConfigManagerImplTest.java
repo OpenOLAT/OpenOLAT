@@ -29,7 +29,6 @@ package org.olat.course.config;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
@@ -56,7 +55,6 @@ public class CourseConfigManagerImplTest extends OlatTestCase {
 	private static ICourse course1;
 
 	private static boolean isSetup = false;
-	private static boolean isTearDown = false;
 
 	
 	/**
@@ -101,23 +99,5 @@ public class CourseConfigManagerImplTest extends OlatTestCase {
 		ccm.deleteConfigOf(course1);
 		VFSItem cc1File = CourseConfigManagerImpl.getConfigFile(course1);
 		assertFalse("CourseConfig file no longer exists.", cc1File != null);
-	}
-
-	/**
-	 * TearDown is called after each test.
-	 * 
-	 * @throws Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-		if (isTearDown) return;
-		try {
-			DBFactory.getInstance().closeSession();
-			isTearDown = true;
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-			e.printStackTrace();
-			throw e;
-		}
 	}
 }
