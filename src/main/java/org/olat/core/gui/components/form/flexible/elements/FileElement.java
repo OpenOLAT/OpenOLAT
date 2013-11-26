@@ -122,7 +122,10 @@ public interface FileElement extends FormMultipartItem {
 	public String getUploadFileName();
 
 	/**
-	 * @return The mime type of the uploaded file
+	 * The mime type is first looked up by servletContext.getMimeType(). If no
+	 * mime type is available, the browser supplied mime type is used.
+	 * 
+	 * @return The mime type of the uploaded file.
 	 */
 	public String getUploadMimeType();
 	
