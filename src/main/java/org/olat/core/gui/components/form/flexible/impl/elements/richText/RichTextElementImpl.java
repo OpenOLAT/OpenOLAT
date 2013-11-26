@@ -186,6 +186,17 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		}
 	}
 
+	@Override
+	public void setNewOriginalValue(String value) {
+		if (value == null) value = "";
+		original = new String(value);
+		originalInitialised = true;
+		//the check is made on the raw values instead of the getValue()
+		if (getRawValue() != null && !getRawValue().equals(value)) {
+			getComponent().setDirty(true);
+		}
+	}
+
 	/**
 	 * DO NOT USE THE ONCHANGE EVENT with TEXTAREAS!
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#addActionListener(org.olat.core.gui.control.Controller, int)
