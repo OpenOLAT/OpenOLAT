@@ -122,10 +122,15 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 			uploadFilename = getRootForm().getRequestMultipartFileName(component.getFormDispatchId());
 			//prevent an issue with Firefox
 			uploadFilename = Normalizer.normalize(uploadFilename, Normalizer.Form.NFKC);
-			uploadMimeType = getRootForm().getRequestMultipartFileMimeType(component.getFormDispatchId());
+			// use mime-type from file name to have deterministic mime types
+			uploadMimeType = WebappHelper.getMimeType(uploadFilename);
 			if (uploadMimeType == null) {
-				// use fallback: mime-type form file name
-				uploadMimeType = WebappHelper.getMimeType(uploadFilename);
+				// use browser mime type as fallback if unknown
+				uploadMimeType = getRootForm().getRequestMultipartFileMimeType(component.getFormDispatchId());
+			}
+			if (uploadMimeType == null) {
+				// use application fallback for worst case 
+				uploadMimeType = "application/octet-stream";
 			}
 			// Mark associated component dirty, that it gets rerendered
 			component.setDirty(true);
@@ -202,22 +207,15 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 			// check for mime types
 		} else if (checkForMimeTypes && tempUploadFile != null && tempUploadFile.exists()) {
 			boolean found = false;
-			// Fix problem with upload mimetype: if the mimetype differs from the
-			// mimetype the webapp helper generates from the file name the match won't work
-			String mimeFromWebappHelper = WebappHelper.getMimeType(uploadFilename);
-			if (uploadMimeType != null || mimeFromWebappHelper != null) {
+			if (uploadMimeType != null) {
 				for (String validType : mimeTypes) {
-					if (validType.equals(uploadMimeType) || validType.equals(mimeFromWebappHelper)) {
+					if (validType.equals(uploadMimeType)) {
 						// exact match: image/jpg
 						found = true;
 						break;
 					} else if (validType.endsWith("/*")) {
 						// wildcard match: image/*
 						if (uploadMimeType != null && uploadMimeType.startsWith(validType.substring(0, validType.length() - 2))) {
-							found = true;
-							break;
-						} else if (mimeFromWebappHelper != null && mimeFromWebappHelper.startsWith(validType.substring(0, validType.length() - 2))) {
-							// fallback to mime type from filename
 							found = true;
 							break;
 						}
