@@ -360,7 +360,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 					doNodeChoose(ureq);
 				} else if (cmd.equals(CMD_BULKFOCUS)){
 					mode = MODE_BULKFOCUS;
-					doBulkAssessment_v2(ureq);
+					doBulkAssessment(ureq);
 				} else if (cmd.equals(CMD_EFF_STATEMENT)){
 					if(callback.mayRecalculateEfficiencyStatements()) {
 						mode = MODE_EFF_STATEMENT;
@@ -908,9 +908,9 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		main.setContent(nodeChoose);
 	}
 	
-	private void doBulkAssessment_v2(UserRequest ureq) {
+	private void doBulkAssessment(UserRequest ureq) {
 		bulkAssOverviewCtrl = new BulkAssessmentOverviewController(ureq, getWindowControl(), ores);
-
+		listenTo(bulkAssOverviewCtrl);
 		main.setContent(bulkAssOverviewCtrl.getInitialComponent());
 	}
 	

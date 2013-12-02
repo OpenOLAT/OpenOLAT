@@ -236,8 +236,11 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		Step start;
 		if(nodes.size() > 1) {
 			start = new BulkAssessment_1_SelectCourseNodeStep(ureq, courseOres);
-		} else {
+		} else if(nodes.size() == 1){
 			start = new BulkAssessment_2_DatasStep(ureq, nodes.get(0));
+		} else {
+			showWarning("bulk.action.no.coursenodes");
+			return;
 		}
 
 		StepRunnerCallback finish = new StepRunnerCallback() {
