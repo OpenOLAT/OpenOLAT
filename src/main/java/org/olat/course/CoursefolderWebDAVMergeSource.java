@@ -43,6 +43,8 @@ class CoursefolderWebDAVMergeSource extends MergeSource {
 	
 	private boolean init = false;
 	private final Identity identity;
+	private long loadTime;
+	
 	
 	public CoursefolderWebDAVMergeSource(Identity identity) {
 		super(null, null);
@@ -89,7 +91,7 @@ class CoursefolderWebDAVMergeSource extends MergeSource {
 
 	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
-		if(!init) {
+		if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
 			init();
 		}
 		return super.getItems(filter);
@@ -132,6 +134,7 @@ class CoursefolderWebDAVMergeSource extends MergeSource {
 			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(courseTitle, re.getOlatResource());
 			addContainer(cfContainer);
 		}
+		loadTime = System.currentTimeMillis();
 		init = true;
 	}
 }

@@ -55,6 +55,7 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 	private boolean init = false;
 	private final Identity identity;
 	private final CollaborationManager collaborationManager;
+	private long loadTime;
 	
 	public GroupfoldersWebDAVMergeSource(Identity identity, CollaborationManager collaborationManager) {
 		super(null, null);
@@ -97,7 +98,7 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 
 	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
-		if(!init) {
+		if(!init  || (System.currentTimeMillis() - loadTime) > 60000) {
 			init();
 		}
 		return super.getItems(filter);
@@ -160,6 +161,7 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 		for (BusinessGroup group : participantsGroups) {
 			addContainer(group, addedGroupKeys, addedGroupNames, false);
 		}
+		loadTime = System.currentTimeMillis();
 		init = true;
 	}
 	

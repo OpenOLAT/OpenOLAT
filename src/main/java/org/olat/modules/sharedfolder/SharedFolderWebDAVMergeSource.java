@@ -50,6 +50,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 	private OLog log = Tracing.createLoggerFor(SharedFolderWebDAVMergeSource.class);
 
 	private boolean init = false;
+	private long loadTime;
 	private final Identity identity;
 	private final List<String> publiclyReadableFolders;
 	
@@ -69,7 +70,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 
 	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
-		if(!init) {
+		if(!init  || (System.currentTimeMillis() - loadTime) > 60000) {
 			init();
 		}
 		return super.getItems(filter);
@@ -168,6 +169,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 	@Override
 	protected void init() {
 		super.init();
+
 		SharedFolderManager sfm = SharedFolderManager.getInstance();
 		RepositoryManager repoManager = RepositoryManager.getInstance();
 		List<RepositoryEntry> ownerEntries = (List<RepositoryEntry>) repoManager.queryByOwner(identity, SharedFolderFileResource.TYPE_NAME);
@@ -204,6 +206,8 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 				}
 			}
 		}
+
+		loadTime = System.currentTimeMillis();
 		init = true;
 	}
 	

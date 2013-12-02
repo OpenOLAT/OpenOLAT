@@ -22,6 +22,7 @@ package org.olat.course;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
@@ -32,14 +33,14 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  */
 class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 	
-	private OLog log = Tracing.createLoggerFor(CoursefolderWebDAVNamedContainer.class);
+	private static final OLog log = Tracing.createLoggerFor(CoursefolderWebDAVNamedContainer.class);
 	
 	private OLATResourceable res;
 	private VFSContainer parentContainer;
 	
 	public CoursefolderWebDAVNamedContainer(String courseTitle, OLATResourceable res) {
 		super(courseTitle, null);
-		this.res = res;
+		this.res = OresHelper.clone(res);
 	}
 
 	@Override
