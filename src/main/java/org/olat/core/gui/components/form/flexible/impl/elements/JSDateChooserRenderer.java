@@ -116,7 +116,8 @@ class JSDateChooserRenderer implements ComponentRenderer {
 				.append("],\n")
 				.append("  showOtherMonths:true,\n")
 				.append("  onSelect:function(){\n")
-				.append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("')")
+				.append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n")
+				.append("    jQuery(this).change();\n")
 				.append("  }\n")
 			  .append("})});")
 			  .append("\n/* ]]> */ \n</script>");
