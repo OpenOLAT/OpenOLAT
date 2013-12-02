@@ -59,7 +59,7 @@ public class ItemMetadataFormController extends FormBasicController {
 	private RichTextElement desc, hint, solution;
 	private SingleSelection layout, limitAttempts, limitTime, shuffle, showHints, showSolution;
 	private IntegerElement attempts, timeMin, timeSec;
-	private QTIEditorPackage qti;
+	private final QTIEditorPackage qti;
 
 	public ItemMetadataFormController(UserRequest ureq, WindowControl control, Item item, QTIEditorPackage qti, boolean restrictedEdit) {
 		super(ureq, control);
@@ -271,7 +271,10 @@ public class ItemMetadataFormController extends FormBasicController {
 			// Solution
 			showSolution = uifactory.addRadiosHorizontal("showSolution", "form.imd.correctsolution.show", formLayout, yesnoKeys, yesnoValues);
 			showSolution.addActionListener(this, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
-			solution = uifactory.addRichTextElementForStringData("solution", "form.imd.correctsolution", item.getQuestion().getSolutionText(), 8,
+			
+			boolean essay = (q.getType() == Question.TYPE_ESSAY);
+			String solLabel = essay ? "form.imd.correctsolution.word" : "form.imd.correctsolution";
+			solution = uifactory.addRichTextElementForStringData("solution", solLabel, item.getQuestion().getSolutionText(), 8,
 					-1, true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
 			// set upload dir to the media dir
 			solution.getEditorConfiguration().setFileBrowserUploadRelPath("media");
@@ -279,8 +282,9 @@ public class ItemMetadataFormController extends FormBasicController {
 				showSolution.select("y", true);
 			} else {
 				showSolution.select("n", true);
+				showSolution.setVisible(!essay);
 				//solution always visible for essay
-				solution.setVisible((q.getType() == Question.TYPE_ESSAY));
+				solution.setVisible(essay);
 			}
 		}
 		// Submit Button
