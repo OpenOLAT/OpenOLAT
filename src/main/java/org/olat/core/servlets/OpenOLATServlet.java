@@ -126,7 +126,6 @@ public class OpenOLATServlet extends HttpServlet {
 		
 		GUIInterna.begin(req);
 		Tracing.setUreq(req);
-		I18nManager.attachI18nInfoToThread(req);
 		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(req);
 		WorkThreadInformations.set("Serve request: " + req.getRequestURI());
 		if(sessionStatsManager != null) {
@@ -257,6 +256,7 @@ public class OpenOLATServlet extends HttpServlet {
 			RequestDispatcher dispatcher = request.getRequestDispatcher(redirectUri);
 			dispatcher.forward(request, response);
 		} else if(dispatchers.containsKey(dispatcherName)) {
+			I18nManager.attachI18nInfoToThread(request);
 			Dispatcher dispatcher = dispatchers.get(dispatcherName);
 			dispatcher.execute(request, response);
 		} else {

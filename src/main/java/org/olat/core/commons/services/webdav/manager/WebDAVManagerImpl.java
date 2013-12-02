@@ -72,7 +72,7 @@ public class WebDAVManagerImpl implements WebDAVManager {
 	public static final String BASIC_AUTH_REALM = "OLAT WebDAV Access";
 	private CoordinatorManager coordinatorManager;
 
-	private CacheWrapper<String,UserSession> timedSessionCache;
+	private CacheWrapper<CacheKey,UserSession> timedSessionCache;
 	
 	private UserSessionManager sessionManager;
 	private WebDAVAuthManager webDAVAuthManager;
@@ -201,10 +201,10 @@ public class WebDAVManagerImpl implements WebDAVManager {
 		String authHeader = request.getHeader("Authorization");
 		if (authHeader != null) {
 			// fetch user session from a previous authentication
-			UserSession usess = timedSessionCache.get(authHeader);
-			if (usess != null && usess.isAuthenticated()) {
-				return usess;
-			}
+			
+			String cacheKey = null;
+			UserSession usess = null;
+			String remoteAddr = request.getRemoteAddr();
 			
 			StringTokenizer st = new StringTokenizer(authHeader);
 			if (st.hasMoreTokens()) {
@@ -212,17 +212,26 @@ public class WebDAVManagerImpl implements WebDAVManager {
 
 				// We only handle HTTP Basic authentication
 				if (basic.equalsIgnoreCase("Basic")) {
-					String credentials = st.nextToken();
-					usess = handleBasicAuthentication(credentials, request);
+					cacheKey = authHeader;
+					usess = timedSessionCache.get(new CacheKey(remoteAddr, authHeader));
+					if (usess == null || !usess.isAuthenticated()) {
+						String credentials = st.nextToken();
+						usess = handleBasicAuthentication(credentials, request);
+					}
 				} else if (basic.equalsIgnoreCase("Digest")) {
 					int digestIndex = authHeader.indexOf("Digest");
 					String digestInfos = authHeader.substring(digestIndex + 7);
-					usess = handleDigestAuthentication(digestInfos, request);
+					DigestAuthentication digestAuth = DigestAuthentication.parse(digestInfos);
+					cacheKey = digestAuth.getUsername();
+					usess = timedSessionCache.get(new CacheKey(remoteAddr, digestAuth.getUsername()));
+					if (usess == null || !usess.isAuthenticated()) {
+						usess = handleDigestAuthentication(digestInfos, request);
+					}
 				}
 			}
-			
-			if(usess != null) {
-				timedSessionCache.put(authHeader, usess);
+	
+			if(usess != null && cacheKey != null) {
+				timedSessionCache.put(new CacheKey(remoteAddr, cacheKey), usess);
 				return usess;
 			}
 		}
