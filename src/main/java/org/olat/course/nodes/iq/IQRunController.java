@@ -582,7 +582,8 @@ public class IQRunController extends BasicController implements GenericEventList
 		myContent.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
 		myContent.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 		myContent.contextPut("passed", scoreEval.getPassed());
-		myContent.contextPut("comment", acn.getUserUserComment(userCourseEnv));
+		StringBuilder comment = Formatter.stripTabsAndReturns(acn.getUserUserComment(userCourseEnv));
+		myContent.contextPut("comment", StringHelper.xssScan(comment));
 		myContent.contextPut("attempts", acn.getUserAttempts(userCourseEnv));
 		
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();

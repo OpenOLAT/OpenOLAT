@@ -53,6 +53,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -230,7 +232,8 @@ public class OnyxRunController extends BasicController {
 				}
 				vc.contextPut("hasResults", hasResults.booleanValue());
 				// </OLATCE-498>
-				vc.contextPut("comment", courseNodeTest.getUserUserComment(userCourseEnv));
+				StringBuilder comment = Formatter.stripTabsAndReturns(courseNodeTest.getUserUserComment(userCourseEnv));
+				vc.contextPut("comment", StringHelper.xssScan(comment));
 
 				if (courseNodeTest.getUserAttempts(userCourseEnv) > 0) {
 					se = courseNodeTest.getUserScoreEvaluation(userCourseEnv);

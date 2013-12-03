@@ -31,7 +31,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
@@ -48,7 +50,6 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class MSCourseNodeRunController extends DefaultController {
 
-	private static final String PACKAGE = Util.getPackageName(MSCourseNodeRunController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(MSCourseNodeRunController.class);
 
 	private VelocityContainer myContent;
@@ -62,7 +63,7 @@ public class MSCourseNodeRunController extends DefaultController {
 	 */
 	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, AssessableCourseNode msCourseNode, boolean displayNodeInfo) {
 		super(wControl);
-		PackageTranslator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+		Translator trans = Util.createPackageTranslator(MSCourseNodeRunController.class, ureq.getLocale());
 		
 		myContent = new VelocityContainer("olatmsrun", VELOCITY_ROOT + "/run.html", trans, this);
 		
@@ -112,7 +113,8 @@ public class MSCourseNodeRunController extends DefaultController {
 		myContent.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
 		myContent.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 		myContent.contextPut("passed", scoreEval.getPassed());
-		myContent.contextPut("comment", courseNode.getUserUserComment(userCourseEnv));
+		StringBuilder comment = Formatter.stripTabsAndReturns(courseNode.getUserUserComment(userCourseEnv));
+		myContent.contextPut("comment", StringHelper.xssScan(comment));
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 		myContent.contextPut("log", am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity()));
 	}

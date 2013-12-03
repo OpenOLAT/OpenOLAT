@@ -358,6 +358,12 @@ public class StringHelper {
 		return new OWASPAntiSamyXSSFilter().filter(str);
 	}
 	
+	public static final String xssScan(StringBuilder str) {
+		if(str == null) return null;
+		if(str.length() == 0) return "";
+		return new OWASPAntiSamyXSSFilter().filter(str.toString());
+	}
+	
 	public static final boolean xssScanForErrors(String str) {
 		OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
 		filter.filter(str);

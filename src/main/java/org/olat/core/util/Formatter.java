@@ -452,7 +452,7 @@ public class Formatter {
 	 */
 	public static StringBuilder stripTabsAndReturns(String source) {
 		if (source == null) return null;
-		StringBuilder sb = new StringBuilder(300);
+		StringBuilder sb = new StringBuilder(source.length() + (source.length() / 10));
 		int len = source.length();
 		char[] cs = source.toCharArray();
 		for (int i = 0; i < len; i++) {

@@ -274,12 +274,20 @@ public class AssessmentForm extends FormBasicController {
 		if (hasComment) {
 			// Use init variables from db, not available from wrapper
 			userCommentValue = assessableCourseNode.getUserUserComment(userCourseEnv);
-			if (userCommentValue == null) userCommentValue = new String("");
+			if (userCommentValue == null) {
+				userCommentValue = "";
+			} else {
+				userCommentValue = StringHelper.xssScan(userCommentValue);
+			}
 			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, userCommentValue, formLayout);
 		}
 
 		coachCommentValue = assessableCourseNode.getUserCoachComment(userCourseEnv);
-		if (coachCommentValue == null) coachCommentValue = new String("");
+		if (coachCommentValue == null) {
+			coachCommentValue = "";
+		} else {
+			coachCommentValue = StringHelper.xssScan(coachCommentValue);
+		}
 		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, coachCommentValue, formLayout);
 	
 		//why does the TextElement not use its default error key??? 
