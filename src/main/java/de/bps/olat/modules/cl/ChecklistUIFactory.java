@@ -19,8 +19,6 @@
  */
 package de.bps.olat.modules.cl;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
@@ -69,8 +67,8 @@ public class ChecklistUIFactory {
 	 * @param course
 	 * @return controller
 	 */
-	public Controller createDisplayController(UserRequest ureq, WindowControl wControl, Checklist checklist, List<ChecklistFilter> filter, boolean canEdit, boolean canManage, ICourse course, CourseNode coursenode) {
-		DefaultController checklistController = new ChecklistDisplayController(ureq, wControl, checklist, filter, canEdit, canManage, course);
+	public Controller createDisplayController(UserRequest ureq, WindowControl wControl, Checklist checklist, boolean canEdit, boolean canManage, ICourse course, CourseNode coursenode) {
+		DefaultController checklistController = new ChecklistDisplayController(ureq, wControl, checklist, canEdit, canManage, course);
 		checklistController.addLoggingResourceable(LoggingResourceable.wrap(coursenode));
 		return checklistController;
 	}
@@ -83,8 +81,8 @@ public class ChecklistUIFactory {
 	 * @param filter
 	 * @return controller
 	 */
-	public Controller createDisplayController(UserRequest ureq, WindowControl wControl, Checklist checklist, List<ChecklistFilter> filter) {
-		return new ChecklistDisplayController(ureq, wControl, checklist, filter, false, false, null);
+	public Controller createDisplayController(UserRequest ureq, WindowControl wControl, Checklist checklist) {
+		return new ChecklistDisplayController(ureq, wControl, checklist, false, false, null);
 	}
 	
 	/**

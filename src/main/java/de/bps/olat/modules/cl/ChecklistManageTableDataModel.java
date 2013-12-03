@@ -20,63 +20,102 @@
 package de.bps.olat.modules.cl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
-public class ChecklistManageTableDataModel extends DefaultTableDataModel {
-	
-	private static int COLUMN_COUNT;
-	private static int ROW_COUNT;
-	
-	private Checklist checklist;
-	private List<Identity> participants;
-	private List entries;
+import de.bps.olat.modules.cl.ChecklistManageTableDataModel.Row;
 
-	@SuppressWarnings("unchecked")
-	public ChecklistManageTableDataModel(Checklist checklist, List<Identity> participants) {
-		super(participants);
-		this.checklist = checklist;
-		this.participants = participants;
+public class ChecklistManageTableDataModel extends DefaultTableDataModel<Row> {
+	
+	private int colCount;
+	private int rowCount;
+
+	public ChecklistManageTableDataModel(Checklist checklist, List<Identity> participants,
+			List<UserPropertyHandler> userPropertyHandlers, int cols) {
+		super(Collections.<Row>emptyList());
 		
-		COLUMN_COUNT = checklist.getCheckpoints().size() + 2;
-		ROW_COUNT = participants.size();
+		colCount = cols;
+		rowCount = participants.size();
 		
-		this.entries = new ArrayList(ROW_COUNT);
+		List<Row> entries = new ArrayList<>(rowCount);
 		for( Identity identity : participants ) {
-			List row = new ArrayList(COLUMN_COUNT);
-			// name
-			row.add(
-					identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()) + " " +
-					identity.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
-			// checkpoints value
-			for( Checkpoint checkpoint : this.checklist.getCheckpointsSorted(ChecklistUIFactory.comparatorTitleAsc) ) {
-				row.add(checkpoint.getSelectionFor(identity));
-			}
-			// action
-			row.add(true);
-			// add to columns
-			entries.add(row);
+			entries.add(new Row(identity, userPropertyHandlers, checklist, Locale.ENGLISH));
 		}
+		setObjects(entries);
 	}
 
+	@Override
 	public int getColumnCount() {
 		// name, 1-n checkpoints, action
-		return COLUMN_COUNT;
+		return colCount;
 	}
 	
-	public int getRowCount() {
-		return ROW_COUNT;
-	}
-	
+	@Override
 	public Object getValueAt(int row, int col) {
-		List entry = (List)entries.get(row);
-		return entry.get(col);
+		Row rowObj = getObject(row);
+		if(col == 1000) {
+			return rowObj.getIdentityName();
+		} else if(col < 500) {
+			String[] props = rowObj.getIdentityProps();
+			if(col >= 0 && col < props.length) {
+				return props[col];
+			}
+		} else {
+			Boolean[] props = rowObj.getCheckpoints();
+			int index = col - 500;
+			if(index >= 0 && index < props.length) {
+				return props[index];
+			}
+		}
+		return "";
 	}
 	
-	public Identity getParticipantAt(int row) {
-		return participants.get(row);
+	public Long getParticipantKeyAt(int row) {
+		Row rowObj = getObject(row);
+		return rowObj.getIdentityKey();
+	}
+	
+	protected static class Row {
+		private final Long identityKey;
+		private final String identityName;
+		private final String[] identityProps;
+		private final Boolean[] checkpoints;
+		
+		public Row(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Checklist checklist, Locale locale) {
+			this.identityKey = identity.getKey();
+			this.identityName = identity.getName();
+			
+			identityProps = new String[userPropertyHandlers.size()];
+			for(int i=userPropertyHandlers.size(); i-->0; ) {
+				identityProps[i] = userPropertyHandlers.get(i).getUserProperty(identity.getUser(), locale);
+			}
+			
+			List<Checkpoint> checkpointList = checklist.getCheckpointsSorted(ChecklistUIFactory.comparatorTitleAsc);
+			checkpoints = new Boolean[checkpointList.size()];
+			for( int i=checkpointList.size(); i-->0; ) {
+				checkpoints[i] =  checkpointList.get(i).getSelectionFor(identity);
+			}
+		}
+
+		public Long getIdentityKey() {
+			return identityKey;
+		}
+
+		public String getIdentityName() {
+			return identityName;
+		}
+
+		public String[] getIdentityProps() {
+			return identityProps;
+		}
+
+		public Boolean[] getCheckpoints() {
+			return checkpoints;
+		}
 	}
 }

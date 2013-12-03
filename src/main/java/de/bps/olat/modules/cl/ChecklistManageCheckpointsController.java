@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -39,9 +41,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
+import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
@@ -58,6 +60,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
@@ -65,6 +68,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Description:<br>
@@ -79,6 +83,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 	
 	protected final static String EDIT_ACTION = "cl.edit.identity";
 	protected final static String DETAILS_ACTION = "cl.user.details";
+	protected static final String USER_PROPS_ID = ChecklistManageCheckpointsController.class.getCanonicalName();
 	
 	private Identity selectedIdentity;
 	
@@ -97,31 +102,35 @@ public class ChecklistManageCheckpointsController extends BasicController {
 	private List<BusinessGroup> lstGroups;
 	private List<Identity> allIdentities, notInGroupIdentities;
 	private CourseGroupManager cgm;
+	private final UserManager userManager;
 	private final BaseSecurity securityManager;
+	private final BaseSecurityModule securityModule;
 	private final BusinessGroupService businessGroupService;
 	
 	private CloseableModalController cmcUserInfo;
 	private UserInfoMainController uimc;
 	
 	protected ChecklistManageCheckpointsController(UserRequest ureq, WindowControl wControl, Checklist checklist, ICourse course) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale()));
 		this.checklist = checklist;
 		this.course = course;
 		this.allIdentities = new ArrayList<Identity>();
 		this.notInGroupIdentities = new ArrayList<Identity>();
 		this.lstGroups = new ArrayList<BusinessGroup>();
 		
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		securityManager = BaseSecurityManager.getInstance();
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		loadData();
 		
 		
 		cgm = course.getCourseEnvironment().getCourseGroupManager();
 		Identity identity = ureq.getIdentity();
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin() || cgm.isIdentityCourseAdministrator(identity);
-		if(cgm.isIdentityCourseAdministrator(identity)) {
+		if(isAdmin) {
 			// collect all identities with results
-			HashSet<Identity> identitiesWithResult = new HashSet<Identity>();
+			Set<Identity> identitiesWithResult = new HashSet<>();
 			for( Checkpoint checkpoint : this.checklist.getCheckpoints() ) {
 				for( CheckpointResult result : checkpoint.getResults() ) {
 					identitiesWithResult.add(securityManager.loadIdentityByKey(result.getIdentityId()));
@@ -129,19 +138,19 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			}
 			
 			// collect all identities in learning groups
-			HashSet<Identity> identitiesInGroups = new HashSet<Identity>();
+			Set<Identity> identitiesInGroups = new HashSet<>();
 			identitiesInGroups.addAll(cgm.getParticipantsFromBusinessGroups());
 			//fxdiff VCRP-1,2: access control of resources
 			identitiesInGroups.addAll(cgm.getParticipants());
 			
 			// all identities with result and/or in learning groups
-			HashSet<Identity> identitiesAll = new HashSet<Identity>();
+			Set<Identity> identitiesAll = new HashSet<Identity>();
 			identitiesAll.addAll(identitiesInGroups);
 			identitiesAll.addAll(identitiesWithResult);
 			allIdentities.addAll(identitiesAll);
 			
 			// collect all identities not in any learning group
-			HashSet<Identity> identitiesNotInGroups = new HashSet<Identity>();
+			Set<Identity> identitiesNotInGroups = new HashSet<>();
 			identitiesNotInGroups.addAll(identitiesAll);
 			identitiesNotInGroups.removeAll(identitiesInGroups);
 			notInGroupIdentities.addAll(identitiesNotInGroups);
@@ -150,7 +159,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			lstGroups.addAll(cgm.getAllBusinessGroups());
 		} else if(cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT)) {
 			// collect all identities in learning groups
-			HashSet<Identity> identitiesInGroups = new HashSet<Identity>();
+			Set<Identity> identitiesInGroups = new HashSet<>();
 			identitiesInGroups.addAll(cgm.getParticipantsFromBusinessGroups());
 			//fxdiff VCRP-1,2: access control of resources
 			identitiesInGroups.addAll(cgm.getParticipants());
@@ -159,7 +168,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			// collect all learning groups
 			lstGroups.addAll(cgm.getAllBusinessGroups());
 		} else if(cgm.isIdentityCourseCoach(identity)) {
-			HashSet<Identity> identitiesInGroups = new HashSet<Identity>();
+			Set<Identity> identitiesInGroups = new HashSet<>();
 			for( BusinessGroup group : cgm.getAllBusinessGroups() ) {
 				if(securityManager.isIdentityInSecurityGroup(identity, group.getOwnerGroup())) {
 					lstGroups.add(group);
@@ -211,10 +220,10 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(groupKey);
 			lstIdents.addAll(securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup()));
 		}
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		// prepare table for run view
-		manageTableData = new ChecklistManageTableDataModel(this.checklist, lstIdents);
-		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("cl.table.empty"));
 		tableConfig.setColumnMovingOffered(true);
@@ -225,15 +234,31 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		manageChecklistTable = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(manageChecklistTable);
 		
-		manageChecklistTable.addColumnDescriptor(new DefaultColumnDescriptor("cl.table.identity", 0, DETAILS_ACTION, ureq.getLocale()));
-		int i = 1;
+		int cols = 0;
+		if(isAdministrativeUser) {
+			manageChecklistTable.addColumnDescriptor(new DefaultColumnDescriptor("username", 1000, null, getLocale()));
+			cols++;
+		}
+
+		int i=0;
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler == null) continue;
+			boolean visible = UserManager.getInstance().isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
+			manageChecklistTable.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(i++, DETAILS_ACTION, getLocale()));
+			cols++;
+		}
+
+		int j = 500;
 		for( Checkpoint checkpoint : checklist.getCheckpoints() ) {
 			String pointTitle = checkpoint.getTitle() == null ? "" : checkpoint.getTitle();
-			manageChecklistTable.addColumnDescriptor(new ChecklistMultiSelectColumnDescriptor(pointTitle, i));
-			i++;
+			manageChecklistTable.addColumnDescriptor(new ChecklistMultiSelectColumnDescriptor(pointTitle, j++));
+			cols++;
 		}
-		manageChecklistTable.addColumnDescriptor(new BooleanColumnDescriptor("cl.edit.title", i, EDIT_ACTION, translate(EDIT_ACTION), ""));
+		manageChecklistTable.addColumnDescriptor(new StaticColumnDescriptor(EDIT_ACTION, "cl.edit.title", translate(EDIT_ACTION)));
+		cols++;
+		
 		manageChecklistTable.setMultiSelect(false);
+		manageTableData = new ChecklistManageTableDataModel(checklist, lstIdents, userPropertyHandlers, cols);
 		manageChecklistTable.setTableDataModel(manageTableData);
 		
 		panel.setContent(manageChecklistTable.getInitialComponent());
@@ -352,7 +377,8 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		if(source == manageChecklistTable) {
 			if(event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent tableEvent = (TableEvent)event;
-				selectedIdentity = manageTableData.getParticipantAt(tableEvent.getRowId());
+				Long identityKey = manageTableData.getParticipantKeyAt(tableEvent.getRowId());
+				selectedIdentity = securityManager.loadIdentityByKey(identityKey, false);
 				if(tableEvent.getActionId().equals(EDIT_ACTION)) {
 					initEditTable(ureq, selectedIdentity);
 					VelocityContainer vcManageUser = createVelocityContainer("manageUser");

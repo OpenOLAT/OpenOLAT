@@ -182,11 +182,18 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		boolean canEdit = ureq.getUserSession().getRoles().isOLATAdmin() || cgm.isIdentityCourseAdministrator(ureq.getIdentity());
+		boolean canEdit = ureq.getUserSession().getRoles().isOLATAdmin()
+				|| cgm.isIdentityCourseAdministrator(ureq.getIdentity());
 		boolean canManage;
-		if(canEdit) canManage = true;
-		else canManage = cgm.isIdentityCourseCoach(ureq.getIdentity()) | cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_GROUPMANAGEMENT);
-		Controller controller = ChecklistUIFactory.getInstance().createDisplayController(ureq, wControl, loadOrCreateChecklist(userCourseEnv.getCourseEnvironment().getCoursePropertyManager()), null, canEdit, canManage, course, this);
+		if(canEdit) {
+			canManage = true;
+		} else {
+			canManage = cgm.isIdentityCourseCoach(ureq.getIdentity())
+					|| cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_GROUPMANAGEMENT);
+		}
+		Checklist checklist = loadOrCreateChecklist(userCourseEnv.getCourseEnvironment().getCoursePropertyManager());
+		Controller controller = ChecklistUIFactory.getInstance()
+				.createDisplayController(ureq, wControl, checklist, canEdit, canManage, course, this);
 		// Add title and descrition
 		controller = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_cl_icon");
 		return new NodeRunConstructionResult(controller);

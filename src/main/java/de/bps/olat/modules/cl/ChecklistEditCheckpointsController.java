@@ -210,7 +210,6 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer fic, Controller controller, UserRequest ureq) {
 		if(titleContainer != null) fic.remove(titleContainer);
 		if(buttonContainer != null) fic.remove(buttonContainer);

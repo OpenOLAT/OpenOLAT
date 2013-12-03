@@ -32,7 +32,7 @@ import org.olat.core.gui.translator.Translator;
  * Initial Date:  11.08.2009 <br>
  * @author bja <bja@bps-system.de>
  */
-public class ChecklistRunTableDataModel extends DefaultTableDataModel {
+public class ChecklistRunTableDataModel extends DefaultTableDataModel<Checkpoint> {
 
 	private static final int COLUMN_COUNT = 3;
 	private Translator translator;
@@ -49,7 +49,7 @@ public class ChecklistRunTableDataModel extends DefaultTableDataModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		Checkpoint checkpoint = (Checkpoint) objects.get(row);
+		Checkpoint checkpoint = getObject(row);
 
 		switch (col) {
 			case 0:
