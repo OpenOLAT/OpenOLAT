@@ -27,6 +27,7 @@ jQuery(function(){
 				url: '$mapuri',
 				data: request,
 				dataType: "json",
+				type: "POST",
 				success: function( data ) {
 					response(jQuery.map( data, function( item ) {
 						return {
