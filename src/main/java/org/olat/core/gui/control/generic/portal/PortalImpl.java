@@ -44,7 +44,6 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -100,8 +99,8 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 		this.portletContainers = new HashMap<String, PortletContainer>();
 		this.inactivePortlets = new ArrayList<String>();
 
-		this.trans = new PackageTranslator(Util.getPackageName(PortalImpl.class), ureq.getLocale());
-		this.portalVC = new VelocityContainer("portalVC", VELOCITY_ROOT + "/portal.html", trans, this);		// initialize arrays
+		trans = Util.createPackageTranslator(PortalImpl.class, ureq.getLocale());
+		portalVC = new VelocityContainer("portalVC", VELOCITY_ROOT + "/portal.html", trans, this);		// initialize arrays
 
 		// calculate the column css classes based on YAML schema
 		int cols = portalColumns.size();
@@ -156,14 +155,14 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 		// init all portlets enabled in the portal columns
 		initPortlets(ureq);
 		// push the columns to velocity
-		this.portalVC.contextPut("portalColumns", portalColumns);
+		portalVC.contextPut("portalColumns", portalColumns);
 		// push list of inactive portlets to velocity
-		this.portalVC.contextPut("inactivePortlets", inactivePortlets);
+		portalVC.contextPut("inactivePortlets", inactivePortlets);
 		// push all portlets to velocity
-		this.portalVC.contextPut("portletContainers", portletContainers);
-		this.portalVC.contextPut("locale", ureq.getLocale());
+		portalVC.contextPut("portletContainers", portletContainers);
+		portalVC.contextPut("locale", ureq.getLocale());
 		// in run mode
-		this.portalVC.contextPut(MODE_EDIT, Boolean.FALSE);
+		portalVC.contextPut(MODE_EDIT, Boolean.FALSE);
 		setInitialComponent(portalVC);
 	}
 
@@ -176,26 +175,22 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 	 */
 	public PortalImpl createInstance(WindowControl wContr, UserRequest ureq) {
 		// user users personal configuration
-		List userColumns = getUserPortalColumns(ureq);
+		List<List<String>> userColumns = getUserPortalColumns(ureq);
 		// clone default configuration for this user if user has no own configuration
 		if (userColumns == null) {
-			userColumns = (List) ObjectCloner.deepCopy(this.portalColumns);
+			userColumns = (List<List<String>>) ObjectCloner.deepCopy(portalColumns);
 		}
 
 		// check if users portal columns contain only defined portals. remove all non existing portals
 		// to make it possible to change the portlets in a next release or to remove a portlet
 		List<List<String>> cleanedUserColumns = new ArrayList<List<String>>();
 		Set<String> availablePortlets = PortletFactory.getPortlets().keySet();
-		Iterator colIter = userColumns.iterator();
-		while (colIter.hasNext()) {
+		for (List<String> row: userColumns) {
 			// add this row as new cleaned row to columns
-			List<String> cleanedRow = new ArrayList<String>();
+			List<String> cleanedRow = new ArrayList<String>(row.size());
 			cleanedUserColumns.add(cleanedRow);
 			// check all portlets in old row and copy to cleaned row if it exists
-			List row = (List) colIter.next();
-			Iterator rowIter = row.iterator();
-			while (rowIter.hasNext()) {
-				String portletName = (String) rowIter.next();
+			for(String portletName : row) {
 				if (availablePortlets.contains(portletName)) {
 					cleanedRow.add(portletName);					
 				}
@@ -206,9 +201,9 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 		return new PortalImpl(this.name, ureq, wContr, cleanedUserColumns);
 	}
 	
-	private List getUserPortalColumns(UserRequest ureq) {
+	private List<List<String>> getUserPortalColumns(UserRequest ureq) {
 		Preferences gp = ureq.getUserSession().getGuiPreferences();
-		return (List) gp.get(PortalImpl.class, "userPortalColumns" + name);
+		return (List<List<String>>) gp.get(PortalImpl.class, "userPortalColumns" + name);
 	}
 
 	private void saveUserPortalColumnsConfiguration(UserRequest ureq, List userColumns) {
@@ -321,6 +316,7 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		log.debug("PortalImpl event=" + event);
 		if (source instanceof PortletContainer) {
@@ -328,9 +324,9 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 			String cmd = event.getCommand();
 			boolean found = false;
 			for (int column = 0; column < portalColumns.size(); column++) {
-				List rows = portalColumns.get(column);
+				List<String> rows = portalColumns.get(column);
 				for (int row = 0; row < rows.size(); row++) {
-					String portletName = (String) rows.get(row);
+					String portletName = rows.get(row);
 					if (portletName.equals(pc.getPortlet().getName())){
 						if (cmd.equals("move.up")) {
 							Collections.swap(rows, row, row - 1);

@@ -124,7 +124,12 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		if (studentView) {
 			entries = RepositoryManager.getInstance().getParticipantRepositoryEntry(getIdentity(), maxResults, orderBy);
 		} else {
-			entries = RepositoryManager.getInstance().getTutorRepositoryEntry(getIdentity(), maxResults, orderBy);
+			List<RepositoryEntry> fullEntries = RepositoryManager.getInstance()
+					.getLearningResourcesAsTeacher(getIdentity(), 0, maxResults, orderBy);
+			entries = new ArrayList<RepositoryEntryLight>();
+			for(RepositoryEntry fullEntry:fullEntries) {
+				entries.add(new FullReWrapper(fullEntry));
+			}
 		}
 		return entries;
 	}
@@ -264,4 +269,47 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 			}};
 	}
   
+	private static class FullReWrapper implements  RepositoryEntryLight {
+		
+		private final RepositoryEntry re;
+		
+		public FullReWrapper(RepositoryEntry re) {
+			this.re = re;
+		}
+
+		@Override
+		public Long getKey() {
+			return re.getKey();
+		}
+
+		@Override
+		public String getDisplayname() {
+			return re.getDisplayname();
+		}
+
+		@Override
+		public String getResourceType() {
+			return re.getOlatResource().getResourceableTypeName();
+		}
+
+		@Override
+		public int getStatusCode() {
+			return re.getStatusCode();
+		}
+
+		@Override
+		public String getDescription() {
+			return re.getDescription();
+		}
+
+		@Override
+		public int getAccess() {
+			return re.getAccess();
+		}
+
+		@Override
+		public boolean isMembersOnly() {
+			return re.isMembersOnly();
+		} 
+	}
 }

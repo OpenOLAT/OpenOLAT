@@ -133,7 +133,7 @@
 		<property name="enabled" value="${portlet.infomessages.enabled}" />
 	</bean>
 
-	<!-- the users home portal -->
+	<!-- the students home portal -->
 	<bean id="homeportal" class="org.olat.core.gui.control.generic.portal.PortalImpl" scope="prototype">
 		<property name="name" value="homeportal" />
 		<property name="portalColumns">
@@ -141,12 +141,36 @@
 			<list>
 				<list>
 					<value>Information</value>
-					<value>Zsuz</value>
 					<value>Quickstart</value>
 					<value>DidYouKnow</value>								
 				</list>
 				<list>
 					<value>RepositoryPortletStudent</value>
+					<value>InfoMessages</value>
+					<value>Calendar</value> 
+					<value>Bookmarks</value>
+					<value>Groups</value>
+					<value>Notifications</value>
+					<value>EfficiencyStatements</value>
+					<value>Notes</value>
+				</list>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- the home portal for authors, managers and admin -->
+	<bean id="authorportal" class="org.olat.core.gui.control.generic.portal.PortalImpl" scope="prototype">
+		<property name="name" value="homeportal" />
+		<property name="portalColumns">
+		<!-- this is the default configuration, used when user has no own configuration -->
+			<list>
+				<list>
+					<value>Information</value>
+					<value>Quickstart</value>
+					<value>DidYouKnow</value>								
+				</list>
+				<list>
+					<value>RepositoryPortletTeacher</value>
 					<value>InfoMessages</value>
 					<value>Calendar</value> 
 					<value>Bookmarks</value>
