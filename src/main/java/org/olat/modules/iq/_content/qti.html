@@ -106,7 +106,7 @@ function confirmSuspend() {
 		#end
 	
 	
-		<div id="o_qti_run_content" class="b_c66r">
+		<div id="o_qti_run_content" class="#if($displayMenu) b_c66r #end">
 			<div class="b_subcr">
 			#if ($qtistatus.hasError())
 			<div class="b_warning">$qtistatus.error</div>
