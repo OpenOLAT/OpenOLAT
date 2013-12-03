@@ -36,6 +36,8 @@ import org.olat.core.logging.AssertException;
  * @author Felix Jost
  */
 public class ExternalSiteEvent extends Event {
+
+	private static final long serialVersionUID = 5469641082868659035L;
 	private boolean accepted;
 	private final String startUri;
 

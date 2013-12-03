@@ -224,6 +224,11 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			} else {
 				// binary data: not .html, not .htm, not .js -> treated as is
 				VFSMediaResource vmr = new VFSMediaResource(vfsLeaf);
+				String filename = vfsLeaf.getName();
+				// This is to prevent the login prompt in Excel, Word and PowerPoint
+				if(filename.endsWith(".xlsx") || filename.endsWith(".pptx") || filename.endsWith(".docx")) {
+					vmr.setDownloadable(true);
+				}
 				mr = vmr;
 			}
 		}

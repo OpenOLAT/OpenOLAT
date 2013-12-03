@@ -39,7 +39,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
  *
  */
 public class HtmlStaticMapper implements Mapper {
-	private static final long serialVersionUID = -2952665240745752911L;
+	
 	private static final OLog log = Tracing.createLoggerFor(HtmlStaticMapper.class);
 	
 	private VFSContainer mapperRootContainer;
