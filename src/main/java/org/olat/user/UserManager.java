@@ -242,6 +242,8 @@ public abstract class UserManager extends BasicManager {
 	public void setUserPropertiesConfig(UserPropertiesConfig userPropertiesConfig) {
 		this.userPropertiesConfig = userPropertiesConfig;
 	}
+	
+	public abstract String getUsername(Long identityKey);
 
 	/**
 	 * Returns the users displayable name, e.g. "Firstname Lastname"

@@ -34,12 +34,11 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.id.Identity;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -76,12 +75,12 @@ public class OpenMeetingsWebService {
 			if(identityKey == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
-			if(identity == null) {
+			String username = CoreSpringFactory.getImpl(UserManager.class).getUsername(identityKey);
+			if(username == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 			
-			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
+			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(username);
 			if(portrait == null || !portrait.exists()) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}

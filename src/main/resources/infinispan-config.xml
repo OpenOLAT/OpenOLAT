@@ -59,6 +59,13 @@
 		<expiration maxIdle="2700000" wakeUpInterval="15000"/>
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
+	
+	<namedCache name="UserManager@userfullname">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="20000" strategy="LIRS"/>
+		<expiration maxIdle="2700000" wakeUpInterval="15000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
 		
 	<namedCache name="LoginModule@blockafterfailedattempts">
 		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>

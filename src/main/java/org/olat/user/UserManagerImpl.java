@@ -75,7 +75,8 @@ public class UserManagerImpl extends UserManager {
   @Autowired
   private CoordinatorManager coordinatorManager;
 
-	private CacheWrapper<Serializable,String> usernameCache;
+	private CacheWrapper<Serializable,String> userToFullnameCache;
+	private CacheWrapper<Long,String> userToNameCache;
   
 	/**
 	 * Use UserManager.getInstance(), this is a spring factory method to load the
@@ -87,8 +88,11 @@ public class UserManagerImpl extends UserManager {
 	
 	@PostConstruct
 	public void init() {
-		usernameCache = coordinatorManager.getCoordinator().getCacher()
+		userToFullnameCache = coordinatorManager.getCoordinator().getCacher()
+				.getCache(UserManager.class.getSimpleName(), "userfullname");
+		userToNameCache = coordinatorManager.getCoordinator().getCacher()
 				.getCache(UserManager.class.getSimpleName(), "username");
+		
 	}
 
 	/**
@@ -407,6 +411,7 @@ public class UserManagerImpl extends UserManager {
 	 * Delete all user-properties which are deletable.
 	 * @param user
 	 */
+	@Override
 	public void deleteUserProperties(User user) {
 		// prevent stale objects, reload first
 		user = loadUserByKey(user.getKey());
@@ -423,12 +428,21 @@ public class UserManagerImpl extends UserManager {
 		updateUser(user);
 		if(isLogDebugEnabled()) logDebug("Delete all user-attributtes for user=" + user);
 	}
-	
-	
+
+	@Override
+	public String getUsername(Long identityKey) {
+		String username = userToNameCache.get(identityKey);
+		if(username == null) {
+			IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
+			getUserDisplayName(identity);//fill the cache
+			username = identity.getName();
+		}
+		return username;
+	}
 
 	@Override
 	public String getUserDisplayName(String username) {
-		String fullName = usernameCache.get(username);
+		String fullName = userToFullnameCache.get(username);
 		if(fullName == null) {
 			List<IdentityShort> identities = securityManager.findShortIdentitiesByName(Collections.singletonList(username));
 			for(IdentityShort identity:identities) {
@@ -444,7 +458,7 @@ public class UserManagerImpl extends UserManager {
 			return "";
 		}
 		
-		String fullName = usernameCache.get(identityKey);
+		String fullName = userToFullnameCache.get(identityKey);
 		if(fullName == null) {
 			IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
 			fullName = getUserDisplayName(identity);
@@ -461,7 +475,7 @@ public class UserManagerImpl extends UserManager {
 		Map<String, String> fullNames = new HashMap<String,String>();
 		List<String> newUsernames = new ArrayList<String>();
 		for(String username:usernames) {
-			String fullName = usernameCache.get(username);
+			String fullName = userToFullnameCache.get(username);
 			if(fullName != null) {
 				fullNames.put(username, fullName);
 			} else {
@@ -477,7 +491,7 @@ public class UserManagerImpl extends UserManager {
 		}
 		//not found
 		for(String notFound:newUsernames) {
-			usernameCache.put(notFound, notFound);
+			userToFullnameCache.put(notFound, notFound);
 		}
 		return fullNames;
 	}
@@ -520,7 +534,7 @@ public class UserManagerImpl extends UserManager {
 		Map<Long, String> fullNames = new HashMap<Long,String>();
 		List<Long> newIdentityKeys = new ArrayList<Long>();
 		for(Long identityKey:identityKeys) {
-			String fullName = usernameCache.get(identityKey);
+			String fullName = userToFullnameCache.get(identityKey);
 			if(fullName != null) {
 				fullNames.put(identityKey, fullName);
 			} else {
@@ -542,10 +556,13 @@ public class UserManagerImpl extends UserManager {
 		if(fullName == null) return;
 		
 		if(identityKey != null) {
-			usernameCache.put(identityKey, fullName);
+			userToFullnameCache.put(identityKey, fullName);
 		}
 		if(username != null) {
-			usernameCache.put(username, fullName);
+			userToFullnameCache.put(username, fullName);
+		}
+		if(username != null && identityKey != null) {
+			userToNameCache.put(identityKey, username);
 		}
 	}
 

@@ -123,6 +123,8 @@ public abstract class BasicController extends DefaultController {
 		// deregister all mappers if needed
 		if (mappers != null) {
 			CoreSpringFactory.getImpl(MapperService.class).cleanUp(mappers);
+			mappers.clear();
+			mappers = null;
 		}
 
 		// dispose child controller if needed
@@ -580,7 +582,7 @@ public abstract class BasicController extends DefaultController {
 	 * <i>Hint</i><br>
 	 * try to avoid using this - and if, comment why.
 	 */
-	protected void setBasePackage(Class clazz) {
+	protected void setBasePackage(Class<?> clazz) {
 		setVelocityRoot(Util.getPackageVelocityRoot(clazz));
 		if (fallbackTranslator != null) {
 			setTranslator(Util.createPackageTranslator(clazz, getLocale(), fallbackTranslator));

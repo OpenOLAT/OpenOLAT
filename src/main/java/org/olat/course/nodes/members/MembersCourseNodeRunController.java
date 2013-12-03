@@ -27,12 +27,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -314,32 +311,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	  NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
 	
-	public class AvatarMapper implements Mapper {
-
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			if(relPath != null && relPath.endsWith("/portrait_small.jpg")) {
-				if(relPath.startsWith("/")) {
-					relPath = relPath.substring(1, relPath.length());
-				}
-				
-				int endKeyIndex = relPath.indexOf('/');
-				if(endKeyIndex > 0) {
-					String idKey = relPath.substring(0, endKeyIndex);
-					Long key = Long.parseLong(idKey);
-					for(FormLink memberLink:memberLinks) {
-						Member m = (Member)memberLink.getUserObject();
-						if(m.getIdentity().getKey().equals(key)) {
-							return portraitManager.getSmallPortraitResource(m.getIdentity().getName());
-						}
-					}
-				}
-			}
-			return null;
-		}
-	}
-	
-	public class Member {
+	public static class Member {
 		private final String firstName;
 		private final String lastName;
 		private final Long key;
@@ -411,7 +383,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		}
 	}
 	
-	public class IdentityComparator implements Comparator<Identity> {
+	public static class IdentityComparator implements Comparator<Identity> {
 
 		@Override
 		public int compare(Identity id1, Identity id2) {
