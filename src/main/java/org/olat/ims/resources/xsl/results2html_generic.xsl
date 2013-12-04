@@ -338,7 +338,7 @@ border-collapse: collapse;
 		</xsl:if>
 		<xsl:if test="../render_fib">
 			<xsl:for-each select="$response/response_value">
-				<pre><xsl:value-of select="."/></pre><br />
+				<pre style="white-space: pre-wrap; white-space:-moz-pre-wrap; white-space:-pre-wrap; white-space:-o-pre-wrap; word-wrap:break-word;"><xsl:value-of select="."/></pre><br />
 			</xsl:for-each>
 		</xsl:if></p>
 	</xsl:template>
