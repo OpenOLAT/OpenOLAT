@@ -28,9 +28,14 @@ package org.olat.course.editor;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.AssertException;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<br>
@@ -45,12 +50,13 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private CourseEditorEnv courseEditorEnv;
 	private ConditionInterpreter ci;
 	private ScoreAccounting sa;
+	private RepositoryEntryLifecycle lifecycle;
 
 	EditorUserCourseEnvironmentImpl(CourseEditorEnv courseEditorEnv){
 		this.courseEditorEnv = courseEditorEnv;
-		this.ci = new ConditionInterpreter(this);
-		this.courseEditorEnv.setConditionInterpreter(ci);
-		this.sa = new ScoreAccounting(this);
+		ci = new ConditionInterpreter(this);
+		courseEditorEnv.setConditionInterpreter(ci);
+		sa = new ScoreAccounting(this);
 	}
 	
 	/**
@@ -107,5 +113,18 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	@Override
 	public boolean isParticipant() {
 		return false;
+	}
+
+	@Override
+	public RepositoryEntryLifecycle getLifecycle() {
+		if(lifecycle == null) {
+			CourseGroupManager cgm = courseEditorEnv.getCourseGroupManager();
+			OLATResource courseResource = cgm.getCourseResource();
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+			if(re != null) {
+				lifecycle = re.getLifecycle();
+			}
+		}
+		return lifecycle;
 	}
 }

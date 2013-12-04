@@ -40,8 +40,8 @@ import java.util.Stack;
 public class ConditionExpression {
 	private String expressionString;
 	private String id;
-	private Stack errorStack;
-	private Map softReferences;
+	private Stack<Exception> errorStack;
+	private Map<String, Set<String>> softReferences;
 
 	public ConditionExpression(String idName, String expression) {
 		this(idName);
@@ -50,8 +50,8 @@ public class ConditionExpression {
 
 	public ConditionExpression(String idName) {
 		this.id = idName;
-		errorStack = new Stack();
-		softReferences = new HashMap();
+		errorStack = new Stack<Exception>();
+		softReferences = new HashMap<>();
 	}
 
 	public String getId() {
@@ -71,11 +71,11 @@ public class ConditionExpression {
 	}
 
 	public void addSoftReference(String category, String softReference) {
-		Set catSoftRefs;
+		Set<String> catSoftRefs;
 		if (softReferences.containsKey(category)) {
-			catSoftRefs = (HashSet) softReferences.get(category);
+			catSoftRefs = softReferences.get(category);
 		} else {
-			catSoftRefs = new HashSet();
+			catSoftRefs = new HashSet<String>();
 		}
 		catSoftRefs.add(softReference);
 		softReferences.put(category, catSoftRefs);
@@ -84,7 +84,7 @@ public class ConditionExpression {
 	public Set<String> getSoftReferencesOf(String category) {
 		Set<String> catSoftRefs;
 		if (softReferences.containsKey(category)) {
-			catSoftRefs = (HashSet) softReferences.get(category);
+			catSoftRefs = softReferences.get(category);
 		} else {
 			catSoftRefs = new HashSet<String>();
 		}
@@ -92,20 +92,19 @@ public class ConditionExpression {
 	}
 
 	public Exception[] getExceptions() {
-		Exception[] retVal = new Exception[errorStack.size()];
-		return (Exception[]) errorStack.toArray(retVal);
+		return errorStack.toArray(new Exception[errorStack.size()]);
 	}
 
 	public String toString() {
 		String retVal = "";
 		String softRefStr ="";
-		Set keys = softReferences.keySet();
-		for (Iterator iter = keys.iterator(); iter.hasNext();) {
-			String category = (String) iter.next();
+		Set<String> keys = softReferences.keySet();
+		for (Iterator<String> iter = keys.iterator(); iter.hasNext();) {
+			String category = iter.next();
 			softRefStr += "["+category+"::";
-			Set catSoftRefs = (Set) softReferences.get(category);
-			for (Iterator iterator = catSoftRefs.iterator(); iterator.hasNext();) {
-				String srs = (String) iterator.next();
+			Set<String> catSoftRefs = softReferences.get(category);
+			for (Iterator<String> iterator = catSoftRefs.iterator(); iterator.hasNext();) {
+				String srs = iterator.next();
 				softRefStr +=srs+",";
 			}
 			softRefStr +="]";

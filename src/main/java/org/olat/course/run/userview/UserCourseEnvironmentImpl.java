@@ -35,6 +35,10 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.group.BusinessGroup;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.resource.OLATResource;
 
 /**
  * Initial Date:  Feb 6, 2004
@@ -46,6 +50,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private CourseEnvironment courseEnvironment;
 	private ConditionInterpreter conditionInterpreter;
 	private ScoreAccounting scoreAccounting;
+	private RepositoryEntryLifecycle lifecycle;
 	
 	private List<BusinessGroup> coachedGroups;
 	private List<BusinessGroup> participatingGroups;
@@ -147,6 +152,19 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		boolean partLazy = cgm.isIdentityCourseParticipant(identityEnvironment.getIdentity());
 		participant = new Boolean(partLazy);
 		return partLazy;
+	}
+
+	@Override
+	public RepositoryEntryLifecycle getLifecycle() {
+		if(lifecycle == null) {
+			CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
+			OLATResource courseResource = cgm.getCourseResource();
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+			if(re != null) {
+				lifecycle = re.getLifecycle();
+			}
+		}
+		return lifecycle;
 	}
 
 	public List<BusinessGroup> getCoachedGroups() {

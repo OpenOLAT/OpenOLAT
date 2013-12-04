@@ -82,7 +82,9 @@ public class OnlyGroupConditionInterpreter extends ConditionInterpreter{
 		env.addFunction(IsCourseAdministratorFunction.name, new DummyBooleanFunction(userCourseEnv));
 
 		env.addFunction(GetAttemptsFunction.name, new DummyIntegerFunction(userCourseEnv));
-		
+
+		env.addFunction(GetCourseBeginDateFunction.name, new GetCourseBeginDateFunction(userCourseEnv));
+		env.addFunction(GetCourseEndDateFunction.name, new GetCourseEndDateFunction(userCourseEnv));
 		env.addFunction(GetInitialCourseLaunchDateFunction.name, new GetInitialCourseLaunchDateFunction(userCourseEnv));
 		env.addFunction(GetRecentCourseLaunchDateFunction.name, new GetRecentCourseLaunchDateFunction(userCourseEnv));
 

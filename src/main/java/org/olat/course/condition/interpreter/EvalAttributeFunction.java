@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -42,6 +43,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * @author Felix Jost
  */
 public class EvalAttributeFunction extends AbstractFunction {
+	
+	private static final OLog log = Tracing.createLoggerFor(EvalAttributeFunction.class);
 	
 	/***************************************************************
 	 * Function types                                              *
@@ -113,9 +116,9 @@ public class EvalAttributeFunction extends AbstractFunction {
 			String[] b = multiValueSeparatorValue.split(values);								// split on ;
 			if (a == null || (a.length == 1 && a[0] == "")) return false;				// empty array?
 			if (b == null || (b.length == 1 && b[0] == "")) return false;				// empty array?
-			if (Tracing.isDebugEnabled(EvalAttributeFunction.class)) {
-				Tracing.logDebug("a: " + Arrays.toString(a), EvalAttributeFunction.class);
-				Tracing.logDebug("b: " + Arrays.toString(b), EvalAttributeFunction.class);
+			if (log.isDebug()) {
+				log.debug("a: " + Arrays.toString(a));
+				log.debug("b: " + Arrays.toString(b));
 			}
 			if (type == FUNCTION_TYPE_HAS_ATTRIBUTE) {
 				List<String> l = Arrays.asList(a);
@@ -195,15 +198,16 @@ public class EvalAttributeFunction extends AbstractFunction {
 		
 		IdentityEnvironment ienv = getUserCourseEnv().getIdentityEnvironment();
 		Identity ident = ienv.getIdentity();
-		Map attributes = ienv.getAttributes();
+		Map<String, String> attributes = ienv.getAttributes();
 		if (attributes == null) return ConditionInterpreter.INT_FALSE;
-		String value = (String)attributes.get(attName);
+		String value = attributes.get(attName);
 		
 		boolean match = false;
-		if (Tracing.isDebugEnabled(EvalAttributeFunction.class)) {
-			Tracing.logDebug("value    : " + value, EvalAttributeFunction.class);
-			Tracing.logDebug("attrValue: " + attValue, EvalAttributeFunction.class);
-			Tracing.logDebug("fT       :  " + functionType, EvalAttributeFunction.class);
+		boolean debug = log.isDebug();
+		if (debug) {
+			log.debug("value    : " + value);
+			log.debug("attrValue: " + attValue);
+			log.debug("fT       :  " + functionType);
 		}
 		if (value != null) {
 			if (functionType <= FUNCTION_TYPE_IS_NOT_IN_ATTRIBUTE) {
@@ -213,9 +217,9 @@ public class EvalAttributeFunction extends AbstractFunction {
 			}
 		}		
 
-		if (Tracing.isDebugEnabled(EvalAttributeFunction.class)) {
-			Tracing.logDebug("identity '" + ident.getName() + "' tested on attribute '" + attName + "' to have value '" +
-					attValue + "' user's value was '" + value + "', match=" + match, EvalAttributeFunction.class);
+		if (debug) {
+			log.debug("identity '" + ident.getName() + "' tested on attribute '" + attName + "' to have value '" +
+					attValue + "' user's value was '" + value + "', match=" + match);
 		}
 		return match ? ConditionInterpreter.INT_TRUE : ConditionInterpreter.INT_FALSE;
 	}
