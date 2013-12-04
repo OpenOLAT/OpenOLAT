@@ -1,10 +1,11 @@
 <script type="text/javascript">
 function $r.getId("undf")() {
 	try {
-		var nd = $("$r.getId("undck")");
-		nd.setAttribute("style","display:none");
-		## for IE specialwurscht...
-		nd.style.display = 'none';
+		jQuery('#$r.getId("undck")').each(function(index, el){
+			el.style.display = 'none';
+			## for IE specialwurscht...
+			jQuery(el).attr("style","display:none");
+		});
 		var ww = window.open("$r.commandURI("ud")", "$winid", "height=400, width=800, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no");
 		ww.focus();
 	} catch(e) {
