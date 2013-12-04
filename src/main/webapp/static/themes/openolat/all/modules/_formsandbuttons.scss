@@ -444,15 +444,12 @@ div.b_progress div.b_progress_bar div { height: 12px; @include o-gradient2($base
 div.b_progress div.b_progress_label {}
 	
 	
-	
-	
 /* MARK */
 .b_mark_set {
 	background-image: url('../openolat/images/flag.png') ! important;
 }
 .b_mark_not_set {
-	background-image: url('../openolat/images/flag.png') ! important;
-	@include o-opacity(40);
+	background-image: url('../openolat/images/flag_off.png') ! important;
 }
 div.b_mark { 
 	width:20px; height:20px; 
@@ -461,9 +458,11 @@ div.b_mark {
 		margin:0;
 		div.b_form_element { margin:0; padding:0; } 
 	}
-	a.b_mark_set { background: url(../openolat/images/flag.png) center right no-repeat; display:block; width:20px; height:20px; }
-	a.b_mark_not_set { background: url(../openolat/images/flag.png) center right no-repeat; display:block; width:20px; height:20px; @include o-opacity(40);}
-	a.b_mark_set span, a.b_mark_not_set span { display:block; width:19px; height:19px; }
+	a { 
+		background-position: center right; background-repeat: no-repeat; display:block; width:20px; height:20px; 
+		span { display:block; width:19px; height:19px; }
+		&:hover { text-decoration: none; }
+	}
 }
 	
 	

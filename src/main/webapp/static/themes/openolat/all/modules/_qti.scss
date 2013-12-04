@@ -71,14 +71,15 @@
     .o_qti_menu_item:hover {border: 1px solid silver;}
     .o_qti_menu_item_closed {padding:.3em; border: 1px solid transparent;}
 
-	.o_qti_menu_item_attempts_marked, .o_qti_menu_item_attempts {@include o-opacity(100); color: silver; padding: .2em .4em; border: 1px solid transparent; background: url(../openolat/images/flag.png) center right no-repeat;  display:block; width:20px; height:12px; }
-    .o_qti_menu_item_attempts { @include o-opacity(40);}
-    .o_qti_menu_item_attempts:hover, .o_qti_menu_item_attempts_marked:hover {color: silver; border: 1px solid silver; cursor:pointer; }
+	.o_qti_menu_item_attempts, .o_qti_menu_item_attempts_marked {color: #666; padding: .2em .4em; border: 1px solid transparent; background-position: center right; background-repeat: no-repeat;  display:block; width:20px; height:12px; }
+	.o_qti_menu_item_attempts { background-image: url(../openolat/images/flag_off.png) } 
+    .o_qti_menu_item_attempts:hover, .o_qti_menu_item_attempts_marked:hover {border: 1px solid silver; cursor:pointer; }
+	.o_qti_menu_item_attempts_marked { background-image: url(../openolat/images/flag.png) } 
 	
 	
-    #o_qti_item_note {padding:0;margin:0;border:0;color:silver;font-family:inherit;font-size:1em;background:inherit;overflow:hidden;}
+    #o_qti_item_note {padding:0;margin:0;border:0;color: #666;font-family:inherit;font-size:1em;background:inherit;overflow:hidden;}
 	.o_qti_item_note_box {border: 1px dashed silver; padding:.1em;margin:0;padding-left:.5em;}
-	div.o_qti_item_note_box_title{color: silver;}
+	div.o_qti_item_note_box_title{color: #666;}
 	
 	div.o_qti_item_itemfeedback, div.o_qti_item_assessfeedback, div.o_qti_item_o_qti_item_sectionfeedback{margin: 1em 0; background: url(../openolat/images/lightning.png) no-repeat left 50%; padding-left: 20px;}
 	div.o_qti_item_objectives {margin: 1em 0; background: url(../openolat/images/information-white.png) no-repeat left 50%; padding-left: 20px; line-height:2em;}
