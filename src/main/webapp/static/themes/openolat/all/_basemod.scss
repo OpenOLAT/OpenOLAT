@@ -496,8 +496,18 @@ h5.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
 a.b_togglebox_closed {background: url($ico_plus) no-repeat 0 50%; padding: 1px 0 1px 18px; vertical-align: middle;}
 a.b_togglebox_opened {background: url($ico_minus) no-repeat 0 50%; padding: 1px 0 1px 18px; vertical-align: middle;}
 
-div.b_titled_wrapper {
-	div.b_togglebox div.b_togglebox_content { background:transparent; border:0px; padding:0px; }
+div.b_togglebox {
+	margin-top: 10px;
+	padding: 10px;
+	background: #FAFAFA;
+	div.b_togglebox_content { background:transparent; border:0px; padding:0px; }
+}	
+
+div.b_titled_wrapper div.b_togglebox {
+	margin-top: 0;
+	padding: 0;
+	background: transparent;
+	div.b_togglebox_content { background:transparent; border:0px; padding:0px; }
 }
 
 div.b_titled_wrapper_desc {
