@@ -56,6 +56,9 @@ import org.olat.course.nodes.AssessableCourseNode;
  */
 public class ValidationStepForm extends StepFormBasicController {
 	
+	private static final String[] userPropsToSearch = new String[]{ UserConstants.EMAIL, UserConstants.INSTITUTIONALEMAIL, UserConstants.INSTITUTIONALUSERIDENTIFIER };
+	
+	
 	private ValidDataModel validModel;
 	private ValidDataModel invalidModel;
 	private FlexiTableElement validTableEl;
@@ -141,7 +144,19 @@ public class ValidationStepForm extends StepFormBasicController {
 			Identity identity = securityManager.findIdentityByName(assessedId);
 			if(identity != null) {
 				idToIdentityMap.put(assessedId, identity);
+				continue;
 			}
+
+			Map<String, String> userProperties = new HashMap<String,String>();
+			for(String prop : userPropsToSearch) {
+				userProperties.put(prop, assessedId);
+				List<Identity> identities = securityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null, null);
+				if(!identities.isEmpty()) {
+					idToIdentityMap.put(assessedId, identities.get(0));
+					break;
+				}
+				userProperties.clear();
+			}	
 		}
 		
 		return idToIdentityMap;
