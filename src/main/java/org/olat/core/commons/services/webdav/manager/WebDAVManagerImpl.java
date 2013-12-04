@@ -247,9 +247,13 @@ public class WebDAVManagerImpl implements WebDAVManager {
 		// and cache them so that it doesn't have to
 		// prompt you again.
 
-		response.addHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
-		String nonce = UUID.randomUUID().toString().replace("-", "");
-		response.addHeader("WWW-Authenticate", "Digest realm=\"" + BASIC_AUTH_REALM + "\", qop=\"auth\", nonce=\"" + nonce + "\"");
+		if(request.isSecure()) {
+			response.addHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
+		}
+		if(webdavModule.isDigestAuthenticationEnabled()) {
+			String nonce = UUID.randomUUID().toString().replace("-", "");
+			response.addHeader("WWW-Authenticate", "Digest realm=\"" + BASIC_AUTH_REALM + "\", qop=\"auth\", nonce=\"" + nonce + "\"");
+		}
 		response.setStatus(401);
 		return null;
 	}
