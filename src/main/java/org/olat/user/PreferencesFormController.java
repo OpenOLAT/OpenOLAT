@@ -23,8 +23,10 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -43,6 +45,7 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailModule;
@@ -77,7 +80,7 @@ public class PreferencesFormController extends FormBasicController {
 	 *          edited. Not necessarily the same as ureq.getIdentity()
 	 */
 	public PreferencesFormController(UserRequest ureq, WindowControl wControl, Identity tobeChangedIdentity) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(SystemRolesAndRightsController.class, ureq.getLocale()));
 		this.tobeChangedIdentity = tobeChangedIdentity;
 		initForm(ureq);
 	}
@@ -144,6 +147,39 @@ public class PreferencesFormController extends FormBasicController {
 
 		// Username
 		StaticTextElement username = uifactory.addStaticTextElement("form.username", tobeChangedIdentity.getName(), formLayout);
+		username.setElementCssClass("o_sel_home_settings_username");
+		username.setEnabled(false);
+
+		// Roles
+		final String[] roleKeys = new String[] {
+			Constants.GROUP_USERMANAGERS, Constants.GROUP_GROUPMANAGERS, Constants.GROUP_POOL_MANAGER,
+			Constants.GROUP_AUTHORS, Constants.GROUP_INST_ORES_MANAGER, Constants.GROUP_ADMIN
+		};
+		String iname = getIdentity().getUser().getProperty("institutionalName", null);
+		String ilabel = iname != null
+				? translate("rightsForm.isInstitutionalResourceManager.institution",iname)
+				: translate("rightsForm.isInstitutionalResourceManager");
+		
+		final String[] roleValues = new String[]{
+				translate("rightsForm.isUsermanager"), translate("rightsForm.isGroupmanager"), translate("rightsForm.isPoolmanager"),
+				translate("rightsForm.isAuthor"), ilabel, translate("rightsForm.isAdmin")
+		};
+		final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		String userRoles = "";
+		List<String> roles = securityManager.getRolesAsString(tobeChangedIdentity);
+		for(String role:roles) {
+			for(int i=0; i<roleKeys.length; i++) {
+				if(roleKeys[i].equals(role)) {
+					userRoles = userRoles + roleValues[i] + ", ";
+				}
+			}
+		}
+		if (userRoles.equals("")) {
+			userRoles = translate("rightsForm.isAnonymous.false");
+		} else {
+			userRoles = userRoles.substring(0, userRoles.lastIndexOf(","));
+		}
+		uifactory.addStaticTextElement("rightsForm.roles", userRoles, formLayout);
 		username.setElementCssClass("o_sel_home_settings_username");
 		username.setEnabled(false);
 

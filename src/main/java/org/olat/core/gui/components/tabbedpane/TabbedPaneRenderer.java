@@ -122,7 +122,7 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
 		TabbedPane tp = (TabbedPane)source;
 		int cnt = tp.getTabCount();
-		if (cnt > 0) {
+		if (cnt > 0 && tp.getSelectedPane() < cnt) {
 			Component toRender = tp.getTabAt(tp.getSelectedPane());
 			// delegate header rendering to the selected pane
 			renderer.renderHeaderIncludes(sb, toRender, rstate);

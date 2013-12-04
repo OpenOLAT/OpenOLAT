@@ -50,7 +50,7 @@ public class IsLearningGroupFullFunction extends AbstractFunction {
 	/**
 	 * @param userCourseEnv
 	 */
-	public IsLearningGroupFullFunction(UserCourseEnvironment userCourseEnv, String fnName) {
+	public IsLearningGroupFullFunction(UserCourseEnvironment userCourseEnv) {
 		super(userCourseEnv);
 	}
 

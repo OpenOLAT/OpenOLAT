@@ -66,6 +66,7 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
@@ -74,14 +75,14 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//fxdiff FXOLAT-113: business path in DMZ
 		emailOrUsername = uifactory.addTextElement("emailOrUsername", "email.or.username", -1, initialEmail, formLayout);
 		emailOrUsername.setMandatory(true);
 		emailOrUsername.setNotEmptyCheck("email.or.username.maynotbeempty");
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
-		this.flc.add(buttonLayout);
+		flc.add(buttonLayout);
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
@@ -90,7 +91,7 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	 * @return The email address or username entered by the user
 	 */
 	public String getEmailOrUsername() {
-		return emailOrUsername.getValue();
+		return emailOrUsername.getValue().toLowerCase();
 	}
 
 	public void setUserNotIdentifiedError() {

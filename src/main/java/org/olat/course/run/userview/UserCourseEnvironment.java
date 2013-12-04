@@ -30,6 +30,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
  * @author Felix Jost
@@ -60,5 +61,7 @@ public interface UserCourseEnvironment {
 	public boolean isParticipant();
 	
 	public boolean isIdentityInCourseGroup(Long groupKey);
+	
+	public RepositoryEntryLifecycle getLifecycle();
 
 }

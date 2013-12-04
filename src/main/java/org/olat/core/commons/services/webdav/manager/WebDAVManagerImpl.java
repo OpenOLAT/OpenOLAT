@@ -41,6 +41,7 @@ import org.olat.core.commons.services.webdav.WebDAVManager;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -247,9 +248,13 @@ public class WebDAVManagerImpl implements WebDAVManager {
 		// and cache them so that it doesn't have to
 		// prompt you again.
 
-		response.addHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
-		String nonce = UUID.randomUUID().toString().replace("-", "");
-		response.addHeader("WWW-Authenticate", "Digest realm=\"" + BASIC_AUTH_REALM + "\", qop=\"auth\", nonce=\"" + nonce + "\"");
+		if(request.isSecure() || Settings.isJUnitTest()) {
+			response.addHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
+		}
+		if(webdavModule.isDigestAuthenticationEnabled()) {
+			String nonce = UUID.randomUUID().toString().replace("-", "");
+			response.addHeader("WWW-Authenticate", "Digest realm=\"" + BASIC_AUTH_REALM + "\", qop=\"auth\", nonce=\"" + nonce + "\"");
+		}
 		response.setStatus(401);
 		return null;
 	}

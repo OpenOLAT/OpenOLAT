@@ -105,7 +105,7 @@ public class ConditionInterpreter {
 		env.addFunction(DateFunction.name, new DateFunction(userCourseEnv));
 		env.addFunction("inGroup", new InLearningGroupFunction(userCourseEnv, "inGroup")); // legacy
 		env.addFunction("inLearningGroup", new InLearningGroupFunction(userCourseEnv, "inLearningGroup"));
-		env.addFunction("isLearningGroupFull", new IsLearningGroupFullFunction(userCourseEnv, "isLearningGroupFull"));
+		env.addFunction("isLearningGroupFull", new IsLearningGroupFullFunction(userCourseEnv));
 		env.addFunction(InRightGroupFunction.name, new InRightGroupFunction(userCourseEnv));
 		env.addFunction(InLearningAreaFunction.name, new InLearningAreaFunction(userCourseEnv));
 		env.addFunction(IsUserFunction.name, new IsUserFunction(userCourseEnv));
@@ -133,6 +133,8 @@ public class ConditionInterpreter {
 		env.addFunction(IsCourseParticipantFunction.name, new IsCourseParticipantFunction(userCourseEnv));
 		env.addFunction(IsCourseAdministratorFunction.name, new IsCourseAdministratorFunction(userCourseEnv));
 
+		env.addFunction(GetCourseBeginDateFunction.name, new GetCourseBeginDateFunction(userCourseEnv));
+		env.addFunction(GetCourseEndDateFunction.name, new GetCourseEndDateFunction(userCourseEnv));
 		env.addFunction(GetInitialCourseLaunchDateFunction.name, new GetInitialCourseLaunchDateFunction(userCourseEnv));
 		env.addFunction(GetRecentCourseLaunchDateFunction.name, new GetRecentCourseLaunchDateFunction(userCourseEnv));
 

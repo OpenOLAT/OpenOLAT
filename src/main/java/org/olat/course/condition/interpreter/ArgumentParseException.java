@@ -31,6 +31,8 @@ package org.olat.course.condition.interpreter;
  * @author Felix Jost
  */
 public class ArgumentParseException extends RuntimeException {
+
+	private static final long serialVersionUID = 7135633046896613748L;
 	/**
 	 * Errorcode if the function needs more arguments
 	 */
