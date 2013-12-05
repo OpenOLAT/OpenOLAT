@@ -51,7 +51,6 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -125,9 +124,9 @@ public class DataStepForm extends StepFormBasicController {
 			//return files
 			returnFileEl = uifactory.addFileElement("returnfiles", "return.files", formLayout);
 			if(datas != null && StringHelper.containsNonWhitespace(datas.getReturnFiles())) {
-				OlatRootFileImpl returnFiles = new OlatRootFileImpl(datas.getReturnFiles(), null);
-				if(returnFiles.exists()) {
-					returnFileEl.setInitialFile(returnFiles.getBasefile());
+				targetArchive = new OlatRootFileImpl(datas.getReturnFiles(), null);
+				if(targetArchive.exists()) {
+					returnFileEl.setInitialFile(targetArchive.getBasefile());
 				}
 			}
 		}
@@ -178,13 +177,15 @@ public class DataStepForm extends StepFormBasicController {
 		}
 	}
 	
+	private OlatRootFileImpl targetArchive;
+	
 	private void processReturnFiles(BulkAssessmentDatas datas, List<BulkAssessmentRow> rows, OlatRootFolderImpl tmpDir) {
 		File uploadedFile = returnFileEl.getUploadFile();
 		if(uploadedFile == null) {
 			File initialFile = returnFileEl.getInitialFile();
 			if(initialFile != null && initialFile.exists()) {
-				VFSLeaf target = new LocalFileImpl(initialFile);
-				processReturnFiles(target, rows);
+				datas.setReturnFiles(targetArchive.getRelPath());
+				processReturnFiles(targetArchive, rows);
 			}
 		} else if(uploadedFile.exists()) {
 			//transfer to secured
@@ -200,12 +201,15 @@ public class DataStepForm extends StepFormBasicController {
 						currentTarget.deleteSilently();
 					}
 					
-					OlatRootFileImpl target = tmpDir.createChildLeaf(uploadedFilename);
+					targetArchive = tmpDir.createChildLeaf(uploadedFilename);
 					FileInputStream inStream = new FileInputStream(uploadedFile);
-					if(VFSManager.copyContent(inStream, target)) {
-						datas.setReturnFiles(target.getRelPath());
-						processReturnFiles(target, rows);
+					if(VFSManager.copyContent(inStream, targetArchive)) {
+						datas.setReturnFiles(targetArchive.getRelPath());
+						processReturnFiles(targetArchive, rows);
 					}
+				} else {
+					datas.setReturnFiles(targetArchive.getRelPath());
+					processReturnFiles(targetArchive, rows);
 				}
 			} catch (FileNotFoundException e) {
 				logError("", e);
@@ -260,6 +264,7 @@ public class DataStepForm extends StepFormBasicController {
 								row = assessedIdToRow.get(assessedId);
 							} else {
 								row = new BulkAssessmentRow();
+								row.setAssessedId(assessedId);
 								assessedIdToRow.put(assessedId, row);
 								rows.add(row);
 							}

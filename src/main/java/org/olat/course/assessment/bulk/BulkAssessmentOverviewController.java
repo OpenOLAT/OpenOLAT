@@ -109,7 +109,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.score", Cols.score.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.passed", Cols.status.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.comment", Cols.comment.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.numOfReturnFiles", Cols.returnFile.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.returnFiles", Cols.returnFile.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.numOfAssessedUsers", Cols.numOfAssessedUsers.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.owner", Cols.owner.ordinal()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));

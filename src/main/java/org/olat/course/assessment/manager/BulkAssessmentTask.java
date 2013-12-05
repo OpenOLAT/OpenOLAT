@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -48,6 +49,7 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -235,9 +237,16 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		}
 		
 		String businessPath = "";
+		ICourse course = CourseFactory.loadCourse(courseRes);
+		CourseNode node = course.getRunStructure().getNode(courseNodeIdent);
+		String courseTitle = course.getCourseTitle();
+		String nodeTitle = node.getShortTitle();
+		String numOfAssessedIds = Integer.toString(datas == null ? 0 : datas.getRowsSize());
+		String date = Formatter.getInstance(locale).formatDateAndTime(new Date());
+		
 		mail.setContext(new MailContextImpl(courseRes, courseNodeIdent, businessPath));
-		String subject = translator.translate("confirmation.mail.subject");
-		String body = translator.translate("confirmation.mail.body", new String[]{ feedbackStr });
+		String subject = translator.translate("confirmation.mail.subject", new String[]{ courseTitle, nodeTitle });
+		String body = translator.translate("confirmation.mail.body", new String[]{ courseTitle, nodeTitle, feedbackStr, numOfAssessedIds, date });
 		mail.setContent(subject, body);
 		mailManager.sendMessage(mail);
 	}
