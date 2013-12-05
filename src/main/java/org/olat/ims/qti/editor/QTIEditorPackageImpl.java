@@ -57,6 +57,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -95,6 +96,7 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 	private static OutputFormat outformat; 
 	private OLog log = Tracing.createLoggerFor(this.getClass());
 	private Translator translator;
+	private VFSSecurityCallback secCallback;
 
 	static {
 		outformat = OutputFormat.createPrettyPrint();
@@ -105,10 +107,11 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 	 * @param identity
 	 * @param fileResource
 	 */
-	public QTIEditorPackageImpl(Identity identity, FileResource fileResource, Translator translator) {
+	public QTIEditorPackageImpl(Identity identity, FileResource fileResource, VFSSecurityCallback secCallback, Translator translator) {
 		this.identity = identity;
 		this.fileResource = fileResource;
 		this.translator = translator;
+		this.secCallback = secCallback;
 		init();
 	}
 
@@ -192,8 +195,14 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 		return new File(packageDir, "/media");
 	}
 	
+	@Override
 	public VFSContainer getBaseDir() {
-		NamedContainerImpl namedBaseDir = new NamedContainerImpl(translator.translate("qti.basedir.displayname"), new LocalFolderImpl(packageDir));
+		VFSContainer localDir = new LocalFolderImpl(packageDir);
+		if(secCallback != null) {
+			localDir.setLocalSecurityCallback(secCallback);
+		}
+		String dirName = translator.translate("qti.basedir.displayname");
+		NamedContainerImpl namedBaseDir = new NamedContainerImpl(dirName, localDir);
 		return namedBaseDir;
 	}
 	

@@ -639,7 +639,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	private void checkEssay(RepositoryEntry re) {
 		TestFileResource fr = new TestFileResource();
 		fr.overrideResourceableId(re.getOlatResource().getResourceableId());
-		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, getTranslator());
+		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, null, getTranslator());
 		Assessment ass = qtiPackage.getQTIDocument().getAssessment();
 
 		//Sections with their Items

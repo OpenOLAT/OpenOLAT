@@ -41,7 +41,7 @@ public class QuotaImpl implements Quota {
 	private Long quotaKB;
 	private Long ulLimitKB;
 	
-	QuotaImpl(String path, Long quotaKB, Long ulLimitKB) {
+	public QuotaImpl(String path, Long quotaKB, Long ulLimitKB) {
 		this.path = path != null ? path : "";
 		this.quotaKB = quotaKB;
 		this.ulLimitKB = ulLimitKB;

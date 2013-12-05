@@ -124,7 +124,7 @@ public class QTI12ResultDetailsController extends BasicController {
 	private boolean checkEssay() {
 		TestFileResource fr = new TestFileResource();
 		fr.overrideResourceableId(repositoryEntry.getOlatResource().getResourceableId());
-		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, getTranslator());
+		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, null, getTranslator());
 		Assessment ass = qtiPackage.getQTIDocument().getAssessment();
 
 		//Sections with their Items

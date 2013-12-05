@@ -35,6 +35,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.admin.quota.QuotaConstants;
+import org.olat.admin.quota.QuotaImpl;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
@@ -79,7 +81,11 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -251,18 +257,26 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				ICourse course = CourseFactory.loadCourse(ref.getSource().getResourceableId());
 				CourseNode courseNode = course.getEditorTreeModel().getCourseNode(ref.getUserdata());
 				String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-		    Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
+				Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
 				List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), repKey, 1);
-				this.restrictedEdit = ((CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, null)) || (results != null && results.size() > 0)) ? true : false;
+				restrictedEdit = ((CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, null))
+						|| (results != null && results.size() > 0)) ? true : false;
 			}
-			if(restrictedEdit) break;
+			if(restrictedEdit) {
+				break;
+			}
 		}
 		if(CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fileResource, null)) {
-			this.restrictedEdit = true;
+			restrictedEdit = true;
 		}
 		this.referencees = referencees;
 		
-		qtiPackage = new QTIEditorPackageImpl(ureq.getIdentity(), fileResource, getTranslator());
+
+		Quota defQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO);
+		//unlimited for author
+		Quota quota = new QuotaImpl(defQuota.getPath(), defQuota.getQuotaKB() * 100, defQuota.getUlLimitKB() * 100);
+		VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota, null);
+		qtiPackage = new QTIEditorPackageImpl(ureq.getIdentity(), fileResource, secCallback, getTranslator());
 
 		// try to get lock which lives longer then the browser session in case of a closing browser window
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().aquirePersistentLock(qtiPackage.getRepresentingResourceable(), ureq.getIdentity(), null);
@@ -284,19 +298,6 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			wControl.setWarning( getTranslator().translate("error.lock", new String[] { fullName,
 				Formatter.formatDatetime(new Date(lockEntry.getLockAquiredTime())) }) );
 		}
-	}
-
-	/**
-	 * This constructor may only be used for new or non-referenced QTI files!
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param fileResource
-	 */
-	public QTIEditorMainController(UserRequest ureq, WindowControl wControl, FileResource fileResource) {
-		// super(wControl) is called in referenced constructor
-		// null as value for the List referencees sets restrictedEdit := false;
-		this(null, ureq, wControl, fileResource);
 	}
 
 	private void init(UserRequest ureq) {
