@@ -14,7 +14,7 @@
 					<option value="$r.commandURI("cmd.filter.nofilter")">$noFilterOption</option>
 				#end
 				#foreach ($filter in $filters)
-					#if ($filter.getShortName() == $selectedFilterValue)
+					#if ($filter == $selectedFilterValue)
 						#set ($selected="selected")
 					#else
 						#set ($selected="")

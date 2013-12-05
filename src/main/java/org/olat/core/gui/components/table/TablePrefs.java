@@ -36,7 +36,7 @@ import java.util.List;
  * @author Felix Jost
  */
 public class TablePrefs {
-	private List activeColumnsRef; // list of Integers
+	private List<Integer> activeColumnsRef; // list of Integers
 
 	public TablePrefs() {
 	// keep default constructor for xstreamhelper
@@ -45,14 +45,14 @@ public class TablePrefs {
 	/**
 	 * @return Returns the activeColumnsRef.
 	 */
-	public List getActiveColumnsRef() {
+	public List<Integer> getActiveColumnsRef() {
 		return activeColumnsRef;
 	}
 
 	/**
 	 * @param activeColumnsRef The activeColumnsRef to set.
 	 */
-	public void setActiveColumnsRef(final List activeColumnsRef) {
+	public void setActiveColumnsRef(final List<Integer> activeColumnsRef) {
 		this.activeColumnsRef = activeColumnsRef;
 	}
 }

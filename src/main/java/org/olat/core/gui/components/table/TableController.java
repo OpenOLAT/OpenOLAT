@@ -48,7 +48,6 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.EntriesChosenEvent;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -136,7 +135,7 @@ public class TableController extends BasicController {
 	private TablePrefs prefs;
 	private TableGuiConfiguration tableConfig;
 
-	private List filters;
+	private List<ShortName> filters;
 	private String filterTitle;
 	private ShortName activeFilter;
 
@@ -228,22 +227,22 @@ public class TableController extends BasicController {
 		}
 		
 		if (tableTrans != null) {
-			setTranslator(new PackageTranslator(Util.getPackageName(TableController.class), ureq.getLocale(), tableTrans));
+			setTranslator(Util.createPackageTranslator(TableController.class, ureq.getLocale(), tableTrans));
 		}
 		
-		this.table = new Table(COMPONENT_TABLE_NAME, getTranslator());
-		this.table.addListener(this);
+		table = new Table(COMPONENT_TABLE_NAME, getTranslator());
+		table.addListener(this);
 
 		// propagate table specific configuration to table,
 		// rest of configuration is handled by this controller
-		this.table.setColumnMovingOffered(tableConfig.isColumnMovingOffered());
-		this.table.setDisplayTableHeader(tableConfig.isDisplayTableHeader());
-		this.table.setSelectedRowUnselectable(tableConfig.isSelectedRowUnselectable());
-		this.table.setSortingEnabled(tableConfig.isSortingEnabled());
-		this.table.setPageingEnabled(tableConfig.isPageingEnabled());
-		this.table.setResultsPerPage(tableConfig.getResultsPerPage());
-		this.table.setMultiSelect(tableConfig.isMultiSelect());
-		this.table.enableShowAllLink(tableConfig.isShowAllLinkEnabled());
+		table.setColumnMovingOffered(tableConfig.isColumnMovingOffered());
+		table.setDisplayTableHeader(tableConfig.isDisplayTableHeader());
+		table.setSelectedRowUnselectable(tableConfig.isSelectedRowUnselectable());
+		table.setSortingEnabled(tableConfig.isSortingEnabled());
+		table.setPageingEnabled(tableConfig.isPageingEnabled());
+		table.setResultsPerPage(tableConfig.getResultsPerPage());
+		table.setMultiSelect(tableConfig.isMultiSelect());
+		table.enableShowAllLink(tableConfig.isShowAllLinkEnabled());
 
 
 		// table is embedded in a velocity page that renders the surrounding layout
@@ -350,7 +349,7 @@ public class TableController extends BasicController {
 				throw new AssertException("Filter size was ::" + filters.size() + " but requested filter was ::" + filterPosition);
 			}
 			// update new filter value
-			setActiveFilter((ShortName) filters.get(filterPosition));
+			setActiveFilter(filters.get(filterPosition));
 			fireEvent(ureq, EVENT_FILTER_SELECTED);
 		}
 	}
@@ -450,7 +449,7 @@ public class TableController extends BasicController {
 	 *         filter is applied
 	 */
 	public ShortName getActiveFilter() {
-		return this.activeFilter;
+		return activeFilter;
 	}
 
 	/**
@@ -459,10 +458,10 @@ public class TableController extends BasicController {
 	 */
 	public void setActiveFilter(final ShortName activeFilter) {
 		this.activeFilter = activeFilter;
-		if (this.activeFilter == null) {
-			this.contentVc.contextPut(VC_VAR_SELECTED_FILTER_VALUE, CMD_FILTER_NOFILTER);
+		if (activeFilter == null) {
+			contentVc.contextPut(VC_VAR_SELECTED_FILTER_VALUE, CMD_FILTER_NOFILTER);
 		} else {
-			this.contentVc.contextPut(VC_VAR_SELECTED_FILTER_VALUE, this.activeFilter.getShortName());
+			contentVc.contextPut(VC_VAR_SELECTED_FILTER_VALUE, activeFilter);
 		}
 	}
 
@@ -472,11 +471,11 @@ public class TableController extends BasicController {
 	 * @param filters List of TableFilter
 	 * @param activeFilter active TableFilter
 	 */
-	public void setFilters(final List filters, final ShortName activeFilter) {
+	public void setFilters(final List<ShortName> filters, final ShortName activeFilter) {
 		this.filters = filters;
-		this.contentVc.contextPut("hasFilters", filters == null ? Boolean.FALSE : Boolean.TRUE);
-		this.contentVc.contextPut("filters", filters);
-		this.contentVc.contextPut("filterTitle", filterTitle == null ? "" : filterTitle);
+		contentVc.contextPut("hasFilters", filters == null ? Boolean.FALSE : Boolean.TRUE);
+		contentVc.contextPut("filters", filters);
+		contentVc.contextPut("filterTitle", filterTitle == null ? "" : filterTitle);
 		setActiveFilter(activeFilter);
 	}
 
@@ -524,7 +523,7 @@ public class TableController extends BasicController {
 		if (!tablePrefsInitialized) { // first time
 			if (prefs != null) {
 				try {
-					List acolRefs = prefs.getActiveColumnsRef();
+					List<Integer> acolRefs = prefs.getActiveColumnsRef();
 					table.updateConfiguredRows(acolRefs);
 				} catch(IndexOutOfBoundsException ex) {
 					// GUI prefs match not to table data model => reset prefs
