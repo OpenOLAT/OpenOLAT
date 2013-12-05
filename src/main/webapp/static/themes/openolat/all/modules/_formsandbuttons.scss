@@ -267,7 +267,7 @@ div.b_form {
 	div.b_form_general_error { padding: 10px 10px 10px 50px; margin-bottom: 20px; text-align: left; background: url(../openolat/images/icon_error_32.png) no-repeat 10px 10px; min-height: 32px; border: 1px solid $nokcolor; color: $nokcolor; font-style: italic;}
 	div.b_form_spacer { margin: 10px 0; }
 	
-	hr {
+	hr {	
 		&.b_form_spacer { margin: 10px 0; border-bottom: 1px solid #eee; padding: 0;}
 		&.b_form_spacer.b_form_horizontal { display: inline-block; width: 2em;}
 		&.b_form_spacer.b_form_spacer_noline { margin: 10px 0; border-bottom: 0; padding: 0;}
@@ -287,7 +287,12 @@ div.b_form {
 			 label {  float: left; display: inline; line-height: 1.3em;}
 			 span.b_form_mandatory { background: url(../openolat/images/star-small.png) no-repeat; padding-left: 16px; height: 16px;}
 			&.b_form_horizontal { width: auto; float: left; display: inline;} 
-		 	&.b_form_vertical { width: auto; float: none; display: block; } 
+		 	&.b_form_vertical { 
+		 		width: auto; float: none; display: block; 
+		 		margin-top: 1em;
+		 		margin-bottom: 0.3em;
+		 		label { float: none;}	
+		 	} 
 		} 
 	 	
 	 	div.b_form_element { 

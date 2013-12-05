@@ -29,8 +29,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -51,6 +53,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -79,7 +82,7 @@ public class DataStepForm extends StepFormBasicController {
 	private OlatRootFolderImpl bulkAssessmentTmpDir;
 	
 	public DataStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
-		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
+		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		
 		courseNode = (AssessableCourseNode)getFromRunContext("courseNode");
 		
@@ -100,6 +103,7 @@ public class DataStepForm extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("data.title");
 		setFormDescription("data.description");
+		setFormContextHelp("org.olat.course.assessment.bulk", "chelp_bulkassessment.html","help.hover.bulkassessment");
 		
 		String dataVal = "";
 		if(datas != null && StringHelper.containsNonWhitespace(datas.getDataBackupFile())) {
@@ -115,6 +119,7 @@ public class DataStepForm extends StepFormBasicController {
 		}
 		
 		dataEl = uifactory.addTextAreaElement("data", "data", -1, 6, 60, true, dataVal, formLayout);
+		dataEl.showLabel(false);
 
 		String[] values = new String[] {translate("form.step3.delimiter.tab"),translate("form.step3.delimiter.comma")};
 		delimiter = uifactory.addRadiosVertical("delimiter", "form.step3.delimiter", formLayout, keys, values);
@@ -123,6 +128,9 @@ public class DataStepForm extends StepFormBasicController {
 		if(courseNode instanceof TACourseNode) {
 			//return files
 			returnFileEl = uifactory.addFileElement("returnfiles", "return.files", formLayout);
+			Set<String> mimes = new HashSet<String>();
+			mimes.add(WebappHelper.getMimeType("file.zip"));
+			returnFileEl.limitToMimeType(mimes, "return.mime", null);
 			if(datas != null && StringHelper.containsNonWhitespace(datas.getReturnFiles())) {
 				targetArchive = new OlatRootFileImpl(datas.getReturnFiles(), null);
 				if(targetArchive.exists()) {
@@ -140,6 +148,12 @@ public class DataStepForm extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String val = dataEl.getValue();
+		if (!StringHelper.containsNonWhitespace(val) && (returnFileEl != null ? !returnFileEl.isUploadSuccess() : true)) {
+			// do not proceed when nothin in input field and no file uploaded
+			setFormWarning("form.step2.error");
+			return;
+		}
+		setFormWarning(null); // reset error
 		BulkAssessmentDatas datas = new BulkAssessmentDatas();
 		
 		if(bulkAssessmentTmpDir == null) {

@@ -59,6 +59,7 @@ public class ScheduleStepForm extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("schedule.title");
 		setFormDescription("schedule.description");
+		setFormContextHelp("org.olat.course.assessment.bulk", "chelp_bulkassessment.html","help.hover.bulkassessment");
 		
 		String[] typeValues = new String[]{
 				translate("schedule.immediately"), translate("schedule.delayed")

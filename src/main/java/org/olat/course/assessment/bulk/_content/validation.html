@@ -1,8 +1,22 @@
-<fieldset>
-	<legend>Valid</legend>
-	$r.render("validList")
-</fieldset>
-<fieldset>
-	<legend>Not found</legend>
-	$r.render("notFoundList")
-</fieldset>
+#if ($hasNoItems) 
+	<p class="b_warning">
+		$r.translate("validation.error")
+	</p>
+#else 
+	#if ($hasValidItems) 
+	<fieldset>
+		<legend>$r.translate("validation.ok.title")</legend>
+		$r.render("validList")
+	</fieldset>
+	#end
+	
+	#if ($hasInvalidItems) 
+	<fieldset>
+		<legend>$r.translate("validation.nok.title")</legend>
+		<p class="b_warning">
+			$r.translate("validation.nok.desc")
+		</p>
+		$r.render("notFoundList")
+	</fieldset>
+	#end
+#end

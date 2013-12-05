@@ -108,6 +108,7 @@ public class ValidationStepForm extends StepFormBasicController {
 		if(datas.getRows() != null) {
 			doValidateRows(datas);
 		}
+		flc.contextPut("hasNoItems", Boolean.valueOf(datas.getRows() == null ||  datas.getRows().size() == 0));			
 	}
 	
 	private void doValidateRows(BulkAssessmentDatas datas) {
@@ -133,6 +134,8 @@ public class ValidationStepForm extends StepFormBasicController {
 		}
 		validModel.setObjects(validDatas);
 		invalidModel.setObjects(invalidDatas);
+		flc.contextPut("hasValidItems", Boolean.valueOf(validDatas.size()>0));
+		flc.contextPut("hasInvalidItems", Boolean.valueOf(invalidDatas.size()>0));
 		validTableEl.reset();
 		invalidTableEl.reset();
 	}
@@ -164,6 +167,10 @@ public class ValidationStepForm extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if (validModel.getRowCount() == 0) {
+			// do not continue wizard without valid data
+			return;
+		}
 		BulkAssessmentDatas datas = (BulkAssessmentDatas)getFromRunContext("datas");
 		List<BulkAssessmentRow> rows = new ArrayList<>(validModel.getRowCount() + invalidModel.getRowCount());
 		for(int i=validModel.getRowCount(); i-->0; ) {
