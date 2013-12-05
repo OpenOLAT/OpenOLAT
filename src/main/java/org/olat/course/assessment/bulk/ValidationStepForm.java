@@ -47,6 +47,7 @@ import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -58,17 +59,18 @@ public class ValidationStepForm extends StepFormBasicController {
 	
 	private static final String[] userPropsToSearch = new String[]{ UserConstants.EMAIL, UserConstants.INSTITUTIONALEMAIL, UserConstants.INSTITUTIONALUSERIDENTIFIER };
 	
-	
 	private ValidDataModel validModel;
 	private ValidDataModel invalidModel;
 	private FlexiTableElement validTableEl;
 	private FlexiTableElement invalidTableEl;
-	
+
+	private final UserManager userManager;
 	private final BaseSecurity securityManager;
 	
 	public ValidationStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "validation");
 		
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		initForm(ureq);
 		doValidate();
@@ -150,16 +152,13 @@ public class ValidationStepForm extends StepFormBasicController {
 				continue;
 			}
 
-			Map<String, String> userProperties = new HashMap<String,String>();
 			for(String prop : userPropsToSearch) {
-				userProperties.put(prop, assessedId);
-				List<Identity> identities = securityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null, null);
-				if(!identities.isEmpty()) {
-					idToIdentityMap.put(assessedId, identities.get(0));
-					break;
+				identity = userManager.findIdentityKeyWithProperty(prop, assessedId);
+				if(identity != null) {
+					idToIdentityMap.put(assessedId, identity);
+					continue;
 				}
-				userProperties.clear();
-			}	
+			}
 		}
 		
 		return idToIdentityMap;
