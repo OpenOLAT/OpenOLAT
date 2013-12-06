@@ -29,7 +29,7 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -51,15 +51,14 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
 import org.olat.user.DisplayPortraitManager;
-import org.olat.user.UserManagerImpl;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -73,11 +72,12 @@ import org.olat.user.UserManagerImpl;
 public class MembersCourseNodeRunController extends FormBasicController {
 
 	private final RepositoryManager rm ;
+	private final UserManager userManager;
 	private final BaseSecurity securityManager;
 	private final UserCourseEnvironment userCourseEnv;
 	private final DisplayPortraitManager portraitManager;
 	private final String avatarBaseURL;
-
+	
 	private FormLink ownersEmailLink;
 	private FormLink coachesEmailLink;
 	private FormLink participantsEmailLink;
@@ -93,12 +93,13 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	
 	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, "members");
-		
+
+		this.userCourseEnv = userCourseEnv;
 		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new AvatarMapper());
 		
 		rm = RepositoryManager.getInstance();
-		securityManager = BaseSecurityManager.getInstance();
-		this.userCourseEnv = userCourseEnv;
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		portraitManager = DisplayPortraitManager.getInstance();
 
 		initForm(ureq);
@@ -106,12 +107,8 @@ public class MembersCourseNodeRunController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
+		List<Identity> owners = getOwners();
 		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		Long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		ICourse course = CourseFactory.loadCourse(courseResId);
-		RepositoryEntry courseRepositoryEntry = rm.lookupRepositoryEntry(course, true);
-		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(courseRepositoryEntry.getOwnerGroup());
 		List<Identity> coaches = new ArrayList<Identity>(cgm.getCoachesFromBusinessGroups());
 		coaches.addAll(cgm.getCoaches());
 		List<Identity> participants = new ArrayList<Identity>(cgm.getParticipantsFromBusinessGroups());
@@ -146,6 +143,12 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			layoutCont.contextPut("hasCoaches", new Boolean(!coachesLinks.isEmpty()));
 			layoutCont.contextPut("hasParticipants", new Boolean(!participantsLinks.isEmpty()));
 		}
+	}
+	
+	private List<Identity> getOwners() {
+		OLATResource resource = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		RepositoryEntry courseRepositoryEntry = rm.lookupRepositoryEntry(resource, true);
+		return securityManager.getIdentitiesOfSecurityGroup(courseRepositoryEntry.getOwnerGroup());
 	}
 	
 	private boolean canEmail(List<Identity> owners, List<Identity> coaches) {
@@ -217,14 +220,14 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		} else {
 			portraitCssClass = DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS;
 		}
-		
-		Member member = new Member(identity.getKey(), identity, firstname, lastname, rsrc != null, portraitCssClass);
+		String fullname = userManager.getUserDisplayName(identity);
+		Member member = new Member(identity.getKey(), firstname, lastname, fullname, rsrc != null, portraitCssClass);
 		return member;
 	}
 	
 	@Override
 	protected void doDispose() {
-		//
+		memberLinks = emailLinks = ownerLinks = coachesLinks = participantsLinks = null;
 	}
 
 	@Override
@@ -237,34 +240,48 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		if(memberLinks.contains(source)) {
 			FormLink memberLink = (FormLink)source;
 			Member member = (Member)memberLink.getUserObject();
-			openHomePage(member.getIdentity(), ureq);
+			openHomePage(member, ureq);
 		} else if (emailLinks.contains(source)) {
 			FormLink emailLink = (FormLink)source;
 			Member member = (Member)emailLink.getUserObject();
 			ContactList memberList = new ContactList(translate("members.to", new String[]{member.getFullName(), userCourseEnv.getCourseEnvironment().getCourseTitle()}));
-			memberList.add(member.getIdentity());
+			Identity identity = securityManager.loadIdentityByKey(member.getKey());
+			memberList.add(identity);
 			sendEmailToMember(memberList, ureq);
-		} else if (source == coachesEmailLink) {
-			ContactList coachList = new ContactList(translate("coaches.to", new String[]{userCourseEnv.getCourseEnvironment().getCourseTitle()}));
-			for(FormLink coachLink:coachesLinks) {
-				Member member = (Member)coachLink.getUserObject();
-				coachList.add(member.getIdentity());
-			}
-			sendEmailToMember(coachList, ureq);
 		} else if (source == ownersEmailLink) {
 			ContactList ownerList = new ContactList(translate("owners.to", new String[]{userCourseEnv.getCourseEnvironment().getCourseTitle()}));
-			for(FormLink ownerLink:ownerLinks) {
-				Member member = (Member)ownerLink.getUserObject();
-				ownerList.add(member.getIdentity());
-			}
+			ownerList.addAllIdentites(getOwners());
 			sendEmailToMember(ownerList, ureq);
+		} else if (source == coachesEmailLink) {
+			ContactList coachList = new ContactList(translate("coaches.to", new String[]{userCourseEnv.getCourseEnvironment().getCourseTitle()}));
+			Set<Long> sendToWhatYouSee = new HashSet<>();
+			for(FormLink coachLink:coachesLinks) {
+				Member member = (Member)coachLink.getUserObject();
+				sendToWhatYouSee.add(member.getKey());
+			}
+			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			avoidInvisibleMember(cgm.getCoachesFromBusinessGroups(), coachList, sendToWhatYouSee);
+			avoidInvisibleMember(cgm.getCoaches(), coachList, sendToWhatYouSee);
+			sendEmailToMember(coachList, ureq);
 		} else if (source == participantsEmailLink) {
 			ContactList participantList = new ContactList(translate("participants.to", new String[]{userCourseEnv.getCourseEnvironment().getCourseTitle()}));
+			Set<Long> sendToWhatYouSee = new HashSet<>();
 			for(FormLink participantLink:participantsLinks) {
 				Member member = (Member)participantLink.getUserObject();
-				participantList.add(member.getIdentity());
+				sendToWhatYouSee.add(member.getKey());
 			}
+			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			avoidInvisibleMember(cgm.getParticipantsFromBusinessGroups(), participantList, sendToWhatYouSee);
+			avoidInvisibleMember(cgm.getParticipants(), participantList, sendToWhatYouSee);
 			sendEmailToMember(participantList, ureq);
+		}
+	}
+	
+	private void avoidInvisibleMember(List<Identity> members, ContactList contactList, Set<Long> sendToWhatYouSee) {
+		for(Identity member:members) {
+			if(sendToWhatYouSee.contains(member.getKey())) {
+				contactList.add(member);
+			}
 		}
 	}
 	
@@ -304,26 +321,26 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		}
 	}
 	
-	protected void openHomePage(Identity member, UserRequest ureq) {
+	protected void openHomePage(Member member, UserRequest ureq) {
 		String url = "[HomePage:" + member.getKey() + "]";
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
-	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-	  NewControllerFactory.getInstance().launch(ureq, bwControl);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+		NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
 	
 	public static class Member {
 		private final String firstName;
 		private final String lastName;
+		private final String fullName;
 		private final Long key;
-		private Identity identity;
 		private boolean portrait;
 		private String portraitCssClass;
 		private FormLink emailLink;
 		
-		public Member(Long key, Identity identity, String firstName, String lastName, boolean portrait, String portraitCssClass) {
+		public Member(Long key, String firstName, String lastName, String fullName, boolean portrait, String portraitCssClass) {
 			this.firstName = firstName;
 			this.lastName = lastName;
-			this.identity = identity;
+			this.fullName = fullName;
 			this.key = key;
 			this.portrait = portrait;
 			this.portraitCssClass = portraitCssClass;
@@ -341,9 +358,6 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			return portraitCssClass;
 		}
 
-		public Identity getIdentity() {
-			return identity;
-		}
 		
 		public boolean isPortraitAvailable() {
 			return portrait; 
@@ -358,7 +372,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		}
 
 		public String getFullName() {
-			return UserManagerImpl.getInstance().getUserDisplayName(identity);
+			return fullName;
 		}
 
 		public Long getKey() {
