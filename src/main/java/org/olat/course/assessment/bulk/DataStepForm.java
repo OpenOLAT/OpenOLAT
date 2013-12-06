@@ -390,6 +390,13 @@ public class DataStepForm extends StepFormBasicController {
 		
 		if(valuesLength > 3) {
 			String commentStr = values[3];
+			// add any additional comment which probably is just a comma in a escaped string
+			if (valuesLength > 4) {
+				for (int i = 4; i < valuesLength; i++) {
+					commentStr += "," + values[i];					
+				}				
+			}			
+			
 			if(commentStr.isEmpty()) {
 				// ignore empty values
 				row.setComment(null);
