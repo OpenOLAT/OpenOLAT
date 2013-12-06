@@ -45,7 +45,13 @@ public class BulkAssessmentSettings implements Serializable {
 		hasUserComment = courseNode.hasCommentConfigured();
 		hasScore = courseNode.hasScoreConfigured();
 		hasPassed = courseNode.hasPassedConfigured();
-		hasReturnFiles = (courseNode instanceof TACourseNode);
+		
+		if (courseNode instanceof TACourseNode) {
+			Boolean hasReturnBox = (Boolean)courseNode.getModuleConfiguration().get(TACourseNode.CONF_RETURNBOX_ENABLED);
+			hasReturnFiles = hasReturnBox.booleanValue();				
+		} else {
+			hasReturnFiles = false;			
+		}
 
 		if (hasScore) {
 			min = courseNode.getMinScoreConfiguration();
