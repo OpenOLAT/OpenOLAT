@@ -84,9 +84,15 @@ public class ValidationStepForm extends StepFormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.identifier", Cols.identifier.ordinal()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.lastName", Cols.lastName.ordinal()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.firstName", Cols.firstName.ordinal()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.score", Cols.score.ordinal(), new ScoreCellRenderer(settings)));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.passed", Cols.passed.ordinal(), new PassedCellRenderer()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.comment", Cols.comment.ordinal()));
+		if(settings.isHasScore()) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.score", Cols.score.ordinal(), new ScoreCellRenderer(settings)));
+		}
+		if(settings.isHasPassed() && settings.getCut() == null) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.passed", Cols.passed.ordinal(), new PassedCellRenderer()));
+		}
+		if(settings.isHasUserComment()) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.comment", Cols.comment.ordinal()));
+		}
 		if(settings.isHasReturnFiles()) {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.numOfReturnFiles", Cols.numOfReturnFiles.ordinal()));
 		}
@@ -98,6 +104,8 @@ public class ValidationStepForm extends StepFormBasicController {
 		invalidModel = new ValidDataModel(Collections.<UserData>emptyList());
 		invalidModel.setTableColumnModel(tableColumnModel);
 		invalidTableEl = uifactory.addTableElement(ureq, getWindowControl(), "notFoundList", invalidModel, formLayout);
+		
+		flc.contextPut("settings", settings);
 	}
 
 	@Override

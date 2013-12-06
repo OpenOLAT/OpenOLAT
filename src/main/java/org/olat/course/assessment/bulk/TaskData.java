@@ -47,7 +47,7 @@ public class TaskData {
 		this.ownerFullName = ownerFullName;
 		
 		hasScore = runnable.getSettings().isHasScore();
-		hasPassed = runnable.getSettings().isHasPassed();
+		hasPassed = runnable.getSettings().isHasPassed() && runnable.getSettings().getCut() == null;
 		hasUserComment = runnable.getSettings().isHasUserComment();
 		hasReturnFiles = runnable.getSettings().isHasReturnFiles();
 		numOfAssessedIds = runnable.getDatas().getRowsSize();

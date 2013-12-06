@@ -270,6 +270,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 
 		AssessableCourseNode courseNode = data.getCourseNode();
 		final Task editableTask = taskManager.pickTaskForEdition(data.getTask());
+		editedTask = editableTask;
 		if(editableTask == null) {
 			showWarning("task.edited");
 		} else {

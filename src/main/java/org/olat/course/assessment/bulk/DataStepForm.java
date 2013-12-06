@@ -60,8 +60,8 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentRow;
+import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.AssessableCourseNode;
-import org.olat.course.nodes.TACourseNode;
 
 /**
  * 
@@ -91,7 +91,7 @@ public class DataStepForm extends StepFormBasicController {
 	
 	public DataStepForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode courseNode, BulkAssessmentDatas datas, 
 			StepsRunContext runContext, Form rootForm) {
-		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
+		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		
 		this.datas = datas;
 		this.courseNode = courseNode;
@@ -123,10 +123,18 @@ public class DataStepForm extends StepFormBasicController {
 
 		String[] values = new String[] {translate("form.step3.delimiter.tab"),translate("form.step3.delimiter.comma")};
 		delimiter = uifactory.addRadiosVertical("delimiter", "form.step3.delimiter", formLayout, keys, values);
-		delimiter.select("tab", true);
-		
-		if(courseNode instanceof TACourseNode) {
-			//return files
+		// preset delimiter type to first appearance of either tab or comma when data is available, default to tab for no data
+		int firstComma = dataVal.indexOf(",");
+		int firstTab = dataVal.indexOf("\t");
+		if (firstComma > -1 && (firstTab == -1 || firstTab > firstComma )) {
+			delimiter.select("comma", true);
+		} else {
+			delimiter.select("tab", true);
+		}
+
+		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
+		// return files only when configured
+		if(settings.isHasReturnFiles()) {
 			returnFileEl = uifactory.addFileElement("returnfiles", "return.files", formLayout);
 			Set<String> mimes = new HashSet<String>();
 			mimes.add(WebappHelper.getMimeType("file.zip"));
@@ -136,7 +144,7 @@ public class DataStepForm extends StepFormBasicController {
 				if(targetArchive.exists()) {
 					returnFileEl.setInitialFile(targetArchive.getBasefile());
 				}
-			}
+			}				
 		}
 	}
 
@@ -344,17 +352,15 @@ public class DataStepForm extends StepFormBasicController {
 		if(valuesLength > 1) {
 			String scoreStr = values[1];
 			Float score;
-			if("".equals(scoreStr)) {
-				score = null;
-			} else if("\"\"".equals(scoreStr) || "''".equals(scoreStr)) {
-				score = new Float(0.0f);
-			} else if (StringHelper.containsNonWhitespace(scoreStr)) {
+			if (StringHelper.containsNonWhitespace(scoreStr)) {
 				try {
-					score = Float.parseFloat(scoreStr);
+					// accept writing with , or .
+					score = Float.parseFloat(scoreStr.replace(',', '.'));
 				} catch (NumberFormatException e) {
 					score = null;
 				}
 			} else {
+				// only set new numbers, ignore everything else
 				score = null;
 			}
 			row.setScore(score);
@@ -363,15 +369,20 @@ public class DataStepForm extends StepFormBasicController {
 		if(valuesLength > 2) {
 			String passedStr = values[2];
 			Boolean passed;
-			if("\"\"".equals(passedStr) || "''".equals(passedStr)) {
-				passed = Boolean.FALSE;
-			} else if("y".equalsIgnoreCase(passedStr) || "yes".equalsIgnoreCase(passedStr)
-					|| "true".equalsIgnoreCase(passedStr) || "1".equalsIgnoreCase(passedStr)) {
+			if ("y".equalsIgnoreCase(passedStr)
+					|| "yes".equalsIgnoreCase(passedStr)
+					|| "passed".equalsIgnoreCase(passedStr)
+					|| "true".equalsIgnoreCase(passedStr)
+					|| "1".equalsIgnoreCase(passedStr)) {
 				passed = Boolean.TRUE;
-			} else if("n".equalsIgnoreCase(passedStr) || "no".equalsIgnoreCase(passedStr)
-					|| "false".equalsIgnoreCase(passedStr) || "0".equalsIgnoreCase(passedStr)) {
+			} else if ("n".equalsIgnoreCase(passedStr)
+					|| "no".equalsIgnoreCase(passedStr)
+					|| "false".equalsIgnoreCase(passedStr)
+					|| "failed".equalsIgnoreCase(passedStr)
+					|| "0".equalsIgnoreCase(passedStr)) {
 				passed = Boolean.FALSE;
 			} else {
+				// only set defined values, ignore everything else
 				passed = null;
 			}
 			row.setPassed(passed);
@@ -380,12 +391,13 @@ public class DataStepForm extends StepFormBasicController {
 		if(valuesLength > 3) {
 			String commentStr = values[3];
 			if(commentStr.isEmpty()) {
+				// ignore empty values
 				row.setComment(null);
 			} else if("\"\"".equals(commentStr) || "''".equals(commentStr)) {
 				row.setComment("");
 			} else {
 				row.setComment(commentStr);
-			}
+			} 
 		}
 		
 		return row;

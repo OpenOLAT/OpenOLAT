@@ -41,6 +41,7 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 	private final Task task;
 	private final BulkAssessmentDatas datas;
 	private final AssessableCourseNode courseNode;
+	private boolean hasPreviousStep = true;
 
 	public BulkAssessment_2_DatasStep(UserRequest ureq) {
 		this(ureq, null, null, null);
@@ -48,6 +49,7 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 	
 	public BulkAssessment_2_DatasStep(UserRequest ureq, AssessableCourseNode courseNode) {
 		this(ureq, courseNode, null, null);
+		hasPreviousStep = false;
 	}
 	
 	/**
@@ -64,11 +66,12 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 		this.courseNode = courseNode;
 		setI18nTitleAndDescr("data.title", "data.title");
 		setNextStep(new BulkAssessment_3_ValidationStep(ureq));
+		hasPreviousStep = false;
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, true, false);
+		return new PrevNextFinishConfig(hasPreviousStep, true, false);
 	}
 
 	@Override

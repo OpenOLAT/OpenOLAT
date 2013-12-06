@@ -3,6 +3,37 @@
 		$r.translate("validation.error")
 	</p>
 #else 
+	<fieldset>
+		<legend>
+			$r.translate("validation.features.title")
+		</legend>
+		<p>
+			$r.translate("validation.features")
+		</p>
+		<ul>
+			#if($settings.isHasScore()) 
+			<li>$r.translate("table.header.score")</li>
+			#end
+			#if($settings.isHasPassed() && !$settings.getCut()) 
+			<li>
+				$r.translate("table.header.passed")
+			</li>
+			#end
+			#if($settings.isHasUserComment()) 
+			<li>$r.translate("table.header.comment")</li>
+			#end
+			#if($settings.isHasReturnFiles()) 
+			<li>$r.translate("table.header.returnFiles")</li>
+			#end
+		</ul>
+		#if($settings.isHasPassed() && $settings.getCut()) 
+			<p>
+				$r.translate("validation.passed.cut", "$settings.getCut()")
+			</p>
+		#end
+		
+	</fieldset>
+	
 	#if ($hasValidItems) 
 	<fieldset>
 		<legend>$r.translate("validation.ok.title")</legend>
