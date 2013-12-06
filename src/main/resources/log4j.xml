@@ -28,5 +28,9 @@
     <level value="FATAL"/>
     <appender-ref ref="stdout"/>
   </logger>
+    <logger name="org.hibernate.engine.internal.StatisticalLoggingSessionEventListener">
+    <level value="FATAL"/>
+    <appender-ref ref="stdout"/>
+  </logger>
 
 </log4j:configuration>
