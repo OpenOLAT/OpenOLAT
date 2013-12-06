@@ -235,7 +235,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		mailManager.sendMessage(bundle);
 	}
 	
-	private boolean changeOlatPassword(Identity doer, Identity identity, String newPwd) {
+	public boolean changeOlatPassword(Identity doer, Identity identity, String newPwd) {
 		Authentication auth = securityManager.findAuthentication(identity, "OLAT");
 		if (auth == null) { // create new authentication for provider OLAT
 			auth = securityManager.createAndPersistAuthentication(identity, "OLAT", identity.getName(), newPwd, LoginModule.getDefaultHashAlgorithm());
@@ -243,6 +243,10 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		} else {
 			auth = securityManager.updateCredentials(auth, newPwd, LoginModule.getDefaultHashAlgorithm());
 			log.audit(doer.getName() + " set new password for identity: " + identity.getName());
+		}
+		
+		if(identity != null && webDAVAuthManager != null) {
+			webDAVAuthManager.changeDigestPassword(doer, identity, newPwd);
 		}
 		return true;
 	}

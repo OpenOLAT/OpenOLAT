@@ -171,6 +171,17 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		}
 		
 		//For Digest
+		changeDigestPassword(doer, identity, newPwd);
+		return true;
+	}
+	
+	public boolean changeDigestPassword(Identity doer, Identity identity, String newPwd) {
+		if (doer==null) throw new AssertException("password changing identity cannot be undefined!");
+		if (identity == null || identity.getKey() == null)
+			throw new AssertException("cannot change password on a nonpersisted identity");
+
+		
+		//For Digest
 		if(webDAVModule.isDigestAuthenticationEnabled()) {
 			Authentication authHa1 = securityManager.findAuthentication(identity, PROVIDER_HA1);
 			String digestToken = identity.getName() + ":" + WebDAVManagerImpl.BASIC_AUTH_REALM + ":" + newPwd;

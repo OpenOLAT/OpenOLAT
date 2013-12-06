@@ -27,9 +27,6 @@ import javax.naming.directory.Attributes;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
-import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -263,7 +260,6 @@ protected void event(UserRequest ureq, Component source, Event event) {
 	public static Identity authenticate(String username, String pwd, LDAPError ldapError) {
 		final LDAPLoginModule ldapModule = CoreSpringFactory.getImpl(LDAPLoginModule.class);
 		final LDAPLoginManager ldapManager = CoreSpringFactory.getImpl(LDAPLoginManager.class);
-		final BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		
 		//authenticate against LDAP server
 		Attributes attrs = ldapManager.bindUser(username, pwd, ldapError);
@@ -289,14 +285,7 @@ protected void event(UserRequest ureq, Component source, Event event) {
 			}
 			// Add or update an OLAT authentication token for this user if configured in the module
 			if (identity != null && LDAPLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
-				Authentication auth = secMgr.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-				if (auth == null) {
-					// Create new authentication token
-					secMgr.createAndPersistAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, pwd, LoginModule.getDefaultHashAlgorithm());
-				} else {
-					// Reuse existing authentication token
-					secMgr.updateCredentials(auth, pwd, LoginModule.getDefaultHashAlgorithm());
-				}				
+				CoreSpringFactory.getImpl(OLATAuthManager.class).changeOlatPassword(identity, identity, pwd);
 			}
 			return identity;
 		} 
