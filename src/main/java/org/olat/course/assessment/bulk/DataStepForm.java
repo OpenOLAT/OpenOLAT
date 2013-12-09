@@ -101,8 +101,14 @@ public class DataStepForm extends StepFormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// hide data input field in case the element does not have any score, passed or comment field enabled
+		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
+		boolean onlyReturnFiles = (!settings.isHasScore() && !settings.isHasPassed() && !settings.isHasUserComment());
+
 		setFormTitle("data.title");
-		setFormDescription("data.description");
+		if (!onlyReturnFiles) {
+			setFormDescription("data.description");
+		}
 		setFormContextHelp("org.olat.course.assessment.bulk", "chelp_bulkassessment.html","help.hover.bulkassessment");
 		
 		String dataVal = "";
@@ -132,7 +138,12 @@ public class DataStepForm extends StepFormBasicController {
 			delimiter.select("tab", true);
 		}
 
-		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
+		// hide data input field in case the element does not have any score, passed or comment field enabled
+		if (onlyReturnFiles) {
+			dataEl.setVisible(false);
+			delimiter.setVisible(false);
+		}		
+		
 		// return files only when configured
 		if(settings.isHasReturnFiles()) {
 			returnFileEl = uifactory.addFileElement("returnfiles", "return.files", formLayout);

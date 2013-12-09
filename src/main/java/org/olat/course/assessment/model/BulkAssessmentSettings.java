@@ -22,6 +22,7 @@ package org.olat.course.assessment.model;
 import java.io.Serializable;
 
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
 
 /**
@@ -48,6 +49,9 @@ public class BulkAssessmentSettings implements Serializable {
 		
 		if (courseNode instanceof TACourseNode) {
 			Boolean hasReturnBox = (Boolean)courseNode.getModuleConfiguration().get(TACourseNode.CONF_RETURNBOX_ENABLED);
+			hasReturnFiles = hasReturnBox.booleanValue();				
+		} else if (courseNode instanceof ProjectBrokerCourseNode) {
+			Boolean hasReturnBox = (Boolean)courseNode.getModuleConfiguration().get(ProjectBrokerCourseNode.CONF_RETURNBOX_ENABLED);
 			hasReturnFiles = hasReturnBox.booleanValue();				
 		} else {
 			hasReturnFiles = false;			

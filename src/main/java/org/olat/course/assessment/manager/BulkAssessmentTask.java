@@ -274,7 +274,11 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		if (courseNode instanceof MSCourseNode
 				|| courseNode instanceof TACourseNode
 				|| courseNode instanceof ProjectBrokerCourseNode) {
-			bulkAssessability = true;
+			// now a more fine granular check on bulk features. only show wizard for nodes that have at least one
+			BulkAssessmentSettings settings = new BulkAssessmentSettings((AssessableCourseNode)courseNode);
+			if (settings.isHasPassed() || settings.isHasScore() || settings.isHasUserComment() || settings.isHasReturnFiles()) {
+				bulkAssessability = true;				
+			}
 		}
 		return bulkAssessability;
 	}
