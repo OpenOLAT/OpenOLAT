@@ -25,6 +25,7 @@ import org.olat.core.util.filter.impl.ConditionalHTMLCommentsFilter;
 import org.olat.core.util.filter.impl.NekoHTMLFilter;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.filter.impl.SimpleHTMLTagsFilter;
+import org.olat.core.util.filter.impl.SmileysCssToDataUriFilter;
 import org.olat.core.util.filter.impl.XMLValidCharacterFilter;
 
 /**
@@ -44,6 +45,7 @@ public class FilterFactory {
 	private static final Filter htmlTagsAndDesescapingFilter = new NekoHTMLFilter();
 	private static final Filter conditionalCommentsFilter = new ConditionalHTMLCommentsFilter();
 	private static final Filter xmlValidCharacterFilter = new XMLValidCharacterFilter();
+	private static final Filter smileysCssToDataUriFilter = new SmileysCssToDataUriFilter();
 
 	/**
 	 * Get an instance of the HTML tag filter
@@ -100,5 +102,13 @@ public class FilterFactory {
 	 */
 	public static Filter getBaseURLToMediaRelativeURLFilter(String mapperBaseURL) {
 		return new AddBaseURLToMediaRelativeURLFilter(mapperBaseURL);
+	}
+
+	/**
+	 * Get a filter that replaces TinyMCE image tags with data uri images, e.g. for HTML emails
+	 * @return
+	 */
+	public static Filter getSmileysCssToDataUriFilter() {
+		return smileysCssToDataUriFilter;
 	}
 }

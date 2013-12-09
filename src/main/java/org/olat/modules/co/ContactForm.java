@@ -55,6 +55,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.filter.impl.SmileysCssToDataUriFilter;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailModule;
 import org.olat.user.UserManager;
@@ -272,7 +274,7 @@ public class ContactForm extends FormBasicController {
 	 * @return email body text
  	 */
  	public String getBody() {
- 		return tbody.getValue();
+ 		return tbody.getValue(FilterFactory.getSmileysCssToDataUriFilter());
 	}
  	
  	public File[] getAttachments() {
