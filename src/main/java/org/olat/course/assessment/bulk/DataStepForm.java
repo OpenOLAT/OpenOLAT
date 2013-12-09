@@ -109,7 +109,7 @@ public class DataStepForm extends StepFormBasicController {
 		if (!onlyReturnFiles) {
 			setFormDescription("data.description");
 		}
-		setFormContextHelp("org.olat.course.assessment.bulk", "chelp_bulkassessment.html","help.hover.bulkassessment");
+		setFormContextHelp("org.olat.course.assessment.bulk", "bulkassessment_data.html","help.hover.bulkassessment_data");
 		
 		String dataVal = "";
 		if(datas != null && StringHelper.containsNonWhitespace(datas.getDataBackupFile())) {
