@@ -99,6 +99,7 @@ public class ConditionInterpreter {
 
 		// variables
 		env.addVariable(NowVariable.name, new NowVariable(userCourseEnv));
+		env.addVariable(TodayVariable.name, new TodayVariable(userCourseEnv));
 		env.addVariable(NeverVariable.name, new NeverVariable(userCourseEnv));
 
 		// functions

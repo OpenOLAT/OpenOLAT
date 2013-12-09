@@ -19,54 +19,52 @@
  */
 package org.olat.course.condition.interpreter;
 
+
+import java.util.Calendar;
+import java.util.Date;
+
+import org.apache.commons.lang.time.DateUtils;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
  * 
  * Description:<br>
- * Function to get the end date of the course
- * lifecycle.
+ * Function to get the date of today 0:00 without hour, minute or seconds, just the day
  * <P>
- * Initial Date:  4.12.2013 <br>
+ * Initial Date:  10.12.2013 <br>
  *
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author gnaegi, gnaegi@frentix.com, http://www.frentix.com
  */
-public class GetCourseEndDateFunction extends AbstractFunction {
+/**
+ */
+public class TodayVariable extends AbstractVariable {
 
-	public static final String name = "getCourseEndDate";
+	public static final String name = "today";
 
 	/**
-	 * Default constructor to use the get initial enrollment date 
+	 * Default constructor to use the current day
 	 * @param userCourseEnv
 	 */
-	public GetCourseEndDateFunction(UserCourseEnvironment userCourseEnv) {
+	public TodayVariable(UserCourseEnvironment userCourseEnv) {
 		super(userCourseEnv);
 	}
-
+	
 	/**
-	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
+	 * @see com.neemsoft.jmep.VariableCB#getValue()
 	 */
-	@Override
-	public Object call(Object[] inStack) {
+	public Object getValue() {
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
-		if(cev != null) {
-			return defaultValue();
+		if(cev!=null) {
+			return new Double(0);
 		}
-
-		RepositoryEntryLifecycle lifecycle = getUserCourseEnv().getLifecycle();
-		if (lifecycle != null && lifecycle.getValidTo() != null) {
-			Double end = Double.valueOf(lifecycle.getValidTo().getTime());
-			return end;
-		} else {
-			// what to do in case of no date available??? -> return date in the future
-			return new Double(Double.POSITIVE_INFINITY);
-		}
+		CourseEnvironment ce = getUserCourseEnv().getCourseEnvironment();
+		long time = ce.getCurrentTimeMillis();
+		Date date = new Date(time);
+		Date day = DateUtils.truncate(date, Calendar.DATE);
+		Double dDay = new Double(day.getTime());
+		return dDay;
 	}
 
-	@Override
-	protected Object defaultValue() {
-		return new Double(Double.MIN_VALUE);
-	}
 }
