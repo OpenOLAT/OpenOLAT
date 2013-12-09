@@ -358,10 +358,16 @@ public class DataStepForm extends StepFormBasicController {
 		}
 
 		BulkAssessmentRow row = new BulkAssessmentRow();
-		row.setAssessedId(values[0]);
+		String identifyer = values[0];
+		identifyer.trim();
+		if (!StringHelper.containsNonWhitespace(identifyer)) {
+			identifyer = "-";
+		}
+		row.setAssessedId(identifyer);
 
 		if(valuesLength > 1) {
 			String scoreStr = values[1];
+			scoreStr= scoreStr.trim();
 			Float score;
 			if (StringHelper.containsNonWhitespace(scoreStr)) {
 				try {
@@ -379,6 +385,7 @@ public class DataStepForm extends StepFormBasicController {
 
 		if(valuesLength > 2) {
 			String passedStr = values[2];
+			passedStr= passedStr.trim();
 			Boolean passed;
 			if ("y".equalsIgnoreCase(passedStr)
 					|| "yes".equalsIgnoreCase(passedStr)
@@ -407,6 +414,7 @@ public class DataStepForm extends StepFormBasicController {
 					commentStr += "," + values[i];					
 				}				
 			}			
+			commentStr= commentStr.trim();
 			
 			if(commentStr.isEmpty()) {
 				// ignore empty values

@@ -340,9 +340,9 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			IdentityEnvironment ienv = new IdentityEnvironment(identity, studentRoles);
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 			
-			//update comment
+			//update comment, empty string will reset comment
 			String userComment = row.getComment();
-			if(hasUserComment && userComment != null && !userComment.equals("")){
+			if(hasUserComment && userComment != null){
 				// Update userComment in db
 				courseNode.updateUserUserComment(userComment, uce, coachIdentity);
 				//LD: why do we have to update the efficiency statement?
