@@ -75,7 +75,7 @@ public class STPeekViewController extends BasicController {
 				Link nodeLink = LinkFactory.createLink("nodeLink_" + child.getIdent(), genericPeekViewVC, this);
 				nodeLink.setCustomDisplayText(child.getShortTitle());
 				// Add css class for course node type
-				String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfiguration(child.getType()).getIconCSSClass();
+				String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(child.getType()).getIconCSSClass();
 				nodeLink.setCustomEnabledLinkCSS("b_with_small_icon_left o_gotoNode " + iconCSSClass);
 				nodeLink.setUserObject(child.getIdent());
 			}
