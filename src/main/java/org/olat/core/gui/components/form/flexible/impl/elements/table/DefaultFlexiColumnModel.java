@@ -36,7 +36,6 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	private String headerKey;
 	private String columnKey;
 	private int columnIndex;
-	private String action;
 
 	private boolean sortable;
 	private String sortedKey;
@@ -51,11 +50,6 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, FlexiCellRenderer renderer) {
 		this(true, headerKey, columnIndex, false, null, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
-	}
-	
-	public DefaultFlexiColumnModel(String headerKey, int columnIndex, String action) {
-		this(headerKey, columnIndex, false, null);
-		this.action = action;
 	}
 	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey) {
@@ -78,11 +72,7 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 
 	@Override
 	public String getAction() {
-		return action;
-	}
-	
-	public void setAction(String action) {
-		this.action = action;
+		return null;
 	}
 
 	@Override

@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -36,10 +37,13 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -50,6 +54,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -111,7 +116,11 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.comment", Cols.comment.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.returnFiles", Cols.returnFile.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.numOfAssessedUsers", Cols.numOfAssessedUsers.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.owner", Cols.owner.ordinal()));
+		
+		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("select-owner", new TextFlexiCellRenderer());
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.owner", Cols.owner.ordinal(), "select-owner", renderer));
+		
+		
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete"));
 		
@@ -165,6 +174,12 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 						doConfirmDelete(ureq, data);
 						break;
 					}
+					case "select-owner": {
+						TaskData data = taskModel.getObject(se.getIndex());
+						Identity creator = data.getTask().getCreator();
+						doOpenCard(ureq, creator);
+						break;
+					}
 				}
 			}
 		}
@@ -196,6 +211,11 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doOpenCard(UserRequest ureq, Identity creator) {
+		String businessPath = "[Identity:" + creator.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, TaskData data) {

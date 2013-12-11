@@ -34,6 +34,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskAwareRunnable;
@@ -176,6 +178,9 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 	public List<BulkAssessmentFeedback> process() {
 		List<BulkAssessmentFeedback> feedbacks = new ArrayList<>();
 		try {
+			LoggingResourceable infos = LoggingResourceable.wrap(getCourseNode());
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(infos);
+			
 			doProcess(feedbacks);
 			cleanup();
 		} catch (Exception e) {
@@ -293,6 +298,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 	}
 	
 	private void doProcess(List<BulkAssessmentFeedback> feedbacks) {
+		final DB dbInstance = DBFactory.getInstance();
 		final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		final Identity coachIdentity = securityManager.loadIdentityByKey(coachedIdentity);
 		final ICourse course = CourseFactory.loadCourse(courseRes);
@@ -328,6 +334,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			cut = courseNode.getCutValueConfiguration();
 		}
 		
+		int count = 0;
 		List<BulkAssessmentRow> rows = datas.getRows();
 		for(BulkAssessmentRow row:rows) {
 			Long identityKey = row.getIdentityKey();
@@ -335,7 +342,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 				feedbacks.add(new BulkAssessmentFeedback("bulk.action.no.such.user", row.getAssessedId()));
 				continue;//nothing to do
 			}
-			
+
 			Identity identity = securityManager.loadIdentityByKey(identityKey);
 			IdentityEnvironment ienv = new IdentityEnvironment(identity, studentRoles);
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
@@ -414,6 +421,10 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 						}
 					}
 				}
+			}
+			
+			if(count++ % 5 == 0) {
+				dbInstance.commitAndCloseSession();
 			}
 		}
 	}
