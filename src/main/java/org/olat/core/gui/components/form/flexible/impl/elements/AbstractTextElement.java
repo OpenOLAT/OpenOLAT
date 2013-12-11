@@ -167,7 +167,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 			}
 		}
 
-		this.value = value.replaceAll("\\p{C}", "");
+		this.value = value;//.replaceAll("\\p{Cc}", "");
 		Component c = getComponent();
 		if (c != null) {
 			// c may be null since it is only created when this formelement is added to a FormItemContainer
