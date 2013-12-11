@@ -152,8 +152,9 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	 * @param value The value to set
 	 */
 	public void setValue(String value) {
-		if (value == null) value = "";
-		else {
+		if (value == null) {
+			value = "";
+		} else {
 			if(!preventTrim) // OO-31
 				value = value.trim();
 			
@@ -165,7 +166,8 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 				originalInitialised = true;
 			}
 		}
-		this.value = value;
+
+		this.value = value.replaceAll("\\p{C}", "");
 		Component c = getComponent();
 		if (c != null) {
 			// c may be null since it is only created when this formelement is added to a FormItemContainer
