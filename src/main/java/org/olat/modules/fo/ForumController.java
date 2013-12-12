@@ -989,7 +989,7 @@ public class ForumController extends BasicController implements GenericEventList
 			// single message in thread view, add message and mark as read
 			addMessageToCurrentMessagesAndVC(ureq, m, vcThreadView, currentMessagesMap, 0, marks, stats);
 			// init single thread list and append
-			sttdmodel = new ForumMessagesTableDataModel(threadMsgs, rms);
+			sttdmodel = new ForumMessagesTableDataModel(userManager, threadMsgs, rms);
 			sttdmodel.setLocale(ureq.getLocale());
 			singleThreadTableCtr.setTableDataModel(sttdmodel);
 			int position = PersistenceHelper.indexOf(threadMsgs, currentMsg);
@@ -1265,9 +1265,9 @@ public class ForumController extends BasicController implements GenericEventList
 				if(isHidden) {
 					title = translate("msg.hidden")  + " " + title;
 				}
-				mesgWrapper[1] = new ForumHelper.MessageWrapper(title,isSticky,collator);
+				mesgWrapper[1] = new ForumHelper.MessageWrapper(title,isSticky,collator, f);
 				User creator = thread.getCreator().getUser();
-				mesgWrapper[2] = new ForumHelper.MessageWrapper(creator.getProperty(UserConstants.FIRSTNAME, null) + " " + creator.getProperty(UserConstants.LASTNAME, null),isSticky, collator);
+				mesgWrapper[2] = new ForumHelper.MessageWrapper(userManager.getUserDisplayName(creator),isSticky, collator, f);
 				// find latest date, and number of read messages for all children
 				// init with thread values
 				Date lastModified = thread.getLastModified();
@@ -1297,13 +1297,13 @@ public class ForumController extends BasicController implements GenericEventList
 						}
 					}
 				}				
-				mesgWrapper[3] = new ForumHelper.MessageWrapper(lastModified,isSticky,collator);
+				mesgWrapper[3] = new ForumHelper.MessageWrapper(lastModified,isSticky,collator, f);
 				//lastModified
-				mesgWrapper[4] = new ForumHelper.MessageWrapper(new Integer(statCounter),isSticky,collator);
+				mesgWrapper[4] = new ForumHelper.MessageWrapper(new Integer(statCounter),isSticky,collator, f);
 				//marked
-				mesgWrapper[5] = new ForumHelper.MessageWrapper(new Integer((childCounter - readCounter)),isSticky,collator);
+				mesgWrapper[5] = new ForumHelper.MessageWrapper(new Integer((childCounter - readCounter)),isSticky,collator, f);
 				// unread					
-				mesgWrapper[6] = new ForumHelper.MessageWrapper(new Integer(childCounter),isSticky,collator);
+				mesgWrapper[6] = new ForumHelper.MessageWrapper(new Integer(childCounter),isSticky,collator, f);
 				// add message itself for later usage
 				mesgWrapper[7] = thread;
 				tmpThreadList.add(thread);

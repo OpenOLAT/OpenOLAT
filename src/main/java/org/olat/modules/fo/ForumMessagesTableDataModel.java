@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.id.UserConstants;
+import org.olat.user.UserManager;
 
 /**
 * @author Felix Jost
@@ -38,14 +38,12 @@ import org.olat.core.id.UserConstants;
 public class ForumMessagesTableDataModel extends DefaultTableDataModel<Message> {
 
 	private Set<Long> readMsgs;
+	private UserManager userManager;
 
-	public ForumMessagesTableDataModel() {
-		super(null);
-	}
-
-	public ForumMessagesTableDataModel(List<Message> objects, Set<Long> readMsgs) {
+	public ForumMessagesTableDataModel(UserManager userManager, List<Message> objects, Set<Long> readMsgs) {
 		super(objects);
 		this.readMsgs = readMsgs;
+		this.userManager = userManager;
 	}
 
 	public int getColumnCount() {
@@ -66,9 +64,7 @@ public class ForumMessagesTableDataModel extends DefaultTableDataModel<Message> 
 				String title = m.getTitle();
 				return title;
 			case 1 :
-				String last= m.getCreator().getUser().getProperty(UserConstants.LASTNAME, getLocale());
-				String first= m.getCreator().getUser().getProperty(UserConstants.FIRSTNAME, getLocale()); 
-				return last + " " + first;
+				return userManager.getUserDisplayName(m.getCreator().getUser());
 			case 2 :
 				Date mod = m.getLastModified();
 				return mod;

@@ -27,6 +27,10 @@ package org.olat.modules.fo;
 
 import java.text.Collator;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.Locale;
+
+import org.olat.core.util.Formatter;
 
 /**
  * 
@@ -108,12 +112,16 @@ public class ForumHelper {
 		private Comparable value;
 		private boolean sticky;
 		private Collator collator = Collator.getInstance();
+		private Formatter formatter = Formatter.getInstance(Locale.getDefault());
 		
-		public MessageWrapper(Comparable value_, boolean sticky_, Collator collator) {
+		public MessageWrapper(Comparable value_, boolean sticky_, Collator collator, Formatter formatter) {
 			value = value_;
 			sticky = sticky_;
 			if (collator != null) {				
 				this.collator = collator;
+			}
+			if (formatter != null) {				
+				this.formatter = formatter;
 			}
 		}
 		
@@ -122,7 +130,10 @@ public class ForumHelper {
 		 * @see java.lang.Object#toString()
 		 */
 		public String toString() {
-			return value.toString();
+			if (value instanceof Date) {
+				return formatter.formatDateAndTime((Date)value);
+			}
+			else return value.toString();
 		}
 
 		public boolean isSticky() {
