@@ -65,9 +65,10 @@
 				#elseif($content.getType().equals("BLANK"))
 				<td>
 					#if ($isSurveyMode.equals("false"))
-					<input type="text" name="content_q$count" size="$content.getSize()" maxLength="$content.getMaxLength()" value="$r.escapeHtml($content.getCorrectBlank())" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')">				
+					## No maxLength to allow input of many synonyms
+					<input type="text" name="content_q$count" size="$content.getSize()" value="$r.escapeHtml($content.getCorrectBlank())" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')">				
 					#else
-					<input type="text" name="content_q$count" size="$content.getSize()" maxLength="$content.getMaxLength()" value="" class="b_disabled" disabled>				
+					<input type="text" name="content_q$count" size="$content.getSize()" value="" class="b_disabled" disabled>				
 					#end
 				#end
 					<input type="hidden" name="ident_q$count" value="$content.getIdent()" />
