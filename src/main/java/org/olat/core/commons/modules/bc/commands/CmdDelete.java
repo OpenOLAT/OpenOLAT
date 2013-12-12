@@ -83,7 +83,7 @@ public class CmdDelete extends BasicController implements FolderCommand {
 			// create dialog controller
 			dialogCtr = activateYesNoDialog(ureq, trans.translate("del.header"), msg, dialogCtr);
 		} else {
-			String msg = FolderCommandHelper.renderLockedMessageAsHtml(trans, currentContainer, lockedFiles);
+			String msg = FolderCommandHelper.renderLockedMessageAsHtml(trans, lockedFiles);
 			List<String> buttonLabels = Collections.singletonList(trans.translate("ok"));
 			lockedFiledCtr = activateGenericDialog(ureq, trans.translate("lock.title"), msg, buttonLabels, lockedFiledCtr);
 		}

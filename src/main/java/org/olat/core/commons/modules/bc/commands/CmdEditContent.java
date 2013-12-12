@@ -104,7 +104,7 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 		
 		if(vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles())) {
 			List<String> lockedFiles = Collections.singletonList(currentItem.getName());
-			String msg = FolderCommandHelper.renderLockedMessageAsHtml(translator, folderComponent.getCurrentContainer(), lockedFiles);
+			String msg = FolderCommandHelper.renderLockedMessageAsHtml(translator, lockedFiles);
 			List<String> buttonLabels = Collections.singletonList(translator.translate("ok"));
 			lockedFiledCtr = activateGenericDialog(ureq, translator.translate("lock.title"), msg, buttonLabels, lockedFiledCtr);
 			return null;

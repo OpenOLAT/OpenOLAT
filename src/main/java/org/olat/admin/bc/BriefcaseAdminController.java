@@ -23,7 +23,7 @@ import java.io.File;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFileImpl;
+import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -45,11 +45,13 @@ public class BriefcaseAdminController extends FormBasicController {
 	
 	private FormLink thumbnailReset;
 	private final TaskExecutorManager taskExecutor;
+	private final MetaInfoFactory metaInfoFactory;
 
 	public BriefcaseAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "bc_admin");
 		
 		taskExecutor = CoreSpringFactory.getImpl(TaskExecutorManager.class);
+		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		
 		initForm(ureq);
 	}
@@ -101,17 +103,8 @@ public class BriefcaseAdminController extends FormBasicController {
 				} else if(file.isDirectory()) {
 					resetThumbnails(file);
 				} else if(file.getName().endsWith(".xml")) {
-					resetThumbnailsInMeta(file);
+					metaInfoFactory.resetThumbnails(file);
 				}
-			}
-		}
-		
-		private void resetThumbnailsInMeta(File metafile) {
-			try {
-				MetaInfoFileImpl metaInfo = new MetaInfoFileImpl(metafile);
-				metaInfo.clearThumbnails();
-			} catch (Exception e) {
-				logError("", e);
 			}
 		}
 	}

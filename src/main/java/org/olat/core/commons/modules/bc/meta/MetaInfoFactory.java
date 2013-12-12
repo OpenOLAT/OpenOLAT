@@ -24,11 +24,18 @@
 */
 package org.olat.core.commons.modules.bc.meta;
 
+import java.io.File;
+
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.thumbnail.ThumbnailService;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 
 
 public class MetaInfoFactory {
+	
+	private static final OLog log = Tracing.createLoggerFor(MetaInfoFactory.class);
 	
 	private ThumbnailService thumbnailService;
 	
@@ -41,8 +48,47 @@ public class MetaInfoFactory {
 	}
 
 	public MetaInfo createMetaInfoFor(OlatRelPathImpl path) {
-		MetaInfoFileImpl meta = new MetaInfoFileImpl(path);
+		File originFile = getOriginFile(path);
+		if(originFile == null) {
+			return null;
+		}
+		String canonicalMetaPath = getCanonicalMetaPath(originFile, path);
+		if (canonicalMetaPath == null) {
+			return null;
+		}
+		
+		File metaFile = new File(canonicalMetaPath);
+		MetaInfoFileImpl meta = new MetaInfoFileImpl(canonicalMetaPath, metaFile, originFile);
 		meta.setThumbnailService(thumbnailService);
 		return meta;
+	}
+	
+	public void resetThumbnails(File metafile) {
+		try {
+			new MetaInfoFileImpl(metafile).clearThumbnails();
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	protected static String getCanonicalMetaPath(OlatRelPathImpl olatRelPathImpl) {
+		File f = getOriginFile(olatRelPathImpl);
+		return getCanonicalMetaPath(f, olatRelPathImpl);
+	}
+	
+	private static String getCanonicalMetaPath(File originFile, OlatRelPathImpl olatRelPathImpl) {
+		String canonicalMetaPath;
+		if (originFile == null || !originFile.exists()) {
+			canonicalMetaPath = null;
+		} else if (originFile.isDirectory()) {
+			canonicalMetaPath = FolderConfig.getCanonicalMetaRoot() + olatRelPathImpl.getRelPath() + "/.xml";
+		} else {
+			canonicalMetaPath = FolderConfig.getCanonicalMetaRoot() + olatRelPathImpl.getRelPath() + ".xml";
+		}
+		return canonicalMetaPath;
+	}
+	
+	protected static File getOriginFile(OlatRelPathImpl olatRelPathImpl) {
+		return new File(FolderConfig.getCanonicalRoot() + olatRelPathImpl.getRelPath());
 	}
 }

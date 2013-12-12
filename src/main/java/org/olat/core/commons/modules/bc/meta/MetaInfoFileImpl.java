@@ -48,10 +48,10 @@ import java.util.UUID;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.poi.util.IOUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailService;
@@ -116,24 +116,18 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	
 
 	// make it a factory
-	public MetaInfoFileImpl() { 
-		
+	private MetaInfoFileImpl() { 
+		//
 	}
 
-	public MetaInfoFileImpl(File metaFile) { 
+	protected MetaInfoFileImpl(File metaFile) { 
 		this.metaFile = metaFile;
 		parseSAX(metaFile);
 	}
 	
-	public MetaInfoFileImpl(OlatRelPathImpl olatRelPathImpl) { 
-		init(olatRelPathImpl);
-	}
-
-	private boolean init(OlatRelPathImpl olatRelPathImpl) {
-		String canonicalMetaPath = getCanonicalMetaPath(olatRelPathImpl);
-		if (canonicalMetaPath == null) return false;
-		originFile = getOriginFile(olatRelPathImpl);
-		metaFile = new File(canonicalMetaPath);
+	protected MetaInfoFileImpl(String canonicalMetaPath, File metaFile, File originFile) { 
+		this.metaFile = metaFile;
+		this.originFile = originFile;
 		// set
 		if (!parseSAX(metaFile)) {
 			String metaDirPath = canonicalMetaPath.substring(0, canonicalMetaPath.lastIndexOf('/'));
@@ -143,30 +137,10 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			}
 			write();
 		}
-		return true;
 	}
 
 	public void setThumbnailService(ThumbnailService thumbnailService) {
 		this.thumbnailService = thumbnailService;
-	}
-
-	private File getOriginFile(OlatRelPathImpl olatRelPathImpl) {
-		return new File(FolderConfig.getCanonicalRoot() + olatRelPathImpl.getRelPath());
-	}
-	/**
-	 * Get the canonical path to the file's meta file.
-	 * 
-	 * @param bcPath
-	 * @return String
-	 */
-	private String getCanonicalMetaPath(OlatRelPathImpl olatRelPathImpl) {
-		File f = getOriginFile(olatRelPathImpl);
-		if (!f.exists()) return null;
-		if (f.isDirectory()) {
-			return FolderConfig.getCanonicalMetaRoot() + olatRelPathImpl.getRelPath() + "/.xml";
-		} else {
-			return FolderConfig.getCanonicalMetaRoot() + olatRelPathImpl.getRelPath() + ".xml";
-		}
 	}
 	
 	/**
@@ -192,7 +166,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 */
 	public void moveCopyToDir(OlatRelPathImpl target, boolean move) {
 		File fSource = metaFile;
-		File fTarget = new File(getCanonicalMetaPath(target));
+		File fTarget = new File(MetaInfoFactory.getCanonicalMetaPath(target));
 		if (isDirectory()) { // move/copy whole meta directory
 			fSource = fSource.getParentFile();
 			fTarget = fTarget.getParentFile();
@@ -443,7 +417,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	  } catch(Exception ex) {
 	  	log.error("Error while parsing " + fMeta, ex);
 	  } finally {
-	  	FileUtils.closeSafely(in);
+	  	IOUtils.closeQuietly(in);
 	  }
 		return true;
 	}
@@ -1043,14 +1017,14 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		return cssClass;
 	}
 	
-	public class XmlFilter implements FileFilter {
+	public static class XmlFilter implements FileFilter {
 		@Override
 		public boolean accept(File file) {
 			return file.getName().endsWith(".xml");
 		}
 	}
 	
-	public class Thumbnail {
+	public static class Thumbnail {
 		private int maxWidth;
 		private int maxHeight;
 		private int finalWidth;

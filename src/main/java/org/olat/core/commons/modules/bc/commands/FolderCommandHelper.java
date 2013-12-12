@@ -42,9 +42,9 @@ import org.olat.core.util.vfs.VFSManager;
  */
 public class FolderCommandHelper {
 	
-	public static String renderLockedMessageAsHtml(Translator trans, VFSContainer container, List<String> files) {
+	public static String renderLockedMessageAsHtml(Translator trans, List<String> files) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(trans.translate("lock.description")).append("<p>").append(renderAsHtml(container, files)).append("</p>");
+		sb.append(trans.translate("lock.description")).append("<p>").append(renderAsHtml(files)).append("</p>");
 		return sb.toString();
 	}
 
@@ -53,7 +53,7 @@ public class FolderCommandHelper {
 	 * 
 	 * @return HTML Fragment.
 	 */
-	private static String renderAsHtml(VFSContainer container, List<String> files) {
+	private static String renderAsHtml(List<String> files) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<ul>");
 		for (String file : files) {

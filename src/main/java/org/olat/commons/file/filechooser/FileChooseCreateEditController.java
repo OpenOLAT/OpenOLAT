@@ -221,7 +221,7 @@ public class FileChooseCreateEditController extends BasicController{
 		FolderComponent folderComponent = new FolderComponent(ureq, "foldercomp", namedCourseFolder, null, null);
 		folderComponent.addListener(this);
 		cmdUpload = new CmdUpload(ureq, getWindowControl(), false, false);
-		cmdUpload.execute(folderComponent, ureq, getWindowControl(), getTranslator(), true);		
+		cmdUpload.execute(folderComponent, ureq, getTranslator(), true);		
 		cmdUpload.hideFieldset();
 		listenTo(cmdUpload);
 		Panel mainPanel = new Panel("upl");

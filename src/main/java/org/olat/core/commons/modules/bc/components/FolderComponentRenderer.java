@@ -53,8 +53,8 @@ import org.olat.core.util.vfs.VFSItem;
  */
 public class FolderComponentRenderer implements ComponentRenderer {
 
-	private ListRenderer listRenderer;
-	private CrumbRenderer crumbRenderer;
+	private final ListRenderer listRenderer;
+	private final CrumbRenderer crumbRenderer;
 
 	/**
 	 * Constructor for TableRenderer. Singleton and must be reentrant
@@ -111,7 +111,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 		}
 		
 		String formName = "folder" + CodeHelper.getRAMUniqueID();
-		target.append("<form  method=\"post\" id=\"" + formName + "\" action=\"");
+		target.append("<form  method=\"post\" id=\"").append(formName).append("\" action=\"");
 		ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] {FolderRunController.FORM_ACTION }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		target.append("\" onsubmit=\"if ( b_briefcase_isChecked('").append(formName)
 			.append("', '").append(Formatter.escapeSingleAndDoubleQuotes(StringHelper.escapeHtml(translator.translate("alert")).toString())) 

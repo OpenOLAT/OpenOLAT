@@ -94,10 +94,10 @@ public class CmdUpload extends BasicController implements FolderCommand {
 	}
 
 	public Controller execute(FolderComponent fc, UserRequest ureq, WindowControl windowControl, Translator trans) {
-		return execute(fc, ureq, windowControl, trans, false);
+		return execute(fc, ureq, trans, false);
 	}
 
-	public Controller execute(FolderComponent fc, UserRequest ureq, WindowControl windowControl, Translator trans, boolean cancelResetsForm) {
+	public Controller execute(FolderComponent fc, UserRequest ureq, Translator trans, boolean cancelResetsForm) {
 		this.folderComponent = fc;
 		this.cancelResetsForm = cancelResetsForm;
 		

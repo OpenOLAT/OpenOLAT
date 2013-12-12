@@ -94,7 +94,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		}
 		
 		if(!lockedFiles.isEmpty()) {
-			String msg = FolderCommandHelper.renderLockedMessageAsHtml(trans, null, lockedFiles);
+			String msg = FolderCommandHelper.renderLockedMessageAsHtml(trans, lockedFiles);
 			List<String> buttonLabels = Collections.singletonList(trans.translate("ok"));
 			lockedFiledCtr = activateGenericDialog(ureq, trans.translate("lock.title"), msg, buttonLabels, lockedFiledCtr);
 			return null;
