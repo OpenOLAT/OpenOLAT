@@ -5,23 +5,30 @@
 #end
 
 #if($user)
+<div>
+	#if ($user.getProperty("institutionalName", $locale) && $user.getProperty("institutionalName", $locale).length() > 0)
+		#set ($inst = $r.escapeHtml($user.getProperty("institutionalName", $locale)))
+	#end
+	#if ($user.getProperty("institutionalUserIdentifier", $locale) && $user.getProperty("institutionalUserIdentifier", $locale).length() > 0)
+		#set ($matnr = $r.escapeHtml($user.getProperty("institutionalUserIdentifier", $locale)))
+	#end
 	<span class="b_with_small_icon_left b_user_icon">
 		$r.escapeHtml($user.getProperty("firstName", $locale)) $r.escapeHtml($user.getProperty("lastName", $locale))
-	</span>
+	</span> 
+ 	#if ($matnr)
+ 		($matnr)
+ 	#end
 	<br />
 	<a href="mailto:$user.getProperty("email", $locale)" class="b_link_mailto">$user.getProperty("email", $locale)</a>
 	#if ($user.getProperty("institutionalEmail", $locale) && $user.getProperty("institutionalEmail", $locale) != "" && $user.getProperty("email", $locale) != $user.getProperty("institutionalEmail", $locale))
 		<br />
 		<a href="mailto:$user.getProperty("institutionalEmail", $locale)" class="b_link_mailto">$user.getProperty("institutionalEmail", $locale)</a>
 	#end
-	#if ($user.getProperty("institutionalName", $locale))
+	#if ($inst)
 		<br />
-		<span class="b_with_small_icon_left b_institution_icon">
-			$r.escapeHtml($user.getProperty("institutionalName", $locale))
-		</span>
+		<span class="b_with_small_icon_left b_institution_icon">$inst</span>
 	#end
-	#if ($user.getProperty("institutionalUserIdentifier", $locale))
-		$r.escapeHtml($user.getProperty("institutionalUserIdentifier", $locale)))
-	#end
+	<br />
+</div>
 #end
 $r.render("assessmentOverviewTable")
