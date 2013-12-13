@@ -136,7 +136,12 @@ public class CmdServeResource implements FolderCommand {
 				mr = vmr;
 			} else {
 				// binary data: not .html, not .htm, not .js -> treated as is
-				mr = new VFSMediaResource(vfsfile);
+				VFSMediaResource vmr = new VFSMediaResource(vfsfile);
+				// This is to prevent the login prompt in Excel, Word and PowerPoint
+				if (path.endsWith(".xlsx") || path.endsWith(".pptx") || path.endsWith(".docx")) {
+					vmr.setDownloadable(true);
+				}
+				mr = vmr;
 			}
 		}
 		
