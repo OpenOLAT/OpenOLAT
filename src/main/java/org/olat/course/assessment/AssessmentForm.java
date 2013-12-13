@@ -276,8 +276,6 @@ public class AssessmentForm extends FormBasicController {
 			userCommentValue = assessableCourseNode.getUserUserComment(userCourseEnv);
 			if (userCommentValue == null) {
 				userCommentValue = "";
-			} else {
-				userCommentValue = StringHelper.xssScan(userCommentValue);
 			}
 			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, userCommentValue, formLayout);
 		}
@@ -285,8 +283,6 @@ public class AssessmentForm extends FormBasicController {
 		coachCommentValue = assessableCourseNode.getUserCoachComment(userCourseEnv);
 		if (coachCommentValue == null) {
 			coachCommentValue = "";
-		} else {
-			coachCommentValue = StringHelper.xssScan(coachCommentValue);
 		}
 		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, coachCommentValue, formLayout);
 	
