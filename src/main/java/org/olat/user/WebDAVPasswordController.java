@@ -27,6 +27,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderManager;
+import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -43,6 +44,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -68,7 +70,7 @@ public class WebDAVPasswordController extends FormBasicController {
 	private final BaseSecurity securityManager;
 	
 	public WebDAVPasswordController(UserRequest ureq, WindowControl wControl) {
-		super(ureq,wControl, "pwdav");
+		super(ureq, wControl, "pwdav", Util.createPackageTranslator(FolderRunController.class, ureq.getLocale()));
 		
 		webDAVAuthManager = CoreSpringFactory.getImpl(WebDAVAuthManager.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
