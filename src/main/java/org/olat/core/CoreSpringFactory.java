@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 
@@ -67,7 +67,7 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	// Access servletContext only for spring beans admin-functions
 	public static ServletContext servletContext;
 	private static DefaultListableBeanFactory beanFactory;
-	private static Map<Class<?>, String> idToBeans = new WeakHashMap<Class<?>, String>();
+	private static Map<Class<?>, String> idToBeans = new ConcurrentHashMap<Class<?>, String>();
 	
 	/**
 	 * [used by spring only]
