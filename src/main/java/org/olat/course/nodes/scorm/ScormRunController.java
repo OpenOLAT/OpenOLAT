@@ -148,7 +148,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		doStartPage();
 		putInitialPanel(main);
 
-		boolean doSkip = config.getBooleanSafe(ScormEditController.CONFIG_SKIPLAUNCHPAGE, true);
+		boolean doSkip = config.getBooleanSafe(ScormEditController.CONFIG_SKIPLAUNCHPAGE, false);
 		if (doSkip && !maxAttemptsReached()) {
 			doLaunch(ureq, true);
 			getWindowControl().getWindowBackOffice().addCycleListener(this);
