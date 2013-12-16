@@ -223,22 +223,15 @@ public class QTIWordExport implements MediaResource {
 				ChoiceQuestion choice = (ChoiceQuestion)question;
 				if(question.getType() == Question.TYPE_SC) {
 					questionType = translator.translate("item.type.sc");
+					fetchPointsOfMultipleChoices(itemEl, choice, iinput);
 				} else if(question.getType() == Question.TYPE_MC) {
 					questionType = translator.translate("item.type.mc");
+					fetchPointsOfMultipleChoices(itemEl, choice, iinput);
 				} else if (question.getType() == Question.TYPE_KPRIM) {
 					questionType = translator.translate("item.type.kprim");
+					fetchPointsOfKPrim(itemEl, choice, iinput);
 				}
-				Element resprocessingXML = itemEl.element("resprocessing");
-				if(resprocessingXML != null) {
-					List<?> respconditions = resprocessingXML.elements("respcondition");
-					Map<String,Float> points = QTIEditHelper.fetchPoints(respconditions, choice.getType());
-					for(Map.Entry<String,Float> entryPoint:points.entrySet()) {
-						Float val = entryPoint.getValue();
-						if(val != null && val.floatValue() > 0.0f) {
-							iinput.put(entryPoint.getKey(), entryPoint.getKey());
-						}
-					}
-				}
+				
 			} else if(question instanceof FIBQuestion) {
 				questionType = translator.translate("item.type.sc");
 				for (Response response: question.getResponses()) {
@@ -264,6 +257,34 @@ public class QTIWordExport implements MediaResource {
 		}
 		
 		foo.renderOpenXML(document, renderInstructions);
+	}
+	
+	private static void fetchPointsOfKPrim(Element itemEl, ChoiceQuestion choice, Map<String,String> iinput) {
+		Element resprocessingXML = itemEl.element("resprocessing");
+		if(resprocessingXML != null) {
+			List<?> respconditions = resprocessingXML.elements("respcondition");
+			Map<String,Float> points = QTIEditHelper.fetchPoints(respconditions, choice.getType());
+			for(Map.Entry<String,Float> entryPoint:points.entrySet()) {
+				Float val = entryPoint.getValue();
+				if(val != null) {
+					iinput.put(entryPoint.getKey(), entryPoint.getKey());
+				}
+			}
+		}
+	}
+	
+	private static void fetchPointsOfMultipleChoices(Element itemEl, ChoiceQuestion choice, Map<String,String> iinput) {
+		Element resprocessingXML = itemEl.element("resprocessing");
+		if(resprocessingXML != null) {
+			List<?> respconditions = resprocessingXML.elements("respcondition");
+			Map<String,Float> points = QTIEditHelper.fetchPoints(respconditions, choice.getType());
+			for(Map.Entry<String,Float> entryPoint:points.entrySet()) {
+				Float val = entryPoint.getValue();
+				if(val != null && val.floatValue() > 0.0f) {
+					iinput.put(entryPoint.getKey(), entryPoint.getKey());
+				}
+			}
+		}
 	}
 	
 	public static void renderSection(Section section, OpenXMLDocument document) {
