@@ -81,7 +81,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * things to put into that should not be clear when signing on (e.g. remember url for a direct jump)
 	 */
 	private transient Map<String,Object> nonClearedStore = new HashMap<String,Object>();
-	private Object lockStores = new Object();
+	private String lockStores = new String();
 	private boolean authenticated = false;
 	private boolean savedSession = false;
 	private transient Preferences guiPreferences;
