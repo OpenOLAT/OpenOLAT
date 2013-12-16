@@ -81,6 +81,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * things to put into that should not be clear when signing on (e.g. remember url for a direct jump)
 	 */
 	private transient Map<String,Object> nonClearedStore = new HashMap<String,Object>();
+	private transient Object lockStores = new Object();
 	private boolean authenticated = false;
 	private boolean savedSession = false;
 	private transient Preferences guiPreferences;
@@ -127,8 +128,12 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		this.savedSession = savedSession;
 	}
 
-	public Map<String,Object> getStore() {
-		return store;
+	public List<Object> getStoreValues() {
+		List<Object> values;
+		synchronized(lockStores) {
+			values = new ArrayList<Object>(store.values());
+		}
+		return values;
 	}
 
 	/**
@@ -136,7 +141,19 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @param o
 	 */
 	public void putEntry(String key, Object o) {
-		store.put(key, o);
+		synchronized(lockStores) {
+			store.put(key, o);
+		}
+	}
+	
+	public Object putEntryIfAbsent(String key, Object o) {
+		synchronized(lockStores) {
+			if (!store.containsKey(key)) {
+				return store.put(key, o);
+			} else {
+				return store.get(key);
+			}
+		}
 	}
 
 	/**
@@ -147,13 +164,15 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		if (key == null) {
 			return null;
 		}
-		if (store.get(key) != null) {
-			return store.get(key);
+		synchronized(lockStores) {
+			if (store.get(key) != null) {
+				return store.get(key);
+			}
+			if (nonClearedStore.get(key) != null) {
+				return nonClearedStore.get(key);
+			}
 		}
-		if (nonClearedStore.get(key) != null) {
-			return nonClearedStore.get(key);
-		}
-		else return null;
+		return null;
 	}
 
 	/**
@@ -161,7 +180,9 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @return removed entry
 	 */
 	public Object removeEntry(String key) {
-		return store.remove(key);
+		synchronized(lockStores) {
+			return store.remove(key);
+		}
 	}
 
 	/**
@@ -174,7 +195,9 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @param o
 	 */
 	public void putEntryInNonClearedStore(String key, Object o) {
-		nonClearedStore.put(key, o);
+		synchronized(lockStores) {
+			nonClearedStore.put(key, o);
+		}
 	}
 
 	/**
@@ -182,12 +205,14 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @return removed entry
 	 */
 	public Object removeEntryFromNonClearedStore(String key) {
-		return nonClearedStore.remove(key);
+		synchronized(lockStores) {
+			return nonClearedStore.remove(key);
+		}
 	}
 	
 	public List<String> getChats() {
 		if(chats == null) {
-			synchronized(this) {
+			synchronized(lockStores) {
 				if(chats == null) {
 					chats = new ArrayList<String>(5);
 				}
@@ -362,6 +387,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	/**
 	 * @see javax.servlet.http.HttpSessionBindingListener#valueBound(javax.servlet.http.HttpSessionBindingEvent)
 	 */
+	@Override
 	public void valueBound(HttpSessionBindingEvent be) {
 		if (log.isDebug()) {
 			log.debug("Opened UserSession:" + toString());
@@ -373,6 +399,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * 
 	 * @see javax.servlet.http.HttpSessionBindingListener#valueUnbound(javax.servlet.http.HttpSessionBindingEvent)
 	 */
+	@Override
 	public void valueUnbound(HttpSessionBindingEvent be) {
 		try {
 			// the identity can be null if an loginscreen only session gets invalidated
@@ -400,6 +427,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	/**
 	 * only for preference changed event
 	 */
+	@Override
 	public void event(Event event) {
 		//fxdiff FXOLAT-231: event on GUI Preferences extern changes
 		if("preferences.changed".equals(event.getCommand())) {

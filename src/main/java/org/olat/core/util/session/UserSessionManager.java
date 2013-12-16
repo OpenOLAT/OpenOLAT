@@ -415,7 +415,7 @@ public class UserSessionManager implements GenericEventListener {
 					// notify all variables in the store (the values) about the disposal
 					// if
 					// Disposable
-					List<Object> storeList = new ArrayList<Object>(usess.getStore().values());
+					List<Object> storeList = usess.getStoreValues();
 
 					for (Iterator<Object> it_storevals = storeList.iterator(); it_storevals.hasNext();) {
 						obj = it_storevals.next();

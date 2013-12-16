@@ -76,18 +76,12 @@ public class Windows implements Disposable, Serializable {
 	 * @return the Windows for this user
 	 */
 	public static Windows getWindows(UserSession us) {
-		Windows ws;
-		synchronized(us) {//sync the creation of Windows object
-			ws = (Windows)us.getEntry(SESSIONID_NAME_FOR_WINDOWS);
-			if (ws == null) {
-				ws = new Windows();
-				// make window id kind of unique (only needed for better user convenience
-				// when a user tries to bookmark an url and uses that browser bookmark
-				// later
-				//TODO: make error handling better
-				//ws.windowId = (int) (System.currentTimeMillis() % 10) * 10 + 1; // must
-				// at least be 1, since 0 is null
-				us.putEntry(SESSIONID_NAME_FOR_WINDOWS, ws);
+		Windows ws = (Windows)us.getEntry(SESSIONID_NAME_FOR_WINDOWS);
+		if (ws == null) {
+			final Windows newWs = new Windows();
+			ws = (Windows)us.putEntryIfAbsent(SESSIONID_NAME_FOR_WINDOWS, newWs);
+			if(ws == null) {
+				ws = newWs;
 			}
 		}
 		return ws;
@@ -193,7 +187,7 @@ public class Windows implements Disposable, Serializable {
 	public WindowManager getWindowManager() {
 		return windowManagerImpl;
 	}
-	
+
 	public void setAttribute(String key, Object value) {
 		attributes.put(key, value);
 	}
@@ -217,19 +211,19 @@ public class Windows implements Disposable, Serializable {
 		return sbws;
 	}
 	
-	private class UriPrefixIdPair {
+	private static class UriPrefixIdPair {
 		private final String uriPrefix;
-		private final String windowId;
+		private final String wId;
 		
-		public UriPrefixIdPair(String uriPrefix, String windowId) {
+		public UriPrefixIdPair(String uriPrefix, String wId) {
 			this.uriPrefix = uriPrefix;
-			this.windowId = windowId;
+			this.wId = wId;
 		}
 		
 		@Override
 		public int hashCode() {
 			return (uriPrefix == null ? 364587 : uriPrefix.hashCode())
-					+ (windowId == null ? 9827 : windowId.hashCode());
+					+ (wId == null ? 9827 : wId.hashCode());
 		}
 		
 		@Override
@@ -240,7 +234,7 @@ public class Windows implements Disposable, Serializable {
 			if(obj instanceof UriPrefixIdPair) {
 				UriPrefixIdPair pair = (UriPrefixIdPair)obj;
 				return uriPrefix != null && uriPrefix.equals(pair.uriPrefix)
-						&& windowId != null && windowId.equals(pair.windowId);
+						&& wId != null && wId.equals(pair.wId);
 			}
 			return false;
 		}
