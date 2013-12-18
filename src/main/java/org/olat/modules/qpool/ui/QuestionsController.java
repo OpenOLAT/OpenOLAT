@@ -111,13 +111,8 @@ public class QuestionsController extends BasicController implements Activateable
 		Object westWidth = ureq.getUserSession().getGuiPreferences().get(source.getClass(), SPLIT_VIEW_WEST_WIDTH);
 		mainVC.contextPut(SPLIT_VIEW_NORTH_HEIGHT, northHeight == null ? "" : northHeight);
 		mainVC.contextPut(SPLIT_VIEW_WEST_WIDTH, westWidth == null ? "" : westWidth);
-		
-		initVelocityContainer(mainVC);
+
 		putInitialPanel(mainVC);
-	}
-	
-	protected void initVelocityContainer(VelocityContainer mainVc) {
-		//
 	}
 	
 	@Override

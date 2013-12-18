@@ -28,7 +28,6 @@ package org.olat.search.service;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
@@ -55,17 +54,11 @@ public class SearchServiceDisabled implements SearchService {
 	private SearchServiceDisabled() {
 		log.info("SearchService Disabled");
 	}
-		
-	public void addToIndex(Document document) {
-	}
 	
 	public void startIndexing() {
 	}
 
 	public void stopIndexing() {
-	}
-
-	public void deleteFromIndex(Document document) {
 	}
 
 	public void init() {

@@ -42,6 +42,7 @@ import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.qpool.QTI12ItemEditorPackage;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.ui.events.QItemChangeEvent;
 /**
  * 
  * Initial date: 21.02.2013<br>
@@ -55,11 +56,13 @@ public class QTI12EditorController extends BasicController implements GenericEve
 	private ItemNodeTabbedFormController editorsCtrl;
 	
 	private final QPoolService qpoolService;
+	private final QuestionItem qitem;
 
 	public QTI12EditorController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
+		this.qitem = qitem;
 		mainVC = createVelocityContainer("qti_preview");
 		mainPanel = new TabbedPane("tabbedPane", ureq.getLocale());
 		
@@ -93,7 +96,7 @@ public class QTI12EditorController extends BasicController implements GenericEve
 	public void event(Event event) {
 		if(event == Event.CHANGED_EVENT) {
 			UserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
-			fireEvent(ureq, Event.CHANGED_EVENT);
+			fireEvent(ureq, new QItemChangeEvent(qitem));
 		}
 	}
 

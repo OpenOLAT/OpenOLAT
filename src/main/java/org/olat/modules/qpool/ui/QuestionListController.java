@@ -57,7 +57,9 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.qpool.model.QItemList;
+import org.olat.modules.qpool.ui.events.QItemChangeEvent;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
@@ -72,6 +74,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.RepositoryDetailsController;
 import org.olat.repository.controllers.RepositorySearchController.Can;
+import org.olat.search.service.indexer.LifeFullIndexer;
 
 /**
  * 
@@ -118,12 +121,14 @@ public class QuestionListController extends AbstractItemListController implement
 	private QuestionItemCollection itemCollection;
 	
 	private final QPoolService qpoolService;
+	private final LifeFullIndexer lifeFullIndexer;
 	private final RepositoryManager repositoryManager;
 	
 	public QuestionListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
 		super(ureq, wControl, source, key);
 
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		lifeFullIndexer = CoreSpringFactory.getImpl(LifeFullIndexer.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 	}
 
@@ -398,6 +403,13 @@ public class QuestionListController extends AbstractItemListController implement
 			QPoolEvent qce = new QPoolEvent(QPoolEvent.ITEM_CREATED);
 			fireEvent(ureq, qce);
 			cleanUp();
+		} else if(source == newItemCtrl) {
+			if(event instanceof QItemChangeEvent) {
+				QItemChangeEvent ce = (QItemChangeEvent)event;
+				if(ce.getItem() != null) {
+					lifeFullIndexer.indexDocument(QItemDocument.TYPE, ce.getItem().getKey());
+				}
+			}
 		} else if(source == cmc) {
 			cleanUp();
 		}
