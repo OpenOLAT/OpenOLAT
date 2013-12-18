@@ -87,6 +87,23 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		Assert.assertEquals("test", task.getResSubPath());
 		Assert.assertEquals(creator, task.getCreator());
 	}
+	
+	@Test
+	public void loadTask_byId() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsUser("extask-21-" + UUID.randomUUID().toString());
+		PersistentTask task = persistentTaskDao.createTask("task-21", new DummyTask(), creator, re.getOlatResource(), "test", null);
+		dbInstance.commitAndCloseSession();
+		
+		//load
+		PersistentTask loadedTask = persistentTaskDao.loadTaskById(task.getKey());
+		Assert.assertNotNull(loadedTask);
+		Assert.assertEquals(task, loadedTask);
+		
+		//check return null if id doesn't exists
+		PersistentTask unkownTask = persistentTaskDao.loadTaskById(1l);
+		Assert.assertNull(unkownTask);
+	}
 
 	@Test
 	public void pickTask() {

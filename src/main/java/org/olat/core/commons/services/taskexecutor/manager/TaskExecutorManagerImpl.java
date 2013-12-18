@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
+import org.olat.core.commons.services.taskexecutor.Sequential;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskAwareRunnable;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -61,6 +62,7 @@ import org.olat.resource.OLATResource;
 public class TaskExecutorManagerImpl extends BasicManager implements TaskExecutorManager {
 	private static final OLog log = Tracing.createLoggerFor(TaskExecutorManagerImpl.class);
 	private final ExecutorService taskExecutor;
+	private final ExecutorService sequentialTaskExecutor;
 	
 	private DB dbInstance;
 	private PersistentTaskDAO persistentTaskDao;
@@ -68,8 +70,9 @@ public class TaskExecutorManagerImpl extends BasicManager implements TaskExecuto
 	/**
 	 * [used by spring]
 	 */
-	private TaskExecutorManagerImpl(ExecutorService threadPoolTaskExecutor) {
-		this.taskExecutor = threadPoolTaskExecutor;
+	private TaskExecutorManagerImpl(ExecutorService mpTaskExecutor, ExecutorService sequentialTaskExecutor) {
+		this.taskExecutor = mpTaskExecutor;
+		this.sequentialTaskExecutor = sequentialTaskExecutor;
 	}
 	
 	/**
@@ -90,28 +93,19 @@ public class TaskExecutorManagerImpl extends BasicManager implements TaskExecuto
 
 	public void shutdown() {
 		taskExecutor.shutdown();
+		sequentialTaskExecutor.shutdown();
 	}
 	
 	@Override
 	public void execute(Runnable task) {
 		//wrap call to the task here to catch all errors that are may not catched yet in the task itself
 		//like outOfMemory or other system errors.
-		
 		Task persistentTask = null;
 		if(task instanceof LongRunnable) {
 			persistentTask = persistentTaskDao.createTask(UUID.randomUUID().toString(), (LongRunnable)task);
 			dbInstance.commit();
 		} else {
-			if (taskExecutor != null) {
-				if(task instanceof TaskAwareRunnable) {
-					((TaskAwareRunnable)task).setTask(persistentTask);
-				}
-				DBSecureRunnable safetask = new DBSecureRunnable(task);
-				taskExecutor.submit(safetask);
-			} else {
-				logError("taskExecutor is not initialized (taskExecutor=null). Do not call 'runTask' before TaskExecutorModule is initialized.", null);
-				throw new AssertException("taskExecutor is not initialized");
-			}
+			execute(task, persistentTask, (task instanceof Sequential));
 		}
 	}
 
@@ -122,14 +116,34 @@ public class TaskExecutorManagerImpl extends BasicManager implements TaskExecuto
 		persistentTaskDao.createTask(UUID.randomUUID().toString(), task, creator, resource, resSubPath, scheduledDate);
 		dbInstance.commit();
 	}
+	
+	private void execute(Runnable task, Task persistentTask, boolean sequential) {
+		if (taskExecutor != null) {
+			if(task instanceof TaskAwareRunnable) {
+				((TaskAwareRunnable)task).setTask(persistentTask);
+			}
+			DBSecureRunnable safetask = new DBSecureRunnable(task);
+			if(sequential) {
+				sequentialTaskExecutor.submit(safetask);
+			} else {
+				taskExecutor.submit(safetask);
+			}
+			
+		} else {
+			logError("taskExecutor is not initialized (taskExecutor=null). Do not call 'runTask' before TaskExecutorModule is initialized.", null);
+			throw new AssertException("taskExecutor is not initialized");
+		}
+	}
 
 	@Override
 	public void executeTaskToDo() {
 		try {
 			List<Long> todos = persistentTaskDao.tasksToDo();
 			for(Long todo:todos) {
+				PersistentTask task = persistentTaskDao.loadTaskById(todo);
+				Runnable runnable = persistentTaskDao.deserializeTask(task);
 				PersistentTaskRunnable command = new PersistentTaskRunnable(todo);
-				execute(command);
+				execute(command, null, (runnable instanceof Sequential));
 			}
 		} catch (Exception e) {
 			// ups, something went completely wrong! We log this but continue next time

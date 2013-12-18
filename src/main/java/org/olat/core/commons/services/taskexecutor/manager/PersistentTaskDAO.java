@@ -109,6 +109,12 @@ public class PersistentTaskDAO {
 				.getResultList();
 	}
 	
+	public PersistentTask loadTaskById(Long taskKey) {
+		PersistentTask task = dbInstance.getCurrentEntityManager()
+				.find(PersistentTask.class, taskKey);
+		return task;
+	}
+	
 	public PersistentTask pickTaskForRun(Long taskKey) {
 		PersistentTask task = dbInstance.getCurrentEntityManager()
 				.find(PersistentTask.class, taskKey, LockModeType.PESSIMISTIC_WRITE);
