@@ -26,6 +26,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 
 /**
  * 
@@ -42,13 +43,17 @@ public class PoolItemsSource extends DefaultItemsSource {
 		this.pool = pool;
 		getDefaultParams().setPoolKey(pool.getKey());
 	}
+	
+	@Override
+	public void removeFromSource(List<QuestionItemShort> items) {
+		qpoolService.removeItemsInPool(items, pool);
+	}
 
 	@Override
 	public int postImport(List<QuestionItem> items) {
 		if(items == null || items.isEmpty()) return 0;
 		qpoolService.addItemsInPools(items, Collections.singletonList(pool), false);
 		return items.size();
-
 	}
 
 	@Override
