@@ -26,6 +26,7 @@
 package org.olat.ims.qti.export;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,7 +34,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.Formatter;
@@ -41,6 +45,7 @@ import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.export.helper.QTIItemObject;
 import org.olat.ims.qti.export.helper.QTIObjectTreeBuilder;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Description: TODO
@@ -82,21 +87,40 @@ public class QTIExportManager extends BasicManager{
 	 * should be used (only for type 2 and 3)
 	 * @return
 	 */
-	public boolean selectAndExportResults(QTIExportFormatter qef, Long olatResource, String shortTitle, String olatResourceDetail, Long repositoryRef,
-		File exportDirectory, String charset, String fileNameSuffix) {
+	public boolean selectAndExportResults(QTIExportFormatter qef, Long courseResId, String shortTitle, String olatResourceDetail,
+			Long testReKey, File exportDirectory, String charset, String fileNameSuffix) {
 		boolean resultsFoundAndExported = false;
 		QTIResultManager qrm = QTIResultManager.getInstance();
-		List<QTIResult> results = qrm.selectResults(olatResource, olatResourceDetail, repositoryRef, qef.getType());
+		List<QTIResult> results = qrm.selectResults(courseResId, olatResourceDetail, testReKey, qef.getType());
 		if(results.size() > 0){
 			QTIResult res0 = results.get(0);
-			
-			QTIObjectTreeBuilder qotb = new QTIObjectTreeBuilder(new Long(res0.getResultSet().getRepositoryRef()));
-			
-			List<QTIItemObject> qtiItemObjectList = qotb.getQTIItemObjectList();
+			List<QTIItemObject> qtiItemObjectList = new QTIObjectTreeBuilder().getQTIItemObjectList(new Long(res0.getResultSet().getRepositoryRef()));
 			qef.setQTIItemObjectList(qtiItemObjectList);
 			if (results.size() > 0) {
 				createContentOfExportFile(results,qtiItemObjectList,qef);
 				writeContentToFile(shortTitle, exportDirectory, charset, qef, fileNameSuffix);
+				resultsFoundAndExported = true;
+			}			
+		}
+		return resultsFoundAndExported;
+	}
+	
+	public boolean selectAndExportResults(QTIExportFormatter qef, Long courseResId, String shortTitle,
+			String olatResourceDetail, RepositoryEntry testRe, ZipOutputStream exportStream, String charset,
+			String fileNameSuffix) throws IOException {
+		boolean resultsFoundAndExported = false;
+		QTIResultManager qrm = QTIResultManager.getInstance();
+		List<QTIResult> results = qrm.selectResults(courseResId, olatResourceDetail, testRe.getKey(), qef.getType());
+		if(results.size() > 0){
+			List<QTIItemObject> qtiItemObjectList = new QTIObjectTreeBuilder().getQTIItemObjectList(testRe);
+			qef.setQTIItemObjectList(qtiItemObjectList);
+			if (results.size() > 0) {
+				createContentOfExportFile(results, qtiItemObjectList, qef);
+				String targetFileName = getFilename(shortTitle, qef, fileNameSuffix);
+				
+				exportStream.putNextEntry(new ZipEntry(targetFileName));
+				IOUtils.write(qef.getReport(), exportStream);
+				exportStream.closeEntry();
 				resultsFoundAndExported = true;
 			}			
 		}
@@ -114,7 +138,7 @@ public class QTIExportManager extends BasicManager{
 	 * @param fileNameSuffix
 	 * @return
 	 */
-		public String exportResults(QTIExportFormatter qef, List results, List qtiItemObjectList, String shortTitle, File exportDirectory, String charset, String fileNameSuffix) {
+		public String exportResults(QTIExportFormatter qef, List<QTIResult> results, List<QTIItemObject> qtiItemObjectList, String shortTitle, File exportDirectory, String charset, String fileNameSuffix) {
 			String targetFileName = null;
 	
 			qef.setQTIItemObjectList(qtiItemObjectList);
@@ -133,26 +157,24 @@ public class QTIExportManager extends BasicManager{
 	 * @param anonymizerCallback
 	 * @return String
 	 */
-	private void createContentOfExportFile(List qtiResults, List qtiItemObjectList, QTIExportFormatter qef) {
+	private void createContentOfExportFile(List<QTIResult> qtiResults, List<QTIItemObject> qtiItemObjectList, QTIExportFormatter qef) {
 		
 		qef.openReport();
 		
 		//formatter has information about how to format the different qti objects
-		Map mapWithConfigs = qef.getMapWithExportItemConfigs();
+		Map<Class<?>, QTIExportItemFormatConfig> mapWithConfigs = qef.getMapWithExportItemConfigs();
 		QTIExportItemFactory qeif = new QTIExportItemFactory(mapWithConfigs);
 				
 		while (qtiResults.size() > 0){
-			List assessIDresults = stripNextAssessID(qtiResults);
+			List<QTIResult> assessIDresults = stripNextAssessID(qtiResults);
 		
-			qef.openResultSet(new QTIExportSet((QTIResult)assessIDresults.get(0)));
+			qef.openResultSet(new QTIExportSet(assessIDresults.get(0)));
 			
-			for (Iterator iter = qtiItemObjectList.iterator(); iter.hasNext();) {
-				QTIItemObject element = (QTIItemObject) iter.next();
+			for (Iterator<QTIItemObject> iter = qtiItemObjectList.iterator(); iter.hasNext();) {
+				QTIItemObject element = iter.next();
 				
-				QTIResult qtir;
-				qtir = element.extractQTIResult(assessIDresults);
+				QTIResult qtir = element.extractQTIResult(assessIDresults);
 				qef.visit(qeif.getExportItem(qtir,element));
-
 			}
 			qef.closeResultSet();
 		}
@@ -164,6 +186,12 @@ public class QTIExportManager extends BasicManager{
 	 */
 	private String writeContentToFile(String shortTitle, File exportDirectory, String charset, QTIExportFormatter qef, String fileNameSuffix) {
 		// defining target filename
+		String targetFileName = getFilename(shortTitle, qef, fileNameSuffix);
+		ExportUtil.writeContentToFile(targetFileName, qef.getReport(), exportDirectory, charset);
+		return targetFileName;
+	}
+	
+	private String getFilename(String shortTitle, QTIExportFormatter qef, String fileNameSuffix) {
 		StringBuilder tf = new StringBuilder();
 		tf.append(qef.getFileNamePrefix());
 		tf.append(Formatter.makeStringFilesystemSave(shortTitle));
@@ -173,9 +201,6 @@ public class QTIExportManager extends BasicManager{
 		tf.append(timestamp);
 		tf.append(fileNameSuffix);
 		String targetFileName = tf.toString();
-
-		ExportUtil.writeContentToFile(targetFileName, qef.getReport(), exportDirectory, charset);
-		
 		return targetFileName;
 	}
 	
@@ -184,12 +209,12 @@ public class QTIExportManager extends BasicManager{
 	 * @param queryResult
 	 * @return List of results with the same assessmentid
 	 */		
-	private List stripNextAssessID(List queryResult){
-		List result = new ArrayList();
+	private List<QTIResult> stripNextAssessID(List<QTIResult> queryResult){
+		List<QTIResult> result = new ArrayList<>();
 		
 		if (queryResult.size()== 0) return result;
 		
-		QTIResult qtir = (QTIResult) queryResult.remove(0);
+		QTIResult qtir = queryResult.remove(0);
 		
 		long currentAssessmentID = qtir.getResultSet().getAssessmentID();
 		result.add(qtir);

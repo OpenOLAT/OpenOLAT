@@ -88,7 +88,7 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiverMainController;
 import org.olat.course.archiver.IArchiverCallback;
 import org.olat.course.assessment.AssessmentChangedEvent;
-import org.olat.course.assessment.AssessmentUIFactory;
+import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
 import org.olat.course.assessment.EfficiencyStatementController;
 import org.olat.course.assessment.EfficiencyStatementManager;
@@ -844,20 +844,20 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		// 1) course admins and users with tool right: full access
 		if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin) {
-			Activateable2 assessmentToolCtr = 
-				AssessmentUIFactory.createAssessmentMainController(ureq, swControl, all, course, new FullAccessAssessmentCallback(isCourseAdmin));
+			AssessmentMainController assessmentToolCtr = new AssessmentMainController(ureq, swControl, all, course,
+					new FullAccessAssessmentCallback(isCourseAdmin));
 			assessmentToolCtr.activate(ureq, null, null);
-			currentToolCtr = (Controller)assessmentToolCtr;
+			currentToolCtr = assessmentToolCtr;
 			listenTo(currentToolCtr);
 			all.pushController(translate("command.openassessment"), currentToolCtr);
 			return assessmentToolCtr;
 		}
 		// 2) users with coach right: limited access to coached groups
 		else if (isCourseCoach) {
-			Activateable2 assessmentToolCtr = AssessmentUIFactory.createAssessmentMainController(ureq, swControl, all, course,
+			AssessmentMainController assessmentToolCtr =  new AssessmentMainController(ureq, swControl, all, course,
 					new CoachingGroupAccessAssessmentCallback());
 			assessmentToolCtr.activate(ureq, null, null);
-			currentToolCtr = (Controller)assessmentToolCtr;
+			currentToolCtr = assessmentToolCtr;
 			listenTo(currentToolCtr);
 			all.pushController(translate("command.openassessment"), currentToolCtr);
 			return assessmentToolCtr;

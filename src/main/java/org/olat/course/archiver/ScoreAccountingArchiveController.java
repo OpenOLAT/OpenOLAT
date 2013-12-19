@@ -34,17 +34,14 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.translator.PackageTranslator;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.ExportUtil;
-import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -56,15 +53,12 @@ import org.olat.user.UserManager;
  * Initial Date: Sep 23, 2004
  * @author gnaegi
  */
-public class ScoreAccountingArchiveController extends DefaultController {
-	private static final String PACKAGE = Util.getPackageName(ScoreAccountingArchiveController.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+public class ScoreAccountingArchiveController extends BasicController {
 
 	private OLATResourceable ores;
 	private Panel myPanel;
 	private VelocityContainer myContent;
 	private VelocityContainer vcFeedback;
-	private Translator t;
 	private Link startButton, downloadButton;
 
 	/**
@@ -73,19 +67,13 @@ public class ScoreAccountingArchiveController extends DefaultController {
 	 * @param course
 	 */
 	public ScoreAccountingArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores) {
-		super(wControl);
+		super(ureq, wControl);
 		this.ores = ores;
 
-		this.t = new PackageTranslator(PACKAGE, ureq.getLocale());
-
-		this.myPanel = new Panel("myPanel");
-		myPanel.addListener(this);
-
-		myContent = new VelocityContainer("myContent", VELOCITY_ROOT + "/start.html", t, this);
+		myPanel = putInitialPanel(myPanel);
+		myContent = createVelocityContainer("start");
 		startButton = LinkFactory.createButtonSmall("cmd.start", myContent, this);
-		
 		myPanel.setContent(myContent);
-		setInitialComponent(myPanel);
 	}
 
 	/**
@@ -94,28 +82,7 @@ public class ScoreAccountingArchiveController extends DefaultController {
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startButton) {
-			ICourse course = CourseFactory.loadCourse(ores);
-			List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
-			List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
-			
-			String result = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, ureq.getLocale());
-
-			String courseTitle = course.getCourseTitle();
-
-			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xls");
-			// location for data export
-			File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), courseTitle);
-			// the user's charset
-			UserManager um = UserManager.getInstance();
-			String charset = um.getUserCharset(ureq.getIdentity());
-			
-			File downloadFile = ExportUtil.writeContentToFile(fileName, result, exportDirectory, charset);
-
-			vcFeedback = new VelocityContainer("feedback", VELOCITY_ROOT + "/feedback.html", t, this);
-			vcFeedback.contextPut("body", vcFeedback.getTranslator().translate("course.res.feedback", new String[] { fileName }));
-			downloadButton = LinkFactory.createButtonSmall("cmd.download", vcFeedback, this);
-			downloadButton.setUserObject(downloadFile);
-			myPanel.setContent(vcFeedback);
+			doStartExport();
 		} else if(source == downloadButton) {
 			File file = (File)downloadButton.getUserObject();
 			if(file != null) {
@@ -123,6 +90,31 @@ public class ScoreAccountingArchiveController extends DefaultController {
 				ureq.getDispatchResult().setResultingMediaResource(resource);
 			}
 		}
+	}
+	
+	private void doStartExport() {
+		ICourse course = CourseFactory.loadCourse(ores);
+		List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
+		List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
+		
+		String result = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, getLocale());
+
+		String courseTitle = course.getCourseTitle();
+
+		String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xls");
+		// location for data export
+		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), courseTitle);
+		// the user's charset
+		UserManager um = UserManager.getInstance();
+		String charset = um.getUserCharset(getIdentity());
+		
+		File downloadFile = ExportUtil.writeContentToFile(fileName, result, exportDirectory, charset);
+
+		vcFeedback = createVelocityContainer("feedback");
+		vcFeedback.contextPut("body", translate("course.res.feedback", new String[] { fileName }));
+		downloadButton = LinkFactory.createButtonSmall("cmd.download", vcFeedback, this);
+		downloadButton.setUserObject(downloadFile);
+		myPanel.setContent(vcFeedback);
 	}
 
 	/**

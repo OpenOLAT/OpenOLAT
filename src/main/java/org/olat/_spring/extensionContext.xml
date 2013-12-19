@@ -826,24 +826,6 @@
 			</property>		 
 			<property name="order" value="11" />
 		</bean>
-		
-		
-		<!-- Extension for SCORM Results export -->	
-		<bean class="org.olat.modules.scorm.archiver.ArchiverActionExtension" init-method="initExtensionPoints">
-			<property name="actionController">	
-				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="org.olat.modules.scorm.archiver.ScormResultArchiveController"/>
-				</bean>
-			</property>
-			<property name="extensionPoints">
-				<list>	
-					<value>org.olat.course.archiver.ArchiverMainController</value>		
-				</list>
-			</property>
-			<property name="order" value="35" />
-		</bean>
-		 
-		<!-- portfolioContext.xml : property name="order" value="37" -->
 				
 	<!-- template for extension of type GenericActionExtension
 		<bean id="NAMEIToptional" class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
@@ -881,6 +863,5 @@
 			<property name="parentTreeNodeIdentifier" value="ifChild-point-to-someUniqueKey-from-parent" />
 			<property name="order" value="38" />
 		</bean>	 -->
-
 
 </beans>

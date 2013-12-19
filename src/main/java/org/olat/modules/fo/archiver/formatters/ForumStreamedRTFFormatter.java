@@ -25,19 +25,18 @@
 
 package org.olat.modules.fo.archiver.formatters;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
@@ -45,33 +44,26 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.nodes.INode;
-import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.MessageNode;
 
 /**
- * Initial Date: Nov 09, 2005 <br>
+ * Initial Date: Dec 19, 2013 <br>
  * 
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  * @author Patrick Brunner, Alexander Schneider
  */
-
-public class ForumRTFFormatter extends ForumFormatter {
+public class ForumStreamedRTFFormatter extends ForumFormatter {
 	
-	private static final OLog log = Tracing.createLoggerFor(ForumRTFFormatter.class);
+	private static final OLog log = Tracing.createLoggerFor(ForumStreamedRTFFormatter.class);
 
-	private VFSContainer container;
-	private VFSItem vfsFil = null;
+	private ZipOutputStream exportStream;
 	private ForumManager fm = ForumManager.getInstance();
-	private VFSContainer tempContainer;
 	
 	final Pattern PATTERN_HTML_BOLD = Pattern.compile("<strong>(.*?)</strong>", Pattern.CASE_INSENSITIVE);
 	final Pattern PATTERN_HTML_ITALIC = Pattern.compile("<em>(.*?)</em>", Pattern.CASE_INSENSITIVE);
@@ -88,6 +80,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 	
 	//TODO: (LD) translate this!
 	private String HIDDEN_STR = "VERBORGEN";
+	private final String path;
 		
 	/**
 	 * 
@@ -95,33 +88,26 @@ public class ForumRTFFormatter extends ForumFormatter {
 	 * @param filePerThread
 	 */
 
-	public ForumRTFFormatter(VFSContainer container, boolean filePerThread) {
+	public ForumStreamedRTFFormatter(ZipOutputStream exportStream, String path, boolean filePerThread) {
 		// init String Buffer in ForumFormatter
 		super();
 		// where to write
-		this.container = container;
+		this.exportStream = exportStream;
 		this.filePerThread = filePerThread;
+		this.path = path;
+		addStandardImages();
 	}
+	
+	private String fileName;
 
 	/**
 	 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
 	 */
 	public void visit(INode node) {
-		MessageNode mn = (MessageNode) node;
-
+		MessageNode mn = (MessageNode)node;
 		if (isTopThread) {
-			if(filePerThread){
-				//make a file per thread
-				//to have a meaningful filename we create the file here
-				String filName = "Thread_" + mn.getKey().toString();
-				tempContainer = makeTempVFSContainer();			
-				vfsFil=tempContainer.resolve(filName + ".rtf");
-				if(vfsFil==null){
-					tempContainer.createChildLeaf(filName + ".rtf");
-					vfsFil=tempContainer.resolve(filName + ".rtf");
-				}
-			}
 			//important!
+			fileName = "Thread_" + mn.getKey().toString() + ".rtf";
 			isTopThread = false;
 		}
 		// Message Title
@@ -160,23 +146,37 @@ public class ForumRTFFormatter extends ForumFormatter {
 		OlatRootFolderImpl msgContainer = fm.getMessageContainer(getForumKey(), mn.getKey());
 		List<VFSItem> attachments = msgContainer.getItems();
 		if (attachments != null && attachments.size() > 0){
-			VFSItem item = container.resolve("attachments");
-			if (item == null){
-				item = container.createChildContainer("attachments");
-			}
-			VFSContainer attachmentContainer = (VFSContainer)item;
-			attachmentContainer.copyFrom(msgContainer);
-			
 			sb.append("{\\pard \\f0\\fs15 Attachment(s): ");
 			boolean commaFlag = false;
 			for (VFSItem attachment: attachments) {
 				if (commaFlag) sb.append(", ");
 				sb.append(attachment.getName());
 				commaFlag = true;
+				
+				ZipUtil.addToZip(attachment, path + "/attachments", exportStream);
 			}
 			sb.append("} \\line");
 		}
 		sb.append("{\\pard \\brdrb\\brdrs\\brdrw10 \\par}");
+	}
+	
+	private void addStandardImages() {
+		String[] images = new String[]{ "fo_sticky_closed", "fo_closed", "fo_sticky"};
+		try {
+			for(String image:images) {
+				String iconPath = getImagePath(image);		
+				if (iconPath != null) {
+					File file = new File(iconPath);
+					if (file.exists()) {
+						exportStream.putNextEntry(new ZipEntry(path + "/" + file.getName()));
+						FileUtils.copyFile(file, exportStream);
+						exportStream.closeEntry();
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -198,18 +198,14 @@ public class ForumRTFFormatter extends ForumFormatter {
 	 * @see org.olat.modules.fo.archiver.formatters.ForumFormatter#getThreadResult()
 	 */
 	public StringBuilder closeThread() {
-		boolean append = !filePerThread;
 		String footerThread = "{\\pard \\brdrb \\brdrs \\brdrw20 \\brsp20 \\par}{\\pard\\par}";
 		sb.append(footerThread);
 		if(filePerThread){
 			sb.append("}");
+			writeToFile(sb);
+			sb = new StringBuilder();
 		}
-		writeToFile(append, sb);
-		if(filePerThread) {
-			zipContainer(tempContainer);			
-			tempContainer.delete();	
-		}
-		return super.closeThread();
+		return sb;
 	}
 	
 	/**
@@ -220,55 +216,37 @@ public class ForumRTFFormatter extends ForumFormatter {
 		if(!filePerThread){
 			//make one ForumFile
 			Long forumKey = getForumKey();
-			String filName = forumKey.toString();
-			filName = "Threads_" + filName + ".rtf";
-			
-			tempContainer = makeTempVFSContainer();					
-			this.vfsFil=tempContainer.resolve(filName);
-			if(vfsFil==null){
-				tempContainer.createChildLeaf(filName);
-				vfsFil = tempContainer.resolve(filName);
-			}
+			fileName = "Threads_" + forumKey.toString() + ".rtf";
 			sb.append("{\\rtf1\\ansi\\deff0");
 			sb.append("{\\fonttbl {\\f0\\fswiss Arial;}} ");
 			sb.append("\\deflang1033\\plain");
 		}
 	}
 
-	
 	/**
 	 * 
 	 * @see org.olat.modules.fo.archiver.formatters.ForumFormatter#closeForum()
 	 */
 	public StringBuilder closeForum(){
 		if(!filePerThread){
-			boolean append = !filePerThread;
 			String footerForum = "}";
 			sb.append(footerForum);
-			writeToFile(append, sb);
-			zipContainer(tempContainer);			
-			tempContainer.delete();					
+			writeToFile(sb);			
 		}
 		return sb;
 	}
-
 	
 	/**
 	 * 
 	 * @param append
 	 * @param buff
 	 */
-	private void writeToFile(boolean append, StringBuilder buff){
-		BufferedOutputStream bos = new BufferedOutputStream(((VFSLeaf) vfsFil).getOutputStream(append));
-		OutputStreamWriter w;
+	private void writeToFile(StringBuilder buff){
 		try {
-			w = new OutputStreamWriter(bos, "utf-8");
-			BufferedWriter bw = new BufferedWriter(w);
-			String s = buff.toString();
 			StringBuilder out = new StringBuilder();
-			int len = s.length();
+			int len = buff.length();
 			for (int i = 0; i < len; i++) {
-				char c = s.charAt(i);
+				char c = buff.charAt(i);
 				int val = c;
 				if (val > 127) {
 					out.append("\\u").append(String.valueOf(val)).append("?");
@@ -276,15 +254,14 @@ public class ForumRTFFormatter extends ForumFormatter {
 					out.append(c);
 				}
 			}
-			
 			String encoded = out.toString();
-			bw.write(encoded);
-			bw.close();
-			bos.close();						
+			exportStream.putNextEntry(new ZipEntry(path + "/" + fileName));
+			IOUtils.write(encoded, exportStream);
+			exportStream.closeEntry();
 		} catch (UnsupportedEncodingException ueEx) {
-				throw new AssertException("could not encode stream from forum export file: " + ueEx);
+			throw new AssertException("could not encode stream from forum export file: " + ueEx);
 		} catch (IOException e) {
-				throw new AssertException("could not write to forum export file: " + e);
+			throw new AssertException("could not write to forum export file: " + e);
 		}
 	}
 	
@@ -376,14 +353,14 @@ public class ForumRTFFormatter extends ForumFormatter {
 	 * @return title prefix for hidden forum threads.
 	 */
 	private String getTitlePrefix(MessageNode messageNode) {
-		StringBuffer stringBuffer = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		if(messageNode.isHidden()) {
-			stringBuffer.append(HIDDEN_STR);
+			sb.append(HIDDEN_STR);
 		} 		
-		if(stringBuffer.length()>1) {
-			stringBuffer.append(": ");
+		if(sb.length()>1) {
+			sb.append(": ");
 		}
-		return stringBuffer.toString();
+		return sb.toString();
 	}
 	
 	/**
@@ -391,19 +368,14 @@ public class ForumRTFFormatter extends ForumFormatter {
 	 * @param messageNode
 	 * @return the RTF image section for the input messageNode.
 	 */
-	private String getImageRTF(MessageNode messageNode) {
-					
-		StringBuffer stringBuffer = new StringBuffer();
-		List<String> fileNameList = addImagesToVFSContainer(messageNode, tempContainer);
-		Iterator<String> listIterator = fileNameList.iterator();
-		while(listIterator.hasNext()) {
-			String fileName = listIterator.next();
-			
-			stringBuffer.append("{\\field\\fldedit{\\*\\fldinst { INCLUDEPICTURE ");			
-			stringBuffer.append("\"").append(fileName).append("\"");
-			stringBuffer.append(" \\\\d }}{\\fldrslt {}}}");			
+	private String getImageRTF(MessageNode messageNode) {			
+		StringBuilder sb = new StringBuilder();
+		for(String fileName : addImagesToVFSContainer(messageNode)) {
+			sb.append("{\\field\\fldedit{\\*\\fldinst { INCLUDEPICTURE ")
+			  .append("\"").append(fileName).append("\"")
+			  .append(" \\\\d }}{\\fldrslt {}}}");			
 		}				
-		return stringBuffer.toString();
+		return sb.toString();
 	}
 	
 	/**
@@ -414,7 +386,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 	 * @param container
 	 * @return
 	 */
-	private List<String> addImagesToVFSContainer(MessageNode messageNode, VFSContainer container) {
+	private List<String> addImagesToVFSContainer(MessageNode messageNode) {
 		List<String> fileNameList = new ArrayList<String>();
 		String iconPath = null;
 		if(messageNode.isClosed() && messageNode.isSticky()) {
@@ -427,8 +399,6 @@ public class ForumRTFFormatter extends ForumFormatter {
 		if (iconPath != null) {
 			File file = new File(iconPath);
 			if (file.exists()) {
-				LocalFileImpl imgFile = new LocalFileImpl(file);
-				container.copyFrom(imgFile);
 				fileNameList.add(file.getName());
 			} else {
 				log.error("Could not find image for forum RTF formatter::" + iconPath);
@@ -446,28 +416,4 @@ public class ForumRTFFormatter extends ForumFormatter {
 	private String getImagePath(Object val) { 		
 		return WebappHelper.getContextRoot() + "/static/images/forum/" + val.toString() + ".png";				
 	}
-	
-	/**
-	 * Generates a new temporary VFSContainer. 
-	 * @return the temp container.
-	 */
-	private VFSContainer makeTempVFSContainer() {		
-		Long forumKey = getForumKey();
-		String dateStamp = String.valueOf(System.currentTimeMillis());
-    //TODO: (LD) could this filename regarded as unique or use System.nanoTime() instead?
-		String fileName = "forum" + forumKey.toString() + "_" + dateStamp; 
-		LocalFolderImpl tempFolder =  new OlatRootFolderImpl("/tmp/" + fileName, null);
-		return tempFolder;
-	}
-	
-	/**
-	 * Zips the input vFSContainer into the container.
-	 * @param vFSContainer
-	 */
-	private void zipContainer(VFSContainer vFSContainer) {
-		String dateStamp = Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));		
-		VFSLeaf zipVFSLeaf = container.createChildLeaf("forum_archive-"+dateStamp+".zip");		
-		ZipUtil.zip(vFSContainer.getItems(), zipVFSLeaf, true);
-	}
-	
 }

@@ -28,12 +28,14 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
@@ -54,13 +56,16 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -71,6 +76,7 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ms.MSEditFormController;
+import org.olat.course.nodes.ta.BulkDownloadToolController;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.DropboxScoringViewController;
 import org.olat.course.nodes.ta.ReturnboxController;
@@ -84,6 +90,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -672,14 +679,25 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, UserCourseEnvironment userCourseEnvironment) {
 		// prepare file component
 		return new DropboxScoringViewController(ureq, wControl, this, userCourseEnvironment);
 	}
 
+	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
+	@Override
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, BusinessGroup limitToGroup) {
+		List<Controller> tools = new ArrayList<Controller>(1);
+		tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
+		tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, limitToGroup, this));
+		return tools;
+	}
+
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListView(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		CoursePropertyManager propMgr = userCourseEnvironment.getCourseEnvironment().getCoursePropertyManager();
@@ -748,139 +766,89 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 		return null;
 	}
 
-	/**
-	 * archives the dropbox of this task course node to the user's personal folder
-	 * under private/archive/[coursename]/dropboxes/[nodeIdent].zip
-	 * 
-	 * @param locale
-	 * @param course
-	 * @param fArchiveDirectory
-	 * @param charset
-	 */
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, File fArchiveDirectory, String charset) {
-	  boolean dataFound = false;
-		String dropboxPath = FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
-		File dropboxDir = new File(dropboxPath);
-		String solutionsPath = FolderConfig.getCanonicalRoot() + TACourseNode.getFoldernodesPathRelToFolderBase(course.getCourseEnvironment()) + "/" + this.getIdent();
-		File solutionDir = new File(solutionsPath);
-		String returnboxPath = FolderConfig.getCanonicalRoot() + ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
-		File returnboxDir = new File(returnboxPath);
+	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+		boolean dataFound = false;
+		String dropboxPath = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this);
+		OlatRootFolderImpl dropboxDir = new OlatRootFolderImpl(dropboxPath, null);
+		String solutionsPath = TACourseNode.getFoldernodesPathRelToFolderBase(course.getCourseEnvironment()) + "/" + this.getIdent();
+		OlatRootFolderImpl solutionDir = new OlatRootFolderImpl(solutionsPath, null);
+		String returnboxPath = ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), this);
+		OlatRootFolderImpl returnboxDir = new OlatRootFolderImpl(returnboxPath, null);
+		
 		Boolean hasTask = (Boolean) getModuleConfiguration().get(TACourseNode.CONF_TASK_ENABLED);
+		
+		String dirName = "task_"
+				+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
 
-		if (dropboxDir.exists() || solutionDir.exists() || returnboxDir.exists() || hasTask.booleanValue()){
-			// Create Temp Dir for zipping
-			String tmpDirPath = WebappHelper.getTmpDir() + course.getCourseEnvironment().getCourseBaseContainer().getRelPath();
-			File tmpDir = new File(tmpDirPath);
-			
-			if (!tmpDir.exists()) {
-			  tmpDir.mkdirs();
-			}
-			//we need a unique dir name
-			File newDir = FileUtils.createTempDir("tmp", "", tmpDir);
-			if(newDir!=null) {
-				tmpDir = newDir;
-				try {
-					tmpDirPath = tmpDir.getCanonicalPath();
-				} catch (IOException e) {
-					log.warn("tmpDir.getCanonicalPath() throws IOException!");
-				}
-			}	
-			
+		if (dropboxDir.exists() || solutionDir.exists() || returnboxDir.exists() || hasTask.booleanValue()){	
 			// prepare writing course results overview table
-			List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
-			List<AssessableCourseNode> nodes = new ArrayList<AssessableCourseNode>();
-			nodes.add(this);
-			String s = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, locale);
-	
+			List<Identity> users = group == null ? ScoreAccountingHelper.loadUsers(course.getCourseEnvironment())
+					: ScoreAccountingHelper.loadUsers(group);
+		
 			String courseTitle = course.getCourseTitle();
 			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xls");
-	
+			List<AssessableCourseNode> nodes = Collections.<AssessableCourseNode>singletonList(this);
+			String s = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, locale);
 			// write course results overview table to filesystem
-			ExportUtil.writeContentToFile(fileName, s, tmpDir, charset);
+			try {
+				exportStream.putNextEntry(new ZipEntry(dirName + "/" + fileName));
+				IOUtils.write(s, exportStream);
+				exportStream.closeEntry();
+			} catch (IOException e) {
+				log.error("", e);
+			}
 
-			// prepare zipping the node directory and the course results overview table
-			Set<String> fileList = new HashSet<String>();
-			// move xls file to tmp dir
-			fileList.add(fileName);
 			// copy solutions to tmp dir
 			if (solutionDir.exists()) {
-				if(FileUtils.isDirectoryAndNotEmpty(solutionDir)){
-					FileUtils.copyDirContentsToDir(solutionDir, new File(tmpDirPath + "/solutions"), false, "archive task course node solutions");
-					fileList.add("solutions");
+				for(VFSItem child:solutionDir.getItems()) {
+					dataFound = true;
+					ZipUtil.addToZip(child, dirName + "/solutions", exportStream);
 				}
 			}
+				
 			// copy dropboxes to tmp dir
 			if (dropboxDir.exists()) {
-			//OLAT-6362 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive
-				File[] dropBoxContent = dropboxDir.listFiles();
-				boolean validDropboxesfound = false;
-				for (File file : dropBoxContent) {
-					if(FileUtils.isDirectoryAndNotEmpty(file)){
-						validDropboxesfound = true;
-						FileUtils.copyDirContentsToDir(file, new File(tmpDirPath + "/dropboxes/"+file.getName()), false, "archive task course node dropboxes "+file.getName());
+				//OLAT-6362 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive
+				List<VFSItem> dropBoxContent = dropboxDir.getItems();
+				for (VFSItem file:dropBoxContent) {
+					if(VFSManager.isDirectoryAndNotEmpty(file)){
+						dataFound = true;
+						ZipUtil.addToZip(file, dirName + "/dropboxes", exportStream);
 					}
 				}
-				
-				if(validDropboxesfound){
-					// dropboxes exists and at least one is not empty, so there is something to archive
-					dataFound = true;
-					fileList.add("dropboxes");
-				}
-			}
-			// copy only the choosen task to user taskfolder, loop over all users
-			String taskfolderPath = FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course.getCourseEnvironment(),this);
-			boolean taskFolderExist = false;
-			for(Identity identity:users) {
-  			// check if user already chose a task
-			  String assignedTask = TaskController.getAssignedTask(identity, course.getCourseEnvironment(), this);
-			  if (assignedTask != null) {
-			  	// copy choosen task to user folder
-					String tmpUserTaskDirPath = tmpDirPath + "/taskfolders/" + identity.getName();
-			  	FileUtils.copyFileToDir(taskfolderPath + "/" + assignedTask, tmpUserTaskDirPath );
-			  	taskFolderExist = true;
-			  }
-			}
-			if (taskFolderExist) {
-  			fileList.add("taskfolders");
 			}
 			
-			// copy returnboxes to tmp dir
+			// copy only the choosen task to user taskfolder, loop over all users
+			String taskfolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course.getCourseEnvironment(),this);
+			OlatRootFolderImpl taskfolderDir = new OlatRootFolderImpl(taskfolderPath, null);
+			for(Identity identity:users) {
+				// check if user already chose a task
+				String assignedTask = TaskController.getAssignedTask(identity, course.getCourseEnvironment(), this);
+				if (assignedTask != null) {
+					VFSItem item = taskfolderDir.resolve(assignedTask);
+					if(item != null) {
+						// copy choosen task to user folder
+						ZipUtil.addToZip(item, dirName + "/taskfolders/" + identity.getName(), exportStream);
+						dataFound = true;
+					}
+				}
+			}
+	
+			// copy returnboxes
 			if (returnboxDir.exists()) {
 				//OLAT-6362 archive only existing returnboxes -> prevent empty folders in archive
-				File[] returnBoxContent = returnboxDir.listFiles();
-				boolean validReturnboxesfound = false;
-				for (File file : returnBoxContent) {
-					if(FileUtils.isDirectoryAndNotEmpty(file)){
-						validReturnboxesfound = true;
-						FileUtils.copyDirContentsToDir(file, new File(tmpDirPath + "/returnboxes/"+file.getName()), false, "archive task course node returnboxes "+file.getName());
+				List<VFSItem> returnBoxContent = returnboxDir.getItems();
+				for (VFSItem file : returnBoxContent) {
+					if(VFSManager.isDirectoryAndNotEmpty(file)){
+						dataFound = true;
+						ZipUtil.addToZip(file, dirName + "/returnboxes", exportStream);
 					}
 				}
-				
-				if(validReturnboxesfound){
-					// returnboxes exists and at least one is not empty, so there is something to archive
-					dataFound = true;
-					fileList.add("returnboxes");
-				}
 			}
-			
-			if(dataFound) {
-				String zipName = ExportUtil.createFileNameWithTimeStamp(this.getIdent(), "zip");
-				
-			  java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss_SSS");
-			  String exportDirName = "task_" + StringHelper.transformDisplayNameToFileSystemName(this.getShortName()) + "_" + formatter.format(new Date(System.currentTimeMillis()));
-			  File fDropBoxArchiveDir = new File(fArchiveDirectory, exportDirName);
-			  if (!fDropBoxArchiveDir.exists()) {
-				  fDropBoxArchiveDir.mkdir();
-			  }
-			  File archiveDir = new File(fDropBoxArchiveDir, zipName);
-			  // zip
-			  dataFound &= ZipUtil.zip(fileList, tmpDir, archiveDir, true);
-			  // Delete all temp files
-			}
-		  FileUtils.deleteDirsAndFiles( tmpDir, true, true);
 		}	
-  	return dataFound;
+		return dataFound;
 	}
 
 	/**

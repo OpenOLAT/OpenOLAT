@@ -26,15 +26,18 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
@@ -50,14 +53,19 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -79,10 +87,12 @@ import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -94,7 +104,10 @@ import org.olat.resource.OLATResource;
  */
 
 public class ProjectBrokerCourseNode extends GenericCourseNode implements AssessableCourseNode {
-	
+
+	private static final long serialVersionUID = -8177448874150049173L;
+	private static final OLog log = Tracing.createLoggerFor(ProjectBrokerCourseNode.class);
+
 	private transient static final String PACKAGE_PROJECTBROKER = Util.getPackageName(ProjectListController.class);
 
 	private transient static final String PACKAGE = Util.getPackageName(ProjectBrokerCourseNode.class);
@@ -655,6 +668,14 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		throw new AssertException("ProjectBroker does not support AssessmentTool");
 	}
 
+	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
+	@Override
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, BusinessGroup limitToGroup) {
+		List<Controller> tools = new ArrayList<>(1);
+		tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
+		return tools;
+	}
+
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListView(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
@@ -692,127 +713,62 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		ProjectBroker projectBroker = ProjectBrokerManagerFactory.getProjectBrokerManager().createAndSaveProjectBroker();
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		ProjectBrokerManagerFactory.getProjectBrokerManager().saveProjectBrokerId(projectBroker.getKey(), cpm, this);
-		
 		return null;
 	}
-
-	/**
-	 * archives the dropbox of this task course node to the user's personal folder
-	 * under private/archive/[coursename]/dropboxes/[nodeIdent].zip
-	 * 
-	 * @param locale
-	 * @param course
-	 * @param fArchiveDirectory
-	 * @param charset
-	 */
+	
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, File fArchiveDirectory, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
 		boolean dataFound = false;
-		String dropboxPath = FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
-		File dropboxDir = new File(dropboxPath);
-		String returnboxPath = FolderConfig.getCanonicalRoot() + ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
-		File returnboxDir = new File(returnboxPath);
+		String dropboxPath = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
+		OlatRootFolderImpl dropboxDir = new OlatRootFolderImpl(dropboxPath, null);
+		String returnboxPath = ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
+		OlatRootFolderImpl returnboxDir = new OlatRootFolderImpl(returnboxPath, null);
+		if (!dropboxDir.exists() && !returnboxDir.exists()) {
+			return false;
+		}
+		
+		String exportDirName = "projectbroker_" + Formatter.makeStringFilesystemSave(getShortName())
+				  + "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
 
-		if (dropboxDir.exists() || returnboxDir.exists() ){
-			// Create Temp Dir for zipping
-			String tmpDirPath = WebappHelper.getTmpDir() + course.getCourseEnvironment().getCourseBaseContainer().getRelPath();
-			File tmpDir = new File( tmpDirPath );
-			if (!tmpDir.exists()) {
-			  tmpDir.mkdirs();
-			}
-
-			// prepare writing course results overview table
-// TODO:ch 28.01.2010 : ProjectBroker does not support assessment-tool in V1.0			
-// 			
-//			List users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
-//			List nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
-//			String s = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, locale);
-//	
-//			String courseTitle = course.getCourseTitle();
-//			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle + "-score", "xls");
-//	
-//			// write course results overview table to filesystem
-//			ExportUtil.writeContentToFile(fileName, s, tmpDir, charset);
-
+		try {
 			String projectBrokerTableExport = ProjectBrokerExportGenerator.createCourseResultsOverviewTable(this, course, locale);
-			String tableExportFileName = ExportUtil.createFileNameWithTimeStamp(this.getShortTitle() + "-projectbroker_overview", "xls");
-			ExportUtil.writeContentToFile(tableExportFileName, projectBrokerTableExport, tmpDir, charset);
+			String tableExportFileName = ExportUtil.createFileNameWithTimeStamp(getShortTitle() + "-projectbroker_overview", "xls");
+			exportStream.putNextEntry(new ZipEntry(exportDirName + "/" + tableExportFileName));
+			IOUtils.write(projectBrokerTableExport, exportStream);
+			exportStream.closeEntry();
+		} catch (IOException e) {
+			log.error("", e);
+		}
 
-			// prepare zipping the node directory and the course results overview table
-			Set<String> fileList = new HashSet<String>();
-			// move xls file to tmp dir
-// TODO:ch 28.01.2010 : ProjectBroker does not support assessment-tool in V1.0
-//			fileList.add(fileName);
-			fileList.add(tableExportFileName);
-
-			// copy dropboxes to tmp dir
-			if (dropboxDir.exists()) {
-				//OLAT-6426 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive
-				boolean validDropboxesfound = false; 
-				File[] themaFolderArray = dropboxDir.listFiles();
-				for(File themaFolder: themaFolderArray){
-					File[] userFolderArray = themaFolder.listFiles();
-					if(userFolderArray==null) continue;
-					for(File userFolder : userFolderArray){
-						if(FileUtils.isDirectoryAndNotEmpty(userFolder)){
-							validDropboxesfound= true;
-							File source = new File(dropboxDir+"/"+themaFolder.getName()+"/"+userFolder.getName());
-							File target = new File(tmpDirPath+"/dropboxes/"+themaFolder.getName()+"/"+userFolder.getName()) ;
-							FileUtils.copyDirContentsToDir(source, target,false, "archive projectbroker dropboxes ");
-						}
-					}
-				}
-				
-				if(validDropboxesfound){
-					// dropboxes exists, so there is something to archive
-					fileList.add("dropboxes");
-					dataFound |= true;
+		// copy dropboxes to tmp dir
+		if (dropboxDir.exists()) {
+			//OLAT-6426 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive 
+			for(VFSItem themaItem: dropboxDir.getItems()) {
+				if(!(themaItem instanceof VFSContainer)) continue;
+				List<VFSItem> userFolderArray = ((VFSContainer)themaItem).getItems();
+				for(VFSItem userFolder : userFolderArray){
+					if(!VFSManager.isDirectoryAndNotEmpty(userFolder)) continue;
+					String path  = exportDirName + "/dropboxes/" + themaItem.getName();
+					ZipUtil.addToZip(userFolder, path, exportStream);
 				}
 			}
+		}
 			
-			// copy returnboxes to tmp dir
-			if (returnboxDir.exists()) {
-				boolean validReturnboxesfound = false; 
-				File[] themaFolderArray = returnboxDir.listFiles();
-				for(File themaFolder: themaFolderArray){
-					File[] userFolderArray = themaFolder.listFiles();
-					if(userFolderArray==null) continue;
-					for(File userFolder : userFolderArray){
-						if(FileUtils.isDirectoryAndNotEmpty(userFolder)){
-							validReturnboxesfound = true;
-							File source = new File(returnboxDir+"/"+themaFolder.getName()+"/"+userFolder.getName());
-							File target = new File(tmpDirPath + "/returnboxes/"+themaFolder.getName()+"/"+userFolder.getName()) ;
-							FileUtils.copyDirContentsToDir(source , target , false, "archive projectbroker returnboxes");
-						}
-					}
-				}
-				if(validReturnboxesfound){
-					fileList.add("returnboxes");
-					//returnboxes exists, so there is something to archive
-					dataFound |= true;
+		// copy returnboxes to tmp dir
+		if (returnboxDir.exists()) {
+			for(VFSItem themaItem:returnboxDir.getItems()) {
+				if(!(themaItem instanceof VFSContainer)) continue;
+				List<VFSItem> userFolderArray = ((VFSContainer)themaItem).getItems();
+				for(VFSItem userFolder : userFolderArray){
+					if(!VFSManager.isDirectoryAndNotEmpty(userFolder)) continue;
+					String path = exportDirName + "/returnboxes/" + themaItem.getName();
+					ZipUtil.addToZip(userFolder, path, exportStream);
 				}
 			}
-			
-			if(dataFound) {
-			  String zipName = ExportUtil.createFileNameWithTimeStamp(this.getIdent(), "zip");
+		}
 
-			  java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss_SSS");
-			  String exportDirName = "projectbroker_" + this.getShortName() + "_" + formatter.format(new Date(System.currentTimeMillis()));
-			  File fDropBoxArchiveDir = new File(fArchiveDirectory, exportDirName);
-			  if (!fDropBoxArchiveDir.exists()) {
-				  fDropBoxArchiveDir.mkdir();
-			  }
-			  File archiveDir = new File(fDropBoxArchiveDir, zipName);	
-			
-			  // zip
-			  dataFound &= ZipUtil.zip(fileList, tmpDir, archiveDir, true);
-			  // Delete all temp files
-			}
-		  FileUtils.deleteDirsAndFiles( tmpDir, true, true);
-		}	
-  	return dataFound;
+		return dataFound;
 	}
-
 
 	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#getConditionExpressions()

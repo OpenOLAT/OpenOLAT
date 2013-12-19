@@ -95,8 +95,8 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		StringBuilder hR2 = new StringBuilder();
 		
 		int i = 1;
-		for (Iterator iter = qtiItemObjectList.iterator(); iter.hasNext();) {
-			QTIItemObject item = (QTIItemObject) iter.next();
+		for (Iterator<QTIItemObject> iter = qtiItemObjectList.iterator(); iter.hasNext();) {
+			QTIItemObject item = iter.next();
 
 			if (displayItem(qeif.getExportItemConfig(item))) {
 				hR1.append(emb);
@@ -297,8 +297,8 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		sb.append(legend);
 		sb.append(car + car);
 		int y = 1;
-		for (Iterator iter = qtiItemObjectList.iterator(); iter.hasNext();) {
-			QTIItemObject element = (QTIItemObject) iter.next();
+		for (Iterator<QTIItemObject> iter = qtiItemObjectList.iterator(); iter.hasNext();) {
+			QTIItemObject element = iter.next();
 			
 			sb.append(element.getItemIdent());
 			sb.append(sep);
@@ -505,10 +505,10 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 	}
 
 	private void setDefaultQTIItemConfigs() {
-		Map itConfigs = new HashMap();
+		Map<Class<?>, QTIExportItemFormatConfig> itConfigs = new HashMap<>();
   	
-		for (Iterator iter = qtiItemObjectList.iterator(); iter.hasNext();) {
-			QTIItemObject item = (QTIItemObject) iter.next();
+		for (Iterator<QTIItemObject> iter = qtiItemObjectList.iterator(); iter.hasNext();) {
+			QTIItemObject item = iter.next();
 			if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_SCQ)) {
 				if (itConfigs.get(QTIExportSCQItemFormatConfig.class) == null) {
 					QTIExportSCQItemFormatConfig confSCQ = new QTIExportSCQItemFormatConfig(true, false, false, false);

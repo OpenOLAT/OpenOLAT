@@ -31,7 +31,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -111,6 +114,24 @@ public class OnyxExportManager {
 			archiveDir.delete();
 		}
 		return filename;
+	}
+	
+	public void exportResults(List<QTIResultSet> resultSets, ZipOutputStream exportStream, CourseNode currentCourseNode) {
+		final String path = createTargetFilename(currentCourseNode.getShortTitle(), "TEST");
+		for (final QTIResultSet rs : resultSets) {
+			String resultXml = getResultXml(rs.getIdentity().getName(),
+					currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString(),
+					currentCourseNode.getIdent(), rs.getAssessmentID());
+
+			String filename =  path + "/" + rs.getIdentity().getName() + "_" + rs.getCreationDate() + ".xml";
+			try {
+				exportStream.putNextEntry(new ZipEntry(filename));
+				IOUtils.write(resultXml, exportStream);
+				exportStream.closeEntry();
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
 	}
 
 	/**

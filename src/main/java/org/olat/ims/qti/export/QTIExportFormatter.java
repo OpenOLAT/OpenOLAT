@@ -34,6 +34,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.export.helper.IdentityAnonymizerCallback;
+import org.olat.ims.qti.export.helper.QTIItemObject;
 
 /**
  * Initial Date: May 23, 2006 <br>
@@ -45,8 +46,8 @@ public abstract class QTIExportFormatter {
 	protected StringBuilder sb;
 	protected Translator translator;
 	protected IdentityAnonymizerCallback anonymizerCallback;
-	protected List qtiItemObjectList;
-	protected Map mapWithExportItemConfigs;
+	protected List<QTIItemObject> qtiItemObjectList;
+	protected Map<Class<?>, QTIExportItemFormatConfig> mapWithExportItemConfigs;
 	
 	/**
 	 *
@@ -71,7 +72,7 @@ public abstract class QTIExportFormatter {
 	 * 
 	 * @param qtiItemObjectList
 	 */
-	public void setQTIItemObjectList(List qtiItemObjectList){
+	public void setQTIItemObjectList(List<QTIItemObject> qtiItemObjectList){
 		this.qtiItemObjectList = qtiItemObjectList;
 	}
 	
@@ -79,7 +80,7 @@ public abstract class QTIExportFormatter {
 	 * 
 	 * @param mapWithConfigs
 	 */
-	public void setMapWithExportItemConfigs(Map mapWithConfigs){
+	public void setMapWithExportItemConfigs(Map<Class<?>, QTIExportItemFormatConfig> mapWithConfigs){
 		this.mapWithExportItemConfigs = mapWithConfigs;
 	}
 	
@@ -88,7 +89,7 @@ public abstract class QTIExportFormatter {
 	 * 
 	 * @return
 	 */
-	public Map getMapWithExportItemConfigs(){
+	public Map<Class<?>, QTIExportItemFormatConfig> getMapWithExportItemConfigs(){
 		return this.mapWithExportItemConfigs;
 	}
 }

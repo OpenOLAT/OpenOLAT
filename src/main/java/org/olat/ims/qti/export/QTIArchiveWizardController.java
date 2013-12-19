@@ -58,9 +58,9 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.NodeTableDataModel;
+import org.olat.course.assessment.NodeTableRow;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
@@ -89,7 +89,6 @@ import de.bps.onyx.plugin.OnyxExportManager;
  */
 public class QTIArchiveWizardController extends BasicController {
 	private static final String CMD_SELECT_NODE = "cmd.select.node";
-	private static final String CMD_BACK = "back";
 	
 	private boolean dummyMode;
 	
@@ -125,8 +124,8 @@ public class QTIArchiveWizardController extends BasicController {
 	private String targetFileName;
 	private int type;
 	private Map qtiItemConfigs;
-	private List results;
-	private List qtiItemObjectList;
+	private List<QTIResult> results;
+	private List<QTIItemObject> qtiItemObjectList;
 	private Link showFileButton;
 	private Link backLinkAtOptionChoose;
 	private Link backLinkAtNoResults;
@@ -134,7 +133,7 @@ public class QTIArchiveWizardController extends BasicController {
 	private OLATResourceable ores;
 
 
-	public QTIArchiveWizardController(boolean dummyMode, UserRequest ureq, List nodesTableObjectArrayList, OLATResourceable ores, WindowControl wControl) {
+	public QTIArchiveWizardController(boolean dummyMode, UserRequest ureq, List<NodeTableRow> nodesTableObjectArrayList, OLATResourceable ores, WindowControl wControl) {
 		super(ureq, wControl);
 		this.dummyMode = dummyMode;
 		this.ores = ores;
@@ -219,9 +218,9 @@ public class QTIArchiveWizardController extends BasicController {
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_SELECT_NODE)) {
 					int rowid = te.getRowId();
-					Map nodeData = (Map) nodeTableModel.getObject(rowid);
+					NodeTableRow nodeData = nodeTableModel.getObject(rowid);
 					ICourse course = CourseFactory.loadCourse(ores);
-					this.currentCourseNode = course.getRunStructure().getNode((String) nodeData.get(AssessmentHelper.KEY_IDENTIFYER));
+					this.currentCourseNode = course.getRunStructure().getNode(nodeData.getIdent());
 
 					boolean isOnyx = false;
 					if (currentCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI) != null) {
@@ -275,10 +274,9 @@ public class QTIArchiveWizardController extends BasicController {
 				    
 							QTIResultManager qrm = QTIResultManager.getInstance();
 							results = qrm.selectResults(olatResource, currentCourseNode.getIdent(), repKey, type);
-							QTIResult res0 = (QTIResult) results.get(0);
+							QTIResult res0 = results.get(0);
 							
-							QTIObjectTreeBuilder qotb = new QTIObjectTreeBuilder(new Long(res0.getResultSet().getRepositoryRef()));
-							qtiItemObjectList = qotb.getQTIItemObjectList();
+							qtiItemObjectList = new QTIObjectTreeBuilder().getQTIItemObjectList(new Long(res0.getResultSet().getRepositoryRef()));
 							
 							qtiItemConfigs = getQTIItemConfigs();
 						

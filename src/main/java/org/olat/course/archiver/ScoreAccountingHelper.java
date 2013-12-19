@@ -376,7 +376,6 @@ public class ScoreAccountingHelper {
 	 * @param courseEnv
 	 * @return The list of identities from this course
 	 */
-	//fxdiff VCRP-1,2: access control of resources
 	public static List<Identity> loadUsers(CourseEnvironment courseEnv) {
 		CourseGroupManager gm = courseEnv.getCourseGroupManager();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
@@ -397,6 +396,11 @@ public class ScoreAccountingHelper {
 		List<Identity> assessedList = courseEnv.getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(userList);
 		userList.addAll(assessedList);
 		return userList;
+	}
+	
+	public static List<Identity> loadUsers(BusinessGroup group) {
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		return securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
 	}
 	
 	/**

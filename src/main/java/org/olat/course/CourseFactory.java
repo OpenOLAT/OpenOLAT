@@ -26,8 +26,11 @@
 package org.olat.course;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -35,7 +38,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.poi.util.IOUtils;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -1188,87 +1193,76 @@ public class CourseFactory extends BasicManager {
 			}
 		}
 	}
-}
+	
+	private static class NodeArchiveVisitor implements Visitor {
+		private File exportPath;
+		private Locale locale;
+		private ICourse course;
+		private String charset;
 
+		/**
+		 * @param locale
+		 * @param course
+		 * @param exportPath
+		 * @param charset
+		 */
+		public NodeArchiveVisitor(Locale locale, ICourse course, File exportPath, String charset) {
+			this.locale = locale;
+			this.exportPath = exportPath;
+			//o_clusterOk by guido: save to hold reference to course inside editor
+			this.course = course;
+			this.charset = charset;
+		}
 
+		/**
+		 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
+		 */
+		public void visit(INode node) {
+			CourseNode cn = (CourseNode) node;
 
-/**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.
-*/
-
-class NodeArchiveVisitor implements Visitor {
-	private File exportPath;
-	private Locale locale;
-	private ICourse course;
-	private String charset;
-
-	/**
-	 * @param locale
-	 * @param course
-	 * @param exportPath
-	 * @param charset
-	 */
-	public NodeArchiveVisitor(Locale locale, ICourse course, File exportPath, String charset) {
-		this.locale = locale;
-		this.exportPath = exportPath;
-		//o_clusterOk by guido: save to hold reference to course inside editor
-		this.course = course;
-		this.charset = charset;
+			String archiveName = cn.getType() + "_"
+					+ StringHelper.transformDisplayNameToFileSystemName(cn.getShortName())
+					+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+			
+			FileOutputStream fileStream = null;
+			ZipOutputStream exportStream = null;
+			try {
+				File exportFile = new File(exportPath, archiveName);
+				fileStream = new FileOutputStream(exportFile);
+				exportStream = new ZipOutputStream(fileStream);
+				cn.archiveNodeData(locale, course, null, exportStream, charset);
+			} catch (FileNotFoundException e) {
+				log.error("", e);
+			} finally {
+				IOUtils.closeQuietly(exportStream);
+				IOUtils.closeQuietly(fileStream);
+			}
+		}
 	}
+	
+	private static class NodeDeletionVisitor implements Visitor {
 
-	/**
-	 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
-	 */
-	public void visit(INode node) {
-		CourseNode cn = (CourseNode) node;
-		cn.archiveNodeData(locale, course, exportPath, charset);
+		private ICourse course;
+
+		/**
+		 * Constructor of the node deletion visitor
+		 * 
+		 * @param course
+		 */
+		public NodeDeletionVisitor(ICourse course) {
+			this.course = course;
+		}
+
+		/**
+		 * Visitor pattern to delete the course nodes
+		 * 
+		 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
+		 */
+		public void visit(INode node) {
+			CourseNode cNode = (CourseNode) node;
+			cNode.cleanupOnDelete(course);
+		}
 	}
-}
-
-class NodeDeletionVisitor implements Visitor {
-
-	private ICourse course;
-
-	/**
-	 * Constructor of the node deletion visitor
-	 * 
-	 * @param course
-	 */
-	public NodeDeletionVisitor(ICourse course) {
-		this.course = course;
-	}
-
-	/**
-	 * Visitor pattern to delete the course nodes
-	 * 
-	 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
-	 */
-	public void visit(INode node) {
-		CourseNode cNode = (CourseNode) node;
-		cNode.cleanupOnDelete(course);
-	}
-
 }
 
 /**

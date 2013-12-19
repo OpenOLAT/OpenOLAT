@@ -28,13 +28,11 @@ package org.olat.modules.fo.archiver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
@@ -49,10 +47,10 @@ import org.olat.modules.fo.archiver.formatters.ForumFormatter;
  * @author Alexander Schneider
  */
 
-public class ForumArchiveManager  extends BasicManager {
-	private static ForumArchiveManager instance = new ForumArchiveManager();
+public class ForumArchiveManager {
+	private static final OLog log = Tracing.createLoggerFor(ForumArchiveManager.class);
+	private static final ForumArchiveManager instance = new ForumArchiveManager();
 	
-	//TODO spring config
 	private ForumArchiveManager() {
 		// private since singleton
 	}
@@ -72,14 +70,12 @@ public class ForumArchiveManager  extends BasicManager {
 	 * @param forumCallback
 	 * @return
 	 */
-	public String applyFormatter(ForumFormatter forumFormatter, long forumId, ForumCallback forumCallback){
-		Tracing.logInfo("Archiving complete forum: "+forumId, ForumArchiveManager.class);
-		Map metaInfo = new HashMap();
-		metaInfo.put(ForumFormatter.MANDATORY_METAINFO_KEY ,new Long(forumId));
+	public String applyFormatter(ForumFormatter forumFormatter, Long forumId, ForumCallback forumCallback){
+		log.info("Archiving complete forum: " + forumId);
 		//convert forum structure to trees
-		List threadTreesList = convertToThreadTrees(forumId, forumCallback);
+		List<MessageNode> threadTreesList = convertToThreadTrees(forumId, forumCallback);
 		//format forum trees by using the formatter given by the callee
-		return formatForum(threadTreesList, forumFormatter, metaInfo);
+		return formatForum(threadTreesList, forumFormatter, forumId);
 	}
 	/**
 	 * It is assumed that if the caller of this method is allowed to see the forum thread
@@ -89,12 +85,10 @@ public class ForumArchiveManager  extends BasicManager {
 	 * @param topMessageId
 	 * @return the message thread as String formatted
 	 */
-	public String applyFormatterForOneThread(ForumFormatter forumFormatter, long forumId, long topMessageId){
-		Tracing.logInfo("Archiving forum.thread: "+forumId+"."+topMessageId, ForumArchiveManager.class);
-		Map metaInfo = new HashMap();
-		metaInfo.put(ForumFormatter.MANDATORY_METAINFO_KEY ,new Long(forumId));
+	public String applyFormatterForOneThread(ForumFormatter forumFormatter, Long forumId, Long topMessageId){
+		log.info("Archiving forum.thread: "+forumId+"."+topMessageId);
 		MessageNode topMessageNode = convertToThreadTree(topMessageId);
-		return formatThread(topMessageNode, forumFormatter, metaInfo);
+		return formatThread(topMessageNode, forumFormatter, forumId);
 	}
 
 	/**
@@ -105,16 +99,15 @@ public class ForumArchiveManager  extends BasicManager {
 	 * @param metaInfo
 	 * @return all top message nodes together with their children in a list
 	 */
-	private List convertToThreadTrees(long forumId, ForumCallback forumCallback){
-		List messages;
-		List topNodeList = new ArrayList();
+	private List<MessageNode> convertToThreadTrees(Long forumId, ForumCallback forumCallback){
+		List<MessageNode> topNodeList = new ArrayList<>();
 		ForumManager fm = ForumManager.getInstance();
-		Long l = new Long(forumId);
-		Forum f = fm.loadForum(l);
-		messages = fm.getMessagesByForum(f);
+	
+		Forum f = fm.loadForum(forumId);
+		List<Message> messages = fm.getMessagesByForum(f);
 		
-		for (Iterator iterTop = messages.iterator(); iterTop.hasNext();) {
-			Message msg = (Message) iterTop.next();
+		for (Iterator<Message> iterTop = messages.iterator(); iterTop.hasNext();) {
+			Message msg = iterTop.next();
 			if (msg.getParent() == null) {
 				iterTop.remove();
 				MessageNode topNode = new MessageNode(msg);
@@ -135,8 +128,8 @@ public class ForumArchiveManager  extends BasicManager {
    * @param topNodeList
    * @return the sorted list.
    */	
-	private List getMessagesSorted(List<Message> topNodeList) { 
-		 Comparator messageNodeComparator = ForumHelper.getMessageNodeComparator();
+	private List<MessageNode> getMessagesSorted(List<MessageNode> topNodeList) { 
+		 Comparator<MessageNode> messageNodeComparator = ForumHelper.getMessageNodeComparator();
 		 Collections.sort(topNodeList, messageNodeComparator);
 		 return topNodeList;
 	}
@@ -147,14 +140,11 @@ public class ForumArchiveManager  extends BasicManager {
 	 * @param metaInfo
 	 * @return the top message node with all its children
 	 */
-	private MessageNode convertToThreadTree(long topMessageId){
-		List messages;
+	private MessageNode convertToThreadTree(Long topMessageId){
 		MessageNode topNode = null;
-		ForumManager fm = ForumManager.getInstance();
-		Long l = new Long(topMessageId);
-		messages = fm.getThread(l);
-		for (Iterator iterTop = messages.iterator(); iterTop.hasNext();) {
-			Message msg = (Message) iterTop.next();
+		List<Message> messages = ForumManager.getInstance().getThread(topMessageId);
+		for (Iterator<Message> iterTop = messages.iterator(); iterTop.hasNext();) {
+			Message msg = iterTop.next();
 			if (msg.getParent() == null) {
 				iterTop.remove();
 				topNode = new MessageNode(msg);
@@ -164,9 +154,9 @@ public class ForumArchiveManager  extends BasicManager {
 		return topNode;
 	}
 	
-	private void addChildren(List messages, MessageNode mn){
-		for(Iterator iterMsg = messages.iterator();iterMsg.hasNext();){
-			Message msg = (Message) iterMsg.next();
+	private void addChildren(List<Message> messages, MessageNode mn){
+		for(Iterator<Message> iterMsg = messages.iterator(); iterMsg.hasNext(); ) {
+			Message msg = iterMsg.next();
 			if ((msg.getParent() != null) && (msg.getParent().getKey() == mn.getKey())){
 				MessageNode childNode = new MessageNode(msg);
 				mn.addChild(childNode);
@@ -184,12 +174,12 @@ public class ForumArchiveManager  extends BasicManager {
 	 * @param metaInfo
 	 * @return
 	 */
-	private String formatForum(List topNodeList, ForumFormatter forumFormatter, Map metaInfo){ 
-		forumFormatter.setForumMetaInformation(metaInfo);
+	private String formatForum(List<MessageNode> topNodeList, ForumFormatter forumFormatter, Long forumId) { 
+		forumFormatter.setForumKey(forumId);
 		StringBuilder formattedForum = new StringBuilder();
 		forumFormatter.openForum();
-		for (Iterator iterTop = topNodeList.iterator(); iterTop.hasNext();){
-			MessageNode mn = (MessageNode) iterTop.next();
+		for (Iterator<MessageNode> iterTop = topNodeList.iterator(); iterTop.hasNext();){
+			MessageNode mn = iterTop.next();
 			//a new top thread starts, inform formatter
 			forumFormatter.openThread();
 			TreeVisitor tv = new TreeVisitor(forumFormatter, mn, false);
@@ -207,8 +197,8 @@ public class ForumArchiveManager  extends BasicManager {
 	 * @param metaInfo
 	 * @return
 	 */
-	private String formatThread(MessageNode mn, ForumFormatter forumFormatter, Map metaInfo){
-		forumFormatter.setForumMetaInformation(metaInfo);
+	private String formatThread(MessageNode mn, ForumFormatter forumFormatter, Long forumId){
+		forumFormatter.setForumKey(forumId);
 		StringBuilder formattedThread = new StringBuilder();
 		forumFormatter.openThread();
 		TreeVisitor tv = new TreeVisitor(forumFormatter, mn, false);

@@ -46,7 +46,7 @@ public class Panel extends Container {
 	private static final ComponentRenderer RENDERER = new PanelRenderer();
 
 	private Component curContent;
-	protected final List<Component> stackList = new ArrayList<Component>(3);; // allow access to extending classes
+	protected final List<Component> stackList = new ArrayList<Component>(3); // allow access to extending classes
 
 	/**
 	 * @param name

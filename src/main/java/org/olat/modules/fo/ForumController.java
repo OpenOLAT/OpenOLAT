@@ -679,7 +679,7 @@ public class ForumController extends BasicController implements GenericEventList
 	private void doArchiveForum(UserRequest ureq) {
 		ForumRTFFormatter rtff = new ForumRTFFormatter(getArchiveContainer(ureq), false);
 		ForumArchiveManager fam = ForumArchiveManager.getInstance();
-		fam.applyFormatter(rtff, forum.getKey().longValue(), focallback);
+		fam.applyFormatter(rtff, forum.getKey(), focallback);
 	}
 
 	private void doArchiveThread(UserRequest ureq, Message currMsg) {
@@ -688,7 +688,7 @@ public class ForumController extends BasicController implements GenericEventList
 
 		ForumRTFFormatter rtff = new ForumRTFFormatter(getArchiveContainer(ureq), true);
 		ForumArchiveManager fam = ForumArchiveManager.getInstance();
-		fam.applyFormatterForOneThread(rtff, forum.getKey().longValue(), topMessageId.longValue());
+		fam.applyFormatterForOneThread(rtff, forum.getKey(), topMessageId);
 	}
 	
 	

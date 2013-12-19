@@ -194,8 +194,7 @@ public class IQEditReplaceWizard extends WizardController {
 			String charset = um.getUserCharset(ureq.getIdentity());
 			QTIExportManager qem = QTIExportManager.getInstance();
 			Long repositoryRef = results.get(0).getResultSet().getRepositoryRef();
-			QTIObjectTreeBuilder qotb = new QTIObjectTreeBuilder(repositoryRef);
-			List<QTIItemObject> qtiItemObjectList = qotb.getQTIItemObjectList();
+			List<QTIItemObject> qtiItemObjectList = new QTIObjectTreeBuilder().getQTIItemObjectList(repositoryRef);
 			QTIExportFormatter formatter = new QTIExportFormatterCSVType1(ureq.getLocale(), "\t", "\"", "\\", "\r\n", false);
 			Map<Class<?>, QTIExportItemFormatConfig> qtiItemConfigs = getQTIItemConfigs(qtiItemObjectList);
 			formatter.setMapWithExportItemConfigs(qtiItemConfigs);

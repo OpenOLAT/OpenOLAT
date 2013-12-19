@@ -38,9 +38,9 @@ import org.olat.ims.qti.export.helper.QTIItemObject;
  * @author Alexander Schneider
  */
 public class QTIExportItemFactory {
-	private Map configs;
+	private Map<Class<?>, QTIExportItemFormatConfig> configs;
 	
-	public QTIExportItemFactory(Map mapWithConfigs){
+	public QTIExportItemFactory(Map<Class<?>, QTIExportItemFormatConfig> mapWithConfigs){
 		this.configs = mapWithConfigs;
 	}
 	
@@ -48,40 +48,40 @@ public class QTIExportItemFactory {
 		QTIExportItem eItem = null;
 		if(item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_SCQ)){
 			eItem = new QTIExportItem(qtir, item);
-			eItem.setConfig((QTIExportSCQItemFormatConfig) configs.get(QTIExportSCQItemFormatConfig.class));	
+			eItem.setConfig(configs.get(QTIExportSCQItemFormatConfig.class));	
 		}
 		else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_MCQ)){ // Checkbox
 			eItem = new QTIExportItem(qtir, item);
-			eItem.setConfig((QTIExportMCQItemFormatConfig) configs.get(QTIExportMCQItemFormatConfig.class));
+			eItem.setConfig(configs.get(QTIExportMCQItemFormatConfig.class));
 		}
 		else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_KPRIM)){ // Kprim
 			eItem = new QTIExportItem(qtir, item);
-			eItem.setConfig((QTIExportKPRIMItemFormatConfig) configs.get(QTIExportKPRIMItemFormatConfig.class));
+			eItem.setConfig(configs.get(QTIExportKPRIMItemFormatConfig.class));
 		}
 		else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_ESSAY)){ // Area
 			eItem = new QTIExportItem(qtir, item);
-			eItem.setConfig((QTIExportEssayItemFormatConfig) configs.get(QTIExportEssayItemFormatConfig.class));
+			eItem.setConfig(configs.get(QTIExportEssayItemFormatConfig.class));
 		}
 		else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_FIB)){ // Blank
 			eItem = new QTIExportItem(qtir, item);
-			eItem.setConfig((QTIExportFIBItemFormatConfig) configs.get(QTIExportFIBItemFormatConfig.class));
+			eItem.setConfig(configs.get(QTIExportFIBItemFormatConfig.class));
 		}
     //	if cannot find the type via the ItemParser, look for the QTIItemObject type
 		else if (item.getItemType().equals(QTIItemObject.TYPE.A)){ 
 			eItem = new QTIExportItem(qtir, item);
-			eItem.setConfig((QTIExportEssayItemFormatConfig) configs.get(QTIExportEssayItemFormatConfig.class));
+			eItem.setConfig(configs.get(QTIExportEssayItemFormatConfig.class));
 		}
 		else if (item.getItemType().equals(QTIItemObject.TYPE.R)){ 
 			eItem = new QTIExportItem(qtir, item);
-			eItem.setConfig((QTIExportSCQItemFormatConfig) configs.get(QTIExportSCQItemFormatConfig.class));
+			eItem.setConfig(configs.get(QTIExportSCQItemFormatConfig.class));
 		}
 		else if (item.getItemType().equals(QTIItemObject.TYPE.C)){
 			eItem = new QTIExportItem(qtir, item);
-			eItem.setConfig((QTIExportMCQItemFormatConfig) configs.get(QTIExportMCQItemFormatConfig.class));
+			eItem.setConfig(configs.get(QTIExportMCQItemFormatConfig.class));
 		}
 		else if (item.getItemType().equals(QTIItemObject.TYPE.B)){
 			eItem = new QTIExportItem(qtir, item);
-			eItem.setConfig((QTIExportFIBItemFormatConfig) configs.get(QTIExportFIBItemFormatConfig.class));
+			eItem.setConfig(configs.get(QTIExportFIBItemFormatConfig.class));
 		}			
 		else{
 			throw new OLATRuntimeException(null,"Can not resolve QTIItem type", null);
@@ -92,37 +92,36 @@ public class QTIExportItemFactory {
 	public QTIExportItemFormatConfig getExportItemConfig(QTIItemObject item){
 		QTIExportItemFormatConfig config = null;
 		if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_SCQ)){ // Radio
-			config = (QTIExportSCQItemFormatConfig) configs.get(QTIExportSCQItemFormatConfig.class);
+			config = configs.get(QTIExportSCQItemFormatConfig.class);
 		}
 		else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_MCQ)){ // Checkbox
-			config = (QTIExportMCQItemFormatConfig) configs.get(QTIExportMCQItemFormatConfig.class);
+			config = configs.get(QTIExportMCQItemFormatConfig.class);
 		}
 		else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_KPRIM)){ // KPRIM
-			config = (QTIExportKPRIMItemFormatConfig) configs.get(QTIExportKPRIMItemFormatConfig.class);
+			config = configs.get(QTIExportKPRIMItemFormatConfig.class);
 		}
 		else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_ESSAY)){ // Area
-			config = (QTIExportEssayItemFormatConfig) configs.get(QTIExportEssayItemFormatConfig.class);
+			config = configs.get(QTIExportEssayItemFormatConfig.class);
 		}
 		else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_FIB)){ // Blank
-			config = (QTIExportFIBItemFormatConfig) configs.get(QTIExportFIBItemFormatConfig.class);
+			config = configs.get(QTIExportFIBItemFormatConfig.class);
 		}
     //	if cannot find the type via the ItemParser, look for the QTIItemObject type
 		else if (item.getItemType().equals(QTIItemObject.TYPE.A)){
-			config = (QTIExportEssayItemFormatConfig) configs.get(QTIExportEssayItemFormatConfig.class);
+			config = configs.get(QTIExportEssayItemFormatConfig.class);
 		}
 		else if (item.getItemType().equals(QTIItemObject.TYPE.R)){
-			config = (QTIExportSCQItemFormatConfig) configs.get(QTIExportSCQItemFormatConfig.class);
+			config = configs.get(QTIExportSCQItemFormatConfig.class);
 		}
 		else if (item.getItemType().equals(QTIItemObject.TYPE.C)){
-			config = (QTIExportMCQItemFormatConfig) configs.get(QTIExportMCQItemFormatConfig.class);
+			config = configs.get(QTIExportMCQItemFormatConfig.class);
 		}
 		else if (item.getItemType().equals(QTIItemObject.TYPE.B)){
-			config = (QTIExportFIBItemFormatConfig) configs.get(QTIExportFIBItemFormatConfig.class);
+			config = configs.get(QTIExportFIBItemFormatConfig.class);
 		}		
 		else{
 			throw new OLATRuntimeException(null,"Can not resolve QTIItem type", null);
 		}
 		return config;
 	}
-	
 }

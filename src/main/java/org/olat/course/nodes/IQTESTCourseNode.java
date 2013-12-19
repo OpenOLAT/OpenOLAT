@@ -26,8 +26,10 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
@@ -39,6 +41,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
@@ -55,12 +59,20 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti.QTIResultSet;
+import org.olat.ims.qti.export.QTIExportFormatter;
+import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
+import org.olat.ims.qti.export.QTIExportManager;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+
+import de.bps.onyx.plugin.OnyxExportManager;
+import de.bps.onyx.plugin.OnyxModule;
 
 /**
  * Initial Date: Feb 9, 2004
@@ -68,6 +80,8 @@ import org.olat.repository.RepositoryManager;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class IQTESTCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode, QTICourseNode {
+	private static final long serialVersionUID = 5806292895738005387L;
+	private static final OLog log = Tracing.createLoggerFor(IQTESTCourseNode.class);
 	private static final String TYPE = "iqtest";
 
 	private static final int CURRENT_CONFIG_VERSION = 2;
@@ -359,21 +373,31 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		}
 	}
 
-
-	/**
-	 * Override default implementation
-	 * 
-	 * @see org.olat.course.nodes.CourseNode#archiveNodeData(java.util.Locale,
-	 *      org.olat.course.ICourse, java.io.File)
-	 */
-	public boolean archiveNodeData(Locale locale, ICourse course, File exportDirectory, String charset) {
-		super.archiveNodeData(locale, course, exportDirectory, charset);
-		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+	@Override
+	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+		String repositorySoftKey = (String)getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		Long courseResourceableId = course.getResourceableId();
-		String shortTitle = this.getShortTitle();
-		String ident = this.getIdent();
-		return IQUIFactory.archive(locale, repositorySoftKey, courseResourceableId, shortTitle, ident, exportDirectory, charset);
-  
+
+		try {
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
+			boolean onyx = OnyxModule.isOnyxTest(re.getOlatResource());
+			if (onyx) {
+				QTIResultManager qrm = QTIResultManager.getInstance();
+				List<QTIResultSet> results = qrm.getResultSets(courseResourceableId, getIdent(), re.getKey(), null);
+				if (results.size() > 0) {
+					OnyxExportManager.getInstance().exportResults(results, exportStream, this);
+				}
+				return true;
+			} else {
+				String shortTitle = getShortTitle();
+				QTIExportManager qem = QTIExportManager.getInstance();
+				QTIExportFormatter qef = new QTIExportFormatterCSVType1(locale, "\t", "\"", "\\", "\r\n", false);
+				return qem.selectAndExportResults(qef, courseResourceableId, shortTitle, getIdent(), re, exportStream, charset, ".xls");
+			}
+		} catch (IOException e) {
+			log.error("", e);
+			return false;
+		}
 	}
 
 	/**

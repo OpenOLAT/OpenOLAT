@@ -26,13 +26,10 @@
 package org.olat.course.nodes;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
@@ -42,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -64,6 +62,7 @@ import org.olat.course.nodes.dialog.DialogCourseNodeRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.dialog.DialogElement;
 import org.olat.modules.dialog.DialogElementsPropertyManager;
@@ -72,6 +71,7 @@ import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.archiver.ForumArchiveManager;
 import org.olat.modules.fo.archiver.formatters.ForumFormatter;
 import org.olat.modules.fo.archiver.formatters.ForumRTFFormatter;
+import org.olat.modules.fo.archiver.formatters.ForumStreamedRTFFormatter;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -220,32 +220,6 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		
 		//delete property
 		depm.deleteProperty(course.getResourceableId(), this.getIdent());
-		
-		
-		
-	}
-
-	/**
-	 * Generic interface implementation. May be overriden by specific node's
-	 * implementation.
-	 * 
-	 * @see org.olat.course.nodes.CourseNode#archiveNodeData(java.util.Locale,
-	 *      org.olat.course.ICourse, java.io.File)
-	 */
-	public boolean archiveNodeData(Locale locale, ICourse course, File exportDirectory, String charset) {
-		boolean dataFound = false;
-		DialogElementsPropertyManager depm = DialogElementsPropertyManager.getInstance();
-		DialogPropertyElements elements = depm.findDialogElements(course.getCourseEnvironment().getCoursePropertyManager(), this);
-		List<DialogElement> list = new ArrayList<DialogElement>();
-		if (elements != null) list = elements.getDialogPropertyElements();
-
-		for (Iterator<DialogElement> iter = list.iterator(); iter.hasNext();) {
-			DialogElement element = iter.next();
-			doArchiveElement(element, exportDirectory);
-			//at least one element found
-			dataFound = true;
-		}
-		return dataFound;
 	}
 
 	/**
@@ -260,8 +234,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		VFSContainer exportContainer = new LocalFolderImpl(exportDirectory);
 		
 		// append export timestamp to avoid overwriting previous export 
-		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss_SSS");
-		String exportDirName = Formatter.makeStringFilesystemSave(getShortTitle())+"_"+element.getForumKey()+"_"+formatter.format(new Date(System.currentTimeMillis()));
+		String exportDirName = Formatter.makeStringFilesystemSave(getShortTitle())+"_"+element.getForumKey()+"_"+Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
 		VFSContainer diaNodeElemExportContainer = exportContainer.createChildContainer(exportDirName);
 		// don't check quota
 		diaNodeElemExportContainer.setLocalSecurityCallback(new FullAccessCallback());
@@ -269,7 +242,43 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 
 		ForumArchiveManager fam = ForumArchiveManager.getInstance();
 		ForumFormatter ff = new ForumRTFFormatter(diaNodeElemExportContainer, false);
-		fam.applyFormatter(ff, element.getForumKey().longValue(), null);
+		fam.applyFormatter(ff, element.getForumKey(), null);
+	}
+	
+	@Override
+	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+		boolean dataFound = false;
+		List<DialogElement> list = DialogElementsPropertyManager.getInstance()
+				.findDialogElements(course.getCourseEnvironment().getCoursePropertyManager(), this)
+				.getDialogPropertyElements();
+		if(list.size() > 0) {
+			for (DialogElement element:list) {
+				doArchiveElement(element, exportStream);
+				dataFound = true;
+			}
+		}
+		return dataFound;
+	}
+	
+	/**
+	 * Archive a single dialog element with files and forum
+	 * @param element
+	 * @param exportDirectory
+	 */
+	public void doArchiveElement(DialogElement element, ZipOutputStream exportStream) {
+		// append export timestamp to avoid overwriting previous export 
+		String exportDirName = Formatter.makeStringFilesystemSave(getShortTitle())
+				+ "_" + element.getForumKey()
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		
+		VFSContainer forumContainer = getForumContainer(element.getForumKey());
+		for(VFSItem item: forumContainer.getItems(new VFSLeafFilter())) {
+			ZipUtil.addToZip(item, exportDirName, exportStream);
+		}
+
+		ForumArchiveManager fam = ForumArchiveManager.getInstance();
+		ForumFormatter ff = new ForumStreamedRTFFormatter(exportStream, exportDirName, false);
+		fam.applyFormatter(ff, element.getForumKey(), null);
 	}
 
 	/**

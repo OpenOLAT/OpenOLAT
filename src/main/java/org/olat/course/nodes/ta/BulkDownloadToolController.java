@@ -1,0 +1,77 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.course.nodes.ta;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.course.archiver.ArchiveResource;
+import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.resource.OLATResource;
+
+/**
+ * 
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class BulkDownloadToolController extends BasicController {
+	
+	private final Link downloadButton;
+
+	private final BusinessGroup group;
+	private final OLATResource courseOres;
+	private final AssessableCourseNode courseNode;
+	
+	public BulkDownloadToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
+			BusinessGroup group, AssessableCourseNode courseNode) {
+		super(ureq, wControl);
+		this.group = group;
+		this.courseNode = courseNode;
+		courseOres = courseEnv.getCourseGroupManager().getCourseResource();
+		
+		VelocityContainer mainVC = createVelocityContainer("start_button");
+		downloadButton = LinkFactory.createButton("bulk.download.title", mainVC, this);
+		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(downloadButton == source) {
+			doDownload(ureq);
+		}
+	}
+	
+	private void doDownload(UserRequest ureq) {
+		ArchiveResource resource = new ArchiveResource(courseNode, courseOres, group, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+}

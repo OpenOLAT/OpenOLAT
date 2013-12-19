@@ -21,7 +21,6 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
@@ -55,6 +54,8 @@ import org.olat.repository.RepositoryEntry;
  */
 public class CalCourseNode extends AbstractAccessableCourseNode {
 
+	private static final long serialVersionUID = -3174525063215323155L;
+	
 	public static final String TYPE = "cal";
 	public static final String EDIT_CONDITION_ID = "editarticle";
 	private Condition preConditionEdit;
@@ -176,14 +177,6 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	 */
 	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
 		return null;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#archiveNodeData(java.util.Locale,
-	 *      org.olat.course.ICourse, java.io.File, java.lang.String)
-	 */
-	public boolean archiveNodeData(Locale locale, ICourse course, File exportDirectory, String charset) {
-	  return true;
 	}
 
 	/**

@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
@@ -61,10 +60,8 @@ public class EfficiencyStatementArchiver {
 	 * constructs an unitialised BusinessGroup, use setXXX for setting attributes
 	 */
 	public EfficiencyStatementArchiver() {
-		String myPackage = Util.getPackageName(this.getClass());
-		String courseNodePackage = Util.getPackageName(CourseNode.class);
-		PackageTranslator fallBackTranslator = new PackageTranslator(courseNodePackage, I18nModule.getDefaultLocale());
-		translator = new PackageTranslator(myPackage, I18nModule.getDefaultLocale(), fallBackTranslator);
+		Translator fallBackTranslator = Util.createPackageTranslator(CourseNode.class, I18nModule.getDefaultLocale());
+		translator = Util.createPackageTranslator(this.getClass(), I18nModule.getDefaultLocale(), fallBackTranslator);
 		// fallback for user properties translation
 		translator = UserManager.getInstance().getPropertyHandlerTranslator(translator);		
 		// list of user property handlers used in this archiver
@@ -75,19 +72,19 @@ public class EfficiencyStatementArchiver {
 		return instance;
 	}
 
-	public void archive(List efficiencyStatements, Identity identity, File archiveFile) {
+	public void archive(List<EfficiencyStatement> efficiencyStatements, Identity identity, File archiveFile) {
 		FileUtils.save(new File(archiveFile, EFFICIENCY_ARCHIVE_FILE), toXls(efficiencyStatements, identity), "utf-8");
 	}
 
 
-	private String toXls(List efficiencyStatements, Identity identity) {
-		StringBuffer buf = new StringBuffer();
+	private String toXls(List<EfficiencyStatement> efficiencyStatements, Identity identity) {
+		StringBuilder buf = new StringBuilder();
 		buf.append(translator.translate("efficiencystatement.title"));
 		appendIdentityIntro(buf, identity);
-		for (Iterator iter = efficiencyStatements.iterator(); iter.hasNext();) {
+		for (Iterator<EfficiencyStatement> iter = efficiencyStatements.iterator(); iter.hasNext();) {
 			buf.append(EOL);
 			buf.append(EOL);
-			EfficiencyStatement efficiencyStatement = (EfficiencyStatement) iter.next();
+			EfficiencyStatement efficiencyStatement = iter.next();
 			appendIntro(buf, efficiencyStatement);
 			buf.append(EOL);
 			appendDetailsHeader(buf);
@@ -96,7 +93,7 @@ public class EfficiencyStatementArchiver {
 		return buf.toString();
 	}
 
-	private void appendDetailsHeader(StringBuffer buf) {
+	private void appendDetailsHeader(StringBuilder buf) {
 		buf.append( translator.translate("table.header.node") );
 		buf.append(DELIMITER);
 		buf.append( translator.translate("table.header.details") );
@@ -111,9 +108,9 @@ public class EfficiencyStatementArchiver {
 		buf.append(EOL);	
 	}
 
-	private void appendDetailsTable(StringBuffer buf, EfficiencyStatement efficiencyStatement) {
-		for (Iterator iter = efficiencyStatement.getAssessmentNodes().iterator(); iter.hasNext();) {
-			Map nodeData = (Map) iter.next();
+	private void appendDetailsTable(StringBuilder buf, EfficiencyStatement efficiencyStatement) {
+		for (Iterator<Map<String,Object>> iter = efficiencyStatement.getAssessmentNodes().iterator(); iter.hasNext();) {
+			Map<String,Object> nodeData = iter.next();
 			appendValue(buf, nodeData, AssessmentHelper.KEY_TITLE_SHORT);		
 			appendValue(buf, nodeData, AssessmentHelper.KEY_TITLE_LONG);
 			appendTypeValue(buf, nodeData, AssessmentHelper.KEY_TYPE);
@@ -124,7 +121,7 @@ public class EfficiencyStatementArchiver {
 		}
 	}
 
-	private void appendTypeValue(StringBuffer buf, Map nodeData, String key_type) {
+	private void appendTypeValue(StringBuilder buf, Map<String,Object> nodeData, String key_type) {
 		Object value = nodeData.get(key_type);
 		if (value != null && (value instanceof String)) {
 			String valueString = (String)value;
@@ -139,7 +136,7 @@ public class EfficiencyStatementArchiver {
 		buf.append(DELIMITER);
 	}
 
-	private void appendIdentityIntro(StringBuffer buf, Identity identity) {
+	private void appendIdentityIntro(StringBuilder buf, Identity identity) {
 		for (UserPropertyHandler propertyHandler : userPropertyHandler) {
 			String label = translator.translate(propertyHandler.i18nColumnDescriptorLabelKey());
 			String value = propertyHandler.getUserProperty(identity.getUser(), translator.getLocale());
@@ -147,19 +144,19 @@ public class EfficiencyStatementArchiver {
 		}
 	}
 	
-	private void appendIntro(StringBuffer buf, EfficiencyStatement efficiencyStatement) {
+	private void appendIntro(StringBuilder buf, EfficiencyStatement efficiencyStatement) {
 		buf.append(EOL);
 		appendLine(buf, translator.translate("course"), efficiencyStatement.getCourseTitle() + "  (" + efficiencyStatement.getCourseRepoEntryKey().toString() +")");
 		appendLine(buf, translator.translate("date"), StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), I18nModule.getDefaultLocale()) );
 		
-		Map nodeData = (Map)efficiencyStatement.getAssessmentNodes().get(0);
+		Map<String,Object> nodeData = efficiencyStatement.getAssessmentNodes().get(0);
 		if (nodeData != null) {
 			appendLabelValueLine(buf, nodeData, translator.translate("table.header.score"), AssessmentHelper.KEY_SCORE);
 			appendLabelValueLine(buf, nodeData, translator.translate("table.header.passed"), AssessmentHelper.KEY_PASSED);
 		}
 	}
 
-	private void appendValue(StringBuffer buf, Map nodeData, String key) {
+	private void appendValue(StringBuilder buf, Map<String,Object> nodeData, String key) {
 		Object value = nodeData.get(key);
 		if (value != null) {
 			buf.append(value);		
@@ -169,22 +166,7 @@ public class EfficiencyStatementArchiver {
 		buf.append(DELIMITER);
 	}
 
-	private void appendValuePassed(StringBuffer buf, Map nodeData, String key) {
-		Object value = nodeData.get(key);
-		if (value != null && (value instanceof Boolean) ) {
-			if ( ((Boolean)value).booleanValue() ) {
-				translator.translate("form.passed.true");
-			} else {
-				translator.translate("form.passed.false");
-			}
-			buf.append(value);		
-		} else {
-			buf.append("");
-		}
-		buf.append(DELIMITER);
-	}
-
-	private void appendLabelValueLine(StringBuffer buf, Map nodeData, String label, String key) {
+	private void appendLabelValueLine(StringBuilder buf, Map<String,Object> nodeData, String label, String key) {
 		buf.append(label);
 		buf.append(DELIMITER);
 		Object value = nodeData.get(key);
@@ -196,13 +178,11 @@ public class EfficiencyStatementArchiver {
 		buf.append(EOL);
 	}
 
-	private void appendLine(StringBuffer buf, String label, String value) {
+	private void appendLine(StringBuilder buf, String label, String value) {
 		buf.append(label);
 		buf.append(DELIMITER);
 		buf.append(value);
 		buf.append(DELIMITER);
 		buf.append(EOL);
 	}
-
-
 }

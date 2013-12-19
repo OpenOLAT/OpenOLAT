@@ -25,8 +25,6 @@
 
 package org.olat.modules.fo.archiver.formatters;
 
-import java.util.Map;
-
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.Visitor;
 
@@ -35,12 +33,11 @@ import org.olat.core.util.tree.Visitor;
  * @author Patrick Brunner, Alexander Schneider
  */
 
-public abstract class ForumFormatter  implements Visitor{
+public abstract class ForumFormatter implements Visitor{
 	protected StringBuilder sb;
 	protected boolean isTopThread = false;
 	protected boolean filePerThread = false;
-	protected Map metaInfo;
-	public final static String MANDATORY_METAINFO_KEY ="forum.metainfo.key";
+	private Long forumKey;
 
 	/**
 	 * init string buffer
@@ -57,8 +54,8 @@ public abstract class ForumFormatter  implements Visitor{
 	 * 
 	 * @param metaInfo
 	 */
-	public void setForumMetaInformation(Map metaInfo){
-		this.metaInfo = metaInfo;
+	public void setForumKey(Long forumKey){
+		this.forumKey = forumKey;
 	}
 	/**
 	 * inform formatter that a new top thread has started, 
@@ -82,8 +79,8 @@ public abstract class ForumFormatter  implements Visitor{
 	 * @param key
 	 * @return value of key
 	 */
-	public Object getMetainfo(String key){
-		return metaInfo.get(key);
+	public Long getForumKey() {
+		return forumKey;
 	}
 	
 	/**
@@ -91,7 +88,7 @@ public abstract class ForumFormatter  implements Visitor{
 	 * @return true if every thread is saved in his own file; false if all threads are saved in one file
 	 */
 	public boolean isFilePerThread(){
-		return this.filePerThread;
+		return filePerThread;
 	}
 	
 	/**

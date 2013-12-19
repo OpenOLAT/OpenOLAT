@@ -481,10 +481,10 @@ public class QTIExportFormatterCSVType2 extends QTIExportFormatter {
 	}
 
 	private void setDefaultQTIItemConfigs() {
-		Map itConfigs = new HashMap();
+		Map<Class<?>, QTIExportItemFormatConfig> itConfigs = new HashMap<>();
   	
-		for (Iterator iter = qtiItemObjectList.iterator(); iter.hasNext();) {
-			QTIItemObject item = (QTIItemObject) iter.next();
+		for (Iterator<QTIItemObject> iter = qtiItemObjectList.iterator(); iter.hasNext();) {
+			QTIItemObject item = iter.next();
 			if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_SCQ)) {
 				if (itConfigs.get(QTIExportSCQItemFormatConfig.class) == null) {
 					QTIExportSCQItemFormatConfig confSCQ = new QTIExportSCQItemFormatConfig(true, false, false, false);

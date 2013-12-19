@@ -25,11 +25,11 @@
 
 package org.olat.course.nodes;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
@@ -49,9 +49,6 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -71,12 +68,13 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.archiver.ForumArchiveManager;
-import org.olat.modules.fo.archiver.formatters.ForumRTFFormatter;
+import org.olat.modules.fo.archiver.formatters.ForumStreamedRTFFormatter;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -352,7 +350,6 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		return oneClickStatusCache;
 	}
 	
-	
 	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
 	 */
@@ -367,41 +364,23 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		return false;
 	}
 
-	
-	
-	/**
-	 * 
-	 * @see org.olat.course.nodes.CourseNode#archiveNodeData(java.util.Locale, org.olat.course.ICourse, java.io.File, java.lang.String)
-	 */
-	public boolean archiveNodeData(Locale locale, ICourse course, File exportDirectory, String charset) {
-		boolean dataFound = false;
+	@Override
+	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		Property forumKeyProperty = cpm.findCourseNodeProperty(this, null, null, FORUM_KEY);
-		if(forumKeyProperty != null){			
-			Long forumKey = forumKeyProperty.getLongValue();
-			if(ForumManager.getInstance().getMessagesByForumID(forumKey).size()>0) {			
-			  String forumName = Formatter.makeStringFilesystemSave(this.getShortTitle());
-
-			  // append export timestamp to avoid overwriting previous export
-			  Date tmp = new Date(System.currentTimeMillis());
-			  java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss_SSS");
-			  forumName += "_"+formatter.format(tmp);
-			
-			  VFSContainer container = new LocalFolderImpl(exportDirectory);
-			  VFSItem vfsItem = container.resolve(forumName);
-			
-			  if (vfsItem == null || !(vfsItem instanceof VFSContainer)){
-				  vfsItem = container.createChildContainer(forumName);
-			  }
-			  container = (VFSContainer)vfsItem;
-				
-			  ForumRTFFormatter rtff = new ForumRTFFormatter(container, false);	
-			  ForumArchiveManager fam = ForumArchiveManager.getInstance();
-			  fam.applyFormatter(rtff, forumKey.longValue(), null);
-			  dataFound = true;
-			}
+		if(forumKeyProperty == null) {
+			return false;
 		}
-		return dataFound;
+		Long forumKey = forumKeyProperty.getLongValue();
+		if(ForumManager.getInstance().countThreadsByForumID(forumKey) <= 0) {
+			return false;
+		}
+		
+		String forumName = "forum_" + Formatter.makeStringFilesystemSave(getShortTitle())
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		ForumStreamedRTFFormatter rtff = new ForumStreamedRTFFormatter(exportStream, forumName, false);	
+		ForumArchiveManager.getInstance().applyFormatter(rtff, forumKey, null);
+		return true;
 	}
 
 	/**
@@ -503,7 +482,6 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		//
 		return retVal;
 	}
-
 }
 /**
  * 

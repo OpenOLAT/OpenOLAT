@@ -23,4 +23,12 @@
 <div style="clear:right">
 $r.render("userlisttable")
 </div>
+#if ($toolCmpNames)
+	<div class="b_button_group">
+	#foreach($toolCmpName in $toolCmpNames)
+		$r.render($toolCmpName)
+	#end
+	</div>
+#end
+
  

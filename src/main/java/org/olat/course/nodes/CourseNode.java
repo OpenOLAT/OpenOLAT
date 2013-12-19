@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
@@ -47,6 +48,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
@@ -297,12 +299,12 @@ public interface CourseNode extends INode, ShortName {
 	 * 
 	 * @param locale The users locale
 	 * @param course The course
-	 * @param exportDirectory The directory where the exported files should be
+	 * @param exportStream The directory where the exported files should be
 	 *          put. This directory must exist prior to calling this method.
 	 * @param value of charset property of current user
 	 * @return true if any data to be archived was found, false otherwise.
 	 */
-	public boolean archiveNodeData(Locale locale, ICourse course, File exportDirectory, String charset);
+	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream out, String charset);
 
 	/**
 	 * Export all node user data to the given directory. This might be one file or

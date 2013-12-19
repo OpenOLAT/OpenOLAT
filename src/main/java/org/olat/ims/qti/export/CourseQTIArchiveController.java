@@ -26,9 +26,7 @@
 package org.olat.ims.qti.export;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,9 +46,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.assessment.AssessmentUIFactory;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.assessment.NodeTableRow;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
@@ -76,7 +73,7 @@ public class CourseQTIArchiveController extends BasicController {
 	private CloseableModalController cmc;
 	private OLATResourceable ores;
 	
-	private List nodesTableObjectArrayList;
+	private List<NodeTableRow> nodesTableObjectArrayList;
 	private Link startExportDummyButton;
 	private Link startExportButton;
 	
@@ -114,9 +111,9 @@ public class CourseQTIArchiveController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		ICourse course = CourseFactory.loadCourse(ores);
 		if (source == startExportButton){
-			qawc = AssessmentUIFactory.createQTIArchiveWizardController(false, ureq, nodesTableObjectArrayList, course, getWindowControl());
+			qawc = new QTIArchiveWizardController(false, ureq, nodesTableObjectArrayList, course, getWindowControl());
 		}	else if (source == startExportDummyButton){
-			qawc = AssessmentUIFactory.createQTIArchiveWizardController(true, ureq, nodesTableObjectArrayList, course, getWindowControl());
+			qawc = new QTIArchiveWizardController(true, ureq, nodesTableObjectArrayList, course, getWindowControl());
 		}
 		listenTo(qawc);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), qawc.getInitialComponent());
@@ -140,7 +137,7 @@ public class CourseQTIArchiveController extends BasicController {
 	 * @param ureq
 	 * @return 
 	 */
-	private List doNodeChoose(UserRequest ureq){
+	private List<NodeTableRow> doNodeChoose(UserRequest ureq){
 	    //table configuraton
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("nodesoverview.nonodes"));
@@ -163,7 +160,7 @@ public class CourseQTIArchiveController extends BasicController {
 		// get list of course node data and populate table data model
 		ICourse course = CourseFactory.loadCourse(ores);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
-		List objectArrayList = addQTINodesAndParentsToList(0, rootNode);
+		List<NodeTableRow> objectArrayList = addQTINodesAndParentsToList(0, rootNode);
 		
 		return objectArrayList;		
 	}
@@ -174,15 +171,15 @@ public class CourseQTIArchiveController extends BasicController {
 	 * @param courseNode
 	 * @return A list of Object[indent, courseNode, selectable]
 	 */
-	@SuppressWarnings("unchecked")
-	private List addQTINodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
+	private List<NodeTableRow> addQTINodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
 		// 1) Get list of children data using recursion of this method
-		List childrenData = new ArrayList();
+		List<NodeTableRow> childrenData = new ArrayList<>();
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);
-			List childData = addQTINodesAndParentsToList( (recursionLevel + 1),  child);
-			if (childData != null)
+			List<NodeTableRow> childData = addQTINodesAndParentsToList( (recursionLevel + 1),  child);
+			if (childData != null) {
 				childrenData.addAll(childData);
+			}
 		}
 		
 		if (childrenData.size() > 0
@@ -192,27 +189,17 @@ public class CourseQTIArchiveController extends BasicController {
 			// Store node data in hash map. This hash map serves as data model for 
 			// the tasks overview table. Leave user data empty since not used in
 			// this table. (use only node data)
-			Map nodeData = new HashMap();
-			// indent
-			nodeData.put(AssessmentHelper.KEY_INDENT, new Integer(recursionLevel));
-			// course node data
-			nodeData.put(AssessmentHelper.KEY_TYPE, courseNode.getType());
-			nodeData.put(AssessmentHelper.KEY_TITLE_SHORT, courseNode.getShortTitle());
-			nodeData.put(AssessmentHelper.KEY_TITLE_LONG, courseNode.getLongTitle());
-			nodeData.put(AssessmentHelper.KEY_IDENTIFYER, courseNode.getIdent());
-
+			NodeTableRow nodeData = new NodeTableRow(recursionLevel, courseNode);
 			if (courseNode instanceof IQTESTCourseNode
 			        || courseNode instanceof IQSELFCourseNode
 			        || courseNode instanceof IQSURVCourseNode){
-				nodeData.put(AssessmentHelper.KEY_SELECTABLE, Boolean.TRUE);
-			}
-			else {
-				nodeData.put(AssessmentHelper.KEY_SELECTABLE, Boolean.FALSE);
+				nodeData.setSelectable(true);
+			} else {
+				nodeData.setSelectable(false);
 			}
 			
-			List nodeAndChildren = new ArrayList();
+			List<NodeTableRow> nodeAndChildren = new ArrayList<>();
 			nodeAndChildren.add(nodeData);
-
 			nodeAndChildren.addAll(childrenData);
 			return nodeAndChildren;
 		}

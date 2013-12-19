@@ -26,7 +26,6 @@
 package org.olat.course.assessment;
 
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
@@ -39,18 +38,16 @@ import org.olat.core.gui.translator.Translator;
  * Comment: 
  * Use the IndentedNodeRenderer to render the node element!
  */
-
-
-public class NodeTableDataModel extends DefaultTableDataModel {
-		private Translator trans;
+public class NodeTableDataModel extends DefaultTableDataModel<NodeTableRow> {
+	private final Translator trans;
 	
 		/**
 		 * Constructor for the node table
-		 * @param objects List maps containting the node data using the keys defined in AssessmentHelper
+		 * @param objects List maps containing the node data using the keys defined in AssessmentHelper
 		 * @param trans The table model translator
 		 * any node select link
 		 */
-    public NodeTableDataModel(List objects, Translator trans) {
+    public NodeTableDataModel(List<NodeTableRow> objects, Translator trans) {
         super(objects);
         this.trans = trans;
     }
@@ -58,43 +55,26 @@ public class NodeTableDataModel extends DefaultTableDataModel {
     /**
      * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
      */
+    @Override
     public int getColumnCount() {
-    		// node, select
+    	// node, select
         return 2;
     }
 
     /**
      * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
      */
+    @Override
     public Object getValueAt(int row, int col) {
-    	Map nodeData = (Map) getObject(row);
+    	NodeTableRow nodeData = getObject(row);
     	switch (col) {
-				case 0:
-					// rendered using the indentedNodeRenderer
-					return nodeData;
-				case 1:
-					// selection command
-					Boolean courseNodeEditable = (Boolean) nodeData.get(AssessmentHelper.KEY_SELECTABLE);
-					if (courseNodeEditable.booleanValue()) return trans.translate("select");
-					else return null;
-				//fxdiff VCRP-4: assessment overview with max score
-				case 2:
-					//min score
-					return nodeData.get(AssessmentHelper.KEY_MIN);
-				case 3:
-					//min score
-					return nodeData.get(AssessmentHelper.KEY_MAX);
-				case 4:
-					// show OnyxReport
-					final Boolean courseNodeIsOnyx = (Boolean) nodeData.get(AssessmentMainController.KEY_IS_ONYX);
-					if (courseNodeIsOnyx != null && courseNodeIsOnyx.booleanValue()) {
-						return trans.translate("table.action.showOnyxReporter");
-					} else {
-						return "";
-					}
-				default:
-					return "error";
-			}
+			case 0: return nodeData;// rendered using the indentedNodeRenderer
+			case 1: return nodeData.isSelectable() ? trans.translate("select") : null;
+			case 2: return nodeData.getMinScore();
+			case 3: return nodeData.getMaxScore();
+			case 4: return nodeData.isOnyx() ? trans.translate("table.action.showOnyxReporter") : "";
+			default: return "error";
+		}
     }
 
     public enum Cols {

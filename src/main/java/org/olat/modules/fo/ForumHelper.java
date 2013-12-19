@@ -56,22 +56,8 @@ public class ForumHelper {
 	 * @return a MessageNode comparator.
 	 * @see java.util.Comparator 
 	 */
-	public static Comparator getMessageNodeComparator() {
-		return new Comparator(){
-			//puts the sticky threads first
-			public int compare(final Object o1, final Object o2) {
-				MessageNode m1 = (MessageNode)o1;
-				MessageNode m2 = (MessageNode)o2;				
-				if(m1.isSticky() && m2.isSticky()) {
-					return m2.getModifiedDate().compareTo(m1.getModifiedDate()); //last first
-				} else if(m1.isSticky()) {
-					return -1;
-				} else if(m2.isSticky()){
-					return 1;
-				} else {
-					return m2.getModifiedDate().compareTo(m1.getModifiedDate()); //last first
-				}				
-			}};
+	public static Comparator<MessageNode> getMessageNodeComparator() {
+		return new MessageNodeComparator();
 	}
 	
 	/**
@@ -171,4 +157,17 @@ public class ForumHelper {
 		}		
 	}
 	
+	private static class MessageNodeComparator implements Comparator<MessageNode> {
+		public int compare(final MessageNode m1, final MessageNode m2) {			
+			if(m1.isSticky() && m2.isSticky()) {
+				return m2.getModifiedDate().compareTo(m1.getModifiedDate()); //last first
+			} else if(m1.isSticky()) {
+				return -1;
+			} else if(m2.isSticky()){
+				return 1;
+			} else {
+				return m2.getModifiedDate().compareTo(m1.getModifiedDate()); //last first
+			}				
+		}
+	}
 }

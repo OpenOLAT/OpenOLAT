@@ -20,16 +20,25 @@
 package de.bps.course.nodes;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
@@ -51,6 +60,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -74,7 +84,8 @@ import de.bps.olat.modules.cl.CheckpointMode;
  * @author skoeber <skoeber@bps-system.de>
  */
 public class ChecklistCourseNode extends AbstractAccessableCourseNode {
-	
+	private static final long serialVersionUID = -8978938639489414749L;
+	private static final OLog log = Tracing.createLoggerFor(ChecklistCourseNode.class);
 	private static final String TYPE = "cl";
 	public static final String CONF_COURSE_ID = "cl_course_id";
 	public static final String CONF_COURSE_NODE_ID = "cl_course_node_id";
@@ -304,16 +315,23 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, File exportDirectory, String charset) {
-		XStream xstream = new XStream();
+	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+		String filename = "checklist_"
+				+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		
 		Checklist checklist = loadOrCreateChecklist(course.getCourseEnvironment().getCoursePropertyManager());
-		String exportContent = xstream.toXML(checklist);
-		String exportFilename = ExportUtil.createFileNameWithTimeStamp("checklist_"+this.getIdent(), "xml");
-		ExportUtil.writeContentToFile(exportFilename, exportContent, exportDirectory, WebappHelper.getDefaultCharset());		
-	
-  	return true;
+		String exportContent = XStreamHelper.createXStreamInstance().toXML(checklist);
+		try {
+			exportStream.putNextEntry(new ZipEntry(filename));
+			IOUtils.write(exportContent, exportStream);
+			exportStream.closeEntry();
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		return true;
 	}
-	
+
 	private String getExportFilename() {
 		return "checklist_"+this.getIdent()+".xml";
 	}

@@ -26,9 +26,14 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
@@ -36,7 +41,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
@@ -53,9 +63,11 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
+import org.olat.modules.scorm.archiver.ScormExportManager;
 import org.olat.modules.scorm.assessment.ScormResultDetailsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -66,7 +78,7 @@ import org.olat.repository.RepositoryEntryImportExport;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class ScormCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
-
+	private static final OLog log = Tracing.createLoggerFor(ScormCourseNode.class);
 	private static final long serialVersionUID = 2970594874787761801L;
 	private static final String TYPE = "scorm";
 	private static final int CURRENT_CONFIG_VERSION = 5;
@@ -336,6 +348,24 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 		}
 	}
 
+	@Override
+	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+		String fileName = "scorm_"
+				+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
+				+ ".xls";
+		Translator trans = Util.createPackageTranslator(ScormExportManager.class, locale);
+		String results = ScormExportManager.getInstance().getResults(course.getCourseEnvironment(), this, trans);
+		try {
+			exportStream.putNextEntry(new ZipEntry(fileName));
+			IOUtils.write(results, exportStream);
+			exportStream.closeEntry();
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		return true;
+	}
+
 	/**
 	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
 	 */
@@ -579,6 +609,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	/**
 	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(org.olat.course.ICourse)
 	 */
+	@Override
 	public void cleanupOnDelete(ICourse course) {
 		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 		// 1) Delete all properties: score, passed, log, comment, coach_comment,
@@ -591,24 +622,4 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 		// I would consider refatoring this and setting up an upgrade task that moves the
 		// folders accordingly
 	}
-
-	/**
-	 * Override default implementation
-	 * 
-	 * @see org.olat.course.nodes.CourseNode#archiveNodeData(java.util.Locale,
-	 *      org.olat.course.ICourse, java.io.File)
-	 */
-	public boolean archiveNodeData(Locale locale, ICourse course, File exportDirectory, String charset) {	
-		return super.archiveNodeData(locale, course, exportDirectory, charset);
-		// copy all user directories containing the xml files into the export dir
-		
-		// FIXME gs
-		// we would have to work through all users
-		// of the system since data is stored under users name instead of the repo entry
-		// with many users on the system it could take quite some time and the user
-		// is waiting in a workflow
-		// see comment on cleanupOnDelete
-	}
-
-
 }

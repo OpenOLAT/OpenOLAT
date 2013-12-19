@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -44,6 +45,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -53,10 +55,12 @@ import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -69,8 +73,8 @@ import org.olat.resource.OLATResource;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class MSCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
+	private static final long serialVersionUID = -7741172700015384397L;
 	private static final String PACKAGE_MS = Util.getPackageName(MSCourseNodeRunController.class);
-
 	private static final String PACKAGE = Util.getPackageName(MSCourseNode.class);
 
 	private static final String TYPE = "ms";
@@ -428,6 +432,13 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 	 */
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(MSCourseNode.class, "Details controler not available in MS nodes", null);
+	}
+
+	@Override
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, BusinessGroup limitToGroup) {
+		List<Controller> tools = new ArrayList<>(1);
+		tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
+		return tools;
 	}
 
 	/**

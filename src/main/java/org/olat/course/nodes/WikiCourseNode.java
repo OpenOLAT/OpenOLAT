@@ -26,9 +26,11 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
@@ -39,15 +41,14 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.SubscriptionContext;
-import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -61,7 +62,9 @@ import org.olat.course.repository.ImportReferencesController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.wiki.Wiki;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.repository.RepositoryEntry;
@@ -74,6 +77,8 @@ import org.olat.repository.RepositoryManager;
  * @author Felix Jost
  */
 public class WikiCourseNode extends AbstractAccessableCourseNode {
+	
+	private static final OLog log = Tracing.createLoggerFor(WikiCourseNode.class);
 
 	public static final String TYPE = "wiki";
 	private Condition preConditionEdit;
@@ -223,46 +228,34 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 			return new ImportReferencesController(ureq, wControl, this, ImportReferencesController.IMPORT_WIKI,rie);
 		}
 	}
-	
 
-
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#archiveNodeData(java.util.Locale, org.olat.course.ICourse, java.io.File, java.lang.String)
-	 */
-	public boolean archiveNodeData(Locale locale, ICourse course, File exportDirectory, String charset) {
-		String repoRef = (String)this.getModuleConfiguration().get("reporef");
+	@Override
+	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+		String repoRef = (String)getModuleConfiguration().get("reporef");
 		OLATResourceable ores = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoRef, true).getOlatResource();
 		
-		if(WikiManager.getInstance().getOrLoadWiki(ores).getAllPagesWithContent().size()>0) {
-		  //OK, there is somthing to archive 
-		  VFSContainer exportContainer = new LocalFolderImpl(exportDirectory);
-		  VFSContainer wikiExportContainer = (VFSContainer)exportContainer.resolve(WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		  if(wikiExportContainer == null){
-			  wikiExportContainer = exportContainer.createChildContainer(WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		  }
-		  String exportDirName = getShortTitle()+"_"+Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
-		  VFSContainer destination = wikiExportContainer.createChildContainer(exportDirName);
-			if (destination==null) {
-				exportDirName = VFSManager.rename(wikiExportContainer, exportDirName);
-				destination = wikiExportContainer.createChildContainer(exportDirName);
-			}
-			if (destination==null) {
-				Tracing.logError("archiveNodeData: Could not create destination directory: wikiExportContainer="+wikiExportContainer+", exportDirName="+exportDirName, getClass());
-				return false;
-			}
-			
-		  VFSContainer container = WikiManager.getInstance().getWikiContainer(ores, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		  if(container!=null) { //the container could be null if the wiki is an old empty one - so nothing to archive
-		    VFSContainer parent = container.getParentContainer();
-		    VFSLeaf wikiZip = WikiToZipUtils.getWikiAsZip(parent);
-		    destination.copyFrom(wikiZip);
-		  }
-		  return true;
-		}		
-	  //empty wiki, no need to archive
-  	return false;
+		Wiki wiki = WikiManager.getInstance().getOrLoadWiki(ores);
+		if(wiki.getAllPagesWithContent().isEmpty()) {
+			return false;
+		}
+		 
+		//OK, there is something to archive 
+		String currentPath = "wiki_"
+				+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		
+		VFSContainer container = WikiManager.getInstance().getWikiContainer(ores, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
+		if(container != null) { //the container could be null if the wiki is an old empty one - so nothing to archive
+		    try {
+				VFSContainer parent = container.getParentContainer();
+				WikiToZipUtils.wikiToZip(parent, currentPath, exportStream);
+			} catch (IOException e) {
+				log.error("", e);
+			} 
+		}
+		return true;
 	}
-	
+
 	public Condition getPreConditionEdit() {
 		if (preConditionEdit == null) {
 			preConditionEdit = new Condition();

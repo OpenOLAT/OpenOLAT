@@ -25,13 +25,18 @@
 package org.olat.course.editor;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.poi.util.IOUtils;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
@@ -42,7 +47,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.ObjectCloner;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -415,8 +422,7 @@ public class PublishProcess {
 					// only clean up and archive of nodes which were already in run
 					// save data, remove references
 					deleteRefs(oldCn);
-					File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(identity, course.getCourseTitle());
-					oldCn.archiveNodeData(locale, course, exportDirectory, charset);
+					archiveDeletedNode(identity, cn, oldCn, locale, charset);
 					// 2) delete all user data
 					oldCn.cleanupOnDelete(course);
 				}
@@ -479,6 +485,27 @@ public class PublishProcess {
 		 * END NEW STYLE PUBLISH
 		 */
 
+	}
+	
+	private void archiveDeletedNode(Identity identity, CourseNode cn, CourseNode oldCn, Locale locale, String charset) {
+		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(identity, course.getCourseTitle());
+		String archiveName = cn.getType() + "_"
+				+ StringHelper.transformDisplayNameToFileSystemName(cn.getShortName())
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		
+		FileOutputStream fileStream = null;
+		ZipOutputStream exportStream = null;
+		try {
+			File exportFile = new File(exportDirectory, archiveName);
+			fileStream = new FileOutputStream(exportFile);
+			exportStream = new ZipOutputStream(fileStream);
+			oldCn.archiveNodeData(locale, course, null, exportStream, charset);
+		} catch (FileNotFoundException e) {
+			log.error("", e);
+		} finally {
+			IOUtils.closeQuietly(exportStream);
+			IOUtils.closeQuietly(fileStream);
+		}
 	}
 
 	/**

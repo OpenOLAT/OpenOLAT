@@ -69,18 +69,30 @@ public class IndentedNodeRenderer implements CustomCellRenderer {
 	 * @see org.olat.core.gui.components.table.CustomCellRenderer#render(org.olat.core.gui.render.StringOutput, org.olat.core.gui.render.Renderer, java.lang.Object, java.util.Locale, int, java.lang.String)
 	 */
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		Map nodeData = (Map) val;
-		Integer indent = (Integer) nodeData.get(AssessmentHelper.KEY_INDENT);
-		String type = (String)  nodeData.get(AssessmentHelper.KEY_TYPE);
-
-		String cssClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type).getIconCSSClass();
-		String title = (String)  nodeData.get(AssessmentHelper.KEY_TITLE_SHORT);
-		String altText = (String)  nodeData.get(AssessmentHelper.KEY_TITLE_LONG);
+		int indent;
+		String type;
+		String title;
+		String altText;
+		if(val instanceof Map) {
+			Map nodeData = (Map) val;
+			Integer indentObj = (Integer) nodeData.get(AssessmentHelper.KEY_INDENT);
+			indent = (indentObj == null ? 0 : indentObj.intValue());
+			type = (String)nodeData.get(AssessmentHelper.KEY_TYPE);
+			title = (String)nodeData.get(AssessmentHelper.KEY_TITLE_SHORT);
+			altText = (String)nodeData.get(AssessmentHelper.KEY_TITLE_LONG);
+		} else if(val instanceof NodeTableRow) {
+			NodeTableRow row = (NodeTableRow)val;
+			indent = row.getIndent();
+			type = row.getType();
+			title = row.getShortTitle();
+			altText = row.getLongTitle();
+		} else {
+			return;
+		}
 		
-		//fxdiff VCRP-4: assessment overview with max score
+		String cssClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type).getIconCSSClass();
 		if(isIndentationEnabled()) {
-			Integer indentation = (Integer) nodeData.get(AssessmentHelper.KEY_INDENT);
-			appendIndent(sb,indentation);
+			appendIndent(sb, indent);
 		}
 		
 		sb.append("<span class=\"b_with_small_icon_left ").append(cssClass);
@@ -91,12 +103,10 @@ public class IndentedNodeRenderer implements CustomCellRenderer {
 		sb.append(StringHelper.escapeHtml(title));
 		sb.append("</span>");
 	}
-
 	
-  private void appendIndent(StringOutput sb, Integer indent) {
-  	for (int i = 0; i < indent.intValue(); i++) {
+	private void appendIndent(StringOutput sb, int indent) {
+		for (int i = 0; i < indent; i++) {
 			sb.append(INDENT);
 		}
-  }
-
+	}
 }

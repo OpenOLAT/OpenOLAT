@@ -19,7 +19,6 @@
  */
 package org.olat.modules.scorm.archiver;
 
-import java.io.File;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DBFactory;
@@ -28,7 +27,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.ExportUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -80,18 +78,10 @@ public class ScormExportManager extends BasicManager {
 	 * @param charset
 	 * @return the name of the file, if any created or empty string otherwise
 	 */
-	public String exportResults(CourseEnvironment courseEnv, ScormCourseNode node, Translator translator, File exportDirectory, String charset) {
+	public String getResults(CourseEnvironment courseEnv, ScormCourseNode node, Translator translator) {
 		ScormExportVisitor visitor = new ScormExportFormatter(translator);
-		
-		boolean dataFound = visitScoDatas(courseEnv, node, visitor);
-
-		if(dataFound) {
-		  String content = visitor.toString();
-		  String fileName = ExportUtil.createFileNameWithTimeStamp("SCORM_" + node.getShortTitle(), "xls");
-		  ExportUtil.writeContentToFile(fileName, content, exportDirectory, charset);
-		  return fileName;
-		}
-		return "";
+		String content = visitor.toString();
+		return content;
 	}
 	
 	/**

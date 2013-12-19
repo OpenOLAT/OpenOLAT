@@ -33,6 +33,8 @@ import java.util.List;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -51,6 +53,8 @@ import org.olat.resource.OLATResource;
  * @author Mike Stock Comment:
  */
 public class ImsRepositoryResolver implements Resolver {
+	
+	private static final OLog log = Tracing.createLoggerFor(ImsRepositoryResolver.class);
 
 	public static final String QTI_FILE = "qti.xml";
 	public static final String QTI_FIB_AUTOCOMPLETE_JS_FILE = "media/fibautocompl.js";
@@ -62,6 +66,13 @@ public class ImsRepositoryResolver implements Resolver {
 	public ImsRepositoryResolver(Long repositoryEntryKey) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry entry = rm.lookupRepositoryEntry(repositoryEntryKey);
+		if (entry != null) {
+			OLATResource ores = entry.getOlatResource();
+			init(ores);
+		}
+	}
+	
+	public ImsRepositoryResolver(RepositoryEntry entry) {
 		if (entry != null) {
 			OLATResource ores = entry.getOlatResource();
 			init(ores);
@@ -124,28 +135,27 @@ public class ImsRepositoryResolver implements Resolver {
 			// no change log
 			return new QTIChangeLogMessage[0];
 		}
-		List items = dirChangelog.getItems();
+		List<VFSItem> items = dirChangelog.getItems();
 		// PRECONDITION: only changelog files in the changelog directory
-		QTIChangeLogMessage[] log = new QTIChangeLogMessage[items.size()];
+		QTIChangeLogMessage[] logArr = new QTIChangeLogMessage[items.size()];
 		String filName;
 		String msg;
 		int i = 0;
 		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss");
-		for (Iterator iter = items.iterator(); iter.hasNext();) {
+		for (Iterator<VFSItem> iter = items.iterator(); iter.hasNext();) {
 			VFSLeaf file = (VFSLeaf) iter.next();
 			filName = file.getName();
 			String[] parts = filName.split("\\.");
 			msg = FileUtils.load(file.getInputStream(), "utf-8");
 			try {
-				log[i] = new QTIChangeLogMessage(msg, parts[1].equals("all"), formatter.parse(parts[0]).getTime());
+				logArr[i] = new QTIChangeLogMessage(msg, parts[1].equals("all"), formatter.parse(parts[0]).getTime());
 				i++;
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.error("", e);
 			}
 		}
 
-		return log;
+		return logArr;
 	}
 
 	/**

@@ -26,9 +26,11 @@
 package org.olat.course.nodes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.condition.Condition;
@@ -38,9 +40,11 @@ import org.olat.course.condition.additionalconditions.AdditionalConditionManager
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 
 import de.bps.course.nodes.CourseNodePasswordManagerImpl;
 
@@ -181,6 +185,12 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		//
 		return retVal;
 	}
+	
+	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, BusinessGroup limitToGroup) {
+		return Collections.emptyList();
+	}
+	
 
 	public List<AdditionalCondition> getAdditionalConditions(){
 		if(additionalConditions==null)

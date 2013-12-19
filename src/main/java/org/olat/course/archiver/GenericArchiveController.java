@@ -25,11 +25,8 @@
 
 package org.olat.course.archiver;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -46,14 +43,17 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.NodeTableDataModel;
+import org.olat.course.assessment.NodeTableRow;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
-import org.olat.user.UserManager;
+import org.olat.course.nodes.TACourseNode;
+import org.olat.group.BusinessGroup;
 
 /**
  * @author schnider Comment: Archives the User selected wiki's to the personal
@@ -62,13 +62,15 @@ import org.olat.user.UserManager;
 public class GenericArchiveController extends BasicController {
 	
 	private static final String CMD_SELECT_NODE = "cmd.select.node";
-	private Panel main;	
-	private VelocityContainer nodeChoose;
-	private NodeTableDataModel nodeTableModel;
+	
+	private final Panel main;
 	private TableController nodeListCtr;
-	protected CourseNode currentCourseNode;
-	private CourseNode nodeType;
-	protected OLATResourceable ores;
+	private NodeTableDataModel nodeTableModel;
+	private CloseableModalController cmc;
+	private ChooseGroupController chooseGroupCtrl;
+	
+	private final CourseNode nodeType;
+	private final OLATResourceable ores;
 
 	/**
 	 * Constructor for the assessment tool controller.
@@ -82,52 +84,57 @@ public class GenericArchiveController extends BasicController {
 
 		this.ores = ores;
 		this.nodeType = nodeType;
+		
 		main = new Panel("main");
-		nodeChoose = createVelocityContainer("nodechoose");
+		VelocityContainer nodeChoose = createVelocityContainer("nodechoose");
 		nodeChoose.contextPut("nodeType",nodeType.getType());
-		doNodeChoose(ureq);		
+		doNodeChoose(ureq, nodeChoose);		
 		putInitialPanel(main);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// no interesting events
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == nodeListCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				ICourse course = CourseFactory.loadCourse(ores);
-				TableEvent te = (TableEvent) event;
+				TableEvent te = (TableEvent)event;
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_SELECT_NODE)) {
-					int rowid = te.getRowId();
-					Map nodeData = (Map) nodeTableModel.getObject(rowid);
-					CourseNode node = course.getRunStructure().getNode((String) nodeData.get(AssessmentHelper.KEY_IDENTIFYER));
-					this.currentCourseNode = node;
-					boolean successfullyArchived = archiveNode(ureq);		
-					if(successfullyArchived) {
-					  showInfo("archive."+nodeType.getType()+".successfully");
-					} else {
-						showWarning("archive."+nodeType.getType()+".notsuccessfully");
-					}
+					NodeTableRow nodeData = nodeTableModel.getObject(te.getRowId());
+					doSelectNode(ureq, nodeData);
 				}
 			}
+		} else if(source == chooseGroupCtrl) {
+			cmc.deactivate();
+			CourseNode courseNode = chooseGroupCtrl.getCourseNode();
+			BusinessGroup group = chooseGroupCtrl.getSelectedGroup();
+			cleanUpPopups();
+			if(Event.DONE_EVENT == event) {
+				archiveNode(ureq, courseNode, group);
+			}
+		} else if (source == cmc) {
+			cleanUpPopups();
 		}
+	}
+	
+	/**
+	 * Aggressive clean up all popup controllers
+	 */
+	protected void cleanUpPopups() {
+		removeAsListenerAndDispose(chooseGroupCtrl);
+		removeAsListenerAndDispose(cmc);
+		chooseGroupCtrl = null;
+		cmc = null;
 	}
 
 	/**
 	 * @param ureq
 	 */
-	private void doNodeChoose(UserRequest ureq) {
+	private void doNodeChoose(UserRequest ureq, VelocityContainer nodeChoose) {
 		// table configuraton
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("nodesoverview.nonodes"));
@@ -143,14 +150,14 @@ public class GenericArchiveController extends BasicController {
 		listenTo(nodeListCtr);
 		
 		// table columns
-		nodeListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.node", 0, null, ureq.getLocale(),
+		nodeListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.node", 0, null, getLocale(),
 				ColumnDescriptor.ALIGNMENT_LEFT, new IndentedNodeRenderer()));
-		nodeListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.action.select", 1, CMD_SELECT_NODE, ureq.getLocale()));
+		nodeListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.action.select", 1, CMD_SELECT_NODE, getLocale()));
 
 		// get list of course node data and populate table data model
 		ICourse course = CourseFactory.loadCourse(ores);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
-		List nodesTableObjectArrayList = addNodesAndParentsToList(0, rootNode);
+		List<NodeTableRow> nodesTableObjectArrayList = addNodesAndParentsToList(0, rootNode);
 
 		// only populate data model if data available
 		if (nodesTableObjectArrayList == null) {
@@ -164,7 +171,6 @@ public class GenericArchiveController extends BasicController {
 
 		// set main content to nodechoose, do not use wrapper
 		main.setContent(nodeChoose);
-
 	}
 
 	/**
@@ -174,52 +180,62 @@ public class GenericArchiveController extends BasicController {
 	 * @param courseNode
 	 * @return A list of maps containing the node data
 	 */
-	@SuppressWarnings("unchecked")
-	private List addNodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
+	private List<NodeTableRow> addNodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
 		// 1) Get list of children data using recursion of this method
-		List childrenData = new ArrayList();
+		List<NodeTableRow> childrenData = new ArrayList<>();
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);
-			List childData = addNodesAndParentsToList((recursionLevel + 1), child);
-			if (childData != null) childrenData.addAll(childData);
+			List<NodeTableRow> childData = addNodesAndParentsToList((recursionLevel + 1), child);
+			if (childData != null) {
+				childrenData.addAll(childData);
+			}
 		}
 
-		String nodent = nodeType.getType();
 		if (childrenData.size() > 0 || courseNode.getType().equals(nodeType.getType())) {
 			// Store node data in map. This map array serves as data model for
 			// the tasks overview table. Leave user data empty since not used in
 			// this table. (use only node data)
-			Map nodeData = new HashMap();
-			// indent
-			nodeData.put(AssessmentHelper.KEY_INDENT, new Integer(recursionLevel));
-			// course node data
-			nodeData.put(AssessmentHelper.KEY_TYPE, courseNode.getType());
-			nodeData.put(AssessmentHelper.KEY_TITLE_SHORT, courseNode.getShortTitle());
-			nodeData.put(AssessmentHelper.KEY_TITLE_LONG, courseNode.getLongTitle());
-			nodeData.put(AssessmentHelper.KEY_IDENTIFYER, courseNode.getIdent());
-
-			if (courseNode.getType().equals(nodeType.getType())) {
-				nodeData.put(AssessmentHelper.KEY_SELECTABLE, Boolean.TRUE);
-			} else {
-				nodeData.put(AssessmentHelper.KEY_SELECTABLE, Boolean.FALSE);
-			}
-
-			List nodeAndChildren = new ArrayList();
+			NodeTableRow nodeData = new NodeTableRow(new Integer(recursionLevel), courseNode);
+			nodeData.setSelectable(courseNode.getType().equals(nodeType.getType()));
+			
+			List<NodeTableRow> nodeAndChildren = new ArrayList<>();
 			nodeAndChildren.add(nodeData);
-
 			nodeAndChildren.addAll(childrenData);
 			return nodeAndChildren;
 		}
 		return null;
 	}
-
-	protected boolean archiveNode(UserRequest ureq) {
+	
+	private void doSelectNode(UserRequest ureq, NodeTableRow nodeData) {
 		ICourse course = CourseFactory.loadCourse(ores);
-		File exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
-		UserManager um = UserManager.getInstance();
-		String charset = um.getUserCharset(ureq.getIdentity());
-		boolean successfullyArchived = currentCourseNode.archiveNodeData(ureq.getLocale(), course, exportDir, charset);	
-		return successfullyArchived;
+		CourseNode node = course.getRunStructure().getNode(nodeData.getIdent());
+		//some node can limit the archive to a business group
+		if(node instanceof TACourseNode) {
+			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+			List<BusinessGroup> relatedGroups = cgm.getAllBusinessGroups();
+			if(relatedGroups.isEmpty()) {
+				archiveNode(ureq, node, null);
+			} else {
+				doSelectBusinessGroup(ureq, node, relatedGroups);
+			}
+		} else {
+			archiveNode(ureq, node, null);
+		}
+	}
+	
+	private void doSelectBusinessGroup(UserRequest ureq, CourseNode node, List<BusinessGroup> relatedGroups) {
+		chooseGroupCtrl = new ChooseGroupController(ureq, getWindowControl(), node, relatedGroups);
+		listenTo(chooseGroupCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseGroupCtrl.getInitialComponent(),
+				true, translate("select.group"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
+	private void archiveNode(UserRequest ureq, CourseNode node, BusinessGroup group) {
+		ArchiveResource aResource = new ArchiveResource(node, ores, group, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(aResource);
+		showInfo("archive." + nodeType.getType() + ".successfully");
 	}
 
 	/**
@@ -228,5 +244,4 @@ public class GenericArchiveController extends BasicController {
 	protected void doDispose() {
 		//
 	}
-
 }

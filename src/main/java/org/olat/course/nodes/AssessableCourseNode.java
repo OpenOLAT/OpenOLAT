@@ -25,13 +25,17 @@
 
 package org.olat.course.nodes;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 
 
 /**
@@ -144,6 +148,12 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @return a controller or null if hasDetails=false
 	 */
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, UserCourseEnvironment userCourseEnvironment);
+	
+
+	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, BusinessGroup limitToGroup);
+	
+	
 	/**
 	 * 
 	 * @param scoreEvaluation if scoreEvaluation.getScore() != null, then the score will be updated, and/or if scoreEvaluation.getPassed() != null, then 'passed' will be updated

@@ -24,10 +24,6 @@
 */
 package org.olat.course.nodes.iq;
 
-import java.io.File;
-import java.util.List;
-import java.util.Locale;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
@@ -40,31 +36,22 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.QTI12ResultDetailsController;
-import org.olat.ims.qti.QTIResultManager;
-import org.olat.ims.qti.QTIResultSet;
-import org.olat.ims.qti.export.QTIExportFormatter;
-import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
-import org.olat.ims.qti.export.QTIExportManager;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 
 import de.bps.ims.qti.QTIResultDetailsController;
-import de.bps.onyx.plugin.OnyxExportManager;
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.run.OnyxRunController;
 
@@ -244,27 +231,6 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 			return new QTIResultDetailsController(courseResourceableId, ident, identity, referencedRepositoryEntry, qmdEntryTypeAssess, ureq, wControl);
 		} else {
 			return new QTI12ResultDetailsController(ureq, wControl, courseResourceableId, ident, identity, referencedRepositoryEntry, qmdEntryTypeAssess);
-		}
-	}
-
-	@Override
-	public boolean archiveIQTestCourseNode(Locale locale, String repositorySoftkey, Long courseResourceableId, String shortTitle,  String ident, File exportDirectory, String charset) {
-		boolean onyx = OnyxModule.isOnyxTest(RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, true).getOlatResource());
-		if (onyx) {
-			ICourse course = CourseFactory.loadCourse(courseResourceableId);
-			CourseNode currentCourseNode = course.getRunStructure().getNode(ident);
-			Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, true).getKey();
-			QTIResultManager qrm = QTIResultManager.getInstance();
-			List<QTIResultSet> results = qrm.getResultSets(courseResourceableId, ident, repKey, null);
-			if (results.size() > 0) {
-				OnyxExportManager.getInstance().exportResults(results, exportDirectory, currentCourseNode);
-			}
-			return true;
-		} else {
-			QTIExportManager qem = QTIExportManager.getInstance();
-			Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, true).getKey();
-			QTIExportFormatter qef = new QTIExportFormatterCSVType1(locale,"\t", "\"", "\\", "\r\n", false);
-			return qem.selectAndExportResults(qef, courseResourceableId, shortTitle, ident, repKey, exportDirectory,charset, ".xls");
 		}
 	}
 }
