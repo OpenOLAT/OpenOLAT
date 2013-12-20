@@ -250,8 +250,12 @@ public class Form extends LogDelegator {
 				// see also OLAT-3141
 				implicitFormSubmit = true;
 			}
-		}else{
-			action = Integer.valueOf(dispatchAction);
+		} else {
+			try {
+				action = Integer.valueOf(dispatchAction);
+			} catch(Exception e) {
+				throw new InvalidRequestParameterException();
+			}
 		}
 		hasAlreadyFired = false;
 		isValidAndSubmitted = false;

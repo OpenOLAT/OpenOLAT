@@ -25,6 +25,7 @@
 
 package org.olat.dispatcher;
 
+import java.io.IOException;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +42,7 @@ import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.form.flexible.impl.InvalidRequestParameterException;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.exception.MsgFactory;
@@ -196,6 +198,12 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				} else {
 					log.error("Invalid URI in AuthenticatedDispatcher: " + request.getRequestURI());
 				}
+			}
+		} catch (InvalidRequestParameterException e) {
+			try {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			} catch (IOException e1) {
+				log.error("An exception occured while handling the invalid request parameter exception...", e1);
 			}
 		} catch (Throwable th) {
 			// Do not log as Warn or Error here, log as ERROR in MsgFactory => ExceptionWindowController throws an OLATRuntimeException 
