@@ -124,6 +124,11 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		throw new AssertException("Not implemented for preview.");
 	}
 
+	@Override
+	public int countCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
+		return 0;
+	}
+
 	/**
 	 * @see org.olat.course.properties.CoursePropertyManager#findCourseNodeProperties(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.group.BusinessGroup, java.lang.String)
 	 */

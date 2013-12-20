@@ -125,9 +125,16 @@ public class PersistingCoursePropertyManager extends BasicManager implements Cou
 	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
 	 *      java.lang.String)
 	 */
+	@Override
 	public List<Property> listCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
 		String myCategory = buildCourseNodePropertyCategory(node);
 		return pm.listProperties(identity, grp, myCategory, name);
+	}
+
+	@Override
+	public int countCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
+		String myCategory = buildCourseNodePropertyCategory(node);
+		return pm.countProperties(identity, grp, myCategory, name);
 	}
 
 	/**

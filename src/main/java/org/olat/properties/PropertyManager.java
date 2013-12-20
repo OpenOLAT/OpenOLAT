@@ -181,10 +181,19 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @return a list of Property objects
 	 */
 	public List<Property> listProperties(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
-		if (resourceable == null) 
+		if (resourceable == null) {
 			return listProperties(identity, grp, null, null, category, name);
-		else
+		} else {
 			return listProperties(identity, grp, resourceable.getResourceableTypeName(), resourceable.getResourceableId(), category, name);
+		}
+	}
+	
+	public int countProperties(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
+		if (resourceable == null) {
+			return countProperties(identity, grp, null, null, category, name, null, null);
+		} else {
+			return countProperties(identity, grp, resourceable.getResourceableTypeName(), resourceable.getResourceableId(), category, name, null, null);
+		}
 	}
 	
 	/**
@@ -201,6 +210,13 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		return listProperties(identity, grp, resourceTypeName, resourceTypeId, category, name, null, null);
 	}
 
+	public int countProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId,
+			String category, String name, Long longValue, String stringValue) {
+		TypedQuery<Number> query = createQueryListProperties(identity, grp, resourceTypeName, resourceTypeId,
+				category, name, longValue, stringValue, Number.class);
+		return query.getSingleResult().intValue();
+	}
+
 	/**
 	 * Only to use if no OLATResourceable Object is available.
 	 * @param identity
@@ -215,14 +231,44 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 */
 	public List<Property> listProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId,
 			String category, String name, Long longValue, String stringValue) {
+		TypedQuery<Property> query = createQueryListProperties(identity, grp, resourceTypeName, resourceTypeId,
+				category, name, longValue, stringValue, Property.class);
+		return query.getResultList();
+	}
+	
+	/**
+	 * 
+	 * @param identity
+	 * @param grp
+	 * @param resourceTypeName
+	 * @param resourceTypeId
+	 * @param category
+	 * @param name
+	 * @param longValue
+	 * @param stringValue
+	 * @param resultClass Only Number and Property are acceptable
+	 * @return
+	 */
+	private <U> TypedQuery<U> createQueryListProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId,
+			String category, String name, Long longValue, String stringValue, Class<U> resultClass) {
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select v from ").append(Property.class.getName()).append(" as v ");
-		if (identity != null) {
-			sb.append(" inner join fetch v.identity identity ");
-		}
-		if (grp != null) {
-			sb.append(" inner join fetch v.grp grp ");
+		if(Number.class.equals(resultClass)) {
+			sb.append("select count(v) from ").append(Property.class.getName()).append(" as v ");
+			if (identity != null) {
+				sb.append(" inner join v.identity identity ");
+			}
+			if (grp != null) {
+				sb.append(" inner join v.grp grp ");
+			}
+		} else {
+			sb.append("select v from ").append(Property.class.getName()).append(" as v ");
+			if (identity != null) {
+				sb.append(" inner join fetch v.identity identity ");
+			}
+			if (grp != null) {
+				sb.append(" inner join fetch v.grp grp ");
+			}
 		}
 		sb.append(" where ");
 
@@ -260,7 +306,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			sb.append("v.stringValue=:string");			
 		}
 		
-		TypedQuery<Property> queryProps = DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString(), Property.class);
+		TypedQuery<U> queryProps = DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString(), resultClass);
 		if (identity != null) {
 			queryProps.setParameter("identityKey", identity.getKey());
 		}
@@ -285,7 +331,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		if (stringValue != null) {
 			queryProps.setParameter("string", stringValue);
 		}
-		return queryProps.getResultList();
+		return queryProps;
 	}
 	
 	/**

@@ -196,6 +196,9 @@ public class PropertyTest extends OlatTestCase {
 		Property prop = (Property) entries.get(0);
 		assertEquals(ores.getResourceableTypeName(), prop.getResourceTypeName());
 		assertEquals(ores.getResourceableId(), prop.getResourceTypeId());
+		
+		int numOfEntries = PropertyManager.getInstance().countProperties(identity, group, ores.getResourceableTypeName(), ores.getResourceableId(), "cat", "TestProperty", null, null);
+		Assert.assertEquals(entries.size(), numOfEntries);
 	}
 	
 	/**
