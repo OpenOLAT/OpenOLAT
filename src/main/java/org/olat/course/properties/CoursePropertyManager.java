@@ -88,6 +88,16 @@ public interface CoursePropertyManager extends IdentityAnonymizerCallback {
 	public List<Property> listCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name);
 	
 	/**
+	 * Same as above but only count the properties
+	 * @param node
+	 * @param identity
+	 * @param grp
+	 * @param name
+	 * @return
+	 */
+	public int countCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name);
+	
+	/**
 	 * Find course node properties (exact match. I.e. null values are taken into account)
 	 * @param node
 	 * @param identity

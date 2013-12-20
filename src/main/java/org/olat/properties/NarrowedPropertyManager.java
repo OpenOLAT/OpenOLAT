@@ -118,6 +118,10 @@ public class NarrowedPropertyManager {
 		return pm.listProperties(identity, grp, resourceable, category, name);
 	}
 	
+	public int countProperties(Identity identity, BusinessGroup grp, String category, String name) {
+		return pm.countProperties(identity, grp, resourceable, category, name);
+	}
+	
 	/**
 	 * Generic find method. Returns a list of Property objects. This is an exact match i.e. if you pass-on null values,
 	 * null values will be included in the query.

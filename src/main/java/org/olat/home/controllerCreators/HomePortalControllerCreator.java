@@ -135,10 +135,10 @@ public class HomePortalControllerCreator extends AutoCreator  {
 		@Override
 		public void event(UserRequest ureq, Component source, Event event) {
 			if (source == portalBackButton){
-				this.myPortal.setIsEditMode(ureq, Boolean.FALSE);
+				myPortal.setIsEditMode(ureq, false);
 				welcome.contextPut("portalEditMode", Boolean.FALSE);
 			} else if (source == portalEditButton){
-				this.myPortal.setIsEditMode(ureq, Boolean.TRUE);
+				myPortal.setIsEditMode(ureq, true);
 				welcome.contextPut("portalEditMode", Boolean.TRUE);
 			} 
 		}

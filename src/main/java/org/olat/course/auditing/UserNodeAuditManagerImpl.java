@@ -26,7 +26,6 @@ package org.olat.course.auditing;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -102,17 +101,19 @@ public class UserNodeAuditManagerImpl extends UserNodeAuditManager {
 	/**
 	 * @see org.olat.course.auditing.AuditManager#hasUserNodeLogs(org.olat.course.nodes.CourseNode)
 	 */
+	@Override
 	public boolean hasUserNodeLogs(CourseNode node) {
 		ICourse course = CourseFactory.loadCourse(ores);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		List<?> logsProperties = cpm.listCourseNodeProperties(node, null, null, LOG_IDENTIFYER);
-		return logsProperties.size() == 0 ? false : true;
+		int numOfProperties = cpm.countCourseNodeProperties(node, null, null, LOG_IDENTIFYER);
+		return numOfProperties > 0;
 	}
 
 	/**
 	 * @see org.olat.course.auditing.AuditManager#getUserNodeLog(org.olat.course.nodes.CourseNode,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public String getUserNodeLog(CourseNode courseNode, Identity identity) {
 		ICourse course = CourseFactory.loadCourse(ores);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();

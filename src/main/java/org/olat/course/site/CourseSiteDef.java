@@ -105,7 +105,7 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 	protected LanguageConfiguration getLanguageConfiguration(UserRequest ureq, CourseSiteConfiguration config) {
 		if(config == null || config.getConfigurations() == null) return null;
 		String language = ureq.getUserSession().getLocale().getLanguage();
-
+		
 		LanguageConfiguration myLangConfig = null;
 		LanguageConfiguration defaultLangConfig = null;
 		for(LanguageConfiguration langConfig:config.getConfigurations()) {
