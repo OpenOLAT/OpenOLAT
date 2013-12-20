@@ -74,5 +74,4 @@ public class ImportStep02 extends BasicStep {
 		StepFormController stepI = new GroupSearchController(ureq, windowControl, form, stepsRunContext);
 		return stepI;
 	}
-
 }
