@@ -93,6 +93,7 @@ import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.OnlyGroupConditionInterpreter;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
@@ -811,7 +812,13 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		List<String> toolCmpNames = new ArrayList<>(3);
 		if(courseNode != null) {
 			CourseEnvironment courseEnv = course.getCourseEnvironment();
-			List<Controller> tools = courseNode.createAssessmentTools(ureq, getWindowControl(), courseEnv, group);
+			AssessmentToolOptions options = new AssessmentToolOptions();
+			if(group == null) {
+				options.setIdentities(identities);
+			} else {
+				options.setGroup(group);
+			}
+			List<Controller> tools = courseNode.createAssessmentTools(ureq, getWindowControl(), courseEnv, options);
 			int count = 0;
 			for(Controller tool:tools) {
 				listenTo(tool);

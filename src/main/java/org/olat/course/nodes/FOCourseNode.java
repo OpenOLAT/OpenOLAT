@@ -68,7 +68,6 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
@@ -365,7 +364,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		Property forumKeyProperty = cpm.findCourseNodeProperty(this, null, null, FORUM_KEY);
 		if(forumKeyProperty == null) {

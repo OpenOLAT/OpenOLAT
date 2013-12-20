@@ -28,9 +28,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.archiver.ArchiveResource;
+import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.resource.OLATResource;
 
 /**
@@ -42,14 +43,16 @@ public class BulkDownloadToolController extends BasicController {
 	
 	private final Link downloadButton;
 
-	private final BusinessGroup group;
+	private final ArchiveOptions options;
 	private final OLATResource courseOres;
 	private final AssessableCourseNode courseNode;
 	
 	public BulkDownloadToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			BusinessGroup group, AssessableCourseNode courseNode) {
+			AssessmentToolOptions asOptions, AssessableCourseNode courseNode) {
 		super(ureq, wControl);
-		this.group = group;
+		this.options = new ArchiveOptions();
+		this.options.setGroup(asOptions.getGroup());
+		this.options.setIdentities(asOptions.getIdentities());
 		this.courseNode = courseNode;
 		courseOres = courseEnv.getCourseGroupManager().getCourseResource();
 		
@@ -71,7 +74,7 @@ public class BulkDownloadToolController extends BasicController {
 	}
 	
 	private void doDownload(UserRequest ureq) {
-		ArchiveResource resource = new ArchiveResource(courseNode, courseOres, group, getLocale());
+		ArchiveResource resource = new ArchiveResource(courseNode, courseOres, options, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 }

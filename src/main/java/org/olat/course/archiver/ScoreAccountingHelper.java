@@ -52,6 +52,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -398,9 +399,19 @@ public class ScoreAccountingHelper {
 		return userList;
 	}
 	
-	public static List<Identity> loadUsers(BusinessGroup group) {
+	public static List<Identity> loadUsers(CourseEnvironment courseEnv, ArchiveOptions options) {
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		return securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+		List<Identity> users;
+		if(options == null) {
+			users = loadUsers(courseEnv);
+		} else if(options.getGroup() != null) {
+			users = securityManager.getIdentitiesOfSecurityGroup(options.getGroup().getPartipiciantGroup());
+		} else if(options.getIdentities() != null) {
+			users = options.getIdentities();
+		} else {
+			users = loadUsers(courseEnv);
+		}
+		return users;
 	}
 	
 	/**

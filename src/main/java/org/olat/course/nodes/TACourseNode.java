@@ -30,8 +30,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -90,7 +92,6 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -687,10 +688,10 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 
 	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, BusinessGroup limitToGroup) {
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<Controller>(1);
 		tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
-		tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, limitToGroup, this));
+		tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
 		return tools;
 	}
 
@@ -767,7 +768,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	}
 
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
 		boolean dataFound = false;
 		String dropboxPath = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this);
 		OlatRootFolderImpl dropboxDir = new OlatRootFolderImpl(dropboxPath, null);
@@ -784,9 +785,15 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 
 		if (dropboxDir.exists() || solutionDir.exists() || returnboxDir.exists() || hasTask.booleanValue()){	
 			// prepare writing course results overview table
-			List<Identity> users = group == null ? ScoreAccountingHelper.loadUsers(course.getCourseEnvironment())
-					: ScoreAccountingHelper.loadUsers(group);
-		
+			List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment(), options);
+			Set<String> dropboxNames = null;
+			if(options != null && (options.getGroup() != null || options.getIdentities() != null)) {
+				dropboxNames = new HashSet<String>();
+				for(Identity user:users) {
+					dropboxNames.add(user.getName());
+				}
+			}
+			
 			String courseTitle = course.getCourseTitle();
 			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xls");
 			List<AssessableCourseNode> nodes = Collections.<AssessableCourseNode>singletonList(this);
@@ -813,7 +820,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 				//OLAT-6362 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive
 				List<VFSItem> dropBoxContent = dropboxDir.getItems();
 				for (VFSItem file:dropBoxContent) {
-					if(VFSManager.isDirectoryAndNotEmpty(file)){
+					if((dropboxNames == null || dropboxNames.contains(file.getName())) && VFSManager.isDirectoryAndNotEmpty(file)){
 						dataFound = true;
 						ZipUtil.addToZip(file, dirName + "/dropboxes", exportStream);
 					}
@@ -841,7 +848,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 				//OLAT-6362 archive only existing returnboxes -> prevent empty folders in archive
 				List<VFSItem> returnBoxContent = returnboxDir.getItems();
 				for (VFSItem file : returnBoxContent) {
-					if(VFSManager.isDirectoryAndNotEmpty(file)){
+					if((dropboxNames == null || dropboxNames.contains(file.getName())) && VFSManager.isDirectoryAndNotEmpty(file)){
 						dataFound = true;
 						ZipUtil.addToZip(file, dirName + "/returnboxes", exportStream);
 					}

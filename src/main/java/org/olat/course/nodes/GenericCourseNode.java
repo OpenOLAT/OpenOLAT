@@ -57,7 +57,6 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.group.model.BGAreaReference;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
@@ -367,7 +366,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 *      org.olat.course.ICourse, java.util.zip.ZipOutputStream, String charset)
 	 */
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
 		// nothing to do in default implementation
 		return true;
 	}

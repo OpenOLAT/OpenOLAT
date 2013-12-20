@@ -62,7 +62,6 @@ import org.olat.course.nodes.dialog.DialogCourseNodeRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.dialog.DialogElement;
 import org.olat.modules.dialog.DialogElementsPropertyManager;
@@ -246,7 +245,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
 		boolean dataFound = false;
 		List<DialogElement> list = DialogElementsPropertyManager.getInstance()
 				.findDialogElements(course.getCourseEnvironment().getCoursePropertyManager(), this)

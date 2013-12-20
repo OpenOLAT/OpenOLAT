@@ -35,8 +35,8 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.CourseNode;
-import org.olat.group.BusinessGroup;
 
 /**
  * 
@@ -49,13 +49,13 @@ public class ArchiveResource implements MediaResource {
 	
 	private final Locale locale;
 	private final String encoding = "UTF-8";
-	private final BusinessGroup group;
+	private final ArchiveOptions options;
 	private final CourseNode courseNode;
 	private final OLATResourceable courseOres;
 	
 	public ArchiveResource(CourseNode courseNode, OLATResourceable courseOres,
-			BusinessGroup group, Locale locale) {
-		this.group = group;
+			ArchiveOptions options, Locale locale) {
+		this.options = options;
 		this.locale = locale;
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
@@ -102,7 +102,7 @@ public class ArchiveResource implements MediaResource {
 			zout = new ZipOutputStream(hres.getOutputStream());
 			zout.setLevel(9);
 			ICourse course = CourseFactory.loadCourse(courseOres);
-			courseNode.archiveNodeData(locale, course, group, zout, encoding);
+			courseNode.archiveNodeData(locale, course, options, zout, encoding);
 		} catch (Exception e) {
 			log.error("", e);
 		} finally {

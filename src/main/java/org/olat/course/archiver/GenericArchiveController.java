@@ -51,6 +51,7 @@ import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.NodeTableDataModel;
 import org.olat.course.assessment.NodeTableRow;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.group.BusinessGroup;
@@ -233,9 +234,10 @@ public class GenericArchiveController extends BasicController {
 	}
 
 	private void archiveNode(UserRequest ureq, CourseNode node, BusinessGroup group) {
-		ArchiveResource aResource = new ArchiveResource(node, ores, group, getLocale());
+		ArchiveOptions options = new ArchiveOptions();
+		options.setGroup(group);
+		ArchiveResource aResource = new ArchiveResource(node, ores, options, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(aResource);
-		showInfo("archive." + nodeType.getType() + ".successfully");
 	}
 
 	/**

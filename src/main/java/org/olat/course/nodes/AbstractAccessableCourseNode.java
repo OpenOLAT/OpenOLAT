@@ -44,7 +44,6 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 
 import de.bps.course.nodes.CourseNodePasswordManagerImpl;
 
@@ -187,7 +186,7 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	}
 	
 	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, BusinessGroup limitToGroup) {
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, AssessmentToolOptions options) {
 		return Collections.emptyList();
 	}
 	

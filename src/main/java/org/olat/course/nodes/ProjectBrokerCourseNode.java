@@ -92,7 +92,6 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -670,7 +669,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 
 	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, BusinessGroup limitToGroup) {
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<>(1);
 		tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
 		return tools;
@@ -717,7 +716,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	}
 	
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, BusinessGroup group, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
 		boolean dataFound = false;
 		String dropboxPath = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
 		OlatRootFolderImpl dropboxDir = new OlatRootFolderImpl(dropboxPath, null);

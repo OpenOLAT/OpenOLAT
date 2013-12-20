@@ -35,7 +35,6 @@ import org.olat.core.id.Identity;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 
 
 /**
@@ -151,7 +150,7 @@ public interface AssessableCourseNode extends CourseNode {
 	
 
 	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, BusinessGroup limitToGroup);
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, AssessmentToolOptions options);
 	
 	
 	/**
