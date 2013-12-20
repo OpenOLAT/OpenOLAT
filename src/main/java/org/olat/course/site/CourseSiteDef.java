@@ -94,14 +94,18 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		}
 		
 		LanguageConfiguration langConfig = getLanguageConfiguration(ureq, courseConfig);
+		if(langConfig == null) {
+			return null;
+		}
 		String icon = courseConfig.getNavIconCssClass();
 		return new CourseSite(this, ureq.getLocale(), langConfig.getRepoSoftKey(), showToolController,
 				siteSecCallback, langConfig.getTitle(), icon);
 	}
 	
 	protected LanguageConfiguration getLanguageConfiguration(UserRequest ureq, CourseSiteConfiguration config) {
+		if(config == null || config.getConfigurations() == null) return null;
 		String language = ureq.getUserSession().getLocale().getLanguage();
-
+		
 		LanguageConfiguration myLangConfig = null;
 		LanguageConfiguration defaultLangConfig = null;
 		for(LanguageConfiguration langConfig:config.getConfigurations()) {
