@@ -117,7 +117,48 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		//fxdiff VCRP-1,2: access control of resources
 		CustomCellRenderer acRenderer = new RepositoryEntryACColumnDescriptor();
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.ac", RepoCols.ac.ordinal(), null, 
-				loc, ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
+				loc, ColumnDescriptor.ALIGNMENT_LEFT, acRenderer) {
+
+			@Override
+			public int compareTo(int rowa, int rowb) {
+				Object o1 = table.getTableDataModel().getObject(rowa);
+				Object o2 = table.getTableDataModel().getObject(rowb);
+				if(o1 == null || !(o1 instanceof RepositoryEntry)) return -1;
+				if(o2 == null || !(o2 instanceof RepositoryEntry)) return 1;
+				RepositoryEntry re1 = (RepositoryEntry)o1;
+				RepositoryEntry re2 = (RepositoryEntry)o2;
+				
+				if(re1.isMembersOnly()) {
+					if(!re2.isMembersOnly()) {
+						return 1;
+					}
+				} else if(re2.isMembersOnly()) {
+					return -1;
+				}
+				
+				OLATResourceAccess ac1 = repoEntriesWithOffer.get(re1.getOlatResource().getKey());
+				OLATResourceAccess ac2 = repoEntriesWithOffer.get(re2.getOlatResource().getKey());
+				
+				if(ac1 == null && ac2 != null) return -1;
+				if(ac1 != null && ac2 == null) return 1;
+				if(ac1 != null && ac2 != null) return compareAccess(re1, ac1, re2, ac2);	
+				return super.compareString(re1.getDisplayname(), re2.getDisplayname());
+			}
+			
+			private int compareAccess(RepositoryEntry re1, OLATResourceAccess ac1,  RepositoryEntry re2, OLATResourceAccess ac2) {
+				int s1 = ac1.getMethods().size();
+				int s2 = ac2.getMethods().size();
+				int compare = s1 - s2;
+				if(compare != 0) return compare;
+				if(s1 > 0 && s2 > 0) {
+					String t1 = ac1.getMethods().get(0).getMethod().getType();
+					String t2 = ac2.getMethods().get(0).getMethod().getType();
+					int compareType = super.compareString(t1, t2);
+					if(compareType != 0) return compareType;
+				}
+				return super.compareString(re1.getDisplayname(), re2.getDisplayname());
+			}
+		});
 		tableCtr.addColumnDescriptor(new RepositoryEntryTypeColumnDescriptor("table.header.typeimg", RepoCols.repoEntry.ordinal(), null, 
 				loc, ColumnDescriptor.ALIGNMENT_LEFT));
 		
@@ -133,7 +174,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", RepoCols.displayname.ordinal(), enableDirectLaunch ? TABLE_ACTION_SELECT_ENTRY : null, loc) {
 			@Override
 			public int compareTo(int rowa, int rowb) {
-				Object o1 =table.getTableDataModel().getValueAt(rowa, 1);
+				Object o1 = table.getTableDataModel().getValueAt(rowa, 1);
 				Object o2 = table.getTableDataModel().getValueAt(rowb, 1);
 				
 				if(o1 == null || !(o1 instanceof RepositoryEntry)) return -1;
@@ -191,7 +232,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		RepositoryEntry re = (RepositoryEntry)getObject(row);
+		RepositoryEntry re = getObject(row);
 		switch (RepoCols.values()[col]) {
 			//fxdiff VCRP-1,2: access control of resources
 			case ac: {
