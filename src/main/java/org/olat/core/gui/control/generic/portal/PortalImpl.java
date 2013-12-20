@@ -74,6 +74,7 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 	private Map<String, PortletContainer> portletContainers; // map of all portlet containers (defined in portal columns + inactive portlets)
 	private List<String> inactivePortlets; // list containing the names of inactive portlets
 	private String name;
+	private boolean editModeEnabled = false;
 
 	/**
 	 * Do use PortalFactory for create new Portals
@@ -251,15 +252,11 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 				}
 				if (isActive) {
 					// initialize portlet container for active portlets only
-					pc.initializeRunComponent(ureq);
-					log.debug("initPortlets: add to inacitve portlets portletName=" + portlet.getName());
+					pc.initializeRunComponent(ureq, editModeEnabled);
 				} else {
 					// add it to inacitve portlets list if not active
 					inactivePortlets.add(portlet.getName());
-					log.debug("initPortlets: add to inacitve portlets portletName=" + portlet.getName());
 				}
-			} else {
-				log.debug("Portlet disabled portletName=" + portlet.getName());
 			}
 		}
 		// update links on visible portlets
@@ -273,15 +270,15 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 		if (source instanceof Link && portalVC.contains(source)) {
 			Link tmp = (Link)source;
 			String portletName = (String)tmp.getUserObject();
-			List<String> firstColumn = this.portalColumns.get(0);
-			PortletContainer pc = this.portletContainers.get(portletName);
+			List<String> firstColumn = portalColumns.get(0);
+			PortletContainer pc = portletContainers.get(portletName);
 			if (pc == null) throw new AssertException("trying to add portlet with name::" + portletName + " to portal, but portlet container did not exist. Could be a user modifying the URL...");
 			// add to users portlet list
 			firstColumn.add(portletName);
 			// remove from inactive portlets list
-			this.inactivePortlets.remove(portletName);
+			inactivePortlets.remove(portletName);
 			// initialize portlet run component
-			pc.initializeRunComponent(ureq);
+			pc.initializeRunComponent(ureq, editModeEnabled);
 			// save user config in db
 			saveUserPortalColumnsConfiguration(ureq, portalColumns);
 			// update possible links in gui
@@ -295,21 +292,22 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 	 * Enable/disable the edit mode of the portal
 	 * @param editModeEnabled true: enabled, false: disabled
 	 */
-	public void setIsEditMode(UserRequest ureq, Boolean editModeEnabled) {
+	public void setIsEditMode(UserRequest ureq, boolean editModeEnabled) {
+		this.editModeEnabled = editModeEnabled;
 		updatePorletContainerEditMode(ureq, editModeEnabled);
-		this.portalVC.contextPut(MODE_EDIT, editModeEnabled);
+		portalVC.contextPut(MODE_EDIT, editModeEnabled);
 	}
 	
 	/**
 	 * Updates all portles using the given mode
 	 * @param editMode true: edit mode activated, false: deactivated
 	 */
-	private void updatePorletContainerEditMode(UserRequest ureq, Boolean editMode) {
-		Iterator<String> portletsIter = PortletFactory.getPortlets().keySet().iterator();
-		while (portletsIter.hasNext()) {
-			String portletName = (String) portletsIter.next();
-			PortletContainer pc = this.portletContainers.get(portletName);
-			if (pc != null ) pc.setIsEditMode(ureq, editMode);
+	private void updatePorletContainerEditMode(UserRequest ureq, boolean editMode) {
+		for (String portletName : PortletFactory.getPortlets().keySet()) {
+			PortletContainer pc = portletContainers.get(portletName);
+			if (pc != null ) {
+				pc.setIsEditMode(ureq, editMode);
+			}
 		}
 	}
 	
@@ -318,7 +316,6 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		log.debug("PortalImpl event=" + event);
 		if (source instanceof PortletContainer) {
 			PortletContainer pc = (PortletContainer) source;
 			String cmd = event.getCommand();
@@ -432,7 +429,7 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 	 * @return Name of portal
 	 */
 	public String getName(){
-		return this.name;
+		return name;
 	}
 
 }

@@ -248,6 +248,7 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, eventBusThisIdentityOres);
 		super.doDispose();
+		portletToolsController = null;
 	}
 	
 	/**
