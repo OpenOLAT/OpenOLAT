@@ -76,7 +76,8 @@ import org.olat.repository.RepositoryManager;
  * @author Felix Jost
  */
 public class WikiCourseNode extends AbstractAccessableCourseNode {
-	
+	private static final long serialVersionUID = -5800975339569440113L;
+
 	private static final OLog log = Tracing.createLoggerFor(WikiCourseNode.class);
 
 	public static final String TYPE = "wiki";

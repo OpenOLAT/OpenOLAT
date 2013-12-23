@@ -81,7 +81,9 @@ public class BaseSecurityModule extends AbstractOLATModule {
 
 	private static final String USERINFOS_TUNNEL_CBB = "userInfosTunnelCourseBuildingBlock";
 	
-	
+	private static final String FORCE_TOP_FRAME = "forceTopFrame";
+	private static final String WIKI_ENABLED = "wiki";
+
 	/**
 	 * default values
 	 */
@@ -124,6 +126,9 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private String userSearchAutocompleteForAdministrators;
 	
 	private String userInfosTunnelCourseBuildingBlock;
+	
+	private String forceTopFrame;
+	private String wikiEnabled;
 
 
 	private BaseSecurityModule(String defaultAuthProviderIdentifier) {
@@ -189,6 +194,9 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		userSearchMaxResults = getStringConfigParameter(USERSEARCH_MAXRESULTS, "-1", true);
 
 		userInfosTunnelCourseBuildingBlock = getStringConfigParameter(USERINFOS_TUNNEL_CBB, "disabled", true);
+
+		forceTopFrame = getStringConfigParameter(FORCE_TOP_FRAME, "disabled", true);
+		wikiEnabled = getStringConfigParameter(WIKI_ENABLED, "enabled", true);
 	}
 
 	@Override
@@ -268,6 +276,15 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		enabled = getStringPropertyValue(USERINFOS_TUNNEL_CBB, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			userInfosTunnelCourseBuildingBlock = enabled;
+		}
+		
+		enabled = getStringPropertyValue(FORCE_TOP_FRAME, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			forceTopFrame = enabled;
+		}
+		enabled = getStringPropertyValue(WIKI_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			wikiEnabled = enabled;
 		}
 	}
 
@@ -482,6 +499,22 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public void setUserInfosTunnelCourseBuildingBlock(String enable) {
 		setStringProperty(USERINFOS_TUNNEL_CBB, enable, true);
 	}
-	
-	
+
+	public boolean isForceTopFrame() {
+		return "enabled".equals(forceTopFrame);
+	}
+
+	public void setForceTopFrame(boolean enable) {
+		String enabled = enable ? "enabled" : "disabled";
+		setStringProperty(FORCE_TOP_FRAME, enabled, true);
+	}
+
+	public boolean isWikiEnabled() {
+		return "enabled".equals(wikiEnabled);
+	}
+
+	public void setWikiEnabled(boolean enable) {
+		String enabled = enable ? "enabled" : "disabled";
+		setStringProperty(WIKI_ENABLED, enabled, true);
+	}
 }

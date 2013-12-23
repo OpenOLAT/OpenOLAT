@@ -30,6 +30,8 @@ package org.olat.core.gui.exception;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
@@ -50,6 +52,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -64,6 +67,7 @@ import org.olat.core.util.i18n.I18nManager;
  * @author Felix Jost
  */
 public class ExceptionWindowController extends DefaultChiefController {
+	private static final OLog log = Tracing.createLoggerFor(ExceptionWindowController.class);
 	private static final String PACKAGE = Util.getPackageName(ExceptionWindowController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(ExceptionWindowController.class);
 
@@ -78,7 +82,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 		// the idea is that at this stage the throwable still contains a stacktrace but passed into the OLATRuntimeException
 		// below as the cause it somehow gets lost. If this does not turn out to be true then the line below can be removed.
 		// in any case, it is just a log.warn
-		Tracing.logWarn("ExceptionWindowController<init>: Throwable occurred, logging the full stacktrace:", th, getClass());
+		log.warn("ExceptionWindowController<init>: Throwable occurred, logging the full stacktrace:", th);
 
 		// Disable inline translation mode whenever an exception occurs
 		I18nManager i18nMgr = I18nManager.getInstance();
@@ -87,10 +91,14 @@ public class ExceptionWindowController extends DefaultChiefController {
 			allowBackButton = false;
 			i18nMgr.setMarkLocalizedStringsEnabled(ureq.getUserSession(), false);			
 		}
-		//
+
 		Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
 		Formatter formatter = Formatter.getInstance(ureq.getLocale());
 		msg = new VelocityContainer("olatmain", VELOCITY_ROOT + "/exception_page.html", trans, this);
+
+		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+		msg.contextPut("enforceTopFrame", new Boolean(securityModule.isForceTopFrame()));
+		
 		// Disallow wrapping of divs around the panel and the main velocity page
 		// (since it contains the "<html><head... intro of the html page,
 		// and thus has better to be replaced as a whole (new page load) instead of

@@ -78,7 +78,7 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 	
 	private InterceptHandler screenreader_interceptHandler = null;
 	
-	private Map<Class,ComponentRenderer> screenReaderRenderers = new HashMap<Class,ComponentRenderer>();
+	private Map<Class<? extends Component>,ComponentRenderer> screenReaderRenderers = new HashMap<>();
 
 	private PopupBrowserWindowControllerCreator pbwcc;
 	

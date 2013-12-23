@@ -29,6 +29,8 @@ package org.olat.core.commons.chiefcontrollers;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -137,6 +139,10 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 
 		// component-id of mainPanel for the window id
 		mainvc.contextPut("o_winid", mainPanel.getDispatchID());
+		
+		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+		mainvc.contextPut("enforceTopFrame", securityModule.isForceTopFrame());
+		
 		// add jsMath library
 		mainvc.contextPut("jsMathEnabled", Boolean.TRUE);
 		// add optional css classes

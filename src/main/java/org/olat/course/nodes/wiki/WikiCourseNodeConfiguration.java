@@ -28,6 +28,8 @@ package org.olat.course.nodes.wiki;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -39,7 +41,7 @@ import org.olat.modules.wiki.Wiki;
 /**
  * 
  * Description:<br>
- * TODO: guido Class Description for WikiCourseNodeConfiguration
+ * Configuration of the wiki course node
  * 
  */
 public class WikiCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
@@ -50,6 +52,11 @@ public class WikiCourseNodeConfiguration extends AbstractCourseNodeConfiguration
 
 	public CourseNode getInstance() {
 		return new WikiCourseNode();
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return CoreSpringFactory.getImpl(BaseSecurityModule.class).isWikiEnabled() && super.isEnabled();
 	}
 
 	/**

@@ -27,6 +27,7 @@ package org.olat.repository.controllers;
 
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogModule;
 import org.olat.catalog.ui.CatalogController;
@@ -151,6 +152,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	private final CatalogModule catalogModule;
 	private final RepositoryModule repositoryModule;
 	private final RepositoryManager repositoryManager;
+	private final BaseSecurityModule securityModule;
 
 	/**
 	 * The check for author rights is executed on construction time and then
@@ -169,6 +171,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		catalogModule = CoreSpringFactory.getImpl(CatalogModule.class);
 		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		
 		// use i18n from RepositoryManager level
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
@@ -235,7 +238,9 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			mainToolC.addLink(RepositoryAddController.ACTION_ADD_COURSE, translate("tools.add.course"), RepositoryAddController.ACTION_ADD_COURSE, "o_toolbox_course o_sel_repo_import_course");
 			mainToolC.addLink(RepositoryAddController.ACTION_ADD_CP, translate("tools.add.cp"), RepositoryAddController.ACTION_ADD_CP, "o_toolbox_content o_sel_repo_import_cp");
 			mainToolC.addLink(RepositoryAddController.ACTION_ADD_SCORM, translate("tools.add.scorm"), RepositoryAddController.ACTION_ADD_SCORM, "o_toolbox_scorm o_sel_repo_import_scorm");
-			mainToolC.addLink(RepositoryAddController.ACTION_ADD_WIKI, translate("tools.add.wiki"), RepositoryAddController.ACTION_ADD_WIKI, "o_toolbox_wiki o_sel_repo_import_wiki");
+			if(securityModule.isWikiEnabled()) {
+				mainToolC.addLink(RepositoryAddController.ACTION_ADD_WIKI, translate("tools.add.wiki"), RepositoryAddController.ACTION_ADD_WIKI, "o_toolbox_wiki o_sel_repo_import_wiki");
+			}
 			mainToolC.addLink(RepositoryAddController.ACTION_ADD_PODCAST, translate("tools.add.podcast"), RepositoryAddController.ACTION_ADD_PODCAST, "o_toolbox_podcast o_sel_repo_import_podcast");
 			mainToolC.addLink(RepositoryAddController.ACTION_ADD_BLOG, translate("tools.add.blog"), RepositoryAddController.ACTION_ADD_BLOG, "o_toolbox_blog o_sel_repo_import_blog");
 			mainToolC.addLink(RepositoryAddController.ACTION_ADD_TEST, translate("tools.add.test"), RepositoryAddController.ACTION_ADD_TEST, "o_toolbox_test o_sel_repo_import_test");
@@ -246,7 +251,9 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			mainToolC.addHeader(translate("tools.new.header"));
 			mainToolC.addLink(ACTION_NEW_CREATECOURSE, translate("tools.new.createcourse"), ACTION_NEW_CREATECOURSE, "o_toolbox_course o_sel_repo_new_course");
 			mainToolC.addLink(ACTION_NEW_CREATECP, translate("tools.new.createcp"), ACTION_NEW_CREATECP, "o_toolbox_content o_sel_repo_new_cp");
-			mainToolC.addLink(ACTION_NEW_WIKI, translate("tools.new.wiki"), ACTION_NEW_WIKI, "o_toolbox_wiki o_sel_repo_new_wiki");
+			if(securityModule.isWikiEnabled()) {
+				mainToolC.addLink(ACTION_NEW_WIKI, translate("tools.new.wiki"), ACTION_NEW_WIKI, "o_toolbox_wiki o_sel_repo_new_wiki");
+			}
 			mainToolC.addLink(ACTION_NEW_PODCAST, translate("tools.new.podcast"), ACTION_NEW_PODCAST, "o_toolbox_podcast o_sel_repo_new_podcast");
 			mainToolC.addLink(ACTION_NEW_BLOG, translate("tools.new.blog"), ACTION_NEW_BLOG, "o_toolbox_blog o_sel_repo_new_blog");
 			if (portfolioModule.isEnabled()){
@@ -321,9 +328,11 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			node = new GenericTreeNode(translate("search.scorm"), "search.scorm");
 			node.setCssClass("o_sel_repo_scorm");
 			rootNode.addChild(node);
-			node = new GenericTreeNode(translate("search.wiki"), "search.wiki");
-			node.setCssClass("o_sel_repo_wiki");
-			rootNode.addChild(node);
+			if(securityModule.isWikiEnabled()) {
+				node = new GenericTreeNode(translate("search.wiki"), "search.wiki");
+				node.setCssClass("o_sel_repo_wiki");
+				rootNode.addChild(node);
+			}
 			node = new GenericTreeNode(translate("search.podcast"), "search.podcast" );
 			node.setCssClass("o_sel_repo_podcast");
 			rootNode.addChild(node);
@@ -450,10 +459,12 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			searchController.enableBackToSearchFormLink(false);
 		} else if (userObject.equals("search.wiki")) { // search
 			// wiki
-			main.setPage(VELOCITY_ROOT + "/index2.html");
- 			mainPanel.setContent(main);
-			searchController.doSearchByTypeLimitAccess(WikiResource.TYPE_NAME, ureq);
-			searchController.enableBackToSearchFormLink(false);
+			if(securityModule.isWikiEnabled()) {
+				main.setPage(VELOCITY_ROOT + "/index2.html");
+	 			mainPanel.setContent(main);
+				searchController.doSearchByTypeLimitAccess(WikiResource.TYPE_NAME, ureq);
+				searchController.enableBackToSearchFormLink(false);
+			}
 		} else if (userObject.equals("search.podcast")) { // search
 			// podcast
 			main.setPage(VELOCITY_ROOT + "/index2.html");
@@ -788,6 +799,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			cmc.activate();
 			return;
 		} else if (event.getCommand().equals(ACTION_NEW_WIKI)) {
+			if(!securityModule.isWikiEnabled()) return;
 			removeAsListenerAndDispose(addController);
 			addController = new RepositoryAddController(urequest, getWindowControl(), RepositoryAddController.ACTION_NEW_WIKI);
 			listenTo(addController);

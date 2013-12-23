@@ -37,7 +37,9 @@ o_info.i18n_noresponse_title = "$r.escapeDoubleQuotes($r.translate("server.no.re
 o_info.i18n_noresponse = "$r.escapeDoubleQuotes($r.translate("server.no.response"))";
 ## Initialize zindex manager
 o_info.zseed = 0;
-
+#if($enforceTopFrame)
+if (top!=self){top.location=self.location+"?o_winrndo=1";}
+#end
 function b_start(){
 	o_init();
 	## js B

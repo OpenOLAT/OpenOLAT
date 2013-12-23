@@ -26,6 +26,8 @@
 
 package org.olat.shibboleth;
 
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
@@ -36,23 +38,22 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.DefaultChiefController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowBackOffice;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 
 /**
  * 
  * Displays a simple message to the user
- * TODO: Lavinia Dumitrescu Class Description for MessageWindowController
  * 
  * <P>
  * Initial Date:  05.11.2007 <br>
  * @author Lavinia Dumitrescu
  */
 public class MessageWindowController extends DefaultChiefController {
-	private static final String PACKAGE = Util.getPackageName(MessageWindowController.class);
+	private static final OLog log = Tracing.createLoggerFor(MessageWindowController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(MessageWindowController.class);
 
 	private VelocityContainer msg;
@@ -65,11 +66,14 @@ public class MessageWindowController extends DefaultChiefController {
 	 * @param supportEmail
 	 */
 	public MessageWindowController(UserRequest ureq, Throwable th, String detailedmessage, String supportEmail) {
-		Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+		Translator trans = Util.createPackageTranslator(MessageWindowController.class, ureq.getLocale());
 		//Formatter formatter = Formatter.getInstance(ureq.getLocale());
 		msg = new VelocityContainer("olatmain", VELOCITY_ROOT + "/message.html", trans, this);
+		
+		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+		msg.contextPut("enforceTopFrame", new Boolean(securityModule.isForceTopFrame()));
 						
-		Tracing.logWarn(th.getMessage() + " *** User info: " + detailedmessage, th.getClass());
+		log.warn(th.getMessage() + " *** User info: " + detailedmessage);
 		
 		msg.contextPut("buildversion", Settings.getVersion());
 		msg.contextPut("detailedmessage", detailedmessage);					

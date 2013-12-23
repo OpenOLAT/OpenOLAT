@@ -19,10 +19,8 @@
  */
 package de.bps.course.nodes.cl;
 
-import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
@@ -81,26 +79,4 @@ public class ChecklistCourseNodeConfiguration extends AbstractCourseNodeConfigur
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
 		return translator.translate("title_cl");
 	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionCSS()
-	 */
-	public ExtensionResource getExtensionCSS() {
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionResources()
-	 */
-	public List getExtensionResources() {
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getName()
-	 */
-	public String getName() {
-		return getAlias();
-	}
-
 }
