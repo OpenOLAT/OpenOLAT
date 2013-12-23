@@ -74,11 +74,10 @@ import com.thoughtworks.xstream.XStream;
  */
 class ImportStep00 extends BasicStep {
 
-	boolean canCreateOLATPassword;
-	static final String usageIdentifyer = UserImportController.class.getCanonicalName();
-	Mapper excelMapper;
-	String formatexplanationPart2;
-	TextElement textAreaElement;
+	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
+	private boolean canCreateOLATPassword;
+	private Mapper excelMapper;
+	private TextElement textAreaElement;
 
 	public ImportStep00(UserRequest ureq, boolean canCreateOLATPassword) {
 		super(ureq);
@@ -108,14 +107,17 @@ class ImportStep00 extends BasicStep {
 
 	private final class ImportStepForm00 extends StepFormBasicController {
 
-		private FormLayoutContainer textContainer;
-		private List<UserPropertyHandler> userPropertyHandlers;
-		private List<TransientIdentity> newIdents;
 		private List<Identity> idents;
+		private List<UpdateIdentity> updateIdents;
+		private List<TransientIdentity> newIdents;
+		private List<UserPropertyHandler> userPropertyHandlers;
+
+		private final UserManager um;
 
 		public ImportStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			flc.setTranslator(getTranslator());
+			um = UserManager.getInstance();
 			initForm(ureq);
 		}
 
@@ -124,11 +126,11 @@ class ImportStep00 extends BasicStep {
 			//
 		}
 
-		@SuppressWarnings("synthetic-access")
 		@Override
 		protected void formOK(UserRequest ureq) {
 			addToRunContext("idents", idents);
 			addToRunContext("newIdents", newIdents);
+			addToRunContext("updateIdents", updateIdents);
 			addToRunContext("validImport", Boolean.TRUE);
 			boolean newUsers = false;
 			if (newIdents.size() != 0) {
@@ -149,7 +151,128 @@ class ImportStep00 extends BasicStep {
 
 			idents = new ArrayList<Identity>();
 			newIdents = new ArrayList<TransientIdentity>();
-			// fxdiff: check also emails in change-workflow, see OLAT-5723
+			updateIdents = new ArrayList<UpdateIdentity>();
+			//check also emails in change-workflow, see OLAT-5723
+			Set<String> tempEmailsInUse = getTemporaryEmailInUse();
+			
+			// Note: some values are fix and required: login, pwd and lang, those
+			// can not be configured in the config file
+			// because they are not user properties.
+			// all fields out of
+			// src/serviceconfig/org/olat/_spring/olat_userconfig.xml -> Key:
+			// org.olat.admin.user.imp.UserImportController
+			// are required and have to be submitted in the right order
+			// - pwd can be enabled / disabled by configuration
+			Set<String> languages = I18nModule.getEnabledLanguageKeys();
+			String[] lines = inp.split("\r?\n");
+			for (int i = 0; i < lines.length; i++) {
+				String line = lines[i];
+				if (line.equals("")) continue;
+				
+				String delimiter = "\t";
+				// use comma as fallback delimiter, e.g. for better testing
+				if (line.indexOf(delimiter) == -1) delimiter = ",";
+				String[] parts = line.split(delimiter);
+				String login, pwd, lang;
+
+				int columnId = 0;
+
+				// login row
+				if (parts.length > columnId) {
+					login = parts[columnId].trim();
+					if (!UserManager.getInstance().syntaxCheckOlatLogin(login)) {
+						textAreaElement.setErrorKey("error.login", new String[] { String.valueOf(i + 1), login });
+						importDataError = true;
+						break;
+					}
+				} else {
+					textAreaElement.setErrorKey("error.columncount", new String[] { String.valueOf(i + 1) });
+					importDataError = true;
+					break;
+				}
+				columnId++;
+
+				// pwd row
+				if (canCreateOLATPassword) {
+					if (parts.length > columnId) {
+						pwd = parts[columnId].trim();
+						if (StringHelper.containsNonWhitespace(pwd)) {
+							if (!UserManager.getInstance().syntaxCheckOlatPassword(pwd)) {
+								textAreaElement.setErrorKey("error.pwd", new String[] { String.valueOf(i + 1), pwd });
+								importDataError = true;
+								break;
+							}
+						} else {
+							// treat all white-space-only passwords as non-passwords.
+							// the user generation code below will then generate no
+							// authentication token for this user
+							pwd = null;
+						}
+					} else {
+						textAreaElement.setErrorKey("error.columncount", new String[] { String.valueOf(i + 1) });
+						importDataError = true;
+						break;
+					}
+				} else {
+					pwd = null;
+				}
+				columnId++;
+
+				// optional language fields
+				if (parts.length > columnId) {
+					lang = parts[columnId].trim();
+					if (lang.equals("")) {
+						lang = defaultlang;
+					} else if (!languages.contains(lang)) {
+						textAreaElement.setErrorKey("error.lang", new String[] { String.valueOf(i + 1), lang });
+						importDataError = true;
+						break;
+					}
+				} else {
+					lang = defaultlang;
+				}
+				columnId++;
+
+				Identity ident = BaseSecurityManager.getInstance().findIdentityByName(login);
+				if (ident != null) {
+					// update existing accounts, add info message
+					idents.add(ident);
+					
+					ident.getUser().getPreferences().setLanguage(lang);
+					importDataError = updateUserProperties(ident, parts, i, columnId, tempEmailsInUse, importedEmails, true);
+					if(importDataError) break;
+					
+					UpdateIdentity uIdentity = new UpdateIdentity(ident, pwd);
+					updateIdents.add(uIdentity);
+				} else {
+					// no identity/user yet, create
+					// check that no user with same login name is already in list
+					for (Iterator<TransientIdentity> it_news = newIdents.iterator(); it_news.hasNext();) {
+						TransientIdentity singleUser = it_news.next();
+						if (singleUser.getName().equalsIgnoreCase(login)) {
+							textAreaElement.setErrorKey("error.login.douplicate", new String[] { String.valueOf(i + 1), login });
+							importDataError = true;
+							break;
+						}
+					}
+
+					TransientIdentity ud = new TransientIdentity();
+					// insert fix fields: login, pwd, lang from above
+					ud.setName(login);
+					ud.setPassword(pwd);
+					ud.setLanguage(lang);
+					importDataError = updateUserProperties(ud, parts, i, columnId, tempEmailsInUse, importedEmails, false);
+					if(importDataError) break;
+					
+					idents.add(ud);
+					newIdents.add(ud);
+				}
+			}
+
+			return !importDataError;
+		}
+		
+		private Set<String> getTemporaryEmailInUse() {
 			Set<String> tempEmailsInUse = new HashSet<String>();
 			RegistrationManager rm = RegistrationManager.getInstance();
 			List<TemporaryKey> tk = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
@@ -164,187 +287,77 @@ class ImportStep00 extends BasicStep {
 					}
 				}
 			}
-			// fxdiff >
+			return tempEmailsInUse;
+		}
+		
+		private boolean updateUserProperties(Identity ud, String[] parts, int i, int columnId,
+				Set<String> tempEmailsInUse, List<String> importedEmails, boolean update) {
 			
-			// Note: some values are fix and required: login, pwd and lang, those
-			// can not be configured in the config file
-			// because they are not user properties.
-			// all fields out of
-			// src/serviceconfig/org/olat/_spring/olat_userconfig.xml -> Key:
-			// org.olat.admin.user.imp.UserImportController
-			// are required and have to be submitted in the right order
-			// - pwd can be enabled / disabled by configuration
-			Set<String> languages = I18nModule.getEnabledLanguageKeys();
-			String[] lines = inp.split("\r?\n");
-			for (int i = 0; i < lines.length; i++) {
-				String line = lines[i];
-				if (!line.equals("")) { // ignore empty lines
-					String delimiter = "\t";
-					// use comma as fallback delimiter, e.g. for better testing
-					if (line.indexOf(delimiter) == -1) delimiter = ",";
-					String[] parts = line.split(delimiter);
-					String login, pwd, lang;
-
-					int columnId = 0;
-
-					// login row
-					if (parts.length > columnId) {
-						login = parts[columnId].trim();
-						if (!UserManager.getInstance().syntaxCheckOlatLogin(login)) {
-							textAreaElement.setErrorKey("error.login", new String[] { String.valueOf(i + 1), login });
-							importDataError = true;
-							break;
-						}
-					} else {
-						textAreaElement.setErrorKey("error.columncount", new String[] { String.valueOf(i + 1) });
+			boolean importDataError = false;
+			for (int j = 0; j < userPropertyHandlers.size(); j++) {
+				UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(j);
+				String thisKey = userPropertyHandler.getName();
+				String thisValue = "";
+				// last columns may be empty if not mandatory
+				if (parts.length <= columnId) {
+					thisValue = "";
+				} else {
+					thisValue = parts[columnId].trim();
+				}
+				boolean isMandatoryField = um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler);
+				if (isMandatoryField && !StringHelper.containsNonWhitespace(thisValue)) {
+					textAreaElement.setErrorKey("error.mandatory", new String[] { String.valueOf(i + 1), translate(userPropertyHandler.i18nFormElementLabelKey()) });
+					importDataError = true;
+					break;
+				}
+				// used for call-back value depending on PropertyHandler
+				ValidationError validationError = new ValidationError();
+				if (!userPropertyHandler.isValidValue(null, thisValue, validationError, getLocale())) {
+					textAreaElement.setErrorKey("error.lengthorformat", new String[] { String.valueOf(i + 1), translate(userPropertyHandler.i18nFormElementLabelKey()),
+							translate(validationError.getErrorKey(), validationError.getArgs()) });
+					importDataError = true;
+					break;
+				}
+				// check that no user with same (institutional) e-mail is already in OLAT
+				if ( (thisKey.equals(UserConstants.INSTITUTIONALEMAIL) || thisKey.equals(UserConstants.EMAIL)) && !thisValue.isEmpty() ) {
+					// check that no user with same email is already in OLAT
+					Identity identity = UserManager.getInstance().findIdentityByEmail(thisValue);
+					if (identity != null && !identity.equals(ud)) {
+						textAreaElement.setErrorKey("error.email.exists", new String[] { String.valueOf(i + 1), thisValue });
 						importDataError = true;
 						break;
 					}
-					columnId++;
-
-					// pwd row
-					if (canCreateOLATPassword) {
-						if (parts.length > columnId) {
-							pwd = parts[columnId].trim();
-							if (StringHelper.containsNonWhitespace(pwd)) {
-								if (!UserManager.getInstance().syntaxCheckOlatPassword(pwd)) {
-									textAreaElement.setErrorKey("error.pwd", new String[] { String.valueOf(i + 1), pwd });
-									importDataError = true;
-									break;
-								}
-							} else {
-								// treat all white-space-only passwords as non-passwords.
-								// the user generation code below will then generate no
-								// authentication token for this user
-								pwd = null;
-							}
-						} else {
-							textAreaElement.setErrorKey("error.columncount", new String[] { String.valueOf(i + 1) });
-							importDataError = true;
-							break;
-						}
-					} else {
-						pwd = null;
+				}
+				// check that no user with same email is already in list
+				if (thisKey.equals(UserConstants.EMAIL)) {
+					// check that no user with same email is already in list
+					Integer mailPos = importedEmails.indexOf(thisValue);
+					boolean duplicate = mailPos != -1;
+					if (!duplicate) {
+						duplicate |= tempEmailsInUse.contains(thisValue);
 					}
-					columnId++;
 
-					// optional language fields
-					if (parts.length > columnId) {
-						lang = parts[columnId].trim();
-						if (lang.equals("")) {
-							lang = defaultlang;
-						} else if (!languages.contains(lang)) {
-							textAreaElement.setErrorKey("error.lang", new String[] { String.valueOf(i + 1), lang });
-							importDataError = true;
-							break;
-						}
+					if (duplicate) {
+						mailPos++;
+						textAreaElement.setErrorKey("error.email.douplicate",
+								new String[] { String.valueOf(i + 1), thisValue, mailPos.toString() });
+						importDataError = true;
+						break;
 					} else {
-						lang = defaultlang;
-					}
-					columnId++;
-
-					Identity ident = BaseSecurityManager.getInstance().findIdentityByName(login);
-					if (ident != null) {
-						// ignore existing accounts, add info message
-						idents.add(ident);
-					} else {
-						// no identity/user yet, create
-						UserManager um = UserManager.getInstance();
-						UserPropertyHandler userPropertyHandler;
-						String thisKey = "";
-						String thisValue = "";
-						// check that no user with same login name is already in list
-						for (Iterator<TransientIdentity> it_news = newIdents.iterator(); it_news.hasNext();) {
-							TransientIdentity singleUser = it_news.next();
-							if (singleUser.getName().equalsIgnoreCase(login)) {
-								textAreaElement.setErrorKey("error.login.douplicate", new String[] { String.valueOf(i + 1), login });
-								importDataError = true;
-								break;
-							}
-						}
-
-						TransientIdentity ud = new TransientIdentity();
-						// insert fix fields: login, pwd, lang from above
-						ud.setName(login);
-						ud.setPassword(pwd);
-						ud.setLanguage(lang);
-
-						for (int j = 0; j < userPropertyHandlers.size(); j++) {
-							userPropertyHandler = userPropertyHandlers.get(j);
-							thisKey = userPropertyHandler.getName();
-							// last columns may be empty if not mandatory
-							if (parts.length <= columnId) {
-								thisValue = "";
-							} else {
-								thisValue = parts[columnId].trim();
-							}
-							boolean isMandatoryField = um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler);
-							if (isMandatoryField && !StringHelper.containsNonWhitespace(thisValue)) {
-								textAreaElement.setErrorKey("error.mandatory", new String[] { String.valueOf(i + 1), translate(userPropertyHandler.i18nFormElementLabelKey()) });
-								importDataError = true;
-								break;
-							}
-							// used for call-back value depending on PropertyHandler
-							ValidationError validationError = new ValidationError();
-							if (!userPropertyHandler.isValidValue(null, thisValue, validationError, getLocale())) {
-								textAreaElement.setErrorKey("error.lengthorformat", new String[] { String.valueOf(i + 1), translate(userPropertyHandler.i18nFormElementLabelKey()),
-										translate(validationError.getErrorKey(), validationError.getArgs()) });
-								importDataError = true;
-								break;
-							}
-							// check that no user with same (institutional) e-mail is already in OLAT
-							if ( (thisKey.equals(UserConstants.INSTITUTIONALEMAIL) || thisKey.equals(UserConstants.EMAIL)) && !thisValue.isEmpty() ) {
-								// check that no user with same email is already in OLAT
-								Identity identity = UserManager.getInstance().findIdentityByEmail(thisValue);
-								if (identity != null) {
-									textAreaElement.setErrorKey("error.email.exists", new String[] { String.valueOf(i + 1), thisValue });
-									importDataError = true;
-									break;
-								}
-							}
-							// check that no user with same email is already in list
-							if (thisKey.equals(UserConstants.EMAIL)) {
-								// check that no user with same email is already in list
-								Integer mailPos = importedEmails.indexOf(thisValue);
-								// fxdiff
-								//TODO unique user property
-								boolean duplicate = mailPos != -1;
-								if (!duplicate) {
-									duplicate |= tempEmailsInUse.contains(thisValue);
-								}
-								if(!duplicate) {
-									duplicate |= um.isEmailInUse(thisValue);
-								}
-
-								if (duplicate) { // fxdiff >
-									mailPos++;
-									textAreaElement.setErrorKey("error.email.douplicate",
-											new String[] { String.valueOf(i + 1), thisValue, mailPos.toString() });
-									importDataError = true;
-									break;
-								} else {
-									importedEmails.add(thisValue);
-								}
-							}
-							ud.setProperty(thisKey, thisValue);
-							columnId++;
-						}
-						idents.add(ud);
-						newIdents.add(ud);
+						importedEmails.add(thisValue);
 					}
 				}
+				ud.getUser().setProperty(thisKey, thisValue);
+				columnId++;
 			}
-
-			if (importDataError) return false;
-
-			return true;
+			return importDataError;
 		}
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("title");
 
-			textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step0.html");
+			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step0.html");
 			formLayout.add(textContainer);
 			textContainer.contextPut("canCreateOLATPassword", canCreateOLATPassword);
 

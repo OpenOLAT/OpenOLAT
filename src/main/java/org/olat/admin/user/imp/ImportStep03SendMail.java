@@ -60,5 +60,4 @@ public class ImportStep03SendMail extends BasicStep {
 		StepFormController stepI = new SendMailConfirmationController(ureq, windowControl, form, stepsRunContext);
 		return stepI;
 	}
-
 }

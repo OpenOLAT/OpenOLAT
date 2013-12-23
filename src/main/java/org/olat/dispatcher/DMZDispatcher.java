@@ -25,6 +25,7 @@
 
 package org.olat.dispatcher;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.form.flexible.impl.InvalidRequestParameterException;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.ChiefControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
@@ -274,6 +276,12 @@ public class DMZDispatcher implements Dispatcher {
 				}
 				window.dispatchRequest(ureq);
 			}
+		} catch (InvalidRequestParameterException e) {
+			try {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			} catch (IOException e1) {
+				log.error("An exception occured while handling the invalid request parameter exception...", e1);
+			}
 		} catch (Throwable th) {
 			try {
 				ChiefController msgcc = MsgFactory.createMessageChiefController(ureq, th);
@@ -282,8 +290,7 @@ public class DMZDispatcher implements Dispatcher {
 				// do not dispatch (render only), since this is a new Window created as
 				// a result of another window's click.
 			} catch (Throwable t) {
-				log.error("An exception occured while handling the exception...",t);
-
+				log.error("An exception occured while handling the exception...", t);
 			}
 		}
 	}

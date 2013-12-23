@@ -1646,6 +1646,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup) {
+		if(businessGroup == null || identity == null) return false;
+		
 		SecurityGroup participants = businessGroup.getPartipiciantGroup();
 		if (participants != null && securityManager.isIdentityInSecurityGroup(identity, participants)) {
 			return true;

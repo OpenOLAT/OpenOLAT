@@ -22,6 +22,7 @@ package org.olat.search.service;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TopDocs;
@@ -66,7 +67,7 @@ class SearchCallable implements Callable<SearchResults> {
 	}
 	
 	@Override
-	public SearchResults call() {
+	public SearchResults call() throws ParseException {
 		try {
 			boolean debug = log.isDebug();
 			
@@ -80,17 +81,19 @@ class SearchCallable implements Callable<SearchResults> {
 			BooleanQuery query = searchService.createQuery(queryString, condQueries);
 			if(debug) log.debug("query=" + query);
 			
-	    long startTime = System.currentTimeMillis();
-	    int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
+			long startTime = System.currentTimeMillis();
+			int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
 	
-	    TopDocs docs = searcher.search(query, n);
-	    long queryTime = System.currentTimeMillis() - startTime;
-	    if(debug) log.debug("hits.length()=" + docs.totalHits);
-	    SearchResultsImpl searchResult = new SearchResultsImpl(searchService.getMainIndexer(), searcher, docs, query, searchService.getAnalyzer(), identity, roles, firstResult, maxResults, doHighlighting, false);
-	    searchResult.setQueryTime(queryTime);
-	    searchResult.setNumberOfIndexDocuments(docs.totalHits);
+			TopDocs docs = searcher.search(query, n);
+			long queryTime = System.currentTimeMillis() - startTime;
+			if(debug) log.debug("hits.length()=" + docs.totalHits);
+			SearchResultsImpl searchResult = new SearchResultsImpl(searchService.getMainIndexer(), searcher, docs, query, searchService.getAnalyzer(), identity, roles, firstResult, maxResults, doHighlighting, false);
+			searchResult.setQueryTime(queryTime);
+			searchResult.setNumberOfIndexDocuments(docs.totalHits);
 
 			return searchResult;
+		} catch(ParseException pex) {
+			throw pex;
 		} catch (Exception naex) {
 			log.error("", naex);
 			return null;

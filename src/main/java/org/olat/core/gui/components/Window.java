@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.components;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
+import org.olat.core.gui.components.form.flexible.impl.InvalidRequestParameterException;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.ChiefController;
@@ -494,6 +496,12 @@ public class Window extends Container {
 						}
 						
 						wbackofficeImpl.pushCommands(request, response);
+					}  catch (InvalidRequestParameterException e) {
+						try {
+							response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+						} catch (IOException e1) {
+							log.error("An exception occured while handling the invalid request parameter exception...", e1);
+						}
 					} catch (Throwable th) {
 						// in any case, try to inform the user appropriately.
 						// a) error while dispatching (e.g. db problem, npe, ...)
