@@ -171,10 +171,9 @@
 			<props>
 				<prop key="hibernate.cache.use_query_cache">true</prop>
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
-				<prop key="hibernate.cache.region.factory_class">org.hibernate.cache.infinispan.JndiInfinispanRegionFactory</prop>
+				<prop key="hibernate.cache.region.factory_class">org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory</prop>
+				<prop key="hibernate.cache.infinispan.cachemanager">java:jboss/infinispan/container/hibernate</prop>
 				<prop key="hibernate.transaction.manager_lookup_class">org.hibernate.transaction.JBossTransactionManagerLookup</prop>
-				<prop key="hibernate.cache.infinispan.use_synchronization">false</prop>
-				<prop key="hibernate.cache.infinispan.cachemanager">java:jboss/infinispan/hibernate</prop>
 			</props>
 		</constructor-arg>        
 	</bean>

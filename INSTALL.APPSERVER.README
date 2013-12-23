@@ -20,7 +20,7 @@ and for Glassfish
 Configuration JBoss AS 7.1
 --------------------------
 
-1. I use a JBoss AS 7.1.1 with Hibernate upgraded to the latest version.
+1. I use a JBoss AS 7.1.1 with Hibernate upgraded to the latest version or JBoss AS 7.1.3.
 2. Define a JDBC connection pool in your standalone.xml configuration with a jndi-name like:
      java:jboss/datasources/OpenOLATDS and set this JNDI name
    in olat.local.properties set the following properties:
@@ -28,6 +28,29 @@ Configuration JBoss AS 7.1
      db.jndi=java:jboss/datasources/OpenOLATDS
      hibernate.cache=disabled
 3. Create a queue with a jndi-name like:
+     java:jboss/exported/jms/queue/searchQueue
+   and a topic:
+     java:jboss/exported/jms/topic/sysbus
+   in olat.local.properties set the following properties:
+     jms.provider=jndi
+     jms.broker.jndi=java:/ConnectionFactory
+     sysbus.broker.jndi=java:jboss/exported/jms/topic/sysbus
+     search.broker.jndi=java:jboss/exported/jms/queue/searchQueue
+     index.broker.jndi=java:jboss/exported/jms/queue/indexQueue
+     exam.broker.jndi=java:jboss/exported/jms/queue/examQueue
+4. In the databaseCoreContext.xml in the bean with id: hibernateCacheProps_enabled_Cluster
+   remove the properties "hibernate.cache.region.factory_class" and "hibernate.cache.infinispan.cachemanager"
+   set the two cache properties "hibernate.cache.use_query_cache" and "hibernate.cache.use_second_level_cache" to false
+     
+Configuration WildFly (JBoss AS 8.0)
+------------------------------------
+
+1. Define a JDBC connection pool in your standalone.xml configuration with a jndi-name like:
+     java:jboss/datasources/OpenOLATDS and set this JNDI name
+   in olat.local.properties set the following properties:
+     db.source=jndi
+     db.jndi=java:jboss/datasources/OpenOLATDS
+2. Create a queue with a jndi-name like:
      java:jboss/exported/jms/queue/searchQueue
    and a topic:
      java:jboss/exported/jms/topic/sysbus
