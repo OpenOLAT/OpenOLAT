@@ -32,6 +32,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -228,13 +229,23 @@ public class SearchServiceImpl implements SearchService {
 	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
 			int firstResult, int maxResults, boolean doHighlighting)
 	throws ServiceNotAvailableException, ParseException {
+	
 		try {
 			SearchCallable run = new SearchCallable(queryString,  condQueries, identity, roles, firstResult, maxResults, doHighlighting, this);
 			Future<SearchResults> futureResults = searchExecutor.submit(run);
 			SearchResults results = futureResults.get();
 			queryCount++;
 			return results;
-		} catch (Exception e) {
+		} catch (InterruptedException e) {
+			log.error("", e);
+			return null;
+		} catch (ExecutionException e) {
+			Throwable e1 = e.getCause();
+			if(e1 instanceof ParseException) {
+				throw (ParseException)e1;
+			} else if(e1 instanceof ServiceNotAvailableException) {
+				throw (ServiceNotAvailableException)e1;
+			}
 			log.error("", e);
 			return null;
 		}
