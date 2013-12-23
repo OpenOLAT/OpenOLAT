@@ -421,6 +421,32 @@ public class StringHelper {
 		return true;
 	}
 	
+	public static String cleanUTF8ForXml(String string) {
+		if(string == null) return null;
+		if(string.length() == 0) return string;
+		
+		StringBuilder sb = new StringBuilder();
+		char[] charArr = string.toCharArray();
+		int numOfCharacters = charArr.length;
+		for(int i=0; i<numOfCharacters; i++) {
+			char ch = charArr[i];
+			if(ch < 32) {
+				switch(ch) {
+					case '\n': sb.append(ch); break;//0x000A
+					case '\t': sb.append(ch); break;//0x0009
+					case '\r': sb.append(ch); break;//0x000D
+				}
+			} else if(ch >= 0x0020 && ch <= 0xD7FF) {
+				sb.append(ch);
+			} else if(ch >= 0xE000 && ch <= 0xFFFD) {
+				sb.append(ch);
+			} else if(ch >= 0x10000 && ch <= 0x10FFFF) {
+				sb.append(ch);
+			}
+		}
+		return sb.toString();
+	}
+	
 	public static String replaceAllCaseInsensitive(String expression, String name, String replacement) {
 		if(!StringHelper.containsNonWhitespace(expression)) {
 			return expression;

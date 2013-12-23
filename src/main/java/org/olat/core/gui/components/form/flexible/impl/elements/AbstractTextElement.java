@@ -33,6 +33,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 import org.olat.core.util.filter.Filter;
@@ -167,7 +168,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 			}
 		}
 
-		this.value = value;//.replaceAll("\\p{Cc}", "");
+		this.value = StringHelper.cleanUTF8ForXml(value);
 		Component c = getComponent();
 		if (c != null) {
 			// c may be null since it is only created when this formelement is added to a FormItemContainer
