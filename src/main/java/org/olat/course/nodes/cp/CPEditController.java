@@ -88,7 +88,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_DELIVERYOPTIONS = "deliveryOptions";
   
 	// NLS support:	
-	private static final String NLS_ERROR_CPREPOENTRYMISSING = "error.cprepoentrymissing";
+	public static final String NLS_ERROR_CPREPOENTRYMISSING = "error.cprepoentrymissing";
 	private static final String NLS_NO_CP_CHOSEN = "no.cp.chosen";
 	private static final String NLS_CONDITION_ACCESSIBILITY_TITLE = "condition.accessibility.title";
 	private static final String NLS_COMMAND_CHOOSECP = "command.choosecp";
