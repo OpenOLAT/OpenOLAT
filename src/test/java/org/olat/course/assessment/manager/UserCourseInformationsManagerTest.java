@@ -20,15 +20,20 @@
 package org.olat.course.assessment.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.restapi.repository.course.CoursesWebService;
@@ -43,6 +48,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class UserCourseInformationsManagerTest extends OlatTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(UserCourseInformationsManagerTest.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -50,12 +57,12 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	private UserCourseInformationsManager userCourseInformationsManager;
 	
 	@Test
-	public void createUpdateCourseInfos() {
+	public void createUpdateCourseInfos_create() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-1-" + UUID.randomUUID().toString());
 		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
 		dbInstance.commitAndCloseSession();
 		
-		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user);
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user, true);
 		dbInstance.commitAndCloseSession();
 		
 		UserCourseInformations infos = userCourseInformationsManager.getUserCourseInformations(course.getResourceableId(), user);
@@ -72,12 +79,29 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void createUpdateCourseInfos_updateToo() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-1-" + UUID.randomUUID().toString());
+		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		dbInstance.commitAndCloseSession();
+		
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user, true);
+		dbInstance.commitAndCloseSession();
+		
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user, true);
+		dbInstance.commitAndCloseSession();
+		
+		UserCourseInformations infos = userCourseInformationsManager.getUserCourseInformations(course.getResourceableId(), user);
+		Assert.assertNotNull(infos);
+		Assert.assertNotNull(infos.getIdentity());
+	}
+	
+	@Test
 	public void getInitialLaunchDate() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-2-" + UUID.randomUUID().toString());
 		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
 		dbInstance.commitAndCloseSession();
 		
-		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user);
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user, true);
 		dbInstance.commitAndCloseSession();
 		
 		Date launchDate = userCourseInformationsManager.getInitialLaunchDate(course.getResourceableId(), user);
@@ -91,8 +115,8 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		ICourse course = CoursesWebService.createEmptyCourse(user1, "course-launch-dates", "course long name", null);
 		dbInstance.commitAndCloseSession();
 		
-		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user1);
-		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user2);
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user1, true);
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user2, true);
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> users = new ArrayList<Identity>();
@@ -106,5 +130,106 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		Assert.assertNotNull(launchDates.get(user1.getKey()));
 		Assert.assertTrue(launchDates.containsKey(user2.getKey()));
 		Assert.assertNotNull(launchDates.get(user2.getKey()));
+	}
+	
+	
+	/**
+	 * This test is to analyze a red screen
+	 */
+	@Test
+	public void updateInitialLaunchDates_loop() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-5-" + UUID.randomUUID().toString());
+		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		dbInstance.commitAndCloseSession();
+		
+		for(int i=0; i<10; i++) {
+			userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user, true);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> users = Collections.singletonList(user);
+		Map<Long,Date> launchDates = userCourseInformationsManager.getInitialLaunchDates(course.getResourceableId(), users);
+		Assert.assertNotNull(launchDates);
+		Assert.assertEquals(1, launchDates.size());
+		Assert.assertTrue(launchDates.containsKey(user.getKey()));
+		Assert.assertNotNull(launchDates.get(user.getKey()));
+	}
+	
+	/**
+	 * This test is to analyze a red screen
+	 */
+	@Test
+	public void updateInitialLaunchDates_concurrent() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-concurrent-6-" + UUID.randomUUID().toString());
+		ICourse course = CoursesWebService.createEmptyCourse(user, "course-concurrent-launch-dates", "course long name", null);
+		dbInstance.commitAndCloseSession();
+		
+		final int numThreads = 20;
+		
+		CountDownLatch latch = new CountDownLatch(numThreads);
+		UpdateThread[] threads = new UpdateThread[numThreads];
+		for(int i=0; i<threads.length;i++) {
+			threads[i] = new UpdateThread(user, course.getResourceableId(), userCourseInformationsManager, latch, dbInstance);
+		}
+
+		for(int i=0; i<threads.length;i++) {
+			threads[i].start();
+		}
+		
+		try {
+			latch.await(120, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			log.error("", e);
+		}
+		
+		int countErrors = 0;
+		for(int i=0; i<threads.length;i++) {
+			countErrors += threads[i].getErrors();
+		}
+		
+		Assert.assertEquals(0, countErrors);
+	}
+	
+	private static class UpdateThread extends Thread {
+		
+		private final DB db;
+		private final CountDownLatch latch;
+		private final UserCourseInformationsManager uciManager;
+		
+		private final Long courseResourceableId;
+		private final Identity user;
+		
+		private int errors = 0;
+		
+		public UpdateThread(Identity user, Long courseResourceableId,
+				UserCourseInformationsManager uciManager, CountDownLatch latch, DB db) {
+			this.user = user;
+			this.courseResourceableId = courseResourceableId;
+			this.uciManager = uciManager;
+			this.latch = latch;
+			this.db = db;
+		}
+
+		public int getErrors() {
+			return errors;
+		}
+
+		@Override
+		public void run() {
+			try {
+				Thread.sleep(10);
+				for(int i=0; i<25;i++) {
+					uciManager.updateUserCourseInformations(courseResourceableId, user, true);
+					uciManager.getUserCourseInformations(courseResourceableId, user);
+					uciManager.updateUserCourseInformations(courseResourceableId, user, true);
+					db.commitAndCloseSession();
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				errors++;
+			} finally {
+				latch.countDown();
+			}
+		}
 	}
 }
