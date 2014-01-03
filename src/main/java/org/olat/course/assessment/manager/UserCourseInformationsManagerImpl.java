@@ -218,7 +218,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 	private final boolean needUpdate(UltraLightInfos infos) {
 		Date lastModified = infos.getLastModified();
 		if(System.currentTimeMillis() - lastModified.getTime()  < 60000) {
-			return true;
+			return false;
 		}
 		return true;
 	}
