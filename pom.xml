@@ -221,6 +221,11 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<dependencies>
+				<dependency>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+					<version>1.2.17</version>
+				</dependency>
 				<!-- Jersey for tomcat -->
 				<dependency>
 					<groupId>javax.ws.rs</groupId>
@@ -378,6 +383,10 @@
 							<groupId>commons-logging</groupId>
 							<artifactId>commons-logging-api</artifactId>
 						</exclusion>
+						<exclusion>
+							<groupId>commons-logging</groupId>
+							<artifactId>commons-logging</artifactId>
+						</exclusion>
 					</exclusions>
 				</dependency>
 				<!-- webservice stack -->
@@ -425,10 +434,102 @@
 			<id>jbossas7</id>
 			<dependencies>
 				<dependency>
+					<groupId>javax.ws.rs</groupId>
+					<artifactId>jsr311-api</artifactId>
+					<version>1.1.1</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
 					<groupId>com.sun.jersey</groupId>
 					<artifactId>jersey-servlet</artifactId>
 					<version>${com.sun.jersey.version}</version>
 					<scope>test</scope>
+				</dependency>
+
+				<dependency>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-jms_1.1_spec</artifactId>
+					<version>1.1.1</version>
+					<scope>provided</scope>
+				</dependency>
+				
+				<dependency>
+					<groupId>dom4j</groupId>
+					<artifactId>dom4j</artifactId>
+					<version>1.6.1</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-core</artifactId>
+					<version>${org.hibernate.version}</version>
+					<scope>provided</scope>
+					<exclusions>
+						<exclusion>
+							<groupId>org.slf4j</groupId>
+							<artifactId>slf4j-log4j12</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-entitymanager</artifactId>
+					<version>${org.hibernate.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-infinispan</artifactId>
+					<version>${org.hibernate.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-c3p0</artifactId>
+					<version>${org.hibernate.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				
+				<dependency>
+					<groupId>org.infinispan</groupId>
+					<artifactId>infinispan-core</artifactId>
+					<version>${org.infinispan.version}</version>
+					<scope>provided</scope>
+					<exclusions>
+						<exclusion>
+							<groupId>org.jboss.spec.javax.transaction</groupId>
+							<artifactId>jboss-transaction-api_1.1_spec</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.jboss.logging</groupId>
+							<artifactId>jboss-logging</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.codehaus.woodstox</groupId>
+							<artifactId>woodstox-core-asl</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.codehaus.woodstox</groupId>
+							<artifactId>stax2-api</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.rhq.helpers</groupId>
+							<artifactId>rhq-pluginAnnotations</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+		
+				<dependency>
+					<groupId>mysql</groupId>
+					<artifactId>mysql-connector-java</artifactId>
+					<version>${org.mysql.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>${org.postgresql.version}</version>
+					<scope>provided</scope>
 				</dependency>
 			</dependencies>
 			<build>
@@ -532,6 +633,10 @@
 						<exclusion>
 							<groupId>commons-logging</groupId>
 							<artifactId>commons-logging-api</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>commons-logging</groupId>
+							<artifactId>commons-logging</artifactId>
 						</exclusion>
 					</exclusions>
 				</dependency>
@@ -1188,6 +1293,9 @@
 				<!-- when enabled resources will be searched and variables replaces with 
 					values -->
 				<filtering>false</filtering>
+				<excludes>
+					<exclude>log4j.xml</exclude>
+				</excludes>
 			</resource>
 		</resources>
     <testResources>
@@ -1564,6 +1672,10 @@
 					<groupId>commons-logging</groupId>
 					<artifactId>commons-logging-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 	    <!-- <OLATCE-1322> -->
@@ -1611,6 +1723,12 @@
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
 			<version>1.0.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency><!-- Velocity dependency -->
 			<groupId>oro</groupId>
@@ -1652,6 +1770,12 @@
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
 			<version>1.8.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
@@ -1742,7 +1866,8 @@
 			<groupId>gnu-regexp</groupId>
 			<artifactId>gnu-regexp</artifactId>
 			<version>1.1.4</version>
-		</dependency>	
+		</dependency>
+		<!-- logging stuff -->	
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -1753,6 +1878,24 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.5.11</version>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>1.5.8</version>
+		</dependency>
+		<!-- Replace commons-logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.5.8</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- basic LTI stuff for lti demo: http://www.imsglobal.org/toolsinteroperability2.cfm -->
 		<dependency>
 			<groupId>org.sakaiproject.basiclti</groupId>
@@ -1809,14 +1952,15 @@
 			<version>5.0</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -1827,6 +1971,12 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -1902,11 +2052,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.14</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
 			<version>1.7</version>
@@ -1930,7 +2075,7 @@
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
-			<version>1.4.4</version>
+			<version>1.4.5</version>
 		</dependency>
 		<dependency>
 			<groupId>cos</groupId>
@@ -2006,6 +2151,12 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>${org.springframework.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -2016,11 +2167,23 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
 			<version>${org.springframework.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 			<version>${org.springframework.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -2102,13 +2265,13 @@
 		<dependency>
 		    <groupId>io.undertow</groupId>
 		    <artifactId>undertow-core</artifactId>
-		    <version>1.0.0.Beta21</version>
+		    <version>1.0.0.Beta30</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 		    <groupId>io.undertow</groupId>
 		    <artifactId>undertow-servlet</artifactId>
-		    <version>1.0.0.Beta21</version>
+		    <version>1.0.0.Beta30</version>
 			<scope>test</scope>
 		</dependency>
     
@@ -2143,6 +2306,12 @@
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
