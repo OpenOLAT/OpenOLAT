@@ -42,7 +42,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -345,13 +344,10 @@ public class RichTextConfiguration implements Disposable {
 	private void setLanguage(Locale loc) {
 		// tiny does not support country or variant codes, only language code
 		String langKey = loc.getLanguage();
-
-		String contextRoot = WebappHelper.getContextRoot();
-		if(StringHelper.containsNonWhitespace(contextRoot)) {
-			File file = new File(contextRoot, "static/js/tinymce4/tinymce/langs/" + langKey + ".js");
-			if(!file.exists()) {
-				langKey = "en";
-			}
+		String path = "/static/js/tinymce4/tinymce/langs/" + langKey + ".js";
+		String realPath = WebappHelper.getContextRealPath(path);
+		if(realPath == null || !(new File(realPath).exists())) {
+			langKey = "en";
 		}
 		setQuotedConfigValue(LANGUAGE, langKey);
 	}

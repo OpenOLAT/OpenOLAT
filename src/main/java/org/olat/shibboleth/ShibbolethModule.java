@@ -25,15 +25,11 @@
 
 package org.olat.shibboleth;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
-import org.olat.core.util.WebappHelper;
 import org.olat.shibboleth.util.AttributeTranslator;
 
 /**
@@ -120,40 +116,6 @@ public class ShibbolethModule extends AbstractOLATModule {
 	 */
 	public void setOperators(List<String> operators) {
 		ShibbolethModule.operators = operators;
-	}
-
-	
-	public static String getSanitizedFileLocation(String location) {
-		if (location == null || location.length() == 0)
-			return null;
-		// try as URL
-		try {
-			new URL(location);
-			return location;
-		} catch (MalformedURLException e) {
-			// ok, we'll try files
-		}
-		// try as absolute file
-		File fAbsFile = new File(location);
-		if (fAbsFile.exists()) {
-			try {
-				return fAbsFile.toURL().toExternalForm();
-			} catch (MalformedURLException e2) {
-				return null;
-			}
-		}
-		// assemble as relative file
-		if (!location.startsWith(location)) location = "/" + location;
-		location = WebappHelper.getContextRoot() + location;
-		fAbsFile = new File(location);
-		if (fAbsFile.exists()) {
-			try {
-				return fAbsFile.toURL().toExternalForm();
-			} catch (MalformedURLException e2) {
-				return null;
-			}
-		}
-		return null;
 	}
 	
 	// Getters and Setters //

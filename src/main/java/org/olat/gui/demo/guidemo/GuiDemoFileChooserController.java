@@ -51,9 +51,8 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  * @author gnaegi
  */
 public class GuiDemoFileChooserController extends BasicController {
-	private FileChooserController chooserCtr;
-	private VelocityContainer contentVC;
-	
+	private final FileChooserController chooserCtr;
+	private final File webappRootFile;
 	
 	/**
 	 * Constructor for the file chooser gui demo
@@ -63,10 +62,10 @@ public class GuiDemoFileChooserController extends BasicController {
 	public GuiDemoFileChooserController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		// Main view is a velocity container
-		contentVC = createVelocityContainer("guidemo-filechooser");
+		VelocityContainer contentVC = createVelocityContainer("guidemo-filechooser");
 
 		// Create File chooser for the web app root directory
-		File webappRootFile = new File(WebappHelper.getContextRoot());
+		webappRootFile = new File(WebappHelper.getContextRealPath("/static"));
 		VFSContainer webappRoot = new LocalFolderImpl(webappRootFile);	
 		// don't show cvs and hidden files meta files
 		VFSItemFilter filter = new VFSItemExcludePrefixFilter(new String[]{"CVS","cvs", "."});
@@ -76,8 +75,8 @@ public class GuiDemoFileChooserController extends BasicController {
 		contentVC.put("chooserCtr", chooserCtr.getInitialComponent());
 		
 		//add source view control
-    Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), contentVC);
-    contentVC.put("sourceview", sourceview.getInitialComponent());
+		Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), contentVC);
+		contentVC.put("sourceview", sourceview.getInitialComponent());
 
 		putInitialPanel(contentVC);
 	}
@@ -87,9 +86,7 @@ public class GuiDemoFileChooserController extends BasicController {
 	 */
 	@Override
 	protected void doDispose() {
-		contentVC = null;
 		// Controllers auto disposed by basic controller
-		chooserCtr = null;
 	}
 
 	/**
@@ -104,8 +101,8 @@ public class GuiDemoFileChooserController extends BasicController {
 				// for this demo just get file path and display an info message
 				LocalImpl localFile = (LocalImpl) selectedItem;
 				String absPath = localFile.getBasefile().getAbsolutePath();
-				String relPath = absPath.substring(WebappHelper.getContextRoot().length());
-				getWindowControl().setInfo("user selected " + relPath);
+				String relPath = absPath.substring(webappRootFile.getAbsolutePath().length());
+				getWindowControl().setInfo("user selected /static" +  relPath);
 				
 			}	else if (event == Event.CANCELLED_EVENT) {
 				// user pressed cancel
@@ -125,5 +122,4 @@ public class GuiDemoFileChooserController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch
 	}
-
 }

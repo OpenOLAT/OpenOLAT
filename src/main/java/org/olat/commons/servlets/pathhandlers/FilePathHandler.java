@@ -56,9 +56,10 @@ public class FilePathHandler implements PathHandler {
 		String rootConf = config;
 		if (rootConf == null) throw new StartupException("child 'root' missing in config for filepathhandler");
 		File f = new File(rootConf);
-		if (f.isAbsolute()) setRoot(rootConf);
-		else {
-			setRoot(WebappHelper.getContextRoot() + "/" + rootConf);
+		if (f.isAbsolute()) {
+			setRoot(rootConf);
+		} else {
+			setRoot(WebappHelper.getContextRealPath("/" + rootConf));
 		}
 	}
 

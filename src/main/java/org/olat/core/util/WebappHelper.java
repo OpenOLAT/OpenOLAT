@@ -206,12 +206,21 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	}
 
 	/**
-	 * This path is depends how you deploy OLAT. When deploying in eclipse you will get an different path 
-	 * than deploying within tomcat
+	 * This path is depends how you deploy OpenOLAT. When deploying in eclipse you will get an different path 
+	 * than deploying within tomcat and a different on JBoass AS / Wildfly. Use instead
+	 * @see getContextRealPath(java.lang.String path) to retrieve a path
 	 * @return the root folder of the webapplication, e.g. /opt/olat3/olat/target/classes  (no trailing slash)
 	 */
 	public static String getContextRoot() {
 		return contextRoot;
+	}
+	
+	public static String getContextRealPath(String path) {
+		if(Settings.isJUnitTest()) {
+			//The mocked servlet context of spring doesn't have a real real path
+			return contextRoot + path;
+		}
+		return servletContext.getRealPath(path);
 	}
 	
 	/**

@@ -39,6 +39,7 @@ import java.util.zip.ZipEntry;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.poi.util.IOUtils;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.StringHelper;
@@ -85,21 +86,6 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 		}
 		init(pakkage.getName());
 	}
-	
-	/**
-	 * Constructor that uses class cloader of given class
-	 * @param clazz
-	 * @param location the relative file path (e.g. _static/my/file.css)
-	 */
-	public ClasspathMediaResource(Class<?> clazz, String location) {
-		this.location = location;		
-		this.url = clazz.getResource(location);
-		String className = clazz.getName();
-		int ls = className.lastIndexOf('.');
-		// using baseClass.getPackage() would add unneeded inefficient and synchronized code
-		String packageName = className.substring(0, ls);
-		init(packageName);
-	}
 
 	/**
 	 * Internal helper to initialize everything for this file
@@ -121,10 +107,11 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 						String jarPath = "/" + fileName.substring(5, pathDelim);
 						// Rel path must not start with "!/", remove it
 						String relPath	= fileName.substring(pathDelim + 2);
+						JarFile jar = null;
 						try {
 							// Get last modified and file size form jar entry
 							File jarFile = new File(jarPath);
-							JarFile jar = new JarFile(jarFile);
+							jar = new JarFile(jarFile);
 							ZipEntry entry = jar.getEntry(relPath);
 							if (entry == null) {
 								logWarn("jar resource at location '"+location+"' and package " + packageName + " was not found, could not resolve entry relPath::" + relPath, null);
@@ -138,7 +125,9 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 							}
 						} catch (IOException e) {
 							logWarn("jar resource at location '"+location+"' and package " + packageName + " was not found!", e);
-						}				
+						} finally {
+							IOUtils.closeQuietly(jar);
+						}
 					}					
 				} else {
 					// For windows ignore the jar size and last modified, it
@@ -149,11 +138,13 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 			} else {
 				// Get last modified and file size
 				File f = new File(fileName);
-				long lm = f.lastModified();
-				this.lastModified = (lm != 0? lm : WebappHelper.getTimeOfServerStartup());
 				if (f.exists()) {
 					size = new Long(f.length());
-				}				
+					long lm = f.lastModified();
+					lastModified = (lm != 0? lm : WebappHelper.getTimeOfServerStartup());
+				} else {
+					url = null;
+				}
 			}			
 			if (isLogDebugEnabled()) {
 				logDebug("resource found at URL::" + this.url
@@ -171,6 +162,7 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getContentType()
 	 */
+	@Override
 	public String getContentType() {
 		String mimeType = WebappHelper.getMimeType(location);
 		if (mimeType == null) mimeType = "application/octet-stream";
@@ -181,6 +173,7 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getSize()
 	 */
+	@Override
 	public Long getSize() {
 		if (size != null && size > 0) return size;
 		else return null;
@@ -189,6 +182,7 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
 	 */
+	@Override
 	public InputStream getInputStream() {
 		InputStream is = null;
 		if (url == null) return null;
@@ -206,6 +200,7 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getLastModified()
 	 */
+	@Override
 	public Long getLastModified() {
 		return lastModified;
 	}
@@ -213,6 +208,7 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#release()
 	 */
+	@Override
 	public void release() {
 	// void
 	}
@@ -220,10 +216,12 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
 	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
 	//  
 	}
-	
+
+	@Override
 	public String toString() {
 		return "ClasspathMediaResource:"+url;
 	}

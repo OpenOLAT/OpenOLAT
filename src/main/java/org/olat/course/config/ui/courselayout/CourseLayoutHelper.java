@@ -132,7 +132,7 @@ public class CourseLayoutHelper {
 			}
 				
 			// 2. check if it's system-default 
-			String staticAbsPath = WebappHelper.getContextRoot() + "/static/coursethemes/";
+			String staticAbsPath = WebappHelper.getContextRealPath("/static/coursethemes/");
 			File themesFile = new File(staticAbsPath + selTheme);
 			if(themesFile.exists()  && themesFile.isDirectory())
 				return new LocalFolderImpl(themesFile);
@@ -167,7 +167,7 @@ public class CourseLayoutHelper {
 		List<VFSItem> courseThemes = new ArrayList<VFSItem>();
 
 		// 1. add the system-defaults
-		String staticAbsPath = WebappHelper.getContextRoot() + "/static";
+		String staticAbsPath = WebappHelper.getContextRealPath("/static");
 		File themesFile = new File(staticAbsPath);
 		VFSContainer cThemeCont = new LocalFolderImpl(themesFile);
 		cThemeCont = (VFSContainer) cThemeCont.resolve("/coursethemes");
@@ -204,7 +204,7 @@ public class CourseLayoutHelper {
 		}
 		// fallback is to use the standards themes directory in the web app
 		if (themeDir == null || !themeDir.exists() || !themeDir.isDirectory()) {
-			File themesDir = new File(WebappHelper.getContextRoot() + "/static/themes/");
+			File themesDir = new File(WebappHelper.getContextRealPath("/static/themes/"));
 			themeDir = new File(themesDir, Settings.getGuiThemeIdentifyer());
 		}
 		// resolve now

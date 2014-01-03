@@ -84,7 +84,7 @@ public class LayoutAdminController extends FormBasicController {
 	
 	private String[] getThemes(){
 		// get all themes from disc
-		String staticAbsPath = WebappHelper.getContextRoot() + "/static/themes";
+		String staticAbsPath = WebappHelper.getContextRealPath("/static/themes");
 		File themesDir = new File(staticAbsPath);
 		if(!themesDir.exists()){
 			logWarn("Themes dir not found: "+staticAbsPath, null);

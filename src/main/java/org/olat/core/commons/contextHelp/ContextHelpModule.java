@@ -56,7 +56,7 @@ public class ContextHelpModule extends AbstractOLATModule implements Destroyable
 	// Initilize context help lookup cache - VM scope, clustersave
 	private static final Map<String,String> contextHelpPagesLegacyLookupIndex = new HashMap<String,String>();
 	private static final Set<String> allContextHelpPages = new HashSet<String>();
-	private static Set blacklist;
+	private static Set<String> blacklist;
 	
 	/**
 	 * @see org.olat.core.configuration.AbstractOLATModule#init()
@@ -96,7 +96,7 @@ public class ContextHelpModule extends AbstractOLATModule implements Destroyable
 	 * [used by spring]
 	 * @param blackist
 	 */
-	public void setCHelpBlacklist(Set blackist) {
+	public void setCHelpBlacklist(Set<String> blackist) {
 		blacklist = blackist;
 	}
 	
@@ -115,13 +115,17 @@ public class ContextHelpModule extends AbstractOLATModule implements Destroyable
 		allContextHelpPages.clear();
 		
 		// 1)  Search for context help files from compiled web app classpath
-		String srcPath = WebappHelper.getContextRoot() + "/WEB-INF/classes";
-		ContextHelpVisitor srcVisitor = new ContextHelpVisitor(srcPath, contextHelpPagesLegacyLookupIndex, allContextHelpPages, blacklist);
-		FileUtils.visitRecursively(new File(srcPath), srcVisitor);
+		String srcPath = WebappHelper.getContextRealPath("/WEB-INF/classes");
+		if(srcPath != null) {
+			ContextHelpVisitor srcVisitor = new ContextHelpVisitor(srcPath, contextHelpPagesLegacyLookupIndex, allContextHelpPages, blacklist);
+			FileUtils.visitRecursively(new File(srcPath), srcVisitor);
+		}
 		// 2) Search in libs directory
+		/*
 		String libDirPath = WebappHelper.getContextRoot() + "/WEB-INF/lib";
 		ContextHelpVisitor libVisitor = new ContextHelpVisitor(libDirPath, contextHelpPagesLegacyLookupIndex, allContextHelpPages, blacklist);
-		FileUtils.visitRecursively(new File(libDirPath), libVisitor);		
+		FileUtils.visitRecursively(new File(libDirPath), libVisitor);
+		*/		
 	}
 
 

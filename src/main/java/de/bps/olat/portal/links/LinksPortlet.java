@@ -102,7 +102,7 @@ public class LinksPortlet extends AbstractPortlet {
 		OLog logger = Tracing.createLoggerFor(LinksPortlet.class);
 		if(logger.isDebug()) logger.debug("START: Loading remote portlets content.");
 		
-		File configurationFile = new File(WebappHelper.getContextRoot() + CONFIG_FILE);
+		File configurationFile = new File(WebappHelper.getContextRealPath(CONFIG_FILE));
 		// fxdiff: have file outside of war/olatapp
 		File fxConfFolder = new File(WebappHelper.getUserDataRoot() + "/customizing/linksPortlet");
 		if (!fxConfFolder.exists()) {

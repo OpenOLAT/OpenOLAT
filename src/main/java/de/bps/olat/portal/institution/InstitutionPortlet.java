@@ -138,7 +138,7 @@ public class InstitutionPortlet extends AbstractPortlet {
 
 		institutions = new FastHashMap();
 		
-		File configurationFile = new File(WebappHelper.getContextRoot() + CONFIG_FILE);
+		File configurationFile = new File(WebappHelper.getContextRealPath(CONFIG_FILE));
 		XStream xstream = getInstitutionConfigXStream();
 		InstitutionConfiguration configuration = (InstitutionConfiguration)xstream.fromXML(configurationFile);
 		

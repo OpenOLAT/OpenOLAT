@@ -444,7 +444,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 	 * @return the path of the static icon image.
 	 */
 	private String getImagePath(Object val) { 		
-		return WebappHelper.getContextRoot() + "/static/images/forum/" + val.toString() + ".png";				
+		return WebappHelper.getContextRealPath("/static/images/forum/" + val.toString() + ".png");				
 	}
 	
 	/**

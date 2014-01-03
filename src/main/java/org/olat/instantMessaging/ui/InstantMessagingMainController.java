@@ -25,7 +25,6 @@
 */
 package org.olat.instantMessaging.ui;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +46,6 @@ import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -118,11 +116,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		
 		Theme guiTheme = getWindowControl().getWindowBackOffice().getWindow().getGuiTheme();
 		String newMessageSoundURL = guiTheme.getBaseURI() + "/sounds/new_message.wav";
-		File soundFile = new File(WebappHelper.getContextRoot() + "/themes/" + guiTheme.getIdentifyer() + "/sounds/new_message.wav");
-		if (!soundFile.exists()) {
-			// fallback to default theme when file does not exist in configured theme
-			newMessageSoundURL = newMessageSoundURL.replace("/themes/" + guiTheme.getIdentifyer(), "/themes/openolat");
-		}
+		newMessageSoundURL = newMessageSoundURL.replace("/themes/" + guiTheme.getIdentifyer(), "/themes/openolat");
 		newMsgIcon.contextPut("newMessageSoundURL", newMessageSoundURL);
 		loadNotifications();
 

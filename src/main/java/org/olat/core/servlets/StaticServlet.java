@@ -107,7 +107,7 @@ public class StaticServlet extends HttpServlet {
 		if(Settings.isDebuging() && WebappHelper.getWebappSourcePath() != null) {
 			staticAbsPath = WebappHelper.getWebappSourcePath() + STATIC_DIR_NAME;
 		} else {
-			staticAbsPath = WebappHelper.getContextRoot() + STATIC_DIR_NAME;
+			staticAbsPath = WebappHelper.getContextRealPath(STATIC_DIR_NAME);
 		}
 		
 		File staticFile = new File(staticAbsPath, normalizedRelPath);
@@ -128,12 +128,18 @@ public class StaticServlet extends HttpServlet {
 				// try fallback without version ID
 				String fallbackPath = pathInfo.substring(1, pathInfo.length());
 				fallbackPath = ServletUtil.normalizePath(fallbackPath);
-				String fallbackAbsPath = WebappHelper.getContextRoot() + STATIC_DIR_NAME + fallbackPath;
-				staticFile = new File(fallbackAbsPath);
-				if (!staticFile.exists()) {
-					response.sendError(HttpServletResponse.SC_NOT_FOUND);
-					return;
-				} 
+				String fallbackAbsPath = WebappHelper.getContextRealPath(STATIC_DIR_NAME + fallbackPath);
+				if(fallbackAbsPath != null) {
+					staticFile = new File(fallbackAbsPath);
+					if (!staticFile.exists()) {
+						String realPath = request.getServletContext().getRealPath("/static" + normalizedRelPath);
+						staticFile = new File(realPath);
+						if(!staticFile.exists()) {
+							response.sendError(HttpServletResponse.SC_NOT_FOUND);
+							return;
+						}
+					}
+				}
 				// log as error, file exists but wrongly mapped
 				log.warn("File exists but not mapped using version - use StaticMediaDispatch methods to create URL of static files! invalid URI::" + request.getRequestURI(), null);			
 			}

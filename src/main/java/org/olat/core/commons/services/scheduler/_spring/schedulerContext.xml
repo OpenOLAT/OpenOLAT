@@ -35,9 +35,6 @@ How to add a new job:
             <ref bean="sendNotificationsEmailTrigger" />
             <!-- <ref bean="dumpJMXJobTrigger"/> -->
             <ref bean="adobeCleanupJob"/>
-		    <!--
-			<ref bean="translationToolStatusGeneratorTrigger"/>
-			-->
             <ref bean="updateStatisticsTrigger"/>
             <ref bean="searchIndexingTrigger"/>
             <ref bean="invitationCleanupTrigger" />
@@ -63,18 +60,6 @@ How to add a new job:
     <property name="repeatInterval" value="60000" />
 </bean>
 
-<bean id="translationToolStatusGeneratorTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-	<!-- Status generation is only needed for a translationserver. -->
-    <property name="jobDetail" ref="translationToolStatusGeneratorJob.${is.translation.server}" />
-    <property name="cronExpression" value="0 15 * * * ?" />
-	<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
-    <property name="startDelay" value="300000" />
-</bean>
-
-
-
-
-
 <!-- Example bean for cron style scheduling--> 
 <!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
 <!--
@@ -84,19 +69,6 @@ How to add a new job:
     <property name="startDelay" value="300000" />
 </bean>
  -->
- 
- <!-- enabled version -->
-<bean id="translationToolStatusGeneratorJob.enabled" class="org.springframework.scheduling.quartz.JobDetailBean"   lazy-init="true">
-	<property name="jobClass" value="org.olat.core.util.i18n.I18nTranslationStatusGeneratorJob" />
-</bean>
-
-<!-- dummy bean -->
-<bean id="translationToolStatusGeneratorJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
-	<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
-</bean>
-
-
-
 
 
 <!--  job definition  -->

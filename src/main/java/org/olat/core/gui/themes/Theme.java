@@ -73,7 +73,7 @@ public class Theme {
 	 * @return
 	 */
 	private File getCustomJSFile() {
-		String staticThemesPath = WebappHelper.getContextRoot() + "/static/themes/";
+		String staticThemesPath = WebappHelper.getContextRealPath("/static/themes/");
 		File themeFolder = new File(staticThemesPath, Settings.getGuiThemeIdentifyer());
 		if (!themeFolder.exists() && Settings.getGuiCustomThemePath() != null) {
 			// fallback to custom themes folder

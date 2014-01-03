@@ -26,6 +26,7 @@
 package org.olat.commons.servlets;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.olat.commons.servlets.pathhandlers.PathHandler;
 import org.olat.core.configuration.Initializable;
@@ -42,8 +43,8 @@ import org.olat.core.logging.Tracing;
  * 
  */
 public class StaticsModule implements Initializable {
-	OLog log = Tracing.createLoggerFor(StaticsModule.class);
-	private static HashMap handlers = new HashMap(5);	
+	private static final OLog log = Tracing.createLoggerFor(StaticsModule.class);
+	private static Map<String,PathHandler> handlers = new HashMap<>(5);	
 	
 	/**
 	 * 
@@ -63,11 +64,6 @@ public class StaticsModule implements Initializable {
 					PathHandler o = (PathHandler)pathHandler.newInstance();
 					o.init("static");
 					handlers.put("raw", o);
-					
-					pathHandler = Class.forName("org.olat.commons.servlets.pathhandlers.ContextHelpFilePathHandler");
-					o = (PathHandler)pathHandler.newInstance();
-					o.init("static/help");
-					handlers.put("help", o);
 					
 					pathHandler = Class.forName("org.olat.ims.qti.QTIStaticsHandler");
 					o = (PathHandler)pathHandler.newInstance();

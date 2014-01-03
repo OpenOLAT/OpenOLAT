@@ -117,7 +117,7 @@ public class CPOfflineReadableManager {
 	public void makeCPOfflineReadable(File unzippedDir, File targetZip) {
 		try {
 			writeOfflineCPStartHTMLFile(unzippedDir);
-			File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + DIRNAME_CPOFFLINEMENUMAT);
+			File cpOfflineMat = new File(WebappHelper.getContextRealPath("/static/" + DIRNAME_CPOFFLINEMENUMAT));
 			zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
 		} catch (IOException e) {
 			log.error("", e);
@@ -144,7 +144,7 @@ public class CPOfflineReadableManager {
 
 			File unzippedDir = new File(repositoryHome + "/" + relPath);
 			File targetZip = new File(repositoryHome + "/" + resId + "/" + zipName);
-			File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + DIRNAME_CPOFFLINEMENUMAT);
+			File cpOfflineMat = new File(WebappHelper.getContextRealPath("/static/" + DIRNAME_CPOFFLINEMENUMAT));
 
 			writeOfflineCPStartHTMLFile(unzippedDir);
 			zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
