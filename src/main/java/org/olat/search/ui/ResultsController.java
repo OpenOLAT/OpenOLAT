@@ -98,7 +98,10 @@ public class ResultsController extends FormBasicController {
 	
 	public void setSearchResults(UserRequest ureq, SearchResults results) {
 		reset();
-		this.searchResults = results;
+		searchResults = results;
+		if(searchResults == null) {
+			searchResults = SearchResults.EMPTY_SEARCH_RESULTS;
+		}
 		documents.addAll(searchResults.getList());
 		setSearchResults(ureq, 0);
 	}
@@ -110,6 +113,9 @@ public class ResultsController extends FormBasicController {
 	
 	public void nextSearchResults(UserRequest ureq, SearchResults results) {
 		searchResults = results;
+		if(searchResults == null) {
+			searchResults = SearchResults.EMPTY_SEARCH_RESULTS;
+		}
 		
 		//the last result set can be empty
 		if(!searchResults.getList().isEmpty()) {

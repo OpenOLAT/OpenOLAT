@@ -176,12 +176,18 @@ public class CPRunController extends BasicController implements ControllerEventL
 			// it is the first time we start the contentpackaging from this instance
 			// of this controller.
 			// need to be strict when launching -> "true"
-			RepositoryEntry re = CPEditController.getCPReference(config, true);
-			if (re == null) throw new AssertException("configurationkey 'CONFIG_KEY_REPOSITORY_SOFTKEY' of BB CP was missing");
+			RepositoryEntry re = CPEditController.getCPReference(config, false);
+			if (re == null) {
+				showError(CPEditController.NLS_ERROR_CPREPOENTRYMISSING);
+				return;
+			}
 			cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
 			// should always exist because references cannot be deleted as long as
 			// nodes reference them
-			if (cpRoot == null) throw new AssertException("file of repository entry " + re.getKey() + " was missing");
+			if (cpRoot == null) {
+				showError(CPEditController.NLS_ERROR_CPREPOENTRYMISSING);
+				return;
+			}
 			
 			if(deliveryOptions != null && deliveryOptions.getInherit() != null && deliveryOptions.getInherit().booleanValue()) {
 				CPPackageConfig packageConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());
