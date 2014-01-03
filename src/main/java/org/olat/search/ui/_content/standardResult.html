@@ -20,7 +20,7 @@
     #if ($result.parentContextName && $result.parentContextName != "")
 		<div class="o_search_result_context">
 			<strong>$r.translate("label.search.result.parent.context"):</strong>
-			$r.translate("$result.parentContextType") "$result.parentContextName" 
+			$r.translate("$result.parentContextType") "$r.escapeHtml($result.parentContextName)" 
 		</div> 
     #end
     
