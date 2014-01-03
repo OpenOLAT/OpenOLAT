@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+$ * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -21,24 +21,83 @@ package org.olat.course.assessment.model;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Persistable;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 
-public class UserCourseInfosImpl extends PersistentObject implements UserCourseInformations, ModifiedInfo {
+@Entity(name="usercourseinfos")
+@Table(name="o_as_user_course_infos")
+public class UserCourseInfosImpl implements UserCourseInformations, Persistable, ModifiedInfo {
 
 	private static final long serialVersionUID = -6933599547069673655L;
 	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+
+	//de facto removing the optimistic locking
+	@Column(name="version", nullable=false, insertable=true, updatable=false)
+	private Integer version = 0;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="initiallaunchdate", nullable=false, insertable=true, updatable=true)
 	private Date initialLaunch;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="recentlaunchdate", nullable=false, insertable=true, updatable=true)
 	private Date recentLaunch;
+
+	@Column(name="visit", nullable=false, insertable=true, updatable=true)
 	private int visit;
+	@Column(name="timespend", nullable=false, insertable=true, updatable=true)
 	private long timeSpend;
 	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_identity", nullable=false, updatable=false)
 	private Identity identity;
+	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_resource_id", nullable=false, updatable=false)
 	private OLATResource resource;
+
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
 
 	@Override
 	public Date getLastModified() {
@@ -106,6 +165,11 @@ public class UserCourseInfosImpl extends PersistentObject implements UserCourseI
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 9271 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 	
 	@Override

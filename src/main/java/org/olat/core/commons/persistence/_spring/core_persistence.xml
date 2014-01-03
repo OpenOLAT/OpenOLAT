@@ -48,7 +48,6 @@
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/assessment/model/UserEfficiencyStatementImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/assessment/model/UserCourseInfosImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/fo/ForumImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/fo/MessageImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/fo/ReadMessage.hbm.xml</mapping-file>
@@ -92,6 +91,7 @@
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>
+		<class>org.olat.course.assessment.model.UserCourseInfosImpl</class>
 		<class>org.olat.group.model.BusinessGroupParticipantViewImpl</class>
 		<class>org.olat.group.model.BusinessGroupOwnerViewImpl</class>
 		<class>org.olat.group.model.BusinessGroupLazyImpl</class>

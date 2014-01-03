@@ -65,8 +65,9 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
-				.append(" inner join infos.resource as resource")
-			  .append(" where infos.identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
+			  .append(" inner join fetch infos.resource as resource")
+			  .append(" inner join infos.identity as identity")
+			  .append(" where identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
 
 			List<UserCourseInfosImpl> infoList = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), UserCourseInfosImpl.class)
@@ -93,8 +94,8 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
-				.append(" inner join fetch infos.resource as resource")
-				.append(" inner join fetch infos.identity as identity")
+			  .append(" inner join fetch infos.resource as resource")
+			  .append(" inner join infos.identity as identity")
 			  .append(" where identity.key=:identityKey and resource.key in (:resKeys)");
 
 			List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
@@ -117,35 +118,94 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 	 * @return
 	 */
 	@Override
-	public void updateUserCourseInformations(final Long courseResourceableId, final Identity identity) {
-		OLATResourceable lockRes = OresHelper.createOLATResourceableInstance("CourseLaunchDate::Identity", identity.getKey());
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(lockRes, new SyncerExecutor(){
-			@Override
-			public void execute() {
-				try {
-					UserCourseInfosImpl infos = getUserCourseInformations(courseResourceableId, identity);
-					if(infos == null) {
-						OLATResource courseResource = resourceManager.findResourceable(courseResourceableId, "CourseModule");
-						infos = new UserCourseInfosImpl();
-						infos.setIdentity(identity);
-						infos.setInitialLaunch(new Date());
-						infos.setLastModified(new Date());
-						infos.setRecentLaunch(new Date());
-						infos.setVisit(1);
-						infos.setResource(courseResource);
-						dbInstance.getCurrentEntityManager().persist(infos);
-					} else if(needUpdate(infos)) {
-						dbInstance.getCurrentEntityManager().refresh(infos);
-						infos.setVisit(infos.getVisit() + 1);
-						infos.setRecentLaunch(new Date());
-						infos.setLastModified(new Date());
-						infos = dbInstance.getCurrentEntityManager().merge(infos);
+	public void updateUserCourseInformations(final Long courseResourceableId, final Identity identity, final boolean strict) {
+		UltraLightInfos ulInfos = getUserCourseInformationsKey(courseResourceableId, identity);
+		if(ulInfos == null) {
+			OLATResourceable lockRes = OresHelper.createOLATResourceableInstance("CourseLaunchDate::Identity", identity.getKey());
+			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(lockRes, new SyncerExecutor(){
+				@Override
+				public void execute() {
+					try {
+						UltraLightInfos ulInfos = getUserCourseInformationsKey(courseResourceableId, identity);
+						if(ulInfos == null) {
+							OLATResource courseResource = resourceManager.findResourceable(courseResourceableId, "CourseModule");
+							UserCourseInfosImpl infos = new UserCourseInfosImpl();
+							infos.setIdentity(identity);
+							infos.setCreationDate(new Date());
+							infos.setInitialLaunch(new Date());
+							infos.setLastModified(new Date());
+							infos.setRecentLaunch(new Date());
+							infos.setVisit(1);
+							infos.setResource(courseResource);
+							dbInstance.getCurrentEntityManager().persist(infos);
+						} else if(strict || needUpdate(ulInfos)) {
+							UserCourseInfosImpl infos = loadById(ulInfos.getKey());
+							if(infos != null) {
+								infos.setVisit(infos.getVisit() + 1);
+								infos.setRecentLaunch(new Date());
+								infos.setLastModified(new Date());
+								infos = dbInstance.getCurrentEntityManager().merge(infos);
+							}
+						}
+					} catch (Exception e) {
+						logError("Cannot update course informations for: " + identity + " from " + identity, e);
 					}
-				} catch (Exception e) {
-					logError("Cannot update course informations for: " + identity + " from " + identity, e);
 				}
+			});
+		} else if(strict || needUpdate(ulInfos)) {
+			UserCourseInfosImpl infos = loadById(ulInfos.getKey());
+			if(infos != null) {
+				infos.setVisit(infos.getVisit() + 1);
+				infos.setRecentLaunch(new Date());
+				infos.setLastModified(new Date());
+				infos = dbInstance.getCurrentEntityManager().merge(infos);
 			}
-		});
+		}
+	}
+	
+	private UserCourseInfosImpl loadById(Long id) {
+		try {
+			String sb = "select infos from usercourseinfos as infos where infos.key=:key";
+
+			TypedQuery<UserCourseInfosImpl> query = dbInstance.getCurrentEntityManager()
+					.createQuery(sb, UserCourseInfosImpl.class)
+					.setParameter("key", id);
+
+			List<UserCourseInfosImpl> infoList = query.getResultList();
+			if(infoList.isEmpty()) {
+				return null;
+			}
+			return infoList.get(0);
+		} catch (Exception e) {
+			logError("Cannot retrieve course informations for: " + id, e);
+			return null;
+		}
+	}
+	
+	private UltraLightInfos getUserCourseInformationsKey(Long courseResourceId, Identity identity) {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select infos.key, infos.lastModified from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
+			  .append(" inner join infos.resource as resource")
+			  .append(" inner join infos.identity as identity")
+			  .append(" where identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
+
+			List<Object[]> infoList = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Object[].class)
+					.setParameter("identityKey", identity.getKey())
+					.setParameter("resId", courseResourceId)
+					.getResultList();
+
+			if(infoList.isEmpty()) {
+				return null;
+			}
+			Object[] infos = infoList.get(0);
+			
+			return new UltraLightInfos((Long)infos[0], (Date)infos[1]);
+		} catch (Exception e) {
+			logError("Cannot retrieve course informations for: " + identity + " from " + identity, e);
+			return null;
+		}
 	}
 	
 	/**
@@ -155,10 +215,10 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 	 * opens a course several times.
 	 * @return
 	 */
-	private final boolean needUpdate(UserCourseInfosImpl infos) {
+	private final boolean needUpdate(UltraLightInfos infos) {
 		Date lastModified = infos.getLastModified();
 		if(System.currentTimeMillis() - lastModified.getTime()  < 60000) {
-			return false;
+			return true;
 		}
 		return true;
 	}
@@ -173,7 +233,8 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos.initialLaunch from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
 			  .append(" inner join infos.resource as resource")
-			  .append(" where infos.identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
+			  .append(" inner join infos.identity as identity")
+			  .append(" where identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
 
 			List<Date> infoList = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Date.class)
@@ -254,6 +315,23 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 		} catch (Exception e) {
 			logError("Cannot Delete course informations for: " + entry, e);
 			return -1;
+		}
+	}
+	
+	private static class UltraLightInfos {
+		private final Long key;
+		private final Date lastModified;
+		
+		public UltraLightInfos(Long key, Date lastModified) {
+			this.key = key;
+			this.lastModified = lastModified;
+		}
+		
+		public Long getKey() {
+			return key;
+		}
+		public Date getLastModified() {
+			return lastModified;
 		}
 	}
 }
