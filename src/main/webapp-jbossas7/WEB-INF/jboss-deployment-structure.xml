@@ -3,15 +3,16 @@
 		<dependencies>
 			<module name="org.dom4j" />
 			<module name="org.infinispan" />
+			<module name="org.javassist" />
 			<module name="org.joda.time" />
 			<module name="org.hibernate" />
 			<module name="org.apache.xalan" />
 			<module name="org.apache.httpcomponents" />
 			<module name="org.codehaus.jackson.jackson-core-asl" />
 			<module name="org.codehaus.jackson.jackson-mapper-asl" />
+			<module name="org.apache.log4j" />
 		</dependencies>
 		<exclusions>
-			<module name="org.apache.log4j" />
 			<module name="org.slf4j" />
 			<module name="org.apache.commons.logging" />
 		</exclusions>
