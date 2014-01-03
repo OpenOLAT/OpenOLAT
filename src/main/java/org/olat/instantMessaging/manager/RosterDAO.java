@@ -111,7 +111,8 @@ public class RosterDAO {
 	}
 	
 	public void deleteEntry(Identity identity, OLATResourceable ores) {
-		dbInstance.getCurrentEntityManager().createNamedQuery("deleteIMRosterEntryByIdentityAndResource")
+		String del = "delete from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname";
+		dbInstance.getCurrentEntityManager().createQuery(del)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
