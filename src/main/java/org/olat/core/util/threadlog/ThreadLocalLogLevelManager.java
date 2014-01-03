@@ -170,9 +170,9 @@ public class ThreadLocalLogLevelManager {
 					return repository;
 				}
 			}, guard);
-		} catch (IllegalArgumentException re) {
+		} catch (IllegalArgumentException | SecurityException re) {
 			// thrown by LogManager.setRepositorySelector
-			Logger.getLogger(ThreadLocalLogLevelManager.class).error("Could not install ThreadLocalLogLevelManager", re);
+			Logger.getLogger(ThreadLocalLogLevelManager.class).error("Could not install ThreadLocalLogLevelManager");
 		}
 		
 	}
