@@ -14,6 +14,11 @@
 				#end
 			</ul>
 		</div>
+		#if ($r.visible('close'))
+		<div class="b_breadcumb_close">
+			$r.render('close')
+		</div>	
+		#end
 	</div>
 #end
 $r.render("content")

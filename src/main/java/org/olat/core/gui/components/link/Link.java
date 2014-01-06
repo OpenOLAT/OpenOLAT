@@ -422,7 +422,10 @@ public class Link extends Component {
 		return suppressDirtyFormWarning;
 	}
 	
-	protected String getCustomDisplayText() {
+	/**
+	 * The custom display text or null if not set
+	 */
+	public String getCustomDisplayText() {
 		return customDisplayText;
 	}
 
