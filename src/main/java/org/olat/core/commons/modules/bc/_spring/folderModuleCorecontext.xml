@@ -33,6 +33,7 @@
 				SendDocLinkOnly=${folder.sendDocumentLinkOnly}
 				<!--   max edit filesize for online-editing in Bytes -->
 				EditFileSizeLimit=${folder.editFileSizeLimitBytes}
+				forceDownload=${folder.force.download}
              </value>
       </property>
 </bean>

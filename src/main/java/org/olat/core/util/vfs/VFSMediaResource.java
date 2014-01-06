@@ -41,7 +41,7 @@ public class VFSMediaResource implements MediaResource {
 
 	private static final String MIME_TYPE_OCTET_STREAM = "application/octet-stream";
 	//use this pseudo mime-type to force download on ie 6
-	private static final String MIME_TYPE_FORCE_DOWNLOAD = "application/force-download";
+	public static final String MIME_TYPE_FORCE_DOWNLOAD = "application/force-download";
 	private VFSLeaf vfsLeaf;
 	private String encoding;
 	boolean unknownMimeType = false;

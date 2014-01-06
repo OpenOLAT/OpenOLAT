@@ -30,7 +30,9 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderLoggingAction;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -78,6 +80,8 @@ public class CmdServeResource implements FolderCommand {
 		} else if(!(vfsitem instanceof VFSLeaf)) {
 			mr = new NotFoundMediaResource(path);
 		} else {
+			boolean forceDownload = CoreSpringFactory.getImpl(FolderModule.class).isForceDownload();
+			
 			VFSLeaf vfsfile = (VFSLeaf)vfsitem;
 			if (path.toLowerCase().endsWith(".html") || path.toLowerCase().endsWith(".htm")) {
 				// setCurrentURI(path);
@@ -106,7 +110,7 @@ public class CmdServeResource implements FolderCommand {
 				g_encoding = enc;
 				if (useLoaded) {
 					StringMediaResource smr = new StringMediaResource();
-					String mimetype = "text/html;charset=" + enc;
+					String mimetype = forceDownload ? VFSMediaResource.MIME_TYPE_FORCE_DOWNLOAD : "text/html;charset=" + enc;
 					smr.setContentType(mimetype);
 					smr.setEncoding(enc);
 					smr.setData(page);
@@ -117,6 +121,9 @@ public class CmdServeResource implements FolderCommand {
 					// again)
 					VFSMediaResource vmr = new VFSMediaResource(vfsfile);
 					vmr.setEncoding(enc);
+					if(forceDownload) {
+						vmr.setDownloadable(true);
+					}
 					mr = vmr;
 				}
 			} else if (path.endsWith(".js")) { // a javascript library
@@ -127,18 +134,28 @@ public class CmdServeResource implements FolderCommand {
 				// together with the mime-type, which is wrong.
 				// so we assume the .js file has the same encoding as the html file
 				// that loads the .js file
-				if (g_encoding != null) vmr.setEncoding(g_encoding);
+				if (g_encoding != null) {
+					vmr.setEncoding(g_encoding);
+				}
+				if(forceDownload) {
+					vmr.setDownloadable(true);
+				}
 				mr = vmr;
 			} else if (path.endsWith(".txt")) {
 				//text files created in OpenOLAT are utf-8, prefer this encoding
 				VFSMediaResource vmr = new VFSMediaResource(vfsfile);
 				vmr.setEncoding("utf-8");
+				if(forceDownload) {
+					vmr.setDownloadable(true);
+				}
 				mr = vmr;
 			} else {
 				// binary data: not .html, not .htm, not .js -> treated as is
 				VFSMediaResource vmr = new VFSMediaResource(vfsfile);
 				// This is to prevent the login prompt in Excel, Word and PowerPoint
 				if (path.endsWith(".xlsx") || path.endsWith(".pptx") || path.endsWith(".docx")) {
+					vmr.setDownloadable(true);
+				} else if(forceDownload) {
 					vmr.setDownloadable(true);
 				}
 				mr = vmr;

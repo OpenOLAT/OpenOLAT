@@ -21,6 +21,7 @@ package org.olat.admin.security;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,12 +39,15 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class SecurityAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement wikiEl, topFrameEl;
+	private MultipleSelectionElement wikiEl, topFrameEl, forceDownloadEl;
+
+	private final FolderModule folderModule;
 	private final BaseSecurityModule securityModule;
 	
 	public SecurityAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+		folderModule = CoreSpringFactory.getImpl(FolderModule.class);
 		initForm(ureq);
 	}
 
@@ -63,6 +67,10 @@ public class SecurityAdminController extends FormBasicController {
 		wikiEl = uifactory.addCheckboxesHorizontal("sec.wiki", "sec.wiki", formLayout, frameKeys, frameValues, null);
 		wikiEl.select("on", securityModule.isWikiEnabled());
 		wikiEl.addActionListener(this, FormEvent.ONCHANGE);
+
+		forceDownloadEl = uifactory.addCheckboxesHorizontal("sec.download", "sec.force.download", formLayout, frameKeys, frameValues, null);
+		forceDownloadEl.select("on", folderModule.isForceDownload());
+		forceDownloadEl.addActionListener(this, FormEvent.ONCHANGE);
 	}
 	
 	@Override
@@ -78,6 +86,9 @@ public class SecurityAdminController extends FormBasicController {
 		} else if(wikiEl == source) {
 			boolean enabled = wikiEl.isAtLeastSelected(1);
 			securityModule.setWikiEnabled(enabled);
+		} else if(forceDownloadEl == source) {
+			boolean enabled = forceDownloadEl.isAtLeastSelected(1);
+			folderModule.setForceDownload(enabled);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -86,8 +97,4 @@ public class SecurityAdminController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-
-	
-
 }

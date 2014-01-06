@@ -33,6 +33,7 @@ import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.version.FolderVersioningConfigurator;
 
 /**
@@ -42,14 +43,17 @@ import org.olat.core.util.vfs.version.FolderVersioningConfigurator;
  */
 public class FolderModule extends AbstractOLATModule {	
 	
-	OLog log = Tracing.createLoggerFor(FolderModule.class);
+	private static final OLog log = Tracing.createLoggerFor(FolderModule.class);
 	private static final String CONFIG_ROOT = "Root";
 	private static final String CONFIG_LIMITULMB = "LimitULMB";
 	private static final String CONFIG_EDITFILESIZELIMIT = "EditFileSizeLimit";
 	private static final String CONFIG_QUOTAMB = "QuotaMB";
 	private static final String CONFIG_SENDDOCLINKONLY = "SendDocLinkOnly";
 	private static final String CONFIG_SENDDOCTOEXTERN = "SendDocToExtern";
+	private static final String CONFIG_FORCE_DOWNLOAD = "forceDownload";
 	private FolderVersioningConfigurator versioning;
+	
+	private String forceDownload;
 	
 	/**
 	 * [used by spring]
@@ -99,18 +103,26 @@ public class FolderModule extends AbstractOLATModule {
 		// create tmp directory
 		File fTmp = new File(FolderConfig.getCanonicalTmpDir());
 		fTmp.mkdirs();
-		
+
+		forceDownload = getStringConfigParameter(CONFIG_FORCE_DOWNLOAD, "true", true);
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
+		updateProperties();
 	}
 
 	@Override
 	public void init() {
 		FolderConfig.setVersioningConfigurator(versioning);
+		updateProperties();
+	}
+	
+	private void updateProperties() {
+		String enabled = getStringPropertyValue(CONFIG_FORCE_DOWNLOAD, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			forceDownload = enabled;
+		}
 	}
 
 	/**
@@ -125,6 +137,13 @@ public class FolderModule extends AbstractOLATModule {
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
 	}
-	
 
+	public boolean isForceDownload() {
+		return "true".equals(forceDownload);
+	}
+
+	public void setForceDownload(boolean enable) {
+		String enabled = enable ? "true" : "false";
+		setStringProperty(CONFIG_FORCE_DOWNLOAD, enabled, true);
+	}
 }
