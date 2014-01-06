@@ -52,6 +52,7 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.vfs.QuotaExceededException;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.VFSLockManagerImpl;
@@ -873,6 +874,8 @@ public class WebDAVDispatcherImpl
             } else {
                 resp.sendError(HttpServletResponse.SC_CONFLICT);
             }
+        } catch(QuotaExceededException e) {
+            resp.sendError(HttpServletResponse.SC_CONFLICT);
         } finally {
             if (resourceInputStream != null) {
                 try {
@@ -1768,10 +1771,15 @@ public class WebDAVDispatcherImpl
             }
         } else if (sourceResource.isFile()) {
         	WebResource movedFrom = moved ? sourceResource : null; 
-            if (!resources.write(dest, sourceResource.getInputStream(), false, movedFrom)) {
-                errorList.put(source, new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
-                return false;
-            }
+            try {
+				if (!resources.write(dest, sourceResource.getInputStream(), false, movedFrom)) {
+				    errorList.put(source, new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
+				    return false;
+				}
+			} catch (QuotaExceededException e) {
+				errorList.put(source, new Integer(WebdavStatus.SC_INSUFFICIENT_SPACE_ON_RESOURCE));
+			    return false;
+			}
         } else {
             errorList.put(source, new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
             return false;
