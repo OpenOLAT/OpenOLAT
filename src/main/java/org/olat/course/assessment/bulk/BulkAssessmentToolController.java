@@ -69,7 +69,7 @@ public class BulkAssessmentToolController extends BasicController {
 		courseOres = courseEnv.getCourseGroupManager().getCourseResource();
 		
 		mainVC = createVelocityContainer("start_button");
-		startButton = LinkFactory.createButton("bulk.wizard.title", mainVC, this);
+		startButton = LinkFactory.createButton("new.bulk", mainVC, this);
 		putInitialPanel(mainVC);
 	}
 	
