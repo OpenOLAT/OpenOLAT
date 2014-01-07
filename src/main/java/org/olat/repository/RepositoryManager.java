@@ -1068,7 +1068,7 @@ public class RepositoryManager extends BasicManager {
 					+ " where sgmsi.securityGroup = v.ownerGroup"
 					+ " and sgmsi.identity = identity"
 					+ " and identity.user = user"
-					+" and user.properties['institutionalName']= :institutionCourseManager "
+					+" and user.userProperties['institutionalName']= :institutionCourseManager "
 					+ " and res.resName= :restrictedType and v.access = 1");
 			
 			DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
@@ -1259,10 +1259,10 @@ public class RepositoryManager extends BasicManager {
 		if (author != null) { // fuzzy author search
 			author = author.replace('*','%');
 			author = '%' + author + '%';
-			query.append(" and (sgmsi2.securityGroup = v.ownerGroup and "+
-			"sgmsi2.identity = identity and "+
-			"identity.user = user and "+
-			"(user.properties['firstName'] like :author or user.properties['lastName'] like :author or identity.name like :author))");
+			query.append(" and (sgmsi2.securityGroup = v.ownerGroup and ")
+			     .append("sgmsi2.identity = identity and ")
+			     .append("identity.user = user and ")
+			     .append("(user.userProperties['firstName'] like :author or user.userProperties['lastName'] like :author or identity.name like :author))");
 		}
 		// restrict on resource name
 		if (displayName != null) {
@@ -1382,9 +1382,9 @@ public class RepositoryManager extends BasicManager {
 			if (!isFirstOfWhereClause) query.append(" and ");
 			query.append("sgmsi.securityGroup = v.ownerGroup and sgmsi.identity = identity and identity.user = user and ");
 			if(mysql) {
-				query.append("(user.properties['firstName'] like :author or user.properties['lastName'] like :author or identity.name like :author)");
+				query.append("(user.userProperties['firstName'] like :author or user.userProperties['lastName'] like :author or identity.name like :author)");
 			} else {
-				query.append("(lower(user.properties['firstName']) like lower(:author) or lower(user.properties['lastName']) like lower(:author) or lower(identity.name) like lower(:author))");
+				query.append("(lower(user.userProperties['firstName']) like lower(:author) or lower(user.userProperties['lastName']) like lower(:author) or lower(identity.name) like lower(:author))");
 			}
 			isFirstOfWhereClause = false;
 		}
@@ -1603,7 +1603,7 @@ public class RepositoryManager extends BasicManager {
 				query.append("sgmsi.securityGroup = v.ownerGroup and " 
 						+ "sgmsi.identity = identity and " 
 						+ "identity.user = user and " 
-						+ "(user.properties['firstName'] like :author or user.properties['lastName'] like :author or identity.name like :author)");
+						+ "(user.userProperties['firstName'] like :author or user.userProperties['lastName'] like :author or identity.name like :author)");
 				isFirstOfWhereClause = false;
 			}
 			if (var_displayname) {
@@ -1627,7 +1627,7 @@ public class RepositoryManager extends BasicManager {
 			}
 			
 			if (!isFirstOfWhereClause) query.append(" and ");
-			query.append("v.access = 1 and user.properties['institutionalName']= :institution ");
+			query.append("v.access = 1 and user.userProperties['institutionalName']= :institution ");
 			isFirstOfWhereClause = false;
 			
 			DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
@@ -1739,7 +1739,7 @@ public class RepositoryManager extends BasicManager {
 			     .append(" org.olat.basesecurity.IdentityImpl msid,")
 			     .append(" org.olat.user.UserImpl msuser ")
 			     .append(" where ms.identity = msid and msid.user = msuser and ")
-			     .append(" msuser.properties['institutionalName']=:institution)")
+			     .append(" msuser.userProperties['institutionalName']=:institution)")
 			     .append("))");
 		} else if (params.isOnlyExplicitMember()) {
 			query.append(" where ");
@@ -1760,7 +1760,7 @@ public class RepositoryManager extends BasicManager {
 		         .append(" org.olat.basesecurity.IdentityImpl msauthid,")
 		         .append(" org.olat.user.UserImpl msauthuser ")
 		         .append(" where msauth.identity = msauthid and msauthid.user = msauthuser and ")
-		         .append(" (msauthuser.properties['firstName'] like :author or msauthuser.properties['lastName'] like :author or msauthid.name like :author))");
+		         .append(" (msauthuser.userProperties['firstName'] like :author or msauthuser.userProperties['lastName'] like :author or msauthid.name like :author))");
 			*/
 			author = PersistenceHelper.makeFuzzyQueryString(author);
 			query.append(" and ownerGroup in (select msauth.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" msauth, ")
@@ -1769,9 +1769,9 @@ public class RepositoryManager extends BasicManager {
            .append(" where msauth.identity = msauthid and msauthid.user = msauthuser and ")
            .append(" (");
 			
-			PersistenceHelper.appendFuzzyLike(query, "msauthuser.properties['firstName']", "author", dbInstance.getDbVendor());
+			PersistenceHelper.appendFuzzyLike(query, "msauthuser.userProperties['firstName']", "author", dbInstance.getDbVendor());
 			query.append(" or ");
-			PersistenceHelper.appendFuzzyLike(query, "msauthuser.properties['lastName']", "author", dbInstance.getDbVendor());
+			PersistenceHelper.appendFuzzyLike(query, "msauthuser.userProperties['lastName']", "author", dbInstance.getDbVendor());
 			query.append(" or ");
 			PersistenceHelper.appendFuzzyLike(query, "msauthid.name", "author", dbInstance.getDbVendor());
     

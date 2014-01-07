@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openolat</groupId>
 	<artifactId>openolat-lms</artifactId>
-	<version>9.3-SNAPSHOT</version>
+	<version>10.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>OpenOLAT LMS</name>
 	<url>http://www.openolat.org</url>
@@ -64,13 +64,13 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.7</targetJdk>
-		<org.springframework.version>3.2.4.RELEASE</org.springframework.version>
-		<org.hibernate.version>4.2.8.Final</org.hibernate.version>
+		<org.springframework.version>3.2.6.RELEASE</org.springframework.version>
+		<org.hibernate.version>4.3.0.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.17.1</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
-		<org.mysql.version>5.1.26</org.mysql.version>
-		<org.postgresql.version>9.1-901.jdbc4</org.postgresql.version>
-		<org.infinispan.version>5.2.7.Final</org.infinispan.version>
+		<org.mysql.version>5.1.28</org.mysql.version>
+		<org.postgresql.version>9.3-1100-jdbc41</org.postgresql.version>
+		<org.infinispan.version>6.0.1.Final</org.infinispan.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -339,7 +339,7 @@
 					<version>${org.mysql.version}</version>
 				</dependency>
 				<dependency>
-					<groupId>postgresql</groupId>
+					<groupId>org.postgresql</groupId>
 					<artifactId>postgresql</artifactId>
 					<version>${org.postgresql.version}</version>
 				</dependency>
@@ -526,7 +526,7 @@
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
-					<groupId>postgresql</groupId>
+					<groupId>org.postgresql</groupId>
 					<artifactId>postgresql</artifactId>
 					<version>${org.postgresql.version}</version>
 					<scope>provided</scope>
@@ -595,7 +595,7 @@
 					<version>${org.mysql.version}</version>
 				</dependency>
 				<dependency>
-					<groupId>postgresql</groupId>
+					<groupId>org.postgresql</groupId>
 					<artifactId>postgresql</artifactId>
 					<version>${org.postgresql.version}</version>
 				</dependency>

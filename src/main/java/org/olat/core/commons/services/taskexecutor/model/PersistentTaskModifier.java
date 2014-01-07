@@ -50,8 +50,7 @@ import org.olat.core.id.Persistable;
 @Table(name="o_ex_task_modifier")
 @NamedQueries({
 	@NamedQuery(name="loadTaskModifierByKey", query="select taskmod from extaskmodifier taskmod where taskmod.key=:modifierKey"),
-	@NamedQuery(name="loadTaskModifiers", query="select distinct(taskmod.modifier) from extaskmodifier taskmod where taskmod.task.key=:taskKey"),
-	@NamedQuery(name="deleteTaskModifiersOf", query="delete from extaskmodifier taskmod where taskmod.task.key=:taskKey")
+	@NamedQuery(name="loadTaskModifiers", query="select distinct(taskmod.modifier) from extaskmodifier taskmod where taskmod.task.key=:taskKey")
 })
 public class PersistentTaskModifier implements CreateInfo, Persistable {
 

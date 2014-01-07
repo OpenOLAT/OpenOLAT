@@ -1009,9 +1009,9 @@ public class BusinessGroupDAO {
 	
 	private StringBuilder searchLikeUserProperty(StringBuilder sb, String key, String var) {
 		if(dbInstance.getDbVendor().equals("mysql")) {
-			sb.append(" user.properties['").append(key).append("'] like :").append(var);
+			sb.append(" user.userProperties['").append(key).append("'] like :").append(var);
 		} else {
-			sb.append(" lower(user.properties['").append(key).append("']) like :").append(var);
+			sb.append(" lower(user.userProperties['").append(key).append("']) like :").append(var);
 			if(dbInstance.getDbVendor().equals("oracle")) {
 	 	 		sb.append(" escape '\\'");
 	 	 	}

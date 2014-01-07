@@ -1242,7 +1242,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
 			.append(" inner join identity.user user ")
-			.append(" where user.properties['").append(UserConstants.INSTITUTIONALUSERIDENTIFIER).append("'] in (:idNumbers) ");
+			.append(" where user.userProperties['").append(UserConstants.INSTITUTIONALUSERIDENTIFIER).append("'] in (:idNumbers) ");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
@@ -1547,9 +1547,14 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	public void deleteAuthentication(Authentication auth) {
 		if(auth == null || auth.getKey() == null) return;//nothing to do
 		try {
-			AuthenticationImpl authRef = dbInstance.getCurrentEntityManager()
-					.getReference(AuthenticationImpl.class, auth.getKey());
-			dbInstance.getCurrentEntityManager().remove(authRef);
+			StringBuilder sb = new StringBuilder();
+			sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+			  .append(" where auth.key=:authKey");
+
+			AuthenticationImpl authRef = dbInstance.getCurrentEntityManager().find(AuthenticationImpl.class,  auth.getKey());
+			if(authRef != null) {
+				dbInstance.getCurrentEntityManager().remove(authRef);
+			}
 		} catch (EntityNotFoundException e) {
 			logError("", e);
 		}
@@ -1729,9 +1734,9 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 						if (needsOr) sb.append(" or ");
 						//fxdiff
 						if(dbVendor.equals("mysql")) {
-							sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
+							sb.append(" user.userProperties['").append(key).append("'] like :").append(key).append("_value ");
 						} else {
-							sb.append(" lower(user.properties['").append(key).append("']) like :").append(key).append("_value ");
+							sb.append(" lower(user.userProperties['").append(key).append("']) like :").append(key).append("_value ");
 						}
 						if(dbVendor.equals("oracle")) {
 							sb.append(" escape '\\'");
@@ -1747,9 +1752,9 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				for (String key : otherProperties.keySet()) {
 					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb,needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
 					if(dbVendor.equals("mysql")) {
-						sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
+						sb.append(" user.userProperties['").append(key).append("'] like :").append(key).append("_value ");
 					} else {
-						sb.append(" lower(user.properties['").append(key).append("']) like :").append(key).append("_value ");
+						sb.append(" lower(user.userProperties['").append(key).append("']) like :").append(key).append("_value ");
 					}
 					if(dbVendor.equals("oracle")) {
 						sb.append(" escape '\\'");

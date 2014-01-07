@@ -207,7 +207,7 @@ public class PersistentTaskDAO {
 		PersistentTask reloadedTask = dbInstance.getCurrentEntityManager()
 				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
 		dbInstance.getCurrentEntityManager()
-				.createNamedQuery("deleteTaskModifiersOf")
+				.createQuery("delete from extaskmodifier taskmod where taskmod.task.key=:taskKey")
 				.setParameter("taskKey", task.getKey())
 				.executeUpdate();
 		dbInstance.getCurrentEntityManager().remove(reloadedTask);

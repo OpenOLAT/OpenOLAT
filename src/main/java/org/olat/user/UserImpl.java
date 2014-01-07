@@ -53,7 +53,9 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author Florian Gnägi
  */
 public class UserImpl extends PersistentObject implements User {
-	
+
+	private static final long serialVersionUID = -2872102058369727753L;
+
 	private Preferences preferences;
 	
 	// o_clusterOK by:cg add diInSync in ChangeProfileController and notifiy about change via event-bus
@@ -77,9 +79,9 @@ public class UserImpl extends PersistentObject implements User {
 
 	UserImpl(String firstName, String lastName, String eMail) {
 		super();
-		if (firstName != null) getProperties().put(UserConstants.FIRSTNAME, firstName);
-		if (lastName != null) getProperties().put(UserConstants.LASTNAME, lastName);
-		if (eMail != null) getProperties().put(UserConstants.EMAIL, eMail);
+		if (firstName != null) getUserProperties().put(UserConstants.FIRSTNAME, firstName);
+		if (lastName != null) getUserProperties().put(UserConstants.LASTNAME, lastName);
+		if (eMail != null) getUserProperties().put(UserConstants.EMAIL, eMail);
 		this.preferences = new PreferencesImpl();
 	}
 
@@ -140,8 +142,8 @@ public class UserImpl extends PersistentObject implements User {
 	 * 
 	 * @return Map containing the raw properties data
 	 */
-	Map<String, String> getProperties() {
-		if (properties == null) setProperties(new HashMap<String, String>());
+	Map<String, String> getUserProperties() {
+		if (properties == null) setUserProperties(new HashMap<String, String>());
 		return properties;
 	}
 
@@ -149,7 +151,7 @@ public class UserImpl extends PersistentObject implements User {
 	 * Hibernate setter
 	 * @param fields
 	 */
-	private void setProperties(Map<String, String> fields) {
+	private void setUserProperties(Map<String, String> fields) {
 		this.properties = fields;
 	}
 

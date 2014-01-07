@@ -136,7 +136,7 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 		slct.append("and rset.repositoryRef=? ");
 		 // 1 -> iqtest, 2 -> iqself
 		if(type == 1 || type == 2)
-		    slct.append("order by usr.properties['").append(UserConstants.LASTNAME).append("'] , rset.assessmentID, res.itemIdent");
+		    slct.append("order by usr.userProperties['").append(UserConstants.LASTNAME).append("'] , rset.assessmentID, res.itemIdent");
 			//3 -> iqsurv: the alphabetical assortment above could destroy the anonymization
 	    // if names and quantity of the persons is well-known
 		else 

@@ -27,7 +27,7 @@
 	    <property name="receiveRealMail" column="receiverealmail" unique="false" not-null="false" length="16" type="string"/>  
     </component>
 
-	<map name="properties" table="o_userproperty" cascade="all,delete-orphan" fetch="join">
+	<map name="userProperties" table="o_userproperty" cascade="all,delete-orphan" fetch="join">
         <key column="fk_user_id" not-null="true"/>
         <map-key column="propname" type="string"/>
         <element column="propvalue" type="string"/>

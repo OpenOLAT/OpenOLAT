@@ -47,8 +47,7 @@ import org.olat.instantMessaging.InstantMessageNotification;
 @Entity(name="imnotification")
 @Table(name="o_im_notification")
 @NamedQueries({
-		@NamedQuery(name="loadIMNotificationByIdentity", query="select notification from imnotification notification where notification.toIdentityKey=:identityKey order by notification.creationDate desc"),
-		@NamedQuery(name="deleteIMNotificationByResourceAndIdentity", query="delete from imnotification notification where notification.toIdentityKey=:identityKey and notification.resourceId=:resid and notification.resourceTypeName=:resname")
+		@NamedQuery(name="loadIMNotificationByIdentity", query="select notification from imnotification notification where notification.toIdentityKey=:identityKey order by notification.creationDate desc")
 })
 public class InstantMessageNotificationImpl implements InstantMessageNotification, Persistable, CreateInfo  {
 

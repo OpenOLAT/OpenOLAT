@@ -92,7 +92,8 @@ public class InstantMessageDAO {
 	}
 	
 	public int deleteMessages(OLATResourceable ores) {
-		int count = dbInstance.getCurrentEntityManager().createNamedQuery("deleteIMessageByResource")
+		int count = dbInstance.getCurrentEntityManager()
+				.createQuery("delete from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname")
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.executeUpdate();
@@ -120,11 +121,12 @@ public class InstantMessageDAO {
 	}
 	
 	public void deleteNotification(Identity identity, OLATResourceable ores) {
-		dbInstance.getCurrentEntityManager().createNamedQuery("deleteIMNotificationByResourceAndIdentity")
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("resid", ores.getResourceableId())
-				.setParameter("resname", ores.getResourceableTypeName())
-				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+			.createQuery("delete from imnotification notification where notification.toIdentityKey=:identityKey and notification.resourceId=:resid and notification.resourceTypeName=:resname")
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("resid", ores.getResourceableId())
+			.setParameter("resname", ores.getResourceableTypeName())
+			.executeUpdate();
 	}
 	
 	public List<InstantMessageNotification> getNotifications(Identity identity) {

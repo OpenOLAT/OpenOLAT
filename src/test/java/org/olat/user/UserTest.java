@@ -423,7 +423,7 @@ public class UserTest extends OlatTestCase {
 		slct.append("org.olat.user.UserImpl usr ");
 		slct.append("where ");
 		slct.append("identity.user = usr.key ");
-		slct.append("order by usr.properties['firstName'] desc");
+		slct.append("order by usr.userProperties['firstName'] desc");
 		List<Identity> results = db.find(slct.toString());
 		Identity ident1 = (Identity) results.get(0);
 		Identity ident2 = (Identity) results.get(1);

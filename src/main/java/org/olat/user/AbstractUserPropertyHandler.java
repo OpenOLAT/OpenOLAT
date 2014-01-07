@@ -122,7 +122,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 */
 	protected String getInternalValue(User user) {
 		if (user instanceof UserImpl) {
-			String value = ((UserImpl)user).getProperties().get(name);
+			String value = ((UserImpl)user).getUserProperties().get(name);
 			if("_".equals(value) && "oracle".equals(DBFactory.getInstance().getDbVendor())) {
 				value = null;
 			}
@@ -143,12 +143,12 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 			if (value == null || value.length() == 0) {
 				//fxdiff: store each value
 				if("oracle".equals(DBFactory.getInstance().getDbVendor())) {
-					((UserImpl)user).getProperties().put(name, "_");
+					((UserImpl)user).getUserProperties().put(name, "_");
 				} else {
-					((UserImpl)user).getProperties().put(name, "");
+					((UserImpl)user).getUserProperties().put(name, "");
 				}
 			} else {
-				((UserImpl)user).getProperties().put(name, value);
+				((UserImpl)user).getUserProperties().put(name, value);
 			}
 		} else if (user instanceof UserImpl) {
 			user.setProperty(name, value);
