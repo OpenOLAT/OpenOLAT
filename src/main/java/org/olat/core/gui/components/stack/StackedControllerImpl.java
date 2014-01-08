@@ -45,13 +45,14 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 	private final VelocityContainer mainVC;
 	private final Link backLink;
 	private final Link closeLink;
-	private final String translatedClose; 
+	private final Translator translator;
 	
 	public StackedControllerImpl(WindowControl wControl, Translator trans, String mainCssClass) {
 		super(wControl);
+		translator = Util.createPackageTranslator(StackedControllerImpl.class, trans.getLocale(), trans);
 
 		String path = Util.getPackageVelocityRoot(StackedController.class) + "/stack.html";
-		mainVC = new VelocityContainer("vc_stacked", path, trans,  this);
+		mainVC = new VelocityContainer("vc_stacked", path, translator,  this);
 		mainVC.contextPut("breadCrumbs", stack);
 		if(StringHelper.containsNonWhitespace(mainCssClass)) {
 			mainVC.contextPut("mainCssClass", mainCssClass);
@@ -60,14 +61,13 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 		backLink = LinkFactory.createCustomLink("back", "back", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, mainVC, this);
 		backLink.setCustomEnabledLinkCSS("b_breadcumb_back");
 		backLink.setCustomDisplayText("&#x25C4;"); // unicode back arrow (black left pointer symbol)
-		backLink.setTitle(trans.translate("back"));
+		backLink.setTitle(translator.translate("back"));
 		backLink.setAccessKey("b"); // allow navigation using keyboard
 
 		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
 		closeLink = LinkFactory.createCustomLink("close", "close", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, mainVC, this);
 		closeLink.setCustomEnabledLinkCSS("b_close");
-		translatedClose= trans.translate("close");
-		closeLink.setCustomDisplayText(translatedClose);
+		closeLink.setCustomDisplayText(translator.translate("doclose"));
 		closeLink.setAccessKey("x"); // allow navigation using keyboard
 
 		setInitialComponent(mainVC);
@@ -171,7 +171,7 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 			closeLink.setVisible(false);								
 		} else {
 			Link link = (Link) stack.get(stack.size()-1);
-			closeLink.setCustomDisplayText(translatedClose + " " + link.getCustomDisplayText());	
+			closeLink.setCustomDisplayText(translator.translate("doclose", new String[] {link.getCustomDisplayText()}));	
 			closeLink.setVisible(true);								
 		}
 	}
