@@ -19,6 +19,7 @@ package org.olat.core.commons.services.webdav.servlets;
 import java.io.InputStream;
 import java.util.Collection;
 
+import org.olat.core.util.vfs.QuotaExceededException;
 import org.olat.core.util.vfs.VFSItem;
 
 
@@ -82,7 +83,8 @@ public interface WebResourceRoot {
      *
      * @return  <code>true</code> if and only if the new Resource is written
      */
-    boolean write(String path, InputStream is, boolean overwrite, WebResource movedFrom);
+    boolean write(String path, InputStream is, boolean overwrite, WebResource movedFrom)
+    throws QuotaExceededException;
     
     public boolean delete(WebResource resourceo);
 

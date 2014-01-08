@@ -19,11 +19,14 @@
  */
 package org.olat.core.commons.services.webdav.manager;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.poi.util.IOUtils;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
@@ -31,13 +34,15 @@ import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaExceededException;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.version.Versionable;
@@ -52,6 +57,7 @@ import org.olat.core.util.vfs.version.VersionsManager;
 public class VFSResourceRoot implements WebResourceRoot  {
 	
 	private static final OLog log = Tracing.createLoggerFor(VFSResourceRoot.class);
+	private static final int BUFFER_SIZE = 2048;
 	
 	private final Identity identity;
 	private final VFSContainer base;
@@ -160,7 +166,8 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	}
 
 	@Override
-	public boolean write(String path, InputStream is, boolean overwrite, WebResource movedFrom) {
+	public boolean write(String path, InputStream is, boolean overwrite, WebResource movedFrom)
+	throws QuotaExceededException {
 		VFSLeaf childLeaf;
 		VFSItem file = resolveFile(path);
 		if (file instanceof VFSLeaf) {
@@ -201,7 +208,10 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		}
 		
 		try {
-	        FileUtils.copy(is, childLeaf.getOutputStream(false));
+	        //FileUtils.copy(is, childLeaf.getOutputStream(false));
+	        copyVFS(childLeaf, is);
+		} catch (QuotaExceededException e) {
+			throw e;
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
@@ -233,6 +243,57 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		}
 		
 		return true;
+	}
+
+	private void copyVFS(VFSLeaf file, InputStream is) throws IOException {
+		// Try to get Quota
+		long quotaLeft = -1;
+		boolean withQuotaCheck = false;
+		VFSContainer parentContainer = file.getParentContainer();
+		if (parentContainer != null) {
+			quotaLeft = VFSManager.getQuotaLeftKB(parentContainer);
+			if (quotaLeft != Quota.UNLIMITED) {
+				quotaLeft = quotaLeft * 1024; // convert from kB
+				withQuotaCheck = true;
+			} else {
+				withQuotaCheck = false;
+			}
+		}
+		// Open os
+		OutputStream os = null;
+		byte buffer[] = new byte[BUFFER_SIZE];
+		int len = -1;
+		boolean quotaExceeded = false;
+		try {
+			os = file.getOutputStream(false);
+			while (true) {
+				len = is.read(buffer);
+				if (len == -1) break;
+				if (withQuotaCheck) {
+					// re-calculate quota and check
+					quotaLeft = quotaLeft - len;
+					if (quotaLeft < 0) {
+						log.info("Quota exceeded: " + file);
+						quotaExceeded = true;
+						break;
+					}
+				}
+				os.write(buffer, 0, len);
+			}
+			
+			if(quotaExceeded) {
+				IOUtils.closeQuietly(os);
+				file.delete();
+				throw new QuotaExceededException("");
+			}
+		} catch (IOException e) {
+			IOUtils.closeQuietly(os); // close first, in order to be able to delete any reamins of the file
+			file.delete();
+			throw e;
+		} finally {
+			IOUtils.closeQuietly(os);
+			IOUtils.closeQuietly(is);
+		}
 	}
 	
 	@Override
