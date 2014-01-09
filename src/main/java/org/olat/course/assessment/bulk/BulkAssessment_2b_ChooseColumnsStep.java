@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.bulk;
 
-import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -27,29 +26,17 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.course.assessment.model.BulkAssessmentDatas;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.assessment.model.BulkAssessmentColumnSettings;
 
 /**
  * 
- * Initial date: 18.11.2013<br>
+ * Initial date: 9.1.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BulkAssessment_2_DatasStep extends BasicStep {
+public class BulkAssessment_2b_ChooseColumnsStep extends BasicStep {
 	
-	private final Task task;
-	private final BulkAssessmentDatas savedDatas;
-	private final AssessableCourseNode courseNode;
-	private boolean hasPreviousStep = true;
-
-	public BulkAssessment_2_DatasStep(UserRequest ureq) {
-		this(ureq, null, null, null);
-	}
-	
-	public BulkAssessment_2_DatasStep(UserRequest ureq, AssessableCourseNode courseNode) {
-		this(ureq, courseNode, null, null);
-	}
+	private final BulkAssessmentColumnSettings savedColumnsSettings;
 	
 	/**
 	 * This constructor start the edit the bulk update.
@@ -57,43 +44,31 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 	 * @param courseNode
 	 * @param datas
 	 */
-	public BulkAssessment_2_DatasStep(UserRequest ureq, AssessableCourseNode courseNode,
-			BulkAssessmentDatas savedDatas, Task task) {
+	public BulkAssessment_2b_ChooseColumnsStep(UserRequest ureq) {
+		this(ureq, null);
+	}
+
+	/**
+	 * This constructor start the edit the bulk update.
+	 * @param ureq
+	 * @param courseNode
+	 * @param datas
+	 */
+	public BulkAssessment_2b_ChooseColumnsStep(UserRequest ureq, BulkAssessmentColumnSettings savedColumnsSettings) {
 		super(ureq);
-		this.task = task;
-		this.savedDatas = savedDatas;
-		this.courseNode = courseNode;
-		setI18nTitleAndDescr("data.title", "data.title");
-		if(savedDatas == null) {
-			setNextStep(new BulkAssessment_2b_ChooseColumnsStep(ureq));
-		} else {
-			setNextStep(new BulkAssessment_2b_ChooseColumnsStep(ureq, savedDatas.getColumnsSettings()));
-		}
-		
-		hasPreviousStep = (courseNode == null ? false : true);
+		this.savedColumnsSettings = savedColumnsSettings;
+		setI18nTitleAndDescr("chooseColumns.title", "chooseColumns.title");
+		setNextStep(new BulkAssessment_3_ValidationStep(ureq));
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(!hasPreviousStep, true, false);
+		return new PrevNextFinishConfig(true, true, false);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
-		form.setMultipartEnabled(true, Integer.MAX_VALUE);
-		if(courseNode != null) {
-			context.put("courseNode", courseNode);
-		}
-		if(task != null) {
-			context.put("task", task);
-		}
-		
-		DataStepForm ctrl;
-		if(savedDatas != null) {
-			ctrl = new DataStepForm(ureq, wControl, courseNode, savedDatas, context, form);
-		} else {
-			ctrl = new DataStepForm(ureq, wControl, context, form);
-		}
+		ChooseColumnsStepForm ctrl = new ChooseColumnsStepForm(ureq, wControl, savedColumnsSettings, context, form);
 		return ctrl;
 	}
 }

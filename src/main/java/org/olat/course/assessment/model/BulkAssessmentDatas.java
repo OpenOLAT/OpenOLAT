@@ -34,6 +34,15 @@ public class BulkAssessmentDatas implements Serializable {
 	private List<BulkAssessmentRow> rows;
 	private String returnFiles;
 	private String dataBackupFile;
+	private BulkAssessmentColumnSettings columnsSettings;
+
+	public BulkAssessmentColumnSettings getColumnsSettings() {
+		return columnsSettings;
+	}
+
+	public void setColumnsSettings(BulkAssessmentColumnSettings columnsSettings) {
+		this.columnsSettings = columnsSettings;
+	}
 
 	public int getRowsSize() {
 		return rows == null ? 0 : rows.size();
