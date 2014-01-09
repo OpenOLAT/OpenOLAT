@@ -254,7 +254,7 @@
 					    	items: [
 					    	    { name: 'provider', type: 'listbox', label: translator().translate('olatmovieviewer.provider'), values: buildProviderList() },
 					    	    { name: 'streamer', type: 'textbox', label: translator().translate('olatmovieviewer.streamer')},
-					    	    { name: 'address', type: 'filepicker', label: translator().translate('olatmovieviewer.address')},
+					    	    { name: 'address', type: 'filepicker', filetype: 'flashplayer', label: translator().translate('olatmovieviewer.address')},
 					    	    {
 									type: 'container',
 									label: translator().translate('olatmovieviewer.size'),
