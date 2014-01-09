@@ -33,6 +33,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.repository.RepositoryEntry;
@@ -48,11 +50,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PersistentTaskDAOTest extends OlatTestCase  {
 	
+	private static final OLog log = Tracing.createLoggerFor(PersistentTaskDAOTest.class);
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private PersistentTaskDAO persistentTaskDao;
-	
 	
 	@Test
 	public void createTask() {
@@ -116,6 +119,30 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		Assert.assertNotNull(todo);
 		Assert.assertEquals(task.getKey(), todo.getKey());
 		Assert.assertEquals(TaskStatus.inWork, todo.getStatus());
+	}
+	
+	@Test
+	public void updateTask() {
+		//create
+		String name = "Task to update";
+		PersistentTask task = persistentTaskDao.createTask(name, new DummyTask());
+		dbInstance.commitAndCloseSession();
+		
+		//update
+		PersistentTask todo = persistentTaskDao.pickTaskForRun(task.getKey());
+		DummyTask taskToUpdate = new DummyTask();
+		taskToUpdate.setMarkerValue("new marker");
+		persistentTaskDao.updateTask(todo, taskToUpdate, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		//reload and check
+		PersistentTask loadedTask = persistentTaskDao.loadTaskById(task.getKey());
+		Runnable runnable = persistentTaskDao.deserializeTask(loadedTask);
+
+		Assert.assertNotNull(runnable);
+		Assert.assertTrue(runnable instanceof DummyTask);
+		DummyTask dummyRunnable = (DummyTask)runnable;
+		Assert.assertEquals("new marker", dummyRunnable.getMarkerValue());
 	}
 	
 	@Test
@@ -471,10 +498,26 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 	
 	public static class DummyTask implements Runnable, Serializable {
 		private static final long serialVersionUID = 5193785402425324970L;
+		
+		private String markerValue;
+		
+		public DummyTask() {
+			this.markerValue = UUID.randomUUID().toString();
+		}
+
+		public String getMarkerValue() {
+			return markerValue;
+		}
+
+		public void setMarkerValue(String markerValue) {
+			this.markerValue = markerValue;
+		}
+
+
 
 		@Override
 		public void run() {
-			//
+			log.info("Run: " + markerValue);
 		}
 	}
 }
