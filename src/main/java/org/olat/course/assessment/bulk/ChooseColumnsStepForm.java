@@ -82,46 +82,52 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 		AssessableCourseNode courseNode = (AssessableCourseNode)getFromRunContext("courseNode");
 		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
 
-		String[] theKeys = new String[numOfColumns];
-		String[] theValues = new String[numOfColumns];
+		String[] usernameKeys = new String[numOfColumns];
+		String[] usernameValues = new String[numOfColumns];
+		String[] otherKeys = new String[numOfColumns + 1];
+		String[] otherValues = new String[numOfColumns + 1];
 		for(int i=0; i<numOfColumns; i++) {
-			theKeys[i] = "col" + i;
-			theValues[i] = translate("column",  Integer.toString(i + 1));
+			usernameKeys[i] = "col" + i;
+			usernameValues[i] = translate("column",  Integer.toString(i + 1));
+			otherKeys[i] = "col" + i;
+			otherValues[i] = translate("column",  Integer.toString(i + 1));
 		}
+		otherKeys[otherKeys.length - 1] = "col9999";
+		otherValues[otherValues.length - 1] = translate("column.dontuse");
 		
 		FormLayoutContainer choosersCont = FormLayoutContainer.createDefaultFormLayout("choosers", getTranslator());
 		choosersCont.setRootForm(mainForm);
 		formLayout.add(choosersCont);
 
 		int pos = 0;
-		userNameColumnEl = uifactory.addDropdownSingleselect("table.header.identifier", choosersCont, theKeys, theValues, null);
-		if(columnsSettings != null && columnsSettings.getUsernameColumn() < theKeys.length) {
-			userNameColumnEl.select(getSelectedKey(pos++, columnsSettings.getUsernameColumn(), theKeys), true);
+		userNameColumnEl = uifactory.addDropdownSingleselect("table.header.identifier", choosersCont, usernameKeys, usernameValues, null);
+		if(columnsSettings != null && columnsSettings.getUsernameColumn() < usernameKeys.length) {
+			userNameColumnEl.select(getSelectedKey(pos++, columnsSettings.getUsernameColumn(), usernameKeys), true);
 		} else {
-			userNameColumnEl.select(theKeys[pos++], true);
+			userNameColumnEl.select(usernameKeys[Math.min(pos++, usernameKeys.length - 1)], true);
 		}
 		if(settings.isHasScore()) {
-			scoreColumnEl = uifactory.addDropdownSingleselect("table.header.score", choosersCont, theKeys, theValues, null);
-			if(columnsSettings != null && columnsSettings.getScoreColumn() < theKeys.length) {
-				scoreColumnEl.select(getSelectedKey(pos++, columnsSettings.getScoreColumn(), theKeys), true);
+			scoreColumnEl = uifactory.addDropdownSingleselect("table.header.score", choosersCont, otherKeys, otherValues, null);
+			if(columnsSettings != null && columnsSettings.getScoreColumn() < otherKeys.length) {
+				scoreColumnEl.select(getSelectedKey(pos++, columnsSettings.getScoreColumn(), otherKeys), true);
 			} else {
-				scoreColumnEl.select(theKeys[pos++], true);
+				scoreColumnEl.select(otherKeys[Math.min(pos++, otherKeys.length - 1)], true);
 			}
 		}
 		if(settings.isHasPassed() && settings.getCut() == null) {
-			passedColumnEl = uifactory.addDropdownSingleselect("table.header.passed", choosersCont, theKeys, theValues, null);
-			if(columnsSettings != null && columnsSettings.getPassedColumn() < theKeys.length) {
-				passedColumnEl.select(getSelectedKey(pos++, columnsSettings.getPassedColumn(), theKeys), true);
+			passedColumnEl = uifactory.addDropdownSingleselect("table.header.passed", choosersCont, otherKeys, otherValues, null);
+			if(columnsSettings != null && columnsSettings.getPassedColumn() < otherKeys.length) {
+				passedColumnEl.select(getSelectedKey(pos++, columnsSettings.getPassedColumn(), otherKeys), true);
 			} else {
-				passedColumnEl.select(theKeys[pos++], true);
+				passedColumnEl.select(otherKeys[Math.min(pos++, otherKeys.length - 1)], true);
 			}
 		}
 		if(settings.isHasUserComment()) {
-			commentColumnEl = uifactory.addDropdownSingleselect("table.header.comment", choosersCont, theKeys, theValues, null);
-			if(columnsSettings != null && columnsSettings.getCommentColumn() < theKeys.length) {
-				commentColumnEl.select(getSelectedKey(pos++, columnsSettings.getCommentColumn(), theKeys), true);
+			commentColumnEl = uifactory.addDropdownSingleselect("table.header.comment", choosersCont, otherKeys, otherValues, null);
+			if(columnsSettings != null && columnsSettings.getCommentColumn() < otherKeys.length) {
+				commentColumnEl.select(getSelectedKey(pos++, columnsSettings.getCommentColumn(), otherKeys), true);
 			} else {
-				commentColumnEl.select(theKeys[pos++], true);
+				commentColumnEl.select(otherKeys[Math.min(pos++, otherKeys.length - 1)], true);
 			}
 		}
 
