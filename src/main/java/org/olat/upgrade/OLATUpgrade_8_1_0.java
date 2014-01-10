@@ -229,6 +229,7 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 
 		UserCourseInfosImpl infos = new UserCourseInfosImpl();
 		infos.setIdentity(identity);
+		infos.setCreationDate(new Date());
 		infos.setLastModified(new Date());
 		infos.setInitialLaunch(prop.initialLaunch);
 		infos.setRecentLaunch(prop.recentLaunch);
