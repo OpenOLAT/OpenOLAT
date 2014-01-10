@@ -650,6 +650,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				doReleaseEditLock();
 				fireEvent(ureq, Event.DONE_EVENT);
 			} else if (event.getCommand().equals(CMD_PUBLISH)) {
+				if(publishStepsController != null) return;//ignore enter
+				
 				/*
 				 * start follwoing steps -> cancel wizardf does not touch data
 				 * (M) Mandatory (O) Optional
@@ -771,23 +773,21 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
 			}
 		} else if (source == publishStepsController) {
-			//if (event == Event.DONE_EVENT) {
-				getWindowControl().pop();
-				removeAsListenerAndDispose(publishStepsController);
-				publishStepsController = null;
-				// reset to root node... may have published a deleted node -> this
-				// resets the view
-				cetm = course.getEditorTreeModel();
-				menuTree.setTreeModel(cetm);
-				String rootNodeIdent = menuTree.getTreeModel().getRootNode().getIdent();
-				menuTree.setSelectedNodeId(rootNodeIdent);
-				updateViewForSelectedNodeId(ureq, rootNodeIdent);
-				if(event == Event.CHANGED_EVENT){					
-					showInfo("pbl.success", null);
-					// do logging
-					ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_PUBLISHED, getClass());
-				}//else Event.DONE -> nothing changed / else Event.CANCELLED -> cancelled wizard
-				
+			getWindowControl().pop();
+			removeAsListenerAndDispose(publishStepsController);
+			publishStepsController = null;
+			// reset to root node... may have published a deleted node -> this
+			// resets the view
+			cetm = course.getEditorTreeModel();
+			menuTree.setTreeModel(cetm);
+			String rootNodeIdent = menuTree.getTreeModel().getRootNode().getIdent();
+			menuTree.setSelectedNodeId(rootNodeIdent);
+			updateViewForSelectedNodeId(ureq, rootNodeIdent);
+			if(event == Event.CHANGED_EVENT){					
+				showInfo("pbl.success", null);
+				// do logging
+				ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_PUBLISHED, getClass());
+			}//else Event.DONE -> nothing changed / else Event.CANCELLED -> cancelled wizard	
 		} else if (source == previewController) {
 			if (event == Event.DONE_EVENT) {
 				// no need to deactivate preview controller, already done internally
