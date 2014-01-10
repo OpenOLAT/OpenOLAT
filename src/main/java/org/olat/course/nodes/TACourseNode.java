@@ -500,30 +500,45 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
 	 */
 	public boolean hasCommentConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean comment = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
-		if (comment == null) return false;
-		return comment.booleanValue();
+		Boolean hasScoring = (Boolean) getModuleConfiguration().get(CONF_SCORING_ENABLED);
+		if (hasScoring) {
+			ModuleConfiguration config = getModuleConfiguration();
+			Boolean comment = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
+			if (comment != null) {
+				return comment.booleanValue();
+			}
+		}
+		return false;
 	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
 	 */
 	public boolean hasPassedConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean passed = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
-		if (passed == null) return false;
-		return passed.booleanValue();
+		Boolean hasScoring = (Boolean) getModuleConfiguration().get(CONF_SCORING_ENABLED);
+		if (hasScoring) {
+			ModuleConfiguration config = getModuleConfiguration();
+			Boolean passed = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
+			if (passed != null) {
+				return passed.booleanValue();
+			}
+		}
+		return false;
 	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
 	 */
 	public boolean hasScoreConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean score = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		if (score == null) return false;
-		return score.booleanValue();
+		Boolean hasScoring = (Boolean) getModuleConfiguration().get(CONF_SCORING_ENABLED);
+		if (hasScoring) {
+			ModuleConfiguration config = getModuleConfiguration();
+			Boolean score = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+			if (score != null) {
+				return score.booleanValue();
+			}
+		}
+		return false;
 	}
 
 	/**

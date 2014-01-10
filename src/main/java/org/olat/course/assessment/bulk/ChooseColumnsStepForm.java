@@ -39,9 +39,9 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.model.BulkAssessmentColumnSettings;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentRow;
-import org.olat.course.assessment.model.BulkAssessmentColumnSettings;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.AssessableCourseNode;
 
@@ -78,6 +78,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("chooseColumns.title");
 		setFormDescription("chooseColumns.description");
+		setFormContextHelp("org.olat.course.assessment.bulk", "bulkassessment_mapping.html","help.hover.bulkassessment_mapping");
 
 		AssessableCourseNode courseNode = (AssessableCourseNode)getFromRunContext("courseNode");
 		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
