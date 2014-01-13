@@ -101,17 +101,16 @@ public class OLATUpgrade_7_1_1 extends OLATUpgrade {
 			if (uhd.isInstallationComplete()) return false;
 		}
 		
-		if(!(portfolioCourseNodeEnabled && epfModule.isEnabled())) return false;
-	
-		// get template maps with invalid references and fix them 
-		fixInvalidMapReferences(upgradeManager, uhd);
-
-		// remove invalid references on db
-		fixInvalidTemplateMaps(upgradeManager, uhd);
+		if((portfolioCourseNodeEnabled && epfModule.isEnabled())) {
+			// get template maps with invalid references and fix them 
+			fixInvalidMapReferences(upgradeManager, uhd);
+			// remove invalid references on db
+			fixInvalidTemplateMaps(upgradeManager, uhd);
+		}
 		
 		migrateSecurityGroups(upgradeManager, uhd);
 
-//		uhd.setInstallationComplete(true);
+		uhd.setInstallationComplete(true);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		log.audit("Finished OLATUpgrade_7_1_1 successfully!");
 		return true;
