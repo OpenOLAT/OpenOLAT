@@ -42,6 +42,9 @@ body {
 	margin:0 auto;
 	width:100%;
 	height:100%;
+	/* fix layering issue with datepicker - OO content on layer 1 */
+	position: relative; 
+	z-index: 1;
 }
 #b_page_wrapper {
 //	@include o-border-radius(6px);
