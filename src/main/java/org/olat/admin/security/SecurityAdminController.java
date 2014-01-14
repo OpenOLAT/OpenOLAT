@@ -20,6 +20,7 @@
 package org.olat.admin.security;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.gui.UserRequest;
@@ -57,18 +58,21 @@ public class SecurityAdminController extends FormBasicController {
 		setFormDescription("sec.description");
 		setFormContextHelp("org.olat.admin.security", "ced-sec.html", "help.hover.sec");
 		
-		String[] frameKeys = new String[]{ "on" };
-		String[] frameValues = new String[]{ "" };
+		String[] keys = new String[]{ "on" };
+		String[] values = new String[]{ "" };
 		
-		topFrameEl = uifactory.addCheckboxesHorizontal("sec.topframe", "sec.topframe", formLayout, frameKeys, frameValues, null);
+		// on: force top top frame (more security); off: allow in frame (less security)
+		topFrameEl = uifactory.addCheckboxesHorizontal("sec.topframe", "sec.topframe", formLayout, keys, values, null);
 		topFrameEl.select("on", securityModule.isForceTopFrame());
 		topFrameEl.addActionListener(this, FormEvent.ONCHANGE);
 		
-		wikiEl = uifactory.addCheckboxesHorizontal("sec.wiki", "sec.wiki", formLayout, frameKeys, frameValues, null);
-		wikiEl.select("on", securityModule.isWikiEnabled());
+		// on: block wiki (more security); off: do not block wiki (less security)
+		wikiEl = uifactory.addCheckboxesHorizontal("sec.wiki", "sec.wiki", formLayout, keys, values, null);
+		wikiEl.select("off", securityModule.isWikiEnabled());
 		wikiEl.addActionListener(this, FormEvent.ONCHANGE);
 
-		forceDownloadEl = uifactory.addCheckboxesHorizontal("sec.download", "sec.force.download", formLayout, frameKeys, frameValues, null);
+		// on: force file download in folder component (more security); off: allow execution of content (less security)
+		forceDownloadEl = uifactory.addCheckboxesHorizontal("sec.download", "sec.force.download", formLayout, keys, values, null);
 		forceDownloadEl.select("on", folderModule.isForceDownload());
 		forceDownloadEl.addActionListener(this, FormEvent.ONCHANGE);
 	}
@@ -85,7 +89,9 @@ public class SecurityAdminController extends FormBasicController {
 			securityModule.setForceTopFrame(enabled);
 		} else if(wikiEl == source) {
 			boolean enabled = wikiEl.isAtLeastSelected(1);
-			securityModule.setWikiEnabled(enabled);
+			securityModule.setWikiEnabled(!enabled);
+			// update collaboration tools list
+			CollaborationToolsFactory.getInstance().initAvailableTools();
 		} else if(forceDownloadEl == source) {
 			boolean enabled = forceDownloadEl.isAtLeastSelected(1);
 			folderModule.setForceDownload(enabled);

@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.collaboration.CalendarToolSettingsController;
 import org.olat.collaboration.CollaborationTools;
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.collaboration.CollaborationToolsSettingsController;
 import org.olat.collaboration.FolderToolSettingsController;
 import org.olat.core.gui.UserRequest;
@@ -75,7 +76,8 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 		
 		String containerPage = velocity_root + "/tool_config_container.html";
 		
-		for (String k : CollaborationTools.TOOLS) {
+		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
+		for (String k : availableTools) {
 			if (k.equals(CollaborationTools.TOOL_CHAT) || k.equals(CollaborationTools.TOOL_NEWS)) {
 				continue;
 			}

@@ -135,12 +135,13 @@ public class BusinessGroupImportExport {
 		}
 		// collab tools
 
+		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
 		CollabTools toolsConfig = new CollabTools();
 		CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
-		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
+		for (int i = 0; i < availableTools.length; i++) {
 			try {
-				Field field = toolsConfig.getClass().getField(CollaborationTools.TOOLS[i]);
-				field.setBoolean(toolsConfig, ct.isToolEnabled(CollaborationTools.TOOLS[i]));
+				Field field = toolsConfig.getClass().getField(availableTools[i]);
+				field.setBoolean(toolsConfig, ct.isToolEnabled(availableTools[i]));
 			} catch (Exception e) {
 				log.error("", e);
 			}
@@ -263,14 +264,15 @@ public class BusinessGroupImportExport {
 				//map the group
 				env.getGroups().add(new BusinessGroupReference(newGroup, group.key, group.name));
 				// get tools config
+				String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
 				CollabTools toolsConfig = group.tools;
 				CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(newGroup);
-				for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
+				for (int i = 0; i < availableTools.length; i++) {
 					try {
-						Field field = toolsConfig.getClass().getField(CollaborationTools.TOOLS[i]);
+						Field field = toolsConfig.getClass().getField(availableTools[i]);
 						Boolean val = field.getBoolean(toolsConfig);
 						if (val != null) {
-							ct.setToolEnabled(CollaborationTools.TOOLS[i], val);
+							ct.setToolEnabled(availableTools[i], val);
 						}
 					} catch (Exception e) {
 						log.error("", e);

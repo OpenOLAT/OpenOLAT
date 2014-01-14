@@ -25,14 +25,22 @@
 
 package org.olat.collaboration;
 
+import java.util.ArrayList;
+
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.group.BusinessGroup;
+import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.modules.openmeetings.OpenMeetingsModule;
+import org.olat.portfolio.PortfolioModule;
 
 /**
  * Description:<BR>
@@ -49,6 +57,14 @@ public class CollaborationToolsFactory {
 	private static CollaborationToolsFactory instance;
 	private CacheWrapper<String,CollaborationTools> cache;
 	private CoordinatorManager coordinatorManager;
+
+	/**
+	 * public for group test only, do not use otherwise convenience, helps
+	 * iterating possible tools, i.e. in jUnit testCase, also for building up a
+	 * tools choice
+	 */
+	public static String[] TOOLS;
+	
 	
 	/**
 	 * [used by spring]
@@ -58,6 +74,46 @@ public class CollaborationToolsFactory {
 		instance = this;
 	}
 
+	/**
+	 * Helper method to initialize the list of enabled tools based system wide
+	 * configuration.
+	 */
+	public synchronized void initAvailableTools() {
+		ArrayList<String> toolArr = new ArrayList<String>();
+		toolArr.add(CollaborationTools.TOOL_NEWS);
+		toolArr.add(CollaborationTools.TOOL_CONTACT);
+		toolArr.add(CollaborationTools.TOOL_CALENDAR);
+		toolArr.add(CollaborationTools.TOOL_FOLDER);
+		toolArr.add(CollaborationTools.TOOL_FORUM);
+		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
+			toolArr.add(CollaborationTools.TOOL_CHAT);
+		}
+		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class); 
+		if (securityModule.isWikiEnabled()) {
+			toolArr.add(CollaborationTools.TOOL_WIKI);			
+		}
+		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
+		if (portfolioModule.isEnabled()) {
+			toolArr.add(CollaborationTools.TOOL_PORTFOLIO);
+		}	
+		OpenMeetingsModule openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
+		if(openMeetingsModule.isEnabled()) {
+			toolArr.add(CollaborationTools.TOOL_OPENMEETINGS);
+		}
+		TOOLS = ArrayHelper.toArray(toolArr);				
+	}
+	
+	/**
+	 * Get the array of available (system wide enabled) collaboration tools
+	 * @return
+	 */
+	public String[] getAvailableTools() {
+		if (TOOLS == null) {
+			initAvailableTools();
+		}
+		return TOOLS;
+	}
+	
 	/**
 	 * it is a singleton.
 	 * 

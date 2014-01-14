@@ -669,32 +669,33 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<BusinessGroup>  sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
 		BusinessGroup found = (BusinessGroup) sqlRes.get(0);
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
-		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
-			String msg = "Tool " + CollaborationTools.TOOLS[i] + " is enabled";
-			boolean enabled = myCTSMngr.isToolEnabled(CollaborationTools.TOOLS[i]);
+		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
+		for (int i = 0; i < availableTools.length; i++) {
+			String msg = "Tool " + availableTools[i] + " is enabled";
+			boolean enabled = myCTSMngr.isToolEnabled(availableTools[i]);
 			// all tools are disabled by default exept the news tool
 			assertTrue(msg, !enabled);
 
 		}
 
-		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
-			myCTSMngr.setToolEnabled(CollaborationTools.TOOLS[i], true);
+		for (int i = 0; i < availableTools.length; i++) {
+			myCTSMngr.setToolEnabled(availableTools[i], true);
 		}
 
-		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
-			String msg = "Tool " + CollaborationTools.TOOLS[i] + " is enabled";
-			boolean enabled = myCTSMngr.isToolEnabled(CollaborationTools.TOOLS[i]);
+		for (int i = 0; i < availableTools.length; i++) {
+			String msg = "Tool " + availableTools[i] + " is enabled";
+			boolean enabled = myCTSMngr.isToolEnabled(availableTools[i]);
 			assertTrue(msg, enabled);
 
 		}
 
-		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
-			myCTSMngr.setToolEnabled(CollaborationTools.TOOLS[i], false);
+		for (int i = 0; i < availableTools.length; i++) {
+			myCTSMngr.setToolEnabled(availableTools[i], false);
 		}
 
-		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
-			String msg = "Tool " + CollaborationTools.TOOLS[i] + " is disabled";
-			boolean enabled = myCTSMngr.isToolEnabled(CollaborationTools.TOOLS[i]);
+		for (int i = 0; i < availableTools.length; i++) {
+			String msg = "Tool " + availableTools[i] + " is disabled";
+			boolean enabled = myCTSMngr.isToolEnabled(availableTools[i]);
 			assertTrue(msg, !enabled);
 		}
 	}
@@ -777,9 +778,10 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		assertTrue("1 BuddyGroup owned by id2", sqlRes.size() == 1);
 		BusinessGroup found = (BusinessGroup) sqlRes.get(0);
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
+		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
 
-		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
-			myCTSMngr.setToolEnabled(CollaborationTools.TOOLS[i], true);
+		for (int i = 0; i < availableTools.length; i++) {
+			myCTSMngr.setToolEnabled(availableTools[i], true);
 		}
 
 		businessGroupService.deleteBusinessGroup(found);

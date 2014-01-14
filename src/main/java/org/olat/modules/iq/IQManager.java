@@ -50,7 +50,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.GenericMainController;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -188,7 +187,6 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 		// -- 99% of cases   -- 2) qti is ready to be run as test/survey
 		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(res, null)){
 			GenericMainController glc = createLockedMessageController(ureq, wControl);
-			glc.init(ureq);
 			return glc;
 		}else{
 			Controller controller = new IQDisplayController(resolver, type, secCallback, ureq, wControl);
@@ -199,22 +197,16 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	}
 
 	private GenericMainController createLockedMessageController(UserRequest ureq, WindowControl wControl) {
-		//
 		//wrap simple message into mainLayout
 		GenericMainController glc = new GenericMainController(ureq, wControl) {
-		
-			private MessageController contentCtr;
-			private Panel empty;
-			private LayoutMain3ColsController columnLayoutCtr;
-
 			@Override
 			public void init(UserRequest ureq) {
-				empty = new Panel("empty");			Translator translator = Util.createPackageTranslator(this.getClass(), ureq.getLocale()); 
-				contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translator.translate("status.currently.locked.title"), translator.translate("status.currently.locked"));
+				Panel empty = new Panel("empty");			
+				setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale())); 
+				Controller contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("status.currently.locked.title"), translate("status.currently.locked"));
 				listenTo(contentCtr); // auto dispose later
 				Component resComp = contentCtr.getInitialComponent();
-
-				columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, resComp, /*do not save no prefs*/null);
+				LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, resComp, /*do not save no prefs*/null);
 				listenTo(columnLayoutCtr); // auto dispose later
 				putInitialPanel(columnLayoutCtr.getInitialComponent());
 			}
@@ -226,6 +218,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 			}
 		
 		};
+		glc.init(ureq);
 		return glc;
 	}
 	

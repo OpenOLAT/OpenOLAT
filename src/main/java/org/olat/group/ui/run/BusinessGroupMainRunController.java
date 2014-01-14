@@ -32,6 +32,7 @@ import org.olat.NewControllerFactory;
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
@@ -1081,7 +1082,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			root.addChild(gtnChild);
 		}
 
-		if (collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI)) {
+		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class); 
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI) && securityModule.isWikiEnabled()) {
 			gtnChild = new GenericTreeNode();
 			gtnChild.setTitle(translate("menutree.wiki"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_WIKI);

@@ -291,10 +291,11 @@ public class LearningGroupWebService {
 		if(selectedTools == null) {
 			selectedTools = new String[0];
 		}
+		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
 		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
-		for (int i=CollaborationTools.TOOLS.length; i-->0; ) {
+		for (int i=availableTools.length; i-->0; ) {
 			boolean enable = false;
-			String tool = CollaborationTools.TOOLS[i];
+			String tool = availableTools[i];
 			for(String selectedTool:selectedTools) {
 				if(tool.equals(selectedTool)) {
 					enable = true;

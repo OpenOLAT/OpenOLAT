@@ -26,9 +26,13 @@ package org.olat.repository;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.layout.GenericMainController;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
@@ -96,6 +100,41 @@ public class RepositoyUIFactory {
 			return layoutCtr;
 		}
 	}
+	
+	/**
+	 * Create main controller that does nothing but displaying a message that
+	 * this resource is disabled due to security constraints
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @return
+	 */
+	public static GenericMainController createRepoEntryDisabledDueToSecurityMessageController(UserRequest ureq, WindowControl wControl) {
+		//wrap simple message into mainLayout
+		GenericMainController glc = new GenericMainController(ureq, wControl) {
+			@Override
+			public void init(UserRequest ureq) {
+				Panel empty = new Panel("empty");			
+				setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale())); 
+				MessageController contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("security.disabled.title"), translate("security.disabled.info"));
+				listenTo(contentCtr); // auto dispose later
+				Component resComp = contentCtr.getInitialComponent();
+				LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, resComp, /*do not save no prefs*/null);
+				listenTo(columnLayoutCtr); // auto dispose later
+				putInitialPanel(columnLayoutCtr.getInitialComponent());
+			}
+		
+			@Override
+			protected Controller handleOwnMenuTreeEvent(Object uobject, UserRequest ureq) {
+				//no menutree means no menu events.
+				return null;
+			}
+		
+		};
+		glc.init(ureq);
+		return glc;
+	}
+
 	
 	public static Controller createLifecylceAdminController(UserRequest ureq, WindowControl wControl) {
 		Controller ctrl = new LifecycleAdminController(ureq, wControl);
