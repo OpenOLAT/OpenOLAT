@@ -81,7 +81,8 @@ public class VelocityHelper extends LogDelegator {
 			p.setProperty(RuntimeConstants.RUNTIME_LOG_INFO_STACKTRACE, "true");
 
 			p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());
-			p.setProperty(RuntimeConstants.OUTPUT_ENCODING, VelocityModule.getOutputEncoding());
+			p.setProperty(RuntimeConstants.OUTPUT_ENCODING, VelocityModule.getOutputEncoding());			
+			p.setProperty(RuntimeConstants.PARSER_POOL_SIZE, VelocityModule.getParsterPoolSize());
 
 
 			if (Settings.isDebuging()) {

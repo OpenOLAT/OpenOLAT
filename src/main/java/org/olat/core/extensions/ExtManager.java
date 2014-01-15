@@ -127,7 +127,7 @@ public class ExtManager extends LogDelegator {
 		if (extensions == null) {
 			synchronized(lockObject) {
 				if (extensions == null) {
-					initExtentions();
+					extensions = initExtentions();
 				}
 			}
 		}
@@ -141,13 +141,13 @@ public class ExtManager extends LogDelegator {
 		return timeOfExtensionStartup;
 	}
 	
-	private void initExtentions() {
+	private ArrayList<Extension> initExtentions() {
 		logInfo("****** start loading extensions *********");
 		Map<Integer, Extension> orderKeys = new HashMap<Integer, Extension>();
 		idExtensionlookup = new HashMap<Long, Extension>();
 		navKeyGAExtensionlookup = new HashMap<ExtensionPointKeyPair, GenericActionExtension>();
 		
-		extensions = new ArrayList<Extension>();
+		ArrayList<Extension> extensionsList = new ArrayList<Extension>();
 		Map<String, Extension> extensionMap = CoreSpringFactory.getBeansOfType(Extension.class);
 		Collection<Extension> extensionValues = extensionMap.values();
 
@@ -182,7 +182,7 @@ public class ExtManager extends LogDelegator {
 					count_duplid++;
 					logWarn("Devel-Info :: duplicate unique id generated for extensions :: "+uid+" [ ["+idExtensionlookup.get(uid)+"]  and ["+extension+"] ]",null);
 			}else{
-				extensions.add(extension);
+				extensionsList.add(extension);
 				idExtensionlookup.put(uid, extension);
 				if (extension instanceof GenericActionExtension) {
 					GenericActionExtension gAE = (GenericActionExtension) extension;
@@ -205,7 +205,8 @@ public class ExtManager extends LogDelegator {
 			logDebug("Created unique-id "+uid+" for extension:: "+extension);
 		}
 		logInfo("Devel-Info :: initExtensions done. :: "+count_disabled+" disabled Extensions, "+count_duplid+" extensions with duplicate ids, "+count_duplnavkey+ " extensions with duplicate navigationKeys");
-		Collections.sort(extensions);
+		Collections.sort(extensionsList);
+		return extensionsList;
 	}
 	
 	private class ExtensionPointKeyPair {
