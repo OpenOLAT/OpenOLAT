@@ -19,6 +19,7 @@
  */
 package org.olat.commons.calendar.ui.components;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -128,7 +129,7 @@ public class FullCalendarComponent extends Component {
 	public KalendarEvent getKalendarEvent(String id) {
 		for(KalendarRenderWrapper cal:calWrappers) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
-				if(id.equals(event.getID())) {
+				if(id.equals(normalizeId(event.getID()))) {
 					return event;
 				}
 			}
@@ -139,7 +140,7 @@ public class FullCalendarComponent extends Component {
 	public KalendarRenderWrapper getKalendarRenderWrapperOf(String id) {
 		for(KalendarRenderWrapper cal:calWrappers) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
-				if(id.equals(event.getID())) {
+				if(id.equals(normalizeId(event.getID()))) {
 					return cal;
 				}
 			}
@@ -180,5 +181,12 @@ public class FullCalendarComponent extends Component {
 
 	public void setKalendars(List<KalendarRenderWrapper> calendarWrappers) {
 		this.calWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
+	}
+	
+	protected static final String normalizeId(String id) {
+		String normalizedId = Normalizer.normalize(id, Normalizer.Form.NFD)
+				.replaceAll("\\p{InCombiningDiacriticalMarks}+","")
+				.replaceAll("\\W+", "");
+		return normalizedId;
 	}
 }
