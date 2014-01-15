@@ -265,14 +265,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 		
 		if(valuesLength > settings.getCommentColumn()) {
 			String commentStr = values[settings.getCommentColumn()];
-			// add any additional comment which probably is just a comma in a escaped string
-			if (valuesLength > 4) {
-				for (int i = 4; i < valuesLength; i++) {
-					commentStr += "," + values[i];					
-				}				
-			}			
 			commentStr= commentStr.trim();
-			
 			if(commentStr.isEmpty()) {
 				// ignore empty values
 				row.setComment(null);
