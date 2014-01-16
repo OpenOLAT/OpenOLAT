@@ -58,9 +58,11 @@
 	/* portfolio */
 	div.o_wiki_wrapper .b_eportfolio_add, div.o_wiki_wrapper .b_eportfolio_add_again { position:absolute; top:28px; right:3px; z-index:99; }
 	/* override default styles to have smaller title and header on wiki pages */
-	div.o_wiki_wrapper h1 	{ font-size: 1.0em;}
-	div.o_wiki_wrapper h2 	{ font-size: 1.0em;}
-	div.o_wiki_wrapper h3 	{ font-size: 1.0em;}
+	div.o_wiki_wrapper h1 	{ font-size: 1.6em;}
+	div.o_wiki_wrapper h2 	{ font-size: 1.4em;}
+	div.o_wiki_wrapper h3 	{ font-size: 1.2em;}
+	div.o_wiki_wrapper h4 	{ font-size: 1.1em;}
+	div.o_wiki_wrapper h5 	{ font-size: 1.0em;}
 	
 	/* wiki chooser for file and links */
 	div.o_wikimod_linkchooser { clear: both; float: left; display: inline; }
