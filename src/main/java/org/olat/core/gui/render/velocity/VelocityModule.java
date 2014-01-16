@@ -68,7 +68,7 @@ public class VelocityModule implements Initializable {
 	/**
 	 * @return the parser pool size for the velocity parser pool configuration
 	 */
-	public static String getParsterPoolSize() {
+	public static String getParserPoolSize() {
 		return parserPoolSize;
 	}
 	
