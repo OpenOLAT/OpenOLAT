@@ -28,7 +28,6 @@ import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQSELFCourseNode;
@@ -134,7 +133,7 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 		GenericTreeModel subTreeModel = new GenericTreeModel();
 		StatisticResourceNode rootTreeNode = new StatisticResourceNode(courseNode, this);
 		subTreeModel.setRootNode(rootTreeNode);
-		buildQTICourseNodeSubTree(courseNode, qtiDocument, rootTreeNode);
+		buildQTICourseNodeSubTree(qtiDocument, rootTreeNode);
 		return subTreeModel;
 	}
 
@@ -178,7 +177,7 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 		}
 	}
 	
-	private void buildQTICourseNodeSubTree(CourseNode courseNode, QTIDocument qtiDocument, GenericTreeNode rootNode) {	
+	private void buildQTICourseNodeSubTree(QTIDocument qtiDocument, GenericTreeNode rootNode) {	
 		for(Section section:qtiDocument.getAssessment().getSections()) {
 			GenericTreeNode sectionNode = new SectionNode(section, null);
 			sectionNode.setUserObject(section);

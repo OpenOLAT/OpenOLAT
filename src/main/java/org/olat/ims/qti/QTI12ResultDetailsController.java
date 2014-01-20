@@ -227,7 +227,7 @@ public class QTI12ResultDetailsController extends BasicController {
 				if(tableModel.isTestRunning()) {
 					IQRetrievedEvent retrieveEvent = new IQRetrievedEvent(assessedIdentity, courseResourceableId, nodeIdent);
 					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(retrieveEvent, retrieveEvent);
-					doRetrieveTest(ureq);
+					doRetrieveTest();
 				}
 			}
 			removeAsListenerAndDispose(retrieveConfirmationCtr);
@@ -253,7 +253,7 @@ public class QTI12ResultDetailsController extends BasicController {
 	 * result set, pass the score to the course node.
 	 * @param ureq
 	 */
-	protected void doRetrieveTest(UserRequest ureq2) {
+	private void doRetrieveTest() {
 		ICourse course = CourseFactory.loadCourse(courseResourceableId);
 		AssessableCourseNode testNode = (AssessableCourseNode)course.getRunStructure().getNode(nodeIdent);
 		ModuleConfiguration modConfig = testNode.getModuleConfiguration();

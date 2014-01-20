@@ -55,11 +55,11 @@ public class QTI12SurveyStatisticsController extends AbstractAssessmentStatistic
 				items.add(item);
 			}
 		}
-		initCourseNodeInformation(items, stats);
+		initCourseNodeInformation(stats);
 		initItemsOverview(items);
 	}
 	
-	private void initCourseNodeInformation(List<Item> items, StatisticAssessment stats) {
+	private void initCourseNodeInformation(StatisticAssessment stats) {
 		mainVC.contextPut("type", resourceResult.getType());
 		mainVC.contextPut("numOfParticipants", stats.getNumOfParticipants());
 		String duration = duration(stats.getAverageDuration());
