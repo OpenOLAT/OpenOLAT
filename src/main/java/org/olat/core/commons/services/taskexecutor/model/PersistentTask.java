@@ -65,8 +65,8 @@ public class PersistentTask implements Task, CreateInfo, ModifiedInfo, Persistab
 	private static final long serialVersionUID = 800884851125711998L;
 
 	@Id
-  @GeneratedValue(generator = "system-uuid")
-  @GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 
@@ -108,7 +108,7 @@ public class PersistentTask implements Task, CreateInfo, ModifiedInfo, Persistab
 	@Column(name="e_executor_boot_id", nullable=true, insertable=true, updatable=true)
 	private String executorBootId;
 	
-	@Column(name="e_task", nullable=false, insertable=true, updatable=false)
+	@Column(name="e_task", nullable=false, insertable=true, updatable=true)
 	private String task;
 
 	@Override

@@ -41,9 +41,7 @@ import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
 
 import de.bps.course.nodes.CourseNodePasswordManagerImpl;
 
@@ -71,12 +69,6 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	protected AbstractAccessableCourseNode(String type) {
 		super(type);
 	}
-
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(UserRequest, WindowControl, UserCourseEnvironment, NodeEvaluation, String)
-	 */
-	abstract public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd);
 
 	/**
 	 * Returns the generic access precondition

@@ -611,45 +611,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	public Persistable loadObject(Persistable persistable) {
 		return loadObject(persistable, false);
 	}
-	
-
-	/**
-	 * Create a named hibernate query for the given name. Optionally the database
-	 * vendor is prepended to load database specific queries if available. Use
-	 * this only when absolutely necessary.
-	 * 
-	 * @param queryName The query name
-	 * @param vendorSpecific true: prepend the database vendor name to the query
-	 *          name, e.g. mysql_queryName; false: use queryName as is
-	 * @return the query or NULL if no such named query exists
-	 */
-	@Override
-	public DBQuery createNamedQuery(final String queryName, boolean vendorSpecific) {
-		if (queryName == null) {
-			throw new AssertException("queryName must not be NULL");
-		}
-		DBQuery dbq = null;
-		if (vendorSpecific) {
-			String finalQueryName = vendorSpecific ? dbVendor + "_" + queryName : queryName;
-			Session session = getSession(getCurrentEntityManager());
-			Query q = session.getNamedQuery(finalQueryName);
-			if (q == null) { 
-				// try fallback with normal query
-				q = session.getNamedQuery(queryName);
-			}
-			if (q == null) {
-				String msg = "Can not create namedQuery::" + finalQueryName;
-				if (vendorSpecific) {
-					msg += " for dbvendor::" + dbVendor + " and non db specific::" + queryName;
-				}
-				msg += ", named query does not exist";
-				logError(msg, null);
-			}	else {
-				dbq = new DBQueryImpl(q);
-			}
-		}
-		return dbq;
-	}	
 
 	/**
 	 * loads an object if needed. this makes sense if you have an object which had

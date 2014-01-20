@@ -68,6 +68,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 
 	private boolean lastCalendarEnabledState;
 	private Controller quotaCtr;
+	private final String[] availableTools; 
 	private final boolean managed;
 	private final BusinessGroup businessGroup;
 
@@ -79,11 +80,13 @@ public class CollaborationToolsSettingsController extends BasicController {
 		super(ureq, wControl);
 		this.businessGroup = businessGroup;
 		managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.tools);
+		// make copy to be independent, for during lifetime of controller
+		availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
 		
 		vc_collabtools = createVelocityContainer ("collaborationtools");
 
-		cots = new ChoiceOfToolsForm (ureq, wControl, collabTools);
+		cots = new ChoiceOfToolsForm (ureq, wControl, collabTools, availableTools);
 		cots.setEnabled(!managed);
 		listenTo(cots);
 		vc_collabtools.put("choiceOfTools", cots.getInitialComponent());
@@ -170,11 +173,11 @@ public class CollaborationToolsSettingsController extends BasicController {
 		if (source == cots && event.getCommand().equals("ONCHANGE")) {
 			
 			Set<String> set = cots.getSelected();
-			for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
+			for (int i = 0; i < availableTools.length; i++) {
 				// usually one should check which one changed but here
 				// it is okay to set all of them because ctsm has a cache
 				// and writes only when really necessary.
-				collabTools.setToolEnabled(CollaborationTools.TOOLS[i], set.contains(""+i));	
+				collabTools.setToolEnabled(availableTools[i], set.contains(""+i));	
 			}
 			//reload tools after a change
 			collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
@@ -267,19 +270,21 @@ public class CollaborationToolsSettingsController extends BasicController {
 }
 
 class ChoiceOfToolsForm extends FormBasicController {
-
 	CollaborationTools cts;
 	MultipleSelectionElement ms;
 	
 	List <String>theKeys   = new ArrayList<String>();
 	List <String>theValues = new ArrayList<String>();
+
+	final String[] availableTools;
 	
-	public ChoiceOfToolsForm(UserRequest ureq, WindowControl wControl, CollaborationTools cts) {
+	public ChoiceOfToolsForm(UserRequest ureq, WindowControl wControl, CollaborationTools cts, final String[] availableTools) {
 		super(ureq, wControl);
 		this.cts = cts;
+		this.availableTools = availableTools;
 		
-		for (int i=0; i<CollaborationTools.TOOLS.length; i++) {
-			String k = CollaborationTools.TOOLS[i];
+		for (int i=0; i<availableTools.length; i++) {
+			String k = availableTools[i];
 			if (k.equals(CollaborationTools.TOOL_CHAT)) {
 				InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 				if (!imModule.isEnabled() || !imModule.isGroupEnabled()) {
@@ -287,7 +292,7 @@ class ChoiceOfToolsForm extends FormBasicController {
 				}
 			}
 			theKeys.add(""+i);
-			theValues.add(translate("collabtools.named."+CollaborationTools.TOOLS[i]));
+			theValues.add(translate("collabtools.named."+availableTools[i]));
 		}
 		
 		initForm(ureq);
@@ -310,8 +315,8 @@ class ChoiceOfToolsForm extends FormBasicController {
 				theValues.toArray(new String[theValues.size()]),
 				null, 1
 		);
-		for (int i=0; i<CollaborationTools.TOOLS.length; i++) {
-			ms.select(""+i, cts.isToolEnabled(CollaborationTools.TOOLS[i]));
+		for (int i=0; i<availableTools.length; i++) {
+			ms.select(""+i, cts.isToolEnabled(availableTools[i]));
 		}
 		ms.addActionListener(listener, FormEvent.ONCLICK);
 	}

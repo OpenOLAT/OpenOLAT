@@ -139,7 +139,7 @@ public class FullCalendarMapper implements Mapper {
 	
 	private JSONObject getJSONEvent(KalendarEvent event, KalendarRenderWrapper cal) throws JSONException {
 		JSONObject jsonEvent = new JSONObject();
-		jsonEvent.put("id", event.getID());
+		jsonEvent.put("id", FullCalendarComponent.normalizeId(event.getID()));
 		jsonEvent.put("title", event.getSubject());
 		jsonEvent.put("allDay", new Boolean(event.isAllDayEvent()));
 		if(StringHelper.containsNonWhitespace(cal.getKalendarConfig().getCss())) {

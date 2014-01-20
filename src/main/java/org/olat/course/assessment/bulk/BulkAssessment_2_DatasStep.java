@@ -39,7 +39,7 @@ import org.olat.course.nodes.AssessableCourseNode;
 public class BulkAssessment_2_DatasStep extends BasicStep {
 	
 	private final Task task;
-	private final BulkAssessmentDatas datas;
+	private final BulkAssessmentDatas savedDatas;
 	private final AssessableCourseNode courseNode;
 	private boolean hasPreviousStep = true;
 
@@ -58,13 +58,18 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 	 * @param datas
 	 */
 	public BulkAssessment_2_DatasStep(UserRequest ureq, AssessableCourseNode courseNode,
-			BulkAssessmentDatas datas, Task task) {
+			BulkAssessmentDatas savedDatas, Task task) {
 		super(ureq);
 		this.task = task;
-		this.datas = datas;
+		this.savedDatas = savedDatas;
 		this.courseNode = courseNode;
 		setI18nTitleAndDescr("data.title", "data.title");
-		setNextStep(new BulkAssessment_3_ValidationStep(ureq));
+		if(savedDatas == null) {
+			setNextStep(new BulkAssessment_2b_ChooseColumnsStep(ureq));
+		} else {
+			setNextStep(new BulkAssessment_2b_ChooseColumnsStep(ureq, savedDatas.getColumnsSettings()));
+		}
+		
 		hasPreviousStep = (courseNode == null ? false : true);
 	}
 
@@ -84,9 +89,8 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 		}
 		
 		DataStepForm ctrl;
-		if(datas != null) {
-			context.put("datas", datas);
-			ctrl = new DataStepForm(ureq, wControl, courseNode, datas, context, form);
+		if(savedDatas != null) {
+			ctrl = new DataStepForm(ureq, wControl, courseNode, savedDatas, context, form);
 		} else {
 			ctrl = new DataStepForm(ureq, wControl, context, form);
 		}

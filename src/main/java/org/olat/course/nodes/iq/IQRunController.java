@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.dom4j.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -125,7 +126,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	
 	private OLATResourceable assessmentInstanceOres;
 	
-	
+	private final IQManager iqManager;
 	
 	/**
 	 * Constructor for a test run controller
@@ -149,6 +150,7 @@ public class IQRunController extends BasicController implements GenericEventList
 		this.assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 		
 		this.userSession = ureq.getUserSession();
+		iqManager = CoreSpringFactory.getImpl(IQManager.class);
 		
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 		
@@ -188,7 +190,7 @@ public class IQRunController extends BasicController implements GenericEventList
 		boolean showAll = userRoles.isAuthor() || userRoles.isOLATAdmin();
 		//get changelog
 		Formatter formatter = Formatter.getInstance(ureq.getLocale());
-		ImsRepositoryResolver resolver = new ImsRepositoryResolver(re.getKey());
+		ImsRepositoryResolver resolver = new ImsRepositoryResolver(re);
 		QTIChangeLogMessage[] qtiChangeLog = resolver.getDocumentChangeLog();
 		StringBuilder qtiChangelog = new StringBuilder();
 
@@ -234,6 +236,7 @@ public class IQRunController extends BasicController implements GenericEventList
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = selftestCourseNode;
 		this.type = AssessmentInstance.QMD_ENTRY_TYPE_SELF;
+		iqManager = CoreSpringFactory.getImpl(IQManager.class);
 
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
@@ -274,6 +277,7 @@ public class IQRunController extends BasicController implements GenericEventList
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = surveyCourseNode;
 		this.type = AssessmentInstance.QMD_ENTRY_TYPE_SURVEY;
+		iqManager = CoreSpringFactory.getImpl(IQManager.class);
 		
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
@@ -386,7 +390,7 @@ public class IQRunController extends BasicController implements GenericEventList
 			OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck("test");
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = addToHistory(ureq, ores, null);
-			Controller returnController = IQManager.getInstance().createIQDisplayController(modConfig, secCallback, ureq, bwControl, callingResId, callingResDetail, this);
+			Controller returnController = iqManager.createIQDisplayController(modConfig, secCallback, ureq, bwControl, callingResId, callingResDetail, this);
 			/*
 			 * either returnController is a MessageController or it is a IQDisplayController
 			 * this should not serve as pattern to be copy&pasted.
@@ -439,14 +443,14 @@ public class IQRunController extends BasicController implements GenericEventList
         //fallback solution: if the assessmentID is not available via AssessmentManager than try to get it via IQManager
 				long callingResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().longValue();
 				String callingResDetail = courseNode.getIdent();
-				assessmentID = IQManager.getInstance().getLastAssessmentID(ureq.getIdentity(), callingResId, callingResDetail);
+				assessmentID = iqManager.getLastAssessmentID(ureq.getIdentity(), callingResId, callingResDetail);
 			}
 			if(assessmentID!=null && !assessmentID.equals("")) {
-				Document doc = IQManager.getInstance().getResultsReportingFromFile(ureq.getIdentity(), type, assessmentID);
+				Document doc = iqManager.getResultsReportingFromFile(ureq.getIdentity(), type, assessmentID);
 				//StringBuilder resultsHTML = LocalizedXSLTransformer.getInstance(ureq.getLocale()).renderResults(doc);
 				String summaryConfig = (String)modConfig.get(IQEditController.CONFIG_KEY_SUMMARY);
 				int summaryType = AssessmentInstance.getSummaryType(summaryConfig);
-				String resultsHTML = IQManager.getInstance().transformResultsReporting(doc, ureq.getLocale(), summaryType);
+				String resultsHTML = iqManager.transformResultsReporting(doc, ureq.getLocale(), summaryType);
 				myContent.contextPut("displayreporting", resultsHTML);
 				myContent.contextPut("resreporting", resultsHTML);
 				myContent.contextPut("showResults", Boolean.TRUE);

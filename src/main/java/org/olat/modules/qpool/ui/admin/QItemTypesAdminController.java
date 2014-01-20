@@ -147,7 +147,7 @@ public class QItemTypesAdminController extends FormBasicController {
 		} else if(source == confirmDeleteCtrl) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				QItemType type = (QItemType)confirmDeleteCtrl.getUserObject();
-				doDelete(ureq, type);
+				doDelete(type);
 			}
 		} else if(source == i18nItemEditCtr) {
 			if(event instanceof I18nItemChangedEvent) {
@@ -198,7 +198,7 @@ public class QItemTypesAdminController extends FormBasicController {
 		confirmDeleteCtrl.setUserObject(type);
 	}
 	
-	private void doDelete(UserRequest ureq, QItemType type) {
+	private void doDelete(QItemType type) {
 		if(qpoolService.delete(type)) {
 			reloadModel();
 			showInfo("item.type.deleted");

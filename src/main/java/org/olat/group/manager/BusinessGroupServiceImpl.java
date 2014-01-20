@@ -389,8 +389,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			CollaborationTools oldTools = toolsF.getOrCreateCollaborationTools(sourceBusinessGroup);
 			CollaborationTools newTools = toolsF.getOrCreateCollaborationTools(newGroup);
 			// copy the collab tools settings
-			for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
-				String tool = CollaborationTools.TOOLS[i];
+			String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
+			for (int i = 0; i < availableTools.length; i++) {
+				String tool = availableTools[i];
 				newTools.setToolEnabled(tool, oldTools.isToolEnabled(tool));
 			}			
 			String oldNews = oldTools.lookupNews();

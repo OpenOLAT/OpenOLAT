@@ -40,6 +40,7 @@ import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.qpool.QTI12ItemEditorPackage;
+import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.ui.events.QItemChangeEvent;
@@ -49,7 +50,7 @@ import org.olat.modules.qpool.ui.events.QItemChangeEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI12EditorController extends BasicController implements GenericEventListener {
+public class QTI12EditorController extends BasicController implements QPoolItemEditorController, GenericEventListener {
 	
 	private final TabbedPane mainPanel;
 	private final VelocityContainer mainVC;
@@ -87,6 +88,11 @@ public class QTI12EditorController extends BasicController implements GenericEve
 		putInitialPanel(mainVC);
 	}
 	
+	@Override
+	public QuestionItem getItem() {
+		return qitem;
+	}
+
 	@Override
 	protected void doDispose() {
 		//

@@ -58,7 +58,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
@@ -102,7 +101,6 @@ import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackImpl;
 import org.olat.portfolio.EPUIFactory;
-import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.ui.structel.EPCreateMapController;
@@ -189,13 +187,6 @@ public class CollaborationTools implements Serializable {
 	public final static String TOOL_OPENMEETINGS = "hasOpenMeetings";
 	
 	/**
-	 * public for group test only, do not use otherwise convenience, helps
-	 * iterating possible tools, i.e. in jUnit testCase, also for building up a
-	 * tools choice
-	 */
-	public static String[] TOOLS;
-	
-	/**
 	 * Only owners have write access to the calendar.
 	 */
 	public static final int CALENDAR_ACCESS_OWNERS = 0;
@@ -237,27 +228,7 @@ public class CollaborationTools implements Serializable {
 	CollaborationTools(CoordinatorManager coordinatorManager, BusinessGroup ores) {
 		this.coordinatorManager = coordinatorManager;
 		this.ores = ores;
-		cacheToolStates = new Hashtable<String, Boolean>();
-		ArrayList<String> toolArr = new ArrayList<String>();
-		toolArr.add(TOOL_NEWS);
-		toolArr.add(TOOL_CONTACT);
-		toolArr.add(TOOL_CALENDAR);
-		toolArr.add(TOOL_FOLDER);
-		toolArr.add(TOOL_FORUM);
-		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
-			toolArr.add(TOOL_CHAT);
-		}
-		toolArr.add(TOOL_WIKI);
-		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
-		if (portfolioModule.isEnabled()) {
-			toolArr.add(TOOL_PORTFOLIO);
-		}	
-		OpenMeetingsModule openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
-		if(openMeetingsModule.isEnabled()) {
-			toolArr.add(TOOL_OPENMEETINGS);
-		}
-		
-		TOOLS = ArrayHelper.toArray(toolArr);
+		this.cacheToolStates = new Hashtable<String, Boolean>();
 	}
 
 	/**

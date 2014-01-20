@@ -53,6 +53,9 @@ div.b_table_wrapper {
 			tr.b_row_selected:hover td { background: $selectcolor_light; }
 			a {
 				color: $tablecolor_links;
+				&:hover {
+					color: $tablecolor_links_hover;
+				}
 			}
 		}
 	}
@@ -120,6 +123,9 @@ div.b_table_wrapper {
 			}
 			tbody a {
 				color: $tablecolor_links;
+				&:hover {
+					color: $tablecolor_links_hover;
+				}
 			}
 		
 			tr.even td.sorting_1 {

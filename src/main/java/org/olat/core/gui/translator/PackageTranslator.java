@@ -229,8 +229,13 @@ public class PackageTranslator extends LogDelegator implements Translator {
 
 		StringBuilder sb = new StringBuilder(150);
 		sb.append(NO_TRANSLATION_ERROR_PREFIX).append(key);
+		sb.append(", fallBackLevel ").append(fallBackLevel);
 		sb.append(": in ").append(packageName);
 		sb.append(" (fallback:").append(fallBack);
+
+//		Reset fallBackLevel
+		fallBackLevel = 0;
+
 		String babel;
 		if (fallBackTranslator instanceof PackageTranslator) {
 			babel = ((PackageTranslator)fallBackTranslator).packageName + " " + fallBackTranslator.toString();

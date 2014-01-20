@@ -38,6 +38,7 @@ public class VelocityModule implements Initializable {
 
 	private static String inputEncoding = DEFAULT_ENCODING;
 	private static String outputEncoding = DEFAULT_ENCODING;
+	private static String parserPoolSize = "20";
 	
 	/**
 	 * [spring]
@@ -63,5 +64,22 @@ public class VelocityModule implements Initializable {
 	public void init() {
 		VelocityHelper.getInstance();
 	}
+
+	/**
+	 * @return the parser pool size for the velocity parser pool configuration
+	 */
+	public static String getParserPoolSize() {
+		return parserPoolSize;
+	}
+	
+	/**
+	 * [SPRING]
+	 * @param newParserPoolSize Set the new parser pool size
+	 */
+	public void setParserPoolSize(String newParserPoolSize) {
+		parserPoolSize = newParserPoolSize;
+	}
+
+
 
 }

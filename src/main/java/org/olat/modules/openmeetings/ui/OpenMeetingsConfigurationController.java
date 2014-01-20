@@ -22,6 +22,7 @@ package org.olat.modules.openmeetings.ui;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -37,8 +38,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
-import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
+import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 
 /**
  * 
@@ -197,6 +198,8 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 		if(source == moduleEnabled) {
 			boolean enabled = moduleEnabled.isSelected(0);
 			openMeetingsModule.setEnabled(enabled);
+			// update collaboration tools list
+			CollaborationToolsFactory.getInstance().initAvailableTools();
 		} else if(source == checkLink) {
 			if(validateURL()) {
 				checkConnection();

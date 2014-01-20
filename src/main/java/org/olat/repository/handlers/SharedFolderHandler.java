@@ -28,6 +28,8 @@ package org.olat.repository.handlers;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Constants;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -140,11 +142,23 @@ public class SharedFolderHandler implements RepositoryHandler {
 	 */
 	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
-		SharedFolderDisplayController sfdCtr = new SharedFolderDisplayController(ureq, wControl, sfContainer, res);
+
+		Identity identity = ureq.getIdentity();
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);		
+		boolean canEdit = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)
+						|| RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re) 
+						|| BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, re.getTutorGroup())
+						|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(re, identity);
+				
+		Controller sfdCtr;
+		if(canEdit) {
+			sfdCtr = new SharedFolderEditorController(res, ureq, wControl);
+		} else {
+			sfdCtr = new SharedFolderDisplayController(ureq, wControl, sfContainer, res);
+		}	
 		// use on column layout
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, sfdCtr.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(sfdCtr); // dispose content on layout dispose
-		//fxdiff VCRP-1: access control of learn resources
 		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
 		return wrapper;
 	}

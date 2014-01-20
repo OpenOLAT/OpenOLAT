@@ -28,6 +28,7 @@ package org.olat.ims.qti.repository.handlers;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -141,7 +142,8 @@ public class QTISurveyHandler extends QTIHandler {
 		} else {
 			Resolver resolver = new ImsRepositoryResolver(res);
 			IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
-			runController = IQManager.getInstance().createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, secCallback, ureq, wControl);
+			runController = CoreSpringFactory.getImpl(IQManager.class)
+					.createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, secCallback, ureq, wControl);
 		}
 		
 		// use on column layout

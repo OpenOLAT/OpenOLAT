@@ -1,0 +1,78 @@
+<div class="o_qti_statistics">
+#if(!$printMode)
+	<div class="o_buttons_box_right">
+		<script type="text/javascript">
+		function $r.getId("print")() {
+			try {
+				var ww = window.open('$r.commandURI("print")', '$winid', 'height=400, width=800, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no');
+				ww.focus();
+			} catch(e) {
+				if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Error when trying to print qti statistics' , "");
+			}
+		}
+		</script>
+		<div id='$r.getId("print")'>
+			<a class="b_small_icon o_print_icon" href='javascript:$r.getId("print")()' title='$r.translateInAttribute("print")'><span>Print</span></a>	
+		</div>
+	</div>
+#end
+<div class="b_clearfix">
+	<div class="b_c33l">
+<h4>$r.translate("fig.title")</h4>
+$r.translate("fig.participants"): $numOfParticipants<br/>
+#if($numOfPassed)
+$r.translate("fig.passed"): $numOfPassed<br/>
+#end
+#if($numOfFailed)
+$r.translate("fig.failed"): $numOfFailed<br/>
+#end
+
+#if($maxScore)
+	$r.translate("chart.maxscore"): $maxScore<br/>
+#end
+#if($cutScore)
+	$r.translate("chart.cutscore"): $cutScore<br/>
+#end
+
+$r.translate("fig.avg"): $average<br/>
+$r.translate("fig.span"): $range<br/>
+$r.translate("fig.stddev"): $standardDeviation<br/>
+$r.translate("fig.mode"): $mode<br/>
+$r.translate("fig.median"): $median<br/>
+$r.translate("fig.averagedur"): $averageDuration<br/>
+	</div>
+	<div class="b_c66r">
+	
+	<h4>$r.translate("chart.score.histogramm")</h4>
+	#if($r.available("scoreHistogram"))
+		$r.render("scoreHistogram")
+	#end
+	</div>
+</div>
+
+<h4>$r.translate("chart.duration.histogramm")</h4>
+$r.render("durationHistogram")
+
+#if($r.available("averageScorePerItemChart"))
+	<h4>$r.translate("chart.averagescore.peritem")</h4>
+	$r.render("averageScorePerItemChart")
+#end
+
+<ul>
+#foreach($itemInfo in $itemInfoList)
+	<li><strong>$itemInfo.label.</strong> $itemInfo.text</li>
+#end
+</ul>
+
+
+#if($r.available("percentRightAnswersPerItemChart"))
+	<h4>$r.translate("chart.rightanswers.peritem")</h4>
+	$r.render("percentRightAnswersPerItemChart")
+#end
+
+<ul>
+#foreach($itemInfo in $itemInfoList)
+	<li><strong>$itemInfo.label.</strong> $itemInfo.text</li>
+#end
+</ul>
+</div>

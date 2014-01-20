@@ -478,7 +478,7 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 			contentCtr1Tmp = handleOwnMenuTreeEvent(uobject, ureq);
 		}
 		if (contentCtr1Tmp == null) { throw new AssertException(
-				"Node must either be an ActionExtension or implementation must handle this MenuTreeEvent: " + uobject.toString()); }
+				"Node must either be an ActionExtension or implementation must handle this MenuTreeEvent: " + (uobject == null ? "NULL" : uobject.toString())); }
 		return contentCtr1Tmp;
 	}
 	

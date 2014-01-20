@@ -562,7 +562,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
 			return;
-		} else if(CollaborationTools.TOOLS == null) {
+		} else if(CollaborationToolsFactory.getInstance().getAvailableTools() == null) {
 			//init the available tools
 			CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(groups.get(0));
 		}

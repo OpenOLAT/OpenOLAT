@@ -92,17 +92,32 @@
 				} else {
 					// Setup from with default values
 					oldWidth = oldHeight = 0;
-					
-					var count = 0;
-					var domIdentity = "olatFlashMovieViewer";
-					var placeHolders = top.tinymce.activeEditor.dom.select("img.mceItemOlatMovieViewer");
-					do {
-						domIdentity = "olatFlashMovieViewer" + (count++);
-					} while(domIdInUse(domIdentity,placeHolders));
-
+					var domIdentity = getNextDomId();
 					var defaultPl = "x={domIdentity:'" + domIdentity + "',address:'',starttime:'00:00:00.000',autostart:false,repeat:false,controlbar:true};";
 					deserializeParameters(defaultPl);
 				}
+			}
+			
+			function getNextDomId() {
+				var count = 0;
+				var domIdentity = "olatFlashMovieViewer";
+				var placeHolders = top.tinymce.activeEditor.dom.select("img.mceItemOlatMovieViewer");
+				do {
+					domIdentity = "olatFlashMovieViewer" + (count++);
+					if(count > 20) {
+						break;
+					}
+				} while(domIdInUse(domIdentity, placeHolders));
+				return domIdentity;
+			}
+			
+			function domIdInUse(domIdentity,placeHolders) {
+				for(var i=0; i<placeHolders.length; i++) {
+					if(placeHolders[i].title != undefined && placeHolders[i].title.indexOf(domIdentity) > 0) {
+						return true;
+					}
+				}
+				return false;
 			}
 			
 			function getBool(p, n, d, tv, fv) {
@@ -169,8 +184,8 @@
 				var controlbar = typeof(p.controlbar) != "undefined" ? p.controlbar : true;
 				var provider = typeof(p.provider) != "undefined" ? p.provider : undefined;
 				var streamer = typeof(p.streamer) != "undefined" ? p.streamer : undefined;
-				var domIdentity = typeof(p.domIdentity) != "undefined" ? p.domIdentity : 'olatFlashMovieViewer0';
-
+				var domIdentity = typeof(p.domIdentity) != "undefined" ? p.domIdentity : getNextDomId();
+				
 				//scale the video if to big to not overlap the buttons
 				var maxHeight = 400;
 				var maxWidth = 560;
@@ -235,10 +250,12 @@
 					fe.style.height = f.height + (f.height.indexOf('%') == -1 ? 'px' : '');
 				} else {
 					// add new object
-					var h = '<img class="mceItemOlatMovieViewer" src="' + ed.getParam("olatmovieviewer_transparentImage") + '"';
-					h += ' title="' + serializeParameters() + '"';
-					h += ' width="' + f.width + '"';
-					h += ' height="' + f.height + '" />';
+					var newDomId = getNextDomId();
+					var titleAttr = "domIdentity:'" + newDomId + "'," + serializeParameters();
+					var h = '<img id="' + newDomId + '"';
+					h += ' class="mceItemOlatMovieViewer" src="' + ed.getParam("olatmovieviewer_transparentImage") + '"';
+					h += ' title="' + titleAttr + '"';
+					h += ' width="' + f.width + '"' + ' height="' + f.height + '" />';
 					ed.execCommand("mceInsertContent", false, h);
 				}
 			} 
@@ -254,7 +271,7 @@
 					    	items: [
 					    	    { name: 'provider', type: 'listbox', label: translator().translate('olatmovieviewer.provider'), values: buildProviderList() },
 					    	    { name: 'streamer', type: 'textbox', label: translator().translate('olatmovieviewer.streamer')},
-					    	    { name: 'address', type: 'filepicker', label: translator().translate('olatmovieviewer.address')},
+					    	    { name: 'address', type: 'filepicker', filetype: 'flashplayer', label: translator().translate('olatmovieviewer.address')},
 					    	    {
 									type: 'container',
 									label: translator().translate('olatmovieviewer.size'),
@@ -334,7 +351,7 @@
 				var controlbar = typeof(p.controlbar) != "undefined" ? p.controlbar : 'true';
 				var provider = typeof(p.provider) != "undefined" ? '"' + p.provider + '"' : 'undefined';
 				var streamer = typeof(p.streamer) != "undefined" ? '"' + p.streamer + '"' : 'undefined';
-				var domIdentity = typeof(p.domIdentity) != "undefined" ? p.domIdentity : 'olatFlashMovieViewer0';
+				var domIdentity = typeof(p.domIdentity) != "undefined" ? p.domIdentity : getNextDomId();
 				var playerScriptUrl = top.tinymce.activeEditor.getParam("olatmovieviewer_playerScript");
 
 				var h = '<script src="' + playerScriptUrl + '" type="text/javascript"></script>';

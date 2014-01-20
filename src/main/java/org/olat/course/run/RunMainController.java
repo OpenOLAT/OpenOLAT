@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
@@ -79,9 +80,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.TreeVisitor;
+import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -110,6 +114,7 @@ import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.statistic.StatisticCourseNodesController;
 import org.olat.course.statistic.StatisticMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -686,13 +691,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			boolean vip = isCourseCoach || isCourseAdmin;
 			OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, courseTitle, vip);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
+		} else if (cmd.equals("qtistatistic")) {
+			launchAssessmentStatistics(ureq, null);
 		} else if (cmd.equals("customDb")) {
 			if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
 				currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
 				listenTo(currentToolCtr);
 				all.pushController(translate("command.opendb"), currentToolCtr);
 			} else throw new OLATSecurityException("clicked dbs, but no according right");
-
 		}else if (cmd.equals("archiver")) {
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
 				currentToolCtr = new ArchiverMainController(ureq, getWindowControl(), course, new IArchiverCallback() {
@@ -835,6 +841,27 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 			return (MembersManagementMainController)currentToolCtr;
 		} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
+	}
+
+	private Activateable2 launchAssessmentStatistics(UserRequest ureq, List<ContextEntry> entries) {
+		OLATResourceable ores = OresHelper.createOLATResourceableType("assessmentStatistics");
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
+			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, courseRepositoryEntry, uce);
+			currentToolCtr = statsToolCtr;
+			listenTo(statsToolCtr);
+			all.pushController(translate("command.openstatistic"), statsToolCtr);
+			return statsToolCtr;
+		}
+		if (isCourseCoach) {
+			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, courseRepositoryEntry, uce);
+			currentToolCtr = statsToolCtr;
+			listenTo(statsToolCtr);
+			all.pushController(translate("command.openstatistic"), statsToolCtr);
+			return statsToolCtr;
+		}
+		return null;
 	}
 
 	private Activateable2 launchAssessmentTool(UserRequest ureq, List<ContextEntry> entries) {
@@ -1018,7 +1045,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				myTool.setEnabled("edit.cmd", !managed);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
-				//fxdiff VCRP-1,2: access control of resources
 				myTool.addLink("unifiedusermngt", translate("command.opensimplegroupmngt"), null, null, "o_sel_course_open_membersmgmt", false);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
@@ -1027,13 +1053,23 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseCoach || isCourseAdmin) {
 				myTool.addLink("assessment", translate("command.openassessment"));
 			}
-			/*
-			 * http://bugs.olat.org/jira/browse/OLAT-4928
-			 */
+			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
+				final AtomicInteger qtiNodes = new AtomicInteger();
+				new TreeVisitor(new Visitor() {
+					@Override
+					public void visit(INode node) {
+						if(((CourseNode)node).isStatisticNodeResultAvailable(uce)) {
+							qtiNodes.incrementAndGet();
+						}
+					}
+				}, course.getRunStructure().getRootNode(), true).visitAll();
+				if(qtiNodes.intValue() > 0) {
+					myTool.addLink("qtistatistic", translate("command.openqtistatistic"));
+				}
+			}
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
 				myTool.addLink("statistic", translate("command.openstatistic"));
 			}
-			//fxdiff: enable the course db menu item
 			if (CourseDBManager.getInstance().isEnabled() && (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin)) {
 				myTool.addLink("customDb", translate("command.opendb"));
 			}
@@ -1233,6 +1269,23 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
 				try {
 					Activateable2 assessmentCtrl = launchAssessmentTool(ureq, null);
+					
+					List<ContextEntry> subEntries;
+					if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {
+						subEntries = entries.subList(2, entries.size());
+					} else {
+						subEntries = entries.subList(1, entries.size());
+					}
+					assessmentCtrl.activate(ureq, subEntries, firstEntry.getTransientState());
+				} catch (OLATSecurityException e) {
+					//the wrong link to the wrong person
+				}
+			}
+		}  else if ("assessmentStatistics".equals(type)) {
+			//check the security before, the link is perhaps in the wrong hands
+			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
+				try {
+					Activateable2 assessmentCtrl = launchAssessmentStatistics(ureq, null);
 					
 					List<ContextEntry> subEntries;
 					if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {

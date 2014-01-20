@@ -22,7 +22,6 @@ package org.olat.modules.qpool;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
 /**
@@ -35,6 +34,6 @@ public interface QItemFactory {
 	
 	public String getLabel(Locale locale);
 	
-	public Controller getEditor(UserRequest ureq, WindowControl wControl, String title);
+	public QPoolItemEditorController getEditor(UserRequest ureq, WindowControl wControl, String title);
 
 }

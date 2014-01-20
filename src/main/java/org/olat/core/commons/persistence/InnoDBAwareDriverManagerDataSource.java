@@ -44,7 +44,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
  * @author guido
  */
 public class InnoDBAwareDriverManagerDataSource extends DriverManagerDataSource implements Initializable {
-	OLog log = Tracing.createLoggerFor(InnoDBAwareDriverManagerDataSource.class);
+	private static final OLog log = Tracing.createLoggerFor(InnoDBAwareDriverManagerDataSource.class);
 	private String dbVendor;
 	
 	/**

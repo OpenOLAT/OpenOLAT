@@ -1,0 +1,41 @@
+<div class="o_qti_statistics">
+<h4>$title</h4>
+<p>$question</p>
+
+#if($maxScore)
+	$r.translate("chart.maxscore"): $maxScore<br/>
+#end
+#if($rightAnswers)
+	$r.translate("fig.correctanswers"): $rightAnswers<br/>
+#end
+#if($wrongAnswers)
+	$r.translate("fig.wronganswers"): $wrongAnswers<br/>
+#end
+#if($notAnswered)
+	$r.translate("fig.notanswered"): $notAnswered<br/>
+#end
+#if($itemDifficulty)
+	$r.translate("fig.itemdiff"): $itemDifficulty<br/>
+#end
+#if($averageScore)
+	$r.translate("fig.averagescore"): $averageScore<br/>
+#end
+#if($averageDuration)
+	$r.translate("fig.averagedur"): $averageDuration<br/>
+#end
+
+<h4>$r.translate("chart.responses")</h4>
+$r.render("questionChart")
+<ul>
+#foreach($responseInfo in $responseInfos)
+	#if($responseInfo.survey)
+		<li class="o_qti_statistics-survey-item">
+	#elseif($responseInfo.correct)
+		<li class="o_qti_statistics-correct">
+	#else
+		<li class="o_qti_statistics-ncorrect">
+	#end
+	<strong>$responseInfo.label.</strong> $responseInfo.text ($responseInfo.points)</li>
+#end
+</ul>
+</div>

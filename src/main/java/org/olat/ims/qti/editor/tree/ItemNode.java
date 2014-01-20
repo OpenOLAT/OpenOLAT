@@ -65,7 +65,19 @@ public class ItemNode extends GenericQtiNode {
 	private QTIEditorPackage qtiPackage;
 	private TabbedPane myTabbedPane;
 	private static OLog log = Tracing.createLoggerFor(ItemNode.class);
-
+	
+	/**
+	 * 
+	 * @param theItem
+	 */
+	public ItemNode(Item theItem) {
+		super(theItem.getIdent().replace(":", ""));
+		item = theItem;
+		setMenuTitleAndAlt(item.getTitle());
+		setUserObject(item.getIdent());
+		
+	}
+	
 	/**
 	 * @param theItem
 	 * @param qtiPackage
@@ -75,28 +87,23 @@ public class ItemNode extends GenericQtiNode {
 		this.qtiPackage = qtiPackage;
 		setMenuTitleAndAlt(item.getTitle());
 		setUserObject(item.getIdent());
+	}
+	
+	@Override
+	public String getIconCssClass() {
 		if (item.isAlient()) {
-			setIconCssClass("o_mi_qtialientitem");
+			return "o_mi_qtialientitem";
 		} else {
 			int questionType = item.getQuestion().getType();
 			switch (questionType) {
-				case Question.TYPE_SC:
-					setIconCssClass("o_mi_qtisc");
-					break;
-				case Question.TYPE_MC:
-					setIconCssClass("o_mi_qtimc");
-					break;
-				case Question.TYPE_KPRIM:
-					setIconCssClass("o_mi_qtikprim");
-					break;
-				case Question.TYPE_FIB:
-					setIconCssClass("o_mi_qtifib");
-					break;
-				case Question.TYPE_ESSAY:
-					setIconCssClass("o_mi_qtiessay");
-					break;
+				case Question.TYPE_SC: return "o_mi_qtisc";
+				case Question.TYPE_MC: return "o_mi_qtimc";
+				case Question.TYPE_KPRIM: return "o_mi_qtikprim";
+				case Question.TYPE_FIB: return "o_mi_qtifib";
+				case Question.TYPE_ESSAY: return "o_mi_qtiessay";
 			}
 		}
+		return "";
 	}
 
 	/**

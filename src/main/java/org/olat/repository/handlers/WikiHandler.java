@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -71,6 +73,7 @@ import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoyUIFactory;
 import org.olat.repository.controllers.AddFileResourceController;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
@@ -156,6 +159,12 @@ public class WikiHandler implements RepositoryHandler {
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+		// first handle special case: disabled wiki for security (XSS Attacks) reasons
+		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class); 
+		if (!securityModule.isWikiEnabled()) {
+			return RepositoyUIFactory.createRepoEntryDisabledDueToSecurityMessageController(ureq, wControl);
+		}
+		// proceed with standard case
 		Controller controller = null;
 		
 		//check role
@@ -349,5 +358,5 @@ public class WikiHandler implements RepositoryHandler {
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		throw new AssertException("not implemented");
 	}
-
+	
 }

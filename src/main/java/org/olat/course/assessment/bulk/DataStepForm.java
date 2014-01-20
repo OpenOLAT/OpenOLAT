@@ -77,7 +77,8 @@ public class DataStepForm extends StepFormBasicController {
 	private FileElement returnFileEl;
 	private SingleSelection delimiter;
 
-	private BulkAssessmentDatas datas;
+	private OlatRootFileImpl targetArchive;
+	private BulkAssessmentDatas savedDatas;
 	private final AssessableCourseNode courseNode;
 	private OlatRootFolderImpl bulkAssessmentTmpDir;
 	
@@ -89,11 +90,11 @@ public class DataStepForm extends StepFormBasicController {
 		initForm(ureq);
 	}
 	
-	public DataStepForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode courseNode, BulkAssessmentDatas datas, 
+	public DataStepForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode courseNode, BulkAssessmentDatas savedDatas, 
 			StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		
-		this.datas = datas;
+		this.savedDatas = savedDatas;
 		this.courseNode = courseNode;
 		addToRunContext("courseNode", courseNode);
 		initForm(ureq);
@@ -112,8 +113,8 @@ public class DataStepForm extends StepFormBasicController {
 		setFormContextHelp("org.olat.course.assessment.bulk", "bulkassessment_data.html","help.hover.bulkassessment_data");
 		
 		String dataVal = "";
-		if(datas != null && StringHelper.containsNonWhitespace(datas.getDataBackupFile())) {
-			OlatRootFileImpl file = new OlatRootFileImpl(datas.getDataBackupFile(), null);
+		if(savedDatas != null && StringHelper.containsNonWhitespace(savedDatas.getDataBackupFile())) {
+			OlatRootFileImpl file = new OlatRootFileImpl(savedDatas.getDataBackupFile(), null);
 			InputStream in = file.getInputStream();
 			try {
 				dataVal = IOUtils.toString(in);
@@ -150,8 +151,8 @@ public class DataStepForm extends StepFormBasicController {
 			Set<String> mimes = new HashSet<String>();
 			mimes.add(WebappHelper.getMimeType("file.zip"));
 			returnFileEl.limitToMimeType(mimes, "return.mime", null);
-			if(datas != null && StringHelper.containsNonWhitespace(datas.getReturnFiles())) {
-				targetArchive = new OlatRootFileImpl(datas.getReturnFiles(), null);
+			if(savedDatas != null && StringHelper.containsNonWhitespace(savedDatas.getReturnFiles())) {
+				targetArchive = new OlatRootFileImpl(savedDatas.getReturnFiles(), null);
 				if(targetArchive.exists()) {
 					returnFileEl.setInitialFile(targetArchive.getBasefile());
 				}
@@ -173,7 +174,10 @@ public class DataStepForm extends StepFormBasicController {
 			return;
 		}
 		setFormWarning(null); // reset error
-		BulkAssessmentDatas datas = new BulkAssessmentDatas();
+		BulkAssessmentDatas datas = (BulkAssessmentDatas)getFromRunContext("datas");
+		if(datas == null) {
+			datas = new BulkAssessmentDatas();
+		}
 		
 		if(bulkAssessmentTmpDir == null) {
 			OlatRootFolderImpl bulkAssessmentDir = new OlatRootFolderImpl("/bulkassessment/", null);
@@ -181,7 +185,9 @@ public class DataStepForm extends StepFormBasicController {
 		}
 
 		backupInputDatas(val, datas, bulkAssessmentTmpDir);
-		List<BulkAssessmentRow> rows = processInputData(val);
+		List<String[]> splittedRows = splitRawData(val);
+		addToRunContext("splittedRows", splittedRows);
+		List<BulkAssessmentRow> rows = new ArrayList<>(100);
 		if(returnFileEl != null) {
 			processReturnFiles(datas, rows, bulkAssessmentTmpDir);
 		}
@@ -190,14 +196,43 @@ public class DataStepForm extends StepFormBasicController {
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	
+	private List<String[]> splitRawData(String idata) {
+		String[] lines = idata.split("\r?\n");
+		int numOfLines = lines.length;
+		
+		List<String[]> rows = new ArrayList<String[]>(numOfLines);
+		
+		String d;
+		if (delimiter.getSelectedKey().startsWith("t")) {
+			d = "\t";
+		} else {
+			d = ",";
+		}
+		
+		for (int i = 0; i < numOfLines; i++) {
+			String line = lines[i];
+			if(StringHelper.containsNonWhitespace(line)){
+				String[] values = line.split(d,-1);
+				rows.add(values);
+			}
+		}
+		return rows;
+	}
+	
 	/**
 	 * Backup the input field for later editing purpose
 	 * @param val
 	 * @param datas
 	 */
 	private void backupInputDatas(String val, BulkAssessmentDatas datas, OlatRootFolderImpl tmpDir) {
-		String inputFilename = UUID.randomUUID().toString() + ".csv";
-		OlatRootFileImpl inputFile = tmpDir.createChildLeaf(inputFilename);
+		OlatRootFileImpl inputFile = null;
+		if(StringHelper.containsNonWhitespace(datas.getDataBackupFile())) {
+			inputFile = new OlatRootFileImpl(datas.getDataBackupFile(), null);
+		}
+		if(inputFile == null) {
+			String inputFilename = UUID.randomUUID().toString() + ".csv";
+			inputFile = tmpDir.createChildLeaf(inputFilename);
+		}
 		OutputStream out = inputFile.getOutputStream(false);
 		
 		try {
@@ -209,8 +244,6 @@ public class DataStepForm extends StepFormBasicController {
 			IOUtils.closeQuietly(out);
 		}
 	}
-	
-	private OlatRootFileImpl targetArchive;
 	
 	private void processReturnFiles(BulkAssessmentDatas datas, List<BulkAssessmentRow> rows, OlatRootFolderImpl tmpDir) {
 		File uploadedFile = returnFileEl.getUploadFile();
@@ -316,116 +349,5 @@ public class DataStepForm extends StepFormBasicController {
 				IOUtils.closeQuietly(zis);
 			}
 		}
-	}
-	
-	private List<BulkAssessmentRow> processInputData(String idata) {
-		String[] lines = idata.split("\r?\n");
-		int numOfLines = lines.length;
-		
-		List<BulkAssessmentRow> rows = new ArrayList<BulkAssessmentRow>(numOfLines);
-		
-		String d;
-		if (delimiter.getSelectedKey().startsWith("t")) {
-			d = "\t";
-		} else {
-			d = ",";
-		}
-		
-		for (int i = 0; i < numOfLines; i++) {
-			String line = lines[i];
-
-			if(StringHelper.containsNonWhitespace(line)){
-				String[] values = line.split(d,-1);
-				BulkAssessmentRow row = createRow(values);
-				if(row != null) {
-					rows.add(row);
-				}
-			}
-		}
-		return rows;
-	}
-	
-	/**
-	 * Create a row object from an array of strings. The array
-	 * is assessed identity identifier, score, status, comment.
-	 * @param values
-	 * @return
-	 */
-	private BulkAssessmentRow createRow(String[] values) {
-		int valuesLength = values.length;
-		if(valuesLength <= 0) {
-			return null;
-		}
-
-		BulkAssessmentRow row = new BulkAssessmentRow();
-		String identifyer = values[0];
-		identifyer.trim();
-		if (!StringHelper.containsNonWhitespace(identifyer)) {
-			identifyer = "-";
-		}
-		row.setAssessedId(identifyer);
-
-		if(valuesLength > 1) {
-			String scoreStr = values[1];
-			scoreStr= scoreStr.trim();
-			Float score;
-			if (StringHelper.containsNonWhitespace(scoreStr)) {
-				try {
-					// accept writing with , or .
-					score = Float.parseFloat(scoreStr.replace(',', '.'));
-				} catch (NumberFormatException e) {
-					score = null;
-				}
-			} else {
-				// only set new numbers, ignore everything else
-				score = null;
-			}
-			row.setScore(score);
-		}
-
-		if(valuesLength > 2) {
-			String passedStr = values[2];
-			passedStr= passedStr.trim();
-			Boolean passed;
-			if ("y".equalsIgnoreCase(passedStr)
-					|| "yes".equalsIgnoreCase(passedStr)
-					|| "passed".equalsIgnoreCase(passedStr)
-					|| "true".equalsIgnoreCase(passedStr)
-					|| "1".equalsIgnoreCase(passedStr)) {
-				passed = Boolean.TRUE;
-			} else if ("n".equalsIgnoreCase(passedStr)
-					|| "no".equalsIgnoreCase(passedStr)
-					|| "false".equalsIgnoreCase(passedStr)
-					|| "failed".equalsIgnoreCase(passedStr)
-					|| "0".equalsIgnoreCase(passedStr)) {
-				passed = Boolean.FALSE;
-			} else {
-				// only set defined values, ignore everything else
-				passed = null;
-			}
-			row.setPassed(passed);
-		}
-		
-		if(valuesLength > 3) {
-			String commentStr = values[3];
-			// add any additional comment which probably is just a comma in a escaped string
-			if (valuesLength > 4) {
-				for (int i = 4; i < valuesLength; i++) {
-					commentStr += "," + values[i];					
-				}				
-			}			
-			commentStr= commentStr.trim();
-			
-			if(commentStr.isEmpty()) {
-				// ignore empty values
-				row.setComment(null);
-			} else if("\"\"".equals(commentStr) || "''".equals(commentStr)) {
-				row.setComment("");
-			} else {
-				row.setComment(commentStr);
-			} 
-		}
-		
-		return row;
 	}
 }

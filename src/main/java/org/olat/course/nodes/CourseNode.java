@@ -48,6 +48,8 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.statistic.StatisticResourceOption;
+import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
@@ -245,6 +247,21 @@ public interface CourseNode extends INode, ShortName {
 	 * @return 
 	 */
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne);
+	
+	/**
+	 * Return a construct with all the informations needed to build the statistics of
+	 * a course node.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param userCourseEnv
+	 * @param options
+	 * @return
+	 */
+	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, StatisticResourceOption options);
+	
+	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv);
 	
 	/**
 	 * this method must generate a nodeevaluation and take care of (if any) child

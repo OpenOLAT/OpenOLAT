@@ -164,7 +164,7 @@ public class QLicensesAdminController extends FormBasicController {
 	}
 	
 	private void doDelete(UserRequest ureq, QLicense type) {
-		//qpoolService.deletePool(pool);
+		//qpoolService.deldeletePool(pool);
 		reloadModel();
 	}
 	

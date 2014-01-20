@@ -127,15 +127,15 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			FormLink button = (FormLink)source;
 			ConditionalQuery query = (ConditionalQuery)button.getUserObject();
 			if(button.getCmd().startsWith("add")) {
-				addParameter(ureq, query);
+				addParameter(query);
 			} else if(button.getCmd().startsWith("remove")) {
-				removeParameter(ureq, query);
+				removeParameter(query);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void addParameter(UserRequest ureq, ConditionalQuery query) {
+	private void addParameter(ConditionalQuery query) {
 		int index = uiQueries.indexOf(query);
 		ConditionalQuery newQuery = new ConditionalQuery();
 		if(index < 0 || (index + 1) > uiQueries.size()) {
@@ -145,7 +145,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		}
 	}
 	
-	private void removeParameter(UserRequest ureq, ConditionalQuery query) {
+	private void removeParameter(ConditionalQuery query) {
 		if(uiQueries.size() > 1 && uiQueries.remove(query)) {
 			flc.setDirty(true);
 		}

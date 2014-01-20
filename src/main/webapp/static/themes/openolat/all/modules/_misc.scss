@@ -1,5 +1,30 @@
 /*  misc */
 
+/* charts */
+
+.d3chart {
+
+	.bar { shape-rendering: crispEdges; }
+
+	.bar_default_light { fill: $basecolor_ultra_light; }
+	.bar_default_light:hover { fill: $basecolor_light; }
+
+	.bar_default { fill: $basecolor_light; }
+	.bar_default:hover { fill: $basecolor; }
+	
+	.bar_default_dark { fill: $basecolor; }
+	.bar_default_dark:hover { fill: black; }
+
+	.axis { font: 12px sans-serif; }
+
+	.axis path, .axis line {
+		fill: none;
+		stroke: #000;
+		shape-rendering: crispEdges;
+	}
+
+	.x.axis path { display: none; }
+}
 
 /* BUSINESS CARD &  Member site, members search  */
 div.o_members_search { padding-top: 10px; padding-left: 10px;  }

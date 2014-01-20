@@ -37,12 +37,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.dom4j.Document;
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -50,15 +47,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.GenericMainController;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Util;
 import org.olat.core.util.controller.OLATResourceableListeningWrapperController;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -94,26 +90,18 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * Initial Date: Mar 4, 2004
  * @author Mike Stock
  */
-public class IQManager extends BasicManager implements UserDataDeletable {
-
-	private static IQManager INSTANCE;
+public class IQManager implements UserDataDeletable {
 	
+	private OLog log = Tracing.createLoggerFor(IQManager.class);
+	
+
+	private DB dbInstance;
 	private UserManager userManager;
-	
-	/**
-	 *  [spring]
-	 */
-	private IQManager() {
-		INSTANCE = this;
+
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
 	}
 
-	/**
-	 * @return Singleton.
-	 */
-	public static IQManager getInstance() { 
-		return INSTANCE; 
-	}
-	
 	/**
 	 * [user by Spring]
 	 * @param userManager
@@ -188,7 +176,6 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 		// -- 99% of cases   -- 2) qti is ready to be run as test/survey
 		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(res, null)){
 			GenericMainController glc = createLockedMessageController(ureq, wControl);
-			glc.init(ureq);
 			return glc;
 		}else{
 			Controller controller = new IQDisplayController(resolver, type, secCallback, ureq, wControl);
@@ -199,22 +186,16 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	}
 
 	private GenericMainController createLockedMessageController(UserRequest ureq, WindowControl wControl) {
-		//
 		//wrap simple message into mainLayout
 		GenericMainController glc = new GenericMainController(ureq, wControl) {
-		
-			private MessageController contentCtr;
-			private Panel empty;
-			private LayoutMain3ColsController columnLayoutCtr;
-
 			@Override
 			public void init(UserRequest ureq) {
-				empty = new Panel("empty");			Translator translator = Util.createPackageTranslator(this.getClass(), ureq.getLocale()); 
-				contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translator.translate("status.currently.locked.title"), translator.translate("status.currently.locked"));
+				Panel empty = new Panel("empty");			
+				setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale())); 
+				Controller contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("status.currently.locked.title"), translate("status.currently.locked"));
 				listenTo(contentCtr); // auto dispose later
 				Component resComp = contentCtr.getInitialComponent();
-
-				columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, resComp, /*do not save no prefs*/null);
+				LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, resComp, /*do not save no prefs*/null);
 				listenTo(columnLayoutCtr); // auto dispose later
 				putInitialPanel(columnLayoutCtr.getInitialComponent());
 			}
@@ -226,6 +207,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 			}
 		
 		};
+		glc.init(ureq);
 		return glc;
 	}
 	
@@ -262,16 +244,15 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	public String transformResultsReporting(Document docResReporting, Locale locale, int summaryType) {
 		switch (summaryType) {
 			case AssessmentInstance.SUMMARY_COMPACT: // Result summary without solutions
-				                                       ResultsBuilder.stripDetails(docResReporting);
-			                                         break;
+				ResultsBuilder.stripDetails(docResReporting);
+				break;
 			case AssessmentInstance.SUMMARY_SECTION: // Section summary without solutions
-				                                       ResultsBuilder.stripItemResults(docResReporting);
-				                                       System.out.println("TEST: Section summary without solutions");
-				                                       break;
+				ResultsBuilder.stripItemResults(docResReporting);
+				break;
 			case AssessmentInstance.SUMMARY_DETAILED:// Strip nothing 
-                                               break;
+				break;
 			default: // default => Strip nothing 
-				       break;
+				break;
 		}
 		StringBuilder sb = LocalizedXSLTransformer.getInstance(locale).renderResults(docResReporting);
 		return sb.toString();
@@ -348,7 +329,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 			qtiResultSet.setIsPassed(ac.isPassed());
 		}
 		
-		DBFactory.getInstance().saveObject(qtiResultSet);
+		dbInstance.getCurrentEntityManager().persist(qtiResultSet);
 		
 		// Loop over all sections in this assessment
 		int sccnt = ac.getSectionContextCount();
@@ -376,18 +357,18 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 					if (inp.isEmpty()) {
 						sb.append("[]");
 					} else {
-						Map im = inp.getInputMap();
+						Map<String,List<String>> im = inp.getInputMap();
 						// Create answer block
-						Set keys = im.keySet();
-						Iterator iter = keys.iterator();
+						Set<String> keys = im.keySet();
+						Iterator<String> iter = keys.iterator();
 						while (iter.hasNext()) {
-							String ident = (String) iter.next();
+							String ident = iter.next();
 							sb.append(ident); // response_lid ident
 							sb.append("[");
-							List answers = inp.getAsList(ident);
+							List<String> answers = inp.getAsList(ident);
 							for (int y = 0; y < answers.size(); y++) {
 								sb.append("[");
-								String answer = (String) answers.get(y);
+								String answer = answers.get(y);
 								// answer is referenced to response_label ident, if
 								// render_choice
 								// answer is userinput, if render_fib
@@ -401,93 +382,10 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 				}
 				qtiResult.setAnswer(sb.toString());
 				// Persist result data in database
-				DBFactory.getInstance().saveObject(qtiResult);
+				dbInstance.getCurrentEntityManager().persist(qtiResult);
 			}
 		}
 	}
-	/**
-	 * 
-	 * @param assessmentID
-	 * @return
-	 */
-	public List findQtiResults(long assessmentID) {
-		DB persister = DBFactory.getInstance();
-		return persister.find("from q in class org.olat.ims.qti.QTIResult where q.assessmentID = ?",
-				new Long(assessmentID), StandardBasicTypes.LONG);
-	}
-
-	/**
-	 * 
-	 * @param assessmentID
-	 * @param versionID
-	 * @return
-	 */
-	public List findQtiResults(long assessmentID, long versionID) {
-		DB persister = DBFactory.getInstance();
-		return persister.find("from q in class org.olat.ims.qti.QTIResult where "
-				+ "q.assessmentID = ? and q.versionid = ?", new Object[]{new Long(assessmentID), new Long(versionID)},
-				new Type[]{StandardBasicTypes.LONG, StandardBasicTypes.LONG});
-	}
-	
-	/**
-	 * 
-	 * @param assessmentID
-	 * @param versionID
-	 * @param itemIdent
-	 * @return
-	 */
-	public List findQtiResults(long assessmentID, long versionID, String itemIdent) {
-		DB persister = DBFactory.getInstance();
-		return persister.find("from q in class org.olat.ims.qti.QTIResult where "
-				+ "q.assessmentID = ? and q.versionid = ? and q.itemident = ?", new Object[]{new Long(assessmentID),
-				new Long(versionID), itemIdent}, new Type[]{StandardBasicTypes.LONG, StandardBasicTypes.LONG, StandardBasicTypes.STRING});
-	}
-	
-	/**
-	 * 
-	 * @param identity
-	 * @param assessmentID
-	 * @return
-	 */
-//TODO: chg: No References to this method, QTIResult has no identity attribute => Query does NOT work !!! => Remove this code	
-//	public List findQtiResults(Identity identity, long assessmentID) {
-//		DB persister = DBFactory.getInstance();
-//		return persister.find("from q in class org.olat.ims.qti.QTIResult where " + "q.assessmentID = ? and q.identity = ?",
-//				new Object[]{new Long(assessmentID), identity.getKey()}, new Type[]{Hibernate.LONG, Hibernate.LONG});
-//	}
-
-
-	/**
-	 * 
-	 * @param identity
-	 * @param assessmentID
-	 * @param versionID
-	 * @return
-	 */
-// TODO: chg: No References to this method, QTIResult has no identity attribute => Query does NOT work !!! => Remove this code	
-//	public List findQtiResults(Identity identity, long assessmentID, long versionID) {
-//		DB persister = DBFactory.getInstance();
-//		return persister.find("from q in class org.olat.ims.qti.QTIResult where "
-//				+ "q.assessmentID = ? and q.versionid = ? and q.identity = ?", new Object[]{new Long(assessmentID),
-//				new Long(versionID), identity.getKey()}, new Type[]{Hibernate.LONG, Hibernate.LONG, Hibernate.LONG});
-//	}
-
-	/**
-	 * 
-	 * @param identity
-	 * @param assessmentID
-	 * @param versionID
-	 * @param itemIdent
-	 * @return
-	 */
-//TODO: chg: No References to this method, QTIResult has no identity attribute => Query does NOT work !!! => Remove this code	
-//	public List findQtiResults(Identity identity, long assessmentID, long versionID, String itemIdent) {
-//		DB persister = DBFactory.getInstance();
-//		return persister.find("from q in class org.olat.ims.qti.QTIResult where "
-//				+ "q.assessmentID = ? and q.versionid = ? and q.identity = ? and q.itemident = ?", new Object[]{
-//				new Long(assessmentID), new Long(versionID), identity.getKey(), itemIdent}, new Type[]{Hibernate.LONG,
-//				Hibernate.LONG, Hibernate.LONG, Hibernate.STRING});
-//	}
 
 	/**
 	 * Qotes special characters used by the QTIResult answer formatting. Special
@@ -535,7 +433,8 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	 */
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		FilePersister.deleteUserData(identity);
-		Tracing.logDebug("Delete all qti.ser data and qti-resreporting data for identity=" + identity, this.getClass());
+		if(log.isDebug())
+			log.debug("Delete all qti.ser data and qti-resreporting data for identity=" + identity);
 	}
 	
 	/**
@@ -546,17 +445,21 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	 * @return Returns the last recorded QTIResultSet
 	 */
 	public QTIResultSet getLastResultSet(Identity identity, long olatResource, String olatResourceDetail) {
-		QTIResultSet returnQTIResultSet=null;
-		DB persister = DBFactory.getInstance();
-		List resultSetList =  persister.find("from q in class org.olat.ims.qti.QTIResultSet where "
-				+ "q.identity = ? and q.olatResource = ? and q.olatResourceDetail = ? order by q.creationDate desc", new Object[]{identity.getKey(), new Long(olatResource), new String(olatResourceDetail)},
-				new Type[]{StandardBasicTypes.LONG, StandardBasicTypes.LONG, StandardBasicTypes.STRING});
-		Iterator resultSetIterator = resultSetList.iterator();
-		while(resultSetIterator.hasNext()) {
-			returnQTIResultSet = (QTIResultSet)resultSetIterator.next();
-			break;
+		StringBuilder sb = new StringBuilder();
+		sb.append("select q from ").append(QTIResultSet.class.getName()).append(" q")
+		  .append(" where q.identity.key=:identityKey and q.olatResource=:resourceId and q.olatResourceDetail=:resSubPath")
+		  .append(" order by q.creationDate desc");
+		
+		List<QTIResultSet> sets = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), QTIResultSet.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("resourceId", new Long(olatResource))
+			.setParameter("resSubPath", olatResourceDetail)
+			.setMaxResults(1).getResultList();
+		
+		if(sets.isEmpty()) {
+			return null;
 		}
-		return returnQTIResultSet;
+		return sets.get(0);
 	}
 	
 	/**
@@ -606,7 +509,4 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 		if(item.canDelete().equals(VFSConstants.YES)) return item.delete();
 		return VFSConstants.NO;
 	}
-	
-	
-	
 }

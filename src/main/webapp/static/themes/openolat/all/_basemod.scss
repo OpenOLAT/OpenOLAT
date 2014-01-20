@@ -42,6 +42,9 @@ body {
 	margin:0 auto;
 	width:100%;
 	height:100%;
+	/* fix layering issue with datepicker - OO content on layer 1 */
+	position: relative; 
+	z-index: 1;
 }
 #b_page_wrapper {
 //	@include o-border-radius(6px);
@@ -395,34 +398,49 @@ div.b_breadcumb_path {
 div.b_breadcumb div.b_breadcumb_path {}
 
 /* toolbar breadcrumb specific styles */
-#b_main_toolbar div.b_breadcumb_path { 
-	ul { 
-		a {
+#b_main_toolbar {
+	div.b_breadcumb_path { 
+		ul { 
+			a {
+				color: $tool_bar_color;
+				font-weight: bold;
+				&:hover {
+					color: $tool_bar_hover;
+					text-decoration: none;
+				}
+			}
+			
+			li.b_breadcumb_back {
+				background: transparent;
+				padding: 0 7px 0 7px; 
+				margin: 0 2px 0 0;
+				border-right: 1px solid $tool_bar_border;
+				a {
+					font-type: Arial; /* for special arrow key */
+					color: $tool_bar_color;
+					font-weight: normal;
+					&:hover {
+						color: $tool_bar_hover;
+					}
+				}
+			}
+		}
+	}
+	div.b_breadcumb_close {
+		position: absolute;
+		right: 5px;
+		size: 80%;
+		.b_close {
+			@extend .b_with_small_icon_right;
+			background-image: url('../openolat/images/close.png');
 			color: $tool_bar_color;
-			font-weight: bold;
 			&:hover {
 				color: $tool_bar_hover;
 				text-decoration: none;
 			}
 		}
-		
-		li.b_breadcumb_back {
-			background: transparent;
-			padding: 0 7px 0 7px; 
-			margin: 0 2px 0 0;
-			border-right: 1px solid $tool_bar_border;
-			a {
-				font-type: Arial; /* for special arrow key */
-				color: $tool_bar_color;
-				font-weight: normal;
-				&:hover {
-					color: $tool_bar_hover;
-				}
-			}
-		}
 	}
 }
-
 div.b_breadcumb_content { 
 	clear: both;  
 	margin-top: 0.5em; 

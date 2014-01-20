@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.List;
 
 import org.dom4j.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -112,8 +113,8 @@ public class QTI12ResultDetailsController extends BasicController {
 		this.assessedIdentity = assessedIdentity;
 		this.repositoryEntry = re;
 		this.type = type;
-		this.iqm = IQManager.getInstance();
-		this.qrm = QTIResultManager.getInstance();
+		iqm = CoreSpringFactory.getImpl(IQManager.class);
+		qrm = QTIResultManager.getInstance();
 		
 		String resourcePath = courseResourceableId + File.separator + nodeIdent;
 		qtiPersister = new FilePersister(assessedIdentity, resourcePath);
@@ -226,7 +227,7 @@ public class QTI12ResultDetailsController extends BasicController {
 				if(tableModel.isTestRunning()) {
 					IQRetrievedEvent retrieveEvent = new IQRetrievedEvent(assessedIdentity, courseResourceableId, nodeIdent);
 					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(retrieveEvent, retrieveEvent);
-					doRetrieveTest(ureq);
+					doRetrieveTest();
 				}
 			}
 			removeAsListenerAndDispose(retrieveConfirmationCtr);
@@ -252,7 +253,7 @@ public class QTI12ResultDetailsController extends BasicController {
 	 * result set, pass the score to the course node.
 	 * @param ureq
 	 */
-	protected void doRetrieveTest(UserRequest ureq2) {
+	private void doRetrieveTest() {
 		ICourse course = CourseFactory.loadCourse(courseResourceableId);
 		AssessableCourseNode testNode = (AssessableCourseNode)course.getRunStructure().getNode(nodeIdent);
 		ModuleConfiguration modConfig = testNode.getModuleConfiguration();

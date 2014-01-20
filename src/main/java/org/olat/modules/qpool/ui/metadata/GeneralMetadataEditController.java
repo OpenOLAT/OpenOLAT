@@ -175,12 +175,12 @@ public class GeneralMetadataEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == selectContext) {
 			okButton.getComponent().setDirty(false);
-			doOpenSelection(ureq);
+			doOpenSelection();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doOpenSelection(UserRequest ureq) {
+	private void doOpenSelection() {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
 			
