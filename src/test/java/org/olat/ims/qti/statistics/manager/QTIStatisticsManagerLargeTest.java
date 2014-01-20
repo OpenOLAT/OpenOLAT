@@ -38,6 +38,7 @@ import junit.framework.Assert;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -51,8 +52,8 @@ import org.olat.ims.qti.export.helper.ItemWithResponseStr;
 import org.olat.ims.qti.export.helper.QTIItemObject;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIStatisticsManager;
-import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
+import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -273,7 +274,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		isInitialized = true;
 	}
 
-	@Test
+	@Test @Ignore
 	public void testStatistics() {
 		long start = System.currentTimeMillis();
 
@@ -315,7 +316,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		}
 	}*/
 	
-	@Test
+	@Test @Ignore
 	public void testItemStatistics_singleChoice_0() {
 		QTIItemObject itemObject = itemObjects.get(0);
 		double maxValue = Double.parseDouble(itemObject.getItemMaxValue());
@@ -326,7 +327,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		assertEquals(scoreQ1, stats.getAverageScore(), 0.1);
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testItemStatistics_multipleChoice_1() {
 		QTIItemObject itemObject = itemObjects.get(1);
 		double maxValue = Double.parseDouble(itemObject.getItemMaxValue());
@@ -341,7 +342,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		assertEquals(numberOfParticipants - wrongAnswersQ2, stats.getNumOfCorrectAnswers());
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testItemStatistics_kprim_2() {
 		QTIItemObject itemObject = itemObjects.get(2);
 		double maxValue = Double.parseDouble(itemObject.getItemMaxValue());
@@ -361,7 +362,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		}
 	}*/
 
-	@Test
+	@Test @Ignore
 	public void testAnswerTexts() {
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(olatResource, olatResourceDetail);
 		List<String> calculatedList  = qtim.getAnswers("QTIEDIT:FIB:1000010792", searchParams);
