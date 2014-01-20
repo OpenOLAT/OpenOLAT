@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -53,6 +54,7 @@ import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QItemFactory;
+import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
@@ -87,14 +89,12 @@ import org.olat.search.service.indexer.LifeFullIndexer;
 public class QuestionListController extends AbstractItemListController implements StackedControllerAware {
 
 	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, deleteItem, authorItem, importItem, bulkChange;
-	
-	
-	private StackedController stackPanel;
 
-	private Controller newItemCtrl;
+	private StackedController stackPanel;
 	private RenameController renameCtrl;
 	private CloseableModalController cmc;
 	private CloseableModalController cmcNewItem;
+	private QPoolItemEditorController newItemCtrl;
 	private DialogBoxController confirmCopyBox;
 	private DialogBoxController confirmDeleteBox;
 	private DialogBoxController confirmRemoveBox;
@@ -399,6 +399,10 @@ public class QuestionListController extends AbstractItemListController implement
 			}
 		} else if(source == cmcNewItem) {
 			showInfo("create.success");
+			if(newItemCtrl.getItem() != null && newItemCtrl.getItem().getKey() != null) {
+				List<QuestionItem> newItems = Collections.singletonList(newItemCtrl.getItem());
+				getSource().postImport(newItems);
+			}
 			getItemsTable().reset();
 			QPoolEvent qce = new QPoolEvent(QPoolEvent.ITEM_CREATED);
 			fireEvent(ureq, qce);

@@ -312,7 +312,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 			descriptionEl.setVisible(copyrightEl.isVisible() && copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey()));
 			rightsWrapperCont.setDirty(true);
 		} else if(source == selectContext) {
-			doOpenSelection(ureq);
+			doOpenSelection();
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -346,7 +346,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		cmc = null;
 	}
 
-	private void doOpenSelection(UserRequest ureq) {
+	private void doOpenSelection() {
 		selectPathCmp = new SelectionTree("taxPathSelection", getTranslator());
 		selectPathCmp.addListener(this);
 		selectPathCmp.setMultiselect(false);

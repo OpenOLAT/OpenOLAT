@@ -19,21 +19,16 @@
  */
 package org.olat.modules.qpool;
 
-import java.util.Locale;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.Controller;
 
 /**
  * 
- * Initial date: 26.06.2013<br>
+ * Initial date: 20.01.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QItemFactory {
+public interface QPoolItemEditorController extends Controller {
 	
-	public String getLabel(Locale locale);
-	
-	public QPoolItemEditorController getEditor(UserRequest ureq, WindowControl wControl, String title);
+	public QuestionItem getItem();
 
 }

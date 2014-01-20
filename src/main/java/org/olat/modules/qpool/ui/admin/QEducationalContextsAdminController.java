@@ -147,7 +147,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		} else if(source == confirmDeleteCtrl) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				QEducationalContext level = (QEducationalContext)confirmDeleteCtrl.getUserObject();
-				doDelete(ureq, level);
+				doDelete(level);
 			}
 		} else if(source == i18nItemEditCtr) {
 			if(event instanceof I18nItemChangedEvent) {
@@ -198,7 +198,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		confirmDeleteCtrl.setUserObject(level);
 	}
 	
-	private void doDelete(UserRequest ureq, QEducationalContext level) {
+	private void doDelete(QEducationalContext level) {
 		if(qpoolService.deleteEducationalContext(level)) {
 			reloadModel();
 			showInfo("educational.context.deleted");
