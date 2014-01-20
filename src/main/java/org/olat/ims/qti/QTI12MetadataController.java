@@ -148,7 +148,7 @@ public class QTI12MetadataController extends FormBasicController  {
 				if(responseFeedbackMat != null) {
 					boolean left = (count++ % 2 == 0);
 					String text = responseFeedbackMat.renderAsText();
-					StaticTextElement el = uifactory.addStaticTextElement("item_feedback_" + count, text, left ? leftFeedbackCont : rightFeedbackCont);
+					StaticTextElement el = uifactory.addStaticTextElement("item_feedback_" + count, null, text, left ? leftFeedbackCont : rightFeedbackCont);
 					el.setLabel(null, null);
 				}
 			}

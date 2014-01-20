@@ -165,7 +165,7 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 	@Override
 	public List<QTIStatisticResultSet> getAllResultSets(QTIStatisticSearchParams searchParams) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select rset from qtistatsresult rset ");
+		sb.append("select rset from qtistatsresultset rset ");
 		decorateRSet(sb, searchParams);
 		sb.append(" order by rset.duration asc");
 
