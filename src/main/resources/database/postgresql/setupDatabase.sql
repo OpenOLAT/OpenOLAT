@@ -1976,6 +1976,7 @@ create index assindex on o_qtiresultset (assessmentid);
 alter table o_qtiresult add constraint FK3563E67340EF401F foreign key (resultset_fk) references o_qtiresultset;
 create index FK3563E67340EF401F on o_qtiresult (resultset_fk);
 create index itemindex on o_qtiresult (itemident);
+create index result_lastmod_idx on o_qtiresult (lastmodified);
 
 -- catalog entry
 alter table o_catentry add constraint FKF4433C2C7B66B0D0 foreign key (parent_id) references o_catentry;

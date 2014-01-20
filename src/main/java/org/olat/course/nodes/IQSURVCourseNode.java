@@ -27,11 +27,13 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
@@ -39,9 +41,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.editor.CourseEditorEnv;
@@ -52,14 +56,21 @@ import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.IQUIFactory;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.repository.ImportReferencesController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.statistic.StatisticResourceOption;
+import org.olat.course.statistic.StatisticResourceResult;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType3;
 import org.olat.ims.qti.export.QTIExportManager;
 import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
+import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
+import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -111,6 +122,36 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 		Controller controller = IQUIFactory.createIQSurveyRunController(ureq, wControl, userCourseEnv, ne, this);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_iqsurv_icon");
 		return new NodeRunConstructionResult(ctrl);
+	}
+	
+	@Override
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
+			CourseEnvironment courseEnv, AssessmentToolOptions options) {
+		List<Controller> tools = new ArrayList<>();
+		tools.add(new QTI12StatisticsToolController(ureq, wControl, courseEnv, options, this));
+		return tools;
+	}
+
+	@Override
+	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, StatisticResourceOption options) {
+		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", courseId);
+		
+		List<SecurityGroup> limitMemberships = new ArrayList<>();
+		if(options.getParticipantsCourse() != null) {
+			limitMemberships.add(options.getParticipantsCourse().getParticipantGroup());
+		}
+		if(options.getParticipantsGroups() != null && !options.getParticipantsGroups().isEmpty()) {
+			for(BusinessGroup group:options.getParticipantsGroups()) {
+				limitMemberships.add(group.getPartipiciantGroup());
+			}
+		}
+		
+		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(courseOres.getResourceableId(), getIdent());
+		searchParams.setLimitToSecGroups(limitMemberships);
+
+		QTIStatisticResourceResult result = new QTIStatisticResourceResult(this, searchParams);
+		return result;
 	}
 
 	/**

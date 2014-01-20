@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.List;
 
 import org.dom4j.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -112,8 +113,8 @@ public class QTI12ResultDetailsController extends BasicController {
 		this.assessedIdentity = assessedIdentity;
 		this.repositoryEntry = re;
 		this.type = type;
-		this.iqm = IQManager.getInstance();
-		this.qrm = QTIResultManager.getInstance();
+		iqm = CoreSpringFactory.getImpl(IQManager.class);
+		qrm = QTIResultManager.getInstance();
 		
 		String resourcePath = courseResourceableId + File.separator + nodeIdent;
 		qtiPersister = new FilePersister(assessedIdentity, resourcePath);

@@ -98,6 +98,7 @@ public class QTIObjectTreeBuilder {
 	private final List<QTIItemObject> getQTIItemObjectList(Resolver resolver) {
 		Document doc = resolver.getQTIDocument();
 		Element root = doc.getRootElement();
+		@SuppressWarnings("unchecked")
 		List<Element> items = root.selectNodes("//item");
 		List<QTIItemObject> itemList = new ArrayList<QTIItemObject>();
 		for (Iterator<Element> iter= items.iterator(); iter.hasNext();) {

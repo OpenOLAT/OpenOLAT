@@ -28,6 +28,7 @@ package org.olat.ims.qti.navigator;
 import java.io.Serializable;
 import java.util.Iterator;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.container.AssessmentContext;
 import org.olat.ims.qti.container.ItemContext;
@@ -158,7 +159,7 @@ public class DefaultNavigator implements Serializable {
 
 		getAssessmentInstance().close();
 		if(!getAssessmentInstance().isPreview() && !alreadyClosed) {
-			IQManager.getInstance().persistResults(getAssessmentInstance());
+			CoreSpringFactory.getImpl(IQManager.class).persistResults(getAssessmentInstance());
 		}
 		
 		AssessmentContext ac = getAssessmentContext();

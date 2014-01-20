@@ -63,10 +63,13 @@ public class BaseFullWebappPopupLayoutFactory {
 		return layoutCC;
 	}
 
-	
-	//fxdiff
 	public static BaseFullWebappPopupLayout createMinimalPopupLayout(ControllerCreator controllerCreator) {
 		BaseFullWebappPopupLayout layoutCC = new BaseFullWebappMinimalLayoutControllerCreator(controllerCreator);
+		return layoutCC;
+	}
+	
+	public static BaseFullWebappPopupLayout createPrintPopupLayout(ControllerCreator controllerCreator) {
+		BaseFullWebappPopupLayout layoutCC = new BaseFullWebappPrintLayoutControllerCreator(controllerCreator);
 		return layoutCC;
 	}
 	

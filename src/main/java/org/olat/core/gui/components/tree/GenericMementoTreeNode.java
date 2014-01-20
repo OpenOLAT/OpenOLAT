@@ -46,13 +46,15 @@ public abstract class GenericMementoTreeNode extends GenericTreeNode implements 
 	public GenericMementoTreeNode(String title, Object userObject) {
 		super(title, userObject);
 	}
-	/**
-	 * 
-	 *
-	 */
+
 	public GenericMementoTreeNode() {
 		super();
 	}
+	
+	public GenericMementoTreeNode(String ident) {
+		super(ident);
+	}
+	
 	/**
 	 * 
 	 * @see org.olat.core.util.memento.MementoOriginator#createMemento()

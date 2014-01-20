@@ -41,15 +41,6 @@ public class NodeRunConstructionResult {
 	private TreeModel subTreeModel;
 	private ControllerEventListener subTreeListener;
 	private final String selectedTreeNodeId;
-
-	/**
-	 * @param runController
-	 * @param subTreeModel
-	 * @param subTreeListener
-	 */
-	/*public NodeRunConstructionResult(Controller runController, TreeModel subTreeModel, ControllerEventListener subTreeListener) {
-		this(runController, subTreeModel, null, subTreeListener);
-	}*/
 	
 	/**
 	 * 

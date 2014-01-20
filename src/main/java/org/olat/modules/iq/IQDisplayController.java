@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.dom4j.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -189,7 +190,7 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		retrieveListenerOres =  new IQRetrievedEvent(ureq.getIdentity(), callingResId, callingResDetail);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), retrieveListenerOres);
 
-		iqm = IQManager.getInstance();
+		iqm = CoreSpringFactory.getImpl(IQManager.class);
 
 		myContent = new VelocityContainer("olatmodiqrun", VELOCITY_ROOT + "/qti.html", translator, this);
 		
@@ -197,7 +198,7 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		 Resolver autcompResolver = null;
 		if (resolver == null){
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, true);
-			 autcompResolver = new ImsRepositoryResolver(re.getKey());
+			autcompResolver = new ImsRepositoryResolver(re);
 		} else {
 			autcompResolver = this.resolver;
 		}

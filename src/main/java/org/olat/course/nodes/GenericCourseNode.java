@@ -57,6 +57,8 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.statistic.StatisticResourceOption;
+import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.group.model.BGAreaReference;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
@@ -142,6 +144,17 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		Translator translator = Util.createPackageTranslator(GenericCourseNode.class, ureq.getLocale());
 		String text = translator.translate("preview.notavailable");
 		return MessageUIFactory.createInfoMessage(ureq, wControl, null, text);
+	}
+	
+	@Override
+	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, StatisticResourceOption options) {
+		return null;
+	}
+
+	@Override
+	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv) {
+		return false;
 	}
 
 	/**

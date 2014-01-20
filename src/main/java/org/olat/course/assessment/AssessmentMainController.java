@@ -48,6 +48,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.StackedControllerAware;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -189,6 +190,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private String onyxReporterBackLocation;
 	
 	private boolean isAdministrativeUser;
+	private boolean mayViewAllUsersAssessments = false;
 	private Translator propertyHandlerTranslator;
 	
 	private boolean isFiltering = true;
@@ -663,7 +665,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			secGroups.add(group.getPartipiciantGroup());
 		}
 
-		//fxdiff VCRP-1,2: access control of resources
 		if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
 			if(re.getParticipantGroup() != null) {
@@ -675,6 +676,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		List<Identity> usersList = secMgr.getIdentitiesOfSecurityGroups(secGroups);
 
 		if(callback.mayViewAllUsersAssessments() && usersList.size() < 500) {
+			mayViewAllUsersAssessments = true;
 			ICourse course = CourseFactory.loadCourse(ores);
 			CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 			List<Identity> assessedRsers = pm.getAllIdentitiesWithCourseAssessmentData(usersList);
@@ -682,7 +684,23 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		}
 		return usersList;
 	}
+	
+	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options) {
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		for (BusinessGroup group: coachedGroups) {
+			secGroups.add(group.getPartipiciantGroup());
+		}
 
+		if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
+			if(re.getParticipantGroup() != null) {
+				secGroups.add(re.getParticipantGroup());
+			}
+		}
+		
+		options.setAlternativeToIdentities(secGroups, mayViewAllUsersAssessments);
+	}
+	
 	/**
 	 * @param identity
 	 * @return List of all course groups if identity is course admin, else groups that 
@@ -815,6 +833,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			AssessmentToolOptions options = new AssessmentToolOptions();
 			if(group == null) {
 				options.setIdentities(identities);
+				fillAlternativeToAssessableIdentityList(options);
 			} else {
 				options.setGroup(group);
 			}
@@ -825,6 +844,9 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				String toolCmpName = "ctrl_" + (count++);
 				userChoose.put(toolCmpName, tool.getInitialComponent());
 				toolCmpNames.add(toolCmpName);
+				if(tool instanceof StackedControllerAware) {
+					((StackedControllerAware)tool).setStackedController(stackPanel);
+				}
 			}
 		}
 		userChoose.contextPut("toolCmpNames", toolCmpNames);

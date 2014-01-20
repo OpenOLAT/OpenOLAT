@@ -59,6 +59,10 @@ public class QTIResultSet extends PersistentObject {
 		//
 	}
 	
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+	
 	/**
 	 * @see org.olat.core.commons.persistence.Auditable#getLastModified()
 	 */

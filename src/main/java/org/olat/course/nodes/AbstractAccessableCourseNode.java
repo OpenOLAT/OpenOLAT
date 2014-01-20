@@ -73,12 +73,6 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	}
 
 	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(UserRequest, WindowControl, UserCourseEnvironment, NodeEvaluation, String)
-	 */
-	abstract public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd);
-
-	/**
 	 * Returns the generic access precondition
 	 * 
 	 * @return Condition

@@ -52,6 +52,7 @@ public class AuditInterceptor extends EmptyInterceptor {
 	/**
 	 * @see org.hibernate.Interceptor#onFlushDirty(java.lang.Object, java.io.Serializable, java.lang.Object[], java.lang.Object[], java.lang.String[], org.hibernate.type.Type[])
 	 */
+	@Override
 	public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState, Object[] previousState,
 			String[] propertyNames, Type[] types) {
 		if (log.isDebug())
@@ -64,6 +65,7 @@ public class AuditInterceptor extends EmptyInterceptor {
 	/**
 	 * @see org.hibernate.Interceptor#onLoad(java.lang.Object, java.io.Serializable, java.lang.Object[], java.lang.String[], org.hibernate.type.Type[])
 	 */
+	@Override
 	public boolean onLoad(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
 		return false;
 	}
@@ -71,15 +73,17 @@ public class AuditInterceptor extends EmptyInterceptor {
 	/**
 	 * @see org.hibernate.Interceptor#onSave(java.lang.Object, java.io.Serializable, java.lang.Object[], java.lang.String[], org.hibernate.type.Type[])
 	 */
+	@Override
 	public boolean onSave(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
 		// automatically set the creationdate property on Auditable (all OLAT entities implement Auditable)
 		if (entity instanceof CreateInfo) {
 			creates++;
 			for (int i = 0; i < propertyNames.length; i++) {
 				if ("creationDate".equals(propertyNames[i])) {
-					//TODO:fj:a = new Timestamp(); should solve this buggy compares between a Timestamp (hibernate reflection set) and the date (set here)
-					state[i] = new Date();
-					return true;
+					if(state[i] == null) {
+						state[i] = new Date();
+						return true;
+					}
 				}
 			}
 		}

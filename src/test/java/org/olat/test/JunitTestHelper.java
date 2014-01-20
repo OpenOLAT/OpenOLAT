@@ -42,6 +42,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.DeployableCourseExport;
@@ -92,6 +93,18 @@ public class JunitTestHelper {
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(ores);
 		OLATResourceManager.getInstance().saveOLATResource(resource);
 		return resource;
+	}
+	
+	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin) {
+		if(StringHelper.containsNonWhitespace(prefixLogin)) {
+			if(!prefixLogin.endsWith("-")) {
+				prefixLogin += "-";
+			}
+		} else {
+			prefixLogin = "junit-";
+		}
+		String login = prefixLogin + UUID.randomUUID().toString();
+		return createAndPersistIdentityAsUser(login);
 	}
 
 	/**

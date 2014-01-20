@@ -651,7 +651,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				return;
 				
 			} else if (cmd.equals(CMD_TOOLS_PREVIEW)) { // preview
-				previewController = IQManager.getInstance().createIQDisplayController(new QTIEditorResolver(qtiPackage),
+				previewController = CoreSpringFactory.getImpl(IQManager.class).createIQDisplayController(new QTIEditorResolver(qtiPackage),
 						qtiPackage.getQTIDocument().isSurvey() ? AssessmentInstance.QMD_ENTRY_TYPE_SURVEY : AssessmentInstance.QMD_ENTRY_TYPE_SELF,
 						new IQPreviewSecurityCallback(), ureq, getWindowControl());
 				if (previewController.isReady()) {
