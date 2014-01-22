@@ -102,4 +102,11 @@ public class InfinispanCacheWrapper<U,V extends Serializable> implements CacheWr
 		V oldOne = cache.put(key, value);
 		return oldOne;
 	}
+
+	@Override
+	public V putIfAbsent(U key, V value) {
+		return cache.putIfAbsent(key, value);
+	}
+	
+	
 }
