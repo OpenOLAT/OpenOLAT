@@ -122,8 +122,8 @@ public class QTIWordExport implements MediaResource {
 			String secureLabel = StringHelper.transformDisplayNameToFileSystemName(label);
 
 			String file = secureLabel + ".zip";
-			hres.setHeader("Content-Disposition","attachment; filename=\"" + StringHelper.urlEncodeISO88591(file) + "\"");			
-			hres.setHeader("Content-Description",StringHelper.urlEncodeISO88591(label));
+			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file));			
+			hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
 			
 			zout = new ZipOutputStream(hres.getOutputStream());
 			zout.setLevel(9);

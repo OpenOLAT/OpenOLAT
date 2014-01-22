@@ -31,7 +31,6 @@ import java.util.StringTokenizer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.util.StringHelper;
 
 /**
  * Initial Date:  08.07.2003
@@ -72,7 +71,7 @@ public class CrumbRenderer {
 		StringTokenizer st = new StringTokenizer(fc.getCurrentContainerPath(), "/", false);
 		while (st.hasMoreElements()) {
 			String token = st.nextToken();
-			pathLink.append(StringHelper.urlEncodeUTF8(token));
+			pathLink.append(ubu.encodeUrl(token));
 			sb.append("&nbsp;/&nbsp;");
 			if (st.hasMoreElements() && renderLinks) {
 				sb.append("<a href=\"");

@@ -26,18 +26,25 @@
 
 package org.olat.core.gui.render;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.regex.Pattern;
+
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.control.winmgr.WindowBackOfficeImpl;
-import org.olat.core.util.StringHelper;
+import org.olat.core.logging.AssertException;
 
 /**
  * 
  * @author Felix Jost
  */
 public class URLBuilder {
+	
+	private static final Pattern p1 = Pattern.compile("\\+");
+	private static final Pattern p2 = Pattern.compile("%2F");
 
 	private final String uriPrefix;
 
@@ -135,16 +142,6 @@ public class URLBuilder {
 		else buf.append(quote);
 	}
 	
-	
-	/*public boolean isAjaxOn() {
-		return true;
-	}*/
-
-	/*public void buildNonAjaxURI(StringOutput buf, String[] keys, String[] values, String modURI) {
-		buildURI(buf, keys, values, modURI, AJAXFlags.MODE_TOBGIFRAME);
-	}*/
-
-	
 	/**
 	 * builds an uri. neither key nor values may contain the character
 	 * UserRequest.PARAM_DELIM which is a ":" (colon). in case you think you
@@ -184,7 +181,7 @@ public class URLBuilder {
 		result.append('/');
 		if (modURI != null) result.append(modURI);
 		//FIXME:fj:a urlEncodeUTF8 is slow; improve the regexp, also convert only the modURI to utf-8?
-		buf.append(StringHelper.urlEncodeUTF8(result.toString()));
+		buf.append(encodeUrl(result.toString()));
 	}
 	
 	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI) {
@@ -243,6 +240,27 @@ public class URLBuilder {
 		}
 		*/
 		return result;
+	}
+	
+	/**
+	 * @param url
+	 * @return encoded string
+	 */
+	public String encodeUrl(String url) {
+		String encodedURL;
+		try {
+			encodedURL = URLEncoder.encode(url, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			/*
+			 * from java.nio.Charset Standard charsets Every implementation of the
+			 * Java platform is required to support the following standard charsets...
+			 * ... UTF-8 Eight-bit UCS Transformation Format ...
+			 */
+			throw new AssertException("utf-8 encoding is needed for proper encoding, but not offered on this java platform????");
+		}
+		encodedURL = p1.matcher(encodedURL).replaceAll("%20");
+		encodedURL = p2.matcher(encodedURL).replaceAll("/");
+		return encodedURL;
 	}
 
 	/**
