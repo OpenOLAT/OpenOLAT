@@ -26,6 +26,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -44,20 +45,27 @@ import org.olat.home.HomeSite;
 public class IdentityContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 	private static final OLog log = Tracing.createLoggerFor(IdentityContextEntryControllerCreator.class);
 
+	private Identity identity;
+	
+	@Override
+	public ContextEntryControllerCreator clone() {
+		return new IdentityContextEntryControllerCreator();
+	}
+
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
 	 *      org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		Identity identity = extractIdentity(ce);
+		Identity identity = getIdentity(ce);
 		if (identity == null) return null;
 		UserInfoMainController uimc = new UserInfoMainController(ureq, wControl, identity);
 		return uimc;
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 		Long resId = ce.getOLATResourceable().getResourceableId();
 		if(resId != null && resId.equals(ureq.getIdentity().getKey())) {
@@ -69,35 +77,37 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
 	 */
+	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		Identity identity = extractIdentity(ce);
+		Identity identity = getIdentity(ce);
 		if (identity == null) return null;
 		return UserManagerImpl.getInstance().getUserDisplayName(identity);
 	}
 
+	@Override
+	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+		return getIdentity(ce) != null;
+	}
+	
 	/**
 	 * Helper to get the identity that is encoded into the context entry
 	 * 
 	 * @param ce
 	 * @return the identity or NULL if not found
 	 */
-	private Identity extractIdentity(ContextEntry ce) {
-		OLATResourceable resource = ce.getOLATResourceable();
-		Long key = resource.getResourceableId();
-		if (key == null || key.equals(0)) {
-			log.error("Can not load identity with key::" + key);
-			return null;
-		}
-		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(key);
-		if (identity == null) {
-			log.error("Can not load identity with key::" + key);
+	private Identity getIdentity(ContextEntry ce) {
+		if(identity == null) {
+			OLATResourceable resource = ce.getOLATResourceable();
+			Long key = resource.getResourceableId();
+			if (key == null || key.equals(0)) {
+				log.error("Can not load identity with key::" + key);
+				return null;
+			}
+			identity = BaseSecurityManager.getInstance().loadIdentityByKey(key);
+			if (identity == null) {
+				log.error("Can not load identity with key::" + key);
+			}
 		}
 		return identity;
-	}
-
-	@Override
-	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		Identity identity = extractIdentity(ce);
-		return identity!=null;
 	}
 }

@@ -44,6 +44,13 @@ import org.olat.core.id.OLATResourceable;
  * @author Felix Jost
  */
 public interface ContextEntryControllerCreator {
+	
+	/**
+	 * Return a request scoped instance of the creator if the
+	 * creator cannot be accessed by multiple users simultaneously.
+	 * @return
+	 */
+	public ContextEntryControllerCreator clone();
 
 	/**
 	 * Factory method to create the run controller for this contex.

@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.repository.site.RepositorySite;
 
@@ -36,6 +37,11 @@ import org.olat.repository.site.RepositorySite;
  */
 public class CatalogContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
+	@Override
+	public ContextEntryControllerCreator clone() {
+		return this;
+	}
+	
 	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		return null;

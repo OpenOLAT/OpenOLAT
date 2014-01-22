@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -53,43 +54,56 @@ public class LiveBlogContextEntryControllerCreator  {
 
 	public LiveBlogContextEntryControllerCreator(final FeedManager feedManager) {
 		
-		NewControllerFactory.getInstance().addContextEntryControllerCreator("LiveBlog", new DefaultContextEntryControllerCreator(){
-			
-			@Override
-			public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("LiveBlog", new LBContextEntryControllerCreator(feedManager));	
+	}
+	
+	private static class LBContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
+		
+		private final FeedManager feedManager;
+		
+		public LBContextEntryControllerCreator(FeedManager feedManager) {
+			this.feedManager = feedManager;
+		}
+		
+		@Override
+		public ContextEntryControllerCreator clone() {
+			return this;
+		}
+
+		@Override
+		public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+			OLATResourceable ores = ce.getOLATResourceable();
+			Feed feed = feedManager.getFeed(ores);
+			boolean isOwner = feed.getAuthor() != null && ureq.getIdentity() != null && feed.getAuthor().equals(ureq.getIdentity().getName());
+			FeedSecurityCallback secCallback = new FeedResourceSecurityCallback(isOwner, isOwner);
+			FeedMainController controller = new FeedMainController(ores, ureq, wControl, BlogUIFactory.getInstance(ureq.getLocale()), secCallback);
+			Component main = controller.getInitialComponent();
+			return new LayoutMain3ColsController(ureq, wControl, null, null, main, "LiveBlog" + ores.getResourceableId());
+		}
+
+		@Override
+		public String getTabName(ContextEntry ce, UserRequest ureq) {
+			OLATResourceable ores = ce.getOLATResourceable();
+			Feed feed = feedManager.getFeed(ores);
+			return feed.getTitle();
+		}
+
+		@Override
+		public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+			return null;
+		}
+
+		@Override
+		public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+			try {
 				OLATResourceable ores = ce.getOLATResourceable();
 				Feed feed = feedManager.getFeed(ores);
-				boolean isOwner = feed.getAuthor() != null && ureq.getIdentity() != null && feed.getAuthor().equals(ureq.getIdentity().getName());
-				FeedSecurityCallback secCallback = new FeedResourceSecurityCallback(isOwner, isOwner);
-				FeedMainController controller = new FeedMainController(ores, ureq, wControl, BlogUIFactory.getInstance(ureq.getLocale()), secCallback);
-				Component main = controller.getInitialComponent();
-				return new LayoutMain3ColsController(ureq, wControl, null, null, main, "LiveBlog" + ores.getResourceableId());
+				return feed != null;
+			} catch (Exception e) {
+				log.warn("Try to load a live blog with an invalid context entry: " + ce, e);
+				return false;
 			}
-
-			@Override
-			public String getTabName(ContextEntry ce, UserRequest ureq) {
-				OLATResourceable ores = ce.getOLATResourceable();
-				Feed feed = feedManager.getFeed(ores);
-				return feed.getTitle();
-			}
-
-			@Override
-			public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
-				return null;
-			}
-
-			@Override
-			public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-				try {
-					OLATResourceable ores = ce.getOLATResourceable();
-					Feed feed = feedManager.getFeed(ores);
-					return feed != null;
-				} catch (Exception e) {
-					log.warn("Try to load a live blog with an invalid context entry: " + ce, e);
-					return false;
-				}
-			}
-			
-		});	
+		}
+		
 	}
 }

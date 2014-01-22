@@ -31,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.id.context.TabContext;
 import org.olat.core.util.resource.OresHelper;
@@ -50,7 +51,12 @@ public class EPMapExtension {
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(EPDefaultMap.class.getSimpleName(), new MapContextEntryControllerCreator());	
 	}
 	
-	private class MapContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
+	private static class MapContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
+
+		@Override
+		public ContextEntryControllerCreator clone() {
+			return this;
+		}
 
 		@Override
 		public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {

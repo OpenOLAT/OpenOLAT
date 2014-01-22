@@ -19,15 +19,13 @@
  */
 package org.olat.group;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.group.ui.homepage.GroupInfoMainController;
 
@@ -37,6 +35,13 @@ import org.olat.group.ui.homepage.GroupInfoMainController;
  */
 public class BusinessGroupCardContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
+	private BusinessGroup group;
+	
+	@Override
+	public ContextEntryControllerCreator clone() {
+		return new BusinessGroupCardContextEntryControllerCreator();
+	}
+
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
 	 *      org.olat.core.gui.UserRequest,
@@ -44,10 +49,7 @@ public class BusinessGroupCardContextEntryControllerCreator extends DefaultConte
 	 */
 	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		OLATResourceable ores = ce.getOLATResourceable();
-		Long gKey = ores.getResourceableId();
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
+		BusinessGroup bgroup = getBusinessGroup(ce);
 		if(bgroup != null) {
 			return new GroupInfoMainController(ureq, wControl, bgroup);
 		}
@@ -59,22 +61,25 @@ public class BusinessGroupCardContextEntryControllerCreator extends DefaultConte
 	 */
 	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		OLATResourceable ores = ce.getOLATResourceable();
-		Long gKey = ores.getResourceableId();
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		List<BusinessGroupShort> bgroup = bgs.loadShortBusinessGroups(Collections.singletonList(gKey));
-		if(bgroup.size() == 1) {
-			return bgroup.get(0).getName();
+		BusinessGroup bgroup = getBusinessGroup(ce);
+		if(bgroup != null) {
+			return bgroup.getName();
 		}
 		return null;
 	}
 
 	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		OLATResourceable ores = ce.getOLATResourceable();
-		Long gKey = ores.getResourceableId();
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		List<BusinessGroupShort> bgroup = bgs.loadShortBusinessGroups(Collections.singletonList(gKey));
-		return (bgroup.size() == 1);
+		return getBusinessGroup(ce) != null;
+	}
+	
+	private BusinessGroup getBusinessGroup(ContextEntry ce) {
+		if(group == null) {
+			OLATResourceable ores = ce.getOLATResourceable();
+			Long gKey = ores.getResourceableId();
+			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			group = bgs.loadBusinessGroup(gKey);
+		}
+		return group;
 	}
 }
