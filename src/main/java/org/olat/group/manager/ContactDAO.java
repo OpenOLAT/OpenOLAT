@@ -61,7 +61,7 @@ public class ContactDAO {
 	
 	private List<Long> getMembersForCount(Identity me, Class<?> cl) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct(memv.identityKey) from ").append(cl.getName()).append(" memv ")
+		sb.append("select memv.identityKey from ").append(cl.getName()).append(" memv ")
 		  .append(" where memv.ownerSecGroupKey in (")
 		  .append("   select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey")
 		  .append(" ) or memv.participantSecGroupKey in (")
