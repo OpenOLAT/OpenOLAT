@@ -104,7 +104,7 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		int numOfFailed = 0;
 		double totalDuration = 0.0;
 		double maxScore = 0.0;
-		double minScore = 0.0;
+		double minScore = Double.MAX_VALUE;
 		double[] scores = new double[rawDatas.size()];
 		long[] durationMinutes = new long[rawDatas.size()];
 		
@@ -154,6 +154,8 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		stats.setAverage(statisticsHelper.getMean());
 		double range = maxScore - minScore;
 		stats.setRange(range);
+		stats.setMaxScore(maxScore);
+		stats.setMinScore(minScore);
 		stats.setStandardDeviation(statisticsHelper.getStdDev());
 		stats.setMedian(statisticsHelper.median());
 		stats.setMode(statisticsHelper.mode());

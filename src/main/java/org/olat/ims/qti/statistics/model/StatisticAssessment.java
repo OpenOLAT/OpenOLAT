@@ -35,6 +35,8 @@ public class StatisticAssessment {
 	
 	private double average;
 	private double range;
+	private double minScore;
+	private double maxScore;
 	private double standardDeviation;
 	private double median;
 	private List<Double> mode;
@@ -96,6 +98,22 @@ public class StatisticAssessment {
 
 	public void setRange(double range) {
 		this.range = range;
+	}
+
+	public double getMinScore() {
+		return minScore;
+	}
+
+	public void setMinScore(double minScore) {
+		this.minScore = minScore;
+	}
+
+	public double getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(double maxScore) {
+		this.maxScore = maxScore;
 	}
 
 	public double getStandardDeviation() {

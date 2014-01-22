@@ -63,6 +63,8 @@ public class Statistics {
     }
 
     public double median() {
+    	if(data.length == 0) return -1.0;
+    	
        double[] b = new double[data.length];
        System.arraycopy(data, 0, b, 0, b.length);
        Arrays.sort(b);
