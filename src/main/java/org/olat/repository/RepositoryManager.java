@@ -477,15 +477,32 @@ public class RepositoryManager extends BasicManager {
 		}
 		StringBuilder query = new StringBuilder();
 		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
-				 .append(" inner join fetch v.olatResource as ores")
-				 .append(" left join fetch v.lifecycle as lifecycle")
-			   .append(" left join fetch v.ownerGroup as ownerGroup")
-			   .append(" left join fetch v.participantGroup as participantGroup")
-			   .append(" left join fetch v.tutorGroup as tutorGroup")
+		     .append(" inner join fetch v.olatResource as ores")
+		     .append(" left join fetch v.lifecycle as lifecycle")
+		     .append(" left join fetch v.ownerGroup as ownerGroup")
+		     .append(" left join fetch v.participantGroup as participantGroup")
+		     .append(" left join fetch v.tutorGroup as tutorGroup")
 		     .append(" where v.key = :repoKey");
 		
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), RepositoryEntry.class)
+				.setParameter("repoKey", key)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
+	}
+	
+	public OLATResource lookupRepositoryEntryResource(Long key) {
+		if (key == null) return null;
+		StringBuilder query = new StringBuilder();
+		query.append("select v.olatResource from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		     .append(" where v.key = :repoKey");
+		
+		List<OLATResource> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), OLATResource.class)
 				.setParameter("repoKey", key)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
