@@ -205,8 +205,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		}
 		String fullName = userManager.getUserDisplayName(me);
 		rosterDao.updateRosterEntry(chatResource, me, fullName, nickName, anonym, vip);
-		dbInstance.commit();//commit before sending event
-		
 		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
 	}
 	
@@ -376,11 +374,10 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	public void listenChat(Identity identity, OLATResourceable chatResource,
+	public void listenChat(Identity identity, OLATResourceable chatResource, String nickName,
 			boolean anonym, boolean vip, GenericEventListener listener) {
 		String fullName = userManager.getUserDisplayName(identity);
-		rosterDao.updateRosterEntry(chatResource, identity, fullName, null, anonym, vip);
-		dbInstance.commit();
+		rosterDao.updateRosterEntry(chatResource, identity, fullName, nickName, anonym, vip);
 		coordinator.getCoordinator().getEventBus().registerFor(listener, identity, chatResource);
 	}
 

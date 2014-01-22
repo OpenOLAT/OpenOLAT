@@ -31,6 +31,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.manager.RosterDAO;
 import org.olat.instantMessaging.model.RosterEntryImpl;
+import org.olat.instantMessaging.model.RosterEntryView;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +91,28 @@ public class RosterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testGetRosterViews() {
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-8-" + UUID.randomUUID().toString(), System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-roster-8-" + UUID.randomUUID().toString());
+		rosterDao.createRosterEntry(chatResource, id, "My little name", "Nock", false, false);
+		dbInstance.commitAndCloseSession();
+		
+		List<RosterEntryView> entries = rosterDao.getRosterView(chatResource, 0, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		
+		RosterEntryView entry = entries.get(0);
+		Assert.assertNotNull(entry);
+		Assert.assertNotNull(entry.getKey());
+		Assert.assertEquals(id.getKey(), entry.getIdentityKey());
+		Assert.assertEquals("My little name", entry.getFullName());
+		Assert.assertEquals("Nock", entry.getNickName());
+		Assert.assertFalse(entry.isAnonym());
+		Assert.assertEquals(chatResource.getResourceableTypeName(), entry.getResourceTypeName());
+		Assert.assertEquals(chatResource.getResourceableId(), entry.getResourceId());
+	}
+	
+	@Test
 	public void testUpdateRosterEntry() {
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-7-" + UUID.randomUUID().toString(), System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-roster-7-" + UUID.randomUUID().toString());
@@ -116,6 +139,34 @@ public class RosterDAOTest extends OlatTestCase {
 		Assert.assertEquals(id.getKey(), reloadEntry.getIdentityKey());
 		Assert.assertEquals("My updated full name", reloadEntry.getFullName());
 		Assert.assertEquals("My updated nick name", reloadEntry.getNickName());
+		Assert.assertTrue(entry.isAnonym());
+		Assert.assertEquals(chatResource.getResourceableTypeName(), reloadEntry.getResourceTypeName());
+		Assert.assertEquals(chatResource.getResourceableId(), reloadEntry.getResourceId());
+	}
+	
+	@Test
+	public void testUpdateRosterEntry_createNew() {
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-7-" + UUID.randomUUID().toString(), System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-roster-7-" + UUID.randomUUID().toString());
+		rosterDao.updateRosterEntry(chatResource, id, "My old name", "Truck", true, false);
+		dbInstance.commitAndCloseSession();
+		
+		//load the entry
+		List<RosterEntryImpl> entries = rosterDao.getRoster(chatResource, 0, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		
+		RosterEntryImpl entry = entries.get(0);
+		
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		
+		RosterEntryImpl reloadEntry = entries.get(0);
+		Assert.assertNotNull(reloadEntry);
+		Assert.assertNotNull(reloadEntry.getKey());
+		Assert.assertEquals(id.getKey(), reloadEntry.getIdentityKey());
+		Assert.assertEquals("My old name", reloadEntry.getFullName());
+		Assert.assertEquals("Truck", reloadEntry.getNickName());
 		Assert.assertTrue(entry.isAnonym());
 		Assert.assertEquals(chatResource.getResourceableTypeName(), reloadEntry.getResourceTypeName());
 		Assert.assertEquals(chatResource.getResourceableId(), reloadEntry.getResourceId());

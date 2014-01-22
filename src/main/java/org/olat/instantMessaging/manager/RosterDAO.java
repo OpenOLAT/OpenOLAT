@@ -59,25 +59,53 @@ public class RosterDAO {
 		return entry;
 	}
 
+	/**
+	 * The method commit the transaction in case of a select for update
+	 * @param chatResource
+	 * @param identity
+	 * @param fullName
+	 * @param nickName
+	 * @param anonym
+	 * @param vip
+	 */
 	public void updateRosterEntry(OLATResourceable chatResource, Identity identity, String fullName, String nickName,
 			boolean anonym, boolean vip) {
-		RosterEntryImpl entry = loadForUpdate(chatResource, identity);
+		RosterEntryImpl entry = load(chatResource, identity);
 		if(entry == null) {
 			createRosterEntry(chatResource, identity, fullName, nickName, anonym, vip);
 		} else {
-			entry.setFullName(fullName);
-			entry.setNickName(nickName);
-			entry.setAnonym(anonym);
-			dbInstance.getCurrentEntityManager().merge(entry);
+			if(entry.isAnonym() == anonym
+				&& ((fullName == null && entry.getFullName() == null) || (fullName != null && fullName.equals(entry.getFullName())))
+				&& ((nickName == null && entry.getNickName() == null) || (nickName != null && nickName.equals(entry.getNickName())))) {
+				return;
+			}
+			
+			RosterEntryImpl reloadedEntry = loadForUpdate(entry);
+			reloadedEntry.setFullName(fullName);
+			reloadedEntry.setNickName(nickName);
+			reloadedEntry.setAnonym(anonym);
+			dbInstance.getCurrentEntityManager().merge(reloadedEntry);
+			dbInstance.commit();
 		}
 	}
 	
-	private RosterEntryImpl loadForUpdate(OLATResourceable ores, Identity identity) {
+	private RosterEntryImpl load(OLATResourceable ores, Identity identity) {
 		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadIMRosterEntryForUpdate", RosterEntryImpl.class)
+				.createNamedQuery("loadIMRosterEntry", RosterEntryImpl.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.setParameter("identityKey", identity.getKey());
+		List<RosterEntryImpl> entries = query.getResultList();
+		if(entries.size() > 0) {
+			return entries.get(0);
+		}
+		return null;
+	}
+	
+	private RosterEntryImpl loadForUpdate(RosterEntryImpl rosterEntry) {
+		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadIMRosterEntryForUpdate", RosterEntryImpl.class)
+				.setParameter("entryKey", rosterEntry.getKey());
 		List<RosterEntryImpl> entries = query.getResultList();
 		if(entries.size() > 0) {
 			return entries.get(0);

@@ -150,8 +150,8 @@ public class InstantMessagingMainController extends BasicController implements G
 		listenTo(chatMgrCtrl);
 		newMsgIcon.put("chats", chatMgrCtrl.getInitialComponent());
 		
-		//listen to privat chat messages
-		imService.listenChat(getIdentity(), getPrivatListenToResourceable(), false, false, this);
+		//listen to private chat messages
+		imService.listenChat(getIdentity(), getPrivatListenToResourceable(), null, false, false, this);
 		
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		singleUserEventCenter.registerFor(this, getIdentity(), InstantMessagingService.ASSESSMENT_EVENT_ORES);
