@@ -196,6 +196,15 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertNotNull(displayName);
 		Assert.assertEquals(re.getDisplayname(), displayName);
 	}
+	@Test
+	public void lookupResource() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		OLATResource resource = repositoryManager.lookupRepositoryEntryResource(re.getKey());
+		Assert.assertNotNull(resource);
+		Assert.assertEquals(re.getOlatResource(), resource);
+	}
 	
 	@Test
 	public void queryByOwnerLimitAccess() {

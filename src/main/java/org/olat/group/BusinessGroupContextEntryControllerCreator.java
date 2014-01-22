@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.ui.BGControllerFactory;
@@ -45,6 +46,14 @@ import org.olat.resource.accesscontrol.AccessControlModule;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class BusinessGroupContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
+	
+	private BusinessGroup group;
+	private Boolean authorized;
+	
+	@Override
+	public ContextEntryControllerCreator clone() {
+		return new BusinessGroupContextEntryControllerCreator();
+	}
 
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
@@ -52,21 +61,10 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		OLATResourceable ores = ce.getOLATResourceable();
-
-		Long gKey = ores.getResourceableId();
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-
 		Controller ctrl = null;
-		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
-		if(bgroup != null) {
-			BGRightManager rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
-			if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
-					|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) 
-					|| rightManager.hasBGRight(Constants.PERMISSION_ACCESS, ureq.getIdentity(), bgroup.getResource())
-					|| isAccessControlled(bgroup)) {
-				ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup);
-			}
+		BusinessGroup bgroup = getBusinessGroup(ce);
+		if(bgroup != null && isAuthorized(ureq, bgroup)) {
+			ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup);
 		}
 		return ctrl;
 	}
@@ -76,27 +74,14 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 	 */
 	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		OLATResourceable ores = ce.getOLATResourceable();
-		Long gKey = ores.getResourceableId();
-		BusinessGroup bgroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(gKey);
+		BusinessGroup bgroup = getBusinessGroup(ce);
 		return bgroup == null ? "" : bgroup.getName();
 	}
 
 	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		OLATResourceable ores = ce.getOLATResourceable();
-		Long gKey = ores.getResourceableId();
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
-		if (bgroup == null) {
-			return false;
-		}	
-		BGRightManager rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
-		return ureq.getUserSession().getRoles().isOLATAdmin()
-				|| ureq.getUserSession().getRoles().isGroupManager() 
-				|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup)  
-				|| rightManager.hasBGRight(Constants.PERMISSION_ACCESS, ureq.getIdentity(), bgroup.getResource())
-				|| isAccessControlled(bgroup);
+		BusinessGroup bgroup = getBusinessGroup(ce);	
+		return bgroup != null && isAuthorized(ureq, bgroup);
 	}
 	
 	private boolean isAccessControlled(BusinessGroup bgroup) {
@@ -108,5 +93,26 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 			}
 		}
 		return false;
+	}
+	
+	private boolean isAuthorized(UserRequest ureq, BusinessGroup bgroup) {
+		if(authorized == null) {
+			authorized = ureq.getUserSession().getRoles().isOLATAdmin()
+				|| ureq.getUserSession().getRoles().isGroupManager() 
+				|| CoreSpringFactory.getImpl(BusinessGroupService.class).isIdentityInBusinessGroup(ureq.getIdentity(), bgroup)  
+				|| CoreSpringFactory.getImpl(BGRightManager.class).hasBGRight(Constants.PERMISSION_ACCESS, ureq.getIdentity(), bgroup.getResource())
+				|| isAccessControlled(bgroup);
+		}
+		return authorized.booleanValue();
+	}
+	
+	private BusinessGroup getBusinessGroup(ContextEntry ce) {
+		if(group == null) {
+			OLATResourceable ores = ce.getOLATResourceable();
+			Long gKey = ores.getResourceableId();
+			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			group = bgs.loadBusinessGroup(gKey);
+		}
+		return group;
 	}
 }

@@ -70,8 +70,9 @@ public class CourseDBMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		hres.setHeader("Content-Disposition","filename=\"" + StringHelper.urlEncodeISO88591(fileName) + "\"");
-		hres.setHeader("Content-Description",StringHelper.urlEncodeISO88591(fileName));
+		String encodedFileName = StringHelper.urlEncodeUTF8(fileName);
+		hres.setHeader("Content-Disposition","filename*=UTF-8''" + encodedFileName);
+		hres.setHeader("Content-Description",encodedFileName);
 
 	}
 

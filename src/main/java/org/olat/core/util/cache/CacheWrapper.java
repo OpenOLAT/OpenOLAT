@@ -89,6 +89,8 @@ public interface CacheWrapper<U, V extends Serializable> {
 	 */
 	public V put(U key, V value);
 	
+	public V putIfAbsent(U key, V value);
+	
 	/**
 	 * In the case of distributed cache, the list can be partial and
 	 * you must carefully setup your cache.

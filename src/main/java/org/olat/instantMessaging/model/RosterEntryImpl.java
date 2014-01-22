@@ -46,8 +46,9 @@ import org.olat.core.id.Persistable;
 @Table(name="o_im_roster_entry")
 @NamedQueries({
 	@NamedQuery(name="loadIMRosterEntryByIdentityandResource", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname"),
-	@NamedQuery(name="loadIMRosterEntryForUpdate", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname",
+	@NamedQuery(name="loadIMRosterEntryForUpdate", query="select entry from imrosterentry entry where entry.key=:entryKey",
 		lockMode=LockModeType.PESSIMISTIC_WRITE),
+	@NamedQuery(name="loadIMRosterEntry", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname"),
 	@NamedQuery(name="loadIMRosterEntryByResource", query="select entry from imrosterentry entry where entry.resourceId=:resid and entry.resourceTypeName=:resname")
 })
 public class RosterEntryImpl implements Persistable, CreateInfo {
@@ -55,8 +56,8 @@ public class RosterEntryImpl implements Persistable, CreateInfo {
 	private static final long serialVersionUID = -4265724240924748369L;
 
 	@Id
-  @GeneratedValue(generator = "system-uuid")
-  @GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	

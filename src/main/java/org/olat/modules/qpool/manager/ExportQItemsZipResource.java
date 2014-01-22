@@ -85,8 +85,9 @@ public class ExportQItemsZipResource implements MediaResource {
 		
 		String label = "ExportItems";
 		String file = StringHelper.transformDisplayNameToFileSystemName(label) + ".zip";
-		hres.setHeader("Content-Disposition","attachment; filename=\"" + StringHelper.urlEncodeISO88591(file) + "\"");			
-		hres.setHeader("Content-Description",StringHelper.urlEncodeISO88591(label));
+		String encodedFileName = StringHelper.urlEncodeUTF8(file);
+		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedFileName);			
+		hres.setHeader("Content-Description", encodedFileName);
 		
 		ZipOutputStream zout = null;
 		try {

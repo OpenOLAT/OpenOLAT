@@ -93,8 +93,8 @@ public class ArchiveResource implements MediaResource {
 				+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
 				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
 				+ ".zip";
-		String urlEncodedLabel = StringHelper.urlEncodeISO88591(label);
-		hres.setHeader("Content-Disposition","attachment; filename=\"" + urlEncodedLabel + "\"");			
+		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
+		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
 		hres.setHeader("Content-Description", urlEncodedLabel);
 		
 		ZipOutputStream zout = null;

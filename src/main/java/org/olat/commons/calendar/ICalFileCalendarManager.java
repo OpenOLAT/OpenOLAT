@@ -164,25 +164,20 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		String key = getKeyFor(type, calendarID);
 		Kalendar cal = calendarCache.get(key);
 		if(cal == null) {
-			//o_clusterOK by:cg
-			OLATResourceable calOres = OresHelper.createOLATResourceableType(getKeyFor(type,calendarID));
-			cal = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, new SyncerCallback<Kalendar>() {
-				public Kalendar execute() {
-					return getCalendarFromCache(type, calendarID);
-				}
-			});
+			cal = getCalendarFromCache(type, calendarID);
 		}
 		return cal;
 	}
 
 	private Kalendar getCalendarFromCache(final String callType, final String callCalendarID) {
-		String calKey = getKeyFor(callType,callCalendarID);
-		OLATResourceable calOres = OresHelper.createOLATResourceableType(calKey);		
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(calOres);
+		String calKey = getKeyFor(callType,callCalendarID);	
 		Kalendar cal = calendarCache.get(calKey);
 		if (cal == null) {
 			cal = loadOrCreateCalendar(callType, callCalendarID);
-			calendarCache.put(calKey, cal);
+			Kalendar cacheCal = calendarCache.putIfAbsent(calKey, cal);
+			if(cacheCal != null) {
+				cal = cacheCal;
+			}
 		}
 		return cal;
 	}

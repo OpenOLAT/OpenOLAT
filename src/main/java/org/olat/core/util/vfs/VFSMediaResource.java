@@ -27,14 +27,13 @@
 package org.olat.core.util.vfs;
 
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FilesInfoMBean;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
 public class VFSMediaResource implements MediaResource {
@@ -93,15 +92,12 @@ public class VFSMediaResource implements MediaResource {
 	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
 	 */
 	public void prepare(HttpServletResponse hres) {
-		//http headers are ASCII only therefore we encode filenames
-		String filename = "";
-		try {
-			filename = URLEncoder.encode(vfsLeaf.getName(), "utf-8");
-		} catch (UnsupportedEncodingException wontHappen) {
-			//nothing};
+		String filename = StringHelper.urlEncodeUTF8(vfsLeaf.getName());
+		if (unknownMimeType) {
+			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
+		} else {
+			hres.setHeader("Content-Disposition", "filename*=UTF-8''" + filename);
 		}
-		if (unknownMimeType) hres.setHeader("Content-Disposition", "attachment; filename=" + filename);
-		else hres.setHeader("Content-Disposition", "filename=" + filename);
 	}
 
 	public void release() {

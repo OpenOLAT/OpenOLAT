@@ -82,8 +82,8 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-1-" + UUID.randomUUID().toString());
 		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-2-" + UUID.randomUUID().toString());
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), chatter1.getKey());
-		imService.listenChat(chatter1, chatResource, false, false, dummyListener);
-		imService.listenChat(chatter2, chatResource, true, true, dummyListener);
+		imService.listenChat(chatter1, chatResource, null, false, false, dummyListener);
+		imService.listenChat(chatter2, chatResource, "Chatter-2", true, true, dummyListener);
 		dbInstance.commitAndCloseSession();
 
 		//check if the buddies listen to the chat
@@ -109,7 +109,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		//create a chat
 		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-3-" + UUID.randomUUID().toString());
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), chatter1.getKey());
-		imService.listenChat(chatter1, chatResource, false, false, new DummyListener());
+		imService.listenChat(chatter1, chatResource, null, false, false, new DummyListener());
 		dbInstance.commitAndCloseSession();
 		
 		BuddyStats stats = imService.getBuddyStats(chatter1);

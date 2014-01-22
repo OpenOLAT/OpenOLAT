@@ -53,8 +53,8 @@ public class RosterEntryView implements Persistable, CreateInfo {
 	private static final long serialVersionUID = -4265724240924748369L;
 
 	@Id
-  @GeneratedValue(generator = "system-uuid")
-  @GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="re_id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	

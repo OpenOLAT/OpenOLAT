@@ -141,7 +141,6 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 		
 		// register to chat events for this resource
-		imService.listenChat(getIdentity(), getOlatResourceable(), defaultAnonym, vip, this);
 		
 		if(privateReceiverKey == null) {
 			buddyList = new Roster(getIdentity().getKey());
@@ -150,8 +149,11 @@ public class ChatController extends BasicController implements GenericEventListe
 			//chat started as anonymous depending on configuratino
 			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, defaultAnonym, offerAnonymMode);
 			listenTo(rosterCtrl);
+			String nickName = rosterCtrl.getNickName();
+			imService.listenChat(getIdentity(), getOlatResourceable(), nickName, defaultAnonym, vip, this);
 		} else {
 			buddyList = null;
+			imService.listenChat(getIdentity(), getOlatResourceable(), null, defaultAnonym, vip, this);
 		}
 
 		chatPanelCtr = new FloatingResizableDialogController(ureq, getWindowControl(), mainVC,

@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 
 /**
@@ -36,12 +37,18 @@ import org.olat.core.id.context.DefaultContextEntryControllerCreator;
  * @author srosse
  */
 public class UserAdminContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
+	
+	@Override
+	public ContextEntryControllerCreator clone() {
+		return this;
+	}
 
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
 	 *      org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		return null;
 	}

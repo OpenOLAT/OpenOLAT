@@ -41,6 +41,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
+import org.olat.login.LoginModule;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -927,6 +928,31 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		sgmsi.setLastModified(cal.getTime());
 		dbInstance.getCurrentEntityManager().merge(sgmsi);
 		dbInstance.commitAndCloseSession();	
+	}
+	
+	@Test
+	public void updateToSaltedAuthentication() {
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("auth-c-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		
+		Authentication auth = securityManager.findAuthentication(ident, "OLAT");
+		String credentials = auth.getCredential();
+		Authentication updatedAuth = securityManager.updateCredentials(auth, "secret", LoginModule.getDefaultHashAlgorithm());
+		Assert.assertNotNull(auth);
+		Assert.assertNotNull(updatedAuth);
+		Assert.assertEquals(auth, updatedAuth);
+		Assert.assertFalse(credentials.equals(updatedAuth.getCredential()));
+		dbInstance.commitAndCloseSession();
+		
+		Authentication auth2 = securityManager.findAuthentication(ident, "OLAT");
+		String credentials2 = auth2.getCredential();
+		Authentication notUpdatedAuth = securityManager.updateCredentials(auth2, "secret", LoginModule.getDefaultHashAlgorithm());
+		Assert.assertNotNull(auth2);
+		Assert.assertNotNull(notUpdatedAuth);
+		Assert.assertSame(auth2, notUpdatedAuth);
+		Assert.assertEquals(credentials2, notUpdatedAuth.getCredential());
+		Assert.assertFalse(credentials.equals(notUpdatedAuth.getCredential()));
+		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test

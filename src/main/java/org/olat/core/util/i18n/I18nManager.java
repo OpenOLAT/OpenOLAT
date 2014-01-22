@@ -37,12 +37,13 @@ import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -51,6 +52,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -60,6 +62,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
@@ -131,9 +134,9 @@ public class I18nManager extends BasicManager {
 
 	// keys: bundlename ":" locale.toString() (e.g. "org.olat.admin:de_DE");
 	// values: PropertyFile
-	private Map<String, Properties> cachedBundles = new ConcurrentHashMap<String, Properties>();
-	private Map<String, String> cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
-	private Map<String, Set<String>> referencingBundlesIndex = new ConcurrentHashMap<String, Set<String>>();
+	private ConcurrentMap<String, Properties> cachedBundles = new ConcurrentHashMap<String, Properties>();
+	private ConcurrentMap<String, String> cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
+	private ConcurrentMap<String, Deque<String>> referencingBundlesIndex = new ConcurrentHashMap<String, Deque<String>>();
 	private boolean cachingEnabled = true;
 
 	private static FilenameFilter i18nFileFilter = new FilenameFilter() {
@@ -334,7 +337,7 @@ public class I18nManager extends BasicManager {
 		return properties.getProperty(key);
 	}
 
-	public synchronized void setAnnotation(I18nItem i18nItem, String annotation) {
+	public void setAnnotation(I18nItem i18nItem, String annotation) {
 		Properties properties = getPropertiesWithoutResolvingRecursively(null, i18nItem.getBundleName());
 		String key = i18nItem.getKey() + METADATA_ANNOTATION_POSTFIX;
 		if (StringHelper.containsNonWhitespace(annotation)) {
@@ -511,7 +514,7 @@ public class I18nManager extends BasicManager {
 				Properties properties = getResolvedProperties(searchLocale, bundleName);
 				Properties metadataProperties = getPropertiesWithoutResolvingRecursively(null, bundleName);
 				int bundlePriority = getBundlePriority(bundleName);
-				for (Map.Entry entry : properties.entrySet()) {
+				for (Map.Entry<Object,Object> entry : properties.entrySet()) {
 					String value = (String) entry.getValue();
 					Matcher m = p.matcher(value.toLowerCase());
 					if (m.find()) {
@@ -660,7 +663,7 @@ public class I18nManager extends BasicManager {
 	 * @param i18nItem
 	 * @param value
 	 */
-	public synchronized void saveOrUpdateI18nItem(I18nItem i18nItem, String value) {
+	public void saveOrUpdateI18nItem(I18nItem i18nItem, String value) {
 		Properties properties = getPropertiesWithoutResolvingRecursively(i18nItem.getLocale(), i18nItem.getBundleName());
 		// Add logging block to find bogus save issues
 		if (isLogDebugEnabled()) {
@@ -694,15 +697,13 @@ public class I18nManager extends BasicManager {
 		// this i18n item, rebuild them lazy on next demand.
 		if (cachingEnabled) {
 			String identifyer = buildI18nItemIdentifyer(i18nItem.getBundleName(), i18nItem.getKey());
-			synchronized (referencingBundlesIndex) { // VM scope, clustersave
-				Set<String> referencingBundles = referencingBundlesIndex.get(identifyer);
-				if (referencingBundles != null) {
-					// remove from index
-					referencingBundlesIndex.remove(identifyer);
-					// remove from bundles cache
-					for (String bundleName : referencingBundles) {
-						cachedBundles.remove(bundleName);
-					}
+			Deque<String> referencingBundles = referencingBundlesIndex.get(identifyer);
+			if (referencingBundles != null) {
+				// remove from index
+				referencingBundlesIndex.remove(identifyer);
+				// remove from bundles cache
+				for (String bundleName : referencingBundles) {
+					cachedBundles.remove(bundleName);
 				}
 			}
 		}
@@ -777,74 +778,69 @@ public class I18nManager extends BasicManager {
 
 	private Properties getProperties(Locale locale, String bundleName, boolean resolveRecursively, int recursionLevel) {
 		String key = calcPropertiesFileKey(locale, bundleName);
-//		if (isLogDebugEnabled()) logDebug("getProperties for key::" + key + ", resolveRecursively::" + resolveRecursively
-//				+ ", recursionLevel::" + recursionLevel, null);
-		Properties props;
-//		boolean logDebug = isLogDebugEnabled();
+		Properties props = cachedBundles.get(key);
 		boolean logDebug = false; // hide messaged for the moment until we find the other issue
 		// Try cache first, load if needed
 		// o_clusterOK by:fj i18n files are static, read-only in production
-		synchronized (cachedBundles) {
-			props = cachedBundles.get(key);
-			// Not loaded yet or use the unresolved version which is always read
-			// from disk. When caching is disabled, the cache will always return
-			// null (AlwaysEmptyMap).
-			if (props == null || !resolveRecursively) {
-				InputStream is = null;
-				try {
-					// Start with an empty property object
-					// Use a sorted properties object that saves the keys sorted alphabetically to disk
-					props = new SortedProperties();
-					//
-					// 1) Try to load the bundle from a configured source path
-					// This is also used to load the overlay properties
-					File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
-					if (baseDir != null) {
-						File f = getPropertiesFile(locale, bundleName, baseDir);
-						// if file exists load properties from file, otherwise
-						// proceed with 2)
-						if (f.exists()) {
-							is = new FileInputStream(f);
-							if (logDebug) logDebug("loading LocalStrings from file::" + f.getAbsolutePath(), null);
-						}
-					}
-					//
-					// 2) Try to load from classpath
-					String fileName = (locale == null ? METADATA_FILENAME : buildI18nFilename(locale));
-					String relPath = bundleName.replace('.', '/') + "/" + I18N_DIRNAME + "/" + fileName;
-					// No "/" at the beginning of the resource! since the
-					// resource will not be found within jars
-					if (is == null) {
-						ClassLoader classLoader = this.getClass().getClassLoader();
-						is = classLoader.getResourceAsStream(relPath);
-						if (logDebug && is != null) logDebug("loading LocalStrings from classpath relpath::" + relPath, null);
-					}
-					// Now load the properties from resource (file, classpath or
-					// langpacks)
-					if (is != null) {
-						props.load(is);
-					}
-				} catch (IOException e) {
-					throw new AssertException("LocalStrings for key::" + key + " could not be loaded", e);
-				} finally {
-					try {
-						if (is != null) is.close();
-					} catch (IOException e) {
-						// did our best
-					}
-				}
+		// Not loaded yet or use the unresolved version which is always read
+		// from disk. When caching is disabled, the cache will always return
+		// null (AlwaysEmptyMap).
+		if (props == null || !resolveRecursively) {
+			props = readPropertiesFile(locale, bundleName, key, logDebug);
 
-				// Try to resolve all keys within this properties and add to
-				// cache
-				if (resolveRecursively) {
-					resolvePropertiesInternalKeys(locale, bundleName, props, I18nModule.isOverlayEnabled(), recursionLevel);
-					cachedBundles.put(key, props);
-				}
-				if (locale == null) {
-					// Add metadata files to cache as well
-					cachedBundles.put(key, props);
+			// Try to resolve all keys within this properties and add to
+			// cache
+			if (resolveRecursively) {
+				resolvePropertiesInternalKeys(locale, bundleName, props, I18nModule.isOverlayEnabled(), recursionLevel);
+				cachedBundles.put(key, props);
+			}
+			if (locale == null) {
+				// Add metadata files to cache as well
+				cachedBundles.put(key, props);
+			}
+		}
+		return props;
+	}
+	
+	private Properties readPropertiesFile(Locale locale, String bundleName, String key, boolean logDebug) {
+		InputStream is = null;
+		Properties props = new SortedProperties();
+		try {
+			// Start with an empty property object
+			// Use a sorted properties object that saves the keys sorted alphabetically to disk
+			//
+			// 1) Try to load the bundle from a configured source path
+			// This is also used to load the overlay properties
+			File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+			if (baseDir != null) {
+				File f = getPropertiesFile(locale, bundleName, baseDir);
+				// if file exists load properties from file, otherwise
+				// proceed with 2)
+				if (f.exists()) {
+					is = new FileInputStream(f);
+					if (logDebug) logDebug("loading LocalStrings from file::" + f.getAbsolutePath(), null);
 				}
 			}
+			//
+			// 2) Try to load from classpath
+			String fileName = (locale == null ? METADATA_FILENAME : buildI18nFilename(locale));
+			String relPath = bundleName.replace('.', '/') + "/" + I18N_DIRNAME + "/" + fileName;
+			// No "/" at the beginning of the resource! since the
+			// resource will not be found within jars
+			if (is == null) {
+				ClassLoader classLoader = this.getClass().getClassLoader();
+				is = classLoader.getResourceAsStream(relPath);
+				if (logDebug && is != null) logDebug("loading LocalStrings from classpath relpath::" + relPath, null);
+			}
+			// Now load the properties from resource (file, classpath or
+			// langpacks)
+			if (is != null) {
+				props.load(is);
+			}
+		} catch (IOException e) {
+			throw new AssertException("LocalStrings for key::" + key + " could not be loaded", e);
+		} finally {
+			IOUtils.closeQuietly(is);
 		}
 		return props;
 	}
@@ -906,7 +902,7 @@ public class I18nManager extends BasicManager {
 		}
 		recursionLevel++;
 
-		StringBuffer resolvedValue = new StringBuffer();
+		StringBuilder resolvedValue = new StringBuilder();
 		int lastPos = 0;
 		Matcher matcher = resolvingKeyPattern.matcher(value);
 		while (matcher.find()) {
@@ -942,15 +938,17 @@ public class I18nManager extends BasicManager {
 			// add resolved key to references index
 			if (cachingEnabled) {
 				String identifyer = buildI18nItemIdentifyer(toResolvedBundle, toResolvedKey);
-				synchronized (referencingBundlesIndex) { // VM scope,
-					// clustersave
-					Set<String> referencingBundles = referencingBundlesIndex.get(identifyer);
-					if (referencingBundles == null) {
-						referencingBundles = new HashSet<String>();
-						referencingBundlesIndex.put(identifyer, referencingBundles);
+
+				Deque<String> referencingBundles = referencingBundlesIndex.get(identifyer);
+				if (referencingBundles == null) {
+					Deque<String> newReferencingBundles = new ArrayDeque<>();
+					referencingBundles = referencingBundlesIndex.putIfAbsent(identifyer, newReferencingBundles);
+					if(referencingBundles == null) {
+						referencingBundles = newReferencingBundles;
 					}
-					referencingBundles.add(bundleName);
 				}
+				referencingBundles.add(bundleName);
+
 			}
 		}
 		// Add rest of value
@@ -969,58 +967,57 @@ public class I18nManager extends BasicManager {
 	public void saveOrUpdateProperties(Properties properties, Locale locale, String bundleName) {
 		String key = calcPropertiesFileKey(locale, bundleName);
 		if (isLogDebugEnabled()) logDebug("saveOrUpdateProperties for key::" + key, null);
-		synchronized (cachedBundles) {
-			// 1) Save file to disk
-			File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
-			if (baseDir == null) { throw new AssertException("Can not save or update properties file for bundle::" + bundleName
-					+ " and language::" + locale.toString() + " - no base directory found, probably loaded from jar!"); }
-			File propertiesFile = getPropertiesFile(locale, bundleName, baseDir);
-			OutputStream fileStream = null;
+
+		// 1) Save file to disk
+		File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+		if (baseDir == null) { throw new AssertException("Can not save or update properties file for bundle::" + bundleName
+				+ " and language::" + locale.toString() + " - no base directory found, probably loaded from jar!"); }
+		File propertiesFile = getPropertiesFile(locale, bundleName, baseDir);
+		OutputStream fileStream = null;
+		try {
+			// create necessary directories
+			File directory = propertiesFile.getParentFile();
+			if (!directory.exists()) directory.mkdirs();
+			// write to file file now
+			fileStream = new FileOutputStream(propertiesFile);
+			properties.store(fileStream, null);
+			fileStream.flush();
+		} catch (FileNotFoundException e) {
+			throw new OLATRuntimeException("Could not save or update to file::" + propertiesFile.getAbsolutePath(), e);
+		} catch (IOException e) {
+			throw new OLATRuntimeException("Could not save or update to file::" + propertiesFile.getAbsolutePath()
+					+ ", maybe permission denied? Check your directory permissions", e);
+		} finally {
 			try {
-				// create necessary directories
-				File directory = propertiesFile.getParentFile();
-				if (!directory.exists()) directory.mkdirs();
-				// write to file file now
-				fileStream = new FileOutputStream(propertiesFile);
-				properties.store(fileStream, null);
-				fileStream.flush();
-			} catch (FileNotFoundException e) {
-				throw new OLATRuntimeException("Could not save or update to file::" + propertiesFile.getAbsolutePath(), e);
+				if (fileStream != null) fileStream.close();
 			} catch (IOException e) {
-				throw new OLATRuntimeException("Could not save or update to file::" + propertiesFile.getAbsolutePath()
-						+ ", maybe permission denied? Check your directory permissions", e);
-			} finally {
-				try {
-					if (fileStream != null) fileStream.close();
-				} catch (IOException e) {
-					logError("Could not close stream after save or update to file::" + propertiesFile.getAbsolutePath(), e);
-				}
+				logError("Could not close stream after save or update to file::" + propertiesFile.getAbsolutePath(), e);
 			}
-			// 2) Check if bundle was already in list of known bundles, add it
-			List<String> knownBundles = I18nModule.getBundleNamesContainingI18nFiles();
-			if (!knownBundles.contains(bundleName)) {
-				knownBundles.add(bundleName);
-				Collections.sort(knownBundles);
-			}
-			// 3) Replace in cache
-			// not loaded yet or a non-resolved file (trans-tool)
-			if (cachedBundles.containsValue(properties)) {
-				// nothing to do with the property, a reused property
-				// but remove from javascript translator cache.
-				// re-initialization will happen lazy
-				if (cachedJSTranslatorData.containsKey(key)) cachedJSTranslatorData.remove(key);
+		}
+		// 2) Check if bundle was already in list of known bundles, add it
+		List<String> knownBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		if (!knownBundles.contains(bundleName)) {
+			knownBundles.add(bundleName);
+			Collections.sort(knownBundles);
+		}
+		// 3) Replace in cache
+		// not loaded yet or a non-resolved file (trans-tool)
+		if (cachedBundles.containsValue(properties)) {
+			// nothing to do with the property, a reused property
+			// but remove from javascript translator cache.
+			// re-initialization will happen lazy
+			if (cachedJSTranslatorData.containsKey(key)) cachedJSTranslatorData.remove(key);
+		} else {
+			// Remove existing resolved property first from caches
+			if (cachedBundles.containsKey(key)) cachedBundles.remove(key);
+			if (cachedJSTranslatorData.containsKey(key)) cachedJSTranslatorData.remove(key);
+			// Add new version to cache
+			if (locale == null) {
+				// Add metadata file to cache
+				cachedBundles.put(key, properties);
 			} else {
-				// Remove existing resolved property first from caches
-				if (cachedBundles.containsKey(key)) cachedBundles.remove(key);
-				if (cachedJSTranslatorData.containsKey(key)) cachedJSTranslatorData.remove(key);
-				// Add new version to cache
-				if (locale == null) {
-					// Add metadata file to cache
-					cachedBundles.put(key, properties);
-				} else {
-					// Getting the resolved property will add it to cache
-					getResolvedProperties(locale, bundleName);
-				}
+				// Getting the resolved property will add it to cache
+				getResolvedProperties(locale, bundleName);
 			}
 		}
 	}
@@ -1034,41 +1031,41 @@ public class I18nManager extends BasicManager {
 	public void deleteProperties(Locale locale, String bundleName) {
 		String key = calcPropertiesFileKey(locale, bundleName);
 		if (isLogDebugEnabled()) logDebug("deleteProperties for key::" + key, null);
-		synchronized (cachedBundles) {
-			if (locale != null) { // metadata files are not in cache
-				// 1) Remove from cache first
-				if (cachedBundles.containsKey(key)) {
-					cachedBundles.remove(key);
-					// Remove also from javascript translator cache.
-					// initialization will happen lazy
-					if (cachedJSTranslatorData.containsKey(key)) cachedJSTranslatorData.remove(key);
-				}
-			}
-			// 2) Remove from filesystem
-			File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
-			if (baseDir == null) {
-				if (baseDir == null) { throw new AssertException("Can not delete properties file for bundle::" + bundleName + " and language::"
-						+ locale.toString() + " - no base directory found, probably loaded from jar!"); }
-			}
-			File f = getPropertiesFile(locale, bundleName, baseDir);
-			if (f.exists()) f.delete();
-			// 3) Check if for this bundle any other language file exists, if
-			// not remove
-			// the bundle from the list of translatable bundles
-			List<String> knownBundles = I18nModule.getBundleNamesContainingI18nFiles();
-			Set<String> knownLangs = I18nModule.getAvailableLanguageKeys();
-			boolean foundOther = false;
-			for (String lang : knownLangs) {
-				f = getPropertiesFile(getLocaleOrDefault(lang), bundleName, baseDir);
-				if (f.exists()) {
-					foundOther = true;
-					break;
-				}
-			}
-			if (!foundOther) {
-				knownBundles.remove(bundleName);
+
+		if (locale != null) { // metadata files are not in cache
+			// 1) Remove from cache first
+			if (cachedBundles.containsKey(key)) {
+				cachedBundles.remove(key);
+				// Remove also from javascript translator cache.
+				// initialization will happen lazy
+				if (cachedJSTranslatorData.containsKey(key)) cachedJSTranslatorData.remove(key);
 			}
 		}
+		// 2) Remove from filesystem
+		File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+		if (baseDir == null) {
+			if (baseDir == null) { throw new AssertException("Can not delete properties file for bundle::" + bundleName + " and language::"
+					+ locale.toString() + " - no base directory found, probably loaded from jar!"); }
+		}
+		File f = getPropertiesFile(locale, bundleName, baseDir);
+		if (f.exists()) f.delete();
+		// 3) Check if for this bundle any other language file exists, if
+		// not remove
+		// the bundle from the list of translatable bundles
+		List<String> knownBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		Set<String> knownLangs = I18nModule.getAvailableLanguageKeys();
+		boolean foundOther = false;
+		for (String lang : knownLangs) {
+			f = getPropertiesFile(getLocaleOrDefault(lang), bundleName, baseDir);
+			if (f.exists()) {
+				foundOther = true;
+				break;
+			}
+		}
+		if (!foundOther) {
+			knownBundles.remove(bundleName);
+		}
+
 	}
 
 	/**
@@ -1094,7 +1091,7 @@ public class I18nManager extends BasicManager {
 		String jsTranslatorData = cachedJSTranslatorData.get(cacheKey);
 		// Build the js data if it does not exist yet
 		if (jsTranslatorData == null) {
-			StringBuffer data = new StringBuffer();
+			StringBuilder data = new StringBuilder();
 			// we build an js object with key-value pairs
 			data.append("var transData = {");
 			Locale referenceLocale = I18nModule.getFallbackLocale();
@@ -1558,11 +1555,9 @@ public class I18nManager extends BasicManager {
 	 * Remove all bundles from caches to force reload from filesystem
 	 */
 	void clearCaches() {
-		synchronized (cachedBundles) {
-			cachedBundles.clear();
-			cachedJSTranslatorData.clear();
-			referencingBundlesIndex.clear();
-		}
+		cachedBundles.clear();
+		cachedJSTranslatorData.clear();
+		referencingBundlesIndex.clear();
 	}
 
 	/**
@@ -1574,11 +1569,11 @@ public class I18nManager extends BasicManager {
 		if (useCache) {
 			cachedBundles = new ConcurrentHashMap<String, Properties>();
 			cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
-			referencingBundlesIndex = new ConcurrentHashMap<String, Set<String>>();
+			referencingBundlesIndex = new ConcurrentHashMap<String, Deque<String>>();
 		} else {
 			cachedBundles = new AlwaysEmptyMap<String, Properties>();
 			cachedJSTranslatorData = new AlwaysEmptyMap<String, String>();
-			referencingBundlesIndex = new AlwaysEmptyMap<String, Set<String>>();
+			referencingBundlesIndex = new AlwaysEmptyMap<String, Deque<String>>();
 		}
 		this.cachingEnabled = useCache;
 	}
@@ -1817,7 +1812,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public Set<String> sarchForAvailableLanguagesInJarFile(File jarFile, boolean checkForExecutables) {
 		Set<String> foundLanguages = new TreeSet<String>();
-		JarFile jar;
+		JarFile jar = null;
 		try {
 			jar = new JarFile(jarFile);
 			Enumeration<JarEntry> jarEntries = jar.entries();
@@ -1841,6 +1836,8 @@ public class I18nManager extends BasicManager {
 			}
 		} catch (IOException e) {
 			throw new OLATRuntimeException("Error when looking up i18n files in jar::" + jarFile.getAbsolutePath(), e);
+		} finally {
+			IOUtils.closeQuietly(jar);
 		}
 		return foundLanguages;
 	}
@@ -1857,7 +1854,7 @@ public class I18nManager extends BasicManager {
 		if (!I18nModule.isTransToolEnabled()) {
 			throw new AssertException("Programming error - can only copy i18n files from a language pack to the source when in translation mode");
 		}
-		JarFile jar;
+		JarFile jar = null;
 		try {
 			jar = new JarFile(jarFile);
 			Enumeration<JarEntry> jarEntries = jar.entries();
@@ -1896,7 +1893,9 @@ public class I18nManager extends BasicManager {
 			}
 		} catch (IOException e) {
 			throw new OLATRuntimeException("Error when copying up i18n files from a jar::" + jarFile.getAbsolutePath(), e);
-		}		
+		} finally {
+			IOUtils.closeQuietly(jar);
+		}
 	}
 
 	/**

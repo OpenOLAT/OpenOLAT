@@ -66,22 +66,20 @@ public class MapperDAO {
 	
 	public boolean updateConfiguration(String mapperId, Serializable mapper, int expirationTime) {
 		PersistedMapper m = loadForUpdate(mapperId);
-		if(m == null) {
-			return false;
+		if(m != null) {
+			String configuration = XStreamHelper.createXStreamInstance().toXML(mapper);
+			m.setXmlConfiguration(configuration);
+			Date currentDate = new Date();
+			m.setLastModified(currentDate);
+			if(expirationTime > 0) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(currentDate);
+				cal.add(Calendar.SECOND, expirationTime);
+				m.setExpirationDate(cal.getTime());
+			}
+			dbInstance.getCurrentEntityManager().merge(m);
 		}
-		
-		String configuration = XStreamHelper.createXStreamInstance().toXML(mapper);
-		m.setXmlConfiguration(configuration);
-		Date currentDate = new Date();
-		m.setLastModified(currentDate);
-		if(expirationTime > 0) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(currentDate);
-			cal.add(Calendar.SECOND, expirationTime);
-			m.setExpirationDate(cal.getTime());
-		}
-
-		dbInstance.getCurrentEntityManager().merge(m);
+		dbInstance.commit();
 		return true;
 	}
 	

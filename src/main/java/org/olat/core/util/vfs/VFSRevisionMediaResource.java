@@ -20,12 +20,11 @@
 package org.olat.core.util.vfs;
 
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.version.VFSRevision;
 
@@ -77,16 +76,12 @@ public class VFSRevisionMediaResource implements MediaResource {
 	}
 
 	public void prepare(HttpServletResponse hres) {
-		String filename = "";
-		try {
-			filename = URLEncoder.encode(revision.getName(), "utf-8");
-		} catch (UnsupportedEncodingException wontHappen) {
-			//nothing
+		String filename = StringHelper.urlEncodeUTF8(revision.getName());
+		if (forceDownload || unknownMimeType) {
+			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
+		} else {
+			hres.setHeader("Content-Disposition", "filename*=UTF-8''" + filename);
 		}
-		if (forceDownload || unknownMimeType)
-			hres.setHeader("Content-Disposition", "attachment; filename=" + filename);
-		else
-			hres.setHeader("Content-Disposition", "filename=" + filename);
 	}
 
 	public void release() {

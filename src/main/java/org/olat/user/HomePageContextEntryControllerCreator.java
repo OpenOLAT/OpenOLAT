@@ -26,6 +26,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLog;
@@ -44,11 +45,17 @@ import org.olat.core.logging.Tracing;
 public class HomePageContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 	private static final OLog log = Tracing.createLoggerFor(HomePageContextEntryControllerCreator.class);
 
+	@Override
+	public ContextEntryControllerCreator clone() {
+		return this;
+	}
+
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
 	 *      org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		Identity identity = extractIdentity(ce);
 		if (identity == null) return null;
@@ -64,6 +71,7 @@ public class HomePageContextEntryControllerCreator extends DefaultContextEntryCo
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
 	 */
+	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		Identity identity = extractIdentity(ce);
 		if (identity == null) return null;
