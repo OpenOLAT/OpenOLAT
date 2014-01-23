@@ -191,6 +191,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private final MarkManager markManager;
 	private final BusinessGroupService businessGroupService;
+	private final EfficiencyStatementManager efficiencyStatementManager;
 	
 	/**
 	 * Constructor for the run main controller
@@ -212,6 +213,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
+		efficiencyStatementManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 
 		this.course = course;
 		addLoggingResourceable(LoggingResourceable.wrap(course));
@@ -924,12 +926,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					assessmentChangedEventReceived = true;										
 				} else if (assessmentChangeType.equals(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED)) {
 					// update tools, maybe efficiency statement link has changed
-					removeAsListenerAndDispose(toolC);
-					toolC = initToolController(identity, null);
-					listenTo(toolC);
-					
-					Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-					columnLayoutCtr.setCol2(toolComp);
+					UserEfficiencyStatement es = efficiencyStatementManager
+							.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), identity);
+					toolC.setEnabled("command.efficiencystatement", (es != null));
 				}
 				// raise a flag to indicate refresh
 				needsRebuildAfterRunDone = true;
@@ -1096,8 +1095,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// data exists for user
 			myTool.addPopUpLink("efficiencystatement", translate("command.efficiencystatement"), "command.efficiencystatement", null,
 					"750", "800", false);
-			EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
-			UserEfficiencyStatement es = esm.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), identity);
+			UserEfficiencyStatement es = efficiencyStatementManager
+					.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), identity);
 			if (es == null) {
 				myTool.setEnabled("command.efficiencystatement", false);
 			}
