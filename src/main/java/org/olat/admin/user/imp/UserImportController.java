@@ -61,11 +61,13 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Description:<br>
- * TODO: Felix Class Description for UserImportController
+ * Bulk import and update of users.
+ * 
  * <P>
  * Initial Date: 17.08.2005 <br>
  * 
  * @author Felix, Roman Haag
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class UserImportController extends BasicController {
 
@@ -150,17 +152,23 @@ public class UserImportController extends BasicController {
 		return ident;
 	}
 	
-	private Identity doUpdateIdentity(UpdateIdentity singleUser, Boolean updatePassword) {
-		String password = singleUser.getPassword();
-		Identity identity = singleUser.getIdentity();
-		um.updateUserFromIdentity(identity);
+	private Identity doUpdateIdentity(UpdateIdentity userToUpdate, Boolean updateUsers, Boolean updatePassword) {
+		Identity identity;
+		if(updateUsers != null && updateUsers.booleanValue()) {
+			identity = userToUpdate.getIdentity(true);
+			um.updateUserFromIdentity(identity);
+		} else {
+			identity = userToUpdate.getIdentity();
+		}
+		
+		String password = userToUpdate.getPassword();
 		if(StringHelper.containsNonWhitespace(password) && updatePassword != null && updatePassword.booleanValue()) {
 			Authentication auth = securityManager.findAuthentication(identity, "OLAT");
 			if(auth != null) {
 				olatAuthManager.changePassword(getIdentity(), identity, password);
 			}
 		}
-		return singleUser.getIdentity();
+		return userToUpdate.getIdentity();
 	}
 
 	/**
@@ -191,12 +199,13 @@ public class UserImportController extends BasicController {
 						for (TransientIdentity newIdent:newIdents) {
 							doCreateAndPersistIdentity(newIdent);
 						}
-						
+
+						Boolean updateUsers = (Boolean)runContext.get("updateUsers");
 						Boolean updatePasswords = (Boolean)runContext.get("updatePasswords");
 						@SuppressWarnings("unchecked")
 						List<UpdateIdentity> updateIdents = (List<UpdateIdentity>) runContext.get("updateIdents");
 						for (UpdateIdentity updateIdent:updateIdents) {
-							doUpdateIdentity(updateIdent, updatePasswords);
+							doUpdateIdentity(updateIdent, updateUsers, updatePasswords);
 						}
 
 						@SuppressWarnings("unchecked")

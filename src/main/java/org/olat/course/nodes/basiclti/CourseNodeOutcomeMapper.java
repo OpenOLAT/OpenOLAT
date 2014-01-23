@@ -114,7 +114,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 		if(node instanceof BasicLTICourseNode) {
 			BasicLTICourseNode ltiNode = (BasicLTICourseNode)node;
 			Identity assessedId = getIdentity();
-			ScoreEvaluation eval = new ScoreEvaluation(null, null);
+			ScoreEvaluation eval = new ScoreEvaluation(0.0f, false);
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
 			ltiNode.updateUserScoreEvaluation(eval, userCourseEnv, assessedId, false);
 		}
