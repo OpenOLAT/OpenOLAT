@@ -63,6 +63,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -2211,22 +2212,30 @@ public class RepositoryManager extends BasicManager {
 	 * @param Identity identity
 	 */
 	public boolean isInstitutionalRessourceManagerFor(RepositoryEntry repositoryEntry, Identity identity) {
-		if(repositoryEntry == null || repositoryEntry.getOwnerGroup() == null) return false;
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		// list of owners
-		List<Identity> listIdentities = secMgr.getIdentitiesOfSecurityGroup(repositoryEntry.getOwnerGroup());
-		String currentUserInstitutionalName = identity.getUser().getProperty("institutionalName", null);
-		boolean isInstitutionalResourceManager = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_INSTORESMANAGER);
+		if(repositoryEntry == null || repositoryEntry.getOwnerGroup() == null) {
+			return false;
+		}
+
+		String currentUserInstitutionalName = identity.getUser().getProperty(UserConstants.INSTITUTIONALNAME, null);
+		if(!StringHelper.containsNonWhitespace(currentUserInstitutionalName)) {
+			return false;
+		}
+		
+		boolean isInstitutionalResourceManager = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_INSTORESMANAGER);
+		if(!isInstitutionalResourceManager) {
+			return false;
+		}
+		
 		boolean sameInstitutional = false;
-		String identInstitutionalName = "";
+		List<Identity> listIdentities = securityManager.getIdentitiesOfSecurityGroup(repositoryEntry.getOwnerGroup());
 		for (Identity ident : listIdentities) {
-			identInstitutionalName = ident.getUser().getProperty("institutionalName", null);
-			if ((identInstitutionalName != null) && (identInstitutionalName.equals(currentUserInstitutionalName))) {
+			String identInstitutionalName = ident.getUser().getProperty(UserConstants.INSTITUTIONALNAME, null);
+			if (identInstitutionalName != null && identInstitutionalName.equals(currentUserInstitutionalName)) {
 				sameInstitutional = true;
 				break;
 			}
 		}
-		return isInstitutionalResourceManager && sameInstitutional;
+		return sameInstitutional;
 	}
 	
 	public int countLearningResourcesAsStudent(Identity identity) {
