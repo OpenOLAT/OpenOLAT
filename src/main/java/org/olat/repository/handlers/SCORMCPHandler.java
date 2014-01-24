@@ -42,8 +42,8 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -108,23 +108,24 @@ public class SCORMCPHandler extends FileHandler implements RepositoryHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
-		if (re!=null) {
+	@Override
+	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+		if (re != null) {
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
 		}
-		
+		OLATResource res = re.getOlatResource();
+		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 		MainLayoutController realController = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, wControl, true, null, cpRoot,
 				res.getResourceableId(), null, "browse", "no-credit", false, null, false, false, false, null);
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, realController);
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, realController);
 		return wrapper; 
 	}
 
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get editor for an SCORM CP type where no editor is provided for this type.");
 	}
 

@@ -121,7 +121,8 @@ public class WebDocumentHandler extends FileHandler implements RepositoryHandler
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res,  UserRequest ureq, WindowControl wControl) {
+	@Override
+	public MainLayoutController createLaunchController(RepositoryEntry re,  UserRequest ureq, WindowControl wControl) {
 		/* For the time beeing, disable launching web ressources...
 		FileResourceManager frm = FileResourceManager.getInstance();
 		ureq.getDispatchResult().setResultingMediaResource(frm.getAsInlineMediaResource(res));
@@ -132,8 +133,9 @@ public class WebDocumentHandler extends FileHandler implements RepositoryHandler
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		throw new AssertException("a web document is not editable!!! res-id:"+res.getResourceableId());
+	@Override
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+		throw new AssertException("a web document is not editable!!! res-id:"+re.getResourceableId());
 	}
 
 	/**

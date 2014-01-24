@@ -86,7 +86,7 @@ public interface RepositoryHandler {
 	 * @param wControl
 	 * @return Controller able to launch resourceable.
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl);
+	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl);
 	
 	/**
 	 * Called if a user wants to edit a Resourceable that this handler can provide an editor for. 
@@ -97,7 +97,7 @@ public interface RepositoryHandler {
 	 * @param wControl
 	 * @return Controler able to edit resourceable.
 	 */
-	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl);
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl);
 	
 	/**
 	 * Called if a user wants to create a Resourceable via wizard.

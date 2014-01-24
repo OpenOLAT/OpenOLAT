@@ -222,8 +222,9 @@ public class PortfolioHandler implements RepositoryHandler {
 	 *      org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl control) {
-		return createLaunchController(res, ureq, control);
+	@Override
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control) {
+		return createLaunchController(re, ureq, control);
 	}
 
 	/**
@@ -231,11 +232,11 @@ public class PortfolioHandler implements RepositoryHandler {
 	 *      java.lang.String, org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq,
+	@Override
+	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq,
 			WindowControl wControl) {
-		RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		PortfolioStructureMap map = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(repoEntry.getOlatResource());
+		PortfolioStructureMap map = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(re.getOlatResource());
 		EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(ureq, map, ePFMgr);
 		Controller epCtr = EPUIFactory.createPortfolioStructureMapController(ureq, wControl, map, secCallback);
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, epCtr.getInitialComponent(), null);
@@ -244,7 +245,7 @@ public class PortfolioHandler implements RepositoryHandler {
 		}
 		layoutCtr.addDisposableChildController(epCtr);
 		//fxdiff VCRP-1: access control of learn resources
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
 		return wrapper;
 	}
 

@@ -207,7 +207,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @param showCourseConfigLink  Flag to enable/disable link to detail-page in tool menu. 
 	 */
 	public RunMainController(final UserRequest ureq, final WindowControl wControl, final ICourse course,
-			final boolean offerBookmark, final boolean showCourseConfigLink) {
+			final RepositoryEntry re, final boolean offerBookmark, final boolean showCourseConfigLink) {
 
 		super(ureq, wControl);
 		
@@ -218,7 +218,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		this.course = course;
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		this.courseTitle = course.getCourseTitle();
-		this.courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+		this.courseRepositoryEntry = re;
 		this.offerBookmark = offerBookmark;
 		this.showCourseConfigLink = showCourseConfigLink;
 		this.courseRunOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_COURSE_RUN, course.getResourceableId());

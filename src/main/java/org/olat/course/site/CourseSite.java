@@ -126,7 +126,7 @@ public class CourseSite extends AbstractSiteInstance {
 			// build up the context path for linked course
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, entry, new StateSite(this), wControl, true) ;	
 			
-			c = new RunMainController(ureq, bwControl, course, false, true);
+			c = new RunMainController(ureq, bwControl, course, entry, false, true);
 			BasicController disposeMsgController = new DisposedCourseSiteRestartController(ureq, wControl, entry);
 			((RunMainController) c).setDisposedMsgController(disposeMsgController);
 			if (!showToolController) {

@@ -901,7 +901,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				return;
 			}
 			//user activity logger is set by course factory
-			Controller editorController = typeToEdit.createEditorController(ores, ureq, dt.getWindowControl());
+			Controller editorController = typeToEdit.createEditorController(re, ureq, dt.getWindowControl());
 			if(editorController == null){
 				//editor could not be created -> warning is shown
 				return;

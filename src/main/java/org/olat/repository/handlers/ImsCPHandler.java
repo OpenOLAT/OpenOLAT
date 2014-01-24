@@ -60,6 +60,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 
 
@@ -130,7 +131,9 @@ public class ImsCPHandler extends FileHandler implements RepositoryHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+		OLATResource res = re.getOlatResource();
 		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 		LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
 		
@@ -158,8 +161,8 @@ public class ImsCPHandler extends FileHandler implements RepositoryHandler {
 		} else {
 			layoutCtr = CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper, deliveryOptions);
 		}
-		//fxdiff VCRP-1: access control of learn resources
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+		
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
 		return wrapper;
 	}
 
@@ -169,9 +172,10 @@ public class ImsCPHandler extends FileHandler implements RepositoryHandler {
 	 *      org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		// only unzips, if not already unzipped
-		OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(res);
+		OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(re.getOlatResource());
 
 		Quota quota = QuotaManager.getInstance().getCustomQuota(cpRoot.getRelPath());
 		if (quota == null) {
@@ -181,7 +185,7 @@ public class ImsCPHandler extends FileHandler implements RepositoryHandler {
 		VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota);
 		cpRoot.setLocalSecurityCallback(secCallback);
 
-		return new CPEditMainController(ureq, wControl, cpRoot, res);
+		return new CPEditMainController(ureq, wControl, cpRoot, re.getOlatResource());
 	}
 
 	/**
