@@ -790,7 +790,7 @@ public class RepositoryManager extends BasicManager {
 		if(reloadedRe == null) return;
 		if(previousLastUsage == null || previousLastUsage.getTime() < (System.currentTimeMillis() - (60 * 60 * 1000))) {
 			LifeCycleManager lcManager = LifeCycleManager.createInstanceFor(reloadedRe);
-			if (lcManager.lookupLifeCycleEntry(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION) != null) {
+			if (lcManager.hasLifeCycleEntry(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION)) {
 				log.audit("Repository-Deletion: Remove from delete-list repositoryEntry=" + reloadedRe);
 				lcManager.deleteTimestampFor(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION);
 			}

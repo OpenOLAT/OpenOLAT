@@ -28,12 +28,13 @@ package org.olat.commons.lifecycle;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Encoder;
 
 
@@ -41,11 +42,12 @@ import org.olat.core.util.Encoder;
  *
  * @author Christian Guretzki
  */
-public class LifeCycleManager extends BasicManager {
+public class LifeCycleManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(LifeCycleManager.class);
 
-	private Long   persistentRef;
+	private Long persistentRef;
 	private String persistentTypeName;
-
 
 	/**
 	 * 
@@ -95,43 +97,70 @@ public class LifeCycleManager extends BasicManager {
 			updateLifeCycleEntry(entry);
 		}
 	}
+	
+	public boolean hasLifeCycleEntry(String action) {
+		return hasLifeCycleEntry(action, null);
+	}
+	
+	public boolean hasLifeCycleEntry(String action, String userValue) {
+		StringBuilder sb = new StringBuilder(); 
+		sb.append("select count(e.key) from org.olat.commons.lifecycle.LifeCycleEntry as e ")
+		  .append("where e.action=:action and e.persistentTypeName=:persistentTypeName and e.persistentRef=:persistentRef");
+		if (userValue == null) {
+			sb.append(" and e.userValue is null");
+		} else {
+			sb.append(" and e.userValue=:userValue");
+		}
+		TypedQuery<Number> dbq = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("action", action)
+				.setParameter("persistentTypeName", persistentTypeName)
+				.setParameter("persistentRef", persistentRef);
+		if (userValue != null) {
+			dbq.setParameter("userValue", userValue);
+		}
+		Number count = dbq.getSingleResult();
+		return (count == null) ? false : (count.intValue() > 0);
+	}
 
 	public LifeCycleEntry lookupLifeCycleEntry(String action) {
 		return lookupLifeCycleEntry(action, null);
 	}
 	
 	public LifeCycleEntry lookupLifeCycleEntry(String action, String userValue) {
-		StringBuilder query = new StringBuilder("from org.olat.commons.lifecycle.LifeCycleEntry as e "); 
-		query.append("where e.action=:action and e.persistentTypeName=:persistentTypeName and e.persistentRef=:persistentRef");
+		StringBuilder sb = new StringBuilder(); 
+		sb.append("select e from org.olat.commons.lifecycle.LifeCycleEntry as e ")
+		  .append("where e.action=:action and e.persistentTypeName=:persistentTypeName and e.persistentRef=:persistentRef");
 		if (userValue == null) {
-			query.append(" and e.userValue=null");
+			sb.append(" and e.userValue is null");
 		} else {
-			query.append(" and e.userValue=:userValue");
+			sb.append(" and e.userValue=:userValue");
 		}
-		DBQuery dbq = DBFactory.getInstance().createQuery(query.toString());
-		dbq.setString("action", action);
-		dbq.setString("persistentTypeName", persistentTypeName);
-		dbq.setLong("persistentRef", persistentRef);
-		if (userValue != null) {
-			dbq.setString("userValue", userValue);
-		}
-		List lifeCycleEntries = dbq.list();
 		
-		if (lifeCycleEntries.size() == 0) {
+		TypedQuery<LifeCycleEntry> dbq = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), LifeCycleEntry.class)
+				.setParameter("action", action)
+				.setParameter("persistentTypeName", persistentTypeName)
+				.setParameter("persistentRef", persistentRef);
+		if (userValue != null) {
+			dbq.setParameter("userValue", userValue);
+		}
+		List<LifeCycleEntry> lifeCycleEntries = dbq.getResultList();
+		
+		if (lifeCycleEntries.isEmpty()) {
 			return null;
 		} else if (lifeCycleEntries.size() > 1) {
-			Tracing.logWarn("Found more than one lifeCycleObject with same parametert :" + lifeCycleEntries , this.getClass());
+			log.warn("Found more than one lifeCycleObject with same parametert :" + lifeCycleEntries);
 		}
-		return (LifeCycleEntry)lifeCycleEntries.get(0);
+		return lifeCycleEntries.get(0);
 	}
-	
 	
 	/**
 	 * Delete a LifeCycleEntry from the database
 	 * @param p
 	 */
 	public void deleteTimestampFor(String action) {
-		this.deleteTimestampFor(action, null);
+		deleteTimestampFor(action, null);
 	}
 
 	/**
@@ -151,7 +180,7 @@ public class LifeCycleManager extends BasicManager {
 	 */
 	public void deleteAllEntriesForPersistentObject() {
 		// TODO:
-		Tracing.logError("NOT IMPLEMENTED YET !!!!!!!!!!!", this.getClass());
+		log.error("NOT IMPLEMENTED YET !!!!!!!!!!!");
 	}
 
 	/**
@@ -183,5 +212,4 @@ public class LifeCycleManager extends BasicManager {
 	private void updateLifeCycleEntry(LifeCycleEntry entry) {
 		DBFactory.getInstance().updateObject(entry);
 	}
-
 }
