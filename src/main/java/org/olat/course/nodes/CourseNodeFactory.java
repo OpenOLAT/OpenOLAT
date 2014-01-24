@@ -151,7 +151,7 @@ public class CourseNodeFactory {
 				return;
 			}
 			//user activity logger is set by course factory
-			Controller editorController = typeToEdit.createEditorController(ores, ureq, dt.getWindowControl());
+			Controller editorController = typeToEdit.createEditorController(repositoryEntry, ureq, dt.getWindowControl());
 			if(editorController == null){
 				//editor could not be created -> warning is shown
 				return;

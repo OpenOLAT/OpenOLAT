@@ -43,7 +43,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.fileresource.types.BlogFileResource;
@@ -409,10 +408,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 					throw new OLATRuntimeException(RepositoryDetailsController.class, sb.toString(), null);
 				}
 				// do skip the increment launch counter, this is only a preview!
-				OLATResourceable ores = repositoryEntry.getOlatResource();
-				
 				removeAsListenerAndDispose(previewCtr);
-				previewCtr = typeToLaunch.createLaunchController(ores, ureq, getWindowControl());
+				previewCtr = typeToLaunch.createLaunchController(repositoryEntry, ureq, getWindowControl());
 				listenTo(previewCtr);
 				
 				removeAsListenerAndDispose(previewModalCtr);

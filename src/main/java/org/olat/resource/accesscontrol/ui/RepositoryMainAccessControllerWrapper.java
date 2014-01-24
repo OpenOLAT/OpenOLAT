@@ -33,12 +33,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ACUIFactory;
 import org.olat.resource.accesscontrol.AccessResult;
@@ -59,7 +57,7 @@ public class RepositoryMainAccessControllerWrapper extends MainLayoutBasicContro
 	private Controller accessController;
 	private final MainLayoutController resController;
 
-	public RepositoryMainAccessControllerWrapper(UserRequest ureq, WindowControl wControl, OLATResourceable res, MainLayoutController resController) {
+	public RepositoryMainAccessControllerWrapper(UserRequest ureq, WindowControl wControl, RepositoryEntry re, MainLayoutController resController) {
 		super(ureq, wControl);
 		
 		contentP = new Panel("wrapperPanel");
@@ -68,7 +66,6 @@ public class RepositoryMainAccessControllerWrapper extends MainLayoutBasicContro
 		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
 			contentP.setContent(resController.getInitialComponent());
 		} else {
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 			// guest are allowed to see resource with BARG 
 			if(re.getAccess() == RepositoryEntry.ACC_USERS_GUESTS && ureq.getUserSession().getRoles().isGuestOnly()) {
 				contentP.setContent(resController.getInitialComponent());

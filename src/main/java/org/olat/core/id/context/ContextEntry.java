@@ -39,12 +39,18 @@ import org.olat.core.id.OLATResourceable;
  * @author Felix Jost
  */
 public interface ContextEntry extends Cloneable {
+	
 	public OLATResourceable getOLATResourceable();
+	
+	/**
+	 * Use it to replace an OresHelper generate resourceable with
+	 * the real object.
+	 * @param ores
+	 */
+	public void upgradeOLATResourceable(OLATResourceable ores);
 
-	//fxdiff BAKS-7 Resume function
 	public StateEntry getTransientState();
 
-	//fxdiff BAKS-7 Resume function
 	public void setTransientState(StateEntry state);
 	
 	public ContextEntry clone();

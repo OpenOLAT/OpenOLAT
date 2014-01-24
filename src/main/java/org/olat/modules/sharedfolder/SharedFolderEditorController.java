@@ -37,11 +37,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 
 /**
  * Initial Date:  Aug 29, 2005 <br>
@@ -68,7 +66,7 @@ public class SharedFolderEditorController extends DefaultController {
 	 * @param ureq
 	 * @param wControl
 	 */
-	public SharedFolderEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	public SharedFolderEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		super(wControl);
 		
 		translator = Util.createPackageTranslator(SharedFolderEditorController.class, ureq.getLocale());
@@ -76,7 +74,7 @@ public class SharedFolderEditorController extends DefaultController {
 		vcEdit = new VelocityContainer("main", VELOCITY_ROOT + "/index.html", translator, this);
 		previewButton = LinkFactory.createButtonSmall("command.preview", vcEdit, this);
 		
-		re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
+		this.re = re;
 		sharedFolder = SharedFolderManager.getInstance().getNamedSharedFolder(re, false);
 		folderRunController = new FolderRunController(sharedFolder, true, true, false, ureq, getWindowControl());
 		vcEdit.put("folder", folderRunController.getInitialComponent());

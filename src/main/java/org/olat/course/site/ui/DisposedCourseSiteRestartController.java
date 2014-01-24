@@ -86,7 +86,7 @@ public class DisposedCourseSiteRestartController extends BasicController {
 			}
 			
 			ICourse course = CourseFactory.loadCourse(ores);
-			RunMainController c = new RunMainController(ureq, getWindowControl(), course, false, true);
+			RunMainController c = new RunMainController(ureq, getWindowControl(), course, courseRepositoryEntry, false, true);
 			panel.setContent(c.getInitialComponent());
 		}
 	}

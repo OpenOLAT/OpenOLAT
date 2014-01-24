@@ -228,7 +228,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 					return;
 				}
 				//user activity logger is set by course factory
-				Controller editorController = typeToEdit.createLaunchController(ores, ureq, dt.getWindowControl());
+				Controller editorController = typeToEdit.createLaunchController(repositoryEntry, ureq, dt.getWindowControl());
 				if(editorController == null){
 					//editor could not be created -> warning is shown
 					return;

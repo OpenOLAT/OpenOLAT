@@ -56,6 +56,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
@@ -140,11 +141,12 @@ public class SharedFolderHandler implements RepositoryHandler {
 	 * @param wControl
 	 * @return Controller
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+		OLATResource res = re.getOlatResource();
 		VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
 
-		Identity identity = ureq.getIdentity();
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);		
+		Identity identity = ureq.getIdentity();	
 		boolean canEdit = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)
 						|| RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re) 
 						|| BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, re.getTutorGroup())
@@ -152,14 +154,14 @@ public class SharedFolderHandler implements RepositoryHandler {
 				
 		Controller sfdCtr;
 		if(canEdit) {
-			sfdCtr = new SharedFolderEditorController(res, ureq, wControl);
+			sfdCtr = new SharedFolderEditorController(re, ureq, wControl);
 		} else {
 			sfdCtr = new SharedFolderDisplayController(ureq, wControl, sfContainer, res);
 		}	
 		// use on column layout
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, sfdCtr.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(sfdCtr); // dispose content on layout dispose
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
 		return wrapper;
 	}
 
@@ -175,8 +177,9 @@ public class SharedFolderHandler implements RepositoryHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable
 	 *      org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		Controller sharedFolderCtr = new SharedFolderEditorController(res, ureq, wControl);
+	@Override
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+		Controller sharedFolderCtr = new SharedFolderEditorController(re, ureq, wControl);
 		// use on column layout
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, sharedFolderCtr.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(sharedFolderCtr); // dispose content on layout dispose
