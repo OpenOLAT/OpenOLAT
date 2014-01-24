@@ -527,7 +527,7 @@ public class BusinessControlFactory {
 class MyContextEntry implements ContextEntry, Serializable {
 
 	private static final long serialVersionUID = 949522581806327579L;
-	private final OLATResourceable olatResourceable;
+	private OLATResourceable olatResourceable;
 
 	//fxdiff BAKS-7 Resume function
 	private StateEntry state;
@@ -542,7 +542,12 @@ class MyContextEntry implements ContextEntry, Serializable {
 	public OLATResourceable getOLATResourceable() {
 		return olatResourceable;
 	}
-	
+
+	@Override
+	public void upgradeOLATResourceable(OLATResourceable ores) {
+		olatResourceable = ores;
+	}
+
 	@Override
 	//fxdiff BAKS-7 Resume function
 	public StateEntry getTransientState() {

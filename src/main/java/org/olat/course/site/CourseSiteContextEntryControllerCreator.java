@@ -129,9 +129,13 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	
 	private RepositoryEntry getRepositoryEntry(ContextEntry ce) {
 		if(repoEntry == null) {
-			OLATResourceable ores = ce.getOLATResourceable();
-			RepositoryManager rm = RepositoryManager.getInstance();
-			repoEntry = rm.lookupRepositoryEntry(ores.getResourceableId());
+			if(ce.getOLATResourceable() instanceof RepositoryEntry) {
+				repoEntry = (RepositoryEntry)ce.getOLATResourceable();
+			} else {
+				OLATResourceable ores = ce.getOLATResourceable();
+				RepositoryManager rm = RepositoryManager.getInstance();
+				repoEntry = rm.lookupRepositoryEntry(ores.getResourceableId());
+			}
 		}
 		return repoEntry;
 	}
