@@ -36,8 +36,8 @@ import org.olat.group.BusinessGroupMemberView;
  *
  */
 @Entity
-@Table(name="o_gp_visible_owner_v")
-public class BusinessGroupOwnerViewImpl implements BusinessGroupMemberView, Persistable {
+@Table(name="o_gp_contact_participant_v")
+public class ContactParticipantView implements BusinessGroupMemberView, Persistable {
 
 	private static final long serialVersionUID = 5125563005863650603L;
 
@@ -51,14 +51,15 @@ public class BusinessGroupOwnerViewImpl implements BusinessGroupMemberView, Pers
 	private Long groupKey;
 	@Column(name="bg_name", nullable=false, insertable=true, updatable=false)
 	private String groupName;
-	@Column(name="bg_owner_member_id", nullable=false, insertable=true, updatable=false)
+	@Column(name="bg_part_member_id", nullable=false, insertable=true, updatable=false)
 	private Long identityKey;
-	@Column(name="bg_owner_member_name", nullable=false, insertable=true, updatable=false)
+	@Column(name="bg_part_member_name", nullable=false, insertable=true, updatable=false)
 	private String username;
 	@Column(name="bg_owner_sec_id", nullable=false, insertable=true, updatable=false)
 	private Long ownerSecGroupKey;
 	@Column(name="bg_part_sec_id", nullable=false, insertable=true, updatable=false)
 	private Long participantSecGroupKey;
+
 
 	@Override
 	public Long getKey() {
@@ -127,8 +128,8 @@ public class BusinessGroupOwnerViewImpl implements BusinessGroupMemberView, Pers
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof BusinessGroupOwnerViewImpl) {
-			BusinessGroupOwnerViewImpl msg = (BusinessGroupOwnerViewImpl)obj;
+		if(obj instanceof ContactParticipantView) {
+			ContactParticipantView msg = (ContactParticipantView)obj;
 			return key != null && key.equals(msg.key);
 		}
 		return false;

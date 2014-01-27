@@ -45,7 +45,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.model.DisplayMembers;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -122,8 +121,8 @@ public class ContactsTest extends OlatJerseyTestCase {
     g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
     
     //permission to see owners and participants
-    businessGroupService.updateDisplayMembers(g1, new DisplayMembers(false, false, false));
-    businessGroupService.updateDisplayMembers(g2, new DisplayMembers(true, true, false));
+    businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
+    businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);
     
     // members g1
     secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());
@@ -140,9 +139,9 @@ public class ContactsTest extends OlatJerseyTestCase {
 		RepositoryEntry c2 =  JunitTestHelper.createAndPersistRepositoryEntry();
     // groups
     g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
-    businessGroupService.updateDisplayMembers(g3, new DisplayMembers(false, true, false));
+    businessGroupService.updateDisplayMembers(g3, false, true, false, false, false, false, false);
     g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
-    businessGroupService.updateDisplayMembers(g4, new DisplayMembers(false, true, false));
+    businessGroupService.updateDisplayMembers(g4, false, true, false, false, false, false, false);
     // members -> default participants are visible
     secm.addIdentityToSecurityGroup(owner1, g3.getPartipiciantGroup());
     secm.addIdentityToSecurityGroup(part3, g3.getPartipiciantGroup());

@@ -34,7 +34,6 @@ import org.olat.group.area.BGArea;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
-import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.EnrollState;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -113,9 +112,10 @@ public interface BusinessGroupService {
 	public BusinessGroup updateBusinessGroup(Identity ureqIdentity, BusinessGroup group, String name, String description,
 			Integer minParticipants, Integer maxParticipants, Boolean waitingList, Boolean autoCloseRanks);
 	
-	public DisplayMembers getDisplayMembers(BusinessGroup group);
-	
-	public void updateDisplayMembers(BusinessGroup group, DisplayMembers displayMembers);
+	public BusinessGroup updateDisplayMembers(BusinessGroup group,
+			boolean ownersIntern, boolean participantsIntern, boolean waitingListIntern,
+			boolean ownersPublis, boolean participantsPublic, boolean waitingListPublic,
+			boolean download);
 	
 	/**
 	 * Delete a business group from the persistence store

@@ -92,8 +92,10 @@
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>
 		<class>org.olat.course.assessment.model.UserCourseInfosImpl</class>
-		<class>org.olat.group.model.BusinessGroupParticipantViewImpl</class>
-		<class>org.olat.group.model.BusinessGroupOwnerViewImpl</class>
+		<class>org.olat.group.model.ContactParticipantView</class>
+		<class>org.olat.group.model.ContactOwnerView</class>
+		<class>org.olat.group.model.ContactKeyParticipantView</class>
+		<class>org.olat.group.model.ContactKeyOwnerView</class>
 		<class>org.olat.group.model.BusinessGroupLazyImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryLifecycle</class>
 		<class>org.olat.repository.model.ParticipantRepositoryEntryShort</class>

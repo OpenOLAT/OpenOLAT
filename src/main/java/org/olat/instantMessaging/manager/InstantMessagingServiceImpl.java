@@ -44,8 +44,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMemberView;
 import org.olat.group.DeletableGroupData;
 import org.olat.group.manager.ContactDAO;
-import org.olat.group.model.BusinessGroupOwnerViewImpl;
-import org.olat.group.model.BusinessGroupParticipantViewImpl;
+import org.olat.group.model.ContactOwnerView;
+import org.olat.group.model.ContactParticipantView;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageNotification;
@@ -268,14 +268,14 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		List<BuddyGroup> groups = new ArrayList<BuddyGroup>(25);
 		Map<Long,BuddyGroup> groupMap = new HashMap<Long,BuddyGroup>();
 		Map<Long, String> identityKeyToStatus = new HashMap<Long, String>();
-		List<BusinessGroupOwnerViewImpl> ownerList = contactDao.getGroupOwners(me);
+		List<ContactOwnerView> ownerList = contactDao.getGroupOwners(me);
 		collectMembersStatus(ownerList, identityKeyToStatus);
-		List<BusinessGroupParticipantViewImpl> participantList = contactDao.getParticipants(me);
+		List<ContactParticipantView> participantList = contactDao.getParticipants(me);
 		collectMembersStatus(participantList, identityKeyToStatus);
-		for(BusinessGroupOwnerViewImpl owner:ownerList) {
+		for(ContactOwnerView owner:ownerList) {
 			addBuddyToGroupList(owner, me, groupMap, groups, identityKeyToStatus, true, offlineUsers);
 		}
-		for(BusinessGroupParticipantViewImpl participant:participantList) {
+		for(ContactParticipantView participant:participantList) {
 			addBuddyToGroupList(participant, me, groupMap, groups, identityKeyToStatus, false, offlineUsers);
 		}
 		

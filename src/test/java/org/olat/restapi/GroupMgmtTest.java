@@ -68,7 +68,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.model.DisplayMembers;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
@@ -168,8 +167,8 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
     g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
     
     //permission to see owners and participants
-    businessGroupService.updateDisplayMembers(g1, new DisplayMembers(false, false, false));
-    businessGroupService.updateDisplayMembers(g2, new DisplayMembers(true, true, false));
+    businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
+    businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);
     
     // members g1
     secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());
@@ -492,10 +491,9 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO));
 		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_WIKI));
 		//check display members
-		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(bg);
-		assertTrue(displayMembers.isShowOwners());
-		assertFalse(displayMembers.isShowParticipants());
-		assertFalse(displayMembers.isShowWaitingList());
+		assertTrue(bg.isOwnersVisibleIntern());
+		assertFalse(bg.isParticipantsVisibleIntern());
+		assertFalse(bg.isWaitingListVisibleIntern());
 	}
 	
 	@Test

@@ -44,6 +44,13 @@ create table if not exists o_gp_business (
    maxparticipants integer,
    waitinglist_enabled bit,
    autocloseranks_enabled bit,
+   ownersintern bit not null default 0,
+   participantsintern bit not null default 0,
+   waitingintern bit not null default 0,
+   ownerspublic bit not null default 0,
+   participantspublic bit not null default 0,
+   waitingpublic bit not null default 0,
+   downloadmembers bit not null default 0,
    groupcontext_fk bigint,
    fk_resource bigint unique,
    fk_ownergroup bigint unique,
@@ -1504,7 +1511,8 @@ select
   where re1.repositoryentry_id is not null or re2.repositoryentry_id is not null
 ;
 
-create or replace view o_gp_visible_participant_v as (
+-- contacts
+create or replace view o_gp_contact_participant_v as
    select
       bg_part_member.id as membership_id,
       bgroup.group_id as bg_id,
@@ -1514,12 +1522,12 @@ create or replace view o_gp_visible_participant_v as (
       bg_part_member.identity_id as bg_part_member_id,
       ident.name as bg_part_member_name 
    from o_gp_business as bgroup
-   inner join o_property as bconfig on (bconfig.grp = bgroup.group_id and bconfig.name = 'displayMembers' and bconfig.category = 'config' and bconfig.longValue in (2,3,6,7))
    inner join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
    inner join o_bs_identity as ident on (bg_part_member.identity_id = ident.id)
- );
+   where bgroup.participantsintern=1
+;
    
-create or replace view o_gp_visible_owner_v as ( 
+create or replace view o_gp_contact_owner_v as
    select
       bg_owner_member.id as membership_id,
       bgroup.group_id as bg_id,
@@ -1529,10 +1537,32 @@ create or replace view o_gp_visible_owner_v as (
       bg_owner_member.identity_id as bg_owner_member_id,
       ident.name as bg_owner_member_name
    from o_gp_business as bgroup
-   inner join o_property as bconfig on (bconfig.grp = bgroup.group_id and bconfig.name = 'displayMembers' and bconfig.category = 'config' and bconfig.longValue in (1,3,5,7))
    inner join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
    inner join o_bs_identity as ident on (bg_owner_member.identity_id = ident.id)
-);
+   where bgroup.ownersintern=1
+;
+
+create or replace view o_gp_contactkey_participant_v as
+   select
+      bg_part_member.id as membership_id,
+      bgroup.fk_partipiciantgroup as bg_part_sec_id,
+      bgroup.fk_ownergroup as bg_owner_sec_id,
+      bg_part_member.identity_id as bg_part_member_id
+   from o_gp_business as bgroup
+   inner join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
+   where bgroup.participantsintern=1
+;
+   
+create or replace view o_gp_contactkey_owner_v as
+   select
+      bg_owner_member.id as membership_id,
+      bgroup.fk_partipiciantgroup as bg_part_sec_id,
+      bgroup.fk_ownergroup as bg_owner_sec_id,
+      bg_owner_member.identity_id as bg_owner_member_id
+   from o_gp_business as bgroup
+   inner join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
+   where bgroup.ownersintern=1
+;
 
 -- coaching
 create or replace view o_as_eff_statement_groups_v as (

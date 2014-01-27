@@ -89,7 +89,6 @@ import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.BusinessGroupMembershipImpl;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupMembershipsChanges;
-import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.EnrollState;
 import org.olat.group.model.IdentityGroupKey;
 import org.olat.group.model.MembershipModification;
@@ -98,7 +97,6 @@ import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
-import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
@@ -142,8 +140,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private BusinessGroupImportExport businessGroupImportExport;
 	@Autowired
 	private BusinessGroupArchiver businessGroupArchiver;
-	@Autowired
-	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
 	@Autowired
@@ -289,30 +285,25 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public DisplayMembers getDisplayMembers(BusinessGroup group) {
-		Property props = businessGroupPropertyManager.findProperty(group);
-		DisplayMembers displayMembers = new DisplayMembers();
-		displayMembers.setShowOwners(businessGroupPropertyManager.showOwners(props));
-		displayMembers.setShowParticipants(businessGroupPropertyManager.showPartips(props));
-		displayMembers.setShowWaitingList(businessGroupPropertyManager.showWaitingList(props));
-		displayMembers.setOwnersPublic(businessGroupPropertyManager.isOwnersPublic(props));
-		displayMembers.setParticipantsPublic(businessGroupPropertyManager.isPartipsPublic(props));
-		displayMembers.setWaitingListPublic(businessGroupPropertyManager.isWaitingListPublic(props));
-		displayMembers.setDownloadLists(businessGroupPropertyManager.isDownloadLists(props));
-		return displayMembers;
-	}
-
-	@Override
-	public void updateDisplayMembers(BusinessGroup group, DisplayMembers displayMembers) {
-		boolean showOwners = displayMembers.isShowOwners();
-		boolean showPartips = displayMembers.isShowParticipants();
-		boolean showWaitingList = displayMembers.isShowWaitingList();
-		boolean ownersPublic = displayMembers.isOwnersPublic();
-		boolean partipsPublic = displayMembers.isParticipantsPublic();
-		boolean waitingListPublic = displayMembers.isWaitingListPublic();
-		boolean downloadLists = displayMembers.isDownloadLists();
-		businessGroupPropertyManager.updateDisplayMembers(group, showOwners, showPartips, showWaitingList,
-				ownersPublic, partipsPublic, waitingListPublic, downloadLists);
+	public BusinessGroup updateDisplayMembers(BusinessGroup group,
+			boolean ownersIntern, boolean participantsIntern, boolean waitingListIntern,
+			boolean ownersPublic, boolean participantsPublic, boolean waitingListPublic,
+			boolean download) {
+		
+		BusinessGroup reloadedBusinessGroup = businessGroupDAO.loadForUpdate(group.getKey());
+		BusinessGroup mergedGroup = null;
+		if(reloadedBusinessGroup != null) {
+			reloadedBusinessGroup.setOwnersVisibleIntern(ownersIntern);
+			reloadedBusinessGroup.setOwnersVisiblePublic(ownersPublic);
+			reloadedBusinessGroup.setParticipantsVisibleIntern(participantsIntern);
+			reloadedBusinessGroup.setParticipantsVisiblePublic(participantsPublic);
+			reloadedBusinessGroup.setWaitingListVisibleIntern(waitingListIntern);
+			reloadedBusinessGroup.setWaitingListVisiblePublic(waitingListPublic);
+			reloadedBusinessGroup.setDownloadMembersLists(download);
+			mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
+		}
+		dbInstance.commit();
+		return mergedGroup;
 	}
 
 	@Override
@@ -399,7 +390,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		}
 		// 3. copy member visibility
 		if (copyMemberVisibility) {
-			businessGroupPropertyManager.copyConfigurationFromGroup(sourceBusinessGroup, newGroup);
+			newGroup.setOwnersVisibleIntern(sourceBusinessGroup.isOwnersVisibleIntern());
+			newGroup.setOwnersVisiblePublic(sourceBusinessGroup.isOwnersVisiblePublic());
+			newGroup.setParticipantsVisibleIntern(sourceBusinessGroup.isParticipantsVisibleIntern());
+			newGroup.setParticipantsVisiblePublic(sourceBusinessGroup.isParticipantsVisiblePublic());
+			newGroup.setWaitingListVisibleIntern(sourceBusinessGroup.isWaitingListVisibleIntern());
+			newGroup.setWaitingListVisiblePublic(sourceBusinessGroup.isWaitingListVisiblePublic());
+			newGroup.setDownloadMembersLists(sourceBusinessGroup.isDownloadMembersLists());
 		}
 		// 4. copy areas
 		if (copyAreas) {
@@ -746,9 +743,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			// 1) Delete all group properties
 			CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 			ct.deleteTools(group);// deletes everything concerning properties&collabTools
-			
-			// 1.b)delete display member property
-			businessGroupPropertyManager.deleteDisplayMembers(group);
 			// 1.c)delete user in security groups
 			//removeFromRepositoryEntrySecurityGroup(group);
 			// 2) Delete the group areas
