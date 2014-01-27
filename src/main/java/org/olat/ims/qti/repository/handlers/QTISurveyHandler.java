@@ -46,12 +46,12 @@ import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.AddFileResourceController;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.OLATResource;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
 
@@ -134,13 +134,13 @@ public class QTISurveyHandler extends QTIHandler {
 	 * @return Controller
 	 */
 	@Override
-	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		Controller runController;
+		OLATResource res = re.getOlatResource();
 		if (OnyxModule.isOnyxTest(res)) {
-			RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
-			runController = new OnyxRunController(ureq, wControl, entry, false);
+			runController = new OnyxRunController(ureq, wControl, re, false);
 		} else {
-			Resolver resolver = new ImsRepositoryResolver(res);
+			Resolver resolver = new ImsRepositoryResolver(re);
 			IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
 			runController = CoreSpringFactory.getImpl(IQManager.class)
 					.createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, secCallback, ureq, wControl);
@@ -155,7 +155,9 @@ public class QTISurveyHandler extends QTIHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+		OLATResource res = re.getOlatResource();
 		if (OnyxModule.isOnyxTest(res)) {
 			return null;
 		}

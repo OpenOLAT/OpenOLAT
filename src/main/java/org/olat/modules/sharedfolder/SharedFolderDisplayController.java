@@ -126,7 +126,6 @@ public class SharedFolderDisplayController extends DefaultController {
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Component source, Event event) {
 	// nothing to do
 	}

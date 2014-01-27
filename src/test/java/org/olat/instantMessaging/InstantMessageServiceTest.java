@@ -34,7 +34,6 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.model.DisplayMembers;
 import org.olat.instantMessaging.manager.InstantMessageDAO;
 import org.olat.instantMessaging.manager.InstantMessagePreferencesDAO;
 import org.olat.instantMessaging.manager.RosterDAO;
@@ -82,8 +81,8 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-1-" + UUID.randomUUID().toString());
 		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-2-" + UUID.randomUUID().toString());
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), chatter1.getKey());
-		imService.listenChat(chatter1, chatResource, false, false, dummyListener);
-		imService.listenChat(chatter2, chatResource, true, true, dummyListener);
+		imService.listenChat(chatter1, chatResource, null, false, false, dummyListener);
+		imService.listenChat(chatter2, chatResource, "Chatter-2", true, true, dummyListener);
 		dbInstance.commitAndCloseSession();
 
 		//check if the buddies listen to the chat
@@ -109,7 +108,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		//create a chat
 		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-3-" + UUID.randomUUID().toString());
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), chatter1.getKey());
-		imService.listenChat(chatter1, chatResource, false, false, new DummyListener());
+		imService.listenChat(chatter1, chatResource, null, false, false, new DummyListener());
 		dbInstance.commitAndCloseSession();
 		
 		BuddyStats stats = imService.getBuddyStats(chatter1);
@@ -130,7 +129,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(chatter1, group.getOwnerGroup());
 		securityManager.addIdentityToSecurityGroup(chatter2, group.getPartipiciantGroup());
 		dbInstance.commit();
-		businessGroupService.updateDisplayMembers(group, new DisplayMembers(false, false, false));
+		businessGroupService.updateDisplayMembers(group, false, false, false, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//check the buddies
@@ -152,7 +151,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(chatter1, group.getOwnerGroup());
 		securityManager.addIdentityToSecurityGroup(chatter2, group.getPartipiciantGroup());
 		dbInstance.commit();
-		businessGroupService.updateDisplayMembers(group, new DisplayMembers(true, true, false));
+		businessGroupService.updateDisplayMembers(group, true, true, false, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//check the buddies

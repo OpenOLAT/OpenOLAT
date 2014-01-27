@@ -34,7 +34,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -89,10 +88,9 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 		Assert.assertFalse(group1.getAutoCloseRanksEnabled().booleanValue());
 		Assert.assertFalse(group1.getWaitingListEnabled().booleanValue());
 		//check display members settings
-		DisplayMembers displayMembersGroup1 = businessGroupService.getDisplayMembers(group1);
-		Assert.assertTrue(displayMembersGroup1.isShowOwners());
-		Assert.assertTrue(displayMembersGroup1.isShowParticipants());
-		Assert.assertFalse(displayMembersGroup1.isShowWaitingList());
+		Assert.assertTrue(group1.isOwnersVisibleIntern());
+		Assert.assertTrue(group1.isParticipantsVisibleIntern());
+		Assert.assertFalse(group1.isWaitingListVisibleIntern());
 		//check collaboration tools
 		CollaborationTools toolGroup1 = CollaborationToolsFactory.getInstance().getCollaborationToolsIfExists(group1);
 		Assert.assertNotNull(toolGroup1);
@@ -118,10 +116,9 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 		Assert.assertTrue(group3.getWaitingListEnabled().booleanValue());
 		Assert.assertEquals(new Integer(25), group3.getMaxParticipants());
 		//check display members settings
-		DisplayMembers displayMembersGroup3 = businessGroupService.getDisplayMembers(group3);
-		Assert.assertTrue(displayMembersGroup3.isShowOwners());
-		Assert.assertTrue(displayMembersGroup3.isShowParticipants());
-		Assert.assertTrue(displayMembersGroup3.isShowWaitingList());
+		Assert.assertTrue(group3.isOwnersVisibleIntern());
+		Assert.assertTrue(group3.isParticipantsVisibleIntern());
+		Assert.assertTrue(group3.isWaitingListVisibleIntern());
 		//check collaboration tools
 		CollaborationTools toolGroup3 = CollaborationToolsFactory.getInstance().getCollaborationToolsIfExists(group3);
 		Assert.assertNotNull(toolGroup3);

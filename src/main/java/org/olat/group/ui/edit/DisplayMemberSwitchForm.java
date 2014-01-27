@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.model.DisplayMembers;
+import org.olat.group.BusinessGroup;
 
 
 
@@ -70,26 +70,42 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	public DisplayMembers getDisplayMembers() {
-		DisplayMembers displayMembers = new DisplayMembers();
-		displayMembers.setShowOwners(showOwners.isSelected(0));
-		displayMembers.setShowParticipants(showPartips.isSelected(0));
-		displayMembers.setShowWaitingList(showWaitingList.isVisible() && showWaitingList.isEnabled() && showWaitingList.isSelected(0));
-		displayMembers.setOwnersPublic(openOwners.isSelected(0));
-		displayMembers.setParticipantsPublic(openPartips.isSelected(0));
-		displayMembers.setWaitingListPublic(openWaitingList.isVisible() && openWaitingList.isEnabled() && openWaitingList.isSelected(0));
-		displayMembers.setDownloadLists(downloadList.isSelected(0));
-		return displayMembers;
+	public boolean isDisplayOwnersIntern() {
+		return showOwners.isSelected(0);
 	}
 	
-	public void setDisplayMembers(DisplayMembers displayMembers) {
-		showOwners.select("show_owners", displayMembers.isShowOwners());
-		showPartips.select("show_participants", displayMembers.isShowParticipants());
-		showWaitingList.select("show_waiting_list", displayMembers.isShowWaitingList());
-		openOwners.select("open_owners", displayMembers.isOwnersPublic());
-		openPartips.select("open_participants", displayMembers.isParticipantsPublic());
-		openWaitingList.select("open_waiting_list", displayMembers.isWaitingListPublic());
-		downloadList.select("download_list", displayMembers.isDownloadLists());
+	public boolean isDisplayParticipantsIntern() {
+		return showPartips.isSelected(0);
+	}
+	
+	public boolean isDisplayWaitingListIntern() {
+		return showWaitingList.isVisible() && showWaitingList.isEnabled() && showWaitingList.isSelected(0);
+	}
+	
+	public boolean isDisplayOwnersPublic() {
+		return openOwners.isSelected(0);
+	}
+	
+	public boolean isDisplayParticipantsPublic() {
+		return openPartips.isSelected(0);
+	}
+	
+	public boolean isDisplayWaitingListPublic() {
+		return openWaitingList.isVisible() && openWaitingList.isEnabled() && openWaitingList.isSelected(0);
+	}
+	
+	public boolean isDownloadList() {
+		return downloadList.isSelected(0);
+	}
+	
+	public void setDisplayMembers(BusinessGroup group) {
+		showOwners.select("show_owners", group.isOwnersVisibleIntern());
+		showPartips.select("show_participants", group.isParticipantsVisibleIntern());
+		showWaitingList.select("show_waiting_list", group.isWaitingListVisibleIntern());
+		openOwners.select("open_owners", group.isOwnersVisiblePublic());
+		openPartips.select("open_participants", group.isParticipantsVisiblePublic());
+		openWaitingList.select("open_waiting_list", group.isWaitingListVisiblePublic());
+		downloadList.select("download_list", group.isDownloadMembersLists());
 	}
 	
 	public void setWaitingListReadOnly(boolean b) {

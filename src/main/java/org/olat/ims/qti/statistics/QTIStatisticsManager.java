@@ -68,11 +68,29 @@ public interface QTIStatisticsManager {
 	 */
 	public List<QTIStatisticResultSet> getAllResultSets(QTIStatisticSearchParams searchParams);
 	
+	/**
+	 * 
+	 * @param searchParams
+	 * @return
+	 */
 	public List<QTIStatisticResult> getResults(QTIStatisticSearchParams searchParams);
 	
+	/**
+	 * 
+	 * @param items
+	 * @param searchParams
+	 * @param numOfParticipants
+	 * @return
+	 */
 	public List<StatisticItem> getStatisticPerItem(List<Item> items, QTIStatisticSearchParams searchParams,
 			double numOfParticipants);
 
+	/**
+	 * 
+	 * @param itemIdent
+	 * @param searchParams
+	 * @return
+	 */
 	public List<StatisticAnswerOption> getStatisticAnswerOptionsOfItem(String itemIdent, QTIStatisticSearchParams searchParams);
 	
 	/**

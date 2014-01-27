@@ -69,8 +69,8 @@ public class ImPreferencesImpl implements ImPreferences, Persistable, CreateInfo
 	private static final long serialVersionUID = -7269061512818714778L;
 
 	@Id
-  @GeneratedValue(generator = "system-uuid")
-  @GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	

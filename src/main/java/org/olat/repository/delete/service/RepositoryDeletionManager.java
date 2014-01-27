@@ -330,7 +330,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 				} else {
 					// repositoryEntry has references, can not be deleted
 					logDebug("filterRepositoryWithReferences Do NOT add to filteredList repositoryEntry=" + repositoryEntry);
-					if (LifeCycleManager.createInstanceFor(repositoryEntry).lookupLifeCycleEntry(SEND_DELETE_EMAIL_ACTION) != null) {
+					if (LifeCycleManager.createInstanceFor(repositoryEntry).hasLifeCycleEntry(SEND_DELETE_EMAIL_ACTION)) {
 						LifeCycleManager.createInstanceFor(repositoryEntry).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
 						logInfo("filterRepositoryWithReferences: found repositoryEntry with references, remove from deletion-process repositoryEntry=" + repositoryEntry);
 					}

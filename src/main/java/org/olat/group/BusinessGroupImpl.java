@@ -66,6 +66,13 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	private Boolean waitingListEnabled;
 	private Boolean autoCloseRanksEnabled;
 	private Date lastModified;
+	private boolean ownersVisibleIntern;
+	private boolean participantsVisibleIntern;
+	private boolean waitingListVisibleIntern;
+	private boolean ownersVisiblePublic;
+	private boolean participantsVisiblePublic;
+	private boolean waitingListVisiblePublic;
+	private boolean downloadMembersLists;
 
 	private static final int TYPE_MAXLENGTH = 15;
 
@@ -167,7 +174,63 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * @see org.olat.group.BusinessGroup#getName()
 	 */
 	public String getName() {
-		return this.name;
+		return name;
+	}
+
+	public boolean isOwnersVisibleIntern() {
+		return ownersVisibleIntern;
+	}
+
+	public void setOwnersVisibleIntern(boolean visible) {
+		this.ownersVisibleIntern = visible;
+	}
+
+	public boolean isParticipantsVisibleIntern() {
+		return participantsVisibleIntern;
+	}
+
+	public void setParticipantsVisibleIntern(boolean visible) {
+		this.participantsVisibleIntern = visible;
+	}
+
+	public boolean isWaitingListVisibleIntern() {
+		return waitingListVisibleIntern;
+	}
+
+	public void setWaitingListVisibleIntern(boolean visible) {
+		this.waitingListVisibleIntern = visible;
+	}
+
+	public boolean isOwnersVisiblePublic() {
+		return ownersVisiblePublic;
+	}
+
+	public void setOwnersVisiblePublic(boolean visible) {
+		this.ownersVisiblePublic = visible;
+	}
+
+	public boolean isParticipantsVisiblePublic() {
+		return participantsVisiblePublic;
+	}
+
+	public void setParticipantsVisiblePublic(boolean visible) {
+		this.participantsVisiblePublic = visible;
+	}
+
+	public boolean isWaitingListVisiblePublic() {
+		return waitingListVisiblePublic;
+	}
+
+	public void setWaitingListVisiblePublic(boolean visible) {
+		this.waitingListVisiblePublic = visible;
+	}
+
+	public boolean isDownloadMembersLists() {
+		return downloadMembersLists;
+	}
+
+	public void setDownloadMembersLists(boolean visible) {
+		this.downloadMembersLists = visible;
 	}
 
 	public OLATResource getResource() {
@@ -182,28 +245,28 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * @see org.olat.group.BusinessGroup#getOwnerGroup()
 	 */
 	public SecurityGroup getOwnerGroup() {
-		return this.ownerGroup;
+		return ownerGroup;
 	}
 
 	/**
 	 * @see org.olat.group.BusinessGroup#getPartipiciantGroup()
 	 */
 	public SecurityGroup getPartipiciantGroup() {
-		return this.partipiciantGroup;
+		return partipiciantGroup;
 	}
 
 	/**
 	 * @see org.olat.group.BusinessGroup#getWaitingGroup()
 	 */
 	public SecurityGroup getWaitingGroup() {
-		return this.waitingGroup;
+		return waitingGroup;
 	}
 
 	/**
 	 * @return Returns the lastUsage.
 	 */
-	public java.util.Date getLastUsage() {
-		return this.lastUsage;
+	public Date getLastUsage() {
+		return lastUsage;
 	}
 
 	/**
@@ -211,15 +274,15 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * 
 	 * @param lastUsageP
 	 */
-	public void setLastUsage(final java.util.Date lastUsageP) {
-		this.lastUsage = lastUsageP;
+	public void setLastUsage(Date lastUsage) {
+		this.lastUsage = lastUsage;
 	}
 
 	/**
 	 * @see org.olat.group.BusinessGroup#getType()
 	 */
 	public String getType() {
-		return this.type;// BusinessGroupImpl.class.getName();
+		return type;// BusinessGroupImpl.class.getName();
 	}
 
 	/**
@@ -252,7 +315,7 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * @see org.olat.group.BusinessGroup#getGroupContext()
 	 */
 	public Long getGroupContextKey() {
-		return this.groupContextKey;
+		return groupContextKey;
 	}
 
 	/**

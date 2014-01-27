@@ -24,6 +24,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 
 /**
@@ -38,19 +39,23 @@ import org.olat.core.id.context.DefaultContextEntryControllerCreator;
  */
 public class RepositoryContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
+	private RepositoryEntry repoEntry;
+	
+	@Override
+	public ContextEntryControllerCreator clone() {
+		return new RepositoryContextEntryControllerCreator();
+	}
+
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
 	 *      org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		OLATResourceable ores = ce.getOLATResourceable();
-
-		RepositoryManager repom = RepositoryManager.getInstance();
-		RepositoryEntry re = repom.lookupRepositoryEntry(ores.getResourceableId());
+		RepositoryEntry re = getRepositoryEntry(ce);
 		Controller ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);
 		return ctrl;
-
 	}
 
 	/**
@@ -58,10 +63,7 @@ public class RepositoryContextEntryControllerCreator extends DefaultContextEntry
 	 */
 	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		OLATResourceable ores = ce.getOLATResourceable();
-
-		RepositoryManager repom = RepositoryManager.getInstance();
-		RepositoryEntry re = repom.lookupRepositoryEntry(ores.getResourceableId());
+		RepositoryEntry re = getRepositoryEntry(ce);
 		return re.getDisplayname();
 	}
 	
@@ -75,10 +77,19 @@ public class RepositoryContextEntryControllerCreator extends DefaultContextEntry
 
 	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		OLATResourceable ores = ce.getOLATResourceable();
-		RepositoryManager repom = RepositoryManager.getInstance();
-		RepositoryEntry re = repom.lookupRepositoryEntry(ores.getResourceableId());
-		return re != null;
-	}	
-
+		return getRepositoryEntry(ce) != null;
+	}
+	
+	private RepositoryEntry getRepositoryEntry(ContextEntry ce) {
+		if(repoEntry == null) {
+			if(ce.getOLATResourceable() instanceof RepositoryEntry) {
+				repoEntry = (RepositoryEntry)ce.getOLATResourceable();
+			} else {
+				OLATResourceable ores = ce.getOLATResourceable();
+				RepositoryManager rm = RepositoryManager.getInstance();
+				repoEntry = rm.lookupRepositoryEntry(ores.getResourceableId());
+			}
+		}
+		return repoEntry;
+	}
 }

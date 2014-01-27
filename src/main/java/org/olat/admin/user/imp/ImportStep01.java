@@ -79,6 +79,7 @@ class ImportStep01 extends BasicStep {
 	private final class ImportStepForm01 extends StepFormBasicController {
 
 		private FormLayoutContainer textContainer;
+		private MultipleSelectionElement updateEl;
 		private MultipleSelectionElement updatePasswordEl;
 		private List<UserPropertyHandler> userPropertyHandlers;
 
@@ -98,11 +99,17 @@ class ImportStep01 extends BasicStep {
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-			Boolean update = Boolean.FALSE;
-			if(updatePasswordEl != null && updatePasswordEl.isAtLeastSelected(1)) {
-				update = Boolean.TRUE; 
+			Boolean updateUsers = Boolean.FALSE;
+			if(updateEl != null && updateEl.isAtLeastSelected(1)) {
+				updateUsers = Boolean.TRUE; 
 			}
-			addToRunContext("updatePasswords", update);
+			addToRunContext("updateUsers", updateUsers);
+			
+			Boolean updatePasswords = Boolean.FALSE;
+			if(updatePasswordEl != null && updatePasswordEl.isAtLeastSelected(1)) {
+				updatePasswords = Boolean.TRUE; 
+			}
+			addToRunContext("updatePasswords", updatePasswords);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
@@ -127,10 +134,17 @@ class ImportStep01 extends BasicStep {
 			String overview = getTranslator().translate("import.confirm", new String[] { "" + cntall, "" + cntNew, "" + cntOld });
 			textContainer.contextPut("overview", overview);
 			textContainer.contextPut("updateusers", updateIdents.isEmpty());
-			if(!updateIdents.isEmpty() && canCreateOLATPassword) {
-				String[] theValues = new String[]{ translate("update.password") };
-				updatePasswordEl = uifactory
-						.addCheckboxesHorizontal("update.password", textContainer, new String[]{"on"}, theValues, null);
+			if(!updateIdents.isEmpty()) {
+				String[] updateValues = new String[]{ translate("update.user") };
+				updateEl = uifactory
+						.addCheckboxesHorizontal("update.user", textContainer, new String[]{"on"}, updateValues, null);
+				updateEl.select("on", true);
+				
+				if(canCreateOLATPassword) {
+					String[] theValues = new String[]{ translate("update.password") };
+					updatePasswordEl = uifactory
+							.addCheckboxesHorizontal("update.password", textContainer, new String[]{"on"}, theValues, null);
+				}
 			}
 
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

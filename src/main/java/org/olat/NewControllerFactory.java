@@ -137,6 +137,11 @@ public class NewControllerFactory extends LogDelegator {
 	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, origControl);
 	  return launch(ureq, bwControl);
 	}
+	
+	private ContextEntryControllerCreator getContextEntryControllerCreator(String type) {
+		ContextEntryControllerCreator typeHandler = contextEntryControllerCreators.get(type);
+		return typeHandler.clone();
+	}
 
 	/**
 	 * Launch a controller in a tab or site in the given window from a user
@@ -154,12 +159,19 @@ public class NewControllerFactory extends LogDelegator {
 		boolean ceConsumed = false;
 		RepositoryEntry re = null;
 		if (ores.getResourceableTypeName().equals(OresHelper.calculateTypeName(RepositoryEntry.class))) {
-			// It is a repository-entry => get OLATResourceable from RepositoryEntry
-			RepositoryManager repom = RepositoryManager.getInstance();
-			re = repom.lookupRepositoryEntry(ores.getResourceableId());
-			if (re != null){
+			if(ores instanceof RepositoryEntry) {
+				re = (RepositoryEntry)ores;
 				ores = re.getOlatResource();
 				ceConsumed = true;
+			} else {
+				// It is a repository-entry => get OLATResourceable from RepositoryEntry
+				RepositoryManager repom = RepositoryManager.getInstance();
+				re = repom.lookupRepositoryEntry(ores.getResourceableId());
+				if (re != null){
+					ores = re.getOlatResource();
+					ceConsumed = true;
+					mainCe.upgradeOLATResourceable(re);
+				}
 			}
 		}
 
@@ -180,7 +192,7 @@ public class NewControllerFactory extends LogDelegator {
 
 		String firstType = mainCe.getOLATResourceable().getResourceableTypeName();
 		// String firstTypeId = ClassToId.getInstance().lookup() BusinessGroup
-		ContextEntryControllerCreator typeHandler = contextEntryControllerCreators.get(firstType);
+		ContextEntryControllerCreator typeHandler = getContextEntryControllerCreator(firstType);
 		if (typeHandler == null) {
 			logWarn("Cannot found an handler for context entry: " + mainCe, null);
 			return false;//simply return and don't throw a red screen

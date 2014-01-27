@@ -45,8 +45,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupModule;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.model.DisplayMembers;
 
 /**
  * 
@@ -66,7 +64,6 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 	
 	/** The business group we're dealing with */
 	private BusinessGroup businessGroup;
-	private DisplayMembers members;
 	
 	/** The navigation tree */
 	private MenuTree menuTree;
@@ -76,15 +73,12 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 	private GroupContactController groupContactController;
 	
 	private final BusinessGroupModule module;
-	private final BusinessGroupService businessGroupService;
 	
 	public GroupInfoMainController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		// Initialize
 		super(ureq, wControl);
 		this.businessGroup = businessGroup;
 		module = CoreSpringFactory.getImpl(BusinessGroupModule.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		members = businessGroupService.getDisplayMembers(businessGroup);
 
 		menuTree = new MenuTree("menuTree");
 		menuTree.setRootVisible(false);
@@ -176,7 +170,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		if(groupMembersDisplayController == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Members", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			groupMembersDisplayController = new GroupMembersDisplayController(ureq, bwControl, businessGroup, members);
+			groupMembersDisplayController = new GroupMembersDisplayController(ureq, bwControl, businessGroup);
 			listenTo(groupMembersDisplayController);
 		}
 		
@@ -214,7 +208,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		rootNode.addChild(childNode);
 		rootNode.setDelegate(childNode);
 		
-		if(members.isOwnersPublic() || members.isParticipantsPublic() || members.isWaitingListPublic()) {
+		if(businessGroup.isOwnersVisiblePublic() || businessGroup.isParticipantsVisiblePublic() || businessGroup.isWaitingListVisiblePublic()) {
 			childNode = new GenericTreeNode();
 			childNode.setTitle(translate("main.menu.members"));
 			childNode.setUserObject(COMMAND_MENU_GROUPMEMBERS);

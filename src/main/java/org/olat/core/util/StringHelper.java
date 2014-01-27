@@ -68,9 +68,6 @@ public class StringHelper {
 	private static final String WHITESPACE_REGEXP = "^\\s*$";
 	private static final Pattern WHITESPACE_PATTERN = Pattern.compile(WHITESPACE_REGEXP);
 	
-	private static final Pattern p1 = Pattern.compile("\\+");
-	private static final Pattern p2 = Pattern.compile("%2F");
-	
 	/**
 	 * regex for not allowing
 	 * <code>;,:</code> <code>ALL_WITHOUT_COMMA_2POINT_STRPNT</code>
@@ -194,21 +191,7 @@ public class StringHelper {
 		numFormatter.setMaximumFractionDigits(fractionDigits);
 		return numFormatter.format(f);
 	}
-
-	/**
-	 * @param url
-	 * @return encoded string
-	 */
-	public static String urlEncodeISO88591(String url) {
-		String part;
-		try {
-			part = URLEncoder.encode(url, "iso-8859-1");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("encoding failed (iso-8859-1) for :" + url);
-		}
-		return part;
-	}
-
+	
 	/**
 	 * @param url
 	 * @return encoded string
@@ -225,13 +208,8 @@ public class StringHelper {
 			 */
 			throw new AssertException("utf-8 encoding is needed for proper encoding, but not offered on this java platform????");
 		}
-		encodedURL = p1.matcher(encodedURL).replaceAll("%20");
-		encodedURL = p2.matcher(encodedURL).replaceAll("/");
 		return encodedURL;
 	}
-	
-
-	
 
 	/**
 	 * Converts all keys of a hash map to a string array.

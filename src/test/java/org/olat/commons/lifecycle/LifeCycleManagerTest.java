@@ -34,17 +34,14 @@ import static org.junit.Assert.assertNull;
 
 import java.util.UUID;
 
-import org.junit.After;
-import org.junit.Before;
+import junit.framework.Assert;
+
 import org.junit.Test;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,48 +56,24 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LifeCycleManagerTest extends OlatTestCase {
 
-	private static OLog log = Tracing.createLoggerFor(LifeCycleManagerTest.class);
-	private static Identity identity;
-	private static BusinessGroup group;
-	private static OLATResource res;
-
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Before
-	public void setup() {
-		// identity with null User should be ok for test case
-		res = JunitTestHelper.createRandomResource();
-		identity = JunitTestHelper.createAndPersistIdentityAsUser("foo-" + UUID.randomUUID().toString());
-		group = businessGroupService.createBusinessGroup(identity, "a buddygroup", "a desc", -1, -1, false, false, null);
-	}
-	
-	/**
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	@After
-	public void tearDown() {
-		try {
-			OLATResourceManager.getInstance().deleteOLATResource(res);
-			businessGroupService.deleteBusinessGroup(group);
-			log.info("tearDown: DB.getInstance().closeSession()");
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("tearDown failed: ", e);
-		}
-	}
 	
 	/**
 	 * Test creation of LifeCycleManager.
 	 */
 	@Test
 	public void testCreateInstanceFor() {
+		OLATResource res = JunitTestHelper.createRandomResource();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("life-1-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "life cycled group 1", "a desc", -1, -1, false, false, null);
+		dbInstance.commitAndCloseSession();
+
 		LifeCycleManager lcm1 = LifeCycleManager.createInstanceFor(group);
 		LifeCycleManager lcm2 = LifeCycleManager.createInstanceFor(res);
-		assertNotSame("testCreateInstanceFor should NOT return the same instance", lcm1,lcm2);
+		assertNotSame("testCreateInstanceFor should NOT return the same instance", lcm1, lcm2);
 	}
 	
 	/**
@@ -108,12 +81,18 @@ public class LifeCycleManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testMarkTimestampFor() {
+		OLATResource res = JunitTestHelper.createRandomResource();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("life-2-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "life cycled group 2", "a desc", -1, -1, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
 		String action = "doTest";
 		LifeCycleManager lcm1 = LifeCycleManager.createInstanceFor(group);
 		LifeCycleManager lcm2 = LifeCycleManager.createInstanceFor(res);
 		lcm1.markTimestampFor(action);
 		lcm2.markTimestampFor(action);
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
+		
 		LifeCycleEntry lce = lcm1.lookupLifeCycleEntry(action, null);
 		assertNotNull("Does not found LifeCycleEntry", lce);
 		assertEquals("Invalid action",lce.getAction(), action);
@@ -122,6 +101,10 @@ public class LifeCycleManagerTest extends OlatTestCase {
 		assertNotNull("Does not found LifeCycleEntry", lce2);
 		assertNotSame("LifeCycleEntry have not the same reference", lce2.getPersistentRef(), lce.getPersistentRef());
 		assertNotSame("LifeCycleEntry have not the same type-name",lce2.getPersistentTypeName(), lce.getPersistentTypeName());
+		
+		//check if has
+		 Assert.assertTrue(lcm1.hasLifeCycleEntry(action));
+		 Assert.assertTrue(lcm2.hasLifeCycleEntry(action));
 	}
 	
 	/**
@@ -129,6 +112,10 @@ public class LifeCycleManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testDeleteTimestampFor() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("life-3-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "life cycled group 3", "a desc", -1, -1, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
 		String action = "doTestDelete";
 		LifeCycleManager lcm1 = LifeCycleManager.createInstanceFor(group);
 		lcm1.markTimestampFor(action);

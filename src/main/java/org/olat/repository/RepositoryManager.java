@@ -63,6 +63,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -477,15 +478,32 @@ public class RepositoryManager extends BasicManager {
 		}
 		StringBuilder query = new StringBuilder();
 		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
-				 .append(" inner join fetch v.olatResource as ores")
-				 .append(" left join fetch v.lifecycle as lifecycle")
-			   .append(" left join fetch v.ownerGroup as ownerGroup")
-			   .append(" left join fetch v.participantGroup as participantGroup")
-			   .append(" left join fetch v.tutorGroup as tutorGroup")
+		     .append(" inner join fetch v.olatResource as ores")
+		     .append(" left join fetch v.lifecycle as lifecycle")
+		     .append(" left join fetch v.ownerGroup as ownerGroup")
+		     .append(" left join fetch v.participantGroup as participantGroup")
+		     .append(" left join fetch v.tutorGroup as tutorGroup")
 		     .append(" where v.key = :repoKey");
 		
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), RepositoryEntry.class)
+				.setParameter("repoKey", key)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
+	}
+	
+	public OLATResource lookupRepositoryEntryResource(Long key) {
+		if (key == null) return null;
+		StringBuilder query = new StringBuilder();
+		query.append("select v.olatResource from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		     .append(" where v.key = :repoKey");
+		
+		List<OLATResource> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), OLATResource.class)
 				.setParameter("repoKey", key)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
@@ -769,11 +787,14 @@ public class RepositoryManager extends BasicManager {
 		return entry;
 	}
 	
-	private void updateLifeCycle(RepositoryEntry reloadedRe) {
-		LifeCycleManager lcManager = LifeCycleManager.createInstanceFor(reloadedRe);
-		if (lcManager.lookupLifeCycleEntry(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION) != null) {
-			log.audit("Repository-Deletion: Remove from delete-list repositoryEntry=" + reloadedRe);
-			lcManager.deleteTimestampFor(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION);
+	private void updateLifeCycle(RepositoryEntry reloadedRe, Date previousLastUsage) {
+		if(reloadedRe == null) return;
+		if(previousLastUsage == null || previousLastUsage.getTime() < (System.currentTimeMillis() - (60 * 60 * 1000))) {
+			LifeCycleManager lcManager = LifeCycleManager.createInstanceFor(reloadedRe);
+			if (lcManager.hasLifeCycleEntry(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION)) {
+				log.audit("Repository-Deletion: Remove from delete-list repositoryEntry=" + reloadedRe);
+				lcManager.deleteTimestampFor(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION);
+			}
 		}
 	}
 
@@ -783,14 +804,16 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public RepositoryEntry incrementLaunchCounter(RepositoryEntry re) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
-		if(reloadedRe == null) return null;//deleted
-
-		reloadedRe.setLaunchCounter(reloadedRe.getLaunchCounter() + 1);
-		reloadedRe.setLastUsage(new Date());
-		updateLifeCycle(reloadedRe);
-		
-		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commit();
+		RepositoryEntry updatedRe = null;
+		Date previousLastUsage = null;
+		if(reloadedRe != null) {
+			reloadedRe.setLaunchCounter(reloadedRe.getLaunchCounter() + 1);
+			previousLastUsage = reloadedRe.getLastUsage();
+			reloadedRe.setLastUsage(new Date());
+			updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		}
+		dbInstance.commit();
+		updateLifeCycle(reloadedRe, previousLastUsage);
 		return updatedRe;
 	}
 
@@ -800,13 +823,16 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public RepositoryEntry incrementDownloadCounter( final RepositoryEntry re) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
-		if(reloadedRe == null) return null;//deleted
-
-		reloadedRe.setDownloadCounter(reloadedRe.getDownloadCounter() + 1);
-		reloadedRe.setLastUsage(new Date());
-		updateLifeCycle(reloadedRe);
-		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commit();
+		RepositoryEntry updatedRe = null;
+		Date previousLastUsage = null;
+		if(reloadedRe != null) {
+			reloadedRe.setDownloadCounter(reloadedRe.getDownloadCounter() + 1);
+			previousLastUsage = reloadedRe.getLastUsage();
+			reloadedRe.setLastUsage(new Date());
+			updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		}
+		dbInstance.commit();
+		updateLifeCycle(reloadedRe, previousLastUsage);
 		return updatedRe;
 	}
 
@@ -835,8 +861,8 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setAccess(access);
 		reloadedRe.setMembersOnly(membersOnly);//fxdiff VCRP-1,2: access control of resources
 		
-		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commit();
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		dbInstance.commit();
 		return updatedRe;
 	}
 
@@ -855,8 +881,8 @@ public class RepositoryManager extends BasicManager {
 		if(StringHelper.containsNonWhitespace(description)) {
 			reloadedRe.setDescription(description);
 		}
-		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commit();
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		dbInstance.commit();
 		return updatedRe;
 	}
 	
@@ -894,10 +920,10 @@ public class RepositoryManager extends BasicManager {
 		
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
 		if(cycleToDelete != null) {
-			DBFactory.getInstance().getCurrentEntityManager().remove(cycleToDelete);
+			dbInstance.getCurrentEntityManager().remove(cycleToDelete);
 		}
 		
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		return updatedRe;
 	}
 	
@@ -937,8 +963,8 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setCanReference(canReference);
 		reloadedRe.setCanLaunch(canLaunch);
 		reloadedRe.setCanDownload(canDownload);
-		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commit();
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		dbInstance.commit();
 		return updatedRe;
 	}
 	
@@ -2186,22 +2212,30 @@ public class RepositoryManager extends BasicManager {
 	 * @param Identity identity
 	 */
 	public boolean isInstitutionalRessourceManagerFor(RepositoryEntry repositoryEntry, Identity identity) {
-		if(repositoryEntry == null || repositoryEntry.getOwnerGroup() == null) return false;
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		// list of owners
-		List<Identity> listIdentities = secMgr.getIdentitiesOfSecurityGroup(repositoryEntry.getOwnerGroup());
-		String currentUserInstitutionalName = identity.getUser().getProperty("institutionalName", null);
-		boolean isInstitutionalResourceManager = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_INSTORESMANAGER);
+		if(repositoryEntry == null || repositoryEntry.getOwnerGroup() == null) {
+			return false;
+		}
+
+		String currentUserInstitutionalName = identity.getUser().getProperty(UserConstants.INSTITUTIONALNAME, null);
+		if(!StringHelper.containsNonWhitespace(currentUserInstitutionalName)) {
+			return false;
+		}
+		
+		boolean isInstitutionalResourceManager = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_INSTORESMANAGER);
+		if(!isInstitutionalResourceManager) {
+			return false;
+		}
+		
 		boolean sameInstitutional = false;
-		String identInstitutionalName = "";
+		List<Identity> listIdentities = securityManager.getIdentitiesOfSecurityGroup(repositoryEntry.getOwnerGroup());
 		for (Identity ident : listIdentities) {
-			identInstitutionalName = ident.getUser().getProperty("institutionalName", null);
-			if ((identInstitutionalName != null) && (identInstitutionalName.equals(currentUserInstitutionalName))) {
+			String identInstitutionalName = ident.getUser().getProperty(UserConstants.INSTITUTIONALNAME, null);
+			if (identInstitutionalName != null && identInstitutionalName.equals(currentUserInstitutionalName)) {
 				sameInstitutional = true;
 				break;
 			}
 		}
-		return isInstitutionalResourceManager && sameInstitutional;
+		return sameInstitutional;
 	}
 	
 	public int countLearningResourcesAsStudent(Identity identity) {

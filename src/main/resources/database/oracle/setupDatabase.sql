@@ -51,6 +51,13 @@ CREATE TABLE o_gp_business (
   maxparticipants number(11),
   waitinglist_enabled number,
   autocloseranks_enabled number,
+  ownersintern number default 0 not null,
+  participantsintern number default 0 not null,
+  waitingintern number default 0 not null,
+  ownerspublic number default 0 not null,
+  participantspublic number default 0 not null,
+  waitingpublic number default 0 not null,
+  downloadmembers number default 0 not null,
   groupcontext_fk number(20),
   fk_resource number(20),
   fk_ownergroup number(20),
@@ -1568,7 +1575,8 @@ create or replace view o_gp_business_v  as (
    from o_gp_business gp
 );
 
-create view o_gp_visible_participant_v as (
+-- contacts
+create view o_gp_contact_participant_v as
    select
       bg_part_member.id as membership_id,
       bgroup.group_id as bg_id,
@@ -1578,12 +1586,12 @@ create view o_gp_visible_participant_v as (
       bg_part_member.identity_id as bg_part_member_id,
       ident.name as bg_part_member_name 
    from o_gp_business bgroup
-   inner join o_property bconfig on (bconfig.grp = bgroup.group_id and bconfig.name = 'displayMembers' and bconfig.category = 'config' and bconfig.longValue in (2,3,6,7))
    inner join o_bs_membership bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
    inner join o_bs_identity ident on (bg_part_member.identity_id = ident.id)
- );
-   
-create view o_gp_visible_owner_v as ( 
+   where bgroup.participantsintern=1
+;
+
+create view o_gp_contact_owner_v as
    select
       bg_owner_member.id as membership_id,
       bgroup.group_id as bg_id,
@@ -1593,10 +1601,32 @@ create view o_gp_visible_owner_v as (
       bg_owner_member.identity_id as bg_owner_member_id,
       ident.name as bg_owner_member_name
    from o_gp_business bgroup
-   inner join o_property bconfig on (bconfig.grp = bgroup.group_id and bconfig.name = 'displayMembers' and bconfig.category = 'config' and bconfig.longValue in (1,3,5,7))
    inner join o_bs_membership bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
    inner join o_bs_identity ident on (bg_owner_member.identity_id = ident.id)
-);
+   where bgroup.ownersintern=1
+;
+
+create view o_gp_contactkey_participant_v as
+   select
+      bg_part_member.id as membership_id,
+      bgroup.fk_partipiciantgroup as bg_part_sec_id,
+      bgroup.fk_ownergroup as bg_owner_sec_id,
+      bg_part_member.identity_id as bg_part_member_id
+   from o_gp_business bgroup
+   inner join o_bs_membership bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
+   where bgroup.participantsintern=1
+;
+  
+create view o_gp_contactkey_owner_v as
+   select
+      bg_owner_member.id as membership_id,
+      bgroup.fk_partipiciantgroup as bg_part_sec_id,
+      bgroup.fk_ownergroup as bg_owner_sec_id,
+      bg_owner_member.identity_id as bg_owner_member_id
+   from o_gp_business bgroup
+   inner join o_bs_membership bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
+   where bgroup.ownersintern=1
+;
 
 create or replace view o_im_roster_entry_v as (
    select

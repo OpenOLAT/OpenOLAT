@@ -89,7 +89,7 @@ public class RepositoyUIFactory {
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 		}
 		
-		MainLayoutController ctrl = handler.createLaunchController(re.getOlatResource(), ureq, bwControl);
+		MainLayoutController ctrl = handler.createLaunchController(re, ureq, bwControl);
 		if (ctrl == null) throw new AssertException("could not create controller for repositoryEntry "+re); 
 		if (ctrl instanceof MainLayoutController) {
 			return ctrl;			

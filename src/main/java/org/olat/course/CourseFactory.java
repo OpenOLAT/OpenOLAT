@@ -183,20 +183,20 @@ public class CourseFactory extends BasicManager {
 	 * 
 	 * @param ureq
 	 * @param wControl
-	 * @param olatResource
+	 * @param re
 	 * @param initialViewIdentifier if null the default view will be started,
 	 *          otherwise a controllerfactory type dependant view will be
 	 *          activated (subscription subtype)
 	 * @return run controller for the given course resourceable
 	 */
-	public static MainLayoutController createLaunchController(UserRequest ureq, WindowControl wControl, final OLATResourceable olatResource) {
-		ICourse course = loadCourse(olatResource);
+	public static MainLayoutController createLaunchController(UserRequest ureq, WindowControl wControl, final RepositoryEntry re) {
+		ICourse course = loadCourse(re.getOlatResource());
 		boolean isDebug = log.isDebug();
 		long startT = 0;
 		if(isDebug){
 			startT = System.currentTimeMillis();
 		}
-		MainLayoutController launchC = new RunMainController(ureq, wControl, course, true, true);
+		MainLayoutController launchC = new RunMainController(ureq, wControl, course, re, true, true);
 		if(isDebug){
 			log.debug("Runview for [["+course.getCourseTitle()+"]] took [ms]"+(System.currentTimeMillis() - startT));
 		}
@@ -839,7 +839,7 @@ public class CourseFactory extends BasicManager {
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);	
 			
-			RunMainController launchC = new RunMainController(ureq, bwControl, course, false, false);
+			RunMainController launchC = new RunMainController(ureq, bwControl, course, entry, false, false);
 			return launchC;			
 		}		
 	}

@@ -51,8 +51,8 @@ public class PersistedMapper implements CreateInfo, ModifiedInfo, Persistable {
 	private static final long serialVersionUID = 7297417374497607347L;
 	
 	@Id
-  @GeneratedValue(generator = "system-uuid")
-  @GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	

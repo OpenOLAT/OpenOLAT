@@ -27,7 +27,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.group.BusinessGroup;
-import org.olat.group.model.DisplayMembers;
 
 /**
  * 
@@ -40,22 +39,22 @@ public class GroupMembersDisplayController extends BasicController {
 
 	private final VelocityContainer content;
 
-	public GroupMembersDisplayController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, DisplayMembers members) {
+	public GroupMembersDisplayController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		// display owners and participants
 		content = createVelocityContainer("groupmembersdisplay");
 
-		if(members.isOwnersPublic()) {
+		if(businessGroup.isOwnersVisiblePublic()) {
 			GroupController groupOwnersController = new GroupController(ureq, wControl, false, true, false, false, false, false, businessGroup.getOwnerGroup());
 			content.put("owners", groupOwnersController.getInitialComponent());
 			listenTo(groupOwnersController);
 		}
-		if(members.isParticipantsPublic()) {
+		if(businessGroup.isParticipantsVisiblePublic()) {
 			GroupController groupParticipantsController = new GroupController(ureq, wControl, false, true, false, false, false, false, businessGroup.getPartipiciantGroup());
 			content.put("participants", groupParticipantsController.getInitialComponent());
 			listenTo(groupParticipantsController);
 		}
-		if(members.isWaitingListPublic()) {
+		if(businessGroup.isWaitingListVisiblePublic()) {
 			GroupController groupWaitingListController = new GroupController(ureq, wControl, false, true, false, false, false, false, businessGroup.getWaitingGroup());
 			content.put("waitingList", groupWaitingListController.getInitialComponent());
 			listenTo(groupWaitingListController);

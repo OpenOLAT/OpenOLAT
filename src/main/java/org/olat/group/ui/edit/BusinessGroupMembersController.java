@@ -47,7 +47,6 @@ import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BusinessGroupMembershipChange;
-import org.olat.group.model.DisplayMembers;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.SearchMembersParams;
 
@@ -80,14 +79,13 @@ public class BusinessGroupMembersController extends BasicController {
 
 		// Member Display Form, allows to enable/disable that others partips see
 		// partips and/or owners
-		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
 		// configure the form with checkboxes for owners and/or partips according
 		// the booleans
 		dmsForm = new DisplayMemberSwitchForm(ureq, getWindowControl(), true, true, hasWaitingList);
 		dmsForm.setEnabled(!BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.display));
 		listenTo(dmsForm);
 		// set if the checkboxes are checked or not.
-		dmsForm.setDisplayMembers(displayMembers);
+		dmsForm.setDisplayMembers(businessGroup);
 		mainVC.put("displayMembers", dmsForm.getInitialComponent());
 		
 		boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.membersmanagement);
@@ -107,6 +105,10 @@ public class BusinessGroupMembersController extends BasicController {
 		importMemberLink.setElementCssClass("o_sel_group_import_members");
 		importMemberLink.setVisible(!managed);
 		mainVC.put("importMembers", importMemberLink);
+	}
+	
+	public BusinessGroup getGroup() {
+		return businessGroup;
 	}
 	
 	@Override
@@ -140,11 +142,23 @@ public class BusinessGroupMembersController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == dmsForm) {
 			if(event == Event.CHANGED_EVENT) {
-				businessGroupService.updateDisplayMembers(businessGroup, dmsForm.getDisplayMembers());
+				boolean ownersIntern = dmsForm.isDisplayOwnersIntern();
+				boolean participantsIntern = dmsForm.isDisplayParticipantsIntern();
+				boolean waitingIntern = dmsForm.isDisplayWaitingListIntern();
+				boolean ownersPublic = dmsForm.isDisplayOwnersPublic();
+				boolean participantsPublic = dmsForm.isDisplayParticipantsPublic();
+				boolean waitingPublic = dmsForm.isDisplayWaitingListPublic();
+				boolean download = dmsForm.isDownloadList();
+				
+				businessGroup = businessGroupService.updateDisplayMembers(businessGroup,
+						ownersIntern, participantsIntern, waitingIntern,
+						ownersPublic, participantsPublic, waitingPublic,
+						download);
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, businessGroup, null);
 				// do loggin
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
+				fireEvent(ureq, event);
 			}
 		} else if(source == importMembersWizard) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.home.HomeSite;
 import org.olat.portfolio.model.structel.EPStructuredMap;
@@ -41,29 +42,35 @@ public class EPMyStructuredMapsExtension {
 
 	public EPMyStructuredMapsExtension() {
 
-		NewControllerFactory.getInstance().addContextEntryControllerCreator(EPStructuredMap.class.getSimpleName(), new DefaultContextEntryControllerCreator(){
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(EPStructuredMap.class.getSimpleName(), new MyStructuredMapsContextEntryControllerCreator());		
+	}
+	
+	private static class MyStructuredMapsContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
-			@Override
-			public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-				return null;
-			}
+		@Override
+		public ContextEntryControllerCreator clone() {
+			return this;
+		}
 
-			@Override
-			public String getTabName(ContextEntry ce, UserRequest ureq) {
-				// opens in home-tab
-				return null;
-			}
+		@Override
+		public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+			return null;
+		}
 
-			@Override
-			public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
-				return HomeSite.class.getName();
-			}
+		@Override
+		public String getTabName(ContextEntry ce, UserRequest ureq) {
+			// opens in home-tab
+			return null;
+		}
 
-			@Override
-			public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-				return true;
-			}
-			
-		});		
+		@Override
+		public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+			return HomeSite.class.getName();
+		}
+
+		@Override
+		public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+			return true;
+		}
 	}
 }

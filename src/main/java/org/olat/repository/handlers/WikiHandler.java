@@ -78,6 +78,7 @@ import org.olat.repository.controllers.AddFileResourceController;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
@@ -158,7 +159,8 @@ public class WikiHandler implements RepositoryHandler {
 	 *      java.lang.String, org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		// first handle special case: disabled wiki for security (XSS Attacks) reasons
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class); 
 		if (!securityModule.isWikiEnabled()) {
@@ -171,13 +173,14 @@ public class WikiHandler implements RepositoryHandler {
 		boolean isOLatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		boolean isResourceOwner = false;
-		if (isOLatAdmin) isResourceOwner = true;
-		else {
+		if (isOLatAdmin) {
+			isResourceOwner = true;
+		} else {
 			RepositoryManager repoMgr = RepositoryManager.getInstance();
-			isResourceOwner = repoMgr.isOwnerOfRepositoryEntry(ureq.getIdentity(), repoMgr.lookupRepositoryEntry(res, true));
+			isResourceOwner = repoMgr.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
 		}
 		
-		
+		OLATResource res = re.getOlatResource();
 		BusinessControl bc = wControl.getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
 		SubscriptionContext subsContext = new SubscriptionContext(res, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
@@ -194,13 +197,11 @@ public class WikiHandler implements RepositoryHandler {
 		// use on column layout
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, controller.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(controller); // dispose content on layout dispose
-		//fxdiff BAKS-7 Resume function
 		if(controller instanceof Activateable2) {
 			layoutCtr.addActivateableDelegate((Activateable2)controller);
 		}
 		
-		//fxdiff VCRP-1: access control of learn resources
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);	
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);	
 		return wrapper;
 	}
 
@@ -209,7 +210,8 @@ public class WikiHandler implements RepositoryHandler {
 	 *      org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		//edit is always part of a wiki
 		return null;
 	}

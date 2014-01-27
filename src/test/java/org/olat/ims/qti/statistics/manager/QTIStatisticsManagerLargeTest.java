@@ -20,7 +20,6 @@
  */
 package org.olat.ims.qti.statistics.manager;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
@@ -38,10 +37,8 @@ import junit.framework.Assert;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.xml.XMLParser;
@@ -84,20 +81,18 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 	private static int numberOfQuestions = 4;
 	private static Map<String,Double> averageScorePerQuestion = new HashMap<String,Double>();
 	private static List<Float> averageRightAnswersInPercent = new ArrayList<Float>();
-	private static Map<String,Long> identToANumOfRightAnswers = new HashMap<>();
+	private static Map<String,Float> identToANumOfRightAnswers = new HashMap<>();
 	private static List<Long> allDurations = new ArrayList<Long>();
-	private static List<Double> scorePerParticipant = new ArrayList<Double>();
-	private static List<Double> scorePerParticipantInTenths = new ArrayList<Double>();
+	private static List<Float> scorePerParticipant = new ArrayList<Float>();
 
-	private static int questionNumber = 1;
 	private static double maxScore = 7.0d;
-	private static float midpointScore = 0.0f;
-	private static long midpointDuration = 0;
+	private static float averageScore = 0.0f;
+	private static long averageDuration = 0;
 	private static int numberOfTestFailed = 0;
 	private static int numberOfTestPassed = 0;
-	private static float durationQ3 = 0l;
-	private static float scoreQ1 = 0;
-	private static float scoreQ2 = 0;
+	private static float durationQ3 = 0.0f;
+	private static float scoreQ1 = 0.0f;
+	private static float scoreQ2 = 0.0f;
 	private static int wrongAnswersQ2 = 0;
 	private static List<String> fibAnswers = new ArrayList<String>();
 
@@ -117,9 +112,8 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 
 		getItemObjectList();
 
-		long tempDuration = 0;
 		double scoreQuestion1 = 0.0d, scoreQuestion2 = 0.0d, scoreQuestion3 = 0.0d, scoreQuestion4 = 0.0d;
-		long maxScoreQ1 = 0, maxScoreQ2 = 0, maxScoreQ3 = 0, maxScoreQ4 = 0;
+		float maxScoreQ1 = 0, maxScoreQ2 = 0, maxScoreQ3 = 0, maxScoreQ4 = 0;
 		
 		// insert value into resultset
 		for (int i = 0; i < numberOfParticipants; i++) {
@@ -132,18 +126,18 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 				numberOfTestFailed++;
 				test.setIsPassed(false);
 			}
-			tempDuration = (long) (Math.random() * 100000) + 1l;
-			midpointDuration += tempDuration;
-			midpointScore = midpointScore + setScore;
-			scorePerParticipant.add(new Double(setScore));
+			long tempTestDuration = Math.round((Math.random() * 100000) + 1.0);
+			averageDuration += tempTestDuration;
+			averageScore += setScore;
+			scorePerParticipant.add(setScore);
 			assertNotNull(allDurations);
-			allDurations.add(tempDuration);
+			allDurations.add(tempTestDuration);
 
 			test.setOlatResource(olatResource);
 			test.setOlatResourceDetail(olatResourceDetail);
 			test.setRepositoryRef(repositoryRef);
 			test.setScore(setScore);
-			test.setDuration(tempDuration);
+			test.setDuration(tempTestDuration);
 			test.setIdentity(JunitTestHelper.createAndPersistIdentityAsUser("test" + i));
 			test.setAssessmentID(111L);
 			test.setLastModified(new Date(200, 8, 23, (int) (Math.random() * 1000 % 60), (int) (Math.random() * 1000 % 60), (int) (Math.random() * 1000 % 60)));
@@ -152,23 +146,20 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 			for (int j = 0; j < numberOfQuestions; j++) {
 				QTIResult testres = new QTIResult();
 				testres.setResultSet(test);
-				tempDuration = (long)(Math.random() * 10000) + 1;
+				long tempDuration = Math.round((Math.random() * 10000) + 1.0);
 				testres.setDuration(tempDuration);
 				testres.setIp("127.0.0.1");
 				testres.setAnswer("asdf");
 
-				if (questionNumber == 1) {
+				if (j == 0) {
 					testres.setItemIdent("QTIEDIT:SCQ:1000007885");
 					if (i % 4 == 0) {
 						testres.setAnswer("1000007887[[1000007890]]");
-					}
-					if (i % 4 == 1) {
+					} else if (i % 4 == 1) {
 						testres.setAnswer("1000007887[[1000009418]]");
-					}
-					if (i % 4 == 2) {
+					} else if (i % 4 == 2) {
 						testres.setAnswer("1000007887[[1000009464]]");
-					}
-					if (i % 4 == 3) {
+					} else if (i % 4 == 3) {
 						testres.setAnswer("1000007887[[1000007890]]");
 					}
 					float score = (float)Math.ceil(Math.random());
@@ -178,7 +169,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 					if (score == 1.0f) {
 						maxScoreQ1++;
 					}
-				} else if (questionNumber == 2) {
+				} else if (j == 1) {
 					testres.setItemIdent("QTIEDIT:MCQ:1000009738");
 					float score = (float)Math.ceil(Math.random() * 3);
 					scoreQ2 += score;
@@ -189,7 +180,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 					} else {
 						maxScoreQ2++;
 					}
-				} else if (questionNumber == 3) {
+				} else if (j == 2) {
 					testres.setItemIdent("QTIEDIT:KPRIM:1000010376");
 					durationQ3 += tempDuration;
 					float score = (float)Math.ceil(Math.random() * 2);
@@ -198,17 +189,15 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 					if (score == 2.0f) {
 						maxScoreQ3++;
 					}
-				} else if (questionNumber == 4) {
+				} else if (j == 3) {
 					testres.setItemIdent("QTIEDIT:FIB:1000010792");
 					if (i % 4 == 0) {
 						testres.setAnswer("Huagagaagaga");
 						fibAnswers.add("Huagagaagaga");
-					}
-					if (i % 4 == 1) {
+					} else if (i % 4 == 1) {
 						testres.setAnswer("Yikes");
 						fibAnswers.add("Yikes");
-					}
-					if (i % 4 == 2 || i % 4 == 3) {
+					} else if (i % 4 == 2 || i % 4 == 3) {
 						testres.setAnswer("Muragarara");
 						fibAnswers.add("Muragarara");
 					}
@@ -222,31 +211,25 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 				testres.setLastModified(new Date());
 				testres.setTstamp(new Date());
 				dbInstance.saveObject(testres);
-				questionNumber++;
-				if (questionNumber == 5) {
-					questionNumber = 1;
-				}
 			}
-			
 			dbInstance.commitAndCloseSession();
 		}
-		
 		dbInstance.commitAndCloseSession();
 		
 		durationQ3 = (durationQ3 / numberOfParticipants);
 		
 		scoreQ1 = scoreQ1 / numberOfParticipants;
 		scoreQ2 = scoreQ2 / numberOfParticipants;
-		midpointScore = midpointScore / numberOfParticipants;
-		midpointDuration = midpointDuration / numberOfParticipants;
+		averageScore = averageScore / numberOfParticipants;
+		averageDuration = averageDuration / numberOfParticipants;
 		averageScorePerQuestion.put("QTIEDIT:SCQ:1000007885", scoreQuestion1 / numberOfParticipants);
 		averageScorePerQuestion.put("QTIEDIT:MCQ:1000009738", scoreQuestion2 / numberOfParticipants);
 		averageScorePerQuestion.put("QTIEDIT:KPRIM:1000010376", scoreQuestion3 / numberOfParticipants);
 		averageScorePerQuestion.put("QTIEDIT:FIB:1000010792", scoreQuestion4 / numberOfParticipants);
-		averageRightAnswersInPercent.add((float)maxScoreQ1 / numberOfParticipants);
-		averageRightAnswersInPercent.add((float)maxScoreQ2 / numberOfParticipants);
-		averageRightAnswersInPercent.add((float)maxScoreQ3 / numberOfParticipants);
-		averageRightAnswersInPercent.add((float)maxScoreQ4 / numberOfParticipants);
+		averageRightAnswersInPercent.add(maxScoreQ1 / numberOfParticipants);
+		averageRightAnswersInPercent.add(maxScoreQ2 / numberOfParticipants);
+		averageRightAnswersInPercent.add(maxScoreQ3 / numberOfParticipants);
+		averageRightAnswersInPercent.add(maxScoreQ4 / numberOfParticipants);
 		identToANumOfRightAnswers.put("QTIEDIT:SCQ:1000007885", maxScoreQ1);
 		identToANumOfRightAnswers.put("QTIEDIT:MCQ:1000009738", maxScoreQ2);
 		identToANumOfRightAnswers.put("QTIEDIT:KPRIM:1000010376", maxScoreQ3);
@@ -256,25 +239,10 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		Collections.sort(allDurations);
 		Collections.sort(scorePerParticipant);
 
-		double counter = 0.0d;
-		double oneTenth = maxScore / 10;
-		double limit = oneTenth;
-		double score;
-		for (int i = 0; i < scorePerParticipant.size(); i++) {
-			score = scorePerParticipant.get(i).doubleValue();
-			if (score <= limit) counter++;
-			else {
-				scorePerParticipantInTenths.add(counter);
-				counter = 0;
-				limit += oneTenth;
-				i --;
-			}
-		}
-		scorePerParticipantInTenths.add(counter);
 		isInitialized = true;
 	}
 
-	@Test @Ignore
+	@Test
 	public void testStatistics() {
 		long start = System.currentTimeMillis();
 
@@ -283,51 +251,38 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		log.info("Statistics of resource takes (ms): " + (System.currentTimeMillis() - start));
 		
 		Assert.assertNotNull(stats);
-		Assert.assertEquals(midpointScore, stats.getAverage(), 0.01);
+		Assert.assertEquals(averageScore, stats.getAverage(), 0.01);
 		Assert.assertEquals(numberOfParticipants, stats.getNumOfParticipants());
 		Assert.assertEquals(numberOfTestFailed, stats.getNumOfFailed());
 		Assert.assertEquals(numberOfTestPassed, stats.getNumOfPassed());
 
-		double range = (scorePerParticipant.get(scorePerParticipant.size() - 1).doubleValue() - scorePerParticipant.get(0).doubleValue());
-		Assert.assertEquals(range, stats.getRange(), 2.00001);//TO DO check range
+		double maxScore = scorePerParticipant.get(scorePerParticipant.size() - 1).doubleValue();
+		double minScore = scorePerParticipant.get(0).doubleValue();
+		double range = maxScore - minScore;
+		Assert.assertEquals(maxScore, stats.getMaxScore(), 0.1);
+		Assert.assertEquals(minScore, stats.getMinScore(), 0.1);
+		Assert.assertEquals(range, stats.getRange(), 0.1);
+
+		Assert.assertEquals(averageDuration, stats.getAverageDuration(), 2);
 		Assert.assertTrue(stats.getStandardDeviation() > 0);
-		Assert.assertEquals(midpointDuration, stats.getAverageDuration());
+		Assert.assertTrue(stats.getMedian() > 0);
+		Assert.assertNotNull(stats.getDurations());
+		Assert.assertNotNull(stats.getScores());
+		Assert.assertNotNull(stats.getMode());
+		Assert.assertFalse(stats.getMode().isEmpty());
 	}
-	/*
-	@Test
-	public void testAverageScorePerItem() {
-		List<StatisticItem> calculatedList = qtim.getStatisticPerItem(olatResource, olatResourceDetail);
-		for (StatisticItem entry : averageScorePerQuestion) {
-			Double average = calculatedList.get(entry.getItemIdent());
-			assertEquals(entry.getValue().doubleValue(), entry.getAverageScore(), 0.01);
-		}
-	}*/
 	
-	/*
 	@Test
-	public void testAverageRightAnswersPerQuestionInPercent() {
-		Assert.assertTrue(averageRightAnswersInPercent.size() > 0);
-		
-		Map<String,Long> calculatedList_v2 = qtim.getNumOfRightAnswersForAllQuestions(itemObjects, olatResource, olatResourceDetail);
-		for (Map.Entry<String, Long> result:calculatedList_v2.entrySet()) {
-			String itemIdent = result.getKey();
-			Long numOfRightResponses = result.getValue();
-			assertEquals(identToANumOfRightAnswers.get(itemIdent), numOfRightResponses);
-		}
-	}*/
-	
-	@Test @Ignore
 	public void testItemStatistics_singleChoice_0() {
 		QTIItemObject itemObject = itemObjects.get(0);
 		double maxValue = Double.parseDouble(itemObject.getItemMaxValue());
 
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(olatResource, olatResourceDetail);
 		StatisticsItem stats  = qtim.getItemStatistics(itemObject.getItemIdent(), maxValue, searchParams);
-
-		assertEquals(scoreQ1, stats.getAverageScore(), 0.1);
+		Assert.assertEquals(scoreQ1, stats.getAverageScore(), 0.1);
 	}
 	
-	@Test @Ignore
+	@Test
 	public void testItemStatistics_multipleChoice_1() {
 		QTIItemObject itemObject = itemObjects.get(1);
 		double maxValue = Double.parseDouble(itemObject.getItemMaxValue());
@@ -336,13 +291,13 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		StatisticsItem stats  = qtim.getItemStatistics(itemObject.getItemIdent(), maxValue, searchParams);
 
 		double difficulty = scoreQ2 / maxValue;
-		assertEquals(difficulty, stats.getDifficulty(), 0.1);
-		assertEquals(scoreQ2, stats.getAverageScore(), 0.1);
-		assertEquals(wrongAnswersQ2, stats.getNumOfIncorrectAnswers());
-		assertEquals(numberOfParticipants - wrongAnswersQ2, stats.getNumOfCorrectAnswers());
+		Assert.assertEquals(difficulty, stats.getDifficulty(), 0.1);
+		Assert.assertEquals(scoreQ2, stats.getAverageScore(), 0.1);
+		Assert.assertEquals(wrongAnswersQ2, stats.getNumOfIncorrectAnswers());
+		Assert.assertEquals(numberOfParticipants - wrongAnswersQ2, stats.getNumOfCorrectAnswers());
 	}
 	
-	@Test @Ignore
+	@Test
 	public void testItemStatistics_kprim_2() {
 		QTIItemObject itemObject = itemObjects.get(2);
 		double maxValue = Double.parseDouble(itemObject.getItemMaxValue());
@@ -350,30 +305,18 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(olatResource, olatResourceDetail);
 		StatisticsItem stats  = qtim.getItemStatistics(itemObject.getItemIdent(), maxValue, searchParams);
 		float durationQ3InSec = durationQ3;
-		assertEquals(durationQ3InSec, stats.getAverageDuration(), 1.0f);
+		Assert.assertEquals(durationQ3InSec, stats.getAverageDuration(), 1.0f);
 	}
-/*
-	@Test
-	public void testAnswerOptions() {
-		int questionNbr = 4;
-		List<String> calculatedList = QTIHelper.getAnswerOptions(itemObjects.get(questionNbr-1));
-		for (int i = 0; i < calculatedList.size(); i++) {
-			assertTrue(itemObjects.get(questionNbr - 1).getResponseLabelMaterials().get(i).equals(calculatedList.get(i)));
-		}
-	}*/
 
-	@Test @Ignore
+	@Test
 	public void testAnswerTexts() {
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(olatResource, olatResourceDetail);
-		List<String> calculatedList  = qtim.getAnswers("QTIEDIT:FIB:1000010792", searchParams);
-		Collections.sort(calculatedList);
-		Collections.sort(fibAnswers);
-		
-		for (int i = 0; i < calculatedList.size(); i++) {
-			assertEquals(fibAnswers.get(i), calculatedList.get(i));
-		}
+		List<String> answers  = qtim.getAnswers("QTIEDIT:FIB:1000010792", searchParams);
+		Assert.assertTrue(answers.containsAll(fibAnswers));
+		Assert.assertTrue(fibAnswers.containsAll(answers));
 	}
 
+	@SuppressWarnings("rawtypes")
 	private void getItemObjectList() {
 		InputStream in = QTIStatisticsManagerLargeTest.class.getResourceAsStream("qti.xml");
 		XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
@@ -396,14 +339,14 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		// create course and persist as OLATResourceImpl
 		
 		OLATResource r =  rm.createOLATResourceInstance("QTIStatisticsTest");
-		DBFactory.getInstance().saveObject(r);
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.saveObject(r);
+		dbInstance.intermediateCommit();
 
 		RepositoryEntry d = RepositoryManager.getInstance().createRepositoryEntryInstance("Stéphane Rossé", "QTIStatisticsTest", "Repo entry");
 		d.setOlatResource(r);
 		d.setDisplayname("QTIStatisticsTest");
-		DBFactory.getInstance().saveObject(d);
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.saveObject(d);
+		dbInstance.intermediateCommit();
 		return d;
 	}
 }

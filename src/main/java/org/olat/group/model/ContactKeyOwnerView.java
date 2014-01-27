@@ -27,39 +27,31 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.olat.core.id.Persistable;
-import org.olat.group.BusinessGroupMemberView;
 
 /**
  * The view list all visible owners
- * Initial date: 20.12.2012<br>
+ * Initial date: 24.1.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Entity
-@Table(name="o_gp_visible_participant_v")
-public class BusinessGroupParticipantViewImpl implements BusinessGroupMemberView, Persistable {
+@Table(name="o_gp_contactkey_owner_v")
+public class ContactKeyOwnerView implements Persistable {
 
 	private static final long serialVersionUID = 5125563005863650603L;
 
 	@Id
-  @GeneratedValue(generator = "system-uuid")
-  @GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="membership_id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
-	
-	@Column(name="bg_id", nullable=false, insertable=true, updatable=false)
-	private Long groupKey;
-	@Column(name="bg_name", nullable=false, insertable=true, updatable=false)
-	private String groupName;
-	@Column(name="bg_part_member_id", nullable=false, insertable=true, updatable=false)
+
+	@Column(name="bg_owner_member_id", nullable=false, insertable=true, updatable=false)
 	private Long identityKey;
-	@Column(name="bg_part_member_name", nullable=false, insertable=true, updatable=false)
-	private String username;
 	@Column(name="bg_owner_sec_id", nullable=false, insertable=true, updatable=false)
 	private Long ownerSecGroupKey;
 	@Column(name="bg_part_sec_id", nullable=false, insertable=true, updatable=false)
 	private Long participantSecGroupKey;
-
 
 	@Override
 	public Long getKey() {
@@ -70,36 +62,12 @@ public class BusinessGroupParticipantViewImpl implements BusinessGroupMemberView
 		this.key = key;
 	}
 
-	public Long getGroupKey() {
-		return groupKey;
-	}
-
-	public void setGroupKey(Long groupKey) {
-		this.groupKey = groupKey;
-	}
-
-	public String getGroupName() {
-		return groupName;
-	}
-
-	public void setGroupName(String groupName) {
-		this.groupName = groupName;
-	}
-
 	public Long getIdentityKey() {
 		return identityKey;
 	}
 
 	public void setIdentityKey(Long identityKey) {
 		this.identityKey = identityKey;
-	}
-
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
 	}
 
 	public Long getOwnerSecGroupKey() {
@@ -128,8 +96,8 @@ public class BusinessGroupParticipantViewImpl implements BusinessGroupMemberView
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof BusinessGroupParticipantViewImpl) {
-			BusinessGroupParticipantViewImpl msg = (BusinessGroupParticipantViewImpl)obj;
+		if(obj instanceof ContactKeyOwnerView) {
+			ContactKeyOwnerView msg = (ContactKeyOwnerView)obj;
 			return key != null && key.equals(msg.key);
 		}
 		return false;

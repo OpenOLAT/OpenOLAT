@@ -82,7 +82,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.model.DisplayMembers;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupEditController;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
@@ -737,9 +736,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private void doShowMembers(UserRequest ureq) {
 		VelocityContainer membersVc = createVelocityContainer("ownersandmembers");
 		// 1. show owners if configured with Owners
-		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
-		boolean downloadAllowed = displayMembers.isDownloadLists();
-		if (displayMembers.isShowOwners()) {
+		boolean downloadAllowed = businessGroup.isDownloadMembersLists();
+		if (businessGroup.isOwnersVisibleIntern()) {
 			removeAsListenerAndDispose(gownersC);
 			gownersC = new GroupController(ureq, getWindowControl(), false, true, true, false, downloadAllowed, false, businessGroup.getOwnerGroup());
 			listenTo(gownersC);
@@ -749,7 +747,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			membersVc.contextPut("showOwnerGroups", Boolean.FALSE);
 		}
 		// 2. show participants if configured with Participants
-		if (displayMembers.isShowParticipants()) {
+		if (businessGroup.isParticipantsVisibleIntern()) {
 			removeAsListenerAndDispose(gparticipantsC);
 			gparticipantsC = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, false, businessGroup.getPartipiciantGroup());
 			listenTo(gparticipantsC);
@@ -761,7 +759,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 		// 3. show waiting-list if configured 
 		membersVc.contextPut("hasWaitingList", new Boolean(businessGroup.getWaitingListEnabled()) );
-		if (displayMembers.isShowWaitingList()) {
+		if (businessGroup.isWaitingListVisibleIntern()) {
 			removeAsListenerAndDispose(waitingListController);
 			waitingListController = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, false, businessGroup.getWaitingGroup());
 			listenTo(waitingListController);
@@ -1027,8 +1025,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			nodeResources = gtnChild;
 		}
 
-		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
-		if (displayMembers.isShowOwners() || displayMembers.isShowParticipants()) {
+		if (businessGroup.isOwnersVisibleIntern() || businessGroup.isParticipantsVisibleIntern()) {
 			// either owners or participants, or both are visible
 			// otherwise the node is not visible
 			gtnChild = new GenericTreeNode();

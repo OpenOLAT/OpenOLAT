@@ -99,7 +99,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
 	 */
-	public List getSupportedTypes() {
+	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
@@ -143,12 +143,12 @@ public class GlossaryHandler implements RepositoryHandler {
 	 * @param wControl
 	 * @return Controller
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(res);
+	@Override
+	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+		VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(re.getOlatResource());
 
 		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
 		boolean editableByUser = "true".equals(glossProps.getProperty(GlossaryItemManager.EDIT_USERS));
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
 		boolean owner = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(ureq.getIdentity(), re.getOwnerGroup());
 		
 		GlossarySecurityCallback secCallback;
@@ -157,13 +157,13 @@ public class GlossaryHandler implements RepositoryHandler {
 		} else {
 			secCallback = new GlossarySecurityCallbackImpl(false, owner, editableByUser, ureq.getIdentity().getKey());
 		}
-		GlossaryMainController gctr = new GlossaryMainController(wControl, ureq, glossaryFolder, res, secCallback, false);
+		GlossaryMainController gctr = new GlossaryMainController(wControl, ureq, glossaryFolder, re.getOlatResource(), secCallback, false);
 		// use on column layout
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, gctr.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(gctr); // dispose content on layout dispose
 		
 		//fxdiff VCRP-1: access control of learn resources
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
 		return wrapper;
 	}
 
@@ -179,8 +179,9 @@ public class GlossaryHandler implements RepositoryHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable
 	 *      org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(res);
+	@Override
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+		VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(re.getOlatResource());
 
 		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
 		boolean editableByUser = "true".equals(glossProps.getProperty(GlossaryItemManager.EDIT_USERS));
@@ -190,7 +191,7 @@ public class GlossaryHandler implements RepositoryHandler {
 		} else {
 			secCallback = new GlossarySecurityCallbackImpl(true, true, editableByUser, ureq.getIdentity().getKey());
 		}
-		GlossaryMainController gctr = new GlossaryMainController(wControl, ureq, glossaryFolder, res, secCallback, false);
+		GlossaryMainController gctr = new GlossaryMainController(wControl, ureq, glossaryFolder, re.getOlatResource(), secCallback, false);
 		// use on column layout
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, gctr.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(gctr); // dispose content on layout dispose

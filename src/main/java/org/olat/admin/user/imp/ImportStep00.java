@@ -236,14 +236,13 @@ class ImportStep00 extends BasicStep {
 				Identity ident = BaseSecurityManager.getInstance().findIdentityByName(login);
 				if (ident != null) {
 					// update existing accounts, add info message
-					idents.add(ident);
 					
-					ident.getUser().getPreferences().setLanguage(lang);
-					importDataError = updateUserProperties(ident, parts, i, columnId, tempEmailsInUse, importedEmails, true);
-					if(importDataError) break;
-					
-					UpdateIdentity uIdentity = new UpdateIdentity(ident, pwd);
+					UpdateIdentity uIdentity = new UpdateIdentity(ident, pwd, lang);
+					idents.add(uIdentity);
 					updateIdents.add(uIdentity);
+					
+					importDataError = updateUserProperties(uIdentity, parts, i, columnId, tempEmailsInUse, importedEmails, true);
+					if(importDataError) break;
 				} else {
 					// no identity/user yet, create
 					// check that no user with same login name is already in list
@@ -322,7 +321,7 @@ class ImportStep00 extends BasicStep {
 				if ( (thisKey.equals(UserConstants.INSTITUTIONALEMAIL) || thisKey.equals(UserConstants.EMAIL)) && !thisValue.isEmpty() ) {
 					// check that no user with same email is already in OLAT
 					Identity identity = UserManager.getInstance().findIdentityByEmail(thisValue);
-					if (identity != null && !identity.equals(ud)) {
+					if (identity != null && !ud.equals(identity)) {
 						textAreaElement.setErrorKey("error.email.exists", new String[] { String.valueOf(i + 1), thisValue });
 						importDataError = true;
 						break;

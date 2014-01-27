@@ -73,7 +73,7 @@ public interface InstantMessagingService {
 	 * @param chatResource
 	 * @param listener
 	 */
-	public void listenChat(Identity identity, OLATResourceable chatResource, boolean anonym, boolean asVip, GenericEventListener listener);
+	public void listenChat(Identity identity, OLATResourceable chatResource, String nickName, boolean anonym, boolean asVip, GenericEventListener listener);
 	
 	/**
 	 * Go away

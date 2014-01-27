@@ -290,8 +290,13 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				// do logging
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
 			}
-		} 
-		else if (source == tabAccessCtrl) {
+		} else if (source == membersController) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				//reload the business group
+				currBusinessGroup = membersController.getGroup();
+				fireEvent(ureq, event);
+			}
+		} else if (source == tabAccessCtrl) {
 			setAllTabs(ureq);
 			fireEvent(ureq, event);
 		} else if (source == resourceController) {

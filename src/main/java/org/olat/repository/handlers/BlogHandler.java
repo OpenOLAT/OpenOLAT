@@ -154,8 +154,9 @@ public class BlogHandler implements RepositoryHandler {
 	 *      org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl control) {
-		return createLaunchController(res, ureq, control);
+	@Override
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control) {
+		return createLaunchController(re, ureq, control);
 	}
 
 	/**
@@ -163,19 +164,17 @@ public class BlogHandler implements RepositoryHandler {
 	 *      java.lang.String, org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq,
+	@Override
+	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq,
 			WindowControl wControl) {
-		RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), repoEntry);	
+		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), re);	
 		FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdmin, isOwner);
-		FeedMainController blogCtr = BlogUIFactory.getInstance(ureq.getLocale()).createMainController(res, ureq, wControl, callback);
+		FeedMainController blogCtr = BlogUIFactory.getInstance(ureq.getLocale()).createMainController(re.getOlatResource(), ureq, wControl, callback);
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, blogCtr.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(blogCtr);
-		//fxdiff BAKS-7 Resume function
 		layoutCtr.addActivateableDelegate(blogCtr);
-		//fxdiff VCRP-1: access control of learn resources
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
 		return wrapper;
 	}
 

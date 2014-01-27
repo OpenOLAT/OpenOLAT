@@ -31,8 +31,12 @@ import org.olat.core.id.OLATResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DefaultContextEntryControllerCreator implements ContextEntryControllerCreator {
+public abstract class DefaultContextEntryControllerCreator implements ContextEntryControllerCreator {
+	
+	@Override
+	public abstract ContextEntryControllerCreator clone();
 
+	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		return null;
 	}
@@ -41,10 +45,12 @@ public class DefaultContextEntryControllerCreator implements ContextEntryControl
 		return null;
 	}
 
+	@Override
 	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 		return null;
 	}
 
+	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		return true;
 	}

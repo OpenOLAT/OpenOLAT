@@ -30,9 +30,10 @@ import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.model.BusinessGroupOwnerViewImpl;
-import org.olat.group.model.BusinessGroupParticipantViewImpl;
-import org.olat.properties.Property;
+import org.olat.group.model.ContactOwnerView;
+import org.olat.group.model.ContactParticipantView;
+import org.olat.group.model.ContactKeyOwnerView;
+import org.olat.group.model.ContactKeyParticipantView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,10 +51,9 @@ public class ContactDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	
 	public Collection<Long> getDistinctGroupOwnersParticipants(Identity me) {
-		List<Long> owners = getMembersForCount(me, BusinessGroupOwnerViewImpl.class);
-		List<Long> participants = getMembersForCount(me, BusinessGroupParticipantViewImpl.class);
+		List<Long> owners = getMembersForCount(me, ContactKeyOwnerView.class);
+		List<Long> participants = getMembersForCount(me, ContactKeyParticipantView.class);
 		Set<Long> contacts = new HashSet<Long>(participants);
 		contacts.addAll(owners);
 		return contacts;
@@ -61,11 +61,13 @@ public class ContactDAO {
 	
 	private List<Long> getMembersForCount(Identity me, Class<?> cl) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct(memv.identityKey) from ").append(cl.getName()).append(" memv ")
-		  .append(" where memv.ownerSecGroupKey in (")
-		  .append("   select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey")
-		  .append(" ) or memv.participantSecGroupKey in (")
-		  .append("   select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey")
+		sb.append("select memv.identityKey from ").append(cl.getName()).append(" memv ")
+		  .append(" where exists (")
+		  .append("   select ownerSgmi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi")
+		  .append("     where ownerSgmi.securityGroup=memv.ownerSecGroupKey and ownerSgmi.identity.key=:identKey")
+		  .append(" ) or exists (")
+		  .append("   select partSgmi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi")
+		  .append("     where memv.participantSecGroupKey=partSgmi.securityGroup and partSgmi.identity.key=:identKey")
 		  .append(" )");
 		
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
@@ -73,21 +75,23 @@ public class ContactDAO {
 				.getResultList();
 	}
 
-	public List<BusinessGroupOwnerViewImpl> getGroupOwners(Identity me) {
-		return getMembers(me, BusinessGroupOwnerViewImpl.class);
+	public List<ContactOwnerView> getGroupOwners(Identity me) {
+		return getMembers(me, ContactOwnerView.class);
 	}
 	
-	public List<BusinessGroupParticipantViewImpl> getParticipants(Identity me) {
-		return getMembers(me, BusinessGroupParticipantViewImpl.class);
+	public List<ContactParticipantView> getParticipants(Identity me) {
+		return getMembers(me, ContactParticipantView.class);
 	}
 	
 	private <U> List<U> getMembers(Identity me, Class<U> cl) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select memv from ").append(cl.getName()).append(" memv ")
-		  .append(" where memv.ownerSecGroupKey in (")
-		  .append("   select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey")
-		  .append(" ) or memv.participantSecGroupKey in (")
-		  .append("   select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey")
+		  .append(" where exists (")
+		  .append("   select ownerSgmi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi")
+		  .append("     where memv.ownerSecGroupKey=ownerSgmi.securityGroup and ownerSgmi.identity.key=:identKey")
+		  .append(" ) or exists (")
+		  .append("   select partSgmi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi")
+		  .append("     where memv.participantSecGroupKey=partSgmi.securityGroup and partSgmi.identity.key=:identKey")
 		  .append(" )");
 		
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), cl)
@@ -126,19 +130,19 @@ public class ContactDAO {
 		     .append(" inner join sgmi.securityGroup as secGroup ")
 		     .append(" where ")
 		     .append("  secGroup in (")
-		     .append("    select bg1.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg1,").append(Property.class.getName()).append(" as prop where prop.grp=bg1 and prop.name='displayMembers' and prop.longValue in (1,3,5,7)")
+		     .append("    select bg1.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg1 where bg1.ownersVisibleIntern=true")
 		     .append("      and bg1.ownerGroup in (select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey)")
 		     .append("  ) or")
 		     .append("  secGroup in (")
-		     .append("    select bg3.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg3,").append(Property.class.getName()).append(" as prop where prop.grp=bg3 and prop.name='displayMembers' and prop.longValue in (1,3,5,7)")
+		     .append("    select bg3.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg3 where bg3.ownersVisibleIntern=true")
 		     .append("      and bg3.partipiciantGroup in (select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey)")
 		     .append("  ) or")
 		     .append("  secGroup in (")
-		     .append("    select bg2.partipiciantGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg2,").append(Property.class.getName()).append(" as prop where prop.grp=bg2 and prop.name='displayMembers' and prop.longValue in (2,3,6,7)")
+		     .append("    select bg2.partipiciantGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg2 where bg2.participantsVisibleIntern=true")
 		     .append("      and bg2.partipiciantGroup in (select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey)")
 		     .append("  ) or")
 		     .append("  secGroup in (")
-		     .append("    select bg4.partipiciantGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg4,").append(Property.class.getName()).append(" as prop where prop.grp=bg4 and prop.name='displayMembers' and prop.longValue in (2,3,6,7)")
+		     .append("    select bg4.partipiciantGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg4 where bg4.participantsVisibleIntern=true")
 		     .append("      and bg4.ownerGroup in (select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey)")
 		     .append("  )");
 		if(Identity.class.equals(resultClass)) {
@@ -149,7 +153,4 @@ public class ContactDAO {
 		db.setParameter("identKey", identity.getKey());
 		return db;
 	}
-
-
-
 }

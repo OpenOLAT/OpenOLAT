@@ -84,8 +84,8 @@ public class NamedFileMediaResource extends FileMediaResource {
 	public void prepare(HttpServletResponse hres) {
 		// encode filename in ISO8859-1; does not really help but prevents from filename not being displayed at all
 		// if it contains non-US-ASCII characters which are not allowed in header fields.
-		hres.setHeader("Content-Disposition","attachment; filename=\"" + StringHelper.urlEncodeISO88591(fileName) + "\"");
-		hres.setHeader("Content-Description",StringHelper.urlEncodeISO88591(fileDescription));
+		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(fileName));
+		hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(fileDescription));
 	}
 
 

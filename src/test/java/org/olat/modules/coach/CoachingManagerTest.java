@@ -40,7 +40,6 @@ import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.model.DisplayMembers;
 import org.olat.modules.coach.manager.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
@@ -171,8 +170,8 @@ public class CoachingManagerTest extends OlatTestCase {
 	    BusinessGroup g2 =  businessGroupService.createBusinessGroup(author, "coach-g2", null, new Integer(0), new Integer(10), false, false, re);
 	    
 	    //permission to see owners and participants
-	    businessGroupService.updateDisplayMembers(g1, new DisplayMembers(false, false, false));
-	    businessGroupService.updateDisplayMembers(g2, new DisplayMembers(true, true, false));
+	    businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
+	    businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);
 	    
 	    // coach
 	    addCoachToGroupCourse(coach10, g1, re);

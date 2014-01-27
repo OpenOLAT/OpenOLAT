@@ -131,6 +131,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti.qpool.QTIExportProcessorTest.class,
 	org.olat.ims.qti.statistics.manager.QTIStatisticsManagerLargeTest.class,
 	org.olat.ims.qti.statistics.manager.QTIStatisticsManagerTest.class,
+	org.olat.ims.qti.statistics.manager.StatisticsTest.class,
 	org.olat.ims.lti.LTIManagerTest.class,
 	org.olat.modules.webFeed.FeedManagerImplTest.class,
 	org.olat.modules.qpool.manager.MetadataConverterHelperTest.class,

@@ -41,6 +41,11 @@ public class SiteContextEntryControllerCreator extends DefaultContextEntryContro
 		this.site = site;
 	}
 
+	@Override
+	public ContextEntryControllerCreator clone() {
+		return this;
+	}
+
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		return null;
 	}

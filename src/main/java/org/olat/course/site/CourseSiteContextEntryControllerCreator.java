@@ -29,6 +29,7 @@ import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
@@ -47,8 +48,14 @@ import org.olat.repository.RepositoyUIFactory;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class CourseSiteContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
-	
+
+	private RepositoryEntry repoEntry;
 	private SiteDefinitions siteDefinitions;
+	
+	@Override
+	public ContextEntryControllerCreator clone() {
+		return new CourseSiteContextEntryControllerCreator();
+	}
 
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
@@ -57,10 +64,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	 */
 	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		OLATResourceable ores = ce.getOLATResourceable();
-
-		RepositoryManager repom = RepositoryManager.getInstance();
-		RepositoryEntry re = repom.lookupRepositoryEntry(ores.getResourceableId());
+		RepositoryEntry re = getRepositoryEntry(ce);
 		Controller ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);
 		return ctrl;
 	}
@@ -70,9 +74,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	 */
 	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		OLATResourceable ores = ce.getOLATResourceable();
-		RepositoryManager repom = RepositoryManager.getInstance();
-		RepositoryEntry re = repom.lookupRepositoryEntry(ores.getResourceableId());
+		RepositoryEntry re = getRepositoryEntry(ce);
 		CourseSiteDef siteDef = getCourseSite(ureq, re);
 		if(siteDef != null) {
 			return "Hello";
@@ -85,9 +87,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	 */
 	@Override
 	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
-		OLATResourceable ores = ce.getOLATResourceable();
-		RepositoryManager repom = RepositoryManager.getInstance();
-		RepositoryEntry re = repom.lookupRepositoryEntry(ores.getResourceableId());
+		RepositoryEntry re = getRepositoryEntry(ce);
 		CourseSiteDef siteDef = getCourseSite(ureq, re);
 		if(siteDef != null) {
 			return siteDef.getClass().getName().replace("Def", "");
@@ -97,10 +97,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	
 	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		OLATResourceable ores = ce.getOLATResourceable();
-		RepositoryManager repom = RepositoryManager.getInstance();
-		RepositoryEntry re = repom.lookupRepositoryEntry(ores.getResourceableId());
-		return re != null;
+		return getRepositoryEntry(ce) != null;
 	}
 
 	private SiteDefinitions getSitesDefinitions() {
@@ -128,5 +125,18 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			}
 		}
 		return null;
+	}
+	
+	private RepositoryEntry getRepositoryEntry(ContextEntry ce) {
+		if(repoEntry == null) {
+			if(ce.getOLATResourceable() instanceof RepositoryEntry) {
+				repoEntry = (RepositoryEntry)ce.getOLATResourceable();
+			} else {
+				OLATResourceable ores = ce.getOLATResourceable();
+				RepositoryManager rm = RepositoryManager.getInstance();
+				repoEntry = rm.lookupRepositoryEntry(ores.getResourceableId());
+			}
+		}
+		return repoEntry;
 	}
 }

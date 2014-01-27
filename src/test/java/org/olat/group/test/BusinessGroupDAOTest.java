@@ -38,8 +38,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLazy;
 import org.olat.group.BusinessGroupMembership;
@@ -47,11 +45,9 @@ import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.manager.BusinessGroupDAO;
-import org.olat.group.manager.BusinessGroupPropertyDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.Offer;
@@ -65,8 +61,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BusinessGroupDAOTest extends OlatTestCase {
 	
-	private OLog log = Tracing.createLoggerFor(BusinessGroupDAOTest.class);
-	
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
@@ -75,8 +69,6 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -425,20 +417,17 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check the value
-		Property prop1 = businessGroupPropertyManager.findProperty(group1);
-		Assert.assertTrue(businessGroupPropertyManager.showOwners(prop1));
-		Assert.assertTrue(businessGroupPropertyManager.showPartips(prop1));
-		Assert.assertFalse(businessGroupPropertyManager.showWaitingList(prop1));
+		Assert.assertTrue(group1.isOwnersVisibleIntern());
+		Assert.assertTrue(group1.isParticipantsVisibleIntern());
+		Assert.assertFalse(group1.isWaitingListVisibleIntern());
 		
-		Property prop2 = businessGroupPropertyManager.findProperty(group2);
-		Assert.assertFalse(businessGroupPropertyManager.showOwners(prop2));
-		Assert.assertTrue(businessGroupPropertyManager.showPartips(prop2));
-		Assert.assertFalse(businessGroupPropertyManager.showWaitingList(prop2));
+		Assert.assertFalse(group2.isOwnersVisibleIntern());
+		Assert.assertTrue(group2.isParticipantsVisibleIntern());
+		Assert.assertFalse(group2.isWaitingListVisibleIntern());
 		
-		Property prop3 = businessGroupPropertyManager.findProperty(group3);
-		Assert.assertFalse(businessGroupPropertyManager.showOwners(prop3));
-		Assert.assertFalse(businessGroupPropertyManager.showPartips(prop3));
-		Assert.assertTrue(businessGroupPropertyManager.showWaitingList(prop3));
+		Assert.assertFalse(group3.isOwnersVisibleIntern());
+		Assert.assertFalse(group3.isParticipantsVisibleIntern());
+		Assert.assertTrue(group3.isWaitingListVisibleIntern());
 	}
 	
 	@Test

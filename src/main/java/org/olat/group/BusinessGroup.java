@@ -140,6 +140,34 @@ public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateIn
 	 * @return last usage of this group
 	 */
 	public Date getLastUsage();
+	
+	public boolean isOwnersVisibleIntern();
+
+	public void setOwnersVisibleIntern(boolean visible);
+
+	public boolean isParticipantsVisibleIntern();
+
+	public void setParticipantsVisibleIntern(boolean visible);
+
+	public boolean isWaitingListVisibleIntern();
+
+	public void setWaitingListVisibleIntern(boolean visible);
+
+	public boolean isOwnersVisiblePublic();
+
+	public void setOwnersVisiblePublic(boolean visible);
+
+	public boolean isParticipantsVisiblePublic();
+
+	public void setParticipantsVisiblePublic(boolean visible);
+
+	public boolean isWaitingListVisiblePublic();
+
+	public void setWaitingListVisiblePublic(boolean visible);
+
+	public boolean isDownloadMembersLists();
+
+	public void setDownloadMembersLists(boolean downloadMembersLists);
 
 	/**
 	 * @return the maximal number of participants

@@ -42,6 +42,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -49,6 +50,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -64,6 +66,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.test.JMSCodePointServerJunitHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -78,6 +81,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -195,6 +200,15 @@ public class RepositoryManagerTest extends OlatTestCase {
 		String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(re.getOlatResource().getResourceableId());
 		Assert.assertNotNull(displayName);
 		Assert.assertEquals(re.getDisplayname(), displayName);
+	}
+	@Test
+	public void lookupResource() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		OLATResource resource = repositoryManager.lookupRepositoryEntryResource(re.getKey());
+		Assert.assertNotNull(resource);
+		Assert.assertEquals(re.getOlatResource(), resource);
 	}
 	
 	@Test
@@ -697,6 +711,44 @@ public class RepositoryManagerTest extends OlatTestCase {
 		List<RepositoryEntryMembership> membership2s = repositoryManager.getRepositoryEntryMembership(null);
 		Assert.assertNotNull(membership2s);
 		Assert.assertTrue(membership2s.isEmpty());
+	}
+	
+	/**
+	 * How can be a resource manager if Constants.ORESOURCE_USERMANAGER is never used?
+	 */
+	@Test
+	public void isInstitutionalRessourceManagerFor() {
+		Identity owner1 = JunitTestHelper.createAndPersistIdentityAsUser("instit-" + UUID.randomUUID().toString());
+		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsUser("instit-" + UUID.randomUUID().toString());
+		Identity part3 = JunitTestHelper.createAndPersistIdentityAsUser("instit-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		securityManager.addIdentityToSecurityGroup(owner1, re.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(owner2, re.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(part3, re.getParticipantGroup());
+		dbInstance.commit();
+		
+		//set the institutions
+		owner1.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "volks");
+		owner2.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "volks");
+		part3.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "volks");
+		userManager.updateUserFromIdentity(owner1);
+		userManager.updateUserFromIdentity(owner2);
+		userManager.updateUserFromIdentity(part3);
+		dbInstance.commit();
+		
+		//promote owner1 to institution resource manager
+		SecurityGroup institutionalResourceManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
+		securityManager.addIdentityToSecurityGroup(owner1, institutionalResourceManagerGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean institutionMgr1 = repositoryManager.isInstitutionalRessourceManagerFor(re, owner1);
+		boolean institutionMgr2 = repositoryManager.isInstitutionalRessourceManagerFor(re, owner2);
+		boolean institutionMgr3 = repositoryManager.isInstitutionalRessourceManagerFor(re, part3);
+	
+		Assert.assertTrue(institutionMgr1);
+		Assert.assertFalse(institutionMgr2);
+		Assert.assertFalse(institutionMgr3);
 	}
 
 	@Test

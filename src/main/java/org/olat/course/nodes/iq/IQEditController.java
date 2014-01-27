@@ -55,7 +55,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -454,8 +453,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 					//not found
 				} else {
 					RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
-					OLATResourceable ores = re.getOlatResource();
-					correctQTIcontroller = typeToEdit.createEditorController(ores, ureq, getWindowControl());
+					correctQTIcontroller = typeToEdit.createEditorController(re, ureq, getWindowControl());
 					getWindowControl().pushToMainArea(correctQTIcontroller.getInitialComponent());					
 					listenTo(correctQTIcontroller);
 				}
