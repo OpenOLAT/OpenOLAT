@@ -20,8 +20,11 @@
 package org.olat.course.site;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
+import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.course.site.model.CourseSiteConfiguration;
+import org.olat.course.site.model.LanguageConfiguration;
 
 /**
  * 
@@ -38,5 +41,12 @@ public class CourseSiteDef2 extends CourseSiteDef {
 		SiteDefinitions siteModule = CoreSpringFactory.getImpl(SiteDefinitions.class);
 		CourseSiteConfiguration config = siteModule.getConfigurationCourseSite2();
 		return config;
+	}
+
+	@Override
+	protected CourseSite createCourseSiteInstance(UserRequest ureq, LanguageConfiguration langConfig,
+			boolean showToolController, SiteSecurityCallback siteSecCallback, String icon) {
+		return new CourseSite2(this, ureq.getLocale(), langConfig.getRepoSoftKey(), showToolController,
+				siteSecCallback, langConfig.getTitle(), icon);
 	}
 }
