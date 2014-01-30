@@ -350,6 +350,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	 */
 	@Override
 	public void addDocument(Document document) {
+		if(document == null) return;//nothing to do
+		
 		IndexWriter writer = null;
 		try {
 			String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
@@ -357,8 +359,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 
 			DirectoryReader reader = getReader();
 			IndexSearcher searcher = new IndexSearcher(reader);
-	    TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
-	    writer = permanentIndexWriter.getAndLock();
+			TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
+			writer = permanentIndexWriter.getAndLock();
 			if(hits.totalHits > 0) {
 				writer.updateDocument(uuidTerm, document);
 			} else {
@@ -378,7 +380,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
 			DirectoryReader reader = getReader();
 			IndexSearcher searcher = new IndexSearcher(reader);
-	    TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
+			TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
 			if(hits.totalHits > 0) {
 				writer.updateDocument(uuidTerm, document);
 			} else {
