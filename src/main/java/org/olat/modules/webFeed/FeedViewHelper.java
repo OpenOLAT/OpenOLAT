@@ -187,6 +187,9 @@ public class FeedViewHelper {
 		// Reload item to prevent displaying of stale content
 		feed = feedManager.getFeed(feed);
 		item = feedManager.getItem(feed, item.getGuid());
+		if(item == null) {
+			return null;
+		}
 
 		String file = null;
 		Enclosure enclosure = item.getEnclosure();
@@ -243,7 +246,7 @@ public class FeedViewHelper {
 		item = feedManager.getItem(feed, item.getGuid());
 
 		String lastModified = null;
-		Date date = item.getLastModified();
+		Date date = item == null ? null : item.getLastModified();
 		if (date != null) {
 			lastModified = DateFormat.getDateInstance(DateFormat.MEDIUM, this.locale).format(date);
 		}
@@ -258,6 +261,9 @@ public class FeedViewHelper {
 		// Reload item to prevent displaying of stale content
 		feed = feedManager.getFeed(feed);
 		item = feedManager.getItem(feed, item.getGuid());
+		if(item == null) {
+			return "";
+		}
 
 		String publishDate = null;
 		Date date = item.getPublishDate();
@@ -275,6 +281,9 @@ public class FeedViewHelper {
 		// Reload item to prevent displaying of stale content
 		feed = feedManager.getFeed(feed);
 		item = feedManager.getItem(feed, item.getGuid());
+		if(item == null) {
+			return "";
+		}
 
 		String info = null;
 		String date = getPublishDate(item);
@@ -305,7 +314,10 @@ public class FeedViewHelper {
 		item = feedManager.getItem(feed, item.getGuid());
 
 		String info = null;
-		if (item.isDraft()) {
+		if(item == null) {
+			//oops deleted
+			info = "";
+		} else if (item.isDraft()) {
 			info = translator.translate("feed.item.draft");
 		} else if (item.isScheduled()) {
 			info = translator.translate("feed.item.scheduled.for", new String[] { getPublishDate(item) });
@@ -319,8 +331,7 @@ public class FeedViewHelper {
 		// Reload item to prevent displaying of stale content
 		feed = feedManager.getFeed(feed);
 		item = feedManager.getItem(feed, item.getGuid());
-
-		return item.getModifierKey() > 0 && StringHelper.containsNonWhitespace(item.getModifier());
+		return item != null && item.getModifierKey() > 0 && StringHelper.containsNonWhitespace(item.getModifier());
 	}
 	
 	/**
@@ -331,6 +342,9 @@ public class FeedViewHelper {
 		// Reload item to prevent displaying of stale content
 		feed = feedManager.getFeed(feed);
 		item = feedManager.getItem(feed, item.getGuid());
+		if(item == null) {
+			return "";
+		}
 
 		if (isModified(item)) {
 			String date = getLastModified(item);
@@ -356,8 +370,7 @@ public class FeedViewHelper {
 		// Reload item to prevent displaying of stale content
 		feed = feedManager.getFeed(feed);
 		item = feedManager.getItem(feed, item.getGuid());
-
-		int width = item.getWidth();
+		int width = item == null ? 0 : item.getWidth();
 		if(width > 0 && width < 2000) {
 			return Integer.toString(width);
 		}
@@ -369,7 +382,7 @@ public class FeedViewHelper {
 		feed = feedManager.getFeed(feed);
 		item = feedManager.getItem(feed, item.getGuid());
 
-		int height = item.getHeight();
+		int height = item == null ? 0 : item.getHeight();
 		if(height > 0 && height < 2000) {
 			return Integer.toString(height);
 		}
@@ -415,6 +428,9 @@ public class FeedViewHelper {
 		// Reload item to prevent displaying of stale content
 		feed = feedManager.getFeed(feed);
 		item = feedManager.getItem(feed, item.getGuid());
+		if(item == null) {
+			return "";
+		}
 		
 		String itemDescription = item.getDescription();
 		if (itemDescription != null) {
@@ -444,6 +460,9 @@ public class FeedViewHelper {
 		// Reload item to prevent displaying of stale content
 		feed = feedManager.getFeed(feed);
 		item = feedManager.getItem(feed, item.getGuid());
+		if(item == null) {
+			return "";
+		}
 		
 		String itemContent = item.getContent();
 		if (itemContent != null) {
