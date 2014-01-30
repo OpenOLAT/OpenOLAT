@@ -1,4 +1,3 @@
-##
 <h3>$!menuTitle</h3>
 <i>$!displayTitle</i>
 
@@ -24,38 +23,26 @@
 			#end
 			</td>
 	</tr>
-	<tr>
-			#if ($attampts)
-			<td>			
-				$r.translate("attempts.yourattempts"): 
-			</td>
-			<td>
-				$attempts
-			</td>
-			#end
+	#if($attempts)
+		<tr>
+			<td>$r.translate("attempts.yourattempts"):</td>
+			<td>$attempts</td>
 		</tr>
+	#end
 	#if ($attempts && $attempts >0 || $self)
 		<tr>
 			<td colspan="2"><b>$r.translate("attempts.result")</b></td>
 		</tr>
 		#foreach ($var in $qtivars)
 		<tr>
-			<td>			
-				${var.getIdentifier()}: 
-			</td>
-			<td>
-				${var.getValue()}
-			</td>
+			<td>${var.getIdentifier()}:</td>
+			<td>${var.getValue()}</td>
 		</tr>
-      	#end
-      	#if ($hasResult == true)
-      	<tr>
-			<td>			
-				$r.translate("score.yourscore"): 
-			</td>
-			<td>
-				$score
-			</td>
+    #end
+    #if ($hasResult == true)
+    <tr>
+			<td>$r.translate("score.yourscore"):</td>
+			<td>$score</td>
 		</tr>
 		##<OLATCE-1014> hide status - line if there is no passed value set
 		#if($passed != "")
@@ -73,13 +60,11 @@
 		##<OLATCE-1014>
 		#end
 		##</OLATCE-1014>
-		#else
+	#else
 		<tr>
-			<td>
-			$r.translate("no.testresults")
-			</td>
+			<td colspan="2">$r.translate("no.testresults")</td>
 		</tr>
-		#end
+	#end
 		<tr>
 			<td>
 			#if($showResultsOnHomePage && $attempts && $attempts >0)
