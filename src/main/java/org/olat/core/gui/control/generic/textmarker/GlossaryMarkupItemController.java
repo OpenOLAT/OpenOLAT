@@ -96,7 +96,7 @@ public class GlossaryMarkupItemController extends BasicController {
 		
 		tmContainer.contextPut("glossaryId", glossaryId);
 
-			// finally add the wrapped content to the velocity container
+		// finally add the wrapped content to the velocity container
 		tmContainer.put("tmComponent", tmComponent);
 		putInitialPanel(tmContainer);		
 	}
@@ -127,8 +127,7 @@ public class GlossaryMarkupItemController extends BasicController {
 	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
 	/**
@@ -136,8 +135,6 @@ public class GlossaryMarkupItemController extends BasicController {
 	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-	// TODO Auto-generated method stub
-
+		//
 	}
-
 }

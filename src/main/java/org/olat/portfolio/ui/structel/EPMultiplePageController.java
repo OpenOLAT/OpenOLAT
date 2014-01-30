@@ -196,7 +196,7 @@ public class EPMultiplePageController extends BasicController implements Activat
 	private void setAndInitTOCPage(UserRequest ureq) {
 		// this is the toc
 		if (tocPageCtrl == null) {
-			EPPage page = (EPPage) pageList.get(0);
+			PortfolioStructure page = pageList.get(0);
 			PortfolioStructure map = ePFMgr.loadStructureParent(page);
 			tocPageCtrl = new EPTOCReadOnlyController(ureq, getWindowControl(), map, secCallback);
 			listenTo(tocPageCtrl);
