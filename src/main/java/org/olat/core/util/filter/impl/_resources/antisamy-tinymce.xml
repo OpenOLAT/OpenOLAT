@@ -557,7 +557,10 @@
 			<attribute name="charoff" />
 			<attribute name="background" />
 		</tag>
+		
+		<tag name="init" action="validate">
 
+		</tag>
 
 	</tag-rules>
 
