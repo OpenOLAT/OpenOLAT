@@ -140,7 +140,10 @@ public class NewControllerFactory extends LogDelegator {
 	
 	private ContextEntryControllerCreator getContextEntryControllerCreator(String type) {
 		ContextEntryControllerCreator typeHandler = contextEntryControllerCreators.get(type);
-		return typeHandler.clone();
+		if(typeHandler != null) {
+			return typeHandler.clone();
+		}
+		return null;
 	}
 
 	/**

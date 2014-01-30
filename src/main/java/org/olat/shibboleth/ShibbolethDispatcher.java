@@ -55,6 +55,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
@@ -143,6 +144,10 @@ public class ShibbolethDispatcher implements Dispatcher{
 			ShibbolethRegistrationController.putShibUniqueID(req, uniqueID);
 			redirectToShibbolethRegistration(resp);
 			return;
+		}
+		if(ureq.getUserSession() != null) {
+			//re-init the activity logger
+			ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(req);
 		}
 		int loginStatus = AuthHelper.doLogin(auth.getIdentity(), ShibbolethDispatcher.PROVIDER_SHIB, ureq);
 		if (loginStatus != AuthHelper.LOGIN_OK) {

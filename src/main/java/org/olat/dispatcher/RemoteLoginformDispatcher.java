@@ -43,6 +43,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
@@ -138,6 +139,9 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 			}
 			
 			UserSession usess = ureq.getUserSession();
+			//re-init the activity logger to pass the user session and identity
+			ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(request);
+			
 			//sync over the UserSession Instance to prevent double logins
 			synchronized (usess) {
 				// Login user, set up everything

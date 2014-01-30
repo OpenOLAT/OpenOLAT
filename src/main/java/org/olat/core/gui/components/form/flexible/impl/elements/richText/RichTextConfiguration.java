@@ -105,6 +105,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String FORCED_ROOT_BLOCK = "forced_root_block";
 	private static final String FORCED_ROOT_BLOCK_VALUE_NOROOT = "";
 	private static final String DOCUMENT_BASE_URL = "document_base_url";
+	private static final String PASTE_DATA_IMAGES = "paste_data_images";
 	//
 	// Generic boolean true / false values
 	private static final String VALUE_FALSE = "false";
@@ -258,6 +259,7 @@ public class RichTextConfiguration implements Disposable {
 		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, EXTENDED_VALID_ELEMENTS_VALUE_FULL);
 		setQuotedConfigValue(INVALID_ELEMENTS, INVALID_ELEMENTS_FILE_FULL_VALUE_UNSAVE);
 		
+		setNonQuotedConfigValue(PASTE_DATA_IMAGES, "true");
 		// Setup file and link browser
 		if (baseContainer != null) {
 			setFileBrowserCallback(baseContainer, customLinkTreeModel, IMAGE_SUFFIXES_VALUES, MEDIA_SUFFIXES_VALUES, FLASH_PLAYER_SUFFIXES_VALUES);
