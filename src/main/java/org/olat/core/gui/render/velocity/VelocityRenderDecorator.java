@@ -622,6 +622,16 @@ public class VelocityRenderDecorator implements Closeable{
 		Component source = renderer.findComponent(componentName);
 		return (source != null && source.isVisible());
 	}
+	
+	/**
+	 * Return the component
+	 * @param componentName
+	 * @return
+	 */
+	public Component getComponent(String componentName) {
+		Component source = renderer.findComponent(componentName);
+		return source;
+	}
 
 	/**
 	 * returns an object from the context of velocity

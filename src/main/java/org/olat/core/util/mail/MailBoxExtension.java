@@ -145,8 +145,8 @@ public class MailBoxExtension extends BasicManager implements MailContextResolve
 	@Override
 	public void open(UserRequest ureq, WindowControl wControl, String businessPath) {
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
-	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
-	  NewControllerFactory.getInstance().launch(ureq, bwControl);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
+		NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
 	
 	private static class InboxContextEntry extends DefaultContextEntryControllerCreator {

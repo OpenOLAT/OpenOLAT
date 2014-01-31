@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.UserRatingsManager;
+import org.olat.core.commons.services.commentAndRating.impl.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -51,6 +52,8 @@ public class UserRatingsTest extends OlatTestCase {
 	public void should_service_present() {
 		CommentAndRatingService service = CoreSpringFactory.getImpl(CommentAndRatingService.class);
 		Assert.assertNotNull(service);
+		UserRatingsDAO userRatingsDAO = CoreSpringFactory.getImpl(UserRatingsDAO.class);
+		Assert.assertNotNull(userRatingsDAO);
 	}
 	
 	@Test

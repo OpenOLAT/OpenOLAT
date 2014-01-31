@@ -19,25 +19,11 @@
  */
 package org.olat.home.controllerCreators;
 
-import org.olat.commons.rss.RSSUtil;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.HtmlHeaderComponent;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.AutoCreator;
-import org.olat.core.gui.control.generic.portal.PortalImpl;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.id.Roles;
-import org.olat.core.util.Util;
-import org.olat.home.InviteeHomeMainController;
+import org.olat.core.gui.control.generic.portal.PortalMainController;
 
 
 /**
@@ -69,78 +55,8 @@ public class HomePortalControllerCreator extends AutoCreator  {
 	 */
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl lwControl) {
-		return new HomePortalController(ureq, lwControl);
+		return new PortalMainController(ureq, lwControl);
 	}
 	
-	public static class HomePortalController extends BasicController {
-		
-		private final VelocityContainer welcome;
-		private final Link portalBackButton;
-		private final Link portalEditButton;
-		private PortalImpl myPortal;
-		
-		public HomePortalController(UserRequest ureq, WindowControl wControl) {
-			super(ureq, wControl, Util.createPackageTranslator(InviteeHomeMainController.class, ureq.getLocale()));
-			// start screen
-			welcome = createVelocityContainer("welcome");
-			portalBackButton = LinkFactory.createButtonXSmall("command.portal.back", welcome, this);
-			portalEditButton = LinkFactory.createButtonXSmall("command.portal.edit", welcome, this);
-			
-			if(CoreSpringFactory.containsBean("baksModule")){
-				welcome.contextPut("isbaks", true);
-			}else{
-				welcome.contextPut("isbaks", false);
-			}
-			
-			// rss link
-			String rssLink = RSSUtil.getPersonalRssLink(ureq);
-			welcome.contextPut("rssLink", rssLink);
-			StringOutput staticUrl = new StringOutput();
-			StaticMediaDispatcher.renderStaticURI(staticUrl, "js/egg.js");
-			welcome.put("htmlHeader", new HtmlHeaderComponent("rss", null, "<link rel=\"alternate\" type=\"application/rss+xml\" title=\""
-					+ translate("welcome.rss") + "\" href=\"" + rssLink + "\" />\n" + "<script type=\"text/javascript\" src=\""
-					+ staticUrl.toString() + "\"></script>"));
 
-			// add portal
-			if (myPortal == null) {
-				Roles roles = ureq.getUserSession().getRoles();
-				PortalImpl portalTemplate;
-				if(roles.isGuestOnly()){
-					portalTemplate = ((PortalImpl)CoreSpringFactory.getBean("guestportal"));
-					portalEditButton.setEnabled(false);
-					portalEditButton.setVisible(false);
-				} else if((roles.isGroupManager() || roles.isInstitutionalResourceManager() || roles.isOLATAdmin() || roles.isPoolAdmin() || roles.isUserManager())
-						&& CoreSpringFactory.containsBean("authorportal")) {
-					portalTemplate = ((PortalImpl)CoreSpringFactory.getBean("authorportal"));
-				} else {
-					portalTemplate = ((PortalImpl)CoreSpringFactory.getBean("homeportal"));
-				}
-				myPortal = portalTemplate.createInstance(getWindowControl(), ureq);
-			}
-			
-			welcome.put("myPortal", myPortal.getInitialComponent());
-			welcome.contextPut("portalEditMode", Boolean.FALSE);
-
-			putInitialPanel(welcome);
-		}
-		
-		@Override
-		protected void doDispose() {
-			if (myPortal != null) {
-				myPortal.dispose();
-				myPortal = null;
-			}
-		}
-
-		@Override
-		public void event(UserRequest ureq, Component source, Event event) {
-			if (source == portalBackButton){
-				myPortal.setIsEditMode(ureq, false);
-				welcome.contextPut("portalEditMode", Boolean.FALSE);
-			} else if (source == portalEditButton){
-				myPortal.setIsEditMode(ureq, true);
-				welcome.contextPut("portalEditMode", Boolean.TRUE);
-			} 
-		}
-	}
 }

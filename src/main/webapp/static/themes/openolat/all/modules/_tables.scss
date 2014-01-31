@@ -143,6 +143,111 @@ div.b_table_wrapper {
 	}
 }
 
+/* custom layout */
+div.o_table_rowline  {
+	div.f_metadata { background-color: #fcfcfc; }
+	h4 { }
+	h3.b_filetype_folder {margin-top:20px;}
+	
+	div.f_item { 
+		margin-bottom:30px;
+		div.f_thumbnail { width:280px; height:158px; float:left; border-right: 1px solid #999; }
+		div.f_item_links {
+			a { background-repeat: no-repeat; }
+		} 
+		div.f_metadata { 
+			position: relative;
+			border: 1px solid #999;
+			@include o-box-shadow(0,1px,2px,#999);
+			
+			div.f_thumbnail_inner {
+				width:280px;
+				height:158px;
+			}
+			div.f_thumbnail_unavailable {
+				width:280px; height:158px;
+				background-image:url(../openolat/images/no_preview.png);
+				background-repeat:no-repeat;
+				background-position:50% 50%;
+			}
+			
+			div.f_metadata_text {
+				margin: 10px 220px 10px 300px;
+			}
+			div.f_metadata_text_inner {
+				width:100%;
+			}
+			div.f_metadata_lifecycle {
+				position: absolute;
+				top: 10px;
+				right: 220px;
+			}
+			div.f_metadata_mark {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+			}
+			div.f_metadata_additional_infos {
+				position: absolute;
+				top: 0;
+				right: 0;
+				height: 158px;
+				width: 210px;
+				border-left: 1px solid #999;
+			}
+			div.f_metadata_start {
+				position: absolute;
+				bottom: 0;
+				right: 0;
+				width: 91px;
+				height: 20px;
+				padding: 7px;
+				background-color: $basecolor;
+				
+				a {
+					color: #ffffff;
+					font-size: 140%;
+					text-decoration: none;
+				}
+			}
+			
+			div.f_metadata_details {
+				position: absolute;
+				bottom: 0;
+				right: 105px;
+				width: 91px;
+				height: 20px;
+				padding: 7px;
+				background-color: $basecolor_light;
+				
+				a {
+					color: #ffffff;
+					font-size: 140%;
+					text-decoration: none;
+				}
+			}
+			
+			span.b_access_method {
+				width: 16px;
+				height: 16px;
+				background-position: 0 50%;
+				background-repeat: no-repeat;
+			}
+			
+			div.f_metadata_additional_infos_inner {
+				margin: 10px 10px 10px 10px;
+			
+			}
+		}
+	}
+	
+	// selected item metadata
+	div.f_item_selected div.f_metadata {
+		background-color:#F0F0F0 !important; 
+		@include o-box-shadow(1,1px,4px,#D3D3D3);
+	}		 
+}
+
 
 	
 /* table paging */

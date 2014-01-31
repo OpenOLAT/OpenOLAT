@@ -248,8 +248,38 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 		
 		li#o_topnav_imclient li {
 			margin-left:0.5em;
-		} 
+		}
+		
+		li#o_topnav_my_menu_link {
+			div.o_topnav_portrait {
+				width:30px;
+				height:30px;
+				float: left;
+				margin-right:5px;
+			}
+		}
 	}	
+}
+
+.o_topnav_my_menu {
+
+	ul { list-style-type: none; margin:0; padding:0; }
+	li { margin:0; padding:0; } 
+	
+	.o_topnav_my_submenu { color: grey; }
+
+	#o_topnav_logout a#b_logout {
+		background: url('../openolat/images/control/control-power.png') no-repeat left 50%;
+		padding: 0 0 0 20px;
+		margin: 0;
+		font-weight: bold;
+	}
+	
+	a.o_password {
+		background: url('../openolat/images/locked.png') no-repeat left 50%;
+		padding: 0 0 0 20px;
+		margin: 0;
+	}
 }
 	
 /**  I moved main navigation and sub-navigation (tree) to separate file, 

@@ -17,12 +17,16 @@
 	</bean>
 	
 	<!-- classes implementing the SiteDefinition interface -->
-
-	<!-- Disable site by adding '<property name="enabled" value="false"/>' -->
-	<bean id="olatsites_home" class="org.olat.home.HomeSiteDef">
-	   <property name="order" value="${site.home.order}" />
-	   <property name="enabled" value="${site.minimalhome.enabled}"/>
+	<bean id="olatsites_mycourses" class="org.olat.repository.site.MyCoursesSiteDef">
+	   <property name="order" value="2" />
+	   <property name="enabled" value="${site.catalog.enable}"/>
 	</bean>
+	
+	<bean id="olatsites_portal" class="org.olat.core.gui.control.generic.portal.PortalSiteDef">
+	   <property name="order" value="3" />
+	   <property name="enabled" value="${site.portal.enable}"/>
+	</bean>
+	
 	<bean id="olatsites_groups" class="org.olat.group.site.GroupsSiteDef">
 	   <property name="order" value="4" />
 	   <property name="enabled" value="${site.groups.enable}"/>
@@ -31,13 +35,12 @@
 	<bean id="coursesite_infos_1" class="org.olat.course.site.CourseSiteDef"/>
 	
 	<bean id="coursesite_infos_2" class="org.olat.course.site.CourseSiteDef2"/>
-
-	<!--
+	
 	<bean id="olatsites_catalog" class="org.olat.catalog.site.CatalogSiteDef">
 	   <property name="order" value="5" />
 	   <property name="enabled" value="${site.catalog.enable}"/>
 	</bean>
-	-->
+
 	<bean id="olatsites_repository" class="org.olat.repository.site.RepositorySiteDef">
 	   <property name="order" value="6" />
 	   <property name="enabled" value="${site.repository.enable}"/>
@@ -55,6 +58,11 @@
 	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
 	   <property name="order" value="11" />
 	   <property name="enabled" value="${guidemo.enabled}"/>
+	</bean>
+	
+	<bean id="olatsites_home" class="org.olat.home.HomeSiteDef">
+	   <property name="order" value="25" />
+	   <property name="enabled" value="true"/>
 	</bean>
 	
 	<!--  security callback -->

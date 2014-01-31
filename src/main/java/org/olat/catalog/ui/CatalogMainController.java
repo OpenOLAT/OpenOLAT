@@ -37,6 +37,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.repository.ui.list.CatalogNodeController;
 
 /**
  * 
@@ -66,8 +67,7 @@ public class CatalogMainController extends BasicController implements Activateab
 
 		List<CatalogEntry> rootNodes = catalogManager.getRootCatalogEntries();
 		if(rootNodes.size() == 1) {
-			boolean admin = ureq.getUserSession().getRoles().isOLATAdmin();
-			nodeController = new CatalogNodeController(ureq, getWindowControl(), rootNodes.get(0), admin);
+			nodeController = new CatalogNodeController(ureq, getWindowControl(), rootNodes.get(0));
 			mainVC.put("node", nodeController.getInitialComponent());
 		}
 		

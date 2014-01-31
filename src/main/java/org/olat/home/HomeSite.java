@@ -19,21 +19,17 @@
  */
 package org.olat.home;
 
-import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.AbstractSiteInstance;
-import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -45,19 +41,8 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class HomeSite extends AbstractSiteInstance {
 
-	private DefaultNavElement curNavElem;
-	private NavElement origNavElem;
-
-	public HomeSite(UserRequest ureq, SiteDefinition siteDef) {
+	public HomeSite( SiteDefinition siteDef) {
 		super(siteDef);
-		Translator trans = Util.createPackageTranslator(BaseChiefController.class, ureq.getLocale());
-		if(ureq.getUserSession().getRoles().isGuestOnly()){
-			origNavElem = new DefaultNavElement(trans.translate("topnav.guesthome"), trans.translate("topnav.guesthome.alt"), "o_site_home");
-		}else{
-			origNavElem = new DefaultNavElement(trans.translate("topnav.home"), trans.translate("topnav.home.alt"), "o_site_home");
-		}
-		curNavElem = new DefaultNavElement(origNavElem);
-		origNavElem.setAccessKey("h".charAt(0));
 	}
 
 	@Override
@@ -74,7 +59,7 @@ public class HomeSite extends AbstractSiteInstance {
 	 */
 	@Override
 	public NavElement getNavElement() {
-		return curNavElem;
+		return null;
 	}
 
 	/**
@@ -84,13 +69,4 @@ public class HomeSite extends AbstractSiteInstance {
 	public boolean isKeepState() {
 		return true;
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.navigation.SiteInstance#reset()
-	 */
-	@Override
-	public void reset() {
-		curNavElem = new DefaultNavElement(origNavElem);
-	}
-
 }

@@ -191,7 +191,7 @@
 		<property name="i18nDescriptionKey" value="eportfolio.menu.title.alt" />
 		<property name="extensionPoints">
 			<list>
-				<value>org.olat.home.HomeMainController</value>
+				<value>org.olat.home.HomeMainController.bak</value>
 			</list>
 		</property>
 	</bean>	 
@@ -213,7 +213,7 @@
 		<property name="parentTreeNodeIdentifier" value="portfolioParent" /> 
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController.bak</value>		
 			</list>
 		</property>
 	</bean>
@@ -235,7 +235,7 @@
 		<property name="parentTreeNodeIdentifier" value="portfolioParent" /> 
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController.bak</value>		
 			</list>
 		</property>
 	</bean>
@@ -257,7 +257,7 @@
 		<property name="parentTreeNodeIdentifier" value="portfolioParent" /> 
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController.bak</value>		
 			</list>
 		</property>
 	</bean>
@@ -279,7 +279,7 @@
 		<property name="parentTreeNodeIdentifier" value="portfolioParent" /> 
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController.bak</value>		
 			</list>
 		</property>
 	</bean>

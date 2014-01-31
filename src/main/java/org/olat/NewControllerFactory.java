@@ -134,8 +134,8 @@ public class NewControllerFactory extends LogDelegator {
 	 */
 	public boolean launch(String businessPath, UserRequest ureq, WindowControl origControl) {
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
-	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, origControl);
-	  return launch(ureq, bwControl);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, origControl);
+		return launch(ureq, bwControl);
 	}
 	
 	private ContextEntryControllerCreator getContextEntryControllerCreator(String type) {

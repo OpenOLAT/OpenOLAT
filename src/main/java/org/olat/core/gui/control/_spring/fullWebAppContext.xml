@@ -49,6 +49,7 @@
 	</bean>
 
 	<!-- Authenticated -->
+
 	<bean id="fullWebApp.TopNavControllerCreator" class="org.olat.gui.control.TopNavCreator" >
 		<property name="impressum" value="${topnav.impressum}"/>
 		<property name="search" value="${topnav.search}" />

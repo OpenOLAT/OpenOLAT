@@ -203,7 +203,7 @@ public class SitesConfigurationController extends FormBasicController {
 			SiteDefinition siteDef = entryDef.getValue();
 			SiteInstance site = siteDef.createSite(ureq, getWindowControl());
 			String title = "-";
-			if(site != null) {
+			if(site != null && site.getNavElement() != null) {
 				title = site.getNavElement().getTitle();
 			}
 			SiteConfiguration config = sitesModule.getConfigurationSite(id);

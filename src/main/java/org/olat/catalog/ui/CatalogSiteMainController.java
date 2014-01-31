@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerImpl;
 import org.olat.core.gui.control.Event;
@@ -45,12 +46,15 @@ public class CatalogSiteMainController extends MainLayoutBasicController impleme
 	
 	public CatalogSiteMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		MainPanel mainPanel = new MainPanel("catalogMainPanel");
 
 		catalogCtrl = new CatalogMainController(ureq, wControl);
 		listenTo(catalogCtrl);
 		stackPanel = new StackedControllerImpl(getWindowControl(), getTranslator(), "o_catalog_breadcrumbs");
 		listenTo(stackPanel);
-		putInitialPanel(stackPanel.getInitialComponent());
+		mainPanel.setContent(stackPanel.getInitialComponent());
+		putInitialPanel(mainPanel);
 		stackPanel.pushController("Katalog", catalogCtrl);
 		catalogCtrl.setStackedController(stackPanel);
 	}

@@ -41,10 +41,8 @@ public class HomeModule extends AbstractOLATModule {
 	public void init() {
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(HomeSite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(HomeSite.class));
-		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("Guest",
 				new GuestHomeCEControllerCreator());
-		
 	}
 
 	@Override

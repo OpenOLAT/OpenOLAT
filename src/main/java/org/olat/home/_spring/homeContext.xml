@@ -2,56 +2,17 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd ">
+                        http://www.springframework.org/schema/beans/spring-beans.xsd ">
                         
                         
 	<bean class="org.olat.home.HomeModule" init-method="init"/>
-
-	<!-- The Default Home-tab (navigation-tree) Setting -->
-	<!--  the "portal"  (notifications + subscriptions + news ) -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="100" />
-		<property name="enabled" value="${minimalhome.ext.portal}"></property>
-		<property name="navigationKey" value="portal" />
-		<property name="actionController">
-			<bean class="org.olat.home.controllerCreators.HomePortalControllerCreator" scope="prototype"/>
-		</property>
-		<property name="translationPackage" value="org.olat.home" />
-		<property name="i18nActionKey" value="main.menu.title"/>
-		<property name="i18nDescriptionKey" value="main.menu.title.alt"/>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.home.HomeMainController</value>		
-			</list>
-		</property>
-	</bean>
-	
-	<!-- personal-Settings -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="101" />
-		<property name="enabled" value="${minimalhome.ext.mysettings}"></property>
-		<property name="navigationKey" value="mysettings" />
-		<property name="actionController">	
-			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.user.PersonalSettingsController"/>
-			</bean>
-		</property>
-		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
-		<property name="translationPackage" value="org.olat.home" />
-		<property name="i18nActionKey" value="menu.mysettings"/>
-		<property name="i18nDescriptionKey" value="menu.mysettings"/>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.home.HomeMainController</value>		
-			</list>
-		</property>
-	</bean>
 	
 	<!--  the weekly calendar -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="102" />
 		<property name="enabled" value="${minimalhome.ext.calendar}"></property>
 		<property name="navigationKey" value="calendar" />
+		<property name="iconCssClass" value="b_with_small_icon_left o_cal_icon" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.home.HomeCalendarController"/>
@@ -62,7 +23,7 @@
 		<property name="i18nDescriptionKey" value="menu.calendar.alt"/>
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController</value>
 			</list>
 		</property>
 	</bean>
@@ -72,6 +33,7 @@
 		<property name="order" value="103" />
 		<property name="enabled" value="${minimalhome.ext.notifications}"></property>
 		<property name="navigationKey" value="notifications" />
+		<property name="iconCssClass" value="b_with_small_icon_left o_notifications_icon" />
 		<property name="actionController">
 			<bean class="org.olat.home.controllerCreators.NotificationsControllerCreator" scope="prototype"/>
 		</property>
@@ -81,12 +43,12 @@
 		<property name="i18nDescriptionKey" value="menu.notifications.alt"/>
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController</value>
 			</list>
 		</property>
 	</bean>
 	
-	<!--  bookmarks -->
+	<!--  bookmarks
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="104" />
 		<property name="enabled" value="${minimalhome.ext.bookmarks}"></property>
@@ -102,16 +64,18 @@
 		<property name="i18nDescriptionKey" value="menu.bookmarks.alt"/>
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController</value>
 			</list>
 		</property>
-	</bean>	
+	</bean>
+	-->	
 	
 	<!--  the users personal folder -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="105" />
 		<property name="enabled" value="${minimalhome.ext.userfolder}"></property>
 		<property name="navigationKey" value="userfolder" />
+		<property name="iconCssClass" value="b_with_small_icon_left o_bc_icon" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.commons.modules.bc.FolderRunController"/>
@@ -123,17 +87,17 @@
 		<property name="i18nDescriptionKey" value="menu.bc.alt"/>
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController</value>
 			</list>
 		</property>
 	</bean>
-	
 	
 	<!--  the users notes ("Notizen") -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="106" />
 		<property name="enabled" value="${minimalhome.ext.notelist}"></property>
 		<property name="navigationKey" value="notelist" />
+		<property name="iconCssClass" value="b_with_small_icon_left o_notes_icon" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.note.NoteListController"/>
@@ -145,7 +109,7 @@
 		<property name="i18nDescriptionKey" value="menu.note.alt"/>
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController</value>
 			</list>
 		</property>
 	</bean>
@@ -155,6 +119,7 @@
 		<property name="order" value="107" />
 		<property name="enabled" value="${minimalhome.ext.efficiencystatement}"></property>
 		<property name="navigationKey" value="effstatements" />
+		<property name="iconCssClass" value="b_with_small_icon_left o_efficiencystatement_icon" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.course.assessment.EfficiencyStatementsListController"/>
@@ -166,32 +131,12 @@
 		<property name="i18nDescriptionKey" value="menu.efficiencyStatements.alt"/>
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController</value>
 			</list>
 		</property>
 	</bean>
 	
-	<!--  the other users aka Usersearch -->
-	<bean class="org.olat.home.CourseActionExtension" init-method="initExtensionPoints">
-	    <constructor-arg index="0" ref="catalogModule"/>
-		<property name="order" value="99" />
-		<property name="actionController">	
-			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.home.CourseMainController"/>
-			</bean>
-		</property>
-		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
-		<property name="translationPackage" value="org.olat.home" />
-		<property name="i18nActionKey" value="menu.course"/>
-		<property name="i18nDescriptionKey" value="menu.course.alt"/>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.home.HomeMainController</value>		
-			</list>
-		</property>
-	</bean>
-	
-	<!--  the other users aka Usersearch -->
+	<!--  the other users aka Usersearch
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="110" />
 		<property name="enabled" value="${minimalhome.ext.otherusers}"/>
@@ -210,7 +155,7 @@
 			</list>
 		</property>
 	</bean>
-	
+	-->
 	
 	<!--  the info-message for guest-user -->
 	<bean  class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
@@ -230,5 +175,73 @@
 		</property>
 	</bean>
 	
+	<!-- Profil -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="109" />
+		<property name="enabled" value="true" />
+		<property name="iconCssClass" value="b_with_small_icon_left o_login_guests" />
+		<property name="navigationKey" value="profil" />
+		<property name="parentTreeNodeIdentifier" value="config" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.user.ProfileAndHomePageEditController"/>
+			</bean>
+		</property>
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
+		<property name="translationPackage" value="org.olat.user" />
+		<property name="i18nActionKey" value="tab.profile"/>
+		<property name="i18nDescriptionKey" value="tab.profile"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
 	
+	<!-- Settings -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="110" />
+		<property name="enabled" value="true" />
+		<property name="iconCssClass" value="b_with_small_icon_left o_settings" />
+		<property name="navigationKey" value="mysettings" />
+		<property name="parentTreeNodeIdentifier" value="config" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.user.UserSettingsController"/>
+			</bean>
+		</property>
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
+		<property name="translationPackage" value="org.olat.user" />
+		<property name="i18nActionKey" value="tab.settings"/>
+		<property name="i18nDescriptionKey" value="tab.settings"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Password -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="112" />
+		<property name="enabled" value="true" />
+		<property name="iconCssClass" value="b_with_small_icon_left o_locked_icon" />
+		<property name="navigationKey" value="mypassword" />
+		<property name="parentTreeNodeIdentifier" value="config" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.user.ChangePasswordController"/>
+			</bean>
+		</property>
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
+		<property name="translationPackage" value="org.olat.user" />
+		<property name="i18nActionKey" value="tab.pwd"/>
+		<property name="i18nDescriptionKey" value="tab.pwd"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
+
 </beans>

@@ -40,6 +40,6 @@ public class HomeSiteDef extends AbstractSiteDefinition implements SiteDefinitio
 		if(ureq.getUserSession().getRoles().isInvitee()) {
 			return null;
 		}
-		return new HomeSite(ureq, this);
+		return new HomeSite(this);
 	}
 }

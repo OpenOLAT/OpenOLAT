@@ -26,6 +26,8 @@
 
 package org.olat.core.gui.control.generic.portal;
 
+import java.util.List;
+
 import org.olat.core.gui.control.Controller;
 
 /** 
@@ -36,5 +38,7 @@ import org.olat.core.gui.control.Controller;
  * @author Lavinia Dumitrescu
  */
 public interface PortletToolController<T> extends Controller {
- //empty
+
+	public List<PortletEntry<T>> getSortedItems();
+	
 }

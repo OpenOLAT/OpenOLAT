@@ -17,39 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.home;
+package org.olat.core.gui.control.generic.portal;
 
-import org.olat.catalog.CatalogModule;
-import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
+import org.olat.core.gui.control.navigation.SiteDefinition;
+import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
- * Description:<br>
- * ActionExtension for the "my courses"
- * 
- * <P>
- * Initial Date:  18 jan. 2013 <br>
+ * Initial date: 20.01.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class CourseActionExtension extends GenericActionExtension {
+public class PortalSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 	
-	private final CatalogModule catModule;
-	
-	public CourseActionExtension(CatalogModule catModule) {
-		this.catModule = catModule;
-	}
-	
-
-	@Override
-	public Controller createController(UserRequest ureq, WindowControl wControl, Object arg) {
-		return new CourseMainController(ureq, wControl);
+	public PortalSiteDef() {
+		super();
 	}
 
 	@Override
-	public boolean isEnabled() {
-		return catModule.isMyCoursesEnabled();
+	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
+			return new PortalSite(this, ureq.getLocale());
+		} else if (!ureq.getUserSession().getRoles().isGuestOnly()
+				&& !ureq.getUserSession().getRoles().isInvitee()) {
+			// all except guests and invitees see this site
+			return new PortalSite(this, ureq.getLocale());
+		}
+		return null;
 	}
 }

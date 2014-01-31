@@ -72,62 +72,24 @@
 	</bean>
 	
 	<!--  the email-parent-menu  -->
-	<bean class="org.olat.core.util.mail.ui.MailActionExtension" name="mailAEparent" init-method="initExtensionPoints">
-		<property name="order" value="108" />
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="mailBox" init-method="initExtensionPoints" >
+		<property name="order" value="404" />
 		<property name="navigationKey" value="Mail" />
-		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
-		<property name="nodeIdentifierIfParent" value="homeEmailParent" />
-		<property name="translationPackage" value="org.olat.home" />
-		<property name="i18nActionKey" value="menu.mail" />
-		<property name="i18nDescriptionKey" value="menu.mail.alt" />
-		<property name="extensionPoints">
-			<list>
-				<value>org.olat.home.HomeMainController</value>
-			</list>
-		</property>
-	</bean>	 
-	
-	<!-- The name of this extension is used by the NotificationUIFactory, don't change it  -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="mailAEinbox" init-method="initExtensionPoints" >
-		<property name="order" value="401" />
-		<property name="navigationKey" value="Inbox" />
+		<property name="iconCssClass" value="b_with_small_icon_left b_mail_icon" />
 		<property name="actionController">	
-			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
-				<property name="factoryName" value="org.olat.core.util.mail.MailUIFactory"/>
-				<property name="factoryMethod" value="createInboxController"/>
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.core.util.mail.ui.MailBoxOverviewController"/>
 			</bean>
 		</property>
 		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
-		<property name="i18nActionKey" value="mail.inbox"/>
-		<property name="i18nDescriptionKey" value="mail.inbox.alt"/>
-		<property name="parentTreeNodeIdentifier" value="homeEmailParent" /> 
+		<property name="i18nActionKey" value="menu.mail"/>
+		<property name="i18nDescriptionKey" value="menu.mail.alt"/>
+		<property name="translationPackage" value="org.olat.core.util.mail"/>
 		<property name="extensionPoints">
 			<list>	
 				<value>org.olat.home.HomeMainController</value>		
 			</list>
 		</property>
 	</bean>
-	
-	
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="mailAEoutbox" init-method="initExtensionPoints" >
-		<property name="order" value="402" />
-		<property name="navigationKey" value="Outbox" />
-		<property name="actionController">	
-			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
-				<property name="factoryName" value="org.olat.core.util.mail.MailUIFactory"/>
-				<property name="factoryMethod" value="createOutboxController"/>
-			</bean>
-		</property>
-		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
-		<property name="i18nActionKey" value="mail.outbox"/>
-		<property name="i18nDescriptionKey" value="mail.outbox.alt"/>
-		<property name="parentTreeNodeIdentifier" value="homeEmailParent" /> 
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.home.HomeMainController</value>		
-			</list>
-		</property>
-	</bean>
-	
 	
 </beans>
