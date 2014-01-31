@@ -492,8 +492,62 @@ public class RepositoryManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
+		List<String> types = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
 		List<RepositoryEntry> entries = repositoryManager.queryByTypeLimitAccess(id,
-				re.getOlatResource().getResourceableTypeName(), new Roles(false, false, false, false, false, false, false));
+				types, new Roles(false, false, false, false, false, false, false));
+		
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		Assert.assertTrue(entries.contains(re));
+		for(RepositoryEntry entry:entries) {
+			if(!entry.equals(re)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			}
+		}
+	}
+	
+	@Test
+	public void queryByTypeLimitAccess_withoutInstitution() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-2-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-2", "tg", null, null, false, false, re);
+		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		List<String> types = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
+		List<RepositoryEntry> entries = repositoryManager.queryByTypeLimitAccess(id,
+				new Roles(false, false, false, false, false, false, false), types);
+		
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		Assert.assertTrue(entries.contains(re));
+		for(RepositoryEntry entry:entries) {
+			if(!entry.equals(re)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			}
+		}
+	}
+	
+	@Test
+	public void queryByTypeLimitAccess_withInstitution() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-3-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-3", "tg", null, null, false, false, re);
+		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+
+		//promote id to institution resource manager
+		id.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "openolat.org");
+		userManager.updateUserFromIdentity(id);
+		SecurityGroup institutionalResourceManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
+		securityManager.addIdentityToSecurityGroup(id, institutionalResourceManagerGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		List<String> types = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
+		List<RepositoryEntry> entries = repositoryManager.queryByTypeLimitAccess(id,
+				new Roles(false, false, false, false, false, true, false), types);
 		
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.isEmpty());

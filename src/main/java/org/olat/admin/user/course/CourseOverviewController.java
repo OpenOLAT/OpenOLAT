@@ -80,6 +80,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryEntryFilter;
+import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 
@@ -401,7 +402,7 @@ public class CourseOverviewController extends BasicController  {
 		RepositoryEntryFilter filter = new ManagedEntryfilter();
 		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[]{ CourseModule.getCourseTypeName() }, filter,
-				translate("choose"), false, false, true, true, true, null);
+				translate("choose"), false, false, true, true, true, Can.all);
 		repoSearchCtr.setUserObject(type);
 		listenTo(repoSearchCtr);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(),
