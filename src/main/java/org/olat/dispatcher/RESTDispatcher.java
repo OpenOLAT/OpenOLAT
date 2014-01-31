@@ -48,6 +48,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
@@ -138,6 +139,9 @@ public class RESTDispatcher implements Dispatcher {
 		// create the olat ureq and get an associated main window to spawn the "tab"
 		//
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
+		if(usess != null) {
+			ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(request);
+		}
 		UserRequest ureq = null;
 		try {
 			//upon creation URL is checked for 

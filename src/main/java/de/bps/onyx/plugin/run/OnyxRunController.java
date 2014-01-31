@@ -214,6 +214,12 @@ public class OnyxRunController extends BasicController {
 
 		if (viewmode != SURVEYVIEW) {
 			ScoreEvaluation se = null;
+			
+			//<OLATCE-1232>
+			boolean isVisibilityPeriod = AssessmentHelper.isResultVisible(modConfig);
+			vc.contextPut("showResultsVisible", new Boolean(isVisibilityPeriod));
+			//</OLATCE-1232>
+				
 			if (courseNodeTest != null) {
 				// <OLATCE-498>
 				Integer attempts = courseNodeTest.getUserAttempts(userCourseEnv);
@@ -271,7 +277,7 @@ public class OnyxRunController extends BasicController {
 			if (hasResult) {
 				vc.contextPut("hasResult", Boolean.TRUE);
 				boolean isPassesSet = se.getPassed() != null;
-				vc.contextPut(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE));
+				vc.contextPut("showResultsOnHomePage", modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE));
 				if (isPassesSet) {
 					vc.contextPut("passed", se.getPassed());
 				} else {

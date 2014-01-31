@@ -104,7 +104,7 @@ public class ResumeController extends FormBasicController implements SupportsAft
 					//make the resume secure. If something fail, don't generate a red screen
 					NewControllerFactory.getInstance().launch(ureq, bwControl);
 				} catch (Exception e) {
-					logError("Error while resumging", e);
+					logError("Error while resuming", e);
 				}
 			}
 			return false;

@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -317,7 +316,8 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 			  	return -comparisonResult;
 			  }
 			  return comparisonResult;
-			}};
+			}
+		};
 	}
   
   /**
@@ -328,7 +328,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
    * Initial Date:  10.12.2007 <br>
    * @author Lavinia Dumitrescu
    */
-  private class GroupTableDataModel extends PortletDefaultTableDataModel<BusinessGroupEntry> {  	
+  private static class GroupTableDataModel extends PortletDefaultTableDataModel<BusinessGroupEntry> {  	
   	public GroupTableDataModel(List<PortletEntry<BusinessGroupEntry>> objects) {
   		super(objects, 1);
   	}
@@ -338,9 +338,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
   		BusinessGroupEntry businessGroup = entry.getValue();
   		switch (col) {
   			case 0:
-  				String name = businessGroup.getName();
-  				name = StringEscapeUtils.escapeHtml(name).toString();
-  				return name;
+  				return businessGroup.getName();
   			default:
   				return "ERROR";
   		}
@@ -360,7 +358,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
    * Initial Date:  10.12.2007 <br>
    * @author Lavinia Dumitrescu
    */
-	private class GroupsManualSortingTableDataModel extends PortletDefaultTableDataModel<BusinessGroupEntry>  {		
+	private static class GroupsManualSortingTableDataModel extends PortletDefaultTableDataModel<BusinessGroupEntry>  {		
 		/**
 		 * @param objects
 		 * @param locale
@@ -396,7 +394,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		}
 	}
 	
-	private class GroupPortletEntry implements PortletEntry<BusinessGroupEntry> {
+	private static class GroupPortletEntry implements PortletEntry<BusinessGroupEntry> {
 	  	private BusinessGroupEntry value;
 	  	private Long key;
 	  	

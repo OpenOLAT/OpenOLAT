@@ -355,6 +355,9 @@ public class ReferencableEntriesSearchController extends BasicController {
 						case copyable:
 							searchCtr.doSearchForCopyableResourcesLimitType(ureq.getIdentity(), limitTypes, ureq.getUserSession().getRoles());
 							break;
+						case all:
+							searchCtr.doSearchByTypeLimitAccess(limitTypes, ureq);							
+							break;
 					}
 				} else if (clickedLink == searchEntriesLink){
 					searchCtr.displaySearchForm();

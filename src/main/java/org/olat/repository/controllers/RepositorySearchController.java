@@ -266,7 +266,6 @@ public class RepositorySearchController extends BasicController implements Activ
 		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);		
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
-		//fxdiff VCRP-10: repository search with type filter
 		if(updateFilters) {
 			updateFilters(entries, null);
 		}
@@ -425,29 +424,31 @@ public class RepositorySearchController extends BasicController implements Activ
 	 */
 	public void doSearchByOwnerLimitAccess(Identity owner) {
 		RepositoryManager rm = RepositoryManager.getInstance();
-		//fxdiff VCRP-1,2: access control of resources
 		List<RepositoryEntry> entries = rm.queryByOwnerLimitAccess(owner, RepositoryEntry.ACC_USERS, Boolean.TRUE);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
-		//fxdiff VCRP-10: repository search with type filter
 		tableCtr.setFilters(null, null);
 		tableCtr.modelChanged();
 		displaySearchResults(null);
 	}
+
+	protected void doSearchByTypeLimitAccess(String restrictedType, UserRequest ureq) {
+		doSearchByTypeLimitAccess(new String[]{restrictedType}, ureq);
+	}
 	
 	/**
-	 * Package private. Used by repository main controller to execute predefined searches.
+	 * Used by repository main controller to execute predefined searches.
 	 * 
-	 * @param type
+	 * @param restrictedTypes
 	 * @param ureq
 	 */
-	void doSearchByTypeLimitAccess(String type, UserRequest ureq) {
+	protected void doSearchByTypeLimitAccess(String[] restrictedTypes, UserRequest ureq) {
 		searchType = null;
 		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> entries = rm.queryByTypeLimitAccess(ureq.getIdentity(), ureq.getUserSession().getRoles(), type);
+		List<String> types = Arrays.asList(restrictedTypes);
+		List<RepositoryEntry> entries = rm.queryByTypeLimitAccess(ureq.getIdentity(), ureq.getUserSession().getRoles(), types);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
-		//fxdiff VCRP-10: repository search with type filter
 		tableCtr.setFilters(null, null);
 		tableCtr.modelChanged();
 		displaySearchResults(ureq);
@@ -719,6 +720,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	
 	public enum Can {
 		referenceable,
-		copyable
+		copyable,
+		all
 	}
 }
