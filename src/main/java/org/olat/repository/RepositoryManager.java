@@ -1036,13 +1036,13 @@ public class RepositoryManager extends BasicManager {
 
 	/**
 	 * Query by type, limit by ownership or role accessability.
-	 * @param identity Identity (optional)
-	 * @param restrictedType
+	 * @param identity
+	 * @param restrictedType The type cannot be empty, no type, no return
 	 * @param roles
-	 * @return Results
+	 * @return
 	 */
-	//fxdiff VCRP-1,2: access control of resources
-	public List<RepositoryEntry> queryByTypeLimitAccess(Identity identity, String restrictedType, Roles roles) {
+	public List<RepositoryEntry> queryByTypeLimitAccess(Identity identity, List<String> restrictedType, Roles roles) {
+		if(restrictedType == null | restrictedType.isEmpty()) return Collections.emptyList();
 		if(roles.isOLATAdmin()) {
 			identity = null;//not need for the query as administrator
 		}
@@ -1054,7 +1054,7 @@ public class RepositoryManager extends BasicManager {
 			.append(" left join fetch v.ownerGroup as ownerGroup")
 			.append(" left join fetch v.participantGroup as participantGroup")
 			.append(" left join fetch v.tutorGroup as tutorGroup")
-			.append(" where res.resName=:restrictedType and ");
+			.append(" where res.resName in (:restrictedType) and ");
 		
 		boolean setIdentity = false;
 		if (roles.isOLATAdmin()) {
@@ -1072,17 +1072,18 @@ public class RepositoryManager extends BasicManager {
 		return query.getResultList();
 	}
 	
+
 	/**
 	 * Query by type, limit by ownership or role accessability and institution.
-	 * @param restrictedType
+	 * @param identity
 	 * @param roles
-	 * @return Results
+	 * @param restrictedType The types cannot be empty, no type, nothing to return
+	 * @return
 	 */
-	//fxdiff VCRP-1: access control
-	public List<RepositoryEntry> queryByTypeLimitAccess(Identity identity, Roles roles, String restrictedType) {
-		String institution = identity.getUser().getProperty("institutionalName", null);
-
-		//TODO hibernate
+	public List<RepositoryEntry> queryByTypeLimitAccess(Identity identity, Roles roles, List<String> restrictedType) {
+		if(restrictedType == null | restrictedType.isEmpty()) return Collections.emptyList();
+		
+		String institution = identity.getUser().getProperty(UserConstants.INSTITUTIONALNAME, null);
 		List<RepositoryEntry> results = new ArrayList<RepositoryEntry>();
 		if(!roles.isOLATAdmin() && institution != null && institution.length() > 0 && roles.isInstitutionalResourceManager()) {
 			StringBuilder query = new StringBuilder(400);
@@ -1095,17 +1096,13 @@ public class RepositoryManager extends BasicManager {
 					+ " and sgmsi.identity = identity"
 					+ " and identity.user = user"
 					+" and user.properties['institutionalName']= :institutionCourseManager "
-					+ " and res.resName= :restrictedType and v.access = 1");
+					+ " and res.resName in (:restrictedType) and v.access = 1");
 			
-			DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
-			dbquery.setString("restrictedType", restrictedType);
-			dbquery.setString("institutionCourseManager", institution);
-			dbquery.setCacheable(true);
-			
-			long start = System.currentTimeMillis();
-			List<RepositoryEntry> institutionalResults = dbquery.list();
-			long timeQuery1 = System.currentTimeMillis() - start;
-			logInfo("Repo-Perf: queryByTypeLimitAccess#3 takes " + timeQuery1);
+			List<RepositoryEntry> institutionalResults = dbInstance.getCurrentEntityManager()
+					.createQuery(query.toString(), RepositoryEntry.class)
+					.setParameter("restrictedType", restrictedType)
+					.setParameter("institutionCourseManager", institution)
+					.getResultList();
 			results.addAll(institutionalResults);
 		}
 		

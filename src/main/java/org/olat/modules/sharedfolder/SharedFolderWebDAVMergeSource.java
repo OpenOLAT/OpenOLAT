@@ -22,6 +22,7 @@ package org.olat.modules.sharedfolder;
 import static org.olat.modules.sharedfolder.SharedFolderWebDAVProvider.readOnlyCallback;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -107,8 +108,8 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 			if (firstItem != null && firstItem.equals("*")) {
 				// fake role that represents normally logged in user
 				Roles registeredUserRole = new Roles(false, false, false, false, false, false, false);
-				//fxdiff VCRP-1,2: access control of resources
-				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(identity, SharedFolderFileResource.TYPE_NAME, registeredUserRole);
+				List<String> types = Collections.singletonList(SharedFolderFileResource.TYPE_NAME);
+				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(identity, types, registeredUserRole);
 				for (RepositoryEntry re : allEntries) {
 					String name = Formatter.makeStringFilesystemSave(re.getDisplayname());
 					if(childName.equals(name)) {
@@ -186,9 +187,8 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 			if (firstItem != null && firstItem.equals("*")) {
 				// fake role that represents normally logged in user
 				Roles registeredUserRole = new Roles(false, false, false, false, false, false, false);
-				//fxdiff VCRP-1,2: access control of resources
-				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(identity, SharedFolderFileResource.TYPE_NAME,
-						registeredUserRole);
+				List<String> types = Collections.singletonList(SharedFolderFileResource.TYPE_NAME);
+				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(identity, types, registeredUserRole);
 				for (RepositoryEntry entry : allEntries) {
 					addReadonlyFolder(this, entry, sfm, addedEntries);
 				}
