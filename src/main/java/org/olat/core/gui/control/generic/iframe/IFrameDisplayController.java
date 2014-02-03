@@ -157,7 +157,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		//TODO:gs may use the same contentMapper if users clicks again on the same singlePage, now each time a new Mapper gets created and 
 		//therefore the browser can not reuse the cached elements
 		contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, adjusteightAutomatically,
-				null /*g_encoding*/, null /*jsEncoding*/, null /*contentEncoding*/,
 				frameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
 		contentMapper.setDeliveryOptions(options);
 
