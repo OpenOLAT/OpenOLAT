@@ -230,15 +230,19 @@ public class ShibbolethDispatcher implements Dispatcher{
 		if(attributesMap.keySet().size()==1) {
 			return false;
 		}
-		String lastname = attributesMap.get(ShibbolethModule.getLastName());
-		String firstname = attributesMap.get(ShibbolethModule.getFirstName());
-		String email = ShibbolethHelper.getFirstValueOf(ShibbolethModule.getEMail(), attributesMap);
-		String institutionalEMail = ShibbolethHelper.getFirstValueOf(ShibbolethModule.getInstitutionalEMail(), attributesMap);
-		String institutionalName = attributesMap.get(ShibbolethModule.getInstitutionalName());
-		//String institutionalUserIdentifier = userMapping.getInstitutionalUserIdentifier();
-		if(lastname!=null && !lastname.equals("") && firstname!=null && !firstname.equals("") && email!=null && !email.equals("") &&
-				institutionalEMail!=null && !institutionalEMail.equals("") && institutionalName!=null && !institutionalName.equals("")) {
-			return true;
+		try {
+			String lastname = attributesMap.get(ShibbolethModule.getLastName());
+			String firstname = attributesMap.get(ShibbolethModule.getFirstName());
+			String email = ShibbolethHelper.getFirstValueOf(ShibbolethModule.getEMail(), attributesMap);
+			String institutionalEMail = ShibbolethHelper.getFirstValueOf(ShibbolethModule.getInstitutionalEMail(), attributesMap);
+			String institutionalName = attributesMap.get(ShibbolethModule.getInstitutionalName());
+			//String institutionalUserIdentifier = userMapping.getInstitutionalUserIdentifier();
+			if(lastname!=null && !lastname.equals("") && firstname!=null && !firstname.equals("") && email!=null && !email.equals("") &&
+					institutionalEMail!=null && !institutionalEMail.equals("") && institutionalName!=null && !institutionalName.equals("")) {
+				return true;
+			}
+		} catch (IllegalArgumentException e) {
+			log.error("Error when reading Shib attributes. Either home org not allowed to connect to this OO instance or user has missing attributes.");
 		}
 		return false;
 	}
