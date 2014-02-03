@@ -22,6 +22,7 @@ package org.olat.search.ui;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -235,10 +236,16 @@ public class AdvancedSearchInputController extends FormBasicController {
 			appendAnd(queries, AbstractOlatDocument.DESCRIPTION_FIELD_NAME, ":(", descriptionQuery.getValue(), ") ");
 	  }
 		if (StringHelper.containsNonWhitespace(createdDate.getValue())) {
-			appendAnd(queries, AbstractOlatDocument.CREATED_FIELD_NAME, ":(", format.format(createdDate.getDate()), ") ");
+			Date creationDate = createdDate.getDate();
+			if(creationDate != null) {
+				appendAnd(queries, AbstractOlatDocument.CREATED_FIELD_NAME, ":(", format.format(creationDate), ") ");
+			}
 	  }
 		if (StringHelper.containsNonWhitespace(modifiedDate.getValue())) {
-			appendAnd(queries, AbstractOlatDocument.CHANGED_FIELD_NAME, ":(", format.format(modifiedDate.getDate()), ") ");
+			Date modificationDate = modifiedDate.getDate();
+			if(modificationDate != null) {
+				appendAnd(queries, AbstractOlatDocument.CHANGED_FIELD_NAME, ":(", format.format(modificationDate), ") ");
+			}
 	  }
 		//Check for null on metadata element since it might not be configured and initialized
 		if (metadataQuery != null && StringHelper.containsNonWhitespace(metadataQuery.getValue())) {
