@@ -17,37 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.rating;
+package org.olat.repository.ui.list;
 
-import org.olat.core.gui.control.Event;
+import org.olat.repository.RepositoryEntry;
 
 /**
- * Description:<br>
- * The rating event is fired by the RatingComponent when a new rating is made
- * <P>
- * Initial Date:  31.10.2008 <br>
- * @author gnaegi
+ * 
+ * Delegate to the controller the job of forgeing the links and the mapperUrl.
+ * 
+ * Initial date: 29.01.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class RatingEvent extends Event {
-
-	private static final long serialVersionUID = -7584762233026409541L;
-	private static final String RATING_EVENT = "ratingEvent";
-	private float rating;
-
-	/**
-	 * Constructor for a rating event.
-	 * @param rating The current rating value
-	 */
-	public RatingEvent(float rating) {
-		super(RATING_EVENT);
-		this.rating = rating;
-	}
-
-	/**
-	 * @return The rating value made
-	 */
-	public float getRating() {
-		return rating;
-	}
+public interface RepositoryEntryDataSourceUIFactory {
+	
+	public String getMapperThumbnailUrl();
+	
+	public void forgeMarkLink(RepositoryEntryRow row);
+	
+	public void forgeSelectLink(RepositoryEntryRow row);
+	
+	public void forgeStartLink(RepositoryEntryRow row);
+	
+	public void forgeDetailsLink(RepositoryEntryRow row);
+	
+	public void forgeRatings(RepositoryEntryRow row, RepositoryEntry entry);
 
 }

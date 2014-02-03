@@ -1,0 +1,77 @@
+<div class="b_clearfix o_table_rowline">
+<div class="f_item  #if($row.selected) f_item_selected #end">
+	<div class="f_metadata b_clearfix">
+		<div class="f_thumbnail">
+			#if($row.isThumbnailAvailable())
+				<div class="f_thumbnail_inner f_thumbnail_available" style="width:280px; height:158px; float:left; background:transparent url('${row.getThumbnailRelPath()}') no-repeat 50% 50%;">&nbsp;</div>
+			#else
+				<div class="f_thumbnail_inner f_thumbnail_unavailable" style="">&nbsp;</div>
+			#end	
+		</div>
+		<div class="f_metadata_text">
+			<div class="f_metadata_text_inner">
+				<h4>$r.render($row.getSelectLinkName())</h4>
+				#if($row.author)
+					$row.author<br/>
+				#end
+				#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleStart || $row.lifecycleEnd)
+					<div class="f_metadata_lifecycle">
+						<p>
+							#if($row.lifecycle) $row.lifecycle #end
+							#if($row.lifecycleSoftKey) $row.lifecycleSoftKey #end
+							#if($row.lifecycleStart) $r.formatDateAndTime($row.lifecycleStart) #end
+							#if($row.lifecycleEnd) - $r.formatDateAndTime($row.lifecycleEnd) #end
+						</p>
+					</div>
+				#end
+				<p>$row.description</p>
+				
+				
+			</div>
+		</div>
+		<div class="f_metadata_additional_infos">
+			<div class="f_metadata_additional_infos_inner">
+				<div class="f_metadata_mark">$r.render($row.markLinkName)</div>
+				
+				#if($r.get("ac_$item.key"))
+					#foreach($ac_type in $r.get("ac_$item.key"))
+						#if($ac_type.price && $ac_type.price.length() > 0)
+							<span class='b_float_right b_with_small_icon_left $ac_type.type'>$ac_type.price</span>
+						#else
+							<span class='b_float_right b_small_icon $ac_type.type'></span>
+						#end
+					#end
+					$r.render($row.getSelectLinkName())
+				#end
+
+				#if($row.passed)
+					$r.translate("passed.true")
+				#elseif($item.failed)
+					$r.translate("passed.false")
+				#end
+				#if($row.score) <span>/ $row.score</span> #end
+
+				#if($row.recentLaunch)
+					$r.formatDateAndTime($row.recentLaunch)<br/>
+				#end
+				
+				#if($row.accessTypes)
+					$r.translate("details.orders"):
+					#foreach($type in $row.accessTypes)
+						<span class="$type.type b_access_method">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+					#end
+				#end
+				
+				$r.render($row.ratingFormItemName)
+				
+				<div class="f_metadata_details">
+					$r.render($row.getDetailsLinkName())
+				</div>
+				<div class="f_metadata_start">
+					$r.render($row.getStartLinkName())
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>

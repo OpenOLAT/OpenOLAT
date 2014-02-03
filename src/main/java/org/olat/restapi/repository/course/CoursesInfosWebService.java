@@ -109,7 +109,7 @@ public class CoursesInfosWebService {
 		Identity identity = getIdentity(httpRequest);
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, CourseModule.getCourseTypeName());
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params, true);
+			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params);
 			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
 			List<CourseInfoVO> infos = new ArrayList<CourseInfoVO>();
 

@@ -143,7 +143,7 @@ public class FlexiTableModelMapper implements Mapper {
 									item.setRootForm(ftE.getRootForm());
 								}
 								ftE.addFormItem(item);
-								val = renderFormItem(item, request, ftE.getTranslator());
+								val = renderFormItem(item, request);
 							} else {
 								val = renderColumnRenderer(col, value, i, ftC, ubu, ftE.getTranslator());
 							}
@@ -173,7 +173,7 @@ public class FlexiTableModelMapper implements Mapper {
 		return target.toString();
 	}
 	
-	private String renderFormItem(FormItem item, HttpServletRequest request, Translator translator) {
+	private String renderFormItem(FormItem item, HttpServletRequest request) {
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		ChiefController cc = (ChiefController)Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
 		return cc.getWindow().renderComponent(item.getComponent());

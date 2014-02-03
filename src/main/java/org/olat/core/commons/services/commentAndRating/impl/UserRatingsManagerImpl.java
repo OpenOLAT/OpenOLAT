@@ -24,7 +24,6 @@
 */
 package org.olat.core.commons.services.commentAndRating.impl;
 
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
@@ -51,6 +50,8 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
  */
 public class UserRatingsManagerImpl extends UserRatingsManager {
 
+	private UserRatingsDAO userRatingsDAO;
+	
 	/**
 	 * Spring constructor. Use the getInstance method instead of calling this
 	 * constructor directly.
@@ -58,13 +59,23 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 	public UserRatingsManagerImpl() {
 		// nothing to do
 	}
+	
+	/**
+	 * [used by Spring]
+	 * @param userRatingsDAO
+	 */
+
+	public void setUserRatingsDAO(UserRatingsDAO userRatingsDAO) {
+		this.userRatingsDAO = userRatingsDAO;
+	}
 
 	/**
 	 * @see org.olat.core.commons.services.commentAndRating.UserRatingsManager#createRatingsManager(org.olat.core.id.OLATResourceable, java.lang.String)
 	 */
 	@Override
 	protected UserRatingsManager createRatingsManager(OLATResourceable ores, String subpath) {
-		UserRatingsManager manager = new UserRatingsManagerImpl();
+		UserRatingsManagerImpl manager = new UserRatingsManagerImpl();
+		manager.userRatingsDAO = userRatingsDAO;
 		manager.init(ores, subpath);
 		return manager;
 	}
@@ -74,29 +85,7 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 	 */
 	@Override
 	public Float calculateRatingAverage() {
-		DBQuery query;
-		if (getOLATResourceableSubPath() == null) {
-			// special query when sub path is null
-			query = DBFactory
-					.getInstance()
-					.createQuery(
-							"select avg(rating) from UserRatingImpl where resName=:resname AND resId=:resId AND resSubPath is NULL");
-		} else {
-			query = DBFactory
-					.getInstance()
-					.createQuery(
-							"select avg(rating) from UserRatingImpl where resName=:resname AND resId=:resId AND resSubPath=:resSubPath");
-			query.setString("resSubPath", getOLATResourceableSubPath());
-		}
-		query.setString("resname", getOLATResourceable()
-				.getResourceableTypeName());
-		query.setLong("resId", getOLATResourceable().getResourceableId());
-		query.setCacheable(true);
-		//
-		Double average = (Double)query.list().get(0);
-		// When no ratings are found, a null value is returned!
-		if (average == null) return Float.valueOf(0);
-		else return average.floatValue();			
+		return userRatingsDAO.getRatingAverage(getOLATResourceable(), getOLATResourceableSubPath());		
 	}
 
 	/**
@@ -104,27 +93,8 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 	 */
 	@Override
 	public Long countRatings() {
-		DBQuery query;
-		if (getOLATResourceableSubPath() == null) {
-			// special query when sub path is null
-			query = DBFactory
-					.getInstance()
-					.createQuery(
-							"select count(*) from UserRatingImpl where resName=:resname AND resId=:resId AND resSubPath is NULL");
-		} else {
-			query = DBFactory
-					.getInstance()
-					.createQuery(
-							"select count(*) from UserRatingImpl where resName=:resname AND resId=:resId AND resSubPath=:resSubPath");
-			query.setString("resSubPath", getOLATResourceableSubPath());
-		}
-		query.setString("resname", getOLATResourceable()
-				.getResourceableTypeName());
-		query.setLong("resId", getOLATResourceable().getResourceableId());
-		query.setCacheable(true);
-		//
-		Long count = (Long) query.list().get(0);
-		return count;
+		int count = userRatingsDAO.countRatings(getOLATResourceable(), getOLATResourceableSubPath());
+		return new Long(count);
 	}
 	
 	/**
@@ -138,12 +108,12 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 			query = DBFactory
 					.getInstance()
 					.createQuery(
-							"select rating from UserRatingImpl as rating where resName=:resname AND resId=:resId AND resSubPath is NULL");
+							"select rating from userrating as rating where resName=:resname AND resId=:resId AND resSubPath is NULL");
 		} else {
 			query = DBFactory
 					.getInstance()
 					.createQuery(
-							"select rating from UserRatingImpl as rating where resName=:resname AND resId=:resId AND resSubPath=:resSubPath");
+							"select rating from userrating as rating where resName=:resname AND resId=:resId AND resSubPath=:resSubPath");
 			query.setString("resSubPath", getOLATResourceableSubPath());
 		}
 		query.setString("resname", getOLATResourceable()
@@ -160,9 +130,7 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 	 */
 	@Override
 	public UserRating createRating(Identity creator, int ratingValue) {
-		UserRating rating = new UserRatingImpl(getOLATResourceable(),
-				getOLATResourceableSubPath(), creator, Integer.valueOf(ratingValue));
-		DBFactory.getInstance().saveObject(rating);
+		UserRating rating = userRatingsDAO.createRating(creator, getOLATResourceable(), getOLATResourceableSubPath(), ratingValue);
 		// do logging
 		ThreadLocalUserActivityLogger.log(CommentAndRatingLoggingAction.RATING_CREATED, getClass(),
 				CoreLoggingResourceable.wrap(getOLATResourceable(), OlatResourceableType.feedItem));
@@ -181,12 +149,12 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 			query = DBFactory
 					.getInstance()
 					.createQuery(
-							"select userRating from UserRatingImpl as userRating where creator=:creator AND resName=:resname AND resId=:resId AND resSubPath is NULL ");
+							"select userRating from userrating as userRating where creator=:creator AND resName=:resname AND resId=:resId AND resSubPath is NULL ");
 		} else {
 			query = DBFactory
 					.getInstance()
 					.createQuery(
-							"select userRating from UserRatingImpl as userRating where creator=:creator AND resName=:resname AND resId=:resId AND resSubPath=:resSubPath");
+							"select userRating from userrating as userRating where creator=:creator AND resName=:resname AND resId=:resId AND resSubPath=:resSubPath");
 			query.setString("resSubPath", getOLATResourceableSubPath());
 		}
 		query.setString("resname", getOLATResourceable()
@@ -231,14 +199,14 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 		// special query when sub path is null
 		if (getOLATResourceableSubPath() == null) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("delete from ").append(UserRatingImpl.class.getName()).append(" where resName=:resName and resId=:resId and resSubPath is null");
+			sb.append("delete from userrating where resName=:resName and resId=:resId and resSubPath is null");
 			return db.getCurrentEntityManager().createQuery(sb.toString())
 					.setParameter("resName", getOLATResourceable().getResourceableTypeName())
 					.setParameter("resId", getOLATResourceable().getResourceableId())
 					.executeUpdate();
 		} else {
 			StringBuilder sb = new StringBuilder();
-			sb.append("delete from ").append(UserRatingImpl.class.getName()).append(" where resName=:resName and resId=:resId and resSubPath=:resSubPath");
+			sb.append("delete from userrating where resName=:resName and resId=:resId and resSubPath=:resSubPath");
 			return db.getCurrentEntityManager().createQuery(sb.toString())
 					.setParameter("resName", getOLATResourceable().getResourceableTypeName())
 					.setParameter("resId", getOLATResourceable().getResourceableId())
@@ -255,7 +223,7 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 	public int deleteAllRatingsIgnoringSubPath() {
 		DB db = DBFactory.getInstance();
 		StringBuilder sb = new StringBuilder();
-		sb.append("delete from ").append(UserRatingImpl.class.getName()).append(" where resName=:resName and resId=:resId");
+		sb.append("delete from userrating where resName=:resName and resId=:resId");
 		return db.getCurrentEntityManager().createQuery(sb.toString())
 				.setParameter("resName", getOLATResourceable().getResourceableTypeName())
 				.setParameter("resId", getOLATResourceable().getResourceableId())
@@ -267,15 +235,7 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 	 */
 	@Override
 	public UserRating reloadRating(UserRating rating) {
-		try {
-			DB db = DBFactory.getInstance();
-			return (UserRating) db.loadObject(rating);			
-		} catch (Exception e) {
-			// Huh, most likely the given object does not exist anymore on the
-			// db, probably deleted by someone else
-			logWarn("Tried to reload a user rating but got an exception. Probably deleted in the meantime", e);
-			return null;
-		}
+		return userRatingsDAO.reloadRating(rating);
 	}
 
 	/**
@@ -287,21 +247,7 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 			throw new AssertException(
 					"This user rating manager is initialized for another resource than the given comment.");
 		}
-		// First reload parent from cache to prevent stale object or cache issues
-		rating = reloadRating(rating);
-		if (rating == null) {
-			// Original rating has been deleted in the meantime. Don't update it
-			return null;
-		}
-		// Update DB entry
-		rating.setRating(newRatingValue);
-		rating.setLastModified(new Date());
-		DB db = DBFactory.getInstance();
-		db.updateObject(rating);
-		// do logging
-		ThreadLocalUserActivityLogger.log(CommentAndRatingLoggingAction.RATING_UPDATED, getClass(),
-				CoreLoggingResourceable.wrap(getOLATResourceable(), OlatResourceableType.feedItem));
-		return rating;
+		return userRatingsDAO.updateRating(rating, newRatingValue);
 	}
 
 	/**
@@ -328,12 +274,11 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 	}
 
 	@Override
-	//fxdiff
 	public List<OLATResourceableRating> getMostRatedResourceables(int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select new ").append(OLATResourceableRating.class.getName()).append("(")
 			.append(" rating.resName, rating.resId, rating.resSubPath, avg(rating.rating))")
-			.append(" from ").append(UserRatingImpl.class.getName()).append(" as rating ")
+			.append(" from userrating as rating ")
 			.append(" where rating.resName=:resName and rating.resId=:resId")
 			.append(" group by rating.resName, rating.resId, rating.resSubPath")
 			.append(" order by avg(rating.rating) desc");

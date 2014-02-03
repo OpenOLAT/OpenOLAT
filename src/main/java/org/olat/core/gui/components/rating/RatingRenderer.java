@@ -23,12 +23,15 @@ import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -42,7 +45,7 @@ import org.olat.core.util.Formatter;
  * 
  * @author gnaegi
  */
-public class RatingRenderer implements ComponentRenderer {
+public class RatingRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -52,8 +55,9 @@ public class RatingRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			@SuppressWarnings("unused") RenderResult renderResult, @SuppressWarnings("unused") String[] args) {
+			RenderResult renderResult, String[] args) {
 		RatingComponent rating = (RatingComponent) source;
 		sb.append("<div class='b_rating ");
 		// Add custom css class
@@ -90,17 +94,26 @@ public class RatingRenderer implements ComponentRenderer {
 			sb.append("'");
 			// Add action
 			if (rating.isAllowUserInput()) {
-				// Add link
-				sb.append(" href=\"");
-				ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { (i+1) +"" },
-						ajaxModeEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-				sb.append("\"");
-				// add link target
-				if (ajaxModeEnabled) {
-					ubu.appendTarget(sb);
-				}				
-				// add check for olat busy
-				sb.append(" onclick=\"return o2cl()\"  onkeypress=\"return o2cl()\"");
+				if(rating.getForm() == null) {
+					// Add link
+					sb.append(" href=\"");
+					ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { (i+1) +"" },
+							ajaxModeEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+					sb.append("\"");
+					// add link target
+					if (ajaxModeEnabled) {
+						ubu.appendTarget(sb);
+					}				
+					// add check for olat busy
+					sb.append(" onclick=\"return o2cl()\"  onkeypress=\"return o2cl()\"");
+				} else {
+					Form theForm = rating.getForm();
+					String elementId = FormBaseComponentIdProvider.DISPPREFIX + rating.getDispatchID();
+					sb.append("href=\"javascript:")
+					  .append(FormJSHelper.getXHRFnCallFor(theForm, elementId, 1,
+							  new NameValuePair(VelocityContainer.COMMAND_ID, Integer.toString(i+1))))
+					  .append("\" ");
+				}
 
 			} else {
 				// Disabled link
@@ -137,28 +150,4 @@ public class RatingRenderer implements ComponentRenderer {
 		}
 		sb.append("</div>");//b_rating
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		// no body onload to execute
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		// no headers to load
-	}
-
 }

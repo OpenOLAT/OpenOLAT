@@ -30,6 +30,7 @@ import java.util.Set;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 
 /**
  * 
@@ -48,6 +49,10 @@ public interface FlexiTableElement extends FormItem {
 	 * @param rendererType
 	 */
 	public void setRendererType(FlexiTableRendererType rendererType);
+	
+	public void setRowRenderer(VelocityContainer renderer);
+	
+	public void addFormItem(FormItem item);
 
 	/**
 	 * @return True if muli selection is enabled

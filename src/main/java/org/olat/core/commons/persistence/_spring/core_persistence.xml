@@ -75,7 +75,9 @@
 		<mapping-file>org/olat/portfolio/model/notification/Notifications.hbm.xml</mapping-file>
 		<mapping-file>org/olat/portfolio/model/restriction/CollectRestriction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/commons/services/commentAndRating/impl/UserCommentImpl.hbm.xml</mapping-file>
+		<!-- 
 		<mapping-file>org/olat/core/commons/services/commentAndRating/impl/UserRatingImpl.hbm.xml</mapping-file>
+		-->
 		<mapping-file>org/olat/core/commons/services/mark/impl/MarkImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/commons/services/tagging/model/TagImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/util/mail/model/DBMail.hbm.xml</mapping-file>
@@ -91,6 +93,7 @@
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>
+		<class>org.olat.core.commons.services.commentAndRating.impl.UserRatingImpl</class>
 		<class>org.olat.course.assessment.model.UserCourseInfosImpl</class>
 		<class>org.olat.group.model.ContactParticipantView</class>
 		<class>org.olat.group.model.ContactOwnerView</class>

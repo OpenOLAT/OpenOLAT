@@ -1683,8 +1683,8 @@ public class RepositoryManager extends BasicManager {
 		return results;
 	}
 	
-	public int countGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, boolean orderBy) {
-		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(params, orderBy, true);
+	public int countGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params) {
+		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(params, false, true);
 		Number count = (Number)dbQuery.uniqueResult();
 		return count.intValue();
 	}

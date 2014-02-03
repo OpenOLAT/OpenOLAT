@@ -1,0 +1,16 @@
+<div class="o_catalog">
+	<fieldset>
+		<legend>$catalogEntryName</legend>
+		#if($catalogEntryDesc)
+			<i>$catalogEntryDesc</i>
+		#end
+		#if($subCategories.size != 0)
+			<div class="o_catalog_itemlist">
+				#foreach($subCategory in $subCategories)
+					$r.render($subCategory.componentName),
+				#end
+			</div>
+		#end
+		</fieldset>
+</div>
+$r.render("entries")

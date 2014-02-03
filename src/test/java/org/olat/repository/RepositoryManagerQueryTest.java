@@ -245,7 +245,7 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		//test paging
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, "kan", null, types, null, role4, "Volks");
 		List<RepositoryEntry> resultOneShootInstitut6 = rm.genericANDQueryWithRolesRestriction(params, 0, 50, true);
-		int resultOneShootInstitutTotal6 = rm.countGenericANDQueryWithRolesRestriction(params, true);
+		int resultOneShootInstitutTotal6 = rm.countGenericANDQueryWithRolesRestriction(params);
 		assertNotNull(resultOneShootInstitut6);
 		assertEquals(50, resultOneShootInstitut6.size());
 		//check

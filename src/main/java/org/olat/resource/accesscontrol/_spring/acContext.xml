@@ -71,13 +71,15 @@
 				<property name="factoryMethod" value="createOrdersController"/>
 			</bean>
 		</property>
+		<property name="navigationKey" value="booking" />
+		<property name="iconCssClass" value="b_with_small_icon_left b_order_icon" />
 		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
 		<property name="translationPackage" value="org.olat.home" />
 		<property name="i18nActionKey" value="menu.orders"/>
 		<property name="i18nDescriptionKey" value="menu.orders.alt"/>
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.home.HomeMainController</value>		
+				<value>org.olat.home.HomeMainController</value>
 			</list>
 		</property>
 	</bean>

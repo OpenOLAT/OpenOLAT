@@ -27,5 +27,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 public enum FlexiTableRendererType {
 	classic,
 	dataTables,
+	custom
 
 }

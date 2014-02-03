@@ -17,46 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.gui.control;
+package org.olat.repository.ui.list;
 
+import java.util.List;
+
+import org.olat.catalog.CatalogEntry;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.AutoCreator;
 
 /**
  * 
- * <h3>Description:</h3>
- * AutoCreator for the FrentixTopNavController which allow to configure
- * an impressum or not, and the search or not
- * 
- * <p>
- * Initial Date:  25 nov. 2010 <br>
- * @author srosse, srosse@frentix.com, www.frentix.com
+ * Initial date: 21.11.2012<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class TopNavCreator extends AutoCreator {
+public class CatalogEntryListController extends AbstractRepositoryEntryListController {
 	
-	private boolean impressum;
-	private boolean search;
-	
-	@Override
-	public Controller createController(UserRequest ureq, WindowControl wControl) {
-		return new OlatTopNavController(ureq, wControl, impressum, search);
+	public CatalogEntryListController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		
+		setDataSource(new CategoriesDataSource(null, getIdentity(), this));
+		initForm(ureq);
 	}
 	
-	public boolean isImpressum() {
-		return impressum;
-	}
-
-	public void setImpressum(boolean impressum) {
-		this.impressum = impressum;
-	}
-
-	public boolean isSearch() {
-		return search;
-	}
-
-	public void setSearch(boolean search) {
-		this.search = search;
+	public void setCatalogEntries(List<CatalogEntry> entries) {
+		setDataSource(new CategoriesDataSource(entries, getIdentity(), this));
 	}
 }

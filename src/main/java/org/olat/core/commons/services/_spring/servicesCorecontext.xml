@@ -22,8 +22,8 @@
 	<!-- Define the manager implementation used in comment and rating service -->
 	<bean id="userCommentsManager" 
 		class="org.olat.core.commons.services.commentAndRating.impl.UserCommentsManagerImpl" scope="prototype" />
-	<bean id="userRatingsManager" 
-		class="org.olat.core.commons.services.commentAndRating.impl.UserRatingsManagerImpl" scope="prototype" />
-	
-
+			
+	<bean id="userRatingsManager" class="org.olat.core.commons.services.commentAndRating.impl.UserRatingsManagerImpl" scope="prototype">
+		<property name="userRatingsDAO" ref="userRatingsDAO"/>
+	</bean>
 </beans>

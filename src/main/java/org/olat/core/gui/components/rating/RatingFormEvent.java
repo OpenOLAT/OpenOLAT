@@ -19,35 +19,32 @@
  */
 package org.olat.core.gui.components.rating;
 
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
 /**
- * Description:<br>
- * The rating event is fired by the RatingComponent when a new rating is made
- * <P>
- * Initial Date:  31.10.2008 <br>
- * @author gnaegi
+ * 
+ * Initial date: 31.01.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class RatingEvent extends Event {
+public class RatingFormEvent extends FormEvent {
 
-	private static final long serialVersionUID = -7584762233026409541L;
+	private static final long serialVersionUID = -3560846420954074918L;
+	
 	private static final String RATING_EVENT = "ratingEvent";
 	private float rating;
 
-	/**
-	 * Constructor for a rating event.
-	 * @param rating The current rating value
-	 */
-	public RatingEvent(float rating) {
-		super(RATING_EVENT);
+	public RatingFormEvent(FormItem source, float rating) {
+		super(RATING_EVENT, source, ONCLICK);
 		this.rating = rating;
 	}
 
-	/**
-	 * @return The rating value made
-	 */
 	public float getRating() {
 		return rating;
 	}
 
+	public void setRating(float rating) {
+		this.rating = rating;
+	}
 }

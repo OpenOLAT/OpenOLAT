@@ -21,10 +21,24 @@ package org.olat.core.commons.services.commentAndRating.impl;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Persistable;
 
 /**
  * Description:<br>
@@ -35,20 +49,44 @@ import org.olat.core.id.OLATResourceable;
  * 
  * @author gnaegi
  */
-public class UserRatingImpl extends PersistentObject implements UserRating {
-	private String resName;
-	private Long resId;
-	private String resSubPath;
+@Entity(name="userrating")
+@Table(name="o_userrating")
+public class UserRatingImpl implements Persistable, CreateInfo,  UserRating {
+
+	private static final long serialVersionUID = -5830951461259559219L;
+
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="rating_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+
+	@Column(name="version", nullable=false, insertable=true, updatable=false)
+	private int version = 0;
 	
-	private Identity creator;
-	private Integer rating;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date modifiedDate;
 
-	/**
-	 * Default constructor for hibernate, don't use this!
-	 */
-	private UserRatingImpl() {
+	@Column(name="resname", nullable=false, insertable=true, updatable=false)
+	private String resName;
+	@Column(name="resid", nullable=false, insertable=true, updatable=false)
+	private Long resId;
+	@Column(name="ressubpath", nullable=true, insertable=true, updatable=false)
+	private String resSubPath;
+
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="creator_id", nullable=false, updatable=false)
+	private Identity creator;
+	@Column(name="rating", nullable=false, insertable=true, updatable=true)
+	private Integer rating;
+	
+
+	public UserRatingImpl() {
 		// 
 	}
 
@@ -59,14 +97,30 @@ public class UserRatingImpl extends PersistentObject implements UserRating {
 	 * @param creator
 	 * @param ratingValue
 	 */
-	UserRatingImpl(OLATResourceable ores, String subpath, Identity creator, Integer ratingValue) {
+	public UserRatingImpl(OLATResourceable ores, String subpath, Identity creator, Integer ratingValue) {
 		this.creator = creator;
 		this.resName = ores.getResourceableTypeName();
 		this.resId = ores.getResourceableId();
 		this.resSubPath = subpath;
 		this.rating = ratingValue;
+		this.creationDate = new Date();
+		this.modifiedDate = new Date();
 	}
 	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+	
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	/**
 	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#getCreator()
 	 */
@@ -153,5 +207,26 @@ public class UserRatingImpl extends PersistentObject implements UserRating {
 	public void setLastModified(Date date) {
 		modifiedDate = date;
 	}
+	
+	@Override
+	public int hashCode() {
+		return key == null ? 13256 : key.hashCode();
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof UserRatingImpl) {
+			UserRatingImpl q = (UserRatingImpl)obj;
+			return key != null && key.equals(q.key);
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
 }

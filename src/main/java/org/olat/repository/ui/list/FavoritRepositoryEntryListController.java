@@ -17,46 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.gui.control;
+package org.olat.repository.ui.list;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.AutoCreator;
+import org.olat.core.id.Roles;
 
 /**
  * 
- * <h3>Description:</h3>
- * AutoCreator for the FrentixTopNavController which allow to configure
- * an impressum or not, and the search or not
- * 
- * <p>
- * Initial Date:  25 nov. 2010 <br>
- * @author srosse, srosse@frentix.com, www.frentix.com
+ * Initial date: 28.01.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class TopNavCreator extends AutoCreator {
+public class FavoritRepositoryEntryListController extends AbstractRepositoryEntryListController {
 	
-	private boolean impressum;
-	private boolean search;
+	private final Roles roles;
 	
-	@Override
-	public Controller createController(UserRequest ureq, WindowControl wControl) {
-		return new OlatTopNavController(ureq, wControl, impressum, search);
-	}
-	
-	public boolean isImpressum() {
-		return impressum;
+	public FavoritRepositoryEntryListController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		roles = ureq.getUserSession().getRoles();
+		
+		FavoritRepositoryEntryDataSource dataSource = new FavoritRepositoryEntryDataSource(getIdentity(), roles, this);
+		setDataSource(dataSource);
+		
+		initForm(ureq);
 	}
 
-	public void setImpressum(boolean impressum) {
-		this.impressum = impressum;
-	}
-
-	public boolean isSearch() {
-		return search;
-	}
-
-	public void setSearch(boolean search) {
-		this.search = search;
+	protected boolean updateMarkedEntries() {
+		return getDataSource().getRowCount() > 0;
 	}
 }

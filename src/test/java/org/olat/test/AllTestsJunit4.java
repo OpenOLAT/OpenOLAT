@@ -150,6 +150,7 @@ import org.junit.runners.Suite;
 	org.olat.test.SpringInitDestroyVerficationTest.class,
 	//org.olat.course.statistic.weekly.TestWeeklyStatisticManager_fillGaps.class, don't know what it tests
 	org.olat.core.commons.services.usercomments.UserCommentsTest.class,
+	org.olat.core.commons.services.usercomments.UserRatingsDAOTest.class,
 	org.olat.core.commons.services.usercomments.UserRatingsTest.class,
 	org.olat.course.auditing.UserNodeAuditManagerTest.class,
 	org.olat.shibboleth.util.ShibbolethAttributeTest.class,

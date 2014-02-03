@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
@@ -56,6 +57,7 @@ public class RatingComponent extends Component {
 	private boolean allowUserInput;
 	private String cssClass;
 	private float currentRating;
+	private Form form;
 
 	/**
 	 * Create a rating component with no title and a default explanation and hover
@@ -68,7 +70,11 @@ public class RatingComponent extends Component {
 	 * @param allowUserInput
 	 */
 	public RatingComponent(String name, float currentRating, int maxRating, boolean allowUserInput) {
-		super(name);
+		this(null, name, currentRating, maxRating, allowUserInput, null);
+	}
+		
+	public RatingComponent(String id, String name, float currentRating, int maxRating, boolean allowUserInput, Form form) {
+		super(id, name);
 		if (currentRating > maxRating) 
 			throw new AssertException("Current rating set to higher value::" + currentRating + " than the maxRating::" + maxRating);
 		this.allowUserInput = allowUserInput;
@@ -86,7 +92,7 @@ public class RatingComponent extends Component {
 		else this.explanation = null;
 		this.translateExplanation = true;
 		this.showRatingAsText = false;
-		
+		this.form = form;
 	}
 
 	/**
@@ -99,9 +105,9 @@ public class RatingComponent extends Component {
 			log.debug("***RATING_CLICKED*** dispatchID::" + ureq.getComponentID() + " rating::" + cmd);
 		}
 		try {
-			float rating = Float.parseFloat(cmd);			
+			float rating = Float.parseFloat(cmd);
 			// update GUI
-			this.setCurrentRating(rating);
+			setCurrentRating(rating);
 			// notify listeners
 			Event event = new RatingEvent(rating);
 			fireEvent(ureq, event);
@@ -118,10 +124,14 @@ public class RatingComponent extends Component {
 	}
 
 	
+	
 	//
 	// Various getter and setter methods
 	//
-	
+	Form getForm() {
+		return form;
+	}
+
 	// only package scope, used by renderer
 	List<String> getRatingLabel() {
 		return ratingLabels;

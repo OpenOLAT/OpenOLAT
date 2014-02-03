@@ -184,7 +184,7 @@ public class RepositoryEntriesResource {
 			}
 			
 			if(MediaTypeVariants.isPaged(httpRequest, request)) {
-				int totalCount = rm.countGenericANDQueryWithRolesRestriction(params, true);
+				int totalCount = rm.countGenericANDQueryWithRolesRestriction(params);
 				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
 				RepositoryEntryVOes voes = new RepositoryEntryVOes();
 				voes.setRepositoryEntries(toArrayOfVOes(res));

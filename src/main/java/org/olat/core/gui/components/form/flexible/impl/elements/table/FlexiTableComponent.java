@@ -42,8 +42,9 @@ import org.olat.core.gui.translator.Translator;
  */
 public class FlexiTableComponent extends FormBaseComponentImpl implements ComponentCollection {
 
-	private ComponentRenderer DATATABLES_RENDERER = new FlexiDataTablesRenderer();
-	private ComponentRenderer CLASSIC_RENDERER = new FlexiTableClassicRenderer();
+	private static final ComponentRenderer DATATABLES_RENDERER = new FlexiDataTablesRenderer();
+	private static final ComponentRenderer CLASSIC_RENDERER = new FlexiTableClassicRenderer();
+	private static final ComponentRenderer CUSTOM_RENDERER = new FlexiTableCustomRenderer();
 	
 	
 	private FlexiTableElementImpl element;
@@ -100,6 +101,7 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 		switch(element.getRendererType()) {
 			case classic: return CLASSIC_RENDERER;
 			case dataTables: return DATATABLES_RENDERER;
+			case custom: return CUSTOM_RENDERER;
 			default: return CLASSIC_RENDERER;
 		}
 	}

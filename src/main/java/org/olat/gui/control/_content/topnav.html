@@ -4,6 +4,12 @@
 		$r.render("topnav.impressum")
 	</li>
 #end
+
+#if (!$inAssessment && $r.available("search_input"))
+	<li id="o_topnav_search">
+		$r.render("search_input")
+	</li>
+#end
 #if ($r.available("groupchatcontroller"))
 	<li id="o_topnav_imgroupclient">
 		$r.render("groupchatcontroller")
@@ -14,25 +20,14 @@
 		$r.render("imclient")
 	</li>
 #end
-#if (!$inAssessment && $r.available("search_input"))
-	<li id="o_topnav_search">
-		$r.render("search_input")
-	</li>
-#end
-	<li id="o_topnav_printview">
-		<a href="javascript:b_doPrint();" title="$r.translateInAttribute("topnav.printview.alt")" >$r.translate("topnav.printview")</a>
-	</li>
-#if ($r.available("topnav.help"))
-	<li id="o_topnav_help">
-		$r.render("topnav.help")
-	</li>
-#end
 #if (!$isGuest)
-	<li id="o_topnav_logout">
-		## make logout link very basic without onClick handler in case javaScript is broken it is still possible to log out
-		## except for the onolatunload() method which must be executed to correctly finish SCORM modules (OLAT-6255)
-		## must be on one line to work with inline translation tool
-		<a id="b_logout" href="$r.commandURI("logout")" title="$r.translateInAttribute("topnav.logout.alt")" onclick="if (window.olatonunload) {olatonunload();}"><span class="b_logout_icon">$r.translate("topnav.logout")</span></a>
+	<li id="o_topnav_my_menu_link">
+		<div class="o_topnav_portrait">
+		#if($hasPortrait)
+			$r.render("portrait")
+		#end
+		</div>
+		$r.render("topnav.my.menu")
 	</li>
 #else
 	<li id="o_topnav_login">
