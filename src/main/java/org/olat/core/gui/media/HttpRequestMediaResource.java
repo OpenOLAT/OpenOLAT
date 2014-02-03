@@ -26,7 +26,6 @@
 
 package org.olat.core.gui.media;
 
-import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.InputStream;
 import java.text.DateFormat;
