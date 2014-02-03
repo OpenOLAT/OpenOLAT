@@ -26,6 +26,8 @@
 
 package org.olat.core.gui.media;
 
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -34,13 +36,18 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * @author Mike Stock
  */
 public class HttpRequestMediaResource implements MediaResource {
+	
+	private static final OLog log = Tracing.createLoggerFor(HttpRequestMediaResource.class);
 
 	private final HttpResponse response;
 
@@ -78,7 +85,7 @@ public class HttpRequestMediaResource implements MediaResource {
 		try {
 			return response.getEntity().getContent();
 		} catch (Exception e) {
-			//  
+			log.error("", e);
 		}
 		return null;
 	}
@@ -107,7 +114,9 @@ public class HttpRequestMediaResource implements MediaResource {
 	 */
 	@Override
 	public void release() {
-		//response.getEntity()..releaseConnection();
+		if(response instanceof Closeable) {
+			IOUtils.closeQuietly((Closeable)response);
+		}
 	}
 
 	/**
@@ -124,6 +133,5 @@ public class HttpRequestMediaResource implements MediaResource {
 		} else {
 			hres.setHeader("Content-Disposition", "filename=" + h.getValue());
 		}
-		
 	}
 }
