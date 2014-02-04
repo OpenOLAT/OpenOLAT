@@ -20,8 +20,8 @@
 
 package org.olat.commons.info.portlet;
 
-import org.olat.core.util.notifications.SubscriptionInfo;
-import org.olat.core.util.notifications.items.SubscriptionListItem;
+import org.olat.core.commons.services.notifications.SubscriptionInfo;
+import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 
 /**
  * 

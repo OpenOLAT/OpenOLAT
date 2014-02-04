@@ -11,6 +11,7 @@
 	<context:component-scan base-package="org.olat.core.commons.services" />
 	<import resource="classpath:/org/olat/core/commons/services/scheduler/_spring/schedulerContext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/taskexecutor/_spring/taskExecutorCorecontext.xml"/>
+	<import resource="classpath:/org/olat/core/commons/services/notifications/_spring/notificationsContext.xml"/>
 
 	<!-- Define commenting and rating service implementation. Remove this bean if you don't want this service to be enabled at all -->
 	<bean id="commentAndRatingService" class="org.olat.core.commons.services.commentAndRating.impl.CommentAndRatingServiceImpl" 

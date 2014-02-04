@@ -17,7 +17,7 @@
 	</bean>
 	
 	<bean id="infoSubscriptionManager" class="org.olat.commons.info.notification.InfoSubscriptionManagerImpl">
-	  <property name="notificationsManager" ref="org.olat.core.util.notifications.NotificationsManager"/>
+	  <property name="notificationsManager" ref="notificationsManager"/>
 	</bean>
 	
 </beans>

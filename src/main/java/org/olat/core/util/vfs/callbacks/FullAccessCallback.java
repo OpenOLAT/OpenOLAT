@@ -26,7 +26,7 @@
 
 package org.olat.core.util.vfs.callbacks;
 
-import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 
 public class FullAccessCallback implements VFSSecurityCallback {

@@ -28,9 +28,9 @@ import java.util.List;
 
 import org.hibernate.ObjectDeletedException;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.notifications.NotificationsManager;
-import org.olat.core.util.notifications.Publisher;
 
 public class OLATUpgrade_7_1_0 extends OLATUpgrade {
 	

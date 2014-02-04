@@ -25,10 +25,10 @@
 
 package org.olat.course.nodes.ta;
 
+import org.olat.core.commons.services.notifications.NotificationsHandler;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.notifications.NotificationsHandler;
-import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;

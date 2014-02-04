@@ -19,11 +19,11 @@
  */
 package org.olat.home.controllerCreators;
 
+import org.olat.core.commons.services.notifications.NotificationUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
-import org.olat.notifications.NotificationUIFactory;
 
 /**
  * wrapper to create a notificationcontroller with the uifactory. 

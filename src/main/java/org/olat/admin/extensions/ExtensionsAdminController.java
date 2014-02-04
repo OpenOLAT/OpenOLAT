@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.olat.admin.SystemAdminMainController;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.extensions.Extension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,7 +41,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Util;
-import org.olat.core.util.notifications.NotificationsHandler;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;

@@ -58,7 +58,7 @@
 		<property name="name" value="Notes" />
 		<property name="enabled" value="${portlet.notes.enabled}" />
 	</bean>
-	<bean id="Notifications" class="org.olat.notifications.NotificationsPortlet" scope="prototype">
+	<bean id="Notifications" class="org.olat.core.commons.services.notifications.ui.NotificationsPortlet" scope="prototype">
 		<property name="name" value="Notifications" />
 		<property name="enabled" value="${portlet.notifications.enabled}" />
 	</bean>

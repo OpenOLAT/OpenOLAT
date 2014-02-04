@@ -23,8 +23,8 @@ package org.olat.commons.info.portlet;
 import java.util.Comparator;
 import java.util.Date;
 
+import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.gui.control.generic.portal.SortingCriteria;
-import org.olat.core.util.notifications.items.SubscriptionListItem;
 
 /**
  * 

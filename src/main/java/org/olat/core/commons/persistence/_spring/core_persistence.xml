@@ -87,6 +87,8 @@
 		<mapping-file>org/olat/upgrade/model/DBMailAttachmentData.hbm.xml</mapping-file>
 		
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
+		<class>org.olat.core.commons.services.notifications.model.SubscriberImpl</class>
+		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>
 		<class>org.olat.course.assessment.model.UserCourseInfosImpl</class>
@@ -123,8 +125,6 @@
 		<class>org.olat.modules.qpool.model.QEducationalContext</class>
 		<class>org.olat.modules.qpool.model.QItemType</class>
 		<class>org.olat.modules.qpool.model.QLicense</class>
-		<class>org.olat.notifications.SubscriberImpl</class>
-		<class>org.olat.notifications.PublisherImpl</class>
 		<class>org.olat.ims.lti.model.LTIOutcomeImpl</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>

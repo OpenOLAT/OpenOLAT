@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.core.util.notifications.items.SubscriptionListItem;
 import org.olat.portfolio.model.structel.EPMapShort;
 import org.olat.portfolio.ui.structel.view.EPChangelogController;
 
