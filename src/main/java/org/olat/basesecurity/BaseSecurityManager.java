@@ -1401,6 +1401,18 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				.setParameter("keys", identityKeys)
 				.getResultList();
 	}
+	
+	public List<Identity> loadIdentities(int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident order by ident.key");
+		
+		return DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+		
+	}
 
 	/**
 	 * 

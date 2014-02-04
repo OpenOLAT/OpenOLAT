@@ -27,30 +27,71 @@ package org.olat.notifications;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
 import org.olat.core.util.notifications.Publisher;
 
 /**
- * Description: <br>
- * TODO: Felix Jost Class Description for PublisherImpl
- * <P>
  * 
  * Initial Date: 21.10.2004 <br>
  * @author Felix Jost
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PublisherImpl extends PersistentObject implements Publisher {
+@Entity(name="notipublisher")
+@Table(name="o_noti_pub")
+public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 
 	private static final long serialVersionUID = -7684628889607509977L;
 	
-	private String type; // e.g. Forum
-	private String resName; // e.g. CourseModule
-	private Long resId; // e.g. 2343284327
-	private String subidentifier; // e.g. 69680861018558 (for a node in
-	// a course)
-	private String data; // any additional data (depending on type)
-	private int state; // 0 = ok
-	private Date latestNewsDate;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="publisher_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+
+	//for compatibility purpose
+	@Column(name="version", nullable=false, insertable=true, updatable=false)
+	private int version = 0;
+	
+	// e.g. Forum
+
+	@Column(name="publishertype", nullable=false, insertable=true, updatable=false)
+	private String type; 
+	// e.g. CourseModule
+	@Column(name="resname", nullable=false, insertable=true, updatable=false)
+	private String resName; 
+	// e.g. 2343284327
+	@Column(name="resid", nullable=false, insertable=true, updatable=false)
+	private Long resId; 
+	// e.g. 69680861018558 (for a node in a course)
+	@Column(name="subident", nullable=true, insertable=true, updatable=false)
+	private String subidentifier;
+	@Column(name="businesspath", nullable=true, insertable=true, updatable=false)
 	private String businessPath;
+	// any additional data (depending on type)
+	@Column(name="data", nullable=true, insertable=true, updatable=false)
+	private String data; 
+	// 0 = ok
+	@Column(name="state", nullable=false, insertable=true, updatable=false)
+	private int state; 
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="latestnews", nullable=false, insertable=true, updatable=true)
+	private Date latestNewsDate;
+
 
 	/**
 	 * for hibernate only
@@ -76,6 +117,22 @@ public class PublisherImpl extends PersistentObject implements Publisher {
 		this.state = state;
 		this.businessPath = businessPath;
 		this.latestNewsDate = latestNewsDate;
+	}
+
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	/**
@@ -200,5 +257,10 @@ public class PublisherImpl extends PersistentObject implements Publisher {
 			return getKey() != null && getKey().equals(p.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

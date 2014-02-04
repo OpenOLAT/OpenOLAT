@@ -54,8 +54,6 @@
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
 		<mapping-file>org/olat/catalog/CatalogEntryImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/notifications/PublisherImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/notifications/SubscriberImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/registration/TemporaryKeyImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/statistic/daily/DailyStat.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/statistic/dayofweek/DayOfWeekStat.hbm.xml</mapping-file>
@@ -125,6 +123,8 @@
 		<class>org.olat.modules.qpool.model.QEducationalContext</class>
 		<class>org.olat.modules.qpool.model.QItemType</class>
 		<class>org.olat.modules.qpool.model.QLicense</class>
+		<class>org.olat.notifications.SubscriberImpl</class>
+		<class>org.olat.notifications.PublisherImpl</class>
 		<class>org.olat.ims.lti.model.LTIOutcomeImpl</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>

@@ -111,14 +111,6 @@ public abstract class NotificationsManager extends BasicManager {
 	 */
 	public abstract Publisher getOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata);
 	
-	/**
-	 * Modify the publisher
-	 * @param oldContext
-	 * @param newContext
-	 * @return
-	 */
-	public abstract Publisher updatePublisher(SubscriptionContext oldContext, SubscriptionContext newContext);
-	
 	public abstract List<Publisher> getAllPublisher();
 
 	/**

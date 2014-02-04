@@ -27,34 +27,70 @@ package org.olat.notifications;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
 import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.notifications.Subscriber;
 
 /**
  * Description: <br>
- * TODO: Felix Jost Class Description for Subscriber
+ * Relation between the publisher and the identity
  * <P>
  * 
  * Initial Date: 21.10.2004 <br>
  * @author Felix Jost
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SubscriberImpl extends PersistentObject implements Subscriber {
+@Entity(name="notisub")
+@Table(name="o_noti_sub")
+public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 	private static final long serialVersionUID = 6165097156137862263L;
-
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="publisher_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
+	private Date lastModified;
+	//for compatibility purpose
+	@Column(name="version", nullable=false, insertable=true, updatable=false)
+	private int version = 0;
+	
 	// reference to the subscribed publisher
+	@ManyToOne(targetEntity=PublisherImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_publisher", nullable=false, updatable=false)
 	private Publisher publisher;
 	
 	// the user this subscription belongs to
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_identity", nullable=false, updatable=false)
 	private Identity identity;
 	
 	// when the user latest received an email concering this subscription; may be null if no email has been sent yet
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="latestemailed", nullable=false, insertable=true, updatable=true)
 	private Date latestEmailed; 
 
-	private Date lastModified; 
-	
-	
 	/**
 	 * for hibernate only
 	 */
@@ -70,6 +106,21 @@ public class SubscriberImpl extends PersistentObject implements Subscriber {
 		identity = listener;
 	}
 
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	public Date getCreationDate() {
+		return creationDate;
+	}
+	
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
 	/**
 	 * @return the identity
 	 */
@@ -142,5 +193,10 @@ public class SubscriberImpl extends PersistentObject implements Subscriber {
 			return getKey() != null && getKey().equals(s.getKey());
 		}
 		return false;
+	}
+	
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

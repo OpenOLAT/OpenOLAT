@@ -134,7 +134,7 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 	
 	private List<Publisher> getAssessmentPublishers() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select pub from ").append(PublisherImpl.class.getName()).append(" pub where pub.resName='AssessmentManager' and type='AssessmentManager'");
+		sb.append("select pub from notipublisher pub where pub.resName='AssessmentManager' and type='AssessmentManager'");
 		DBQuery query = dbInstance.createQuery(sb.toString());
 		@SuppressWarnings("unchecked")
 		List<Publisher> res = query.list();

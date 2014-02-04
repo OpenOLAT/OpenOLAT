@@ -38,6 +38,7 @@ import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.notifications.SubscriptionInfo;
 import org.olat.core.util.notifications.items.SubscriptionListItem;
 import org.olat.core.util.notifications.items.TitleItem;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -57,6 +58,10 @@ public class InfoMessageNotificationHandler extends LogDelegator implements Noti
 		SubscriptionInfo si = null;
 		Publisher p = subscriber.getPublisher();
 		Date latestNews = p.getLatestNewsDate();
+		
+		if(14745600 == p.getKey()) {
+			System.out.println(latestNews);
+		}
 
 		// do not try to create a subscription info if state is deleted - results in
 		// exceptions, course
@@ -67,22 +72,11 @@ public class InfoMessageNotificationHandler extends LogDelegator implements Noti
 				final Long resId = subscriber.getPublisher().getResId();
 				final String resName = subscriber.getPublisher().getResName();
 				String resSubPath = subscriber.getPublisher().getSubidentifier();
-				String businessPath = subscriber.getPublisher().getBusinessPath();
 				String title = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(title, CSS_CLASS_ICON), null);
 				
-				OLATResourceable ores = new OLATResourceable() {
-					@Override
-					public String getResourceableTypeName() {
-						return resName;
-					}
-					@Override
-					public Long getResourceableId() {
-						return resId;
-					}
-				};
-
-				List<InfoMessage> infos = InfoMessageManager.getInstance().loadInfoMessageByResource(ores, resSubPath, businessPath, compareDate, null, 0, 0);
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
+				List<InfoMessage> infos = InfoMessageManager.getInstance().loadInfoMessageByResource(ores, resSubPath, null, compareDate, null, 0, 0);
 				for(InfoMessage info:infos) {
 					String desc = info.getTitle();
 					String tooltip = info.getMessage();

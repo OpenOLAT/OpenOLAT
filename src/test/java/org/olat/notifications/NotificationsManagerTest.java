@@ -98,32 +98,31 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testUpdatePublisherContext() {
+	public void testCreateUpdatePublisher() {
 		String identifier = UUID.randomUUID().toString().replace("-", "");
-		SubscriptionContext context = new SubscriptionContext("PS", new Long(123), identifier);
+		SubscriptionContext context = new SubscriptionContext("PS2", new Long(124), identifier);
 		PublisherData publisherData = new PublisherData("testPublisherSubscriber", "e.g. forumdata=keyofforum", null);
 		
 		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
 		dbInstance.commitAndCloseSession();
 		//check values
 		Assert.assertNotNull(publisher);
-		Assert.assertEquals("PS", publisher.getResName());
-		Assert.assertEquals(new Long(123), publisher.getResId());
-		Assert.assertEquals(identifier, publisher.getSubidentifier());
-
-		//modify
-		String modifiedIdentifier = UUID.randomUUID().toString().replace("-", "");
-		SubscriptionContext modifiedContext = new SubscriptionContext("PSModified", new Long(12300), modifiedIdentifier);
-		notificationManager.updatePublisher(context, modifiedContext);
-		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(publisher.getKey());
+		Assert.assertNotNull(publisher.getCreationDate());
+		Assert.assertNotNull(publisher.getLatestNewsDate());
+		Assert.assertEquals("PS2", publisher.getResName());
+		Assert.assertEquals(new Long(124), publisher.getResId());
 		
-		//check if exists
-		Publisher reloadedPublisher = notificationManager.getPublisher(modifiedContext);
+		sleep(2000);
+
+		//update the publisher
+		notificationManager.markPublisherNews(context, null, false);
+		
+		//check if exists and last news date is updated
+		Publisher reloadedPublisher = notificationManager.getPublisher(context);
 		Assert.assertNotNull(reloadedPublisher);
 		Assert.assertEquals(publisher, reloadedPublisher);
-		Assert.assertEquals("PSModified", reloadedPublisher.getResName());
-		Assert.assertEquals(new Long(12300), reloadedPublisher.getResId());
-		Assert.assertEquals(modifiedIdentifier, reloadedPublisher.getSubidentifier());
+		Assert.assertTrue(publisher.getLatestNewsDate().before(reloadedPublisher.getLatestNewsDate()));
 	}
 	
 	@Test
@@ -171,6 +170,36 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Subscriber reloadedSubscriber = notificationManager.getSubscriber(subscriber.getKey());
 		Assert.assertNotNull(reloadedSubscriber);
 		Assert.assertEquals(subscriber,  reloadedSubscriber);
+	}
+	
+	@Test
+	public void testMarkSubscriberRead() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID().toString());
+		//create a publisher
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("All", new Long(123), identifier);
+		PublisherData publisherData = new PublisherData("testAllPublishers", "e.g. forumdata=keyofforum", null);
+		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
+		dbInstance.commit();
+		Assert.assertNotNull(publisher);
+		
+		//subscribe
+		notificationManager.subscribe(id, context, publisherData);
+		dbInstance.commit();
+		//load the subscriber
+		Subscriber subscriber = notificationManager.getSubscriber(id, publisher);
+		Assert.assertNotNull(subscriber);
+		dbInstance.commitAndCloseSession();
+		
+		sleep(2000);
+		
+		notificationManager.markSubscriberRead(id, context);
+		
+		//check the last modification date
+		Subscriber reloadedSubscriber = notificationManager.getSubscriber(subscriber.getKey());
+		Assert.assertNotNull(reloadedSubscriber);
+		Assert.assertEquals(subscriber,  reloadedSubscriber);
+		Assert.assertTrue(subscriber.getLastModified().before(reloadedSubscriber.getLastModified()));
 	}
 	
 	@Test
@@ -277,59 +306,6 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, subscribers.size());
 		Assert.assertEquals(publisher, subscribers.get(0).getPublisher());
 		Assert.assertEquals(publisher, subscribers.get(1).getPublisher());
-	}
-	
-	@Test
-	public void testGetAllValidSubscribers() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("valid1b-" + UUID.randomUUID().toString());
-		//create a publisher
-		String identifier = UUID.randomUUID().toString().replace("-", "");
-		SubscriptionContext context = new SubscriptionContext("AllSubs", new Long(130), identifier);
-		PublisherData publisherData = new PublisherData("testGetAllValidSubscribers", "e.g. forumdata=keyofforum", null);
-		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(publisher);
-		//add subscriber
-		notificationManager.subscribe(id, context, publisherData);
-		dbInstance.commitAndCloseSession();
-		
-		//get all subscribers
-		List<Subscriber> allSubscribers = ((NotificationsManagerImpl)notificationManager).getAllValidSubscribers();
-		Assert.assertNotNull(allSubscribers);
-		Assert.assertFalse(allSubscribers.isEmpty());
-		
-		//get current subscriber
-		Subscriber thisSubscriber = notificationManager.getSubscriber(id, publisher);
-		Assert.assertNotNull(thisSubscriber);
-		Assert.assertTrue(allSubscribers.contains(thisSubscriber));
-	}
-	
-	@Test
-	public void testGetAllValidSubscribers_paged() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("valid1paged-" + UUID.randomUUID().toString());
-		//create a publisher
-		for(int i=0; i<10; i++) {
-			String identifier = UUID.randomUUID().toString().replace("-", "");
-			SubscriptionContext context = new SubscriptionContext("AllSubs", new Long(130 + i), identifier);
-			PublisherData publisherData = new PublisherData("testGetAllValidSubscribers", "e.g. forumdata=keyofforum", null);
-			Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
-			Assert.assertNotNull(publisher);
-			
-			dbInstance.commitAndCloseSession();
-			//add subscriber
-			notificationManager.subscribe(id, context, publisherData);
-			dbInstance.commitAndCloseSession();
-		}
-		
-		//get all subscribers
-		List<Subscriber> allSubscribers = ((NotificationsManagerImpl)notificationManager).getAllValidSubscribers(0, -1);
-		Assert.assertNotNull(allSubscribers);
-		Assert.assertFalse(allSubscribers.isEmpty());
-		
-		//get all subcribers pages
-		List<Subscriber> partialSubscribers = ((NotificationsManagerImpl)notificationManager).getAllValidSubscribers(0, 8);
-		Assert.assertNotNull(partialSubscribers);
-		Assert.assertEquals(8, partialSubscribers.size());
 	}
 	
 	@Test

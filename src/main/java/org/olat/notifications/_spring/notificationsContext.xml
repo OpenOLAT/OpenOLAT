@@ -19,6 +19,9 @@
 	<bean id="org.olat.commons.info.notification.InfoMessageNotificationHandler" class="org.olat.commons.info.notification.InfoMessageNotificationHandler" />
 	
 	<bean id="org.olat.core.util.notifications.NotificationsManager" class="org.olat.notifications.NotificationsManagerImpl" >
+		<property name="dbInstance" ref="database"/>
+		<property name="securityManager" ref="baseSecurityManager"/>
+		<property name="propertyManager" ref="propertyManager"/>
 		<!-- 
 			Configure which notification intervals you want the user to choose from. 
 			Don't add other intervals unless you also implement them. But you can surely

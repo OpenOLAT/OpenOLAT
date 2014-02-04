@@ -25,13 +25,11 @@
 
 package org.olat.notifications;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,8 +44,9 @@ import javax.persistence.TypedQuery;
 
 import org.hibernate.FlushMode;
 import org.olat.ControllerFactory;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.translator.Translator;
@@ -95,6 +94,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 
 	private static final int PUB_STATE_OK = 0;
 	private static final int PUB_STATE_NOT_OK = 1;
+	private static final int BATCH_SIZE = 100;
 	private static final String LATEST_EMAIL_USER_PROP = "noti_latest_email";
 	private final SubscriptionInfo NOSUBSINFO = new NoSubscriptionInfo();
 
@@ -107,6 +107,10 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private static final Map<String, Integer> INTERVAL_DEF_MAP = buildIntervalMap();
 	private Object lockObject = new Object();
 	
+	private DB dbInstance;
+	private BaseSecurity securityManager;
+	private PropertyManager propertyManager;
+	
 	/**
 	 * [used by spring]
 	 * @param userDeletionManager
@@ -114,6 +118,30 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private NotificationsManagerImpl() {
 		// private since singleton
 		INSTANCE = this;
+	}
+
+	/**
+	 * [used by Spring]
+	 * @param dbInstance
+	 */
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
+	}
+	
+	/**
+	 * [user by Spring]
+	 * @param securityManager
+	 */
+	public void setSecurityManager(BaseSecurity securityManager) {
+		this.securityManager = securityManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param propertyManager
+	 */
+	public void setPropertyManager(PropertyManager propertyManager) {
+		this.propertyManager = propertyManager;
 	}
 
 	/**
@@ -134,7 +162,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			businessPath = businessPath.substring(0, 230);
 		}
 		PublisherImpl pi = new PublisherImpl(resName, resId, subidentifier, type, data, businessPath, new Date(), PUB_STATE_OK);
-		DBFactory.getInstance().saveObject(pi);
+		pi.setCreationDate(new Date());
+		dbInstance.getCurrentEntityManager().persist(pi);
 		return pi;
 	}
 
@@ -146,9 +175,10 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	protected Subscriber doCreateAndPersistSubscriber(Publisher persistedPublisher, Identity listener) {
 		SubscriberImpl si = new SubscriberImpl(persistedPublisher, listener);
+		si.setCreationDate(new Date());
 		si.setLastModified(new Date());
 		si.setLatestEmailed(new Date());
-		DBFactory.getInstance().saveObject(si);
+		dbInstance.getCurrentEntityManager().persist(si);
 		return si;
 	}
 
@@ -173,13 +203,13 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	@Override
 	public List<Subscriber> getSubscribers(Identity identity, List<String> types) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select sub from ").append(SubscriberImpl.class.getName()).append(" as sub ")
+		sb.append("select sub from notisub as sub ")
 		  .append("inner join fetch sub.publisher as publisher ")
 		  .append("where sub.identity = :anIdentity");
 		if(types != null && !types.isEmpty()) {
 			sb.append(" and publisher.type in (:types)");
 		}
-		TypedQuery<Subscriber> query = DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString(), Subscriber.class);
+		TypedQuery<Subscriber> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Subscriber.class);
 		query.setParameter("anIdentity", identity);
 		if(types != null && !types.isEmpty()) {
 			query.setParameter("types", types);
@@ -195,11 +225,11 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	@Override
 	public List<Subscriber> getValidSubscribers(Identity identity) {
 		StringBuilder q = new StringBuilder();
-		q.append("select sub from ").append(SubscriberImpl.class.getName()).append(" sub ")
+		q.append("select sub from notisub sub ")
 		 .append(" inner join fetch sub.publisher as pub ")
 		 .append(" where sub.identity.key=:anIdentityKey and pub.state=").append(PUB_STATE_OK);
 		
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Subscriber.class)
 				.setParameter("anIdentityKey", identity.getKey())
 				.getResultList();
@@ -211,54 +241,24 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	@Override
 	public List<Subscriber> getValidSubscribersOf(Publisher publisher) {
 		StringBuilder q = new StringBuilder();
-		q.append("select sub from ").append(SubscriberImpl.class.getName()).append(" sub ")
+		q.append("select sub from notisub sub ")
 		 .append(" inner join fetch sub.identity")
 		 .append(" where sub.publisher = :publisher and sub.publisher.state=").append(PUB_STATE_OK);
 		
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Subscriber.class)
 				.setParameter("publisher", publisher)
 				.getResultList();
 	}
 	
-	/**
-	 * @return a list of subscribers ordered by the name of the identity of the
-	 *         subscription
-	 */
-	protected List<Subscriber> getAllValidSubscribers() {
-		StringBuilder q = new StringBuilder();
-		q.append("select sub from ").append(SubscriberImpl.class.getName()).append(" sub")
-		 .append(" inner join fetch sub.publisher as pub")
-		 .append(" where pub.state=").append(PUB_STATE_OK).append(" order by sub.identity.name");
-		return DBFactory.getInstance().getCurrentEntityManager()
-				.createQuery(q.toString(), Subscriber.class)
-				.getResultList();
-	}
-	
-	protected List<Subscriber> getAllValidSubscribers(int firstResult, int maxResults) {
-		StringBuilder q = new StringBuilder();
-		q.append("select sub from ").append(SubscriberImpl.class.getName()).append(" sub")
-		 .append(" inner join fetch sub.publisher as pub")
-		 .append(" where pub.state=").append(PUB_STATE_OK).append(" order by sub.identity.name, sub.key");
-		TypedQuery<Subscriber> query = DBFactory.getInstance().getCurrentEntityManager()
-				.createQuery(q.toString(), Subscriber.class);
-		if(firstResult >= 0) {
-			query.setFirstResult(firstResult);
-		}
-		if(maxResults > 0) {
-			query.setMaxResults(maxResults);
-		}
-		return query.getResultList();
-	}
-	
 	@Override
 	public List<SubscriptionInfo> getSubscriptionInfos(Identity identity, String publisherType) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select sub from ").append(SubscriberImpl.class.getName()).append(" sub")
+		sb.append("select sub from notisub sub")
 			.append(" inner join fetch sub.publisher as pub")
 			.append(" where sub.identity=:identity and pub.type=:type and pub.state=:aState");
 		
-		List<Subscriber> subscribers = DBFactory.getInstance().getCurrentEntityManager()
+		List<Subscriber> subscribers = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Subscriber.class)
 				.setParameter("aState", PUB_STATE_OK)
 				.setParameter("type", publisherType)
@@ -284,114 +284,89 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		}
 		return sis;
 	}
-
+	
 	public void notifyAllSubscribersByEmail() {
-		logAudit("starting notification cronjob for email sending", null);
+		logAudit("starting notification cronjob to send email", null);
 		WorkThreadInformations.setLongRunningTask("sendNotifications");
+		
+		int counter = 0;
+		List<Identity> identities;
+		do {
+			identities = securityManager.loadIdentities(counter, BATCH_SIZE);
+			for(Identity identity:identities) {
+				processSubscribersByEmail(identity);
+			}
+			counter += identities.size();
+			dbInstance.commitAndCloseSession();
+		} while(identities.size() == BATCH_SIZE);
+		
+		// done, purge last entry
+		WorkThreadInformations.unsetLongRunningTask("sendNotifications");
+		logAudit("end notification cronjob to send email", null);
+	}
+	
+	private void processSubscribersByEmail(Identity ident) {
+		long start = System.currentTimeMillis();
+		if(ident.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) >= 0) {
+			return;//send only to active user
+		}
+		
+		String userInterval = getUserIntervalOrDefault(ident);
+		if("never".equals(userInterval)) {
+			return;
+		}
 
-		List<SubscriptionItem> items = new ArrayList<SubscriptionItem>();
-		List<Subscriber> subsToUpdate = null;
+		Date compareDate = getCompareDateFromInterval(userInterval);
+		Property p = propertyManager.findProperty(ident, null, null, null, LATEST_EMAIL_USER_PROP);
+		if(p != null) {
+		  	Date latestEmail = new Date(p.getLongValue());
+		  	if(latestEmail.after(compareDate)) {
+		  		return;//nothing to do
+		  	}
+		}
+
+		Date defaultCompareDate = getDefaultCompareDate();
+		List<Subscriber> subscribers = getSubscribers(ident);
+		if(subscribers.isEmpty()) {
+			return;
+		}
+		
+		String langPrefs = null;
+		if(ident.getUser() != null && ident.getUser().getPreferences() != null) {
+			langPrefs = ident.getUser().getPreferences().getLanguage();
+		}
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(langPrefs);
 		
 		boolean veto = false;
 		Subscriber latestSub = null;
-		Identity ident = null;
-		Translator translator = null;
-		Locale locale = null;
+		List<SubscriptionItem> items = new ArrayList<>();
+		List<Subscriber> subsToUpdate = new ArrayList<>();
+		for(Subscriber sub:subscribers) {
+			Date latestEmail = sub.getLatestEmailed();
 		
-		Date defaultCompareDate = getDefaultCompareDate();
-		long start = System.currentTimeMillis();
-		
-		Set<Long> subs = new HashSet<Long>();
-		
-		// loop all subscriptions, as its ordered by identity, they get collected for each identity
-		for(AllSubscriberIterator subscriberIt= new AllSubscriberIterator(); subscriberIt.hasNext(); ){
-			try {
-				Subscriber sub = subscriberIt.next();
-				ident = sub.getIdentity();
-				
-				if(subs.contains(sub.getKey())) {
-					System.out.println("ERROR");
-				} else {
-					subs.add(sub.getKey());
+			SubscriptionItem subsitem = null;
+			if (latestEmail == null || compareDate.after(latestEmail)){
+				// no notif. ever sent until now
+				if (latestEmail == null) {
+					latestEmail = defaultCompareDate;
+				}	else if (latestEmail.before(defaultCompareDate)) {
+					//no notification older than a month
+					latestEmail = defaultCompareDate;
 				}
-
-				if (latestSub == null || (!ident.equalsByPersistableKey(latestSub.getIdentity()))) { 
-					// first time or next identity => prepare for a new user and send old data.
-					
-					// send a mail
-					notifySubscribersByEmail(latestSub, items, subsToUpdate, translator, start, veto);
-					
-					// prepare for new user
-					start = System.currentTimeMillis();
-					locale = I18nManager.getInstance().getLocaleOrDefault(ident.getUser().getPreferences().getLanguage());
-					translator = Util.createPackageTranslator(NotificationsManagerImpl.class, locale);
-					items = new ArrayList<SubscriptionItem>();
-					subsToUpdate = new ArrayList<Subscriber>();
-					latestSub = sub;
-					veto = false;
-					
-					PropertyManager pm = PropertyManager.getInstance();
-				  Property p = pm.findProperty(ident, null, null, null, LATEST_EMAIL_USER_PROP);
-				  if(p != null) {
-				  	Date latestEmail = new Date(p.getLongValue());
-						String userInterval = getUserIntervalOrDefault(ident);
-				  	Date compareDate = getCompareDateFromInterval(userInterval);
-				  	if(latestEmail.after(compareDate)) {
-				  		veto = true;
-				  	}
-				  }
-				}
-				
-				if(veto) {
-					continue;
-				}
-				// only send notifications to active users
-				if(ident.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) >= 0) {
-					continue;
-				}
-				// this user doesn't want notifications
-				String userInterval = getUserIntervalOrDefault(ident);
-				if("never".equals(userInterval)) {
-					continue;
-				}
-				
-				// find out the info that happened since the date the last email was sent. Only those infos need to be emailed. 
-				// mail is only sent if users interval is over.
-				Date compareDate = getCompareDateFromInterval(userInterval);
-				Date latestEmail = sub.getLatestEmailed();
-				
-				SubscriptionItem subsitem = null;
-				if (latestEmail == null || compareDate.after(latestEmail)){
-					// no notif. ever sent until now
-					if (latestEmail == null) {
-						latestEmail = defaultCompareDate;
-					}	else if (latestEmail.before(defaultCompareDate)) {
-						//no notification older than a month
-						latestEmail = defaultCompareDate;
-					}
-					subsitem = createSubscriptionItem(sub, locale, SubscriptionInfo.MIME_PLAIN, SubscriptionInfo.MIME_PLAIN, latestEmail);
-				}	else if(latestEmail != null && latestEmail.after(compareDate)) {
-					//already send an email within the user's settings interval
-					veto = true;
-				}
-				if (subsitem != null) {
-					items.add(subsitem);
-					subsToUpdate.add(sub);
-				}
-			} catch(Error er) {
-				logError("Error in NotificationsManagerImpl.notifyAllSubscribersByEmail, ", er);
-				throw er;
-			} catch(RuntimeException re) {
-				logError("RuntimeException in NotificationsManagerImpl.notifyAllSubscribersByEmail,", re);
-				throw re;
-			} catch(Throwable th) {
-				logError("Throwable in NotificationsManagerImpl.notifyAllSubscribersByEmail,", th);
+				subsitem = createSubscriptionItem(sub, locale, SubscriptionInfo.MIME_PLAIN, SubscriptionInfo.MIME_PLAIN, latestEmail);
+			}	else if(latestEmail != null && latestEmail.after(compareDate)) {
+				//already send an email within the user's settings interval
+				veto = true;
 			}
-		} // for
+			if (subsitem != null) {
+				items.add(subsitem);
+				subsToUpdate.add(sub);
+			}
+			latestSub = sub;
+		}
 		
-		// done, purge last entry
+		Translator translator = Util.createPackageTranslator(NotificationsManagerImpl.class, locale);
 		notifySubscribersByEmail(latestSub, items, subsToUpdate, translator, start, veto);
-		WorkThreadInformations.unsetLongRunningTask("sendNotifications");
 	}
 	
 	private void notifySubscribersByEmail(Subscriber latestSub, List<SubscriptionItem> items, List<Subscriber> subsToUpdate, Translator translator, long start, boolean veto) {
@@ -403,26 +378,25 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			Identity curIdent = latestSub.getIdentity();
 			boolean sentOk = sendMailToUserAndUpdateSubscriber(curIdent, items, translator, subsToUpdate);
 			if (sentOk) {
-				PropertyManager pm = PropertyManager.getInstance();
-			  Property p = pm.findProperty(curIdent, null, null, null, LATEST_EMAIL_USER_PROP);
-			  if(p == null) {
-			  	p = pm.createUserPropertyInstance(curIdent, null, LATEST_EMAIL_USER_PROP, null, null, null, null);
-			  	p.setLongValue(new Date().getTime());
-				  pm.saveProperty(p);
-			  } else {
-			  	p.setLongValue(new Date().getTime());
-				  pm.updateProperty(p);
-			  }
+				Property p = propertyManager.findProperty(curIdent, null, null, null, LATEST_EMAIL_USER_PROP);
+				if(p == null) {
+					p = propertyManager.createUserPropertyInstance(curIdent, null, LATEST_EMAIL_USER_PROP, null, null, null, null);
+					p.setLongValue(new Date().getTime());
+					propertyManager.saveProperty(p);
+				} else {
+					p.setLongValue(new Date().getTime());
+					propertyManager.updateProperty(p);
+				}
 			  
-			  StringBuilder mailLog = new StringBuilder();
-			  mailLog.append("Notifications mailed for ").append(curIdent.getName()).append(' ').append(items.size()).append(' ').append((System.currentTimeMillis() - start)).append("ms");
-			  logAudit(mailLog.toString());
+				StringBuilder mailLog = new StringBuilder();
+				mailLog.append("Notifications mailed for ").append(curIdent.getName()).append(' ').append(items.size()).append(' ').append((System.currentTimeMillis() - start)).append("ms");
+				logAudit(mailLog.toString());
 			} else {
 				logAudit("Error sending notification email to : " + curIdent.getName());
 			}
 		}
 		//collecting the SubscriptionItem can potentially make a lot of DB calls
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 	}
 
 	/**
@@ -458,6 +432,11 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @see org.olat.core.util.notifications.NotificationsManager#getUserIntervalOrDefault(org.olat.core.id.Identity)
 	 */
 	public String getUserIntervalOrDefault(Identity ident){
+		if(ident.getUser() == null || ident.getUser().getPreferences() == null) {
+			logWarn("User " + ident.getName() + " has no preferences invalid", null);
+			return getDefaultNotificationInterval();
+		}
+		
 		String userInterval = ident.getUser().getPreferences().getNotificationInterval();
 		if (!StringHelper.containsNonWhitespace(userInterval)) userInterval = getDefaultNotificationInterval();
 		List<String> avIntvls = getEnabledNotificationIntervals();
@@ -485,14 +464,13 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		}
 		
 		StringBuilder q = new StringBuilder();	
-		q.append("select sub from ").append(SubscriberImpl.class.getName()).append(" sub ")
+		q.append("select sub from notisub sub ")
 		 .append(" inner join fetch sub.publisher where sub.key in (:aKey)");
 		
-		EntityManager em = DBFactory.getInstance().getCurrentEntityManager();
+		EntityManager em = dbInstance.getCurrentEntityManager();
 		List<Long> keys = PersistenceHelper.toKeys(subscribersToUpdate);
 		List<Subscriber> subscribers = em.createQuery(q.toString(), Subscriber.class)
 				.setParameter("aKey", keys)
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
 		
 		for (Subscriber subscriber :subscribers) {
@@ -546,11 +524,11 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	@Override
 	public Subscriber getSubscriber(Long key) {
 		StringBuilder q = new StringBuilder();
-		q.append("select sub from ").append(SubscriberImpl.class.getName()).append(" as sub")
+		q.append("select sub from notisub as sub")
 		 .append(" inner join fetch sub.publisher ")
 		 .append(" where sub.key=:aKey");
 
-		List<Subscriber> res = DBFactory.getInstance().getCurrentEntityManager()
+		List<Subscriber> res = dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Subscriber.class)
 				.setParameter("aKey", key.longValue())
 				.getResultList();
@@ -602,7 +580,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	@Override
 	public Publisher getPublisher(SubscriptionContext subsContext) {
 		StringBuilder q = new StringBuilder();
-		q.append("select pub from ").append(PublisherImpl.class.getName()).append(" pub ")
+		q.append("select pub from notipublisher pub ")
 		 .append(" where pub.resName=:resName and pub.resId = :resId");
 		if(StringHelper.containsNonWhitespace(subsContext.getSubidentifier())) {
 			q.append(" and pub.subidentifier=:subidentifier");
@@ -610,7 +588,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			q.append(" and (pub.subidentifier='' or pub.subidentifier is null)");
 		}
 		
-		TypedQuery<Publisher> query = DBFactory.getInstance().getCurrentEntityManager()
+		TypedQuery<Publisher> query = dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Publisher.class)
 				.setParameter("resName", subsContext.getResName())
 				.setParameter("resId", subsContext.getResId());
@@ -628,16 +606,17 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		Publisher pub = getPublisher(subsContext);
 		if(pub != null && pub.getKey() != null) {
 			//prevent optimistic lock issue
-			DBFactory.getInstance().getCurrentEntityManager().detach(pub);
-			pub = DBFactory.getInstance().getCurrentEntityManager().find(PublisherImpl.class, pub.getKey(), LockModeType.PESSIMISTIC_WRITE);
+			dbInstance.getCurrentEntityManager().detach(pub);
+			pub = dbInstance.getCurrentEntityManager()
+					.find(PublisherImpl.class, pub.getKey(), LockModeType.PESSIMISTIC_WRITE);
 		}
 		return pub;
 	}
 	
 	@Override
 	public List<Publisher> getAllPublisher() {
-		String q = "select pub from org.olat.notifications.PublisherImpl pub";
-		return DBFactory.getInstance().getCurrentEntityManager().createQuery(q, Publisher.class)
+		String q = "select pub from notipublisher pub";
+		return dbInstance.getCurrentEntityManager().createQuery(q, Publisher.class)
 				.getResultList();
 	}
 
@@ -647,8 +626,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @return a list of publishers belonging to the resource
 	 */
 	private List<Publisher> getPublishers(String resName, Long resId) {
-		String q = "select pub from org.olat.notifications.PublisherImpl pub" + " where pub.resName = :resName" + " and pub.resId = :resId";
-		return DBFactory.getInstance().getCurrentEntityManager()
+		String q = "select pub from notipublisher pub where pub.resName=:resName and pub.resId= :resId";
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(q, Publisher.class)
 				.setParameter("resName", resName)
 				.setParameter("resId", resId.longValue())
@@ -669,13 +648,13 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		List<Publisher> pubs = getPublishers(type, id);
 		if(pubs.isEmpty()) return;
 
-		String q1 = "delete from org.olat.notifications.SubscriberImpl sub where sub.publisher in (:publishers)";
-		DBQuery query1 = DBFactory.getInstance().createQuery(q1);
+		String q1 = "delete from notisub sub where sub.publisher in (:publishers)";
+		DBQuery query1 = dbInstance.createQuery(q1);
 		query1.setParameterList("publishers", pubs);
 		query1.executeUpdate(FlushMode.AUTO);
 		
-		String q2 = "delete from org.olat.notifications.PublisherImpl pub where pub in (:publishers)";
-		DBQuery query2 = DBFactory.getInstance().createQuery(q2);
+		String q2 = "delete from notipublisher pub where pub in (:publishers)";
+		DBQuery query2 = dbInstance.createQuery(q2);
 		query2.setParameterList("publishers", pubs);
 		query2.executeUpdate(FlushMode.AUTO);
 	}
@@ -689,31 +668,13 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	@Override
 	public Subscriber getSubscriber(Identity identity, Publisher publisher) {
 		StringBuilder q = new StringBuilder();
-		q.append("select sub from ").append(SubscriberImpl.class.getName()).append(" as sub ")
+		q.append("select sub from notisub as sub ")
 		 .append(" where sub.publisher.key=:publisherKey and sub.identity.key=:identityKey");
 		
-		List<Subscriber> res = DBFactory.getInstance().getCurrentEntityManager()
+		List<Subscriber> res = dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Subscriber.class)
 				.setParameter("publisherKey", publisher.getKey())
 				.setParameter("identityKey", identity.getKey())
-				.getResultList();
-
-		if (res.size() == 0) return null;
-		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
-		Subscriber s = res.get(0);
-		return s;
-	}
-	
-	private Subscriber getSubscriberForUpdate(Identity identity, Publisher publisher) {
-		StringBuilder q = new StringBuilder();
-		q.append("select sub from ").append(SubscriberImpl.class.getName()).append(" as sub ")
-		 .append(" where sub.publisher.key=:publisherKey and sub.identity.key=:identityKey");
-		
-		List<Subscriber> res = DBFactory.getInstance().getCurrentEntityManager()
-				.createQuery(q.toString(), Subscriber.class)
-				.setParameter("publisherKey", publisher.getKey())
-				.setParameter("identityKey", identity.getKey())
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
 
 		if (res.size() == 0) return null;
@@ -727,8 +688,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	@Override
 	public List<Subscriber> getSubscribers(Publisher publisher) {
-		String q = "select sub from org.olat.notifications.SubscriberImpl sub where sub.publisher = :publisher";
-		return DBFactory.getInstance().getCurrentEntityManager()
+		String q = "select sub notisub sub where sub.publisher = :publisher";
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(q, Subscriber.class)
 				.setParameter("publisher", publisher)
 				.getResultList();
@@ -740,8 +701,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	@Override
 	public List<Identity> getSubscriberIdentities(Publisher publisher) {
-		String q = "select sub.identity from org.olat.notifications.SubscriberImpl sub where sub.publisher = :publisher";
-		return DBFactory.getInstance().getCurrentEntityManager()
+		String q = "select sub.identity from notisub sub where sub.publisher = :publisher";
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(q, Identity.class)
 				.setParameter("publisher", publisher)
 				.getResultList();
@@ -767,23 +728,12 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		}
 		return notificationHandlers.get(type);		
 	}
-	
-	@Override
-	public Publisher updatePublisher(SubscriptionContext oldContext, SubscriptionContext newContext) {
-		Publisher p = getPublisherForUpdate(oldContext);
-
-		p.setResId(newContext.getResId());
-		p.setResName(newContext.getResName());
-		p.setSubidentifier(newContext.getSubidentifier());
-		
-		return DBFactory.getInstance().getCurrentEntityManager().merge(p);
-	}
 
 	/**
 	 * @param subscriber
 	 */
 	private void deleteSubscriber(Subscriber subscriber) {
-		DBFactory.getInstance().deleteObject(subscriber);
+		dbInstance.deleteObject(subscriber);
 	}
 
 	/**
@@ -795,19 +745,20 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	@Override
 	public void markSubscriberRead(Identity identity, SubscriptionContext subsContext) {
-		Publisher p = getPublisherForUpdate(subsContext);
+		Publisher p = getPublisher(subsContext);
 		if (p == null) throw new AssertException("cannot markRead for identity " + identity.getName()
 				+ ", since the publisher for the given subscriptionContext does not exist: subscontext = " + subsContext);
 
 		markSubscriberRead(identity, p);
 	}
 	
-	private void markSubscriberRead(Identity identity, Publisher p) {
-		Subscriber sub = getSubscriberForUpdate(identity, p);
+	private Subscriber markSubscriberRead(Identity identity, Publisher p) {
+		Subscriber sub = getSubscriber(identity, p);
 		if(sub != null) {
 			sub.setLastModified(new Date());
-			DBFactory.getInstance().getCurrentEntityManager().merge(sub);
+			sub = dbInstance.getCurrentEntityManager().merge(sub);
 		}
+		return sub;
 	}
 
 	/**
@@ -833,6 +784,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			// news after subscription time
 			doCreateAndPersistSubscriber(toUpdate, identity);
 		}
+		dbInstance.commit();
 	}
 
 	/**
@@ -852,7 +804,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			return;
 		}
 		toUpdate.setLatestNewsDate(new Date());
-		Publisher publisher = DBFactory.getInstance().getCurrentEntityManager().merge(toUpdate);
+		Publisher publisher = dbInstance.getCurrentEntityManager().merge(toUpdate);
+		dbInstance.commit();//commit the select for update
 
 		// no need to sync, since there is only one gui thread at a time from one
 		// user
@@ -862,7 +815,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		
 		if(sendEvents) {
 			//commit all things on the database
-			DBFactory.getInstance().commit();
+			dbInstance.commit();
 			
 			// channel-notify all interested listeners (e.g. the pnotificationsportletruncontroller)
 			// 1. find all subscribers which can be affected
@@ -903,13 +856,15 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		Publisher p = getPublisherForUpdate(subscriptionContext);
 		// if no publisher yet.
 		//TODO: check race condition: can p be null at all?
-		if (p == null) return;
-		Subscriber s = getSubscriber(identity, p);
-		if (s != null) {
-			deleteSubscriber(s);
-		} else {
-			logWarn("could not unsubscribe " + identity.getName() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
+		if (p != null) {
+			Subscriber s = getSubscriber(identity, p);
+			if (s != null) {
+				deleteSubscriber(s);
+			} else {
+				logWarn("could not unsubscribe " + identity.getName() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
+			}
 		}
+		dbInstance.commit();
 	}
 
 	/**
@@ -934,12 +889,12 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	@Override
 	public boolean isSubscribed(Identity identity, SubscriptionContext subscriptionContext) {
 		StringBuilder q = new StringBuilder();		
-		q.append("select count(sub) from ").append(SubscriberImpl.class.getName()).append(" as sub ")
+		q.append("select count(sub) from notisub as sub ")
 		 .append(" inner join sub.publisher as pub ")
 		 .append(" where sub.identity.key=:anIdentityKey and pub.resName=:resName and pub.resId=:resId")
 		 .append(" and pub.subidentifier=:subidentifier");
 		
-		Number count = DBFactory.getInstance().getCurrentEntityManager()
+		Number count = dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Number.class)
 				.setParameter("anIdentityKey", identity.getKey())
 				.setParameter("resName", subscriptionContext.getResName())
@@ -969,7 +924,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			deleteSubscriber(subscriber);
 		}
 		// else:
-		DBFactory.getInstance().deleteObject(p);
+		dbInstance.deleteObject(p);
 	}
 
 	/**
@@ -979,11 +934,12 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	@Override
 	public void deactivate(Publisher publisher) {
-		EntityManager em = DBFactory.getInstance().getCurrentEntityManager();
+		EntityManager em = dbInstance.getCurrentEntityManager();
 		
 		PublisherImpl toDeactivate = em.find(PublisherImpl.class, publisher.getKey(), LockModeType.PESSIMISTIC_WRITE);
 		toDeactivate.setState(PUB_STATE_NOT_OK);
 		em.merge(toDeactivate);
+		dbInstance.commit();
 	}
 
 	/**
@@ -1033,13 +989,15 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		if (latestEmailed == null) throw new AssertException("compareDate may not be null, use a date from history");
 		
 		try {
+			boolean debug = isLogDebugEnabled();
+			
 			SubscriptionItem si = null;
 			Publisher pub = subscriber.getPublisher();
 			NotificationsHandler notifHandler = getNotificationsHandler(pub);
-			if (isLogDebugEnabled()) logDebug("create subscription with handler: " + notifHandler.getClass().getName());
+			if(debug) logDebug("create subscription with handler: " + notifHandler.getClass().getName());
 			// do not create subscription item when deleted
 			if (isPublisherValid(pub)) {
-				if (isLogDebugEnabled()) logDebug("NotifHandler: " + notifHandler.getClass().getName() + " compareDate: " + latestEmailed.toString() + " now: " + new Date().toString(), null);
+				if(debug) logDebug("NotifHandler: " + notifHandler.getClass().getName() + " compareDate: " + latestEmailed.toString() + " now: " + new Date().toString(), null);
 				SubscriptionInfo subsInfo = notifHandler.createSubscriptionInfo(subscriber, locale, latestEmailed);
 				if (subsInfo.hasNews()) {
 					si = createSubscriptionItem(subsInfo, subscriber, locale, mimeTypeTitle, mimeTypeContent);
@@ -1157,46 +1115,4 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	public List<String> getEnabledNotificationIntervals() {
 		return notificationIntervals;
 	}
-	
-	/**
-	 * Iterate through the valid subscribers
-	 * 
-	 * Initial date: 23.10.2013<br>
-	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
-	 *
-	 */
-	private class AllSubscriberIterator implements Iterator<Subscriber> {
-		private final static int BATCH_SIZE = 500;
-		
-		private int count = 0;
-		private Deque<Subscriber> subscribers = new ArrayDeque<Subscriber>(BATCH_SIZE + 25);
-
-		public void fillTheStack() {
-			List<Subscriber> batch = getAllValidSubscribers(count, BATCH_SIZE);
-			subscribers.addAll(batch);
-			count += batch.size();
-		}
-
-		@Override
-		public boolean hasNext() {
-			if(subscribers.size() == 0) {
-				fillTheStack();
-			}
-			return subscribers.size() > 0;
-		}
-
-		@Override
-		public Subscriber next() {
-			if(subscribers.size() == 0) {
-				fillTheStack();
-			}
-			return subscribers.pollFirst();
-		}
-
-		@Override
-		public void remove() {
-			//not implemented
-		}
-	}
 }
-
