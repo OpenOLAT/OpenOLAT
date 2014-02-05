@@ -408,7 +408,7 @@ public class RestApiLoginFilter implements Filter {
 		if(Settings.isJUnitTest()) {
 			return true;
 		}
-		return StringHelper.containsNonWhitespace(WebappHelper.getServletContextPath());
+		return WebappHelper.getServletContextPath() != null;
 	}
 	
 	private String getLoginUrl() {
