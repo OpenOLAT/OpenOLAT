@@ -92,7 +92,7 @@ public class LockInfo {
 	}
 
 	public void setOwner(String owner) {
-		this.owner = owner;
+		this.owner = (owner == null ? null : owner.trim().replace("<href>", "<D:href>").replace("</href>", "</D:href>"));
 	}
 
 	public String getType() {
@@ -191,7 +191,7 @@ public class LockInfo {
 
         generatedXML.writeElement("D", "depth", XMLWriter.OPENING);
         if (depth == WebDAVDispatcherImpl.maxDepth) {
-            generatedXML.writeText("Infinity");
+            generatedXML.writeText("infinity");
         } else {
             generatedXML.writeText("0");
         }

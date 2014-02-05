@@ -161,7 +161,7 @@ public class IQStatus {
 		long due = assessStart + assessMaxdur;
 		StringBuilder results = new StringBuilder();
 		results.append(IQComponentRenderer.getFormattedLimit(assessMaxdur));
-		results.append("&nbsp(");
+		results.append("&nbsp;(");
 		results.append(translator.translate("timelimit.end"));
 		results.append("&nbsp;");
 		results.append(formatter.formatTimeShort(new Date(due)));

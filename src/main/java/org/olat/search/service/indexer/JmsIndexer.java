@@ -51,6 +51,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.search.SearchModule;
@@ -89,7 +90,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	
 	public JmsIndexer(SearchModule searchModuleConfig) {
 		indexingNode = searchModuleConfig.isSearchServiceEnabled();
-    ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
+		ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
 		permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
 	}
 
@@ -287,6 +288,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 				message.acknowledge();
 			} catch (JMSException e) {
 				log.error("", e);
+			} finally {
+				DBFactory.getInstance().commitAndCloseSession();
 			}
 		}
 	}
@@ -334,7 +337,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 		IndexWriter writer = null;
 		try {
 			Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
-	    writer = permanentIndexWriter.getAndLock();
+			writer = permanentIndexWriter.getAndLock();
 			writer.deleteDocuments(uuidTerm);
 		} catch (IOException e) {
 			log.error("", e);

@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,7 +37,6 @@ import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.util.Encoder;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSItem;
@@ -44,8 +44,6 @@ import org.olat.core.util.vfs.VFSLockManager;
 
 
 public class VFSLockManagerImpl implements VFSLockManager {
-	
-	private static final String PRETTY_LITTLE_LIARS = "OpenOLAT secret";
 	
 	private MetaInfoFactory metaInfoFactory;
 
@@ -273,14 +271,15 @@ public class VFSLockManagerImpl implements VFSLockManager {
     	}
     	return null;
 	}
-	
+
+	/**
+	 * I replace the method from Tomcat with a classic UUID. The method
+	 * from tTomcat based on a MD5 hash of severals different informations
+	 * + time in milliseconds seems to disturb the WebDAV client of Mac OS X 10.9
+	 */
+	@Override
     public String generateLockToken(LockInfo lock, Long identityKey) {
-    	String lockTokenStr = "/webdav" + "-" + lock.getType() + "-"
-                + lock.getScope() + "-" + identityKey + "-"
-                + lock.getDepth() + "-" + lock.getOwner() + "-" + lock.getTokens() + "-"
-                + lock.getExpiresAt() + "-" + System.currentTimeMillis() + "-"
-                + PRETTY_LITTLE_LIARS;
-    	return Encoder.md5hash(lockTokenStr);
+    	return UUID.randomUUID().toString();
     }
     
     public void putResourceLock(WebResource resource, LockInfo lock) {
@@ -363,7 +362,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
      * lock token has been found for at least one of the non-shared locks which
      * are present on the resource).
      */
-    public boolean isLocked(WebResource resource, String ifHeader, Identity identity, Roles roles) {
+    public boolean isLocked(WebResource resource, String ifHeader, Identity identity) {
         // Checking resource locks
     	String path = resource.getPath();
     	

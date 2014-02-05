@@ -19,6 +19,7 @@
  */
 package org.olat.group;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -143,29 +144,34 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 	@Override
 	protected void init() {
 		super.init();
-	// collect buddy groups
+
+		// collect buddy groups
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		Set<Long> addedGroupKeys = new HashSet<Long>();
 		Set<String> addedGroupNames = new HashSet<String>();
+		List<VFSContainer> containers = new ArrayList<>();
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
 		params.addTools(CollaborationTools.TOOL_FOLDER);
 		List<BusinessGroup> tutorGroups = bgs.findBusinessGroups(params, null, 0, -1);
 		for (BusinessGroup group : tutorGroups) {
-			addContainer(group, addedGroupKeys, addedGroupNames, true);
+			addContainer(group, addedGroupKeys, addedGroupNames, containers, true);
 		}
 
 		SearchBusinessGroupParams paramsParticipants = new SearchBusinessGroupParams(identity, false, true);
+		paramsParticipants.addTools(CollaborationTools.TOOL_FOLDER);
 		List<BusinessGroup> participantsGroups = bgs.findBusinessGroups(paramsParticipants, null, 0, -1);
 		for (BusinessGroup group : participantsGroups) {
-			addContainer(group, addedGroupKeys, addedGroupNames, false);
+			addContainer(group, addedGroupKeys, addedGroupNames, containers, false);
 		}
+		setMergedContainers(containers);
 		loadTime = System.currentTimeMillis();
 		init = true;
 	}
 	
-	private void addContainer(BusinessGroup group, Set<Long> addedGroupKeys, Set<String> addedGroupNames, boolean isOwner) {
+	private void addContainer(BusinessGroup group, Set<Long> addedGroupKeys, Set<String> addedGroupNames,
+			List<VFSContainer> containers, boolean isOwner) {
 		if(addedGroupKeys.contains(group.getKey())) {
 			return;
 		}
@@ -176,7 +182,7 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 
 		VFSContainer grpContainer = getGroupContainer(name, group, isOwner);
 		// add container
-		addContainer(grpContainer);
+		addContainerToList(grpContainer, containers);
 		addedGroupKeys.add(group.getKey());
 	}
 	
@@ -231,7 +237,7 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 		return grpContainer;
 	}
 	
-	private class FullAccessWithLazyQuotaCallback extends FullAccessWithQuotaCallback {
+	private static class FullAccessWithLazyQuotaCallback extends FullAccessWithQuotaCallback {
 		
 		private final String folderPath;
 		

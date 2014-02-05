@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -49,6 +50,7 @@ import org.olat.core.commons.services.webdav.WebDAVDispatcher;
 import org.olat.core.commons.services.webdav.WebDAVManager;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.dispatcher.Dispatcher;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
@@ -470,7 +472,7 @@ public class WebDAVDispatcherImpl
         throws ServletException, IOException {
 
         String path = getRelativePath(req);
-        if (path.endsWith("/"))
+        if (path.length() > 1 && path.endsWith("/"))
             path = path.substring(0, path.length() - 1);
 
         // Properties which are to be displayed.
@@ -870,6 +872,18 @@ public class WebDAVDispatcherImpl
                     resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_CREATED);
+                    PrintWriter writer = resp.getWriter();
+                    writer.append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n")
+                    	.append("<html><head>\n")
+                    	.append("<title>201 Created</title>\n")
+                    	.append("</head><body>\n")
+                    	.append("<h1>Created</h1>\n")
+                    	.append("<p>Resource ").append(path).append(" created.</p>\n")
+                    	.append("</body></html>\n");
+                    resp.setContentType("text/html; charset=ISO-8859-1");
+                    
+                    String location = Settings.getServerContextPathURI() + path;
+                    resp.setHeader("Location", location);
                 }
             } else {
                 resp.sendError(HttpServletResponse.SC_CONFLICT);
@@ -1423,38 +1437,6 @@ public class WebDAVDispatcherImpl
         writer.write(generatedXML.toString());
         writer.close();
     }
-    
-    /*private boolean doUnlockMavericks(HttpServletRequest req, HttpServletResponse resp) {
-    	//workaround for Mac OS X Mavericks which forget the Lock-Token
-        String sysLockTokenHeader = req.getHeader("Lock-Token"); 
-        if(sysLockTokenHeader == null) {
-        	String userAgent = req.getHeader("User-Agent");
-			if(userAgent != null && userAgent.indexOf("WebDAVFS/3") >= 0) {
-				//Mavericks forgot the token
-				
-				final String path = getRelativePath(req);
-		        final WebResourceRoot resources = getResources(req);
-		        final WebResource resource = resources.getResource(path);
-		        LockInfo lock = lockManager.getResourceLock(resource);
-		        UserSession usess = webDAVManager.getUserSession(req);
-		        if(lock != null && lock.isWebDAVLock()
-		        		&& lock.getLockedBy().equals(usess.getIdentity().getKey())
-		        		&& lock.getTokensSize() == 1) {
-		        	
-		        	String lastToken = lock.getTokens().get(0);
-		        	lock.removeToken(lastToken);
-		        	
-		        	lockManager.removeResourceLock(resource);
-		            // Removing any lock-null resource which would be present
-		            lockManager.removeLockNullResource(resource);
-		        }
-		        resp.setStatus(WebdavStatus.SC_NO_CONTENT);
-				return true;
-			}
-        }
-        return false;
-    }*/
-
 
     /**
      * UNLOCK Method.
@@ -1462,10 +1444,6 @@ public class WebDAVDispatcherImpl
     public void doUnlock(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
     	
-    	/*if(doUnlockMavericks(req, resp)) {
-    		return;
-    	}*/
-
         if (isLocked(req)) {
             resp.sendError(WebdavStatus.SC_LOCKED);
             return;
@@ -1478,6 +1456,8 @@ public class WebDAVDispatcherImpl
         String lockTokenHeader = req.getHeader("Lock-Token");
         if (lockTokenHeader == null) {
         	lockTokenHeader = "";
+        } else if(lockTokenHeader != null && lockTokenHeader.startsWith("<opaquelocktoken") && !lockTokenHeader.endsWith(">")) {
+        	lockTokenHeader += ">";
         }
 
         // Checking resource locks
@@ -1560,10 +1540,12 @@ public class WebDAVDispatcherImpl
         String lockTokenHeader = req.getHeader("Lock-Token");
         if (lockTokenHeader == null) {
         	lockTokenHeader = "";
+        } else if(lockTokenHeader != null && lockTokenHeader.startsWith("<opaquelocktoken") && !lockTokenHeader.endsWith(">")) {
+        	lockTokenHeader += ">";
         }
         
         UserSession usess = webDAVManager.getUserSession(req);
-        boolean locked = lockManager.isLocked(resource, ifHeader + lockTokenHeader, usess.getIdentity(), usess.getRoles());
+        boolean locked = lockManager.isLocked(resource, ifHeader + lockTokenHeader, usess.getIdentity());
         if(locked && log.isDebug()) {
         	log.debug("Ressource is locked: " + req.getPathInfo());
         }
@@ -1830,7 +1812,7 @@ public class WebDAVDispatcherImpl
         final WebResourceRoot resources = getResources(req);
         final WebResource resource = resources.getResource(path);
         UserSession usess = webDAVManager.getUserSession(req);
-        if (lockManager.isLocked(resource, ifHeader + lockTokenHeader, usess.getIdentity(), usess.getRoles())) {
+        if (lockManager.isLocked(resource, ifHeader + lockTokenHeader, usess.getIdentity())) {
             resp.sendError(WebdavStatus.SC_LOCKED);
             return false;
         }
@@ -1905,7 +1887,7 @@ public class WebDAVDispatcherImpl
             childName += entry.getName();
             WebResource childResource = resources.getResource(childName);
 
-            if (lockManager.isLocked(childResource, ifHeader + lockTokenHeader, usess.getIdentity(), usess.getRoles())) {
+            if (lockManager.isLocked(childResource, ifHeader + lockTokenHeader, usess.getIdentity())) {
 
                 errorList.put(childName, new Integer(WebdavStatus.SC_LOCKED));
 
@@ -2524,6 +2506,7 @@ public class WebDAVDispatcherImpl
         if (wroteStart) {
             generatedXML.writeElement("D", "lockdiscovery", XMLWriter.CLOSING);
         } else {
+            generatedXML.writeElement("D", "lockdiscovery", XMLWriter.NO_CONTENT);
             return false;
         }
 

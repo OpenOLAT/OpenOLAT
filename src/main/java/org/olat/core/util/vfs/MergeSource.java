@@ -69,6 +69,10 @@ public class MergeSource extends AbstractVirtualContainer {
 			mergedContainersChildren = new ArrayList<VFSContainer>(2);
 		}
 	}
+	
+	protected void setMergedContainers(List<VFSContainer> mergedContainers) {
+		this.mergedContainers = mergedContainers;
+	}
 
 	@Override
 	public boolean exists() {
@@ -81,8 +85,12 @@ public class MergeSource extends AbstractVirtualContainer {
 	 * @param container
 	 */
 	public void addContainer(VFSContainer container) {
+		addContainerToList(container, mergedContainers);
+	}
+	
+	public void addContainerToList(VFSContainer container, List<VFSContainer> containers) {
 		VFSContainer newContainer = container;
-		if (isContainerNameTaken(newContainer.getName())) {
+		if (isContainerNameTaken(newContainer.getName(), containers)) {
 			String newName = newContainer.getName() + "_" + CodeHelper.getRAMUniqueID();
 			newContainer = new NamedContainerImpl(newName, container);
 		}
@@ -92,7 +100,7 @@ public class MergeSource extends AbstractVirtualContainer {
 			newContainer.setDefaultItemFilter(defaultFilter);
 		}
 		newContainer.setParentContainer(this);
-		mergedContainers.add(newContainer);
+		containers.add(newContainer);
 	}
 	
 	/**
@@ -295,14 +303,13 @@ public class MergeSource extends AbstractVirtualContainer {
 		return rootWriteContainer;
 	}
 	
-	private boolean isContainerNameTaken(String containerName) {
-		for (Iterator<VFSContainer> iter = mergedContainers.iterator(); iter.hasNext();) {
-			VFSContainer mergedContainer = iter.next();
-			if (mergedContainer.getName().equals(containerName)) return true;
-			
+	private boolean isContainerNameTaken(String containerName, List<VFSContainer> containers) {
+		for (Iterator<VFSContainer> iter = containers.iterator(); iter.hasNext();) {
+			VFSContainer container = iter.next();
+			if (container.getName().equals(containerName)) {
+				return true;
+			}
 		}
 		return false;
 	}
-
 }
-
