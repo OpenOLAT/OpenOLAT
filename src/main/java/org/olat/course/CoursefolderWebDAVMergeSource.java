@@ -19,6 +19,7 @@
  */
 package org.olat.course;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -26,6 +27,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
@@ -128,12 +130,14 @@ class CoursefolderWebDAVMergeSource extends MergeSource {
 		super.init();
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<RepositoryEntry> courseEntries = rm.queryByEditor(identity, CourseModule.getCourseTypeName());
+		List<VFSContainer> containers = new ArrayList<>();
 		// Add all found repo entries to merge source
 		for (RepositoryEntry re:courseEntries) {
 			String courseTitle = Formatter.makeStringFilesystemSave(re.getDisplayname());
 			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(courseTitle, re.getOlatResource());
-			addContainer(cfContainer);
+			addContainerToList(cfContainer, containers);
 		}
+		setMergedContainers(containers);
 		loadTime = System.currentTimeMillis();
 		init = true;
 	}
