@@ -136,4 +136,8 @@ public class OpenMeetingsRoom {
 	public void setClosed(boolean closed) {
 		this.closed = closed;
 	}
+	
+	public void setClosed(Boolean closed) {
+		this.closed = closed == null ? false : closed.booleanValue();
+	}
 }
