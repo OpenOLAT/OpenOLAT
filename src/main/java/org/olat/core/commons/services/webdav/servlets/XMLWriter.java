@@ -199,7 +199,7 @@ public class XMLWriter {
      * Write XML Header.
      */
     public void writeXMLHeader() {
-        buffer.append("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
+        buffer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
     }
 
 

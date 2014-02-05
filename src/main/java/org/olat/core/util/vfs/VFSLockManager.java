@@ -61,4 +61,9 @@ public interface VFSLockManager {
 	 * @return True if and only if the VFS lock was unlocked and there isn't any WedDAV lock
 	 */
 	public boolean unlock(VFSItem item, Identity identity, Roles roles);
+	
+	/**
+	 * Method the generate the Lock-Token
+	 */
+	public String generateLockToken(LockInfo lock, Long identityKey);
 }
