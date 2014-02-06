@@ -120,7 +120,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		//
 	}
 
-	protected MetaInfoFileImpl(File metaFile) { 
+	public MetaInfoFileImpl(File metaFile) { 
 		this.metaFile = metaFile;
 		parseSAX(metaFile);
 	}
