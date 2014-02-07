@@ -1764,6 +1764,11 @@ public class RepositoryManager extends BasicManager {
 			     .append(" where ms.identity = msid and msid.user = msuser and ")
 			     .append(" msuser.properties['institutionalName']=:institution)")
 			     .append("))");
+		} else if (params.isOnlyOwnedResources()) {
+			query.append(" where v.access!=0 and exists (select ms from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ms ")
+		         .append("    where ms.securityGroup=ownerGroup and ms.identity.key=:identityKey")
+		         .append(" )");
+			setIdentity = true;
 		} else if (params.isOnlyExplicitMember()) {
 			query.append(" where ");
 			setIdentity = appendMemberAccessSubSelects(query, identity);
@@ -1797,8 +1802,7 @@ public class RepositoryManager extends BasicManager {
 			PersistenceHelper.appendFuzzyLike(query, "msauthuser.properties['lastName']", "author", dbInstance.getDbVendor());
 			query.append(" or ");
 			PersistenceHelper.appendFuzzyLike(query, "msauthid.name", "author", dbInstance.getDbVendor());
-    
-      query.append("))");
+			query.append("))");
 		}
 		
 		if (var_displayname) {
