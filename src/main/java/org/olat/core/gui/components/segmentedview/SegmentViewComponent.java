@@ -26,13 +26,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 
-public class SegmentViewComponent extends Component  {
+public class SegmentViewComponent extends AbstractComponent  {
 	
 	private boolean allowNoSelection;
 	private boolean allowMultipleSelection;

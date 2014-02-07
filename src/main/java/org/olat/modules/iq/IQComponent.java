@@ -26,7 +26,7 @@
 package org.olat.modules.iq;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
@@ -37,7 +37,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
  *
  * @author Mike Stock
  */
-public class IQComponent extends Component {
+public class IQComponent extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new IQComponentRenderer();
 
 	private AssessmentInstance ai;

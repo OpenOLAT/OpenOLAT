@@ -45,7 +45,7 @@ import org.apache.http.util.EntityUtils;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.media.AsyncMediaResponsible;
 import org.olat.core.gui.media.HttpRequestMediaResource;
@@ -64,7 +64,7 @@ import org.olat.modules.ModuleConfiguration;
 /**
  * @author Mike Stock Comment:
  */
-public class TunnelComponent extends Component implements AsyncMediaResponsible {
+public class TunnelComponent extends AbstractComponent implements AsyncMediaResponsible {
 	private static final OLog log = Tracing.createLoggerFor(TunnelComponent.class);
 	private static final ComponentRenderer RENDERER = new TunnelRenderer();
 

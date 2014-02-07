@@ -30,7 +30,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.media.AsyncMediaResponsible;
 import org.olat.core.gui.media.MediaResource;
@@ -51,7 +51,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
  * 
  * @author Felix Jost
  */
-public class HtmlStaticPageComponent extends Component implements AsyncMediaResponsible {
+public class HtmlStaticPageComponent extends AbstractComponent implements AsyncMediaResponsible {
 	// make public mainly for the IFrameDisplayController
 	public static final String OLAT_CMD_PREFIX = "olatcmd/";
 

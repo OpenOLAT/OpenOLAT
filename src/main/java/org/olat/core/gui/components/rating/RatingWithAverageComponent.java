@@ -20,6 +20,7 @@
 package org.olat.core.gui.components.rating;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -31,7 +32,7 @@ import org.olat.core.gui.control.Event;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RatingWithAverageComponent extends Component implements ComponentEventListener {
+public class RatingWithAverageComponent extends AbstractComponent implements ComponentEventListener {
 	
 	private static final RatingWithAverageRenderer RENDERER = new RatingWithAverageRenderer();
 	

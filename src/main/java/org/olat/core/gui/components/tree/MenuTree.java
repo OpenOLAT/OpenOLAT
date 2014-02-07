@@ -35,7 +35,7 @@ import java.util.Set;
 
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.util.StringHelper;
@@ -47,7 +47,7 @@ import org.olat.core.util.tree.TreeHelper;
  * 
  * @author Felix Jost
  */
-public class MenuTree extends Component {
+public class MenuTree extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new MenuTreeRenderer();
 
 	/**

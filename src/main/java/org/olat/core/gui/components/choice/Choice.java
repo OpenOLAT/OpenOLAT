@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableDataModel;
@@ -43,7 +43,7 @@ import org.olat.core.util.Util;
  * 
  * @author Felix Jost
  */
-public class Choice extends Component {
+public class Choice extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new ChoiceRenderer();
 
 	/**

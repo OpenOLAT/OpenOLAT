@@ -29,7 +29,7 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
@@ -40,7 +40,7 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FullCalendarComponent extends Component {
+public class FullCalendarComponent extends AbstractComponent {
 	
 	private static final FullCalendarComponentRenderer RENDERER = new FullCalendarComponentRenderer();
 

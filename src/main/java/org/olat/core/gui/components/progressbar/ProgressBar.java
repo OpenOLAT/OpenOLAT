@@ -27,7 +27,7 @@
 package org.olat.core.gui.components.progressbar;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 
 /**
@@ -35,7 +35,7 @@ import org.olat.core.gui.components.ComponentRenderer;
  * 
  * @author Andreas
  */
-public class ProgressBar extends Component {
+public class ProgressBar extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new ProgressBarRenderer();
 
 	private static final int DEFAULT_WIDTH = 200;

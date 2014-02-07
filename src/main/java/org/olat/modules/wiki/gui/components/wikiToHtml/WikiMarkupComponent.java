@@ -37,7 +37,7 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.JSAndCSSAdder;
@@ -59,7 +59,7 @@ import org.olat.modules.wiki.WikiPage;
  * 
  * @author guido
  */
-public class WikiMarkupComponent extends Component implements Disposable {
+public class WikiMarkupComponent extends AbstractComponent implements Disposable {
 	// single renderer for all users, lazy creation upon first object cration of
 	// this class.
 	private static final ComponentRenderer RENDERER = new WikiMarkupRenderer();

@@ -32,7 +32,7 @@ import java.util.List;
 
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.Form;
 import org.olat.core.gui.translator.PackageTranslator;
@@ -47,7 +47,7 @@ import org.olat.core.util.tree.TreeHelper;
  * 
  * @author Felix Jost
  */
-public class SelectionTree extends Component {
+public class SelectionTree extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new SelectionTreeRenderer();	
 	private static final String PACKAGE = Util.getPackageName(SelectionTree.class);
 	

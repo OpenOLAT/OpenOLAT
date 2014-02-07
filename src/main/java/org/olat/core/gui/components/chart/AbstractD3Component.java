@@ -20,7 +20,7 @@
 package org.olat.core.gui.components.chart;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
 
@@ -31,7 +31,7 @@ import org.olat.core.gui.render.ValidationResult;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractD3Component extends Component {
+public abstract class AbstractD3Component extends AbstractComponent {
 	
 	public AbstractD3Component(String name) {
 		super(name);

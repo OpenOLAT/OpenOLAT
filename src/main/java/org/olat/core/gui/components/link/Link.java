@@ -27,7 +27,7 @@
 package org.olat.core.gui.components.link;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -44,7 +44,7 @@ import org.olat.core.logging.Tracing;
  * 
  * @author Alexander Schneider, Patrick Brunner
  */
-public class Link extends Component {
+public class Link extends AbstractComponent {
 	private static final OLog log = Tracing.createLoggerFor(Link.class);
 	//single renderer for all users, lazy creation upon first object creation of this class.
 	private static final ComponentRenderer RENDERER = new LinkRenderer();

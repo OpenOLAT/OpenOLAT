@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -44,7 +44,7 @@ import org.olat.core.logging.Tracing;
  * Initial Date:  31.10.2008 <br>
  * @author gnaegi
  */
-public class RatingComponent extends Component {
+public class RatingComponent extends AbstractComponent {
 	private static final OLog log = Tracing.createLoggerFor(RatingComponent.class);
 	private static final ComponentRenderer RENDERER = new RatingRenderer();
 	private List<String> ratingLabels;

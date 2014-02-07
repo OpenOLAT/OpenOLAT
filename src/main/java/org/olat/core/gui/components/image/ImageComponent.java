@@ -38,7 +38,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.AssertException;
@@ -52,7 +52,7 @@ import org.olat.core.util.image.Size;
  * 
  * @author Felix Jost
  */
-public class ImageComponent extends Component {
+public class ImageComponent extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new ImageRenderer();
 	private static final OLog log = Tracing.createLoggerFor(ImageComponent.class);
 	

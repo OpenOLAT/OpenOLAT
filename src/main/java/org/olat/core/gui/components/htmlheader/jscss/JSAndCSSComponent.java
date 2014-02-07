@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.ValidationResult;
@@ -49,7 +49,7 @@ import org.olat.core.gui.render.ValidationResult;
 *
 * @author Felix Jost
 */
-public class JSAndCSSComponent extends Component {
+public class JSAndCSSComponent extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new JSAndCSSComponentRenderer();
 	private final String cssFileName;
 	private final String[] jsFileNames;

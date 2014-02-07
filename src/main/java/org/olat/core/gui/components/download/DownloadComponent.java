@@ -20,7 +20,7 @@
 package org.olat.core.gui.components.download;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -36,7 +36,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
  * 
  * @author gnaegi
  */
-public class DownloadComponent extends Component {
+public class DownloadComponent extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new DownloadComponentRenderer();
 	private MediaResource mediaResource;
 	private String linkText;

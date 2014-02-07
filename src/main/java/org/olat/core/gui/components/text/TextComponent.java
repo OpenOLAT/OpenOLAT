@@ -20,7 +20,7 @@
 package org.olat.core.gui.components.text;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
@@ -39,7 +39,7 @@ import org.olat.core.logging.AssertException;
  * 
  * @author gnaegi
  */
-public class TextComponent extends Component {
+public class TextComponent extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new TextComponentRenderer();
 	private String text; // a plain vanilla string, will not be translated
 	private String i18nKey; // a i18n key that will be translated with

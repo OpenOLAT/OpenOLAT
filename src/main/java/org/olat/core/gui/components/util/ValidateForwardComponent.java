@@ -26,7 +26,7 @@
 package org.olat.core.gui.components.util;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.RenderUtil;
 import org.olat.core.gui.render.ValidationResult;
@@ -48,7 +48,7 @@ import org.olat.core.gui.translator.Translator;
  * Initial Date: 10.03.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class ValidateForwardComponent extends Component {
+public class ValidateForwardComponent extends AbstractComponent {
 
 	/**
 	 * @param name

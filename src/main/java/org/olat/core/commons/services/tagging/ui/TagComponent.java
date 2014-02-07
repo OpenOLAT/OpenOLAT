@@ -25,7 +25,7 @@
 package org.olat.core.commons.services.tagging.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 
 /** 
@@ -35,7 +35,7 @@ import org.olat.core.gui.components.ComponentRenderer;
  * Initial Date:  11.06.2010 <br>
  * @author rhaag
  */
-public class TagComponent extends Component {
+public class TagComponent extends AbstractComponent {
 
 	/**
 	 * @param name

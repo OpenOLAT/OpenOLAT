@@ -40,7 +40,7 @@ import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
 import org.olat.core.commons.modules.bc.meta.tagged.LockComparator;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.generic.folder.FolderHelper;
@@ -61,7 +61,7 @@ import org.olat.core.util.vfs.version.Versionable;
  * Initial Date:  Feb 11, 2004
  * @author Mike Stock
  */
-public class FolderComponent extends Component {
+public class FolderComponent extends AbstractComponent {
  	private static final ComponentRenderer RENDERER = new FolderComponentRenderer();
  	
 	public static final String SORT_NAME = "name";

@@ -20,7 +20,7 @@
 package org.olat.core.gui.components.download;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 
 /**
@@ -41,7 +41,7 @@ import org.olat.core.gui.components.ComponentRenderer;
  * 
  * @author gnaegi
  */
-public class DisplayOrDownloadComponent extends Component {
+public class DisplayOrDownloadComponent extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new DisplayOrDownloadComponentRenderer();
 	private String fileUrl = null;
 

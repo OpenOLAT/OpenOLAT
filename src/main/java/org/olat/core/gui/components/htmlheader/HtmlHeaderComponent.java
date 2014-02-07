@@ -27,7 +27,7 @@
 package org.olat.core.gui.components.htmlheader;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 
 /**
@@ -35,7 +35,7 @@ import org.olat.core.gui.components.ComponentRenderer;
  * 
  * @author gnaegi
  */
-public class HtmlHeaderComponent extends Component {
+public class HtmlHeaderComponent extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new HtmlHeaderRenderer();
 
 	private String jsBodyOnLoad;

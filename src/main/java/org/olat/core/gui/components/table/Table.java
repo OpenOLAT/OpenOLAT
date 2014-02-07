@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.render.StringOutput;
@@ -53,7 +53,7 @@ import org.olat.core.util.filter.FilterFactory;
  * 
  * @author Felix Jost
  */
-public class Table extends Component {
+public class Table extends AbstractComponent {
 	private static final int NO_ROW_SELECTED = -1;
 	private static final int DEFAULT_RESULTS_PER_PAGE = 20;
 	private static final int INITIAL_COLUMNSIZE = 5;

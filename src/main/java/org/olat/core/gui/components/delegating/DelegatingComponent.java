@@ -27,7 +27,7 @@
 package org.olat.core.gui.components.delegating;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
 
@@ -39,7 +39,7 @@ import org.olat.core.gui.control.Event;
  * 
  * @author Felix Jost
  */
-public class DelegatingComponent extends Component {
+public class DelegatingComponent extends AbstractComponent {
 	/**
 	 * Comment for <code>FORWARDED</code> : the only event fired by this
 	 * component

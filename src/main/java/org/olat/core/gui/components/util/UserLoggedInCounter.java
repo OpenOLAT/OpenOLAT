@@ -23,7 +23,7 @@ package org.olat.core.gui.components.util;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.util.session.UserSessionManager;
 
@@ -37,7 +37,7 @@ import org.olat.core.util.session.UserSessionManager;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 
-public class UserLoggedInCounter extends Component {
+public class UserLoggedInCounter extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new UserLoggedInCounterRenderer();
 	private int currentCount = 0;
 
