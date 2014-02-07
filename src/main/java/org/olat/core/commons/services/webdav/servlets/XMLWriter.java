@@ -209,7 +209,6 @@ public class XMLWriter {
     public void sendData()
         throws IOException {
         if (writer != null) {
-        	//System.out.println(buffer.toString());
             writer.write(buffer.toString());
             buffer = new StringBuilder();
         }

@@ -30,7 +30,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.notifications.Publisher;
-import org.olat.core.commons.services.notifications.model.PublisherImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.EfficiencyStatement;

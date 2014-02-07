@@ -58,10 +58,6 @@ public class InfoMessageNotificationHandler extends LogDelegator implements Noti
 		SubscriptionInfo si = null;
 		Publisher p = subscriber.getPublisher();
 		Date latestNews = p.getLatestNewsDate();
-		
-		if(14745600 == p.getKey()) {
-			System.out.println(latestNews);
-		}
 
 		// do not try to create a subscription info if state is deleted - results in
 		// exceptions, course

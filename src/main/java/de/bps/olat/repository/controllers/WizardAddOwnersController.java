@@ -101,7 +101,7 @@ public class WizardAddOwnersController extends WizardController {
 		
 		step1Vc = createVelocityContainer("step1_wizard_add_owners");
 		
-		searchCtr = new RepositorySearchMultiSelectController(null, ureq, getWindowControl(), false, false, null, isAuthor & !isAdmin ? ureq.getIdentity().getName() : null);
+		searchCtr = new RepositorySearchMultiSelectController(null, ureq, getWindowControl(), false, false, null);
 		listenTo(searchCtr);
 		
 	  // links

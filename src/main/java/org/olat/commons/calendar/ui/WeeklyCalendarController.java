@@ -450,6 +450,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			if(affectedCal!=null) {
 			  ThreadLocalUserActivityLogger.log(getCalLoggingAction(), getClass(), LoggingResourceable.wrap(ureq.getIdentity()), LoggingResourceable.wrap(affectedCal));			
 			}
+			cleanUp();
 		} else if (source == eventDetailsCtr) {
 			if(event instanceof KalendarGUIEditEvent) {
 				eventCalloutCtr.deactivate();
@@ -467,9 +468,9 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			eventCalloutCtr.deactivate();
 		} else if (source == importCalendarController) {
 			cmc.deactivate();
-		} else if(source == cmc && event == CloseableModalController.CLOSE_MODAL_EVENT){
-			//DO NOT DEACTIVATE AS ALREADY CLOSED BY CloseableModalController INTERNALLY
+		} else if(source == cmc) {
 			weeklyCalendar.getComponent().setDirty(true);
+			cleanUp();
 		} else if (source == calendarConfig || source == importedCalendarConfig) {
 			if (event instanceof KalendarGUIAddEvent) {
 				pushAddEventController((KalendarGUIAddEvent)event, ureq);
@@ -521,7 +522,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				CalendarManagerFactory.getInstance().getCalendarManager().updateEventFrom(affectedCal, kEvent);
 				deleteSingleYesNoController.dispose();
 				weeklyCalendar.getComponent().setDirty(true);
-			//TODO jquery vcMain.setDirty(true);
 			}
 		} else if (source == deleteSequenceYesNoController) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
@@ -530,7 +530,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				CalendarManagerFactory.getInstance().getCalendarManager().removeEventFrom(affectedCal, kalendarEvent);
 				deleteSequenceYesNoController.dispose();
 				weeklyCalendar.getComponent().setDirty(true);
-			//TODO jquery vcMain.setDirty(true);
 			}
 		} 
 		if (weeklyCalendar.getComponent().isDirty()) {
@@ -547,6 +546,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				}
 			}
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(editController);
+		removeAsListenerAndDispose(cmc);
+		editController = null;
+		cmc = null;
 	}
 	
 	@Override
@@ -635,6 +641,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	 * @param kalendarWrapper
 	 */
 	private void pushEditEventController(UserRequest ureq, KalendarEvent kalendarEvent, KalendarRenderWrapper kalendarWrapper) {
+		if(editController != null) return;
+		
 		removeAsListenerAndDispose(editController);
 		
 		boolean canEdit = false;
@@ -664,6 +672,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	}
 
 	private void pushAddEventController(KalendarGUIAddEvent addEvent, UserRequest ureq) {
+		if(editController != null) return;
+		
 		KalendarRenderWrapper calendarWrapper = weeklyCalendar.getKalendarRenderWrapper(addEvent.getCalendarID());
 		// create new KalendarEvent
 		Date begin = addEvent.getStartDate();

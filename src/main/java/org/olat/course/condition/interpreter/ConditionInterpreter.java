@@ -441,7 +441,6 @@ public class ConditionInterpreter {
 		tokenListField.setAccessible(true);
 		@SuppressWarnings("unchecked")
 		Collection<Object> tokenList = (Collection<Object>)tokenListField.get(exp);
-		System.out.println("Tokens: " + tokenList);
 		return tokenList;
 	}
 

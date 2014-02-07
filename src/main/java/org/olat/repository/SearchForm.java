@@ -90,7 +90,6 @@ public class SearchForm extends FormBasicController{
 	private MultipleSelectionElement types;
 	private FormLink searchButton;
 	
-	private String limitUsername;
 	private String[] limitTypes;
 	private boolean withCancel;
 	private boolean isAdmin;
@@ -106,12 +105,11 @@ public class SearchForm extends FormBasicController{
 	 * @param limitType Limit searches to a specific type.
 	 * @param limitUser Limit searches to a specific user.
 	 */
-	public SearchForm(UserRequest ureq, WindowControl wControl, boolean withCancel, boolean isAdmin, String limitType, String limitUser) {
+	public SearchForm(UserRequest ureq, WindowControl wControl, boolean withCancel, boolean isAdmin, String limitType) {
 		this(ureq, wControl,  withCancel,  isAdmin);
 		if(limitType != null) {
 			this.limitTypes = new String[]{limitType};
 		}
-		this.limitUsername = limitUser;		
 	}
 
 	/**
@@ -246,19 +244,14 @@ public class SearchForm extends FormBasicController{
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		//setFormTitle("search.generic");
-		
+
 		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", formLayout);
 		displayName.setElementCssClass("o_sel_repo_search_displayname");
 		displayName.setFocus(true);
 		
 		author = uifactory.addTextElement("cif_author", "cif.author", 255, "", formLayout);
 		author.setElementCssClass("o_sel_repo_search_author");
-		if (limitUsername != null) {
-			author.setValue(limitUsername);
-			author.setEnabled(false);
-		}
+
 		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", formLayout);
 		description.setElementCssClass("o_sel_repo_search_description");
 		

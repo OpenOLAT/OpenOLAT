@@ -197,9 +197,6 @@ public class LoggingResourceable implements ILoggingResourceable {
 		id_ = restrictStringLength(id, MAX_ID_LEN, "id", true);
 		name_ = restrictStringLength(name, MAX_NAME_LEN, "name", true);
 		resourceable_ = resourceable;
-		if(resourceableType != null && resourceableType.equals("RepositoryEntry")) {
-			System.out.println();
-		}
 		resourceableType_ = resourceableType;
 		this.ignorable = ignorable;
 	}
