@@ -26,7 +26,7 @@
 package org.olat.core.gui.control.guistack;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.util.Util;
 
@@ -41,13 +41,13 @@ import org.olat.core.util.Util;
 public class GuiStackSimpleImpl implements GuiStack {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(GuiStackSimpleImpl.class);
 	
-	private Panel contentPanel;
+	private StackedPanel contentPanel;
 	
 	/**
 	 * 
 	 */
 	public GuiStackSimpleImpl(Component initialComponent) {
-		contentPanel = new Panel("simpleguistack");
+		contentPanel = new StackedPanel("simpleguistack");
 		contentPanel.setContent(initialComponent);
 	}
 
@@ -83,14 +83,14 @@ public class GuiStackSimpleImpl implements GuiStack {
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.GuiStack#getPanel()
 	 */
-	public Panel getPanel() {
+	public StackedPanel getPanel() {
 		return contentPanel;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.GuiStack#getModalPanel()
 	 */
-	public Panel getModalPanel() {
+	public StackedPanel getModalPanel() {
 		return null;
 	}
 

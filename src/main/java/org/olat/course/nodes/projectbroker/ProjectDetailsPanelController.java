@@ -27,7 +27,7 @@ package org.olat.course.nodes.projectbroker;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -52,7 +52,7 @@ import org.olat.course.run.environment.CourseEnvironment;
  */
 public class ProjectDetailsPanelController extends BasicController {
 	
-	private Panel detailsPanel;
+	private StackedPanel detailsPanel;
 	private ProjectEditDetailsFormController editController;
 	private ProjectDetailsDisplayController runController;
 
@@ -78,7 +78,7 @@ public class ProjectDetailsPanelController extends BasicController {
 		this.projectBrokerModuleConfiguration = projectBrokerModuleConfiguration;
 		this.newCreatedProject = newCreatedProject;
 
-		detailsPanel = new Panel("projectdetails_panel");
+		detailsPanel = new StackedPanel("projectdetails_panel");
 		runController = new ProjectDetailsDisplayController(ureq, wControl, project, courseEnv, courseNode, projectBrokerModuleConfiguration);
 		listenTo(runController);
 		detailsPanel.setContent(runController.getInitialComponent());

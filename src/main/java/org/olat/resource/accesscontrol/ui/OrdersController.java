@@ -27,7 +27,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -67,7 +67,7 @@ public class OrdersController extends BasicController implements Activateable2 {
 	
 	private static final String CMD_SELECT = "sel";
 
-	private final Panel mainPanel;
+	private final StackedPanel mainPanel;
 	private final VelocityContainer mainVC;
 	private final TableController tableCtr;
 	private OrderDetailController detailController;

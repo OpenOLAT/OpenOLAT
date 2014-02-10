@@ -29,8 +29,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.Container;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -66,7 +66,7 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		FormWrapperContainer formC = (FormWrapperContainer) source;
-		Container toRender = formC.getFormLayout();
+		ComponentCollection toRender = formC.getFormLayout();
 
 		/*
 		 * extract check for render instruction to the form wrapper
@@ -138,7 +138,7 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 	@Override
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		FormWrapperContainer formC = (FormWrapperContainer) source;
-		Container toRender = formC.getFormLayout();
+		ComponentCollection toRender = formC.getFormLayout();
 		if (toRender != null) {
 			renderer.renderBodyOnLoadJSFunctionCall(sb, toRender, rstate);
 		}
@@ -156,7 +156,7 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {
 		FormWrapperContainer formC = (FormWrapperContainer) source;
-		Container toRender = formC.getFormLayout();
+		ComponentCollection toRender = formC.getFormLayout();
 		if (toRender != null) {
 			renderer.renderHeaderIncludes(sb, toRender, rstate);
 		}

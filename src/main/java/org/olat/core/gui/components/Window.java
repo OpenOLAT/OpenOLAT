@@ -93,7 +93,7 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * 
  * @author Felix Jost
  */
-public class Window extends Container {
+public class Window extends AbstractComponent {
 	
 	private static final OLog log = Tracing.createLoggerFor(Window.class);
 	
@@ -138,7 +138,7 @@ public class Window extends Container {
 	public static final Event ABOUT_TO_DISPATCH = new Event("about_to_dispatch");
 	
 	private String uriPrefix;
-	private Container contentPane;
+	private ComponentCollection contentPane;
 	private String latestTimestamp;
 	private AsyncMediaResponsible asyncMediaResponsible;
 	private String instanceId;
@@ -201,7 +201,7 @@ public class Window extends Container {
 	/**
 	 * @return Container
 	 */
-	public Container getContentPane() {
+	public ComponentCollection getContentPane() {
 		return contentPane;
 	}
 
@@ -210,7 +210,7 @@ public class Window extends Container {
 	 * 
 	 * @param contentPane The contentPane to set
 	 */
-	public void setContentPane(Container contentPane) {
+	public void setContentPane(ComponentCollection contentPane) {
 		this.contentPane = contentPane;
 	}
 
@@ -373,7 +373,7 @@ public class Window extends Container {
 									fireEvent(ureq, OLDTIMESTAMPCALL);
 								}
 								
-								Container top = getContentPane();
+								ComponentCollection top = getContentPane();
 								// always validate here, since we are never in the case of just rerendering (we are in the bg iframe)
 								ValidatingVisitor vv = new ValidatingVisitor(gsettings, jsAndCssAdder);
 								ComponentTraverser ct = new ComponentTraverser(vv, top, false);
@@ -665,7 +665,7 @@ public class Window extends Container {
 			if (inline) {
 					// do inline rendering.
 					
-					Container top = getContentPane();
+					ComponentCollection top = getContentPane();
 					// validate prior to rendering, but only if the timestamp was not null
 					// /
 					// the component just got dispatched

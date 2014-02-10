@@ -26,7 +26,9 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -91,6 +93,11 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 			cmp.add(item.getComponent());
 		}
 		return cmp;
+	}
+
+	@Override
+	public Map<String, Component> getComponentMap() {
+		return Collections.emptyMap();
 	}
 
 	/**

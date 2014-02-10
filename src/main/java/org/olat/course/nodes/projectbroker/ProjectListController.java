@@ -34,7 +34,7 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
@@ -89,7 +89,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	
 
 	private VelocityContainer contentVC;
-	private Panel mainPanel;
+	private StackedPanel mainPanel;
 	private ProjectListTableModel projectListTableModel;
 	private TableController tableController;
 	private Controller projectController;
@@ -142,7 +142,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			}			
 		}
 		contentVC.contextPut("infoProjectBrokerRunMode", infoProjectBrokerRunMode);
-		mainPanel = new Panel("projectlist_panel");
+		mainPanel = new StackedPanel("projectlist_panel");
 		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 		if (  (ProjectBrokerManagerFactory.getProjectGroupManager().isAccountManager(ureq.getIdentity(), cpm, ne.getCourseNode() ) && !previewMode)
 				|| userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity())
@@ -427,8 +427,8 @@ public class ProjectListController extends BasicController implements GenericEve
 		tableController.addColumnDescriptor(projectManagerDescriptor);
 		// Custom-Fields
 		List<CustomField> customFieldList = moduleConfig.getCustomFields();
-		for (Iterator iterator = customFieldList.iterator(); iterator.hasNext();) {
-			CustomField customField = (CustomField) iterator.next();
+		for (Iterator<CustomField> iterator = customFieldList.iterator(); iterator.hasNext();) {
+			CustomField customField = iterator.next();
 			if (customField.isTableViewEnabled()) {
 				numberOfCustomFieldInTable++;
 				DefaultColumnDescriptor columnDescriptor = new DefaultColumnDescriptor(customField.getName(), dataColumn++,null, ureq.getLocale());

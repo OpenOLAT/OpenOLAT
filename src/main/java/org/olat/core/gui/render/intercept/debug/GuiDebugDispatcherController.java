@@ -38,7 +38,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.delegating.DelegatingComponent;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -73,7 +73,7 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 	private DelegatingComponent dc;
 	private Map<String, Component> idToComponent = new HashMap<String, Component>();
 	private PlainTextEditorController vcEditorController;
-	private Panel mainP;
+	private StackedPanel mainP;
 
 	/**
 	 * @param ureq

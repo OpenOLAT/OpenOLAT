@@ -29,7 +29,7 @@ package org.olat.core.gui.control.generic.docking;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -49,7 +49,7 @@ public class DockController extends BasicController {
 	private static final String CMD_UNDOCK = "ud";
 
 	private VelocityContainer mainVC;
-	private Panel panel;
+	private StackedPanel panel;
 	private DockLayoutControllerCreatorCallback layoutCreator;
 	
 	Controller controller;

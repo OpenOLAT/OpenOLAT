@@ -25,8 +25,16 @@
 */ 
 package org.olat.core.gui.components.panel;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
+import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
+import org.olat.core.logging.AssertException;
 
 /**
  * Description:<br>
@@ -37,10 +45,12 @@ import org.olat.core.gui.render.ValidationResult;
  * Initial Date: 19.01.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class OncePanel extends Panel {
+public class OncePanel extends AbstractComponent implements ComponentCollection {
+	private static final ComponentRenderer RENDERER = new PanelRenderer();
 
 	private boolean hideOnNextValidate;
-
+	private Component curContent;
+	
 	/**
 	 * @param name
 	 */
@@ -48,9 +58,57 @@ public class OncePanel extends Panel {
 		super(name);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest, org.olat.core.gui.render.ValidationResult)
+	/**
+	 * @return
 	 */
+	public Component getContent() {
+		return curContent;
+	}
+	
+	/**
+	 * clears the stack and sets the base content anew.
+	 * 
+	 * @param newContent the newContent. if null, then the panel will be empty
+	 */
+	public void setContent(Component newContent) {
+		curContent = newContent;
+		setDirty(true);
+	}
+
+	@Override
+	public Component getComponent(String name) {
+		if(curContent != null && curContent.getComponentName().equals(name)) {
+			return curContent;
+		}
+		return null;
+	}
+
+	@Override
+	public Iterable<Component> getComponents() {
+		if(curContent == null) {
+			return Collections.emptyList();
+		}
+		return Collections.singletonList(curContent);
+	}
+
+	@Override
+	public Map<String, Component> getComponentMap() {
+		if(curContent == null) {
+			return Collections.emptyMap();
+		}
+		return Collections.singletonMap(curContent.getComponentName(), curContent);
+	}
+	
+	@Override
+	protected void doDispatchRequest(UserRequest ureq) {
+		throw new AssertException("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
+	}
+
+	@Override
+	public ComponentRenderer getHTMLRendererSingleton() {
+		return RENDERER;
+	}
+
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);

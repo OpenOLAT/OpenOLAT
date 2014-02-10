@@ -1,59 +1,48 @@
 /**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.  
-* <p>
-*/ 
-
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.core.gui.components.panel;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.Container;
 import org.olat.core.logging.AssertException;
 
 /**
- * Description: <br>
- * The panel implements a place holder component with a stack to hold zero, one
- * or more components. Only the highest component on the stack is shown.
  * 
- * @author Felix Jost
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class Panel extends Container {
+public class Panel extends AbstractComponent implements ComponentCollection {
 	private static final ComponentRenderer RENDERER = new PanelRenderer();
 
 	private Component curContent;
-	protected final List<Component> stackList = new ArrayList<Component>(3); // allow access to extending classes
-
 	/**
 	 * @param name
 	 */
 	public Panel(String name) {
 		super(name);
-		curContent = null;
 	}
 
 	/**
@@ -72,72 +61,50 @@ public class Panel extends Container {
 	public Component getContent() {
 		return curContent;
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.Container#put(org.olat.core.gui.components.Component)
-	 */
-	public void put(Component component) {
-		throw new AssertException("please don't use put(comp) in a panel, but setContent(component) or pushContent(component)");
-	}
-
+	
 	/**
 	 * clears the stack and sets the base content anew.
 	 * 
 	 * @param newContent the newContent. if null, then the panel will be empty
 	 */
 	public void setContent(Component newContent) {
-		stackList.clear();
-		clear();
-		if (newContent != null) {
-			pushContent(newContent);
-		} else {
-			curContent = null;
-		}
-		setDirty(true);
-	}
-
-	/**
-	 * @param newContent may not be null
-	 */
-	public void pushContent(Component newContent) {
-		if (curContent != null) super.remove(curContent);
-		super.put("pc", newContent); // add in tree for later rendering;
-		stackList.add(newContent);
 		curContent = newContent;
 		setDirty(true);
 	}
 
-	/**
-	 * 
-	 */
-	public void popContent() {
-		int stackHeight = stackList.size();
-		if (stackHeight < 1) throw new AssertException("stack was empty!");
-		if (curContent == null) throw new AssertException("stackHeight not zero, but curContent was null!");
-		// remove the current active component as the containers child
-		super.remove(curContent);
-		stackList.remove(stackHeight - 1); // remove the top component
-		if (stackHeight == 1) { // after pop, the content is null
-			curContent = null;
-		} else { // stackHeight > 1
-			curContent = stackList.get(stackHeight - 2);
-			super.put("pc", curContent); // set it as the container's child
+	@Override
+	public Component getComponent(String name) {
+		if(curContent != null && curContent.getComponentName().equals(name)) {
+			return curContent;
 		}
-		setDirty(true);
+		return null;
+	}
+
+	@Override
+	public Iterable<Component> getComponents() {
+		if(curContent == null) {
+			return Collections.emptyList();
+		}
+		return Collections.singletonList(curContent);
+	}
+
+	@Override
+	public Map<String, Component> getComponentMap() {
+		if(curContent == null) {
+			return Collections.emptyMap();
+		}
+		return Collections.singletonMap(curContent.getComponentName(), curContent);
 	}
 
 	/**
-	 * @see org.olat.core.gui.components.Container#getExtendedDebugInfo()
+	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
 	 */
+	@Override
 	public String getExtendedDebugInfo() {
 		StringBuilder sb = new StringBuilder();
-		int size = stackList.size();
-		for (int i = 0; i < size; i++) {
-			Component comp = stackList.get(i); // may be null
-			String compName = (comp == null ? "NULL" : comp.getComponentName());
-			sb.append(compName).append(" | ");
-		}
-		return "stacksize:" + size + ", active:" + sb.toString();
+		String compName = (curContent == null ? "NULL" : curContent.getComponentName());
+		sb.append(compName).append(" | ");
+		return "stacksize:1, active:" + sb.toString();
 	}
 
 	public ComponentRenderer getHTMLRendererSingleton() {

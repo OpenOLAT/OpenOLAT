@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
@@ -68,7 +68,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	private List<ControllerEventListener> listeners;
 	private Component initialComponent;
 	private boolean disposed = false;
-	private Panel wrapperPanel;
+	private StackedPanel wrapperPanel;
 	private final IUserActivityLogger userActivityLogger;
 	
 	private WindowControl newWControl;
@@ -301,10 +301,10 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 		// we also take care that no event is deliverd to implementors of this
 		// abstract class after this controller has been disposed
 		
-		if (initialComponent instanceof Panel) {
-			wrapperPanel = (Panel) initialComponent;
+		if (initialComponent instanceof StackedPanel) {
+			wrapperPanel = (StackedPanel) initialComponent;
 		} else {
-			wrapperPanel = new Panel("autowrapper of controller " + this.getClass().getName());
+			wrapperPanel = new StackedPanel("autowrapper of controller " + this.getClass().getName());
 			wrapperPanel.setContent(initialComponent);
 		}
 		this.initialComponent = wrapperPanel;

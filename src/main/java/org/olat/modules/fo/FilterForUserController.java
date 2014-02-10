@@ -38,7 +38,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
@@ -104,7 +104,7 @@ public class FilterForUserController extends BasicController {
 	private final TableController userListCtr;
 	private final AutoCompleterController userAutoCompleterCtr;
 	private final DateFormat dateFormat;
-	private final Panel searchPanel;
+	private final StackedPanel searchPanel;
 	
 	private final OLATResourceable forumOres;
 	

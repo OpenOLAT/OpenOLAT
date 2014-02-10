@@ -72,9 +72,9 @@ public interface Component {
 	
 	public boolean isSilentlyDynamicalCmp();
 	
-	public Container getParent();
+	public ComponentCollection getParent();
 	
-	public void setParent(Container parent);
+	public void setParent(ComponentCollection parent);
 	
 	public void addListener(ComponentEventListener controller);
 	

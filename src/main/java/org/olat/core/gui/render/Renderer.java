@@ -33,8 +33,8 @@ import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.Container;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.translator.Translator;
@@ -48,7 +48,7 @@ public class Renderer {
 
 	private URLBuilder urlBuilder;
 	private Translator translator;
-	private Container renderContainer;
+	private ComponentCollection renderContainer;
 	private RenderResult renderResult;
 	private GlobalSettings globalSettings;
 
@@ -60,12 +60,12 @@ public class Renderer {
 	 * @param globalSettings
 	 * @return an instance of the renderer
 	 */
-	public static Renderer getInstance(Container renderContainer, Translator translator, URLBuilder ubu, RenderResult renderResult,
+	public static Renderer getInstance(ComponentCollection renderContainer, Translator translator, URLBuilder ubu, RenderResult renderResult,
 			GlobalSettings globalSettings) {
 		return new Renderer(renderContainer, translator, ubu, renderResult, globalSettings);
 	}
 
-	private Renderer(Container renderContainer, Translator translator, URLBuilder ubu, RenderResult renderResult,
+	private Renderer(ComponentCollection renderContainer, Translator translator, URLBuilder ubu, RenderResult renderResult,
 			GlobalSettings globalSettings) {
 		this.renderContainer = renderContainer;
 		this.translator = translator;
@@ -225,7 +225,7 @@ public class Renderer {
 			if (GUIInterna.isLoadPerformanceMode()) {
 				StringBuilder pathsb = new StringBuilder();
 				Component cc = source;
-				Container ccpar = cc.getParent();
+				ComponentCollection ccpar = cc.getParent();
 				while (ccpar != null) { // omit content pane
 					// find out name under which cc was registered in its parent - that is the relevant name, not the name of the component itself
 					Map<String,Component> namedChildren = ccpar.getComponentMap();

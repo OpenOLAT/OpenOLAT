@@ -34,6 +34,8 @@ import org.olat.core.gui.control.Event;
  */
 public class TabbedPaneChangedEvent extends Event {
 
+	private static final long serialVersionUID = 2481268566284582151L;
+
 	/**
 	 * <code>TAB_CHANGED</code>
 	 */

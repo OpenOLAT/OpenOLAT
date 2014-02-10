@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.InlineElement;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
@@ -80,7 +80,7 @@ public abstract class FormBasicController extends BasicController {
 
 	protected Form mainForm;
 
-	protected Panel initialPanel;
+	protected StackedPanel initialPanel;
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 	

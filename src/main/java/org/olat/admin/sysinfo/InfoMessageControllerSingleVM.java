@@ -31,7 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -53,7 +53,7 @@ public class InfoMessageControllerSingleVM extends BasicController {
 	private Link infomsgEditButton,infomsgClearButton, maintenancemsgEditButton,maintenancemsgClearButton;
 	private VelocityContainer infoMsgView, infoMsgEdit;
 	private InfoMsgForm infoMsgForm, maintenanceMsgForm;
-	private Panel container;
+	private StackedPanel container;
 	
 	/**
 	 * 
@@ -62,7 +62,7 @@ public class InfoMessageControllerSingleVM extends BasicController {
 	 */
 	public InfoMessageControllerSingleVM(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
-		container = new Panel("container");
+		container = new StackedPanel("container");
 		infoMsgView = createVelocityContainer("infomsg");
 		infoMsgEdit = createVelocityContainer("infomsgEdit");
 		infoMsgView.contextPut("cluster", Boolean.FALSE);
@@ -170,7 +170,7 @@ public class InfoMessageControllerSingleVM extends BasicController {
 	protected VelocityContainer getEditContainer() {
 		return infoMsgEdit;
 	}
-	protected Panel getMainContainer() {
+	protected StackedPanel getMainContainer() {
 		return container;
 	}
 	protected InfoMsgForm getMaintenanceMsgForm() {

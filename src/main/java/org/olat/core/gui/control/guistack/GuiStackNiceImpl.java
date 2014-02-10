@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.LayeredPanel;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.util.ZIndexWrapper;
@@ -44,8 +45,8 @@ import org.olat.core.util.Util;
 public class GuiStackNiceImpl implements GuiStack {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(GuiStackNiceImpl.class);
 	
-	private Panel panel;
-	private Panel modalPanel;
+	private StackedPanel panel;
+	private StackedPanel modalPanel;
 	private int modalLayers;
 
 	private WindowBackOffice wbo;
@@ -54,7 +55,7 @@ public class GuiStackNiceImpl implements GuiStack {
 	 * 
 	 */
 	private GuiStackNiceImpl() {
-		panel = new Panel("guistackpanel");
+		panel = new StackedPanel("guistackpanel");
 		// Use a layered panel instead of a standard panel to support multiple modal layers
 		modalPanel = new LayeredPanel("guistackmodalpanel", 900, 100);
 		modalLayers = 0;
@@ -185,14 +186,14 @@ public class GuiStackNiceImpl implements GuiStack {
 	/**
 	 * @return
 	 */
-	public Panel getPanel() {
+	public StackedPanel getPanel() {
 		return panel;
 	}
 
 	/**
 	 * @return Returns the modalPanel.
 	 */
-	public Panel getModalPanel() {
+	public StackedPanel getModalPanel() {
 		return modalPanel;
 	}
 

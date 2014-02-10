@@ -26,7 +26,7 @@
 package org.olat.core.gui.control.guistack;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 
 /**
  * Description:<br>
@@ -64,11 +64,11 @@ public interface GuiStack {
 	/**
 	 * @return
 	 */
-	public Panel getPanel();
+	public StackedPanel getPanel();
 
 	/**
 	 * @return Returns the modalPanel, which should be put so that it looks modal (e.g. alpha-blended background) may be null if no modal panel is needed
 	 */
-	public Panel getModalPanel();
+	public StackedPanel getModalPanel();
 
 }

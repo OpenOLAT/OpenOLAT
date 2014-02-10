@@ -50,6 +50,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.OncePanel;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -133,7 +134,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 	//
 	private BaseFullWebappControllerParts baseFullWebappControllerParts;
 	protected Controller contentCtrl;
-	private Panel initialPanel;
+	private StackedPanel initialPanel;
 	private DTabs myDTabsImpl;
 	private static Integer MAX_TAB;
 	private WindowSettings wSettings;
@@ -523,12 +524,12 @@ public class BaseFullWebappController extends BasicController implements Generic
 
 	private void setGuiStack(GuiStack guiStack) {
 		currentGuiStack = guiStack;
-		Panel guiStackPanel = currentGuiStack.getPanel();
+		StackedPanel guiStackPanel = currentGuiStack.getPanel();
 		main.setContent(guiStackPanel);
 		// place for modal dialogs, which are overlayd over the normal layout (using
 		// css alpha blending)
 		// maybe null if no current modal dialog -> clears the panel
-		Panel modalStackP = currentGuiStack.getModalPanel();
+		StackedPanel modalStackP = currentGuiStack.getModalPanel();
 		modalPanel.setContent(modalStackP);
 	}
 

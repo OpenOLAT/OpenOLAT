@@ -27,31 +27,24 @@ package org.olat.gui.demo.guidemo;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.gui.demo.GUIDemoMainController;
 
 public class GuiDemoController extends BasicController {
-	//how to create a logger
-	OLog log = Tracing.createLoggerFor(GuiDemoController.class);
 
-	Panel p;
-	VelocityContainer vcMain;
+	private final VelocityContainer vcMain;
 	
 	public GuiDemoController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setBasePackage(GUIDemoMainController.class);
 		//simple Text as first node in the guidemo tree
 		vcMain = createVelocityContainer("guidemo");
-		p = putInitialPanel(vcMain);
+		putInitialPanel(vcMain);
 	}
 
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Component source, Event event) {
 		//no events to catch
 	}

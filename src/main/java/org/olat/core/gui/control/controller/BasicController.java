@@ -34,7 +34,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
@@ -267,15 +267,15 @@ public abstract class BasicController extends DefaultController {
 				+ ".html", translator, this);
 	}
 
-	protected Panel putInitialPanel(Component initialContent) {
-		Panel p = new Panel("mainPanel");
+	protected StackedPanel putInitialPanel(Component initialContent) {
+		StackedPanel p = new StackedPanel("mainPanel");
 		p.setContent(initialContent);
 		super.setInitialComponent(p);
 		return p;
 	}
 
-	protected void setInitialComponent(@SuppressWarnings("unused")
-	Component initialComponent) {
+	@Override
+	protected void setInitialComponent(Component initialComponent) {
 		throw new AssertException("please use method putInitialPanel!");
 	}
 

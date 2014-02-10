@@ -37,7 +37,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -74,7 +74,7 @@ public class LTIRunController extends BasicController {
 	private static final String PROP_NAME_DATA_EXCHANGE_ACCEPTED = "LtiDataExchageAccepted";
 	
 	private Link startButton;
-	private final Panel mainPanel;
+	private final StackedPanel mainPanel;
 	private VelocityContainer run, startPage, acceptPage;
 	private BasicLTICourseNode courseNode;
 	private ModuleConfiguration config;
@@ -128,7 +128,7 @@ public class LTIRunController extends BasicController {
 		String display = config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
 		this.newWindow = "window".equals(display);
 
-		mainPanel = new Panel("ltiContainer");
+		mainPanel = new StackedPanel("ltiContainer");
 		putInitialPanel(mainPanel);
 		
 		// only run directly when user as already accepted to data exchange or no data has to be exchanged

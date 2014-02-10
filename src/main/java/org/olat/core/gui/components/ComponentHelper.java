@@ -98,7 +98,7 @@ public class ComponentHelper {
 	 * @param top
 	 * @param vr
 	 */
-	public static void validateComponentTree(UserRequest ureq, Container top, ValidationResult vr) {
+	public static void validateComponentTree(UserRequest ureq, ComponentCollection top, ValidationResult vr) {
 		doValidate(ureq, top, vr);
 	}
 

@@ -48,8 +48,7 @@ import org.olat.core.logging.OLATRuntimeException;
 
 public class GuiDemoLinksController extends BasicController {
 	
-	Panel p;
-	VelocityContainer mainVC;
+	private final VelocityContainer mainVC;
 	
 	private Link buttonXSmall;
 	private Link buttonSmall;
@@ -126,11 +125,10 @@ public class GuiDemoLinksController extends BasicController {
 		Controller sourceView = new SourceViewController(ureq, wControl, this.getClass(), mainVC);
 		mainVC.put("sourceview", sourceView.getInitialComponent());
 		
-		
 		// form buttons
 		mainVC.put("formbuttonctr",new FormButtonsDemoController(ureq, wControl).getInitialComponent());
 		
-		p = putInitialPanel(mainVC);		
+		putInitialPanel(mainVC);		
 	}
 
 	public void event(UserRequest ureq, Component source, Event event) {

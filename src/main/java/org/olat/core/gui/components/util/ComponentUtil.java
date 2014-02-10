@@ -26,7 +26,6 @@
 package org.olat.core.gui.components.util;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.Container;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -46,7 +45,7 @@ public class ComponentUtil {
 	
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(ComponentUtil.class);
 
-	public static void registerForValidateEvents(Container parentContainer, Controller listeningController) {
+	public static void registerForValidateEvents(VelocityContainer parentContainer, Controller listeningController) {
 		ValidateForwardComponent vfc = new ValidateForwardComponent("validatecomp");
 		vfc.addListener(listeningController);
 		parentContainer.put("o_validate"+vfc.getDispatchID(), vfc);

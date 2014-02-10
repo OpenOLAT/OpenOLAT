@@ -36,6 +36,7 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.Container;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.link.Link;
@@ -397,8 +398,8 @@ public class DevelopmentController extends BasicController {
 	
 	private int cntTree(Component current) {
 		int cnt = 1;
-		if (current instanceof Container) {
-			Container co = (Container) current;
+		if (current instanceof ComponentCollection) {
+			ComponentCollection co = (ComponentCollection) current;
 			for (Component child:co.getComponents()) {
 				cnt += cntTree(child);
 			}

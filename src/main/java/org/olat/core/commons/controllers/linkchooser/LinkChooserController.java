@@ -29,7 +29,7 @@ package org.olat.core.commons.controllers.linkchooser;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -48,7 +48,7 @@ import org.olat.core.util.vfs.VFSContainer;
 public class LinkChooserController extends BasicController {
 
 	private VelocityContainer tabbedPaneViewVC, closeVC;
-	private Panel mainPanel;
+	private StackedPanel mainPanel;
 
 	private TabbedPane linkChooserTabbedPane;
 	private FileLinkChooserController fileLinkChooserController;

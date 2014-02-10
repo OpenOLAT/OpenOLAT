@@ -32,7 +32,6 @@ import java.util.Locale;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -214,7 +213,7 @@ public class CourseLogsArchiveController extends BasicController {
 		myPanel.setContent(vcOngoing);
 
 		// initialize polling 
-		myPanel.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), 3000));
+		//myPanel.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), 3000));
 	}
 
 	protected void showExportFinished() {

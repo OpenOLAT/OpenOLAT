@@ -24,7 +24,7 @@ import org.olat.core.gui.components.ComponentRenderer;
 /**
  * 
  * This component wrapped the content to mimic
- * the 3 columsn main controller with only
+ * the 3 columns main controller with only
  * one column.
  * 
  * 

@@ -225,7 +225,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	}
 
 	/**
-	 * @see org.olat.core.gui.components.Container#getExtendedDebugInfo()
+	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
 	 */
 	public String getExtendedDebugInfo() {
 		return "selectedPane:" + selectedPane;

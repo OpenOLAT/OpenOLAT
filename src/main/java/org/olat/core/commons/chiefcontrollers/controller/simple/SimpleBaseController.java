@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.OncePanel;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ContentableController;
 import org.olat.core.gui.control.Controller;
@@ -189,12 +190,12 @@ public class SimpleBaseController extends BasicController implements Contentable
 
 	private void setGuiStack(GuiStack guiStack) {
 		currentGuiStack = guiStack;
-		Panel guiStackPanel = currentGuiStack.getPanel();
+		StackedPanel guiStackPanel = currentGuiStack.getPanel();
 		content.setContent(guiStackPanel);
 		// place for modal dialogs, which are overlayd over the normal layout (using
 		// css alpha blending)
 		// maybe null if no current modal dialog -> clears the panel
-		Panel modalStackP = currentGuiStack.getModalPanel();
+		StackedPanel modalStackP = currentGuiStack.getModalPanel();
 		modalPanel.setContent(modalStackP);
 	}
 

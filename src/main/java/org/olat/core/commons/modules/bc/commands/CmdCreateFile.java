@@ -38,7 +38,7 @@ import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -70,7 +70,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 	private FolderComponent folderComponent;
 	private VelocityContainer mainVC;
-	private Panel mainPanel;
+	private StackedPanel mainPanel;
 	
 	private CreateFileForm createFileForm;
 	private Controller editorCtr;

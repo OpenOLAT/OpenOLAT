@@ -26,7 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -55,7 +55,7 @@ public class YearNavigationController extends BasicController {
 	private YearNavigationModel model;
 	private Link next, previous, yearLink;
 	private VelocityContainer mainVC;
-	private Panel mainPanel;
+	private StackedPanel mainPanel;
 	private List<Link> monthLinks;
 	private List<? extends Dated> allObjects;
 	private boolean showAll = true;

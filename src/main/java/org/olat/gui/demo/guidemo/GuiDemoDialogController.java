@@ -25,7 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -63,7 +63,7 @@ public class GuiDemoDialogController extends BasicController {
 	private DialogBoxController dialogBoxWithoutClose;
 	private ArrayList<String> myButtons;
 	private Link guimsgButton;
-	private Panel mainP;
+	private StackedPanel mainP;
 	private MessageController guimsg;
 
 	public GuiDemoDialogController(UserRequest ureq, WindowControl wControl) {
@@ -78,8 +78,8 @@ public class GuiDemoDialogController extends BasicController {
 		guimsgButton = LinkFactory.createButton("guidemo.dialog.guimsg", vcMain, this);
 		
 		//add source view control
-    Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), vcMain);
-    vcMain.put("sourceview", sourceview.getInitialComponent());
+		Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), vcMain);
+		vcMain.put("sourceview", sourceview.getInitialComponent());
 		
 		mainP = putInitialPanel(vcMain);
 	}
@@ -119,10 +119,10 @@ public class GuiDemoDialogController extends BasicController {
 			listenTo(guimsg);
 			mainP.pushContent(guimsg.getInitialComponent());
 		}
-
 	}
 
-	public void event(@SuppressWarnings("unused")UserRequest ureq, Controller source, Event event) {
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
 		String feedbackMessage = null;
 		if (source == dialogBoxOne) {
 			if (event == Event.CANCELLED_EVENT) {

@@ -39,6 +39,7 @@ import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -117,7 +118,7 @@ public class IQRunController extends BasicController implements GenericEventList
 
 	private IFrameDisplayController iFrameCtr;
 
-	private Panel mainPanel;
+	private StackedPanel mainPanel;
 	
 	private boolean assessmentStopped = true; //default: true
 	private EventBus singleUserEventCenter;

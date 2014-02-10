@@ -47,7 +47,7 @@ import org.apache.commons.fileupload.util.Streams;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.Container;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -156,13 +156,13 @@ public class Form extends LogDelegator {
 	private String eventFieldId;
 
 	// the real form
-	private FormItemContainer formLayout = null;
+	private FormItemContainer formLayout;
 	private FormWrapperContainer formWrapperComponent;
 	private Integer action;
 	private boolean hasAlreadyFired;
 	private List<FormBasicController> formListeners;
 	private boolean isValidAndSubmitted=true;
-	private FormItem submitFormItem = null;
+	private FormItem submitFormItem;
 	private boolean isDirtyMarking=true;
 	private boolean multipartEnabled = false;
 	private int multipartUploadMaxSizeKB = 0;
@@ -202,7 +202,7 @@ public class Form extends LogDelegator {
 		// this is where the formitems go to
 		form.formLayout = formLayout;
 		form.formLayout.setRootForm(form);
-		form.formListeners = new ArrayList<FormBasicController>();
+		form.formListeners = new ArrayList<FormBasicController>(1);
 		if(listener instanceof FormBasicController){
 			form.formListeners.add((FormBasicController)listener);
 		}
@@ -212,7 +212,7 @@ public class Form extends LogDelegator {
 		// renders header + <formLayout> + footer of html form
 		form.formWrapperComponent = new FormWrapperContainer(id, name, translator, form);
 		form.formWrapperComponent.addListener(listener);
-		form.formWrapperComponent.put(formLayout.getComponent().getComponentName(), formLayout.getComponent());
+		//form.formWrapperComponent.put(formLayout.getComponent().getComponentName(), formLayout.getComponent());
 		// generate name for form and dispatch uri hidden field
 
 		form.formName = Form.FORMID + form.formWrapperComponent.getDispatchID();
@@ -526,11 +526,11 @@ public class Form extends LogDelegator {
 	/**
 	 * @return
 	 */
-	Container getFormLayout() {
-		return (Container) formLayout.getComponent();
+	ComponentCollection getFormLayout() {
+		return (ComponentCollection) formLayout.getComponent();
 	}
 
-	public Container getInitialComponent() {
+	public Component getInitialComponent() {
 		return formWrapperComponent;
 	}
 

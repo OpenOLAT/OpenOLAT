@@ -166,7 +166,7 @@ public class VelocityContainer extends Container {
 	}
 
 	/**
-	 * @see org.olat.core.gui.components.Container#getExtendedDebugInfo()
+	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
 	 */
 	public String getExtendedDebugInfo() {
 		return "page:"+page+" "+super.getExtendedDebugInfo();

@@ -49,7 +49,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -145,7 +145,7 @@ public class ForumController extends BasicController implements GenericEventList
 
 	private Collator collator; 
 
-	private Panel forumPanel;
+	private StackedPanel forumPanel;
 
 	private VelocityContainer vcListTitles;
 	private VelocityContainer vcEditMessage;
@@ -220,7 +220,7 @@ public class ForumController extends BasicController implements GenericEventList
 		collator = Collator.getInstance(ureq.getLocale());
 		collator.setStrength(Collator.PRIMARY);
 
-		forumPanel = new Panel("forumPanel");
+		forumPanel = new StackedPanel("forumPanel");
 		forumPanel.addListener(this);
 
 		//create page

@@ -25,14 +25,19 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.Container;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 
-class FormWrapperContainer extends Container {
+class FormWrapperContainer extends AbstractComponent implements ComponentCollection {
 
 	// Renderer
 	private static ComponentRenderer RENDERER = new FormWrapperContainerRenderer();
@@ -67,8 +72,26 @@ class FormWrapperContainer extends Container {
 	/**
 	 * @return
 	 */
-	Container getFormLayout() {
+	ComponentCollection getFormLayout() {
 		return form.getFormLayout();
+	}
+
+	@Override
+	public Component getComponent(String name) {
+		if(form.getFormLayout().getComponentName().equals(name)) {
+			return form.getFormLayout();
+		}
+		return null;
+	}
+
+	@Override
+	public Iterable<Component> getComponents() {
+		return Collections.<Component>singletonList(form.getFormLayout());
+	}
+
+	@Override
+	public Map<String, Component> getComponentMap() {
+		return Collections.<String, Component>singletonMap(form.getFormLayout().getComponentName(), form.getFormLayout());
 	}
 
 	/**
@@ -83,9 +106,7 @@ class FormWrapperContainer extends Container {
 	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		//
 		form.evalFormRequest(ureq);
-		//
 	}
 
 	/**
@@ -109,8 +130,6 @@ class FormWrapperContainer extends Container {
 			fireEvent(ureq, org.olat.core.gui.components.form.Form.EVNT_VALIDATION_NOK);
 		}
 	}
-
-	
 	
 	/**
 	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest, org.olat.core.gui.render.ValidationResult)
@@ -134,6 +153,4 @@ class FormWrapperContainer extends Container {
 	public void fireFormEvent(UserRequest ureq, FormEvent event) {
 		fireEvent(ureq, event);
 	}
-
-
 }

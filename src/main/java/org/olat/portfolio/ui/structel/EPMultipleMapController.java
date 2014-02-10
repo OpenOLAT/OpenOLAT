@@ -29,7 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -90,7 +90,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 	private EPMapViewController mapViewCtrl;
 	private EPShareListController shareListController;
 	private CloseableModalController shareBox;
-	private Panel myPanel;
+	private StackedPanel myPanel;
 	
 	private final EPMapRunViewOption option;
 	private final Identity mapOwner;

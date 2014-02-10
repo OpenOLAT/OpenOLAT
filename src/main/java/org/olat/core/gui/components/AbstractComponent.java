@@ -78,8 +78,7 @@ public abstract class AbstractComponent implements Component {
 	 * do not create a logger for this class otherwise millions of useless loggers are created which consumes
 	 * quite some memory
 	 */
-
-	private Container parent = null;
+	private ComponentCollection parent;
 	/**
 	 * 
 	 * @param name the name of this component
@@ -415,14 +414,14 @@ public abstract class AbstractComponent implements Component {
 	 * to be called only by the container when a child is added
 	 * @param parent
 	 */
-	public void setParent(Container parent){
+	public void setParent(ComponentCollection parent){
 		this.parent = parent;
 	}
 	
 	/**
 	 * @return
 	 */
-	public Container getParent(){
+	public ComponentCollection getParent(){
 		return parent;
 	}
 	

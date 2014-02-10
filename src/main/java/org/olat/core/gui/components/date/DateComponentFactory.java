@@ -21,7 +21,7 @@ package org.olat.core.gui.components.date;
 
 import java.util.Date;
 
-import org.olat.core.gui.components.Container;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 
 /**
  * Description:<br>
@@ -51,7 +51,7 @@ public class DateComponentFactory {
 	 * @return the date component
 	 */
 	public static DateComponent createDateComponentWithYear(String name,
-			Date date, Container container) {
+			Date date, VelocityContainer container) {
 		DateComponent comp = new DateComponent(name, date, true);
 		if (container != null) {
 			container.put(name, comp);
@@ -77,7 +77,7 @@ public class DateComponentFactory {
 	 * @return the date component
 	 */
 	public static DateComponent createDateComponentWithoutYear(String name,
-			Date date, Container container) {
+			Date date, VelocityContainer container) {
 		DateComponent comp = new DateComponent(name, date, false);
 		if (container != null) {
 			container.put(name, comp);

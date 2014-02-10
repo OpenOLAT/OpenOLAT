@@ -45,6 +45,7 @@ import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.table.Table;
@@ -146,7 +147,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private WikiSecurityCallback securityCallback;
 	private WikiArticleSearchForm searchOrCreateArticleForm;
 	private Controller searchCtrl;
-	private Panel mainPanel;
+	private StackedPanel mainPanel;
 	
 	public static final String ACTION_COMPARE = "compare";
 	public static final String ACTION_SHOW = "view.version";

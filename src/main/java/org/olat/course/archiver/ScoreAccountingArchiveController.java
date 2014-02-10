@@ -32,7 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -56,7 +56,7 @@ import org.olat.user.UserManager;
 public class ScoreAccountingArchiveController extends BasicController {
 
 	private OLATResourceable ores;
-	private Panel myPanel;
+	private StackedPanel myPanel;
 	private VelocityContainer myContent;
 	private VelocityContainer vcFeedback;
 	private Link startButton, downloadButton;

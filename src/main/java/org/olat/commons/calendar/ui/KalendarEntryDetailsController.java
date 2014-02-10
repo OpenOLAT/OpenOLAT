@@ -42,7 +42,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -62,7 +62,7 @@ public class KalendarEntryDetailsController extends BasicController {
 	private Collection<KalendarRenderWrapper> availableCalendars;
 	private boolean isNew, isReadOnly;
 	private KalendarEvent kalendarEvent;
-	private Panel mainPanel;
+	private StackedPanel mainPanel;
 	private VelocityContainer mainVC, eventVC, linkVC;
 	private TabbedPane pane;
 	private KalendarEntryForm eventForm;

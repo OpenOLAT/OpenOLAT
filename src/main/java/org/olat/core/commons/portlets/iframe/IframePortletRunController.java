@@ -35,7 +35,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -60,7 +59,6 @@ public class IframePortletRunController extends BasicController {
 	
 	private OLog log = Tracing.createLoggerFor(this.getClass());
 	
-	private Panel panel;
 	private VelocityContainer iframeVC;
 	private Link editLink;
 	private Controller editorCtr;
@@ -111,7 +109,7 @@ public class IframePortletRunController extends BasicController {
 			editLink.setEnabled(editLinkEnabled);//edit link always there, but disabled if something went wrong
 		}		
 		
-		panel = this.putInitialPanel(this.iframeVC);
+		putInitialPanel(iframeVC);
 	}
 	
 	/**

@@ -61,7 +61,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
@@ -119,7 +119,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private static final String CMD_BULKEDIT = "bulkEditUsers";
 
 	private VelocityContainer userListVC, userSearchVC, mailVC;
-	private Panel panel;
+	private StackedPanel panel;
 
 	private UsermanagerUserSearchForm searchform;
 	private TableController tableCtr;

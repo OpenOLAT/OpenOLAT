@@ -41,7 +41,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -89,7 +89,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private VelocityContainer content;
 	private Controller authController;
 	private final List<Controller> authControllers = new ArrayList<Controller>();
-	private Panel dmzPanel;
+	private StackedPanel dmzPanel;
 	private GenericTreeNode checkNode;
 	private GenericTreeNode accessibilityNode;
 	private GenericTreeNode aboutNode;
@@ -110,7 +110,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			ureq.getUserSession().removeEntryFromNonClearedStore("error.change.email.time");
 		}
 		
-		dmzPanel = new Panel("content");
+		dmzPanel = new StackedPanel("content");
 		content = initLoginContent(ureq, null);
 		dmzPanel.pushContent(content);
 

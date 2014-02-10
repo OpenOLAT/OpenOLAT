@@ -41,7 +41,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
@@ -110,7 +110,7 @@ public class DialogElementsController extends BasicController {
 	private CourseNode courseNode;
 	private FileUploadController fileUplCtr;
 	private LinkChooserController fileCopyCtr;
-	private Panel dialogPanel;
+	private StackedPanel dialogPanel;
 	private ForumManager forumMgr;
 	private DialogElement recentDialogElement, selectedElement;
 	private DialogElementsTableModel tableModel;

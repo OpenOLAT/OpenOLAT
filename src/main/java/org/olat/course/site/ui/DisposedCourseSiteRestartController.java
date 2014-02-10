@@ -23,7 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -49,7 +49,7 @@ public class DisposedCourseSiteRestartController extends BasicController {
 	private VelocityContainer initialContent;
 	private Link restartLink;
 	private RepositoryEntry courseRepositoryEntry;
-	private Panel panel;
+	private StackedPanel panel;
 
 	public DisposedCourseSiteRestartController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseRepositoryEntry) {
 		super(ureq, wControl);

@@ -29,7 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.delegating.DelegatingComponent;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -76,7 +76,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 	private DelegatingComponent delegatingComponent;
 	private TranslationToolI18nItemEditCrumbController i18nItemEditCtr;
 	private CloseableModalController cmc;
-	private Panel mainP;
+	private StackedPanel mainP;
 
 	// patterns to detect localized strings with identifyers
 	private static final String decoratedTranslatedPattern = "(" + I18nManager.IDENT_PREFIX + "(.*?)" + I18nManager.IDENT_START_POSTFIX

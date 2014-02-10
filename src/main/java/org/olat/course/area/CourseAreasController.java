@@ -27,7 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -59,7 +59,7 @@ public class CourseAreasController extends MainLayoutBasicController {
 	private static final String TABLE_ACTION_EDIT = "tbl_edit";
 	private static final String TABLE_ACTION_DELETE = "tbl_del";
 	
-	private final Panel mainPanel;
+	private final StackedPanel mainPanel;
 	private final Link createAreaLink;
 	private final VelocityContainer mainVC;
 	private final TableController tableCtrl;

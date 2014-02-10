@@ -36,7 +36,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
@@ -100,7 +100,7 @@ public class UserSearchController extends BasicController {
 	private static final String ACTION_MULTISELECT_CHOOSE = "msc";
 	
 	private VelocityContainer myContent;
-	private Panel searchPanel;
+	private StackedPanel searchPanel;
 	private UserSearchForm searchform;
 	private TableController tableCtr;
 	private TableGuiConfiguration tableConfig;
@@ -170,7 +170,7 @@ public class UserSearchController extends BasicController {
 		myContent = new VelocityContainer("olatusersearch", VELOCITY_ROOT + "/usersearch.html", pT, this);
 		backLink = LinkFactory.createButton("btn.back", myContent, this);
 		
-		searchPanel = new Panel("usersearchPanel");
+		searchPanel = new StackedPanel("usersearchPanel");
 		searchPanel.addListener(this);
 		myContent.put("usersearchPanel", searchPanel);
 

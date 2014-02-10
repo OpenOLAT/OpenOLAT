@@ -19,16 +19,20 @@
  */
 package org.olat.core.gui.components;
 
+import java.util.Map;
+
 /**
  * 
  * Initial date: 06.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ComponentCollection {
+public interface ComponentCollection extends Component {
 	
 	public Component getComponent(String name);
 	
 	public Iterable<Component> getComponents();
+	
+	public Map<String, Component> getComponentMap();
 
 }
