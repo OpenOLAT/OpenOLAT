@@ -853,6 +853,7 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setLastUsage(newUsage);
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
+		updateLifeCycle(reloadedRe, lastUsage);
 		return updatedRe;
 	}
 
