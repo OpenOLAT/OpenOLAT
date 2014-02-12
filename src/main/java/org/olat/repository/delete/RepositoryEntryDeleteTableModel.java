@@ -38,13 +38,13 @@ import org.olat.repository.delete.service.RepositoryDeletionManager;
  * 
  * @author Christian Guretzki
  */
-public class RepositoryEntryDeleteTableModel extends DefaultTableDataModel {
+public class RepositoryEntryDeleteTableModel extends DefaultTableDataModel<RepositoryEntry> {
 
 	
 	/**
 	 * @param objects
 	 */
-	public RepositoryEntryDeleteTableModel(List objects) {
+	public RepositoryEntryDeleteTableModel(List<RepositoryEntry> objects) {
 		super(objects);
 	}
 
@@ -52,7 +52,7 @@ public class RepositoryEntryDeleteTableModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public final Object getValueAt(int row, int col) {
-		RepositoryEntry repositoryEntry = (RepositoryEntry) getObject(row);
+		RepositoryEntry repositoryEntry = getObject(row);
 		switch (col) {
 			case 0 :
 				//TODO:cg check data garbage in db, each repositoryEntry should have a ores => cleanup-code to remove this entries
