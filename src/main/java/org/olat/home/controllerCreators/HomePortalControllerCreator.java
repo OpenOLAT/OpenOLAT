@@ -109,7 +109,7 @@ public class HomePortalControllerCreator extends AutoCreator  {
 					portalTemplate = ((PortalImpl)CoreSpringFactory.getBean("guestportal"));
 					portalEditButton.setEnabled(false);
 					portalEditButton.setVisible(false);
-				} else if((roles.isGroupManager() || roles.isInstitutionalResourceManager() || roles.isOLATAdmin() || roles.isPoolAdmin() || roles.isUserManager())
+				} else if((roles.isGroupManager() || roles.isInstitutionalResourceManager() || roles.isOLATAdmin() || roles.isPoolAdmin() || roles.isUserManager() || roles.isAuthor())
 						&& CoreSpringFactory.containsBean("authorportal")) {
 					portalTemplate = ((PortalImpl)CoreSpringFactory.getBean("authorportal"));
 				} else {
