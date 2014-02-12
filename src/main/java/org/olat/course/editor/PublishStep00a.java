@@ -50,7 +50,7 @@ class PublishStep00a extends BasicStep implements Step {
 	public PublishStep00a(UserRequest ureq) {
 		super(ureq);
 		setI18nTitleAndDescr("publish.step.title.messages", null);
-		setNextStep(new PublishStep00b(ureq));
+		setNextStep(new PublishStepUpdate(ureq, null, true));
 	}
 
 	/**

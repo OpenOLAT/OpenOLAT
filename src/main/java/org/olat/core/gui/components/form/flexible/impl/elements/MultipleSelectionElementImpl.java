@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -51,7 +52,7 @@ import org.olat.core.util.ValidationStatus;
  * @author patrickb
  */
 public class MultipleSelectionElementImpl extends FormItemImpl implements MultipleSelectionElement {
-
+	private static final OLog log = Tracing.createLoggerFor(MultipleSelectionElementImpl.class);
 	private static final String PACKAGE = Util.getPackageName(MultipleSelectionElementImpl.class);
 	protected static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
  
@@ -206,8 +207,8 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 				j++;
 			}
 			if (!foundKey){
-				Tracing.logWarn("submitted key '" + key + "' was not found in the keys of formelement named "
-					+ this.getName() + " , keys=" + Arrays.asList(keys), this.getClass());
+				log.warn("submitted key '" + key + "' was not found in the keys of formelement named "
+					+ this.getName() + " , keys=" + Arrays.asList(keys));
 			}else{
 				selected.add(key);	
 			}
@@ -288,7 +289,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#setEnabled(java.util.Set, boolean)
 	 */
-	public void setEnabled(@SuppressWarnings("hiding") Set<String> keys, boolean isEnabled) {
+	public void setEnabled(Set<String> keys, boolean isEnabled) {
 		for (String key : keys) {
 			setEnabled(key, isEnabled);
 		}
@@ -305,7 +306,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			elm.setVisible(isVisible);
 		}
 		// set container dirty to render new values
-		this.formLayoutContainer.setDirty(true);
+		formLayoutContainer.setDirty(true);
 	}
 	
 	
@@ -322,7 +323,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#setVisible(java.util.Set, boolean)
 	 */
-	public void setVisible(@SuppressWarnings("hiding") Set<String> keys, boolean isEnabled) {
+	public void setVisible(Set<String> keys, boolean isEnabled) {
 		for (String key : keys) {
 			setEnabled(key, isEnabled);
 		}
@@ -333,7 +334,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	 * @return Keys of the checkboxes
 	 */
 	public Set<String> getKeys() {
-		return new HashSet<String>(Arrays.asList(this.keys));
+		return new HashSet<String>(Arrays.asList(keys));
 	}
 	
 	protected void initSelectionElements() {

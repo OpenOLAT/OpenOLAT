@@ -58,3 +58,34 @@ create or replace view o_gp_contactkey_owner_v as (
    where bgroup.ownersintern=1
 );
 
+-- checklist
+create table o_cl_checkbox (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_checkboxid varchar(50) not null,
+   c_resname varchar(50) not null,
+   c_resid bigint not null,
+   c_ressubpath varchar(255) not null,
+   primary key (id)
+);
+alter table o_cl_checkbox ENGINE = InnoDB;
+
+create table o_cl_check (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_score float(65,30),
+   c_checked bit(0),
+   fk_identity_id bigint not null,
+   fk_checkbox_id bigint not null,
+   primary key (id)
+);
+alter table o_cl_check ENGINE = InnoDB;
+
+alter table o_cl_check add constraint check_identity_ctx foreign key (fk_identity_id) references o_bs_identity (id);
+alter table o_cl_check add constraint check_box_ctx foreign key (fk_checkbox_id) references o_cl_checkbox (id);
+create index idx_checkbox_uuid_idx on o_cl_checkbox (c_checkboxid);
+
+
+

@@ -106,6 +106,7 @@ import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.PublishProcess;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.PublishSetInformations;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -776,7 +777,8 @@ public class CourseFactory extends BasicManager {
 			 visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
 
 			 publishProcess.createPublishSetFor(nodeToPublish);
-			 StatusDescription[] status = publishProcess.testPublishSet(locale);
+			 PublishSetInformations set = publishProcess.testPublishSet(locale);
+			 StatusDescription[] status = set.getWarnings();
 			 //publish not possible when there are errors
 			 for(int i = 0; i < status.length; i++) {
 				 if(status[i].isError()) {

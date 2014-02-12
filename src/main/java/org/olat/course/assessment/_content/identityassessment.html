@@ -1,0 +1,12 @@
+#if($r.available("backLink"))
+	<h5>$r.translate("identityoverview.title")</h5>
+	$r.render("backLink")
+	<br><br>
+#end
+
+#if($r.available("identityInfos"))
+	$r.render("identityInfos")
+#end
+
+
+$r.render("assessmentOverviewTable")

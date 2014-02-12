@@ -61,7 +61,7 @@ public class ModuleConfiguration implements Serializable {
 	 * @param value
 	 */
 	public void set(String key, Object value) {
-		if (!(value instanceof Serializable) && value != null) throw new RuntimeException("ModuleConfiguration only accepts cloneable values.");
+		if (!(value instanceof Serializable) && value != null) throw new RuntimeException("ModuleConfiguration only accepts serializable values.");
 		config.put(key, value);
 	}
 

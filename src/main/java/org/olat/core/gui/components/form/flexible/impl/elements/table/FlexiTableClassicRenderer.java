@@ -26,8 +26,12 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -44,5 +48,39 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		super.render(renderer, target, source, ubu, translator, renderResult, args);
+	}
+
+	@Override
+	protected void renderHeaderSort(StringOutput sb, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, Translator translator) {
+		// sort is not defined
+		if (!fcm.isSortable() || fcm.getSortKey() == null) return;
+		
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		
+		Boolean asc = null;
+		String sortKey = fcm.getSortKey();
+		SortKey[] orderBy = ftE.getOrderBy();
+		if(orderBy != null && orderBy.length > 0) {
+			for(int i=orderBy.length; i-->0; ) {
+				if(sortKey.equals(orderBy[i].getKey())) {
+					asc = new Boolean(orderBy[i].isAsc());
+				}
+			}
+		}
+
+		Form theForm = ftE.getRootForm();
+		if(asc == null) {
+			sb.append("<a class='b_sorting' href=\"javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
+			  .append("\">").append(" ").append("</a>");
+		} else if(asc.booleanValue()) {
+			sb.append("<a class='b_sorting_asc' href=\"javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "desc")))
+			  .append("\">").append(" ").append("</a>");
+		} else {
+			sb.append("<a class='b_sorting_desc' href=\"javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
+			  .append("\">").append(" ").append("</a>");
+		}
 	}
 }

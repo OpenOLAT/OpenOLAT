@@ -1244,6 +1244,28 @@ create table o_lti_outcome (
    primary key (id)
 );
 
+create table o_cl_checkbox (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_checkboxid varchar(50) not null,
+   c_resname varchar(50) not null,
+   c_resid bigint not null,
+   c_ressubpath varchar(255) not null,
+   primary key (id)
+);
+
+create table o_cl_check (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_score float(65,30),
+   c_checked bit(0),
+   fk_identity_id bigint not null,
+   fk_checkbox_id bigint not null,
+   primary key (id)
+);
+
 create table o_ex_task (
    id bigint not null,
    creationdate datetime not null,
@@ -1948,6 +1970,8 @@ alter table o_im_roster_entry ENGINE = InnoDB;
 alter table o_im_preferences ENGINE = InnoDB;
 alter table o_ex_task ENGINE = InnoDB;
 alter table o_ex_task_modifier ENGINE = InnoDB;
+alter table o_cl_checkbox ENGINE = InnoDB;
+alter table o_cl_check ENGINE = InnoDB;
 
 
 -- rating
@@ -2131,6 +2155,11 @@ alter table o_ex_task add constraint idx_ex_task_ident_id foreign key (fk_identi
 alter table o_ex_task add constraint idx_ex_task_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
 alter table o_ex_task_modifier add constraint idx_ex_task_mod_ident_id foreign key (fk_identity_id) references o_bs_identity(id);
 alter table o_ex_task_modifier add constraint idx_ex_task_mod_task_id foreign key (fk_task_id) references o_ex_task(id);
+
+-- checklist
+alter table o_cl_check add constraint check_identity_ctx foreign key (fk_identity_id) references o_bs_identity (id);
+alter table o_cl_check add constraint check_box_ctx foreign key (fk_checkbox_id) references o_cl_checkbox (id);
+create index idx_checkbox_uuid_idx on o_cl_checkbox (c_checkboxid);
 
 -- lifecycle
 create index lc_pref_idx on o_lifecycle (persistentref);

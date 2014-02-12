@@ -70,16 +70,16 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class IdentityAssessmentEditController extends BasicController {
 	
 	private boolean mayEdit;
-	private VelocityContainer identityOverviewVC;
+	private final VelocityContainer identityAssessmentVC;
 	private Panel main;
 	private AssessmentEditController assessmentEditCtr;
 	private IdentityAssessmentOverviewController assessmentOverviewCtr;
 	private UserCourseEnvironment assessedUserCourseEnvironment;
 	private Link backLink;
 	private final StackedController stackPanel;
+	private final AssessedIdentityInfosController identityInfosCtrl;
 	
 	private OLATResourceable ores;
-	private final boolean headers;
 
 	/**
 	 * Constructor for the identity assessment overview controller
@@ -100,12 +100,19 @@ public class IdentityAssessmentEditController extends BasicController {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.mayEdit = mayEdit;
-		main = new Panel("main");
 		assessedUserCourseEnvironment = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 		this.ores = OresHelper.clone(course);
-		this.headers = headers;
-		doIdentityAssessmentOverview(ureq, true);		
-		putInitialPanel(main);
+
+		identityAssessmentVC = createVelocityContainer("identityassessment");
+		if(headers) {
+			backLink = LinkFactory.createLinkBack(identityAssessmentVC, this);
+			identityAssessmentVC.contextPut("user", assessedIdentity.getUser());
+		}
+		main = putInitialPanel(identityAssessmentVC);
+		
+		identityInfosCtrl = new AssessedIdentityInfosController(ureq, wControl, assessedIdentity);
+		identityAssessmentVC.put("identityInfos", identityInfosCtrl.getInitialComponent());
+		doIdentityAssessmentOverview(ureq, true);
 		
 		BusinessControl bc = getWindowControl().getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
@@ -152,23 +159,14 @@ public class IdentityAssessmentEditController extends BasicController {
 	}
 
 	private void doIdentityAssessmentOverview(UserRequest ureq, boolean initTable) {
-		if (identityOverviewVC == null) {
-			identityOverviewVC = createVelocityContainer("identityoverview");
-			
-			if(headers) {
-				backLink = LinkFactory.createLinkBack(identityOverviewVC, this);
-				Identity assessedIdentity = assessedUserCourseEnvironment.getIdentityEnvironment().getIdentity();
-				identityOverviewVC.contextPut("user", assessedIdentity.getUser());
-			}
-		}
 		if (initTable) {
 			assessedUserCourseEnvironment.getScoreAccounting().evaluateAll();
 			assessmentOverviewCtr = new IdentityAssessmentOverviewController(ureq, getWindowControl(), 
 					assessedUserCourseEnvironment, mayEdit, false, true);			
 			listenTo(assessmentOverviewCtr);
-			identityOverviewVC.put("assessmentOverviewTable", assessmentOverviewCtr.getInitialComponent());
+			identityAssessmentVC.put("assessmentOverviewTable", assessmentOverviewCtr.getInitialComponent());
 		}
-		main.setContent(identityOverviewVC);
+		main.setContent(identityAssessmentVC);
 	}
 
 	

@@ -20,16 +20,18 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -37,7 +39,7 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
+public abstract class AbstractFlexiTableRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
@@ -47,17 +49,18 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 
 		String id = ftC.getFormDispatchId();
-		sb.append("<div class=\"b_table_wrapper b_floatscrollbox\">");
+		sb.append("<div class=\"b_table_wrapper b_flexitable_wrapper b_floatscrollbox\">");
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 		sb.append("<table id=\"").append(id).append("\">");
 		
 		//render headers
-		renderHeaders(sb, ftE, translator);
+		renderHeaders(sb, ftC, translator);
 		//render body
+		sb.append("<tbody>");
 		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
-		sb.append("</table>");
+		sb.append("</tbody></table>");
 		
-		renderFooterButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
+		renderFooterButtons(renderer, sb, ftC, ubu, translator, renderResult, args);
 		sb.append("</div>");
 		
 		//source
@@ -70,12 +73,26 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 	
 	protected void renderHeaderButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
+		if(ftE.isFilterEnabled()) {
+			sb.append("<div class='b_table_filter'>");
+			SingleSelection filterEl = ftE.getFilterSelection();
+			String text = filterEl.getLabelText();
+			if(text != null && text.length() < 128) {
+				sb.append("<label>").append(text).append("</label>");
+			}
+			renderFormItem(renderer, sb, filterEl, ubu, translator, renderResult, args);
+			sb.append("</div>");
+		}
 		if(ftE.isSearchEnabled()) {
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
 		}
 		if(ftE.getExtendedSearchButton() != null) {
 			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+		}
+		
+		if(ftE.getExportButton() != null && ftE.isExportEnabled()) {
+			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, args);
 		}
 		if(ftE.getCustomButton() != null && ftE.isCustomizeColumns()) {
 			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, args);
@@ -90,9 +107,10 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		}
 	}
 	
-	protected void renderFooterButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+	protected void renderFooterButtons(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		
+
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		if(ftE.isSelectAllEnable()) {
 			String formName = ftE.getRootForm().getFormName();
 			String dispatchId = ftE.getFormDispatchId();
@@ -111,9 +129,14 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 			
 			sb.append("</div>");
 		}
+		
+		if(ftE.getRendererType() != FlexiTableRendererType.dataTables && ftE.getPageSize() > 0) {
+			renderPagesLinks(sb, ftC);
+		}
 	}
 	
-	protected void renderHeaders(StringOutput target, FlexiTableElementImpl ftE, Translator translator) {
+	protected void renderHeaders(StringOutput target, FlexiTableComponent ftC, Translator translator) {
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
 		      
@@ -130,21 +153,30 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		for(int i=0; i<cols; i++) {
 			FlexiColumnModel fcm = columnModel.getColumnModel(i);
 			if(ftE.isColumnModelVisible(fcm)) {
-				renderHeader(target, fcm, col++, cols, translator);
+				renderHeader(target, ftC, fcm, col++, cols, translator);
 			}
-  	}
+		}
 		
 		target.append("</tr></thead>");
 	}
 	
-	protected void renderHeader(StringOutput target, FlexiColumnModel fcm, int colPos, int numOfCols, Translator translator) {
-		String header = translator.translate(fcm.getHeaderKey());	
+	protected void renderHeader(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, int numOfCols, Translator translator) {
+		String header;
+		if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
+			header = fcm.getHeaderLabel();
+		} else {
+			header = translator.translate(fcm.getHeaderKey());
+		}
 		target.append("<th class=\"");
 		// add css class for first and last column to support older browsers
 		if (colPos == 0) target.append(" b_first_child");
 		if (colPos == numOfCols-1) target.append(" b_last_child");
-		target.append("\">").append(header).append("</th>");
+		target.append("\">").append(header);
+		renderHeaderSort(target, ftC, fcm, colPos, translator);
+		target.append("</th>");
 	}
+	
+	protected abstract void renderHeaderSort(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, Translator translator);
 	
 	protected void renderBody(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult) {
@@ -152,9 +184,6 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		String id = ftC.getFormDispatchId();
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
-
-		// build rows
-		target.append("<tbody>");
 		
 		// the really selected rowid (from the tabledatamodel)
 		int firstRow = ftE.getFirstRow();
@@ -169,7 +198,6 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 			}
 		}				
 		// end of table table
-		target.append("</tbody>");
 	}
 	
 	protected void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
@@ -241,22 +269,103 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 		}
 		target.append("</td>");
 	}
-
-
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
-			Translator translator, RenderingState rstate) {
-		//
-	}
-
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source,
-			RenderingState rstate) {
-		//
-	}
-	
 	
 
+	private void renderPagesLinks(StringOutput sb, FlexiTableComponent ftC) {
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		int pageSize = ftE.getPageSize();
+		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
+		int rows = dataModel.getRowCount();
+		
+		if(pageSize > 0 && rows > pageSize) {
+			sb.append("<div class='b_table_page'>");
 
+			int page = ftE.getPage();
+			int maxPage = (int)Math.ceil(((double) rows / (double) pageSize));
+	
+			renderPageBackLink(sb, ftC, page);
+			renderPageNumberLinks(sb, ftC, page, maxPage);
+			renderPageNextLink(sb, ftC, page, maxPage);
 
+			sb.append("</div>");
+		}
+	}
+	
+	private void renderPageBackLink(StringOutput sb, FlexiTableComponent ftC, int page) {
+		if (page <= 0) return;
+
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		Form theForm = ftE.getRootForm();
+		sb.append("<a class='b_table_backward' href=\"javascript:")
+		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("page", Integer.toString(page - 1))))
+		  .append("\">").append("&nbsp;").append("</a>");
+	}
+	
+	private void renderPageNextLink(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
+		if (page == maxPage) return;
+
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		Form theForm = ftE.getRootForm();
+		sb.append("<a class='b_table_forward' href=\"javascript:")
+		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("page", Integer.toString(page + 1))))
+		  .append("\">").append("&nbsp;").append("</a>");
+	}
+	
+	private void renderPageNumberLinks(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
+		if (maxPage < 12) {
+			for (int i=0; i<maxPage; i++) {
+				appendPagenNumberLink(sb, ftC, page, i);
+			}
+		} else {
+			int powerOf10 = String.valueOf(maxPage).length() - 1;
+			int maxStepSize = (int) Math.pow(10, powerOf10);
+			int stepSize = (int) Math.pow(10, String.valueOf(page).length() - 1);
+			boolean isStep = false;
+			int useEveryStep = 3;
+			int stepCnt = 0;
+			boolean isNear = false;
+			int nearleft = 5;
+			int nearright = 5;
+			if (page < nearleft) {
+				nearleft = page;
+				nearright += (nearright - nearleft);
+			} else if (page > (maxPage - nearright)) {
+				nearright = maxPage - page;
+				nearleft += (nearleft - nearright);
+			}
+			for (int i = 1; i <= maxPage; i++) {
+				// adapt stepsize if needed
+				stepSize = adaptStepIfNeeded(page, maxStepSize, stepSize, i);
+	
+				isStep = ((i % stepSize) == 0);
+				if (isStep) {
+					stepCnt++;
+					isStep = isStep && (stepCnt % useEveryStep == 0);
+				}
+				isNear = (i > (page - nearleft) && i < (page + nearright));
+				if (i == 1 || i == maxPage || isStep || isNear) {
+					appendPagenNumberLink(sb, ftC, page, i);
+				}
+			}
+		}
+	}
+	
+	private void appendPagenNumberLink(StringOutput sb, FlexiTableComponent ftC, int page, int i) {
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		Form theForm = ftE.getRootForm();
+		String cssClass = (page == i) ? "b_table_page b_table_page_active" : "b_table_page";
+		sb.append("<a class='").append(cssClass).append("' href=\"javascript:")
+		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("page", Integer.toString(i))))
+		  .append("\">").append(i+1).append("</a>");
+	}
+
+	private int adaptStepIfNeeded(final int page, final int maxStepSize, final int stepSize, final int i) {
+		int newStepSize = stepSize;
+		if (i < page && stepSize > 1 && ((page - i) / stepSize == 0)) {
+			newStepSize = stepSize / 10;
+		} else if (i > page && stepSize < maxStepSize && ((i - page) / stepSize == 9)) {
+			newStepSize = stepSize * 10;
+		}
+		return newStepSize;
+	}
 }

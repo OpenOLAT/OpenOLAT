@@ -1,4 +1,4 @@
-#if ($courseNode)
+#if ($courseNodeInfosVisible && $courseNode)
 	<div class="b_with_small_icon_left $courseNodeCss">$r.escapeHtml($courseNode.getShortTitle())
 	#if ($courseNode.getLongTitle() && $courseNode.getLongTitle() != "")
 		($r.escapeHtml($courseNode.getLongTitle()))
@@ -6,10 +6,13 @@
 	</div>
 	<hr />
 #end
+
+#if($titleVisible)
 <h4>$r.translate("detailview.title")</h4>
-$r.render("backLink")
-<br />
-<br />
+$r.render("backLink")<br /><br />
+#end
+
+#if($identityInfosVisible)
 <table class="b_table">
 	<tr>
 		<td>
@@ -49,6 +52,7 @@ $r.render("backLink")
 	</tr>
 </table>
 <hr />
+#end
 
 #if ($infoCoach && $infoCoach != "")
 	<div class="o_course_run_disclaimer">

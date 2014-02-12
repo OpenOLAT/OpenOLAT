@@ -139,6 +139,27 @@ public interface FlexiTableElement extends FormItem {
 	public void setSearchEnabled(boolean enable);
 	
 	/**
+	 * Is the filer enabled?
+	 * @return
+	 */
+	public boolean isFilterEnabled();
+	
+	/**
+	 * Set the values for the filter and will enable it.
+	 * @param keys
+	 * @param values
+	 */
+	public void setFilterKeysAndValues(String labelI18nKey, String[] keys, String[] values);
+	
+	/**
+	 * Enable export
+	 * @return True if export is enabled
+	 */
+	public boolean isExportEnabled();
+	
+	public void setExportEnabled(boolean enabled);
+	
+	/**
 	 * 
 	 * @param callout
 	 */

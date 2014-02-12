@@ -61,6 +61,9 @@ public class VisibleFlexiColumnsModel implements TableDataModel<FlexiColumnModel
 			case 0: // on/off indicator; true if column is visible
 				return (enabledCols.contains(new Integer(cd.getColumnIndex())) ? Boolean.TRUE : Boolean.FALSE);
 			case 1: // name of column
+				if(cd.getHeaderLabel() != null) {
+					return cd.getHeaderLabel();
+				}
 				return translator.translate(cd.getHeaderKey());
 			default:
 				return "ERROR";

@@ -1,0 +1,9 @@
+#foreach($checkbox in $checkboxList)
+	<div class="b_clearfix">
+		$r.render($checkbox.checkboxElName)
+		<b>$checkbox.title #if($checkbox.pointsAvailable) ($checkbox.points) #end</b>
+		#if($checkbox.description)
+			<p>$checkbox.description</p>
+		#end
+	</div>
+#end

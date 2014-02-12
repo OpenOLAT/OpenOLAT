@@ -1,0 +1,26 @@
+<h4>$r.translate("checklist")</h4>
+#if($dueDate)
+	<p>$r.translate("run.due.date.desc")</p>
+	<p>$r.translate("run.due.date",$r.formatDateAndTime($dueDate))</p>
+#end
+
+<div class="b_clearfix">
+	<div class="b_c25l"><h4>$r.translate("run.mark")</h4></div>
+	<div class="b_c75r"><h4>$r.translate("run.info")</h4></div>
+</div>
+#foreach($checkbox in $checkboxList)
+	<div class="b_clearfix">
+		<div class="b_c25l">
+			$r.render($checkbox.checkboxElName)
+		</div>
+		<div class="b_c75r">
+			<b>$checkbox.title #if($checkbox.pointsAvailable) ($checkbox.points) #end</b><br/>
+			#if($checkbox.description)
+				<p>$checkbox.description</p>
+			#end
+			#if($checkbox.checkbox.filename)
+				<p>Download: $r.render($checkbox.downloadName)</p>
+			#end
+		</div>
+	</div>
+#end

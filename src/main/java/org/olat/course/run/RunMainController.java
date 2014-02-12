@@ -740,6 +740,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 						return true;
 					}
 
+					@Override
+					public boolean mayArchiveScorm() {
+						return true;
+					}
+
+					@Override
+					public boolean mayArchiveChecklist() {
+						return true;
+					}
 				});
 				listenTo(currentToolCtr);
 				all.pushController(translate("command.openarchiver"), currentToolCtr);
@@ -1205,7 +1214,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		List<BusinessGroup> coachedGroups = cgm.getOwnedBusinessGroups(identity);
 		List<BusinessGroup> participatedGroups = cgm.getParticipatingBusinessGroups(identity);
 		List<BusinessGroup> waitingLists = cgm.getWaitingListGroups(identity);
-		uce.setGroupMemberships(coachedGroups, participatedGroups, waitingLists);
+		uce.setGroupMemberships(courseRepositoryEntry, coachedGroups, participatedGroups, waitingLists);
 	}
 
 	/**

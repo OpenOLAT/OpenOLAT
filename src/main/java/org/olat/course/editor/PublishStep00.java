@@ -149,6 +149,7 @@ class PublishStep00 extends BasicStep {
 		private PublishProcess publishManager2;
 		private MultipleSelectionElement multiSelectTree;
 		private StatusDescription[] sds;
+		private List<StatusDescription> updateNotes;
 		private FormLayoutContainer fic;
 		private StaticTextElement errorElement;
 		private FormLink selectAllLink;
@@ -162,10 +163,8 @@ class PublishStep00 extends BasicStep {
 
 		@Override
 		protected void doDispose() {
-		// nothing to dispose
-
+			// nothing to dispose
 		}
-
 		
 		@SuppressWarnings("synthetic-access")
 		@Override
@@ -185,7 +184,11 @@ class PublishStep00 extends BasicStep {
 				publishManager2.createPublishSetFor(asList);
 				addToRunContext("publishSetCreatedFor", multiSelectTree.getSelectedKeys());
 				//
-				sds = publishProcess.testPublishSet(ureq.getLocale());
+				PublishSetInformations set = publishProcess.testPublishSet(ureq.getLocale());
+				sds = set.getWarnings();
+				updateNotes = set.getUpdateInfos();
+				addToRunContext("updateNotes", updateNotes);
+				
 				//
 				boolean isValid = sds.length == 0;
 				if (isValid) {
@@ -200,9 +203,9 @@ class PublishStep00 extends BasicStep {
 				String errorTxt = getTranslator().translate("publish.notpossible.setincomplete");
 				String warningTxt = getTranslator().translate("publish.withwarnings");
 
-				String errors = "<UL>";
+				String errors = "<ul>";
 				int errCnt = 0;
-				String warnings = "<UL>";
+				String warnings = "<ul>";
 				for (int i = 0; i < sds.length; i++) {
 					StatusDescription description = sds[i];
 					String nodeId = sds[i].getDescriptionForUnit();
@@ -214,14 +217,14 @@ class PublishStep00 extends BasicStep {
 					String nodeName = publishProcess.getCourseEditorTreeModel().getCourseNode(nodeId).getShortName();
 					String isFor = "<b>" + nodeName + "</b><br/>";
 					if (description.isError()) {
-						errors += "<LI>" + isFor + description.getShortDescription(ureq.getLocale()) + "</LI>";
+						errors += "<li>" + isFor + description.getShortDescription(ureq.getLocale()) + "</li>";
 						errCnt++;
 					} else if (description.isWarning()) {
-						warnings += "<LI>" + isFor + description.getShortDescription(ureq.getLocale()) + "</LI>";
+						warnings += "<li>" + isFor + description.getShortDescription(ureq.getLocale()) + "</li>";
 					}
 				}
-				warnings += "</UL>";
-				errors += "</UL>";
+				warnings += "</ul>";
+				errors += "</ul>";
 				//
 				errorTxt += "<P/>" + errors;
 				warningTxt += "<P/>" + warnings;

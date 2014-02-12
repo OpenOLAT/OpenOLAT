@@ -772,10 +772,10 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
 		//import tasks
 		File fNodeImportDir = new File(importDirectory, getIdent());
-		File fTaskfolderDir = new File(FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course, this));
+		File fTaskfolderDir = new File(FolderConfig.getCanonicalRoot() + getTaskFolderPathRelToFolderRoot(course, this));
 		FileUtils.copyDirContentsToDir(fNodeImportDir, fTaskfolderDir, false, "import task course node");
 	
-		File fSolutionDir = new File(FolderConfig.getCanonicalRoot(), TACourseNode.getFoldernodesPathRelToFolderBase(course.getCourseEnvironment()) + "/" + getIdent());
+		File fSolutionDir = new File(FolderConfig.getCanonicalRoot(), getFoldernodesPathRelToFolderBase(course.getCourseEnvironment()) + "/" + getIdent());
 		fSolutionDir.mkdirs();
 		File fSolImportDir = new File(new File(importDirectory, "solutions"), getIdent());
 		FileUtils.copyDirContentsToDir(fSolImportDir, fSolutionDir, false, "import task course node solutions");
