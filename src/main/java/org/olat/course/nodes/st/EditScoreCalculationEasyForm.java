@@ -283,7 +283,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		
 		hasScore = uifactory.addCheckboxesHorizontal("scform.hasScore", formLayout, new String[]{"xx"}, new String[]{null}, null);
 		hasScore.select("xx", sc != null && sc.getSumOfScoreNodes() != null && sc.getSumOfScoreNodes().size() > 0);
-		hasScore.addActionListener(listener, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+		hasScore.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		
 		scoreNodeIdents = initNodeSelectionElement(
 				formLayout, "scform.scoreNodeIndents", sc, (sc == null ? null : sc.getSumOfScoreNodes()), nodeIdentList
@@ -294,7 +294,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		
 		hasPassed = uifactory.addCheckboxesHorizontal("scform.passedtype", formLayout, new String[]{"xx"}, new String[]{null}, null);
 		hasPassed.select("xx", sc != null && sc.getPassedType() != null && !sc.getPassedType().equals(ScoreCalculator.PASSED_TYPE_NONE));
-		hasPassed.addActionListener(listener, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+		hasPassed.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		
 		String[] passedTypeKeys = new String[] {
 				ScoreCalculator.PASSED_TYPE_CUTVALUE,
@@ -312,7 +312,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		} else {
 			passedType.select(ScoreCalculator.PASSED_TYPE_CUTVALUE, true);
 		}
-		passedType.addActionListener(listener, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+		passedType.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		
 		int cutinitval = 0;
 		if (sc != null) cutinitval = sc.getPassedCutValue();

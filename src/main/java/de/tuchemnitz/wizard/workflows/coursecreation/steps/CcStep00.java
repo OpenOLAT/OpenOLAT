@@ -182,10 +182,10 @@ public class CcStep00 extends BasicStep {
 			String[] cssClasses = new String[] { "cc_sp", "en_sp", "bc_sp", "fo_sp", "co_sp", };
 			// show checkbox
 			rightsChooser = FormUIFactory.getInstance().addCheckboxesVertical("rightsChooser", fic, keys, values, cssClasses, 1);
-			rightsChooser.addActionListener(this, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+			rightsChooser.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			// create edit button for enrollment and hide it
 			editButtonEnrollment = FormUIFactory.getInstance().addFormLink("cce.edit", fic);
-			editButtonEnrollment.addActionListener(this, FormEvent.ONCLICK);
+			editButtonEnrollment.addActionListener(FormEvent.ONCLICK);
 			editButtonEnrollment.setVisible(false);
 		}
 

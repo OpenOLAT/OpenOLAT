@@ -111,15 +111,15 @@ public class RegistrationAdminController extends FormBasicController {
 		formLayout.add(settingsContainer);
 		
 		registrationElement = uifactory.addCheckboxesHorizontal("enable.self.registration", "admin.enableRegistration", settingsContainer, enableRegistrationKeys, enableRegistrationValues, null);
-		registrationElement.addActionListener(this, FormEvent.ONCHANGE);
+		registrationElement.addActionListener(FormEvent.ONCHANGE);
 		registrationElement.select("on", registrationModule.isSelfRegistrationEnabled());
 		
 		registrationLoginElement = uifactory.addCheckboxesHorizontal("enable.registration.login", "admin.enableRegistrationLogin", settingsContainer, enableRegistrationKeys, enableRegistrationValues, null);
-		registrationLoginElement.addActionListener(this, FormEvent.ONCHANGE);
+		registrationLoginElement.addActionListener(FormEvent.ONCHANGE);
 		registrationLoginElement.select("on", registrationModule.isSelfRegistrationLoginEnabled());
 
 		registrationLinkElement = uifactory.addCheckboxesHorizontal("enable.registration.link", "admin.enableRegistrationLink", settingsContainer, enableRegistrationKeys, enableRegistrationValues, null);
-		registrationLinkElement.addActionListener(this, FormEvent.ONCHANGE);
+		registrationLinkElement.addActionListener(FormEvent.ONCHANGE);
 		registrationLinkElement.select("on", registrationModule.isSelfRegistrationLinkEnabled());
 		
 		String example = generateExampleCode();
@@ -144,7 +144,7 @@ public class RegistrationAdminController extends FormBasicController {
 		uifactory.addStaticTextElement("admin.registration.staticprop.error", null, translate("admin.registration.staticprop.desc"), staticPropContainer);
 		
 		staticPropElement = uifactory.addCheckboxesHorizontal("enable.staticprop", "admin.enableStaticProp", staticPropContainer, enableRegistrationKeys, enableRegistrationValues, null);
-		staticPropElement.addActionListener(this, FormEvent.ONCHANGE);
+		staticPropElement.addActionListener(FormEvent.ONCHANGE);
 		staticPropElement.select("on", registrationModule.isStaticPropertyMappingEnabled());
 
 		propertyElement = uifactory.addDropdownSingleselect("property", "admin.registration.property", staticPropContainer, propertyKeys, propertyValues, null);
@@ -153,7 +153,7 @@ public class RegistrationAdminController extends FormBasicController {
 		if(handler != null) {
 			propertyElement.select(handler.getName(), true);
 		}
-		propertyElement.addActionListener(this, FormEvent.ONCHANGE);
+		propertyElement.addActionListener(FormEvent.ONCHANGE);
 		
 		String propertyValue = registrationModule.getStaticPropertyMappingValue();
 		propertyValueElement = uifactory.addTextElement("admin.registration.prop.value", "admin.registration.propertyValue", 255, propertyValue, staticPropContainer);

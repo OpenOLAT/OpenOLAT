@@ -270,7 +270,7 @@ public class SearchForm extends FormBasicController{
 		externalRef.setVisible(managedEnabled);
 
 		typesSelection = uifactory.addCheckboxesVertical("search.limit.type", formLayout, new String[]{"xx"}, new String[]{""}, new String[]{null}, 1);
-		typesSelection.addActionListener(listener, FormEvent.ONCLICK);
+		typesSelection.addActionListener(FormEvent.ONCLICK);
 		typesSelection.setElementCssClass("o_sel_repo_search_type_limit");
 		
 		String[] typeKeys = getResources().toArray(new String[0]);

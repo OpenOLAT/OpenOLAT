@@ -195,7 +195,7 @@ public class EPArtefactViewController extends FormBasicController {
 			tblE.setEnabled(false);
 		} else {
 			flc.contextPut("tagclass", "b_tag_list");
-			//tblE.addActionListener(this, FormEvent.ONCHANGE);
+			//tblE.addActionListener(FormEvent.ONCHANGE);
 			Map<String, String> allUsersTags = ePFMgr.getUsersMostUsedTags(getIdentity(), -1);
 			tblE.setAutoCompleteContent(allUsersTags);
 		}
@@ -227,7 +227,7 @@ public class EPArtefactViewController extends FormBasicController {
 		
 		// create a delete button
 		deleteBtn = uifactory.addFormLink("delete.artefact", formLayout, "b_with_small_icon_left b_delete_icon");
-		deleteBtn.addActionListener(this, FormEvent.ONCLICK);
+		deleteBtn.addActionListener(FormEvent.ONCLICK);
 		if (viewOnlyMode || artefactChooseMode || artefactInClosedMap) deleteBtn.setVisible(false);
 		
 		// let the artefact-handler paint what is special for this kind of artefact
@@ -263,7 +263,7 @@ public class EPArtefactViewController extends FormBasicController {
 		// if in artefactChooseMode, add an "choose this" button
 		if(artefactChooseMode) {
 			chooseBtn = uifactory.addFormLink("choose.artefact", formLayout);
-			chooseBtn.addActionListener(this, FormEvent.ONCLICK);
+			chooseBtn.addActionListener(FormEvent.ONCLICK);
 		}
 		
 		flc.contextPut("artefact", artefact);

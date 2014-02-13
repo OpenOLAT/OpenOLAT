@@ -130,7 +130,7 @@ public class GuiDemoFlexiFormHideUnhide extends FormBasicController{
 		checkbox = uifactory.addCheckboxesVertical("checkbox", "guidemo.flexi.form.show", formLayout, new String[] { "ison" }, new String[] { "" }, null, 1);
 		checkbox.select("ison", true);
 		// register for on click event to hide/disable other elements
-		checkbox.addActionListener(listener, FormEvent.ONCLICK);
+		checkbox.addActionListener(FormEvent.ONCLICK);
 		//rule to hide/unhide is defined at the end
 		
 		firstName = uifactory.addTextElement("firstname", "guidemo.flexi.form.firstname", 256, personData.getFirstName(), formLayout);

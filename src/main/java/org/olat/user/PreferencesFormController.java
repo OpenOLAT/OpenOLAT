@@ -211,7 +211,7 @@ public class PreferencesFormController extends FormBasicController {
 		fontsize = uifactory.addDropdownSingleselect("form.fontsize", formLayout, cssFontsizeKeys, cssFontsizeValues, null);
 		fontsize.setElementCssClass("o_sel_home_settings_fontsize");
 		fontsize.select(prefs.getFontsize(), true);
-		fontsize.addActionListener(this, FormEvent.ONCHANGE);
+		fontsize.addActionListener(FormEvent.ONCHANGE);
 		
 		// Email notification interval
 		NotificationsManager nMgr = NotificationsManager.getInstance();

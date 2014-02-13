@@ -134,7 +134,7 @@ public class MailTemplateForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(!mandatoryEmail) {
 			sendMail = uifactory.addCheckboxesVertical("sendmail", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.sendMailSwitchElem")}, null, 1);
-			sendMail.addActionListener(listener, FormEvent.ONCLICK);
+			sendMail.addActionListener(FormEvent.ONCLICK);
 		}
 
 		subjectElem = uifactory.addTextElement("subjectElem", "mailtemplateform.subject", 128, template.getSubjectTemplate(), formLayout);

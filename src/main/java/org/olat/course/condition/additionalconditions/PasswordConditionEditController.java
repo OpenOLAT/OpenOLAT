@@ -57,7 +57,7 @@ public class PasswordConditionEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		passwordSwitch = uifactory.addCheckboxesHorizontal("passwordSwitch", "", formLayout, new String[]{"ison"}, new String[]{translate("password.field")}, new String[]{""});
-		passwordSwitch.addActionListener(this, FormEvent.ONCHANGE);
+		passwordSwitch.addActionListener(FormEvent.ONCHANGE);
 		
 		passwordField = uifactory.addTextElement("passwordField", "password.field", 30, "", formLayout);
 		passwordField.setExampleKey("password.example", null);

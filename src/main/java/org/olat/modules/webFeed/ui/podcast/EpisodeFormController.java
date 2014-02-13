@@ -263,7 +263,7 @@ public class EpisodeFormController extends FormBasicController {
 		file.setMandatory(true, "podcast.episode.mandatory");
 		File mediaFile = FeedManager.getInstance().getItemEnclosureFile(episode, podcast);
 		file.setInitialFile(mediaFile);
-		file.addActionListener(this, FormEvent.ONCHANGE);
+		file.addActionListener(FormEvent.ONCHANGE);
 		if(baseDir.getLocalSecurityCallback() != null && baseDir.getLocalSecurityCallback().getQuota() != null) {
 			Long uploadLimitKB = baseDir.getLocalSecurityCallback().getQuota().getUlLimitKB();
 			String supportAddr = WebappHelper.getMailConfig("mailQuota");

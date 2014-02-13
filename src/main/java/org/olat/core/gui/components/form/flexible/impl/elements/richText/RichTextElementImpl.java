@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.winmgr.JSCommand;
@@ -202,8 +201,8 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#addActionListener(org.olat.core.gui.control.Controller, int)
 	 */
 	@Override
-	public void addActionListener(Controller listener, int action) {
-		super.addActionListener(listener, action);
+	public void addActionListener(int action) {
+		super.addActionListener(action);
 		if (action == FormEvent.ONCHANGE && Settings.isDebuging()) {
 			log.warn("Do not use the onChange event in Textfields / TextAreas as this has often unwanted side effects. " +
 					"As the onchange event is only tiggered when you click outside a field or navigate with the tab to the next element " +
@@ -211,7 +210,4 @@ public class RichTextElementImpl extends AbstractTextElement implements
 					"the submit button first the onchange event will be triggered and you have to click twice to submit the data. ");
 		}
 	}
-	
-	
-
 }

@@ -290,10 +290,10 @@ class PublishStep00 extends BasicStep {
 				multiSelectTree.selectAll();
 				selectAllLink = uifactory.addFormLink("checkall", fic);
 				selectAllLink.setElementCssClass("o_sel_course_publish_selectall_cbb");
-				selectAllLink.addActionListener(this, FormEvent.ONCLICK);
+				selectAllLink.addActionListener(FormEvent.ONCLICK);
 				uncheckallLink = uifactory.addFormLink("uncheckall", fic);
 				uncheckallLink.setElementCssClass("o_sel_course_publish_deselectall_cbb");
-				uncheckallLink.addActionListener(this, FormEvent.ONCLICK);
+				uncheckallLink.addActionListener(FormEvent.ONCLICK);
 			} else {
 				// set message container - telling nothing to publish.
 				formLayout.add(FormLayoutContainer.createCustomFormLayout("nothingtopublish", getTranslator(), this.velocity_root

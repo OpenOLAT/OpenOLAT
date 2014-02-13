@@ -92,13 +92,13 @@ public class IMPreferenceController extends FormBasicController {
 		
 		toogleVisibility = uifactory.addCheckboxesVertical("online_list", "form.onlinelist", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		toogleVisibility.select("xx", imPrefs.isVisibleToOthers());
-		toogleVisibility.addActionListener(this, FormEvent.ONCHANGE);
+		toogleVisibility.addActionListener(FormEvent.ONCHANGE);
 		
 		statusList = uifactory.addRadiosVertical("status_list", "form.defaultstatus", formLayout, keys, values);
 		if(StringHelper.containsNonWhitespace(imPrefs.getRosterDefaultStatus())) {
 			statusList.select(imPrefs.getRosterDefaultStatus(), true);
 		}
-		statusList.addActionListener(this, FormEvent.ONCHANGE);
+		statusList.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	@Override

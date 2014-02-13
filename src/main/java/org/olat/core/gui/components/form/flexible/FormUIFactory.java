@@ -461,7 +461,7 @@ public class FormUIFactory {
 	
 	public TextElement addInlineTextElement(String name, String value, FormItemContainer formLayout, FormBasicController listener) {
 		TextElement ie = new TextElementImpl(null, name, value, TextElementImpl.HTML_INPUT_TYPE_TEXT, true);
-		ie.addActionListener(listener, FormEvent.ONCLICK);
+		ie.addActionListener(FormEvent.ONCLICK);
 		if(listener != null){
 			formLayout.add(ie);
 		}
@@ -470,7 +470,7 @@ public class FormUIFactory {
 	
 	public IntegerElement addInlineIntegerElement(String name, int initVal, FormItemContainer formLayout, FormBasicController listener){
 		IntegerElement iie = new IntegerElementImpl(name, initVal, true);
-		iie.addActionListener(listener, FormEvent.ONCLICK);
+		iie.addActionListener(FormEvent.ONCLICK);
 		if(listener != null){
 			formLayout.add(iie);
 		}

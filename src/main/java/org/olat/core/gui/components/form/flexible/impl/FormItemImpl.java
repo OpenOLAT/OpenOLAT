@@ -39,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleT
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErrorText;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleLabelText;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
@@ -464,34 +463,12 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormItem#addActionListenerFor(org.olat.core.gui.control.Controller, int)
 	 */
-	public void addActionListener(Controller listener, int action) {
-		/*
-		 * for simplicity only one action and listener per item (at the moment)
-		 */
+	@Override
+	public void addActionListener(int action) {
 		this.action = action;
-		//for (int i = 0; i < FormEvent.ON_DOTDOTDOT.length; i++) {
-			//if(action - FormEvent.ON_DOTDOTDOT[i] == 0){
-				//String key = String.valueOf(FormEvent.ON_DOTDOTDOT[i]);
-				//if(actionListeners.containsKey(key)){
-					//List listeners = (List)actionListeners.get(key);
-					//if(!listeners.contains(listener)){
-						//listeners.add(listener);
-					//}
-				//}else{
-					//String key = String.valueOf(this.action);
-					//List listeners = new ArrayList(1);
-					//actionListeners.put(key, listeners);
-				//}
-			//}
-			//
-			//action = action - FormEvent.ON_DOTDOTDOT[i];
-		//}
 	}
-	
-	/*public List getActionListenersFor(int event){
-		return (List)actionListeners.get(String.valueOf(event));
-	}*/
 
+	@Override
 	public int getAction() {
 		return action;
 	}

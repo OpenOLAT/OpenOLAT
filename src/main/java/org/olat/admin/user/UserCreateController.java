@@ -209,7 +209,7 @@ class NewUserForm extends FormBasicController {
 			String[] authValues = {translate("new.form.auth.true")};
 			authCheckbox = uifactory.addCheckboxesHorizontal("new.form.auth", formLayout, authKeys, authValues, null);
 			authCheckbox.select("xx", showPasswordFields);
-			authCheckbox.addActionListener(this, FormEvent.ONCLICK);
+			authCheckbox.addActionListener(FormEvent.ONCLICK);
 
 			// if OLAT authentication is used, use the pwd below
 			psw1TextElement = uifactory.addPasswordElement(PASSWORD_NEW1, "new.form.password.new1", 255, "", formLayout);

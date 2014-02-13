@@ -222,7 +222,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			} else {
 				selectAttributeType(pref.getAttribute(), pref.getValue());
 			}
-			attributeChoice.addActionListener(ExtendedSearchController.this, FormEvent.ONCHANGE);
+			attributeChoice.addActionListener(FormEvent.ONCHANGE);
 			attributeChoice.setUserObject(this);
 			flc.add(attributeChoice.getName(), attributeChoice);
 			addButton = uifactory.addFormLink("add-" + id, "add", null, flc, Link.BUTTON);

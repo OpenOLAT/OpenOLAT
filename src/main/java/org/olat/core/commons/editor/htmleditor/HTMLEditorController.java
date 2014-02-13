@@ -240,11 +240,11 @@ public class HTMLEditorController extends FormBasicController {
 			//
 			// The buttons
 			save = uifactory.addFormLink("savebuttontext", formLayout, Link.BUTTON);
-			save.addActionListener(this, FormEvent.ONCLICK);
+			save.addActionListener(FormEvent.ONCLICK);
 			cancel = uifactory.addFormLink("cancel", formLayout, Link.BUTTON);
-			cancel.addActionListener(this, FormEvent.ONCLICK);
+			cancel.addActionListener(FormEvent.ONCLICK);
 			saveClose = uifactory.addFormLink("saveandclosebuttontext", formLayout, Link.BUTTON);
-			saveClose.addActionListener(this, FormEvent.ONCLICK);
+			saveClose.addActionListener(FormEvent.ONCLICK);
 			//
 			// Add some file metadata		
 			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();

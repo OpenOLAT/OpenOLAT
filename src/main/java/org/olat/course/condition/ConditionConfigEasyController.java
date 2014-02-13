@@ -741,7 +741,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		attributeSwitch = uifactory.addCheckboxesVertical("attributeSwitch", "form.easy.attributeSwitch", formLayout, new String[] { "ison" }, new String[] { "" }, null, 1);
 		attributeSwitch.select("ison", validatedCondition.getAttributeConditions()!=null);
 		// register for on click event to hide/disable other elements
-		attributeSwitch.addActionListener(listener, FormEvent.ONCLICK);
+		attributeSwitch.addActionListener(FormEvent.ONCLICK);
 		// rules are later added
 
 		// add attribute connector: AND or OR
@@ -1083,7 +1083,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		coachExclusive.select("ison", coachesAndAdminsInitValue);
 		
 		// register for on click event to hide/disable other elements
-		coachExclusive.addActionListener(listener, FormEvent.ONCLICK);
+		coachExclusive.addActionListener(FormEvent.ONCLICK);
 		// rules are later added
 	}
 
@@ -1147,7 +1147,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		} else {
 			dateSwitch.select("ison", false);
 		}
-		dateSwitch.addActionListener(listener, FormEvent.ONCLICK);
+		dateSwitch.addActionListener(FormEvent.ONCLICK);
 	}
 
 	/**
@@ -1171,7 +1171,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		} else {
 			groupSwitch.select("ison", false);
 		}
-		groupSwitch.addActionListener(listener, FormEvent.ONCLICK);
+		groupSwitch.addActionListener(FormEvent.ONCLICK);
 		
 		//groups
 		groupChooseSubContainer = FormLayoutContainer.createHorizontalFormLayout("groupChooseSubContainer", getTranslator());
@@ -1214,7 +1214,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		int cutInitValue = 0;
 		
 		assessmentSwitch = uifactory.addCheckboxesHorizontal("assessmentSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.assessmentSwitch") }, null);
-		assessmentSwitch.addActionListener(listener, FormEvent.ONCLICK);
+		assessmentSwitch.addActionListener(FormEvent.ONCLICK);
 		
 
 		boolean selectedNodeIsInList = false;
@@ -1276,7 +1276,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			}
 		};
 		assessmentTypeSwitch.setLabel("form.easy.assessmentSwitch.type", null);
-		assessmentTypeSwitch.addActionListener(listener, FormEvent.ONCLICK);
+		assessmentTypeSwitch.addActionListener(FormEvent.ONCLICK);
 
 		if (nodePassedInitVal != null) {
 			// has a node configured

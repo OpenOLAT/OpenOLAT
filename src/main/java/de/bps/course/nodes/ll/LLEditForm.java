@@ -323,7 +323,7 @@ public class LLEditForm extends FormBasicController {
 				return true;
 			}
 		});
-		lTarget.addActionListener(this, FormEvent.ONCHANGE);
+		lTarget.addActionListener(FormEvent.ONCHANGE);
 		lTarget.setUserObject(link);
 		lTargetInputList.add(index, lTarget);
 		//add html target

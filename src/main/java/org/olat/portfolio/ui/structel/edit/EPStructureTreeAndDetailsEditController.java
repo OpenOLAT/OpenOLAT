@@ -102,7 +102,7 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 				i++;
 			}		
 			mapStyle = uifactory.addDropdownSingleselect("map.style", formLayout, theKeys, theValues, theCssClasses);
-			mapStyle.addActionListener(this, FormEvent.ONCHANGE);
+			mapStyle.addActionListener(FormEvent.ONCHANGE);
 			String givenStyle = ((EPStructureElement)rootStructure).getStyle();
 			if (StringHelper.containsNonWhitespace(givenStyle)){
 				mapStyle.select(givenStyle, true);

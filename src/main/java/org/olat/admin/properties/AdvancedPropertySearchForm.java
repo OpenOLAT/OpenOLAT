@@ -148,7 +148,7 @@ public class AdvancedPropertySearchForm extends FormBasicController {
 		// Don't use submit button, form should not be marked as dirty since this is
 		// not a configuration form but only a search form (OLAT-5626)
 		searchButton = uifactory.addFormLink("search", formLayout, Link.BUTTON);
-		searchButton.addActionListener(this, FormEvent.ONCLICK);
+		searchButton.addActionListener(FormEvent.ONCLICK);
 		
 		resourceTypeId.setRegexMatchCheck("\\d*", "error.search.form.onlynumbers");
 	}

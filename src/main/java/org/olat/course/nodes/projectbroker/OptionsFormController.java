@@ -88,26 +88,26 @@ public class OptionsFormController extends FormBasicController {
 		nbrOfAttendees = uifactory.addIntegerElement("form.options.number.of.participants.per.topic_nbr", nbrOfParticipantsValue, formLayout);
 		nbrOfAttendees.setMinValueCheck(0, null);
 		nbrOfAttendees.setDisplaySize(3);
-		nbrOfAttendees.addActionListener(listener, FormEvent.ONCHANGE);
+		nbrOfAttendees.addActionListener(FormEvent.ONCHANGE);
 		if (nbrOfParticipantsValue == ProjectBrokerModuleConfiguration.NBR_PARTICIPANTS_UNLIMITED) {
 			nbrOfAttendees.setVisible(false);
 			selectionLimitedAttendees.select(keys[0], false);
 		} else {
 			selectionLimitedAttendees.select(keys[0], true);
 		}
-		selectionLimitedAttendees.addActionListener(listener, FormEvent.ONCLICK);
+		selectionLimitedAttendees.addActionListener(FormEvent.ONCLICK);
 		
 		final Boolean selectionAcceptValue = config.isAcceptSelectionManually();
 		selectionAccept = uifactory.addCheckboxesVertical("form.options.selection.accept", formLayout, keys, values, null, 1);
 		selectionAccept.select(keys[0], selectionAcceptValue);
-		selectionAccept.addActionListener(this, FormEvent.ONCLICK);
+		selectionAccept.addActionListener(FormEvent.ONCLICK);
 
 		final Boolean autoSignOut = config.isAutoSignOut();
 		selectionAutoSignOut = uifactory.addCheckboxesVertical("form.options.auto.sign.out", formLayout, keys, values, null, 1);
 		selectionAutoSignOut.select(keys[0], autoSignOut);
 		// enable auto-sign-out only when 'accept-selection' is enabled
 		selectionAutoSignOut.setVisible(selectionAcceptValue);
-		selectionAutoSignOut.addActionListener(this, FormEvent.ONCLICK);
+		selectionAutoSignOut.addActionListener(FormEvent.ONCLICK);
 		
 		uifactory.addFormSubmitButton("save", formLayout);
 	}

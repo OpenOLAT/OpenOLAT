@@ -390,7 +390,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		// use this sorted keys-values
 		final SingleSelection attribute = uifactory.addDropdownSingleselect(PRE_ATTRIBUTE + rowCreationCounter, null, flc, attrKeys, guiTranslatedAttKeys, null);
 		attribute.setUserObject(Integer.valueOf(rowPos));
-		attribute.addActionListener(this, FormEvent.ONCHANGE);
+		attribute.addActionListener(FormEvent.ONCHANGE);
 		columnAttribute.add(rowPos, attribute.getName());
 
 		// 2b) Operator selector

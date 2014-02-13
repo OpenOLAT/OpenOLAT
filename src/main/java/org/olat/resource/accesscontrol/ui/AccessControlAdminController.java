@@ -96,7 +96,7 @@ public class AccessControlAdminController extends FormBasicController {
 		methods.select("token.method", acModule.isTokenEnabled());
 		methods.select("paypal.method", acModule.isPaypalEnabled());
 		methods.setEnabled(acModule.isEnabled());
-		methods.addActionListener(this, FormEvent.ONCHANGE);
+		methods.addActionListener(FormEvent.ONCHANGE);
 		
 		uifactory.addSpacerElement("itgirl", formLayout, false);
 		

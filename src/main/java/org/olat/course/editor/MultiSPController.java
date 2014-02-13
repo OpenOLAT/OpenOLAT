@@ -135,7 +135,7 @@ public class MultiSPController extends FormBasicController {
 		nodeSelection.setLabel("multi.sps.file", null);
 		
 		nodeSelection.setUserObject(node);
-		nodeSelection.addActionListener(this, FormEvent.ONCLICK);
+		nodeSelection.addActionListener(FormEvent.ONCLICK);
 		nodeSelections.add(nodeSelection);
 		identToSelectionMap.put(node.getId(), nodeSelection);
 		layoutcont.add(nodeSelection.getComponent().getComponentName(), nodeSelection);

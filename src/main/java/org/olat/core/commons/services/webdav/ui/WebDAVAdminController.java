@@ -58,16 +58,16 @@ public class WebDAVAdminController extends FormBasicController {
 		String[] values = new String[] { getTranslator().translate("webdav.on") };
 		enableModuleEl = uifactory.addCheckboxesHorizontal("webdavModule", "webdav.module", formLayout, new String[]{"xx"}, values, null);
 		enableModuleEl.select("xx", enabled);
-		enableModuleEl.addActionListener(this, FormEvent.ONCHANGE);
+		enableModuleEl.addActionListener(FormEvent.ONCHANGE);
 		
 		enableLinkEl = uifactory.addCheckboxesHorizontal("webdavLink", "webdav.link", formLayout, new String[]{"xx"}, values, null);
 		enableLinkEl.select("xx", webDAVModule.isLinkEnabled());
-		enableLinkEl.addActionListener(this, FormEvent.ONCHANGE);
+		enableLinkEl.addActionListener(FormEvent.ONCHANGE);
 		enableLinkEl.setEnabled(enabled);
 		
 		enableDigestEl = uifactory.addCheckboxesHorizontal("webdavDigest", "webdav.digest", formLayout, new String[]{"xx"}, values, null);
 		enableDigestEl.select("xx", webDAVModule.isDigestAuthenticationEnabled());
-		enableDigestEl.addActionListener(this, FormEvent.ONCHANGE);
+		enableDigestEl.addActionListener(FormEvent.ONCHANGE);
 		enableDigestEl.setEnabled(enabled);
 	}
 

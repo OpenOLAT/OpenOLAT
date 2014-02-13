@@ -100,7 +100,7 @@ public class SystemRegistrationAdminController extends FormBasicController {
 		// Add website
 		publishWebSiteSelection = uifactory.addCheckboxesVertical("registration.publishWebSiteSelection", null,  formLayout,
 				new String[] { YES }, new String[] { "" }, null, 1);
-		publishWebSiteSelection.addActionListener(this, FormEvent.ONCLICK);
+		publishWebSiteSelection.addActionListener(FormEvent.ONCLICK);
 		boolean publishWebsiteConfig = registrationModule.isPublishWebsite();
 		publishWebSiteSelection.select(YES, publishWebsiteConfig);
 		flc.contextPut("isRegisteredWeb", Boolean.valueOf(publishWebsiteConfig));
@@ -108,7 +108,7 @@ public class SystemRegistrationAdminController extends FormBasicController {
 		// Add website description
 		String webSiteDesc = registrationModule.getWebsiteDescription();
 		webSiteDescription = uifactory.addTextAreaElement("registration.webSiteDescription", 5, 60, webSiteDesc, formLayout);
-		webSiteDescription.addActionListener(this, FormEvent.ONCHANGE);
+		webSiteDescription.addActionListener(FormEvent.ONCHANGE);
 		flc.contextPut("webSiteURL", Settings.getServerContextPathURI());
 		RulesFactory.createHideRule(publishWebSiteSelection, null, webSiteDescription, formLayout);
 		RulesFactory.createShowRule(publishWebSiteSelection, YES, webSiteDescription, formLayout);
@@ -124,7 +124,7 @@ public class SystemRegistrationAdminController extends FormBasicController {
 		// Add announce list
 		addToAnnounceListSelection = uifactory.addCheckboxesVertical("registration.addToAnnounceListSelection", null, formLayout,
 				new String[] { YES }, new String[] { "" }, null, 1);
-		addToAnnounceListSelection.addActionListener(this, FormEvent.ONCLICK);
+		addToAnnounceListSelection.addActionListener(FormEvent.ONCLICK);
 		addToAnnounceListSelection.select(YES, registrationModule.isNotifyReleases());
 		//
 		// Add email field

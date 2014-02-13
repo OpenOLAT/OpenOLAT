@@ -83,10 +83,10 @@ public class DateChooserController extends FormBasicController {
 		//FIXME: Can't use time format for now, only date format due to bug OLAT-4736
 		// dateChooser.setDateChooserTimeEnabled(true);
 		dateChooser.setDate(initDate);
-		dateChooser.addActionListener(this, FormEvent.ONCHANGE);
+		dateChooser.addActionListener(FormEvent.ONCHANGE);
 		
 		typeSelection = uifactory.addDropdownSingleselect("news.type", "news.type", formLayout, typeKeys, typeValues, null);
-		typeSelection.addActionListener(this, FormEvent.ONCHANGE);
+		typeSelection.addActionListener(FormEvent.ONCHANGE);
 		typeSelection.select("all", true);
 		
 		//link = uifactory.addFormLink("news.since.link", formLayout);

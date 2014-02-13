@@ -151,7 +151,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		MultipleSelectionElement el = uifactory
 				.addCheckboxesHorizontal(boxId, null, formLayout, onKeys, values, null);
 		el.setEnabled(canCheck && !readOnly);
-		el.addActionListener(this, FormEvent.ONCHANGE);
+		el.addActionListener(FormEvent.ONCHANGE);
 
 		FormLink downloadLink = null;
 		if(StringHelper.containsNonWhitespace(checkbox.getFilename())) {

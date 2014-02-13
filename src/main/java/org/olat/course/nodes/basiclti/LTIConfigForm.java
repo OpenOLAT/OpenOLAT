@@ -282,7 +282,7 @@ public class LTIConfigForm extends FormBasicController {
 		String[] assessableKeys = new String[]{ "on" };
 		String[] assessableValues = new String[]{ "" };
 		isAssessableEl = uifactory.addCheckboxesHorizontal("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues, null);
-		isAssessableEl.addActionListener(this, FormEvent.ONCHANGE);
+		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
 		if(isAssessable) {
 			isAssessableEl.select("on", true);
 		}
@@ -370,7 +370,7 @@ public class LTIConfigForm extends FormBasicController {
 		
 		SingleSelection typeEl = uifactory.addDropdownSingleselect("typ_" + guid, customParamLayout, customTypeKeys, customTypeValues, null);
 		typeEl.setUserObject(pair);
-		typeEl.addActionListener(this, FormEvent.ONCHANGE);
+		typeEl.addActionListener(FormEvent.ONCHANGE);
 		pair.setCustomType(typeEl);
 		
 		boolean userprops = value != null && value.startsWith(LTIManager.USER_PROPS_PREFIX);

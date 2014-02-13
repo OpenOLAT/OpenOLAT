@@ -164,11 +164,11 @@ public class CPMDFlexiForm extends FormBasicController {
 
 		// Submit buttons
 		lSave = new FormLinkImpl("lSave", "lSave", "submit", Link.BUTTON);
-		lSave.addActionListener(this, FormEvent.ONCLICK);
+		lSave.addActionListener(FormEvent.ONCLICK);
 
 		lSaveandclose = new FormLinkImpl("lSaveandclose", "lSaveandclose", "saveandclose", Link.BUTTON);
 
-		lSaveandclose.addActionListener(this, FormEvent.ONCLICK);
+		lSaveandclose.addActionListener(FormEvent.ONCLICK);
 		buttonContainer.add(lSave);
 		buttonContainer.add(lSaveandclose);
 

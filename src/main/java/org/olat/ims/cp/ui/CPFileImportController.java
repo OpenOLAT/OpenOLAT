@@ -116,7 +116,7 @@ public class CPFileImportController extends FormBasicController {
 
 		file = uifactory.addFileElement("file", this.flc);
 		file.setLabel("cpfileuploadcontroller.import.text", null);
-		file.addActionListener(this, FormEvent.ONCHANGE);
+		file.addActionListener(FormEvent.ONCHANGE);
 		
 		Long uploadLimitKb = getUploadLimitKb();
 		if(uploadLimitKb != null) {

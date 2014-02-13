@@ -293,7 +293,7 @@ public class SitesConfigurationController extends FormBasicController {
 			String id = config.getId();
 			
 			secCallbackEl = uifactory.addDropdownSingleselect("site.security." + id, "site.security", formLayout, secKeys, secValues, null);
-			secCallbackEl.addActionListener(SitesConfigurationController.this, FormEvent.ONCHANGE);
+			secCallbackEl.addActionListener(FormEvent.ONCHANGE);
 			secCallbackEl.setUserObject(this);
 			
 			boolean needAlt = false;
@@ -308,10 +308,10 @@ public class SitesConfigurationController extends FormBasicController {
 			}
 			
 			enableSiteEl = uifactory.addCheckboxesHorizontal("site.enable." + id, null, formLayout, new String[]{ "x" }, new String[]{ "" }, null);
-			enableSiteEl.addActionListener(SitesConfigurationController.this, FormEvent.ONCHANGE);
+			enableSiteEl.addActionListener(FormEvent.ONCHANGE);
 			
 			altControllerEl = uifactory.addDropdownSingleselect("site.alternative." + id, "site.alternative", formLayout, altKeys, altValues, null);
-			altControllerEl.addActionListener(SitesConfigurationController.this, FormEvent.ONCHANGE);
+			altControllerEl.addActionListener(FormEvent.ONCHANGE);
 			altControllerEl.setVisible(needAlt);
 			if(StringHelper.containsNonWhitespace(config.getAlternativeControllerBeanId())) {
 				for(String altKey:altKeys) {

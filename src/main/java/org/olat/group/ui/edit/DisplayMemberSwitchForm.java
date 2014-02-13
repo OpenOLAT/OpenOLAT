@@ -157,13 +157,13 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 
 		downloadList = uifactory.addCheckboxesVertical("DownloadList", "chkBox.open.downloadList", formLayout, new String[]{"download_list"}, new String[]{""}, null, 1);
 
-		showOwners.addActionListener(this, FormEvent.ONCLICK);
-		showPartips.addActionListener(this, FormEvent.ONCLICK);
-		showWaitingList.addActionListener(this, FormEvent.ONCLICK);
-		openOwners.addActionListener(this, FormEvent.ONCLICK);
-		openPartips.addActionListener(this, FormEvent.ONCLICK);
-		openWaitingList.addActionListener(this, FormEvent.ONCLICK);
-		downloadList.addActionListener(this, FormEvent.ONCLICK);
+		showOwners.addActionListener(FormEvent.ONCLICK);
+		showPartips.addActionListener(FormEvent.ONCLICK);
+		showWaitingList.addActionListener(FormEvent.ONCLICK);
+		openOwners.addActionListener(FormEvent.ONCLICK);
+		openPartips.addActionListener(FormEvent.ONCLICK);
+		openWaitingList.addActionListener(FormEvent.ONCLICK);
+		downloadList.addActionListener(FormEvent.ONCLICK);
 	}
 
 	@Override

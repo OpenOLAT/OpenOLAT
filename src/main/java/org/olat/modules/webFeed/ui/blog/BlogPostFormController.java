@@ -194,7 +194,7 @@ public class BlogPostFormController extends FormBasicController {
 
 		uifactory.addFormSubmitButton("feed.publish", buttonLayout);
 		draftLink = uifactory.addFormLink("feed.save.as.draft", buttonLayout, Link.BUTTON);
-		draftLink.addActionListener(this, FormEvent.ONCLICK);
+		draftLink.addActionListener(FormEvent.ONCLICK);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 }

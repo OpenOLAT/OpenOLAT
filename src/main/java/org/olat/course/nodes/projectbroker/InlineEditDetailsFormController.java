@@ -237,7 +237,7 @@ public class InlineEditDetailsFormController extends FormBasicController {
 		if (project.getAttachmentFileName() != null && !project.getAttachmentFileName().equals("")) {
 			attachmentFileName.setInitialFile(new File(project.getAttachmentFileName()));
 		}
-		attachmentFileName.addActionListener(this, FormEvent.ONCHANGE);
+		attachmentFileName.addActionListener(FormEvent.ONCHANGE);
 
 		uifactory.addFormSubmitButton("save", formLayout);
 	}

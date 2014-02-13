@@ -95,7 +95,7 @@ public class CourseSiteAdminController extends FormBasicController {
 		setFormTitle("admin.menu.title");
 
 		enableToolbar = uifactory.addCheckboxesHorizontal("site.enable.toolbar", "site.enable.toolbar", formLayout, new String[]{ "x" }, new String[]{ "" }, null);
-		enableToolbar.addActionListener(this, FormEvent.ONCHANGE);
+		enableToolbar.addActionListener(FormEvent.ONCHANGE);
 		if(siteConfiguration.isToolbar()) {
 			enableToolbar.select("x", true);
 		}

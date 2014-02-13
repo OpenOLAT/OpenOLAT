@@ -208,7 +208,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		} else {
 			selectionMaxMembers.select(keys[0], true);
 		}
-		selectionMaxMembers.addActionListener(listener, FormEvent.ONCLICK);
+		selectionMaxMembers.addActionListener(FormEvent.ONCLICK);
 		uifactory.addSpacerElement("spacer_1", formLayout, false);
 
 		// customfields
@@ -291,7 +291,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			attachmentFileName.setInitialFile(new File(project.getAttachmentFileName()));
 			removeAttachmentLink = uifactory.addFormLink("detailsform.remove.attachment", formLayout, Link.BUTTON_XSMALL);
 		}
-		attachmentFileName.addActionListener(this, FormEvent.ONCHANGE);
+		attachmentFileName.addActionListener(FormEvent.ONCHANGE);
 
 		mailNotification = uifactory.addCheckboxesHorizontal("detailsform.mail.notification.label", formLayout, keys, values, null);
 		mailNotification.select(keys[0], project.isMailNotificationEnabled());

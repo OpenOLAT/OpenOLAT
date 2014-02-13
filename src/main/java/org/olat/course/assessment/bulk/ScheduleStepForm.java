@@ -65,7 +65,7 @@ public class ScheduleStepForm extends StepFormBasicController {
 				translate("schedule.immediately"), translate("schedule.delayed")
 		};
 		scheduleTypeEl = uifactory.addRadiosVertical("schedule.type", formLayout, typeKeys, typeValues);
-		scheduleTypeEl.addActionListener(this, FormEvent.ONCHANGE);
+		scheduleTypeEl.addActionListener(FormEvent.ONCHANGE);
 		
 		boolean delayed;
 		Date scheduleDate;

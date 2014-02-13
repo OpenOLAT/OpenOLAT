@@ -197,7 +197,7 @@ public class GlossaryFlexionController extends FormBasicController {
 			if (Arrays.asList(msKeys).contains(morphServicePresetIdent)){
 				selectMS.select(morphServicePresetIdent, true);
 			}
-			selectMS.addActionListener(listener, FormEvent.ONCHANGE);
+			selectMS.addActionListener(FormEvent.ONCHANGE);
 			
 			flexButton = uifactory.addFormLink("flexions.get.button", formLayout, Link.BUTTON);
 		}		
@@ -218,7 +218,7 @@ public class GlossaryFlexionController extends FormBasicController {
 			}
 			existingFlexions = uifactory.addCheckboxesVertical("existing.flexions.checkboxes", null, formLayout, flexionKeys, flexionValues, flexionCSS,
 					1);
-			existingFlexions.addActionListener(listener, FormEvent.ONCLICK);
+			existingFlexions.addActionListener(FormEvent.ONCLICK);
 			for (String flexKey : existingKeys) {
 				existingFlexions.select(flexKey, true);
 			}

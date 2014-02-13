@@ -35,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.elements.InlineTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.RenderingState;
@@ -337,8 +336,8 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	 * TODO: add an onkeypress listener which will post do background instead, this could then also be used for an autocomplete textfield
 	 */
 	@Override
-	public void addActionListener(Controller listener, int action) {
-		super.addActionListener(listener, action);
+	public void addActionListener(int action) {
+		super.addActionListener(action);
 		if (action == FormEvent.ONCHANGE && Settings.isDebuging()) {
 			log.warn("Do not use the onChange event in Textfields / TextAreas as this has often unwanted side effects. " +
 					"As the onchange event is only tiggered when you click outside a field or navigate with the tab to the next element " +

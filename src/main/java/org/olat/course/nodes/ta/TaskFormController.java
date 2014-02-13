@@ -115,7 +115,7 @@ public class TaskFormController extends FormBasicController {
 		} else {
 			this.type.select(TaskController.TYPE_MANUAL, true);
 		}
-		this.type.addActionListener(this, FormEvent.ONCLICK);
+		this.type.addActionListener(FormEvent.ONCLICK);
 
 		// add the preview radio buttons
 		Boolean taskPreview = Boolean.valueOf(false);// per default no preview
@@ -131,7 +131,7 @@ public class TaskFormController extends FormBasicController {
 		} else {
 			this.preview.select(TaskController.WITHOUT_PREVIEW, true);
 		}
-		this.preview.addActionListener(this, FormEvent.ONCLICK);
+		this.preview.addActionListener(FormEvent.ONCLICK);
 		
 	  // add the deselect radio buttons
 		Boolean taskDeselect = Boolean.valueOf(false);// per default no deselect possible

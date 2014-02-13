@@ -101,7 +101,7 @@ public class EPFilterSelectController extends FormBasicController {
 			formLayout.add(selection);
 			
 			filterSel = uifactory.addDropdownSingleselect("filter.select", selection, theKeys, theValues, null);
-			filterSel.addActionListener(this, FormEvent.ONCHANGE);
+			filterSel.addActionListener(FormEvent.ONCHANGE);
 			filterSel.select(presetFilterIndex, true);
 			adaptBtn = uifactory.addFormLink("filter.adapt", selection);
 			adaptBtn.setVisible(!presetFilterIndex.equals("0"));

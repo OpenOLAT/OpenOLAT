@@ -65,15 +65,15 @@ public class CatalogAdminController extends FormBasicController {
 
 		myCoursesEl = uifactory.addCheckboxesHorizontal("my.courses", "catalog.courses", serverCont, new String[]{"xx"}, new String[]{""}, null);
 		myCoursesEl.select("xx", catalogModule.isMyCoursesEnabled());
-		myCoursesEl.addActionListener(this, FormEvent.ONCLICK);
+		myCoursesEl.addActionListener(FormEvent.ONCLICK);
 		
 		siteEl = uifactory.addCheckboxesHorizontal("catalog.new", "catalog.new", serverCont, new String[]{"xx"}, new String[]{""}, null);
 		siteEl.select("xx", catalogModule.isCatalogSiteEnabled());
-		siteEl.addActionListener(this, FormEvent.ONCLICK);
+		siteEl.addActionListener(FormEvent.ONCLICK);
 		
 		repoEl = uifactory.addCheckboxesHorizontal("catalog.classic", "catalog.classic", serverCont, new String[]{"xx"}, new String[]{""}, null);
 		repoEl.select("xx", catalogModule.isCatalogRepoEnabled());
-		repoEl.addActionListener(this, FormEvent.ONCLICK);
+		repoEl.addActionListener(FormEvent.ONCLICK);
 	}
 	
 	protected void doDispose() {

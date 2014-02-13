@@ -271,13 +271,13 @@ public class TUConfigForm extends FormBasicController {
 		String loadedConfig = convertConfigToNewStyle(config);
 		selectables = uifactory.addRadiosVertical("selectables", NLS_DISPLAY_CONFIG_EXTERN, formLayout, selectableValues, selectableLabels);
 		selectables.select(loadedConfig, true);
-		selectables.addActionListener(this, FormEvent.ONCLICK);
+		selectables.addActionListener(FormEvent.ONCLICK);
 		
 		checkboxPagePasswordProtected = uifactory.addCheckboxesVertical("checkbox", "TUConfigForm.protected", formLayout, new String[] { "ison" }, new String[] { "" }, null, 1);
 		
 		checkboxPagePasswordProtected.select("ison", (user != null) && !user.equals(""));
 		// register for on click event to hide/disable other elements
-		checkboxPagePasswordProtected.addActionListener(listener, FormEvent.ONCLICK);
+		checkboxPagePasswordProtected.addActionListener(FormEvent.ONCLICK);
 		
 		tuser = uifactory.addTextElement("user", "TUConfigForm.user", 255, user == null ? "" : user, formLayout);
 		tpass = uifactory.addPasswordElement("pass", "TUConfigForm.pass", 255, pass == null ? "" : pass, formLayout);

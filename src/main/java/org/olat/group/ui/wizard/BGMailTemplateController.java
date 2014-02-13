@@ -159,7 +159,7 @@ public class BGMailTemplateController extends FormBasicController {
 		if(!mandatoryEmail) {
 			sendMail = uifactory.addCheckboxesVertical("sendmail", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.sendMailSwitchElem")}, null, 1);
 			sendMail.select("xx", true);
-			sendMail.addActionListener(listener, FormEvent.ONCLICK);
+			sendMail.addActionListener(FormEvent.ONCLICK);
 		}
 		
 		defaultTemplate = uifactory.addCheckboxesVertical("deftemplate", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.defaultTemplate")}, null, 1);
@@ -167,7 +167,7 @@ public class BGMailTemplateController extends FormBasicController {
 			defaultTemplate.select("xx", true);
 		}
 		
-		defaultTemplate.addActionListener(listener, FormEvent.ONCLICK);
+		defaultTemplate.addActionListener(FormEvent.ONCLICK);
 		defaultTemplate.setEnabled(customizingAvailable);
 
 		if(customizingAvailable) {

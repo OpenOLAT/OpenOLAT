@@ -87,7 +87,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 			
 			String i18n = first ? "config.tools.desc" : null;
 			MultipleSelectionElement selectEl = uifactory.addCheckboxesHorizontal(k, i18n, formLayout, keys, values, null);
-			selectEl.addActionListener(this, FormEvent.ONCHANGE);
+			selectEl.addActionListener(FormEvent.ONCHANGE);
 			toolList.add(selectEl);
 			
 			ToolConfig config = new ToolConfig(k);
@@ -98,7 +98,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 			config.configContainer.setRootForm(mainForm);
 			formLayout.add(config.configContainer);
 			config.enableEl = uifactory.addRadiosHorizontal("config.enable." + k, null, config.configContainer, enableKeys, enableValues);
-			config.enableEl.addActionListener(this, FormEvent.ONCHANGE);
+			config.enableEl.addActionListener(FormEvent.ONCHANGE);
 			config.enableEl.select("off", true);
 			enableList.add(config.enableEl);
 			config.enableEl.setUserObject(config);

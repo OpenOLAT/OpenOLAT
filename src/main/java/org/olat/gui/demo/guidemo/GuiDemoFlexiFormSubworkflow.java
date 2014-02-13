@@ -244,7 +244,7 @@ public class GuiDemoFlexiFormSubworkflow extends FormBasicController {
 				entrySelector.select(selection, true);
 			}
 			//on click do something -> see the formInnerEvent method
-			entrySelector.addActionListener(this, FormEvent.ONCLICK);
+			entrySelector.addActionListener(FormEvent.ONCLICK);
 			
 		}
 		

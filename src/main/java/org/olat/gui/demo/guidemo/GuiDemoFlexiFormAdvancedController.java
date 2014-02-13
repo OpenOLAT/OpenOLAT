@@ -129,7 +129,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 		// Add some rich text elements
 		richTextElement = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple", "guidemo.form.richtext.simple", "click <i>to</i> <b>edit</b>. This one has an event listener and an <b>external menu with auto hide</b>", -1, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
-		//richTextElement.addActionListener(this, FormEvent.ONCHANGE);
+		//richTextElement.addActionListener(FormEvent.ONCHANGE);
 
 		richTextElement2 = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple2", null, "one <i>with</i> <b>height</b> and <span style='color:red'>no</span> event listener and an <b>internal</b> menu", 10, 40, true, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 
@@ -198,7 +198,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		// As an example on how to use the formInnerEvent method we'll catch events
 		// on these radio buttons and therefore need to add the current controller
 		// to their listeners.
-		verticalRadioButtons.addActionListener(this, FormEvent.ONCLICK);
+		verticalRadioButtons.addActionListener(FormEvent.ONCLICK);
 
 		// checkboxes
 		final MultipleSelectionElement checkboxes = uifactory.addCheckboxesVertical("checkboxes", "advanced_form.checkboxes", form, keys, options, null, 1);
@@ -214,7 +214,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 				yesOrNoOptions);
 		// A default value is needed for show/hide rules
 		horizontalRadioButtons.select(yesOrNoKeys[0], true);
-		horizontalRadioButtons.addActionListener(this, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+		horizontalRadioButtons.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 	}
 
 	/**

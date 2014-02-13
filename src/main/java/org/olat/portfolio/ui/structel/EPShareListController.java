@@ -497,7 +497,7 @@ public class EPShareListController extends FormBasicController {
 
 			if(policyWrapper.getType() != null) {
 				SingleSelection type = uifactory.addDropdownSingleselect("map.share.target." + cmpName, "map.share.target", container, targetKeys, targetValues, null);
-				type.addActionListener(this, FormEvent.ONCHANGE);
+				type.addActionListener(FormEvent.ONCHANGE);
 				type.setUserObject(policyWrapper);
 				type.select(policyWrapper.getType().name(), true);
 				switch(policyWrapper.getType()) {

@@ -82,7 +82,7 @@ public class PortfolioAdminController extends FormBasicController  {
 		
 			portfolioEnabled = uifactory.addCheckboxesHorizontal("portfolio.module.enabled", moduleFlc, enabledKeys, enabledValues, null);
 			portfolioEnabled.select(enabledKeys[0], portfolioModule.isEnabled());
-			portfolioEnabled.addActionListener(listener, FormEvent.ONCHANGE);
+			portfolioEnabled.addActionListener(FormEvent.ONCHANGE);
 			
 			//handlers configuration
 			FormLayoutContainer handlersFlc = FormLayoutContainer.createDefaultFormLayout("flc_handlers", getTranslator());
@@ -96,7 +96,7 @@ public class PortfolioAdminController extends FormBasicController  {
 				MultipleSelectionElement handlerEnabled = uifactory.addCheckboxesHorizontal(handlerClass, handlersFlc, enabledKeys, enabledValues, null);
 				handlerEnabled.select(enabledKeys[0], handler.isEnabled());
 				handlerEnabled.setUserObject(handler);
-				handlerEnabled.addActionListener(listener, FormEvent.ONCHANGE);
+				handlerEnabled.addActionListener(FormEvent.ONCHANGE);
 				handlersEnabled.add(handlerEnabled);
 			}
 			
@@ -105,11 +105,11 @@ public class PortfolioAdminController extends FormBasicController  {
 			layoutContainer.add(wizardFlc);	
 			copyrightStepCB = uifactory.addCheckboxesHorizontal("wizard.step.copyright", wizardFlc, enabledKeys, enabledValues, null);
 			copyrightStepCB.select(enabledKeys[0], portfolioModule.isCopyrightStepEnabled());
-			copyrightStepCB.addActionListener(listener, FormEvent.ONCHANGE);
+			copyrightStepCB.addActionListener(FormEvent.ONCHANGE);
 			
 			reflexionStepCB = uifactory.addCheckboxesHorizontal("wizard.step.reflexion", wizardFlc, enabledKeys, enabledValues, null);
 			reflexionStepCB.select(enabledKeys[0], portfolioModule.isReflexionStepEnabled());
-			reflexionStepCB.addActionListener(listener, FormEvent.ONCHANGE);
+			reflexionStepCB.addActionListener(FormEvent.ONCHANGE);
 			
 			
 		}

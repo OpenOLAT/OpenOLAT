@@ -149,7 +149,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 				translate("inherit"), translate("custom")	
 		};
 		inheritEl = uifactory.addRadiosVertical("inherit.label", formLayout, inheritKeys, inheritValues);
-		inheritEl.addActionListener(this, FormEvent.ONCHANGE);
+		inheritEl.addActionListener(FormEvent.ONCHANGE);
 		if(config != null && config.getInherit() != null && config.getInherit().booleanValue()) {
 			inheritEl.select(inheritKeys[0], true);
 		} else {
@@ -166,7 +166,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			translate("mode.standard"), translate("mode.configured")	
 		};
 		standardModeEl = uifactory.addRadiosVertical("mode", formLayout, standardModeKeys, standardModeValues);
-		standardModeEl.addActionListener(this, FormEvent.ONCHANGE);
+		standardModeEl.addActionListener(FormEvent.ONCHANGE);
 		
 		uifactory.addSpacerElement("spacer.js", formLayout, false);
 
@@ -174,7 +174,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 				translate("option.js.none"), translate("option.js.jQuery"), translate("option.js.prototypejs")
 		};
 		jsOptionEl = uifactory.addRadiosVertical("option.js", formLayout, jsKeys, jsValues);
-		jsOptionEl.addActionListener(this, FormEvent.ONCHANGE);
+		jsOptionEl.addActionListener(FormEvent.ONCHANGE);
 		
 		glossarEl = uifactory.addCheckboxesHorizontal("option.glossary", formLayout, new String[]{"on"}, new String[]{""}, null);
 

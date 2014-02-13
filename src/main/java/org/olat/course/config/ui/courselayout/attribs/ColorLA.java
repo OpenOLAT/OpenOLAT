@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.control.Controller;
 
 /**
  * 
@@ -117,7 +116,7 @@ public class ColorLA extends AbstractLayoutAttribute {
 		FormLayoutContainer colorFLC = FormLayoutContainer.createVerticalFormLayout(compName, formLayout.getTranslator());
 		formLayout.add(compName, colorFLC);	
 		FormItem dropDown = super.getFormItem(compName + "sel", formLayout);
-		dropDown.addActionListener((Controller) formLayout.getUserObject(), FormEvent.ONCHANGE);
+		dropDown.addActionListener(FormEvent.ONCHANGE);
 		colorFLC.add(dropDown);
 		
 		String inputValue = "";

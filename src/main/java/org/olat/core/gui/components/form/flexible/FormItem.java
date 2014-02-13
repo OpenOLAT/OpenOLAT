@@ -33,7 +33,6 @@ import org.olat.core.gui.components.Container;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.ValidationStatus;
 
@@ -433,15 +432,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @param listener
 	 * @param events
 	 */
-	public void addActionListener(Controller listener, int events);
-
-	/**
-	 * 
-	 * @param event
-	 * @return
-	 */
-	//not implemented
-	//public List getActionListenersFor(int event);
+	public void addActionListener(int events);
 
 	/**
 	 * 

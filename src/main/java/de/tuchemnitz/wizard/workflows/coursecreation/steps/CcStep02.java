@@ -148,7 +148,6 @@ public class CcStep02 extends BasicStep {
 		}
 
 		@Override
-		@SuppressWarnings( { "unused", "synthetic-access" })
 		protected void initForm(FormItemContainer formLayout, Controller listener, final UserRequest ureq) {
 			fic = FormLayoutContainer.createCustomFormLayout("cc02", this.getTranslator(), this.velocity_root + "/CcStep02_form.html");
 			FormLayoutContainer formItems = FormLayoutContainer.createDefaultFormLayout("formItems", this.getTranslator());
@@ -160,9 +159,9 @@ public class CcStep02 extends BasicStep {
 			publishCheckbox.setLabel("car.makepublic", null);
 			publishCheckbox.select("ison", true);
 
-			publishCheckbox.addActionListener(this, FormEvent.ONCHANGE);
+			publishCheckbox.addActionListener(FormEvent.ONCHANGE);
 			// register for on click event to hide/disable other elements
-			publishCheckbox.addActionListener(this, FormEvent.ONCLICK);
+			publishCheckbox.addActionListener(FormEvent.ONCLICK);
 			
 			int numOpts = showAclInst ? 3 : 2;
 			keys = new String[numOpts];
@@ -185,22 +184,16 @@ public class CcStep02 extends BasicStep {
 			accessChooser.setLabel("car.label", null);
 
 			accessChooser.select(CourseCreationConfiguration.ACL_OLAT, true);
-			accessChooser.addActionListener(this, FormEvent.ONCHANGE);
+			accessChooser.addActionListener(FormEvent.ONCHANGE);
 
 			// text warning
 			warning = FormUIFactory.getInstance().addStaticTextElement("car.warning.text", "car.label", translate("car.warning.text"), formItems);
 
 			// rules to hide / unhide
-			Set<FormItem> targetsDoPublish = new HashSet<FormItem>() {
-				{
-					add(accessChooser);
-				}
-			};
-			Set<FormItem> targetsDontPublish = new HashSet<FormItem>() {
-				{
-					add(warning);
-				}
-			};
+			Set<FormItem> targetsDoPublish = new HashSet<>();
+			targetsDoPublish.add(accessChooser);
+			Set<FormItem> targetsDontPublish = new HashSet<>();
+			targetsDontPublish.add(warning);
 
 			RulesFactory.createHideRule(publishCheckbox, null, targetsDoPublish, formItems);
 			RulesFactory.createShowRule(publishCheckbox, "ison", targetsDoPublish, formItems);

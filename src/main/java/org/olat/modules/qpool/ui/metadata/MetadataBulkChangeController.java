@@ -273,7 +273,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		licenseKeys = getQLicenseKeyValues(qpoolService);
 		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright.sel", "rights.copyright", rightsWrapperCont,
 				licenseKeys.getKeys(), licenseKeys.getValues(), null);
-		copyrightEl.addActionListener(this, FormEvent.ONCHANGE);
+		copyrightEl.addActionListener(FormEvent.ONCHANGE);
 		copyrightEl.select("none", true);
 
 		descriptionEl = uifactory.addTextAreaElement("rights.description", "rights.description", 1000, 6, 40, true, null, rightsWrapperCont);
@@ -283,7 +283,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		String itemName = item.getName();
 		MultipleSelectionElement checkbox = uifactory.addCheckboxesVertical("cbx_" + itemName, itemName, formLayout, new String[] { itemName }, EMPTY_VALUES, null, 1);
 		checkbox.select(itemName, false);
-		checkbox.addActionListener(listener, FormEvent.ONCLICK);
+		checkbox.addActionListener(FormEvent.ONCLICK);
 		checkbox.setUserObject(item);
 		checkboxSwitch.add(checkbox);
 

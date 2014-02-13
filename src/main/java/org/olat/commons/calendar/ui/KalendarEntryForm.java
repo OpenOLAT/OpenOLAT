@@ -328,7 +328,7 @@ public class KalendarEntryForm extends FormBasicController {
 		String currentRecur = CalendarUtils.getRecurrence(event.getRecurrenceRule());
 		boolean rk = currentRecur != null && !currentRecur.equals("");
 		chooseRecurrence.select(rk ? currentRecur:RECURRENCE_NONE, true);
-		chooseRecurrence.addActionListener(this, FormEvent.ONCHANGE);
+		chooseRecurrence.addActionListener(FormEvent.ONCHANGE);
 		
 		recurrenceEnd = uifactory.addDateChooser("recurrence", "cal.form.recurrence.end", null, formLayout);
 		recurrenceEnd.setDisplaySize(21);

@@ -256,7 +256,7 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 			
 			autoDateEl.select(autoDate ? keys[0] : keys[1], autoDate);
 			autoDateEl.setLabel("pane.tab.start_date", null);
-			autoDateEl.addActionListener(this, FormEvent.ONCLICK);
+			autoDateEl.addActionListener(FormEvent.ONCLICK);
 			
 			Date startDate = getStartDate(config);
 			Date selectedDate = startDate == null ? new Date() : startDate;

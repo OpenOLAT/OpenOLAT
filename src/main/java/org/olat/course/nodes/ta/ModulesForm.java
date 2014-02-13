@@ -115,11 +115,11 @@ public class ModulesForm extends FormBasicController {
 		cv = (Boolean)config.get(TACourseNode.CONF_SOLUTION_ENABLED);
 		solution.select("xx", cv == null ? false : cv.booleanValue());
 		
-		task.addActionListener(this, FormEvent.ONCLICK);
-		dropbox.addActionListener(this, FormEvent.ONCLICK);
-		returnbox.addActionListener(this, FormEvent.ONCLICK);
-		scoring.addActionListener(this, FormEvent.ONCLICK);
-		solution.addActionListener(this, FormEvent.ONCLICK);
+		task.addActionListener(FormEvent.ONCLICK);
+		dropbox.addActionListener(FormEvent.ONCLICK);
+		returnbox.addActionListener(FormEvent.ONCLICK);
+		scoring.addActionListener(FormEvent.ONCLICK);
+		solution.addActionListener(FormEvent.ONCLICK);
 	}
 
 	@Override

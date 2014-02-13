@@ -88,7 +88,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 		mimeTypes.add("application/x-jar");
 		mimeTypes.add("application/x-java-jar");
 		importFile.limitToMimeType(mimeTypes, "configuration.management.package.import.file.error.type", null);
-		importFile.addActionListener(this, FormEvent.ONCHANGE); // trigger auto-upload		
+		importFile.addActionListener(FormEvent.ONCHANGE); // trigger auto-upload		
 		//
 		// Add checkboxes for the found languages - hide so far
 		String[] langKeys = new String[]{};

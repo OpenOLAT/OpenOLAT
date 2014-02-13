@@ -187,7 +187,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			} else {
 				dateTypesEl.select("public", true);
 			}
-			dateTypesEl.addActionListener(this, FormEvent.ONCHANGE);
+			dateTypesEl.addActionListener(FormEvent.ONCHANGE);
 	
 			List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
 			String[] publicKeys = new String[cycles.size()];
@@ -250,7 +250,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			fileUpload.setLabel(null, null);
 		}
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
-		fileUpload.addActionListener(this, FormEvent.ONCHANGE);
+		fileUpload.addActionListener(FormEvent.ONCHANGE);
 		fileUpload.setVisible(!managed);
 		
 		Set<String> mimeTypes = new HashSet<String>();

@@ -178,7 +178,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		String[] theCssClasses = ArrayHelper.toArray(csss);
 		
 		styleSel = uifactory.addDropdownSingleselect("course.layout.selector", formLayout, theKeys, theValues, theCssClasses);
-		styleSel.addActionListener(this, FormEvent.ONCHANGE);
+		styleSel.addActionListener(FormEvent.ONCHANGE);
 		styleSel.setEnabled(editable);
 		if (keys.contains(actualCSSSettings)){
 			styleSel.select(actualCSSSettings, true);
@@ -199,7 +199,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		// offer upload for 2nd logo
 		if(editable) {
 			logoUpl = uifactory.addFileElement("upload.second.logo", formLayout);
-			logoUpl.addActionListener(this, FormEvent.ONCHANGE);
+			logoUpl.addActionListener(FormEvent.ONCHANGE);
 			Set<String> mimeTypes = new HashSet<String>();
 			mimeTypes.add("image/*");
 			logoUpl.limitToMimeType(mimeTypes, "logo.file.type.error", null);
@@ -430,7 +430,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			for (AbstractLayoutAttribute attrib : attributes) {
 				String compName = elementType + ELEMENT_ATTRIBUTE_DELIM + attrib.getLayoutAttributeTypeName();
 				FormItem fi = attrib.getFormItem(compName, styleFlc);
-				fi.addActionListener(this, FormEvent.ONCHANGE);
+				fi.addActionListener(FormEvent.ONCHANGE);
 				elAttribGui.put(attrib.getLayoutAttributeTypeName(), fi);
 			}			
 			guiWrapper.put(elementType, elAttribGui);			

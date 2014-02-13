@@ -150,7 +150,7 @@ public class MSEditFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Create the "score granted" field...
 		scoreGranted = uifactory.addCheckboxesVertical("form.score", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		scoreGranted.addActionListener(this, FormEvent.ONCLICK);
+		scoreGranted.addActionListener(FormEvent.ONCLICK);
 		Boolean sf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		scoreGranted.select("xx", sf == null ? false : sf.booleanValue());
 
@@ -176,7 +176,7 @@ public class MSEditFormController extends FormBasicController {
 
 		// Create the "display passed / failed"
 		displayPassed = uifactory.addCheckboxesVertical("form.passed", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		displayPassed.addActionListener(this, FormEvent.ONCLICK);
+		displayPassed.addActionListener(FormEvent.ONCLICK);
 		Boolean pf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
 		if (pf == null) pf = Boolean.TRUE;
 		displayPassed.select("xx", pf);
@@ -185,7 +185,7 @@ public class MSEditFormController extends FormBasicController {
 		// FALSE means manually)...
 		Float cut = (Float) modConfig.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		displayType = uifactory.addRadiosVertical("form.passed.type", formLayout, trueFalseKeys, passedTypeValues);
-		displayType.addActionListener(this, FormEvent.ONCLICK);
+		displayType.addActionListener(FormEvent.ONCLICK);
 
 		displayType.select(trueFalseKeys[1], true);
 		if (cut != null) {

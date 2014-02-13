@@ -178,7 +178,7 @@ public class IQ12EditForm extends FormBasicController {
 		// Only assessments have a limitation on number of attempts
 		if (isAssessment) {
 			limitAttempts.select("xx", confAttempts>0);
-			limitAttempts.addActionListener(this, FormEvent.ONCLICK);
+			limitAttempts.addActionListener(FormEvent.ONCLICK);
 		} else {
 			limitAttempts.select("xx", false);
 			limitAttempts.setVisible(false);
@@ -194,7 +194,7 @@ public class IQ12EditForm extends FormBasicController {
 		Boolean CdisplayMenu = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_DISPLAYMENU);
 		displayMenu = uifactory.addCheckboxesVertical("qti_displayMenu", "qti.form.menudisplay", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		displayMenu.select("xx", CdisplayMenu == null ? true : CdisplayMenu );
-		displayMenu.addActionListener(this, FormEvent.ONCLICK);
+		displayMenu.addActionListener(FormEvent.ONCLICK);
 		
 		Boolean CenableMenu = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_ENABLEMENU);
 		enableMenu = uifactory.addCheckboxesVertical("qti_enableMenu", "qti.form.menuenable", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
@@ -293,7 +293,7 @@ public class IQ12EditForm extends FormBasicController {
 		scoreInfo.select("xx", enableScoreInfos);
 		if (isAssessment || isSelfTest) {
 			scoreInfo.select("xx", enableScoreInfos);
-			scoreInfo.addActionListener(this, FormEvent.ONCLICK);
+			scoreInfo.addActionListener(FormEvent.ONCLICK);
 		} else {
 			// isSurvey
 			scoreInfo.setVisible(false);
@@ -310,7 +310,7 @@ public class IQ12EditForm extends FormBasicController {
 		confEnableShowResultOnHomePage = !noSummary && confEnableShowResultOnHomePage;
 		showResultsOnHomePage = uifactory.addCheckboxesVertical("qti_enableResultsOnHomePage", "qti.form.results.onhomepage", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		showResultsOnHomePage.select("xx", confEnableShowResultOnHomePage);
-		showResultsOnHomePage.addActionListener(this, FormEvent.ONCLICK);
+		showResultsOnHomePage.addActionListener(FormEvent.ONCLICK);
 		showResultsOnHomePage.setVisible(!isSurvey);
 		
 		Boolean showResultsActive = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
@@ -322,7 +322,7 @@ public class IQ12EditForm extends FormBasicController {
 		showResultsDateDependentButton = uifactory.addCheckboxesVertical("qti_showresult", "qti.form.show.results", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		if (isAssessment || isSelfTest) {
 			showResultsDateDependentButton.select("xx", showResultsDateDependent);
-			showResultsDateDependentButton.addActionListener(this, FormEvent.ONCLICK);
+			showResultsDateDependentButton.addActionListener(FormEvent.ONCLICK);
 		} else {
 			showResultsDateDependentButton.setEnabled(false);
 		}
@@ -343,7 +343,7 @@ public class IQ12EditForm extends FormBasicController {
 		confEnableShowResultOnFinish = !noSummary && confEnableShowResultOnFinish;
 		showResultsAfterFinishTest = uifactory.addCheckboxesVertical("qti_enableResultsOnFinish", "qti.form.results.onfinish", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		showResultsAfterFinishTest.select("xx", confEnableShowResultOnFinish);
-		showResultsAfterFinishTest.addActionListener(this, FormEvent.ONCLICK);
+		showResultsAfterFinishTest.addActionListener(FormEvent.ONCLICK);
 		showResultsAfterFinishTest.setVisible(!isSurvey);
 			
 		String[] summaryKeys = new String[] { 

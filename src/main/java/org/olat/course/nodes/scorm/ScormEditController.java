@@ -549,10 +549,10 @@ class VarForm extends FormBasicController {
 		cutValueEl.setDisplaySize(3);
 		
 		// <OLATCE-289>
-		isAssessableEl.addActionListener(this, FormEvent.ONCHANGE);
+		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
 		advanceScoreEl = uifactory.addCheckboxesVertical("advanceScore", "advance.score.label", formLayout, new String[]{"ison"}, new String[]{null}, null, 1);
 		advanceScoreEl.select("ison", advanceScore);
-		advanceScoreEl.addActionListener(this, FormEvent.ONCHANGE);
+		advanceScoreEl.addActionListener(FormEvent.ONCHANGE);
 
 		//assessable type score/passed -> show "Prevent subsequent attempts from decreasing score"
 		RulesFactory.createHideRule(isAssessableEl, assessableKeys[0], advanceScoreEl, formLayout);
@@ -566,7 +566,7 @@ class VarForm extends FormBasicController {
 
 		scoreAttemptsEl = uifactory.addCheckboxesVertical("scoreAttempts", "attempts.depends.label", formLayout, new String[]{"ison"}, new String[]{null}, null, 1);
 		scoreAttemptsEl.select("ison", scoreAttempts);
-		scoreAttemptsEl.addActionListener(this, FormEvent.ONCHANGE);
+		scoreAttemptsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		RulesFactory.createShowRule(advanceScoreEl, "ison", scoreAttemptsEl, formLayout);
 		RulesFactory.createHideRule(advanceScoreEl, null, scoreAttemptsEl, formLayout);

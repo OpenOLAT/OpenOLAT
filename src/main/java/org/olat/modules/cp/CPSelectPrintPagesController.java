@@ -100,7 +100,7 @@ public class CPSelectPrintPagesController extends FormBasicController {
 		MultipleSelectionElement nodeSelection = uifactory.addCheckboxesVertical("print.node.list." + nodeSelections.size(), layoutcont, singleKey, singleValue, cssClass, 1);
 		nodeSelection.setLabel("print.node.list", null);
 		nodeSelection.setUserObject(new SelectNodeObject(node, level));
-		nodeSelection.addActionListener(this, FormEvent.ONCLICK);
+		nodeSelection.addActionListener(FormEvent.ONCLICK);
 		nodeSelection.select(node.getIdent(), true); 		
 		nodeSelections.add(nodeSelection);
 		identToSelectionMap.put(node.getIdent(), nodeSelection);

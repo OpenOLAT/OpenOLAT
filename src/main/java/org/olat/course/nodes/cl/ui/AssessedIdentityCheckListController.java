@@ -117,7 +117,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		boxEl.setEnabled(!readOnly);
 		boxEl.setLabel(checkbox.getTitle(), null, false);
 		boxEl.showLabel(true);
-		boxEl.addActionListener(this, FormEvent.ONCHANGE);
+		boxEl.addActionListener(FormEvent.ONCHANGE);
 
 		String pointId = "point_" + checkbox.getCheckboxId();
 		String points = AssessmentHelper.getRoundedScore(checkbox.getPoints());

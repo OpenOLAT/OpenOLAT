@@ -200,7 +200,7 @@ public class FeedbackFormController extends FormBasicController {
 		yesNoValues = new String[] { translate(YES), translate(NO) };
 
 		feedbackSwitch = uifactory.addRadiosHorizontal("feedbackswitch", switchLayout, yesNoKeys, yesNoValues);
-		feedbackSwitch.addActionListener(this, FormEvent.ONCLICK);
+		feedbackSwitch.addActionListener(FormEvent.ONCLICK);
 		if (control.isFeedback()) {
 			feedbackSwitch.select(yesNoKeys[0], true);
 		} else {
@@ -283,8 +283,8 @@ public class FeedbackFormController extends FormBasicController {
 	 */
 	private void registerFeedbackElement(Material mat, RichTextElement textElement, FormLink link) {
 		textElement.setEnabled(false);
-		textElement.addActionListener(this, FormEvent.ONCLICK);
-		link.addActionListener(this, FormEvent.ONCLICK);
+		textElement.addActionListener(FormEvent.ONCLICK);
+		link.addActionListener(FormEvent.ONCLICK);
 		textElements.put(mat, textElement);
 		//allow scripts...
 		textElement.getEditorConfiguration().setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);

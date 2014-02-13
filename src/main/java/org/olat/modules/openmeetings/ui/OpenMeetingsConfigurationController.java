@@ -85,7 +85,7 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 		
 			moduleEnabled = uifactory.addCheckboxesHorizontal("openmeetings.module.enabled", moduleFlc, enabledKeys, enabledValues, null);
 			moduleEnabled.select(enabledKeys[0], openMeetingsModule.isEnabled());
-			moduleEnabled.addActionListener(listener, FormEvent.ONCHANGE);
+			moduleEnabled.addActionListener(FormEvent.ONCHANGE);
 			
 			//spacer
 			uifactory.addSpacerElement("Spacer", moduleFlc, false);

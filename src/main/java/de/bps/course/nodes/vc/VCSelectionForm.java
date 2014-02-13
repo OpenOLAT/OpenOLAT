@@ -67,7 +67,7 @@ public class VCSelectionForm extends FormBasicController {
 		
 		selVC = uifactory.addDropdownSingleselect("config.select.vc", flc, keys, vals, null);
 		selVC.select(selectedProvider, true);
-		selVC.addActionListener(this, FormEvent.ONCHANGE);
+		selVC.addActionListener(FormEvent.ONCHANGE);
 	}
 	
 	@Override

@@ -70,7 +70,7 @@ public class AdobeEditForm extends FormBasicController {
     multiSelectOptions.select(OPTION_START_MEETING, !config.isGuestStartMeetingAllowed());
     multiSelectOptions.select(OPTION_OPEN_MEETING, !config.isGuestAccessAllowed());
     multiSelectOptions.setVisible(showOptions);
-    multiSelectOptions.addActionListener(this, FormEvent.ONCHANGE);
+    multiSelectOptions.addActionListener(FormEvent.ONCHANGE);
     multiSelectOptions.showLabel(false);
 
     submit = new FormSubmit("subm", "submit");

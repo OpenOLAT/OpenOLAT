@@ -179,10 +179,10 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		String[] bundlesListArray = ArrayHelper.toArray(bundlesList);
 		String[] keysListArray = ArrayHelper.toArray(keysList);
 		bundlesSelection = formFactory.addDropdownSingleselect("bundlesSelection", this.flc, bundlesListArray, bundlesListArray, null);
-		bundlesSelection.addActionListener(this, FormEvent.ONCHANGE);
+		bundlesSelection.addActionListener(FormEvent.ONCHANGE);
 		bundlesSelection.select(currentItem.getBundleName(), true);
 		keysSelection = formFactory.addDropdownSingleselect("keysSelection", this.flc, keysListArray, keysListArray, null);
-		keysSelection.addActionListener(this, FormEvent.ONCHANGE);
+		keysSelection.addActionListener(FormEvent.ONCHANGE);
 		keysSelection.select(currentItem.getKey(), true);
 		// Add reference box
 		referenceArea = formFactory.addTextAreaElement("referenceArea", "edit.referenceArea", -1, 1, -1, true, null, this.flc);
@@ -195,7 +195,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		compareSwitch = formFactory.addCheckboxesHorizontal("compareSwitch", null, this.flc, new String[] { KEYS_ENABLED },
 				new String[] { KEYS_EMPTY }, null);//i18nLabel set to null -> disabled label
 		compareSwitch.select(KEYS_ENABLED, compareEnabledPrefs.booleanValue());
-		compareSwitch.addActionListener(listener, FormEvent.ONCLICK);
+		compareSwitch.addActionListener(FormEvent.ONCLICK);
 		formLayout.add(compareSwitch);
 		this.flc.contextPut("compareSwitchEnabled", compareEnabledPrefs);
 		// Add compare language selection
@@ -220,7 +220,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 				compareLangCssClasses);
 		compareLangSelection.select(i18nMgr.getLocaleKey(compareLocale), true);
 		this.flc.contextPut("compareLanguageKey", i18nMgr.getLocaleKey(compareLocale));
-		compareLangSelection.addActionListener(this, FormEvent.ONCHANGE);
+		compareLangSelection.addActionListener(FormEvent.ONCHANGE);
 		compareLangSelection.setEnabled(compareEnabledPrefs.booleanValue());
 		// Add target box
 		this.flc.contextPut("targetLanguageKey", i18nMgr.getLocaleKey(currentItem.getLocale()));

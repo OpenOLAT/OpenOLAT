@@ -102,7 +102,7 @@ public class PortfolioTextForm extends FormBasicController {
 				translate("map.deadline." + absolutKeys[0]), translate("map.deadline." + absolutKeys[1]), translate("map.deadline." + absolutKeys[2])
 		};
 		deadlineType = uifactory.addRadiosVertical("deadline-type", "map.deadline", formLayout, absolutKeys, absolutValues);
-		deadlineType.addActionListener(this, FormEvent.ONCHANGE);
+		deadlineType.addActionListener(FormEvent.ONCHANGE);
 		String type = (String)config.get(PortfolioCourseNodeConfiguration.DEADLINE_TYPE);
 		if(StringHelper.containsNonWhitespace(type)) {
 			try {
@@ -124,7 +124,7 @@ public class PortfolioTextForm extends FormBasicController {
 		deadlineChooser.setValidDateCheck("map.deadline.invalid");
 		deadlineChooser.setNotEmptyCheck("map.deadline.invalid");
 		deadlineChooser.setMandatory(true);
-		deadlineChooser.addActionListener(this, FormEvent.ONCHANGE);
+		deadlineChooser.addActionListener(FormEvent.ONCHANGE);
 		
 		//relativ deadline
 		String template = Util.getPackageVelocityRoot(PortfolioConfigForm.class) + "/deadline.html";
@@ -134,17 +134,17 @@ public class PortfolioTextForm extends FormBasicController {
 
 		String[] monthKeys = getTimeKeys(24);
 		deadlineMonth = uifactory.addDropdownSingleselect("deadline-month", deadlineLayout, monthKeys, monthKeys, null);
-		deadlineMonth.addActionListener(this, FormEvent.ONCHANGE);
+		deadlineMonth.addActionListener(FormEvent.ONCHANGE);
 		select(deadlineMonth, PortfolioCourseNodeConfiguration.DEADLINE_MONTH, monthKeys);
 		
 		String[] weekKeys = getTimeKeys(4);
 		deadlineWeek = uifactory.addDropdownSingleselect("deadline-week", deadlineLayout, weekKeys, weekKeys, null);
-		deadlineWeek.addActionListener(this, FormEvent.ONCHANGE);
+		deadlineWeek.addActionListener(FormEvent.ONCHANGE);
 		select(deadlineWeek, PortfolioCourseNodeConfiguration.DEADLINE_WEEK, weekKeys);
 		
 		String[] dayKeys = getTimeKeys(7);
 		deadlineDay = uifactory.addDropdownSingleselect("deadline-day", deadlineLayout, dayKeys, dayKeys, null);
-		deadlineDay.addActionListener(this, FormEvent.ONCHANGE);
+		deadlineDay.addActionListener(FormEvent.ONCHANGE);
 		select(deadlineDay, PortfolioCourseNodeConfiguration.DEADLINE_DAY, dayKeys);
 		formLayout.add(deadlineLayout);
 

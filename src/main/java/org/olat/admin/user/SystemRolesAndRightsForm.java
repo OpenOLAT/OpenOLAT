@@ -291,7 +291,7 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		);
 		sysSep = uifactory.addSpacerElement("syssep", formLayout, false);
 		if (iAmOlatAdmin || canGuestsByConfig) {
-			AnonymousRE.addActionListener(this, FormEvent.ONCLICK);
+			AnonymousRE.addActionListener(FormEvent.ONCLICK);
 		} else {
 			AnonymousRE.setVisible(false);
 			sysSep.setVisible(false);

@@ -811,21 +811,18 @@ public class OnyxRunController extends BasicController {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 			startButton = FormUIFactory.getInstance().addFormLink(START_LABEL, resumeSuspended ? RESUME_LABEL : START_LABEL, null, flc, Link.BUTTON);
-			// ((Link) startButton.getComponent()).setContextMenuAllowed(false);
-			startButton.addActionListener(OnyxRunController.this, FormEvent.ONCLICK);
+			startButton.addActionListener(FormEvent.ONCLICK);
 		}
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-			// TODO Auto-generated method stub
-
+			//
 		}
 
 		@Override
 		protected void doDispose() {
-			// TODO Auto-generated method stub
+			//
 		}
 
 		@Override

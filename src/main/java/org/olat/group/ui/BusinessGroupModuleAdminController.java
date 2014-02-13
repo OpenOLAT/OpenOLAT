@@ -87,7 +87,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		allowEl = uifactory.addCheckboxesVertical("module.admin.allow.create", optionsContainer, onKeys, values, null, 1);
 		allowEl.select("user", module.isUserAllowedCreate());
 		allowEl.select("author", module.isAuthorAllowedCreate());
-		allowEl.addActionListener(this, FormEvent.ONCHANGE);
+		allowEl.addActionListener(FormEvent.ONCHANGE);
 
 		FormLayoutContainer resourceAssignmentContainer = FormLayoutContainer.createDefaultFormLayout("resourceAssignment", getTranslator());
 		formLayout.add(resourceAssignmentContainer);
@@ -95,12 +95,12 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		String[] courseValues = new String[]{ translate("module.resource.courses.grant") };
 		assignCoursesEl = uifactory.addCheckboxesVertical("module.resource.courses", resourceAssignmentContainer, assignKeys, courseValues, null, 1);
 		assignCoursesEl.select(assignKeys[0], module.isGroupManagersAllowedToLinkCourses());
-		assignCoursesEl.addActionListener(this, FormEvent.ONCHANGE);
+		assignCoursesEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] groupValues = new String[]{ translate("module.resource.groups.grant") };
 		assignGroupsEl = uifactory.addCheckboxesVertical("module.resource.groups", resourceAssignmentContainer, assignKeys, groupValues, null, 1);
 		assignGroupsEl.select(assignKeys[0], module.isResourceManagersAllowedToLinkGroups());
-		assignGroupsEl.addActionListener(this, FormEvent.ONCHANGE);
+		assignGroupsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		FormLayoutContainer privacyOptionsContainer = FormLayoutContainer.createDefaultFormLayout("privacy_options", getTranslator());
 		formLayout.add(privacyOptionsContainer);
@@ -117,7 +117,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		enrolmentEl.select("usermanagers", "true".equals(module.getMandatoryEnrolmentEmailForUsermanagers()));
 		enrolmentEl.select("groupmanagers", "true".equals(module.getMandatoryEnrolmentEmailForGroupmanagers()));
 		enrolmentEl.select("administrators", "true".equals(module.getMandatoryEnrolmentEmailForAdministrators()));
-		enrolmentEl.addActionListener(this, FormEvent.ONCHANGE);
+		enrolmentEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] membershipValues = new String[]{
 				translate("enrolment.email.users"),
@@ -132,7 +132,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		membershipEl.select("usermanagers", "true".equals(module.getAcceptMembershipForUsermanagers()));
 		membershipEl.select("groupmanagers", "true".equals(module.getAcceptMembershipForGroupmanagers()));
 		membershipEl.select("administrators", "true".equals(module.getAcceptMembershipForAdministrators()));
-		membershipEl.addActionListener(this, FormEvent.ONCHANGE);
+		membershipEl.addActionListener(FormEvent.ONCHANGE);
 
 		FormLayoutContainer dedupCont = FormLayoutContainer.createDefaultFormLayout("dedup", getTranslator());
 		formLayout.add(dedupCont);

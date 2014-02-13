@@ -108,7 +108,7 @@ class I18nConfigSubDeleteLangController extends FormBasicController {
 		String[] availableLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(deletableKeys, "b_with_small_icon_left");
 		deleteLangSelection = uifactory.addCheckboxesVertical("configuration.deleteLangSelection", null, formLayout, deletableKeys,
 				availableValues, availableLangCssClasses, 2);
-		deleteLangSelection.addActionListener(this, FormEvent.ONCLICK);
+		deleteLangSelection.addActionListener(FormEvent.ONCLICK);
 		// Add cancel and submit in button group layout
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);

@@ -138,7 +138,7 @@ public class LanguageChooserController extends FormBasicController {
 		final FormLayoutContainer langLayout = FormLayoutContainer.createCustomFormLayout("langLayout", getTranslator(), velocity_root + "/langchooser.html");
 		formLayout.add(langLayout);
 		langs = uifactory.addDropdownSingleselect("select.language", langLayout, langKeys, langValues, langCssClasses); 
-		langs.addActionListener(this, FormEvent.ONCHANGE);
+		langs.addActionListener(FormEvent.ONCHANGE);
 		langs.select(curlang, true);
 		Locale loc = I18nManager.getInstance().getLocaleOrDefault(curlang);
 		langLayout.contextPut("languageCode", loc.toString());

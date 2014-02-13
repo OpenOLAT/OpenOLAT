@@ -105,7 +105,7 @@ class I18nConfigSubExportLangController extends FormBasicController {
 		String[] availableLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(availableKeys, "b_with_small_icon_left");
 		exportLangSelection = uifactory.addCheckboxesVertical("configuration.exportLangSelection", null, formLayout, availableKeys,
 				availableValues, availableLangCssClasses, 2);
-		exportLangSelection.addActionListener(this, FormEvent.ONCLICK);
+		exportLangSelection.addActionListener(FormEvent.ONCLICK);
 		// Add cancel and submit in button group layout
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);

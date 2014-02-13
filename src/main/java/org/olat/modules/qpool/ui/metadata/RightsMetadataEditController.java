@@ -106,7 +106,7 @@ public class RightsMetadataEditController extends FormBasicController {
 
 		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright", "rights.copyright", formLayout,
 				licenseKeys.getKeys(), licenseKeys.getValues(), null);
-		copyrightEl.addActionListener(this, FormEvent.ONCHANGE);
+		copyrightEl.addActionListener(FormEvent.ONCHANGE);
 		String description;
 		QLicense copyright = item.getLicense();
 		if(copyright == null) {

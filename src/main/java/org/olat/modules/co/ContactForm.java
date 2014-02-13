@@ -395,7 +395,7 @@ public class ContactForm extends FormBasicController {
 		
 		attachmentEl = uifactory.addFileElement("file_upload_1", NLS_CONTACT_ATTACHMENT, formLayout);
 		attachmentEl.setLabel(NLS_CONTACT_ATTACHMENT, null);
-		attachmentEl.addActionListener(this, FormEvent.ONCHANGE);
+		attachmentEl.addActionListener(FormEvent.ONCHANGE);
 		attachmentEl.setExampleKey(NLS_CONTACT_ATTACHMENT_EXPL, new String[]{Integer.toString(contactAttachmentMaxSizeInMb)});
 		
 

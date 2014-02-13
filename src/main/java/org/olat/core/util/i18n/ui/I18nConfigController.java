@@ -102,7 +102,7 @@ class I18nConfigController extends FormBasicController {
 		String[] defaultLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(defaultlangKeys, "b_with_small_icon_left");
 		defaultLangSelection = uifactory.addDropdownSingleselect("configuration.defaultLangSelection", formLayout, defaultlangKeys,
 				defaultLangValues, defaultLangCssClasses);
-		defaultLangSelection.addActionListener(this, FormEvent.ONCHANGE);
+		defaultLangSelection.addActionListener(FormEvent.ONCHANGE);
 		// Enable the current default language
 		Locale defaultLocale = I18nModule.getDefaultLocale();
 		this.flc.contextPut("defaultLangKey", defaultLocale.toString());
@@ -131,7 +131,7 @@ class I18nConfigController extends FormBasicController {
 		enabledLangSelection = uifactory.addCheckboxesVertical("configuration.enabledLangSelection", null, formLayout, availablelangKeys,
 				availableValues, availableLangCssClasses, 2);
 		enabledLangSelection.setEscapeHtml(false);
-		enabledLangSelection.addActionListener(this, FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+		enabledLangSelection.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		// Enable current enabled languages
 		for (String langKey : I18nModule.getEnabledLanguageKeys()) {
 			enabledLangSelection.select(langKey, true);

@@ -196,7 +196,7 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 			// column 7: Action Link
 			FormLinkImpl link = new FormLinkImpl("choose");
 			link.setUserObject(Integer.valueOf(i));
-			link.addActionListener(controller, FormEvent.ONCLICK);
+			link.addActionListener(FormEvent.ONCLICK);
 			col7 = link;
 		}
 

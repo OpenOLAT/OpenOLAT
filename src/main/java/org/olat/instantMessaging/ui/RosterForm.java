@@ -74,7 +74,7 @@ public class RosterForm extends FormBasicController {
 		} else {
 			toggle.select("name", true);
 		}
-		toggle.addActionListener(this, FormEvent.ONCLICK);
+		toggle.addActionListener(FormEvent.ONCLICK);
 
 		String nickName = generateNickname();
 		nickNameEl = uifactory.addTextElement("nickname", "", 20, nickName, formLayout);

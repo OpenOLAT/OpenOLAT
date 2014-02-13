@@ -77,7 +77,7 @@ public class PrivacyAdminController extends FormBasicController {
 		adminPropsEl.select("usermanagers", "enabled".equals(module.getUserSearchAdminPropsForUsermanagers()));
 		adminPropsEl.select("groupmanagers", "enabled".equals(module.getUserSearchAdminPropsForGroupmanagers()));
 		adminPropsEl.select("administrators", "enabled".equals(module.getUserSearchAdminPropsForAdministrators()));
-		adminPropsEl.addActionListener(this, FormEvent.ONCHANGE);
+		adminPropsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		uifactory.addSpacerElement("admin.space.1", propsCont, true);
 
@@ -87,7 +87,7 @@ public class PrivacyAdminController extends FormBasicController {
 		lastloginEl.select("usermanagers", "enabled".equals(module.getUserLastLoginVisibleForUsermanagers()));
 		lastloginEl.select("groupmanagers", "enabled".equals(module.getUserLastLoginVisibleForGroupmanagers()));
 		lastloginEl.select("administrators", "enabled".equals(module.getUserLastLoginVisibleForAdministrators()));
-		lastloginEl.addActionListener(this, FormEvent.ONCHANGE);
+		lastloginEl.addActionListener(FormEvent.ONCHANGE);
 		
 		FormLayoutContainer tuCont = FormLayoutContainer.createDefaultFormLayout("tu", getTranslator());
 		formLayout.add(tuCont);
@@ -96,7 +96,7 @@ public class PrivacyAdminController extends FormBasicController {
 		
 		tunnelEl = uifactory.addCheckboxesHorizontal("tunnel.cbb", tuCont, onKeys, new String[]{""}, null);
 		tunnelEl.select("on", "enabled".equals(module.getUserInfosTunnelCourseBuildingBlock()));
-		tunnelEl.addActionListener(this, FormEvent.ONCHANGE);
+		tunnelEl.addActionListener(FormEvent.ONCHANGE);
 	}
 	
 	@Override

@@ -196,7 +196,7 @@ public class IQEditForm extends FormBasicController {
 		// Only assessments have a limitation on number of attempts
 		if (isAssessment) {
 			limitAttempts.select("xx", confAttempts > 0);
-			limitAttempts.addActionListener(this, FormEvent.ONCLICK);
+			limitAttempts.addActionListener(FormEvent.ONCLICK);
 		} else {
 			limitAttempts.select("xx", false);
 			limitAttempts.setVisible(false);
@@ -210,7 +210,7 @@ public class IQEditForm extends FormBasicController {
 		//Surveys do not have a solution
 		if(!isSurvey){
 			allowShowSolutionBox = uifactory.addCheckboxesVertical("allowShowSolution", "qti.form.allowShowSolution", formLayout, allowShowSolution, valuesShowSolution, null, 1);
-			allowShowSolutionBox.addActionListener(this, FormEvent.ONCLICK);
+			allowShowSolutionBox.addActionListener(FormEvent.ONCLICK);
 			if(confAllowShowSolution!=null){
 				allowShowSolutionBox.select(ALLOW, confAllowShowSolution);
 			} else if (isSelfTest){
@@ -224,7 +224,7 @@ public class IQEditForm extends FormBasicController {
 		String[] valuesSuspesion = new String[] { "" };
 		allowSuspensionBox = uifactory.addCheckboxesVertical("allowSuspension", "qti.form.allowSuspension", formLayout, allowSuspension,
 				valuesSuspesion, null, 1);
-		allowSuspensionBox.addActionListener(this, FormEvent.ONCLICK);
+		allowSuspensionBox.addActionListener(FormEvent.ONCLICK);
 		if (confAllowSuspension != null) {
 			allowSuspensionBox.select(ALLOW, confAllowSuspension);
 		} else if (isSelfTest) {
@@ -289,7 +289,7 @@ public class IQEditForm extends FormBasicController {
 		showResultsOnHomePage = uifactory.addCheckboxesVertical("qti_enableResultsOnHomePage", "qti.form.results.onhomepage", formLayout, new String[] { "xx" },
 				new String[] { null }, null, 1);
 		showResultsOnHomePage.select("xx", confEnableShowResultOnHomePage);
-		showResultsOnHomePage.addActionListener(this, FormEvent.ONCLICK);
+		showResultsOnHomePage.addActionListener(FormEvent.ONCLICK);
 		showResultsOnHomePage.setVisible(!isSurvey);
 
 		Boolean showResultsActive = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
@@ -302,7 +302,7 @@ public class IQEditForm extends FormBasicController {
 				new String[] { null }, null, 1);
 		if (isAssessment || isSelfTest) {
 			showResultsDateDependentButton.select("xx", showResultsDateDependent);
-			showResultsDateDependentButton.addActionListener(this, FormEvent.ONCLICK);
+			showResultsDateDependentButton.addActionListener(FormEvent.ONCLICK);
 		} else {
 			showResultsDateDependentButton.setEnabled(false);
 		}

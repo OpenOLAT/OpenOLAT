@@ -84,7 +84,7 @@ public class ProjectEventFormController extends FormBasicController {
 			projectEventElement.select(keys[0], isEventEnabled);
 			projectEventElement.setVisible(keys[1], isEventEnabled);
 			projectEventElement.select(keys[1], isTableViewEnabled);
-			projectEventElement.addActionListener(listener, FormEvent.ONCLICK);
+			projectEventElement.addActionListener(FormEvent.ONCLICK);
 			projectEventElementList.put(eventType, projectEventElement);
 		}
 		formSubmit = uifactory.addFormSubmitButton("save", formLayout);		

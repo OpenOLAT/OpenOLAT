@@ -109,7 +109,7 @@ public class DialogConfigForm extends FormBasicController {
 		
 		String selectConfig = (String) config.get(DialogConfigForm.DIALOG_CONFIG_INTEGRATION);
 		select.select ("xx", selectConfig == CONFIG_INTEGRATION_VALUE_POPUP);
-		select.addActionListener(this, FormEvent.ONCLICK);
+		select.addActionListener(FormEvent.ONCLICK);
 	}
 
 	@Override

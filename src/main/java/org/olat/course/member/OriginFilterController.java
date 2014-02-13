@@ -53,7 +53,7 @@ public class OriginFilterController extends FormBasicController {
 		}
 		originEl = uifactory.addRadiosHorizontal("openBg", "search.origin.alt", formLayout, originKeys, openValues);
 		originEl.select("all", true);
-		originEl.addActionListener(this, FormEvent.ONCHANGE);
+		originEl.addActionListener(FormEvent.ONCHANGE);
 	}
 	
 	@Override

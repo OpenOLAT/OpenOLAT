@@ -80,7 +80,7 @@ public class InstantMessagingAdminController extends FormBasicController {
 		String[] enabledValues = new String[]{ translate("enabled") };
 		imEnabledEl = uifactory.addCheckboxesHorizontal("im.module.enabled", moduleFlc, enabledKeys, enabledValues, null);
 		imEnabledEl.select(enabledKeys[0], imModule.isEnabled());
-		imEnabledEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
 		//options
 		FormLayoutContainer chatOptionsFlc = FormLayoutContainer.createDefaultFormLayout("flc_chatOptions", getTranslator());
@@ -88,44 +88,44 @@ public class InstantMessagingAdminController extends FormBasicController {
 
 		imEnableGroupEl = uifactory.addCheckboxesHorizontal("im.module.enabled.group", chatOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableGroupEl.select(enabledKeys[0], imModule.isGroupEnabled());
-		imEnableGroupEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnableGroupEl.addActionListener(FormEvent.ONCHANGE);
 
 		imEnableGroupAnonymEl = uifactory.addCheckboxesHorizontal("im.module.enabled.group.anonym", chatOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableGroupAnonymEl.select(enabledKeys[0], imModule.isGroupAnonymEnabled());
-		imEnableGroupAnonymEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnableGroupAnonymEl.addActionListener(FormEvent.ONCHANGE);
 
 		imEnableGroupAnonymDefaultEl = uifactory.addCheckboxesHorizontal("im.module.enabled.group.anonym.default", chatOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableGroupAnonymDefaultEl.select(enabledKeys[0], imModule.isGroupAnonymDefaultEnabled());
-		imEnableGroupAnonymDefaultEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnableGroupAnonymDefaultEl.addActionListener(FormEvent.ONCHANGE);
 
 		uifactory.addSpacerElement("spacer", chatOptionsFlc, true);
 		
 		imEnableCourseEl = uifactory.addCheckboxesHorizontal("im.module.enabled.course", chatOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableCourseEl.select(enabledKeys[0], imModule.isCourseEnabled());
-		imEnableCourseEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnableCourseEl.addActionListener(FormEvent.ONCHANGE);
 
 		imEnableCourseAnonymEl = uifactory.addCheckboxesHorizontal("im.module.enabled.course.anonym", chatOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableCourseAnonymEl.select(enabledKeys[0], imModule.isCourseAnonymEnabled());
-		imEnableCourseAnonymEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnableCourseAnonymEl.addActionListener(FormEvent.ONCHANGE);
 
 		imEnableCourseAnonymDefaultEl = uifactory.addCheckboxesHorizontal("im.module.enabled.course.anonym.default", chatOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableCourseAnonymDefaultEl.select(enabledKeys[0], imModule.isCourseAnonymDefaultEnabled());
-		imEnableCourseAnonymDefaultEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnableCourseAnonymDefaultEl.addActionListener(FormEvent.ONCHANGE);
 
 		FormLayoutContainer messageOptionsFlc = FormLayoutContainer.createDefaultFormLayout("flc_messageOptions", getTranslator());
 		formLayout.add(messageOptionsFlc);
 		
  		imEnablePrivateEl = uifactory.addCheckboxesHorizontal("im.module.enabled.private", messageOptionsFlc, enabledKeys, enabledValues, null);
 		imEnablePrivateEl.select(enabledKeys[0], imModule.isPrivateEnabled());
-		imEnablePrivateEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnablePrivateEl.addActionListener(FormEvent.ONCHANGE);
 		
 		imEnableGroupPeersEl = uifactory.addCheckboxesHorizontal("im.module.enabled.grouppeers", messageOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableGroupPeersEl.select(enabledKeys[0], imModule.isGroupPeersEnabled());
-		imEnableGroupPeersEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnableGroupPeersEl.addActionListener(FormEvent.ONCHANGE);
 		
 		imEnableOnlineStatusEl = uifactory.addCheckboxesHorizontal("im.module.enabled.onlineStatus", messageOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableOnlineStatusEl.select(enabledKeys[0], imModule.isOnlineStatusEnabled());
-		imEnableOnlineStatusEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnableOnlineStatusEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// update GUI dependencies
 		updateDependencies();

@@ -159,9 +159,9 @@ public class PortfolioFilterController extends FormBasicController {
 			formLayout.add(dateFlc);
 			dateFlc.setLabel("filter.by.date", null);
 			dateStart = uifactory.addDateChooser("filter.date.start", null, dateFlc);
-			dateStart.addActionListener(this, FormEvent.ONCHANGE);
+			dateStart.addActionListener(FormEvent.ONCHANGE);
 			dateEnd = uifactory.addDateChooser("filter.date.end", null, dateFlc);
-			dateEnd.addActionListener(listener, FormEvent.ONCHANGE);
+			dateEnd.addActionListener(FormEvent.ONCHANGE);
 			dateStart.clearError();
 			dateEnd.clearError();
 		}
@@ -178,7 +178,7 @@ public class PortfolioFilterController extends FormBasicController {
 		String searchText = filterSettings.getTextFilter();
 		if(formLayout.getFormComponent("search") == null) {
 			searchFld = uifactory.addTextElement("search", "filter.search", 20, searchText, formLayout);
-			searchFld.addActionListener(listener, FormEvent.ONCHANGE);
+			searchFld.addActionListener(FormEvent.ONCHANGE);
 		} else {
 			searchFld.setValue(searchText);
 		}
@@ -246,7 +246,7 @@ public class PortfolioFilterController extends FormBasicController {
 		if (!nonEmptyFilters.isEmpty()) {
 			if(formLayout.getFormComponent("filter.select") == null) {
 				filterSel = uifactory.addDropdownSingleselect("filter.select", formLayout, theKeys, theValues, null);
-				filterSel.addActionListener(this, FormEvent.ONCHANGE);
+				filterSel.addActionListener(FormEvent.ONCHANGE);
 			} else {
 				filterSel.setKeysAndValues(theKeys, theValues, null);
 				filterSel.setVisible(true);

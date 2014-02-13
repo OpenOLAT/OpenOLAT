@@ -99,7 +99,7 @@ public class EPChangelogController extends FormBasicController {
 		/* the datechooser */
 		dateChooser = uifactory.addDateChooser("dateChooser", "news.since", null, formLayout);
 		dateChooser.setDate(new Date());
-		dateChooser.addActionListener(this, FormEvent.ONCHANGE);
+		dateChooser.addActionListener(FormEvent.ONCHANGE);
 
 		/* display the changelog */
 		updateChangelogDisplay(ureq);

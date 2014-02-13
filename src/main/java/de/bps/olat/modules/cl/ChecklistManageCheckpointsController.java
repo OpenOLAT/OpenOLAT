@@ -472,7 +472,7 @@ class GroupChoiceForm extends FormBasicController {
 		}
 		
 		groupChoice = uifactory.addDropdownSingleselect("cl.choice.groups", "cl.choice.groups", mainLayout, keys, values, null);
-		groupChoice.addActionListener(this, FormEvent.ONCHANGE);
+		groupChoice.addActionListener(FormEvent.ONCHANGE);
 		groupChoice.select(CHOICE_ALL, true);
 		
 		exportButton = uifactory.addFormLink(EXPORT_TABLE, EXPORT_TABLE, null, mainLayout, Link.BUTTON);

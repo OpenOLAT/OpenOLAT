@@ -234,7 +234,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				filterEl.setLabel(labelI18nKey, null);
 				filterEl.showLabel(true);
 			}
-			filterEl.addActionListener(null, FormEvent.ONCHANGE);
+			filterEl.addActionListener(FormEvent.ONCHANGE);
 			filterEl.setKeysAndValues(keys, values, null);
 			components.put("rFilter", filterEl);
 			rootFormAvailable(filterEl);

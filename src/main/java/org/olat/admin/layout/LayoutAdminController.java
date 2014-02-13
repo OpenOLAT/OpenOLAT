@@ -78,7 +78,7 @@ public class LayoutAdminController extends FormBasicController {
 				break;
 			}
 		}
-		themeSelection.addActionListener(listener, FormEvent.ONCHANGE);	
+		themeSelection.addActionListener(FormEvent.ONCHANGE);	
 	}
 
 	

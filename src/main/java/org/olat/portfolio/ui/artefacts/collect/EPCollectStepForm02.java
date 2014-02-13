@@ -71,7 +71,7 @@ public class EPCollectStepForm02 extends StepFormBasicController {
 		if (artefact.getSignature() > 0 ){
 			crCheck.select(Boolean.TRUE.toString(), true);
 		}
-		crCheck.addActionListener(this, FormEvent.ONCHANGE);
+		crCheck.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	/**

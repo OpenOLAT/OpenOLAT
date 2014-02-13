@@ -127,7 +127,7 @@ public class VCEditForm extends FormBasicController {
   	String[] accessVals = new String[] {translate(OPTION_DATES)};
   	multiSelectOptions = uifactory.addCheckboxesVertical("vc.options", "vc.options.label", editVC, accessKeys, accessVals, null, 1);
   	multiSelectOptions.select(OPTION_DATES, useDates);
-  	multiSelectOptions.addActionListener(this, FormEvent.ONCHANGE);
+  	multiSelectOptions.addActionListener(FormEvent.ONCHANGE);
 
     // create gui elements for all meetings
     editVC.contextPut("useDates", useDates);

@@ -107,13 +107,13 @@ class I18nConfigSubNewLangController extends FormBasicController {
 		newLanguage.setMandatory(true);
 		newLanguage.setRegexMatchCheck("[a-z]{2}", "configuration.management.create.language.error");
 		newLanguage.setDisplaySize(2);
-		newLanguage.addActionListener(this, FormEvent.ONCHANGE);
+		newLanguage.addActionListener(FormEvent.ONCHANGE);
 		// b) the country code
 		newCountry = uifactory.addTextElement("configuration.management.create.country", "configuration.management.create.country", 2, "",
 				formLayout);
 		newCountry.setExampleKey("configuration.management.create.country.example", null);
 		newCountry.setRegexMatchCheck("[A-Z]{0,2}", "configuration.management.create.country.error");
-		newCountry.addActionListener(this, FormEvent.ONCHANGE);
+		newCountry.addActionListener(FormEvent.ONCHANGE);
 		newCountry.setDisplaySize(2);
 		// c) the variant, only available when country code is filled out
 		newVariant = uifactory.addTextElement("configuration.management.create.variant", "configuration.management.create.variant", 50, "",

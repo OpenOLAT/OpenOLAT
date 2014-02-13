@@ -278,7 +278,7 @@ class FeedFormController extends FormBasicController {
 		imageContainer.put("image", image);
 
 		file = uifactory.addFileElement("feed.file.label", this.flc);
-		file.addActionListener(this, FormEvent.ONCHANGE);
+		file.addActionListener(FormEvent.ONCHANGE);
 
 		if (feed.getImageName() != null) {
 			MediaResource imageResource = FeedManager.getInstance().createFeedMediaFile(feed, feed.getImageName());

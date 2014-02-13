@@ -81,7 +81,7 @@ public class EPArtefactTypeSelectionController extends FormBasicController {
 			if (selectedTypeList != null && selectedTypeList.contains(handler.getType())) {
 				chkBox.select(keys[0], true);
 			}
-			chkBox.addActionListener(this, FormEvent.ONCHANGE);
+			chkBox.addActionListener(FormEvent.ONCHANGE);
 			chkBox.setUserObject(handler.getType());
 			typeCmpList.add(chkBox);
 		}

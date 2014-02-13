@@ -70,7 +70,7 @@ public class MailSettingsAdminController extends FormBasicController  {
 		boolean internEnabled = isEnabled();
 		enabled = uifactory.addCheckboxesHorizontal("mail.admin.intern.enabled", formLayout, keys, values, null);
 		enabled.select(keys[0], internEnabled);
-		enabled.addActionListener(this, FormEvent.ONCHANGE);
+		enabled.addActionListener(FormEvent.ONCHANGE);
 		
 		boolean realMailSetting = isUserDefaultSetting();
 		userSettingValues = new String[] {

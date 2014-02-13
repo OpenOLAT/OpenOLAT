@@ -318,7 +318,7 @@ class ChoiceOfToolsForm extends FormBasicController {
 		for (int i=0; i<availableTools.length; i++) {
 			ms.select(""+i, cts.isToolEnabled(availableTools[i]));
 		}
-		ms.addActionListener(listener, FormEvent.ONCLICK);
+		ms.addActionListener(FormEvent.ONCLICK);
 	}
 	
 	@Override

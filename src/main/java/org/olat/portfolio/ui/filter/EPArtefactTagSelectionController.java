@@ -86,7 +86,7 @@ public class EPArtefactTagSelectionController extends FormBasicController {
 			String[] selectedKeys = selectedTagsList.toArray(new String[0]);
 			chkBox.setSelectedValues(selectedKeys);
 		}
-		chkBox.addActionListener(this, FormEvent.ONCHANGE);
+		chkBox.addActionListener(FormEvent.ONCHANGE);
 		uifactory.addFormSubmitButton("filter.type.submit", formLayout);
 	}
 

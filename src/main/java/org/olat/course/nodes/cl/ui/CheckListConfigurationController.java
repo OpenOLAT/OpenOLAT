@@ -80,7 +80,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		Date dueDate = (Date)config.get(CheckListCourseNode.CONFIG_KEY_DUE_DATE);
 		String[] theValues = new String[] { "" };
 		dueDateEl = uifactory.addCheckboxesHorizontal("duedate", "config.due.date.on", formLayout, onKeys, theValues, null);
-		dueDateEl.addActionListener(this, FormEvent.ONCHANGE);
+		dueDateEl.addActionListener(FormEvent.ONCHANGE);
 		if(dueDateBool != null && dueDateBool.booleanValue()) {
 			dueDateEl.select(onKeys[0], true);
 		}

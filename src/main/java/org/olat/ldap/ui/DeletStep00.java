@@ -138,9 +138,9 @@ public class DeletStep00 extends BasicStep{
 			multiSelectTree = uifactory.addTreeMultiselect("seltree", null, formLayout, deleteIdentityTreeModel, deleteIdentityTreeModel);
 			
 			selectAllLink = uifactory.addFormLink("checkall", formLayout);
-			selectAllLink.addActionListener(this, FormEvent.ONCLICK);
+			selectAllLink.addActionListener(FormEvent.ONCLICK);
 			uncheckallLink = uifactory.addFormLink("uncheckall", formLayout);
-			uncheckallLink.addActionListener(this, FormEvent.ONCLICK);
+			uncheckallLink.addActionListener(FormEvent.ONCLICK);
 		}
 	}
 	

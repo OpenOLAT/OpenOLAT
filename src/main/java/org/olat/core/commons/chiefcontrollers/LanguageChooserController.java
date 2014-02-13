@@ -123,7 +123,7 @@ public class LanguageChooserController extends FormBasicController {
 		// Build css classes for reference languages
 		String[] langCssClasses = I18nManager.getInstance().createLanguageFlagsCssClasses(langKeys, "b_with_small_icon_left");
 		langs = uifactory.addDropdownSingleselect(mainForm.getFormId() + "_select", "select.language", "select.language", formLayout, langKeys, langValues, langCssClasses); 
-		langs.addActionListener(this, FormEvent.ONCHANGE);
+		langs.addActionListener(FormEvent.ONCHANGE);
 		langs.select(curlang, true);
 		// Add to velocity for flag
 		this.flc.contextPut("languageCode", curlang.toString());

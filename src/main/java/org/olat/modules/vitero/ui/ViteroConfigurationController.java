@@ -91,7 +91,7 @@ public class ViteroConfigurationController extends FormBasicController {
 		
 			viteroEnabled = uifactory.addCheckboxesHorizontal("vitero.module.enabled", moduleFlc, enabledKeys, enabledValues, null);
 			viteroEnabled.select(enabledKeys[0], viteroModule.isEnabled());
-			viteroEnabled.addActionListener(listener, FormEvent.ONCHANGE);
+			viteroEnabled.addActionListener(FormEvent.ONCHANGE);
 			
 			//spacer
 			uifactory.addSpacerElement("Spacer", moduleFlc, false);
