@@ -55,6 +55,13 @@ public class CheckboxAssessmentDataModel extends DefaultFlexiTableDataModel<Asse
 		super(datas, columnModel);
 		backupRows = datas;
 	}
+	
+	/**
+	 * @return The list of rows, not filtered
+	 */
+	public List<AssessmentDataView> getBackedUpRows() {
+		return backupRows;
+	}
 
 	@Override
 	public DefaultFlexiTableDataModel<AssessmentDataView> createCopyWithEmptyList() {

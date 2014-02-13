@@ -6,4 +6,10 @@
 		<p>$r.translate("run.due.date",$r.formatDateAndTime($dueDate))</p>
 	#end
 	$r.render("checkbox-list")
+	
+	<div class="b_clearfix o_qpool_button_bar_box">
+		<div class="o_qpool_button_bar">
+			$r.render("pdf.export")
+		</div>
+	</div>
 </div>

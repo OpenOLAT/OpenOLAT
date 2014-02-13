@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.cl.ui;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -28,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.transform.TransformerException;
+
+import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -38,6 +42,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -49,6 +54,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
@@ -94,9 +100,11 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private final UserCourseEnvironment userCourseEnv;
 	private final boolean isAdministrativeUser;
 	
+	private FormLink pdfExport;
 	private CheckboxAssessmentDataModel model;
 	private FlexiTableElement table;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final CheckboxList checkboxList;
 	
 	private CloseableModalController cmc;
 	private AssessedIdentityOverviewController editCtrl;
@@ -130,6 +138,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
 		config = courseNode.getModuleConfiguration();
+		checkboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
@@ -179,10 +188,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 			}
 		}
 		
-		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
-		List<Checkbox> checkboxList = list.getList();
+		List<Checkbox> boxList = checkboxList.getList();
 		int j = 0;
-		for(Checkbox box:checkboxList) {
+		for(Checkbox box:boxList) {
 			int colIndex = CheckboxAssessmentDataModel.CHECKBOX_OFFSET + j++;
 			String colName = "checkbox_" + colIndex;
 			DefaultFlexiColumnModel column = new DefaultFlexiColumnModel(true, colName, colIndex, true, colName);
@@ -215,6 +223,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 		table = uifactory.addTableElement(ureq, getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
 		table.setFilterKeysAndValues("participants", keys, values);
 		table.setExportEnabled(true);
+		
+		pdfExport = uifactory.addFormLink("pdf.export", formLayout, Link.BUTTON);
 	}
 	
 	private List<AssessmentDataView> loadDatas() {
@@ -303,6 +313,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 					doOpenIdentity(ureq, row);
 				}
 			}
+		} else if(pdfExport == source) {
+			doExportPDF(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -328,6 +340,21 @@ public class CheckListAssessmentController extends FormBasicController implement
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private void doExportPDF(UserRequest ureq) {
+		try {
+			String name = courseNode.getShortTitle();
+			CheckboxPDFExport pdfExport = new CheckboxPDFExport(name, getTranslator(), userPropertyHandlers);
+			pdfExport.setAuthor(userManager.getUserDisplayName(getIdentity()));
+			pdfExport.setTitle(courseNode.getShortTitle());
+			pdfExport.setSubject(courseNode.getLongTitle());
+			pdfExport.setObjectives(courseNode.getLearningObjectives());
+			pdfExport.create(checkboxList, model);
+			ureq.getDispatchResult().setResultingMediaResource(pdfExport);
+		} catch (IOException | COSVisitorException | TransformerException e) {
+			logError("", e);
+		}
 	}
 	
 	private void doOpenIdentity(UserRequest ureq, AssessmentDataView row) {
