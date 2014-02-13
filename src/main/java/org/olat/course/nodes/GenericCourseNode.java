@@ -27,6 +27,7 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
@@ -347,6 +348,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		preConditionAccess.setConditionId("accessability");
 		return preConditionAccess;
 	}
+	
+	@Override
+	public void updateOnPublish(Locale locale, ICourse course) {
+		//default do nothing
+	}
 
 	/**
 	 * Generic interface implementation. May be overriden by specific node's
@@ -366,9 +372,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(org.olat.course.ICourse)
 	 */
 	public void cleanupOnDelete(ICourse course) {
-	/**
-	 * do nothing in default implementation
-	 */
+		// do nothing in default implementation
 	}
 
 	/**
@@ -663,6 +667,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			return description;
 		}
 		return retVal;
+	}
+	
+	@Override
+	public List<StatusDescription> publishUpdatesExplanations(CourseEditorEnv cev) {
+		return Collections.<StatusDescription>emptyList();
 	}
 
 	/**

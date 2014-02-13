@@ -70,7 +70,7 @@ public class ReadyToDeleteController extends BasicController {
 	private TableController tableCtr;
 	private RepositoryEntryDeleteTableModel redtm;
 	private Link feedbackBackLink;
-	private List readyToDeleteRepositoryEntries;
+	private List<RepositoryEntry> readyToDeleteRepositoryEntries;
 	private DialogBoxController deleteConfirmController;
 
 
@@ -115,7 +115,7 @@ public class ReadyToDeleteController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					RepositoryManager.getInstance().setLastUsageNowFor( (RepositoryEntry) redtm.getObject(rowid) );
+					RepositoryManager.getInstance().setLastUsageNowFor(redtm.getObject(rowid) );
 					updateRepositoryEntryList();
 				}
 			} else if (event.getCommand().equals(Table.COMMAND_MULTISELECT)) {
@@ -173,7 +173,7 @@ public class ReadyToDeleteController extends BasicController {
 	}
 
 	protected void updateRepositoryEntryList() {
-		List l = RepositoryDeletionManager.getInstance().getReprositoryEntriesReadyToDelete(RepositoryDeletionManager.getInstance().getDeleteEmailDuration());
+		List<RepositoryEntry> l = RepositoryDeletionManager.getInstance().getReprositoryEntriesReadyToDelete(RepositoryDeletionManager.getInstance().getDeleteEmailDuration());
 		redtm = new RepositoryEntryDeleteTableModel(l);
 		tableCtr.setTableDataModel(redtm);
 	}

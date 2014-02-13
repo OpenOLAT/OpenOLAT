@@ -54,8 +54,6 @@
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
 		<mapping-file>org/olat/catalog/CatalogEntryImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/notifications/PublisherImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/notifications/SubscriberImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/registration/TemporaryKeyImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/statistic/daily/DailyStat.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/statistic/dayofweek/DayOfWeekStat.hbm.xml</mapping-file>
@@ -91,10 +89,14 @@
 		<mapping-file>org/olat/upgrade/model/DBMailAttachmentData.hbm.xml</mapping-file>
 		
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
+		<class>org.olat.core.commons.services.notifications.model.SubscriberImpl</class>
+		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>
 		<class>org.olat.core.commons.services.commentAndRating.impl.UserRatingImpl</class>
 		<class>org.olat.course.assessment.model.UserCourseInfosImpl</class>
+		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
+		<class>org.olat.course.nodes.cl.model.DBCheck</class>
 		<class>org.olat.group.model.ContactParticipantView</class>
 		<class>org.olat.group.model.ContactOwnerView</class>
 		<class>org.olat.group.model.ContactKeyParticipantView</class>

@@ -23,9 +23,10 @@ import static org.olat.modules.sharedfolder.SharedFolderWebDAVProvider.readOnlyC
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
@@ -147,41 +148,25 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 		return shared;
 	}
 	
-	/**
-	 * Outsourced helper method for adding an entry to the root container.
-	 * 
-	 * @param rootContainer
-	 * @param sfm
-	 * @param ownerEntries
-	 * @param entry
-	 */
-	private void addReadonlyFolder(MergeSource rootContainer, RepositoryEntry entry, SharedFolderManager sfm,
-			List<RepositoryEntry> addedEntries) {
-		//
-		if (addedEntries == null || !PersistenceHelper.listContainsObjectByKey(addedEntries, entry)) {
-			// add the entry (readonly)
-			VFSContainer folder = sfm.getNamedSharedFolder(entry, true);
-			folder.setLocalSecurityCallback(readOnlyCallback);
-			rootContainer.addContainer(folder);
-			addedEntries.add(entry);
-		}
-	}
-	
 	@Override
 	protected void init() {
 		super.init();
 
 		SharedFolderManager sfm = SharedFolderManager.getInstance();
 		RepositoryManager repoManager = RepositoryManager.getInstance();
+		List<VFSContainer> containers = new ArrayList<>();
+		Set<Long> addedEntries = new HashSet<>();
 		List<RepositoryEntry> ownerEntries = (List<RepositoryEntry>) repoManager.queryByOwner(identity, SharedFolderFileResource.TYPE_NAME);
-		for (RepositoryEntry repoEntry : ownerEntries) {
-			addContainer(sfm.getNamedSharedFolder(repoEntry, true));
+		for (RepositoryEntry entry : ownerEntries) {
+			VFSContainer container = sfm.getNamedSharedFolder(entry, true);
+			addContainerToList(container, containers);
+			addedEntries.add(entry.getKey());
 		}
 
 		// see /olat3/webapp/WEB-INF/olat_extensions.xml
 		if (publiclyReadableFolders != null && publiclyReadableFolders.size() > 0) {
 			// Temporarily save added entries. This is needed to make sure not to add an entry twice.
-			List<RepositoryEntry> addedEntries = new ArrayList<RepositoryEntry>(ownerEntries);
+			
 			String firstItem = publiclyReadableFolders.get(0);
 			// If the first value in the list is '*', list all resource folders.
 			if (firstItem != null && firstItem.equals("*")) {
@@ -190,7 +175,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 				List<String> types = Collections.singletonList(SharedFolderFileResource.TYPE_NAME);
 				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(identity, types, registeredUserRole);
 				for (RepositoryEntry entry : allEntries) {
-					addReadonlyFolder(this, entry, sfm, addedEntries);
+					addReadonlyFolder(entry, sfm, addedEntries, containers);
 				}
 			} else {
 				// only list the specified folders
@@ -199,7 +184,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 				for (RepositoryEntry entry:entries) {
 					if (entry.getAccess() >= RepositoryEntry.ACC_USERS || (entry.getAccess() == RepositoryEntry.ACC_OWNERS && entry.isMembersOnly())) {
 						// add folder (which is a repo entry) to root container if not present
-						addReadonlyFolder(this, entry, sfm, addedEntries);
+						addReadonlyFolder(entry, sfm, addedEntries, containers);
 					} else {
 						log.warn("Access denied on entry::" + entry.getKey(), null);
 					}
@@ -207,9 +192,23 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 			}
 		}
 
+		setMergedContainers(containers);
 		loadTime = System.currentTimeMillis();
 		init = true;
 	}
+
+	private void addReadonlyFolder(RepositoryEntry entry, SharedFolderManager sfm,
+			Set<Long> addedEntries, List<VFSContainer> containers) {
+		//
+		if (!addedEntries.contains(entry.getKey())) {
+			// add the entry (readonly)
+			VFSContainer folder = sfm.getNamedSharedFolder(entry, true);
+			folder.setLocalSecurityCallback(readOnlyCallback);
+			addContainerToList(folder, containers);
+			addedEntries.add(entry.getKey());
+		}
+	}
+	
 	
 	private List<Long> getSharedKeys() {
 		List<Long> publiclyReadableFoldersKeys = new ArrayList<Long>();

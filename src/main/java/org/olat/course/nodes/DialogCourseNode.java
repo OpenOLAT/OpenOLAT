@@ -32,6 +32,8 @@ import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
@@ -40,8 +42,6 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
-import org.olat.core.util.notifications.NotificationsManager;
-import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;

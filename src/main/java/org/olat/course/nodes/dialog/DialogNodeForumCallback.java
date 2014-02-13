@@ -25,7 +25,7 @@
 
 package org.olat.course.nodes.dialog;
 
-import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.modules.fo.ForumCallback;
 

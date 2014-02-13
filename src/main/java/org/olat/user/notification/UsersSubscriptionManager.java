@@ -23,11 +23,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.notifications.PublisherData;
-import org.olat.core.util.notifications.Subscriber;
-import org.olat.core.util.notifications.SubscriptionContext;
 
 
 /**

@@ -29,8 +29,8 @@ import java.util.Set;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.id.Identity;
-import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.EfficiencyStatementManager;
@@ -38,7 +38,6 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManagerImpl;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
-import org.olat.notifications.PublisherImpl;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -134,7 +133,7 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 	
 	private List<Publisher> getAssessmentPublishers() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select pub from ").append(PublisherImpl.class.getName()).append(" pub where pub.resName='AssessmentManager' and type='AssessmentManager'");
+		sb.append("select pub from notipublisher pub where pub.resName='AssessmentManager' and type='AssessmentManager'");
 		DBQuery query = dbInstance.createQuery(sb.toString());
 		@SuppressWarnings("unchecked")
 		List<Publisher> res = query.list();

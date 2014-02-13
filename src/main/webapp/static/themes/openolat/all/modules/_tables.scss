@@ -45,8 +45,23 @@ div.b_table_wrapper {
 		width: 99.5%;
 		margin-left: 1px;
 		border:1px solid $basegray_ultra_light;
-		thead, thead a { 
-	 		color: $tablecolor_header; 
+		thead, thead a {
+	 		color: $tablecolor_header;
+	 		a.b_sorting {
+	 			padding: 0 20px 0 0;
+	 			text-decoration: none;
+	 			background:url("../openolat/images/arrow-resize-090.png") no-repeat center right;
+	 		}
+	 		a.b_sorting_asc {
+	 			padding: 0 20px 0 0;
+	 			text-decoration: none;
+	 			background:url("../openolat/images/arrow_up.png") no-repeat center right;
+	 		}
+	 		a.b_sorting_desc {
+	 			padding: 0 20px 0 0;
+	 			text-decoration: none;
+	 			background:url("../openolat/images/arrow_down.png") no-repeat center right;
+	 		}
 	 	}		
 	 	tbody{
 			tr:hover td { background: $selectcolor_ultra_light; }
@@ -140,6 +155,16 @@ div.b_table_wrapper {
 				}
 			}
 		}
+	}
+}
+
+div.b_table_wrapper.b_flexitable_wrapper div.b_table_filter {
+	margin:3px 0 3px 0;
+	label {
+		padding:3px 7px 3px 0;
+	}
+	div.b_form_selection_element {
+		float:right;
 	}
 }
 

@@ -1677,10 +1677,6 @@ public class I18nManager extends BasicManager {
 	 * @return
 	 */
 	public String getLocaleKey(Locale locale) {
-		if(locale == null) {
-			System.out.println();
-		}
-		
 		String langKey = locale.getLanguage();
 		String country = locale.getCountry();
 		// Only add country when available - in case of an overlay country is

@@ -25,7 +25,7 @@
 
 package org.olat.modules.fo;
 
-import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 
 /**
  * @author schneider

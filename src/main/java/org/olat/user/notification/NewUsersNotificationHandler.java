@@ -23,6 +23,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.services.notifications.NotificationHelper;
+import org.olat.core.commons.services.notifications.NotificationsHandler;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionInfo;
+import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
+import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
@@ -30,14 +38,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.core.util.notifications.NotificationHelper;
-import org.olat.core.util.notifications.NotificationsHandler;
-import org.olat.core.util.notifications.NotificationsManager;
-import org.olat.core.util.notifications.Publisher;
-import org.olat.core.util.notifications.Subscriber;
-import org.olat.core.util.notifications.SubscriptionInfo;
-import org.olat.core.util.notifications.items.SubscriptionListItem;
-import org.olat.core.util.notifications.items.TitleItem;
 
 /**
  * 

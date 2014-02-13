@@ -268,6 +268,14 @@ public interface BaseSecurity {
 	 * @return the identity or null
 	 */
 	public Identity loadIdentityByKey(Long identityKey, boolean strict);
+	
+	/**
+	 * Method to load all the identities. Paging is mandatory!
+	 * @param firstResult
+	 * @param maxResults
+	 * @return
+	 */
+	public List<Identity> loadIdentities(int firstResult, int maxResults);
 
 	/**
 	 * get number of users with last login greater than lastLoginLimit

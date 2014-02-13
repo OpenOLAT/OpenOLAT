@@ -25,10 +25,10 @@
 
 package org.olat.user;
 
+import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.id.Preferences;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.notifications.NotificationsManager;
 
 
 /**

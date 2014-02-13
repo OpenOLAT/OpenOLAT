@@ -54,6 +54,9 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
@@ -88,9 +91,6 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.nodes.INode;
-import org.olat.core.util.notifications.NotificationsManager;
-import org.olat.core.util.notifications.Publisher;
-import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
@@ -106,6 +106,7 @@ import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.PublishProcess;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.PublishSetInformations;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -776,7 +777,8 @@ public class CourseFactory extends BasicManager {
 			 visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
 
 			 publishProcess.createPublishSetFor(nodeToPublish);
-			 StatusDescription[] status = publishProcess.testPublishSet(locale);
+			 PublishSetInformations set = publishProcess.testPublishSet(locale);
+			 StatusDescription[] status = set.getWarnings();
 			 //publish not possible when there are errors
 			 for(int i = 0; i < status.length; i++) {
 				 if(status[i].isError()) {

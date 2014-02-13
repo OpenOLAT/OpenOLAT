@@ -288,6 +288,9 @@ public interface CourseNode extends INode, ShortName {
 	 *         within the specified course environment.
 	 */
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev);
+	
+	
+	public void updateOnPublish(Locale locale, ICourse course);
 
 	/**
 	 * Called if this node is ABOUT TO BE deleted. For the time being, the node
@@ -401,6 +404,13 @@ public interface CourseNode extends INode, ShortName {
 	 * @return
 	 */
 	public StatusDescription explainThisDuringPublish(StatusDescription description);
+	
+	/**
+	 * Return some explanations if an update is planned after publishing
+	 * @param cev
+	 * @return
+	 */
+	public List<StatusDescription> publishUpdatesExplanations(CourseEditorEnv cev);
 
 	/**
 	 * Update the module configuration to have all mandatory configuration flags

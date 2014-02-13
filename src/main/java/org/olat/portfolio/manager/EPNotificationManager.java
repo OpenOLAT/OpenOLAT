@@ -26,10 +26,10 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.notifications.items.SubscriptionListItem;
 import org.olat.portfolio.model.notification.EPArtefactNotification;
 import org.olat.portfolio.model.notification.EPCommentNotification;
 import org.olat.portfolio.model.notification.EPNotification;

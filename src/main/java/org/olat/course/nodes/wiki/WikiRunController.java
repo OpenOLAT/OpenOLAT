@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -45,7 +46,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.course.CourseFactory;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.nodes.WikiCourseNode;

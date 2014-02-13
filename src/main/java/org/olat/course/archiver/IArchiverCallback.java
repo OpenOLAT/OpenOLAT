@@ -65,6 +65,10 @@ public interface IArchiverCallback {
 	 */
 	public boolean mayArchiveWikis();
 	
+	public boolean mayArchiveScorm();
+	
+	public boolean mayArchiveChecklist();
+	
 	/**
 	 * @return true if user has rights to archive project-broker data
 	 */

@@ -86,6 +86,26 @@ public class CourseLoggingAction extends BaseLoggingAction {
 		setTypeList(new ResourceableTypeList().addMandatory(OlatResourceableType.course, 
 				OlatResourceableType.node, StringResourceableType.checklist, StringResourceableType.checkpoint));
 	
+	public static final ILoggingAction CHECKLIST_CHECK_UPDATED = 
+			new CourseLoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.edit, ActionObject.check).
+			setTypeList(new ResourceableTypeList().addMandatory(OlatResourceableType.course, 
+					OlatResourceableType.node, StringResourceableType.checkbox));
+	
+	public static final ILoggingAction CHECKLIST_CHECKBOX_CREATED = 
+			new CourseLoggingAction(ActionType.statistic, CrudAction.create, ActionVerb.add, ActionObject.checkbox).
+			setTypeList(new ResourceableTypeList().addMandatory(OlatResourceableType.course, 
+					OlatResourceableType.node, StringResourceableType.checkbox));
+	
+	public static final ILoggingAction CHECKLIST_CHECKBOX_UPDATED = 
+			new CourseLoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.edit, ActionObject.checkbox).
+			setTypeList(new ResourceableTypeList().addMandatory(OlatResourceableType.course, 
+					OlatResourceableType.node, StringResourceableType.checkbox));
+	
+	public static final ILoggingAction CHECKLIST_CHECKBOX_DELETED = 
+			new CourseLoggingAction(ActionType.statistic, CrudAction.delete, ActionVerb.remove, ActionObject.checkbox).
+			setTypeList(new ResourceableTypeList().addMandatory(OlatResourceableType.course, 
+					OlatResourceableType.node, StringResourceableType.checkbox));			
+	
 	public static final ILoggingAction INFO_MESSAGE_CREATED = 
 			new CourseLoggingAction(ActionType.statistic, CrudAction.create, ActionVerb.add, ActionObject.infomessage).
 			setTypeList(new ResourceableTypeList().addMandatory(OlatResourceableType.course, 

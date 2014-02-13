@@ -199,7 +199,7 @@ public class XMLWriter {
      * Write XML Header.
      */
     public void writeXMLHeader() {
-        buffer.append("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
+        buffer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
     }
 
 
@@ -209,7 +209,6 @@ public class XMLWriter {
     public void sendData()
         throws IOException {
         if (writer != null) {
-        	//System.out.println(buffer.toString());
             writer.write(buffer.toString());
             buffer = new StringBuilder();
         }

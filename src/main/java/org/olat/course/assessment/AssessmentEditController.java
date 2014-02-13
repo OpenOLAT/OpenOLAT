@@ -160,6 +160,9 @@ public class AssessmentEditController extends BasicController {
 			});
 			detailView.contextPut("participantGroups", participantGroups);
 			detailView.contextPut("noParticipantGroups", (participantGroups.size() > 0 ? Boolean.FALSE : Boolean.TRUE));
+			detailView.contextPut("identityInfosVisible", Boolean.TRUE);
+			detailView.contextPut("courseNodeInfosVisible", Boolean.TRUE);
+			detailView.contextPut("titleVisible", Boolean.TRUE);
 
 			putInitialPanel(detailView);
 		}else{
@@ -170,6 +173,25 @@ public class AssessmentEditController extends BasicController {
 			//no initial component set -> empty behind dialog box!
 		}
 	}
+	
+	public void setIdentityInfos(boolean visible) {
+		if(detailView != null) {
+			detailView.contextPut("identityInfosVisible", new Boolean(visible));
+		}
+	}
+	
+	public void setCourseNodeInfos(boolean visible) {
+		if(detailView != null) {
+			detailView.contextPut("courseNodeInfosVisible", new Boolean(visible));
+		}
+	}
+	
+	public void setTitleInfos(boolean visible) {
+		if(detailView != null) {
+			detailView.contextPut("titleVisible", new Boolean(visible));
+		}
+	}
+	
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,

@@ -46,11 +46,13 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -59,6 +61,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
@@ -81,15 +84,16 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private int currentPage;
 	private int currentFirstResult;
 	private int pageSize;
+	private boolean exportEnabled;
 	private boolean searchEnabled;
 	private boolean selectAllEnabled;
-	
 	private int columnLabelForDragAndDrop;
 	
 	private VelocityContainer rowRenderer;
 
-	private FormLink customButton;
+	private FormLink customButton, exportButton;
 	private FormLink searchButton, extendedSearchButton;
+	private SingleSelection filterEl;
 	private TextElement searchFieldEl;
 	private ExtendedFlexiTableSearchController extendedSearchCtrl;
 	
@@ -140,7 +144,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String dispatchId = component.getDispatchID();
 		customButton = new FormLinkImpl(dispatchId + "_customButton", "rCustomButton", "search", Link.BUTTON);
 		customButton.setTranslator(translator);
-		customButton.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only b_table_prefs");
+		customButton.setCustomEnabledLinkCSS("b_with_small_icon_only b_table_prefs");
 		components.put("rCustomize", customButton);
 
 		this.pageSize = pageSize;
@@ -209,6 +213,60 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	public void setRowRenderer(VelocityContainer rowRenderer) {
 		this.rowRenderer = rowRenderer;
+	}
+
+	@Override
+	public boolean isFilterEnabled() {
+		return filterEl != null;
+	}
+
+	@Override
+	public void setFilterKeysAndValues(String labelI18nKey, String[] keys, String[] values) {
+		if(keys == null || keys.length == 0) {
+			components.remove("rFilter");
+			filterEl = null;
+		} else {
+			String dispatchId = component.getDispatchID();
+			String name = dispatchId + "_filter";
+			filterEl = new SingleSelectionImpl(name, name, SingleSelectionImpl.createSelectboxLayouter(name, name));
+			filterEl.setTranslator(getTranslator());
+			if(StringHelper.containsNonWhitespace(labelI18nKey)) {
+				filterEl.setLabel(labelI18nKey, null);
+				filterEl.showLabel(true);
+			}
+			filterEl.addActionListener(null, FormEvent.ONCHANGE);
+			filterEl.setKeysAndValues(keys, values, null);
+			components.put("rFilter", filterEl);
+			rootFormAvailable(filterEl);
+		}
+	}
+	
+	public SingleSelection getFilterSelection() {
+		return filterEl;
+	}
+	
+	public boolean isExportEnabled() {
+		return exportEnabled;
+	}
+	
+	public void setExportEnabled(boolean enabled) {
+		this.exportEnabled = enabled;
+		if(exportEnabled) {
+			exportButton = null;
+			
+			String dispatchId = component.getDispatchID();
+			exportButton = new FormLinkImpl(dispatchId + "_exportButton", "rExportButton", "export", Link.BUTTON);
+			exportButton.setTranslator(translator);
+			exportButton.setCustomEnabledLinkCSS("b_with_small_icon_only b_table_download");
+			components.put("rExport", exportButton);
+			rootFormAvailable(exportButton);
+		} else {
+			exportButton = null;
+		}
+	}
+	
+	public FormLink getExportButton() {
+		return exportButton;
 	}
 
 	@Override
@@ -376,11 +434,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String dispatchuri = form.getRequestParameter("dispatchuri");
 		String select = form.getRequestParameter("select");
 		String page = form.getRequestParameter("page");
+		String sort = form.getRequestParameter("sort");
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(page)) {
 			int p = Integer.parseInt(page);
 			setPage(p);
+		} else if(StringHelper.containsNonWhitespace(sort)) {
+			String asc = form.getRequestParameter("asc");
+			sort(sort, "asc".equals(asc));
 		} else if(StringHelper.containsNonWhitespace(selectedIndex)) {
 			int index = selectedIndex.lastIndexOf('-');
 			if(index > 0 && index+1 < selectedIndex.length()) {
@@ -392,9 +454,16 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(searchButton != null
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
 			evalSearchRequest(ureq);
-		}  else if(extendedSearchButton != null
+		} else if(extendedSearchButton != null
 				&& extendedSearchButton.getFormDispatchId().equals(dispatchuri)) {
 			openExtendedSearch(ureq);
+		} else if(filterEl != null
+				&& filterEl.getFormDispatchId().equals(dispatchuri)) {
+			filterEl.evalFormRequest(ureq);
+			filter();
+		} else if(exportButton != null
+				&& exportButton.getFormDispatchId().equals(dispatchuri)) {
+			export(ureq);
 		} else if(dispatchuri != null && select != null && select.equals("checkall")) {
 			doSelectAll();
 		} else if(dispatchuri != null && select != null && select.equals("uncheckall")) {
@@ -437,6 +506,40 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			setCustomizedColumns(visibleColsChoice);
 			callout.deactivate();
 		}
+	}
+	
+	protected void sort(String sortKey, boolean asc) {
+		SortKey key = new SortKey(sortKey, asc);
+		orderBy = new SortKey[]{ key };
+		if(dataModel instanceof SortableFlexiTableDataModel) {
+			((SortableFlexiTableDataModel<?>)dataModel).sort(key);
+			component.setDirty(true);
+		} else if(dataSource != null) {
+			dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
+		}
+	}
+	
+	protected void filter() {
+		if(filterEl.isOneSelected()) {
+			String filter = filterEl.getSelectedKey();
+			if(dataModel instanceof FilterableFlexiTableModel) {
+				((FilterableFlexiTableModel)dataModel).filter(filter);
+			} else if(dataSource != null) {
+				List<String> conditionalQueries = Collections.singletonList(filter);
+				dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
+			}
+		}
+	}
+	
+	protected void export(UserRequest ureq) {
+		MediaResource resource;
+		if(dataModel instanceof ExportableFlexiTableDataModel) {
+			resource = ((ExportableFlexiTableDataModel)dataModel).export(component);
+		} else {
+			ExportableFlexiTableDataModelDelegate exporter = new ExportableFlexiTableDataModelDelegate();
+			resource = exporter.export(component, getTranslator());
+		}
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
 	protected void openExtendedSearch(UserRequest ureq) {
@@ -679,9 +782,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	protected void rootFormAvailable() {
-		rootFormAvailable(searchFieldEl);
+		rootFormAvailable(filterEl);
 		rootFormAvailable(searchButton);
 		rootFormAvailable(customButton);
+		rootFormAvailable(exportButton);
+		rootFormAvailable(searchFieldEl);
 		rootFormAvailable(extendedSearchButton);
 	}
 	

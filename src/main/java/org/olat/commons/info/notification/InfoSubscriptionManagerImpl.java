@@ -24,13 +24,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.commons.info.model.InfoMessage;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.notifications.NotificationsManager;
-import org.olat.core.util.notifications.Publisher;
-import org.olat.core.util.notifications.PublisherData;
-import org.olat.core.util.notifications.Subscriber;
-import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 

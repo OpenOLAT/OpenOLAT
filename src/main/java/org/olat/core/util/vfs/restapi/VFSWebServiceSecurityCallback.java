@@ -19,7 +19,7 @@
  */
 package org.olat.core.util.vfs.restapi;
 
-import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 

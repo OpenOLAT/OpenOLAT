@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -30,6 +31,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -47,12 +49,12 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 
 		String id = ftC.getFormDispatchId();
-		sb.append("<div class=\"b_table_wrapper b_floatscrollbox\">");
+		sb.append("<div class=\"b_table_wrapper b_flexitable_wrapper b_floatscrollbox\">");
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 		sb.append("<table id=\"").append(id).append("\">");
 		
 		//render headers
-		renderHeaders(sb, ftE, translator);
+		renderHeaders(sb, ftC, translator);
 		//render body
 		sb.append("<tbody>");
 		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
@@ -71,12 +73,26 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	protected void renderHeaderButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
+		if(ftE.isFilterEnabled()) {
+			sb.append("<div class='b_table_filter'>");
+			SingleSelection filterEl = ftE.getFilterSelection();
+			String text = filterEl.getLabelText();
+			if(text != null && text.length() < 128) {
+				sb.append("<label>").append(text).append("</label>");
+			}
+			renderFormItem(renderer, sb, filterEl, ubu, translator, renderResult, args);
+			sb.append("</div>");
+		}
 		if(ftE.isSearchEnabled()) {
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
 		}
 		if(ftE.getExtendedSearchButton() != null) {
 			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+		}
+		
+		if(ftE.getExportButton() != null && ftE.isExportEnabled()) {
+			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, args);
 		}
 		if(ftE.getCustomButton() != null && ftE.isCustomizeColumns()) {
 			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, args);
@@ -119,7 +135,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 	}
 	
-	protected void renderHeaders(StringOutput target, FlexiTableElementImpl ftE, Translator translator) {
+	protected void renderHeaders(StringOutput target, FlexiTableComponent ftC, Translator translator) {
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
 		      
@@ -136,21 +153,30 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		for(int i=0; i<cols; i++) {
 			FlexiColumnModel fcm = columnModel.getColumnModel(i);
 			if(ftE.isColumnModelVisible(fcm)) {
-				renderHeader(target, fcm, col++, cols, translator);
+				renderHeader(target, ftC, fcm, col++, cols, translator);
 			}
 		}
 		
 		target.append("</tr></thead>");
 	}
 	
-	protected void renderHeader(StringOutput target, FlexiColumnModel fcm, int colPos, int numOfCols, Translator translator) {
-		String header = translator.translate(fcm.getHeaderKey());	
+	protected void renderHeader(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, int numOfCols, Translator translator) {
+		String header;
+		if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
+			header = fcm.getHeaderLabel();
+		} else {
+			header = translator.translate(fcm.getHeaderKey());
+		}
 		target.append("<th class=\"");
 		// add css class for first and last column to support older browsers
 		if (colPos == 0) target.append(" b_first_child");
 		if (colPos == numOfCols-1) target.append(" b_last_child");
-		target.append("\">").append(header).append("</th>");
+		target.append("\">").append(header);
+		renderHeaderSort(target, ftC, fcm, colPos, translator);
+		target.append("</th>");
 	}
+	
+	protected abstract void renderHeaderSort(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, Translator translator);
 	
 	protected void renderBody(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult) {

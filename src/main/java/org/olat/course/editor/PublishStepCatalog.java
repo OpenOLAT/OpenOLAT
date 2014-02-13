@@ -106,7 +106,7 @@ class PublishStepCatalog extends BasicStep {
 		return new PublishStepCatalogForm(ureq, wControl, form, stepsRunContext, courseEnv, rootNode);
 	}
 	
-	class PublishStepCatalogForm extends StepFormBasicController {
+	static class PublishStepCatalogForm extends StepFormBasicController {
 		
 		private FormLink addToCatalog;
 		private SingleSelection catalogBox;

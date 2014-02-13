@@ -24,6 +24,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
+import org.olat.core.commons.services.notifications.ui.DateChooserController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -32,10 +36,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.notifications.ContextualSubscriptionController;
-import org.olat.core.util.notifications.PublisherData;
-import org.olat.core.util.notifications.SubscriptionContext;
-import org.olat.notifications.DateChooserController;
 import org.olat.user.notification.UsersSubscriptionManager;
 
 /**

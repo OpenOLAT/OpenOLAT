@@ -42,6 +42,8 @@ public enum ActionObject {
 	
 	calendar,
 	chat,
+	check,
+	checkbox,
 	checkpoint,
 	comment,
 	course,

@@ -54,6 +54,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.editor.PublishProcess;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.PublishSetInformations;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.COCourseNode;
@@ -326,7 +327,8 @@ public class CourseCreationHelper {
 			nodeIds.add(cetm.getRootNode().getChildAt(i).getIdent());
 		}
 		pp.createPublishSetFor(nodeIds);
-		sds = pp.testPublishSet(ureq.getLocale());
+		PublishSetInformations set = pp.testPublishSet(ureq.getLocale());
+		sds = set.getWarnings();
 		boolean isValid = sds.length == 0;
 		if (!isValid) {
 			// no error and no warnings -> return immediate

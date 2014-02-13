@@ -10,7 +10,7 @@
 	<import resource="classpath:/org/olat/user/propertyhandlers/_spring/userPropertriesHandlersContext.xml"/>
 
 <bean id="userModule" class="org.olat.user.UserModule" 
-	depends-on="org.olat.core.util.notifications.NotificationsManager, database, baseSecurityManager, triggerI18nModuleInit">
+	depends-on="notificationsManager, database, baseSecurityManager, triggerI18nModuleInit">
 <!-- default auth string -->
 <constructor-arg index="0" value="${default.auth.provider.identifier}" />
 <constructor-arg index="1" ref="userManager" />

@@ -947,7 +947,6 @@ public class QTIEditHelper {
   	while(itemIterator.hasNext()) {
   		VFSItem item = itemIterator.next();
   		if(deleteableSet.contains(item.getName())) {
-  			//System.out.println("Delete unused media file: " + item.getName());
   			item.delete();
   		}
   	}

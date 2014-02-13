@@ -55,8 +55,8 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 	private static final long serialVersionUID = 1425964260797865080L;
 	
 	@Id
-  @GeneratedValue(generator = "system-uuid")
-  @GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	

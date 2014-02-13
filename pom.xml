@@ -1502,7 +1502,7 @@
 						<show>public</show>
 						<subpackages>
 							org.olat.restapi,org.olat.catalog.restapi,org.olat.modules.fo.restapi,
-							org.olat.notifications.restapi,org.olat.user.restapi,org.olat.course.nodes,
+							org.olat.core.commons.services.notifications.restapi,org.olat.user.restapi,org.olat.course.nodes,
 							org.olat.restapi.system
 					</subpackages>
 
@@ -1550,7 +1550,7 @@
 						<formatWadlFile>true</formatWadlFile>
 						<baseUri>http://www.example.com</baseUri>
 						<packagesResourceConfig>
-							<param>org.olat.restapi;org.olat.catalog.restapi;org.olat.notifications.restapi;org.olat.modules.fo.restapi;org.olat.user.restapi;org.olat.course.nodes</param>
+							<param>org.olat.restapi;org.olat.catalog.restapi;org.olat.core.commons.services.notifications.restapi;org.olat.modules.fo.restapi;org.olat.user.restapi;org.olat.course.nodes</param>
 						</packagesResourceConfig>
 						<wadlGenerators>
 							<wadlGeneratorDescription>
@@ -1769,7 +1769,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>1.8.3</version>
+			<version>1.8.4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1965,12 +1965,12 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.3</version>
+			<version>4.3.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.3</version>
+			<version>4.3.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1981,7 +1981,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.3</version>
+			<version>4.3.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>

@@ -1,10 +1,3 @@
-#if($r.available("backLink"))
-	<h5>$r.translate("identityoverview.title")</h5>
-	$r.render("backLink")
-	<br><br>
-#end
-
-#if($user)
 <div>
 	#if ($user.getProperty("institutionalName", $locale) && $user.getProperty("institutionalName", $locale).length() > 0)
 		#set ($inst = $r.escapeHtml($user.getProperty("institutionalName", $locale)))
@@ -30,5 +23,3 @@
 	#end
 	<br />
 </div>
-#end
-$r.render("assessmentOverviewTable")

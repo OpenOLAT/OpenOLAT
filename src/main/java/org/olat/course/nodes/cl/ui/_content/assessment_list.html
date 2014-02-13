@@ -1,0 +1,15 @@
+<div class="b_form b_clearfix">
+	$r.contextHelpWithWrapper("org.olat.course.nodes.cl.ui","cl-coach-assessment.html","help.hover.choach")
+	<div class="b_form_desc">$r.translate("coach.desc")</div>
+	#if($dueDate)
+		<p>$r.translate("coach.due.date.desc")</p>
+		<p>$r.translate("run.due.date",$r.formatDateAndTime($dueDate))</p>
+	#end
+	$r.render("checkbox-list")
+	
+	<div class="b_clearfix o_qpool_button_bar_box">
+		<div class="o_qpool_button_bar">
+			$r.render("pdf.export")
+		</div>
+	</div>
+</div>

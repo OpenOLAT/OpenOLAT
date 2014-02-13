@@ -710,7 +710,6 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		payRequest.setRequestEnvelope(getAppRequestEnvelope());
 		payRequest.setActionType("PAY");
 		payRequest.setIpnNotificationUrl(Settings.getServerContextPathURI() + "/paypal/ipn");
-		System.out.println(Settings.getServerContextPathURI() + "/paypal/ipn");
 
 		PayResponse payResp = null;
 		try {

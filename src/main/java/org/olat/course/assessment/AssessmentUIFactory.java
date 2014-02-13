@@ -24,12 +24,12 @@
 */
 package org.olat.course.assessment;
 
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.notifications.ContextualSubscriptionController;
-import org.olat.core.util.notifications.PublisherData;
-import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.course.ICourse;
 
 /**

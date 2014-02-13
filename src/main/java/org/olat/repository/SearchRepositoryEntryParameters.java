@@ -47,6 +47,7 @@ public class SearchRepositoryEntryParameters {
 	private Boolean managed;
 	private String externalId;
 	private String externalRef;
+	private boolean onlyOwnedResources;
 	private boolean onlyExplicitMember;
 	private List<Long> repositoryEntryKeys;
 	private CatalogEntry parentEntry;
@@ -186,6 +187,19 @@ public class SearchRepositoryEntryParameters {
 	
 	public void setInstitution(String institution) {
 		this.institution = institution;
+	}
+
+	/**
+	 * This has effect for authors. Administrator or instituional mangers
+	 * has more rights.
+	 * @return
+	 */
+	public boolean isOnlyOwnedResources() {
+		return onlyOwnedResources;
+	}
+
+	public void setOnlyOwnedResources(boolean onlyOwnedResources) {
+		this.onlyOwnedResources = onlyOwnedResources;
 	}
 
 	public boolean isOnlyExplicitMember() {

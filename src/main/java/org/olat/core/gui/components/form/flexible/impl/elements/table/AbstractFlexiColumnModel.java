@@ -29,14 +29,24 @@ public class AbstractFlexiColumnModel implements FlexiColumnModel {
 
 	private int alignment;
 	private String headerKey;
+	private String headerLabel;
 	private String columnKey;
+	private boolean sortable;
+	private String sortedKey;
 	private int columnIndex;
 	private FlexiCellRenderer cellRenderer;
 
 	public AbstractFlexiColumnModel(String headerKey, int columnIndex, int alignment, FlexiCellRenderer cellRenderer) {
+		this(headerKey, columnIndex, alignment, false, null, cellRenderer);
+	}
+	
+	public AbstractFlexiColumnModel(String headerKey, int columnIndex, int alignment,
+			boolean sortable, String sortedKey, FlexiCellRenderer cellRenderer) {
 		this.headerKey = headerKey;
 		this.columnIndex = columnIndex;
 		this.columnKey = headerKey.replace(".", "").toLowerCase();
+		this.sortable = sortable;
+		this.sortedKey = sortedKey;
 		this.alignment = alignment;
 		this.cellRenderer = cellRenderer;
 	}
@@ -48,6 +58,15 @@ public class AbstractFlexiColumnModel implements FlexiColumnModel {
 
 	public String getHeaderKey() {
 		return headerKey;
+	}
+	
+	@Override
+	public String getHeaderLabel() {
+		return headerLabel;
+	}
+	
+	public void setHeaderLabel(String headerLabel) {
+		this.headerLabel = headerLabel;
 	}
 
 	@Override
@@ -62,12 +81,12 @@ public class AbstractFlexiColumnModel implements FlexiColumnModel {
 
 	@Override
 	public boolean isSortable() {
-		return false;
+		return sortable;
 	}
 
 	@Override
-	public void setSortable(boolean enable) {
-		//
+	public void setSortable(boolean sortable) {
+		this.sortable = sortable;
 	}
 
 	@Override
@@ -77,12 +96,12 @@ public class AbstractFlexiColumnModel implements FlexiColumnModel {
 
 	@Override
 	public String getSortKey() {
-		return null;
+		return sortedKey;
 	}
 
 	@Override
 	public void setSortKey(String sortedKey) {
-		//
+		this.sortedKey = sortedKey;
 	}
 
 	public int getAlignment() {

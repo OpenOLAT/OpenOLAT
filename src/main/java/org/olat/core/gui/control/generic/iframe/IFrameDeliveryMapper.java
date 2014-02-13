@@ -72,7 +72,6 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 	private boolean enableTextmarking;
 	private boolean adjusteightAutomatically;
 	
-	private String g_encoding;
 	private String jsEncoding;
 	private String contentEncoding;
 
@@ -93,7 +92,6 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 	}
 	
 	public IFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking, boolean adjusteightAutomatically,
-			String g_encoding, String jsEncoding, String contentEncoding,
 			String frameId, String customCssURL, String themeBaseUri, String customHeaderContent) {
 		
 		this.rootDir = rootDir;
@@ -101,10 +99,6 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		this.rawContent = rawContent;
 		this.enableTextmarking = enableTextmarking;
 		this.adjusteightAutomatically = adjusteightAutomatically;
-		
-		this.g_encoding = g_encoding;
-		this.jsEncoding = jsEncoding;
-		this.contentEncoding = contentEncoding;
 		
 		this.frameId = frameId;
 		this.customCssURL = customCssURL;
@@ -121,7 +115,7 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			}
 			openolatCss = config.getOpenolatCss();
 			if(config.getContentEncoding() != null) {
-				g_encoding = config.getContentEncoding();
+				contentEncoding = config.getContentEncoding();
 			}
 			if(config.getJavascriptEncoding() != null) {
 				jsEncoding = config.getJavascriptEncoding();
@@ -202,13 +196,16 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			if (path.toLowerCase().lastIndexOf(FILE_SUFFIX_HTM) >= (path.length()-4)) {
 				// set the http content-type and the encoding
 				Page page = loadPageWithGuess(vfsLeaf);
-				g_encoding = page.getEncoding();
+				String pageEncoding = page.getEncoding();
 				if (page.isUseLoadedPageString()) {
-					mr = prepareMediaResource(httpRequest, page.getPage(), g_encoding, page.getContentType(), isPopUp);
+					mr = prepareMediaResource(httpRequest, page.getPage(), pageEncoding, page.getContentType(), isPopUp);
 				} else {
 					// found a new charset other than iso-8859-1, load string with proper encoding
-					String content = FileUtils.load(vfsLeaf.getInputStream(), g_encoding);
-					mr = prepareMediaResource(httpRequest, content, g_encoding, page.getContentType(), isPopUp);
+					String content = FileUtils.load(vfsLeaf.getInputStream(), pageEncoding);
+					mr = prepareMediaResource(httpRequest, content, pageEncoding, page.getContentType(), isPopUp);
+				}
+				if(contentEncoding == null) {
+					contentEncoding = pageEncoding;
 				}
 			} else if (path.endsWith(FILE_SUFFIX_JS)) { // a javascript library
 				VFSMediaResource vmr = new VFSMediaResource(vfsLeaf);
@@ -218,8 +215,11 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 				// together with the mime-type, which is wrong.
 				// so we assume the .js file has the same encoding as the html file
 				// that loads the .js file
-				if (jsEncoding != null) vmr.setEncoding(jsEncoding);
-				else if (g_encoding != null) vmr.setEncoding(g_encoding);
+				if (jsEncoding != null) {
+					vmr.setEncoding(jsEncoding);
+				} else if (contentEncoding != null) {
+					vmr.setEncoding(contentEncoding);
+				}
 				mr = vmr;
 			} else {
 				// binary data: not .html, not .htm, not .js -> treated as is
@@ -505,7 +505,7 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		return cType;
 	}
 	
-	private String guessEncoding(String content) {
+	protected String guessEncoding(String content) {
 		Matcher m = PATTERN_ENCTYPE.matcher(content);
 		if (m.find()) {
 			// use found char set

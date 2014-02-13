@@ -1287,6 +1287,28 @@ create table o_lti_outcome (
    primary key (id)
 );
 
+create table o_cl_checkbox (
+   id number(20) not null,
+   creationdate date not null,
+   lastmodified date not null,
+   c_checkboxid varchar2(50 char) not null,
+   c_resname varchar2(50 char) not null,
+   c_resid number(20) not null,
+   c_ressubpath varchar2(255 char) not null,
+   primary key (id)
+);
+
+create table o_cl_check (
+   id number(20) not null,
+   creationdate date not null,
+   lastmodified date not null,
+   c_score float,
+   c_checked number default 0,
+   fk_identity_id number(20) not null,
+   fk_checkbox_id number(20) not null,
+   primary key (id)
+);
+
 create table o_ex_task (
    id number(20) not null,
    creationdate date not null,
@@ -2176,6 +2198,13 @@ alter table o_ex_task_modifier add constraint idx_ex_task_mod_ident_id foreign k
 create index idx_ex_task_mod_ident_idx on o_ex_task_modifier (fk_identity_id);
 alter table o_ex_task_modifier add constraint idx_ex_task_mod_task_id foreign key (fk_task_id) references o_ex_task(id);
 create index idx_ex_task_mod_task_idx on o_ex_task_modifier (fk_task_id);
+
+-- checklist
+alter table o_cl_check add constraint check_identity_ctx foreign key (fk_identity_id) references o_bs_identity (id);
+create index check_to_identity_idx on o_cl_check (fk_identity_id);
+alter table o_cl_check add constraint check_box_ctx foreign key (fk_checkbox_id) references o_cl_checkbox (id);
+create index check_to_checkbox_idx on o_cl_check (fk_checkbox_id);
+create index idx_checkbox_uuid_idx on o_cl_checkbox (c_checkboxid);
 
 -- lifecycle
 create index  lc_pref_idx on o_lifecycle (persistentref);

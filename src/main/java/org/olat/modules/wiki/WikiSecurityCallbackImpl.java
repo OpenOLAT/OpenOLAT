@@ -24,7 +24,7 @@
 */
 package org.olat.modules.wiki;
 
-import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.course.run.userview.NodeEvaluation;
 
 /**

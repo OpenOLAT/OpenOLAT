@@ -26,18 +26,19 @@ import java.util.Locale;
 
 import org.olat.commons.info.manager.InfoMessageManager;
 import org.olat.commons.info.model.InfoMessage;
+import org.olat.core.commons.services.notifications.NotificationsHandler;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionInfo;
+import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
+import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.Util;
-import org.olat.core.util.notifications.NotificationsHandler;
-import org.olat.core.util.notifications.NotificationsManager;
-import org.olat.core.util.notifications.Publisher;
-import org.olat.core.util.notifications.Subscriber;
-import org.olat.core.util.notifications.SubscriptionInfo;
-import org.olat.core.util.notifications.items.SubscriptionListItem;
-import org.olat.core.util.notifications.items.TitleItem;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -67,22 +68,11 @@ public class InfoMessageNotificationHandler extends LogDelegator implements Noti
 				final Long resId = subscriber.getPublisher().getResId();
 				final String resName = subscriber.getPublisher().getResName();
 				String resSubPath = subscriber.getPublisher().getSubidentifier();
-				String businessPath = subscriber.getPublisher().getBusinessPath();
 				String title = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(title, CSS_CLASS_ICON), null);
 				
-				OLATResourceable ores = new OLATResourceable() {
-					@Override
-					public String getResourceableTypeName() {
-						return resName;
-					}
-					@Override
-					public Long getResourceableId() {
-						return resId;
-					}
-				};
-
-				List<InfoMessage> infos = InfoMessageManager.getInstance().loadInfoMessageByResource(ores, resSubPath, businessPath, compareDate, null, 0, 0);
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
+				List<InfoMessage> infos = InfoMessageManager.getInstance().loadInfoMessageByResource(ores, resSubPath, null, compareDate, null, 0, 0);
 				for(InfoMessage info:infos) {
 					String desc = info.getTitle();
 					String tooltip = info.getMessage();

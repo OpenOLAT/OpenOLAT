@@ -39,12 +39,12 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.rss.RSSUtil;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.notifications.PersonalRSSFeed;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.notifications.PersonalRSSFeed;
 
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;

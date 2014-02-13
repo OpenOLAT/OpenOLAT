@@ -676,43 +676,39 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				StepRunnerCallback finish = new StepRunnerCallback(){
 					@SuppressWarnings("unchecked")
 					public Step execute(UserRequest ureq1, WindowControl wControl1, StepsRunContext runContext) {
-						/*
-						 * all information to do now is within the runContext saved
-						 */
+						//all information to do now is within the runContext saved
 						boolean hasChanges = false;
-
-						if (runContext.containsKey("validPublish") && ((Boolean) runContext.get("validPublish")).booleanValue()) {
-
+						
+						PublishProcess publishManager = (PublishProcess)runContext.get("publishProcess");
+						if (runContext.containsKey("validPublish") && ((Boolean)runContext.get("validPublish")).booleanValue()) {
 							Set<String> selectedNodeIds = (Set<String>) runContext.get("publishSetCreatedFor");
 							hasChanges = (selectedNodeIds != null) && (selectedNodeIds.size() > 0);
 							if (hasChanges) {
-								PublishProcess publishManager = (PublishProcess) runContext.get("publishProcess");
 								publishManager.applyPublishSet(ureq1.getIdentity(), ureq1.getLocale());
+								publishManager.applyUpdateSet(ureq1.getIdentity(), ureq1.getLocale());
 							}
 						}
+						
 						if (runContext.containsKey("changedaccess")) {
 							// there were changes made to the general course access
 							String newAccessStr = (String) runContext.get("changedaccess");
 							int newAccess;
-							//fxdiff VCRP-1,2: access control of resources
 							boolean membersOnly = RepositoryEntry.MEMBERS_ONLY.equals(newAccessStr);
 							if(membersOnly) {
 								newAccess = RepositoryEntry.ACC_OWNERS;
 							} else {
 								newAccess = Integer.valueOf(newAccessStr);
 							}
-							PublishProcess publishManager = (PublishProcess) runContext.get("publishProcess");
+							
 							// fires an EntryChangedEvent for repository entry notifying
 							// about modification.
 							publishManager.changeGeneralAccess(ureq1, newAccess, membersOnly);
 							hasChanges = true;
 						}
 						
-						//fxdiff VCRP-3: add catalog entry in publish wizard
 						if (runContext.containsKey("catalogChoice")) {
 							String choice = (String) runContext.get("catalogChoice");
 							List<CategoryLabel> categories = (List<CategoryLabel>)runContext.get("categories");
-							PublishProcess publishManager = (PublishProcess) runContext.get("publishProcess");
 							publishManager.publishToCatalog(choice, categories);
 						}
 

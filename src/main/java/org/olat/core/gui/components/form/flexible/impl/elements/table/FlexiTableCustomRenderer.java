@@ -68,7 +68,13 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 	}
 
 	@Override
-	protected void renderHeaders(StringOutput sb, FlexiTableElementImpl ftE, Translator translator) {
+	protected void renderHeaders(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
+		//do nothing
+	}
+	
+	@Override
+	protected void renderHeaderSort(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm,
+			int colPos, Translator translator) {
 		//do nothing
 	}
 

@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.helpers.Settings;
@@ -42,7 +43,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.CourseNode;

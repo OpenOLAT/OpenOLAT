@@ -268,7 +268,8 @@ public class PublishProcessTest extends OlatTestCase {
 		PublishProcess pp = PublishProcess.getInstance(course, cetm, locale);
 		// create publish node list
 		pp.createPublishSetFor(nodeIds);
-		StatusDescription[] sds = pp.testPublishSet(locale);
+		PublishSetInformations set = pp.testPublishSet(locale);
+		StatusDescription[] sds = set.getWarnings();
 		Assert.assertNotNull(sds);
 		Assert.assertEquals(0, sds.length);
 		pp.applyPublishSet(author, locale);

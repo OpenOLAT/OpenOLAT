@@ -38,6 +38,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -144,6 +145,7 @@ public class TunnelMapper implements Mapper {
 			Header responseHeader = response.getFirstHeader("Content-Type");
 			if (responseHeader == null) {
 				// error
+				EntityUtils.consumeQuietly(response.getEntity());
 				return new NotFoundMediaResource(relPath);
 			}
 			return new HttpRequestMediaResource(response);
@@ -154,7 +156,7 @@ public class TunnelMapper implements Mapper {
 			log.error("", e);
 			return null;
 		} catch (IOException e) {
-			log.error("", e);
+			log.error("Error loading URI: " + (meth == null ? "???" : meth.getURI()), e);
 			return null;
 		}
 	}

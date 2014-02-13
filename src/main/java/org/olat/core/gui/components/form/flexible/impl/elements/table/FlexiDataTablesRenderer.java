@@ -176,4 +176,9 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("/* ]]> */\n")
 		  .append("</script>\n");
 	}
+
+	@Override
+	protected void renderHeaderSort(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, Translator translator) {
+		//nothing to do, dataTables do it alone
+	}
 }

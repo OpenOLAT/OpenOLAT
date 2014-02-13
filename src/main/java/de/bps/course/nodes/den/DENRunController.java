@@ -22,6 +22,10 @@ package de.bps.course.nodes.den;
 import java.util.List;
 
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -43,10 +47,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.notifications.ContextualSubscriptionController;
-import org.olat.core.util.notifications.NotificationsManager;
-import org.olat.core.util.notifications.PublisherData;
-import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;

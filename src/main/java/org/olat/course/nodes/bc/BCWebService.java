@@ -48,12 +48,12 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
-import org.olat.core.util.notifications.NotificationsManager;
-import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;

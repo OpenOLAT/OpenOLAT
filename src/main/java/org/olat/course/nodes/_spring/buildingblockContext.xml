@@ -8,7 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:component-scan base-package="org.olat.course.nodes.en" />
+	<context:component-scan base-package="org.olat.course.nodes.en,org.olat.course.nodes.cl" />
 	  
 	<!-- Course node spring config: Course Nodes are searched on the whole classpath, just place your CourceNodeConfiguration somewhere
 	on the classpath best as a jar. The xml file with ending ...Context.xml has do to be outside of the jar to get automatically loaded -->
@@ -38,7 +38,7 @@
 	<bean id="tu" class="org.olat.course.nodes.tu.TUCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="30" />
 	</bean>
-	
+
 	<bean id="cp" class="org.olat.course.nodes.cp.CPCourseNodeConfiguration" scope="prototype" >
 		<property name="order" value="40" />
 	</bean>
@@ -105,6 +105,10 @@
 		
 	<bean id="cal" class="org.olat.course.nodes.cal.CalCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="200" />
+	</bean>
+	
+	<bean id="checklist" class="org.olat.course.nodes.cl.CheckListCourseNodeConfiguration" scope="prototype" >
+		<property name="order" value="210" />
 	</bean>
 	
 </beans>

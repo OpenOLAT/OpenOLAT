@@ -20,8 +20,8 @@
 package org.olat.commons.calendar.notification;
 
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.group.BusinessGroup;
 
 /**

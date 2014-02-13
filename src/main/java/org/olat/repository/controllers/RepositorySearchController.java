@@ -246,7 +246,11 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * using the values from the form
 	 * @param ureq
 	 */
-	private void doSearch(UserRequest ureq, String limitType, boolean updateFilters) {
+	protected void doSearch(UserRequest ureq, String limitType, boolean updateFilters) {
+		doSearch(ureq, limitType, false, updateFilters);
+	}
+	
+	protected void doSearch(UserRequest ureq, String limitType, boolean onlyOwner, boolean updateFilters) {
 		searchType = SearchType.searchForm;
 		RepositoryManager rm = RepositoryManager.getInstance();
 		Set<String> s = searchForm.getRestrictedTypes();
@@ -256,13 +260,18 @@ public class RepositorySearchController extends BasicController implements Activ
 		} else {
 			restrictedTypes = (s == null) ? null : new ArrayList<String>(s);
 		}
+		
+		String author = searchForm.getAuthor();
+		String displayName = searchForm.getDisplayName();
+		String description = searchForm.getDescription();
 
 		SearchRepositoryEntryParameters params =
-				new SearchRepositoryEntryParameters(searchForm.getDisplayName(), searchForm.getAuthor(), searchForm.getDescription(),
-						restrictedTypes, ureq.getIdentity(), ureq.getUserSession().getRoles(),
-						ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, null));
+				new SearchRepositoryEntryParameters(displayName, author, description,
+						restrictedTypes, getIdentity(), ureq.getUserSession().getRoles(),
+						getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, null));
 		params.setExternalId(searchForm.getExternalId());
 		params.setExternalRef(searchForm.getExternalRef());
+		params.setOnlyOwnedResources(onlyOwner);
 		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);		
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);

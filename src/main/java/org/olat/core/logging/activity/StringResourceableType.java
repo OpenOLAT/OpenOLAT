@@ -64,6 +64,9 @@ public enum StringResourceableType implements ILoggingResourceableType {
 	
 	 /** a checkpoint from a checklist **/
 	checkpoint,
+
+	 /** checkbox from a checklist **/
+	checkbox,
 	
 	/** the briefcase filename **/
 	bcFile, 
