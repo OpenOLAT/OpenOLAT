@@ -69,6 +69,7 @@ import org.olat.core.util.ValidationStatus;
 /**
  * 
  * @author Christian Guretzki
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection,
 	ControllerEventListener, ComponentEventListener {
@@ -83,6 +84,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private int currentPage;
 	private int currentFirstResult;
 	private int pageSize;
+	private boolean editMode;
 	private boolean exportEnabled;
 	private boolean searchEnabled;
 	private boolean selectAllEnabled;
@@ -233,11 +235,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public SingleSelection getFilterSelection() {
 		return filterEl;
 	}
-	
+
+	@Override
 	public boolean isExportEnabled() {
 		return exportEnabled;
 	}
 	
+	@Override
 	public void setExportEnabled(boolean enabled) {
 		this.exportEnabled = enabled;
 		if(exportEnabled) {
@@ -259,10 +263,24 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
+	public boolean isEditMode() {
+		return editMode;
+	}
+
+	@Override
+	public void setEditMode(boolean editMode) {
+		if(this.editMode != editMode) {
+			this.editMode = editMode;
+			component.setDirty(true);
+		}
+	}
+
+	@Override
 	public boolean isSearchEnabled() {
 		return searchEnabled;
 	}
-	
+
+	@Override
 	public void setSearchEnabled(boolean enable) {
 		this.searchEnabled = enable;
 		if(searchEnabled) {
@@ -552,9 +570,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		callout.activate();
 		callout.addControllerListener(this);
 	}
-	
-	protected boolean isColumnModelVisible(FlexiColumnModel col) {
+
+	@Override
+	public boolean isColumnModelVisible(FlexiColumnModel col) {
 		return enabledColumnIndex.contains(col.getColumnIndex());
+	}
+
+	@Override
+	public void setColumnModelVisible(FlexiColumnModel col, boolean visible) {
+		boolean currentlyVisible = enabledColumnIndex.contains(col.getColumnIndex());
+		if(currentlyVisible != visible) {
+			if(visible) {
+				enabledColumnIndex.add(col.getColumnIndex());
+			} else {
+				enabledColumnIndex.remove(col.getColumnIndex());
+			}
+		}
 	}
 	
 	protected void setCustomizedColumns(Choice visibleColsChoice) {

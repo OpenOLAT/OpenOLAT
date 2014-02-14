@@ -95,7 +95,6 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 				DBCheck check = uuidToCheckMap.get(checkbox.getCheckboxId());
 				boolean readOnly = false;
 				CheckboxWrapper wrapper = forgeCheckboxWrapper(checkbox, check, readOnly, formLayout);
-				layoutCont.add(wrapper.getCheckboxEl());
 				wrappers.add(wrapper);
 			}
 			layoutCont.contextPut("checkboxList", wrappers);
@@ -105,7 +104,6 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		formLayout.add(buttonCont);
 		uifactory.addFormSubmitButton("save", "save", buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
-		
 	}
 	
 	private CheckboxWrapper forgeCheckboxWrapper(Checkbox checkbox, DBCheck check, boolean readOnly, FormItemContainer formLayout) {

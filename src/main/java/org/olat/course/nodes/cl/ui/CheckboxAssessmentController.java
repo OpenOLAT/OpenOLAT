@@ -17,50 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.cl.model;
+package org.olat.course.nodes.cl.ui;
 
-import java.beans.Transient;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 
 /**
  * 
- * Initial date: 06.02.2014<br>
+ * Initial date: 14.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckboxList implements Serializable {
-
-	private static final long serialVersionUID = -5703947579583559550L;
+public class CheckboxAssessmentController extends FormBasicController {
 	
-	private List<Checkbox> list;
-	
-	@Transient
-	public int getNumOfCheckbox() {
-		return list == null ? 0 : list.size();
+	public CheckboxAssessmentController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		
+		initForm(ureq);
 	}
 
-	public List<Checkbox> getList() {
-		return list;
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		//
 	}
 
-	public void setList(List<Checkbox> list) {
-		this.list = list;
+	@Override
+	protected void doDispose() {
+		//
 	}
 	
-	public void add(Checkbox checkbox) {
-		if(list == null) {
-			list = new ArrayList<Checkbox>();
-			list.add(checkbox);
-		} else if(!list.contains(checkbox)) {
-			list.add(checkbox);
-		}
-	}
-	
-	public void remove(Checkbox checkbox) {
-		if(list != null) {
-			list.remove(checkbox);
-		}
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 }

@@ -17,9 +17,8 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.cl.ui;
+package org.olat.course.nodes.cl.ui.wizard;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,7 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -42,51 +41,46 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.OLATResourceable;
-import org.olat.course.nodes.CheckListCourseNode;
-import org.olat.course.nodes.MSCourseNode;
+import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
+import org.olat.core.gui.control.generic.wizard.StepsEvent;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.cl.model.Checkbox;
-import org.olat.course.nodes.cl.model.CheckboxList;
+import org.olat.course.nodes.cl.ui.CheckListEditController;
+import org.olat.course.nodes.cl.ui.CheckboxConfigDataModel;
 import org.olat.course.nodes.cl.ui.CheckboxConfigDataModel.Cols;
-import org.olat.modules.ModuleConfiguration;
+import org.olat.course.nodes.cl.ui.CheckboxEditController;
 
 /**
- * Controller to manage a list of checks
  * 
- * 
- * Initial date: 04.02.2014<br>
+ * Initial date: 25.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckListBoxListEditController extends FormBasicController {
+public class CheckboxListStepController extends StepFormBasicController {
 	
 	private FormLink addLink;
 	private FlexiTableElement boxTable;
 	private CheckboxConfigDataModel model;
-	private DefaultFlexiColumnModel pointColModel;
 	private CloseableModalController cmc;
 	private CheckboxEditController editCtrl;
-
-	private ModuleConfiguration config;
-	private final OLATResourceable courseOres;
-	private final CheckListCourseNode courseNode;
 	
-	public CheckListBoxListEditController(UserRequest ureq, WindowControl wControl,
-			OLATResourceable courseOres, CheckListCourseNode courseNode) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+	private final GeneratorData data;
+
+	public CheckboxListStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
+		setTranslator(Util.createPackageTranslator(CheckListEditController.class, getLocale(), getTranslator()));
 		
-		this.courseOres = courseOres;
-		this.courseNode = courseNode;
-		config = courseNode.getModuleConfiguration();
-		
+		data = (GeneratorData)getFromRunContext("data");
+
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("config.checkbox.title");
-		setFormDescription("config.checkbox.description");
-		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-checkbox.html", "help.hover.checkbox");
+		setFormTitle("checkbox.template");
+		setFormDescription("checkbox.template.description");
+		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-checkbox-template.html", "help.hover.checkboxtemplate");
 		
 		FormLayoutContainer tableCont = FormLayoutContainer
 				.createCustomFormLayout("tablecontainer", getTranslator(), velocity_root + "/checkboxlist_edit.html");
@@ -96,20 +90,12 @@ public class CheckListBoxListEditController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title.i18nKey(), Cols.title.ordinal()));
-		
-		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		boolean visible = (hasScore == null || hasScore.booleanValue());
-		pointColModel = new DefaultFlexiColumnModel(visible, Cols.points.i18nKey(), Cols.points.ordinal(), false, null);
-		columnsModel.addFlexiColumnModel(pointColModel);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.points.i18nKey(), Cols.points.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.release.i18nKey(), Cols.release.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.file.i18nKey(), Cols.file.ordinal()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit.checkbox", translate("edit.checkbox"), "edit"));
-		
-		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
-		List<Checkbox> boxList = list == null ? null : list.getList();
-		if(boxList == null) {
-			boxList = new ArrayList<Checkbox>();
-		}
+
+		List<Checkbox> boxList = data.getCheckboxList();
 		model = new CheckboxConfigDataModel(boxList, getTranslator(), columnsModel);
 		boxTable = uifactory.addTableElement(ureq, getWindowControl(), "checkbox-list", model, getTranslator(), tableCont);
 	}
@@ -120,8 +106,21 @@ public class CheckListBoxListEditController extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		setFormWarning(null);
+		if(data.getCheckboxList().isEmpty()) {
+			setFormWarning("error.needone.checklist");
+			allOk &= false;
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
 	@Override
@@ -150,54 +149,35 @@ public class CheckListBoxListEditController extends FormBasicController {
 			cleanUp();
 		} else if(editCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
-				doEdit(ureq, editCtrl.getCheckbox());
+				doEdit(editCtrl.getCheckbox());
 			} else if("delete".equals(event.getCommand())) {
-				doDelete(ureq, editCtrl.getCheckbox());
+				doDelete(editCtrl.getCheckbox());
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(source instanceof CheckListConfigurationController) {
-			//update score / no score
-			Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-			boolean visible = (hasScore == null || hasScore.booleanValue());
-			if(visible != boxTable.isColumnModelVisible(pointColModel)) {
-				boxTable.setColumnModelVisible(pointColModel, visible);
-				boxTable.reset();
-				boxTable.reloadData();
-			}
 		}
 		super.event(ureq, source, event);
 	}
 	
-	private void doDelete(UserRequest ureq, Checkbox checkbox ) {
-		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
-		if(list == null || checkbox == null) return;
-		
-		list.remove(checkbox);
-		config.set(CheckListCourseNode.CONFIG_KEY_CHECKBOX, list);
-		fireEvent(ureq, Event.DONE_EVENT);
-		model.setObjects(list.getList());
+	private void doDelete(Checkbox checkbox) {
+		List<Checkbox> boxList = data.getCheckboxList();
+		boxList.remove(checkbox);
+		model.setObjects(boxList);
 		boxTable.reset();
 	}
 	
-	private void doEdit(UserRequest ureq, Checkbox checkbox) {
-		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
-		if(list == null) {
-			list = new CheckboxList();
-		}
-		list.add(checkbox);
-		config.set(CheckListCourseNode.CONFIG_KEY_CHECKBOX, list);
-		fireEvent(ureq, Event.DONE_EVENT);
-		model.setObjects(list.getList());
+	private void doEdit(Checkbox checkbox) {
+		List<Checkbox> boxList = data.getCheckboxList();
+		boxList.add(checkbox);
+		model.setObjects(boxList);
+		setFormWarning(null);
 		boxTable.reset();
 	}
 
 	private void doOpenEdit(UserRequest ureq, Checkbox checkbox, boolean newCheckbox, String title) {
 		if(editCtrl != null) return;
 		
-		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		boolean withScore = (hasScore == null || hasScore.booleanValue());	
-		editCtrl = new CheckboxEditController(ureq, getWindowControl(), courseOres, courseNode, checkbox, newCheckbox, withScore);
+		editCtrl = new CheckboxEditController(ureq, getWindowControl(), checkbox, newCheckbox, true);
 		listenTo(editCtrl);
 
 		Component content = editCtrl.getInitialComponent();

@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 
 /**
@@ -158,6 +159,18 @@ public interface FlexiTableElement extends FormItem {
 	public boolean isExportEnabled();
 	
 	public void setExportEnabled(boolean enabled);
+	
+	public boolean isEditMode();
+
+	/**
+	 * Set a visual change but do not change anything on the model
+	 * @param editMode
+	 */
+	public void setEditMode(boolean editMode);
+	
+	public boolean isColumnModelVisible(FlexiColumnModel col);
+	
+	public void setColumnModelVisible(FlexiColumnModel col, boolean visible);
 	
 	/**
 	 * 

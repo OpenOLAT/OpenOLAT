@@ -34,7 +34,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.pdf.PdfDocument;
-import org.olat.course.nodes.cl.model.AssessmentDataView;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -61,6 +60,10 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 	public CheckboxPDFExport(String filename, Translator translator, List<UserPropertyHandler> userPropertyHandlers)
 			throws IOException {
 		super();
+		
+		marginTopBottom = 62.0f;
+		marginLeftRight = 62.0f;
+		
 		this.filename = filename;
 		this.translator = translator;
 		
@@ -153,7 +156,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 		}
 	}
 
-	public void create(CheckboxList checkboxList, CheckboxAssessmentDataModel dataModel)
+	public void create(CheckboxList checkboxList, CheckListAssessmentDataModel dataModel)
     throws IOException, COSVisitorException, TransformerException {
     	addPage();
     	addMetadata(title, subject, author);
@@ -161,17 +164,25 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
     		addParagraph(objectives, 10, width);
     	}
     	
-    	float maxSize = 0.0f;
+    	float cellMargin = 5.0f;
+    	
+    	float headerMaxSize = 0.0f;
     	float fontSize = 10.0f;
     	for(Checkbox box:checkboxList.getList()) {
-    		maxSize = Math.max(maxSize, getStringWidth(box.getTitle(), fontSize));
+    		headerMaxSize = Math.max(headerMaxSize, getStringWidth(box.getTitle(), fontSize));
     	}
     	
     	String[] headers = getHeaders(checkboxList);
     	String[][] content = getRows(checkboxList, dataModel);
+    	
+    	float nameMaxSize = 0.0f;
+    	for(String[] row:content) {
+    		nameMaxSize = Math.max(nameMaxSize, getStringWidth(row[0], fontSize));
+    	}
+    	
     	int numOfRows = content.length;
     	for(int offset=0; offset<numOfRows; ) {
-    		offset += drawTable(headers, content, offset, maxSize, fontSize, 5);
+    		offset += drawTable(headers, content, offset, headerMaxSize, nameMaxSize, fontSize, cellMargin);
     		closePage();
         	if(offset<numOfRows) {
         		addPage();
@@ -181,15 +192,15 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
     	addPageNumbers(); 
     }
 	
-	private String[][] getRows(CheckboxList checkboxList, CheckboxAssessmentDataModel dataModel) {
-		List<AssessmentDataView> rows = dataModel.getBackedUpRows();
+	private String[][] getRows(CheckboxList checkboxList, CheckListAssessmentDataModel dataModel) {
+		List<CheckListAssessmentRow> rows = dataModel.getBackedUpRows();
 		int numOfRows = rows.size();
 		List<Checkbox> boxList = checkboxList.getList();
     	int numOfCheckbox = boxList.size();
     	
     	String[][] content = new String[numOfRows][];
     	for(int i=0; i<numOfRows; i++) {
-    		AssessmentDataView row = rows.get(i);
+    		CheckListAssessmentRow row = rows.get(i);
     		content[i] = new String[numOfCheckbox + 2];
         	content[i][0] = getName(row);
         	for(int j=0; j<numOfCheckbox; j++) {
@@ -207,7 +218,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
     	return content;
 	}
 	
-	private String getName(AssessmentDataView view) {
+	private String getName(CheckListAssessmentRow view) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(view.getIdentityProp(lastNameIndex))
 		  .append(", ")
@@ -227,16 +238,15 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
     	return headers;
 	}
     
-	public int drawTable(String[] headers, String[][] content, int offset, float maxHeaderSize, float fontSize, float margin)
+	public int drawTable(String[] headers, String[][] content, int offset, float maxHeaderSize, float nameMaxSize, float fontSize, float cellMargin)
 	throws IOException {
 	
 		float tableWidth = width;
 		int cols = content[0].length;
-		
-		
-		float headerHeight = maxHeaderSize + (2*margin);
-		
-		float rowHeight = (lineHeightFactory * fontSize) + (2 * margin);
+
+		float headerHeight = maxHeaderSize + (2*cellMargin);
+		float rowHeight = (lineHeightFactory * fontSize) + (2 * cellMargin);
+		nameMaxSize += (2 * cellMargin);
 		
 		float availableHeight = currentY - marginTopBottom - headerHeight;
 		float numOfAvailableRows = availableHeight / rowHeight;
@@ -245,8 +255,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 		int rows = end - offset;
 		
 		float tableHeight = (rowHeight * rows) + headerHeight;
-		float colWidth = (tableWidth - 200) / (float) (cols - 2.0f);
-		float cellMargin = 5f;
+		float colWidth = (tableWidth - (100 + nameMaxSize)) / (float) (cols - 2.0f);
 
 		// draw the rows
 		float y = currentY;
@@ -261,7 +270,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 		// draw the columns
 		float nextx = marginLeftRight;
 		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
-		nextx += 100;
+		nextx += nameMaxSize;
 		for (int i=1; i<=cols-2; i++) {
 			drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
 			nextx += colWidth;
@@ -269,53 +278,45 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
 		nextx += 100;
 		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
-		
 
 		// now add the text
-		currentContentStream.setFont(font, fontSize);
 		
 		// draw the headers
 		float textx = marginLeftRight + cellMargin;
 		float texty = currentY;
+		int lastColIndex = cols -1;
 		for (int h=0; h<cols; h++) {
 			String text = headers[h];
 			if(text == null) {
 				text = "";
 			}
 			currentContentStream.beginText();
-			if (h == 0 || h == (cols-1)) {
-				currentContentStream.moveTextPositionByAmount(textx, texty - headerHeight + margin);
+			currentContentStream.setFont(font, fontSize);
+			if (h == 0 || (h == lastColIndex)) {
+				currentContentStream.moveTextPositionByAmount(textx, texty - headerHeight + cellMargin);
 				currentContentStream.drawString(text);
-				textx += 100;
+				textx += nameMaxSize;
 			} else {
-				currentContentStream.setTextRotation(3 * (Math.PI / 2), textx + margin, texty - margin);
+				currentContentStream.setTextRotation(3 * (Math.PI / 2), textx + cellMargin, texty - cellMargin);
 				currentContentStream.drawString(text);
 				textx += colWidth;
 			}
 			currentContentStream.endText();
-			
 		}
 
 		currentY -= headerHeight;
 
-
 		textx = marginLeftRight + cellMargin;
 		texty = currentY - 15;
 		for (int i=offset; i<end; i++) {
-			if(i==200) {
-				System.out.println();
-			}
-			
 			String[] rowContent = content[i];
 			if(rowContent == null) continue;
 			
 			for (int j = 0; j < cols; j++) {
 				String text = rowContent[j];
 				if(text != null) {
-					if("x".equals(text)) {
-						text = "x";
-					} 
 					currentContentStream.beginText();
+					currentContentStream.setFont(font, fontSize);
 					currentContentStream.moveTextPositionByAmount(textx, texty);
 					currentContentStream.drawString(text);
 					currentContentStream.endText();
@@ -325,9 +326,6 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 			texty -= rowHeight;
 			textx = marginLeftRight + cellMargin;
 		}
-		
 		return rows;
 	}
-    
-
 }

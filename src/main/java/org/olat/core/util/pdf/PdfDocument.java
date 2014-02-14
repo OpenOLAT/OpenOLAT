@@ -41,6 +41,9 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 /**
+ * The metric is dpi: 72 dpi.<br/>
+ * 1 inch -> 72 points<br/>
+ * 1cm -> 28.3 points<br/>
  * 
  * Initial date: 12.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -73,7 +76,7 @@ public class PdfDocument {
 			currentContentStream.close();
 		}
 
-		PDPage page = new PDPage();
+		PDPage page = new PDPage(PDPage.PAGE_SIZE_A4);
         document.addPage(page);
         currentPage = page;
         currentContentStream = new PDPageContentStream(document, currentPage);

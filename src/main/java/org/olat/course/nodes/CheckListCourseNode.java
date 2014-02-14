@@ -83,6 +83,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	private static final String ICON_CSS_CLASS = "o_cl_icon";
 	
 	public static final String CONFIG_KEY_PASSED_SUM_CHECKBOX = "passedSumCheckbox";
+	public static final String CONFIG_KEY_PASSED_SUM_CUTVALUE = "passedSumCutValue";
 	public static final String CONFIG_KEY_PASSED_MANUAL_CORRECTION = "passedManualCorrection";
 	
 	public static final String CONFIG_KEY_DUE_DATE = "dueDate";

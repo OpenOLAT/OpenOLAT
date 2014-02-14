@@ -21,21 +21,19 @@ package org.olat.course.nodes.cl;
 
 import java.io.File;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.CheckListCourseNode;
+import org.olat.course.nodes.cl.model.AssessmentBatch;
 import org.olat.course.nodes.cl.model.AssessmentData;
-import org.olat.course.nodes.cl.model.AssessmentDataView;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -59,6 +57,8 @@ public interface CheckboxManager {
 	
 	public void check(DBCheckbox checkbox, Identity owner, Float score, Boolean checked);
 	
+	public void check(OLATResourceable ores, String resSubPath, List<AssessmentBatch> batch);
+	
 	public List<DBCheck> loadCheck(Identity identity, OLATResourceable ores, String resSubPath);
 	
 	public int countChecked(Identity identity, OLATResourceable ores, String resSubPath);
@@ -66,9 +66,6 @@ public interface CheckboxManager {
 	public float calculateScore(Identity identity, OLATResourceable ores, String resSubPath);
 	
 	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, List<SecurityGroup> groups);
-	
-	public List<AssessmentDataView> getAssessmentDataViews(OLATResourceable ores, String resSubPath, List<Checkbox> checkbox,
-			List<SecurityGroup> secGroups, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
 	
 	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode, Checkbox checkbox);
 	

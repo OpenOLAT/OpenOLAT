@@ -110,16 +110,22 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	}
 
 	@Override
-	public void event(UserRequest urequest, Controller source, Event event) {
+	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessibilityCondCtrl) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				Condition cond = accessibilityCondCtrl.getCondition();
 				courseNode.setPreConditionAccess(cond);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if(source == configurationCtrl || source == checkboxListEditCtrl) {
+		} else if(source == configurationCtrl) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				checkboxListEditCtrl.dispatchEvent(ureq, configurationCtrl, event);
+			}
+		} else if(source == checkboxListEditCtrl) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				configurationCtrl.dispatchEvent(ureq, checkboxListEditCtrl, event);
 			}
 		}
 	}

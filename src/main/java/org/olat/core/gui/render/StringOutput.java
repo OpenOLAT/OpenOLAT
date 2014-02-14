@@ -60,7 +60,7 @@ public class StringOutput extends Writer {
 
 	/**
 	 * @param val
-	 * @return this
+	 * @return Itself
 	 */
 	public StringOutput append(String val) {
 		sb.append(val);
@@ -68,8 +68,21 @@ public class StringOutput extends Writer {
 	}
 	
 	/**
+	 * 
+	 * @param val The value to append
+	 * @param append If true append happens, if false not
+	 * @return Itself
+	 */
+	public StringOutput append(String val, boolean append) {
+		if(append) {
+			sb.append(val);
+		}
+		return this;
+	}
+	
+	/**
 	 * @param val
-	 * @return this
+	 * @return Itself
 	 */
 	public StringOutput append(boolean val) {
 		sb.append(val);
@@ -78,7 +91,7 @@ public class StringOutput extends Writer {
 
 	/**
 	 * @param i
-	 * @return
+	 * @return Itself
 	 */
 	public StringOutput append(int i) {
 		sb.append(i);
@@ -87,7 +100,7 @@ public class StringOutput extends Writer {
 
 	/**
 	 * @param stringOutput
-	 * @return
+	 * @return Itself
 	 */
 	public StringOutput append(StringOutput stringOutput) {
 		sb.append(stringOutput.toString());
@@ -101,7 +114,7 @@ public class StringOutput extends Writer {
 
 	/**
 	 * @param sMin
-	 * @return
+	 * @return Itself
 	 */
 	public StringOutput append(long sMin) {
 		sb.append(String.valueOf(sMin));
@@ -110,7 +123,7 @@ public class StringOutput extends Writer {
 
 	/**
 	 * @param buffer
-	 * @return
+	 * @return Itself
 	 */
 	public StringOutput append(StringBuilder buffer) {
 		sb.append(buffer);
@@ -119,7 +132,7 @@ public class StringOutput extends Writer {
 	
 	/**
 	 * @param buffer
-	 * @return
+	 * @return Itself
 	 */
 	public StringOutput appendScanned(String str) {
 		sb.append(new OWASPAntiSamyXSSFilter().filter(str));
@@ -128,7 +141,7 @@ public class StringOutput extends Writer {
 	
 	/**
 	 * @param buffer
-	 * @return
+	 * @return Itself
 	 */
 	public StringOutput appendHtmlEscaped(String str) {
 		try {

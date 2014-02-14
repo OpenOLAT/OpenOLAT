@@ -73,6 +73,7 @@ public class CheckboxEditController extends FormBasicController {
 	private FileElement fileEl;
 	
 	private final Checkbox checkbox;
+	private final boolean withScore;
 	private final boolean newCheckbox;
 	private final OLATResourceable courseOres;
 	private final CheckListCourseNode courseNode;
@@ -80,10 +81,16 @@ public class CheckboxEditController extends FormBasicController {
 	private final CheckboxManager checkboxManager;
 	
 	public CheckboxEditController(UserRequest ureq, WindowControl wControl,
+			Checkbox checkbox, boolean newCheckbox, boolean withScore) {
+		this(ureq, wControl, null, null, checkbox, newCheckbox, withScore);
+	}
+	
+	public CheckboxEditController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable courseOres, CheckListCourseNode courseNode,
-			Checkbox checkbox, boolean newCheckbox) {
+			Checkbox checkbox, boolean newCheckbox, boolean withScore) {
 		super(ureq, wControl);
 		this.checkbox = checkbox;
+		this.withScore = withScore;
 		this.courseOres = courseOres;
 		this.courseNode = courseNode;
 		this.newCheckbox = newCheckbox;
@@ -121,11 +128,14 @@ public class CheckboxEditController extends FormBasicController {
 		String[] onKeys = new String[] { "on" };
 		String[] onValues = new String[] { translate("award.point.on") };
 		awardPointEl = uifactory.addCheckboxesHorizontal("points", formLayout, onKeys, onValues, null);
+		awardPointEl.setVisible(withScore);
+		awardPointEl.addActionListener(this, FormEvent.ONCHANGE);
 		if(checkbox.getPoints() != null) {
 			awardPointEl.select(onKeys[0], true);
 		}
 		String points = checkbox.getPoints() == null ? null : Float.toString(checkbox.getPoints().floatValue());
 		pointsEl = uifactory.addTextElement("numofpoints", null, 10, points, formLayout);
+		pointsEl.setVisible(withScore && awardPointEl.isAtLeastSelected(1));
 		pointsEl.setDisplaySize(5);
 		
 		String desc = checkbox.getDescription();
@@ -204,9 +214,11 @@ public class CheckboxEditController extends FormBasicController {
 			}
 		}
 		
-		ILoggingAction action = newCheckbox ? CourseLoggingAction.CHECKLIST_CHECKBOX_CREATED : CourseLoggingAction.CHECKLIST_CHECKBOX_UPDATED;
-		ThreadLocalUserActivityLogger.log(action, getClass(), LoggingResourceable.wrap(courseNode),
-			LoggingResourceable.wrapNonOlatResource(StringResourceableType.checkbox, checkbox.getCheckboxId(), checkbox.getTitle()));
+		if(courseNode != null) {
+			ILoggingAction action = newCheckbox ? CourseLoggingAction.CHECKLIST_CHECKBOX_CREATED : CourseLoggingAction.CHECKLIST_CHECKBOX_UPDATED;
+			ThreadLocalUserActivityLogger.log(action, getClass(), LoggingResourceable.wrap(courseNode),
+				LoggingResourceable.wrapNonOlatResource(StringResourceableType.checkbox, checkbox.getCheckboxId(), checkbox.getTitle()));
+		}
 
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -220,9 +232,12 @@ public class CheckboxEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(deleteLink == source) {
 			fireEvent(ureq, new Event("delete"));
-
-			ThreadLocalUserActivityLogger.log(CourseLoggingAction.CHECKLIST_CHECKBOX_DELETED, getClass(), LoggingResourceable.wrap(courseNode),
-				LoggingResourceable.wrapNonOlatResource(StringResourceableType.checkbox, checkbox.getCheckboxId(), checkbox.getTitle()));
+			if(courseNode != null) {
+				ThreadLocalUserActivityLogger.log(CourseLoggingAction.CHECKLIST_CHECKBOX_DELETED, getClass(), LoggingResourceable.wrap(courseNode),
+						LoggingResourceable.wrapNonOlatResource(StringResourceableType.checkbox, checkbox.getCheckboxId(), checkbox.getTitle()));
+			}
+		} else if(awardPointEl == source) {
+			pointsEl.setVisible(withScore && awardPointEl.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

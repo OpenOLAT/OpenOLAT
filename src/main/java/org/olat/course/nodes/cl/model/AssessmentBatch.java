@@ -19,48 +19,39 @@
  */
 package org.olat.course.nodes.cl.model;
 
-import java.beans.Transient;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * 
- * Initial date: 06.02.2014<br>
+ * Initial date: 14.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckboxList implements Serializable {
-
-	private static final long serialVersionUID = -5703947579583559550L;
+public class AssessmentBatch {
 	
-	private List<Checkbox> list;
+	private final Long identityKey;
+	private final String checkboxId;
+	private final boolean check;
+	private final Float score;
 	
-	@Transient
-	public int getNumOfCheckbox() {
-		return list == null ? 0 : list.size();
+	public AssessmentBatch(Long identityKey, String checkboxId, Float score, boolean check) {
+		this.identityKey = identityKey;
+		this.checkboxId = checkboxId;
+		this.check = check;
+		this.score = score;
+	}
+	
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+	
+	public boolean getCheck() {
+		return check;
 	}
 
-	public List<Checkbox> getList() {
-		return list;
+	public Float getScore() {
+		return score;
 	}
 
-	public void setList(List<Checkbox> list) {
-		this.list = list;
-	}
-	
-	public void add(Checkbox checkbox) {
-		if(list == null) {
-			list = new ArrayList<Checkbox>();
-			list.add(checkbox);
-		} else if(!list.contains(checkbox)) {
-			list.add(checkbox);
-		}
-	}
-	
-	public void remove(Checkbox checkbox) {
-		if(list != null) {
-			list.remove(checkbox);
-		}
+	public String getCheckboxId() {
+		return checkboxId;
 	}
 }

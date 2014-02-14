@@ -1,0 +1,141 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.course.nodes.cl.ui.wizard;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.CheckListCourseNode;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.cl.model.Checkbox;
+import org.olat.course.nodes.cl.model.CheckboxList;
+import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.ModuleConfiguration;
+
+/**
+ * 
+ * Initial date: 13.02.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class CheckListStepRunnerCallback implements StepRunnerCallback {
+	
+	private final OLATResourceable courseOres;
+	
+	public CheckListStepRunnerCallback(OLATResourceable courseOres) {
+		this.courseOres = OresHelper.clone(courseOres);
+	}
+
+	@Override
+	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+		GeneratorData data = (GeneratorData)runContext.get("data");
+		List<Checkbox> templateCheckbox = data.getCheckboxList();
+		ModuleConfiguration templateConfig = data.getModuleConfiguration();
+		
+		ICourse course = CourseFactory.getCourseEditSession(courseOres.getResourceableId());
+		
+		CourseNode structureNode = createCourseNode(data.getStructureShortTitle(), data.getStructureTitle(), data.getStructureObjectives(), "st");
+		CourseEditorTreeNode parentNode = (CourseEditorTreeNode)course.getEditorTreeModel().getRootNode();
+		course.getEditorTreeModel().addCourseNode(structureNode, parentNode.getCourseNode());
+		
+		List<CheckListNode> nodes = data.getNodes();
+		List<String> nodesIdent = new ArrayList<>();
+		for(CheckListNode node:nodes) {
+			String title = node.getTitle();
+			CourseNode checkNode = createCourseNode(title, title, null, "checklist");
+			nodesIdent.add(checkNode.getIdent());
+
+			ModuleConfiguration config = checkNode.getModuleConfiguration();
+			config.putAll(templateConfig);
+			
+			CheckboxList checkboxList = new CheckboxList();
+			List<Checkbox> boxes = new ArrayList<>();
+			for(Checkbox templateBox:templateCheckbox) {
+				boxes.add(templateBox.clone());
+			}
+			checkboxList.setList(boxes);
+			config.set(CheckListCourseNode.CONFIG_KEY_CHECKBOX, checkboxList);
+			
+			boolean dueDate = node.getDueDate() != null;
+			if(dueDate) {
+				config.set(CheckListCourseNode.CONFIG_KEY_DUE_DATE, node.getDueDate());
+			}
+			config.set(CheckListCourseNode.CONFIG_KEY_CLOSE_AFTER_DUE_DATE, new Boolean(dueDate));
+			
+			course.getEditorTreeModel().addCourseNode(checkNode, structureNode);
+		}
+		
+		setScoreCalculation(data, (STCourseNode)structureNode, nodesIdent);
+		
+		return StepsMainRunController.DONE_MODIFIED;
+	}
+	
+	private void setScoreCalculation(GeneratorData data, STCourseNode stNode, List<String> checklistNodes) {
+		if(!data.isPassed() && !data.isPoints()) return;
+
+		ScoreCalculator sc = stNode.getScoreCalculator();
+		if(data.isPoints()) {
+			sc.setSumOfScoreNodes(new ArrayList<String>(checklistNodes));
+		} else {
+			sc.setSumOfScoreNodes(null);
+		}
+
+		if(data.isPassed()) {
+			Float cutValue = data.getCutValue();
+			if(cutValue == null) {
+				sc.setPassedType(ScoreCalculator.PASSED_TYPE_INHERIT);
+				sc.setPassedNodes(new ArrayList<String>(checklistNodes));
+			} else {
+				sc.setPassedType(ScoreCalculator.PASSED_TYPE_CUTVALUE);
+				sc.setPassedCutValue(cutValue.intValue());
+			}
+		} else {
+			sc.setPassedType(ScoreCalculator.PASSED_TYPE_NONE);
+		}
+
+		sc.setScoreExpression(sc.getScoreExpressionFromEasyModeConfiguration());
+		sc.setPassedExpression(sc.getPassedExpressionFromEasyModeConfiguration());
+		stNode.setScoreCalculator(sc);
+	}
+	
+	private CourseNode createCourseNode(String shortTitle, String title, String objectives, String type) {
+		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
+		CourseNode newNode = newNodeConfig.getInstance();
+		newNode.setShortTitle(shortTitle);
+		newNode.setLongTitle(title);
+		newNode.setLearningObjectives(objectives);
+		newNode.setNoAccessExplanation("You don't have access");
+		return newNode;
+	}
+}

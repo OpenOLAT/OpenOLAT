@@ -20,6 +20,7 @@
 package org.olat.course.nodes.cl.model;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import org.olat.course.nodes.cl.ui.CheckboxLabelEnum;
 import org.olat.course.nodes.cl.ui.CheckboxReleaseEnum;
@@ -100,5 +101,18 @@ public class Checkbox implements Serializable {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+	
+	@Override
+	public Checkbox clone() {
+		Checkbox clone = new Checkbox();
+		clone.title = title;
+		clone.points = points;
+		clone.checkboxId = UUID.randomUUID().toString();
+		clone.release = release;
+		clone.label = label;
+		clone.description = description;
+		clone.filename = filename;
+		return clone;
 	}
 }

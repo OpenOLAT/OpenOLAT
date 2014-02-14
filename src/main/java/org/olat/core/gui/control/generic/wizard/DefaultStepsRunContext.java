@@ -17,50 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.cl.model;
+package org.olat.core.gui.control.generic.wizard;
 
-import java.beans.Transient;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 
- * Initial date: 06.02.2014<br>
+ * Initial date: 13.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckboxList implements Serializable {
+public class DefaultStepsRunContext implements StepsRunContext {
+	
+	private final Map<String, Object> context = new HashMap<String, Object>();
 
-	private static final long serialVersionUID = -5703947579583559550L;
-	
-	private List<Checkbox> list;
-	
-	@Transient
-	public int getNumOfCheckbox() {
-		return list == null ? 0 : list.size();
+	@Override
+	public void put(String key, Object value) {
+		context.put(key, value);
 	}
 
-	public List<Checkbox> getList() {
-		return list;
+	@Override
+	public Object get(String key) {
+		return context.get(key);
 	}
 
-	public void setList(List<Checkbox> list) {
-		this.list = list;
+	@Override
+	public boolean containsKey(String key) {
+		return context.containsKey(key);
 	}
-	
-	public void add(Checkbox checkbox) {
-		if(list == null) {
-			list = new ArrayList<Checkbox>();
-			list.add(checkbox);
-		} else if(!list.contains(checkbox)) {
-			list.add(checkbox);
-		}
-	}
-	
-	public void remove(Checkbox checkbox) {
-		if(list != null) {
-			list.remove(checkbox);
-		}
-	}
+
 }

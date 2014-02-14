@@ -38,11 +38,11 @@ import org.olat.core.util.StringHelper;
 
 /**
  * 
- * Initial date: 07.02.2014<br>
+ * Initial date: 14.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckboxAssessmentDataModel extends DefaultFlexiTableDataModel<CheckListAssessmentRow>
+public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<CheckListAssessmentRow>
 	implements FilterableFlexiTableModel, SortableFlexiTableDataModel<CheckListAssessmentRow>,
 	    ExportableFlexiTableDataModel {
 	
@@ -51,7 +51,7 @@ public class CheckboxAssessmentDataModel extends DefaultFlexiTableDataModel<Chec
 	
 	private List<CheckListAssessmentRow> backupRows;
 	
-	public CheckboxAssessmentDataModel(List<CheckListAssessmentRow> datas, FlexiTableColumnModel columnModel) {
+	public CheckListAssessmentDataModel(List<CheckListAssessmentRow> datas, FlexiTableColumnModel columnModel) {
 		super(datas, columnModel);
 		backupRows = datas;
 	}
@@ -65,7 +65,7 @@ public class CheckboxAssessmentDataModel extends DefaultFlexiTableDataModel<Chec
 
 	@Override
 	public DefaultFlexiTableDataModel<CheckListAssessmentRow> createCopyWithEmptyList() {
-		return new CheckboxAssessmentDataModel(new ArrayList<CheckListAssessmentRow>(), getTableColumnModel());
+		return new CheckListAssessmentDataModel(new ArrayList<CheckListAssessmentRow>(), getTableColumnModel());
 	}
 	
 	@Override

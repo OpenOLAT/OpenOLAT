@@ -499,7 +499,7 @@ public class Form extends LogDelegator {
 		for (Iterator<FormBasicController> iterator = formListeners.iterator(); iterator.hasNext();) {
 			FormBasicController fbc = iterator.next();
 			//let all listeners validate and calc the total isValid
-			//let further validate even if one fails. TODO:pb discuss with cg
+			//let further validate even if one fails.
 			isValid = fbc.validateFormLogic(ureq) && isValid;
 		}
 
