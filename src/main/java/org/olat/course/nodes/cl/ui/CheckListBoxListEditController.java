@@ -67,14 +67,15 @@ public class CheckListBoxListEditController extends FormBasicController {
 	private CloseableModalController cmc;
 	private CheckboxEditController editCtrl;
 
+	private final boolean inUse;
 	private ModuleConfiguration config;
 	private final OLATResourceable courseOres;
 	private final CheckListCourseNode courseNode;
 	
 	public CheckListBoxListEditController(UserRequest ureq, WindowControl wControl,
-			OLATResourceable courseOres, CheckListCourseNode courseNode) {
+			OLATResourceable courseOres, CheckListCourseNode courseNode, boolean inUse) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		
+		this.inUse = inUse;
 		this.courseOres = courseOres;
 		this.courseNode = courseNode;
 		config = courseNode.getModuleConfiguration();
@@ -87,6 +88,9 @@ public class CheckListBoxListEditController extends FormBasicController {
 		setFormTitle("config.checkbox.title");
 		setFormDescription("config.checkbox.description");
 		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-checkbox.html", "help.hover.checkbox");
+		if(inUse) {
+			setFormWarning("config.warning.inuse");
+		}
 		
 		FormLayoutContainer tableCont = FormLayoutContainer
 				.createCustomFormLayout("tablecontainer", getTranslator(), velocity_root + "/checkboxlist_edit.html");

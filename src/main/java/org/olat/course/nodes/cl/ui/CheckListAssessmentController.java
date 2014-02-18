@@ -37,6 +37,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -68,13 +69,14 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.course.nodes.CheckListCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.AssessmentBatch;
 import org.olat.course.nodes.cl.model.AssessmentData;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
-import org.olat.course.nodes.cl.ui.CheckboxAssessmentDataModel.Cols;
+import org.olat.course.nodes.cl.ui.CheckListAssessmentDataModel.Cols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
@@ -101,30 +103,31 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private static final String[] onValues = new String[] { "" };
 	
 	private final Date dueDate;
+	private final boolean withScore;
+	private final CheckboxList checkboxList;
 	private final Boolean closeAfterDueDate;
 	private final OLATResourceable courseOres;
 	private final CheckListCourseNode courseNode;
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment userCourseEnv;
 	private final boolean isAdministrativeUser;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private FormSubmit saveButton;
 	private FormCancel cancelButton;
-	private FormLink pdfExport, editButton;
+	private FormLink pdfExport, checkedPdfExport, editButton, boxAssessmentButton;
 	private CheckListAssessmentDataModel model;
 	private FlexiTableElement table;
-	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final CheckboxList checkboxList;
 	
 	private CloseableModalController cmc;
 	private AssessedIdentityOverviewController editCtrl;
+	private CheckboxAssessmentController boxAssessmentCtrl;
 	
 	private final UserManager userManager;
 	private final BaseSecurity securityManager;
 	private final CheckboxManager checkboxManager;
 	private final RepositoryManager repositoryManager;
 	private final BusinessGroupService businessGroupService;
-	
 	
 	/**
 	 * Use this constructor to launch the checklist.
@@ -149,7 +152,13 @@ public class CheckListAssessmentController extends FormBasicController implement
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
 		config = courseNode.getModuleConfiguration();
-		checkboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+		CheckboxList configCheckboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+		if(configCheckboxList == null) {
+			checkboxList = new CheckboxList();
+			checkboxList.setList(Collections.<Checkbox>emptyList());
+		} else {
+			checkboxList = configCheckboxList;
+		}
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
@@ -160,12 +169,18 @@ public class CheckListAssessmentController extends FormBasicController implement
 		} else {
 			dueDate = null;
 		}
+		
+		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+		withScore = (hasScore == null || hasScore.booleanValue());	
 
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormDescription("coach.desc");
+		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-coach-assessment.html", "help.hover.metadatas");
+
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			if(dueDate != null) {
@@ -199,6 +214,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			}
 		}
 		
+		int numOfCheckbox = checkboxList.getNumOfCheckbox();
 		List<Checkbox> boxList = checkboxList.getList();
 		int j = 0;
 		for(Checkbox box:boxList) {
@@ -209,7 +225,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 			columnsModel.addFlexiColumnModel(column);
 		}
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.totalPoints.i18nKey(), Cols.totalPoints.ordinal(), true, "points"));
+		if(withScore) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.totalPoints.i18nKey(), Cols.totalPoints.ordinal(), true, "points"));
+		}
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit.checkbox", translate("edit.checkbox"), "edit"));
 		
 		String[] keys = null;
@@ -236,12 +254,19 @@ public class CheckListAssessmentController extends FormBasicController implement
 		table.setExportEnabled(true);
 		
 		pdfExport = uifactory.addFormLink("pdf.export", formLayout, Link.BUTTON);
+		pdfExport.setEnabled(numOfCheckbox > 0);
+		checkedPdfExport = uifactory.addFormLink("pdf.export.checked", formLayout, Link.BUTTON);
+		checkedPdfExport.setEnabled(numOfCheckbox > 0);
+		
 		editButton = uifactory.addFormLink("edit", formLayout, Link.BUTTON);
+		editButton.setEnabled(numOfCheckbox > 0);
 		saveButton = uifactory.addFormSubmitButton("save", formLayout);
 		saveButton.getComponent().setSpanAsDomReplaceable(true);
 		saveButton.setVisible(false);
 		cancelButton = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		cancelButton.setVisible(false);
+		boxAssessmentButton = uifactory.addFormLink("box.assessment", formLayout, Link.BUTTON);
+		boxAssessmentButton.setEnabled(numOfCheckbox > 0);
 	}
 	
 	private List<CheckListAssessmentRow> loadDatas() {
@@ -250,8 +275,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 
 		UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)userCourseEnv;
-		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
-		List<Checkbox> checkboxList = list.getList();
+		List<Checkbox> checkboxColl = checkboxList.getList();
+		int numOfCheckbox = checkboxList.getNumOfCheckbox();
 
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		Map<Long,Long> groupToSecGroupKey = new HashMap<Long,Long>();
@@ -276,7 +301,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 
 		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(courseOres, courseNode.getIdent(), secGroups);
-		List<CheckListAssessmentRow> boxList = getAssessmentDataViews(dataList, checkboxList);
+		List<CheckListAssessmentRow> boxList = getAssessmentDataViews(dataList, checkboxColl);
 		Map<Long,CheckListAssessmentRow> identityToView = new HashMap<>();
 		for(CheckListAssessmentRow box:boxList) {
 			identityToView.put(box.getIdentityKey(), box);
@@ -294,7 +319,10 @@ public class CheckListAssessmentController extends FormBasicController implement
 
 		List<Identity> missingIdentities = securityManager.loadIdentityByKeys(missingIdentityKeys);
 		for(Identity missingIdentity:missingIdentities) {
-			CheckListAssessmentRow view = new CheckListAssessmentRow(missingIdentity, null, null, userPropertyHandlers, getLocale());
+			Boolean[] checked = new Boolean[numOfCheckbox];
+			Float[] scores = new Float[numOfCheckbox];
+			CheckListAssessmentRow view = new CheckListAssessmentRow(missingIdentity, checked, scores, null,
+					userPropertyHandlers, getLocale());
 			identityToView.put(missingIdentity.getKey(), view);
 		}
 		
@@ -322,12 +350,14 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 		
 		for(AssessmentData data:datas) {
+			Float[] scores = new Float[numOfcheckbox];
 			Boolean[] checkBool = new Boolean[numOfcheckbox];
 			float totalPoints = 0.0f;
 			for(DBCheck check:data.getChecks()) {
 				Float score = check.getScore();
 				if(score != null) {
 					totalPoints += score.floatValue();
+					
 				}
 				
 				if(check.getChecked() == null) continue;
@@ -336,11 +366,12 @@ public class CheckListAssessmentController extends FormBasicController implement
 				if(index != null) {
 					int i = index.intValue();
 					if(i >= 0 && i<numOfcheckbox) {
+						scores[i] = score;
 						checkBool[i] = check.getChecked();
 					}
 				}
 			}
-			CheckListAssessmentRow row = new CheckListAssessmentRow(data.getIdentity(), checkBool, totalPoints, userPropertyHandlers, getLocale());
+			CheckListAssessmentRow row = new CheckListAssessmentRow(data.getIdentity(), checkBool, scores, totalPoints, userPropertyHandlers, getLocale());
 			dataViews.add(row);
 		}
 		return dataViews;
@@ -378,20 +409,35 @@ public class CheckListAssessmentController extends FormBasicController implement
 			}
 		} else if(pdfExport == source) {
 			doExportPDF(ureq);
+		} else if(checkedPdfExport == source) {
+			doCheckedExportPDF(ureq);
 		} else if(editButton == source) {
 			saveButton.setVisible(true);
 			cancelButton.setVisible(true);
 			editButton.setVisible(false);
 			doEdit();
+		} else if(boxAssessmentButton == source) {
+			doOpenBoxAssessment(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(editCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
+		} else if(boxAssessmentCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+			
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				DBFactory.getInstance().commit();//make sure all changes are on the database
+				model.setObjects(loadDatas());
+				table.reset();
+				table.reloadData();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -399,8 +445,10 @@ public class CheckListAssessmentController extends FormBasicController implement
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(boxAssessmentCtrl);
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
+		boxAssessmentCtrl = null;
 		editCtrl = null;
 		cmc = null;
 	}
@@ -408,6 +456,21 @@ public class CheckListAssessmentController extends FormBasicController implement
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private void doOpenBoxAssessment(UserRequest ureq) {
+		if(boxAssessmentCtrl != null) return;
+
+		List<CheckListAssessmentRow> rows = model.getBackedUpRows();
+		boxAssessmentCtrl = new CheckboxAssessmentController(ureq, getWindowControl(), checkboxList, rows,
+				courseOres, userCourseEnv, courseNode);
+		listenTo(boxAssessmentCtrl);
+
+		String title = translate("box.assessment");
+		Component content = boxAssessmentCtrl.getInitialComponent();
+		cmc = new CloseableModalController(getWindowControl(), "close", content, true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doEdit() {
@@ -438,6 +501,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		int numOfCheckbox = checkboxList.getNumOfCheckbox();
 		List<CheckListAssessmentRow> rows = model.getBackedUpRows();
 		List<AssessmentBatch> batchElements = new ArrayList<>();
+		Set<Long> assessedIdentityToUpdate = new HashSet<>();
 		for(CheckListAssessmentRow row:rows) {
 			Boolean[] checked = row.getChecked();
 			Boolean[] editedChecked = new Boolean[numOfCheckbox];
@@ -458,7 +522,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 					if(editedValue != currentValue) {
 						Checkbox checkbox = checkboxList.getList().get(i);
 						String checkboxId = checkbox.getCheckboxId();
-						batchElements.add(new AssessmentBatch(row.getIdentityKey(), checkboxId, checkbox.getPoints(), editedValue));
+						Float score = editedValue ? checkbox.getPoints() : new Float(0f);
+						batchElements.add(new AssessmentBatch(row.getIdentityKey(), checkboxId, score, editedValue));
+						assessedIdentityToUpdate.add(row.getIdentityKey());
 					}
 
 					flc.remove(checkEl);
@@ -469,8 +535,16 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 		doDisableEditingMode();
 		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
+		
+		if(assessedIdentityToUpdate.size() > 0) {
+			DBFactory.getInstance().commit();
+			
+			List<Identity> identities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
+			for(Identity identity:identities) {
+				courseNode.updateScoreEvaluation(userCourseEnv, identity);
+			}
+		}
 	}
-
 	
 	private void doDisableEditingMode() {
 		table.setEditMode(false);
@@ -501,6 +575,21 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 	}
 	
+	private void doCheckedExportPDF(UserRequest ureq) {
+		try {
+			String name = courseNode.getShortTitle();
+			CheckedPDFExport pdfExport = new CheckedPDFExport(name, getTranslator(), withScore, userPropertyHandlers);
+			pdfExport.setAuthor(userManager.getUserDisplayName(getIdentity()));
+			pdfExport.setTitle(courseNode.getShortTitle());
+			pdfExport.setSubject(courseNode.getLongTitle());
+			pdfExport.setObjectives(courseNode.getLearningObjectives());
+			pdfExport.create(checkboxList, model);
+			ureq.getDispatchResult().setResultingMediaResource(pdfExport);
+		} catch (IOException | COSVisitorException | TransformerException e) {
+			logError("", e);
+		}
+	}
+	
 	private void doOpenIdentity(UserRequest ureq, CheckListAssessmentRow row) {
 		String businessPath = "[Identity:" + row.getIdentityKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
@@ -510,7 +599,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 		if(editCtrl != null) return;
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-		editCtrl = new AssessedIdentityOverviewController(ureq, getWindowControl(), assessedIdentity, courseOres, courseNode);
+		editCtrl = new AssessedIdentityOverviewController(ureq, getWindowControl(), assessedIdentity,
+				courseOres, userCourseEnv, courseNode);
 		listenTo(editCtrl);
 
 		String title = courseNode.getShortTitle();

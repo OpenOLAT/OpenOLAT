@@ -39,6 +39,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.olat.core.util.StringHelper;
 
 /**
  * The metric is dpi: 72 dpi.<br/>
@@ -52,6 +53,7 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 public class PdfDocument {
 	
 	protected PDFont font = PDType1Font.HELVETICA;
+	protected PDFont fontBold = PDType1Font.HELVETICA_BOLD;
 	protected float marginTopBottom = 72.0f;
 	protected float marginLeftRight = 72.0f;
 	protected float lineHeightFactory = 1.5f;
@@ -107,8 +109,14 @@ public class PdfDocument {
 
     public void addParagraph(String text, float fontSize, float width)
     throws IOException {
+    	addParagraph(text, fontSize, false, width);
+    }
     	
+    public void addParagraph(String text, float fontSize, boolean bold, float width)
+    throws IOException {
         float leading = lineHeightFactory * fontSize;
+        
+        PDFont textFont = bold ? fontBold : font;
 
         List<String> lines = new ArrayList<String>();
         int lastSpace = -1;
@@ -119,7 +127,7 @@ public class PdfDocument {
                 text = "";
             } else {
                 String subString = text.substring(0, spaceIndex);
-                float size = fontSize * font.getStringWidth(subString) / 1000;
+                float size = fontSize * textFont.getStringWidth(subString) / 1000;
                 if (size > width) {
                     if (lastSpace < 0) // So we have a word longer than the line... draw it anyways
                         lastSpace = spaceIndex;
@@ -134,7 +142,7 @@ public class PdfDocument {
         }
 
         currentContentStream.beginText();
-        currentContentStream.setFont(font, fontSize);
+        currentContentStream.setFont(textFont, fontSize);
         currentContentStream.moveTextPositionByAmount(marginLeftRight, currentY);            
         for (String line: lines) {
         	currentContentStream.drawString(line);
@@ -153,6 +161,17 @@ public class PdfDocument {
     throws IOException {
 		currentContentStream.setLineWidth(width);
 		currentContentStream.drawLine(xStart, yStart, xEnd, yEnd);
+    }
+    
+    public void drawTextAtMovedPositionByAmount(String text, float fontSize, float textx, float texty)
+    throws IOException {
+    	if(!StringHelper.containsNonWhitespace(text)) return;
+    	
+    	currentContentStream.beginText();
+		currentContentStream.setFont(font, fontSize);
+		currentContentStream.moveTextPositionByAmount(textx, texty);
+		currentContentStream.drawString(text);
+		currentContentStream.endText();
     }
     
     public void addMetadata(String title, String subject, String author)

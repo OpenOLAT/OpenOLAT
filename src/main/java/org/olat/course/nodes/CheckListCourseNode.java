@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.FileUtils;
@@ -50,9 +51,11 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.EfficiencyStatementEvent;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
@@ -61,10 +64,12 @@ import org.olat.course.nodes.cl.ui.AssessedIdentityCheckListController;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.olat.course.nodes.cl.ui.CheckListRunController;
 import org.olat.course.nodes.cl.ui.CheckListRunForCoachController;
+import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
@@ -422,11 +427,11 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
-			StackedController stackPanel, UserCourseEnvironment userCourseEnvironment) {
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		Long resId = userCourseEnvironment.getCourseEnvironment().getCourseResourceableId();
+			StackedController stackPanel, UserCourseEnvironment userCourseEnv) {
+		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
+		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resId);
-		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, this);
+		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, userCourseEnv, this);
 	}
 
 	/**
@@ -531,16 +536,165 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		super.cleanupOnDelete(course);
 		CoreSpringFactory.getImpl(CheckboxManager.class).deleteCheckbox(course, getIdent());
 	}
+	
+	/**
+	 * The user course environment must be the coach or the user which preceed to
+	 * the changes.
+	 * @param userCourseEnv
+	 * @param assessedIdentity
+	 */
+	public void updateScoreEvaluation(UserCourseEnvironment userCourseEnv, Identity assessedIdentity) {
+		ModuleConfiguration config = getModuleConfiguration();
+		Boolean sum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
+		Float cutValue = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		if(cutValue != null) {
+			doUpdateAssessment(cutValue, userCourseEnv, assessedIdentity);
+		} else if(sum != null) {
+			doUpdateAssessmentBySum(userCourseEnv, assessedIdentity);
+		}
+	}
+	
+	private void doUpdateAssessment(Float cutValue, UserCourseEnvironment userCourseEnv, Identity assessedIdentity) {
+		OLATResourceable courseOres = OresHelper
+				.createOLATResourceableInstance("CourseModule", userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+		
+		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
+		float score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
+		Boolean passed = null;
+		if(cutValue != null) {
+			boolean aboveCutValue = score >= cutValue.floatValue();
+			passed = new Boolean(aboveCutValue);
+		}
+		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), passed);
+		
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		am.saveScoreEvaluation(this, mySelf, assessedIdentity, sceval, userCourseEnv, false);
+	
+		userCourseEnv.getScoreAccounting().scoreInfoChanged(this, sceval);
+	}
+	
+	private void doUpdateAssessmentBySum(UserCourseEnvironment userCourseEnv, Identity assessedIdentity) {
+		OLATResourceable courseOres = OresHelper
+				.createOLATResourceableInstance("CourseModule", userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
+		int checkedBox = checkboxManager.countChecked(assessedIdentity, courseOres, getIdent());
+		CheckboxList checkboxList = (CheckboxList)config.get(CONFIG_KEY_CHECKBOX);
+		Integer cut = (Integer)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE);
+		int minNumOfCheckbox = cut == null ? checkboxList.getNumOfCheckbox() : cut.intValue();
+		boolean passed = checkedBox >= minNumOfCheckbox;
+		
+		Float score = null;
+		if(passed) {
+			Boolean scoreGrantedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+			if(scoreGrantedBool != null && scoreGrantedBool.booleanValue()) {
+				score = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+			}
+		}
+
+		ScoreEvaluation sceval = new ScoreEvaluation(score, new Boolean(passed));
+		
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		am.saveScoreEvaluation(this, mySelf, assessedIdentity, sceval, userCourseEnv, false);
+		
+		userCourseEnv.getScoreAccounting().scoreInfoChanged(this, sceval);
+	}
 
 	@Override
-	public void updateOnPublish(Locale locale, ICourse course) {
+	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
 		ModuleConfiguration config = getModuleConfiguration();
 		//sync the checkbox with the database
 		CheckboxList list = (CheckboxList)config.get(CONFIG_KEY_CHECKBOX);
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		checkboxManager.syncCheckbox(list, course, getIdent());
+
+		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
+		List<Identity> assessedUsers = pm.getAllIdentitiesWithCourseAssessmentData(null);
+
+		for(Identity assessedIdentity: assessedUsers) {
+			updateScorePassedOnPublish(assessedIdentity, publisher, checkboxManager, course);
+		}
+		super.updateOnPublish(locale, course, publisher, publishEvents);
 		
-		super.updateOnPublish(locale, course);
+		EfficiencyStatementEvent recalculateEvent = new EfficiencyStatementEvent(EfficiencyStatementEvent.CMD_RECALCULATE, course.getResourceableId());
+		publishEvents.addPostPublishingEvent(recalculateEvent);
+	}
+	
+	private void updateScorePassedOnPublish(Identity assessedIdentity, Identity coachIdentity, CheckboxManager checkboxManager, ICourse course) {
+		
+		AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
+		
+		Float currentScore = am.getNodeScore(this, assessedIdentity);
+		Boolean currentPassed = am.getNodePassed(this, assessedIdentity);
+
+		
+		Float updatedScore = null;
+		Boolean updatedPassed = null;
+
+		ModuleConfiguration config = getModuleConfiguration();
+		Boolean scoreGrantedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+		if(scoreGrantedBool != null && scoreGrantedBool.booleanValue()) {
+			updatedScore = checkboxManager.calculateScore(assessedIdentity, course, getIdent());
+		} else {
+			updatedScore = null;
+		}
+		
+		Boolean passedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
+		if(passedBool != null && passedBool.booleanValue()) {
+
+			Float cutValue = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+			Boolean sumCheckbox = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
+			if(sumCheckbox != null && sumCheckbox.booleanValue()) {
+				Integer minValue = (Integer)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE);
+				int checkedBox = checkboxManager.countChecked(assessedIdentity, course, getIdent());
+				if(minValue != null && minValue.intValue() <= checkedBox) {
+					updatedPassed = Boolean.TRUE;
+				} else {
+					updatedPassed = Boolean.FALSE;
+				}
+
+			} else if (cutValue != null) {
+				if(updatedScore == null) {
+					updatedScore = checkboxManager.calculateScore(assessedIdentity, course, getIdent());
+				}
+				
+				if(updatedScore != null && cutValue.floatValue() <= updatedScore.floatValue()) {
+					updatedPassed = Boolean.TRUE;
+				} else {
+					updatedPassed = Boolean.FALSE;
+				}
+			}
+		} else {
+			updatedPassed = null;
+		}
+		
+		boolean needUpdate = false;
+		
+		Boolean manualCorrection = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
+		if(manualCorrection == null || !manualCorrection.booleanValue()) {
+			//update passed
+			if((currentPassed == null && updatedPassed != null)
+					|| (currentPassed != null && updatedPassed == null)
+					|| (currentPassed != null && !currentPassed.equals(updatedPassed))) {
+				needUpdate = true;	
+			}
+		}
+		
+		if((currentScore == null && updatedScore != null)
+				|| (currentScore != null && updatedScore == null)
+				|| (currentScore != null && !currentScore.equals(updatedScore))) {
+			needUpdate = true;	
+		}	
+		
+		if(needUpdate) {
+			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
+			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
+			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+			am.saveScoreEvaluation(this, coachIdentity, assessedIdentity, scoreEval, uce, false);
+		}
 	}
 
 	/**

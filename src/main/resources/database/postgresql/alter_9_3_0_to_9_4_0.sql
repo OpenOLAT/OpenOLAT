@@ -87,4 +87,5 @@ alter table o_cl_check add constraint check_identity_ctx foreign key (fk_identit
 create index check_to_identity_idx on o_cl_check (fk_identity_id);
 alter table o_cl_check add constraint check_box_ctx foreign key (fk_checkbox_id) references o_cl_checkbox (id);
 create index check_to_checkbox_idx on o_cl_check (fk_checkbox_id);
+alter table o_cl_check add unique (fk_identity_id, fk_checkbox_id);
 create index idx_checkbox_uuid_idx on o_cl_checkbox (c_checkboxid);

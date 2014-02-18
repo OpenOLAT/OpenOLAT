@@ -118,7 +118,7 @@ public class EfficiencyStatementAssessmentController extends FormBasicController
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == recalculateEfficiencyDC) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {				
-				recalculate(ureq);
+				recalculate();
 			}
 		}
 	}
@@ -135,7 +135,7 @@ public class EfficiencyStatementAssessmentController extends FormBasicController
 		recalculateEfficiencyDC = activateYesNoDialog(ureq, null, translate("efficiencystatement.recalculate.warning"), recalculateEfficiencyDC);
 	}
 	
-	private void recalculate(UserRequest ureq) {
+	private void recalculate() {
 		flc.contextPut("recalculating", Boolean.TRUE);
 		EfficiencyStatementEvent recalculateEvent = new EfficiencyStatementEvent(EfficiencyStatementEvent.CMD_RECALCULATE, ores.getResourceableId());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(recalculateEvent, ores);

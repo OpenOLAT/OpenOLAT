@@ -21,6 +21,7 @@ package org.olat.course.nodes.cl.ui;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +34,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.pdf.PdfDocument;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
@@ -40,23 +42,28 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
- * Initial date: 12.02.2014<br>
+ * Initial date: 17.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckboxPDFExport extends PdfDocument implements MediaResource {
+public class CheckedPDFExport extends PdfDocument implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(CheckboxPDFExport.class);
+	private static final OLog log = Tracing.createLoggerFor(CheckedPDFExport.class);
 	
 	private final String filename;
 	private String title;
 	private String subject;
 	private String objectives;
 	private String author;
+	private final boolean withScore;
 	private final Translator translator;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	private int firstNameIndex, lastNameIndex, institutionalUserIdentifierIndex;
 	
-	public CheckboxPDFExport(String filename, Translator translator, List<UserPropertyHandler> userPropertyHandlers)
+	private int numOfCols = 0;
+	
+	public CheckedPDFExport(String filename, Translator translator,
+			boolean withScore, List<UserPropertyHandler> userPropertyHandlers)
 			throws IOException {
 		super();
 		
@@ -65,6 +72,8 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 		
 		this.filename = filename;
 		this.translator = translator;
+		this.withScore = withScore;
+		this.userPropertyHandlers = userPropertyHandlers;
 		
 		lastNameIndex = findPropertyIndex(UserConstants.LASTNAME, userPropertyHandlers);
 		firstNameIndex = findPropertyIndex(UserConstants.FIRSTNAME, userPropertyHandlers);
@@ -77,10 +86,21 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 			if(propertyName.equals(userPropertyHandler.getName())) {
 				index = i;
+				numOfCols++;
 			}
 			i++;
 		}
 		return index;
+	}
+	
+	private String findHeader(String propertyName, List<UserPropertyHandler> userPropertyHandlers) {
+		String header = null;
+		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+			if(propertyName.equals(userPropertyHandler.getName())) {
+				header = translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey());
+			}
+		}
+		return header;
 	}
 	
     public String getTitle() {
@@ -157,113 +177,105 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 
 	public void create(CheckboxList checkboxList, CheckListAssessmentDataModel dataModel)
     throws IOException, COSVisitorException, TransformerException {
-    	addPage();
-    	addMetadata(title, subject, author);
-    	if(StringHelper.containsNonWhitespace(objectives)) {
-    		addParagraph(objectives, 10, width);
-    	}
-    	
-    	float cellMargin = 5.0f;
-    	
-    	float headerMaxSize = 0.0f;
-    	float fontSize = 10.0f;
-    	for(Checkbox box:checkboxList.getList()) {
-    		headerMaxSize = Math.max(headerMaxSize, getStringWidth(box.getTitle(), fontSize));
-    	}
-    	
-    	String[] headers = getHeaders(checkboxList);
-    	String[][] content = getRows(checkboxList, dataModel);
-    	
-    	float nameMaxSize = 0.0f;
-    	for(String[] row:content) {
-    		nameMaxSize = Math.max(nameMaxSize, getStringWidth(row[0], fontSize));
-    	}
-    	nameMaxSize = Math.min(nameMaxSize, 150f);
-    	
-    	int numOfRows = content.length;
-    	for(int offset=0; offset<numOfRows; ) {
-    		offset += drawTable(headers, content, offset, headerMaxSize, nameMaxSize, fontSize, cellMargin);
-    		closePage();
-        	if(offset<numOfRows) {
-        		addPage();
-        	}
-    	}
-    	
+		addMetadata(title, subject, author);
+		
+		int i=0;
+		for(Checkbox checkbox:checkboxList.getList()) {
+			create(checkbox, i++, dataModel);
+		}
+
     	addPageNumbers(); 
+	}
+		
+	private void create(Checkbox checkbox, int checkboxIndex, CheckListAssessmentDataModel dataModel)
+	throws IOException, COSVisitorException, TransformerException {
+		addPage();
+
+		String text = checkbox.getTitle();
+    	if(StringHelper.containsNonWhitespace(text)) {
+    		if(withScore && checkbox.getPoints() != null) {
+    			String[] points = new String[]{ Float.toString(checkbox.getPoints().floatValue() )};
+    			text += " " + translator.translate("box.points.info", points);
+    		}
+    		addParagraph(text, 12f, true, width);
+    	}
+		
+		String description = checkbox.getDescription();
+    	if(StringHelper.containsNonWhitespace(description)) {
+    		description = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
+    		addParagraph(description, 10f, width);
+    	}
+    	
+    	String msg = translator.translate("done.by");
+    	addParagraph(msg, 10f, width);
+    	
+    	float cellMargin = 5f;
+    	float fontSize = 10f;
+
+    	String[] headers = getHeaders();
+    	
+    	List<CheckListAssessmentRow> content = getRows(checkboxIndex, dataModel);
+    	int numOfRows = content.size();
+    	if(numOfRows == 0) {
+    		closePage();
+    	} else {
+	    	for(int offset=0; offset<numOfRows; ) {
+	    		offset += drawTable(headers, content, offset, fontSize, cellMargin);
+	    		closePage();
+	        	if(offset<numOfRows) {
+	        		addPage();
+	        	}
+	    	}
+    	}
     }
 	
-	private String[][] getRows(CheckboxList checkboxList, CheckListAssessmentDataModel dataModel) {
+	private List<CheckListAssessmentRow> getRows(int checkboxIndex, CheckListAssessmentDataModel dataModel) {
 		List<CheckListAssessmentRow> rows = dataModel.getBackedUpRows();
 		int numOfRows = rows.size();
-		List<Checkbox> boxList = checkboxList.getList();
-    	int numOfCheckbox = boxList.size();
     	
-    	String[][] content = new String[numOfRows][];
+		List<CheckListAssessmentRow> filteredRows = new ArrayList<>(rows.size());
     	for(int i=0; i<numOfRows; i++) {
     		CheckListAssessmentRow row = rows.get(i);
-    		content[i] = new String[numOfCheckbox + 2];
-        	content[i][0] = getName(row);
-        	for(int j=0; j<numOfCheckbox; j++) {
-        		Boolean[] checked = row.getChecked();
-        		if(checked != null && j >= 0 && j < checked.length) {
-    				Boolean check = checked[j];
-    				if(check != null && check.booleanValue()) {
-    					content[i][j+1] = "x";
-    				}
-    			}
-
-        	}
+    		Boolean[] checks = row.getChecked();
+    		if(checks != null && checks.length > checkboxIndex
+    				&& checks[checkboxIndex] != null && checks[checkboxIndex].booleanValue()) {
+    			filteredRows.add(row);
+    		}
     	}
     	
-    	return content;
+    	return filteredRows;
 	}
 	
-	private String getName(CheckListAssessmentRow view) {
-		StringBuilder sb = new StringBuilder();
-		if(lastNameIndex >= 0) {
-			sb.append(view.getIdentityProp(lastNameIndex));
-		}
+	private String[] getHeaders() {
+		List<String> headers = new ArrayList<>();
 		if(firstNameIndex >= 0) {
-			if(sb.length() > 0) sb.append(", ");
-			sb.append(view.getIdentityProp(firstNameIndex));
+			headers.add(findHeader(UserConstants.FIRSTNAME, userPropertyHandlers));
+		}
+		if(lastNameIndex >= 0) {
+			headers.add(findHeader(UserConstants.LASTNAME, userPropertyHandlers));
 		}
 		if(institutionalUserIdentifierIndex >= 0) {
-			if(sb.length() > 0) sb.append(", ");
-			sb.append(view.getIdentityProp(institutionalUserIdentifierIndex));
+			headers.add(findHeader(UserConstants.INSTITUTIONALUSERIDENTIFIER, userPropertyHandlers));
 		}
-		return sb.toString();
-	}
-	
-	private String[] getHeaders(CheckboxList checkboxList) {
-    	int numOfCheckbox = checkboxList.getList().size();
-		String[] headers = new String[numOfCheckbox + 2];
-    	headers[0] = translator.translate("participants");
-    	int pos = 1;
-    	for(Checkbox box:checkboxList.getList()) {
-    		headers[pos++] = box.getTitle();
-    	}
-    	headers[numOfCheckbox + 1] = translator.translate("signature");
-    	return headers;
+
+    	return headers.toArray(new String[headers.size()]);
 	}
     
-	public int drawTable(String[] headers, String[][] content, int offset, float maxHeaderSize, float nameMaxSize, float fontSize, float cellMargin)
+	public int drawTable(String[] headers, List<CheckListAssessmentRow> content, int offset, float fontSize, float cellMargin)
 	throws IOException {
 	
 		float tableWidth = width;
-		int cols = content[0].length;
-
-		float headerHeight = maxHeaderSize + (2*cellMargin);
 		float rowHeight = (lineHeightFactory * fontSize) + (2 * cellMargin);
-		nameMaxSize += (2 * cellMargin);
-		
+		float headerHeight = rowHeight;
+
 		float availableHeight = currentY - marginTopBottom - headerHeight;
 		float numOfAvailableRows = availableHeight / rowHeight;
 		int possibleRows = Math.round(numOfAvailableRows);
-		int end = Math.min(offset + possibleRows, content.length);
+		int end = Math.min(offset + possibleRows, content.size());
 		int rows = end - offset;
 		
 		float tableHeight = (rowHeight * rows) + headerHeight;
-		float colWidth = (tableWidth - (100 + nameMaxSize)) / (float) (cols - 2.0f);
+		float colWidth = tableWidth / (float)numOfCols;
 
 		// draw the rows
 		float y = currentY;
@@ -277,38 +289,27 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 
 		// draw the columns
 		float nextx = marginLeftRight;
-		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
-		nextx += nameMaxSize;
-		for (int i=1; i<=cols-2; i++) {
+		for (int i=0; i<=numOfCols; i++) {
 			drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
 			nextx += colWidth;
 		}
-		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
-		nextx += 100;
-		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
 
 		// now add the text
 		
 		// draw the headers
 		float textx = marginLeftRight + cellMargin;
 		float texty = currentY;
-		int lastColIndex = cols -1;
-		for (int h=0; h<cols; h++) {
+		for (int h=0; h<numOfCols; h++) {
 			String text = headers[h];
 			if(text == null) {
 				text = "";
 			}
 			currentContentStream.beginText();
 			currentContentStream.setFont(font, fontSize);
-			if (h == 0 || (h == lastColIndex)) {
-				currentContentStream.moveTextPositionByAmount(textx, texty - headerHeight + cellMargin);
-				textx += nameMaxSize;
-			} else {
-				currentContentStream.setTextRotation(3 * (Math.PI / 2), textx + cellMargin, texty - cellMargin);
-				textx += colWidth;
-			}
+			currentContentStream.moveTextPositionByAmount(textx, texty - headerHeight + cellMargin);
 			currentContentStream.drawString(text);
 			currentContentStream.endText();
+			textx += colWidth;
 		}
 
 		currentY -= headerHeight;
@@ -316,20 +317,27 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 		textx = marginLeftRight + cellMargin;
 		texty = currentY - 15;
 		for (int i=offset; i<end; i++) {
-			String[] rowContent = content[i];
+			CheckListAssessmentRow rowContent = content.get(i);
 			if(rowContent == null) continue;
 			
-			for (int j = 0; j < cols; j++) {
-				String text = rowContent[j];
-				if(text != null) {
-					currentContentStream.beginText();
-					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(textx, texty);
-					currentContentStream.drawString(text);
-					currentContentStream.endText();
-				}
-				textx += (j==0 ? 100 : colWidth);
+			if(firstNameIndex >= 0) {
+				String text = rowContent.getIdentityProp(firstNameIndex);
+				drawTextAtMovedPositionByAmount(text, fontSize, textx, texty);
+				textx += colWidth;
 			}
+			
+			if(lastNameIndex >= 0) {
+				String text = rowContent.getIdentityProp(lastNameIndex);
+				drawTextAtMovedPositionByAmount(text, fontSize, textx, texty);
+				textx += colWidth;
+			}
+			
+			if(institutionalUserIdentifierIndex >= 0) {
+				String text = rowContent.getIdentityProp(institutionalUserIdentifierIndex);
+				drawTextAtMovedPositionByAmount(text, fontSize, textx, texty);
+				textx += colWidth;
+			}
+			
 			texty -= rowHeight;
 			textx = marginLeftRight + cellMargin;
 		}

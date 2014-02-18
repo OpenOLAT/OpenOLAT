@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -52,6 +53,7 @@ import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeConfigFormController;
+import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -350,7 +352,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 	
 	@Override
-	public void updateOnPublish(Locale locale, ICourse course) {
+	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
 		//default do nothing
 	}
 

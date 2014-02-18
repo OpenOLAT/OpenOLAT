@@ -253,6 +253,7 @@
 				
 				<entry key="org.olat.course.nodes.cl.ui.CheckListAssessmentController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Table for check lists" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyFirstName" />

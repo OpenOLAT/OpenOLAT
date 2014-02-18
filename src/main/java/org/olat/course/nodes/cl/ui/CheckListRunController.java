@@ -20,6 +20,7 @@
 package org.olat.course.nodes.cl.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +61,6 @@ import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -74,6 +74,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class CheckListRunController extends FormBasicController implements ControllerEventListener, Activateable2 {
 	
 	private final Date dueDate;
+	private final boolean withScore;
 	private final Boolean closeAfterDueDate;
 	private final CheckboxList checkboxList;
 	
@@ -103,13 +104,22 @@ public class CheckListRunController extends FormBasicController implements Contr
 		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		
 		config = courseNode.getModuleConfiguration();
-		checkboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+		CheckboxList configCheckboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+		if(configCheckboxList == null) {
+			checkboxList = new CheckboxList();
+			checkboxList.setList(Collections.<Checkbox>emptyList());
+		} else {
+			checkboxList = configCheckboxList;
+		}
 		closeAfterDueDate = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
 		if(closeAfterDueDate != null && closeAfterDueDate.booleanValue()) {
 			dueDate = (Date)config.get(CheckListCourseNode.CONFIG_KEY_DUE_DATE);
 		} else {
 			dueDate = null;
 		}
+		
+		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+		withScore = (hasScore == null || hasScore.booleanValue());	
 
 		initForm(ureq);
 	}
@@ -123,6 +133,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			if(dueDate != null) {
 				layoutCont.contextPut("dueDate", dueDate);
 			}
+			layoutCont.contextPut("withScore", new Boolean(withScore));
 			
 			List<DBCheck> checks = checkboxManager.loadCheck(getIdentity(), courseOres, courseNode.getIdent());
 			Map<String, DBCheck> uuidToCheckMap = new HashMap<>();
@@ -228,45 +239,10 @@ public class CheckListRunController extends FormBasicController implements Contr
 		checkboxManager.check(theOne, getIdentity(), score, new Boolean(checked));
 		DBFactory.getInstance().commit();//make sure all results is on the database before calculating some scores
 		
-		Boolean sum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
-		Float cutValue = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		if(cutValue != null) {
-			doUpdateAssessment(cutValue);
-		} else if(sum != null) {
-			doUpdateAssessmentBySum();
-		}
+		courseNode.updateScoreEvaluation(userCourseEnv, getIdentity());
 		
 		Checkbox checkbox = wrapper.getCheckbox();
 		logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());
-	}
-	
-	private void doUpdateAssessment(Float cutValue) {
-		float score = checkboxManager.calculateScore(getIdentity(), courseOres, courseNode.getIdent());
-		Boolean passed = null;
-		if(cutValue != null) {
-			boolean aboveCutValue = score >= cutValue.floatValue();
-			passed = new Boolean(aboveCutValue);
-		}
-		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), passed);
-		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), false);
-		userCourseEnv.getScoreAccounting().scoreInfoChanged(courseNode, sceval);
-	}
-	
-	private void doUpdateAssessmentBySum() {
-		int checkedBox = checkboxManager.countChecked(getIdentity(), courseOres, courseNode.getIdent());
-		boolean passed = checkedBox == checkboxList.getList().size();
-		
-		Float score = null;
-		if(passed) {
-			Boolean scoreGrantedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-			if(scoreGrantedBool != null && scoreGrantedBool.booleanValue()) {
-				score = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-			}
-		}
-
-		ScoreEvaluation sceval = new ScoreEvaluation(score, new Boolean(passed));
-		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), false);
-		userCourseEnv.getScoreAccounting().scoreInfoChanged(courseNode, sceval);
 	}
 	
 	private void logUpdateCheck(String checkboxId, String boxTitle) {

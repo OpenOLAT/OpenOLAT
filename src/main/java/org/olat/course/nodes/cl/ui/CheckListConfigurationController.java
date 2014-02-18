@@ -62,21 +62,25 @@ public class CheckListConfigurationController extends FormBasicController {
 	private DateChooser dueDateChooserEl;
 	
 	private final ModuleConfiguration config;
+	private final boolean inUse;
 	private final boolean wizard;
 	private GeneratorData data;
 	
 	private static final String[] numOfKeys = new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
 	
-	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, boolean inUse) {
 		super(ureq, wControl);
 		wizard = false;
+		this.inUse = inUse;
 		config = courseNode.getModuleConfiguration();
 		initForm(ureq);
 	}
 	
-	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, GeneratorData data, Form rootForm) {
+	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config,
+			GeneratorData data, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		wizard = true;
+		inUse = false;
 		this.data = data;
 		this.config = config;
 		initForm(ureq);
@@ -97,6 +101,9 @@ public class CheckListConfigurationController extends FormBasicController {
 			setFormTitle("config.title");
 			setFormDescription("config.description");
 			setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-config.html", "help.hover.config");
+			if(inUse) {
+				setFormWarning("config.warning.inuse");
+			}
 		}
 		
 		//due date

@@ -292,8 +292,36 @@ public class CheckboxManagerTest extends OlatTestCase {
 		Assert.assertTrue(collectedChecks.contains(check3_2));
 	}
 	
+	
 	@Test
-	public void countChecked() {
+	public void countChecked_resource() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-16");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-17");
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("checkbox-12", 2354l);
+		String resSubPath = UUID.randomUUID().toString();
+		String checkboxId1 = UUID.randomUUID().toString();
+		DBCheckbox checkbox1 = checkboxManager.createDBCheckbox(checkboxId1, ores, resSubPath);
+		String checkboxId2 = UUID.randomUUID().toString();
+		DBCheckbox checkbox2 = checkboxManager.createDBCheckbox(checkboxId2, ores, resSubPath);
+		String checkboxId3 = UUID.randomUUID().toString();
+		DBCheckbox checkbox3 = checkboxManager.createDBCheckbox(checkboxId3, ores, resSubPath);
+		String checkboxId4 = UUID.randomUUID().toString();
+		checkboxManager.createDBCheckbox(checkboxId4, ores, resSubPath);
+		//create a check
+		checkboxManager.createCheck(checkbox1, id1, null, Boolean.TRUE);
+		checkboxManager.createCheck(checkbox2, id1, null, Boolean.TRUE);
+		checkboxManager.createCheck(checkbox1, id2, null, Boolean.TRUE);
+		checkboxManager.createCheck(checkbox3, id2, null, Boolean.TRUE);
+		dbInstance.commitAndCloseSession();
+		
+		//count the checks
+		int checked = checkboxManager.countChecked(ores, resSubPath);
+		Assert.assertEquals(4, checked);
+	}
+	
+	@Test
+	public void countChecked_withIdentity() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-7");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-8");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-12");

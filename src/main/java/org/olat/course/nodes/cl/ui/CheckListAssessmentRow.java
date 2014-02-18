@@ -43,14 +43,16 @@ public class CheckListAssessmentRow {
 	private final String identityName;
 	private final String[] identityProps;
 	private Boolean[] checked;
+	private Float[] scores;
 	private MultipleSelectionElement[] checkedEl;
 	private final Float totalPoints;
 	
-	public CheckListAssessmentRow(Identity identity, Boolean[] checked, Float totalPoints,
+	public CheckListAssessmentRow(Identity identity, Boolean[] checked, Float[] scores, Float totalPoints,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		identityKey = identity.getKey();
 		identityName = identity.getName();
 		this.checked = checked;
+		this.scores = scores;
 		this.totalPoints = totalPoints;
 		
 		identityProps = new String[userPropertyHandlers.size()];
@@ -89,9 +91,21 @@ public class CheckListAssessmentRow {
 	public String getIdentityProp(int index) {
 		return identityProps[index];
 	}
+	
+	public String[] getIdentityProps() {
+		return identityProps;
+	}
 
 	public Float getTotalPoints() {
 		return totalPoints;
+	}
+
+	public Float[] getScores() {
+		return scores;
+	}
+
+	public void setScores(Float[] scores) {
+		this.scores = scores;
 	}
 
 	public Boolean[] getChecked() {

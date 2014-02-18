@@ -84,6 +84,7 @@ import org.olat.core.util.coordinate.LockEntry;
 import org.olat.core.util.coordinate.LockRemovedEvent;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
@@ -679,13 +680,15 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				 * callback executed in case wizard is finished.
 				 */
 				StepRunnerCallback finish = new StepRunnerCallback(){
-					@SuppressWarnings("unchecked")
+					
 					public Step execute(UserRequest ureq1, WindowControl wControl1, StepsRunContext runContext) {
 						//all information to do now is within the runContext saved
 						boolean hasChanges = false;
 						
 						PublishProcess publishManager = (PublishProcess)runContext.get("publishProcess");
+						PublishEvents publishEvents = publishManager.getPublishEvents();
 						if (runContext.containsKey("validPublish") && ((Boolean)runContext.get("validPublish")).booleanValue()) {
+							@SuppressWarnings("unchecked")
 							Set<String> selectedNodeIds = (Set<String>) runContext.get("publishSetCreatedFor");
 							hasChanges = (selectedNodeIds != null) && (selectedNodeIds.size() > 0);
 							if (hasChanges) {
@@ -713,8 +716,15 @@ public class EditorMainController extends MainLayoutBasicController implements G
 						
 						if (runContext.containsKey("catalogChoice")) {
 							String choice = (String) runContext.get("catalogChoice");
+							@SuppressWarnings("unchecked")
 							List<CategoryLabel> categories = (List<CategoryLabel>)runContext.get("categories");
 							publishManager.publishToCatalog(choice, categories);
+						}
+						
+						if(publishEvents.getPostPublishingEvents().size() > 0) {
+							for(MultiUserEvent event:publishEvents.getPostPublishingEvents()) {
+								CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, ores);
+							}
 						}
 
 						// signal correct completion and tell if changes were made or not.

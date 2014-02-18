@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.cl.ui;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -33,6 +34,7 @@ import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CheckListCourseNode;
+import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -73,9 +75,13 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 				accessCondition, "accessabilityConditionForm", AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode), euce);		
 		listenTo(accessibilityCondCtrl);
 		
-		checkboxListEditCtrl = new CheckListBoxListEditController(ureq, wControl, course, courseNode);
+
+		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
+		int numOfChecks = checkboxManager.countChecked(course, courseNode.getIdent());
+		
+		checkboxListEditCtrl = new CheckListBoxListEditController(ureq, wControl, course, courseNode, numOfChecks > 0);
 		listenTo(checkboxListEditCtrl);
-		configurationCtrl = new CheckListConfigurationController(ureq, wControl, courseNode);
+		configurationCtrl = new CheckListConfigurationController(ureq, wControl, courseNode, numOfChecks > 0);
 		listenTo(configurationCtrl);
 	}
 

@@ -138,6 +138,8 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	}
 	
 	private List<DBCheckbox> loadCheckbox(OLATResourceable ores, String resSubPath, Collection<String> uuids) {
+		if(uuids == null || uuids.isEmpty()) return Collections.emptyList();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select box from clcheckbox box")
 		  .append(" where box.checkboxId in (:checkboxId) and box.resName=:resName and box.resId=:resId");
@@ -161,6 +163,26 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		DBCheckbox ref = dbInstance.getCurrentEntityManager()
 				.getReference(DBCheckbox.class, checkbox.getKey());
 		dbInstance.getCurrentEntityManager().remove(ref);
+	}
+	
+	@Override
+	public List<DBCheck> loadCheck(OLATResourceable ores, String resSubPath) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select check from clcheck check")
+		  .append(" inner join fetch check.checkbox box")
+		  .append(" where box.resName=:resName and box.resId=:resId");
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			sb.append(" and box.resSubPath=:resSubPath");
+		}
+		
+		TypedQuery<DBCheck> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DBCheck.class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId());
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			query.setParameter("resSubPath", resSubPath);
+		}
+		return query.getResultList();
 	}
 
 	@Override
@@ -193,13 +215,15 @@ public class CheckboxManagerImpl implements CheckboxManager {
 			uuids.put(dbCheckbox.getCheckboxId(), dbCheckbox);
 		}
 
-		List<Checkbox> resCheckboxList =  checkboxList.getList();
-		for(Checkbox resCheckbox:resCheckboxList) {
-			String resUuid = resCheckbox.getCheckboxId();
-			if(uuids.containsKey(resUuid)) {
-				uuids.remove(resUuid);//already synched
-			} else {
-				createDBCheckbox(resUuid, ores, resSubPath);
+		if(checkboxList != null && checkboxList.getList() != null) {
+			List<Checkbox> resCheckboxList = checkboxList.getList();
+			for(Checkbox resCheckbox:resCheckboxList) {
+				String resUuid = resCheckbox.getCheckboxId();
+				if(uuids.containsKey(resUuid)) {
+					uuids.remove(resUuid);//already synched
+				} else {
+					createDBCheckbox(resUuid, ores, resSubPath);
+				}
 			}
 		}
 		
@@ -274,7 +298,7 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		for(AssessmentBatch row:batch) {
 			
 			Long identityKey = row.getIdentityKey();
-			if(currentIdentity == null || identityKey.equals(currentIdentity.getKey())) {
+			if(currentIdentity == null || !identityKey.equals(currentIdentity.getKey())) {
 				currentIdentity = em.getReference(IdentityImpl.class, identityKey);
 			}
 			
@@ -341,6 +365,29 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		return check;
 	}
 	
+	@Override
+	public int countChecked(OLATResourceable ores, String resSubPath) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(check) from clcheck check")
+		  .append(" inner join check.checkbox box")
+		  .append(" inner join check.identity ident")
+		  .append(" where box.resName=:resName and box.resId=:resId");
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			sb.append(" and box.resSubPath=:resSubPath");
+		}
+		
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId());
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			query.setParameter("resSubPath", resSubPath);
+		}
+		
+		Number numOfChecks = query.getSingleResult();
+		return numOfChecks.intValue();
+	}
+
 	@Override
 	public int countChecked(Identity identity, OLATResourceable ores, String resSubPath) {
 		StringBuilder sb = new StringBuilder();

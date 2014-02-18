@@ -58,9 +58,21 @@ public interface CheckboxManager {
 	public void check(DBCheckbox checkbox, Identity owner, Float score, Boolean checked);
 	
 	public void check(OLATResourceable ores, String resSubPath, List<AssessmentBatch> batch);
+
+	public List<DBCheck> loadCheck(OLATResourceable ores, String resSubPath);
 	
 	public List<DBCheck> loadCheck(Identity identity, OLATResourceable ores, String resSubPath);
 	
+
+	public int countChecked(OLATResourceable ores, String resSubPath);
+	
+	/**
+	 * 
+	 * @param identity (mandatory)
+	 * @param ores (mandatory)
+	 * @param resSubPath (optional)
+	 * @return
+	 */
 	public int countChecked(Identity identity, OLATResourceable ores, String resSubPath);
 	
 	public float calculateScore(Identity identity, OLATResourceable ores, String resSubPath);
