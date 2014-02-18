@@ -245,6 +245,8 @@ public class UserImportController extends BasicController {
 			if(o instanceof TransientIdentity) {
 				TransientIdentity transIdent = (TransientIdentity)o;
 				usernames.add(transIdent.getName());
+			} else if (o instanceof UpdateIdentity) {
+				identities.add(((UpdateIdentity)o).getIdentity());	
 			} else if (o instanceof Identity) {
 				identities.add((Identity)o);	
 			}
