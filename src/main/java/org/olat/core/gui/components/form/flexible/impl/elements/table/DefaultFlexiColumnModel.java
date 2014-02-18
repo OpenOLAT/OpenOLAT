@@ -108,6 +108,10 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	public boolean isDefaultVisible() {
 		return defaultVisible;
 	}
+	
+	public void setDefaultVisible(boolean defaultVisible) {
+		this.defaultVisible = defaultVisible;
+	}
 
 	@Override
 	public void setSortable(boolean enable) {

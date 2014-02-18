@@ -120,8 +120,12 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 	 * @see org.olat.user.UserPropertiesConfig#getUserPropertyHandlersFor(java.lang.String, boolean)
 	 */
 	public List<UserPropertyHandler> getUserPropertyHandlersFor(String usageIdentifyer, boolean isAdministrativeUser) {
-		List<UserPropertyHandler> currentUsageHandlers;
 		String key = usageIdentifyer + "_" + isAdministrativeUser;
+		List<UserPropertyHandler> currentUsageHandlers = userPropertyUsageContextsLookupMap.get(key);
+		if (currentUsageHandlers != null) {
+			return currentUsageHandlers;
+		}
+		
 		// synchronize access to lookup map in this VM. No need for clustering locks.
 		synchronized (userPropertyUsageContextsLookupMap) {
 			// use little hashmap as local cache makes no sense to perform this over
@@ -136,7 +140,7 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 			// add all handlers that are accessable for this user
 			for (UserPropertyHandler propertyHandler : currentUsageConfig.getPropertyHandlers()) {
 				// if configured for this class and if isAdministrativeUser
-				if (currentUsageConfig.isForAdministrativeUserOnly(propertyHandler) && ! isAdministrativeUser) {
+				if (currentUsageConfig.isForAdministrativeUserOnly(propertyHandler) && !isAdministrativeUser) {
 					// don't add this handler for this user
 					continue;
 				}

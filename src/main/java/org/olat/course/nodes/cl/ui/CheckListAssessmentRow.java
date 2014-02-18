@@ -17,11 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.cl.model;
+package org.olat.course.nodes.cl.ui;
 
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.id.Identity;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -35,20 +36,23 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentDataView {
+public class CheckListAssessmentRow {
 	
 	private Long[] groupKeys;
 	private final Long identityKey;
 	private final String identityName;
 	private final String[] identityProps;
-	private final Boolean[] checked;
+	private Boolean[] checked;
+	private Float[] scores;
+	private MultipleSelectionElement[] checkedEl;
 	private final Float totalPoints;
 	
-	public AssessmentDataView(Identity identity, Boolean[] checked, Float totalPoints,
+	public CheckListAssessmentRow(Identity identity, Boolean[] checked, Float[] scores, Float totalPoints,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		identityKey = identity.getKey();
 		identityName = identity.getName();
 		this.checked = checked;
+		this.scores = scores;
 		this.totalPoints = totalPoints;
 		
 		identityProps = new String[userPropertyHandlers.size()];
@@ -87,13 +91,36 @@ public class AssessmentDataView {
 	public String getIdentityProp(int index) {
 		return identityProps[index];
 	}
+	
+	public String[] getIdentityProps() {
+		return identityProps;
+	}
 
 	public Float getTotalPoints() {
 		return totalPoints;
 	}
 
+	public Float[] getScores() {
+		return scores;
+	}
+
+	public void setScores(Float[] scores) {
+		this.scores = scores;
+	}
+
 	public Boolean[] getChecked() {
 		return checked;
 	}
+	
+	public void setChecked(Boolean[] checked) {
+		this.checked = checked;
+	}
 
+	public MultipleSelectionElement[] getCheckedEl() {
+		return checkedEl;
+	}
+
+	public void setCheckedEl(MultipleSelectionElement[] checkedEl) {
+		this.checkedEl = checkedEl;
+	}
 }

@@ -114,7 +114,7 @@ public class OperatorManager {
 	public static String[] getRegisteredAndAlreadyTranslatedOperatorLabels(Locale locale, String[] operatorKeys) {
 		List<String> keys = Arrays.asList(operatorKeys);
 		Translator t = new PackageTranslator(OperatorManager.class.getPackage().getName(), locale);
-		String[] tmp = new String[ops.size()];
+		String[] tmp = new String[operatorKeys.length];
 		int i = 0;
 		for (Operator o : ops) {
 			if(keys.contains(o.getOperatorKey())) {

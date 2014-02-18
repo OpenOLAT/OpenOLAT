@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.cl.model;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,11 @@ public class CheckboxList implements Serializable {
 	private static final long serialVersionUID = -5703947579583559550L;
 	
 	private List<Checkbox> list;
+	
+	@Transient
+	public int getNumOfCheckbox() {
+		return list == null ? 0 : list.size();
+	}
 
 	public List<Checkbox> getList() {
 		return list;

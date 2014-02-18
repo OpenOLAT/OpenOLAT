@@ -296,7 +296,7 @@ public class MultiSPController extends FormBasicController {
 		}
 	}
 
-	public class SelectNodeObject {
+	public static class SelectNodeObject {
 		private final int indentation;
 		private final VFSItem item;
 		private final String id;
@@ -336,7 +336,8 @@ public class MultiSPController extends FormBasicController {
 		}
 	}
 	
-	public class MultiFileEvents extends Event {
+	public static class MultiFileEvents extends Event {
+		private static final long serialVersionUID = -5564537741338183501L;
 		private final String currentPath;
 		private final VFSContainer currentContainer;
 		private final List<String> selectedFiles;
@@ -361,7 +362,7 @@ public class MultiSPController extends FormBasicController {
 		}
 	}
 	
-	public class MultiSPVFSItemFilter	implements VFSItemFilter {
+	public class MultiSPVFSItemFilter implements VFSItemFilter {
 		@Override
 		public boolean accept(VFSItem vfsItem) {
 			String name = vfsItem.getName();

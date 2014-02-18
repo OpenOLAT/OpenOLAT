@@ -44,6 +44,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.nodes.CheckListCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.ui.CheckboxConfigDataModel.Cols;
@@ -62,17 +63,19 @@ public class CheckListBoxListEditController extends FormBasicController {
 	private FormLink addLink;
 	private FlexiTableElement boxTable;
 	private CheckboxConfigDataModel model;
+	private DefaultFlexiColumnModel pointColModel;
 	private CloseableModalController cmc;
 	private CheckboxEditController editCtrl;
 
+	private final boolean inUse;
 	private ModuleConfiguration config;
 	private final OLATResourceable courseOres;
 	private final CheckListCourseNode courseNode;
 	
 	public CheckListBoxListEditController(UserRequest ureq, WindowControl wControl,
-			OLATResourceable courseOres, CheckListCourseNode courseNode) {
+			OLATResourceable courseOres, CheckListCourseNode courseNode, boolean inUse) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		
+		this.inUse = inUse;
 		this.courseOres = courseOres;
 		this.courseNode = courseNode;
 		config = courseNode.getModuleConfiguration();
@@ -85,6 +88,9 @@ public class CheckListBoxListEditController extends FormBasicController {
 		setFormTitle("config.checkbox.title");
 		setFormDescription("config.checkbox.description");
 		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-checkbox.html", "help.hover.checkbox");
+		if(inUse) {
+			setFormWarning("config.warning.inuse");
+		}
 		
 		FormLayoutContainer tableCont = FormLayoutContainer
 				.createCustomFormLayout("tablecontainer", getTranslator(), velocity_root + "/checkboxlist_edit.html");
@@ -94,7 +100,11 @@ public class CheckListBoxListEditController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title.i18nKey(), Cols.title.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.points.i18nKey(), Cols.points.ordinal()));
+		
+		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+		boolean visible = (hasScore == null || hasScore.booleanValue());
+		pointColModel = new DefaultFlexiColumnModel(visible, Cols.points.i18nKey(), Cols.points.ordinal(), false, null);
+		columnsModel.addFlexiColumnModel(pointColModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.release.i18nKey(), Cols.release.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.file.i18nKey(), Cols.file.ordinal()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit.checkbox", translate("edit.checkbox"), "edit"));
@@ -150,6 +160,15 @@ public class CheckListBoxListEditController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(source instanceof CheckListConfigurationController) {
+			//update score / no score
+			Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+			boolean visible = (hasScore == null || hasScore.booleanValue());
+			if(visible != boxTable.isColumnModelVisible(pointColModel)) {
+				boxTable.setColumnModelVisible(pointColModel, visible);
+				boxTable.reset();
+				boxTable.reloadData();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -180,7 +199,9 @@ public class CheckListBoxListEditController extends FormBasicController {
 	private void doOpenEdit(UserRequest ureq, Checkbox checkbox, boolean newCheckbox, String title) {
 		if(editCtrl != null) return;
 		
-		editCtrl = new CheckboxEditController(ureq, getWindowControl(), courseOres, courseNode, checkbox, newCheckbox);
+		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+		boolean withScore = (hasScore == null || hasScore.booleanValue());	
+		editCtrl = new CheckboxEditController(ureq, getWindowControl(), courseOres, courseNode, checkbox, newCheckbox, withScore);
 		listenTo(editCtrl);
 
 		Component content = editCtrl.getInitialComponent();

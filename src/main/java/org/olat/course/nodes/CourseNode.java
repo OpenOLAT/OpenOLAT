@@ -36,12 +36,14 @@ import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -290,7 +292,7 @@ public interface CourseNode extends INode, ShortName {
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev);
 	
 	
-	public void updateOnPublish(Locale locale, ICourse course);
+	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents);
 
 	/**
 	 * Called if this node is ABOUT TO BE deleted. For the time being, the node

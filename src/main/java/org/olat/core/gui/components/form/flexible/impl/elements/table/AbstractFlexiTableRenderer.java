@@ -49,7 +49,10 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 
 		String id = ftC.getFormDispatchId();
-		sb.append("<div class=\"b_table_wrapper b_flexitable_wrapper b_floatscrollbox\">");
+
+		sb.append("<div class=\"b_table_wrapper b_flexitable_wrapper")
+		  .append(" b_table_edit", ftE.isEditMode())
+		  .append(" b_floatscrollbox\">");
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 		sb.append("<table id=\"").append(id).append("\">");
 		

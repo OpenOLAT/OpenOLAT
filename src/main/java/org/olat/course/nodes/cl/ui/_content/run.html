@@ -14,7 +14,7 @@
 			$r.render($checkbox.checkboxElName)
 		</div>
 		<div class="b_c75r">
-			<b>$checkbox.title #if($checkbox.pointsAvailable) ($checkbox.points) #end</b><br/>
+			<b>$checkbox.title #if($withScore && $checkbox.pointsAvailable) $r.translate("box.points.info", $checkbox.points) #end</b><br/>
 			#if($checkbox.description)
 				<p>$checkbox.description</p>
 			#end

@@ -2159,6 +2159,7 @@ alter table o_ex_task_modifier add constraint idx_ex_task_mod_task_id foreign ke
 -- checklist
 alter table o_cl_check add constraint check_identity_ctx foreign key (fk_identity_id) references o_bs_identity (id);
 alter table o_cl_check add constraint check_box_ctx foreign key (fk_checkbox_id) references o_cl_checkbox (id);
+alter table o_cl_check add unique check_identity_unique_ctx (fk_identity_id, fk_checkbox_id);
 create index idx_checkbox_uuid_idx on o_cl_checkbox (c_checkboxid);
 
 -- lifecycle

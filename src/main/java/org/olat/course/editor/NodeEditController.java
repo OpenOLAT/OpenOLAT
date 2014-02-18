@@ -127,7 +127,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		
 		this.putInitialPanel(descriptionVc);
 
-		nodeConfigController = new NodeConfigFormController(ureq, wControl, luNode, false);
+		nodeConfigController = new NodeConfigFormController(ureq, wControl, luNode);
 		listenTo(nodeConfigController);
 		descriptionVc.put("nodeConfigForm", nodeConfigController.getInitialComponent());
 		

@@ -21,14 +21,20 @@ package org.olat.course.nodes.cl.manager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
+import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -40,14 +46,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
+import org.olat.course.nodes.cl.model.AssessmentBatch;
 import org.olat.course.nodes.cl.model.AssessmentData;
-import org.olat.course.nodes.cl.model.AssessmentDataView;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -131,12 +136,53 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		}
 		return box.get(0);
 	}
+	
+	private List<DBCheckbox> loadCheckbox(OLATResourceable ores, String resSubPath, Collection<String> uuids) {
+		if(uuids == null || uuids.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select box from clcheckbox box")
+		  .append(" where box.checkboxId in (:checkboxId) and box.resName=:resName and box.resId=:resId");
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			sb.append(" and box.resSubPath=:resSubPath");
+		}
+		
+		TypedQuery<DBCheckbox> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), DBCheckbox.class)
+			.setParameter("resName", ores.getResourceableTypeName())
+			.setParameter("resId", ores.getResourceableId())
+			.setParameter("checkboxId", uuids);
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			query.setParameter("resSubPath", resSubPath);
+		}
+		return query.getResultList();
+	}
 
 	@Override
 	public void removeCheckbox(DBCheckbox checkbox) {
 		DBCheckbox ref = dbInstance.getCurrentEntityManager()
 				.getReference(DBCheckbox.class, checkbox.getKey());
 		dbInstance.getCurrentEntityManager().remove(ref);
+	}
+	
+	@Override
+	public List<DBCheck> loadCheck(OLATResourceable ores, String resSubPath) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select check from clcheck check")
+		  .append(" inner join fetch check.checkbox box")
+		  .append(" where box.resName=:resName and box.resId=:resId");
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			sb.append(" and box.resSubPath=:resSubPath");
+		}
+		
+		TypedQuery<DBCheck> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DBCheck.class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId());
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			query.setParameter("resSubPath", resSubPath);
+		}
+		return query.getResultList();
 	}
 
 	@Override
@@ -169,13 +215,15 @@ public class CheckboxManagerImpl implements CheckboxManager {
 			uuids.put(dbCheckbox.getCheckboxId(), dbCheckbox);
 		}
 
-		List<Checkbox> resCheckboxList =  checkboxList.getList();
-		for(Checkbox resCheckbox:resCheckboxList) {
-			String resUuid = resCheckbox.getCheckboxId();
-			if(uuids.containsKey(resUuid)) {
-				uuids.remove(resUuid);//already synched
-			} else {
-				createDBCheckbox(resUuid, ores, resSubPath);
+		if(checkboxList != null && checkboxList.getList() != null) {
+			List<Checkbox> resCheckboxList = checkboxList.getList();
+			for(Checkbox resCheckbox:resCheckboxList) {
+				String resUuid = resCheckbox.getCheckboxId();
+				if(uuids.containsKey(resUuid)) {
+					uuids.remove(resUuid);//already synched
+				} else {
+					createDBCheckbox(resUuid, ores, resSubPath);
+				}
 			}
 		}
 		
@@ -231,6 +279,63 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		dbInstance.commit();	
 	}
 	
+	@Override
+	public void check(OLATResourceable ores, String resSubPath, List<AssessmentBatch> batch) {
+		Collections.sort(batch, new BatchComparator());
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		
+		Set<String> dbBoxUuids = new HashSet<>();
+		for(AssessmentBatch row:batch) {
+			dbBoxUuids.add(row.getCheckboxId());
+		}
+		List<DBCheckbox> boxes = loadCheckbox(ores, resSubPath, dbBoxUuids);
+		Map<String, DBCheckbox> uuidToBox = new HashMap<>();
+		for(DBCheckbox box:boxes) {
+			uuidToBox.put(box.getCheckboxId(), box);
+		}
+		
+		Identity currentIdentity = null;
+		for(AssessmentBatch row:batch) {
+			
+			Long identityKey = row.getIdentityKey();
+			if(currentIdentity == null || !identityKey.equals(currentIdentity.getKey())) {
+				currentIdentity = em.getReference(IdentityImpl.class, identityKey);
+			}
+			
+			boolean check = row.getCheck();
+			DBCheckbox checkbox = uuidToBox.get(row.getCheckboxId());
+			DBCheck currentCheck = loadCheck(checkbox, currentIdentity);
+			if(check) {
+				
+				if(currentCheck == null) {
+					DBCheckbox lockedCheckbox = loadForUpdate(checkbox);
+					if(lockedCheckbox != null) {
+						//locked -> reload to make sure nobody create it
+						DBCheck reloaedCheck = loadCheck(checkbox, currentIdentity);
+						if(reloaedCheck == null) {
+							createCheck(lockedCheckbox, currentIdentity, row.getScore(), new Boolean(check));
+						} else {
+							currentCheck = reloaedCheck;
+						}
+					}
+					dbInstance.commit();
+				}
+				
+				if(currentCheck != null) {
+					currentCheck.setScore(row.getScore());
+					currentCheck.setChecked(new Boolean(check));
+					em.merge(currentCheck);
+				}
+				
+				//save check
+			} else if(currentCheck != null) {
+				currentCheck.setChecked(Boolean.FALSE);
+				currentCheck.setScore(new Float(0f));
+				em.merge(currentCheck);
+			}	
+		}
+	}
+	
 	protected DBCheck loadCheck(DBCheckbox checkbox, Identity identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select check from clcheck as check")
@@ -260,6 +365,29 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		return check;
 	}
 	
+	@Override
+	public int countChecked(OLATResourceable ores, String resSubPath) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(check) from clcheck check")
+		  .append(" inner join check.checkbox box")
+		  .append(" inner join check.identity ident")
+		  .append(" where box.resName=:resName and box.resId=:resId");
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			sb.append(" and box.resSubPath=:resSubPath");
+		}
+		
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId());
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			query.setParameter("resSubPath", resSubPath);
+		}
+		
+		Number numOfChecks = query.getSingleResult();
+		return numOfChecks.intValue();
+	}
+
 	@Override
 	public int countChecked(Identity identity, OLATResourceable ores, String resSubPath) {
 		StringBuilder sb = new StringBuilder();
@@ -349,43 +477,6 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	}
 
 	@Override
-	public List<AssessmentDataView> getAssessmentDataViews(OLATResourceable ores, String resSubPath, List<Checkbox> checkbox,
-			List<SecurityGroup> secGroups, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		
-		List<AssessmentData> datas = getAssessmentDatas(ores, resSubPath, secGroups);
-		List<AssessmentDataView> dataViews = new ArrayList<>();
-		
-		int numOfcheckbox = checkbox.size();
-		Map<String,Integer> indexed = new HashMap<String,Integer>();
-		for(int i=numOfcheckbox; i-->0; ) {
-			indexed.put(checkbox.get(i).getCheckboxId(), new Integer(i));
-		}
-		
-		for(AssessmentData data:datas) {
-			Boolean[] checkBool = new Boolean[numOfcheckbox];
-			float totalPoints = 0.0f;
-			for(DBCheck check:data.getChecks()) {
-				Float score = check.getScore();
-				if(score != null) {
-					totalPoints += score.floatValue();
-				}
-				
-				if(check.getChecked() == null) continue;
-				
-				Integer index = indexed.get(check.getCheckbox().getCheckboxId());
-				if(index != null) {
-					int i = index.intValue();
-					if(i >= 0 && i<numOfcheckbox) {
-						checkBool[i] = check.getChecked();
-					}
-				}
-			}
-			dataViews.add(new AssessmentDataView(data.getIdentity(), checkBool, totalPoints, userPropertyHandlers, locale));
-		}
-		return dataViews;
-	}
-
-	@Override
 	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode, Checkbox checkbox) {
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + CheckListCourseNode.FOLDER_NAME + "/" + cNode.getIdent();
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
@@ -397,5 +488,14 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + CheckListCourseNode.FOLDER_NAME + "/" + cNode.getIdent();
 		File rootFolder = new File(FolderConfig.getCanonicalRoot(), path);
 		return rootFolder; 
+	}
+	
+	private static class BatchComparator implements Comparator<AssessmentBatch> {
+		@Override
+		public int compare(AssessmentBatch o1, AssessmentBatch o2) {
+			Long id1 = o1.getIdentityKey();
+			Long id2 = o2.getIdentityKey();
+			return id1.compareTo(id2);
+		}
 	}
 }

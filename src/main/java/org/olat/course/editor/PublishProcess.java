@@ -106,12 +106,13 @@ public class PublishProcess {
 	/*
 	 * intermediate structures to calculate next course run
 	 */
-	private ArrayList<CourseEditorTreeNode> editorModelDeletedNodes;
-	private ArrayList<CourseEditorTreeNode> editorModelInsertedNodes;
-	private ArrayList<CourseEditorTreeNode> editorModelModifiedNodes;
+	private List<CourseEditorTreeNode> editorModelDeletedNodes;
+	private List<CourseEditorTreeNode> editorModelInsertedNodes;
+	private List<CourseEditorTreeNode> editorModelModifiedNodes;
 	private Structure resultingCourseRun;
 	private List<String> originalNodeIdsToPublish;
 
+	private final PublishEvents publishEvents = new PublishEvents();
 
 	
 	PublishProcess(ICourse course, CourseEditorTreeModel cetm, Locale locale) {
@@ -127,7 +128,9 @@ public class PublishProcess {
 		return new PublishProcess(course, cetm, locale);
 	}
 	
-
+	public PublishEvents getPublishEvents() {
+		return publishEvents;
+	}
 
 	/**
 	 * first step in publishing course editor nodes.<br>
@@ -295,11 +298,11 @@ public class PublishProcess {
 			}
 		}
 		
-		List<StatusDescription> updateNotifications = testUpdateSet(tmpCEV, locale);
+		List<StatusDescription> updateNotifications = testUpdateSet(tmpCEV);
 		return new PublishSetInformations(status, updateNotifications);
 	}
 	
-	public List<StatusDescription> testUpdateSet(CourseEditorEnv cev, Locale locale) {
+	public List<StatusDescription> testUpdateSet(CourseEditorEnv cev) {
 		//check for valid references to tests, resource folder, wiki
 		List<StatusDescription> notifications = checkUpdates(editorModelInsertedNodes, cev);
 		notifications.addAll(checkUpdates(editorModelModifiedNodes, cev));
@@ -507,10 +510,10 @@ public class PublishProcess {
 	
 	public void applyUpdateSet(Identity identity, Locale locale) {
 		for (CourseEditorTreeNode cetn:editorModelInsertedNodes) {
-			cetn.getCourseNode().updateOnPublish(locale, course);
+			cetn.getCourseNode().updateOnPublish(locale, course, identity, publishEvents);
 		}
 		for (CourseEditorTreeNode cetn:editorModelModifiedNodes) {
-			cetn.getCourseNode().updateOnPublish(locale, course);
+			cetn.getCourseNode().updateOnPublish(locale, course, identity, publishEvents);
 		}
 	}
 	

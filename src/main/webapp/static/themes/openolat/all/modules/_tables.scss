@@ -158,6 +158,10 @@ div.b_table_wrapper {
 	}
 }
 
+div.b_table_wrapper.b_table_edit table thead {
+	border-bottom:solid #f3ca22 5px;
+}
+
 div.b_table_wrapper.b_flexitable_wrapper div.b_table_filter {
 	margin:3px 0 3px 0;
 	label {

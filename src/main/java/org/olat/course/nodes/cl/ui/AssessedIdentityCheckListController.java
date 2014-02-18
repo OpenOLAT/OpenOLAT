@@ -20,6 +20,7 @@
 package org.olat.course.nodes.cl.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,18 +33,23 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.CheckListCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
+import org.olat.course.nodes.cl.model.AssessmentBatch;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -56,25 +62,39 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 
 	private static final String[] onKeys = new String[]{ "on" };
 
+	private final boolean withScore;
 	private final ModuleConfiguration config;
 	private final CheckListCourseNode courseNode;
+	private final UserCourseEnvironment userCourseEnv;
 	private final OLATResourceable courseOres;
 	private final Identity assessedIdentity;
 	private final CheckboxList checkboxList;
+	private List<CheckboxWrapper> wrappers;
 	
 	private final CheckboxManager checkboxManager;
 	
 	public AssessedIdentityCheckListController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, OLATResourceable courseOres, CheckListCourseNode courseNode) {
+			Identity assessedIdentity, OLATResourceable courseOres,
+			UserCourseEnvironment userCourseEnv, CheckListCourseNode courseNode) {
 		super(ureq, wControl);
 
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
+		this.userCourseEnv = userCourseEnv;
 		config = courseNode.getModuleConfiguration();
+		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+		withScore = (hasScore == null || hasScore.booleanValue());	
+
 		this.assessedIdentity = assessedIdentity;
-		checkboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
-		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
+		CheckboxList configCheckboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+		if(configCheckboxList == null) {
+			checkboxList = new CheckboxList();
+			checkboxList.setList(Collections.<Checkbox>emptyList());
+		} else {
+			checkboxList = configCheckboxList;
+		}
 		
+		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		initForm(ureq);
 	}
 
@@ -90,12 +110,11 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 			}
 			
 			List<Checkbox> list = checkboxList.getList();
-			List<CheckboxWrapper> wrappers = new ArrayList<>(list.size());
+			wrappers = new ArrayList<>(list.size());
 			for(Checkbox checkbox:list) {
 				DBCheck check = uuidToCheckMap.get(checkbox.getCheckboxId());
 				boolean readOnly = false;
 				CheckboxWrapper wrapper = forgeCheckboxWrapper(checkbox, check, readOnly, formLayout);
-				layoutCont.add(wrapper.getCheckboxEl());
 				wrappers.add(wrapper);
 			}
 			layoutCont.contextPut("checkboxList", wrappers);
@@ -103,9 +122,9 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonCont);
-		uifactory.addFormSubmitButton("save", "save", buttonCont);
+		FormSubmit saveButton = uifactory.addFormSubmitButton("save", "save", buttonCont);
+		saveButton.setEnabled(checkboxList.getNumOfCheckbox() > 0);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
-		
 	}
 	
 	private CheckboxWrapper forgeCheckboxWrapper(Checkbox checkbox, DBCheck check, boolean readOnly, FormItemContainer formLayout) {
@@ -118,14 +137,17 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		boxEl.setLabel(checkbox.getTitle(), null, false);
 		boxEl.showLabel(true);
 		boxEl.addActionListener(FormEvent.ONCHANGE);
-
-		String pointId = "point_" + checkbox.getCheckboxId();
-		String points = AssessmentHelper.getRoundedScore(checkbox.getPoints());
-		TextElement pointEl = uifactory.addTextElement(pointId, null, 16, points, formLayout);
-		pointEl.setDisplaySize(5);
-		pointEl.setExampleKey("checklist.point.example", new String[]{ "0", "1"});
 		
-		CheckboxWrapper wrapper = new CheckboxWrapper(checkbox, boxEl, pointEl);
+		TextElement pointEl = null;
+		if(withScore) {
+			String pointId = "point_" + checkbox.getCheckboxId();
+			String points = AssessmentHelper.getRoundedScore(checkbox.getPoints());
+			pointEl = uifactory.addTextElement(pointId, null, 16, points, formLayout);
+			pointEl.setDisplaySize(5);
+			pointEl.setExampleKey("checklist.point.example", new String[]{ "0", "1"});
+		}
+		
+		CheckboxWrapper wrapper = new CheckboxWrapper(checkbox, check, boxEl, pointEl);
 		boxEl.setUserObject(wrapper);
 		if(check != null && check.getChecked() != null && check.getChecked().booleanValue()) {
 			boxEl.select(onKeys[0], true);
@@ -141,6 +163,44 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		List<AssessmentBatch> batchElements = new ArrayList<>();
+		for(CheckboxWrapper wrapper:wrappers) {
+			Float editedPoint = null;
+			if(wrapper.getPointEl() != null) {
+				String val = wrapper.getPointEl().getValue();
+				if(StringHelper.containsNonWhitespace(val)) {
+					try {
+						editedPoint = new Float(val);
+					} catch (NumberFormatException e) {
+						editedPoint = null;
+					}	
+				}
+			}
+			
+			boolean editedValue = wrapper.getCheckboxEl().isAtLeastSelected(1);
+			
+			Float currentPoint = null;
+			boolean currentValue = false;
+			if(wrapper.getCheck() != null) {
+				currentPoint = wrapper.getCheck().getScore();
+				Boolean checkObj = wrapper.getCheck().getChecked();
+				if(checkObj != null && checkObj.booleanValue()) {
+					currentValue = checkObj.booleanValue();
+				}
+			}
+			
+			if((editedValue != currentValue)
+					|| ((currentPoint == null && editedPoint != null)
+					|| (currentPoint != null &&  editedPoint == null)
+					|| (currentPoint != null && !currentPoint.equals(editedPoint)))) {
+				
+				String boxId = wrapper.getCheckbox().getCheckboxId();
+				batchElements.add(new AssessmentBatch(assessedIdentity.getKey(), boxId, editedPoint, editedValue));
+			}
+		}
+		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
+		
+		courseNode.updateScoreEvaluation(userCourseEnv, assessedIdentity);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -154,10 +214,12 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		private final TextElement pointEl;
 		private final MultipleSelectionElement checkboxEl;
 		private final Checkbox checkbox;
+		private DBCheck check;
 		private DBCheckbox dbCheckbox;
 		
-		public CheckboxWrapper(Checkbox checkbox, MultipleSelectionElement checkboxEl, TextElement pointEl) {
+		public CheckboxWrapper(Checkbox checkbox, DBCheck check, MultipleSelectionElement checkboxEl, TextElement pointEl) {
 			this.checkboxEl = checkboxEl;
+			this.check = check;
 			this.pointEl = pointEl;
 			this.checkbox = checkbox;
 		}
@@ -166,6 +228,14 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 			return checkbox;
 		}
 		
+		public DBCheck getCheck() {
+			return check;
+		}
+
+		public void setCheck(DBCheck check) {
+			this.check = check;
+		}
+
 		/**
 		 * This value is lazy loaded and can be null!
 		 * @return

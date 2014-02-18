@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -39,6 +40,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.nodes.cl.model.CheckboxList;
+import org.olat.course.nodes.cl.ui.wizard.GeneratorData;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -53,27 +56,55 @@ public class CheckListConfigurationController extends FormBasicController {
 	private static final String[] outputKeys = new String[]{ "cutvalue", "sum", "coach"};
 	
 	private MultipleSelectionElement dueDateEl, scoreGrantedEl, passedEl, commentEl;
-	private SingleSelection outputEl;
-	private TextElement minPointsEl, maxPointsEl, cutValueEl;
+	private SingleSelection outputEl, numOfCheckListEl, sumCheckboxEl;
+	private TextElement minPointsEl, maxPointsEl, cutValueEl, titlePrefixEl;
 	private RichTextElement tipUserEl, tipCoachEl;
 	private DateChooser dueDateChooserEl;
 	
-	private ModuleConfiguration config;
+	private final ModuleConfiguration config;
+	private final boolean inUse;
+	private final boolean wizard;
+	private GeneratorData data;
 	
+	private static final String[] numOfKeys = new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
 	
-	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, boolean inUse) {
 		super(ureq, wControl);
-		
+		wizard = false;
+		this.inUse = inUse;
 		config = courseNode.getModuleConfiguration();
-		
+		initForm(ureq);
+	}
+	
+	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config,
+			GeneratorData data, Form rootForm) {
+		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
+		wizard = true;
+		inUse = false;
+		this.data = data;
+		this.config = config;
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("config.title");
-		setFormDescription("config.description");
-		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-config.html", "help.hover.config");
+		if(wizard) {
+			titlePrefixEl = uifactory.addTextElement("titelprefix", "title.prefix", 64, "", formLayout);
+			titlePrefixEl.setMandatory(true);
+			
+			numOfCheckListEl = uifactory.addDropdownSingleselect("num.of.checklist", "num.of.checklist", formLayout, numOfKeys, numOfKeys, null);
+			numOfCheckListEl.select(numOfKeys[0], true);
+			numOfCheckListEl.setMandatory(true);
+
+			uifactory.addSpacerElement("spacer-wiz", formLayout, false);
+		} else {
+			setFormTitle("config.title");
+			setFormDescription("config.description");
+			setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-config.html", "help.hover.config");
+			if(inUse) {
+				setFormWarning("config.warning.inuse");
+			}
+		}
 		
 		//due date
 		Boolean dueDateBool = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
@@ -100,44 +131,67 @@ public class CheckListConfigurationController extends FormBasicController {
 		Float maxVal = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		String[] pointsValues = new String[]{ translate("config.points.on") };
 		scoreGrantedEl = uifactory.addCheckboxesHorizontal("points", "config.points", formLayout, onKeys, pointsValues, null);
-		if(scoreGrantedBool != null && scoreGrantedBool.booleanValue()) {
+		scoreGrantedEl.addActionListener(FormEvent.ONCHANGE);
+		if(scoreGrantedBool == null || (scoreGrantedBool != null && scoreGrantedBool.booleanValue())) {
 			scoreGrantedEl.select(onKeys[0], true);
 		}
 		String minValStr = minVal == null ? "" : Float.toString(minVal.floatValue());
 		minPointsEl = uifactory.addTextElement("pointsmin", "config.points.min", 4, minValStr, formLayout);
+		minPointsEl.setMandatory(true);
 		minPointsEl.setDisplaySize(5);
 		String maxValStr = maxVal == null ? "" : Float.toString(maxVal.floatValue());
 		maxPointsEl = uifactory.addTextElement("pointsmax", "config.points.max", 4, maxValStr, formLayout);
+		maxPointsEl.setMandatory(true);
 		maxPointsEl.setDisplaySize(5);
+		updateScoreVisibility();
+		
 		uifactory.addSpacerElement("spacer-points", formLayout, false);
 		
 		//passed
+		Float cutVal = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		Boolean passedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
+		Boolean passedSum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
+		Integer sumCutValue = (Integer)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE);
+		Boolean manualCorr = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
+		
 		passedEl = uifactory.addCheckboxesHorizontal("passed", "config.passed", formLayout, onKeys, theValues, null);
-		if(passedBool != null && passedBool.booleanValue()) {
+		passedEl.addActionListener(FormEvent.ONCHANGE);
+		if(passedBool == null || (passedBool != null && passedBool.booleanValue())) {
 			passedEl.select(onKeys[0], true);
 		}
 		String[] outputValues = new String[]{
 			translate("config.output.cutvalue"), translate("config.output.sum"), translate("config.output.coach")
 		};
 		outputEl = uifactory.addRadiosVertical("output", "config.output", formLayout, outputKeys, outputValues);
-		Boolean passedSum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
-		if(passedSum != null && passedSum.booleanValue()) {
-			outputEl.select(outputKeys[1], true);
-		}
-		Boolean manualCorr = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
-		if(manualCorr != null && manualCorr.booleanValue()) {
-			outputEl.select(outputKeys[2], true);
-		}
-		Float cutVal = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		if(cutVal != null && cutVal.floatValue() > -0.1) {
-			outputEl.select(outputKeys[0], true);
-		}
+		outputEl.addActionListener(FormEvent.ONCHANGE);
+		
 		String cutValStr = cutVal == null ? "" : Float.toString(cutVal.floatValue());
 		cutValueEl = uifactory.addTextElement("cutvalue", "config.cutvalue", 4, cutValStr, formLayout);
 		cutValueEl.setDisplaySize(5);
-		uifactory.addSpacerElement("spacer-passed", formLayout, false);
+		cutValueEl.setMandatory(true);
 		
+		String[] numKeys = getAvailableSumCutValues();
+		sumCheckboxEl = uifactory.addDropdownSingleselect("sum.cutvalue", "sum.cutvalue", formLayout, numKeys, numKeys, null);
+		if(sumCutValue == null || sumCutValue.intValue() <= 0) {
+			sumCheckboxEl.select(numKeys[0], true);
+		} else if(sumCutValue.intValue() > 0 && sumCutValue.intValue() < numKeys.length) {
+			sumCheckboxEl.select(numKeys[sumCutValue.intValue()], true);
+		} else {
+			sumCheckboxEl.select(numKeys[numKeys.length - 1], true);
+		}
+		if(passedSum != null && passedSum.booleanValue()) {
+			outputEl.select(outputKeys[1], true);
+		}
+		if(manualCorr != null && manualCorr.booleanValue()) {
+			outputEl.select(outputKeys[2], true);
+		}
+		if((cutVal != null && cutVal.floatValue() > -0.1) || !outputEl.isOneSelected()) {
+			outputEl.select(outputKeys[0], true);
+		}
+		updatePassedAndOutputVisibilty();
+		
+		uifactory.addSpacerElement("spacer-passed", formLayout, false);
+
 		//comment
 		commentEl = uifactory.addCheckboxesHorizontal("comment", "config.comment", formLayout, onKeys, theValues, null);
 		Boolean commentBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
@@ -153,10 +207,11 @@ public class CheckListConfigurationController extends FormBasicController {
 		tipCoachEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.coach", "config.tip.coach", ic, 5, -1, formLayout,
 				ureq.getUserSession(), getWindowControl());
 		
-		
-		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsLayout);
-		uifactory.addFormSubmitButton("submit", "submit", buttonsLayout);
+		if(!wizard) {
+			FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			formLayout.add(buttonsLayout);
+			uifactory.addFormSubmitButton("submit", "submit", buttonsLayout);
+		}
 	}
 	
 	@Override
@@ -166,6 +221,13 @@ public class CheckListConfigurationController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(wizard) {
+			String prefix = titlePrefixEl.getValue();
+			data.setNodePrefix(prefix);
+			int numOfChecklist = numOfCheckListEl.getSelected();
+			data.setNumOfNodes(numOfChecklist + 1);
+		}
+
 		//due date
 		boolean closeAfterDueDate = dueDateEl.isAtLeastSelected(1);
 		config.set(CheckListCourseNode.CONFIG_KEY_CLOSE_AFTER_DUE_DATE, new Boolean(closeAfterDueDate));
@@ -190,6 +252,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		Boolean pf = new Boolean(passedEl.isSelected(0));
 		config.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, pf);
 		config.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		config.remove(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE);
 		config.set(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX, Boolean.FALSE);
 		config.set(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION, Boolean.FALSE);
 		if (pf.booleanValue()) {
@@ -198,6 +261,8 @@ public class CheckListConfigurationController extends FormBasicController {
 				config.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, new Float(cutValueEl.getValue()));
 			} else if("sum".equals(output)) {
 				config.set(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX, Boolean.TRUE);
+				int sumCutValue = Integer.parseInt(sumCheckboxEl.getSelectedKey());
+				config.set(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE, new Integer(sumCutValue));
 			} else if("coach".equals(output)) {
 				config.set(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION, Boolean.TRUE);
 			}
@@ -225,6 +290,22 @@ public class CheckListConfigurationController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		
+		//wizardery need title prefix and number of checklist to be defined
+		if(wizard) {
+			titlePrefixEl.clearError();
+			if(!StringHelper.containsNonWhitespace(titlePrefixEl.getValue())) {
+				titlePrefixEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+			
+			numOfCheckListEl.clearError();
+			if(!numOfCheckListEl.isOneSelected()) {
+				numOfCheckListEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+		
 		// score flag
 		minPointsEl.clearError();
 		maxPointsEl.clearError();
@@ -277,13 +358,80 @@ public class CheckListConfigurationController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(dueDateEl == source) {
-			boolean selected = dueDateEl.isAtLeastSelected(1);
-			dueDateChooserEl.setVisible(selected);
-			
-			
+			if(!wizard) {
+				boolean selected = dueDateEl.isAtLeastSelected(1);
+				dueDateChooserEl.setVisible(selected);
+			}
+		} else if(scoreGrantedEl == source) {
+			updateScoreVisibility();
+		} else if(passedEl == source) {
+			updatePassedAndOutputVisibilty();
+		} else if(outputEl == source) {
+			updatePassedAndOutputVisibilty();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof CheckListBoxListEditController) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				//update the number of box available
+				String[] numKeys = getAvailableSumCutValues();
+				int currentSelection = sumCheckboxEl.getSelected();
+				sumCheckboxEl.setKeysAndValues(numKeys, numKeys, null);
+				if(currentSelection >= numKeys.length) {
+					//if the number is smaller, update the selection to fit in the new range
+					sumCheckboxEl.select(numKeys[numKeys.length - 1], true);
+				} else {
+					sumCheckboxEl.select(numKeys[currentSelection], true);
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
 	
+	private String[] getAvailableSumCutValues() {
+		int currentNumOfCheckbox;
+		if(data == null) {
+			CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+			currentNumOfCheckbox = list == null ? 0 : list.getNumOfCheckbox();
+		} else {
+			currentNumOfCheckbox = data.getNumOfCheckbox();
+		}
+		String[] numKeys = new String[currentNumOfCheckbox + 1];
+		for(int i=0; i<=currentNumOfCheckbox; i++) {
+			numKeys[i] = Integer.toString(i);
+		}
+		return numKeys;
+	}
+
+	private void updateScoreVisibility() {
+		boolean granted = scoreGrantedEl.isSelected(0);
+		minPointsEl.setVisible(granted);
+		minPointsEl.setMandatory(granted);
+		maxPointsEl.setVisible(granted);
+		maxPointsEl.setMandatory(granted);
+	}
+	
+	private void updatePassedAndOutputVisibilty() {
+		if(passedEl.isSelected(0)) {
+			outputEl.setVisible(true);
+			String selectKey = outputEl.getSelectedKey();
+			if("cutvalue".equals(selectKey)) {
+				cutValueEl.setVisible(true);
+				sumCheckboxEl.setVisible(false);
+			} else if("sum".equals(selectKey)) {
+				cutValueEl.setVisible(false);
+				sumCheckboxEl.setVisible(true);
+			} else if("coach".equals(selectKey)) {
+				cutValueEl.setVisible(false);
+				sumCheckboxEl.setVisible(false);
+			}
+		} else {
+			outputEl.setVisible(false);
+			cutValueEl.setVisible(false);
+			sumCheckboxEl.setVisible(false);
+		}
+	}
 }
