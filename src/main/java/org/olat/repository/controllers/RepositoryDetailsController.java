@@ -888,20 +888,22 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		}
 
 		OLATResourceable ores = re.getOlatResource();
+		BusinessControlFactory bcFactory = BusinessControlFactory.getInstance();
 		
 		//was brasato:: DTabs dts = getWindowControl().getDTabs();
 		DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
 		DTab dt = dts.getDTab(ores);
 		if (dt == null) {
 			// does not yet exist -> create and add
-			//fxdiff BAKS-7 Resume function
 			dt = dts.createDTab(ores, re, re.getDisplayname());
 			if (dt == null){
 				//null means DTabs are full -> warning is shown
 				return;
 			}
 			//user activity logger is set by course factory
-			Controller editorController = typeToEdit.createEditorController(re, ureq, dt.getWindowControl());
+			ContextEntry entry = bcFactory.createContextEntry(re);
+			WindowControl swControl = bcFactory.createBusinessWindowControl(entry, dt.getWindowControl());
+			Controller editorController = typeToEdit.createEditorController(re, ureq, swControl);
 			if(editorController == null){
 				//editor could not be created -> warning is shown
 				return;
@@ -909,7 +911,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			dt.setController(editorController);
 			dts.addDTab(ureq, dt);
 		}
-		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_EDITOR);
+		List<ContextEntry> entries = bcFactory.createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_EDITOR);
 		dts.activate(ureq, dt, entries);
 	}
 
