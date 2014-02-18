@@ -34,6 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -47,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -80,6 +82,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 	
 	private FlexiTableElement table;
 	private SingleSelection checkboxEl;
+	private FormLink selectAllBoxButton;
 	private CheckboxAssessmentDataModel model;
 	private List<CheckboxAssessmentRow> boxRows;
 	private List<CheckListAssessmentRow> initialRows;
@@ -217,6 +220,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		selectAllBoxButton = uifactory.addFormLink("selectall", buttonsCont, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
@@ -248,6 +252,8 @@ public class CheckboxAssessmentController extends FormBasicController {
 				}	
 			}
 			currentCheckboxIndex = nextCheckboxIndex;
+		} else if(selectAllBoxButton == source) {
+			doSelectAll();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -283,6 +289,18 @@ public class CheckboxAssessmentController extends FormBasicController {
 			return new Float(pointVal);
 		} catch (NumberFormatException e) {
 			return null;
+		}
+	}
+	
+	private void doSelectAll() {
+		List<CheckboxAssessmentRow> rows = model.getObjects();
+		for(CheckboxAssessmentRow row:rows) {
+			boolean checked = row.getCheckedEl().isAtLeastSelected(1);
+			Boolean[] checkedArr = row.getChecked();
+			if(!checked) {
+				checkedArr[currentCheckboxIndex] = Boolean.TRUE;
+				row.getCheckedEl().select(onKeys[0], true);
+			}
 		}
 	}
 
