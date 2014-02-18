@@ -183,7 +183,8 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
 		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
-		  .append(" where cei.type=").append(CatalogEntry.TYPE_NODE);
+		  .append(" where cei.type=").append(CatalogEntry.TYPE_NODE)
+		  .append(" order by cei.name");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CatalogEntry.class)
