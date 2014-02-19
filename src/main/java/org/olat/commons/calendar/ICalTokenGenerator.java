@@ -32,6 +32,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.group.BusinessGroupService;
@@ -50,6 +51,8 @@ import org.olat.properties.PropertyManager;
  * @author Udit Sajjanhar
  */
 public class ICalTokenGenerator {
+	
+	private static final OLog log = Tracing.createLoggerFor(ICalTokenGenerator.class);
 
 	/** Authentication provider name for iCal authentication **/
 	public static final String ICAL_AUTH_PROVIDER = "ICAL-OLAT";
@@ -202,21 +205,11 @@ public class ICalTokenGenerator {
   	}
   }
   
-  private static void destroyIcalAuthToken(Identity identity) {
-  	// find the property for the identity
-  	PropertyManager pm = PropertyManager.getInstance();
-  	Property tokenProperty = pm.findProperty(identity, null, null, 
-  			PROP_CAT_ICALTOKEN, PROP_NAME_ICALTOKEN);
-  	
-  	// return the string value of the property
-  	pm.deleteProperty(tokenProperty);
-  }
-  
   private static Identity getIdentity (String userName) {
 		Identity identity = BaseSecurityManager.getInstance().findIdentityByName(userName);
 		if (identity == null) {
 			// error - abort
-			Tracing.logError("Identity not found for the username: " + userName, ICalTokenGenerator.class);
+			log.error("Identity not found for the username: " + userName);
 		} 
 		return identity;
   }
@@ -230,7 +223,7 @@ public class ICalTokenGenerator {
 		 	resourceable = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(new Long(calendarID));
 		 	if (resourceable == null) {
 		 		// error
-		 		Tracing.logError("Group not found for the Resourceableid: " + calendarID, ICalTokenGenerator.class);
+		 		log.error("Group not found for the Resourceableid: " + calendarID);
 		 		return null;
 		 	}
 		} else if ((calendarType.equals(ICalFileCalendarManager.TYPE_COURSE))) {
@@ -238,12 +231,12 @@ public class ICalTokenGenerator {
 		 		// get the course
 		 		resourceable = CourseFactory.loadCourse(new Long(Long.parseLong(calendarID)));
 		 	} catch (Exception e) {
-		 		Tracing.logError("Course not found for the Resourceableid: " + calendarID, ICalTokenGenerator.class);
+		 		log.error("Course not found for the Resourceableid: " + calendarID);
 		 		return null;
 		 	}
 		} else {
 			// error - abort
-			Tracing.logError("Unmatching Calendar Type: " + calendarType, ICalTokenGenerator.class);
+			log.error("Unmatching Calendar Type: " + calendarType);
 			return null;
 		} 
   

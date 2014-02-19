@@ -47,13 +47,11 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 import org.olat.course.run.calendar.CourseCalendarSubscription;
 
 public class KalendarConfigurationController extends BasicController {
 
-	private static final String PACKAGE = Util.getPackageName(CalendarManager.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
 
 	private static final Object CMD_ADD = "add";
@@ -79,9 +77,9 @@ public class KalendarConfigurationController extends BasicController {
 	
 	private List<String> subscriptionIds;
 
-	public KalendarConfigurationController(List<KalendarRenderWrapper> calendars, UserRequest ureq, WindowControl wControl, boolean insideManager, boolean canUnsubscribe) {
+	public KalendarConfigurationController(List<KalendarRenderWrapper> calendars, UserRequest ureq, WindowControl wControl, boolean insideManager) {
 		super(ureq, wControl);
-		setTranslator(new PackageTranslator(PACKAGE, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale()));
 		
 		configVC = new VelocityContainer("calEdit", VELOCITY_ROOT + "/calConfig.html", getTranslator(), this);
 		setCalendars(ureq, calendars);

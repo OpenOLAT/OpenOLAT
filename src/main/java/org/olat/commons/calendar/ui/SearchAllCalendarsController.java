@@ -27,7 +27,6 @@ package org.olat.commons.calendar.ui;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -53,7 +52,7 @@ import org.olat.core.util.Formatter;
 
 public class SearchAllCalendarsController extends BasicController {
 
-	private Collection calendars;
+	private Collection<KalendarRenderWrapper> calendars;
 	
 	private VelocityContainer mainVC;
 	private Panel panel;
@@ -62,7 +61,8 @@ public class SearchAllCalendarsController extends BasicController {
 
 	private Link backLink;
 
-	public SearchAllCalendarsController(UserRequest ureq, WindowControl wControl, Collection calendars) {
+	public SearchAllCalendarsController(UserRequest ureq, WindowControl wControl,
+			Collection<KalendarRenderWrapper> calendars) {
 		super(ureq, wControl);
 		this.calendars = calendars;
 				
@@ -117,8 +117,7 @@ public class SearchAllCalendarsController extends BasicController {
 				Date beginPeriod = searchForm.getBeginPeriod();
 				Date endPeriod = searchForm.getEndPeriod();
 				// search for events and build selection tree model
-				for (Iterator iter = calendars.iterator(); iter.hasNext();) {
-					KalendarRenderWrapper	kalendarWrapper = (KalendarRenderWrapper)iter.next();
+				for (KalendarRenderWrapper kalendarWrapper : calendars) {
 					// for locally read-only calendars: search only public events, for imported calendar search in private and public events 
 					boolean searchPublicEventsOnly = (kalendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY) && !kalendarWrapper.isImported();
 					List<KalendarEvent> matchingEvents = CalendarUtils.findEvents(kalendarWrapper.getKalendar(), subject, location, beginPeriod, endPeriod, searchPublicEventsOnly);
@@ -126,8 +125,7 @@ public class SearchAllCalendarsController extends BasicController {
 					GenericTreeNode calendarNode = new GenericTreeNode("<i>" + translate("cal.form.calendarname") + ": " + kalendarWrapper.getKalendarConfig().getDisplayName() + "</i>", null);
 					calendarNode.setAccessible(false);
 					rootNode.addChild(calendarNode);
-					for (Iterator<KalendarEvent> Iter_matching = matchingEvents.iterator(); Iter_matching.hasNext();) {
-						KalendarEvent matchingEvent = Iter_matching.next();
+					for (KalendarEvent matchingEvent: matchingEvents) {
 						StringBuilder display = new StringBuilder();
 						String truncatedSubject = matchingEvent.getSubject();
 						if (truncatedSubject.length() > CalendarManager.MAX_SUBJECT_DISPLAY_LENGTH)

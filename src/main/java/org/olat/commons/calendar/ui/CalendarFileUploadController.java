@@ -28,7 +28,6 @@ package org.olat.commons.calendar.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Locale;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
@@ -41,10 +40,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 
@@ -62,29 +59,25 @@ import com.oreilly.servlet.multipart.Part;
  */
 public class CalendarFileUploadController extends BasicController {
 
-	private static final String PACKAGE = Util.getPackageName(CalendarManager.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
 
 	private VelocityContainer calFileUploadVC;
 	private Translator translator;
 	private static final String COMMAND_PROCESS_UPLOAD = "pul";
 	private static final long fileUploadLimit = 1024;
-	private CalendarImportNameForm nameForm;
 	private Link cancelButton;
 	
 	
-	CalendarFileUploadController(UserRequest ureq, Locale locale, WindowControl wControl) {
+	CalendarFileUploadController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		translator = new PackageTranslator(PACKAGE, locale);
+		translator = Util.createPackageTranslator(CalendarManager.class,  ureq.getLocale());
 		calFileUploadVC = new VelocityContainer("calmanage", VELOCITY_ROOT + "/calFileUpload.html", translator, this);
 		cancelButton = LinkFactory.createButton("cancel", calFileUploadVC, this);
 		putInitialPanel(calFileUploadVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == cancelButton) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -110,7 +103,7 @@ public class CalendarFileUploadController extends BasicController {
 					FilePart fPart = (FilePart) part;
 					String type = fPart.getContentType();
 					// get file contents
-					Tracing.logWarn(type + fPart.getFileName(), this.getClass());
+					logWarn(type + fPart.getFileName(), null);
 					if (fPart != null && fPart.getFileName() != null && type.startsWith("text") && (type.toLowerCase().endsWith("calendar"))) {
 						
 						// store the uploaded file by a temporary name
@@ -143,29 +136,24 @@ public class CalendarFileUploadController extends BasicController {
 
 		} catch (IOException ioe) {
 			// exceeded UL limit
-			Tracing.logWarn("IOException in CalendarFileUploadController: ", ioe, this.getClass());
+			logWarn("IOException in CalendarFileUploadController: ", ioe);
 			String slimitKB = String.valueOf(fileUploadLimit);
 			String supportAddr = WebappHelper.getMailConfig("mailQuota");//->{0} für e-mail support e-mail adresse
 			getWindowControl().setError(translator.translate("cal.import.form.limit.error", new String[] { slimitKB, supportAddr }));
 			return;
 		} catch (OLATRuntimeException e) {
-			Tracing.logWarn("Imported Calendar file not correct. Parsing failed.", e, this.getClass());
+			logWarn("Imported Calendar file not correct. Parsing failed.", e);
 			getWindowControl().setError(translator.translate("cal.import.parsing.failed"));
 			return;
 		}catch (Exception e) {
-			Tracing.logWarn("Exception in CalendarFileUploadController: ", e, this.getClass());
+			logWarn("Exception in CalendarFileUploadController: ", e);
 			getWindowControl().setError(translator.translate("cal.import.form.failed"));
 			return;
 		}
 	}
-	
-	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+
+	@Override
 	protected void doDispose() {
 		// do nothing here yet
 	}
-
 }

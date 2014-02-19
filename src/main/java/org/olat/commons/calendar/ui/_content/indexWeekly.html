@@ -16,9 +16,8 @@
 				$r.render("calsubscription")
 			</div>
 		#end
-	  
-	  
-	  #if ($caller == "home")
+
+		#if ($caller == "home")
 			$r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar.html","help.hover.personalcal")
 		#elseif ($caller == "course")
 			$r.contextHelpWithWrapper("org.olat.commons.calendar","course-calendar.html","help.hover.coursecal")

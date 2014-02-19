@@ -62,8 +62,7 @@ public class CalWebService {
 	@GET
 	@Path("events")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getEventsByCalendar(@PathParam("calendarId") String calendarId,
-			@PathParam("identityKey") Long identityKey, @QueryParam("start") @DefaultValue("0") Integer start,
+	public Response getEventsByCalendar(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,
 			@QueryParam("onlyFuture") @DefaultValue("false") Boolean onlyFuture,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
@@ -93,8 +92,7 @@ public class CalWebService {
 	@Path("events/{eventId}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response deleteEventByCalendar(@PathParam("calendarId") String calendarId,
-			@PathParam("eventId") String eventId, @PathParam("identityKey") Long identityKey,
+	public Response deleteEventByCalendar(@PathParam("eventId") String eventId,
 			@Context HttpServletRequest httpRequest) {
 		
 		UserRequest ureq = getUserRequest(httpRequest);
@@ -127,21 +125,19 @@ public class CalWebService {
 	@Path("events")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putEventByCalendar(@PathParam("calendarId") String calendarId,
-			EventVO event, @Context HttpServletRequest httpRequest) {
-		return addEventByCalendar(calendarId, event, httpRequest);
+	public Response putEventByCalendar(EventVO event, @Context HttpServletRequest httpRequest) {
+		return addEventByCalendar(event, httpRequest);
 	}
 	
 	@POST
 	@Path("events")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postEventByCalendar(@PathParam("calendarId") String calendarId,
-			EventVO event, @Context HttpServletRequest httpRequest) {
-		return addEventByCalendar(calendarId, event, httpRequest);
+	public Response postEventByCalendar(EventVO event, @Context HttpServletRequest httpRequest) {
+		return addEventByCalendar(event, httpRequest);
 	}
 	
-	private Response addEventByCalendar(String calendarId, EventVO event, HttpServletRequest httpRequest) {
+	private Response addEventByCalendar(EventVO event, HttpServletRequest httpRequest) {
 		UserRequest ureq = getUserRequest(httpRequest);
 		if(!ureq.getUserSession().isAuthenticated()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

@@ -44,7 +44,6 @@ import org.olat.commons.calendar.model.KalendarComparator;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -139,16 +138,14 @@ public class ImportCalendarManager extends BasicManager {
 	
 	private static List<Property> loadPropertiesByImportCategory() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select p from org.olat.properties.Property as p where ")
-			.append(" p.category = :category")
-			.append(" and p.resourceTypeId = :restypeid");
+		sb.append("select p from ").append(Property.class.getName()).append(" as p where ")
+		  .append(" p.category = :category and p.resourceTypeId = :restypeid");
 
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setString("category", PROP_CATEGORY_IMP);
-		query.setLong("restypeid", new Long(0));
-
-		List<Property> properties = query.list();
-		return properties;		
+		return DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Property.class)
+				.setParameter("category", PROP_CATEGORY_IMP)
+				.setParameter("restypeid", new Long(0))
+				.getResultList();		
 	}
 	
 	public static boolean importCalendarIn(KalendarRenderWrapper calenderWrapper, InputStream in) {

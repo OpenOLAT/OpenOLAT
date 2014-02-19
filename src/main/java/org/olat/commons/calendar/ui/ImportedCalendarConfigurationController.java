@@ -27,7 +27,6 @@
 package org.olat.commons.calendar.ui;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -48,14 +47,12 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 
 
 
 public class ImportedCalendarConfigurationController extends BasicController {
 
-	private static final String PACKAGE = Util.getPackageName(CalendarManager.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
 
 	private static final Object CMD_ADD = "add";
@@ -65,7 +62,7 @@ public class ImportedCalendarConfigurationController extends BasicController {
 	private static final String PARAM_ID = "id";
 
 	private VelocityContainer configVC;
-	private List importedCalendarWrappers;
+	private List<KalendarRenderWrapper> importedCalendarWrappers;
 	private CalendarColorChooserController colorChooser;
 	private KalendarRenderWrapper lastCalendarWrapper;
 	private CloseableModalController cmc;
@@ -74,10 +71,11 @@ public class ImportedCalendarConfigurationController extends BasicController {
 	private Link manageCalendarsButton;
 	private ManageCalendarsController manageCalendarsController;
 
-	public ImportedCalendarConfigurationController(List importedCalendarWrappers, UserRequest ureq, WindowControl wControl, boolean insideManager) {
+	public ImportedCalendarConfigurationController(UserRequest ureq, WindowControl wControl,
+			List<KalendarRenderWrapper> importedCalendarWrappers, boolean insideManager) {
 		super(ureq, wControl);
 		this.importedCalendarWrappers = importedCalendarWrappers;
-		setTranslator(new PackageTranslator(PACKAGE, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale()));
 		
 		configVC = new VelocityContainer("calEdit", VELOCITY_ROOT + "/importedCalConfig.html", getTranslator(), this);
 		configVC.contextPut("calendars", importedCalendarWrappers);
@@ -87,7 +85,7 @@ public class ImportedCalendarConfigurationController extends BasicController {
 		putInitialPanel(configVC);
 	}
 
-	public void setCalendars(List calendars) {
+	public void setCalendars(List<KalendarRenderWrapper> calendars) {
 		this.importedCalendarWrappers = calendars;
 		configVC.contextPut("calendars", calendars);
 	}
@@ -124,7 +122,7 @@ public class ImportedCalendarConfigurationController extends BasicController {
 		} else if (source == manageCalendarsButton){
 			removeAsListenerAndDispose(manageCalendarsController);
 			importedCalendarWrappers = ImportCalendarManager.getImportedCalendarsForIdentity(ureq);
-			manageCalendarsController = new ManageCalendarsController(ureq, ureq.getLocale()  ,getWindowControl(), importedCalendarWrappers);
+			manageCalendarsController = new ManageCalendarsController(ureq, getWindowControl(), importedCalendarWrappers);
 			listenTo(manageCalendarsController);
 			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(getWindowControl(), this.translate("close"), manageCalendarsController.getInitialComponent());
@@ -165,17 +163,11 @@ public class ImportedCalendarConfigurationController extends BasicController {
 	}
 	
 	private KalendarRenderWrapper findKalendarRenderWrapper(String calendarID) {
-		for (Iterator iter = importedCalendarWrappers.iterator(); iter.hasNext();) {
-			KalendarRenderWrapper calendarWrapper = (KalendarRenderWrapper) iter.next();
+		for (KalendarRenderWrapper calendarWrapper : importedCalendarWrappers) {
 			if (calendarWrapper.getKalendar().getCalendarID().equals(calendarID))
 				return calendarWrapper;
 		}
 		return null;
-	}
-	
-	private String getCalendarType(String calendarID) {
-		KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarID);
-		return calendarWrapper.getKalendar().getType();
 	}
 		
 	protected void doDispose() {
@@ -183,5 +175,4 @@ public class ImportedCalendarConfigurationController extends BasicController {
 		cmc = null;
 		colorChooser = null;
 	}
-
 }

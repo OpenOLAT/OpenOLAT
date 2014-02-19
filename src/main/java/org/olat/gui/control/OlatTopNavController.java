@@ -304,16 +304,14 @@ public class OlatTopNavController extends BasicController implements GenericEven
 	@Override
 	public void event(Event event) {
 		if (event instanceof AssessmentEvent) {
-			if(((AssessmentEvent)event).getEventType().equals(AssessmentEvent.TYPE.STARTED)) {
+			AssessmentEvent ae = (AssessmentEvent)event;
+			if(ae.getEventType().equals(AssessmentEvent.TYPE.STARTED)) {
 				topNavVC.contextPut("inAssessment", true);
-				return;
-			} 
-			if(((AssessmentEvent)event).getEventType().equals(AssessmentEvent.TYPE.STOPPED)) {
+			} else if(ae.getEventType().equals(AssessmentEvent.TYPE.STOPPED)) {
 				OLATResourceable a = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 				if (singleUserEventCenter.getListeningIdentityCntFor(a)<1) {
 					topNavVC.contextPut("inAssessment", false);
 				}
-				return;
 			} 
 		}
 	}

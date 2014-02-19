@@ -26,21 +26,21 @@
 
 package org.olat.commons.calendar.ui;
 
+import java.util.List;
+
+import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.ImportCalendarManager;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.UserRequest;
-import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.ImportCalendarManager;
-
-import java.util.List;
-import java.util.Locale;
+import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * Description:<BR>
@@ -66,9 +66,7 @@ public class ManageCalendarsController extends BasicController {
 	private Panel panel;
 	private String importUrl;
 
-	
-
-	ManageCalendarsController(UserRequest ureq, Locale locale, WindowControl wControl, List importedCalendarWrappers) {
+	ManageCalendarsController(UserRequest ureq, WindowControl wControl, List<KalendarRenderWrapper> importedCalendarWrappers) {
 		super(ureq, wControl);
 		
 		setBasePackage(CalendarManager.class);
@@ -76,13 +74,13 @@ public class ManageCalendarsController extends BasicController {
 		manageVC = createVelocityContainer("manageCalendars");
 			
 		// Import calendar functionalities
-		importedCalendarConfig = new ImportedCalendarConfigurationController(importedCalendarWrappers, ureq, getWindowControl(), true);
+		importedCalendarConfig = new ImportedCalendarConfigurationController(ureq, getWindowControl(), importedCalendarWrappers, true);
 		listenTo(importedCalendarConfig);
 		manageVC.put("importedCalendarConfig", importedCalendarConfig.getInitialComponent());
 		manageVC.contextPut("importedCalendarWrappers", importedCalendarWrappers);
 		
 		
-		calFileUpload = new CalendarFileUploadController(ureq, locale, wControl);
+		calFileUpload = new CalendarFileUploadController(ureq, wControl);
 		listenTo(calFileUpload);
 
 		calImportByUrl = new CalendarImportByUrlController(ureq, wControl);

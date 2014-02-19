@@ -30,7 +30,7 @@ public class KalendarEventLink {
 
 	private String provider, id, displayName, URI, iconCssClass;
 	
-	private KalendarEventLink() {
+	public KalendarEventLink() {
 		// no-args constructor for XStream
 	}
 	

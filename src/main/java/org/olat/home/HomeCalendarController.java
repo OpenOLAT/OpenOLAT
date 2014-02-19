@@ -90,7 +90,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 		List<KalendarRenderWrapper> importedCalendars = getListOfImportedCalendarWrappers(ureq);
 		calendarController = new WeeklyCalendarController(ureq, windowControl, calendars, importedCalendars, WeeklyCalendarController.CALLER_HOME, false);
 		listenTo(calendarController);
-		
+
 		putInitialPanel(calendarController.getInitialComponent());
 	}
 

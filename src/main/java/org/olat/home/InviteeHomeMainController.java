@@ -31,7 +31,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 
@@ -94,7 +93,7 @@ public class InviteeHomeMainController extends MainLayoutBasicController {
 				}
 			}
 		} else {
-			Tracing.logWarn("Unhandled olatMenuTree event: " + event.getCommand(), InviteeHomeMainController.class);
+			logWarn("Unhandled olatMenuTree event: " + event.getCommand(), null);
 		}
 	}
 

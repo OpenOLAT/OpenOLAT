@@ -39,7 +39,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.portal.PortalImpl;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 
@@ -124,7 +123,7 @@ public class GuestHomeMainController extends MainLayoutBasicController {
 				}
 			}
 		} else {
-			Tracing.logWarn("Unhandled olatMenuTree event: " + event.getCommand(), GuestHomeMainController.class);
+			logWarn("Unhandled olatMenuTree event: " + event.getCommand(), null);
 		}
 	}
 

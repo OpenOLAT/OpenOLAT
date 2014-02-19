@@ -27,13 +27,13 @@ package org.olat.commons.calendar.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -54,14 +54,13 @@ public class CopyEventToCalendarController extends DefaultController {
 
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
 	
-	private Translator translator;
 	private VelocityContainer mainVC;
 	private SelectionTree calendarSelectionTree;
 	private KalendarEvent kalendarEvent;
 
-	public CopyEventToCalendarController(KalendarEvent kalendarEvent, Collection calendars, Translator translator, WindowControl wControl) {
+	public CopyEventToCalendarController(KalendarEvent kalendarEvent, Collection<KalendarRenderWrapper> calendars,
+			Translator translator, WindowControl wControl) {
 		super(wControl);
-		this.translator = translator;
 		this.kalendarEvent = kalendarEvent;
 		
 		mainVC = new VelocityContainer("calCopy", VELOCITY_ROOT + "/calCopy.html", translator, this);
@@ -82,17 +81,16 @@ public class CopyEventToCalendarController extends DefaultController {
 			TreeEvent te = (TreeEvent) event;
 			if (event.getCommand().equals(TreeEvent.COMMAND_TREENODES_SELECTED)) {
 				// rebuild kalendar event links
-				List selectedNodesIDS = te.getNodeIds();
+				List<String> selectedNodesIDS = te.getNodeIds();
 				TreeModel model = calendarSelectionTree.getTreeModel();
 				CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-				for (Iterator iter = selectedNodesIDS.iterator(); iter.hasNext();) {
-					String nodeId = (String)iter.next();
+				for (String nodeId : selectedNodesIDS) {
 					GenericTreeNode node = (GenericTreeNode)model.getNodeById(nodeId);
 					KalendarRenderWrapper calendarWrapper = (KalendarRenderWrapper)node.getUserObject();
 					Kalendar cal = calendarWrapper.getKalendar();
 					KalendarEvent clonedKalendarEvent = (KalendarEvent)XStreamHelper.xstreamClone(kalendarEvent);
 					if (clonedKalendarEvent.getKalendarEventLinks().size() != 0)
-						clonedKalendarEvent.setKalendarEventLinks(new ArrayList());
+						clonedKalendarEvent.setKalendarEventLinks(new ArrayList<KalendarEventLink>());
 					calendarManager.addEventTo(cal, clonedKalendarEvent);
 //					calendarManager.persistCalendar(cal);			
 				}
@@ -106,28 +104,26 @@ public class CopyEventToCalendarController extends DefaultController {
 	protected void doDispose() {
 		// nothing to do here
 	}
-
-
-}
-
-class CalendarSelectionModel extends GenericTreeModel {
-
-	public CalendarSelectionModel(Collection calendars, Kalendar excludeKalendar, Translator translator) {
-		GenericTreeNode rootNode = new GenericTreeNode(translator.translate("cal.copy.rootnode"), null);
-		for (Iterator iter_calendars = calendars.iterator(); iter_calendars.hasNext();) {
-			KalendarRenderWrapper calendarWrapper = (KalendarRenderWrapper) iter_calendars.next();
-			GenericTreeNode node = new GenericTreeNode(calendarWrapper.getKalendarConfig().getDisplayName(), calendarWrapper);
-			node.setIdent(calendarWrapper.getKalendar().getCalendarID());
-			if (calendarWrapper.getKalendar().getCalendarID().equals(excludeKalendar.getCalendarID())) {
-				// this is the calendar, the event comes from
-				node.setSelected(true);
-				node.setAccessible(false);
-			} else {
-				node.setAccessible(calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE);
-			}
-			rootNode.addChild(node);
-		}
-		setRootNode(rootNode);
-	}
 	
+	public static class CalendarSelectionModel extends GenericTreeModel {
+
+		private static final long serialVersionUID = 8954574138862602309L;
+
+		public CalendarSelectionModel(Collection<KalendarRenderWrapper> calendars, Kalendar excludeKalendar, Translator translator) {
+			GenericTreeNode rootNode = new GenericTreeNode(translator.translate("cal.copy.rootnode"), null);
+			for (KalendarRenderWrapper calendarWrapper : calendars) {
+				GenericTreeNode node = new GenericTreeNode(calendarWrapper.getKalendarConfig().getDisplayName(), calendarWrapper);
+				node.setIdent(calendarWrapper.getKalendar().getCalendarID());
+				if (calendarWrapper.getKalendar().getCalendarID().equals(excludeKalendar.getCalendarID())) {
+					// this is the calendar, the event comes from
+					node.setSelected(true);
+					node.setAccessible(false);
+				} else {
+					node.setAccessible(calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE);
+				}
+				rootNode.addChild(node);
+			}
+			setRootNode(rootNode);
+		}
+	}
 }

@@ -98,7 +98,7 @@ public class KalendarRecurEvent extends KalendarEvent {
 		return sourceEvent.getID();
 	}
 
-	public List getKalendarEventLinks() {
+	public List<KalendarEventLink> getKalendarEventLinks() {
 		return sourceEvent.getKalendarEventLinks();
 	}
 
