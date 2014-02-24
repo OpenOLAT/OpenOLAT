@@ -19,6 +19,7 @@
  */
 package org.olat.catalog.ui;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityManager;
@@ -74,6 +75,7 @@ public class CatalogEntryAddController extends BasicController {
 		catalogManager = CatalogManager.getInstance();
 		
 		List<CatalogEntry> catEntryList = CatalogManager.getInstance().getAllCatalogNodes();
+		Collections.sort(catEntryList, new CatalogEntryNodeComparator(getLocale()));
 
 		mainVC = createVelocityContainer("catMove");
 		mainVC.contextPut("withTitle", new Boolean(title));
