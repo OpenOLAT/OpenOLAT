@@ -174,6 +174,8 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	public boolean unlock(VFSItem item, Identity identity, Roles roles) {
 		if (item instanceof MetaTagged) {
 			MetaInfoFileImpl info = (MetaInfoFileImpl)((MetaTagged) item).getMetaInfo();
+			if(info == null) return false;
+			
 			info.setLockedBy(null);
 			info.setLockedDate(null);
 			info.setLocked(false);
