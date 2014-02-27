@@ -59,9 +59,9 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 
 	@Override
 	protected void setInternalValue(User user, String mail) {
-		// save mail addresses always lowercase
+		// save mail addresses always lower case and remove trailing whitespace
 		if (mail != null) {
-			super.setInternalValue(user, mail.toLowerCase());
+			super.setInternalValue(user, mail.toLowerCase().trim());
 		} else {
 			super.setInternalValue(user, null);			
 		}
@@ -132,6 +132,7 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 		String value = textElement.getValue();
 
 		if (StringHelper.containsNonWhitespace(value)) {
+			value = value.toLowerCase().trim();
 			// check mail address syntax
 			if (!MailHelper.isValidEmailAddress(value)) {
 				textElement.setErrorKey(i18nFormElementLabelKey() + ".error.valid", null);
@@ -159,6 +160,7 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 		}
 
 		if (StringHelper.containsNonWhitespace(value)) {
+			value = value.toLowerCase().trim();
 			// check mail address syntax
 			if ( ! MailHelper.isValidEmailAddress(value)) {
 				validationError.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
