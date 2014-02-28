@@ -46,6 +46,8 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -71,6 +73,7 @@ public class BGAreaEditController extends BasicController {
 	// area, context and group references
 	private BGArea area;
 	private OLATResource resource;
+	private RepositoryEntry repoEntry;
 	private List<BusinessGroup> allGroups, inAreaGroups;
 	// managers
 	private final BGAreaManager areaManager;
@@ -89,6 +92,7 @@ public class BGAreaEditController extends BasicController {
 		this.area = area;
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		resource = area.getResource();
+		repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(resource, false);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		// tabbed pane
@@ -129,7 +133,7 @@ public class BGAreaEditController extends BasicController {
 		groupsTabVC = createVelocityContainer("groupstab");
 		tabbedPane.addTab(translate("tab.groups"), groupsTabVC);
 
-		allGroups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
+		allGroups = businessGroupService.findBusinessGroups(null, repoEntry, 0, -1);
 		inAreaGroups = areaManager.findBusinessGroupsOfArea(area);
 		groupsDataModel = new GroupsToAreaDataModel(allGroups, inAreaGroups);
 

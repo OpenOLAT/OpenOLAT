@@ -37,6 +37,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -50,6 +51,7 @@ import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserManager;
@@ -173,19 +175,14 @@ public class JunitTestHelper {
 	
 	public static final RepositoryEntry createAndPersistRepositoryEntry(OLATResource r, boolean membersOnly) {
 		RepositoryManager repositoryManager = RepositoryManager.getInstance();
-		RepositoryEntry re = repositoryManager.createRepositoryEntryInstance("Florian Gnägi");
-		re.setOlatResource(r);
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		RepositoryEntry re = repositoryService.create("Florian Gnägi", "Lernen mit OLAT", r.getResourceableTypeName(), null, r);
 		if(membersOnly) {
 			re.setAccess(RepositoryEntry.ACC_OWNERS);
 			re.setMembersOnly(true);
 		} else {
 			re.setAccess(RepositoryEntry.ACC_USERS);
 		}
-		re.setResourcename("Lernen mit OLAT");
-		re.setDisplayname(r.getResourceableTypeName());
-		repositoryManager.createOwnerSecurityGroup(re);
-		repositoryManager.createTutorSecurityGroup(re, false);
-		repositoryManager.createParticipantSecurityGroup(re, false);
 		repositoryManager.saveRepositoryEntry(re);
 		return re;
 	}

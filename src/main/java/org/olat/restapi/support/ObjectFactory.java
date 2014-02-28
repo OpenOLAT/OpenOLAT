@@ -26,9 +26,10 @@ import java.util.Date;
 import javax.ws.rs.core.EntityTag;
 
 import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -41,6 +42,7 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -97,7 +99,7 @@ public class ObjectFactory {
 		vo.setMinParticipants(grp.getMinParticipants());
 		vo.setExternalId(grp.getExternalId());
 		vo.setManagedFlags(grp.getManagedFlagsString());
-		vo.setType(grp.getType());
+		vo.setType("LearningGroup");
 		return vo;
 	}
 	
@@ -110,7 +112,7 @@ public class ObjectFactory {
 		
 		vo.setMaxParticipants(grp.getMaxParticipants());
 		vo.setMinParticipants(grp.getMinParticipants());
-		vo.setType(grp.getType());
+		vo.setType("LearningGroup");
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(grp);
 		if(collabTools.isToolEnabled(CollaborationTools.TOOL_FORUM)) {
@@ -130,7 +132,7 @@ public class ObjectFactory {
 			Long access = collabTools.lookupFolderAccess();
 			if(access != null && access.intValue() == CollaborationTools.FOLDER_ACCESS_OWNERS) {
 				//is owner?
-				hasFolderWrite = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, grp.getOwnerGroup());
+				hasFolderWrite = CoreSpringFactory.getImpl(BusinessGroupService.class).hasRoles(identity, grp, GroupRoles.coach.name());
 			}
 		}
 		vo.setFolderWrite(hasFolderWrite);

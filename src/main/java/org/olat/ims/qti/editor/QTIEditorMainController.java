@@ -37,8 +37,7 @@ import java.util.Set;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.admin.quota.QuotaImpl;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -124,6 +123,7 @@ import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.user.UserManager;
 
@@ -1086,13 +1086,13 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		changeEmail = new ContactMessage(ureq.getIdentity());
 
 		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		// the owners of this qtiPkg
 		RepositoryEntry myEntry = rm.lookupRepositoryEntry(qtiPackage.getRepresentingResourceable(), false);
-		SecurityGroup qtiPkgOwners = myEntry.getOwnerGroup();
-
+		
 		// add qti resource owners as group
 		ContactList cl = new ContactList("qtiPkgOwners");
-		cl.addAllIdentites(BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(qtiPkgOwners));
+		cl.addAllIdentites(repositoryService.getMembers(myEntry, GroupRoles.owner.name()));
 		changeEmail.addEmailTo(cl);
 
 		StringBuilder result = new StringBuilder();
@@ -1104,11 +1104,9 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				ICourse course = CourseFactory.loadCourse(element.getSource().getResourceableId());
 
 				// the course owners
-
 				RepositoryEntry entry = rm.lookupRepositoryEntry(course, false);
 				String courseTitle = course.getCourseTitle();
-				SecurityGroup owners = entry.getOwnerGroup();
-				List<Identity> stakeHoldersIds = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(owners);
+				List<Identity> stakeHoldersIds = repositoryService.getMembers(entry, GroupRoles.owner.name());
 
 				// add stakeholders as group
 				cl = new ContactList(courseTitle);

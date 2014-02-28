@@ -41,10 +41,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -57,6 +53,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.test.JMSCodePointServerJunitHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Mar 26, 2004
@@ -72,6 +69,9 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 	
 	private static final String FG_TYPE = UUID.randomUUID().toString().replace("_", "");
 	private static final String CG_TYPE = UUID.randomUUID().toString().replace("-", "");
+	
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	@Before
 	public void setup() {
@@ -95,7 +95,6 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 	public void testQueryReferencableResourcesLimitType() {
 		DB db = DBFactory.getInstance();
 		RepositoryManager rm = RepositoryManager.getInstance();
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsAuthor("id1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsAuthor("id2");
@@ -105,29 +104,19 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 		long startCreate = System.currentTimeMillis();
 		for (int i = 1; i < numbRes; i++) {
 			// create course and persist as OLATResourceImpl
-			RepositoryEntry re = createRepositoryEntryFG(i);				
+			Identity owner = (i % 2 > 0) ? id1 : id2;
+			RepositoryEntry re = createRepositoryEntryFG(owner, i);				
 			if ((i % 2 > 0)) {
 				re.setCanReference(true);
 			} else {
 				re.setCanReference(false);
 			}
-			// create security group
-			SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
-			// member of this group may modify member's membership
-			securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_ACCESS, ownerGroup);
-			// members of this group are always authors also
-			securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-			if ((i % 2 > 0)) {
-				securityManager.addIdentityToSecurityGroup(id1, ownerGroup);
-			} else {
-				securityManager.addIdentityToSecurityGroup(id2, ownerGroup);				
-			}
-			re.setOwnerGroup(ownerGroup);
 			// save the repository entry
 			rm.saveRepositoryEntry(re);
+			
 			// Create course admin policy for owner group of repository entry
 			// -> All owners of repository entries are course admins
-			securityManager.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());	
+			//securityManager.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());	
 			
 			// flush database and hibernate session cache after 10 records to improve performance
 			// without this optimization, the first entries will be fast but then the adding new 
@@ -157,7 +146,7 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 	}
 
 
-	private RepositoryEntry createRepositoryEntryFG(final int i) {
+	private RepositoryEntry createRepositoryEntryFG(Identity owner, final int i) {
 		DB db = DBFactory.getInstance();
 		
 		OLATResourceable resourceable = new OLATResourceable() {
@@ -168,9 +157,8 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 		db.saveObject(r);
 		
 		// now make a repository entry for this course
-		final RepositoryEntry re = RepositoryManager.getInstance().createRepositoryEntryInstance("Florian Gnägi", "Lernen mit OLAT " + i, "yo man description bla bla + i");
-		re.setDisplayname("JunitTest_RepositoryEntry_" + i);		
-		re.setOlatResource(r);
+		final RepositoryEntry re = repositoryService.create(owner, "Lernen mit OLAT " + i,
+				"JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r);
 		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
 		return re;
 	}

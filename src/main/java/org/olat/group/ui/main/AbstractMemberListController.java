@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -84,6 +85,7 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.resource.OLATResource;
@@ -128,6 +130,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	
 	private final BaseSecurity securityManager;
 	private final BaseSecurityModule securityModule;
+	private final RepositoryService repositoryService;
 	private final RepositoryManager repositoryManager;
 	private final BusinessGroupService businessGroupService;
 	private final BusinessGroupModule groupModule;
@@ -160,6 +163,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		acService = CoreSpringFactory.getImpl(ACService.class);
@@ -211,7 +215,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 			boolean managedEntry = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 			managed &= managedEntry;
 			
-			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, repoEntry.getOlatResource(), 0, -1);
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, repoEntry, 0, -1);
 			for(BusinessGroup group:groups) {
 				managed &= BusinessGroupManagedFlag.isManaged(group, BusinessGroupManagedFlag.membersmanagement);
 			}
@@ -375,8 +379,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 	
 	protected void confirmDelete(UserRequest ureq, List<MemberView> members) {
 		int numOfOwners =
-				repoEntry == null ? securityManager.countIdentitiesOfSecurityGroup(businessGroup.getOwnerGroup())
-				: securityManager.countIdentitiesOfSecurityGroup(repoEntry.getOwnerGroup());
+				repoEntry == null ? businessGroupService.countMembers(businessGroup, GroupRoles.coach.name())
+				: repositoryService.countMembers(repoEntry, GroupRoles.owner.name());
 		
 		int numOfRemovedOwner = 0;
 		List<Long> identityKeys = new ArrayList<Long>();
@@ -544,6 +548,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 		//course membership
 		boolean managedMembersRepo = 
 				RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
+		
+		long start = System.nanoTime();
 		List<RepositoryEntryMembership> repoMemberships =
 				repoEntry == null ? Collections.<RepositoryEntryMembership>emptyList()
 				: repositoryManager.getRepositoryEntryMembership(repoEntry);
@@ -551,7 +557,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		//groups membership
 		List<BusinessGroup> groups = 
 				repoEntry == null ? Collections.singletonList(businessGroup)
-				: businessGroupService.findBusinessGroups(null, repoEntry.getOlatResource(), 0, -1);
+				: businessGroupService.findBusinessGroups(null, repoEntry, 0, -1);
 				
 		List<Long> groupKeys = new ArrayList<Long>();
 		Map<Long,BusinessGroupShort> keyToGroupMap = new HashMap<Long,BusinessGroupShort>();
@@ -562,6 +568,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 
 		List<BusinessGroupMembership> memberships = groups.isEmpty() ? Collections.<BusinessGroupMembership>emptyList() :
 			businessGroupService.getBusinessGroupsMembership(groups);
+		
+		System.out.println("Take (ms): " + ((System.nanoTime() - start) / 1000000));
 
 		//get identities
 		Set<Long> identityKeys = new HashSet<Long>();
@@ -671,13 +679,13 @@ public abstract class AbstractMemberListController extends BasicController imple
 				memberView.setFirstTime(membership.getCreationDate());
 				memberView.setLastTime(membership.getLastModified());
 				memberView.getMembership().setManagedMembersRepo(managedMembersRepo);
-				if(membership.getOwnerRepoKey() != null) {
+				if(membership.isOwner()) {
 					memberView.getMembership().setRepoOwner(true);
 				}
-				if(membership.getTutorRepoKey() != null) {
+				if(membership.isCoach()) {
 					memberView.getMembership().setRepoTutor(true);
 				}
-				if(membership.getParticipantRepoKey() != null) {
+				if(membership.isParticipant()) {
 					memberView.getMembership().setRepoParticipant(true);
 				}
 			}

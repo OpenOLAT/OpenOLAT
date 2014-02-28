@@ -20,8 +20,8 @@
 package org.olat.group.ui.homepage;
 
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 
 /**
  * 
@@ -39,7 +40,6 @@ import org.olat.group.BusinessGroup;
  */
 public class GroupInfoDisplayController extends BasicController {
 	
-	
 	private final VelocityContainer content;
 	
 	public GroupInfoDisplayController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
@@ -48,17 +48,10 @@ public class GroupInfoDisplayController extends BasicController {
 		content.contextPut("description", businessGroup.getDescription());
 		content.contextPut("name", StringHelper.escapeHtml(businessGroup.getName()));
 		
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		int numParticipants = 0;
-		if (businessGroup.getPartipiciantGroup() != null) {
-			numParticipants =  securityManager.countIdentitiesOfSecurityGroup(businessGroup.getPartipiciantGroup());
-		}
-		int numOwners = 0;
-		if (businessGroup.getOwnerGroup() != null) {
-			numOwners = securityManager.countIdentitiesOfSecurityGroup(businessGroup.getOwnerGroup());
-		}
-		content.contextPut("numMembers", numParticipants + numOwners);
-		
+		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		int numOfMembers = businessGroupService.countMembers(businessGroup, GroupRoles.participant.name(), GroupRoles.coach.name());
+		content.contextPut("numMembers", numOfMembers);
+
 		putInitialPanel(content);
 	}
 

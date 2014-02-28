@@ -48,6 +48,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -81,7 +82,10 @@ public class CourseCalendarController extends BasicController {
 		courseKalendarWrapper = calendarManager.getCourseCalendar(course);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		Identity identity = ureq.getIdentity();
-		boolean isPrivileged = cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_COURSEEDITOR) || RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(RepositoryManager.getInstance().lookupRepositoryEntry(course, false), identity);
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isPrivileged = cgm.isIdentityCourseAdministrator(identity)
+				|| cgm.hasRight(identity, CourseRights.RIGHT_COURSEEDITOR)
+				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 		} else {

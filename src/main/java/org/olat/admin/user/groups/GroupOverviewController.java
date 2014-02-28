@@ -26,8 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -91,7 +90,6 @@ public class GroupOverviewController extends BasicController {
 	private GroupSearchController groupsCtrl;
 	private GroupLeaveDialogBoxController removeFromGrpDlg;
 
-	private final BaseSecurity securityManager;
 	private final BusinessGroupModule groupModule;
 	private final BusinessGroupService businessGroupService;
 	
@@ -101,7 +99,6 @@ public class GroupOverviewController extends BasicController {
 		super(ureq, control, Util.createPackageTranslator(BusinessGroupTableModelWithType.class, ureq.getLocale()));
 		
 		this.identity = identity;
-		securityManager = BaseSecurityManager.getInstance();
 		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
@@ -292,8 +289,8 @@ public class GroupOverviewController extends BasicController {
 	private void doLeave(UserRequest ureq, List<BusinessGroup> groupsToLeave) {
 		List<BusinessGroup> groupsToDelete = new ArrayList<BusinessGroup>(1);
 		for(BusinessGroup group:groupsToLeave) {
-			int numOfOwners = securityManager.countIdentitiesOfSecurityGroup(group.getOwnerGroup());
-			int numOfParticipants = securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+			int numOfOwners = businessGroupService.countMembers(group, GroupRoles.coach.name());
+			int numOfParticipants = businessGroupService.countMembers(group, GroupRoles.participant.name());
 			if ((numOfOwners == 1 && numOfParticipants == 0) || (numOfOwners == 0 && numOfParticipants == 1)) {
 				groupsToDelete.add(group);
 			}
@@ -324,7 +321,7 @@ public class GroupOverviewController extends BasicController {
 				}
 			} else {
 				// 1) remove as owner
-				if (securityManager.isIdentityInSecurityGroup(identity, group.getOwnerGroup())) {
+				if (businessGroupService.hasRoles(identity, group, GroupRoles.coach.name())) {
 					businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), group);
 				}
 				MailPackage mailing = new MailPackage(doSendMail);

@@ -71,14 +71,14 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();	
 		
 		//check if all three groups are imported
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource.getOlatResource(), 0, -1);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(3, groups.size());
 		
 		//get first group (members true, true, false) (no collaboration tools)
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setExactName("Export group 1");
-		List<BusinessGroup> group1List = businessGroupService.findBusinessGroups(params, resource.getOlatResource(), 0, -1);
+		List<BusinessGroup> group1List = businessGroupService.findBusinessGroups(params, resource, 0, -1);
 		Assert.assertNotNull(group1List);
 		Assert.assertEquals(1, group1List.size());
 		//check settings of the first group
@@ -105,7 +105,7 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 
 		//get third group (members true, true, true) (all collaboration tools)
 		params.setExactName("Export group 3");
-		List<BusinessGroup> group3List = businessGroupService.findBusinessGroups(params, resource.getOlatResource(), 0, -1);
+		List<BusinessGroup> group3List = businessGroupService.findBusinessGroups(params, resource, 0, -1);
 		Assert.assertNotNull(group3List);
 		Assert.assertEquals(1, group3List.size());
 		//check settings of the first group
@@ -143,7 +143,7 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check if all three groups are imported
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource.getOlatResource(), 0, -1);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(3, groups.size());
 		

@@ -69,6 +69,7 @@ import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -175,6 +176,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private Map<String, Boolean> courseRightsCache = new HashMap<String, Boolean>();
 	private boolean isCourseAdmin = false;
 	private boolean isCourseCoach = false;
+	private final Roles roles;
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
@@ -215,6 +217,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			final RepositoryEntry re, final boolean offerBookmark, final boolean showCourseConfigLink) {
 
 		super(ureq, wControl);
+		
+		roles = ureq.getUserSession().getRoles();
 		
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
@@ -375,7 +379,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// if user has the role InstitutionalResourceManager and has the same institution like author
 		// then set isCourseAdmin true
 		isCourseAdmin = cgm.isIdentityCourseAdministrator(identity)
-				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(courseRepositoryEntry, identity);
+				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, courseRepositoryEntry);
 		// 2) course coaches: users who are in the owner group of any group of this
 		// course
 		isCourseCoach = cgm.isIdentityCourseCoach(identity);

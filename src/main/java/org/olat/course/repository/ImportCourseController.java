@@ -31,9 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.commons.file.filechooser.FileChooserController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -137,12 +134,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 	 * @see org.olat.repository.controllers.IAddController#repositoryEntryCreated(org.olat.repository.RepositoryEntry)
 	 */
 	public void repositoryEntryCreated(RepositoryEntry re) {
-		// Create course admin policy for owner group of repository entry
-		// -> All owners of repository entries are course admins
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		secMgr.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());
-		// set root node title
-						
+		// set root node title				
 		course = CourseFactory.getCourseEditSession(re.getOlatResource().getResourceableId());
 		String displayName = re.getDisplayname();
 		course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(displayName, 25)); //do not use truncate!

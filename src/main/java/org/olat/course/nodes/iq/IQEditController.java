@@ -55,6 +55,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -351,7 +352,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			if(isOnyx) {
 				setOnyxVariables(re);
 			} else {
-				if (isEditable(ureq.getIdentity(), re)) {
+				if (isEditable(ureq.getIdentity(), ureq.getUserSession().getRoles(), re)) {
 					editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
 				}
 				myContent.contextPut("showOutcomes", Boolean.FALSE);
@@ -424,7 +425,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @param repository entry
 	 * @return
 	 */
-	private boolean isEditable(Identity identity, RepositoryEntry re) {
+	private boolean isEditable(Identity identity, Roles roles, RepositoryEntry re) {
 		boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
 		if (isOnyx) {
 			return false;
@@ -432,7 +433,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 		return (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)
 				|| RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re)
-				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(re, identity));
+				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re));
 	}
 
 	/**
@@ -754,7 +755,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 						myContent.contextPut(CONFIG_KEY_MAXSCORE, moduleConfiguration.get(CONFIG_KEY_MAXSCORE));
 						myContent.contextPut(CONFIG_KEY_CUTVALUE, moduleConfiguration.get(CONFIG_KEY_CUTVALUE));
 					}
-					if (isEditable(urequest.getIdentity(), re)) {
+					if (isEditable(urequest.getIdentity(), urequest.getUserSession().getRoles(), re)) {
 						editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
 					}
 				}

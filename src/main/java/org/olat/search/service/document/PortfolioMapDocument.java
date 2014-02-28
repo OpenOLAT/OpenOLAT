@@ -23,8 +23,8 @@ package org.olat.search.service.document;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -59,23 +59,23 @@ public class PortfolioMapDocument extends OlatDocument {
 	private static final long serialVersionUID = -7960651550499734346L;
 	private static final OLog log = Tracing.createLoggerFor(PortfolioMapDocument.class);
 	
-	private static BaseSecurity securityManager;
+	private static GroupDAO groupDao;
 	private static EPFrontendManager ePFMgr; 
 	private static PortfolioModule portfolioModule;
 
 	public PortfolioMapDocument() {
 		super();
-		securityManager = BaseSecurityManager.getInstance();
-		ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
-		portfolioModule = (PortfolioModule)CoreSpringFactory.getBean("portfolioModule");
+		groupDao = CoreSpringFactory.getImpl(GroupDAO.class);
+		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+		portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);
 	}
 
 	public static Document createDocument(SearchResourceContext searchResourceContext, PortfolioStructure map) {		
 		PortfolioMapDocument document = new PortfolioMapDocument();
 		if(map instanceof EPAbstractMap) {
 			EPAbstractMap abstractMap = (EPAbstractMap)map;
-  		if(abstractMap.getOwnerGroup() != null) {
-  			List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(abstractMap.getOwnerGroup());
+  		if(abstractMap.getGroup() != null) {
+  			List<Identity> identities = groupDao.getMembers(abstractMap.getGroup(), GroupRoles.owner.name());
   			StringBuilder authors = new StringBuilder();
   			for(Identity identity:identities) {
   				if(authors.length() > 0) {

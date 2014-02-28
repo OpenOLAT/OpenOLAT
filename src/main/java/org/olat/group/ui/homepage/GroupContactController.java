@@ -21,9 +21,8 @@ package org.olat.group.ui.homepage;
 
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -34,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.co.ContactFormController;
 
 /**
@@ -46,17 +46,17 @@ public class GroupContactController extends BasicController {
 	
 	private final VelocityContainer content;
 	private ContactFormController contactForm;
-	private final BaseSecurity securityManager;
+	private final BusinessGroupService businessGroupService;
 	
 	public GroupContactController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		
-		securityManager = BaseSecurityManager.getInstance();
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		content = createVelocityContainer("groupcontact");
 
 		// per default contact the group owners.
-		if (securityManager.countIdentitiesOfSecurityGroup(businessGroup.getOwnerGroup()) != 0) {
-			ContactMessage contactMessage = createContactMessage(ureq.getIdentity(), "form.to.owners", businessGroup.getOwnerGroup());
+		if (businessGroupService.countMembers(businessGroup, GroupRoles.coach.name()) != 0) {
+			ContactMessage contactMessage = createContactMessage(ureq.getIdentity(), "form.to.owners", businessGroup);
 			contactForm = new ContactFormController(ureq, getWindowControl(), false, false, false, false, contactMessage);
 			listenTo(contactForm);
 			content.put("contactForm",	contactForm.getInitialComponent());
@@ -67,10 +67,10 @@ public class GroupContactController extends BasicController {
 		putInitialPanel(content);
 	}
 	
-	private ContactMessage createContactMessage(Identity from, String contactListName, SecurityGroup destinationGroup) {
+	private ContactMessage createContactMessage(Identity from, String contactListName, BusinessGroup businessGroup) {
 		ContactMessage contactMessage = new ContactMessage(from);
 		ContactList contactList = new ContactList(translate(contactListName));
-		List<Identity> members = securityManager.getIdentitiesOfSecurityGroup(destinationGroup);
+		List<Identity> members = businessGroupService.getMembers(businessGroup, GroupRoles.coach.name());
 		for (Identity member : members) {
 			contactList.add(member);
 		}

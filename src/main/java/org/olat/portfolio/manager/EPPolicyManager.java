@@ -83,7 +83,7 @@ public class EPPolicyManager extends BasicManager {
 				wrapper.addIdentities(identities);
 			} else if (permission.startsWith(EPMapPolicy.Type.group.name())) {
 				wrapper.addPolicy(policy);
-				BusinessGroup group = businessGroupService.findBusinessGroup(policy.getSecurityGroup());
+				BusinessGroup group = null;//TODO group businessGroupService.findBusinessGroup(policy.getSecurityGroup());
 				wrapper.addGroup(group);
 				wrapper.setType(EPMapPolicy.Type.group);
 			} else if (permission.startsWith(EPMapPolicy.Type.invitation.name())) {
@@ -187,8 +187,8 @@ public class EPPolicyManager extends BasicManager {
 				break;
 			case group:
 				for(BusinessGroup group:wrapper.getGroups()) {
-					savedPolicies.add(applyPolicyTo(group.getPartipiciantGroup(), wrapper, map));
-					savedPolicies.add(applyPolicyTo(group.getOwnerGroup(), wrapper, map));
+					//TODO group savedPolicies.add(applyPolicyTo(group.getPartipiciantGroup(), wrapper, map));
+					//TODO group savedPolicies.add(applyPolicyTo(group.getOwnerGroup(), wrapper, map));
 				}
 				break;
 			case invitation:

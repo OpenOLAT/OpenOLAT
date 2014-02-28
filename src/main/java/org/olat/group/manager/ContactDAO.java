@@ -26,14 +26,12 @@ import java.util.Set;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.group.BusinessGroupImpl;
-import org.olat.group.model.ContactOwnerView;
-import org.olat.group.model.ContactParticipantView;
-import org.olat.group.model.ContactKeyOwnerView;
-import org.olat.group.model.ContactKeyParticipantView;
+import org.olat.group.model.ContactKeyView;
+import org.olat.group.model.ContactView;
+import org.olat.group.model.ContactViewExtended;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,53 +50,56 @@ public class ContactDAO {
 	private DB dbInstance;
 	
 	public Collection<Long> getDistinctGroupOwnersParticipants(Identity me) {
-		List<Long> owners = getMembersForCount(me, ContactKeyOwnerView.class);
-		List<Long> participants = getMembersForCount(me, ContactKeyParticipantView.class);
+		List<Long> participants = getMembersForCount(me);
+		List<Long> owners = getMembersForCount(me);
+		
 		Set<Long> contacts = new HashSet<Long>(participants);
 		contacts.addAll(owners);
 		return contacts;
 	}
 	
-	private List<Long> getMembersForCount(Identity me, Class<?> cl) {
+	private List<Long> getMembersForCount(Identity me) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select memv.identityKey from ").append(cl.getName()).append(" memv ")
-		  .append(" where exists (")
-		  .append("   select ownerSgmi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi")
-		  .append("     where ownerSgmi.securityGroup=memv.ownerSecGroupKey and ownerSgmi.identity.key=:identKey")
-		  .append(" ) or exists (")
-		  .append("   select partSgmi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi")
-		  .append("     where memv.participantSecGroupKey=partSgmi.securityGroup and partSgmi.identity.key=:identKey")
-		  .append(" )");
+		sb.append("select memv.identityKey from ").append(ContactKeyView.class.getName()).append(" memv ")
+		  .append(" where memv.meKey=:identKey");
 		
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("identKey", me.getKey())
 				.getResultList();
 	}
-
-	public List<ContactOwnerView> getGroupOwners(Identity me) {
-		return getMembers(me, ContactOwnerView.class);
-	}
 	
-	public List<ContactParticipantView> getParticipants(Identity me) {
-		return getMembers(me, ContactParticipantView.class);
-	}
-	
-	private <U> List<U> getMembers(Identity me, Class<U> cl) {
+	public List<ContactViewExtended> getContactWithExtendedInfos(Identity me) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select memv from ").append(cl.getName()).append(" memv ")
-		  .append(" where exists (")
-		  .append("   select ownerSgmi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi")
-		  .append("     where memv.ownerSecGroupKey=ownerSgmi.securityGroup and ownerSgmi.identity.key=:identKey")
-		  .append(" ) or exists (")
-		  .append("   select partSgmi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi")
-		  .append("     where memv.participantSecGroupKey=partSgmi.securityGroup and partSgmi.identity.key=:identKey")
-		  .append(" )");
+		sb.append("select memv from ").append(ContactViewExtended.class.getName()).append(" memv ")
+		  .append(" where memv.meKey=:identKey");
 		
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), cl)
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), ContactViewExtended.class)
 				.setParameter("identKey", me.getKey())
 				.getResultList();
 	}
+
+	public List<ContactViewExtended> getGroupOwners(Identity me) {
+		//return getMembers(me, ContactOwnerView.class);
+		return getMembers(me, GroupRoles.coach.name());
+	}
 	
+	public List<ContactViewExtended> getParticipants(Identity me) {
+		//return getMembers(me, ContactParticipantView.class);
+		return getMembers(me, GroupRoles.participant.name());
+	}
+	
+	private List<ContactViewExtended> getMembers(Identity me, String role) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select memv from ").append(ContactViewExtended.class.getName()).append(" memv ")
+		  .append(" where memv.meKey=:identKey and memv.role=:role");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), ContactViewExtended.class)
+				.setParameter("identKey", me.getKey())
+				.setParameter("role", role)
+				.getResultList();
+	}
 
 	public int countContacts(Identity identity) {
 		List<Long> result = createContactsQuery(identity, Long.class).getResultList();
@@ -122,31 +123,15 @@ public class ContactDAO {
 	private <T> TypedQuery<T> createContactsQuery(Identity identity, Class<T> resultClass) {
 		StringBuilder query = new StringBuilder();
 		if(Identity.class.equals(resultClass)) {
-			query.append("select distinct identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+			query.append("select distinct identity from ").append(ContactView.class.getName()).append(" as contact ");
 		} else {
-			query.append("select distinct identity.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+			query.append("select distinct identity.key from ").append(ContactView.class.getName()).append(" as contact ");
+			     
 		}
-		query.append(" inner join sgmi.identity as identity ")
-		     .append(" inner join sgmi.securityGroup as secGroup ")
-		     .append(" where ")
-		     .append("  secGroup in (")
-		     .append("    select bg1.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg1 where bg1.ownersVisibleIntern=true")
-		     .append("      and bg1.ownerGroup in (select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey)")
-		     .append("  ) or")
-		     .append("  secGroup in (")
-		     .append("    select bg3.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg3 where bg3.ownersVisibleIntern=true")
-		     .append("      and bg3.partipiciantGroup in (select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey)")
-		     .append("  ) or")
-		     .append("  secGroup in (")
-		     .append("    select bg2.partipiciantGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg2 where bg2.participantsVisibleIntern=true")
-		     .append("      and bg2.partipiciantGroup in (select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey)")
-		     .append("  ) or")
-		     .append("  secGroup in (")
-		     .append("    select bg4.partipiciantGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg4 where bg4.participantsVisibleIntern=true")
-		     .append("      and bg4.ownerGroup in (select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey)")
-		     .append("  )");
+		query.append(" inner join contact.identity as identity ");
+		query.append(" where contact.meKey=:identKey");
 		if(Identity.class.equals(resultClass)) {
-			query.append("order by identity.name");
+			query.append(" order by identity.name");
 		}
 
 		TypedQuery<T> db = dbInstance.getCurrentEntityManager().createQuery(query.toString(), resultClass);

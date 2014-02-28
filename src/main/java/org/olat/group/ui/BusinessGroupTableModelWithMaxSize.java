@@ -28,8 +28,7 @@ package org.olat.group.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
@@ -58,7 +57,6 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	private Translator trans;
 	private Identity identity;
 	private boolean cancelEnrollEnabled;
-	private BaseSecurity securityManager;
 	private BusinessGroupService businessGroupService;
 
 	/**
@@ -72,7 +70,6 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 		this.members = members;
 		this.trans = trans;
 		this.identity = identity;
-		securityManager =	BaseSecurityManager.getInstance();
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.cancelEnrollEnabled = cancelEnrollEnabled;
 	}
@@ -88,7 +85,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		BusinessGroup businessGroup = (BusinessGroup) objects.get(row);
+		BusinessGroup businessGroup = objects.get(row);
 		Integer numbParts = members.get(row);
 		Integer max = businessGroup.getMaxParticipants();
 		switch (col) {
@@ -118,15 +115,15 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 				// Waiting-list
 				if (businessGroup.getWaitingListEnabled().booleanValue()) {
 					// Waitinglist is enabled => show current size
-					int intValue = securityManager.countIdentitiesOfSecurityGroup(businessGroup.getWaitingGroup());
+					int intValue = businessGroupService.countMembers(businessGroup, GroupRoles.waiting.name());
 					return new Integer(intValue);
 				}
 				return trans.translate("grouplist.table.noWaitingList");
 			case 4:
 				// Status
-				if (securityManager.isIdentityInSecurityGroup(identity,businessGroup.getPartipiciantGroup())) {
+				if (businessGroupService.hasRoles(identity, businessGroup, GroupRoles.participant.name())) {
 					return trans.translate("grouplist.table.state.onPartipiciantList"); 
-				} else if (securityManager.isIdentityInSecurityGroup(identity,businessGroup.getWaitingGroup())) {
+				} else if (businessGroupService.hasRoles(identity, businessGroup, GroupRoles.waiting.name())) {
 					int pos = businessGroupService.getPositionInWaitingListFor(identity,businessGroup);
 					String[] onWaitingListArgs = new String[] { Integer.toString(pos) };
 					return trans.translate("grouplist.table.state.onWaitingList",onWaitingListArgs); 
@@ -151,7 +148,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 				// Action cancel enrollment
 				if (isEnrolledIn(businessGroup, identity)) {
           // check if user is on waiting-list
-					if (securityManager.isIdentityInSecurityGroup(this.identity,businessGroup.getWaitingGroup())) {
+					if (businessGroupService.hasRoles(identity, businessGroup, GroupRoles.waiting.name())) {
             // user is on waitinglist => show allways action cancelEnrollment for waitinglist 
  					  return Boolean.TRUE;
 					}
@@ -183,7 +180,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	 * @return the business group at the given row
 	 */
 	public BusinessGroup getBusinessGroupAt(int row) {
-		return (BusinessGroup) objects.get(row);
+		return objects.get(row);
 	}
 	
 	/**
@@ -193,8 +190,8 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	 * @return true: Found identity in PartipiciantGroup or WaitingGroup.
 	 */
 	private boolean isEnrolledIn(BusinessGroup businessGroup, Identity identity) {
-		if (securityManager.isIdentityInSecurityGroup(identity,businessGroup.getPartipiciantGroup())
-				|| securityManager.isIdentityInSecurityGroup(identity,businessGroup.getWaitingGroup()) ) {
+		if (businessGroupService.hasRoles(identity, businessGroup, GroupRoles.participant.name())
+				|| businessGroupService.hasRoles(identity, businessGroup, GroupRoles.waiting.name())) {
 			return true;
 		} 
 		return false;

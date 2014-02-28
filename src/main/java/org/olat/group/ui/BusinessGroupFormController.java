@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.admin.restapi.RestapiAdminController;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -46,6 +47,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
+import org.olat.group.BusinessGroupService;
 
 /**
  * Implements a Business group creation dialog using FlexiForms.
@@ -103,6 +105,8 @@ public class BusinessGroupFormController extends FormBasicController {
 	/** The value for the autoCloseRanks checkbox. */
 	private final String[] autoCloseValues = new String[] { translate("create.form.enableAutoCloseRanks") };
 	
+	private final BusinessGroupService businessGroupService;
+	
 	/**
 	 * Creates this controller.
 	 * 
@@ -114,6 +118,7 @@ public class BusinessGroupFormController extends FormBasicController {
 	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq);
 	}
 	
@@ -129,6 +134,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
 		this.bulkMode = bulkMode;
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq); // depends on bulkMode flag
 	}
 	
@@ -137,6 +143,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		this.businessGroup = businessGroup;
 		bulkMode = false;
 		embbeded = true;
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq); // depends on bulkMode flag
 	}
 
@@ -344,8 +351,8 @@ public class BusinessGroupFormController extends FormBasicController {
 
 		// 3) Check auto close settings
 		boolean disableWaitingListOk = true;
-		if ((businessGroup != null) && (businessGroup.getWaitingGroup() != null)) {
-			int waitingPartipiciantSize = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(businessGroup.getWaitingGroup());
+		if (businessGroup != null) {
+			int waitingPartipiciantSize = businessGroupService.countMembers(businessGroup, GroupRoles.waiting.name());
 			if ((businessGroup.getWaitingListEnabled()).booleanValue() && !isWaitingListEnabled() && (waitingPartipiciantSize > 0)) {
 				enableAutoCloseRanks.setErrorKey("form.error.disableNonEmptyWaitingList", new String[] {});
 				disableWaitingListOk = false;

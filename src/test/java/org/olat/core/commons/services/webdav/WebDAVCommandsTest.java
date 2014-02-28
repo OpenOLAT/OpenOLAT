@@ -44,6 +44,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.poi.util.IOUtils;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
@@ -58,6 +59,7 @@ import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.restapi.CoursePublishTest;
 import org.olat.test.JunitTestHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +77,8 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private VFSLockManager lockManager;
 	
@@ -573,9 +577,9 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		File courseWithForums = new File(courseWithForumsUrl.toURI());
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
 		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, author.getName(), softKey, 4);	
-		securityManager.addIdentityToSecurityGroup(author, re.getOwnerGroup());
+		repositoryService.addRole(author, re, GroupRoles.owner.name());
 		if(coAuthor != null) {
-			securityManager.addIdentityToSecurityGroup(coAuthor, re.getOwnerGroup());
+			repositoryService.addRole(coAuthor, re, GroupRoles.owner.name());
 		}
 		
 		dbInstance.commitAndCloseSession();

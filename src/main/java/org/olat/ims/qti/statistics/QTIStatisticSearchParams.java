@@ -21,7 +21,7 @@ package org.olat.ims.qti.statistics;
 
 import java.util.List;
 
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Group;
 
 
 /**
@@ -34,7 +34,7 @@ public class QTIStatisticSearchParams {
 	private final Long resourceableId;
 	private final String resSubPath;
 
-	private List<SecurityGroup> limitToSecGroups;
+	private List<Group> limitToGroups;
 	private boolean mayViewAllUsersAssessments;
 	
 	public QTIStatisticSearchParams(Long resourceableId, String resSubPath) {
@@ -49,14 +49,13 @@ public class QTIStatisticSearchParams {
 	public String getResSubPath() {
 		return resSubPath;
 	}
-	
 
-	public List<SecurityGroup> getLimitToSecGroups() {
-		return limitToSecGroups;
+	public List<Group> getLimitToGroups() {
+		return limitToGroups;
 	}
 	
-	public void setLimitToSecGroups(List<SecurityGroup> limitToSecGroups) {
-		this.limitToSecGroups = limitToSecGroups;
+	public void setLimitToGroups(List<Group> limitToGroups) {
+		this.limitToGroups = limitToGroups;
 	}
 	
 	public boolean isMayViewAllUsersAssessments() {

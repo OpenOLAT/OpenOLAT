@@ -29,7 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
 import org.olat.core.commons.modules.glossary.GlossaryMainController;
@@ -55,6 +56,7 @@ import org.olat.modules.glossary.CreateNewGlossaryController;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.AddFileResourceController;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
@@ -147,9 +149,10 @@ public class GlossaryHandler implements RepositoryHandler {
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(re.getOlatResource());
 
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
 		boolean editableByUser = "true".equals(glossProps.getProperty(GlossaryItemManager.EDIT_USERS));
-		boolean owner = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(ureq.getIdentity(), re.getOwnerGroup());
+		boolean owner = repositoryService.hasRole(ureq.getIdentity(), re, GroupRoles.owner.name());
 		
 		GlossarySecurityCallback secCallback;
 		if (ureq.getUserSession().getRoles().isGuestOnly()) {

@@ -47,28 +47,22 @@ public interface BGArea extends Persistable, CreateInfo, ShortName {
 	/**
 	 * @return The group area description
 	 */
-	public abstract String getDescription();
+	public String getDescription();
 
 	/**
 	 * @param description the group area description
 	 */
-	public abstract void setDescription(String description);
+	public void setDescription(String description);
 	
 	public OLATResource getResource();
 
 	/**
-	 * @return The group context
-	 */
-	public Long getGroupContextKey();
-
-
-	/**
 	 * @return The group area name
 	 */
-	public abstract String getName();
+	public String getName();
 
 	/**
 	 * @param name The group area name
 	 */
-	public abstract void setName(String name);
+	public void setName(String name);
 }

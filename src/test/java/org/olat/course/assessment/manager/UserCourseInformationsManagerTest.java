@@ -190,6 +190,33 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, countErrors);
 	}
 	
+	/* Needed to generate a lot of datas
+	@Test
+	public void testHeavyLoads() {
+		List<Identity> loadIdentities = CoreSpringFactory.getImpl(BaseSecurity.class)
+				.getVisibleIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, 1000, 20000);
+
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+		params.setRoles(new Roles(true, false, false, false, false, false, false));
+		params.setResourceTypes(Collections.singletonList("CourseModule"));
+		List<RepositoryEntry> loadOres = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction(params, 0, -1, false);
+
+		for(Identity identity:loadIdentities) {
+			double r = Math.random() * loadOres.size();
+			int pos = (int)Math.round(r) - 1;
+			if(pos < 40) {
+				pos = 40;
+			}
+			List<RepositoryEntry> subEntries = loadOres.subList(pos - 30, pos);
+			for(RepositoryEntry entry:subEntries) {
+				OLATResource resource = entry.getOlatResource();
+				userCourseInformationsManager.updateUserCourseInformations(resource.getResourceableId(), identity, true);
+			}
+			dbInstance.commitAndCloseSession();
+		}
+	}
+	*/
+	
 	private static class UpdateThread extends Thread {
 		
 		private final DB db;

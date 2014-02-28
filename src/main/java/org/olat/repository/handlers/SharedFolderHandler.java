@@ -28,8 +28,8 @@ package org.olat.repository.handlers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -39,6 +39,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -53,6 +54,7 @@ import org.olat.modules.sharedfolder.SharedFolderEditorController;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.WizardCloseResourceController;
@@ -146,11 +148,12 @@ public class SharedFolderHandler implements RepositoryHandler {
 		OLATResource res = re.getOlatResource();
 		VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
 
-		Identity identity = ureq.getIdentity();	
-		boolean canEdit = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)
-						|| RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re) 
-						|| BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, re.getTutorGroup())
-						|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(re, identity);
+		Identity identity = ureq.getIdentity();
+		Roles roles = ureq.getUserSession().getRoles();
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		boolean canEdit = roles.isOLATAdmin()
+						|| repositoryService.hasRole(identity, re, GroupRoles.owner.name(), GroupRoles.coach.name()) 
+						|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re);
 				
 		Controller sfdCtr;
 		if(canEdit) {

@@ -20,11 +20,9 @@
 package org.olat.group.ui.wizard;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -44,6 +42,7 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.co.ContactForm;
 
 /**
@@ -55,14 +54,14 @@ public class BGEmailCompositionStepController extends StepFormBasicController   
 	private ContactForm contactForm;
 	private final List<BusinessGroup> groups;
 	private final MailManager mailService;
-	private final BaseSecurity securityManager;
+	private final BusinessGroupService businessGroupService;
 	
 	public BGEmailCompositionStepController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, List<BusinessGroup> groups) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "wrapper");
 		
 		mailService = CoreSpringFactory.getImpl(MailManager.class);
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.groups = groups;
 
 		initForm(ureq);
@@ -70,31 +69,24 @@ public class BGEmailCompositionStepController extends StepFormBasicController   
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+
+		
+		ContactList contacts = new ContactList("mails");
 		
 		Boolean sendToTutorObj = (Boolean)getFromRunContext("tutors");
 		boolean sendToTutors = sendToTutorObj == null ? false : sendToTutorObj.booleanValue();
 		if(sendToTutors) {
-			for(BusinessGroup group:groups) {
-				if(group.getOwnerGroup() != null) {
-					secGroups.add(group.getOwnerGroup());
-				}
-			}
+			List<Identity> coaches = businessGroupService.getMembers(groups, GroupRoles.coach.name());
+			contacts.addAllIdentites(coaches);
 		}
 		
 		Boolean sendToParticipantObj = (Boolean)getFromRunContext("participants");
 		boolean sendToParticipants = sendToParticipantObj == null ? false : sendToParticipantObj.booleanValue();
 		if(sendToParticipants) {
-			for(BusinessGroup group:groups) {
-				if(group.getPartipiciantGroup() != null) {
-					secGroups.add(group.getPartipiciantGroup());
-				}
-			}
+			List<Identity> participants = businessGroupService.getMembers(groups, GroupRoles.participant.name());
+			contacts.addAllIdentites(participants);
 		}
 
-		List<Identity> receveirs = securityManager.getIdentitiesOfSecurityGroups(secGroups);
-		ContactList contacts = new ContactList("mails");
-		contacts.addAllIdentites(receveirs);
 		contactForm = new ContactForm(ureq, getWindowControl(), mainForm, getIdentity(), false, false, false, false);
 		contactForm.addEmailTo(contacts);
 		formLayout.add("wrapped", contactForm.getInitialFormItem());

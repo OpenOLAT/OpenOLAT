@@ -55,8 +55,8 @@ public class RepositoryEntryLifecycle implements Persistable, CreateInfo, Modifi
 
 	private static final long serialVersionUID = -8484159601386853047L;
 	@Id
-  @GeneratedValue(generator = "system-uuid")
-  @GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	

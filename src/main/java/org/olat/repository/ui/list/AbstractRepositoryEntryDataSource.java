@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
@@ -41,7 +40,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
-import org.olat.modules.coach.manager.CoachingService;
+import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -114,11 +113,9 @@ public abstract class AbstractRepositoryEntryDataSource implements FlexiTableDat
 	
 	protected List<RepositoryEntryRow> processModel(List<RepositoryEntry> repoEntries) {
 		List<OLATResource> resources = new ArrayList<OLATResource>(repoEntries.size());
-		List<SecurityGroup> authorsSecGroup = new ArrayList<SecurityGroup>(repoEntries.size());
 		Set<Long> markedResources = new HashSet<Long>(repoEntries.size() * 2 + 1);
 		for(RepositoryEntry entry:repoEntries) {
 			resources.add(entry.getOlatResource());
-			authorsSecGroup.add(entry.getOwnerGroup());
 			markedResources.add(entry.getResourceableId());
 		}
 
@@ -166,7 +163,7 @@ public abstract class AbstractRepositoryEntryDataSource implements FlexiTableDat
 			
 			StringBuilder sb = new StringBuilder();
 			for(RepositoryEntryMembership membership:authors) {
-				if(entry.getKey().equals(membership.getOwnerRepoKey())) {
+				if(membership.isOwner() && entry.getKey().equals(membership.getRepoKey())) {
 					String authorName = authorNames.get(membership.getIdentityKey());
 					if(StringHelper.containsNonWhitespace(authorName)) {
 						if(sb.length() > 0) {

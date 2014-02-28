@@ -27,13 +27,14 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.manager.ContactDAO;
-import org.olat.group.model.ContactOwnerView;
-import org.olat.group.model.ContactParticipantView;
+import org.olat.group.model.ContactViewExtended;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,8 @@ public class ContactDAOTest extends OlatTestCase {
 	private ContactDAO contactDao;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -68,18 +71,18 @@ public class ContactDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id1 -> group 1 and 2
-		securityManager.addIdentityToSecurityGroup(id1, group1.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(id1, group2.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id1, group1, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id1, group2, GroupRoles.participant.name());
 		//id2 -> group 1 and 2
-		securityManager.addIdentityToSecurityGroup(id2, group1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group2.getOwnerGroup());
+		businessGroupRelationDao.addRole(id2, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group2, GroupRoles.coach.name());
 		//id3 -> group 1 and 3
-		securityManager.addIdentityToSecurityGroup(id3, group1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, group3.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id3, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, group3, GroupRoles.participant.name());
 		//id4 -> group 2
-		securityManager.addIdentityToSecurityGroup(id4, group2.getOwnerGroup());
+		businessGroupRelationDao.addRole(id4, group2, GroupRoles.coach.name());
 		//id5 -> group 3
-		securityManager.addIdentityToSecurityGroup(id5, group3.getOwnerGroup());
+		businessGroupRelationDao.addRole(id5, group3, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();	
 		
 		//check identity1 : contact to id2 and id3
@@ -108,7 +111,7 @@ public class ContactDAOTest extends OlatTestCase {
 		
 		//check identity4 : contact to id1
 		int numOfContact4 = contactDao.countContacts(id4);
-		Assert.assertEquals(1, numOfContact4);//!!! ne marche pas
+		Assert.assertEquals(1, numOfContact4);
 		List<Identity> contactList4 = contactDao.findContacts(id4, 0, -1);
 		Assert.assertEquals(1, contactList4.size());
 		Assert.assertTrue(contactList4.contains(id1));
@@ -135,19 +138,20 @@ public class ContactDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id1 -> group 1 and 2
-		securityManager.addIdentityToSecurityGroup(id1, group1.getOwnerGroup());				//visible
-		securityManager.addIdentityToSecurityGroup(id1, group2.getPartipiciantGroup());	//visible
+		businessGroupRelationDao.addRole(id1, group1, GroupRoles.coach.name());			//visible
+		businessGroupRelationDao.addRole(id1, group2, GroupRoles.participant.name());	//visible
 		//id2 -> group 1 and 2
-		securityManager.addIdentityToSecurityGroup(id2, group1.getPartipiciantGroup()); //not
-		securityManager.addIdentityToSecurityGroup(id2, group2.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id2, group1, GroupRoles.participant.name()); //not
+		businessGroupRelationDao.addRole(id2, group2, GroupRoles.coach.name());        //not
 		//id3 -> group 1 and 3
-		securityManager.addIdentityToSecurityGroup(id3, group2.getOwnerGroup());        //not
-		securityManager.addIdentityToSecurityGroup(id3, group3.getPartipiciantGroup()); //not
+		businessGroupRelationDao.addRole(id3, group2, GroupRoles.coach.name());        //not
+		businessGroupRelationDao.addRole(id3, group3, GroupRoles.participant.name()); //not
 		//id4 -> group 2
-		securityManager.addIdentityToSecurityGroup(id4, group2.getOwnerGroup());        //not
-		securityManager.addIdentityToSecurityGroup(id4, group3.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id4, group2, GroupRoles.coach.name());        //not
+
+		businessGroupRelationDao.addRole(id4, group3, GroupRoles.coach.name());        //not
 		//id5 -> group 3
-		securityManager.addIdentityToSecurityGroup(id5, group3.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id5, group3, GroupRoles.coach.name());        //not
 		dbInstance.commitAndCloseSession();	
 		
 		//check identity1 : contact to id2 and id3
@@ -199,19 +203,19 @@ public class ContactDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id1 -> group 1 and 2
-		securityManager.addIdentityToSecurityGroup(id1, group1.getOwnerGroup());		//visible
-		securityManager.addIdentityToSecurityGroup(id1, group2.getPartipiciantGroup());	//visible
+		businessGroupRelationDao.addRole(id1, group1, GroupRoles.coach.name());		//visible
+		businessGroupRelationDao.addRole(id1, group2, GroupRoles.participant.name());	//visible
 		//id2 -> group 1 and 2
-		securityManager.addIdentityToSecurityGroup(id2, group1.getPartipiciantGroup()); //not
-		securityManager.addIdentityToSecurityGroup(id2, group2.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id2, group1, GroupRoles.participant.name()); //not
+		businessGroupRelationDao.addRole(id2, group2, GroupRoles.coach.name());        //not
 		//id3 -> group 1 and 3
-		securityManager.addIdentityToSecurityGroup(id3, group2.getOwnerGroup());        //not
-		securityManager.addIdentityToSecurityGroup(id3, group3.getPartipiciantGroup()); //not
+		businessGroupRelationDao.addRole(id3, group2, GroupRoles.coach.name());       //not
+		businessGroupRelationDao.addRole(id3, group3, GroupRoles.participant.name()); //not
 		//id4 -> group 2
-		securityManager.addIdentityToSecurityGroup(id4, group2.getOwnerGroup());        //not
-		securityManager.addIdentityToSecurityGroup(id4, group3.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id4, group2, GroupRoles.coach.name());        //not
+		businessGroupRelationDao.addRole(id4, group3, GroupRoles.coach.name());        //not
 		//id5 -> group 3
-		securityManager.addIdentityToSecurityGroup(id5, group3.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id5, group3, GroupRoles.coach.name());        //not
 		dbInstance.commitAndCloseSession();	
 		
 		//check identity1 : no contact
@@ -259,45 +263,45 @@ public class ContactDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id1 -> group 1 and 2
-		securityManager.addIdentityToSecurityGroup(id1, group1.getOwnerGroup());		//visible
-		securityManager.addIdentityToSecurityGroup(id1, group2.getPartipiciantGroup());	//visible
+		businessGroupRelationDao.addRole(id1, group1, GroupRoles.coach.name());		//visible
+		businessGroupRelationDao.addRole(id1, group2, GroupRoles.participant.name());	//visible
 		//id2 -> group 1 and 2
-		securityManager.addIdentityToSecurityGroup(id2, group1.getPartipiciantGroup()); //not
-		securityManager.addIdentityToSecurityGroup(id2, group2.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id2, group1, GroupRoles.participant.name()); //not
+		businessGroupRelationDao.addRole(id2, group2, GroupRoles.coach.name());       //not
 		//id3 -> group 1 and 3
-		securityManager.addIdentityToSecurityGroup(id3, group2.getOwnerGroup());        //not
-		securityManager.addIdentityToSecurityGroup(id3, group3.getPartipiciantGroup()); //not
+		businessGroupRelationDao.addRole(id3, group2, GroupRoles.coach.name());        //not
+		businessGroupRelationDao.addRole(id3, group3, GroupRoles.participant.name()); //not
 		//id4 -> group 2
-		securityManager.addIdentityToSecurityGroup(id4, group2.getOwnerGroup());        //not
-		securityManager.addIdentityToSecurityGroup(id4, group3.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id4, group2, GroupRoles.coach.name());        //not
+		businessGroupRelationDao.addRole(id4, group3, GroupRoles.coach.name());       //not
 		//id5 -> group 3
-		securityManager.addIdentityToSecurityGroup(id5, group3.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id5, group3, GroupRoles.coach.name());        //not
 		dbInstance.commitAndCloseSession();	
 		
 		//check identity1 : no contact
-		Collection<ContactOwnerView> contacts1 = contactDao.getGroupOwners(id1);
+		Collection<ContactViewExtended> contacts1 = contactDao.getGroupOwners(id1);
 		Assert.assertNotNull(contacts1);
 		Assert.assertEquals(1, contacts1.size());
 		Assert.assertTrue(contacts1.iterator().next().getIdentityKey().equals(id1.getKey()));
 		
 		//check identity2 : contact to id1 and id3
-		Collection<ContactOwnerView> contacts2 = contactDao.getGroupOwners(id2);
+		Collection<ContactViewExtended> contacts2 = contactDao.getGroupOwners(id2);
 		Assert.assertNotNull(contacts2);
 		Assert.assertEquals(1, contacts2.size());
 		Assert.assertTrue(contacts2.iterator().next().getIdentityKey().equals(id1.getKey()));
 		
 		//check identity3 : contact to id1 and id2
-		Collection<ContactOwnerView> contacts3 = contactDao.getGroupOwners(id3);
+		Collection<ContactViewExtended> contacts3 = contactDao.getGroupOwners(id3);
 		Assert.assertNotNull(contacts3);
 		Assert.assertEquals(0, contacts3.size());
 		
 		//check identity4 : contact to id1
-		Collection<ContactOwnerView> contacts4 = contactDao.getGroupOwners(id4);
+		Collection<ContactViewExtended> contacts4 = contactDao.getGroupOwners(id4);
 		Assert.assertNotNull(contacts4);
 		Assert.assertEquals(0, contacts4.size());
 		
 		//check identity5 : contact to id2
-		Collection<ContactOwnerView> contacts5 = contactDao.getGroupOwners(id5);
+		Collection<ContactViewExtended> contacts5 = contactDao.getGroupOwners(id5);
 		Assert.assertNotNull(contacts5);
 		Assert.assertEquals(0, contacts5.size());
 	}
@@ -317,47 +321,47 @@ public class ContactDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id1 -> group 1 and 2
-		securityManager.addIdentityToSecurityGroup(id1, group1.getOwnerGroup());		//visible
-		securityManager.addIdentityToSecurityGroup(id1, group2.getPartipiciantGroup());	//visible
+		businessGroupRelationDao.addRole(id1, group1, GroupRoles.coach.name());		//visible
+		businessGroupRelationDao.addRole(id1, group2, GroupRoles.participant.name());	//visible
 		//id2 -> group 1 and 2
-		securityManager.addIdentityToSecurityGroup(id2, group1.getPartipiciantGroup()); //not
-		securityManager.addIdentityToSecurityGroup(id2, group2.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id2, group1, GroupRoles.participant.name()); //not
+		businessGroupRelationDao.addRole(id2, group2, GroupRoles.coach.name());       //not
 		//id3 -> group 1 and 3
-		securityManager.addIdentityToSecurityGroup(id3, group2.getOwnerGroup());        //not
-		securityManager.addIdentityToSecurityGroup(id3, group3.getPartipiciantGroup()); //not
+		businessGroupRelationDao.addRole(id3, group2, GroupRoles.coach.name());       //not
+		businessGroupRelationDao.addRole(id3, group3, GroupRoles.participant.name()); //not
 		//id4 -> group 2
-		securityManager.addIdentityToSecurityGroup(id4, group2.getOwnerGroup());        //not
-		securityManager.addIdentityToSecurityGroup(id4, group3.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id4, group2, GroupRoles.coach.name());        //not
+		businessGroupRelationDao.addRole(id4, group3, GroupRoles.coach.name());        //not
 		//id5 -> group 3
-		securityManager.addIdentityToSecurityGroup(id5, group3.getOwnerGroup());        //not
+		businessGroupRelationDao.addRole(id5, group3, GroupRoles.coach.name());        //not
 		dbInstance.commitAndCloseSession();	
 		
 		//check identity1 : no contact
-		Collection<ContactParticipantView> contacts1 = contactDao.getParticipants(id1);
+		Collection<ContactViewExtended> contacts1 = contactDao.getParticipants(id1);
 		Assert.assertNotNull(contacts1);
 		Assert.assertEquals(1, contacts1.size());
 		Assert.assertTrue(contacts1.iterator().next().getIdentityKey().equals(id1.getKey()));
 		
 		//check identity2 : contact to id1 and id3
-		Collection<ContactParticipantView> contacts2 = contactDao.getParticipants(id2);
+		Collection<ContactViewExtended> contacts2 = contactDao.getParticipants(id2);
 		Assert.assertNotNull(contacts2);
 		Assert.assertEquals(1, contacts2.size());
 		Assert.assertTrue(contacts2.iterator().next().getIdentityKey().equals(id1.getKey()));
 		
 		//check identity3 : contact to id1 and id2
-		Collection<ContactParticipantView> contacts3 = contactDao.getParticipants(id3);
+		Collection<ContactViewExtended> contacts3 = contactDao.getParticipants(id3);
 		Assert.assertNotNull(contacts3);
 		Assert.assertEquals(1, contacts3.size());
 		Assert.assertTrue(contacts3.iterator().next().getIdentityKey().equals(id1.getKey()));
 		
 		//check identity4 : contact to id1
-		Collection<ContactParticipantView> contacts4 = contactDao.getParticipants(id4);
+		Collection<ContactViewExtended> contacts4 = contactDao.getParticipants(id4);
 		Assert.assertNotNull(contacts4);
 		Assert.assertEquals(1, contacts4.size());
 		Assert.assertTrue(contacts4.iterator().next().getIdentityKey().equals(id1.getKey()));
 		
 		//check identity5 : contact to id2
-		Collection<ContactParticipantView> contacts5 = contactDao.getParticipants(id5);
+		Collection<ContactViewExtended> contacts5 = contactDao.getParticipants(id5);
 		Assert.assertNotNull(contacts5);
 		Assert.assertEquals(0, contacts5.size());
 	}

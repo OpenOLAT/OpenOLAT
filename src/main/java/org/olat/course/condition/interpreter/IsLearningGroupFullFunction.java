@@ -95,7 +95,7 @@ public class IsLearningGroupFullFunction extends AbstractFunction {
 			return cgm.isBusinessGroupFull(groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 		}
 		
-		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseResource());
+		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseEntry());
 		if(!groupKeys.isEmpty()) {
 			return cgm.isBusinessGroupFull(groupKeys.get(0)) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 		}

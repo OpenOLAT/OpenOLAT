@@ -74,19 +74,11 @@ public interface Project extends CreateInfo,Persistable{
 
 	/**
 	 * 
-	 * @return SecurityGroup with project participants
-	 */
-	public SecurityGroup getProjectParticipantGroup();
-
-	/**
-	 * 
 	 * @return List of Identity objects
 	 */
 	public SecurityGroup getCandidateGroup();
 
 	public BusinessGroup getProjectGroup();
-
-	public SecurityGroup getProjectLeaderGroup();
 
 	public void setTitle(String value);
 

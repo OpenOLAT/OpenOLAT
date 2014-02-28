@@ -39,7 +39,9 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Policy;
+import org.olat.basesecurity.Grant;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -48,6 +50,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRights;
 import org.olat.group.right.BGRightsRole;
@@ -70,7 +73,11 @@ public class BGRightManagerTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private GroupDAO groupDao;
+	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BGRightManager rightManager;
 	@Autowired
@@ -120,7 +127,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("has-right-1-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "hasBGRight", null, -1, -1, false, false, resource);
-		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.has-right", group, BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 		
@@ -138,7 +145,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("has-right-2-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "hasBGRight", null, -1, -1, false, false, resource);
-		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.has-right", group, resource.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 		
@@ -156,7 +163,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, -1, -1, false, false, resource);
-		securityManager.addIdentityToSecurityGroup(identity, group.getOwnerGroup());
+	    businessGroupRelationDao.addRole(identity, group, GroupRoles.coach.name());
 		rightManager.addBGRight("bgr.right1", group, resource.getOlatResource(), BGRightsRole.tutor);
 		dbInstance.commitAndCloseSession();
 		
@@ -172,7 +179,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, -1, -1, false, false, resource);
-		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.right1", group, resource.getOlatResource(), BGRightsRole.tutor);
 		dbInstance.commitAndCloseSession();
 		
@@ -192,10 +199,10 @@ public class BGRightManagerTest extends OlatTestCase {
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, -1, -1, false, false, resource);
-		securityManager.addIdentityToSecurityGroup(id1, group.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, group.getOwnerGroup());
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(id2, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(id3, group, GroupRoles.coach.name());
 		rightManager.addBGRight("bgr.right1", group, resource.getOlatResource(), BGRightsRole.tutor);
 		rightManager.addBGRight("bgr.right2", group, resource.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
@@ -225,7 +232,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("find-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "findBGRights", null, -1, -1, false, false, resource);
-		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.findright1", group, BGRightsRole.participant);
 		rightManager.addBGRight("bgr.findright2", group, BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
@@ -244,7 +251,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("find-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "findBGRights", null, -1, -1, false, false, resource);
-		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.findright1", group, BGRightsRole.participant);
 		rightManager.addBGRight("bgr.findright2", group, BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
@@ -264,7 +271,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("remove-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, -1, -1, false, false, resource);
-		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.removeright1", group, BGRightsRole.participant);
 		rightManager.addBGRight("bgr.removeright2", group, BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
@@ -297,8 +304,8 @@ public class BGRightManagerTest extends OlatTestCase {
 
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, -1, -1, false, false, resource1);
 		businessGroupService.addResourceTo(group, resource2);
-		securityManager.addIdentityToSecurityGroup(tutor, group.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(participant, group.getPartipiciantGroup());
+	    businessGroupRelationDao.addRole(tutor, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.removeright1", group, resource1.getOlatResource(), BGRightsRole.tutor);
 		rightManager.addBGRight("bgr.removeright2", group, resource1.getOlatResource(), BGRightsRole.participant);
 		rightManager.addBGRight("bgr.dontrmght3", group, resource2.getOlatResource(), BGRightsRole.tutor);
@@ -344,8 +351,8 @@ public class BGRightManagerTest extends OlatTestCase {
 
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, -1, -1, false, false, resource1);
 		businessGroupService.addResourceTo(group, resource2);
-		securityManager.addIdentityToSecurityGroup(tutor, group.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(participant, group.getPartipiciantGroup());
+	    businessGroupRelationDao.addRole(tutor, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.removeright1", group, resource1.getOlatResource(), BGRightsRole.tutor);
 		rightManager.addBGRight("bgr.removeright2", group, resource1.getOlatResource(), BGRightsRole.participant);
 		rightManager.addBGRight("bgr.dontrmght3", group, resource2.getOlatResource(), BGRightsRole.tutor);
@@ -425,7 +432,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("remove-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, -1, -1, false, false, resource);
-		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.removeright1", group, BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 
@@ -443,10 +450,10 @@ public class BGRightManagerTest extends OlatTestCase {
 		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, -1, -1, false, false, c1);
 		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, -1, -1, false, false, c2);
 
-		securityManager.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id1, g2.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, g3.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id1, g2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, g3, GroupRoles.participant.name());
 
 		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g1, BGRightsRole.participant);
 		rightManager.addBGRight(CourseRights.RIGHT_COURSEEDITOR, g1, BGRightsRole.participant);
@@ -454,8 +461,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		rightManager.addBGRight(CourseRights.RIGHT_COURSEEDITOR, g3, BGRightsRole.participant);
 		DBFactory.getInstance().closeSession(); // simulate user clicks
 
-		List<Policy> policies = securityManager.getPoliciesOfSecurityGroup(g1.getPartipiciantGroup());
-		Assert.assertEquals(4, policies.size()); // read, parti, archiving, courseeditor
+		List<Grant> grants = groupDao.getGrants(g1.getBaseGroup(), GroupRoles.participant.name());
+		Assert.assertEquals(2, grants.size()); // read, parti, archiving, courseeditor
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
 		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id1, c2.getOlatResource()));

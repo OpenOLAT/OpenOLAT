@@ -34,6 +34,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -42,6 +43,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
 import org.olat.repository.RepositoryEntry;
@@ -64,6 +66,8 @@ public class CourseGroupManagementTest extends OlatTestCase {
 	private BGRightManager rightManager;
 	@Autowired
 	private BGAreaManager areaManager;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -95,11 +99,11 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, 0, 10, false, false,
 				course1);
 		// members
-		securityManager.addIdentityToSecurityGroup(id1, g2.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, g1.getOwnerGroup());
+		businessGroupRelationDao.addRole(id1, g2, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, g2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, g1, GroupRoles.coach.name());
 
 		// groups
 		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, -1, -1, false, false,
@@ -107,9 +111,9 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g4", null, -1, -1, false, false,
 				course1);
 		// members
-		securityManager.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id1, g4.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, g4.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id1, g4, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, g4, GroupRoles.participant.name());
 		// rights
 		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g3, BGRightsRole.participant);
 		rightManager.addBGRight(CourseRights.RIGHT_COURSEEDITOR, g3, BGRightsRole.participant);
@@ -161,11 +165,11 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, 0, 10, false, false,
 				course1);
 		// members
-		securityManager.addIdentityToSecurityGroup(id1, g2.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, g1.getOwnerGroup());
+		businessGroupRelationDao.addRole(id1, g2, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, g2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, g1, GroupRoles.coach.name());
 		// areas
 		BGArea a1 = areaManager.createAndPersistBGArea("a1", "desca1", course1.getOlatResource());
 		BGArea a2 = areaManager.createAndPersistBGArea("a2", null, course1.getOlatResource());
@@ -181,9 +185,9 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g4", null, -1, -1, false, false,
 				course1);
 		// members
-		securityManager.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id1, g4.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, g4.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id1, g4, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, g4, GroupRoles.participant.name());
 		// rights
 		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g3, BGRightsRole.participant);
 		rightManager.addBGRight(CourseRights.RIGHT_COURSEEDITOR, g3, BGRightsRole.participant);

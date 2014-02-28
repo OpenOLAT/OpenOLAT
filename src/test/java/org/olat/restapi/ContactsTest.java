@@ -35,18 +35,18 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
@@ -62,7 +62,11 @@ public class ContactsTest extends OlatJerseyTestCase {
 	private static BusinessGroup g1, g2;
 	private static BusinessGroup g3, g4;
 	private static OLATResource course;
-	
+
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -81,58 +85,36 @@ public class ContactsTest extends OlatJerseyTestCase {
 		part2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-contacts-five");
 		part3 = JunitTestHelper.createAndPersistIdentityAsUser("rest-contacts-six");
 		
-		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitcourse",System.currentTimeMillis());
-		RepositoryEntry re = RepositoryManager.getInstance().createRepositoryEntryInstance("administrator");
-		re.setCanDownload(false);
+		course = OLATResourceManager.getInstance().findOrPersistResourceable(resourceable);
+		
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
+		RepositoryEntry re = rs.create("administrator", "-", "rest-re", null, course);
 		re.setCanLaunch(true);
-		re.setDisplayname("rest-re");
-		re.setResourcename("-");
-		re.setAccess(0);// Access for nobody
-		re.setOwnerGroup(null);
-		
-		// create security group
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
-		// members of this group are always authors also
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-		securityManager.addIdentityToSecurityGroup(owner1, newGroup);
-		re.setOwnerGroup(newGroup);
-		
-		course =  rm.createOLATResourceInstance(resourceable);
-		DBFactory.getInstance().saveObject(course);
-		DBFactory.getInstance().intermediateCommit();
-
-		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resourceable);
-		re.setOlatResource(ores);
 		RepositoryManager.getInstance().saveRepositoryEntry(re);
-		DBFactory.getInstance().intermediateCommit();
+		DBFactory.getInstance().commit();
 			
 		//create learn group
-    BaseSecurity secm = BaseSecurityManager.getInstance();
-		
-    // 1) context one: learning groups
+		// 1) context one: learning groups
 		RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
-    // create groups without waiting list
-    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
-    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
+		// create groups without waiting list
+		g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
+		g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
     
-    //permission to see owners and participants
-    businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
-    businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);
+		//permission to see owners and participants
+		businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
+		businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);
     
-    // members g1
-    secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());
-    secm.addIdentityToSecurityGroup(owner2, g1.getOwnerGroup());
-    secm.addIdentityToSecurityGroup(part1, g1.getPartipiciantGroup());
-    secm.addIdentityToSecurityGroup(part2, g1.getPartipiciantGroup());
+		// members g1
+	businessGroupRelationDao.addRole(owner1, g1, GroupRoles.coach.name());
+	businessGroupRelationDao.addRole(owner2, g1, GroupRoles.coach.name());
+	businessGroupRelationDao.addRole(part1, g1, GroupRoles.participant.name());
+	businessGroupRelationDao.addRole(part2, g1, GroupRoles.participant.name());
     
     // members g2
-    secm.addIdentityToSecurityGroup(owner1, g2.getOwnerGroup());
-    secm.addIdentityToSecurityGroup(part1, g2.getPartipiciantGroup());
+	businessGroupRelationDao.addRole(owner1, g2, GroupRoles.coach.name());
+	businessGroupRelationDao.addRole(part1, g2, GroupRoles.participant.name());
     
     
     // 2) context two: right groups
@@ -143,11 +125,11 @@ public class ContactsTest extends OlatJerseyTestCase {
     g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
     businessGroupService.updateDisplayMembers(g4, false, true, false, false, false, false, false);
     // members -> default participants are visible
-    secm.addIdentityToSecurityGroup(owner1, g3.getPartipiciantGroup());
-    secm.addIdentityToSecurityGroup(part3, g3.getPartipiciantGroup());
+	businessGroupRelationDao.addRole(owner1, g3, GroupRoles.participant.name());
+	businessGroupRelationDao.addRole(part3, g3, GroupRoles.participant.name());
     
-    secm.addIdentityToSecurityGroup(owner2, g4.getPartipiciantGroup());
-    secm.addIdentityToSecurityGroup(part3, g4.getPartipiciantGroup());
+	businessGroupRelationDao.addRole(owner2, g4, GroupRoles.participant.name());
+	businessGroupRelationDao.addRole(part3, g4, GroupRoles.participant.name());
     
     DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
     initialized = true;

@@ -31,14 +31,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.lifecycle.LifeCycleEntry;
 import org.olat.commons.lifecycle.LifeCycleManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 
 
 /**
@@ -123,19 +126,7 @@ public class ProjectImpl extends PersistentObject implements Project {
 	 * @return List of Identity objects
 	 */
 	public List<Identity> getProjectLeaders() {
-		return BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(getProjectGroup().getOwnerGroup());
-	}
-
-	public SecurityGroup getProjectLeaderGroup() {
-		return getProjectGroup().getOwnerGroup();
-	}
-
-	/**
-	 * 
-	 * @return SecurityGroup with project participants
-	 */
-	public SecurityGroup getProjectParticipantGroup() {
-		return getProjectGroup().getPartipiciantGroup();
+		return CoreSpringFactory.getImpl(BusinessGroupService.class).getMembers(getProjectGroup(), GroupRoles.coach.name());
 	}
 
 	/**
@@ -151,7 +142,7 @@ public class ProjectImpl extends PersistentObject implements Project {
 	}
 
 	public int getSelectedPlaces() {
-		return BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(getProjectParticipantGroup()) +
+		return CoreSpringFactory.getImpl(BusinessGroupService.class).countMembers(getProjectGroup(), GroupRoles.participant.name()) +
 		                     BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(getCandidateGroup());
 	}
 

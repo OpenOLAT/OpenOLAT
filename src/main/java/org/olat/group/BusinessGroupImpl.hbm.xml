@@ -28,8 +28,7 @@
   		lastUsage helps the SYSTEMADMIN to find the BusinessGroups
   		which were idle for some time.
   		-->
-  		<property name="lastUsage" column="lastusage" type="timestamp" />   
-		<property name="type" column="businessgrouptype" unique="false" length="15" not-null="true" index="gp_type_idx"/>	
+  		<property name="lastUsage" column="lastusage" type="timestamp" />   	
 		<property name="externalId" column="external_id" unique="false" not-null="false" type="string"/>
 		<property name="managedFlagsString" column="managed_flags" unique="false" not-null="false" type="string"/>
 		
@@ -48,63 +47,19 @@
 		<property name="waitingListEnabled" type="boolean" column="waitinglist_enabled" unique="false" not-null="false"/>	
 		<property name="autoCloseRanksEnabled" type="boolean" column="autocloseranks_enabled" unique="false" not-null="false"/>	
 		
-		<property name="groupContextKey" type="long" column="groupcontext_fk" />	
-
 		<many-to-one name="resource" class="org.olat.resource.OLATResourceImpl"
-    		outer-join="true" cascade="none" lazy="false">  
-			<column name="fk_resource" not-null="false" unique="true" />    	
-    	</many-to-one> 
+    		outer-join="true" cascade="none" lazy="false">
+			<column name="fk_resource" not-null="false" unique="true" />
+    	</many-to-one>
 
-		<!--
-		Implementation Note:
-		********************
-		In fact these many-to-one relations are one-to-one relations,
-		but as hibernate requires primary-key or unique-foreign-key associations,
-		this one-to-one feature is not applicable within the OLAT framework.
-		********************
-		References:
-		********************
-		go to http://www.hibernate.org/... and follow to
-		...hib_docs/reference/en/html/mapping.html#mapping-declaration-onetoone
-		********************
-		-->
-		<many-to-one 
- 		   	name="ownerGroup" 
-    		class="org.olat.basesecurity.SecurityGroupImpl"
-    		outer-join="true" 
-    		cascade="none">  
-			<column 
-				name="fk_ownergroup" 
-				not-null="false" 
-				unique="true" />    	
-    	</many-to-one> 
-    	
-		<many-to-one 
- 		   	name="partipiciantGroup" 
-    		class="org.olat.basesecurity.SecurityGroupImpl"
-    		outer-join="true" 
-    		cascade="none">  
-			<column 
-				name="fk_partipiciantgroup" 
-				not-null="false" 
-				unique="true" />    	
-    	</many-to-one> 
-
-		<many-to-one 
- 		   	name="waitingGroup" 
-    		class="org.olat.basesecurity.SecurityGroupImpl"
-    		outer-join="true" 
-    		cascade="none">  
-			<column 
-				name="fk_waitinggroup" 
-				not-null="false" 
-				unique="true" />    	
-    	</many-to-one> 
-    			  	
+		<many-to-one name="baseGroup"
+    		class="org.olat.basesecurity.model.GroupImpl"
+    		outer-join="true"
+    		cascade="persist,delete">
+			<column name="fk_group_id" not-null="false" unique="true" />
+    	</many-to-one>
 	</class>
-	
-	
-	
+
 	<class name="org.olat.group.model.BusinessGroupShortImpl" table="o_gp_business" mutable="false">
 		<cache usage="transactional" />
 		<id name="key" type="long" column="group_id" unsaved-value="null">

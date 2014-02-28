@@ -116,7 +116,7 @@ public class EPXStreamHandler {
 
 			PortfolioStructure struct = (PortfolioStructure) myStream.fromXML(buffer.toString());
 			// OLAT-6344: reset ownerGroup from earlier exports. A new group is created by import in ePFMgr.importPortfolioMapTemplate() later on anyway.
-			((EPAbstractMap) struct).setOwnerGroup(null); 
+			((EPAbstractMap) struct).setGroup(null); 
 			return struct;
 		} catch (Exception e) {
 			log.error("Cannot export this map: " + fMapXml, e);

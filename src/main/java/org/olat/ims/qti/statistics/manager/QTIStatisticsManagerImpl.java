@@ -27,14 +27,12 @@ import java.util.Map;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Response;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIStatisticsManager;
-import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti.statistics.model.QTIStatisticResult;
 import org.olat.ims.qti.statistics.model.QTIStatisticResultSet;
 import org.olat.ims.qti.statistics.model.StatisticAnswerOption;
@@ -44,6 +42,7 @@ import org.olat.ims.qti.statistics.model.StatisticItem;
 import org.olat.ims.qti.statistics.model.StatisticKPrimOption;
 import org.olat.ims.qti.statistics.model.StatisticSurveyItem;
 import org.olat.ims.qti.statistics.model.StatisticSurveyItemResponse;
+import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,9 +64,9 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		  .append("   where r2set.identityKey=rset.identityKey and r2set.olatResource=rset.olatResource and r2set.olatResourceDetail=rset.olatResourceDetail")
 		  .append(" )");
 		
-		if(searchParams.getLimitToSecGroups() != null && searchParams.getLimitToSecGroups().size() > 0) {
-			sb.append(" and rset.identityKey in ( select secMembership.identity.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" secMembership ")
-			  .append("   where secMembership.securityGroup in (:secGroups)")
+		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
+			sb.append(" and rset.identityKey in ( select membership.identity.key from bgroupmember membership ")
+			  .append("   where membership.group in (:baseGroups)")
 			  .append(" )");
 		}
 		
@@ -83,8 +82,8 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 	private void decorateRSetQuery(TypedQuery<?> query, QTIStatisticSearchParams searchParams) {
 		query.setParameter("resourceId", searchParams.getResourceableId())
 		     .setParameter("resSubPath", searchParams.getResSubPath());
-		if(searchParams.getLimitToSecGroups() != null && searchParams.getLimitToSecGroups().size() > 0) {
-			query.setParameter("secGroups", searchParams.getLimitToSecGroups());
+		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
+			query.setParameter("baseGroups", searchParams.getLimitToGroups());
 		}
 	}
 

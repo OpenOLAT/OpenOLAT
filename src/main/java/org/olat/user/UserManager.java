@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.IdentityNames;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -273,7 +273,7 @@ public abstract class UserManager extends BasicManager {
 	 * @param user
 	 * @return
 	 */
-	public abstract String getUserDisplayName(IdentityShort user);
+	public abstract String getUserDisplayName(IdentityNames user);
 	
 	public abstract String getUserDisplayName(String username);
 	

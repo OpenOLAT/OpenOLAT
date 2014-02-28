@@ -135,7 +135,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		this.cev = cev;
 		
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
-		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
+		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 		
 
 		OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
@@ -178,7 +178,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		Boolean cancelEnrollEnabled = enableCancelEnroll.getSelectedKeys().size()==1;
 		moduleConfig.set(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED, cancelEnrollEnabled);
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
-		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
+		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 		// Inform all listeners about the changed condition
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
@@ -201,7 +201,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		if(groupKeys == null) {
 			groupInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
 			if(StringHelper.containsNonWhitespace(groupInitVal)) {
-				groupKeys = businessGroupService.toGroupKeys(groupInitVal, cev.getCourseGroupManager().getCourseResource());
+				groupKeys = businessGroupService.toGroupKeys(groupInitVal, cev.getCourseGroupManager().getCourseEntry());
 			} else {
 				groupKeys = new ArrayList<Long>();
 			}
@@ -213,7 +213,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 
 		chooseGroupsLink = uifactory.addFormLink("choose", groupChooseSubContainer,"b_form_groupchooser");
 		createGroupsLink = uifactory.addFormLink("create", groupChooseSubContainer,"b_form_groupchooser");	
-		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
+		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 		
 		// areas
 		areaChooseSubContainer = FormLayoutContainer.createHorizontalFormLayout("areaChooseSubContainer", getTranslator());
@@ -580,7 +580,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	}
 	
 	private void updateGroupsAndAreasCheck() {
-		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
+		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 		chooseGroupsLink.setVisible(hasGroups);
 		createGroupsLink.setVisible(!hasGroups && !managedGroups);
 		

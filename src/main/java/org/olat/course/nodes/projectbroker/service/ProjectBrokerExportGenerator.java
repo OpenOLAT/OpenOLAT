@@ -29,7 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -44,6 +45,7 @@ import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
 import org.olat.course.properties.CoursePropertyManager;
+import org.olat.group.BusinessGroupService;
 
 /**
  * @author Christian Guretzki
@@ -144,7 +146,9 @@ public class ProjectBrokerExportGenerator {
 		
 		StringBuilder participants = new StringBuilder();
 		boolean firstParticipants = true;
-		for (Identity identity : BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(project.getProjectParticipantGroup()) ) {
+		List<Identity> participantList = CoreSpringFactory.getImpl(BusinessGroupService.class)
+				.getMembers(project.getProjectGroup(), GroupRoles.participant.name());
+		for (Identity identity : participantList) {
 			if (!firstParticipants) {
 				participants.append(" , ");
 			}

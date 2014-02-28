@@ -1318,8 +1318,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 */
 	private void updateGroupsAndAreasCheck() {
 		OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
+		RepositoryEntry courseEntry = courseEditorEnv.getCourseGroupManager().getCourseEntry();
 		boolean hasAreas = areaManager.countBGAreasInContext(courseResource) > 0;
-		boolean hasGroups = businessGroupService.countBusinessGroups(null, courseResource) > 0;
+		boolean hasGroups = businessGroupService.countBusinessGroups(null, courseEntry) > 0;
 		
 		createGroupsLink.setVisible(!hasGroups && !managedGroup);
 		chooseGroupsLink.setVisible(!createGroupsLink.isVisible());

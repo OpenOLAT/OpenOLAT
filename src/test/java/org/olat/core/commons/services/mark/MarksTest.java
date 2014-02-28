@@ -30,9 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.mark.Mark;
-import org.olat.core.commons.services.mark.MarkResourceStat;
-import org.olat.core.commons.services.mark.MarkingService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
@@ -162,49 +159,33 @@ public class MarksTest extends OlatTestCase {
 		}
 	}
 	
-	/* @Test
+	/*
+	@Test
 	public void testHeavyLoadStats() {
-		final int numberOf = 30;
+		List<Identity> loadIdentities = CoreSpringFactory.getImpl(BaseSecurity.class)
+				.getVisibleIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, 0, -1);
+
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+		params.setRoles(new Roles(true, false, false, false, false, false, false));
+		List<RepositoryEntry> loadOres = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction(params, 0, -1, false);
 		
-		List<Identity> loadIdentities = new ArrayList<Identity>();
-		for(int i=0; i<numberOf; i++) {
-			loadIdentities.add(JunitTestHelper.createAndPersistIdentityAsUser("identity-test-" + i));
-		}
-		DBFactory.getInstance().intermediateCommit();
-		
-		List<OLATResourceable> loadOres = new ArrayList<OLATResourceable>();
-		for(int i=0; i<numberOf; i++) {
-			loadOres.add(OresHelper.createOLATResourceableInstance("testresource", Long.valueOf(12300 + i)));
-		}
-		
-		List<String> loadSubPaths = new ArrayList<String>();
-		for(int i=0; i<numberOf; i++) {
-			loadSubPaths.add("sub-path-" + i);
-		}
 		
 		int count = 0;
 		for(Identity ident:loadIdentities) {
-			for(OLATResourceable o:loadOres) {
-				for(String sPath:loadSubPaths) {
-					service.getMarkManager().setMark(o, ident, sPath, "");
-					if(++count % 20 == 0) {
-						DBFactory.getInstance().intermediateCommit();
-					}
+
+			double r = Math.random() * loadOres.size();
+			int pos = (int)Math.round(r);
+			List<RepositoryEntry> toBookmarks = loadOres.subList(pos, Math.min(pos + 10, loadOres.size() - 1));
+			
+			for(RepositoryEntry toBookmark:toBookmarks) {
+				service.getMarkManager().setMark(toBookmark, ident, null, "");
+				if(++count % 20 == 0) {
+					DBFactory.getInstance().intermediateCommit();
 				}
 			}
+
 		}
-		DBFactory.getInstance().intermediateCommit();
-		
-		long start = System.currentTimeMillis();
-		List<MarkResourceStat> stat1s = service.getMarkManager().getStats(loadOres.get(7), null, loadIdentities.get(15));
-		System.out.println(stat1s.size() + " in (ms): " + (System.currentTimeMillis() - start));
 
-		DBFactory.getInstance().intermediateCommit();
-		
-		start = System.currentTimeMillis();
-		List<MarkResourceStat> stat2s = service.getMarkManager().getStats(loadOres.get(18), null, null);
-		System.out.println(stat2s.size() + " in (ms): " + (System.currentTimeMillis() - start));
-
-		DBFactory.getInstance().intermediateCommit();
-	}*/
+	}
+	*/
 }

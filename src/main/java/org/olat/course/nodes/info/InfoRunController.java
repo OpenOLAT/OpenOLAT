@@ -44,6 +44,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -55,6 +56,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 
 /**
  * 
@@ -105,27 +107,28 @@ public class InfoRunController extends BasicController {
 		}
 		
 		Identity identity = ureq.getIdentity();
+		Roles roles = ureq.getUserSession().getRoles();
 		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		boolean institutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(
-				RepositoryManager.getInstance().lookupRepositoryEntry(course, false), identity);
+		boolean institutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry());
 		boolean courseAdmin = cgm.isIdentityCourseAdministrator(identity);
 		
 		boolean canAdd = courseAdmin
 			|| ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID)
 			|| institutionalManager
-			|| ureq.getUserSession().getRoles().isOLATAdmin();
+			|| roles.isOLATAdmin();
 		
 		boolean canAdmin = courseAdmin
 			|| ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID)
 			|| institutionalManager
-			|| ureq.getUserSession().getRoles().isOLATAdmin();
+			|| roles.isOLATAdmin();
 
 		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(canAdd, canAdmin);
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
 		infoDisplayController = new InfoDisplayController(ureq, wControl, config, secCallback, infoResourceable, resSubPath, businessPath);
 		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, CoreSpringFactory.getImpl(InfoMessageFrontendManager.class)));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(course.getCourseEnvironment().getCourseGroupManager().getCourseResource(),
-				RepositoryManager.getInstance(), CoreSpringFactory.getImpl(BusinessGroupService.class)));
+				RepositoryManager.getInstance(), repositoryService, CoreSpringFactory.getImpl(BusinessGroupService.class)));
 		MailFormatter mailFormatter = new SendMailFormatterForCourse(course.getCourseTitle(), businessPath, getTranslator());
 		infoDisplayController.setSendMailFormatter(mailFormatter);
 		listenTo(infoDisplayController);

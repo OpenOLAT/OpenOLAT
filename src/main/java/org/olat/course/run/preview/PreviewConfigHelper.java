@@ -37,7 +37,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Provides a PreviewCourseEnvironment without using the PreviewConfigController and the PreviewSettingsForm.
@@ -51,7 +51,7 @@ public class PreviewConfigHelper {
 
 	public static CourseEnvironment getPreviewCourseEnvironment(boolean isCoach, boolean isCourseAdmin, ICourse course) {
 		//generateEnvironment();
-		final OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		final RepositoryEntry courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		final CourseGroupManager cgm = new PreviewCourseGroupManager(courseResource, new ArrayList<BusinessGroup>(), new ArrayList<BGArea>(), isCoach, isCourseAdmin);
 		final UserNodeAuditManager auditman = new PreviewAuditManager();
 		final AssessmentManager am = new PreviewAssessmentManager();

@@ -21,28 +21,62 @@ package org.olat.group.model;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.core.id.Persistable;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupMembershipViewImpl extends PersistentObject {
+@Entity(name="bgmembershipview")
+@Table(name="o_bs_gp_membership_v")
+public class BusinessGroupMembershipViewImpl implements Persistable {
 
 	private static final long serialVersionUID = -5404538852842562897L;
 	
-	private Long identityKey;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="membership_id", nullable=false, insertable=false, updatable=false)
+	private Long key;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=false)
 	private Date lastModified;
-	private Long ownerGroupKey;
-	private Long participantGroupKey;
-	private Long waitingGroupKey;
-
-	public Long getIdentityKey() {
-		return identityKey;
+	
+	@Column(name="fk_identity_id", nullable=false, insertable=false, updatable=false)
+	private Long identityKey;
+	@Column(name="group_id", nullable=false, insertable=false, updatable=false)
+	private Long groupKey;
+	@Column(name="g_role", nullable=false, insertable=false, updatable=false)
+	private String role;
+	
+	@Override
+	public Long getKey() {
+		return key;
 	}
 
-	public void setIdentityKey(Long identityKey) {
-		this.identityKey = identityKey;
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	public Date getLastModified() {
@@ -52,46 +86,36 @@ public class BusinessGroupMembershipViewImpl extends PersistentObject {
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
+
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
+	}
 	
 	public Long getGroupKey() {
-		if(participantGroupKey != null) {
-			return participantGroupKey;
-		}
-		if(ownerGroupKey != null) {
-			return ownerGroupKey;
-		}
-		return waitingGroupKey;
+		return groupKey;
+	}
+	
+	public void setGroupKey(Long groupKey) {
+		this.groupKey = groupKey;
 	}
 
-	public Long getOwnerGroupKey() {
-		return ownerGroupKey;
+	public String getRole() {
+		return role;
 	}
 
-	public void setOwnerGroupKey(Long ownerGroupKey) {
-		this.ownerGroupKey = ownerGroupKey;
-	}
-
-	public Long getParticipantGroupKey() {
-		return participantGroupKey;
-	}
-
-	public void setParticipantGroupKey(Long participantGroupKey) {
-		this.participantGroupKey = participantGroupKey;
-	}
-
-	public Long getWaitingGroupKey() {
-		return waitingGroupKey;
-	}
-
-	public void setWaitingGroupKey(Long waitingGroupKey) {
-		this.waitingGroupKey = waitingGroupKey;
+	public void setRole(String role) {
+		this.role = role;
 	}
 
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 2901 : getKey().hashCode();
 	}
-
+	
 	/**
 	 * Compares the keys.
 	 * @see java.lang.Object#equals(java.lang.Object)
@@ -105,5 +129,10 @@ public class BusinessGroupMembershipViewImpl extends PersistentObject {
 			return getKey() != null && getKey().equals(bg.getKey());
 		}
 		return false;
+	}
+	
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

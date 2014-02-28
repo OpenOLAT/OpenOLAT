@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -39,10 +40,12 @@ import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.EnrollState;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -97,6 +100,10 @@ public class ACFrontendManager extends BasicManager implements ACService {
 	private ACTransactionManager transactionManager;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -158,16 +165,12 @@ public class ACFrontendManager extends BasicManager implements ACService {
 			return new AccessResult(true);
 		}
 
-		boolean tutor = securityManager.isIdentityInSecurityGroup(forId, group.getOwnerGroup());
-		if(tutor) {
+		List<String> roles = businessGroupRelationDao.getRoles(forId, group);
+		if(roles.contains(GroupRoles.coach.name())) {
 			return new AccessResult(true);
 		}
-		
-		if(group.getPartipiciantGroup() != null) {
-			boolean participant = securityManager.isIdentityInSecurityGroup(forId, group.getPartipiciantGroup());
-			if(participant) {
-				return new AccessResult(true);
-			}
+		if(roles.contains(GroupRoles.participant.name())) {
+			return new AccessResult(true);
 		}
 		
 		OLATResource resource = OLATResourceManager.getInstance().findResourceable(group);
@@ -380,7 +383,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 					reserved = true;
 				}
 				
-				int currentCount = securityManager.countIdentitiesOfSecurityGroup(reloadedGroup.getPartipiciantGroup());
+				int currentCount = businessGroupService.countMembers(reloadedGroup, GroupRoles.participant.name());
 				int reservations = reservationDao.countReservations(resource);
 				if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
 					reservationDao.createReservation(identity, offer.getMethod().getType(), null, resource);
@@ -420,8 +423,8 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		if("CourseModule".equals(resourceType)) {
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
 			if(entry != null) {
-				if(!securityManager.isIdentityInSecurityGroup(identity, entry.getParticipantGroup())) {
-					securityManager.addIdentityToSecurityGroup(identity, entry.getParticipantGroup());
+				if(!repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
+					repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
 				}
 				return true;
 			}
@@ -451,16 +454,16 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		if("CourseModule".equals(resourceType)) {
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
 			if(entry != null) {
-				if(securityManager.isIdentityInSecurityGroup(identity, entry.getParticipantGroup())) {
-					securityManager.removeIdentityFromSecurityGroup(identity, entry.getParticipantGroup());
+				if(repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
+					repositoryEntryRelationDao.removeRole(identity, entry, GroupRoles.participant.name());
 				}
 				return true;
 			}
 		} else if("BusinessGroup".equals(resourceType)) {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
-				if(securityManager.isIdentityInSecurityGroup(identity, group.getPartipiciantGroup())) {
-					securityManager.removeIdentityFromSecurityGroup(identity, group.getPartipiciantGroup());
+				if(businessGroupService.hasRoles(identity, group, GroupRoles.participant.name())) {
+					businessGroupRelationDao.removeRole(identity, group, GroupRoles.participant.name());
 				}
 				return true;
 			}

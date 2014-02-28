@@ -22,25 +22,30 @@ package org.olat.group.manager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
-import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGRepositoryEntryRelation;
-import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryShort;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceImpl;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,81 +58,188 @@ public class BusinessGroupRelationDAO {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private GroupDAO groupDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
-	public void addRelationToResource(BusinessGroup group, OLATResource resource) {
-		BGResourceRelation relation = new BGResourceRelation();
-		relation.setGroup(group);
-		relation.setResource((OLATResourceImpl)resource);
-		dbInstance.getCurrentEntityManager().persist(relation);
+	public void addRelationToResource(BusinessGroup group, RepositoryEntry re) {
+		repositoryEntryRelationDao.createRelation(((BusinessGroupImpl)group).getBaseGroup(), re);
 	}
 	
-	public void deleteRelation(BusinessGroup group, OLATResource resource) {
+	public void addRole(Identity identity, BusinessGroup businessGroup, String role) {
+		Group group = getGroup(businessGroup);
+		groupDao.addMembership(group, identity, role);
+	}
+	
+	public boolean removeRole(Identity identity, BusinessGroup businessGroup, String role) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select rel from ").append(BGResourceRelation.class.getName()).append(" as rel ")
-			.append(" where rel.group.key=:groupKey and rel.resource.key=:resourceKey");
+		sb.append("select membership from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey and membership.identity.key=:identityKey and membership.role=:role");
 
-		EntityManager em = dbInstance.getCurrentEntityManager();
-		List<BGResourceRelation> relations = em.createQuery(sb.toString(), BGResourceRelation.class)
-				.setParameter("groupKey", group.getKey())
-				.setParameter("resourceKey", resource.getKey())
+		 List<GroupMembershipImpl> memberships = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), GroupMembershipImpl.class)
+				.setParameter("businessGroupKey", businessGroup.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", role)
 				.getResultList();
+		 if(memberships.size() > 0) {
+			 dbInstance.getCurrentEntityManager().remove(memberships.get(0)); 
+		 }
+		 return memberships.size() > 0;
+	}
+	
+	public Group getGroup(BusinessGroup businessGroup) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select baseGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" where bgroup.key=:businessGroupKey");
+
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Group.class)
+				.setParameter("businessGroupKey", businessGroup.getKey())
+				.getSingleResult();
+	}
+	
+	public List<String> getRoles(Identity identity, BusinessGroup group) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.role from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey and membership.identity.key=:identityKey");
+
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), String.class)
+				.setParameter("businessGroupKey", group.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
+	public int countRoles(BusinessGroup group, String... role) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(membership) from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey");
 		
-		for(BGResourceRelation relation:relations) {
-			em.remove(relation);
+		List<String> roleList = GroupRoles.toList(role);
+		if(roleList.size() > 0) {
+			sb.append(" and membership.role in (:roles)");
 		}
+		TypedQuery<Number> countQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("businessGroupKey", group.getKey());
+		if(roleList.size() > 0) {
+			countQuery.setParameter("roles", roleList);
+		}		
+		Number count = countQuery.getSingleResult();
+		return count == null ? 0 : count.intValue();
+	}
+	
+	/**
+	 * Match the list of roles with the list of specfified roles
+	 * @param identity
+	 * @param group
+	 * @param roles
+	 * @return
+	 */
+	public boolean hasRole(IdentityRef identity, BusinessGroupRef group, String role) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(membership) from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey and membership.identity.key=:identityKey and membership.role=:role");
+
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("businessGroupKey", group.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", role)
+				.getSingleResult();
+		return count == null ? false : count.intValue() > 0;
+	}
+	
+	public void touchMembership(IdentityRef identity, BusinessGroupRef group) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey and membership.identity.key=:identityKey");
+
+		List<GroupMembershipImpl> memberships = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), GroupMembershipImpl.class)
+				.setParameter("businessGroupKey", group.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+		for(GroupMembershipImpl membership:memberships) {
+			membership.setLastModified(new Date());
+		}
+	}
+	
+	public List<Identity> getMembers(BusinessGroupRef group, String... roles) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.identity from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey and membership.role in (:roles)");
+		
+		List<String> roleList = GroupRoles.toList(roles);
+		List<Identity> members = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Identity.class)
+				.setParameter("businessGroupKey", group.getKey())
+				.setParameter("roles", roleList)
+				.getResultList();
+		return members;
+	}
+	
+	public List<Identity> getMembersOrderByDate(BusinessGroupRef group, String... roles) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.identity from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey and membership.role in (:roles) order by membership.creationDate");
+
+		List<String> roleList = GroupRoles.toList(roles);
+		List<Identity> members = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Identity.class)
+				.setParameter("businessGroupKey", group.getKey())
+				.setParameter("roles", roleList)
+				.getResultList();
+		return members;
+	}
+	
+	public void deleteRelation(BusinessGroup group, RepositoryEntry entry) {
+		repositoryEntryRelationDao.removeRelation(group.getBaseGroup(), entry);
 	}
 	
 	public void deleteRelations(BusinessGroup group) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select rel from ").append(BGResourceRelation.class.getName()).append(" as rel ")
-			.append(" where rel.group.key=:groupKey");
-
-		EntityManager em = dbInstance.getCurrentEntityManager();
-		List<BGResourceRelation> relations = em.createQuery(sb.toString(), BGResourceRelation.class)
-				.setParameter("groupKey", group.getKey())
-				.getResultList();
-		
-		for(BGResourceRelation relation:relations) {
-			em.remove(relation);
-		}
+		repositoryEntryRelationDao.removeNotDefaultRelation(group.getBaseGroup());
 	}
 
-	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey, boolean ownedById, boolean attendeeById,
-			OLATResource resource) {
+	public boolean isIdentityInBusinessGroup(IdentityRef identity, Long groupKey, boolean ownedById, boolean attendeeById,
+			RepositoryEntryRef resource) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" bgi");
-		boolean and = false;
+		sb.append("select count(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" bgi")
+		  .append(" inner join bgi.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as bmember")
+		  .append(" where bmember.identity.key=:identityKey and bmember.role in (:roles)");
 		if(groupKey != null) {
-			and = and(sb, and);
-			sb.append(" bgi.key=:groupKey");
+			sb.append(" and bgi.key=:groupKey");
 		}
-		and(sb, and);
-		sb.append(" (");
+
+		List<String> roles = new ArrayList<>(2);
 		if(ownedById) {
-			sb.append("   bgi.ownerGroup in (")
-			  .append("     select ownerMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerMemberShip ")
-			  .append("       where ownerMemberShip.identity.key=:identityKey")
-			  .append("   )");
+			roles.add(GroupRoles.coach.name());
 		}
 		if(attendeeById) {
-			if(ownedById) {
-				sb.append(" or");
-			}
-			sb.append("   bgi.partipiciantGroup in (")
-			  .append("     select participantMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantMemberShip ")
-			  .append("       where participantMemberShip.identity.key=:identityKey")
-			  .append("   )");
+			roles.add(GroupRoles.participant.name());
 		}
-		  
-		sb.append(" )");
+		
 		if(resource != null) {
-			sb.append(" and bgi in (")
-				.append("   select relation.group from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
+			sb.append(" and exists (")
+				.append("   select relation from repoentrytogroup as relation where relation.group=baseGroup and relation.entry.key=:resourceKey")
 				.append(" )");
 		}
 
-		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
-				.setParameter("identityKey", identity.getKey());
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("roles", roles);
 		if(resource != null) {
 				query.setParameter("resourceKey", resource.getKey());
 		}
@@ -139,102 +251,41 @@ public class BusinessGroupRelationDAO {
 		return count.intValue() > 0;
 	}
 
-	
-	public int countMembersOf(OLATResource resource, boolean owner, boolean attendee) {
-		if(!owner && !attendee) return 0;
-		Number count = createMembersDBQuery(resource, owner, attendee, Number.class)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
-				.getSingleResult();
-		return count.intValue();
-	}
-
-	public List<Identity> getMembersOf(OLATResource resource, boolean owner, boolean attendee) {
-		if(!owner && !attendee) return Collections.emptyList();
-		TypedQuery<Identity> query = createMembersDBQuery(resource, owner, attendee, Identity.class);
-		List<Identity> members = query.getResultList();
-		return members;
-	}
-	
-	private <T> TypedQuery<T> createMembersDBQuery(OLATResource resource, boolean owner, boolean attendee, Class<T> resultClass) {
-		StringBuilder sb = new StringBuilder();
-		if(Identity.class.equals(resultClass)) {
-			sb.append("select distinct identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+	public List<Identity> getMembersOf(RepositoryEntryRef resource, boolean coach, boolean participant) {
+		String[] roles;
+		if(coach && participant) {
+			roles = new String[]{ GroupRoles.coach.name(), GroupRoles.participant.name() };
+		} else if(coach) {
+			roles = new String[]{ GroupRoles.coach.name() };
+		} else if(participant) {
+			roles = new String[]{ GroupRoles.participant.name() };
 		} else {
-			sb.append("select count(distinct identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+			return Collections.emptyList();
 		}
-		sb.append(" inner join sgmi.identity as identity ")
-		  .append(" inner join sgmi.securityGroup as secGroup ")
-		  .append(" where ");
-		
-		if(owner) {
-			sb.append("  secGroup in (")
-		    .append("    select rel1.group.ownerGroup from ").append(BGResourceRelation.class.getName()).append(" as rel1")
-		    .append("      where rel1.resource.key=:resourceKey")
-		    .append("  )");
-		}
-		if(attendee) {
-			if(owner) sb.append(" or ");
-			sb.append("  secGroup in (")
-	      .append("    select rel2.group.partipiciantGroup from ").append(BGResourceRelation.class.getName()).append(" as rel2")
-	      .append("      where rel2.resource.key=:resourceKey")
-	      .append("  )");
-		}  
-		if(Identity.class.equals(resultClass)) {
-			sb.append("order by identity.name");
-		}
-
-		TypedQuery<T> db = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), resultClass);
-		db.setParameter("resourceKey", resource.getKey());
-		return db;
+		return repositoryEntryRelationDao.getMembers(resource, RepositoryEntryRelationType.both, roles);
 	}
 	
 	public int countResources(BusinessGroup group) {
-		if(group == null) return 0;
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(bgcr) from ").append(BGResourceRelation.class.getName()).append(" bgcr where bgcr.group.key=:groupKey");
-		
-		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
-				.setParameter("groupKey", group.getKey())
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
-				.getSingleResult();
-		return count.intValue();
+		return repositoryEntryRelationDao.countRelations(group.getBaseGroup());
 	}
 	
-	public int countResources(List<BusinessGroup> groups) {
-		if(groups == null || groups.isEmpty()) return 0;
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(bgcr) from ").append(BGResourceRelation.class.getName()).append(" bgcr where bgcr.group.key in (:groupKeys)");
-		List<Long> groupKeys = new ArrayList<Long>();
-		for(BusinessGroup group: groups) {
-			groupKeys.add(group.getKey());
-		}
-		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
-				.setParameter("groupKeys", groupKeys)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
-				.getSingleResult();
-		return count.intValue();
-	}
-
-	public List<OLATResource> findResources(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
-		if(groups == null || groups.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct bgcr.resource from ").append(BGResourceRelation.class.getName()).append(" bgcr where bgcr.group.key in (:groupKeys)");
+	public boolean hasResources(List<BusinessGroup> groups) {
+		if(groups == null || groups.isEmpty()) return false;
 		
-		TypedQuery<OLATResource> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), OLATResource.class);
-		query.setFirstResult(firstResult);
-		if(maxResults > 0) {
-			query.setMaxResults(maxResults);
-		}
-		
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Group> baseGroups = new ArrayList<>(groups.size());
 		for(BusinessGroup group:groups) {
-			groupKeys.add(group.getKey());
+			baseGroups.add(group.getBaseGroup());
 		}
-		query.setParameter("groupKeys", groupKeys);
-		return query.getResultList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(rel) from repoentrytogroup as rel")
+		  .append(" where rel.group in (:groups)");
+
+		Number count = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Number.class)
+			.setParameter("groups", baseGroups)
+			.getSingleResult();
+		return count == null ? false : count.intValue() > 0;
 	}
 	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
@@ -243,14 +294,12 @@ public class BusinessGroupRelationDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 			.append(" inner join fetch v.olatResource as ores ")
 			.append(" left join fetch v.lifecycle as lifecycle")
-			.append(" left join fetch v.ownerGroup as ownerGroup ")
-			.append(" left join fetch v.tutorGroup as tutorGroup ")
-			.append(" left join fetch v.participantGroup as participantGroup ")
-			.append(" where ores in (")
-			.append("  select bgcr.resource from ").append(BGResourceRelation.class.getName()).append(" as bgcr where bgcr.group.key in (:groupKeys)")
+			.append(" inner join v.groups as relGroup")
+			.append(" where exists (")
+			.append("   select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi where bgi.baseGroup=relGroup.group and bgi.key in (:groupKeys)")
 			.append(" )");
 
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), RepositoryEntry.class);
@@ -272,8 +321,9 @@ public class BusinessGroupRelationDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select new org.olat.group.model.BGRepositoryEntryShortImpl(v.key, v.displayname) from ").append(RepositoryEntry.class.getName()).append(" as v ")
 			.append(" inner join v.olatResource as ores ")
-			.append(" where ores in (")
-			.append("  select bgcr.resource from ").append(BGResourceRelation.class.getName()).append(" as bgcr where bgcr.group.key in (:groupKeys)")
+			.append(" inner join v.groups as relGroup")
+			.append(" where exists (")
+			.append("   select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi where bgi.baseGroup=relGroup.group and bgi.key in (:groupKeys)")
 			.append(" )");
 
 		TypedQuery<RepositoryEntryShort> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), RepositoryEntryShort.class);
@@ -298,7 +348,7 @@ public class BusinessGroupRelationDAO {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select rel from ").append(BGRepositoryEntryRelation.class.getName()).append(" as rel ")
-			.append(" where rel.groupKey in (:groupKeys)");
+			.append(" where rel.relationId.groupKey in (:groupKeys)");
 
 		TypedQuery<BGRepositoryEntryRelation> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGRepositoryEntryRelation.class);
 
@@ -326,25 +376,7 @@ public class BusinessGroupRelationDAO {
 		return relations;
 	}
 	
-	public List<BGResourceRelation> findRelations(Collection<Long> groupKeys, int firstResult, int maxResults) {
-		if(groupKeys == null || groupKeys.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("select rel from ").append(BGResourceRelation.class.getName()).append(" as rel ")
-			.append(" where rel.group.key in (:groupKeys)");
-
-		TypedQuery<BGResourceRelation> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGResourceRelation.class);
-		query.setFirstResult(firstResult);
-		if(maxResults > 0) {
-			query.setMaxResults(maxResults);
-		}
-		query.setParameter("groupKeys", groupKeys);
-		return query.getResultList();
-	}
-	
-	public List<Long> toGroupKeys(String groupNames, OLATResource resource) {
+	public List<Long> toGroupKeys(String groupNames, RepositoryEntryRef repoEntry) {
 		if(!StringHelper.containsNonWhitespace(groupNames)) return Collections.emptyList();
 		
 		String[] groupNameArr = groupNames.split(",");
@@ -356,21 +388,18 @@ public class BusinessGroupRelationDAO {
 		if(names.isEmpty()) return Collections.emptyList();
 			
 		StringBuilder sb = new StringBuilder();
-		sb.append("select rel.group.key from ").append(BGResourceRelation.class.getName()).append(" as rel ")
-		  .append(" inner join rel.group bgs")
-		  .append(" where rel.resource.key=:resourceKey and bgs.name in (:names)");
+		sb.append("select bgi.key from ").append(BusinessGroupImpl.class.getName()).append(" as bgi ")
+		  .append(" inner join bgi.baseGroup as baseGroup")
+		  .append(" where bgi.name in (:names)")
+		  .append(" and exists (")
+		  .append("   select relation from repoentrytogroup as relation where relation.group=baseGroup and relation.entry.key=:repoEntryKey")
+		  .append(" )");
 
 		List<Long> keys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
-				.setParameter("resourceKey", resource.getKey())
+				.setParameter("repoEntryKey", repoEntry.getKey())
 				.setParameter("names", names)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 		return keys;
-	}
-	
-	private boolean and(StringBuilder sb, boolean and) {
-		if(and) sb.append(" and ");
-		else sb.append(" where ");
-		return true;
 	}
 }

@@ -77,10 +77,11 @@
 <bean id="courseFactory" class="org.olat.course.CourseFactory" depends-on="businessGroupService">
 	<constructor-arg index="0" ref="coordinatorManager" />
 	<constructor-arg index="1" ref="repositoryManager" />
-	<constructor-arg index="2" ref="resourceManager" />
-	<constructor-arg index="3" ref="baseSecurityManager" />
-	<constructor-arg index="4" ref="referenceManager" />
-	<constructor-arg index="5" ref="glossaryManager" />
+	<constructor-arg index="2" ref="repositoryService" />
+	<constructor-arg index="3" ref="resourceManager" />
+	<constructor-arg index="4" ref="baseSecurityManager" />
+	<constructor-arg index="5" ref="referenceManager" />
+	<constructor-arg index="6" ref="glossaryManager" />
 </bean>
 
                 

@@ -27,12 +27,10 @@ package org.olat.repository.controllers;
 
 import java.util.List;
 
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -123,17 +121,16 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 	private CourseCalendarConfigController calCfgCtr;
 	private CourseConfigGlossaryController cglosCtr;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
-	//fxdiff VCRP-1,2: access control of resources
 	private AccessConfigurationController acCtr;
 	private TabbedPane tabbedPane;
 	private RepositoryEntry repositoryEntry;
 	
-  private LockResult courseLockEntry;
+	private LockResult courseLockEntry;
   
-  private CourseConfig initialCourseConfig; //deep clone of the courseConfig
-  private CourseConfig changedCourseConfig; //deep clone of the courseConfig
-  private DialogBoxController yesNoCommitConfigsCtr;
-  private boolean repositoryEntryChanged; //false per default
+	private CourseConfig initialCourseConfig; //deep clone of the courseConfig
+	private CourseConfig changedCourseConfig; //deep clone of the courseConfig
+	private DialogBoxController yesNoCommitConfigsCtr;
+	private boolean repositoryEntryChanged; //false per default
 	private boolean courseConfigChanged;
 	
 	private int efficiencyConfigPos;
@@ -156,12 +153,6 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 		addLoggingResourceable(LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		
 		this.repositoryEntry = entry;
-				
-		SecurityGroup secGroup = repositoryEntry.getOwnerGroup();
-		// needed b/c of lazy initialized set
-		//DBFactory.getInstance().reputInHibernateSessionCache(secGroup);
-		//o_clusterREVIEW
-		secGroup = (SecurityGroup) DBFactory.getInstance().loadObject(secGroup);
 		
 		bgVC = createVelocityContainer("bgrep");
 		bgVC.contextPut("title", entry.getDisplayname());

@@ -27,10 +27,7 @@ package org.olat.course.repository;
 
 import java.io.File;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -44,6 +41,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
@@ -61,6 +59,7 @@ import org.olat.repository.DetailsReadOnlyForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -73,6 +72,8 @@ import org.olat.resource.OLATResourceManager;
  * @author Mike Stock
  */
 public class ImportSharedfolderReferencesController extends BasicController {
+	
+	private static final OLog log = Tracing.createLoggerFor(ImportSharedfolderReferencesController.class);
 	
 	private VelocityContainer importSharedfolderVC;
 	private Link importButton;
@@ -155,60 +156,32 @@ public class ImportSharedfolderReferencesController extends BasicController {
 		SharedFolderManager sfm = SharedFolderManager.getInstance();
 		SharedFolderFileResource resource = sfm.createSharedFolder();
 		if (resource == null) {
-			Tracing.logError("Error adding file resource during repository reference import: " + importExport.getDisplayName(), ImportSharedfolderReferencesController.class);
+			log.error("Error adding file resource during repository reference import: " + importExport.getDisplayName());
 			return null;
 		}
 
 		// unzip contents
 		VFSContainer sfContainer = sfm.getSharedFolder(resource);
 		File fExportedFile = importExport.importGetExportedFile();
-		if (fExportedFile.exists())
+		if (fExportedFile.exists()) {
 			ZipUtil.unzip(new LocalFileImpl(fExportedFile), sfContainer);
-		else
-			Tracing.logWarn("The actual contents of the shared folder were not found in the export.", ImportSharedfolderReferencesController.class);
-		
+		} else {
+			log.warn("The actual contents of the shared folder were not found in the export.");
+		}
 		// create repository entry
 		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry importedRepositoryEntry = rm.createRepositoryEntryInstance(owner.getName());
-		importedRepositoryEntry.setDisplayname(importExport.getDisplayName());
-		importedRepositoryEntry.setResourcename(importExport.getResourceName());
-		importedRepositoryEntry.setDescription(importExport.getDescription());
-		if (keepSoftkey)
-			importedRepositoryEntry.setSoftkey(importExport.getSoftkey());
-		
-		// Set the resource on the repository entry.
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
-		importedRepositoryEntry.setOlatResource(ores);
+		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, importExport.getResourceName(),
+				importExport.getDisplayName(), importExport.getDescription(), ores);
+		
+		if (keepSoftkey) {
+			importedRepositoryEntry.setSoftkey(importExport.getSoftkey());
+		}
+		
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(importedRepositoryEntry);
 		importedRepositoryEntry.setCanLaunch(rh.supportsLaunch(importedRepositoryEntry));
-		
-		// create security group
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
-		// members of this group are always authors also
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-		securityManager.addIdentityToSecurityGroup(owner, newGroup);
-		importedRepositoryEntry.setOwnerGroup(newGroup);
-		
-		//fxdiff VCRP-1,2: access control of resources
-		// security group for tutors / coaches
-		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, importedRepositoryEntry.getOlatResource());
-		// members of this group are always tutors also
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
-		importedRepositoryEntry.setTutorGroup(tutorGroup);
-		
-		// security group for participants
-		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, importedRepositoryEntry.getOlatResource());
-		// members of this group are always participants also
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
-		importedRepositoryEntry.setParticipantGroup(participantGroup);
-		
+
 		rm.saveRepositoryEntry(importedRepositoryEntry);
 		
 		if (!keepSoftkey) {

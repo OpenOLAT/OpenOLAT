@@ -51,8 +51,19 @@ public class HistoryManager extends BasicManager {
 	private static XStream historyWriteStream = XStreamHelper.createXStreamInstance();
 	static {
 		//xstream config
+		historyReadStream.omitField(BusinessGroup.class, "type");
+		historyReadStream.omitField(BusinessGroup.class, "ownerGroup");
+		historyReadStream.omitField(BusinessGroup.class, "partipiciantGroup");
+		historyReadStream.omitField(BusinessGroup.class, "waitingGroup");
 		historyReadStream.omitField(BusinessGroup.class, "groupContext");
+		historyReadStream.omitField(BusinessGroupImpl.class, "type");
+		historyReadStream.omitField(BusinessGroupImpl.class, "ownerGroup");
+		historyReadStream.omitField(BusinessGroupImpl.class, "partipiciantGroup");
+		historyReadStream.omitField(BusinessGroupImpl.class, "waitingGroup");
 		historyReadStream.omitField(BusinessGroupImpl.class, "groupContext");
+		historyReadStream.omitField(RepositoryEntry.class, "ownerGroup");
+		historyReadStream.omitField(RepositoryEntry.class, "participantGroup");
+		historyReadStream.omitField(RepositoryEntry.class, "tutorGroup");
 		historyReadStream.omitField(RepositoryEntry.class, "metaDataElements");
 		historyReadStream.alias("org.olat.core.util.resource.OresHelper$1", Resourceable.class);
 		historyReadStream.alias("org.olat.core.util.resource.OresHelper$2", Resourceable.class);

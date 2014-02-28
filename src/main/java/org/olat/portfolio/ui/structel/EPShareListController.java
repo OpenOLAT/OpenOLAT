@@ -30,6 +30,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Invitation;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -66,6 +67,7 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -91,6 +93,7 @@ public class EPShareListController extends FormBasicController {
 	private final PortfolioStructureMap map;
 	private final EPFrontendManager ePFMgr;
 	private final BaseSecurity securityManager;
+	private final BusinessGroupService businessGroupService;
 	private final UserManager userManager;
 	private final MailManager mailManager;
 	private final String[] targetKeys = EPMapPolicy.Type.names();
@@ -110,6 +113,7 @@ public class EPShareListController extends FormBasicController {
 		securityManager = BaseSecurityManager.getInstance();
 		userManager = UserManager.getInstance();
 		mailManager = CoreSpringFactory.getImpl(MailManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		for(int i=targetKeys.length; i-->0; ) {
 			targetValues[i] = translate("map.share.to." + targetKeys[i]);
 		}
@@ -378,12 +382,8 @@ public class EPShareListController extends FormBasicController {
 			invitation = wrapper.getInvitation();
 		} else if (shareType.equals(EPMapPolicy.Type.group)){
 			List<BusinessGroup> groups = wrapper.getGroups();
-			for (BusinessGroup businessGroup : groups) {
-				List<Identity> partIdents = securityManager.getIdentitiesOfSecurityGroup(businessGroup.getPartipiciantGroup());
-				identitiesToMail.addAll(partIdents);
-				List<Identity> ownerIdents = securityManager.getIdentitiesOfSecurityGroup(businessGroup.getOwnerGroup());
-				identitiesToMail.addAll(ownerIdents);
-			}
+			List<Identity> members = businessGroupService.getMembers(groups, GroupRoles.coach.name(), GroupRoles.participant.name());
+			identitiesToMail.addAll(members);
 		}	else if (shareType.equals(EPMapPolicy.Type.user)){
 			identitiesToMail = wrapper.getIdentities();
 		}

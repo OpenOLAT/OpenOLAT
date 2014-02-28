@@ -54,8 +54,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -66,6 +65,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -338,64 +338,20 @@ public class RepositoryEntriesResource {
 		
 	public static RepositoryEntry importResource(Identity identity, OLATResourceable newResource, String resourcename, String displayname,
 			String softkey, int access) {
-
-		RepositoryEntry addedEntry = RepositoryManager.getInstance().createRepositoryEntryInstance(identity.getName());
-		addedEntry.setCanDownload(false);
-		addedEntry.setCanLaunch(true);
-		if(StringHelper.containsNonWhitespace(resourcename)) {
-			addedEntry.setResourcename(resourcename);
-		}
-		if(StringHelper.containsNonWhitespace(displayname)) {
-			addedEntry.setDisplayname(displayname);
-		}
-		if(StringHelper.containsNonWhitespace(softkey)) {
-			addedEntry.setSoftkey(softkey);
-		}
-		// Do set access for owner at the end, because unfinished course should be
-		// invisible
-		// addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
-		addedEntry.setAccess(0);// Access for nobody
-
-		// Set the resource on the repository entry and save the entry.
-		RepositoryManager rm = RepositoryManager.getInstance();
+		
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResource);
-		addedEntry.setOlatResource(ores);
+		RepositoryEntry addedEntry = repositoryService.create(identity, resourcename, displayname, null, ores);
+		addedEntry.setCanLaunch(true);
 
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		// create security group
-		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
-		// members of this group are always authors also
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-
-		securityManager.addIdentityToSecurityGroup(identity, newGroup);
-		addedEntry.setOwnerGroup(newGroup);
-		
-		//fxdiff VCRP-1,2: access control of resources
-		// security group for tutors / coaches
-		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, addedEntry.getOlatResource());
-		// members of this group are always tutors also
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
-		addedEntry.setTutorGroup(tutorGroup);
-		
-		// security group for participants
-		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, addedEntry.getOlatResource());
-		// members of this group are always participants also
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
-		addedEntry.setParticipantGroup(participantGroup);
-		
-		// Do set access for owner at the end, because unfinished course should be
-		// invisible
+		// Do set access for owner at the end, because unfinished course should be invisible
 		if(access < RepositoryEntry.ACC_OWNERS || access > RepositoryEntry.ACC_USERS_GUESTS) {
 			addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
 		} else {
 			addedEntry.setAccess(access);
 		}
+		
+		RepositoryManager rm = RepositoryManager.getInstance();
 		rm.saveRepositoryEntry(addedEntry);
 		return addedEntry;
 	}
@@ -404,6 +360,7 @@ public class RepositoryEntriesResource {
 	public RepositoryEntryResource getRepositoryEntryResource() {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		return new RepositoryEntryResource(rm, securityManager);
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		return new RepositoryEntryResource(rm, repositoryService, securityManager);
 	}
 }

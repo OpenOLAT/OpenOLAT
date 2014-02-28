@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -61,7 +62,6 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * 
  * @author guretzki
  */
-
 public class ProjectGroupManagerImpl extends BasicManager implements ProjectGroupManager {
 	
 	//////////////////////
@@ -256,7 +256,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				for (final Identity identity : identities) {
-					if (!BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, reloadedProject.getProjectGroup().getPartipiciantGroup())) {
+					if (!bgs.hasRoles(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name())) {
 						BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
 						logAudit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
 					}		
@@ -287,7 +287,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	}
 
 	public boolean isProjectManager(Identity identity, Project project) {
-		return BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getProjectLeaderGroup());
+		return CoreSpringFactory.getImpl(BusinessGroupService.class).hasRoles(identity, project.getProjectGroup(), GroupRoles.coach.name());
 	}
 
 	public boolean isProjectManagerOrAdministrator(UserRequest ureq, CourseEnvironment courseEnv, Project project) {	
@@ -297,7 +297,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	}
 	
 	public boolean isProjectParticipant(Identity identity, Project project) {
-		return BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getProjectParticipantGroup());
+		return CoreSpringFactory.getImpl(BusinessGroupService.class).hasRoles(identity, project.getProjectGroup(), GroupRoles.participant.name());
 	}
 
 	public boolean isProjectCandidate(Identity identity, Project project) {
@@ -319,11 +319,12 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	///////////////////
 
 	private boolean isAccountManager(Identity identity, BusinessGroup businessGroup) {
-		if ( (businessGroup == null) || (businessGroup.getPartipiciantGroup() == null) ) {
+		if (businessGroup == null) {
 			return false;
 		}
-		return    BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, businessGroup.getPartipiciantGroup())
-				   || BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, businessGroup.getOwnerGroup());
+		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		return businessGroupService.hasRoles(identity, businessGroup, GroupRoles.participant.name())
+				   || businessGroupService.hasRoles(identity, businessGroup, GroupRoles.coach.name());
 	}
 
 	@Override

@@ -32,11 +32,14 @@ import javax.persistence.TypedQuery;
 import org.hibernate.ObjectNotFoundException;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.NamedGroupImpl;
 import org.olat.basesecurity.PolicyImpl;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
@@ -71,6 +74,8 @@ import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +100,12 @@ public class EPStructureManager extends BasicManager {
 	private OLATResourceManager resourceManager;
 	private BaseSecurity securityManager;
 	private EPPolicyManager policyManager;
+	@Autowired
+	private GroupDAO groupDao;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntyRelationDao;
 
 	/**
 	 * 
@@ -210,15 +221,12 @@ public class EPStructureManager extends BasicManager {
 		return pStructs;
 	}
 	
-	protected List<PortfolioStructure> getStructureElementsForUser(Identity ident, ElementType... types){
+	protected List<PortfolioStructure> getStructureElementsForUser(IdentityRef ident, ElementType... types){
 		StringBuilder sb = new StringBuilder();
-		sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" stEl");
-		sb.append(" where ownerGroup in ( " )
-			.append("select sgi.key from")
-			.append(" org.olat.basesecurity.SecurityGroupImpl as sgi,") 
-			.append(" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ")
-			.append(" where sgmsi.securityGroup = sgi and sgmsi.identity =:ident")
-			.append(" )");
+		sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" as stEl")
+		  .append(" where exists (select membership from bgroupmember as membership " )
+		  .append("    where stEl.group=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
+		  .append(" )");
 		if(types != null && types.length > 0) {
 			sb.append(" and stEl.class in (");
 			boolean first = true;
@@ -230,11 +238,10 @@ public class EPStructureManager extends BasicManager {
 			sb.append(")");
 		}
 		
-		DBQuery query =	dbInstance.createQuery(sb.toString());
-		query.setEntity("ident", ident);
-		@SuppressWarnings("unchecked")
-		List<PortfolioStructure> pStructs = query.list();
-		return pStructs;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructure.class)
+				.setParameter("identityKey", ident.getKey())
+				.getResultList();
 	}
 	
 	/**
@@ -243,25 +250,21 @@ public class EPStructureManager extends BasicManager {
 	 * @param ores
 	 * @return
 	 */
-	protected boolean isMapOwner(Identity identity, OLATResourceable ores) {
+	protected boolean isMapOwner(IdentityRef identity, OLATResourceable ores) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(stEl) from ").append(EPStructureElement.class.getName()).append(" stEl ")
-			.append(" where stEl.olatResource.resId=:resourceableId")
-			.append(" and stEl.olatResource.resName=:resourceableTypeName")
-			.append(" and stEl.ownerGroup in ( " )
-			.append("  select sgi.key from")
-			.append("  org.olat.basesecurity.SecurityGroupImpl as sgi,") 
-			.append("  org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ")
-			.append("  where sgmsi.securityGroup = sgi and sgmsi.identity =:owner")
-			.append(" )");
+		  .append(" where stEl.olatResource.resId=:resourceableId")
+		  .append(" and stEl.olatResource.resName=:resourceableTypeName")
+		  .append(" and exists (select membership from bgroupmember as membership " )
+		  .append("   where stEl.group=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
+		  .append(" )");
 		
-		DBQuery query =	dbInstance.createQuery(sb.toString());
-		query.setEntity("owner", identity);
-		query.setLong("resourceableId", ores.getResourceableId());
-		query.setString("resourceableTypeName", ores.getResourceableTypeName());
-	
-		Number count = (Number)query.uniqueResult();
-		return count.intValue() == 1;
+		Number count =	dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("resourceableId", ores.getResourceableId())
+				.setParameter("resourceableTypeName", ores.getResourceableTypeName())
+				.getSingleResult();
+		return count == null ? false : count.intValue() > 0;
 	}
 	
 	/**
@@ -274,8 +277,8 @@ public class EPStructureManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(stEl) from ").append(EPStructureElement.class.getName()).append(" stEl ")
 			.append(" inner join stEl.olatResource as oRes ")
-			.append(" where oRes.resId=:resourceableId")
-			.append(" and oRes.resName=:resourceableTypeName")
+			.append(" inner join stEl.group as baseGroup ")
+			.append(" where oRes.resId=:resourceableId and oRes.resName=:resourceableTypeName")
 			.append(" and ( oRes in ( " )
 			.append("  select policy.olatResource from")
 			.append("  ").append(PolicyImpl.class.getName()).append(" as policy, ")
@@ -286,11 +289,8 @@ public class EPStructureManager extends BasicManager {
 			.append("  and (policy.from is null or policy.from<=:date)")
 			.append("  and (policy.to is null or policy.to>=:date)")
 			.append(" )")
-			.append(" or stEl.ownerGroup in ( " )
-			.append("select sgi.key from")
-			.append(" org.olat.basesecurity.SecurityGroupImpl as sgi,") 
-			.append(" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ")
-			.append(" where sgmsi.securityGroup = sgi and sgmsi.identity =:identity")
+			.append(" or exists (select membership from bgroupmember as membership " )
+			.append("   where membership.group=baseGroup and membership.identity.key=:identity")
 			.append(" ))");
 
 		DBQuery query =	dbInstance.createQuery(sb.toString());
@@ -1092,10 +1092,9 @@ public class EPStructureManager extends BasicManager {
 		dbInstance.deleteObject(struct);		
 		if (struct instanceof EPAbstractMap){
 			EPAbstractMap esmap = (EPAbstractMap)struct;
-			SecurityGroup securityGroup = esmap.getOwnerGroup();
-			if (securityGroup!=null) {
-				securityManager.deleteSecurityGroup(securityGroup);
-				resourceManager.deleteOLATResourceable(securityGroup);
+			Group group = esmap.getGroup();
+			if (group != null) {
+				groupDao.removeGroup(group);
 			}
 		}
 		
@@ -1695,8 +1694,8 @@ public class EPStructureManager extends BasicManager {
 		fillStructureElement(el, title, description);
 		
 		//create security group
-		SecurityGroup ownerGroup = createSecurityGroup(el, identity);
-		el.setOwnerGroup(ownerGroup);
+		Group ownerGroup = createBaseGroup(el, identity);
+		el.setGroup(ownerGroup);
 		return el;
 	}
 	
@@ -1706,8 +1705,8 @@ public class EPStructureManager extends BasicManager {
 		fillStructureElement(el, title, description);
 
 		//create security group
-		SecurityGroup ownerGroup = createSecurityGroup(el, identity);
-		el.setOwnerGroup(ownerGroup);
+		Group ownerGroup = createBaseGroup(el, identity);
+		el.setGroup(ownerGroup);
 		
 		return el;
 	}
@@ -1744,13 +1743,13 @@ public class EPStructureManager extends BasicManager {
 		EPStructuredMapTemplate el = new EPStructuredMapTemplate();
 		
 		fillStructureElement(el, title, description);
-		
-		//create security group
-		SecurityGroup ownerGroup = createSecurityGroup(el, identity);
-		el.setOwnerGroup(ownerGroup);
 
 		//create a repository entry with default security settings
-		createRepositoryEntry(identity, ownerGroup, el.getOlatResource(), title);
+		RepositoryEntry re = createRepositoryEntry(identity, el.getOlatResource(), title);
+		dbInstance.commit();
+		
+		Group ownerGroup = repositoryService.getDefaultGroup(re);
+		el.setGroup(ownerGroup);
 		return el;
 	}
 	
@@ -1771,8 +1770,7 @@ public class EPStructureManager extends BasicManager {
 		importEPStructureElementRecursively((EPStructureElement)root, el);
 		
 		//create an empty security group
-		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
-		el.setOwnerGroup(ownerGroup);
+		el.setGroup(groupDao.createGroup());
 		
 		return el;
 	}
@@ -1817,12 +1815,11 @@ public class EPStructureManager extends BasicManager {
 		el.setOlatResource(entry.getOlatResource());
 		
 		//create security group
-		SecurityGroup ownerGroup = entry.getOwnerGroup();
-		if(ownerGroup == null) {
-			ownerGroup = createSecurityGroup(el,identity);
+		Group group = repositoryEntyRelationDao.getDefaultGroup(entry);
+		if(group == null) {
+			group = groupDao.createGroup();
 		}
-		el.setOwnerGroup(ownerGroup);
-		
+		el.setGroup(group);
 		dbInstance.saveObject(el);
 		return el;
 	}
@@ -1836,10 +1833,8 @@ public class EPStructureManager extends BasicManager {
 		if(map instanceof EPStructuredMapTemplate) {
 			EPStructuredMapTemplate mapImpl = (EPStructuredMapTemplate)map;
 			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(mapImpl.getOlatResource(), true);
-			SecurityGroup ownerGroup = re.getOwnerGroup();
-			if (!securityManager.isIdentityInSecurityGroup(author, ownerGroup)) {
-				securityManager.addIdentityToSecurityGroup(author, ownerGroup);
-				dbInstance.updateObject(ownerGroup);
+			if (!repositoryEntyRelationDao.hasRole(author, re, GroupRoles.owner.name())) {
+				repositoryEntyRelationDao.addRole(author, re, GroupRoles.owner.name());
 			}
 		}
 	}
@@ -1853,54 +1848,29 @@ public class EPStructureManager extends BasicManager {
 		if(map instanceof EPStructuredMapTemplate) {
 			EPStructuredMapTemplate mapImpl = (EPStructuredMapTemplate)map;
 			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(mapImpl.getOlatResource(), true);
-			SecurityGroup ownerGroup = re.getOwnerGroup();
-			if (securityManager.isIdentityInSecurityGroup(author, ownerGroup)) {
-				securityManager.removeIdentityFromSecurityGroup(author, ownerGroup);
-				dbInstance.updateObject(ownerGroup);
+			if (repositoryEntyRelationDao.hasRole(author, re, GroupRoles.owner.name())) {
+				repositoryEntyRelationDao.removeRole(author, re, GroupRoles.owner.name());
 			}
 		}
 	}
 	
-	private void createRepositoryEntry(Identity identity, SecurityGroup ownerGroup, OLATResource oresable, String title) {
+	private RepositoryEntry createRepositoryEntry(Identity identity, OLATResource oresable, String title) {
 		// create a repository entry
-		RepositoryEntry addedEntry = repositoryManager.createRepositoryEntryInstance(identity.getName());
-		addedEntry.setCanDownload(false);
+		RepositoryEntry addedEntry = repositoryService.create(identity, "-", title, null, oresable);
 		addedEntry.setCanLaunch(true);
-		addedEntry.setDisplayname(title);
-		addedEntry.setResourcename("-");
 		// Do set access for owner at the end, because unfinished course should be invisible
 		addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
-		
-		if(ownerGroup == null) {
-			//create security group
-			ownerGroup = securityManager.createAndPersistSecurityGroup();
-			//create olat resource for the security group
-			OLATResource ownerGroupResource =  resourceManager.createOLATResourceInstance(ownerGroup);
-			resourceManager.saveOLATResource(ownerGroupResource);
-			// member of this group may modify member's membership
-			securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_ACCESS, ownerGroup);
-			// members of this group are always authors also
-			securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-			securityManager.addIdentityToSecurityGroup(identity, ownerGroup);
-		}
-		addedEntry.setOwnerGroup(ownerGroup);
 
 		// Set the resource on the repository entry and save the entry.
 		// bind resource and repository entry
-		addedEntry.setOlatResource(oresable);
-		resourceManager.saveOLATResource(oresable);
 		repositoryManager.saveRepositoryEntry(addedEntry);
+		return addedEntry;
 	}
 	
-	private SecurityGroup createSecurityGroup(EPAbstractMap map, Identity author) {
+	private Group createBaseGroup(EPAbstractMap map, Identity author) {
 		//create security group
-		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
-		//create olat resource for the security group
-		OLATResource ownerGroupResource =  resourceManager.createOLATResourceInstance(ownerGroup);
-		resourceManager.saveOLATResource(ownerGroupResource);
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicyWithResource(ownerGroup, Constants.PERMISSION_ACCESS, map.getOlatResource());
-		securityManager.addIdentityToSecurityGroup(author, ownerGroup);
+		Group ownerGroup = groupDao.createGroup();
+		groupDao.addMembership(ownerGroup, author, GroupRoles.owner.name());
 		return ownerGroup;
 	}
 

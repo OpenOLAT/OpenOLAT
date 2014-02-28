@@ -19,7 +19,7 @@
  */
 package org.olat.portfolio.model.structel;
 
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Group;
 
 /**
  * 
@@ -34,30 +34,17 @@ public abstract class EPAbstractMap extends EPStructureElement implements Portfo
 
 	private static final long serialVersionUID = 3295737167134638317L;
 	
-	/**
-	 * @uml.property  name="ownerGroup"
-	 */
-	transient private SecurityGroup ownerGroup;
+	private Group group;
 
-
-	/**
-	 * Getter of the property <tt>ownerGroup</tt>
-	 * @return  Returns the ownerGroup.
-	 * @uml.property  name="ownerGroup"
-	 */
-	public SecurityGroup getOwnerGroup() {
-		return ownerGroup;
+	public Group getGroup() {
+		return group;
 	}
 
-	/**
-	 * Setter of the property <tt>ownerGroup</tt>
-	 * @param ownerGroup  The ownerGroup to set.
-	 * @uml.property  name="ownerGroup"
-	 */
-	public void setOwnerGroup(SecurityGroup ownerGroup) {
-		this.ownerGroup = ownerGroup;
+	public void setGroup(Group group) {
+		this.group = group;
 	}
 	
+	@Override
 	public String getIcon(){
 		return "b_ep_map_icon";
 	}

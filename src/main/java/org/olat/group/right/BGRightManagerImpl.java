@@ -32,10 +32,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Policy;
-import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.Grant;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -54,7 +56,9 @@ import org.springframework.stereotype.Service;
 public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 
 	@Autowired
-	private BaseSecurity securityManager;
+	private DB dbInstance;
+	@Autowired
+	private GroupDAO groupDao;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDAO;
 
@@ -64,12 +68,13 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	 */
 	@Override
 	public void addBGRight(String bgRight, BusinessGroup rightGroup, BGRightsRole roles) {
-		List<OLATResource> resources = businessGroupRelationDAO.findResources(Collections.singletonList(rightGroup), 0, -1);
+		Group baseGroup = rightGroup.getBaseGroup();
+		List<OLATResource> resources = findResources(baseGroup);
 		for(OLATResource resource:resources) {
 			if(roles == BGRightsRole.participant) {
-				securityManager.createAndPersistPolicy(rightGroup.getPartipiciantGroup(), bgRight, resource);
+				groupDao.addGrant(baseGroup, GroupRoles.participant.name(), bgRight, resource);
 			} else if(roles == BGRightsRole.tutor) {
-				securityManager.createAndPersistPolicy(rightGroup.getOwnerGroup(), bgRight, resource);
+				groupDao.addGrant(baseGroup, GroupRoles.coach.name(), bgRight, resource);
 			}
 		}
 	}
@@ -77,9 +82,9 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	@Override
 	public void addBGRight(String bgRight, BusinessGroup rightGroup, OLATResource resource, BGRightsRole roles) {
 		if(roles == BGRightsRole.participant) {
-			securityManager.createAndPersistPolicy(rightGroup.getPartipiciantGroup(), bgRight, resource);
+			groupDao.addGrant(rightGroup.getBaseGroup(), GroupRoles.participant.name(), bgRight, resource);
 		} else if(roles == BGRightsRole.tutor) {
-			securityManager.createAndPersistPolicy(rightGroup.getOwnerGroup(), bgRight, resource);
+			groupDao.addGrant(rightGroup.getBaseGroup(), GroupRoles.coach.name(), bgRight, resource);
 		}
 	}
 
@@ -90,34 +95,32 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	@Override
 	public void removeBGRight(String bgRight, BusinessGroup rightGroup, OLATResource resource, BGRightsRole roles) {
 		if(roles == BGRightsRole.participant) {
-			securityManager.deletePolicy(rightGroup.getPartipiciantGroup(), bgRight, resource);
+			groupDao.removeGrant(rightGroup.getBaseGroup(), GroupRoles.participant.name(), bgRight, resource);
 		} else if (roles == BGRightsRole.tutor) {
-			securityManager.deletePolicy(rightGroup.getOwnerGroup(), bgRight, resource);
+			groupDao.removeGrant(rightGroup.getBaseGroup(), GroupRoles.coach.name(), bgRight, resource);
 		}
 	}
 	
 	@Override
 	public void removeBGRights(BusinessGroup rightGroup, OLATResource resource, BGRightsRole role) {
 		if(role == BGRightsRole.tutor) {
-			securityManager.deletePolicies(Collections.singletonList(rightGroup.getOwnerGroup()), Collections.singletonList(resource));
+			groupDao.removeGrants(rightGroup.getBaseGroup(), GroupRoles.coach.name(), resource);
 		} else if(role == BGRightsRole.participant) {
-			securityManager.deletePolicies(Collections.singletonList(rightGroup.getPartipiciantGroup()), Collections.singletonList(resource));
+			groupDao.removeGrants(rightGroup.getBaseGroup(), GroupRoles.participant.name(), resource);
 		}
 	}
 
 	@Override
 	public void removeBGRights(Collection<BusinessGroup> groups, OLATResource resource) {
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>(groups.size() * 2);
 		for(BusinessGroup group:groups) {
-			secGroups.add(group.getOwnerGroup());
-			secGroups.add(group.getPartipiciantGroup());
+			groupDao.removeGrants(group.getBaseGroup(), GroupRoles.coach.name(), resource);
+			groupDao.removeGrants(group.getBaseGroup(), GroupRoles.participant.name(), resource);
 		}
-		securityManager.deletePolicies(secGroups, Collections.singletonList(resource));
 	}
 
 	@Override
-	public boolean hasBGRight(String bgRight, Identity identity, OLATResource resource) {
-		return securityManager.isIdentityPermittedOnResourceable(identity, bgRight, resource);
+	public boolean hasBGRight(String bgRight, IdentityRef identity, OLATResource resource) {
+		return groupDao.hasGrant(identity, bgRight, resource);
 	}
 
 	/**
@@ -125,52 +128,68 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	 */
 	@Override
 	public List<String> findBGRights(BusinessGroup group, BGRightsRole role) {
-		SecurityGroup secGroup = null;
+		GroupRoles groupRole = null;
 		if(role == BGRightsRole.tutor) {
-			secGroup = group.getOwnerGroup();
+			groupRole = GroupRoles.coach;
 		} else if(role == BGRightsRole.participant) {
-			secGroup = group.getPartipiciantGroup();
+			groupRole = GroupRoles.participant;
 		} else {
 			return Collections.emptyList();
 		}
 		
-		List<Policy> results = securityManager.getPoliciesOfSecurityGroup(secGroup);
+		List<Grant> grants = groupDao.getGrants(group.getBaseGroup(), groupRole.name());
 		// filter all business group rights permissions. group right permissions
 		// start with bgr.
 		List<String> rights = new ArrayList<String>();
-		for (Policy rightPolicy:results) {
-			String right = rightPolicy.getPermission();
-			if (right.indexOf(BG_RIGHT_PREFIX) == 0) rights.add(right);
+		for (Grant grant:grants) {
+			String right = grant.getPermission();
+			if (right.indexOf(BG_RIGHT_PREFIX) == 0) {
+				rights.add(right);
+			}
 		}
 		return rights;
 	}
 	
 	@Override
 	public List<BGRights> findBGRights(List<BusinessGroup> groups, OLATResource resource) {
-		Map<SecurityGroup,BusinessGroup> secToGroupMap = new HashMap<SecurityGroup,BusinessGroup>();
-		List<SecurityGroup> tutorSecGroups = new ArrayList<SecurityGroup>(groups.size());
-		List<SecurityGroup> participantSecGroups = new ArrayList<SecurityGroup>(groups.size());
+		Map<Group,BusinessGroup> secToGroupMap = new HashMap<Group,BusinessGroup>();
+		List<Group> baseGroups = new ArrayList<>(groups.size());
 		for(BusinessGroup group:groups) {
-			tutorSecGroups.add(group.getOwnerGroup());
-			secToGroupMap.put(group.getOwnerGroup(), group);
-			participantSecGroups.add(group.getPartipiciantGroup());
-			secToGroupMap.put(group.getPartipiciantGroup(), group);
+			baseGroups.add(group.getBaseGroup());
+			secToGroupMap.put(group.getBaseGroup(), group);
 		}
 		List<BGRights> rights = new ArrayList<BGRights>();
-		List<Policy> tutorPolicies = securityManager.getPoliciesOfSecurityGroup(tutorSecGroups, resource);
-		rights.addAll(findBGRights(tutorPolicies, secToGroupMap, resource, BGRightsRole.tutor));
-		List<Policy> participantPolicies = securityManager.getPoliciesOfSecurityGroup(participantSecGroups, resource);
-		rights.addAll(findBGRights(participantPolicies, secToGroupMap, resource, BGRightsRole.participant));
+		List<Grant> grants = groupDao.getGrants(baseGroups, resource);
+		rights.addAll(findBGRights(grants, secToGroupMap, resource));
 		return rights;
 	}
 	
-	private List<BGRights> findBGRights(List<Policy> policies, Map<SecurityGroup,BusinessGroup> secToGroupMap, OLATResource resource, BGRightsRole role) {
+	private List<OLATResource> findResources(Group group) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" select resource from repoentrytogroup as rel")
+		  .append(" inner join rel.entry as entry")
+		  .append(" inner join entry.olatResource as resource")
+		  .append(" where rel.group.key=:groupKey");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), OLATResource.class)
+			.setParameter("groupKey", group.getKey())
+			.getResultList();
+	}
+	
+	private List<BGRights> findBGRights(List<Grant> grants, Map<Group,BusinessGroup> secToGroupMap, OLATResource resource) {
 		List<BGRights> rights = new ArrayList<BGRights>();
 		Map<BGRights,BGRights> rightsMap = new HashMap<BGRights,BGRights>();
-		for (Policy policy:policies) {
-			String right = policy.getPermission();
-			if (right.indexOf(BG_RIGHT_PREFIX) == 0 && policy.getOlatResource().equals(resource)) {
-				BusinessGroup group = secToGroupMap.get(policy.getSecurityGroup());
+		for (Grant grant:grants) {
+			String right = grant.getPermission();
+			if (right.indexOf(BG_RIGHT_PREFIX) == 0 && grant.getResource().equals(resource)) {
+				BusinessGroup group = secToGroupMap.get(grant.getGroup());
+				
+				BGRightsRole role = null;
+				if(GroupRoles.participant.name().equals(grant.getRole())) {
+					role = BGRightsRole.participant;
+				} else if(GroupRoles.coach.name().equals(grant.getRole())) {
+					role = BGRightsRole.tutor;
+				}
 				BGRights wrapper = new BGRightsImpl(group.getKey(), role);
 				if(rightsMap.containsKey(wrapper)) {
 					wrapper = rightsMap.get(wrapper);
@@ -189,17 +208,16 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	public boolean hasBGRight(List<BusinessGroup> groups) {
 		if(groups == null || groups.isEmpty()) return false;
 		
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>(groups.size());
+		List<Group> secGroups = new ArrayList<>(groups.size());
 		for(BusinessGroup group:groups) {
-			secGroups.add(group.getOwnerGroup());
-			secGroups.add(group.getPartipiciantGroup());
+			secGroups.add(group.getBaseGroup());
 		}
 		
-		List<Policy> results = securityManager.getPoliciesOfSecurityGroup(secGroups);
+		List<Grant> grants = groupDao.getGrants(secGroups);
 		// filter all business group rights permissions. group right permissions
 		// start with bgr.
-		for (Policy rightPolicy:results) {
-			String right = rightPolicy.getPermission();
+		for (Grant grant:grants) {
+			String right = grant.getPermission();
 			if (right.indexOf(BG_RIGHT_PREFIX) == 0) {
 				return true;
 			}

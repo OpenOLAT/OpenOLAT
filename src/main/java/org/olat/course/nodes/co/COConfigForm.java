@@ -451,7 +451,7 @@ public class COConfigForm extends FormBasicController {
 		List<Long> groupKeys = (List<Long>)config.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
 		if(groupKeys == null) {
 			groupInitVal = (String)config.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
-			groupKeys = businessGroupService.toGroupKeys(groupInitVal, cev.getCourseGroupManager().getCourseResource());
+			groupKeys = businessGroupService.toGroupKeys(groupInitVal, cev.getCourseGroupManager().getCourseEntry());
 		}
 		groupInitVal = getGroupNames(groupKeys);
 
@@ -461,7 +461,7 @@ public class COConfigForm extends FormBasicController {
 		chooseGroupsLink = uifactory.addFormLink("choose", groupChooseSubContainer,"b_form_groupchooser");
 		createGroupsLink = uifactory.addFormLink("create", groupChooseSubContainer,"b_form_groupchooser");	
 
-		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
+		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 		
 		// areas
 		areaChooseSubContainer = FormLayoutContainer.createHorizontalFormLayout(
@@ -552,7 +552,7 @@ public class COConfigForm extends FormBasicController {
 			easyGroupList.setUserObject(null);
 		}
 		
-		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
+		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 		chooseGroupsLink.setVisible(wg &&  hasGroups);
 		createGroupsLink.setVisible(wg && !hasGroups && !managedGroups);
 		

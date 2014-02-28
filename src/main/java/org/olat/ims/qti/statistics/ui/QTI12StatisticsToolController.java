@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Group;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -87,12 +87,12 @@ public class QTI12StatisticsToolController extends BasicController implements St
 		
 		searchParams = new QTIStatisticSearchParams(courseRes.getResourceableId(), courseNode.getIdent());
 		if(asOptions.getGroup() != null) {
-			List<SecurityGroup> secGroups = Collections.singletonList(asOptions.getGroup().getPartipiciantGroup());
-			searchParams.setLimitToSecGroups(secGroups);
+			List<Group> bGroups = Collections.singletonList(asOptions.getGroup().getBaseGroup());
+			searchParams.setLimitToGroups(bGroups);
 		} else if(asOptions.getAlternativeToIdentities() != null) {
 			AlternativeToIdentities alt = asOptions.getAlternativeToIdentities();
 			searchParams.setMayViewAllUsersAssessments(alt.isMayViewAllUsersAssessments());
-			searchParams.setLimitToSecGroups(alt.getSecGroups());
+			searchParams.setLimitToGroups(alt.getGroups());
 		}
 		
 		VelocityContainer mainVC = createVelocityContainer("stats_button");

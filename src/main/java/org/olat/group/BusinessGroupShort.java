@@ -27,9 +27,7 @@ import org.olat.core.id.OLATResourceable;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface BusinessGroupShort extends OLATResourceable {
-	
-	public Long getKey();
+public interface BusinessGroupShort extends BusinessGroupRef, OLATResourceable {
 	
 	public String getName();
 	

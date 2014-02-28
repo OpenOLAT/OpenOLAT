@@ -31,13 +31,16 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACMethodManager;
@@ -73,9 +76,13 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private ACMethodManager acMethodManager;
 	@Autowired
@@ -135,7 +142,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//is id a participant?
-		boolean participant = securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup());
+		boolean participant = businessGroupRelationDao.hasRole(id, group, GroupRoles.participant.name());
 		Assert.assertTrue(participant);
 	}
 	
@@ -149,8 +156,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
-		securityManager.addIdentityToSecurityGroup(id1, group.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
 		acService.save(offer);	
@@ -166,9 +173,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//is id a waiting?
-		boolean participant = securityManager.isIdentityInSecurityGroup(id3, group.getPartipiciantGroup());
+		boolean participant = businessGroupRelationDao.hasRole(id3, group, GroupRoles.participant.name());
 		Assert.assertFalse(participant);
-		boolean waiting = securityManager.isIdentityInSecurityGroup(id3, group.getWaitingGroup());
+		boolean waiting = businessGroupRelationDao.hasRole(id3, group, GroupRoles.waiting.name());
 		Assert.assertFalse(waiting);
 	}
 	
@@ -194,9 +201,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//is id a waiting?
-		boolean participant = securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup());
+		boolean participant = businessGroupRelationDao.hasRole(id, group, GroupRoles.participant.name());
 		Assert.assertTrue(participant);
-		boolean waiting = securityManager.isIdentityInSecurityGroup(id, group.getWaitingGroup());
+		boolean waiting = businessGroupRelationDao.hasRole(id, group, GroupRoles.waiting.name());
 		Assert.assertFalse(waiting);
 	}
 	
@@ -210,8 +217,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), true, false, null);
-		securityManager.addIdentityToSecurityGroup(id1, group.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
 		acService.save(offer);	
@@ -227,9 +234,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//is id a waiting?
-		boolean participant = securityManager.isIdentityInSecurityGroup(id3, group.getPartipiciantGroup());
+		boolean participant = businessGroupRelationDao.hasRole(id3, group, GroupRoles.participant.name());
 		Assert.assertFalse(participant);
-		boolean waiting = securityManager.isIdentityInSecurityGroup(id3, group.getWaitingGroup());
+		boolean waiting = businessGroupRelationDao.hasRole(id3, group, GroupRoles.waiting.name());
 		Assert.assertTrue(waiting);
 	}
 	
@@ -266,8 +273,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//admin fill the group
-		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//id1 finish the process
@@ -277,9 +284,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//is id a waiting?
-		boolean participant = securityManager.isIdentityInSecurityGroup(id1, group.getPartipiciantGroup());
+		boolean participant = businessGroupRelationDao.hasRole(id1, group, GroupRoles.participant.name());
 		Assert.assertTrue(participant);
-		boolean waiting = securityManager.isIdentityInSecurityGroup(id1, group.getWaitingGroup());
+		boolean waiting = businessGroupRelationDao.hasRole(id1, group, GroupRoles.waiting.name());
 		Assert.assertFalse(waiting);
 		
 		if(!enabled) {
@@ -310,8 +317,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//admin fill the group
-		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
 		//id1 try to reserve a place before the payment process
@@ -331,14 +338,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.saveObject(r);
 
 		// now make a repository entry for this resource
-		RepositoryEntry re = repositoryManager.createRepositoryEntryInstance("Florian Gnägi", "Access controlled by OLAT ", "Description");
-		re.setDisplayname("JunitRE" + UUID.randomUUID().toString().replace("-", ""));
-		re.setOlatResource(r);
+		RepositoryEntry re = repositoryService.create("Florian Gnägi", "Access controlled by OLAT ",
+				"JunitRE" + UUID.randomUUID().toString().replace("-", ""), "Description", r);
 		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
-
-		repositoryManager.createParticipantSecurityGroup(re, false);
-		repositoryManager.createTutorSecurityGroup(re, false);
-		repositoryManager.createOwnerSecurityGroup(re);
 		repositoryManager.saveRepositoryEntry(re);
 		dbInstance.commitAndCloseSession();
 		return re;

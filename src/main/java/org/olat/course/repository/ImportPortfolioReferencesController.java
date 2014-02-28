@@ -27,10 +27,6 @@ package org.olat.course.repository;
 
 import java.io.File;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -51,13 +47,13 @@ import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPXStreamHandler;
-import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.DetailsReadOnlyForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.RepositorySearchController;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -180,15 +176,16 @@ public class ImportPortfolioReferencesController extends BasicController {
 			return null;
 		}
 		
-		EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
-		PortfolioStructure map = ePFMgr.importPortfolioMapTemplate(structure, owner);
-
+		
 		// create repository entry
 		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry importedRepositoryEntry = rm.createRepositoryEntryInstance(owner.getName());
-		importedRepositoryEntry.setDisplayname(importExport.getDisplayName());
-		importedRepositoryEntry.setResourcename(importExport.getResourceName());
-		importedRepositoryEntry.setDescription(importExport.getDescription());
+		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		
+		PortfolioStructure map = ePFMgr.importPortfolioMapTemplate(structure, owner);
+		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(map.getOlatResource());
+		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, importExport.getResourceName(),
+				importExport.getDisplayName(), importExport.getDescription(), ores);
 		if (keepSoftkey) {
 			String theSoftKey = importExport.getSoftkey();
 			if (rm.lookupRepositoryEntryBySoftkey(theSoftKey, false) != null) {
@@ -205,46 +202,11 @@ public class ImportPortfolioReferencesController extends BasicController {
 			importedRepositoryEntry.setSoftkey(importExport.getSoftkey());
 		}
 
-		// Set the resource on the repository entry.
-		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(map.getOlatResource());
-		importedRepositoryEntry.setOlatResource(ores);
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(importedRepositoryEntry);
 		importedRepositoryEntry.setCanLaunch(rh.supportsLaunch(importedRepositoryEntry));
-
-		// create security group
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		SecurityGroup newGroup;
-		if(map instanceof EPStructuredMapTemplate) {
-			newGroup = ((EPStructuredMapTemplate)map).getOwnerGroup();
-		} else {
-			newGroup = securityManager.createAndPersistSecurityGroup();
-		}
-
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
-		// members of this group are always authors also
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-		securityManager.addIdentityToSecurityGroup(owner, newGroup);
-		importedRepositoryEntry.setOwnerGroup(newGroup);
 		
-		//fxdiff VCRP-1,2: access control of resources
-		// security group for tutors / coaches
-		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, importedRepositoryEntry.getOlatResource());
-		// members of this group are always tutors also
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
-		importedRepositoryEntry.setTutorGroup(tutorGroup);
+		//map.setGroup();
 		
-		// security group for participants
-		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, importedRepositoryEntry.getOlatResource());
-		// members of this group are always participants also
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
-		importedRepositoryEntry.setParticipantGroup(participantGroup);
-		
-		rm.saveRepositoryEntry(importedRepositoryEntry);
 
 		if (!keepSoftkey) {
 			setReference(importedRepositoryEntry, map, node);

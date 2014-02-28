@@ -59,6 +59,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -67,6 +68,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.ObjectFactory;
@@ -90,6 +92,8 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private DB dbInstance;
 
@@ -133,7 +137,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetEntry() throws IOException, URISyntaxException {
-		RepositoryEntry re = createRepository("Test GET repo entry");
+		RepositoryEntry re = createRepository("Rei Ayanami", "Test GET repo entry");
 
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
@@ -150,7 +154,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetEntry_managed() throws IOException, URISyntaxException {
-		RepositoryEntry re = createRepository("Test GET repo entry");
+		RepositoryEntry re = createRepository("Rei Ayanami", "Test GET repo entry");
 		re.setManagedFlagsString("all");
 		re = dbInstance.getCurrentEntityManager().merge(re);
 		dbInstance.commitAndCloseSession();
@@ -300,7 +304,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Long key = vo.getKey();
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(key);
 		assertNotNull(re);
-		assertNotNull(re.getOwnerGroup());
 		assertNotNull(re.getOlatResource());
 		assertEquals("CP demo", re.getDisplayname());
 		assertEquals(RepositoryEntry.ACC_USERS, re.getAccess());
@@ -336,7 +339,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Long key = vo.getKey();
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(key);
 		assertNotNull(re);
-		assertNotNull(re.getOwnerGroup());
 		assertNotNull(re.getOlatResource());
 		assertEquals("QTI demo", re.getDisplayname());
 		log.info(re.getOlatResource().getResourceableTypeName());
@@ -372,7 +374,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Long key = vo.getKey();
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(key);
 		assertNotNull(re);
-		assertNotNull(re.getOwnerGroup());
 		assertNotNull(re.getOlatResource());
 		assertEquals("Questionnaire demo", re.getDisplayname());
 		log.info(re.getOlatResource().getResourceableTypeName());
@@ -407,7 +408,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Long key = vo.getKey();
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(key);
 		assertNotNull(re);
-		assertNotNull(re.getOwnerGroup());
 		assertNotNull(re.getOlatResource());
 		assertEquals("Wiki demo", re.getDisplayname());
 		log.info(re.getOlatResource().getResourceableTypeName());
@@ -443,7 +443,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Long key = vo.getKey();
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(key);
 		assertNotNull(re);
-		assertNotNull(re.getOwnerGroup());
 		assertNotNull(re.getOlatResource());
 		assertEquals("Blog demo", re.getDisplayname());
 		log.info(re.getOlatResource().getResourceableTypeName());
@@ -470,7 +469,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		List<UserVO> users = parseUserArray(response.getEntity());
 		Assert.assertNotNull(users);
-		Assert.assertEquals(3, users.size());//our 2 + administrator
+		Assert.assertEquals(2, users.size());//our 2
 		
 		int found = 0;
 		for(UserVO user:users) {
@@ -507,9 +506,9 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(re.getOwnerGroup());
+		List<Identity> owners = repositoryService.getMembers(re, GroupRoles.owner.name());
 		Assert.assertNotNull(owners);
-		Assert.assertEquals(2, owners.size());
+		Assert.assertEquals(1, owners.size());
 		Assert.assertTrue(owners.contains(owner));
 	}
 	
@@ -533,9 +532,9 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(re.getOwnerGroup());
+		List<Identity> owners = repositoryService.getMembers(re, GroupRoles.owner.name());
 		Assert.assertNotNull(owners);
-		Assert.assertEquals(1, owners.size());//administrator
+		Assert.assertEquals(0, owners.size());
 		Assert.assertFalse(owners.contains(owner));
 	}
 	
@@ -597,7 +596,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> coaches = securityManager.getIdentitiesOfSecurityGroup(re.getTutorGroup());
+		List<Identity> coaches = repositoryService.getMembers(re, GroupRoles.coach.name());
 		Assert.assertNotNull(coaches);
 		Assert.assertEquals(1, coaches.size());
 		Assert.assertTrue(coaches.contains(coach));
@@ -623,7 +622,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> coaches = securityManager.getIdentitiesOfSecurityGroup(re.getTutorGroup());
+		List<Identity> coaches = repositoryService.getMembers(re, GroupRoles.coach.name());
 		Assert.assertNotNull(coaches);
 		Assert.assertTrue(coaches.isEmpty());
 		Assert.assertFalse(coaches.contains(coach));
@@ -685,7 +684,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> participants = securityManager.getIdentitiesOfSecurityGroup(re.getParticipantGroup());
+		List<Identity> participants = repositoryService.getMembers(re, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(1, participants.size());
 		Assert.assertTrue(participants.contains(participant));
@@ -712,7 +711,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> participatns = securityManager.getIdentitiesOfSecurityGroup(re.getParticipantGroup());
+		List<Identity> participatns = repositoryService.getMembers(re, GroupRoles.participant.name());
 		Assert.assertNotNull(participatns);
 		Assert.assertTrue(participatns.isEmpty());
 		Assert.assertFalse(participatns.contains(participant));
@@ -738,7 +737,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	private RepositoryEntry createRepository(String name) {
+	private RepositoryEntry createRepository(String owner, String name) {
 		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 		
@@ -746,11 +745,8 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().saveObject(r);
 		DBFactory.getInstance().intermediateCommit();
 
-		RepositoryEntry d = RepositoryManager.getInstance().createRepositoryEntryInstance("Stéphane Rossé", name, "Repo entry");
-		d.setOlatResource(r);
-		d.setDisplayname(name);
-		DBFactory.getInstance().saveObject(d);
-		DBFactory.getInstance().intermediateCommit();
+		RepositoryEntry d = repositoryService.create(name, "-", name, "Repo entry", r);
+		DBFactory.getInstance().commit();
 		return d;
 	}
 }

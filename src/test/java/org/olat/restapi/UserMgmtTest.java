@@ -64,6 +64,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -87,6 +88,7 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
@@ -94,6 +96,7 @@ import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.modules.fo.restapi.MessageVOes;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.ErrorVO;
@@ -136,11 +139,15 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 	
 	@Autowired
-	DB dbInstance;
+	private DB dbInstance;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private UserManager userManager;
 	
@@ -182,9 +189,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		dbInstance.saveObject(course);
 		dbInstance.intermediateCommit();
 		
-		//create learn group
-    BaseSecurity secm = BaseSecurityManager.getInstance();
-		
+		//create learn group	
     // 1) context one: learning groups
     RepositoryEntry c1 = JunitTestHelper.createAndPersistRepositoryEntry();
     // create groups without waiting list
@@ -192,11 +197,11 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     g1 = businessGroupService.createBusinessGroup(null, "user-rest-g1", null, g1externalId, "all", 0, 10, false, false, c1);
     g2 = businessGroupService.createBusinessGroup(null, "user-rest-g2", null, 0, 10, false, false, c1);
     // members g1
-    secm.addIdentityToSecurityGroup(id1, g1.getOwnerGroup());
-    secm.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
+    businessGroupRelationDao.addRole(id1, g1, GroupRoles.coach.name());
+    businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
     // members g2
-    secm.addIdentityToSecurityGroup(id2, g2.getOwnerGroup());
-    secm.addIdentityToSecurityGroup(id1, g2.getPartipiciantGroup());
+    businessGroupRelationDao.addRole(id2, g2, GroupRoles.coach.name());
+    businessGroupRelationDao.addRole(id1, g2, GroupRoles.participant.name());
 
     // 2) context two: right groups
     RepositoryEntry c2 = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -204,9 +209,9 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     g3ExternalId = UUID.randomUUID().toString();
     g3 = businessGroupService.createBusinessGroup(null, "user-rest-g3", null, g3ExternalId, "all", -1, -1, false, false, c2);
     g4 = businessGroupService.createBusinessGroup(null, "user-rest-g4", null, -1, -1, false, false, c2);
-    // members
-    secm.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
-    secm.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());
+		// members
+		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, g4, GroupRoles.participant.name());
 		dbInstance.closeSession();
 		
 		//add some collaboration tools
@@ -236,10 +241,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//prepare some courses
 		RepositoryEntry entry = JunitTestHelper.deployDemoCourse();
-		if(entry.getParticipantGroup() == null) {
-			assertTrue(false);
-		} else if (!secm.isIdentityInSecurityGroup(id1, entry.getParticipantGroup())){
-	    secm.addIdentityToSecurityGroup(id1, entry.getParticipantGroup());
+		if (!repositoryService.hasRole(id1, entry, GroupRoles.participant.name())){
+			repositoryService.addRole(id1, entry, GroupRoles.participant.name());
 		}
 		
 		demoCourse = CourseFactory.loadCourse(entry.getOlatResource());

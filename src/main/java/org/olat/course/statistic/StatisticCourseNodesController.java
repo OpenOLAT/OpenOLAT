@@ -22,6 +22,7 @@ package org.olat.course.statistic;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.Group;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,7 +49,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -72,10 +72,8 @@ public class StatisticCourseNodesController extends BasicController implements A
 		boolean coach = userCourseEnv.isCoach();
 		if(coach && !admin) {
 			UserCourseEnvironmentImpl userCourseEnvImpl = (UserCourseEnvironmentImpl)userCourseEnv;
-			List<BusinessGroup> coachedGroups = userCourseEnvImpl.getCoachedGroups();
+			List<Group> coachedGroups = userCourseEnvImpl.getCoachedBaseGroups(true, true);
 			if(coachedGroups == null || coachedGroups.isEmpty()) {
-				options.setParticipantsCourse(courseRe);
-			} else {
 				options.setParticipantsGroups(coachedGroups);
 			}
 		}

@@ -81,7 +81,8 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	@Before public void setup() throws Exception {
+	@Before
+	public void setup() throws Exception {
 		System.out.println("ProjectBrokerManagerTest.setUp start...");
 		try {
 			id1 = JunitTestHelper.createAndPersistIdentityAsUser("project-id1-" + UUID.randomUUID().toString());

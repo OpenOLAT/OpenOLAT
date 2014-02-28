@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
@@ -101,8 +102,8 @@ import org.olat.group.ui.wizard.BGMergeStep;
 import org.olat.group.ui.wizard.BGUserMailTemplate;
 import org.olat.group.ui.wizard.BGUserManagementController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
-import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
@@ -455,8 +456,8 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	private void doLeave(UserRequest ureq, BusinessGroup group) {
 		List<Identity> identityToRemove = Collections.singletonList(getIdentity());
 		// 1) remove as owner
-		if (securityManager.isIdentityInSecurityGroup(getIdentity(), group.getOwnerGroup())) {
-			List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup());
+		if (businessGroupService.hasRoles(getIdentity(), group, GroupRoles.coach.name())) {
+			List<Identity> ownerList = businessGroupService.getMembers(group, GroupRoles.coach.name());
 			if (ownerList.size() > 1) {
 				businessGroupService.removeOwners(getIdentity(), identityToRemove, group);
 			} else {
@@ -837,7 +838,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			//check security
 			boolean ow = ureq.getUserSession().getRoles().isOLATAdmin()
 					|| ureq.getUserSession().getRoles().isGroupManager()
-					|| securityManager.isIdentityInSecurityGroup(getIdentity(), group.getOwnerGroup());
+					|| businessGroupService.hasRoles(getIdentity(), group, GroupRoles.coach.name());
 
 			if (ow) {
 				if (doSendMail) {
@@ -856,7 +857,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		updateTableModel(lastSearchParams, false);
 	}
 	
-	protected OLATResource getResource() {
+	protected RepositoryEntryRef getResource() {
 		return null;
 	}
 	

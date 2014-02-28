@@ -26,8 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.info.ui.SendMailOption;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -35,6 +34,7 @@ import org.olat.core.util.Util;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 
 /**
@@ -50,11 +50,13 @@ public class SendMembersMailOption implements SendMailOption {
 	
 	private final OLATResource courseResource;
 	private final RepositoryManager rm;
+	private final RepositoryService repositoryService;
 	private final BusinessGroupService businessGroupService;
 	
-	public SendMembersMailOption(OLATResource courseResource, RepositoryManager rm, BusinessGroupService businessGroupService) {
+	public SendMembersMailOption(OLATResource courseResource, RepositoryManager rm, RepositoryService repositoryService, BusinessGroupService businessGroupService) {
 		this.courseResource = courseResource;
 		this.rm = rm;
+		this.repositoryService = repositoryService;
 		this.businessGroupService = businessGroupService;
 	}
 
@@ -71,21 +73,13 @@ public class SendMembersMailOption implements SendMailOption {
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		List<Identity> members = businessGroupService.getMembersOf(courseResource, true, true);
-		Set<Identity> identities = new HashSet<Identity>(members);
-
-		//fxdiff VCRP-1,2: access control of resources
 		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(courseResource, true);
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		if(repositoryEntry.getParticipantGroup() != null) {
-			identities.addAll(securityManager.getIdentitiesOfSecurityGroup(repositoryEntry.getParticipantGroup()));
-		}
-		if(repositoryEntry.getTutorGroup() != null) {
-			identities.addAll(securityManager.getIdentitiesOfSecurityGroup(repositoryEntry.getTutorGroup()));
-		}
-		if(repositoryEntry.getOwnerGroup() != null) {
-			identities.addAll(securityManager.getIdentitiesOfSecurityGroup(repositoryEntry.getOwnerGroup()));
-		}
+		
+		List<Identity> members = businessGroupService.getMembersOf(repositoryEntry, true, true);
+		Set<Identity> identities = new HashSet<Identity>(members);
+		List<Identity> reMembers = repositoryService.getMembers(repositoryEntry, GroupRoles.participant.name(), GroupRoles.coach.name(), GroupRoles.owner.name());
+		identities.addAll(reMembers);
+
 		return new ArrayList<Identity>(identities);
 	}
 }

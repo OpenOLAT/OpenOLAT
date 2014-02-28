@@ -559,7 +559,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		Long key = newTestVO.getKey();
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(key);
 		assertNotNull(re);
-		assertNotNull(re.getOwnerGroup());
 		assertNotNull(re.getOlatResource());
 		assertEquals("QTI demo", re.getDisplayname());
 		
@@ -634,7 +633,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		Long surveyKey = newSurveyVO.getKey();
 		RepositoryEntry surveyRE = RepositoryManager.getInstance().lookupRepositoryEntry(surveyKey);
 		assertNotNull(surveyRE);
-		assertNotNull(surveyRE.getOwnerGroup());
 		assertNotNull(surveyRE.getOlatResource());
 		assertEquals("Questionnaire demo", surveyRE.getDisplayname());
 		

@@ -54,6 +54,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -62,6 +63,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -96,6 +98,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
 	private BaseSecurity securityManager;
 	
 	
@@ -127,17 +131,17 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
     g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, courseRepoEntry);
     g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, courseRepoEntry);
     // members
-    securityManager.addIdentityToSecurityGroup(id1, g2.getOwnerGroup());
-    securityManager.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
-    securityManager.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
-    securityManager.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
+    businessGroupRelationDao.addRole(id1, g2, GroupRoles.coach.name());
+	businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
+	businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
+	businessGroupRelationDao.addRole(id2, g2, GroupRoles.participant.name());
     
     // groups
     g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, courseRepoEntry);
     g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, courseRepoEntry);
     // members
-    securityManager.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
-    securityManager.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());
+	businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
+	businessGroupRelationDao.addRole(id2, g4, GroupRoles.participant.name());
     
     dbInstance.commitAndCloseSession(); // simulate user clicks
 	}
@@ -246,7 +250,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		vo.setDescription("rest-g1 description");
 		vo.setMinParticipants(g1.getMinParticipants());
 		vo.setMaxParticipants(g1.getMaxParticipants());
-		vo.setType(g1.getType());
+		vo.setType("LeanringGroup");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getOlatResource().getResourceableId() + "/groups/" + g1.getKey()).build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);

@@ -35,6 +35,7 @@ import javax.persistence.TypedQuery;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -47,6 +48,7 @@ import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.Resourceable;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +88,8 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	/**
 	 * [spring]
@@ -153,9 +157,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		  .append(" inner join fetch cei.parent as parentCei")
 		  .append(" inner join fetch parentCei.ownerGroup as parentOwnerGroup")
 		  .append(" left join fetch cei.repositoryEntry as repositoryEntry")
-		  .append(" left join fetch repositoryEntry.ownerGroup as repoOwnerGroup")
-		  .append(" left join fetch repositoryEntry.tutorGroup as repoTutorGroup")
-		  .append(" left join fetch repositoryEntry.participantGroup as repoParticipantGroup")
+		  .append(" left join fetch repositoryEntry.lifecycle as lifecycle")
 		  .append(" left join fetch repositoryEntry.olatResource as resource")
 		  .append(" where parentCei.key=:parentKey");
 		if(orderBy != null) {
@@ -238,8 +240,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		for(CatalogEntry cate:catalogEntries) {
 			if (cate.getType() == CatalogEntry.TYPE_LEAF) {
 				RepositoryEntry repe = cate.getRepositoryEntry();
-				SecurityGroup secGroup = repe.getOwnerGroup();
-				if (securityManager.isIdentityInSecurityGroup(identity, secGroup)) {
+				if (repositoryService.hasRole(identity, repe, GroupRoles.owner.name())) {
 					ownedEntries.add(cate);
 				}
 			}

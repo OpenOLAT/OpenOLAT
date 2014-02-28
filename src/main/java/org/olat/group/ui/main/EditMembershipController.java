@@ -59,9 +59,9 @@ import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
-import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -160,12 +160,12 @@ public class EditMembershipController extends FormBasicController {
 	}
 	
 	private void loadModel(Identity member) {
-		OLATResource resource = null;
+		RepositoryEntryRef resource = null;
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		if(repoEntry == null) {
 			params.setGroupKeys(Collections.singletonList(businessGroup.getKey()));
 		} else {
-			resource = repoEntry.getOlatResource();
+			resource = repoEntry;
 		}
 		List<BusinessGroupView> groups = businessGroupService.findBusinessGroupViews(params, resource, 0, -1);
 	

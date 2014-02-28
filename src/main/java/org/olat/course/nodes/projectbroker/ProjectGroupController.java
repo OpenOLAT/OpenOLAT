@@ -28,11 +28,13 @@ package org.olat.course.nodes.projectbroker;
 import java.util.List;
 import java.util.UUID;
 
-import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesMoveEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.admin.securitygroup.gui.WaitingGroupController;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.ui.GroupController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -53,6 +55,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
 
@@ -90,12 +93,15 @@ public class ProjectGroupController extends BasicController {
 		VelocityContainer myContent = createVelocityContainer("projectgroup_management");
 
 		// Project Leader Management
-		projectLeaderController = new GroupController(ureq, getWindowControl(), true, true, true, false, true, false, project.getProjectLeaderGroup());
+		BusinessGroup projectGroup = project.getProjectGroup();
+		Group group = businessGroupService.getGroup(projectGroup);
+		
+		projectLeaderController = new GroupController(ureq, getWindowControl(), true, true, true, false, true, false, group, GroupRoles.coach.name());
 		listenTo(projectLeaderController);
 		myContent.put("projectLeaderController", projectLeaderController.getInitialComponent());
 
 		// Project Member Management
-		projectMemberController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, project.getProjectParticipantGroup());
+		projectMemberController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, group, GroupRoles.participant.name());
 		listenTo(projectMemberController);
 		myContent.put("projectMemberController", projectMemberController.getInitialComponent());
 		// add mail templates used when adding and removing users

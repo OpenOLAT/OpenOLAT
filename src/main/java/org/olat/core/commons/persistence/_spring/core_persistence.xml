@@ -19,12 +19,8 @@
 		<mapping-file>org/olat/commons/info/model/InfoMessageImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/area/BGAreaImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/area/BGtoAreaRelationImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/group/context/BGContextImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/group/context/BGContext2Resource.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/BusinessGroupImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/group/model/BGResourceRelation.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/model/BusinessGroupViewImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/group/model/BusinessGroupMembershipViewImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/lock/pessimistic/PLockImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/references/ReferenceImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/OLATResourceImpl.hbm.xml</mapping-file>
@@ -44,7 +40,6 @@
 		<mapping-file>org/olat/basesecurity/SecurityGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/SecurityGroupMembershipImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/repository/RepositoryEntry.hbm.xml</mapping-file>
-		<mapping-file>org/olat/repository/model/RepositoryEntryViews.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/assessment/model/UserEfficiencyStatementImpl.hbm.xml</mapping-file>
@@ -83,11 +78,22 @@
 		<mapping-file>org/olat/core/util/mail/model/DBMailRecipient.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/logging/activity/LoggingObject.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/db/impl/CourseDBEntryImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/modules/coach/model/EfficiencyStatementStatEntry.hbm.xml</mapping-file>
 		
+		<!-- Start upgraders mapping -->
+		<mapping-file>org/olat/upgrade/model/BGAreaUpgrade.hbm.xml</mapping-file>
+		<mapping-file>org/olat/upgrade/model/BGContextImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/upgrade/model/BGContext2Resource.hbm.xml</mapping-file>
 		<mapping-file>org/olat/upgrade/model/BookmarkImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/upgrade/model/DBMailAttachmentData.hbm.xml</mapping-file>
+		<mapping-file>org/olat/upgrade/model/BusinessGroupUpgrade.hbm.xml</mapping-file>
+		<mapping-file>org/olat/upgrade/model/BGResourceRelation.hbm.xml</mapping-file>
+		<mapping-file>org/olat/upgrade/model/RepositoryEntryUpgrade.hbm.xml</mapping-file>
+		<class>org.olat.upgrade.model.RepositoryEntryUpgradeToGroupRelation</class>
+		<!-- End upgraders mapping -->
 		
+		<class>org.olat.basesecurity.model.GroupImpl</class>
+		<class>org.olat.basesecurity.model.GrantImpl</class>
+		<class>org.olat.basesecurity.model.GroupMembershipImpl</class>
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
 		<class>org.olat.core.commons.services.notifications.model.SubscriberImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
@@ -97,15 +103,17 @@
 		<class>org.olat.course.assessment.model.UserCourseInfosImpl</class>
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>
-		<class>org.olat.group.model.ContactParticipantView</class>
-		<class>org.olat.group.model.ContactOwnerView</class>
-		<class>org.olat.group.model.ContactKeyParticipantView</class>
-		<class>org.olat.group.model.ContactKeyOwnerView</class>
+		<class>org.olat.group.model.ContactView</class>
+		<class>org.olat.group.model.ContactKeyView</class>
+		<class>org.olat.group.model.ContactViewExtended</class>
 		<class>org.olat.group.model.BusinessGroupLazyImpl</class>
+		<class>org.olat.group.model.BusinessGroupMembershipViewImpl</class>
+		<class>org.olat.group.model.BGRepositoryEntryRelation</class>
+		<class>org.olat.repository.model.RepositoryEntryToGroupRelation</class>
 		<class>org.olat.repository.model.RepositoryEntryLifecycle</class>
-		<class>org.olat.repository.model.ParticipantRepositoryEntryShort</class>
-		<class>org.olat.repository.model.TutorRepositoryEntryShort</class>
 		<class>org.olat.repository.model.RepositoryEntryLightImpl</class>
+		<class>org.olat.repository.model.RepositoryEntryMyViewImpl</class>
+		<class>org.olat.repository.model.RepositoryEntryMembership</class>
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
 		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>
@@ -113,6 +121,9 @@
 		<class>org.olat.instantMessaging.model.InstantMessageNotificationImpl</class>
 		<class>org.olat.ims.qti.statistics.model.QTIStatisticResult</class>
 		<class>org.olat.ims.qti.statistics.model.QTIStatisticResultSet</class>
+		<class>org.olat.modules.coach.model.EfficiencyStatementGroupStatEntry</class>
+		<class>org.olat.modules.coach.model.EfficiencyStatementCourseStatEntry</class>
+		<class>org.olat.modules.coach.model.EfficiencyStatementStudentStatEntry</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>
 		<class>org.olat.modules.qpool.model.PoolItemView</class>

@@ -24,7 +24,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.async.ProgressDelegate;
@@ -38,6 +39,7 @@ import org.olat.group.model.EnrollState;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.ResourceReservation;
@@ -228,14 +230,6 @@ public interface BusinessGroupService {
 	 */
 	public void updateMemberships(Identity ureqIdentity, List<BusinessGroupMembershipChange> changes,
 			MailPackage mailing);
-	
-	//search methods
-	/**
-	 * Find the business group associated with this security group
-	 * @param secGroup
-	 * @return Return the business group or null if not found
-	 */
-	public BusinessGroup findBusinessGroup(SecurityGroup secGroup);
 
 	/**
 	 * Find the BusinessGroups list associated with the supplied identity, where the identity is an owner.
@@ -243,7 +237,7 @@ public interface BusinessGroupService {
 	 * @param resource
 	 * @return
 	 */
-	public List<BusinessGroup> findBusinessGroupsOwnedBy(Identity identity, OLATResource resource);
+	public List<BusinessGroup> findBusinessGroupsOwnedBy(Identity identity);
 	
 	/**
 	 * Find the list of BusinessGroups associated with the supplied identity, where
@@ -252,7 +246,7 @@ public interface BusinessGroupService {
 	 * @param resource
 	 * @return
 	 */
-	public List<BusinessGroup> findBusinessGroupsAttendedBy(Identity identity, OLATResource resource);
+	public List<BusinessGroup> findBusinessGroupsAttendedBy(Identity identity);
 	
 	public List<BusinessGroupLazy> findBusinessGroups(Identity identity, int maxResults, BusinessGroupOrder... order);
 	
@@ -262,14 +256,12 @@ public interface BusinessGroupService {
 	 * @param resource
 	 * @return
 	 */
-	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity,OLATResource resource);
+	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity, RepositoryEntryRef resource);
 	
-	public int countBusinessGroups(SearchBusinessGroupParams params, OLATResource resource);
+	public int countBusinessGroups(SearchBusinessGroupParams params, RepositoryEntryRef resource);
 	
-	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults, BusinessGroupOrder... ordering);
+	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, RepositoryEntryRef resource, int firstResult, int maxResults, BusinessGroupOrder... ordering);
 	
-	
-	public int countBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource);
 	/**
 	 * Find business groups (the view)
 	 * @param params
@@ -279,7 +271,7 @@ public interface BusinessGroupService {
 	 * @param ordering
 	 * @return
 	 */
-	public List<BusinessGroupView> findBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults, BusinessGroupOrder... ordering);
+	public List<BusinessGroupView> findBusinessGroupViews(SearchBusinessGroupParams params, RepositoryEntryRef resource, int firstResult, int maxResults, BusinessGroupOrder... ordering);
 	
 	/**
 	 * Find all groups within resources where the identity is author.
@@ -288,7 +280,7 @@ public interface BusinessGroupService {
 	 */
 	public List<BusinessGroupView> findBusinessGroupViewsWithAuthorConnection(Identity author);
 	
-	public List<Long> toGroupKeys(String groupNames, OLATResource resource);
+	public List<Long> toGroupKeys(String groupNames, RepositoryEntryRef resource);
 
 	//retrieve repository entries
 
@@ -302,7 +294,7 @@ public interface BusinessGroupService {
 	
 	public void removeResourceFrom(List<BusinessGroup> group, RepositoryEntry re);
 	
-	public void removeResource(OLATResource resource);
+	public void removeResource(RepositoryEntryRef resource);
 	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);
 	
@@ -317,17 +309,32 @@ public interface BusinessGroupService {
 	
 	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<Long> groups, int firstResult, int maxResults);
 	
-	public List<OLATResource> findResources(Collection<BusinessGroup> groups, int firstResult, int maxResults);
-	
-	
 	//found identities
 	public int countContacts(Identity identity);
 	
 	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults);
 	
-	public int countMembersOf(OLATResource resource, boolean owner, boolean attendee);
+	public List<Identity> getMembersOf(RepositoryEntryRef resource, boolean owner, boolean attendee);
 	
-	public List<Identity> getMembersOf(OLATResource resource, boolean owner, boolean attendee);
+	
+	public Group getGroup(BusinessGroup group);
+	
+	/**
+	 * Return true if the identity has one of the specified role
+	 * @param identity
+	 * @param businessGroup
+	 * @param role
+	 * @return
+	 */
+	public boolean hasRoles(IdentityRef identity, BusinessGroupRef businessGroup, String role);
+	
+	public List<Identity> getMembers(BusinessGroup businessGroup, String... roles);
+	
+	public List<Identity> getMembers(List<BusinessGroup> businessGroups, String... roles);
+	
+	
+	
+	public int countMembers(BusinessGroup businessGroup, String... roles);
 	
 	/**
 	 * Get position of an identity on a certain waiting-list 
@@ -475,9 +482,6 @@ public interface BusinessGroupService {
 	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(Identity ureqIdentity, List<Identity> identities,
 			BusinessGroup currBusinessGroup, MailPackage mailing);
 
-
-	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
-	
 	/**
 	 * Count the duplicates
 	 * @param entry
@@ -508,7 +512,7 @@ public interface BusinessGroupService {
 	 * as participant
 	 * @param identity
 	 * @param businessGroup
-	 * @return
+	 * @return True if coach or participant
 	 */
 	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup);
 	
@@ -539,7 +543,7 @@ public interface BusinessGroupService {
 	 * @param resource The resource context (mandatory)
 	 * @return
 	 */
-	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey, boolean ownedById, boolean attendedById, OLATResource resource);
+	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey, boolean ownedById, boolean attendedById, RepositoryEntryRef resource);
 
 	
 	//export - import

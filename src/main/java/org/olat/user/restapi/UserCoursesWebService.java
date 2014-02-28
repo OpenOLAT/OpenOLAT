@@ -154,8 +154,13 @@ public class UserCoursesWebService {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
 			List<RepositoryEntry> repoEntries = rm.getFavoritLearningResourcesAsTeacher(identity, courseType, start, limit, RepositoryEntryOrder.nameAsc);
-			int totalCount= rm.countFavoritLearningResourcesAsTeacher(identity, courseType);
-
+			
+			int totalCount;
+			if(repoEntries.size() < limit) {
+				totalCount = repoEntries.size();
+			} else {
+				totalCount = rm.countFavoritLearningResourcesAsTeacher(identity, courseType);
+			}
 			CourseVO[] vos = toCourseVo(repoEntries);
 			CourseVOes voes = new CourseVOes();
 			voes.setCourses(vos);

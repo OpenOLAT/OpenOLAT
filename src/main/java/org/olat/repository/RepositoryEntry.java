@@ -26,9 +26,9 @@
 package org.olat.repository;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
@@ -37,12 +37,13 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
 
 /**
  *Represents a repository entry.
  */
-public class RepositoryEntry extends PersistentObject implements ModifiedInfo, OLATResourceable {
+public class RepositoryEntry extends PersistentObject implements RepositoryEntryRef, ModifiedInfo, OLATResourceable {
 
 	private static final long serialVersionUID = 5319576295875289054L;
 	// IMPORTANT: Keep relation ACC_OWNERS < ACC_OWNERS_AUTHORS < ACC_USERS < ACC_USERS_GUESTS
@@ -63,15 +64,12 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	 */
 	public static final int ACC_USERS_GUESTS = 4; // no limits
 	
-	//fxdiff VCRP-1,2: access control of resources
 	public static final String MEMBERS_ONLY =  "membersonly";
 	
 	private String softkey; // mandatory
 	private OLATResource olatResource; // mandatory
-	private SecurityGroup ownerGroup; // mandatory
-	//fxdiff VCRP-1,2: access control of resources
-	private SecurityGroup tutorGroup;
-	private SecurityGroup participantGroup;
+	private Set<RepositoryEntryToGroupRelation> groups;
+	
 	private String resourcename; // mandatory
 	private String displayname; // mandatory
 	private String description; // mandatory
@@ -87,9 +85,8 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	private boolean canReference;
 	private boolean canLaunch;
 	private boolean canDownload;
-	private boolean membersOnly;//fxdiff VCRP-1,2: access control of resources
+	private boolean membersOnly;
 	private int statusCode;
-	//private List<MetaDataElement> metaDataElements;
 	private long launchCounter;
 	private long downloadCounter;
 	private Date lastUsage;
@@ -104,9 +101,8 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	/**
 	 * Default constructor.
 	 */
-	RepositoryEntry() {
+	public RepositoryEntry() {
 		softkey = CodeHelper.getGlobalForeverUniqueID();
-		//metaDataElements = new ArrayList<MetaDataElement>();
 		access = ACC_OWNERS;
 	}
 
@@ -122,7 +118,7 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	 * @param softkey
 	 */
 	public void setSoftkey(String softkey) {
-		if (softkey.length() > 30)
+		if (softkey.length() > 36)
 			throw new AssertException("Trying to set a softkey which is too long...");
 		this.softkey = softkey;
 	}
@@ -164,18 +160,7 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 			throw new AssertException("initialAuthor is limited to "+IdentityImpl.NAME_MAXLENGTH+" characters.");
 		this.initialAuthor = initialAuthor;
 	}
-	/**
-	 * @return Returns the metaDataElements.
-	 *//*
-	public List<MetaDataElement> getMetaDataElements() {
-		return metaDataElements;
-	}*/
-	/**
-	 * @param metaDataElements The metaDataElements to set.
-	 *//*
-	public void setMetaDataElements(List<MetaDataElement> metaDataElements) {
-		this.metaDataElements = metaDataElements;
-	}*/
+
 	/**
 	 * @return Returns the statusCode.
 	 */
@@ -216,52 +201,13 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	public void setOlatResource(OLATResource olatResource) {
 		this.olatResource = olatResource;
 	}
-	
-	/**
-	 * @return Grou of owners of this repo entry.
-	 */
-	public SecurityGroup getOwnerGroup() {
-		return ownerGroup;
-	}
-	
-	/**
-	 * Set the group of owners of this repo entry.
-	 * @param ownerGroup
-	 */
-	public void setOwnerGroup(SecurityGroup ownerGroup) {
-		this.ownerGroup = ownerGroup;
-	}
-	
-	/**
-	 * @return The group for tutors
-	 */
-	//fxdiff VCRP-1,2: access control of resources
-	public SecurityGroup getTutorGroup() {
-		return tutorGroup;
+
+	public Set<RepositoryEntryToGroupRelation> getGroups() {
+		return groups;
 	}
 
-	/**
-	 * Set the group for tutors
-	 * @param tutorGroup
-	 */
-	public void setTutorGroup(SecurityGroup tutorGroup) {
-		this.tutorGroup = tutorGroup;
-	}
-
-	/**
-	 * @return The group of participants
-	 */
-	//fxdiff VCRP-1,2: access control of resources
-	public SecurityGroup getParticipantGroup() {
-		return participantGroup;
-	}
-
-	/**
-	 * Set the group of participants
-	 * @param participantGroup
-	 */
-	public void setParticipantGroup(SecurityGroup participantGroup) {
-		this.participantGroup = participantGroup;
+	public void setGroups(Set<RepositoryEntryToGroupRelation> groups) {
+		this.groups = groups;
 	}
 
 	/**
@@ -479,6 +425,10 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	 */
 	public void setLastModified(Date date) {
 		this.lastModified = date;
+	}
+	
+	public void setCreationDate(Date date) {
+		this.creationDate = date;
 	}
 	
 	

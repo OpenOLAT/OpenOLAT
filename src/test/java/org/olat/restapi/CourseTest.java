@@ -59,7 +59,9 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -69,12 +71,15 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.UserVO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CourseTest extends OlatJerseyTestCase {
 	
@@ -83,6 +88,11 @@ public class CourseTest extends OlatJerseyTestCase {
 	private Identity admin, auth0, auth1, auth2;
 	private ICourse course1;
 	private RestConnection conn;
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	/**
 	 * SetUp is called before each test.
@@ -204,7 +214,8 @@ public class CourseTest extends OlatJerseyTestCase {
 		courseType.add(CourseModule.getCourseTypeName());
 		Roles roles = new Roles(true, true, true, true, false, true, false);
 		//fxdiff VCRP-1,2: access control of resources
-		List<RepositoryEntry> repoEntries = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction("*", "*", "*", courseType, null, roles, "");
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters("*", "*", "*", courseType, null, roles, "");
+		List<RepositoryEntry> repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		assertNotNull(repoEntries);
 		
 		for(RepositoryEntry entry:repoEntries) {
@@ -230,9 +241,9 @@ public class CourseTest extends OlatJerseyTestCase {
 		
 		//is auth0 owner
 		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course1, true);
-		SecurityGroup ownerGroup = repositoryEntry.getOwnerGroup();
-		boolean isOwner = securityManager.isIdentityInSecurityGroup(auth0, ownerGroup);
+		boolean isOwner = repositoryService.hasRole(auth0, repositoryEntry, GroupRoles.owner.name());
 		DBFactory.getInstance().intermediateCommit();
 		assertTrue(isOwner);
 	}
@@ -313,9 +324,8 @@ public class CourseTest extends OlatJerseyTestCase {
 		
 		//control
 		repositoryEntry = rm.lookupRepositoryEntry(course1, true);
-		SecurityGroup ownerGroup = repositoryEntry.getOwnerGroup();
-		assertFalse(securityManager.isIdentityInSecurityGroup(auth1, ownerGroup));
-		assertFalse(securityManager.isIdentityInSecurityGroup(auth2, ownerGroup));
+		assertFalse(repositoryService.hasRole(auth1, repositoryEntry, GroupRoles.owner.name()));
+		assertFalse(repositoryService.hasRole(auth2, repositoryEntry, GroupRoles.owner.name()));
 		DBFactory.getInstance().intermediateCommit();
 	}
 	
@@ -330,10 +340,8 @@ public class CourseTest extends OlatJerseyTestCase {
 
 		//is auth0 coach/tutor
 		RepositoryManager rm = RepositoryManager.getInstance();
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course1, true);
-		SecurityGroup tutorGroup = repositoryEntry.getTutorGroup();
-		boolean isTutor = securityManager.isIdentityInSecurityGroup(auth1, tutorGroup);
+		boolean isTutor = repositoryService.hasRole(auth1, repositoryEntry, GroupRoles.coach.name());
 		DBFactory.getInstance().intermediateCommit();
 		assertTrue(isTutor);
 	}
@@ -349,10 +357,8 @@ public class CourseTest extends OlatJerseyTestCase {
 
 		//is auth2 participant
 		RepositoryManager rm = RepositoryManager.getInstance();
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course1, true);
-		SecurityGroup participant = repositoryEntry.getParticipantGroup();
-		boolean isParticipant = securityManager.isIdentityInSecurityGroup(auth2, participant);
+		boolean isParticipant = repositoryService.hasRole(auth2, repositoryEntry, GroupRoles.participant.name());
 		DBFactory.getInstance().intermediateCommit();
 		assertTrue(isParticipant);
 	}

@@ -27,8 +27,7 @@ package org.olat.repository.controllers;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,6 +47,7 @@ import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.BlogHandler;
 import org.olat.repository.handlers.CourseHandler;
 import org.olat.repository.handlers.GlossaryHandler;
@@ -374,61 +374,27 @@ public class RepositoryAddController extends BasicController {
 			logError("", e);
 		}
 		
-		addedEntry = RepositoryManager.getInstance()
-			.createRepositoryEntryInstance(ureq.getIdentity().getName());
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 
-		addedEntry.setCanDownload(false);
-		addedEntry.setCanLaunch(typeToAdd.supportsLaunch(addedEntry));
-		String dispName = addCallback.getDisplayName();
-		if (dispName == null) dispName = "";
-		addedEntry.setDisplayname(dispName);
 		String resName = addCallback.getResourceName();
-		if (resName == null) resName = "";
-		addedEntry.setResourcename(resName);
-		
+		if (resName == null) {
+			resName = "";
+		}
+		String dispName = addCallback.getDisplayName();
+		if (dispName == null) {
+			dispName = "";
+		}
 		String resDescription = addCallback.getDescription();
 		if(resDescription == null){
 			resDescription = "";
 		}
-		addedEntry.setDescription(resDescription);
+		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(addCallback.getResourceable());
 		
-    // Do set access for owner at the end, because unfinished course should be invisible
-		// addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
-		addedEntry.setAccess(0);//Access for nobody
+		addedEntry = repositoryService.create(ureq.getIdentity(), resName, dispName, resDescription, ores);
+		addedEntry.setCanLaunch(typeToAdd.supportsLaunch(addedEntry));
 		
 		// Set the resource on the repository entry and save the entry.
 		RepositoryManager rm = RepositoryManager.getInstance();
-		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(addCallback.getResourceable());
-		addedEntry.setOlatResource(ores);
-		
-		// create security groups
-		//security group for owners / authors
-		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
-		// members of this group are always authors also
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-		
-		securityManager.addIdentityToSecurityGroup(ureq.getIdentity(), newGroup);
-		addedEntry.setOwnerGroup(newGroup);
-		
-		//fxdiff VCRP-1,2: access control of resources
-		// security group for tutors / coaches
-		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, addedEntry.getOlatResource());
-		// members of this group are always tutors also
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
-		addedEntry.setTutorGroup(tutorGroup);
-		
-		// security group for participants
-		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, addedEntry.getOlatResource());
-		// members of this group are always participants also
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
-		addedEntry.setParticipantGroup(participantGroup);
-		
 		rm.saveRepositoryEntry(addedEntry);
 
 		removeAsListenerAndDispose(detailsController);

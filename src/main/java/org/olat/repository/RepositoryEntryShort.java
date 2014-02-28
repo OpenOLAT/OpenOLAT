@@ -25,9 +25,7 @@ package org.olat.repository;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface RepositoryEntryShort {
-
-	public Long getKey();
+public interface RepositoryEntryShort extends RepositoryEntryRef {
 	
 	public String getDisplayname();
 	

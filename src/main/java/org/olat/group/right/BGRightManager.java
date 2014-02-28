@@ -28,7 +28,7 @@ package org.olat.group.right;
 import java.util.Collection;
 import java.util.List;
 
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.group.BusinessGroup;
 import org.olat.resource.OLATResource;
 
@@ -96,7 +96,7 @@ public interface BGRightManager {
 	 * @return true if an identity is in a group that has this business group
 	 *         right in the given resource
 	 */
-	public boolean hasBGRight(String bgRight, Identity identity, OLATResource resource);
+	public boolean hasBGRight(String bgRight, IdentityRef identity, OLATResource resource);
 
 	/**
 	 * @param rightGroup

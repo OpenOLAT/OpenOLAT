@@ -28,13 +28,15 @@ package org.olat.core.id;
 
 import java.util.Date;
 
+import org.olat.basesecurity.IdentityRef;
+
 
 /**
  * Initial Date:  24.04.2004
  *
  * @author Mike Stock
  */
-public interface Identity extends CreateInfo, Persistable {
+public interface Identity extends CreateInfo, IdentityRef, Persistable {
 
 	// status = 1..99    User with this status are visibale (e.g. user search)
 	//          100..199 User with this status are invisibale (e.g. user search)

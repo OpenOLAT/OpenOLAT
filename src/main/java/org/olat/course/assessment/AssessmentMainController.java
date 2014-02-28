@@ -34,10 +34,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.admin.user.UserTableDataModel;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DBFactory;
@@ -104,8 +104,10 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 
 import de.bps.onyx.plugin.OnyxModule;
@@ -201,8 +203,12 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private BulkAssessmentOverviewController bulkAssOverviewCtrl;
 	private final StackedController stackPanel;
 
+	private RepositoryEntry re;
 	private OLATResourceable ores;
+	
 	private final OnyxModule onyxModule;
+	private final RepositoryService repositoryService;
+	private final BusinessGroupService businessGroupService;
 	
 	/**
 	 * Constructor for the assessment tool controller. 
@@ -211,10 +217,13 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	 * @param course
 	 * @param assessmentCallback
 	 */
-	public AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
+	public AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, OLATResourceable ores,
+			IAssessmentCallback assessmentCallback) {
 		super(ureq, wControl);	
 		
 		onyxModule = CoreSpringFactory.getImpl(OnyxModule.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
 		this.stackPanel = stackPanel;
@@ -223,7 +232,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		localUserCourseEnvironmentCache = new ConcurrentHashMap<Long, UserCourseEnvironment>();
 		initialLaunchDates = new ConcurrentHashMap<Long,Date>();
 		
-    //use the PropertyHandlerTranslator	as tableCtr translator
+		//use the PropertyHandlerTranslator	as tableCtr translator
 		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -283,8 +292,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			// Initialize all groups that the user is allowed to coach
 			coachedGroups = getAllowedGroupsFromGroupmanagement(ureq.getIdentity());
 			
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
-			repoTutor = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(getIdentity(), re.getTutorGroup());
+			re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
+			repoTutor = repositoryService.hasRole(getIdentity(), re, GroupRoles.coach.name());
 
 			// preload the assessment cache to speed up everything as background thread
 			// the thread will terminate when finished
@@ -650,8 +659,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	 * @return List of participant identities from this group
 	 */
 	private List<Identity> getGroupIdentitiesFromGroupmanagement(BusinessGroup selectedGroup) {
-		SecurityGroup selectedSecurityGroup = selectedGroup.getPartipiciantGroup();
-		return BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(selectedSecurityGroup);
+		return  businessGroupService.getMembers(selectedGroup, GroupRoles.participant.name()); 
 	}
 
 	/**
@@ -660,45 +668,34 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	 * @return List of identities
 	 */
 	private List<Identity> getAllAssessableIdentities() {
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for (BusinessGroup group: coachedGroups) {
-			secGroups.add(group.getPartipiciantGroup());
-		}
 
+		List<Identity> participants = businessGroupService.getMembers(coachedGroups, GroupRoles.participant.name());
 		if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
-			if(re.getParticipantGroup() != null) {
-				secGroups.add(re.getParticipantGroup());
-			}
+			List<Identity> courseParticipants = repositoryService.getMembers(re, GroupRoles.participant.name());
+			participants.addAll(courseParticipants);
 		}
 
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		List<Identity> usersList = secMgr.getIdentitiesOfSecurityGroups(secGroups);
-
-		if(callback.mayViewAllUsersAssessments() && usersList.size() < 500) {
+		if(callback.mayViewAllUsersAssessments() && participants.size() < 500) {
 			mayViewAllUsersAssessments = true;
 			ICourse course = CourseFactory.loadCourse(ores);
 			CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
-			List<Identity> assessedRsers = pm.getAllIdentitiesWithCourseAssessmentData(usersList);
-			usersList.addAll(assessedRsers);
+			List<Identity> assessedRsers = pm.getAllIdentitiesWithCourseAssessmentData(participants);
+			participants.addAll(assessedRsers);
 		}
-		return usersList;
+		return participants;
 	}
 	
 	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options) {
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for (BusinessGroup group: coachedGroups) {
-			secGroups.add(group.getPartipiciantGroup());
-		}
-
+		List<Group> baseGroups = new ArrayList<>();
 		if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
-			if(re.getParticipantGroup() != null) {
-				secGroups.add(re.getParticipantGroup());
+			baseGroups.add(repositoryService.getDefaultGroup(re));
+		}
+		if(coachedGroups.size() > 0) {
+			for(BusinessGroup coachedGroup:coachedGroups) {
+				baseGroups.add(coachedGroup.getBaseGroup());
 			}
 		}
-		
-		options.setAlternativeToIdentities(secGroups, mayViewAllUsersAssessments);
+		options.setAlternativeToIdentities(baseGroups, mayViewAllUsersAssessments);
 	}
 	
 	/**
@@ -1099,8 +1096,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		if ( (courseNode == null) || ( group == null ) ) {
 			return true;
 		}
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		List<Identity> identities = secMgr.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup(), 0, 1);		
+		List<Identity> identities = businessGroupService.getMembers(group, GroupRoles.participant.name());		
 		if (identities.isEmpty()) {
 			// group has no participant, can not evalute  
 			return false;

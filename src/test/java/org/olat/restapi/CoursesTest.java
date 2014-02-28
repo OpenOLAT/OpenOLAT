@@ -300,7 +300,6 @@ public class CoursesTest extends OlatJerseyTestCase {
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(course.getRepoEntryKey());
 		assertNotNull(re);
 		assertNotNull(re.getOlatResource());
-		assertNotNull(re.getOwnerGroup());
 	}
 	
 	@Test
@@ -338,7 +337,6 @@ public class CoursesTest extends OlatJerseyTestCase {
 		Long repoKey = vo.getRepoEntryKey();
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(repoKey);
 		assertNotNull(re);
-		assertNotNull(re.getOwnerGroup());
 		assertNotNull(re.getOlatResource());
 		assertEquals("Very small course", re.getDisplayname());
 		assertEquals(softKey, re.getSoftkey());

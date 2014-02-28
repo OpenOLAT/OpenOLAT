@@ -19,7 +19,10 @@
  */
 package org.olat.modules.coach.model;
 
-import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import org.olat.core.commons.persistence.PersistentObject;
 
@@ -28,32 +31,41 @@ import org.olat.core.commons.persistence.PersistentObject;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Entity
+@Table(name="o_as_eff_statement_groups_v")
 public class EfficiencyStatementGroupStatEntry extends PersistentObject {
 
 	private static final long serialVersionUID = -5632894869497135693L;
 	
-	private Long repoKey;
-	private Long groupKey;
+	@Id
+	@Column(name="st_id", nullable=false, unique=true, insertable=false, updatable=false)
 	private Long statementKey;
-	private Long tutorKey;
-	private Long studentKey;
-	
+
+	@Column(name="re_id", nullable=false, unique=false, insertable=false, updatable=false)
+	private Long repoKey;
+	@Column(name="re_name", nullable=false, unique=false, insertable=false, updatable=false)
 	private String repoDisplayName;
-	private Long repoResourceId;
-	private int repoAccess;
-	private int repoStatusCode;
-	
+
+	@Column(name="bg_id", nullable=false, unique=false, insertable=false, updatable=false)
+	private Long groupKey;
+	@Column(name="bg_name", nullable=false, unique=false, insertable=false, updatable=false)
 	private String groupName;
 	
-	private String tutorName;
-	private String studentName;
+	@Column(name="tutor_id", nullable=false, unique=false, insertable=false, updatable=false)
+	private Long tutorKey;
+	@Column(name="student_id", nullable=false, unique=false, insertable=false, updatable=false)
+	private Long studentKey;
 
+	@Column(name="st_score", nullable=false, unique=false, insertable=false, updatable=false)
 	private Float score;
+	@Column(name="st_passed", nullable=false, unique=false, insertable=false, updatable=false)
 	private int passed;
+	@Column(name="st_failed", nullable=false, unique=false, insertable=false, updatable=false)
 	private int failed;
+	@Column(name="st_not_attempted", nullable=false, unique=false, insertable=false, updatable=false)
 	private int notAttempted;
-	private Date lastModified;
-	
+
+	@Column(name="pg_id", nullable=false, unique=false, insertable=false, updatable=false)
 	private Long initialLaunchKey;
 	
 	public Long getRepoKey() {
@@ -104,29 +116,7 @@ public class EfficiencyStatementGroupStatEntry extends PersistentObject {
 		this.repoDisplayName = repoDisplayName;
 	}
 	
-	public Long getRepoResourceId() {
-		return repoResourceId;
-	}
 
-	public void setRepoResourceId(Long repoResourceId) {
-		this.repoResourceId = repoResourceId;
-	}
-
-	public int getRepoAccess() {
-		return repoAccess;
-	}
-
-	public void setRepoAccess(int repoAccess) {
-		this.repoAccess = repoAccess;
-	}
-
-	public int getRepoStatusCode() {
-		return repoStatusCode;
-	}
-
-	public void setRepoStatusCode(int repoStatusCode) {
-		this.repoStatusCode = repoStatusCode;
-	}
 
 	public String getGroupName() {
 		return groupName;
@@ -134,22 +124,6 @@ public class EfficiencyStatementGroupStatEntry extends PersistentObject {
 
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
-	}
-
-	public String getTutorName() {
-		return tutorName;
-	}
-	
-	public void setTutorName(String tutorName) {
-		this.tutorName = tutorName;
-	}
-	
-	public String getStudentName() {
-		return studentName;
-	}
-	
-	public void setStudentName(String studentName) {
-		this.studentName = studentName;
 	}
 	
 	public Float getScore() {
@@ -184,14 +158,6 @@ public class EfficiencyStatementGroupStatEntry extends PersistentObject {
 		this.notAttempted = notAttempted;
 	}
 
-	public Date getLastModified() {
-		return lastModified;
-	}
-
-	public void setLastModified(Date lastModified) {
-		this.lastModified = lastModified;
-	}
-
 	public Long getInitialLaunchKey() {
 		return initialLaunchKey;
 	}
@@ -205,9 +171,7 @@ public class EfficiencyStatementGroupStatEntry extends PersistentObject {
 		StringBuilder sb = new StringBuilder();
 		sb.append("efficiencyStatementStatEntry[statementId=")
 		  .append(getKey()).append(":repositoryEntry=")
-		  .append(repoDisplayName).append(":tutorName=")
-		  .append(tutorName).append(":studentName=")
-		  .append(studentName);
+		  .append(repoDisplayName).append(":tutorName=");
 		return sb.toString();
 	}
 

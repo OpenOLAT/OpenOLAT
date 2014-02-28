@@ -147,7 +147,7 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 				if (re != null) {
 					moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
 					if(!moderator) {
-						moderator = rm.isInstitutionalRessourceManagerFor(re, ureq.getIdentity());
+						moderator = rm.isInstitutionalRessourceManagerFor(ureq.getIdentity(), ureq.getUserSession().getRoles(), re);
 					}
 				}
 			}

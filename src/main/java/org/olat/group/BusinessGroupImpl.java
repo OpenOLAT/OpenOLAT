@@ -27,9 +27,8 @@ package org.olat.group;
 
 import java.util.Date;
 
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.PersistentObject;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -52,17 +51,14 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	
 	private String description;
 	private String name;
-	private String type;
 	private String externalId;
 	private String managedFlagsString;
 	private Integer minParticipants;
 	private Integer maxParticipants;
 	private OLATResource resource;
-	private SecurityGroup ownerGroup;
-	private SecurityGroup partipiciantGroup;
-	private SecurityGroup waitingGroup;
+	private Group baseGroup;
+	
 	private Date lastUsage;
-	private Long groupContextKey;
 	private Boolean waitingListEnabled;
 	private Boolean autoCloseRanksEnabled;
 	private Date lastModified;
@@ -74,8 +70,6 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	private boolean waitingListVisiblePublic;
 	private boolean downloadMembersLists;
 
-	private static final int TYPE_MAXLENGTH = 15;
-
 	/**
 	 * constructs an unitialised BusinessGroup, use setXXX for setting attributes
 	 */
@@ -86,40 +80,18 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	/**
 	 * convenience constructor
 	 * 
-	 * @param type
 	 * @param groupName
 	 * @param description
-	 * @param ownerGroup
-	 * @param partipiciantGroup
 	 */
-	public BusinessGroupImpl(String groupName, String description, SecurityGroup ownerGroup, SecurityGroup partipiciantGroup,
-			SecurityGroup waitingGroup) {
-		this.setName(groupName);
-		this.setDescription(description);
-		this.setOwnerGroup(ownerGroup);
-		this.setPartipiciantGroup(partipiciantGroup);
-		this.setWaitingGroup(waitingGroup);
-		this.setType("LearningGroup");
+	public BusinessGroupImpl(String groupName, String description) {
+		setName(groupName);
+		setDescription(description);
 		// per default no waiting-list
 		Boolean disabled = new Boolean(false);
-		this.setWaitingListEnabled(disabled);
-		this.setAutoCloseRanksEnabled(disabled);
-		this.setLastUsage(new Date());
-		this.setLastModified(new Date());
-	}
-
-	/**
-	 * @param partipiciantGroupP
-	 */
-	public void setPartipiciantGroup(SecurityGroup partipiciantGroupP) {
-		this.partipiciantGroup = partipiciantGroupP;
-	}
-
-	/**
-	 * @param ownerGroupP
-	 */
-	public void setOwnerGroup(SecurityGroup ownerGroupP) {
-		this.ownerGroup = ownerGroupP;
+		setWaitingListEnabled(disabled);
+		setAutoCloseRanksEnabled(disabled);
+		setLastUsage(new Date());
+		setLastModified(new Date());
 	}
 
 	/**
@@ -241,25 +213,12 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 		this.resource = resource;
 	}
 
-	/**
-	 * @see org.olat.group.BusinessGroup#getOwnerGroup()
-	 */
-	public SecurityGroup getOwnerGroup() {
-		return ownerGroup;
+	public Group getBaseGroup() {
+		return baseGroup;
 	}
 
-	/**
-	 * @see org.olat.group.BusinessGroup#getPartipiciantGroup()
-	 */
-	public SecurityGroup getPartipiciantGroup() {
-		return partipiciantGroup;
-	}
-
-	/**
-	 * @see org.olat.group.BusinessGroup#getWaitingGroup()
-	 */
-	public SecurityGroup getWaitingGroup() {
-		return waitingGroup;
+	public void setBaseGroup(Group group) {
+		this.baseGroup = group;
 	}
 
 	/**
@@ -279,21 +238,6 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	}
 
 	/**
-	 * @see org.olat.group.BusinessGroup#getType()
-	 */
-	public String getType() {
-		return type;// BusinessGroupImpl.class.getName();
-	}
-
-	/**
-	 * @param type2
-	 */
-	private void setType(String type2) {
-		if (type2 != null && type2.length() > TYPE_MAXLENGTH) throw new AssertException("businessgrouptype in o_bg_business too long.");
-		this.type = type2;
-	}
-
-	/**
 	 * @see org.olat.group.BusinessGroup#getDisplayableType(java.util.Locale)
 	 */
 
@@ -309,20 +253,6 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 */
 	public Long getResourceableId() {
 		return getKey();
-	}
-
-	/**
-	 * @see org.olat.group.BusinessGroup#getGroupContext()
-	 */
-	public Long getGroupContextKey() {
-		return groupContextKey;
-	}
-
-	/**
-	 * @see org.olat.group.BusinessGroup#setGroupContext(org.olat.group.context.BGContext)
-	 */
-	public void setGroupContextKey(Long groupContextKey) {
-		this.groupContextKey = groupContextKey;
 	}
 
 	/**
@@ -362,11 +292,7 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "name=" + name + "::" + "type=" + type + "::" + super.toString();
-	}
-
-	public void setWaitingGroup(SecurityGroup waitingGroup) {
-		this.waitingGroup = waitingGroup;
+		return "name=" + name + "::" + "::" + super.toString();
 	}
 
 	public Boolean getAutoCloseRanksEnabled() {

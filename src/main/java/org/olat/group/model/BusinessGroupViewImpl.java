@@ -21,7 +21,7 @@ package org.olat.group.model;
 
 import java.util.Date;
 
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
@@ -44,9 +44,7 @@ public class BusinessGroupViewImpl extends PersistentObject implements BusinessG
 	private Integer minParticipants;
 	private Integer maxParticipants;
 	private OLATResource resource;
-	private SecurityGroup ownerGroup;
-	private SecurityGroup partipiciantGroup;
-	private SecurityGroup waitingGroup;
+	private Group baseGroup;
 	private Date lastUsage;
 	private Boolean waitingListEnabled;
 	private Boolean autoCloseRanksEnabled;
@@ -210,28 +208,12 @@ public class BusinessGroupViewImpl extends PersistentObject implements BusinessG
 		this.resource = resource;
 	}
 
-	public SecurityGroup getOwnerGroup() {
-		return ownerGroup;
+	public Group getBaseGroup() {
+		return baseGroup;
 	}
 
-	public void setOwnerGroup(SecurityGroup ownerGroup) {
-		this.ownerGroup = ownerGroup;
-	}
-
-	public SecurityGroup getPartipiciantGroup() {
-		return partipiciantGroup;
-	}
-
-	public void setPartipiciantGroup(SecurityGroup partipiciantGroup) {
-		this.partipiciantGroup = partipiciantGroup;
-	}
-
-	public SecurityGroup getWaitingGroup() {
-		return waitingGroup;
-	}
-	
-	public void setWaitingGroup(SecurityGroup waitingGroup) {
-		this.waitingGroup = waitingGroup;
+	public void setBaseGroup(Group group) {
+		this.baseGroup = group;
 	}
 
 	@Override

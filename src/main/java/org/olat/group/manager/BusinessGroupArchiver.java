@@ -23,13 +23,14 @@ package org.olat.group.manager;
 import java.io.File;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupMembership;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -40,6 +41,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.BGControllerFactory;
@@ -57,6 +59,8 @@ public class BusinessGroupArchiver {
 	private static final String DELIMITER = "\t";
 	private static final String EOL = "\n";
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
@@ -97,33 +101,48 @@ public class BusinessGroupArchiver {
 		buf.append(DELIMITER);
 		buf.append(translator.translate("archive.group.type"));
 		buf.append(DELIMITER);
-		buf.append(businessGroup.getType());
+		buf.append("LearningGroup");
 		buf.append(DELIMITER);
 		buf.append(translator.translate("archive.group.description"));
 		buf.append(DELIMITER);
 		buf.append(FilterFactory.getHtmlTagsFilter().filter(businessGroup.getDescription()));
 		buf.append(EOL);
 		
-		appendIdentityTable(buf, businessGroup.getOwnerGroup(), translator.translate("archive.header.owners"), translator);
-		appendIdentityTable(buf, businessGroup.getPartipiciantGroup(), translator.translate("archive.header.partipiciant"), translator);
+		List<GroupMembership> memberships = getMembers(businessGroup);
+		
+		appendIdentityTable(buf, memberships, GroupRoles.coach.name(), translator.translate("archive.header.owners"), translator);
+		appendIdentityTable(buf, memberships, GroupRoles.participant.name(), translator.translate("archive.header.partipiciant"), translator);
 		
 		if (businessGroup.getWaitingListEnabled() ) {
-			appendIdentityTable(buf, businessGroup.getWaitingGroup(), translator.translate("archive.header.waitinggroup"), translator);
+			appendIdentityTable(buf, memberships, GroupRoles.waiting.name(), translator.translate("archive.header.waitinggroup"), translator);
 		}
 		return buf.toString();
 	}
 
-	private void appendIdentityTable(StringBuffer buf, SecurityGroup group, String title, Translator translator) {
-		if (group != null) {
-			appendTitle(buf, title);
-			appendIdentityTableHeader(buf, translator);
-			for (Iterator<Object[]> iter = securityManager.getIdentitiesAndDateOfSecurityGroup(group).iterator(); iter.hasNext();) {
-				Object[] element = iter.next();
-				Identity identity = (Identity) element[0];
-				Date addedTo = (Date) element[1];
+	private void appendIdentityTable(StringBuffer buf, List<GroupMembership> members, String role, String title, Translator translator) {
+
+		appendTitle(buf, title);
+		appendIdentityTableHeader(buf, translator);
+		for (GroupMembership membership:members) {
+			if(role.equals(membership.getRole())) {
+				Identity identity = membership.getIdentity();
+				Date addedTo = membership.getCreationDate();
 				appendIdentity(buf, identity, addedTo, translator);
 			}
 		}
+	}
+	
+	public List<GroupMembership> getMembers(BusinessGroup group) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey");
+
+		List<GroupMembership> members = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), GroupMembership.class)
+				.setParameter("businessGroupKey", group.getKey())
+				.getResultList();
+		return members;
 	}
 
 	private void appendTitle(StringBuffer buf, String title) {

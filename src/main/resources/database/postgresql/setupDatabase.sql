@@ -27,13 +27,40 @@ create table o_bs_secgroup (
    creationdate timestamp,
    primary key (id)
 );
+
+create table o_bs_group (
+   id int8 not null,
+   creationdate timestamp not null,
+   g_name varchar(36),
+   primary key (id)
+);
+
+create table o_bs_group_member (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_role varchar(50) not null,
+   fk_group_id int8 not null,
+   fk_identity_id int8 not null,
+   primary key (id)
+);
+
+create table o_bs_grant (
+   id int8 not null,
+   creationdate timestamp not null,
+   g_role varchar(32) not null,
+   g_permission varchar(32) not null,
+   fk_group_id int8 not null,
+   fk_resource_id int8 not null,
+   primary key (id)
+);
+
 create table o_gp_business (
    group_id int8 not null,
    version int4 not null,
    lastmodified timestamp,
    creationdate timestamp,
    lastusage timestamp,
-   businessgrouptype varchar(15) not null,
    groupname varchar(255),
    external_id varchar(64),
    managed_flags varchar(255),
@@ -49,20 +76,9 @@ create table o_gp_business (
    participantspublic bool not null default false,
    waitingpublic bool not null default false,
    downloadmembers bool not null default false,
-   groupcontext_fk int8,
    fk_resource int8 unique,
-   fk_ownergroup int8 unique,
-   fk_partipiciantgroup int8 unique,
-   fk_waitinggroup int8 unique,
+   fk_group_id int8 unique,
    primary key (group_id)
-);
-create table o_gp_business_to_resource (
-   g_id bigint not null,
-   version int4 not null,
-   creationdate timestamp,
-   fk_resource int8 not null,
-   fk_group int8 not null,
-   primary key (g_id)
 );
 create table o_temporarykey (
    reglist_id int8 not null,
@@ -173,17 +189,6 @@ create table o_note (
    notetext text,
    primary key (note_id)
 );
-create table o_gp_bgcontext (
-   groupcontext_id int8 not null,
-   version int4 not null,
-   creationdate timestamp,
-   name varchar(255) not null,
-   descr text,
-   grouptype varchar(15) not null,
-   ownergroup_fk int8 unique,
-   defaultcontext bool not null,
-   primary key (groupcontext_id)
-);
 create table o_references (
    reference_id int8 not null,
    version int4 not null,
@@ -192,15 +197,6 @@ create table o_references (
    target_id int8 not null,
    userdata varchar(64),
    primary key (reference_id)
-);
-create table o_repositorymetadata (
-   metadataelement_id int8 not null,
-   version int4 not null,
-   creationdate timestamp,
-   name varchar(255) not null,
-   value text not null,
-   fk_repositoryentry int8 not null,
-   primary key (fk_repositoryentry, metadataelement_id)
 );
 create table o_user (
    user_id int8 not null,
@@ -219,14 +215,6 @@ create table o_userproperty (
    propname varchar(255) not null,
    propvalue varchar(255),
    primary key (fk_user_id, propname)
-);
-create table o_gp_bgcontextresource_rel (
-   groupcontextresource_id int8 not null,
-   version int4 not null,
-   creationdate timestamp,
-   oresource_id int8 not null,
-   groupcontext_fk int8 not null,
-   primary key (groupcontextresource_id)
 );
 create table o_message (
    message_id int8 not null,
@@ -297,7 +285,6 @@ create table o_gp_bgarea (
    creationdate timestamp,
    name varchar(255) not null,
    descr text,
-   groupcontext_fk int8,
    fk_resource int8 default null,
    primary key (area_id)
 );
@@ -307,7 +294,7 @@ create table o_repositoryentry (
    lastmodified timestamp,
    creationdate timestamp,
    lastusage timestamp,
-   softkey varchar(30) not null unique,
+   softkey varchar(36) not null unique,
    external_id varchar(64),
    external_ref varchar(64),
    managed_flags varchar(255),
@@ -315,9 +302,6 @@ create table o_repositoryentry (
    resourcename varchar(100) not null,
    fk_lifecycle int8,
    fk_olatresource int8 unique,
-   fk_ownergroup int8 unique,
-   fk_tutorgroup int8,
-   fk_participantgroup int8,
    description text,
    initialauthor varchar(128) not null,
    accesscode int4 not null,
@@ -331,6 +315,14 @@ create table o_repositoryentry (
    downloadcounter int8 not null,
    primary key (repositoryentry_id)
 );
+create table o_re_to_group (
+   id int8 not null,
+   creationdate timestamp not null,
+   r_defgroup boolean not null,
+   fk_group_id int8 not null,
+   fk_entry_id int8 not null,
+   primary key (id)
+);
 create table o_repositoryentry_cycle (
    id int8 not null,
    creationdate timestamp not null,
@@ -341,19 +333,6 @@ create table o_repositoryentry_cycle (
    r_validfrom timestamp,
    r_validto timestamp,
    primary key (id)
-);
-create table o_bookmark (
-   bookmark_id int8 not null,
-   version int4 not null,
-   creationdate timestamp,
-   owner_id int8 not null,
-   title varchar(255) not null,
-   description text,
-   detaildata varchar(255),
-   displayrestype varchar(50) not null,
-   olatrestype varchar(50) not null,
-   olatreskey int8,
-   primary key (bookmark_id)
 );
 create table o_bs_membership (
    id int8 not null,
@@ -623,7 +602,7 @@ create table o_ep_struct_el (
   fk_struct_root_id int8,
   fk_struct_root_map_id int8,
   fk_map_source_id int8,
-  fk_ownergroup int8,
+  fk_group_id int8,
   fk_olatresource int8 not null,
   primary key (structure_id)  
 );
@@ -1306,25 +1285,6 @@ create view o_bs_identity_short_v as (
    left join o_userproperty as p_email on (us.user_id = p_email.fk_user_id and p_email.propName = 'email')
 );
 
--- assessment results
--- help view
-create view o_gp_contextresource_2_group_v as (
-   select
-      cg_bg2resource.groupcontextresource_id as groupcontextresource_id,
-      cg_bgcontext.groupcontext_id as groupcontext_id,
-      cg_bgroup.group_id as group_id,
-      cg_bg2resource.oresource_id as oresource_id,
-      cg_bgcontext.grouptype as grouptype,
-      cg_bgcontext.defaultcontext as defaultcontext,
-      cg_bgroup.groupname as groupname,
-      cg_bgroup.fk_ownergroup as fk_ownergroup,
-      cg_bgroup.fk_partipiciantgroup as fk_partipiciantgroup,
-      cg_bgroup.fk_waitinggroup as fk_waitinggroup
-   from o_gp_bgcontextresource_rel as cg_bg2resource
-   inner join o_gp_bgcontext as cg_bgcontext on (cg_bg2resource.groupcontext_fk = cg_bgcontext.groupcontext_id)
-   inner join o_gp_business as cg_bgroup on (cg_bg2resource.groupcontext_fk = cg_bgroup.groupcontext_fk)
-);
-
 -- eportfolio views
 create or replace view o_ep_notifications_struct_v as (
    select
@@ -1392,52 +1352,39 @@ create or replace view o_ep_notifications_comment_v as (
    left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(ucomment.ressubpath as integer))
 );
 
-create or replace view o_gp_business_to_repository_v as (
+create view o_gp_business_to_repository_v as (
 	select 
 		grp.group_id as grp_id,
 		repoentry.repositoryentry_id as re_id,
 		repoentry.displayname as re_displayname
 	from o_gp_business as grp
-	inner join o_gp_business_to_resource as relation on (relation.fk_group = grp.group_id)
-	inner join o_repositoryentry as repoentry on (repoentry.fk_olatresource = relation.fk_resource)
+	inner join o_re_to_group as relation on (relation.fk_group_id = grp.fk_group_id)
+	inner join o_repositoryentry as repoentry on (repoentry.repositoryentry_id = relation.fk_entry_id)
 );
 
-create or replace view o_bs_gp_membership_v as (
+create view o_bs_gp_membership_v as (
    select
       membership.id as membership_id,
-      membership.identity_id as identity_id,
+      membership.fk_identity_id as fk_identity_id,
       membership.lastmodified as lastmodified,
       membership.creationdate as creationdate,
-      owned_gp.group_id as owned_gp_id,
-      participant_gp.group_id as participant_gp_id,
-      waiting_gp.group_id as waiting_gp_id
-   from o_bs_membership as membership
-   left join o_gp_business as owned_gp on (membership.secgroup_id = owned_gp.fk_ownergroup)
-   left join o_gp_business as participant_gp on (membership.secgroup_id = participant_gp.fk_partipiciantgroup)
-   left join o_gp_business as waiting_gp on (membership.secgroup_id = waiting_gp.fk_waitinggroup)
-   where (owned_gp.group_id is not null or participant_gp.group_id is not null or waiting_gp.group_id is not null)
+      membership.g_role as g_role,
+      gp.group_id as group_id
+   from o_bs_group_member as membership
+   inner join o_gp_business as gp on (gp.fk_group_id=membership.fk_group_id)
 );
 
-create or replace view o_gp_member_v as
+create view o_gp_member_v as (
    select
       gp.group_id as bg_id,
       gp.groupname as bg_name,
       gp.creationdate as bg_creationdate,
       gp.managed_flags as bg_managed_flags,
       gp.descr as bg_desc,
-      membership.identity_id as member_id
-   from o_bs_membership membership
-   inner join o_gp_business gp on (membership.secgroup_id = gp.fk_ownergroup) 
-   union select
-      gp.group_id as bg_id,
-      gp.groupname as bg_name,
-      gp.creationdate as bg_creationdate,
-      gp.managed_flags as bg_managed_flags,
-      gp.descr as bg_desc,
-      membership.identity_id as member_id
-   from o_bs_membership membership
-   inner join o_gp_business gp on (membership.secgroup_id = gp.fk_partipiciantgroup)
-;
+      membership.fk_identity_id as member_id
+   from o_gp_business as gp
+   inner join o_bs_group_member as membership on (membership.fk_group_id = gp.fk_group_id and membership.g_role in ('coach','participant'))
+);
 
 create or replace view o_gp_business_v  as (
    select
@@ -1453,12 +1400,12 @@ create or replace view o_gp_business_v  as (
       gp.autocloseranks_enabled as autocloseranks_enabled,
       gp.external_id as external_id,
       gp.managed_flags as managed_flags,
-      (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
+      (select count(part.id) from o_bs_group_member as part where part.fk_group_id = gp.fk_group_id and part.g_role='participant') as num_of_participants,
       (select count(pending.reservation_id) from o_ac_reservation as pending where pending.fk_resource = gp.fk_resource) as num_of_pendings,
-      (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
+      (select count(own.id) from o_bs_group_member as own where own.fk_group_id = gp.fk_group_id and own.g_role='coach') as num_of_owners,
       (case when gp.waitinglist_enabled = true
          then 
-           (select count(waiting.id) from o_bs_membership as waiting where waiting.secgroup_id = gp.fk_partipiciantgroup)
+           (select count(waiting.id) from o_bs_group_member as waiting where waiting.fk_group_id = gp.fk_group_id and waiting.g_role='waiting')
          else
            0
       end) as num_waiting,
@@ -1472,126 +1419,116 @@ create or replace view o_gp_business_v  as (
          where offer.fk_resource_id = gp.fk_resource
          and offer.is_valid=true
       ) as num_of_offers,
-      (select count(relation.fk_resource) from o_gp_business_to_resource as relation 
-         where relation.fk_group = gp.group_id
+      (select count(relation.fk_entry_id) from o_re_to_group as relation 
+         where relation.fk_group_id = gp.fk_group_id
       ) as num_of_relations,
       gp.fk_resource as fk_resource,
-      gp.fk_ownergroup as fk_ownergroup,
-      gp.fk_partipiciantgroup as fk_partipiciantgroup,
-      gp.fk_waitinggroup as fk_waitinggroup
+      gp.fk_group_id as fk_group_id
    from o_gp_business as gp
 );
 
 create or replace view o_re_membership_v as (
    select
-      membership.id as membership_id,
-      membership.identity_id as identity_id,
-      membership.lastmodified as lastmodified,
-      membership.creationdate as creationdate,
-      re_owner_member.repositoryentry_id as owner_re_id,
-      re_owner_member.fk_olatresource as owner_ores_id,
-      re_tutor_member.repositoryentry_id as tutor_re_id,
-      re_tutor_member.fk_olatresource as tutor_ores_id,
-      re_part_member.repositoryentry_id as participant_re_id,
-      re_part_member.fk_olatresource as participant_ores_id
-   from o_bs_membership as membership
-   left join o_repositoryentry as re_part_member on (membership.secgroup_id = re_part_member.fk_participantgroup)
-   left join o_repositoryentry as re_tutor_member on (membership.secgroup_id = re_tutor_member.fk_tutorgroup)
-   left join o_repositoryentry as re_owner_member on (membership.secgroup_id = re_owner_member.fk_ownergroup)
+      bmember.id as membership_id,
+      bmember.creationdate as creationdate,
+      bmember.lastmodified as lastmodified,
+      bmember.fk_identity_id as fk_identity_id,
+      bmember.g_role as g_role,
+      re.repositoryentry_id as fk_entry_id
+   from o_repositoryentry as re
+   inner join o_re_to_group relgroup on (relgroup.fk_entry_id=re.repositoryentry_id)
+   inner join o_bs_group_member as bmember on (bmember.fk_group_id=relgroup.fk_group_id) 
 );
-
-create or replace view o_re_participant_v as
-select
-   re.repositoryentry_id as re_id,
-   re_member.identity_id as member_id
-   from o_repositoryentry re
-   inner join o_bs_membership re_member on (re_member.secgroup_id = re.fk_participantgroup)
-union select
-   re.repositoryentry_id as re_id,
-   bg_member.identity_id as member_id
-   from o_repositoryentry re
-   inner join o_gp_business_to_resource bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
-   inner join o_gp_business bgroup on (bgroup.group_id = bgroup_rel.fk_group)
-   inner join o_bs_membership bg_member on (bg_member.secgroup_id = bgroup.fk_partipiciantgroup)
-;
-
-create or replace view o_re_tutor_v as
-select
-   re.repositoryentry_id as re_id,
-   re_member.identity_id as member_id
-   from o_repositoryentry re
-   inner join o_bs_membership re_member on (re_member.secgroup_id = re.fk_tutorgroup)
-union select
-   re.repositoryentry_id as re_id,
-   bg_member.identity_id as member_id
-   from o_repositoryentry re
-   inner join o_gp_business_to_resource bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
-   inner join o_gp_business bgroup on (bgroup.group_id = bgroup_rel.fk_group)
-   inner join o_bs_membership bg_member on (bg_member.secgroup_id = bgroup.fk_ownergroup)
-;
-
-create view o_gp_contact_participant_v as
-   select
-      bg_part_member.id as membership_id,
-      bgroup.group_id as bg_id,
-      bgroup.groupname as bg_name,
-      bgroup.fk_partipiciantgroup as bg_part_sec_id,
-      bgroup.fk_ownergroup as bg_owner_sec_id,
-      bg_part_member.identity_id as bg_part_member_id,
-      ident.name as bg_part_member_name 
-   from o_gp_business as bgroup
-   inner join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
-   inner join o_bs_identity as ident on (bg_part_member.identity_id = ident.id)
-   where bgroup.participantsintern=true
-;
   
 -- contacts
-create view o_gp_contact_owner_v as
+create view o_gp_contactkey_v as (
    select
-      bg_owner_member.id as membership_id,
-      bgroup.group_id as bg_id,
-      bgroup.groupname as bg_name,
-      bgroup.fk_partipiciantgroup as bg_part_sec_id,
-      bgroup.fk_ownergroup as bg_owner_sec_id,
-      bg_owner_member.identity_id as bg_owner_member_id,
-      ident.name as bg_owner_member_name
+      bg_member.id as membership_id,
+      bg_member.fk_identity_id as member_id,
+      bg_member.g_role as membership_role,
+      bg_me.fk_identity_id as me_id,
+      bgroup.group_id as bg_id
    from o_gp_business as bgroup
-   inner join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
-   inner join o_bs_identity as ident on (bg_owner_member.identity_id = ident.id)
-   where bgroup.ownersintern=true
-;
+   inner join o_bs_group_member as bg_member on (bg_member.fk_group_id = bgroup.fk_group_id)
+   inner join o_bs_group_member as bg_me on (bg_me.fk_group_id = bgroup.fk_group_id)
+   where
+      (bgroup.ownersintern=true and bg_member.g_role='coach')
+      or
+      (bgroup.participantsintern=true and bg_member.g_role='participant')
+);
 
-create view o_gp_contactkey_participant_v as
+create view o_gp_contactext_v as (
    select
-      bg_part_member.id as membership_id,
-      bgroup.fk_partipiciantgroup as bg_part_sec_id,
-      bgroup.fk_ownergroup as bg_owner_sec_id,
-      bg_part_member.identity_id as bg_part_member_id
+      bg_member.id as membership_id,
+      bg_member.fk_identity_id as member_id,
+      bg_member.g_role as membership_role,
+      id_member.name as member_name,
+      first_member.propvalue as member_firstname,
+      last_member.propvalue as member_lastname,
+      bg_me.fk_identity_id as me_id,
+      bgroup.group_id as bg_id,
+      bgroup.group_id as bg_name
    from o_gp_business as bgroup
-   inner join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
-   where bgroup.participantsintern=true
-;
-  
-create view o_gp_contactkey_owner_v as
-   select
-      bg_owner_member.id as membership_id,
-      bgroup.fk_partipiciantgroup as bg_part_sec_id,
-      bgroup.fk_ownergroup as bg_owner_sec_id,
-      bg_owner_member.identity_id as bg_owner_member_id
-   from o_gp_business as bgroup
-   inner join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
-   where bgroup.ownersintern=true
-;
+   inner join o_bs_group_member as bg_member on (bg_member.fk_group_id = bgroup.fk_group_id)
+   inner join o_bs_identity as id_member on (bg_member.fk_identity_id = id_member.id)
+   inner join o_user as us_member on (id_member.fk_user_id = us_member.user_id)
+   inner join o_userproperty as first_member on (first_member.fk_user_id = us_member.user_id and first_member.propname='firstName')
+   inner join o_userproperty as last_member on (last_member.fk_user_id = us_member.user_id and last_member.propname='lastName')
+   inner join o_bs_group_member as bg_me on (bg_me.fk_group_id = bgroup.fk_group_id)
+   where
+      (bgroup.ownersintern=true and bg_member.g_role='coach')
+      or
+      (bgroup.participantsintern=true and bg_member.g_role='participant')
+);
 
 -- coaching
-create or replace view o_as_eff_statement_groups_v as (
+create view o_as_eff_statement_students_v as (
+   select
+      sg_re.repositoryentry_id as re_id,
+      sg_coach.fk_identity_id as tutor_id,
+      sg_participant.fk_identity_id as student_id,
+      sg_statement.id as st_id,
+      (case when sg_statement.passed = true then 1 else 0 end) as st_passed,
+      (case when sg_statement.passed = false then 1 else 0 end) as st_failed,
+      (case when sg_statement.passed is null then 1 else 0 end) as st_not_attempted,
+      sg_statement.score as st_score,
+      pg_initial_launch.id as pg_id
+   from o_repositoryentry as sg_re
+   inner join o_re_to_group as togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)
+   inner join o_bs_group_member as sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role='coach')
+   inner join o_bs_group_member as sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')
+   left join o_as_eff_statement as sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)
+   left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
+);
+
+create view o_as_eff_statement_courses_v as (
+   select
+      sg_re.repositoryentry_id as re_id,
+      sg_re.displayname as re_name,
+      sg_coach.fk_identity_id as tutor_id,
+      sg_participant.fk_identity_id as student_id,
+      sg_statement.id as st_id,
+      (case when sg_statement.passed = true then 1 else 0 end) as st_passed,
+      (case when sg_statement.passed = false then 1 else 0 end) as st_failed,
+      (case when sg_statement.passed is null then 1 else 0 end) as st_not_attempted,
+      sg_statement.score as st_score,
+      pg_initial_launch.id as pg_id
+   from o_repositoryentry as sg_re
+   inner join o_re_to_group as togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)
+   inner join o_bs_group_member as sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role='coach')
+   inner join o_bs_group_member as sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')
+   left join o_as_eff_statement as sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)
+   left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
+);
+
+create view o_as_eff_statement_groups_v as (
    select
       sg_re.repositoryentry_id as re_id,
       sg_re.displayname as re_name,
       sg_bg.group_id as bg_id,
       sg_bg.groupname as bg_name,
-      sg_tutorMembership.identity_id as tutor_id,
-      sg_studentMembership.identity_id as student_id,
+      sg_coach.fk_identity_id as tutor_id,
+      sg_participant.fk_identity_id as student_id,
       sg_statement.id as st_id,
       (case when sg_statement.passed = true then 1 else 0 end) as st_passed,
       (case when sg_statement.passed = false then 1 else 0 end) as st_failed,
@@ -1599,85 +1536,15 @@ create or replace view o_as_eff_statement_groups_v as (
       sg_statement.score as st_score,
       pg_initial_launch.id as pg_id
    from o_repositoryentry as sg_re
-   inner join o_olatresource as sg_reResource on (sg_re.fk_olatresource = sg_reResource.resource_id and sg_reResource.resname = 'CourseModule')
-   inner join o_gp_business_to_resource as sg_bg2resource on (sg_bg2resource.fk_resource = sg_reResource.resource_id)
-   inner join o_gp_business as sg_bg on (sg_bg.group_id = sg_bg2resource.fk_group)
-   inner join o_bs_membership as sg_tutorMembership on (sg_bg.fk_ownergroup = sg_tutorMembership.secgroup_id)
-   inner join o_bs_membership as sg_studentMembership on (sg_bg.fk_partipiciantgroup = sg_studentMembership.secgroup_id)
-   left join o_as_eff_statement as sg_statement on (sg_statement.fk_resource_id = sg_reResource.resource_id and sg_statement.fk_identity = sg_studentMembership.identity_id)
-   left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_reResource.resource_id and pg_initial_launch.fk_identity = sg_studentMembership.identity_id)
-   group by sg_re.repositoryentry_id, sg_re.displayname, sg_bg.group_id, sg_bg.groupname, sg_tutorMembership.identity_id, 
-      sg_studentMembership.identity_id, sg_statement.id, sg_statement.passed, sg_statement.score, pg_initial_launch.id
+   inner join o_re_to_group as togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)
+   inner join o_gp_business as sg_bg on (sg_bg.fk_group_id=togroup.fk_group_id)
+   inner join o_bs_group_member as sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role='coach')
+   inner join o_bs_group_member as sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')
+   left join o_as_eff_statement as sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)
+   left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
 );
 
-create or replace view o_as_eff_statement_grouped_v as (
-   select
-      sg_re.repositoryentry_id as re_id,
-      sg_re.displayname as re_name,
-      sg_tutorMembership.identity_id as tutor_id,
-      sg_studentMembership.identity_id as student_id,
-      sg_statement.id as st_id,
-      (case when sg_statement.passed = true then 1 else 0 end) as st_passed,
-      (case when sg_statement.passed = false then 1 else 0 end) as st_failed,
-      (case when sg_statement.passed is null then 1 else 0 end) as st_not_attempted,
-      sg_statement.score as st_score,
-      pg_initial_launch.id as pg_id
-   from o_repositoryentry as sg_re
-   inner join o_olatresource as sg_reResource on (sg_re.fk_olatresource = sg_reResource.resource_id and sg_reResource.resname = 'CourseModule')
-   inner join o_gp_business_to_resource as sg_bg2resource on (sg_bg2resource.fk_resource = sg_reResource.resource_id)
-   inner join o_gp_business as sg_bg on (sg_bg.group_id = sg_bg2resource.fk_group)
-   inner join o_bs_membership as sg_tutorMembership on (sg_bg.fk_ownergroup = sg_tutorMembership.secgroup_id)
-   inner join o_bs_membership as sg_studentMembership on (sg_bg.fk_partipiciantgroup = sg_studentMembership.secgroup_id)
-   left join o_as_eff_statement as sg_statement on (sg_statement.fk_resource_id = sg_reResource.resource_id and sg_statement.fk_identity = sg_studentMembership.identity_id)
-   left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_reResource.resource_id and pg_initial_launch.fk_identity = sg_studentMembership.identity_id)
-   group by sg_re.repositoryentry_id, sg_re.displayname, sg_tutorMembership.identity_id, 
-      sg_studentMembership.identity_id, sg_statement.id, sg_statement.passed, sg_statement.score, pg_initial_launch.id
-);
-
-create view o_as_eff_statement_members_v as (
-   select
-      sm_re.repositoryentry_id as re_id,
-      sm_re.displayname as re_name,
-      sm_tutorMembership.identity_id as tutor_id,
-      sm_studentMembership.identity_id as student_id,
-      sm_statement.id as st_id,
-      (case when sm_statement.passed = true then 1 else 0 end) as st_passed,
-      (case when sm_statement.passed = false then 1 else 0 end) as st_failed,
-      (case when sm_statement.passed is null then 1 else 0 end) as st_not_attempted,
-      sm_statement.score as st_score,
-      pm_initial_launch.id as pg_id
-   from o_repositoryentry as sm_re
-   inner join o_olatresource as sm_reResource on (sm_re.fk_olatresource = sm_reResource.resource_id and sm_reResource.resname = 'CourseModule')
-   inner join o_bs_membership as sm_tutorMembership on (sm_re.fk_tutorgroup = sm_tutorMembership.secgroup_id)
-   inner join o_bs_membership as sm_studentMembership on (sm_re.fk_participantgroup = sm_studentMembership.secgroup_id)
-   left join o_as_eff_statement as sm_statement on (sm_statement.fk_resource_id = sm_reResource.resource_id and sm_statement.fk_identity = sm_studentMembership.identity_id)
-   left join o_as_user_course_infos as pm_initial_launch on (pm_initial_launch.fk_resource_id = sm_reResource.resource_id and pm_initial_launch.fk_identity = sm_studentMembership.identity_id)
-);
-
-create or replace view o_as_eff_statement_members_strict_v as (
-   select
-      sm_re.repositoryentry_id as re_id,
-      sm_re.displayname as re_name,
-      sm_tutorMembership.identity_id as tutor_id,
-      sm_studentMembership.identity_id as student_id,
-      sm_statement.id as st_id,
-      (case when sm_statement.passed = true then 1 else 0 end) as st_passed,
-      (case when sm_statement.passed = false then 1 else 0 end) as st_failed,
-      (case when sm_statement.passed is null then 1 else 0 end) as st_not_attempted,
-      sm_statement.score as st_score,
-      pm_initial_launch.id as pg_id
-   from o_repositoryentry as sm_re
-   inner join o_olatresource as sm_reResource on (
-      sm_re.fk_olatresource = sm_reResource.resource_id
-      and sm_reResource.resname = 'CourseModule'
-      and not exists (select * from o_gp_business_to_resource as sm_re2group where sm_reResource.resource_id = sm_re2group.fk_resource)
-   )
-   inner join o_bs_membership as sm_tutorMembership on (sm_re.fk_tutorgroup = sm_tutorMembership.secgroup_id)
-   inner join o_bs_membership as sm_studentMembership on (sm_re.fk_participantgroup = sm_studentMembership.secgroup_id)
-   left join o_as_eff_statement as sm_statement on (sm_statement.fk_resource_id = sm_reResource.resource_id and sm_statement.fk_identity = sm_studentMembership.identity_id)
-   left join o_as_user_course_infos as pm_initial_launch on (pm_initial_launch.fk_resource_id = sm_reResource.resource_id and pm_initial_launch.fk_identity = sm_studentMembership.identity_id)
-);
-
+-- instant messaging
 create or replace view o_im_roster_entry_v as (
    select
       entry.id as re_id,
@@ -1693,7 +1560,6 @@ create or replace view o_im_roster_entry_v as (
    from o_im_roster_entry as entry
    inner join o_bs_identity as ident on (entry.fk_identity_id = ident.id)
 );
-
 
 -- views with rating
 create or replace view o_qp_item_v as (
@@ -1920,43 +1786,30 @@ create index category_idx on o_property (category);
 create index name_idx1 on o_property (name);
 create index restype_idx1 on o_property (resourcetypename);
 
--- business group
-alter table o_gp_business add constraint FKCEEB8A86DF6BCD14 foreign key (groupcontext_fk) references o_gp_bgcontext;
-create index idx_grp_to_ctxt_idx on o_gp_business (groupcontext_fk);
-alter table o_gp_business add constraint FKCEEB8A86A1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup;
--- index idx_grp_to_own_grp_idx created on unique constraint
-alter table o_gp_business add constraint FKCEEB8A86C06E3EF3 foreign key (fk_partipiciantgroup) references o_bs_secgroup;
--- index idx_grp_to_part_grp_idx created on unique cosntraint
-alter table o_gp_business add constraint idx_bgp_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
--- index idx_grp_to_rsrc_idx create on unique constraint
-alter table o_gp_business add constraint idx_bgp_waiting foreign key (fk_waitinggroup) references o_bs_secgroup (id);
--- index idx_grp_to_wait_grp_idx created on unique constraint
+-- group
+alter table o_bs_group_member add constraint member_identity_ctx foreign key (fk_identity_id) references o_bs_identity (id);
+alter table o_bs_group_member add constraint member_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+create index member_to_identity_idx on o_bs_group_member (fk_identity_id);
+create index member_to_group_idx on o_bs_group_member (fk_group_id);
+create index member_to_grp_role_idx on o_bs_group_member (g_role);
 
-create index idx_grp_to_sec_grps_idx on o_gp_business (fk_ownergroup, fk_partipiciantgroup, fk_waitinggroup);
+alter table o_re_to_group add constraint re_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_re_to_group add constraint re_to_group_re_ctx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+create index re_to_group_group_idx on o_re_to_group (fk_group_id);
+create index re_to_group_re_idx on o_re_to_group (fk_entry_id);
+
+alter table o_gp_business add constraint gp_to_group_business_ctx foreign key (fk_group_id) references o_bs_group (id);
+create index gp_to_group_group_idx on o_gp_business (fk_group_id);
+
+-- business group
 create index gp_name_idx on o_gp_business (groupname);
 create index idx_grp_lifecycle_soft_idx on o_gp_business (external_id);
-
-alter table o_gp_business_to_resource add constraint idx_bgp_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
-create index idx_grrsrc_to_rsrc_idx on o_gp_business_to_resource (fk_resource);
-alter table o_gp_business_to_resource add constraint idx_bgp_to_rsrc_group foreign key (fk_group) references o_gp_business (group_id);
-create index idx_grrsrc_to_grp_idx  on o_gp_business_to_resource (fk_group);
-create index idx_grrsrc_to_rsrc_grp_idx  on o_gp_business_to_resource (fk_resource, fk_group);
 
 alter table o_bs_namedgroup add constraint FKBAFCBBC4B85B522C foreign key (secgroup_id) references o_bs_secgroup;
 create index FKBAFCBBC4B85B522C on o_bs_namedgroup (secgroup_id);
 create index groupname_idx on o_bs_namedgroup (groupname);
 
--- context (deprecated)
-alter table o_gp_bgcontext add constraint FK1C154FC47E4A0638 foreign key (ownergroup_fk) references o_bs_secgroup;
-create index type_idx on o_gp_bgcontext (grouptype);
-create index default_idx on o_gp_bgcontext (defaultcontext);
-create index name_idx5 on o_gp_bgcontext (name);
-
-alter table o_gp_bgcontextresource_rel add constraint FK9903BEAC9F9C3F1D foreign key (oresource_id) references o_olatresource;
-alter table o_gp_bgcontextresource_rel add constraint FK9903BEACDF6BCD14 foreign key (groupcontext_fk) references o_gp_bgcontext;
-
 -- area
-alter table o_gp_bgarea add constraint FK9EFAF698DF6BCD14 foreign key (groupcontext_fk) references o_gp_bgcontext;
 alter table o_gp_bgarea add constraint idx_area_to_resource foreign key (fk_resource) references o_olatresource (resource_id);
 create index idx_area_resource on o_gp_bgarea (fk_resource);
 create index name_idx6 on o_gp_bgarea (name);
@@ -2048,15 +1901,6 @@ create index name_idx4 on o_olatresource (resname);
 create index id_idx on o_olatresource (resid);
 
 -- repository 
-alter table o_repositoryentry add constraint FK2F9C439888C31018 foreign key (fk_olatresource) references o_olatresource;
--- index created idx_repoentry_rsrc_idx on unique constraint
-alter table o_repositoryentry add constraint FK2F9C4398A1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup;
--- index created idx_repoentry_owner_idx on unique cosntraint
-alter table o_repositoryentry add constraint repo_tutor_sec_group_ctx foreign key (fk_tutorgroup) references o_bs_secgroup (id);
-create index idx_repoentry_tutor on o_repositoryentry(fk_tutorgroup);
-alter table o_repositoryentry add constraint repo_parti_sec_group_ctx foreign key (fk_participantgroup) references o_bs_secgroup (id);
-create index idx_repoentry_parti on o_repositoryentry(fk_participantgroup);
-
 create index descritpion_idx on o_repositoryentry (description);
 create index access_idx on o_repositoryentry (accesscode);
 create index initialAuthor_idx on o_repositoryentry (initialauthor);
@@ -2070,9 +1914,6 @@ create index idx_re_lifecycle_extref_idx on o_repositoryentry (external_ref);
 
 alter table o_repositoryentry add constraint idx_re_lifecycle_fk foreign key (fk_lifecycle) references o_repositoryentry_cycle(id);
 create index idx_re_lifecycle_idx on o_repositoryentry (fk_lifecycle);
-
--- (deprecated)
-alter table o_repositorymetadata add constraint FKDB97A6493F14E3EE foreign key (fk_repositoryentry) references o_repositoryentry;
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
@@ -2108,9 +1949,6 @@ alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (f
 create index idx_rsrv_to_rsrc_idx on o_ac_reservation(fk_resource);
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_identity foreign key (fk_identity) references o_bs_identity (id);
 create index idx_rsrv_to_rsrc_id_idx on o_ac_reservation(fk_identity);
-
--- bookmark (deprecated)
-alter table o_bookmark add constraint FK68C4E30663219E27 foreign key (owner_id) references o_bs_identity;
 
 -- note
 alter table o_note add constraint FKC2D855C263219E27 foreign key (owner_id) references o_bs_identity;
@@ -2199,8 +2037,6 @@ create index idx_artfeact_to_struct_idx on o_ep_artefact (fk_struct_el_id);
 
 alter table o_ep_struct_el add constraint FKF26C8375236F26X foreign key (fk_olatresource) references o_olatresource (resource_id);
 create index idx_structel_to_rsrc_idx on o_ep_struct_el (fk_olatresource);
-alter table o_ep_struct_el add constraint FKF26C8375236F29X foreign key (fk_ownergroup) references o_bs_secgroup (id);
-create index idx_structel_to_ownegrp_idx on o_ep_struct_el (fk_ownergroup);
 alter table o_ep_struct_el add constraint FK4ECC1C8D636191A1 foreign key (fk_map_source_id) references o_ep_struct_el (structure_id);
 create index idx_structel_to_map_idx on o_ep_struct_el (fk_map_source_id);
 alter table o_ep_struct_el add constraint FK4ECC1C8D76990817 foreign key (fk_struct_root_id) references o_ep_struct_el (structure_id);

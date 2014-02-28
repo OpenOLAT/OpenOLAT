@@ -41,7 +41,7 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.Component;
@@ -144,7 +144,7 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 	// Test for WaitingList
 	///////////////////////
 	/**
-	 * Enroll 3 idenities (group with max-size=2 and waiting-list).
+	 * Enroll 3 identities (group with max-size=2 and waiting-list).
 	 * Cancel enrollment. Check size after each step.
 	 */
 	@Test public void testEnroll() throws Exception {
@@ -165,7 +165,7 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 		enrollmentManager.doEnroll(wg1, wg1Roles, bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator,
 				new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());	
 		assertTrue("Enrollment failed, user='wg1'", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
-		int participantsCounter = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(bgWithWaitingList.getPartipiciantGroup());
+		int participantsCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.participant.name());
 		assertTrue("Wrong number of participants," + participantsCounter , participantsCounter == 1);
 		// 2. enroll wg2 user
 		ienv = new IdentityEnvironment();
@@ -176,7 +176,7 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 				new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());	
 		assertTrue("Enrollment failed, user='wg2'", businessGroupService.isIdentityInBusinessGroup(wg2,bgWithWaitingList));	
 		assertTrue("Enrollment failed, user='wg1'", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
-		participantsCounter = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(bgWithWaitingList.getPartipiciantGroup());
+		participantsCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.participant.name());
 		assertTrue("Wrong number of participants," + participantsCounter , participantsCounter == 2);
 		// 3. enroll wg3 user => list is full => waiting-list
 		ienv = new IdentityEnvironment();
@@ -186,13 +186,13 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 		enrollmentManager.doEnroll(wg3, wg3Roles, bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator,
 				new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());		
 		assertFalse("Wrong enrollment, user='wg3' is in PartipiciantGroup, must be on waiting-list", businessGroupService.isIdentityInBusinessGroup(wg3,bgWithWaitingList));	
-		assertFalse("Wrong enrollment, user='wg3' is in PartipiciantGroup, must be on waiting-list", BaseSecurityManager.getInstance().isIdentityInSecurityGroup(wg3, bgWithWaitingList.getPartipiciantGroup()));
-		assertTrue("Wrong enrollment, user='wg3' must be on waiting-list", BaseSecurityManager.getInstance().isIdentityInSecurityGroup(wg3, bgWithWaitingList.getWaitingGroup()));
+		assertFalse("Wrong enrollment, user='wg3' is in PartipiciantGroup, must be on waiting-list", businessGroupService.hasRoles(wg3, bgWithWaitingList, GroupRoles.participant.name()));
+		assertTrue("Wrong enrollment, user='wg3' must be on waiting-list", businessGroupService.hasRoles(wg3, bgWithWaitingList, GroupRoles.waiting.name()));
 		assertTrue("Enrollment failed, user='wg2'", businessGroupService.isIdentityInBusinessGroup(wg2,bgWithWaitingList));	
 		assertTrue("Enrollment failed, user='wg1'", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
-		participantsCounter = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(bgWithWaitingList.getPartipiciantGroup());
+		participantsCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.participant.name());
 		assertTrue("Wrong number of participants," + participantsCounter , participantsCounter == 2);
-		int waitingListCounter = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(bgWithWaitingList.getWaitingGroup());
+		int waitingListCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.waiting.name());
 		assertTrue("Wrong number of waiting-list, must be 1, is " + waitingListCounter , waitingListCounter == 1);
 		// cancel enrollment for wg2 => transfer wg3 from waiting-list to participants
 		ienv = new IdentityEnvironment();
@@ -203,9 +203,9 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 		assertFalse("Cancel enrollment failed, user='wg2' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg2,bgWithWaitingList));	
 		assertTrue("Enrollment failed, user='wg3'", businessGroupService.isIdentityInBusinessGroup(wg3,bgWithWaitingList));	
 		assertTrue("Enrollment failed, user='wg1'", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
-		participantsCounter = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(bgWithWaitingList.getPartipiciantGroup());
+		participantsCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.participant.name());
 		assertTrue("Wrong number of participants, must be 2, is " + participantsCounter , participantsCounter == 2);
-		waitingListCounter = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(bgWithWaitingList.getWaitingGroup());
+		waitingListCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.waiting.name());
 		assertTrue("Wrong number of waiting-list, must be 0, is " + waitingListCounter , waitingListCounter == 0);
 		// cancel enrollment for wg1 
 		ienv = new IdentityEnvironment();
@@ -216,9 +216,9 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 		assertFalse("Cancel enrollment failed, user='wg2' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg2,bgWithWaitingList));	
 		assertFalse("Cancel enrollment failed, user='wg1' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
 		assertTrue("Enrollment failed, user='wg3'", businessGroupService.isIdentityInBusinessGroup(wg3,bgWithWaitingList));	
-		participantsCounter = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(bgWithWaitingList.getPartipiciantGroup());
+		participantsCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.participant.name());
 		assertTrue("Wrong number of participants, must be 1, is " + participantsCounter , participantsCounter == 1);
-		waitingListCounter = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(bgWithWaitingList.getWaitingGroup());
+		waitingListCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.waiting.name());
 		assertTrue("Wrong number of waiting-list, must be 0, is " + waitingListCounter , waitingListCounter == 0);
 		// cancel enrollment for wg3 
 		ienv = new IdentityEnvironment();
@@ -229,9 +229,9 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 		assertFalse("Cancel enrollment failed, user='wg3' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg3,bgWithWaitingList));	
 		assertFalse("Cancel enrollment failed, user='wg2' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg2,bgWithWaitingList));	
 		assertFalse("Cancel enrollment failed, user='wg1' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
-		participantsCounter = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(bgWithWaitingList.getPartipiciantGroup());
+		participantsCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.participant.name());
 		assertTrue("Wrong number of participants, must be 0, is " + participantsCounter , participantsCounter == 0);
-		waitingListCounter = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(bgWithWaitingList.getWaitingGroup());
+		waitingListCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.waiting.name());
 		assertTrue("Wrong number of waiting-list, must be 0, is " + waitingListCounter , waitingListCounter == 0);
 
 		log.info("testEnroll: done...");
@@ -265,16 +265,14 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 			fail("" + e.getMessage());
 		}
 
-		List<Identity> enrolledIds = securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+		List<Identity> enrolledIds = businessGroupService.getMembers(group, GroupRoles.participant.name());
 		Assert.assertNotNull(enrolledIds);
 		Assert.assertEquals(10, enrolledIds.size());
 		
-		List<Identity> waitingIds = securityManager.getIdentitiesOfSecurityGroup(group.getWaitingGroup());
+		List<Identity> waitingIds = businessGroupService.getMembers(group, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingIds);
 		Assert.assertEquals(ids.size() - 10, waitingIds.size());
 	}
-	
-	
 
 	private class EnrollThread extends Thread {
 		private final ENCourseNode enNode;

@@ -43,8 +43,6 @@ import java.util.zip.ZipOutputStream;
 import org.apache.poi.util.IOUtils;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.notification.CalendarNotificationManager;
@@ -68,6 +66,7 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
@@ -105,8 +104,8 @@ import org.olat.course.config.CourseConfigManagerImpl;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.PublishProcess;
-import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.PublishSetInformations;
+import org.olat.course.editor.StatusDescription;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -132,6 +131,7 @@ import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceImpl;
@@ -164,12 +164,13 @@ public class CourseFactory extends BasicManager {
 	private static BaseSecurity securityManager;
 	private static ReferenceManager referenceManager;
 	private static GlossaryManager glossaryManager;
+	private static RepositoryService repositoryService;
 	
 	
 	/**
 	 * [used by spring]
 	 */
-	private CourseFactory(CoordinatorManager coordinatorManager, RepositoryManager repositoryManager, OLATResourceManager olatResourceManager, 
+	private CourseFactory(CoordinatorManager coordinatorManager, RepositoryManager repositoryManager, RepositoryService repositoryService, OLATResourceManager olatResourceManager, 
 			BaseSecurity securityManager, ReferenceManager referenceManager, GlossaryManager glossaryManager) {
 		loadedCourses = coordinatorManager.getCoordinator().getCacher().getCache(CourseFactory.class.getSimpleName(), "courses");
 		CourseFactory.repositoryManager = repositoryManager;
@@ -177,6 +178,7 @@ public class CourseFactory extends BasicManager {
 		CourseFactory.securityManager = securityManager;
 		CourseFactory.referenceManager = referenceManager;
 		CourseFactory.glossaryManager = glossaryManager;
+		CourseFactory.repositoryService = repositoryService;
 	}
 	
 	/**
@@ -611,7 +613,6 @@ public class CourseFactory extends BasicManager {
 		File courseExportData = course.getCourseExportDataDir().getBasefile();
 		// get the export data directory
 		// create the repository entry
-		RepositoryEntry re = repositoryManager.createRepositoryEntryInstance("administrator");
 		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(courseExportData);
 		if(!StringHelper.containsNonWhitespace(softKey)) {
 			softKey = importExport.getSoftkey();
@@ -625,52 +626,20 @@ public class CourseFactory extends BasicManager {
 			CourseFactory.deleteCourse(newCourseResource);
 			return existingEntry;
 		}
-		// ok, continue import
+		
 		newCourseResource = olatResourceManager.findOrPersistResourceable(newCourseResource);
+		RepositoryEntry re = repositoryService.create(importExport.getInitialAuthor(), importExport.getResourceName(),
+				importExport.getDisplayName(), importExport.getDescription(), newCourseResource);
+		// ok, continue import
 		re.setOlatResource(newCourseResource);
 		re.setSoftkey(softKey);
-		re.setInitialAuthor(importExport.getInitialAuthor());
-		re.setDisplayname(importExport.getDisplayName());
-		re.setResourcename(importExport.getResourceName());
-		re.setDescription(importExport.getDescription());
 		re.setCanLaunch(true);
-		
 		// set access configuration
 		re.setAccess(access);
 
-		// create security group
-		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_ACCESS, ownerGroup);
-		// members of this group are always authors also
-		securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-		securityManager.addIdentityToSecurityGroup(securityManager.findIdentityByName("administrator"), ownerGroup);
-		re.setOwnerGroup(ownerGroup);
 		// save the repository entry
 		repositoryManager.saveRepositoryEntry(re);
-		// Create course admin policy for owner group of repository entry
-		// -> All owners of repository entries are course admins
-		securityManager.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());
-		
-		//fxdiff VCRP-1,2: access control of resources
-		// create security group for tutors / coaches
-		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, re.getOlatResource());
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_COACH, re.getOlatResource());
-		// members of this group are always tutors also
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
-		re.setTutorGroup(tutorGroup);
-	
-		// create security group for participants
-		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, re.getOlatResource());
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_PARTI, re.getOlatResource());
-		// members of this group are always participants also
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
-		re.setParticipantGroup(participantGroup);
-		
+
 		//import groups
 		course = openCourseEditSession(course.getResourceableId());
 		// create group management
@@ -855,13 +824,13 @@ public class CourseFactory extends BasicManager {
 	 * @param locale
 	 * @param identity
 	 */
-	public static void archiveCourse(OLATResourceable res, String charset, Locale locale, Identity identity) {
+	public static void archiveCourse(OLATResourceable res, String charset, Locale locale, Identity identity, Roles roles) {
 		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 		PersistingCourseImpl course = (PersistingCourseImpl) loadCourse(res);
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(identity, course.getCourseTitle());
-		boolean isOLATAdmin = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN);
+		boolean isOLATAdmin = roles.isOLATAdmin();
 		boolean isOresOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, courseRe);
-		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(courseRe, identity);
+		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, courseRe);
 		archiveCourse(identity, course, charset, locale, exportDirectory, isOLATAdmin, isOresOwner, isOresInstitutionalManager);
 	}
 		

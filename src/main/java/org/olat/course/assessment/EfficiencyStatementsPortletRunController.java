@@ -287,17 +287,22 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 		return new Comparator<UserEfficiencyStatementLight>(){			
 			public int compare(final UserEfficiencyStatementLight s1, final UserEfficiencyStatementLight s2) {	
 				int comparisonResult = 0;
-			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
-			  	comparisonResult = collator.compare(s1.getShortTitle(), s2.getShortTitle());			  		  	
-			  } else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
-			  	comparisonResult = s1.getLastModified().compareTo(s2.getLastModified());
-			  } 
-			  if(!sortingCriteria.isAscending()) {
-			  	//if not isAscending return (-comparisonResult)			  	
-			  	return -comparisonResult;
-			  }
-			  return comparisonResult;
-			}};
+				if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
+					String st1 = s1.getShortTitle();
+					String st2 = s2.getShortTitle();
+					if(st2 == null) return -1;
+					if(st1 == null) return 1;
+					comparisonResult = collator.compare(st1, st2);			  		  	
+				} else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
+					comparisonResult = s1.getLastModified().compareTo(s2.getLastModified());
+				} 
+				if(!sortingCriteria.isAscending()) {
+					//if not isAscending return (-comparisonResult)			  	
+					return -comparisonResult;
+				}
+				return comparisonResult;
+			}
+		};
 	}
   
   /**

@@ -43,6 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -58,7 +59,9 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.resource.OLATResource;
@@ -90,7 +93,13 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
@@ -184,6 +193,19 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertNull(repoKey3);
 	}
 	
+	@Test
+	public void lookupRepositoryEntries() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		//check with a return value
+		List<Long> keys = Collections.singletonList(re.getKey());
+		List<RepositoryEntry> entries = repositoryManager.lookupRepositoryEntries(keys);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertTrue(entries.contains(re));
+	}
+	
 	@Test(expected=AssertException.class)
 	public void lookupRepositoryEntryKeyStrictFailed() {
 		//check with a return value
@@ -212,12 +234,42 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void queryByEditor() {
+		//create a repository entry with an owner
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-la-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+		
+		List<RepositoryEntry> entries = repositoryManager.queryByEditor(id);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertTrue(entries.contains(re));
+	}
+	
+	@Test
+	public void queryByOwner() {
+		//create a repository entry with an owner
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-la-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+		
+		List<RepositoryEntry> entries = repositoryManager.queryByOwner(id);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertTrue(entries.contains(re));
+	}
+	
+	@Test
 	public void queryByOwnerLimitAccess() {
 		//create a repository entry with an owner
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-la-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		securityManager.addIdentityToSecurityGroup(id, re.getOwnerGroup());
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		
 		List<RepositoryEntry> entries = repositoryManager.queryByOwnerLimitAccess(id, RepositoryEntry.ACC_OWNERS, Boolean.TRUE);
@@ -230,7 +282,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	public void getLearningResourcesAsStudent() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-la-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		securityManager.addIdentityToSecurityGroup(id, re.getParticipantGroup());
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
 		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, 0, -1, RepositoryEntryOrder.nameAsc);
@@ -252,7 +304,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-lb-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studg", "tg", null, null, false, false, re);
-		securityManager.addIdentityToSecurityGroup(id, group.getPartipiciantGroup());
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
 		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, 0, -1);
@@ -273,7 +325,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	public void getParticipantRepositoryEntry() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-lc-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		securityManager.addIdentityToSecurityGroup(id, re.getParticipantGroup());
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
 		List<RepositoryEntryLight> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
@@ -292,7 +344,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 				//OK
 			} else if(entry.getAccess() == RepositoryEntry.ACC_OWNERS && entry.isMembersOnly()) {
 				RepositoryEntry reloadedRe = repositoryManager.lookupRepositoryEntry(entry.getKey());
-				boolean member = securityManager.isIdentityInSecurityGroup(id, reloadedRe.getParticipantGroup());
+				boolean member = repositoryEntryRelationDao.hasRole(id, reloadedRe, GroupRoles.participant.name());
 				Assert.assertTrue(member);
 			} else {
 				Assert.fail();
@@ -307,7 +359,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-ld-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studh", "th", null, null, false, false, re);
-		securityManager.addIdentityToSecurityGroup(id, group.getPartipiciantGroup());
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
 		List<RepositoryEntryLight> entries = repositoryManager.getParticipantRepositoryEntry(id, -1);
@@ -331,7 +383,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	public void getLearningResourcesAsTeacher() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-teac-la-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		securityManager.addIdentityToSecurityGroup(id, re.getTutorGroup());
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 
 		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsTeacher(id, 0, -1);
@@ -353,7 +405,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-teac-lb-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re);
-		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 
 		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsTeacher(id, 0, -1);
@@ -377,6 +429,16 @@ public class RepositoryManagerTest extends OlatTestCase {
 		markManager.setMark(re, id, null, "[RepositoryEntry:" + re.getKey() + "]");
 		dbInstance.commitAndCloseSession();
 		
+		//check get forbidden favorit
+		List<RepositoryEntry> forbiddenEntries = repositoryManager.getFavoritLearningResourcesAsTeacher(id, null, 0, -1);
+		Assert.assertNotNull(forbiddenEntries);
+		Assert.assertEquals(0, forbiddenEntries.size());
+		int countForbiddenEntries = repositoryManager.countFavoritLearningResourcesAsTeacher(id, null);
+		Assert.assertEquals(0, countForbiddenEntries);
+		
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+		
 		//check get favorit
 		List<RepositoryEntry> entries = repositoryManager.getFavoritLearningResourcesAsTeacher(id, null, 0, -1);
 		Assert.assertNotNull(entries);
@@ -392,7 +454,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	public void getTutorRepositoryEntry() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-le-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		securityManager.addIdentityToSecurityGroup(id, re.getTutorGroup());
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 
 		List<RepositoryEntryLight> entries = repositoryManager.getTutorRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
@@ -411,7 +473,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 				//OK
 			} else if(entry.getAccess() == RepositoryEntry.ACC_OWNERS && entry.isMembersOnly()) {
 				RepositoryEntry reloadedRe = repositoryManager.lookupRepositoryEntry(entry.getKey());
-				boolean member = securityManager.isIdentityInSecurityGroup(id, reloadedRe.getTutorGroup());
+				boolean member = repositoryEntryRelationDao.hasRole(id, reloadedRe, GroupRoles.coach.name());
 				Assert.assertTrue(member);
 			} else {
 				Assert.fail();
@@ -426,7 +488,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-lf-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studi", "ti", null, null, false, false, re);
-		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 
 		List<RepositoryEntryLight> entries = repositoryManager.getTutorRepositoryEntry(id, -1);
@@ -451,6 +513,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-fav-1-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		markManager.setMark(re, id, null, "[RepositoryEntry:" + re.getKey() + "]");
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
 		//check get favorite
@@ -488,7 +551,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-1-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-1", "tg", null, null, false, false, re);
-		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
 		//check
@@ -511,7 +574,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-2-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-2", "tg", null, null, false, false, re);
-		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
 		//check
@@ -534,7 +597,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-3-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-3", "tg", null, null, false, false, re);
-		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 
 		//promote id to institution resource manager
@@ -560,12 +623,24 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void queryResourcesLimitType() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		List<String> resourceTypes = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
+		List<RepositoryEntry> entries = repositoryManager
+				.queryResourcesLimitType(id, resourceTypes, "re-member", "me", "no", true, true);
+		Assert.assertNotNull(entries);
+	}
+	
+	@Test
 	public void isMember() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", null, null, false, false, re);
-		securityManager.addIdentityToSecurityGroup(id1, group.getOwnerGroup());
+	    businessGroupRelationDao.addRole(id1, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 
 		//id1 is member
@@ -590,13 +665,13 @@ public class RepositoryManagerTest extends OlatTestCase {
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "member-2-g", "tg", null, null, false, false, re);
 		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "member-3-g", "tg", null, null, true, false, re);
 		BusinessGroup groupNull = businessGroupService.createBusinessGroup(null, "member-null-g", "tg", null, null, true, false, null);
-		securityManager.addIdentityToSecurityGroup(id1, re.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(id2, re.getTutorGroup());
-		securityManager.addIdentityToSecurityGroup(id3, re.getParticipantGroup());
-		securityManager.addIdentityToSecurityGroup(id4, group1.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(id5, group2.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id6, group3.getWaitingGroup());
-		securityManager.addIdentityToSecurityGroup(idNull, groupNull.getPartipiciantGroup());
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(id4, group1, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(id5, group2, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(id6, group3, GroupRoles.waiting.name());
+	    businessGroupRelationDao.addRole(idNull, groupNull, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
 		//id1 is owner
@@ -629,8 +704,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity part = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-is-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		securityManager.addIdentityToSecurityGroup(owner, re.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(part, re.getParticipantGroup());
+		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(part, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//check
@@ -641,6 +716,34 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void countLearningResourcesAsOwner() {
+		//create a repository entry with an owner and a participant
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-is-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		int count = repositoryManager.countLearningResourcesAsOwner(owner);
+		Assert.assertEquals(1, count);
+	}
+	
+	@Test
+	public void countLearningResourcesAsStudent() {
+		//create a repository entry with an owner and a participant
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("re-participant-is-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		int count = repositoryManager.countLearningResourcesAsStudent(owner);
+		Assert.assertTrue(1 <= count);
+	}
+	
+	@Test
 	public void isIdentityInTutorSecurityGroup() {
 		//create a repository entry with an owner and a participant
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("re-tutor-is-" + UUID.randomUUID().toString());
@@ -648,40 +751,18 @@ public class RepositoryManagerTest extends OlatTestCase {
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		securityManager.addIdentityToSecurityGroup(identity, re1.getTutorGroup());
-		securityManager.addIdentityToSecurityGroup(identity, re2.getParticipantGroup());
-		securityManager.addIdentityToSecurityGroup(identity, re3.getOwnerGroup());
+		repositoryEntryRelationDao.addRole(identity, re1, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(identity, re2, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(identity, re3, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		boolean isTutor1 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re1.getOlatResource());
+		boolean isTutor1 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re1);
 		Assert.assertTrue(isTutor1);
-		boolean isTutor2 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re2.getOlatResource());
+		boolean isTutor2 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re2);
 		Assert.assertFalse(isTutor2);
-		boolean isTutor3 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re3.getOlatResource());
+		boolean isTutor3 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re3);
 		Assert.assertFalse(isTutor3);
-	}
-	
-	@Test
-	public void isIdentityInParticipantSecurityGroup() {
-		//create a repository entry with an owner and a participant
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("re-tutor-is-" + UUID.randomUUID().toString());
-		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		dbInstance.commitAndCloseSession();
-		securityManager.addIdentityToSecurityGroup(identity, re1.getTutorGroup());
-		securityManager.addIdentityToSecurityGroup(identity, re2.getParticipantGroup());
-		securityManager.addIdentityToSecurityGroup(identity, re3.getOwnerGroup());
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		boolean isParticipant1 = repositoryManager.isIdentityInParticipantSecurityGroup(identity, re1.getOlatResource());
-		Assert.assertFalse(isParticipant1);
-		boolean isParticipant2 = repositoryManager.isIdentityInParticipantSecurityGroup(identity, re2.getOlatResource());
-		Assert.assertTrue(isParticipant2);
-		boolean isParticipant3 = repositoryManager.isIdentityInParticipantSecurityGroup(identity, re3.getOlatResource());
-		Assert.assertFalse(isParticipant3);
 	}
 	
 	@Test
@@ -696,16 +777,17 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id6 = JunitTestHelper.createAndPersistIdentityAsUser("re-m-is-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		if(securityManager.isIdentityInSecurityGroup(admin, re.getOwnerGroup())) {
-			securityManager.removeIdentityFromSecurityGroup(admin, re.getOwnerGroup());
+		if(repositoryEntryRelationDao.hasRole(admin, re, GroupRoles.owner.name())) {
+			repositoryEntryRelationDao.removeRole(admin, re, GroupRoles.owner.name());
 		}
-		securityManager.addIdentityToSecurityGroup(id1, re.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(id2, re.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(id3, re.getTutorGroup());
-		securityManager.addIdentityToSecurityGroup(id4, re.getTutorGroup());
-		securityManager.addIdentityToSecurityGroup(id5, re.getParticipantGroup());
-		securityManager.addIdentityToSecurityGroup(id6, re.getParticipantGroup());
-		securityManager.addIdentityToSecurityGroup(id1, re.getParticipantGroup());
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(id4, re, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(id5, re, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(id6, re, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.participant.name());
+		
 		dbInstance.commitAndCloseSession();
 		
 		Set<Long> identityKeys = new HashSet<Long>();
@@ -725,17 +807,17 @@ public class RepositoryManagerTest extends OlatTestCase {
 		int countTutor = 0;
 		int countParticipant = 0;
 		for(RepositoryEntryMembership membership:memberships) {
-			if(membership.getOwnerRepoKey() != null) {
+			if(membership.isOwner()) {
 				countOwner++;
-				Assert.assertEquals(re.getKey(), membership.getOwnerRepoKey());
+				Assert.assertEquals(re.getKey(), membership.getRepoKey());
 			}
-			if (membership.getTutorRepoKey() != null) {
+			if (membership.isCoach()) {
 				countTutor++;
-				Assert.assertEquals(re.getKey(), membership.getTutorRepoKey());
+				Assert.assertEquals(re.getKey(), membership.getRepoKey());
 			}
-			if (membership.getParticipantRepoKey() != null) {
+			if (membership.isParticipant()) {
 				countParticipant++;
-				Assert.assertEquals(re.getKey(), membership.getParticipantRepoKey());
+				Assert.assertEquals(re.getKey(), membership.getRepoKey());
 			}
 			Assert.assertTrue(identityKeys.contains(membership.getIdentityKey()));
 		}
@@ -748,10 +830,10 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertNotNull(membership1s);
 		Assert.assertEquals(2, membership1s.size());
 		for(RepositoryEntryMembership membership:membership1s) {
-			if(membership.getOwnerRepoKey() != null) {
-				Assert.assertEquals(re.getKey(), membership.getOwnerRepoKey());
-			} else if (membership.getParticipantRepoKey() != null) {
-				Assert.assertEquals(re.getKey(), membership.getParticipantRepoKey());
+			if(membership.isOwner()) {
+				Assert.assertEquals(re.getKey(), membership.getRepoKey());
+			} else if (membership.isParticipant()) {
+				Assert.assertEquals(re.getKey(), membership.getRepoKey());
 			} else {
 				Assert.assertTrue(false);
 			}
@@ -776,9 +858,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsUser("instit-" + UUID.randomUUID().toString());
 		Identity part3 = JunitTestHelper.createAndPersistIdentityAsUser("instit-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		securityManager.addIdentityToSecurityGroup(owner1, re.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(owner2, re.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(part3, re.getParticipantGroup());
+		repositoryEntryRelationDao.addRole(owner1, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(owner2, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(part3, re, GroupRoles.participant.name());
 		dbInstance.commit();
 		
 		//set the institutions
@@ -796,9 +878,10 @@ public class RepositoryManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		boolean institutionMgr1 = repositoryManager.isInstitutionalRessourceManagerFor(re, owner1);
-		boolean institutionMgr2 = repositoryManager.isInstitutionalRessourceManagerFor(re, owner2);
-		boolean institutionMgr3 = repositoryManager.isInstitutionalRessourceManagerFor(re, part3);
+		Roles roles = new Roles(false, false, false, false, false, true, false);
+		boolean institutionMgr1 = repositoryManager.isInstitutionalRessourceManagerFor(owner1, roles, re);
+		boolean institutionMgr2 = repositoryManager.isInstitutionalRessourceManagerFor(owner2, roles, re);
+		boolean institutionMgr3 = repositoryManager.isInstitutionalRessourceManagerFor(part3, roles, re);
 	
 		Assert.assertTrue(institutionMgr1);
 		Assert.assertFalse(institutionMgr2);
@@ -808,19 +891,18 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test
 	public void testCountByTypeLimitAccess() {
 		String TYPE = UUID.randomUUID().toString().replace("-", "");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-1-" + UUID.randomUUID().toString());
 		
 		int count = repositoryManager.countByTypeLimitAccess("unkown", RepositoryEntry.ACC_OWNERS_AUTHORS);
-    assertEquals("Unkown type must return 0 elements", 0,count);
-    int countValueBefore = repositoryManager.countByTypeLimitAccess(TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
-    // add 1 entry
-    RepositoryEntry re = createRepositoryEntry(TYPE, 999999l);
+		assertEquals("Unkown type must return 0 elements", 0,count);
+		int countValueBefore = repositoryManager.countByTypeLimitAccess(TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
+		// add 1 entry
+		RepositoryEntry re = createRepositoryEntry(TYPE, owner, 999999l);
 		// create security group
-		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
-		re.setOwnerGroup(ownerGroup);
-    repositoryManager.saveRepositoryEntry(re);
-    count = repositoryManager.countByTypeLimitAccess(TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
-    // check count must be one more element
-    assertEquals("Add one course repository-entry, but countByTypeLimitAccess does NOT return one more element", countValueBefore + 1,count);
+		repositoryManager.saveRepositoryEntry(re);
+		count = repositoryManager.countByTypeLimitAccess(TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
+		// check count must be one more element
+		assertEquals("Add one course repository-entry, but countByTypeLimitAccess does NOT return one more element", countValueBefore + 1,count);
 	}
 	
 	@Test
@@ -830,9 +912,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-2-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-3-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		securityManager.addIdentityToSecurityGroup(id1, re.getOwnerGroup());
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re);
-		securityManager.addIdentityToSecurityGroup(id2, group.getOwnerGroup());
+	    businessGroupRelationDao.addRole(id2, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
 		
@@ -886,10 +968,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-2-" + UUID.randomUUID().toString());
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		
-		securityManager.addIdentityToSecurityGroup(id1, re2.getParticipantGroup());
+		repositoryEntryRelationDao.addRole(id1, re2, GroupRoles.participant.name());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re1);
-		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
+	    businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		
@@ -961,6 +1042,39 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertFalse(freeEntries.contains(managedRe));
 		Assert.assertTrue(freeEntries.contains(freeRe));
 	}
+	
+	@Test
+	public void genericANDQueryWithRoles_owned() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("owned-re-");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+		
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+		params.setRoles(new Roles(false, false, false, true, false, false, false));
+		params.setOnlyOwnedResources(true);
+		params.setIdentity(owner);
+		List<RepositoryEntry> myEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
+		Assert.assertNotNull(myEntries);
+		Assert.assertEquals(1, myEntries.size());
+		Assert.assertTrue(myEntries.contains(re));
+	}
+	
+	@Test
+	public void genericANDQueryWithRoles_byauthor() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("author-re-");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+		
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+		params.setRoles(new Roles(true, false, false, false, false, false, false));
+		params.setAuthor(owner.getName());
+		List<RepositoryEntry> myEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
+		Assert.assertNotNull(myEntries);
+		Assert.assertEquals(1, myEntries.size());
+		Assert.assertTrue(myEntries.contains(re));
+	}
 
 	@Test
 	public void setDescriptionAndName() {
@@ -1005,15 +1119,14 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 
-	private RepositoryEntry createRepositoryEntry(final String type, long i) {
+	private RepositoryEntry createRepositoryEntry(final String type, Identity owner, long i) {
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(type, new Long(i));
 		OLATResource r =  resourceManager.createOLATResourceInstance(resourceable);
 		dbInstance.saveObject(r);
 		
 		// now make a repository entry for this course
-		final RepositoryEntry re = repositoryManager.createRepositoryEntryInstance("Florian Gnägi", "Lernen mit OLAT " + i, "yo man description bla bla + i");
-		re.setDisplayname("JunitTest_RepositoryEntry_" + i);		
-		re.setOlatResource(r);
+		final RepositoryEntry re = repositoryService.create(owner, "Lernen mit OLAT " + i,
+				"JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r);	
 		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
 		return re;
 	}

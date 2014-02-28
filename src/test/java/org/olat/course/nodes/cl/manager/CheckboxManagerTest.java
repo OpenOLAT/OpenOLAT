@@ -273,7 +273,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load the check
-		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(ores, resSubPath, null);
+		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(ores, resSubPath, null, null);
 		Assert.assertNotNull(loadedChecks);
 		Assert.assertEquals(3, loadedChecks.size());
 		

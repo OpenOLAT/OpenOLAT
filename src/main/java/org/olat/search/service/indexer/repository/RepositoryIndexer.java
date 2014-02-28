@@ -157,11 +157,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 			boolean isOwner = repositoryManager.isOwnerOfRepositoryEntry(identity,repositoryEntry);
 			boolean isAllowedToLaunch = false;
 			if (!isOwner) {
-				if (repositoryEntry.getOwnerGroup() == null) {
-					// FIXME:chg: Inconsistent RepositoryEntry without owner-group, should not exit => Workaround no access
-					return false;
-				}
-  			isAllowedToLaunch = repositoryManager.isAllowedToLaunch(identity, roles, repositoryEntry);
+				isAllowedToLaunch = repositoryManager.isAllowedToLaunch(identity, roles, repositoryEntry);
 			}
 			if (isLogDebugEnabled()) logDebug("isOwner=" + isOwner + "  isAllowedToLaunch=" + isAllowedToLaunch);
   		if (isOwner || isAllowedToLaunch) {

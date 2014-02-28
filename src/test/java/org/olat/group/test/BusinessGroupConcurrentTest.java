@@ -31,12 +31,14 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +57,8 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
 
 	
@@ -69,7 +73,7 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 		SetLastUsageThread[] threads = new SetLastUsageThread[numOfThreads];
 		for(int i=numOfThreads; i-->0; ) {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("group-concurent-" + i + "-" + UUID.randomUUID().toString());
-			securityManager.addIdentityToSecurityGroup(id, group.getPartipiciantGroup());
+			businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 			threads[i] = new SetLastUsageThread(group.getKey(), id, doneSignal);
 		}
 		dbInstance.commitAndCloseSession();;

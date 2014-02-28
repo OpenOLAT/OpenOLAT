@@ -93,7 +93,7 @@ public class OLATResourceManager extends BasicManager {
 	 * @param aClass
 	 * @return OLATResource
 	 */
-	public OLATResource createOLATResourceInstance(Class aClass) {
+	public OLATResource createOLATResourceInstance(Class<?> aClass) {
 		String typeName = OresHelper.calculateTypeName(aClass);
 		return createOLATResourceInstance(typeName);
 	}
@@ -152,8 +152,9 @@ public class OLATResourceManager extends BasicManager {
 				OLATResource oresSync  = findResourceable(resourceable);
 				// if not found, persist it.
 				if (oresSync == null ) {
-					if(CourseModule.ORES_TYPE_COURSE.equals(resourceable.getResourceableTypeName()))
+					if(CourseModule.ORES_TYPE_COURSE.equals(resourceable.getResourceableTypeName())) {
 					  logInfo("OLATResourceManager - createOLATResourceInstance if not found: " + resourceable.getResourceableTypeName() + " " + resourceable.getResourceableId());
+					}
 					oresSync = createOLATResourceInstance(resourceable);
 					saveOLATResource(oresSync);
 				}

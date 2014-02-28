@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.Policy;
 import org.olat.core.commons.persistence.DB;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupOrder;
@@ -128,6 +126,8 @@ public class OLATUpgrade_8_4_5 extends OLATUpgrade {
 		List<RepositoryEntry> relations = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		for(RepositoryEntry re:relations) {
 			//add author permission if needed
+			//TODO group
+			/*
 			Policy accessPolicy = securityManager.findPolicy(re.getOwnerGroup(), Constants.PERMISSION_ACCESS, group.getResource());
 			if(accessPolicy == null) {
 				securityManager.createAndPersistPolicyWithResource(re.getOwnerGroup(), Constants.PERMISSION_ACCESS, group.getResource());
@@ -141,6 +141,7 @@ public class OLATUpgrade_8_4_5 extends OLATUpgrade {
 			if(participantPolicy == null) {
 				securityManager.createAndPersistPolicyWithResource(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, re.getOlatResource());
 			}
+			*/
 		}
 	}
 }

@@ -130,7 +130,7 @@ public class ENRunController extends BasicController implements GenericEventList
 		enrollableGroupKeys = (List<Long>)moduleConfig.get(ENCourseNode.CONFIG_GROUP_IDS);
 		if(enrollableGroupKeys == null) {
 			String groupNamesConfig = (String)moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
-			enrollableGroupKeys = businessGroupService.toGroupKeys(groupNamesConfig, courseGroupManager.getCourseResource());
+			enrollableGroupKeys = businessGroupService.toGroupKeys(groupNamesConfig, courseGroupManager.getCourseEntry());
 		}
 
 		enrollableAreaKeys = (List<Long>)moduleConfig.get(ENCourseNode.CONFIG_AREA_IDS);
@@ -142,7 +142,7 @@ public class ENRunController extends BasicController implements GenericEventList
 		cancelEnrollEnabled = ((Boolean) moduleConfig.get(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED)).booleanValue();
 
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		enrolledGroup = enrollmentManager.getBusinessGroupWhereEnrolled(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager.getCourseResource());
+		enrolledGroup = enrollmentManager.getBusinessGroupWhereEnrolled(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager.getCourseEntry());
 		waitingListGroup = enrollmentManager.getBusinessGroupWhereInWaitingList(identity, enrollableGroupKeys, enrollableAreaKeys);
 		registerGroupChangedEvents(enrollableGroupKeys, enrollableAreaKeys, ureq.getIdentity());
 		// Set correct view

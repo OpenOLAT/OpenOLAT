@@ -30,10 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -53,6 +50,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 
@@ -72,11 +70,12 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	private static final String LEARNINGGROUPARCHIVE_XLS = "learninggroup_archiv.xls";
 	//private static final String RIGHTGROUPARCHIVE_XLS = "rightgroup_archiv.xls";
 
+	private RepositoryEntry courseRepoEntry;
 	private final OLATResource courseResource;
 	
 	private final BGAreaManager areaManager;
 	private final BGRightManager rightManager;
-	private final BaseSecurity securityManager;
+	private final RepositoryService repositoryService;
 	private final BusinessGroupService businessGroupService;
 
 	private PersistingCourseGroupManager(OLATResourceable course) {
@@ -87,13 +86,21 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		this.courseResource = courseResource;
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
-		securityManager = BaseSecurityManager.getInstance();
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 	}
 
 	@Override
 	public OLATResource getCourseResource() {
 		return courseResource;
+	}
+
+	@Override
+	public RepositoryEntry getCourseEntry() {
+		if(courseRepoEntry == null) {
+			courseRepoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+		}
+		return courseRepoEntry;
 	}
 
 	/**
@@ -117,17 +124,19 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 *      java.lang.String)
 	 */
 	public boolean hasRight(Identity identity, String courseRight) {
-		boolean hasRight = rightManager.hasBGRight(courseRight, identity, courseResource);
+		boolean hasRight = rightManager.hasBGRight(courseRight, identity, getCourseResource());
 		return hasRight;
 	}
 	
 	public List<String> getRights(Identity identity) {
-		return securityManager.getIdentityPermissionOnresourceable(identity, courseResource);
+		return Collections.emptyList();
+				
+				//TODO groups securityManager.getIdentityPermissionOnresourceable(identity, getCourseResource());
 	}
 
 	@Override
 	public boolean isIdentityInGroup(Identity identity, Long groupKey) {
-		return businessGroupService.isIdentityInBusinessGroup(identity, groupKey, true, true, courseResource);
+		return businessGroupService.isIdentityInBusinessGroup(identity, groupKey, true, true, getCourseEntry());
 	}
 
 	/**
@@ -142,7 +151,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 			return false;
 		} else {
 			// has group participants
-			int members = securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+			int members = businessGroupService.countMembers(group, GroupRoles.participant.name());
 			// has group no maximum of participants
 			if (group.getMaxParticipants() == null) {
 				log.warn("group.getMaxParticipants() is null");
@@ -156,7 +165,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	
 	@Override
 	public boolean isIdentityInLearningArea(Identity identity, Long areaKey) {
-		return areaManager.isIdentityInBGArea(identity, null, areaKey, courseResource);
+		return areaManager.isIdentityInBGArea(identity, null, areaKey, getCourseResource());
 	}
 
 	/**
@@ -165,7 +174,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	@Override
 	public List<BusinessGroup> getAllBusinessGroups() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		return businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
+		return businessGroupService.findBusinessGroups(params, getCourseEntry(), 0, -1);
 	}
 
 	@Override
@@ -176,7 +185,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		}else {
 			params.setExactName(nameOrKey);
 		}
-		return businessGroupService.countBusinessGroups(params, courseResource) > 0;
+		return businessGroupService.countBusinessGroups(params, getCourseEntry()) > 0;
 	}
 
 	/**
@@ -184,13 +193,13 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	@Override
 	public List<BGArea> getAllAreas() {
-		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
+		List<BGArea> areas = areaManager.findBGAreasInContext(getCourseResource());
 		return areas;
 	}
 
 	@Override
 	public boolean existArea(String nameOrKey) {
-		return areaManager.existArea(nameOrKey, courseResource);
+		return areaManager.existArea(nameOrKey, getCourseResource());
 	}
 
 	/**
@@ -200,7 +209,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public List<BusinessGroup> getOwnedBusinessGroups(Identity identity) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
 		List<BusinessGroup> allGroups =
-				businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
+				businessGroupService.findBusinessGroups(params, getCourseEntry(), 0, -1);
 		return allGroups;
 	}
 
@@ -211,7 +220,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
 		List<BusinessGroup> allGroups =
-				businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
+				businessGroupService.findBusinessGroups(params, getCourseEntry(), 0, -1);
 		return allGroups;
 	}
 
@@ -219,32 +228,23 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseCoach(org.olat.core.id.Identity)
 	 */
 	public boolean isIdentityCourseCoach(Identity identity) {
-		//fxdiff VCRP-1: access control of learn resource
-		boolean isCoach = RepositoryManager.getInstance().isIdentityInTutorSecurityGroup(identity, courseResource);
+		boolean isCoach = repositoryService.hasRole(identity, getCourseEntry(), GroupRoles.coach.name());
 		if (isCoach) { // don't check any further
 			return true;
 		}
 
-		BaseSecurity secManager = BaseSecurityManager.getInstance();
-		boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_COACH, courseResource)
-				|| businessGroupService.isIdentityInBusinessGroup(identity, null, true, false, courseResource);
-		return isParticipant;
+		return businessGroupService.isIdentityInBusinessGroup(identity, null, true, false, getCourseEntry());
 	}
 	
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseCoach(org.olat.core.id.Identity)
 	 */
 	public boolean isIdentityCourseParticipant(Identity identity) {
-		//fxdiff VCRP-1: access control of learn resource
-		boolean participant = RepositoryManager.getInstance().isIdentityInParticipantSecurityGroup(identity, courseResource);
+		boolean participant = repositoryService.hasRole(identity, getCourseEntry(), GroupRoles.participant.name());
 		if (participant) {// don't check any further
 			return true;
 		}
-		
-		BaseSecurity secManager = BaseSecurityManager.getInstance();
-		boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_PARTI, courseResource)
-				|| businessGroupService.isIdentityInBusinessGroup(identity, null, false, true, courseResource);
-		return isParticipant;
+		return businessGroupService.isIdentityInBusinessGroup(identity, null, false, true, getCourseEntry());
 	}
 
 	/**
@@ -253,8 +253,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public boolean isIdentityCourseAdministrator(Identity identity) {
 		// not really a group management method, for your convenience we have a
 		// shortcut here...
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		return secMgr.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_ADMIN, courseResource);
+		return repositoryService.hasRole(identity, getCourseEntry(), GroupRoles.owner.name());
 	}
 
 	/**
@@ -262,14 +261,16 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public void deleteCourseGroupmanagement() {
 		//delete permission group to course
-		businessGroupService.removeResource(courseResource);
-		//delete areas
-		List<BGArea> areas = getAllAreas();
-		for(BGArea area:areas) {
-			areaManager.deleteBGArea(area);
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(getCourseResource(), false);
+		if(re != null) {
+			businessGroupService.removeResource(re);
+			//delete areas
+			List<BGArea> areas = getAllAreas();
+			for(BGArea area:areas) {
+				areaManager.deleteBGArea(area);
+			}
+			logAudit("Deleting course groupmanagement for " + re.toString());
 		}
-		
-		logAudit("Deleting course groupmanagement for " + courseResource.toString());
 	}
 
 	/**
@@ -280,7 +281,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public List<Integer> getNumberOfMembersFromGroups(List<BusinessGroup> groups) {
 		List<Integer> members = new ArrayList<Integer>();
 		for (BusinessGroup group:groups) {
-			int numbMembers = securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+			int numbMembers = businessGroupService.countMembers(group, GroupRoles.participant.name());
 			members.add(new Integer(numbMembers));
 		}
 		return members;
@@ -340,11 +341,11 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public CourseEnvironmentMapper getBusinessGroupEnvironment() {
 		CourseEnvironmentMapper env = new CourseEnvironmentMapper();
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, courseResource, 0, -1);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, getCourseEntry(), 0, -1);
 		for(BusinessGroup group:groups) {
 			env.getGroups().add(new BusinessGroupReference(group));
 		}
-		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
+		List<BGArea> areas = areaManager.findBGAreasInContext(getCourseResource());
 		for(BGArea area:areas) {
 			env.getAreas().add(new BGAreaReference(area));
 		}
@@ -357,7 +358,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	@Override
 	public CourseEnvironmentMapper importCourseBusinessGroups(File fImportDirectory) {
 		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
-		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, true);
+		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(getCourseResource(), true);
 		File fGroupXML1 = new File(fImportDirectory, LEARNINGGROUPEXPORT_XML);
 		if(fGroupXML1.exists()) {
 			BusinessGroupEnvironment env = businessGroupService.importGroups(courseRe, fGroupXML1);
@@ -376,12 +377,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public List<Identity> getCoachesFromBusinessGroups() {
 		List<BusinessGroup> bgs = getAllBusinessGroups();
-
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for(BusinessGroup group:bgs) {
-			secGroups.add(group.getOwnerGroup());
-		}
-		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		return businessGroupService.getMembers(bgs, GroupRoles.coach.name());
 	}
 
 	/**
@@ -389,53 +385,29 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public List<Identity> getParticipantsFromBusinessGroups() {
 		List<BusinessGroup> bgs = getAllBusinessGroups();
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for(BusinessGroup group:bgs) {
-			secGroups.add(group.getPartipiciantGroup());
-		}
-		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		return businessGroupService.getMembers(bgs, GroupRoles.participant.name());
 	}
 	
 	@Override
 	public List<Identity> getCoachesFromBusinessGroups(List<Long> groupKeys) {
 		List<BusinessGroup> bgs = businessGroupService.loadBusinessGroups(groupKeys);
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for(BusinessGroup group:bgs) {
-			secGroups.add(group.getOwnerGroup());
-		}
-		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		return businessGroupService.getMembers(bgs, GroupRoles.coach.name());
 	}
 	
 	@Override
 	public List<Identity> getParticipantsFromBusinessGroups(List<Long> groupKeys) {
 		List<BusinessGroup> bgs = businessGroupService.loadBusinessGroups(groupKeys);
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for(BusinessGroup group:bgs) {
-			secGroups.add(group.getPartipiciantGroup());
-		}
-		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		return businessGroupService.getMembers(bgs, GroupRoles.participant.name());
 	}
 
 	@Override
-	//fxdiff VCRP-1,2: access control of resources
 	public List<Identity> getCoaches() {
-		BaseSecurity secManager = BaseSecurityManager.getInstance();
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
-		if(re != null && re.getTutorGroup() != null) {
-			return secManager.getIdentitiesOfSecurityGroup(re.getTutorGroup());
-		}
-		return Collections.emptyList();
+		return repositoryService.getMembers(getCourseEntry(), GroupRoles.coach.name());
 	}
 
 	@Override
-	//fxdiff VCRP-1,2: access control of resources
 	public List<Identity> getParticipants() {
-		BaseSecurity secManager = BaseSecurityManager.getInstance();
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
-		if(re != null && re.getParticipantGroup() != null) {
-			return secManager.getIdentitiesOfSecurityGroup(re.getParticipantGroup());
-		}
-		return Collections.emptyList();
+		return repositoryService.getMembers(getCourseEntry(), GroupRoles.participant.name());
 	}
 
 	/**
@@ -443,23 +415,14 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public List<Identity> getCoachesFromAreas() {
 		List<BusinessGroup> bgs = getAllBusinessGroups();
-		
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for(BusinessGroup group:bgs) {
-			secGroups.add(group.getOwnerGroup());
-		}
-		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		return businessGroupService.getMembers(bgs, GroupRoles.coach.name());
 	}
 	
 	@Override
 	public List<Identity> getCoachesFromAreas(List<Long> areaKeys) {
 		List<BGArea> areas = areaManager.loadAreas(areaKeys);
 		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for(BusinessGroup group:groups) {
-			secGroups.add(group.getOwnerGroup());
-		}
-		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		return businessGroupService.getMembers(groups, GroupRoles.coach.name());
 	}
 
 	/**
@@ -467,23 +430,14 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public List<Identity> getParticipantsFromAreas() {
 		List<BusinessGroup> bgs = getAllBusinessGroups();
-		
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for(BusinessGroup group:bgs) {
-			secGroups.add(group.getPartipiciantGroup());
-		}
-		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		return businessGroupService.getMembers(bgs, GroupRoles.participant.name());
 	}
 
 	@Override
 	public List<Identity> getParticipantsFromAreas(List<Long> areaKeys) {
 		List<BGArea> areas = areaManager.loadAreas(areaKeys);
 		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for(BusinessGroup group:groups) {
-			secGroups.add(group.getPartipiciantGroup());
-		}
-		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		return businessGroupService.getMembers(groups, GroupRoles.participant.name());
 	}
 
 	/**
@@ -491,7 +445,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getWaitingListGroups(org.olat.core.id.Identity)
 	 */
 	public List<BusinessGroup> getWaitingListGroups(Identity identity) {
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsWithWaitingListAttendedBy(identity, courseResource);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsWithWaitingListAttendedBy(identity, getCourseEntry());
 		return groups;
 	}
 

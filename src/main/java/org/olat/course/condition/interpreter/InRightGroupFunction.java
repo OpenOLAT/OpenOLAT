@@ -96,7 +96,7 @@ public class InRightGroupFunction extends AbstractFunction {
 			return cgm.isIdentityInGroup(ident, groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 		}
 		//TODO gm
-		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseResource());
+		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseEntry());
 		if(!groupKeys.isEmpty()) {
 			return cgm.isIdentityInGroup(ident, groupKeys.get(0)) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 		}

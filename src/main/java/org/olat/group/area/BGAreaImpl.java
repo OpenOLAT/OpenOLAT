@@ -38,7 +38,6 @@ public class BGAreaImpl extends PersistentObject implements BGArea {
 	private static final long serialVersionUID = 4452153442327716546L;
 	private String name;
 	private String description;
-	private Long groupContextKey;
 	private OLATResource resource;
 
 	/**
@@ -74,20 +73,6 @@ public class BGAreaImpl extends PersistentObject implements BGArea {
 
 	public void setResource(OLATResource resource) {
 		this.resource = resource;
-	}
-
-	/**
-	 * @see org.olat.group.area.BGArea#getGroupContext()
-	 */
-	public Long getGroupContextKey() {
-		return groupContextKey;
-	}
-
-	/**
-	 * @see org.olat.group.area.BGArea#setGroupContext(org.olat.group.context.BGContext)
-	 */
-	public void setGroupContextKey(Long groupContextKey) {
-		this.groupContextKey = groupContextKey;
 	}
 
 	/**

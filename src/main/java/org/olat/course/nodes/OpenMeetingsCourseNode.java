@@ -34,8 +34,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseFactory;
-import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
@@ -113,25 +111,24 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 		// check if user is moderator of the virtual classroom
 		boolean admin = roles.isOLATAdmin();
 		boolean moderator = admin;
-		Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+		RepositoryEntry re = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
 		if (!admin) {
-			ICourse course = CourseFactory.loadCourse(resourceId);
 			RepositoryManager rm = RepositoryManager.getInstance();
-			RepositoryEntry re = rm.lookupRepositoryEntry(course, false);
 			if(roles.isInstitutionalResourceManager() || roles.isAuthor()) {
 				if (re != null) {
 					admin = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re)
-							|| rm.isInstitutionalRessourceManagerFor(re, ureq.getIdentity());
+							|| rm.isInstitutionalRessourceManagerFor(ureq.getIdentity(), roles, re);
 				}
 			}
 			moderator = admin
-					|| rm.isIdentityInTutorSecurityGroup(ureq.getIdentity(), re.getOlatResource())
+					|| rm.isIdentityInTutorSecurityGroup(ureq.getIdentity(), re)
 					|| isCoach(re, ureq.getIdentity());
 		}
 
 		// create run controller
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
+		OLATResourceable ores = OresHelper.clone(
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
 		Controller runCtr = new OpenMeetingsRunController(ureq, wControl, null, ores, getIdent(), admin, moderator);
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_openmeetings_icon");
 		return new NodeRunConstructionResult(controller);
@@ -140,7 +137,7 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	private final boolean isCoach(RepositoryEntry re, Identity identity) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
-		int count = bgs.countBusinessGroups(params, re.getOlatResource());
+		int count = bgs.countBusinessGroups(params, re);
 		return count > 0;
 	}
 

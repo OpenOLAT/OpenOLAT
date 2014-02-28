@@ -35,7 +35,7 @@ import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -85,6 +85,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -127,6 +128,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private final BaseSecurity securityManager;
 	private final CheckboxManager checkboxManager;
 	private final RepositoryManager repositoryManager;
+	private final RepositoryService repositoryService;
 	private final BusinessGroupService businessGroupService;
 	
 	/**
@@ -145,6 +147,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		
@@ -278,29 +281,20 @@ public class CheckListAssessmentController extends FormBasicController implement
 		List<Checkbox> checkboxColl = checkboxList.getList();
 		int numOfCheckbox = checkboxList.getNumOfCheckbox();
 
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		Map<Long,Long> groupToSecGroupKey = new HashMap<Long,Long>();
-
 		RepositoryEntry re = env.getCourseRepositoryEntry();
-		boolean courseTutor = securityManager.isIdentityInSecurityGroup(getIdentity(), re.getTutorGroup());
-		
-		Set<Long> missingIdentityKeys = new HashSet<>();
+		boolean courseTutor = repositoryService.hasRole(getIdentity(), re, GroupRoles.coach.name());
+
+		Set<Long> missingIdentityKeys = new HashSet<>(); 
 		if(courseTutor) {
-			secGroups.add(re.getParticipantGroup());
 			List<RepositoryEntryMembership> repoMemberships = repositoryManager.getRepositoryEntryMembership(re);
 			for(RepositoryEntryMembership repoMembership:repoMemberships) {
-				if(repoMembership.getParticipantRepoKey() == null) continue;
+				if(repoMembership.isParticipant()) continue;
 				missingIdentityKeys.add(repoMembership.getIdentityKey());
 			}
 		}
 
 		List<BusinessGroup> coachedGroups = env.getCoachedGroups();
-		for(BusinessGroup group:coachedGroups) {
-			secGroups.add(group.getPartipiciantGroup());
-			groupToSecGroupKey.put(group.getKey(), group.getPartipiciantGroup().getKey());
-		}
-
-		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(courseOres, courseNode.getIdent(), secGroups);
+		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(courseOres, courseNode.getIdent(), courseTutor ? re : null, coachedGroups);
 		List<CheckListAssessmentRow> boxList = getAssessmentDataViews(dataList, checkboxColl);
 		Map<Long,CheckListAssessmentRow> identityToView = new HashMap<>();
 		for(CheckListAssessmentRow box:boxList) {

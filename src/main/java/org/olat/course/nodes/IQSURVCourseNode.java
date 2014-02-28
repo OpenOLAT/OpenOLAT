@@ -33,7 +33,6 @@ import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
@@ -62,7 +61,6 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
-import org.olat.group.BusinessGroup;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType3;
@@ -136,19 +134,8 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, StatisticResourceOption options) {
 		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", courseId);
-		
-		List<SecurityGroup> limitMemberships = new ArrayList<>();
-		if(options.getParticipantsCourse() != null) {
-			limitMemberships.add(options.getParticipantsCourse().getParticipantGroup());
-		}
-		if(options.getParticipantsGroups() != null && !options.getParticipantsGroups().isEmpty()) {
-			for(BusinessGroup group:options.getParticipantsGroups()) {
-				limitMemberships.add(group.getPartipiciantGroup());
-			}
-		}
-		
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(courseOres.getResourceableId(), getIdent());
-		searchParams.setLimitToSecGroups(limitMemberships);
+		searchParams.setLimitToGroups(options.getParticipantsGroups());
 
 		QTIStatisticResourceResult result = new QTIStatisticResourceResult(this, searchParams);
 		return result;

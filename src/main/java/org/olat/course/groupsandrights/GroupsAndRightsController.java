@@ -49,7 +49,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRights;
 import org.olat.group.right.BGRightsRole;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -60,7 +60,7 @@ public class GroupsAndRightsController extends FormBasicController {
 	private GroupsAndRightsDataModel tableDataModel;
 	private FormLink removeAllLink;
 	
-	private final OLATResource resource;
+	private final RepositoryEntry resource;
 	private final BGRightManager rightManager;
 	private final BusinessGroupService businessGroupService;
 	
@@ -68,7 +68,7 @@ public class GroupsAndRightsController extends FormBasicController {
 	private static final String[] values = {""};
 	
 	
-	public GroupsAndRightsController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
+	public GroupsAndRightsController(UserRequest ureq, WindowControl wControl, RepositoryEntry resource) {
 		super(ureq, wControl, "right_list");
 		
 		rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
@@ -106,7 +106,7 @@ public class GroupsAndRightsController extends FormBasicController {
 		List<BGRightsOption> options = new ArrayList<BGRightsOption>();
 		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
 		
-		List<BGRights> currentRights = rightManager.findBGRights(groups, resource);
+		List<BGRights> currentRights = rightManager.findBGRights(groups, resource.getOlatResource());
 		Map<Long,BGRights> tutorToRightsMap = new HashMap<Long,BGRights>();
 		Map<Long,BGRights> participantToRightsMap = new HashMap<Long,BGRights>();
 		for(BGRights right:currentRights) {
@@ -189,7 +189,7 @@ public class GroupsAndRightsController extends FormBasicController {
 		List<BusinessGroup> groups = getGroups();
 
 		//collect current rights
-		List<BGRights> currentRights = rightManager.findBGRights(groups, resource);
+		List<BGRights> currentRights = rightManager.findBGRights(groups, resource.getOlatResource());
 		Map<Long,BGRights> tutorToRightsMap = new HashMap<Long,BGRights>();
 		Map<Long,BGRights> participantToRightsMap = new HashMap<Long,BGRights>();
 		for(BGRights right:currentRights) {
@@ -221,19 +221,19 @@ public class GroupsAndRightsController extends FormBasicController {
 			List<String> newPermissionsTmp = new ArrayList<String>(newPermissions);
 			newPermissionsTmp.removeAll(currentPermissions);
 			for(String newPermission:newPermissionsTmp) {
-				rightManager.addBGRight(newPermission, option.getGroup(), resource, option.getRole());
+				rightManager.addBGRight(newPermission, option.getGroup(), resource.getOlatResource(), option.getRole());
 			}
 			
 			currentPermissions.removeAll(newPermissions);
 			for(String currentPermission:currentPermissions) {
-				rightManager.removeBGRight(currentPermission, option.getGroup(), resource, option.getRole());
+				rightManager.removeBGRight(currentPermission, option.getGroup(), resource.getOlatResource(), option.getRole());
 			}
 		}
 	}
 	
 	private void doRemoveAllRights() {
 		List<BusinessGroup> groups = getGroups();
-		rightManager.removeBGRights(groups, resource);
+		rightManager.removeBGRights(groups, resource.getOlatResource());
 		loadModel();
 	}
 

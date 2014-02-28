@@ -19,7 +19,7 @@
 **/
 package org.olat.user;
 
-import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.IdentityNames;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 
@@ -54,7 +54,7 @@ public class UserDisplayNameCreator {
 		return getDisplayName(first, last);
 	}
 
-	public String getUserDisplayName(IdentityShort identity) {
+	public String getUserDisplayName(IdentityNames identity) {
 		return getDisplayName(identity.getFirstName(), identity.getLastName());
 	}
 	

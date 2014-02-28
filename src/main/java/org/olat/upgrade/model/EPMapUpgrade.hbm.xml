@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-lazy="false">
+
+	<class name="org.olat.upgrade.model.EPMapUpgrade" table="o_ep_struct_el">
+  	
+		<id name="key" column="structure_id" type="long" unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+		<property name="structureType" column="structure_type" type="string" />
+    
+		<many-to-one name="ownerGroup"
+                  column="fk_ownergroup"
+                  class="org.olat.basesecurity.SecurityGroupImpl" 
+                  outer-join="true"   
+                  unique="true" not-found="ignore"
+                  cascade="none"/>
+                  
+		<many-to-one name="group"
+                  column="fk_group_id"
+                  class="org.olat.basesecurity.model.GroupImpl" 
+                  outer-join="true"   
+                  unique="true" not-found="ignore"
+                  cascade="none"/>
+	</class>
+  
+</hibernate-mapping>

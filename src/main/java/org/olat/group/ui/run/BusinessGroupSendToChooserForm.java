@@ -30,8 +30,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,6 +47,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.ArrayHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -90,6 +91,8 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	public final static String NLS_RADIO_NOTHING = "nothing";
 	public final static String NLS_RADIO_CHOOSE = "choose";
 	
+	private final BusinessGroupService businessGroupService;
+	
 	/**
 	 * @param name
 	 * @param translator
@@ -99,6 +102,8 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 
 		this.businessGroup = businessGroup;
 		this.isAdmin = isAdmin;
+		
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		// check 'members can see owners' and 'members can see participants' 
 		showChooseOwners  = businessGroup.isOwnersVisibleIntern();
@@ -120,7 +125,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 			};
 
 			// Owner MultiSelection
-			SecurityGroup owners = businessGroup.getOwnerGroup();			
+			List<Identity> owners = businessGroupService.getMembers(businessGroup, GroupRoles.coach.name());
 			keysOwner = getMemberKeys(owners);
 			valuesOwner = getMemberValues(ureq, owners); 
 			ArrayHelper.sort(keysOwner, valuesOwner, false, true, false);
@@ -166,7 +171,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 				};
 				
 				// Participant MultiSelection
-				SecurityGroup participants = businessGroup.getPartipiciantGroup();
+				List<Identity> participants = businessGroupService.getMembers(businessGroup, GroupRoles.participant.name());
 				keysPartips = getMemberKeys(participants);
 				valuesPartips = getMemberValues(ureq, participants); 
 				ArrayHelper.sort(keysPartips, valuesPartips, false, true, false);
@@ -205,7 +210,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 				
 		if (showWaitingList) {
 		  // Waitings MultiSelection
-			SecurityGroup waitingList = businessGroup.getWaitingGroup();
+			List<Identity> waitingList = businessGroupService.getMembers(businessGroup, GroupRoles.waiting.name());
 			keysWaitings = getMemberKeys(waitingList);
 			valuesWaitings = getMemberValues(ureq, waitingList);			
 			ArrayHelper.sort(keysWaitings, valuesWaitings, false, true, false);
@@ -223,12 +228,10 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	 * @param ureq
 	 * @param securityGroup
 	 * @return
-	 * fxdiff: FXOLAT-227 get properties and order by user-properties-context.
 	 */
-	private String[] getMemberValues(UserRequest ureq, SecurityGroup securityGroup) {
+	private String[] getMemberValues(UserRequest ureq, List<Identity> membersList) {
 		String[] values = new String[0];		
-		List<UserPropertyHandler> propHandlers = UserManager.getInstance().getUserPropertyHandlersFor(this.getClass().getCanonicalName(), ureq.getUserSession().getRoles().isOLATAdmin());
-		List<Identity> membersList = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(securityGroup);		
+		List<UserPropertyHandler> propHandlers = UserManager.getInstance().getUserPropertyHandlersFor(this.getClass().getCanonicalName(), ureq.getUserSession().getRoles().isOLATAdmin());	
 		values = new String[membersList.size()];
 		for (int i = 0; i < membersList.size(); i++) {			
 			User currentUser = membersList.get(i).getUser();
@@ -249,9 +252,8 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	 * @param securityGroup
 	 * @return
 	 */
-	private String[] getMemberKeys(SecurityGroup securityGroup) {
-		String[] keys = new String[0];		
-		List<Identity> membersList = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(securityGroup);		
+	private String[] getMemberKeys(List<Identity> membersList ) {
+		String[] keys = new String[0];			
 		keys = new String[membersList.size()];
 		for (int i = 0; i < membersList.size(); i++) {
 			keys[i] = membersList.get(i).getKey().toString();			

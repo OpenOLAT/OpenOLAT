@@ -28,9 +28,6 @@ package org.olat.course.repository;
 import java.io.File;
 import java.util.UUID;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -133,12 +130,15 @@ public class CreateNewCourseController extends BasicController implements IAddCo
 	public void repositoryEntryCreated(RepositoryEntry re) {
 		// Create course admin policy for owner group of repository entry
 		// -> All owners of repository entries are course admins
+		/*
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		secMgr.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());
 		//fxdiff VCRP-1,2: access control of resources
 		secMgr.createAndPersistPolicy(re.getParticipantGroup(), Constants.PERMISSION_PARTI, re.getOlatResource());
 		secMgr.createAndPersistPolicy(re.getTutorGroup(), Constants.PERMISSION_COACH, re.getOlatResource());
 		// set root node title
+		 * 
+		 */
 				
 		course = CourseFactory.openCourseEditSession(re.getOlatResource().getResourceableId());
 		String displayName = re.getDisplayname();

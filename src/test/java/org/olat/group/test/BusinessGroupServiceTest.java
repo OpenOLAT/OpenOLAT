@@ -20,7 +20,6 @@
 package org.olat.group.test;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -35,19 +34,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.SecurityGroup;
-import org.olat.basesecurity.SecurityGroupImpl;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -66,11 +65,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BusinessGroupServiceTest extends OlatTestCase {
 	
-	private OLog log = Tracing.createLoggerFor(BusinessGroupServiceTest.class);
 	private static boolean initialize = false;
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private GroupDAO groupDao;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -79,6 +79,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -115,35 +117,32 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			id3 = JunitTestHelper.createAndPersistIdentityAsUser("id3-bgs-" + UUID.randomUUID().toString());
 			id4 = JunitTestHelper.createAndPersistIdentityAsUser("id4-bgs-" + UUID.randomUUID().toString());
 			// buddyGroups without waiting-list: groupcontext is null
-			List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(id1, null);
+			List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(id1);
 			if (l.size() == 0) {
 				one = businessGroupService.createBusinessGroup(id1, oneName, oneDesc, -1, -1, false, false, null);
 			} else {
-				List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(id1, null);
+				List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(id1);
 				for(BusinessGroup group:groups) {
 					if(oneName.equals(group.getName())) {
 						one = group;
 					}
 				}
 			}
-			l = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
+			l = businessGroupService.findBusinessGroupsOwnedBy(id2);
 			if (l.size() == 0) {
 				two = businessGroupService.createBusinessGroup(id2, twoName, twoDesc, -1, -1, false, false, null);
-				SecurityGroup twoPartips = two.getPartipiciantGroup();
-				securityManager.addIdentityToSecurityGroup(id3, twoPartips);
-				securityManager.addIdentityToSecurityGroup(id4, twoPartips);
+				businessGroupRelationDao.addRole(id3, two, GroupRoles.participant.name());
+				businessGroupRelationDao.addRole(id4, two, GroupRoles.participant.name());
 			} else {
-				two = businessGroupService.findBusinessGroupsOwnedBy(id2, null).get(0);
+				two = businessGroupService.findBusinessGroupsOwnedBy(id2).get(0);
 			}
-			l = businessGroupService.findBusinessGroupsOwnedBy(id3, null);
+			l = businessGroupService.findBusinessGroupsOwnedBy(id3);
 			if (l.size() == 0) {
 				three = businessGroupService.createBusinessGroup(id3, threeName, threeDesc, -1, -1, false, false, null);
-				SecurityGroup threeOwner = three.getOwnerGroup();
-				SecurityGroup threeOPartips = three.getPartipiciantGroup();
-				securityManager.addIdentityToSecurityGroup(id2, threeOPartips);
-				securityManager.addIdentityToSecurityGroup(id1, threeOwner);
+				businessGroupRelationDao.addRole(id2, three, GroupRoles.participant.name());
+				businessGroupRelationDao.addRole(id1, three, GroupRoles.coach.name());
 			} else {
-				three = businessGroupService.findBusinessGroupsOwnedBy(id3, null).get(0);
+				three = businessGroupService.findBusinessGroupsOwnedBy(id3).get(0);
 			}
 			/*
 			 * Membership in ParticipiantGroups............................. id1
@@ -263,10 +262,10 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		BusinessGroup group = businessGroupService.createBusinessGroup(id0, "auto-1", "auto-1-desc", new Integer(0), new Integer(1), true, true, resource);
 		Assert.assertNotNull(group);
 
-		securityManager.addIdentityToSecurityGroup(id1, group.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group.getWaitingGroup());
-		securityManager.addIdentityToSecurityGroup(id3, group.getWaitingGroup());
-		securityManager.addIdentityToSecurityGroup(id4, group.getWaitingGroup());
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(id3, group, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(id4, group, GroupRoles.waiting.name());
 		dbInstance.commitAndCloseSession();
 
 		//update max participants
@@ -275,12 +274,12 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check the auto rank 
-		List<Identity> participants = securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+		List<Identity> participants = businessGroupRelationDao.getMembers(group, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(3, participants.size());
 		Assert.assertTrue(participants.contains(id1));
 		
-		List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroup(group.getWaitingGroup());
+		List<Identity> waitingList = businessGroupRelationDao.getMembers(group, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingList);
 		Assert.assertEquals(1, waitingList.size());
 	}
@@ -298,10 +297,10 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		BusinessGroup group = businessGroupService.createBusinessGroup(id0, "auto-1", "auto-1-desc", new Integer(0), new Integer(1), false, false, resource);
 		Assert.assertNotNull(group);
 
-		securityManager.addIdentityToSecurityGroup(id1, group.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group.getWaitingGroup());
-		securityManager.addIdentityToSecurityGroup(id3, group.getWaitingGroup());
-		securityManager.addIdentityToSecurityGroup(id4, group.getWaitingGroup());
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(id3, group, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(id4, group, GroupRoles.waiting.name());
 		dbInstance.commitAndCloseSession();
 
 		//update max participants
@@ -310,12 +309,12 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check the auto rank 
-		List<Identity> participants = securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+		List<Identity> participants = businessGroupRelationDao.getMembers(group, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(3, participants.size());
 		Assert.assertTrue(participants.contains(id1));
 		
-		List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroup(group.getWaitingGroup());
+		List<Identity> waitingList = businessGroupRelationDao.getMembers(group, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingList);
 		Assert.assertEquals(1, waitingList.size());
 	}
@@ -327,8 +326,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 
 		dbInstance.commitAndCloseSession(); // simulate user clicks
 		SearchBusinessGroupParams params1 = new SearchBusinessGroupParams(null, false, false);
-		assertTrue(businessGroupService.findBusinessGroups(params1, c1.getOlatResource(), 0, -1).isEmpty());
-		assertTrue(businessGroupService.countBusinessGroups(params1, c1.getOlatResource()) == 0);
+		assertTrue(businessGroupService.findBusinessGroups(params1, c1, 0, -1).isEmpty());
+		assertTrue(businessGroupService.countBusinessGroups(params1, c1) == 0);
 
 		dbInstance.commitAndCloseSession(); // simulate user clicks
 		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, 0, 10, false, false, c1);
@@ -346,8 +345,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 
 		dbInstance.commitAndCloseSession(); // simulate user clicks
 		SearchBusinessGroupParams params2 = new SearchBusinessGroupParams(null, false, false);
-		Assert.assertEquals(3, businessGroupService.findBusinessGroups(params2, c1.getOlatResource(), 0, -1).size());
-		Assert.assertEquals(3, businessGroupService.countBusinessGroups(params2, c1.getOlatResource()));
+		Assert.assertEquals(3, businessGroupService.findBusinessGroups(params2, c1, 0, -1).size());
+		Assert.assertEquals(3, businessGroupService.countBusinessGroups(params2, c1));
 	}
 	
 	@Test
@@ -361,16 +360,16 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity id6 = JunitTestHelper.createAndPersistIdentityAsUser("merge-6-" + UUID.randomUUID().toString());
 		//create groups and memberships
 		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "old-1", null, 0, 10, false, false, null);
-		securityManager.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, g1.getOwnerGroup());
+		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, g1, GroupRoles.coach.name());
 		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "old-2", null, 0, 10, false, false, null);
-		securityManager.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id4, g2.getWaitingGroup());
-		securityManager.addIdentityToSecurityGroup(id5, g2.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id6, g2.getOwnerGroup());
+		businessGroupRelationDao.addRole(id2, g2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id4, g2, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(id5, g2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id6, g2, GroupRoles.coach.name());
 		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "target", null, 0, 10, false, false, null);
-		securityManager.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//merge
@@ -384,18 +383,18 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check merge
-		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(mergedGroup.getOwnerGroup());
+		List<Identity> owners = businessGroupRelationDao.getMembers(mergedGroup, GroupRoles.coach.name());
 		Assert.assertNotNull(owners);
 		Assert.assertEquals(2, owners.size());
 		Assert.assertTrue(owners.contains(id3));
 		Assert.assertTrue(owners.contains(id6));
-		List<Identity> participants = securityManager.getIdentitiesOfSecurityGroup(mergedGroup.getPartipiciantGroup());
+		List<Identity> participants = businessGroupRelationDao.getMembers(mergedGroup, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(3, participants.size());
 		Assert.assertTrue(participants.contains(id1));
 		Assert.assertTrue(participants.contains(id2));
 		Assert.assertTrue(participants.contains(id5));
-		List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroup(mergedGroup.getWaitingGroup());
+		List<Identity> waitingList = businessGroupRelationDao.getMembers(mergedGroup, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingList);
 		Assert.assertEquals(1, waitingList.size());
 		Assert.assertTrue(waitingList.contains(id4));
@@ -412,35 +411,35 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void testCreateAndPersistBuddyGroup() throws Exception {
 		// id1
-		List<BusinessGroup> groupOwnedId1 = businessGroupService.findBusinessGroupsOwnedBy(id1, null);
+		List<BusinessGroup> groupOwnedId1 = businessGroupService.findBusinessGroupsOwnedBy(id1);
 		Assert.assertEquals("2 BuddyGroups owned by id1", 3, groupOwnedId1.size());
 		Assert.assertTrue(groupOwnedId1.contains(one));
 		Assert.assertTrue(groupOwnedId1.contains(three));
 		Assert.assertTrue(groupOwnedId1.contains(bgWithWaitingList));
 
-		List<BusinessGroup> groupAttendeeId1 = businessGroupService.findBusinessGroupsAttendedBy(id1, null);
+		List<BusinessGroup> groupAttendeeId1 = businessGroupService.findBusinessGroupsAttendedBy(id1);
 		Assert.assertEquals("0 BuddyGroup where id1 is partipicating", 0, groupAttendeeId1.size());
 
 		// id2
-		List<BusinessGroup> groupOwnedId2 = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
+		List<BusinessGroup> groupOwnedId2 = businessGroupService.findBusinessGroupsOwnedBy(id2);
 		Assert.assertEquals("1 BuddyGroup owned by id2", 1, groupOwnedId2.size());
 		Assert.assertTrue(groupOwnedId2.contains(two));
 		
-		List<BusinessGroup> groupAttendeeId2 = businessGroupService.findBusinessGroupsAttendedBy(id2, null);
+		List<BusinessGroup> groupAttendeeId2 = businessGroupService.findBusinessGroupsAttendedBy(id2);
 		Assert.assertEquals("1 BuddyGroup where id2 is partipicating", 1, groupAttendeeId2.size());
 		assertTrue("It's the correct BuddyGroup", groupAttendeeId2.contains(three));
 
 		// id3
-		List<BusinessGroup> groupOwnedId3 = businessGroupService.findBusinessGroupsOwnedBy(id3, null);
+		List<BusinessGroup> groupOwnedId3 = businessGroupService.findBusinessGroupsOwnedBy(id3);
 		Assert.assertEquals("1 BuddyGroup owned by id3", 1, groupOwnedId3.size());
 		assertTrue("It's the correct BuddyGroup", groupOwnedId3.contains(three));
 		
-		List<BusinessGroup> groupAttendeeId3 = businessGroupService.findBusinessGroupsAttendedBy(id3, null);
+		List<BusinessGroup> groupAttendeeId3 = businessGroupService.findBusinessGroupsAttendedBy(id3);
 		Assert.assertEquals("1 BuddyGroup where id3 is partipicating", 1, groupAttendeeId3.size());
 		assertTrue("It's the correct BuddyGroup", groupAttendeeId3.contains(two));
 
 		// id4
-		List<BusinessGroup> groupOwnedId4 = businessGroupService.findBusinessGroupsOwnedBy(id4, null);
+		List<BusinessGroup> groupOwnedId4 = businessGroupService.findBusinessGroupsOwnedBy(id4);
 		Assert.assertEquals("0 BuddyGroup owned by id4", 0, groupOwnedId4.size());
 
 
@@ -551,13 +550,13 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(id2, "move-bg-3", "move-desc", 0, 10, true, false, resource);
 		BusinessGroup group3 = businessGroupService.createBusinessGroup(id3, "move-bg-3", "move-desc", 0, 10, true, false, resource);
 
-		securityManager.addIdentityToSecurityGroup(id2, group1.getWaitingGroup());
-		securityManager.addIdentityToSecurityGroup(id3, group1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, group2.getWaitingGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group2.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id1, group3.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group3.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id4, group3.getWaitingGroup());
+		businessGroupRelationDao.addRole(id2, group1, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(id3, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, group2, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(id2, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id1, group3, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id2, group3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id4, group3, GroupRoles.waiting.name());
 		dbInstance.commitAndCloseSession();
 		//this groups and relations have been created
 		//group1: id1, id2, id3
@@ -573,39 +572,39 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check in group1 stay only id2 in waiting list
-		List<Identity> ownerGroup1 = securityManager.getIdentitiesOfSecurityGroup(group1.getOwnerGroup());
+		List<Identity> ownerGroup1 = businessGroupService.getMembers(group1, GroupRoles.coach.name());
 		Assert.assertNotNull(ownerGroup1);
 		Assert.assertTrue(ownerGroup1.isEmpty());
-		List<Identity> participantGroup1 = securityManager.getIdentitiesOfSecurityGroup(group1.getPartipiciantGroup());
+		List<Identity> participantGroup1 = businessGroupRelationDao.getMembers(group1, GroupRoles.participant.name());
 		Assert.assertNotNull(participantGroup1);
 		Assert.assertTrue(participantGroup1.isEmpty());
-		List<Identity> waitingGroup1 = securityManager.getIdentitiesOfSecurityGroup(group1.getWaitingGroup());
+		List<Identity> waitingGroup1 = businessGroupRelationDao.getMembers(group1, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingGroup1);
 		Assert.assertEquals(1, waitingGroup1.size());
 		Assert.assertEquals(id2, waitingGroup1.get(0));
 		
 		//check in group2 id2 as owner and participant
-		List<Identity> ownerGroup2 = securityManager.getIdentitiesOfSecurityGroup(group2.getOwnerGroup());
+		List<Identity> ownerGroup2 = businessGroupService.getMembers(group2, GroupRoles.coach.name());
 		Assert.assertNotNull(ownerGroup2);
 		Assert.assertEquals(1, ownerGroup2.size());
 		Assert.assertEquals(id2, ownerGroup2.get(0));
-		List<Identity> participantGroup2 = securityManager.getIdentitiesOfSecurityGroup(group2.getPartipiciantGroup());
+		List<Identity> participantGroup2 = businessGroupRelationDao.getMembers(group2, GroupRoles.participant.name());
 		Assert.assertNotNull(participantGroup2);
 		Assert.assertEquals(1, participantGroup2.size());
 		Assert.assertEquals(id2, participantGroup2.get(0));
-		List<Identity> waitingGroup2 = securityManager.getIdentitiesOfSecurityGroup(group2.getWaitingGroup());
+		List<Identity> waitingGroup2 = businessGroupRelationDao.getMembers(group2, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingGroup2);
 		Assert.assertTrue(waitingGroup2.isEmpty());
 		
 		//check in group3 id2 as owner and participant
-		List<Identity> ownerGroup3 = securityManager.getIdentitiesOfSecurityGroup(group3.getOwnerGroup());
+		List<Identity> ownerGroup3 = businessGroupService.getMembers(group3, GroupRoles.coach.name());
 		Assert.assertNotNull(ownerGroup3);
 		Assert.assertTrue(ownerGroup3.isEmpty());
-		List<Identity> participantGroup3 = securityManager.getIdentitiesOfSecurityGroup(group3.getPartipiciantGroup());
+		List<Identity> participantGroup3 = businessGroupRelationDao.getMembers(group3, GroupRoles.participant.name());
 		Assert.assertNotNull(participantGroup3);
 		Assert.assertEquals(1, participantGroup3.size());
 		Assert.assertEquals(id2, participantGroup3.get(0));
-		List<Identity> waitingGroup3 = securityManager.getIdentitiesOfSecurityGroup(group3.getWaitingGroup());
+		List<Identity> waitingGroup3 = businessGroupRelationDao.getMembers(group3, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingGroup3);
 		Assert.assertEquals(1, waitingGroup3.size());
 		Assert.assertEquals(id4, waitingGroup3.get(0));
@@ -666,7 +665,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	 */
 	@Test
 	public void testEnableDisableAndCheckForTool() throws Exception {
-		List<BusinessGroup>  sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
+		List<BusinessGroup>  sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2);
 		BusinessGroup found = (BusinessGroup) sqlRes.get(0);
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
 		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
@@ -707,8 +706,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity ownerIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mship-o-" + UUID.randomUUID().toString());
 		Identity partIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mship-p-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(ureqIdentity, "Up-mship", "updateMembership", 0, 10, false, false, null);
-		securityManager.addIdentityToSecurityGroup(ownerIdentity, group.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(partIdentity, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(ownerIdentity, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(partIdentity, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
 		//update memberships
@@ -721,13 +720,13 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check if the participant is owner too and the owner is participant too
-		boolean partIsOwner = securityManager.isIdentityInSecurityGroup(partIdentity, group.getOwnerGroup());
+		boolean partIsOwner = businessGroupService.hasRoles(partIdentity, group, GroupRoles.coach.name());
 		Assert.assertTrue(partIsOwner);
-		boolean partIsPart = securityManager.isIdentityInSecurityGroup(partIdentity, group.getPartipiciantGroup());
+		boolean partIsPart = businessGroupService.hasRoles(partIdentity, group, GroupRoles.participant.name());
 		Assert.assertTrue(partIsPart);
-		boolean ownerIsOwner = securityManager.isIdentityInSecurityGroup(ownerIdentity, group.getOwnerGroup());
+		boolean ownerIsOwner = businessGroupService.hasRoles(ownerIdentity, group, GroupRoles.coach.name());
 		Assert.assertTrue(ownerIsOwner);
-		boolean ownerIsPart = securityManager.isIdentityInSecurityGroup(ownerIdentity, group.getPartipiciantGroup());
+		boolean ownerIsPart = businessGroupService.hasRoles(ownerIdentity, group, GroupRoles.participant.name());
 		Assert.assertTrue(ownerIsPart);
 	}
 	
@@ -738,8 +737,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity ownerIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mships-o-" + UUID.randomUUID().toString());
 		Identity partIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mships-p-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(ureqIdentity, "Up-mships", "updateMemberships", 0, 10, false, false, null);
-		securityManager.addIdentityToSecurityGroup(ownerIdentity, group.getOwnerGroup());
-		securityManager.addIdentityToSecurityGroup(partIdentity, group.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(ownerIdentity, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(partIdentity, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
 		//invert the roles
@@ -757,13 +756,13 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check the result
-		boolean partIsOwner = securityManager.isIdentityInSecurityGroup(partIdentity, group.getOwnerGroup());
+		boolean partIsOwner = businessGroupService.hasRoles(partIdentity, group, GroupRoles.coach.name());
 		Assert.assertTrue(partIsOwner);
-		boolean partIsPart = securityManager.isIdentityInSecurityGroup(partIdentity, group.getPartipiciantGroup());
+		boolean partIsPart = businessGroupService.hasRoles(partIdentity, group, GroupRoles.participant.name());
 		Assert.assertFalse(partIsPart);
-		boolean ownerIsPart = securityManager.isIdentityInSecurityGroup(ownerIdentity, group.getPartipiciantGroup());
+		boolean ownerIsPart = businessGroupService.hasRoles(ownerIdentity, group, GroupRoles.participant.name());
 		Assert.assertTrue(ownerIsPart);
-		boolean ownerIsOwner = securityManager.isIdentityInSecurityGroup(ownerIdentity, group.getOwnerGroup());
+		boolean ownerIsOwner = businessGroupService.hasRoles(ownerIdentity, group, GroupRoles.coach.name());
 		Assert.assertFalse(ownerIsOwner);
 	}
 
@@ -773,8 +772,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	 * @throws Exception
 	 */
 	@Test
-	public void testDeleteBuddyGroup() throws Exception {
-		List<BusinessGroup> sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
+	public void testDeleteGroup() throws Exception {
+		List<BusinessGroup> sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2);
 		assertTrue("1 BuddyGroup owned by id2", sqlRes.size() == 1);
 		BusinessGroup found = (BusinessGroup) sqlRes.get(0);
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
@@ -785,39 +784,23 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		}
 
 		businessGroupService.deleteBusinessGroup(found);
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2);
 		assertTrue("0 BuddyGroup owned by id2", sqlRes.size() == 0);
 	}
 	
 	@Test
 	public void testDeleteBusinessGroupWithWaitingGroup() {
-		doTestDeleteBusinessGroup(true);
-	}
-	
-	@Test
-	public void testDeleteBusinessGroupWithoutWaitingGroup() {
-		doTestDeleteBusinessGroup(false);
-	}
-	
-	private void doTestDeleteBusinessGroup(boolean withWaitingList) {
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-
 		BusinessGroup deleteTestGroup = businessGroupService.createBusinessGroup(id1, "deleteTestGroup-1",
-				"deleteTestGroup-1", -1, -1, withWaitingList, true, resource);
+				"deleteTestGroup-1", -1, -1, true, true, resource);
+		dbInstance.commitAndCloseSession();
 		
-		Long ownerGroupKey = deleteTestGroup.getOwnerGroup().getKey();
-		Long partipiciantGroupKey = deleteTestGroup.getPartipiciantGroup().getKey();
-		Long waitingGroupKey = deleteTestGroup.getWaitingGroup().getKey();
-		
-		assertNotNull("Could not find owner-group", dbInstance.findObject(SecurityGroupImpl.class, ownerGroupKey));
-		assertNotNull("Could not find partipiciant-group", dbInstance.findObject(SecurityGroupImpl.class, partipiciantGroupKey));
-		assertNotNull("Could not find waiting-group", dbInstance.findObject(SecurityGroupImpl.class, waitingGroupKey));
 		businessGroupService.deleteBusinessGroup(deleteTestGroup);
-		assertNull("owner-group still exist after delete", dbInstance.findObject(SecurityGroupImpl.class, ownerGroupKey));
-		assertNull("partipiciant-group still exist after delete", dbInstance.findObject(SecurityGroupImpl.class, partipiciantGroupKey));
-		assertNull("waiting-group still exist after delete", dbInstance.findObject(SecurityGroupImpl.class, waitingGroupKey));
+		dbInstance.commitAndCloseSession();
+		
+		Group reloadedGroup = groupDao.loadGroup(deleteTestGroup.getBaseGroup().getKey());
+		Assert.assertNull(reloadedGroup);
 	}
-	
 
 	@Test
 	public void testAcceptPendingParticipation_participant() {
@@ -835,14 +818,14 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Assert.assertEquals(group.getResource(), reservation.getResource());
 		
 		//check that the user is not participant
-		Assert.assertFalse(securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup()));
+		Assert.assertFalse(businessGroupService.hasRoles(id, group, GroupRoles.participant.name()));
 		
 		//accept reservation
 		businessGroupService.acceptPendingParticipation(id, id, group.getResource());
 		dbInstance.commitAndCloseSession();
 		
 	//check that the user is participant
-		boolean participant = securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup());
+		boolean participant = businessGroupService.hasRoles(id, group, GroupRoles.participant.name());
 		Assert.assertTrue(participant);
 	}
 
@@ -860,14 +843,14 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Assert.assertNotNull(reservation);
 		
 		//check that the user is not participant
-		Assert.assertFalse(securityManager.isIdentityInSecurityGroup(id, group.getOwnerGroup()));
+		Assert.assertFalse(businessGroupService.hasRoles(id, group, GroupRoles.coach.name()));
 		
 		//accept reservation
 		acService.acceptReservationToResource(id, reservation);
 		dbInstance.commitAndCloseSession();
 		
 		//check that the user is participant
-		Assert.assertTrue(securityManager.isIdentityInSecurityGroup(id, group.getOwnerGroup()));
+		Assert.assertTrue(businessGroupService.hasRoles(id, group, GroupRoles.coach.name()));
 		//check that the reservations are deleted
 		List<ResourceReservation> reservations = reservationDao.loadReservations(id);
 		Assert.assertNotNull(reservations);
@@ -888,14 +871,14 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Assert.assertNotNull(reservation);
 		
 		//check that the user is not participant
-		Assert.assertFalse(securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup()));
+		Assert.assertFalse(businessGroupService.hasRoles(id, group, GroupRoles.participant.name()));
 		
 		//accept reservation
 		acService.removeReservation(id, id, reservation);
 		dbInstance.commitAndCloseSession();
 		
 		//check that the user is not participant
-		Assert.assertFalse(securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup()));
+		Assert.assertFalse(businessGroupService.hasRoles(id, group, GroupRoles.participant.name()));
 		//check that the reservations are deleted
 		List<ResourceReservation> reservations = reservationDao.loadReservations(id);
 		Assert.assertNotNull(reservations);
@@ -924,7 +907,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check that the user is not participant
-		boolean participant2 = securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup());
+		boolean participant2 = businessGroupService.hasRoles(id, group, GroupRoles.participant.name());
 		Assert.assertFalse(participant2);
 		//check that the reservations are deleted
 		List<ResourceReservation> reservations = reservationDao.loadReservations(id);

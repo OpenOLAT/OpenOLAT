@@ -29,9 +29,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.velocity.VelocityContext;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -61,10 +59,10 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
@@ -72,6 +70,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 
 
 /**
@@ -97,6 +96,7 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 	private VelocityContainer sendNotificationVC;
 	private CloseRessourceOptionForm formStep2;
 	
+	private final RepositoryService repositoryService;
 	private final BusinessGroupService businessGroupService;
 	private final MailManager mailManager;
 	
@@ -105,6 +105,7 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 		setBasePackage(RepositoryManager.class);
 		this.repositoryEntry = repositoryEntry;
 		mailManager = CoreSpringFactory.getImpl(MailManager.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		mainVc = createVelocityContainer("wizard");
@@ -192,10 +193,8 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 			if (mailNotificationCtr.getMailTemplate() != null) {
 				List<Identity> ownerList = new ArrayList<Identity>();
 				// owners
-				BaseSecurity securityManager = BaseSecurityManager.getInstance();
-				SecurityGroup owners = repositoryEntry.getOwnerGroup();
-				if (securityManager.isIdentityInSecurityGroup(ureq.getIdentity(), owners)) {
-					ownerList = securityManager.getIdentitiesOfSecurityGroup(owners);
+				if (repositoryService.hasRole(ureq.getIdentity(), repositoryEntry, GroupRoles.owner.name())) {
+					ownerList = repositoryService.getMembers(repositoryEntry, GroupRoles.owner.name());
 				}
 
 				String businessPath = getWindowControl().getBusinessControl().getAsString();
@@ -257,34 +256,19 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 	private void doCleanGroups(Identity identity) {
 		ICourse course = CourseFactory.loadCourse(repositoryEntry.getOlatResource());
 		if(course != null) {
-			BaseSecurity securityManager = BaseSecurityManager.getInstance();
-
 			// LearningGroups
 			List<BusinessGroup> allGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
 			for (BusinessGroup bGroup : allGroups) {
-				SecurityGroup secGroupOwner = bGroup.getOwnerGroup();
-				SecurityGroup secGroupPartipiciant = bGroup.getPartipiciantGroup();
-				SecurityGroup secGroupWaiting = bGroup.getWaitingGroup();
-				if(secGroupOwner != null) {
-					businessGroupService.removeOwners(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupOwner), bGroup);
-				}
-				if(secGroupPartipiciant != null) {
-					businessGroupService.removeParticipants(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), bGroup, null);
-				}
-				if(secGroupWaiting != null) {
-					businessGroupService.removeFromWaitingList(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupWaiting), bGroup, null);
-				}
+				List<Identity> owners = businessGroupService.getMembers(bGroup, GroupRoles.coach.name());
+				businessGroupService.removeOwners(identity, owners, bGroup);
+
+				List<Identity> participants = businessGroupService.getMembers(bGroup, GroupRoles.participant.name());
+				businessGroupService.removeParticipants(identity, participants, bGroup, null);
+				
+				List<Identity> waitingList = businessGroupService.getMembers(bGroup, GroupRoles.waiting.name());
+				businessGroupService.removeFromWaitingList(identity, waitingList, bGroup, null);
 			}
-			
-			//fxdiff VCRP-1,2: access control of resources
-			if(repositoryEntry.getParticipantGroup() != null) {
-				SecurityGroup secGroupPartipiciant = repositoryEntry.getParticipantGroup();
-				businessGroupService.removeAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), secGroupPartipiciant);
-			}
-			if(repositoryEntry.getTutorGroup() != null) {
-				SecurityGroup secGroupPartipiciant = repositoryEntry.getTutorGroup();
-				businessGroupService.removeAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), secGroupPartipiciant);
-			}
+			repositoryService.removeMembers(repositoryEntry);
 		}
 	}
   

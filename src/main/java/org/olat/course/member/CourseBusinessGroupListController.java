@@ -56,7 +56,7 @@ import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.group.ui.main.UnmanagedGroupFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -258,7 +258,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	}
 
 	@Override
-	protected OLATResource getResource() {
-		return re.getOlatResource();
+	protected RepositoryEntryRef getResource() {
+		return re;
 	}
 }

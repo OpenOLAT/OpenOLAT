@@ -39,7 +39,9 @@ import org.olat.core.logging.AssertException;
  * 
  * @author Felix Jost
  */
-public class IdentityImpl extends PersistentObject implements Identity, Serializable {
+public class IdentityImpl extends PersistentObject implements Identity, IdentityRef, Serializable {
+
+	private static final long serialVersionUID = 1762176135363569542L;
 	private String name;
 	private User user;
 	private Date lastLogin;

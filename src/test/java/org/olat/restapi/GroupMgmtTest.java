@@ -54,12 +54,10 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -68,6 +66,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
@@ -76,6 +75,7 @@ import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.GroupConfigurationVO;
@@ -105,9 +105,13 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	private OLATResource course;
 	private Message m1, m2, m3, m4, m5;
 	private RestConnection conn;
-	
+
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
 	/**
 	 * Set up a course with learn group and group area
@@ -119,7 +123,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		super.setUp();
 		conn = new RestConnection();
 		//create a course with learn group
-		
+
 		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-one");
 		owner2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-two");
 		owner3 = JunitTestHelper.createAndPersistIdentityAsUser("rest-three");
@@ -130,88 +134,65 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitcourse",System.currentTimeMillis());
-		RepositoryEntry re = RepositoryManager.getInstance().createRepositoryEntryInstance("administrator");
-		re.setCanDownload(false);
+		course = rm.findOrPersistResourceable(resourceable);
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
+		RepositoryEntry re = rs.create("administrator", "-", "rest-re", null, course);
 		re.setCanLaunch(true);
-		re.setDisplayname("rest-re");
-		re.setResourcename("-");
-		re.setAccess(0);// Access for nobody
-		re.setOwnerGroup(null);
-		
-		// create security group
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
-		// members of this group are always authors also
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-		securityManager.addIdentityToSecurityGroup(owner1, newGroup);
-		re.setOwnerGroup(newGroup);
-		
-		course =  rm.createOLATResourceInstance(resourceable);
-		DBFactory.getInstance().saveObject(course);
-		DBFactory.getInstance().intermediateCommit();
-
-		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resourceable);
-		re.setOlatResource(ores);
 		RepositoryManager.getInstance().saveRepositoryEntry(re);
-		DBFactory.getInstance().intermediateCommit();
+		DBFactory.getInstance().commit();
 		
 		//create learn group
-    BaseSecurity secm = BaseSecurityManager.getInstance();
-		
-    // 1) context one: learning groups
+		// 1) context one: learning groups
 		RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
-    // create groups without waiting list
-    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
-    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
+		// create groups without waiting list
+		g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
+		g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
     
-    //permission to see owners and participants
-    businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
-    businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);
+		//permission to see owners and participants
+		businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
+		businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);
     
-    // members g1
-    secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());
-    secm.addIdentityToSecurityGroup(owner2, g1.getOwnerGroup());
-    secm.addIdentityToSecurityGroup(part1, g1.getPartipiciantGroup());
-    secm.addIdentityToSecurityGroup(part2, g1.getPartipiciantGroup());
+		// members g1
+		businessGroupRelationDao.addRole(owner1, g1, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(owner2, g1, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(part1, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(part2, g1, GroupRoles.participant.name());
     
-    // members g2
-    secm.addIdentityToSecurityGroup(owner1, g2.getOwnerGroup());
-    secm.addIdentityToSecurityGroup(part1, g2.getPartipiciantGroup());
+		// members g2
+		businessGroupRelationDao.addRole(owner1, g2, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(part1, g2, GroupRoles.participant.name());
     
     
-    // 2) context two: right groups
+		// 2) context two: right groups
 		RepositoryEntry c2 =  JunitTestHelper.createAndPersistRepositoryEntry();
-    // groups
-    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
-    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
-    // members
-    secm.addIdentityToSecurityGroup(owner1, g3.getPartipiciantGroup());
-    secm.addIdentityToSecurityGroup(owner2, g4.getPartipiciantGroup());
+		// groups
+		g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
+		g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
+		// members
+		businessGroupRelationDao.addRole(owner1, g3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(owner2, g4, GroupRoles.participant.name());
     
-    DBFactory.getInstance().closeSession(); // simulate user clicks
+		DBFactory.getInstance().closeSession(); // simulate user clicks
     
-    //3) collaboration tools
-    CollaborationTools collabTools1 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
-    collabTools1.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
-    collabTools1.setToolEnabled(CollaborationTools.TOOL_WIKI, true);
-    collabTools1.saveNews("<p>Hello world</p>");
+		//3) collaboration tools
+		CollaborationTools collabTools1 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
+		collabTools1.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
+		collabTools1.setToolEnabled(CollaborationTools.TOOL_WIKI, true);
+		collabTools1.saveNews("<p>Hello world</p>");
     
-    try {
+		try {
 			collabTools1.createForumController(null, null, true, false, null);
 		} catch (Exception e) {
 			//will fail but generate the forum key
 		}
 		
-    CollaborationTools collabTools2 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g2);
-    collabTools2.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
+		CollaborationTools collabTools2 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g2);
+		collabTools2.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
     
-    DBFactory.getInstance().closeSession(); // simulate user clicks
+		DBFactory.getInstance().closeSession(); // simulate user clicks
     
-    //4) fill forum for g1
-    
-    NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(g1);
+		//4) fill forum for g1
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(g1);
 		Property forumKeyProperty = npm.findProperty(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS, CollaborationTools.KEY_FORUM);
 		ForumManager fm = ForumManager.getInstance();
 		Forum forum = fm.loadForum(forumKeyProperty.getLongValue());
@@ -246,7 +227,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 	}
 	
-  @After
+	@After
 	public void tearDown() throws Exception {
 		try {
 			if(conn != null) {
@@ -254,8 +235,8 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 			}
 		} catch (Exception e) {
 			log.error("Exception in tearDown(): " + e);
-      e.printStackTrace();
-      throw e;
+			e.printStackTrace();
+			throw e;
 		}
 	}
 	
@@ -399,7 +380,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		vo.setDescription("rest-g1 description");
 		vo.setMinParticipants(g1.getMinParticipants());
 		vo.setMaxParticipants(g1.getMaxParticipants());
-		vo.setType(g1.getType());
+		vo.setType("LearningGroup");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey()).build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
@@ -592,8 +573,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
-		BaseSecurity secm = BaseSecurityManager.getInstance();
-		List<Identity> participants = secm.getIdentitiesOfSecurityGroup(g1.getPartipiciantGroup());
+		List<Identity> participants = businessGroupService.getMembers(g1, GroupRoles.participant.name());
 		boolean found = false;
 		for(Identity participant:participants) {
 			if(participant.getKey().equals(part3.getKey())) {
@@ -614,8 +594,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		BaseSecurity secm = BaseSecurityManager.getInstance();
-		List<Identity> participants = secm.getIdentitiesOfSecurityGroup(g1.getPartipiciantGroup());
+		List<Identity> participants = businessGroupService.getMembers(g1, GroupRoles.participant.name());
 		boolean found = false;
 		for(Identity participant:participants) {
 			if(participant.getKey().equals(part2.getKey())) {
@@ -633,11 +612,9 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		
-		
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
-		BaseSecurity secm = BaseSecurityManager.getInstance();
-		List<Identity> owners = secm.getIdentitiesOfSecurityGroup(g1.getOwnerGroup());
+		List<Identity> owners = businessGroupRelationDao.getMembers(g1, GroupRoles.coach.name());
 		boolean found = false;
 		for(Identity owner:owners) {
 			if(owner.getKey().equals(owner3.getKey())) {
@@ -654,12 +631,10 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/owners/" + owner2.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
-		
 
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		BaseSecurity secm = BaseSecurityManager.getInstance();
-		List<Identity> owners = secm.getIdentitiesOfSecurityGroup(g1.getOwnerGroup());
+		List<Identity> owners = businessGroupRelationDao.getMembers(g1, GroupRoles.coach.name());
 		boolean found = false;
 		for(Identity owner:owners) {
 			if(owner.getKey().equals(owner2.getKey())) {

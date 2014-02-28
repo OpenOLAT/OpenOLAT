@@ -29,7 +29,7 @@ import java.util.Map;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.KalendarConfig;
@@ -42,6 +42,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,6 +54,8 @@ public class CollaborationManagerImpl extends BasicManager implements Collaborat
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public String getFolderRelPath(OLATResourceable ores) {
 		return "/cts/folders/" + ores.getResourceableTypeName() + "/" + ores.getResourceableId();
@@ -125,7 +128,7 @@ public class CollaborationManagerImpl extends BasicManager implements Collaborat
 		// get the calendar
 		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		KalendarRenderWrapper calRenderWrapper = calManager.getGroupCalendar(businessGroup);
-		boolean isOwner = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(ureq.getIdentity(), businessGroup.getOwnerGroup());
+		boolean isOwner = businessGroupService.hasRoles(ureq.getIdentity(), businessGroup, GroupRoles.coach.name());
 		if (!(isAdmin || isOwner)) {
 			// check if participants have read/write access
 			int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;

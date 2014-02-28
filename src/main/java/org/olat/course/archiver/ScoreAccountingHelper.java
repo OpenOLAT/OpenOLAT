@@ -32,9 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -61,8 +59,10 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -379,33 +379,29 @@ public class ScoreAccountingHelper {
 	 */
 	public static List<Identity> loadUsers(CourseEnvironment courseEnv) {
 		CourseGroupManager gm = courseEnv.getCourseGroupManager();
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		List<BusinessGroup> groups = gm.getAllBusinessGroups();
 		
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		for (BusinessGroup group: groups) {
-			secGroups.add(group.getPartipiciantGroup());
-		}
-		
+		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		List<Identity> userList = businessGroupService.getMembers(groups, GroupRoles.participant.name());
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, courseEnv.getCourseResourceableId());
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
-		if(re != null && re.getParticipantGroup() != null) {
-			secGroups.add(re.getParticipantGroup());
+		if(re != null) {
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			userList.addAll(repositoryService.getMembers(re, GroupRoles.participant.name()));
 		}
-		
-		List<Identity> userList = securityManager.getIdentitiesOfSecurityGroups(secGroups);
+
 		List<Identity> assessedList = courseEnv.getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(userList);
 		userList.addAll(assessedList);
 		return userList;
 	}
 	
 	public static List<Identity> loadUsers(CourseEnvironment courseEnv, ArchiveOptions options) {
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		List<Identity> users;
 		if(options == null) {
 			users = loadUsers(courseEnv);
 		} else if(options.getGroup() != null) {
-			users = securityManager.getIdentitiesOfSecurityGroup(options.getGroup().getPartipiciantGroup());
+			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			users = businessGroupService.getMembers(options.getGroup(), GroupRoles.participant.name());
 		} else if(options.getIdentities() != null) {
 			users = options.getIdentities();
 		} else {

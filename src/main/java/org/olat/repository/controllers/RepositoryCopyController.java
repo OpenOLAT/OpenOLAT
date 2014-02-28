@@ -25,10 +25,7 @@
 
 package org.olat.repository.controllers;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -45,6 +42,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.repository.DetailsReadOnlyForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
@@ -64,7 +62,6 @@ public class RepositoryCopyController extends BasicController {
 	private Link cancelButton;
 	private Link forwardButton;
 	private RepositoryEditDescriptionController descriptionController;
-	private BaseSecurity securityManager;
 	private RepositoryEntry sourceEntry;
 	private RepositoryEntry newEntry;
 
@@ -73,6 +70,7 @@ public class RepositoryCopyController extends BasicController {
 	// user abort / cancel the system will delete temporary data
 	private boolean workflowSuccessful = false;
 
+	private final RepositoryService repositoryService;
 
 	/**
 	 * Create a repository add controller that adds the given resourceable.
@@ -88,7 +86,7 @@ public class RepositoryCopyController extends BasicController {
 		this.sourceEntry = sourceEntry;
 		this.newEntry = null;
 		
-		securityManager = BaseSecurityManager.getInstance();
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
 		mainContainer = createVelocityContainer("copy");
 		cancelButton = LinkFactory.createButton("cmd.cancel", mainContainer, this);
@@ -162,20 +160,15 @@ public class RepositoryCopyController extends BasicController {
 	}
 
 	private RepositoryEntry createNewRepositoryEntry(RepositoryEntry src, UserRequest ureq) {
-		RepositoryEntry preparedEntry = RepositoryManager.getInstance()
-		.createRepositoryEntryInstance(ureq.getIdentity().getName());
-
-		preparedEntry.setCanDownload(src.getCanDownload());
-		preparedEntry.setCanLaunch(src.getCanLaunch());
-		// FIXME:pb:ms translation for COPY OF
 		String newDispalyname = "Copy of " + src.getDisplayname();
-		if (newDispalyname.length() > DetailsReadOnlyForm.MAX_DISPLAYNAME) newDispalyname = newDispalyname.substring(0,
-				DetailsReadOnlyForm.MAX_DISPLAYNAME - 1);
-		preparedEntry.setDisplayname(newDispalyname);
-		preparedEntry.setDescription(src.getDescription());
+		if (newDispalyname.length() > DetailsReadOnlyForm.MAX_DISPLAYNAME) {
+			newDispalyname = newDispalyname.substring(0, DetailsReadOnlyForm.MAX_DISPLAYNAME - 1);
+		}		
 		String resName = src.getResourcename();
-		if (resName == null) resName = "";
-		preparedEntry.setResourcename(resName);
+		if (resName == null) {
+			resName = "";
+		}
+		
 		RepositoryHandler typeToCopy = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src);			
 		OLATResourceable newResourceable = typeToCopy.createCopy(sourceEntry.getOlatResource(), ureq);
 		if (newResourceable == null) {
@@ -185,35 +178,9 @@ public class RepositoryCopyController extends BasicController {
 		}
 		
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResourceable);
-		preparedEntry.setOlatResource(ores);
-		// create security group
-		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
-		// members of this group are always authors also
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-		
-		securityManager.addIdentityToSecurityGroup(ureq.getIdentity(), newGroup);
-		preparedEntry.setOwnerGroup(newGroup);
-		
-		//fxdiff VCRP-1,2: access control of resources
-		// security group for tutors / coaches
-		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, preparedEntry.getOlatResource());
-		// members of this group are always tutors also
-		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
-		preparedEntry.setTutorGroup(tutorGroup);
-		
-		// security group for participants
-		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, preparedEntry.getOlatResource());
-		// members of this group are always participants also
-		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
-		preparedEntry.setParticipantGroup(participantGroup);
-		
-
+		RepositoryEntry preparedEntry = repositoryService.create(ureq.getIdentity(), resName, newDispalyname, src.getDescription(), ores);
+		preparedEntry.setCanDownload(src.getCanDownload());
+		preparedEntry.setCanLaunch(src.getCanLaunch());
 		RepositoryManager.getInstance().saveRepositoryEntry(preparedEntry);
 		// copy image if available
 		RepositoryManager.getInstance().copyImage(src, preparedEntry);

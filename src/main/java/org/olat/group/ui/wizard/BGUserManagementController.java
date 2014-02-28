@@ -19,14 +19,12 @@
  */
 package org.olat.group.ui.wizard;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.olat.admin.securitygroup.gui.IdentitiesOfGroupTableDataModel;
 import org.olat.admin.user.UserSearchController;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.CoreSpringFactory;
@@ -50,6 +48,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BGMembership;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.ui.main.BGRoleCellRenderer;
@@ -80,12 +79,12 @@ public class BGUserManagementController extends BasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private final List<BusinessGroup> groups;
-	private final BaseSecurity securityManager;
+	private final BusinessGroupService businessGroupService;
 
 	public BGUserManagementController(UserRequest ureq, WindowControl wControl, List<BusinessGroup> groups) {
 		super(ureq, wControl);
 		this.groups = groups;
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
 		
 		mainVC = createVelocityContainer("users");
@@ -123,24 +122,9 @@ public class BGUserManagementController extends BasicController {
 	}
 	
 	private void loadModel() {
-		List<SecurityGroup> onwerSecGroups = new ArrayList<SecurityGroup>();
-		List<SecurityGroup> participantSecGroups = new ArrayList<SecurityGroup>();
-		List<SecurityGroup> waitingSecGroups = new ArrayList<SecurityGroup>();
-		for(BusinessGroup group:groups) {
-			if(group.getOwnerGroup() != null) {
-				onwerSecGroups.add(group.getOwnerGroup());
-			}
-			if(group.getPartipiciantGroup() != null) {
-				participantSecGroups.add(group.getPartipiciantGroup());
-			}
-			if(group.getWaitingGroup() != null) {
-				waitingSecGroups.add(group.getWaitingGroup());
-			}
-		}
-
-		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroups(onwerSecGroups);
-		List<Identity> participants = securityManager.getIdentitiesOfSecurityGroups(participantSecGroups);
-		List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroups(waitingSecGroups);
+		List<Identity> owners = businessGroupService.getMembers(groups, GroupRoles.coach.name());
+		List<Identity> participants = businessGroupService.getMembers(groups, GroupRoles.participant.name());
+		List<Identity> waitingList = businessGroupService.getMembers(groups, GroupRoles.waiting.name());;
 		userTableModel.setMembers(owners, participants, waitingList);
 		usersCtrl.modelChanged();
 	}

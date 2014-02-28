@@ -35,20 +35,12 @@
 			<column name="fk_resource" not-null="false" unique="true" />    	
     	</many-to-one> 
 
-		<many-to-one name="ownerGroup" class="org.olat.basesecurity.SecurityGroupImpl"
-    		outer-join="true" cascade="none">  
-			<column name="fk_ownergroup" not-null="false" unique="true" />    	
-    	</many-to-one> 
-    	
-		<many-to-one name="partipiciantGroup" class="org.olat.basesecurity.SecurityGroupImpl"
-    		outer-join="true" cascade="none">  
-			<column name="fk_partipiciantgroup" not-null="false" unique="true" />    	
-    	</many-to-one> 
-
-		<many-to-one name="waitingGroup" class="org.olat.basesecurity.SecurityGroupImpl"
-    		outer-join="true" cascade="none">  
-			<column name="fk_waitinggroup" not-null="false" unique="true" />    	
-    	</many-to-one> 		  	
+		<many-to-one name="baseGroup"
+    		class="org.olat.basesecurity.model.GroupImpl"
+    		outer-join="true"
+    		cascade="none">
+			<column name="fk_group_id" not-null="false" unique="true" />
+    	</many-to-one>		  	
 	</class>
 
 </hibernate-mapping>

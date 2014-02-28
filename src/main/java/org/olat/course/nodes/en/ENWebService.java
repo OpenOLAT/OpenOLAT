@@ -178,7 +178,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 		@SuppressWarnings("unchecked")
 		List<Long> groupKeys = (List<Long>)config.get(ENCourseNode.CONFIG_GROUP_IDS);
 		if(groupKeys == null && StringHelper.containsNonWhitespace(groupNames)) {
-			groupKeys = bgs.toGroupKeys(groupNames, course.getCourseEnvironment().getCourseGroupManager().getCourseResource()); 
+			groupKeys = bgs.toGroupKeys(groupNames, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry()); 
 		}
 		
 		if(groupKeys == null || groupKeys.isEmpty()) {

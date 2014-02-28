@@ -21,24 +21,83 @@ package org.olat.repository.model;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Persistable;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class RepositoryEntryMembership extends PersistentObject {
+@Table(name="o_re_membership_v")
+@Entity(name="repoentrymembership")
+public class RepositoryEntryMembership implements Persistable, ModifiedInfo, CreateInfo {
 
 	private static final long serialVersionUID = -5404538852842562897L;
 	
-	private Long identityKey;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="membership_id", nullable=false, unique=true, insertable=false, updatable=false)
+	private Long key;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=false, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=false, updatable=false)
 	private Date lastModified;
-	private Long ownerRepoKey;
-	private Long ownerResourceKey;
-	private Long tutorRepoKey;
-	private Long tutorResourceKey;
-	private Long participantRepoKey;
-	private Long participantResourceKey;
+	@Column(name="fk_identity_id", nullable=false, unique=false, insertable=false, updatable=false)
+	private Long identityKey;
+	@Column(name="fk_entry_id", nullable=false, unique=false, insertable=false, updatable=false)
+	private Long repoKey;
+	@Column(name="g_role", nullable=false, unique=false, insertable=false, updatable=false)
+	private String role;
+
+	@Transient
+	private boolean owner;
+	@Transient
+	private boolean coach;
+	@Transient
+	private boolean participant;
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+	
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	@Override
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	@Override
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
 
 	public Long getIdentityKey() {
 		return identityKey;
@@ -48,60 +107,51 @@ public class RepositoryEntryMembership extends PersistentObject {
 		this.identityKey = identityKey;
 	}
 
-	public Date getLastModified() {
-		return lastModified;
+	public Long getRepoKey() {
+		return repoKey;
 	}
 
-	public void setLastModified(Date lastModified) {
-		this.lastModified = lastModified;
+	public void setRepoKey(Long repoKey) {
+		this.repoKey = repoKey;
 	}
 
-	public Long getOwnerRepoKey() {
-		return ownerRepoKey;
+	public String getRole() {
+		return role;
 	}
 
-	public void setOwnerRepoKey(Long ownerRepoKey) {
-		this.ownerRepoKey = ownerRepoKey;
+	public void setRole(String role) {
+		if(GroupRoles.owner.name().equals(role)) {
+			owner = true;
+		} else if(GroupRoles.coach.name().equals(role)) {
+			coach = true;
+		} else if(GroupRoles.participant.name().equals(role)) {
+			participant = true;
+		}
+		this.role = role;
 	}
 
-	public Long getTutorRepoKey() {
-		return tutorRepoKey;
+	public boolean isOwner() {
+		return owner || GroupRoles.owner.name().equals(role);
 	}
 
-	public void setTutorRepoKey(Long tutorRepoKey) {
-		this.tutorRepoKey = tutorRepoKey;
+	public void setOwner(boolean owner) {
+		this.owner = owner;
 	}
 
-	public Long getParticipantRepoKey() {
-		return participantRepoKey;
+	public boolean isCoach() {
+		return coach || GroupRoles.coach.name().equals(role);
 	}
 
-	public void setParticipantRepoKey(Long participantRepoKey) {
-		this.participantRepoKey = participantRepoKey;
+	public void setCoach(boolean coach) {
+		this.coach = coach;
 	}
 
-	public Long getOwnerResourceKey() {
-		return ownerResourceKey;
+	public boolean isParticipant() {
+		return participant || GroupRoles.participant.name().equals(role);
 	}
 
-	public void setOwnerResourceKey(Long ownerResourceKey) {
-		this.ownerResourceKey = ownerResourceKey;
-	}
-
-	public Long getTutorResourceKey() {
-		return tutorResourceKey;
-	}
-
-	public void setTutorResourceKey(Long tutorResourceKey) {
-		this.tutorResourceKey = tutorResourceKey;
-	}
-
-	public Long getParticipantResourceKey() {
-		return participantResourceKey;
-	}
-
-	public void setParticipantResourceKey(Long participantResourceKey) {
-		this.participantResourceKey = participantResourceKey;
+	public void setParticipant(boolean participant) {
+		this.participant = participant;
 	}
 
 	@Override
@@ -122,5 +172,10 @@ public class RepositoryEntryMembership extends PersistentObject {
 			return getKey() != null && getKey().equals(bg.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

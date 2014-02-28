@@ -194,7 +194,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 			selectedCtrl = ordersController;
 		} else if(CMD_RIGHTS.equals(cmd)) {
 			if(rightsController == null) {
-				rightsController = new GroupsAndRightsController(ureq, bwControl, repoEntry.getOlatResource());
+				rightsController = new GroupsAndRightsController(ureq, bwControl, repoEntry);
 				listenTo(rightsController);
 			}
 			mainVC.put("content", rightsController.getInitialComponent());

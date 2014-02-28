@@ -26,9 +26,11 @@
 package org.olat.course.nodes.projectbroker;
 
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.ui.GroupController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
@@ -189,7 +191,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
     String groupDescription = translate("account.manager.groupdescription", node.getShortTitle());
     accountManagerGroup = ProjectBrokerManagerFactory.getProjectGroupManager().getAccountManagerGroupFor(cpm, node, course, groupName, groupDescription, ureq.getIdentity());
     if (accountManagerGroup != null) {
-    	accountManagerGroupController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, accountManagerGroup.getPartipiciantGroup());
+    	Group group = businessGroupService.getGroup(accountManagerGroup);
+    	accountManagerGroupController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, group, GroupRoles.participant.name());
 			listenTo(accountManagerGroupController);
 			// add mail templates used when adding and removing users
 			MailTemplate ownerAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(accountManagerGroup, ureq.getIdentity());

@@ -30,6 +30,7 @@ import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
@@ -480,15 +481,12 @@ public class QuestionItemDAO {
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(bgi) from ").append(org.olat.group.BusinessGroupImpl.class.getName()).append(" as bgi ")
-		  .append("inner join fetch bgi.ownerGroup ownerGroup ")
-		  .append("inner join fetch bgi.partipiciantGroup participantGroup ")
-			.append("inner join fetch bgi.waitingGroup waitingGroup ")
-			.append("inner join fetch bgi.resource bgResource ")
-			.append("where (ownerGroup.key in (select ownerMemberShip.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerMemberShip ")
-			.append("   where ownerMemberShip.identity.key=:identityKey ")
-			.append(" ) or participantGroup.key in (select partMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partMembership ")
-			.append("  where partMembership.identity.key=:identityKey")
-			.append(" )) and exists (select share from qshareitem share where share.resource=bgResource)");
+		  .append(" inner join fetch bgi.resource bgResource")
+		  .append(" inner join fetch bgi.baseGroup as baseGroup")
+		  .append(" inner join fetch baseGroup.members as membership")
+		  .append(" where membership.identity.key=:identityKey")
+		  .append(" and membership.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
+		  .append(" and exists (select share from qshareitem share where share.resource=bgResource)");
 
 		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)

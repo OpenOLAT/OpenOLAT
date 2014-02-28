@@ -52,12 +52,10 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -68,8 +66,10 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.FileVO;
@@ -92,9 +92,13 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	private BusinessGroup g1, g2;
 	private OLATResource course;
 	private RestConnection conn;
-	
+
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
 	/**
 	 * Set up a course with learn group and group area
@@ -113,41 +117,19 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		part1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-four");
 		part2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-five");
 		
-		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitcourse",System.currentTimeMillis());
-		RepositoryEntry re = RepositoryManager.getInstance().createRepositoryEntryInstance("administrator");
-		re.setCanDownload(false);
+		course = OLATResourceManager.getInstance().findOrPersistResourceable(resourceable);
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
+		RepositoryEntry re = rs.create("administrator", "-", "rest-re", null, course);
 		re.setCanLaunch(true);
-		re.setDisplayname("rest-re");
-		re.setResourcename("-");
-		re.setAccess(0);// Access for nobody
-		re.setOwnerGroup(null);
-		
-		// create security group
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
-		// member of this group may modify member's membership
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
-		// members of this group are always authors also
-		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-		securityManager.addIdentityToSecurityGroup(owner1, newGroup);
-		re.setOwnerGroup(newGroup);
-		
-		course =  rm.createOLATResourceInstance(resourceable);
-		DBFactory.getInstance().saveObject(course);
-		DBFactory.getInstance().intermediateCommit();
 
-		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resourceable);
-		re.setOlatResource(ores);
 		RepositoryManager.getInstance().saveRepositoryEntry(re);
-		DBFactory.getInstance().intermediateCommit();
+		DBFactory.getInstance().commit();
 		
 		//create learn group
-	    BaseSecurity secm = BaseSecurityManager.getInstance();
-			
 	    // 1) context one: learning groups
-			RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 	    // create groups without waiting list
 	    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
 	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
@@ -157,16 +139,16 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	    businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);
 	    
 	    // members g1
-	    secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());
-	    secm.addIdentityToSecurityGroup(owner2, g1.getOwnerGroup());
-	    secm.addIdentityToSecurityGroup(part1, g1.getPartipiciantGroup());
-	    secm.addIdentityToSecurityGroup(part2, g1.getPartipiciantGroup());
+	    businessGroupRelationDao.addRole(owner1, g1, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(owner2, g1, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(part1, g1, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(part2, g1, GroupRoles.participant.name());
 	    
 	    // members g2
-	    secm.addIdentityToSecurityGroup(owner1, g2.getOwnerGroup());
-	    secm.addIdentityToSecurityGroup(part1, g2.getPartipiciantGroup());
+	    businessGroupRelationDao.addRole(owner1, g2, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(part1, g2, GroupRoles.participant.name());
 	    
-	    DBFactory.getInstance().closeSession(); // simulate user clicks
+	    DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
     
 	    //3) collaboration tools
 	    CollaborationTools collabTools1 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
@@ -175,7 +157,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
     	CollaborationTools collabTools2 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g2);
     	collabTools2.setToolEnabled(CollaborationTools.TOOL_FOLDER, true);
     
-    	DBFactory.getInstance().closeSession(); // simulate user clicks
+    	DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
 	}
 	
   @After

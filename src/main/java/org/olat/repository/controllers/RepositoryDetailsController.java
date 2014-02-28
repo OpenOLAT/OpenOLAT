@@ -33,11 +33,11 @@ import java.util.Locale;
 import org.olat.ControllerFactory;
 import org.olat.NewControllerFactory;
 import org.olat.admin.restapi.RestapiAdminController;
-import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.ui.GroupController;
 import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.catalog.ui.RepoEntryCategoriesTableController;
 import org.olat.core.CoreSpringFactory;
@@ -66,7 +66,9 @@ import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -96,6 +98,7 @@ import org.olat.repository.RepositoryEntryIconRenderer;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.CourseHandler;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -191,6 +194,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private final BaseSecurity securityManager;
 	private final UserManager userManager;
 	private final MarkManager markManager;
+	private final RepositoryService repositoryService;
 
 	/**
 	 * Controller displaying details of a given repository entry.
@@ -207,6 +211,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		acService = CoreSpringFactory.getImpl(ACService.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
 		if (log.isDebug()){
 			log.debug("Constructing ReposityMainController using velocity root " + velocity_root);
@@ -238,13 +243,14 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			isOlatAdmin = true;
 		} else {
 			// load repositoryEntry again because the hibenate object is 'detached'.Otherwise you become an exception when you check owner-group.
-			boolean isInstitutionalResourceManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(repositoryEntry, ureq.getIdentity());
-			repositoryEntry = (RepositoryEntry) DBFactory.getInstance().loadObject(repositoryEntry);
-			isOwner = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(ureq.getIdentity(), Constants.PERMISSION_ACCESS,
-					repositoryEntry.getOwnerGroup())
+			Identity identity = ureq.getIdentity();
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
+					&& RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, repositoryEntry);
+			isOwner = repositoryService.hasRole(ureq.getIdentity(), repositoryEntry, GroupRoles.owner.name())
 					| isInstitutionalResourceManager;
-			isAuthor = ureq.getUserSession().getRoles().isAuthor() | isInstitutionalResourceManager;
-			isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+			isAuthor = roles.isAuthor() | isInstitutionalResourceManager;
+			isGuestOnly = roles.isGuestOnly();
 			isOlatAdmin = false;
 		}
 	}
@@ -329,10 +335,10 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		}
 		
 		//add the list of owners
-		List<IdentityShort> authors = securityManager.getIdentitiesShortOfSecurityGroups(Collections.singletonList(repositoryEntry.getOwnerGroup()), 0, -1);
+		List<Identity> authors = repositoryService.getMembers(repositoryEntry, GroupRoles.owner.name());
 		List<String> authorLinkNames = new ArrayList<String>(authors.size());
 		int counter = 0;
-		for(IdentityShort author:authors) {
+		for(Identity author:authors) {
 			String authorName = userManager.getUserDisplayName(author);
 			Link authorLink = LinkFactory.createLink("author_" + counter++, main, this);
 			authorLink.setCustomDisplayText(StringHelper.escapeHtml(authorName));
@@ -463,7 +469,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		main.put(infopanelVC.getComponentName(), infopanelVC);
 
 		removeAsListenerAndDispose(groupController);
-		groupController = new GroupController(ureq, getWindowControl(), false, true, false, false, true, false, repositoryEntry.getOwnerGroup());
+		Group group = null;
+		groupController = new GroupController(ureq, getWindowControl(), false, true, false, false, true, false, group, GroupRoles.owner.name());
 		listenTo(groupController);
 		
 		main.put("ownertable", groupController.getInitialComponent());

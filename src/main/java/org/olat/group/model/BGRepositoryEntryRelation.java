@@ -21,36 +21,38 @@ package org.olat.group.model;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Table(name="o_gp_business_to_repository_v")
+@Entity(name="repoentryrelationview")
 public class BGRepositoryEntryRelation implements Serializable {
 
 	private static final long serialVersionUID = -589388325515371455L;
+
+    @EmbeddedId
+    private RelationId relationId;
 	
-	private Long groupKey;
-	private Long repositoryEntryKey;
+	@Column(name="re_displayname", nullable=false, insertable=true, updatable=true)
 	private String repositoryEntryDisplayName;
-	
+
 	public BGRepositoryEntryRelation() {
 		//
 	}
 	
 	public Long getGroupKey() {
-		return groupKey;
+		return relationId.getGroupKey();
 	}
-	
-	public void setGroupKey(Long groupKey) {
-		this.groupKey = groupKey;
-	}
-	
+
 	public Long getRepositoryEntryKey() {
-		return repositoryEntryKey;
-	}
-	
-	public void setRepositoryEntryKey(Long repositoryEntryKey) {
-		this.repositoryEntryKey = repositoryEntryKey;
+		return relationId.getRepositoryEntryKey();
 	}
 	
 	public String getRepositoryEntryDisplayName() {
@@ -63,8 +65,8 @@ public class BGRepositoryEntryRelation implements Serializable {
 	
 	@Override
 	public int hashCode() {
-		return (groupKey == null ? 8934 : groupKey.hashCode()) +
-				(repositoryEntryKey == null ? 8934 : repositoryEntryKey.hashCode());
+		return (getGroupKey() == null ? 8934 : getGroupKey().hashCode()) +
+				(getRepositoryEntryKey() == null ? 8934 : getRepositoryEntryKey().hashCode());
 	}
 	
 	@Override
@@ -74,9 +76,40 @@ public class BGRepositoryEntryRelation implements Serializable {
 		}
 		if(obj instanceof BGRepositoryEntryRelation) {
 			BGRepositoryEntryRelation rel = (BGRepositoryEntryRelation)obj;
-			return groupKey != null && groupKey.equals(rel.groupKey)
-					&& repositoryEntryKey != null && repositoryEntryKey.equals(rel.repositoryEntryKey);
+			return getGroupKey() != null && getGroupKey().equals(rel.getGroupKey())
+					&& getRepositoryEntryKey() != null && getRepositoryEntryKey().equals(rel.getRepositoryEntryKey());
 		}
 		return false;
+	}
+	
+	@Embeddable
+	public static class RelationId implements Serializable {
+
+		private static final long serialVersionUID = -1215870965613146741L;
+		
+		@Column(name = "grp_id")
+	    private Long groupKey;
+	    @Column(name = "re_id")
+		private Long repositoryEntryKey;
+	    
+	    public RelationId() {
+	    	//
+	    }
+	    
+		public Long getGroupKey() {
+			return groupKey;
+		}
+		
+		public void setGroupKey(Long groupKey) {
+			this.groupKey = groupKey;
+		}
+		
+		public Long getRepositoryEntryKey() {
+			return repositoryEntryKey;
+		}
+		
+		public void setRepositoryEntryKey(Long repositoryEntryKey) {
+			this.repositoryEntryKey = repositoryEntryKey;
+		}
 	}
 }

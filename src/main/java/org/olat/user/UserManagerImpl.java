@@ -34,6 +34,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityNames;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -518,7 +519,7 @@ public class UserManagerImpl extends UserManager {
 	 * @see org.olat.user.UserManager#getUserDisplayName(org.olat.core.id.IdentityShort)
 	 */
 	@Override
-	public String getUserDisplayName(IdentityShort identity) {
+	public String getUserDisplayName(IdentityNames identity) {
 		if (userDisplayNameCreator == null || identity == null) return "";
 		String fullName = userDisplayNameCreator.getUserDisplayName(identity);
 		updateUsernameCache(identity.getKey(), identity.getName(), fullName);

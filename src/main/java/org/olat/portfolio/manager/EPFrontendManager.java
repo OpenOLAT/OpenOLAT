@@ -29,9 +29,9 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Policy;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tagging.manager.TaggingManager;
 import org.olat.core.commons.services.tagging.model.Tag;
@@ -73,6 +73,7 @@ import org.olat.search.model.ResultDocument;
 import org.olat.search.service.indexer.identity.PortfolioArtefactIndexer;
 import org.olat.search.service.searcher.SearchClient;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -100,6 +101,9 @@ public class EPFrontendManager extends BasicManager {
 	private final EPPolicyManager policyManager;
 	private final UserManager userManager;
 	private PortfolioModule portfolioModule;
+	
+	@Autowired
+	private GroupDAO groupDao;
 
 	/**
 	 * [for Spring]
@@ -1135,7 +1139,7 @@ public class EPFrontendManager extends BasicManager {
 		AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 		CourseNode courseNode = course.getRunStructure().getNode(resource.getSubPath());
 		
-		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(submittedMap.getOwnerGroup());
+		List<Identity> owners = groupDao.getMembers(submittedMap.getGroup(), GroupRoles.coach.name());
 		for(Identity owner:owners) {
 			if (courseNode != null) { // courseNode might have been deleted meanwhile
 				IdentityEnvironment ienv = new IdentityEnvironment(); 
@@ -1229,15 +1233,16 @@ public class EPFrontendManager extends BasicManager {
 	 * @return
 	 */
 	public String getAllOwnersAsString(PortfolioStructureMap map){
-		if(map.getOwnerGroup() == null) {
+		if(map.getGroup() == null) {
 			return null;
 		}
-		List<SecurityGroup> ownerGroups = Collections.singletonList(map.getOwnerGroup());
-		List<IdentityShort> ownerIdents = securityManager.getIdentitiesShortOfSecurityGroups(ownerGroups, 0, -1);
+		List<Identity> ownerIdents = groupDao.getMembers(map.getGroup(), GroupRoles.coach.name());
 		List<String> identNames = new ArrayList<String>();
-		for (IdentityShort identity : ownerIdents) {
-			String fullName = identity.getFirstName() + " " + identity.getLastName();
-			identNames.add(fullName);
+		for (Identity identity : ownerIdents) {
+			String fullName = userManager.getUserDisplayName(identity);
+			if(fullName != null) {
+				identNames.add(fullName);
+			}
 		}
 		return StringHelper.formatAsCSVString(identNames);
 	}
@@ -1249,10 +1254,10 @@ public class EPFrontendManager extends BasicManager {
 	 * @return
 	 */
 	public String getFirstOwnerAsString(PortfolioStructureMap map){
-		if(map.getOwnerGroup() == null) {
+		if(map.getGroup() == null) {
 			return "n/a";
 		}
-		List<Identity> ownerIdents = securityManager.getIdentitiesOfSecurityGroup(map.getOwnerGroup(), 0, 1);
+		List<Identity> ownerIdents = groupDao.getMembers(map.getGroup(), GroupRoles.coach.name());
 		if(ownerIdents.size() > 0){
 			Identity id = ownerIdents.get(0);
 			return userManager.getUserDisplayName(id);
@@ -1261,13 +1266,12 @@ public class EPFrontendManager extends BasicManager {
 	}
 	
 	public String getFirstOwnerAsString(EPMapShort map){
-		if(map.getOwnerGroup() == null) {
+		if(map.getGroup() == null) {
 			return "n/a";
 		}
-		List<SecurityGroup> secGroups = Collections.singletonList(map.getOwnerGroup());
-		List<IdentityShort> ownerIdents = securityManager.getIdentitiesShortOfSecurityGroups(secGroups, 0, 1);
+		List<Identity> ownerIdents = groupDao.getMembers(map.getGroup(), GroupRoles.coach.name());
 		if(ownerIdents.size() > 0){
-			IdentityShort id = ownerIdents.get(0);
+			Identity id = ownerIdents.get(0);
 			return userManager.getUserDisplayName(id);
 		}
 		return "n/a";
@@ -1280,10 +1284,10 @@ public class EPFrontendManager extends BasicManager {
 	 * @return
 	 */
 	public Identity getFirstOwnerIdentity(PortfolioStructureMap map){
-		if(map.getOwnerGroup() == null) {
+		if(map.getGroup() == null) {
 			return null;
 		}
-		List<Identity> ownerIdents = securityManager.getIdentitiesOfSecurityGroup(map.getOwnerGroup(), 0, 1);
+		List<Identity> ownerIdents = groupDao.getMembers(map.getGroup(), GroupRoles.coach.name());
 		if (ownerIdents.size() > 0) {
 			Identity id = ownerIdents.get(0);
 			return id;

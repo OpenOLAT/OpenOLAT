@@ -33,6 +33,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -49,6 +50,7 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
@@ -77,6 +79,8 @@ public class EPStructureManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	@Autowired
 	private OLATResourceManager resourceManager;
@@ -554,9 +558,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		assertNotNull(resource);
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(resource, false);
 		assertNotNull(re);
-		SecurityGroup secGroup = re.getOwnerGroup();
-		assertNotNull(secGroup);
-		List<Identity> authors = securityManager.getIdentitiesOfSecurityGroup(secGroup);
+		List<Identity> authors = repositoryService.getMembers(re, GroupRoles.owner.name());
 		assertEquals(2, authors.size());
 		assertTrue(authors.contains(ident1));//owner
 		assertTrue(authors.contains(ident2));//owner
@@ -578,9 +580,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		assertNotNull(resource);
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(resource, false);
 		assertNotNull(re);
-		SecurityGroup secGroup = re.getOwnerGroup();
-		assertNotNull(secGroup);
-		List<Identity> authors = securityManager.getIdentitiesOfSecurityGroup(secGroup);
+		List<Identity> authors = repositoryService.getMembers(re, GroupRoles.owner.name());
 		assertEquals(2, authors.size());
 		dbInstance.commitAndCloseSession();
 		
@@ -588,7 +588,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		epStructureManager.removeAuthor(map, ident2);
 		dbInstance.commitAndCloseSession();
 		
-		List<Identity> singleAuthor = securityManager.getIdentitiesOfSecurityGroup(secGroup);
+		List<Identity> singleAuthor = repositoryService.getMembers(re, GroupRoles.owner.name());
 		assertEquals(1, singleAuthor.size());
 		assertTrue(singleAuthor.contains(ident1));//owner
 		assertFalse(singleAuthor.contains(ident2));//owner

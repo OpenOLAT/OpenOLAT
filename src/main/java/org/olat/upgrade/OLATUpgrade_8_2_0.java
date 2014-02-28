@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Roles;
@@ -31,21 +33,22 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaImpl;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.area.BGtoAreaRelationImpl;
-import org.olat.group.context.BGContext2Resource;
 import org.olat.group.model.BGAreaReference;
-import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.upgrade.model.BGAreaUpgrade;
+import org.olat.upgrade.model.BGContext2Resource;
+import org.olat.upgrade.model.BGResourceRelation;
+import org.olat.upgrade.model.BusinessGroupUpgrade;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -123,10 +126,10 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 	private boolean upgradeGroups(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		if (!uhd.getBooleanDataValue(TASK_CONTEXTS)) {
 			int counter = 0;
-			List<BusinessGroup> groups;
+			List<BusinessGroupUpgrade> groups;
 			do {
 				groups = findBusinessGroups(counter, REPO_ENTRIES_BATCH_SIZE);
-				for(BusinessGroup group:groups) {
+				for(BusinessGroupUpgrade group:groups) {
 					processBusinessGroup(group);
 				}
 				counter += groups.size();
@@ -143,10 +146,10 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 	private boolean upgradeAreas(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		if (!uhd.getBooleanDataValue(TASK_AREAS)) {
 			int counter = 0;
-			List<BGAreaImpl> areas;
+			List<BGAreaUpgrade> areas;
 			do {
 				areas = findAreas(counter, REPO_ENTRIES_BATCH_SIZE);
-				for(BGAreaImpl area:areas) {
+				for(BGAreaUpgrade area:areas) {
 					processArea(area);
 				}
 				counter += areas.size();
@@ -172,7 +175,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 				for(RepositoryEntry entry:entries) {
 					try {
 						ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-						CourseEnvironmentMapper envMapper = getCourseEnvironmentMapper(entry.getOlatResource());
+						CourseEnvironmentMapper envMapper = getCourseEnvironmentMapper(entry);
 						course.postImport(envMapper);
 					} catch (CorruptedCourseException e) {
 						log.error("Course seems corrupt: " + entry.getOlatResource().getResourceableId());
@@ -191,35 +194,35 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		return true;
 	}
 	
-	private CourseEnvironmentMapper getCourseEnvironmentMapper(OLATResource courseResource) {
+	private CourseEnvironmentMapper getCourseEnvironmentMapper(RepositoryEntry courseResource) {
 		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
 		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, courseResource, 0, -1);
 		for(BusinessGroup group:groups) {
 			envMapper.getGroups().add(new BusinessGroupReference(group));
 		}
-		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
+		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource.getOlatResource());
 		for(BGArea area:areas) {
 			envMapper.getAreas().add(new BGAreaReference(area));
 		}
 		return envMapper;
 	}
 	
-	private void processBusinessGroup(BusinessGroup group) {
+	private void processBusinessGroup(BusinessGroupUpgrade group) {
 		List<RepositoryEntry> resources = findOLATResourcesForBusinessGroup(group);
-		List<RepositoryEntry> currentList = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
+		List<RepositoryEntry> currentList = findRepositoryEntries(group, 0, -1);
 		
 		boolean merge = false;
 		if(group.getResource() == null) {
 			OLATResource resource = resourceManager.findResourceable(group);
-			((BusinessGroupImpl)group).setResource(resource);
+			group.setResource(resource);
 			merge = true;
 		}
 		if(group.getOwnerGroup() == null) {
-			((BusinessGroupImpl)group).setOwnerGroup(securityManager.createAndPersistSecurityGroup());
+			group.setOwnerGroup(securityManager.createAndPersistSecurityGroup());
 			merge = true;
 		}
 		if(group.getPartipiciantGroup() == null) {
-			((BusinessGroupImpl)group).setPartipiciantGroup(securityManager.createAndPersistSecurityGroup());
+			group.setPartipiciantGroup(securityManager.createAndPersistSecurityGroup());
 			merge = true;
 		}
 		if(group.getWaitingGroup() == null) {
@@ -241,7 +244,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		log.audit("Processed: " + group.getName() + " add " + count + " resources");
 	}
 	
-	private void processArea(BGAreaImpl area) {
+	private void processArea(BGAreaUpgrade area) {
 		if(area.getResource() != null) {
 			//already migrated
 			return;
@@ -261,7 +264,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			//remove the groups which aren't part of the first resource
 			for(BusinessGroup group:originalGroupList) {
 				if(!firstResourcesGroupKeys.contains(group.getKey())) {
-					areaManager.removeBGFromArea(group, area);
+					removeBGFromArea(group, area);
 				}
 			}
 			
@@ -307,7 +310,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		return groups;
 	}
 	
-	private List<BusinessGroup> findBusinessGroupsOfArea(BGArea area) {
+	private List<BusinessGroup> findBusinessGroupsOfArea(BGAreaUpgrade area) {
 		StringBuilder q = new StringBuilder();
 		q.append("select bgarel.businessGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
 		 .append(" where bgarel.groupArea.key=:areaKey");
@@ -319,28 +322,40 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		return groups;
 	}
 	
-	private List<BGAreaImpl> findAreas(int firstResult, int maxResults) {
+	private void removeBGFromArea(BusinessGroup businessGroup, BGAreaUpgrade bgArea) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel where bgarel.groupArea.key=:areaKey and bgarel.businessGroup.key=:groupKey");
+		
+		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+			.setParameter("areaKey", bgArea.getKey())
+			.setParameter("groupKey", businessGroup.getKey())
+			.executeUpdate();
+	}
+	
+	private List<BGAreaUpgrade> findAreas(int firstResult, int maxResults) {
 		StringBuilder q = new StringBuilder();
 		q.append("select area from ").append(BGAreaImpl.class.getName()).append(" area ")
 		 .append(" left join fetch area.resource resource")
 		 .append(" order by area.key");
 
-		List<BGAreaImpl> resources = dbInstance.getCurrentEntityManager().createQuery(q.toString(), BGAreaImpl.class)
+		List<BGAreaUpgrade> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(q.toString(), BGAreaUpgrade.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
 				.getResultList();
 		return resources;
 	}
 	
-	private List<BusinessGroup> findBusinessGroups(int firstResult, int maxResults) {
+	private List<BusinessGroupUpgrade> findBusinessGroups(int firstResult, int maxResults) {
 		StringBuilder q = new StringBuilder();
-		q.append("select bg from ").append(BusinessGroupImpl.class.getName()).append(" bg ")
+		q.append("select bg from ").append(BusinessGroupUpgrade.class.getName()).append(" bg ")
 		 .append(" left join fetch bg.ownerGroup onwerGroup")
 		 .append(" left join fetch bg.partipiciantGroup participantGroup")
 		 .append(" left join fetch bg.waitingGroup waitingGroup")
 		 .append(" order by bg.key");
 
-		List<BusinessGroup> resources = dbInstance.getCurrentEntityManager().createQuery(q.toString(), BusinessGroup.class)
+		List<BusinessGroupUpgrade> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(q.toString(), BusinessGroupUpgrade.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
 				.getResultList();
@@ -356,8 +371,34 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		 .append(" )");
 
 		List<RepositoryEntry> resources = dbInstance.getCurrentEntityManager().createQuery(q.toString(), RepositoryEntry.class)
-				.setParameter("contextKey", ((BusinessGroupImpl)group).getGroupContextKey())
+				.setParameter("contextKey", ((BusinessGroupUpgrade)group).getGroupContextKey())
 				.getResultList();
 		return resources;
+	}
+	
+	private List<RepositoryEntry> findRepositoryEntries(BusinessGroupUpgrade group, int firstResult, int maxResults) {
+		if(group == null) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+			.append(" inner join fetch v.olatResource as ores ")
+			.append(" left join fetch v.lifecycle as lifecycle")
+			.append(" left join fetch v.ownerGroup as ownerGroup ")
+			.append(" left join fetch v.tutorGroup as tutorGroup ")
+			.append(" left join fetch v.participantGroup as participantGroup ")
+			.append(" where ores in (")
+			.append("  select bgcr.resource from ").append(BGResourceRelation.class.getName()).append(" as bgcr where bgcr.group.key =:groupKey")
+			.append(" )");
+
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("groupKey", group.getKey())
+				.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
 	}
 }

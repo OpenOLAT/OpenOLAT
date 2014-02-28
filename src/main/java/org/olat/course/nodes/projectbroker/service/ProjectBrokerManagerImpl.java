@@ -37,7 +37,9 @@ import java.util.StringTokenizer;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -65,6 +67,8 @@ import org.olat.course.nodes.projectbroker.datamodel.ProjectImpl;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.properties.Property;
 import org.olat.testutils.codepoints.server.Codepoint;
 
@@ -134,7 +138,9 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	}
 
 	public int getSelectedPlaces(Project project) {
-		return BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(project.getProjectParticipantGroup()) +
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		
+		return bgs.countMembers(project.getProjectGroup(), GroupRoles.participant.name()) +
 		       BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(project.getCandidateGroup());
 	}
 
@@ -165,6 +171,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 					logDebug("enrollProjectParticipant: project.getMaxMembers()=" + reloadedProject.getMaxMembers());
 					logDebug("enrollProjectParticipant: project.getSelectedPlaces()=" + reloadedProject.getSelectedPlaces());
 					if ( ProjectBrokerManagerFactory.getProjectBrokerManager().canBeProjectSelectedBy(identity, reloadedProject, moduleConfig, nbrSelectedProjects, isParticipantInAnyProject) ) {				
+						
 						if (moduleConfig.isAcceptSelectionManually() ) {
 							BaseSecurityManager.getInstance().addIdentityToSecurityGroup(identity, reloadedProject.getCandidateGroup());
 							logAudit("ProjectBroker: Add as candidate identity=" + identity + " to project=" + reloadedProject);
@@ -172,10 +179,11 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 								logDebug("ProjectBroker: Add as candidate reloadedProject=" + reloadedProject + "  CandidateGroup=" + reloadedProject.getCandidateGroup() );
 							}
 						} else {
-							BaseSecurityManager.getInstance().addIdentityToSecurityGroup(identity, reloadedProject.getProjectParticipantGroup());
+							BusinessGroupRelationDAO businessGroupRelationDao = CoreSpringFactory.getImpl(BusinessGroupRelationDAO.class);
+							businessGroupRelationDao.addRole(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name());
 							logAudit("ProjectBroker: Add as participant identity=" + identity + " to project=" + reloadedProject);
 							if (isLogDebugEnabled()) {
-								logDebug("ProjectBroker: Add as participant reloadedProject=" + reloadedProject + "  ParticipantGroup=" + reloadedProject.getProjectParticipantGroup() );
+								logDebug("ProjectBroker: Add as participant reloadedProject=" + reloadedProject + "  ParticipantGroup=" + reloadedProject.getProjectGroup() );
 							}
 							if ( (reloadedProject.getMaxMembers() != Project.MAX_MEMBERS_UNLIMITED) && (reloadedProject.getSelectedPlaces() >= reloadedProject.getMaxMembers()) ) {
 								reloadedProject.setState(Project.STATE_ASSIGNED);
@@ -207,11 +215,12 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 					Project reloadedProject = (Project) DBFactory.getInstance().loadObject(project, true);					
 					// User can only cancel enrollment, when state is 'NOT_ASSIGNED'
 					if (canBeCancelEnrollmentBy(identity, project, moduleConfig)) {
-						BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, reloadedProject.getProjectParticipantGroup());
+						BusinessGroupRelationDAO businessGroupRelationDao = CoreSpringFactory.getImpl(BusinessGroupRelationDAO.class);
+						businessGroupRelationDao.removeRole(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name());
 						BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
 						logAudit("ProjectBroker: Remove (as participant or waitinglist) identity=" + identity + " from project=" + project);
 						if (isLogDebugEnabled()) {
-							logDebug("ProjectBroker: Remove as participant reloadedProject=" + reloadedProject + "  ParticipantGroup=" + reloadedProject.getProjectParticipantGroup() + "  CandidateGroup=" + reloadedProject.getCandidateGroup());
+							logDebug("ProjectBroker: Remove as participant reloadedProject=" + reloadedProject + "  ParticipantGroup=" + reloadedProject.getProjectGroup() + "  CandidateGroup=" + reloadedProject.getCandidateGroup());
 						}
 						if ( (reloadedProject.getMaxMembers() != Project.MAX_MEMBERS_UNLIMITED) && (reloadedProject.getSelectedPlaces() < reloadedProject.getMaxMembers()) ) {
 							reloadedProject.setState(Project.STATE_NOT_ASSIGNED);
@@ -268,7 +277,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		int selectedCounter = 0;
 		for (Iterator<Project> iterator = projectList.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
-			if (BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getProjectParticipantGroup()) ||
+			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			if (businessGroupService.hasRoles(identity, project.getProjectGroup(), GroupRoles.participant.name()) ||
 					BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getCandidateGroup()) ) {
 				selectedCounter++;
 			}
@@ -289,7 +299,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 			return false;
 		}
 		// 2. check number of max project members
-		int projectMembers = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(project.getProjectParticipantGroup()) +
+		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		int projectMembers = businessGroupService.countMembers(project.getProjectGroup(), GroupRoles.participant.name()) +
 		                     BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(project.getCandidateGroup());
 		if ( (project.getMaxMembers() != Project.MAX_MEMBERS_UNLIMITED) && (projectMembers >= project.getMaxMembers()) ) {
 			logDebug("canBeSelectedBy: return false because projectMembers >= getMaxMembers()");
@@ -545,9 +556,10 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	 * @return
 	 */
 	public boolean isParticipantInAnyProject(Identity identity, List<Project> projectList) {
+		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		for (Iterator<Project> iterator = projectList.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
-			if ( BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getProjectParticipantGroup()) ) {
+			if (businessGroupService.hasRoles(identity, project.getProjectGroup(), GroupRoles.participant.name()) ) {
 				return true;
 			}
 		}
@@ -605,9 +617,10 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		List<Project> myProjects = new ArrayList<Project>();
 		List<Project> allProjects = getProjectListBy(projectBrokerId);
 		//TODO: for better performance should be done with sql query instead of a loop
+		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		for (Iterator<Project> iterator = allProjects.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
-			if (BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getProjectParticipantGroup()) ) {
+			if (businessGroupService.hasRoles(identity, project.getProjectGroup(), GroupRoles.participant.name()) ) {
 				myProjects.add(project);
 			}
 		}
@@ -626,7 +639,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		//TODO: for better performance should be done with sql query instead of a loop
 		for (Iterator<Project> iterator = allProjects.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
-			if (BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getProjectLeaderGroup()) ) {
+			if (CoreSpringFactory.getImpl(BusinessGroupService.class)
+					.hasRoles(identity, project.getProjectGroup(), GroupRoles.coach.name())) {
 				myProjects.add(project);
 			}
 		}

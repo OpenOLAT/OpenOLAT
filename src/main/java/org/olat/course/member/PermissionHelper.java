@@ -36,13 +36,13 @@ public class PermissionHelper {
 		RepoPermission p = new RepoPermission();
 		if(id != null && memberships != null && !memberships.isEmpty()) {
 			for(RepositoryEntryMembership membership:memberships) {
-				if(membership.getOwnerRepoKey() != null && re.getKey().equals(membership.getOwnerRepoKey())) {
+				if(membership.isOwner() && re.getKey().equals(membership.getRepoKey())) {
 					p.setOwner(true);
 				}
-				if(membership.getTutorRepoKey() != null && re.getKey().equals(membership.getTutorRepoKey())) {
+				if(membership.isCoach() && re.getKey().equals(membership.getRepoKey())) {
 					p.setTutor(true);
 				}
-				if(membership.getParticipantRepoKey() != null && re.getKey().equals(membership.getParticipantRepoKey())) {
+				if(membership.isParticipant() && re.getKey().equals(membership.getRepoKey())) {
 					p.setParticipant(true);
 				}
 			}

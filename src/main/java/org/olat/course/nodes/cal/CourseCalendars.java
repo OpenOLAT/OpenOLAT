@@ -35,6 +35,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -96,11 +97,10 @@ public class CourseCalendars {
 		KalendarRenderWrapper courseKalendarWrapper = calendarManager.getCourseCalendar(course);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		Identity identity = ureq.getIdentity();
-		boolean isPrivileged = cgm.isIdentityCourseAdministrator(identity)
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isPrivileged = roles.isOLATAdmin() || cgm.isIdentityCourseAdministrator(identity)
 				|| (ne != null && ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID))
-				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(
-						RepositoryManager.getInstance().lookupRepositoryEntry(course, false), identity)
-				|| ureq.getUserSession().getRoles().isOLATAdmin();
+				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry());
 		
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);

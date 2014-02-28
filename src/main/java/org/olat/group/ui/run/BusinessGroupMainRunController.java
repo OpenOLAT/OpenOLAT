@@ -25,16 +25,17 @@
 
 package org.olat.group.ui.run;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.ui.GroupController;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
@@ -471,8 +472,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	 * @return a contact form controller for this group
 	 */
 	private ContactFormController createContactFormController(UserRequest ureq) {
-		BaseSecurity scrtMngr = BaseSecurityManager.getInstance();
-
 		ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
 		// two named ContactLists, the new way using the contact form
 		// the same name as in the checkboxes are taken as contactlist names
@@ -482,16 +481,14 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 		if (sendToChooserForm.ownerChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_ALL)) {
 			ownerCntctLst = new ContactList(translate("sendtochooser.form.radio.owners.all"));
-			SecurityGroup owners = businessGroup.getOwnerGroup();
-			List<Identity> ownerList = scrtMngr.getIdentitiesOfSecurityGroup(owners);
+			List<Identity> ownerList = businessGroupService.getMembers(businessGroup, GroupRoles.coach.name());
 			ownerCntctLst.addAllIdentites(ownerList);
 			cmsg.addEmailTo(ownerCntctLst);
 		} else {
 			if (sendToChooserForm.ownerChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_CHOOSE)) {
 				ownerCntctLst = new ContactList(translate("sendtochooser.form.radio.owners.choose"));
-				SecurityGroup owners = businessGroup.getOwnerGroup();
-				List<Identity> ownerList = scrtMngr.getIdentitiesOfSecurityGroup(owners);
-				List<Identity> changeableOwnerList = scrtMngr.getIdentitiesOfSecurityGroup(owners);
+				List<Identity> ownerList = businessGroupService.getMembers(businessGroup, GroupRoles.coach.name());
+				List<Identity> changeableOwnerList = new ArrayList<>(ownerList);
 				for (Identity identity : ownerList) {
 					boolean keyIsSelected = false;
 					for (Long key : sendToChooserForm.getSelectedOwnerKeys()) {
@@ -512,16 +509,14 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		if (sendToChooserForm != null) {
 			if  (sendToChooserForm.participantChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_ALL)) {
 				partipCntctLst  = new ContactList(translate("sendtochooser.form.radio.partip.all"));
-				SecurityGroup participants = businessGroup.getPartipiciantGroup();
-				List<Identity> participantsList = scrtMngr.getIdentitiesOfSecurityGroup(participants);
+				List<Identity> participantsList = businessGroupService.getMembers(businessGroup, GroupRoles.participant.name());
 				partipCntctLst.addAllIdentites(participantsList);
 				cmsg.addEmailTo(partipCntctLst);
 			} else {
 				if (sendToChooserForm.participantChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_CHOOSE)) {
 					partipCntctLst  = new ContactList(translate("sendtochooser.form.radio.partip.choose"));
-					SecurityGroup participants = businessGroup.getPartipiciantGroup();
-					List<Identity> participantsList = scrtMngr.getIdentitiesOfSecurityGroup(participants);
-					List<Identity> changeableParticipantsList = scrtMngr.getIdentitiesOfSecurityGroup(participants);
+					List<Identity> participantsList = businessGroupService.getMembers(businessGroup, GroupRoles.participant.name());
+					List<Identity> changeableParticipantsList = new ArrayList<>(participantsList);
 					for (Identity identity : participantsList) {
 						boolean keyIsSelected = false;
 						for (Long key : sendToChooserForm.getSelectedPartipKeys()) {
@@ -543,16 +538,14 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		if (sendToChooserForm != null && isAdmin && businessGroup.getWaitingListEnabled().booleanValue()) {
 			if (sendToChooserForm.waitingListChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_ALL)) {
 				waitingListContactList = new ContactList(translate("sendtochooser.form.radio.waitings.all"));
-				SecurityGroup waitingList = businessGroup.getWaitingGroup();
-				List<Identity> waitingListIdentities = scrtMngr.getIdentitiesOfSecurityGroup(waitingList);
+				List<Identity> waitingListIdentities = businessGroupService.getMembers(businessGroup, GroupRoles.waiting.name());
 				waitingListContactList.addAllIdentites(waitingListIdentities);
 				cmsg.addEmailTo(waitingListContactList);
 			} else {
 				if (sendToChooserForm.waitingListChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_CHOOSE)) {
 					waitingListContactList = new ContactList(translate("sendtochooser.form.radio.waitings.choose"));
-					SecurityGroup waitingList = businessGroup.getWaitingGroup();
-					List<Identity> waitingListIdentities = scrtMngr.getIdentitiesOfSecurityGroup(waitingList);
-					List<Identity> changeableWaitingListIdentities = scrtMngr.getIdentitiesOfSecurityGroup(waitingList);
+					List<Identity> waitingListIdentities = businessGroupService.getMembers(businessGroup, GroupRoles.waiting.name());
+					List<Identity> changeableWaitingListIdentities = new ArrayList<>(waitingListIdentities);
 					for (Identity indentity : waitingListIdentities) {
 						boolean keyIsSelected = false;
 						for (Long key : sendToChooserForm.getSelectedWaitingKeys()) {
@@ -737,9 +730,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		VelocityContainer membersVc = createVelocityContainer("ownersandmembers");
 		// 1. show owners if configured with Owners
 		boolean downloadAllowed = businessGroup.isDownloadMembersLists();
+		Group group = businessGroupService.getGroup(businessGroup);
 		if (businessGroup.isOwnersVisibleIntern()) {
 			removeAsListenerAndDispose(gownersC);
-			gownersC = new GroupController(ureq, getWindowControl(), false, true, true, false, downloadAllowed, false, businessGroup.getOwnerGroup());
+			gownersC = new GroupController(ureq, getWindowControl(), false, true, true, false, downloadAllowed, false, group, GroupRoles.coach.name());
 			listenTo(gownersC);
 			membersVc.put("owners", gownersC.getInitialComponent());
 			membersVc.contextPut("showOwnerGroups", Boolean.TRUE);
@@ -749,7 +743,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		// 2. show participants if configured with Participants
 		if (businessGroup.isParticipantsVisibleIntern()) {
 			removeAsListenerAndDispose(gparticipantsC);
-			gparticipantsC = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, false, businessGroup.getPartipiciantGroup());
+			gparticipantsC = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, false, group, GroupRoles.participant.name());
 			listenTo(gparticipantsC);
 			
 			membersVc.put("participants", gparticipantsC.getInitialComponent());
@@ -761,7 +755,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		membersVc.contextPut("hasWaitingList", new Boolean(businessGroup.getWaitingListEnabled()) );
 		if (businessGroup.isWaitingListVisibleIntern()) {
 			removeAsListenerAndDispose(waitingListController);
-			waitingListController = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, false, businessGroup.getWaitingGroup());
+			waitingListController = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, false, group, GroupRoles.waiting.name());
 			listenTo(waitingListController);
 			membersVc.put("waitingList", waitingListController.getInitialComponent());
 			membersVc.contextPut("showWaitingList", Boolean.TRUE);

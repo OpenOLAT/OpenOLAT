@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
-<hibernate-mapping default-lazy="false">
+<hibernate-mapping>
 	<class name="org.olat.repository.RepositoryEntry" table="o_repositoryentry">
 	
 		<cache usage="transactional" />
@@ -37,34 +37,18 @@
                      outer-join="true"   
                      unique="true" 
                      cascade="none"/>
-
-		<many-to-one name="ownerGroup"
-                     column="fk_ownergroup"
-                     class="org.olat.basesecurity.SecurityGroupImpl" 
-                     outer-join="true"   
-                     unique="true" 
-                     cascade="none"/>
-                     
-		<many-to-one name="participantGroup"
-                     column="fk_participantgroup"
-                     class="org.olat.basesecurity.SecurityGroupImpl" 
-                     outer-join="true"   
-                     unique="true" 
-                     cascade="none"/>
-                     
-		<many-to-one name="tutorGroup"
-                     column="fk_tutorgroup"
-                     class="org.olat.basesecurity.SecurityGroupImpl" 
-                     outer-join="true"   
-                     unique="true" 
-                     cascade="none"/>
-                     
+       
         <many-to-one name="lifecycle"
                      column="fk_lifecycle"
                      class="org.olat.repository.model.RepositoryEntryLifecycle" 
                      outer-join="true"
                      fetch="join"
-                     cascade="none"/>            
+                     cascade="none"/>
+                     
+        <set name="groups" cascade="persist,delete">
+            <key column="fk_entry_id"/>
+            <one-to-many class="org.olat.repository.model.RepositoryEntryToGroupRelation" />
+        </set>       
 
 		<property name="description" type="string">
 			<column name="description" length="16777210" unique="false" not-null="false" />

@@ -63,10 +63,10 @@
 		
 		</subclass>
 		
-		<subclass name="org.olat.portfolio.model.structel.EPDefaultMap" discriminator-value="default-map">
-			<many-to-one name="ownerGroup"
-                   column="fk_ownergroup"
-                   class="org.olat.basesecurity.SecurityGroupImpl" 
+		<subclass name="org.olat.portfolio.model.structel.EPDefaultMap" discriminator-value="default-map">  
+			<many-to-one name="group"
+                   column="fk_group_id"
+                   class="org.olat.basesecurity.model.GroupImpl" 
                    outer-join="true"   
                    unique="true" 
                    cascade="none"/>
@@ -86,10 +86,10 @@
 				<property  name="subPath" column="target_ressubpath" length="2048" type="string" />
 				<property  name="businessPath" column="target_businesspath" length="2048" type="string" />
 			</component>
-			
-			<many-to-one name="ownerGroup"
-                   column="fk_ownergroup"
-                   class="org.olat.basesecurity.SecurityGroupImpl" 
+                   
+			<many-to-one name="group"
+                   column="fk_group_id"
+                   class="org.olat.basesecurity.model.GroupImpl" 
                    outer-join="true"   
                    unique="true" 
                    cascade="none"/>
@@ -104,9 +104,10 @@
 		</subclass>
 		
 		<subclass name="org.olat.portfolio.model.structel.EPStructuredMapTemplate" discriminator-value="template-map">
-			<many-to-one name="ownerGroup"
-                   column="fk_ownergroup"
-                   class="org.olat.basesecurity.SecurityGroupImpl" 
+     
+			<many-to-one name="group"
+                   column="fk_group_id"
+                   class="org.olat.basesecurity.model.GroupImpl" 
                    outer-join="true"   
                    unique="true" 
                    cascade="none"/>
@@ -153,12 +154,12 @@
     <property name="sourceMapKey" column="fk_map_source_id" type="long"/>
 	<property name="title" column="title" type="string"/>
 
-	<many-to-one name="ownerGroup"
-                 column="fk_ownergroup"
-                 class="org.olat.basesecurity.SecurityGroupImpl" 
-                 outer-join="true"   
-                 unique="true" 
-                 cascade="none"/>
+			<many-to-one name="group"
+                   column="fk_group_id"
+                   class="org.olat.basesecurity.model.GroupImpl" 
+                   outer-join="true"   
+                   unique="true" 
+                   cascade="none"/>
 
     <many-to-one name="olatResource"
                  column="fk_olatresource"

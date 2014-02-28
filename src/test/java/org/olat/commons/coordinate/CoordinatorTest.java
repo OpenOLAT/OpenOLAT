@@ -35,8 +35,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -46,7 +45,11 @@ import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,6 +57,9 @@ import org.olat.test.OlatTestCase;
 public class CoordinatorTest extends OlatTestCase {
 
 	private static boolean isInitialized = false;
+	
+	@Autowired
+	private RepositoryService repositoryService;
 	
 
 	/**
@@ -333,13 +339,11 @@ public class CoordinatorTest extends OlatTestCase {
 	@Test
 	public void testDoInSyncPerformance() {
 		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testDoInSyncPerformance", new Long("123989456"));
+		OLATResource r =  CoreSpringFactory.getImpl(OLATResourceManager.class).findOrPersistResourceable(ores);
 		int maxLoop = 1000;
 
-		final RepositoryEntry re = RepositoryManager.getInstance().createRepositoryEntryInstance("test", "perfTest", "perfTest description");
-		re.setDisplayname("testPerf");
+		final RepositoryEntry re = repositoryService.create("test", "perfTest", "testPerf", "perfTest description", r);
 		// create security group
-		SecurityGroup ownerGroup = BaseSecurityManager.getInstance().createAndPersistSecurityGroup();
-		re.setOwnerGroup(ownerGroup);
 		RepositoryManager.getInstance().saveRepositoryEntry(re);
 		DBFactory.getInstance().commitAndCloseSession();
 		

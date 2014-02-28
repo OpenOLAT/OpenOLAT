@@ -48,6 +48,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -62,6 +63,7 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
@@ -79,6 +81,8 @@ public class CalendarTest extends OlatJerseyTestCase {
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -130,7 +134,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 			
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course1, false);
 			entry = repositoryManager.setAccess(entry, RepositoryEntry.ACC_USERS, false);
-			securityManager.addIdentityToSecurityGroup(id1, entry.getParticipantGroup());
+			repositoryService.addRole(id1, entry, GroupRoles.participant.name());
 			
 			dbInstance.commit();
 		}

@@ -94,11 +94,15 @@ import org.junit.runners.Suite;
 	org.olat.resource.lock.pessimistic.PLockTest.class,//ok
 	org.olat.resource.references.ReferenceManagerTest.class,//ok
 	org.olat.resource.OLATResourceManagerTest.class,//ok
+	org.olat.basesecurity.manager.GroupDAOTest.class,//ok
 	org.olat.basesecurity.SecurityManagerTest.class,//ok
 	org.olat.basesecurity.BaseSecurityTest.class,//ok
 	org.olat.basesecurity.BaseSecurityManagerTest.class,//ok
 	org.olat.user.UserManagerTest.class,//ok
 	org.olat.user.UserNameAndPasswordSyntaxCheckerWithRegexpTest.class,//ok
+	org.olat.repository.manager.RepositoryEntryLifecycleDAOTest.class,//ok
+	org.olat.repository.manager.RepositoryEntryRelationDAOTest.class,//ok
+	org.olat.repository.manager.RepositoryServiceImplTest.class,//ok
 	org.olat.repository.RepositoryManagerTest.class,//ok
 	org.olat.repository.RepositoryManagerConcurrentTest.class,//ok
 	org.olat.repository.RepositoryManagerQueryTest.class,//ok
@@ -117,7 +121,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.wiki.WikiUnitTest.class,//ok
 	org.olat.modules.wiki.versioning.diff.CookbookDiffTest.class,//ok
 	org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtilTest.class,
-	//org.olat.modules.coach.CoachingManagerTest.class,//ok
+	org.olat.modules.coach.CoachingServiceTest.class,//ok
 	org.olat.properties.PropertyTest.class,//ok
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,
 	org.olat.search.service.document.file.PDFDocumentTest.class,

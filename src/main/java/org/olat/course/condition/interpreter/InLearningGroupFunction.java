@@ -89,7 +89,7 @@ public class InLearningGroupFunction extends AbstractFunction {
 		}
 
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
-		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseResource());
+		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseEntry());
 		if(!groupKeys.isEmpty()) {
 			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 			return cgm.isIdentityInGroup(ident, groupKeys.get(0)) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;

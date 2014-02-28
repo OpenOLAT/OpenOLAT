@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -41,7 +42,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -196,10 +196,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct businessGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
 		  .append(" inner join bgarel.businessGroup businessGroup ")
-			.append(" left join fetch businessGroup.ownerGroup ownerGroup")
-			.append(" left join fetch businessGroup.partipiciantGroup participantGroup")
-			.append(" left join fetch businessGroup.waitingGroup waitingGroup")
-			.append(" left join fetch businessGroup.resource resource")
+		  .append(" left join fetch businessGroup.resource resource")
 		  .append(" where  bgarel.groupArea.key in (:areaKeys)");
 
 		List<BusinessGroup> result = DBFactory.getInstance().getCurrentEntityManager()
@@ -216,13 +213,12 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	@Override
 	public List<BusinessGroup> findBusinessGroupsOfAreaAttendedBy(Identity identity, List<Long> areaKeys, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi ")
-		  .append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi")
-		  .append(", org.olat.group.area.BGtoAreaRelationImpl as bgarel")
-			.append(", org.olat.group.area.BGAreaImpl as area")
-			.append(" where bgarel.groupArea=area and bgi.partipiciantGroup=sgmi.securityGroup and bgarel.businessGroup=bgi")
-			.append(" and sgmi.identity.key=:identityKey");
-		
+		sb.append("select distinct grp from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel")
+		  .append(" inner join bgarel.businessGroup as grp")
+		  .append(" inner join bgarel.groupArea as area")
+		  .append(" inner join grp.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("'");
 		if(areaKeys != null && !areaKeys.isEmpty()) {
 			sb.append(" and area.key in (:areaKeys)");
 		}
@@ -317,18 +313,20 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 */
 	public boolean isIdentityInBGArea(Identity identity, String areaName, Long areaKey, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(grp) from ").append(BusinessGroupImpl.class.getName()).append(" as grp")
-		  .append(", org.olat.group.area.BGAreaImpl as area, org.olat.group.area.BGtoAreaRelationImpl bgarel, org.olat.basesecurity.SecurityGroupMembershipImpl as secgmemb")
-		  .append(" where bgarel.groupArea = area and bgarel.businessGroup = grp");
+		sb.append("select count(bgarel) from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel")
+		  .append(" inner join bgarel.businessGroup as grp")
+		  .append(" inner join bgarel.groupArea as area")
+		  .append(" inner join grp.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where area.resource.key=:resourceKey ")
+		  .append(" and membership.identity.key=:identityKey and membership.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')");
 		if(StringHelper.containsNonWhitespace(areaName)) {
 			sb.append(" and area.name=:name ");
 		}
 		if(areaKey != null) {
 			sb.append(" and area.key=:areaKey ");
 		}
-		sb.append(" and area.resource.key=:resourceKey ")
-			.append(" and ((grp.partipiciantGroup = secgmemb.securityGroup and secgmemb.identity.key=:identityKey) or (grp.ownerGroup = secgmemb.securityGroup and secgmemb.identity=:identityKey))");
-		
+			
 		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("resourceKey", resource.getKey());

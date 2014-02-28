@@ -102,7 +102,7 @@ public class RepositoryEntryLifecycleDAOTest extends OlatTestCase {
 	public void loadPublicLifeCycles() {
 		//create a public life cycle object
 		String label = "A public life cycle";
-		RepositoryEntryLifecycle publicRelf = reLifeCycleDao.create(label, null, true, null, null);
+		RepositoryEntryLifecycle publicRelf = reLifeCycleDao.create(label, null, false, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		//load public life cycle

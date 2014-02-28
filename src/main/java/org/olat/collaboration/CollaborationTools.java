@@ -37,6 +37,7 @@ import java.util.List;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.ui.CalendarController;
@@ -107,7 +108,7 @@ import org.olat.portfolio.ui.structel.EPCreateMapController;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 import org.olat.testutils.codepoints.server.Codepoint;
 
 /**
@@ -375,7 +376,7 @@ public class CollaborationTools implements Serializable {
 
 		//fxdiff VCRP-8: collaboration tools folder access control
 		boolean writeAccess;
-		boolean isOwner = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, businessGroup.getOwnerGroup());
+		boolean isOwner = CoreSpringFactory.getImpl(BusinessGroupService.class).hasRoles(identity, businessGroup, GroupRoles.coach.name());
 		if (!(isAdmin || isOwner)) {
 				// check if participants have read/write access
 			int folderAccess = CollaborationTools.FOLDER_ACCESS_ALL;
@@ -407,12 +408,12 @@ public class CollaborationTools implements Serializable {
 		KalendarRenderWrapper calRenderWrapper = collaborationManager.getCalendar(businessGroup, ureq, isAdmin);
 	
 		// add linking
-		List<OLATResource> resources = CoreSpringFactory.getImpl(BusinessGroupService.class).findResources(Collections.singleton(businessGroup), 0, -1);
+		List<RepositoryEntry> repoEntries = CoreSpringFactory.getImpl(BusinessGroupService.class).findRepositoryEntries(Collections.singleton(businessGroup), 0, -1);
 		
-		List<ICourse> courses = new ArrayList<ICourse>(resources.size());
-		for (OLATResource resource:resources) {
-			if (resource.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
-				ICourse course = CourseFactory.loadCourse(resource);
+		List<ICourse> courses = new ArrayList<ICourse>(repoEntries.size());
+		for (RepositoryEntry repoEntry:repoEntries) {
+			if (repoEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
+				ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
 				courses.add(course);
 			}
 		}

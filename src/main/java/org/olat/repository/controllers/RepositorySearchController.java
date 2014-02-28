@@ -272,7 +272,8 @@ public class RepositorySearchController extends BasicController implements Activ
 		params.setExternalId(searchForm.getExternalId());
 		params.setExternalRef(searchForm.getExternalRef());
 		params.setOnlyOwnedResources(onlyOwner);
-		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);		
+		
+		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		if(updateFilters) {
@@ -455,6 +456,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		searchType = null;
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<String> types = Arrays.asList(restrictedTypes);
+
 		List<RepositoryEntry> entries = rm.queryByTypeLimitAccess(ureq.getIdentity(), ureq.getUserSession().getRoles(), types);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
@@ -482,7 +484,6 @@ public class RepositorySearchController extends BasicController implements Activ
 		searchType = SearchType.myAsStudent;
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<RepositoryEntry> entries = rm.getLearningResourcesAsStudent(ureq.getIdentity(), 0, -1);
-		//fxdiff VCRP-10: repository search with type filter
 		filterRepositoryEntries(entries);
 		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
 	}

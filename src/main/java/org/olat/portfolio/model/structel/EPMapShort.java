@@ -19,7 +19,7 @@
  */
 package org.olat.portfolio.model.structel;
 
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.resource.OLATResource;
 
@@ -36,7 +36,7 @@ public class EPMapShort extends PersistentObject {
 	private String title;
 	private Long sourceMapKey;
 	private OLATResource olatResource;
-	private SecurityGroup ownerGroup;
+	private Group group;
 	
 	public EPMapShort() {
 		//
@@ -67,12 +67,12 @@ public class EPMapShort extends PersistentObject {
 		this.olatResource = olatResource;
 	}
 
-	public SecurityGroup getOwnerGroup() {
-		return ownerGroup;
+	public Group getGroup() {
+		return group;
 	}
 
-	public void setOwnerGroup(SecurityGroup ownerGroup) {
-		this.ownerGroup = ownerGroup;
+	public void setGroup(Group group) {
+		this.group = group;
 	}
 	
 	@Override

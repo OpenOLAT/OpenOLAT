@@ -43,6 +43,7 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -52,6 +53,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
@@ -74,6 +76,8 @@ public class BGAreaManagerTest extends OlatTestCase {
 	private BGAreaManager areaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BaseSecurity securityManager;
 
@@ -542,10 +546,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 		areaManager.addBGToBGArea(group3, area1);
 		dbInstance.commitAndCloseSession();
 		//add attendee
-		securityManager.addIdentityToSecurityGroup(id1, group1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group2.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id2, group3.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id3, group3.getPartipiciantGroup());
+		businessGroupRelationDao.addRole(id1, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//find with resource
@@ -590,8 +594,8 @@ public class BGAreaManagerTest extends OlatTestCase {
 		areaManager.addBGToBGArea(group3, area3);
 		dbInstance.commitAndCloseSession();
 		//add attendee
-		securityManager.addIdentityToSecurityGroup(id1, group1.getPartipiciantGroup());
-		securityManager.addIdentityToSecurityGroup(id1, group2.getOwnerGroup());
+		businessGroupRelationDao.addRole(id1, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id1, group2, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
 		//check in area 1

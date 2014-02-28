@@ -27,8 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -52,6 +51,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.manager.VmsNotAvailableException;
 import org.olat.modules.vitero.model.GroupRole;
@@ -59,6 +59,7 @@ import org.olat.modules.vitero.model.ViteroBooking;
 import org.olat.modules.vitero.model.ViteroGroupRoles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -76,7 +77,8 @@ public class ViteroUserToGroupController extends BasicController {
 	private final ViteroBooking booking;
 	private final ViteroManager viteroManager;
 	private final RepositoryManager repositoryManager;
-	private final BaseSecurity securityManager;
+	private final RepositoryService repositoryService;
+	private final BusinessGroupService businessGroupService;
 	private CourseGroupManager courseGroupManager;
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
@@ -90,9 +92,10 @@ public class ViteroUserToGroupController extends BasicController {
 		this.ores = ores;
 		this.group = group;
 		this.booking = booking;
-		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
+		viteroManager = CoreSpringFactory.getImpl(ViteroManager.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		repositoryManager = RepositoryManager.getInstance();
-		securityManager = BaseSecurityManager.getInstance();
 		
 		mainVC = createVelocityContainer("user_admin");
 
@@ -254,8 +257,8 @@ public class ViteroUserToGroupController extends BasicController {
 		Set<Identity> selfParticipants = new HashSet<Identity>();
 		
 		if(group != null) {
-			owners.addAll(securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup()));
-			participants.addAll(securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup()));
+			owners.addAll(businessGroupService.getMembers(group, GroupRoles.coach.name()));
+			participants.addAll(businessGroupService.getMembers(group, GroupRoles.participant.name()));
 		} else {
 			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(ores, false);
 			if ("CourseModule".equals(ores.getResourceableTypeName())) {
@@ -269,17 +272,12 @@ public class ViteroUserToGroupController extends BasicController {
 				participants.addAll(courseGroupManager.getParticipantsFromBusinessGroups());
 			}
 			
-			List<Identity> repoOwners = securityManager.getIdentitiesOfSecurityGroup(repoEntry.getOwnerGroup());
+			List<Identity> repoOwners = repositoryService.getMembers(repoEntry, GroupRoles.owner.name());
 			owners.addAll(repoOwners);
-			
-			if(repoEntry.getParticipantGroup() != null) {
-				List<Identity> repoParticipants = securityManager.getIdentitiesOfSecurityGroup(repoEntry.getParticipantGroup());
-				participants.addAll(repoParticipants);
-			}
-			if(repoEntry.getTutorGroup() != null) {
-				List<Identity> repoTutors = securityManager.getIdentitiesOfSecurityGroup(repoEntry.getTutorGroup());
-				coaches.addAll(repoTutors);
-			}
+			List<Identity> repoParticipants = repositoryService.getMembers(repoEntry, GroupRoles.participant.name());
+			participants.addAll(repoParticipants);
+			List<Identity> repoTutors = repositoryService.getMembers(repoEntry, GroupRoles.coach.name());
+			coaches.addAll(repoTutors);
 		}
 		
 		//add all self signed participants

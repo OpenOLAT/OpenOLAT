@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -56,6 +57,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
@@ -74,6 +76,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	private final RepositoryManager rm ;
 	private final UserManager userManager;
 	private final BaseSecurity securityManager;
+	private final RepositoryService repositoryService;
 	private final UserCourseEnvironment userCourseEnv;
 	private final DisplayPortraitManager portraitManager;
 	private final String avatarBaseURL;
@@ -100,6 +103,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		rm = RepositoryManager.getInstance();
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		portraitManager = DisplayPortraitManager.getInstance();
 
 		initForm(ureq);
@@ -148,7 +152,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	private List<Identity> getOwners() {
 		OLATResource resource = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		RepositoryEntry courseRepositoryEntry = rm.lookupRepositoryEntry(resource, true);
-		return securityManager.getIdentitiesOfSecurityGroup(courseRepositoryEntry.getOwnerGroup());
+		return repositoryService.getMembers(courseRepositoryEntry, GroupRoles.owner.name());
 	}
 	
 	private boolean canEmail(List<Identity> owners, List<Identity> coaches) {

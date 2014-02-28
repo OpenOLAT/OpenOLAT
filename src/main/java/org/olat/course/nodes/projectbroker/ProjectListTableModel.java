@@ -29,7 +29,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -39,6 +40,7 @@ import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.group.BusinessGroupService;
 
 /**
  * 
@@ -105,14 +107,15 @@ public class ProjectListTableModel extends DefaultTableDataModel {
 			return name;
 		} else if (col == 1) {
 			// get identity_date list sorted by AddedDate
-		  List<Object[]> identities = BaseSecurityManager.getInstance().getIdentitiesAndDateOfSecurityGroup(project.getProjectLeaderGroup(), true);
+		  List<Identity> identities = CoreSpringFactory.getImpl(BusinessGroupService.class)
+					.getMembers(project.getProjectGroup(), GroupRoles.coach.name());
 			if (identities.isEmpty()) {
 				return "-";
 			} else {
 				// return all proj-leaders
-				ArrayList<Identity> allIdents = new ArrayList<Identity>();
-				for (Object[] idobj : identities) {
-					allIdents.add((Identity)idobj[0]);
+				List<Identity> allIdents = new ArrayList<Identity>();
+				for (Identity idobj : identities) {
+					allIdents.add(idobj);
 				}
 				return allIdents;
 			}

@@ -44,9 +44,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
@@ -514,7 +513,9 @@ public class LearningGroupWebService {
 			}
 		}
 		
-		return getIdentityInGroup(bg.getOwnerGroup());
+		List<Identity> coaches = CoreSpringFactory.getImpl(BusinessGroupService.class)
+				.getMembers(bg, GroupRoles.coach.name());
+		return getIdentityInGroup(coaches);
 	}
 	
 	/**
@@ -547,19 +548,17 @@ public class LearningGroupWebService {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		}
-		
-		return getIdentityInGroup(bg.getPartipiciantGroup());
+
+		List<Identity> participants = CoreSpringFactory.getImpl(BusinessGroupService.class)
+				.getMembers(bg, GroupRoles.participant.name());
+		return getIdentityInGroup(participants);
 	}
 	
-	private Response getIdentityInGroup(SecurityGroup sg) {
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		List<Object[]> owners = securityManager.getIdentitiesAndDateOfSecurityGroup(sg);
-		
+	private Response getIdentityInGroup(List<Identity> identities) {
 		int count = 0;
-		UserVO[] ownerVOs = new UserVO[owners.size()];
-		for(int i=0; i<owners.size(); i++) {
-			Identity identity = (Identity)(owners.get(i))[0];
-			ownerVOs[count++] = UserVOFactory.get(identity);
+		UserVO[] ownerVOs = new UserVO[identities.size()];
+		for(int i=0; i<identities.size(); i++) {
+			ownerVOs[count++] = UserVOFactory.get(identities.get(i));
 		}
 		return Response.ok(ownerVOs).build();
 	}

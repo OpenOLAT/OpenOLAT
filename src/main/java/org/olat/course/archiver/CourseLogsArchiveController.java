@@ -41,7 +41,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -50,6 +52,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.AsyncExportManager;
 import org.olat.home.InviteeHomeMainController;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 
@@ -84,9 +87,13 @@ public class CourseLogsArchiveController extends BasicController {
 
 		myContent = createVelocityContainer("start_courselogs");
 		
+		Identity identity = ureq.getIdentity();
+		Roles roles = ureq.getUserSession().getRoles();
+		
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
 		boolean isOLATAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isOresOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), RepositoryManager.getInstance().lookupRepositoryEntry(ores, false));
-		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(RepositoryManager.getInstance().lookupRepositoryEntry(ores, false), ureq.getIdentity());
+		boolean isOresOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re);
+		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re);
 		boolean aLogV = isOresOwner || isOresInstitutionalManager;
 		boolean uLogV = isOLATAdmin;
 		boolean sLogV = isOresOwner || isOresInstitutionalManager;

@@ -53,7 +53,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
@@ -67,6 +67,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
@@ -101,10 +102,12 @@ public class RepositoryEntryResource {
   }
   
   private RepositoryManager repositoryManager;
+  private RepositoryService repositoryService;
   private BaseSecurity securityManager;
   
-  public RepositoryEntryResource(RepositoryManager repositoryManager, BaseSecurity securityManager) {
+  public RepositoryEntryResource(RepositoryManager repositoryManager, RepositoryService repositoryService, BaseSecurity securityManager) {
   	this.repositoryManager = repositoryManager;
+  	this.repositoryService = repositoryService;
   	this.securityManager = securityManager;
   }
 
@@ -172,7 +175,7 @@ public class RepositoryEntryResource {
 		} else if(!isAuthorEditor(repoEntry, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return getIdentityInSecurityGroup(repoEntry.getOwnerGroup());
+		return getIdentityInSecurityGroup(repoEntry, GroupRoles.owner.name());
 	}
 	
 	/**
@@ -269,7 +272,7 @@ public class RepositoryEntryResource {
 		} else if(!isAuthorEditor(repoEntry, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return getIdentityInSecurityGroup(repoEntry.getTutorGroup());
+		return getIdentityInSecurityGroup(repoEntry, GroupRoles.coach.name());
 	}
 	
 	/**
@@ -365,7 +368,7 @@ public class RepositoryEntryResource {
 		} else if(!isAuthorEditor(repoEntry, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return getIdentityInSecurityGroup(repoEntry.getParticipantGroup());
+		return getIdentityInSecurityGroup(repoEntry, GroupRoles.participant.name());
 	}
 	
 	/**
@@ -672,8 +675,8 @@ public class RepositoryEntryResource {
 		return Response.ok().build();
 	}
 	
-	private Response getIdentityInSecurityGroup(SecurityGroup sg) {
-		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(sg);
+	private Response getIdentityInSecurityGroup(RepositoryEntry re, String role) {
+		List<Identity> identities = repositoryService.getMembers(re, role);
 		
 		int count = 0;
 		UserVO[] ownerVOs = new UserVO[identities.size()];

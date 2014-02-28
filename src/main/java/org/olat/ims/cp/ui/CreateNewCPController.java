@@ -26,9 +26,6 @@
 
 package org.olat.ims.cp.ui;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -84,8 +81,7 @@ public class CreateNewCPController extends BasicController implements IAddContro
 	}
 
 	public void repositoryEntryCreated(RepositoryEntry re) {
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		secMgr.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());
+		//
 	}
 
 	@Override

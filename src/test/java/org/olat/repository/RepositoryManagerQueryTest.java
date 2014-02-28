@@ -25,15 +25,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -61,6 +57,8 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 	
 	@Autowired
 	private RepositoryManager rm;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -110,35 +108,39 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		// generate some repo entries
 		int numbRes = 500;
 		for (int i = 0; i < numbRes; i++) {
-			// create course and persist as OLATResourceImpl
-			RepositoryEntry re = createCourseRepositoryEntry(db, i);				
-
-			SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
-			securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_ACCESS, ownerGroup);
-			securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
+			
 			
 			int rest = i%4;
+			int access = 0;
+			Identity owner = null;
 			switch(rest) {
 				case 0: {
-					re.setAccess(RepositoryEntry.ACC_USERS_GUESTS);
-					securityManager.addIdentityToSecurityGroup(id1, ownerGroup); break;
+					access = RepositoryEntry.ACC_USERS_GUESTS;
+					owner = id1;
+					break;
 				}
 				case 1: {
-					re.setAccess(RepositoryEntry.ACC_USERS);
-					securityManager.addIdentityToSecurityGroup(id2, ownerGroup); break;
+					access = RepositoryEntry.ACC_USERS;
+					owner = id2;
+					break;
 				}
 				case 2: {
-					re.setAccess(RepositoryEntry.ACC_OWNERS);
-					securityManager.addIdentityToSecurityGroup(institut1, ownerGroup); break;
+					access = RepositoryEntry.ACC_OWNERS;
+					owner = institut1;
+					break;
 				}
 				case 3: {
-					re.setAccess(RepositoryEntry.ACC_OWNERS);
-					securityManager.addIdentityToSecurityGroup(institut2, ownerGroup); break;
+					access = RepositoryEntry.ACC_OWNERS;
+					owner = institut2;
+					break;
 				}
 			}
-			re.setOwnerGroup(ownerGroup);
+			
+			// create course and persist as OLATResourceImpl
+			RepositoryEntry re = createCourseRepositoryEntry(db, owner, i);
+			re.setAccess(access);
+
 			rm.saveRepositoryEntry(re);
-			securityManager.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());	
 			if (i % 20 == 0) {
 				db.commitAndCloseSession();
 			}
@@ -150,32 +152,17 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testTwoShootQuery() {
-		List<String> types = Collections.singletonList(TEST_RES_NAME);
-		Roles role1 = new Roles(false, false, false, true, false, false, false);
-		List<RepositoryEntry> resultTwoShoot = rm.genericANDQueryWithRolesRestriction(null, null, null, types, null, role1, null);
-		assertNotNull(resultTwoShoot);
-		assertFalse(resultTwoShoot.isEmpty());
-	}
-	
-	@Test
 	public void testOneShootQueryWithRoles() {
 		List<String> types = Collections.singletonList(TEST_RES_NAME);
 		
 		//roles: author + institution manager
 		Roles role2 = new Roles(false, false, false, true, false, true, false);
-		List<RepositoryEntry> resultTwoShootInstitut = rm.genericANDQueryWithRolesRestriction(null, null, null, types, null, role2, "Volks");
-		Set<RepositoryEntry> resultTwoShootInstitutSet = new HashSet<RepositoryEntry>(resultTwoShootInstitut);
-		assertNotNull(resultTwoShootInstitut);
-		assertFalse(resultTwoShootInstitut.isEmpty());
-		assertEquals(resultTwoShootInstitutSet.size(), resultTwoShootInstitut.size());
-		
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, null, null, types, admin, role2, "Volks");
 		List<RepositoryEntry> resultOneShootInstitut = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		assertNotNull(resultOneShootInstitut);
 		assertFalse(resultOneShootInstitut.isEmpty());
 
-		assertEquals(resultTwoShootInstitutSet.size(), resultOneShootInstitut.size());
+		//TODO groups assertEquals(resultTwoShootInstitutSet.size(), resultOneShootInstitut.size());
 	}
 	
 	@Test
@@ -184,16 +171,14 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		
 		//roles: author + institution manager
 		Roles role2 = new Roles(false, false, false, true, false, false, false);
-		List<RepositoryEntry> resultTwoShoot = rm.genericANDQueryWithRolesRestriction(null, null, null, types, null, role2, null);
-		assertNotNull(resultTwoShoot);
-		assertFalse(resultTwoShoot.isEmpty());
+
 		
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, null, null, types, null, role2, null);
 		List<RepositoryEntry> resultOneShoot = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		assertNotNull(resultOneShoot);
 		assertFalse(resultOneShoot.isEmpty());
 
-		assertEquals(resultTwoShoot.size(), resultOneShoot.size());
+		//TODO groups assertEquals(resultTwoShoot.size(), resultOneShoot.size());
 	}
 	
 	@Test
@@ -202,16 +187,14 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		
 		//roles: institution manager
 		Roles role3 = new Roles(false, false, false, true, false, true, false);
-		List<RepositoryEntry> resultTwoShootInstitut3 = rm.genericANDQueryWithRolesRestriction(null, null, null, types, null, role3, "Volks");
-		assertNotNull(resultTwoShootInstitut3);
-		assertFalse(resultTwoShootInstitut3.isEmpty());
+
 		
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, null, null, types, null, role3, "Volks");
 		List<RepositoryEntry> resultOneShootInstitut3 = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		assertNotNull(resultOneShootInstitut3);
 		assertFalse(resultOneShootInstitut3.isEmpty());
 		//check
-		assertEquals(resultTwoShootInstitut3.size(), resultOneShootInstitut3.size());
+		//TODO groups assertEquals(resultTwoShootInstitut3.size(), resultOneShootInstitut3.size());
 	}
 	
 	@Test
@@ -220,16 +203,14 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		
 		//roles: institution manager search: authorname
 		Roles role4 = new Roles(false, false, false, false, false, true, false);
-		List<RepositoryEntry> resultTwoShootInstitut4 = rm.genericANDQueryWithRolesRestriction(null, "kan", null, types, null, role4, "Volks");
-		assertNotNull(resultTwoShootInstitut4);
-		assertFalse(resultTwoShootInstitut4.isEmpty());
+
 		
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, "kan", null, types, null, role4, "Volks");
 		List<RepositoryEntry> resultOneShootInstitut4 = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		assertNotNull(resultOneShootInstitut4);
 		assertFalse(resultOneShootInstitut4.isEmpty());
 		//check
-		assertEquals(resultTwoShootInstitut4.size(), resultOneShootInstitut4.size());
+		//TODO groups assertEquals(resultTwoShootInstitut4.size(), resultOneShootInstitut4.size());
 	}
 	
 	@Test
@@ -238,9 +219,7 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		
 		//roles: institution manager search: authorname
 		Roles role4 = new Roles(false, false, false, false, false, true, false);
-		List<RepositoryEntry> resultTwoShootInstitut4 = rm.genericANDQueryWithRolesRestriction(null, "kan", null, types, null, role4, "Volks");
-		assertNotNull(resultTwoShootInstitut4);
-		assertFalse(resultTwoShootInstitut4.isEmpty());
+
 		
 		//test paging
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, "kan", null, types, null, role4, "Volks");
@@ -249,16 +228,15 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		assertNotNull(resultOneShootInstitut6);
 		assertEquals(50, resultOneShootInstitut6.size());
 		//check
-		assertEquals(resultTwoShootInstitut4.size(), resultOneShootInstitutTotal6);
+		//TODO groups assertEquals(resultTwoShootInstitut4.size(), resultOneShootInstitutTotal6);
 	}
 	
-	private RepositoryEntry createCourseRepositoryEntry(DB db, final int i) {
+	private RepositoryEntry createCourseRepositoryEntry(DB db, Identity owner, final int i) {
 		OLATResource r =  OLATResourceManager.getInstance().createOLATResourceInstance(TEST_RES_NAME);
 		db.saveObject(r);
 		// now make a repository entry for this course
-		RepositoryEntry re = RepositoryManager.getInstance().createRepositoryEntryInstance("Rei Ayanami", "Lernen mit OLAT " + i, "Description of learning by OLAT " + i);
-		re.setDisplayname("JunitTest_RepositoryEntry_" + i);
-		re.setOlatResource(r);
+		RepositoryEntry re = repositoryService.create(owner, "Lernen mit OLAT " + i,
+				"JunitTest_RepositoryEntry_" + i, "Description of learning by OLAT " + i, r);
 		re.setAccess(RepositoryEntry.ACC_OWNERS);
 		//db.commit();
 		return re;

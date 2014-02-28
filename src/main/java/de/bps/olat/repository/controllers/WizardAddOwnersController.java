@@ -23,11 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.admin.user.UserSearchController;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -41,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.WizardController;
 import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 
 
 /**
@@ -72,10 +72,14 @@ public class WizardAddOwnersController extends WizardController {
 	private boolean isAdmin, isAuthor;
 	private Link backButton;
 	
+	private final RepositoryService repositoryService;
+	
 	public WizardAddOwnersController(UserRequest ureq, WindowControl control) {
 		super(ureq, control, NUM_STEPS);
 		
 		setBasePackage(WizardAddOwnersController.class);
+		
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
 		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin() | ureq.getUserSession().getRoles().isInstitutionalResourceManager();
 		isAuthor = isAdmin | ureq.getUserSession().getRoles().isAuthor();
@@ -222,12 +226,10 @@ public class WizardAddOwnersController extends WizardController {
 	 * add owners to a set of repository entries
 	 */
 	private void addOwnersToRepositoryEntry() {
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		for (RepositoryEntry entry : repoEntries) {
-			SecurityGroup secGroup = entry.getOwnerGroup();
 			for (Identity identity : owners) {
-				if (!securityManager.isIdentityInSecurityGroup(identity, secGroup)) {
-					securityManager.addIdentityToSecurityGroup(identity, secGroup);
+				if (!repositoryService.hasRole(identity, entry, GroupRoles.owner.name())) {
+					repositoryService.addRole(identity, entry, GroupRoles.owner.name());
 				}
 			}
 		}

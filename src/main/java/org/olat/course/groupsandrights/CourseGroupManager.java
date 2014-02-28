@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
 /**
@@ -53,6 +54,8 @@ public interface CourseGroupManager {
 
 	
 	public OLATResource getCourseResource();
+	
+	public RepositoryEntry getCourseEntry();
 
 	/**
 	 * Checks users course rights in any of the available right group context of

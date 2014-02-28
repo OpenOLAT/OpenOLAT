@@ -29,8 +29,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -78,6 +78,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryEntryFilter;
 import org.olat.repository.controllers.RepositorySearchController.Can;
@@ -108,17 +109,17 @@ public class CourseOverviewController extends BasicController  {
 	
 	private final Identity editedIdentity;
 	
-	private final BaseSecurity securityManager;
 	private final RepositoryModule repositoryModule;
 	private final RepositoryManager repositoryManager;
+	private final RepositoryService repositoryService;
 	private final BusinessGroupService businessGroupService;
 	
 	public CourseOverviewController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl, Util.createPackageTranslator(BusinessGroupTableModelWithType.class, ureq.getLocale()));
 		
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		editedIdentity = identity;
@@ -176,16 +177,7 @@ public class CourseOverviewController extends BasicController  {
 
 		Map<Long,CourseMemberView> repoKeyToViewMap = new HashMap<Long,CourseMemberView>();
 		for(RepositoryEntryMembership membership: memberships) {
-			Long repoKey;
-			if(membership.getOwnerRepoKey() != null) {
-				repoKey = membership.getOwnerRepoKey();
-			} else if(membership.getTutorRepoKey() != null) {
-				repoKey = membership.getTutorRepoKey();
-			} else if(membership.getParticipantRepoKey() != null) {
-				repoKey = membership.getParticipantRepoKey();
-			} else {
-				continue;
-			}
+			Long repoKey = membership.getRepoKey();
 
 			CourseMemberView memberView;
 			if(repoKeyToViewMap.containsKey(repoKey)) {
@@ -197,9 +189,9 @@ public class CourseOverviewController extends BasicController  {
 			
 			memberView.setFirstTime(membership.getCreationDate());
 			memberView.setLastTime(membership.getLastModified());
-			memberView.getMembership().setRepoOwner(membership.getOwnerRepoKey() != null);
-			memberView.getMembership().setRepoTutor(membership.getTutorRepoKey() != null);
-			memberView.getMembership().setRepoParticipant(membership.getParticipantRepoKey() != null);
+			memberView.getMembership().setRepoOwner(membership.isOwner());
+			memberView.getMembership().setRepoTutor(membership.isCoach());
+			memberView.getMembership().setRepoParticipant(membership.isParticipant());
 		}
 
 		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(groupKeys);
@@ -462,7 +454,7 @@ public class CourseOverviewController extends BasicController  {
 			if(!RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.membersmanagement)) {
 				repoEntryToLeave.add(re);
 				if(view.getMembership().isRepoOwner()) {
-					int numOfOwners = securityManager.countIdentitiesOfSecurityGroup(re.getOwnerGroup());
+					int numOfOwners = repositoryService.countMembers(re, GroupRoles.owner.name());
 					if(numOfOwners == 1) {
 						showError("error.atleastone", view.getDisplayName());
 						return;//break the process
@@ -475,8 +467,8 @@ public class CourseOverviewController extends BasicController  {
 
 		List<BusinessGroup> groupsToDelete = new ArrayList<BusinessGroup>(1);
 		for(BusinessGroup group:groupsToLeave) {
-			int numOfOwners = securityManager.countIdentitiesOfSecurityGroup(group.getOwnerGroup());
-			int numOfParticipants = securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+			int numOfOwners = businessGroupService.countMembers(group, GroupRoles.coach.name());
+			int numOfParticipants = businessGroupService.countMembers(group, GroupRoles.participant.name());
 			if ((numOfOwners == 1 && numOfParticipants == 0) || (numOfOwners == 0 && numOfParticipants == 1)) {
 				groupsToDelete.add(group);
 			}
@@ -505,7 +497,7 @@ public class CourseOverviewController extends BasicController  {
 				}
 			} else {
 				// 1) remove as owner
-				if (securityManager.isIdentityInSecurityGroup(editedIdentity, group.getOwnerGroup())) {
+				if (businessGroupService.hasRoles(editedIdentity, group, GroupRoles.coach.name())) {
 					businessGroupService.removeOwners(ureq.getIdentity(), membersToRemove, group);
 				}
 				MailPackage mailing = new MailPackage(doSendMail);

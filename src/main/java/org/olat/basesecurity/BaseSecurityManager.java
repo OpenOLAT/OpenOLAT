@@ -685,12 +685,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return createAndPersistPolicyWithResource(secGroup, permission, null, null, olatResource);
 	}
 
-/**
- * Creates a policy and persists on the database
- * @see org.olat.basesecurity.BaseSecurity#createAndPersistPolicyWithResource(org.olat.basesecurity.SecurityGroup, java.lang.String, java.util.Date, java.util.Date, org.olat.resource.OLATResource)
- */
-	@Override
-	public Policy createAndPersistPolicyWithResource(SecurityGroup secGroup, String permission, Date from, Date to, OLATResource olatResource) {
+	/**
+	 * Creates a policy and persists on the database
+	 * @see org.olat.basesecurity.BaseSecurity#createAndPersistPolicyWithResource(org.olat.basesecurity.SecurityGroup, java.lang.String, java.util.Date, java.util.Date, org.olat.resource.OLATResource)
+	 */
+	private Policy createAndPersistPolicyWithResource(SecurityGroup secGroup, String permission, Date from, Date to, OLATResource olatResource) {
 		PolicyImpl pi = new PolicyImpl();
 		pi.setSecurityGroup(secGroup);
 		pi.setOlatResource(olatResource);

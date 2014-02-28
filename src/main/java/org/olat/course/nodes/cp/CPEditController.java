@@ -49,6 +49,7 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.course.ICourse;
@@ -149,7 +150,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
 				cpConfigurationVc.contextPut(VC_CHOSENCP, translate("no.cp.chosen"));
 			} else {
-				if (isEditable(ureq.getIdentity(), re)) {
+				if (isEditable(ureq.getIdentity(), ureq.getUserSession().getRoles(), re)) {
 					editLink = LinkFactory.createButtonSmall("edit", cpConfigurationVc, this);
 				}
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
@@ -251,7 +252,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 						cpConfigurationVc.remove(editLink);
 						editLink = null;
 					}
-					if (isEditable(urequest.getIdentity(), re)) {
+					if (isEditable(urequest.getIdentity(), urequest.getUserSession().getRoles(), re)) {
 						editLink = LinkFactory.createButtonSmall("edit", cpConfigurationVc, this);
 					}
 					// fire event so the updated config is saved by the editormaincontroller
@@ -290,10 +291,10 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	 * @param repository entry
 	 * @return
 	 */
-	private boolean isEditable(Identity identity, RepositoryEntry re) {
+	private boolean isEditable(Identity identity, Roles roles, RepositoryEntry re) {
 		return (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)
 				|| RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re) 
-				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(re, identity));
+				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re));
 	}
 
 	/**

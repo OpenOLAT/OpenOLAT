@@ -22,7 +22,6 @@ package org.olat.course.nodes.cl;
 import java.io.File;
 import java.util.List;
 
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
@@ -34,6 +33,8 @@ import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -77,7 +78,7 @@ public interface CheckboxManager {
 	
 	public float calculateScore(Identity identity, OLATResourceable ores, String resSubPath);
 	
-	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, List<SecurityGroup> groups);
+	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntry re, List<BusinessGroup> groups);
 	
 	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode, Checkbox checkbox);
 	

@@ -29,8 +29,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -78,12 +77,11 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 		super(command);
 		this.groupKey = group.getKey();
 		this.identityKey = (identity == null ? null : identity.getKey());
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		if (identity != null) {
 			if (command.equals(MYSELF_ASOWNER_REMOVED_EVENT)) {
 				isTutor = true; // Removed myself as tutor/owner from group
 			} else {
-  		  isTutor = securityManager.isIdentityInSecurityGroup(identity, group.getOwnerGroup());
+				isTutor = CoreSpringFactory.getImpl(BusinessGroupService.class).hasRoles(identity, group, GroupRoles.coach.name());
 			}
 		} 
 	}

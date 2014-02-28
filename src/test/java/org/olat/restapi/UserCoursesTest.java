@@ -36,6 +36,7 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
@@ -44,6 +45,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
@@ -68,6 +70,8 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	@Test
 	public void testMyCourses() throws IOException, URISyntaxException {
@@ -76,7 +80,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		ICourse course = CoursesWebService.createEmptyCourse(user, "My course 1", "My course", null);
 		RepositoryEntry courseRe = repositoryManager.lookupRepositoryEntry(course, true);
 		repositoryManager.setAccess(courseRe, RepositoryEntry.ACC_OWNERS, true);
-		securityManager.addIdentityToSecurityGroup(user, courseRe.getParticipantGroup());
+		repositoryService.addRole(user, courseRe, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -115,7 +119,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		ICourse course = CoursesWebService.createEmptyCourse(teacher, "A course to teach", "A course to teach", null);
 		RepositoryEntry courseRe = repositoryManager.lookupRepositoryEntry(course, true);
 		repositoryManager.setAccess(courseRe, RepositoryEntry.ACC_OWNERS, true);
-		securityManager.addIdentityToSecurityGroup(teacher, courseRe.getTutorGroup());
+		repositoryService.addRole(teacher, courseRe, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -153,7 +157,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("Course-teacher-" + UUID.randomUUID().toString());
 		ICourse course = CoursesWebService.createEmptyCourse(me, "A course to teach", "A course to teach", null);
 		RepositoryEntry courseRe = repositoryManager.lookupRepositoryEntry(course, true);
-		repositoryManager.setAccess(courseRe, RepositoryEntry.ACC_USERS, true);
+		repositoryManager.setAccess(courseRe, RepositoryEntry.ACC_USERS, false);
 		markManager.setMark(courseRe, me, null, "[RepositoryEntry:" + courseRe.getKey() + "]");	
 		dbInstance.commitAndCloseSession();
 

@@ -52,6 +52,7 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.calendar.restapi.CalWebService;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -76,6 +77,7 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
@@ -135,7 +137,8 @@ public class CourseWebService {
 		if(ores == null) {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		}
-		return new CourseGroupWebService(ores);
+		RepositoryEntry re = getCourseEntry(ores);
+		return new CourseGroupWebService(re, ores);
 	}
 	
 	@Path("calendar")
@@ -516,10 +519,10 @@ public class CourseWebService {
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
-		SecurityGroup sg = repositoryEntry.getOwnerGroup();
 
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(sg);
+
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		List<Identity> owners = repositoryService.getMembers(repositoryEntry, GroupRoles.owner.name());
 		
 		int count = 0;
 		UserVO[] authors = new UserVO[owners.size()];
@@ -558,14 +561,15 @@ public class CourseWebService {
 		}
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
-		SecurityGroup sg = repositoryEntry.getOwnerGroup();
+
 		
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
 
 		Identity author = securityManager.loadIdentityByKey(identityKey, false);
-		if(securityManager.isIdentityInSecurityGroup(author, sg) &&
+		if(repositoryService.hasRole(author, repositoryEntry, GroupRoles.owner.name()) &&
 				securityManager.isIdentityInSecurityGroup(author, authorGroup)) {
 			UserVO vo = UserVOFactory.get(author);
 			return Response.ok(vo).build();
@@ -763,6 +767,11 @@ public class CourseWebService {
 			ores = OLATResourceManager.getInstance().findResourceable(courseId, "junitcourse");
 		}
 		return ores;
+	}
+	
+	private RepositoryEntry getCourseEntry(OLATResource courseResource) {
+		String typeName = OresHelper.calculateTypeName(CourseModule.class);
+		return RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
 	}
 	
 	public static boolean isCourseAccessible(ICourse course, boolean authorRightsMandatory, HttpServletRequest request) {

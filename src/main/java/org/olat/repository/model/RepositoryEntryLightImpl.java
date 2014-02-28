@@ -19,6 +19,8 @@
  */
 package org.olat.repository.model;
 
+import java.util.Set;
+
 import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -29,6 +31,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -74,9 +77,13 @@ public class RepositoryEntryLightImpl implements RepositoryEntryLight, Persistab
 	@Column(name="statuscode", nullable=false, insertable=false, updatable=false)
 	private int statusCode;
 	
-	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY,optional=false)
+	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_olatresource", nullable=false, insertable=true, updatable=false)
 	private OLATResource olatResource;
+	
+	@OneToMany(targetEntity=RepositoryEntryToGroupRelation.class, fetch=FetchType.LAZY)
+	@JoinColumn(name="fk_entry_id")
+	private Set<RepositoryEntryToGroupRelation> groups;
 	
 	public Long getKey() {
 		return key;
@@ -111,6 +118,14 @@ public class RepositoryEntryLightImpl implements RepositoryEntryLight, Persistab
 
 	public void setOlatResource(OLATResource olatResource) {
 		this.olatResource = olatResource;
+	}
+
+	public Set<RepositoryEntryToGroupRelation> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(Set<RepositoryEntryToGroupRelation> groups) {
+		this.groups = groups;
 	}
 
 	public int getAccess() {
