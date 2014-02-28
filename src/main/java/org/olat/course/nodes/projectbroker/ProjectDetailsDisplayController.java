@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
@@ -55,8 +56,10 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerMailer;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
@@ -84,6 +87,9 @@ public class ProjectDetailsDisplayController extends BasicController {
 	private Link changeProjectStateToAssignButton;
 	private LockResult lock;
 
+	private final ProjectBrokerMailer projectBrokerMailer;
+	private final ProjectBrokerManager projectBrokerManager;
+	private final ProjectGroupManager projectGroupManager;
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -95,6 +101,10 @@ public class ProjectDetailsDisplayController extends BasicController {
 		this.courseEnv = courseEnv;
 		this.courseNode = courseNode;
 		
+		projectBrokerMailer = CoreSpringFactory.getImpl(ProjectBrokerMailer.class);
+		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		
 		// use property handler translator for translating of user fields
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
 		myContent = createVelocityContainer("projectdetailsdisplay");
@@ -104,7 +114,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 			myContent.contextPut("keyMaxLabel", "detailsform.places.label");
 		}
 
-		if ( ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManagerOrAdministrator(ureq, courseEnv, project) ) {
+		if ( projectGroupManager.isProjectManagerOrAdministrator(ureq, courseEnv, project) ) {
 			myContent.contextPut("isProjectManager", true);
 			editProjectButton = LinkFactory.createButtonSmall("edit.project.button", myContent, this);
 			deleteProjectButton = LinkFactory.createButtonSmall("delete.project.button", myContent, this);
@@ -166,12 +176,12 @@ public class ProjectDetailsDisplayController extends BasicController {
 		}		
 		myContent.contextPut("eventList", eventList);
 		
-		String stateValue = getTranslator().translate(ProjectBrokerManagerFactory.getProjectBrokerManager().getStateFor(project,ureq.getIdentity(),projectBrokerModuleConfiguration));
+		String stateValue = getTranslator().translate(projectBrokerManager.getStateFor(project,ureq.getIdentity(),projectBrokerModuleConfiguration));
 		myContent.contextPut("state", stateValue);
 		if (project.getMaxMembers() == Project.MAX_MEMBERS_UNLIMITED) {
 			myContent.contextPut("projectPlaces", this.getTranslator().translate("detailsform.unlimited.project.members") );
 		} else {
-			String placesValue = ProjectBrokerManagerFactory.getProjectBrokerManager().getSelectedPlaces(project) + " " + this.getTranslator().translate("detailsform.places.of") + " " + project.getMaxMembers();
+			String placesValue = projectBrokerManager.getSelectedPlaces(project) + " " + this.getTranslator().translate("detailsform.places.of") + " " + project.getMaxMembers();
 			myContent.contextPut("projectPlaces", placesValue);
 		}
 		
@@ -197,13 +207,13 @@ public class ProjectDetailsDisplayController extends BasicController {
 				deleteGroup = false;
 			}
 			// send email before delete project with group
-			ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendProjectDeletedEmailToParticipants(ureq.getIdentity(), project, this.getTranslator());
-			ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendProjectDeletedEmailToManager(ureq.getIdentity(), project, this.getTranslator());
+			projectBrokerMailer.sendProjectDeletedEmailToParticipants(ureq.getIdentity(), project, this.getTranslator());
+			projectBrokerMailer.sendProjectDeletedEmailToManager(ureq.getIdentity(), project, this.getTranslator());
 			//now send email to PB-accountmanager
-			ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendProjectDeletedEmailToAccountManagers(ureq.getIdentity(), project, courseEnv, courseNode, getTranslator());
+			projectBrokerMailer.sendProjectDeletedEmailToAccountManagers(ureq.getIdentity(), project, courseEnv, courseNode, getTranslator());
 			
-			ProjectBrokerManagerFactory.getProjectBrokerManager().deleteProject(project, deleteGroup, courseEnv, courseNode);
-			ProjectBrokerManagerFactory.getProjectGroupManager().sendGroupChangeEvent(project, courseEnv.getCourseResourceableId(), ureq.getIdentity());
+			projectBrokerManager.deleteProject(project, deleteGroup, courseEnv, courseNode);
+			projectGroupManager.sendGroupChangeEvent(project, courseEnv.getCourseResourceableId(), ureq.getIdentity());
 			showInfo("project.deleted.msg", project.getTitle());
 			fireEvent(ureq, new ProjectBrokerEditorEvent(project, ProjectBrokerEditorEvent.DELETED_PROJECT));
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
@@ -215,7 +225,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		if ( ProjectBrokerManagerFactory.getProjectBrokerManager().existsProject(project.getKey()) ) {
+		if ( projectBrokerManager.existsProject(project.getKey()) ) {
 			if (source == editProjectButton) {
 				fireEvent(ureq, new Event("switchToEditMode"));
 			} else if (source == deleteProjectButton) {
@@ -244,11 +254,11 @@ public class ProjectDetailsDisplayController extends BasicController {
 			} else if (source == attachedFileLink) {
 				doFileDelivery(ureq, project, courseEnv, courseNode);
 			} else if (source == changeProjectStateToNotAssignButton) {
-				ProjectBrokerManagerFactory.getProjectBrokerManager().setProjectState(project, Project.STATE_NOT_ASSIGNED);
+				projectBrokerManager.setProjectState(project, Project.STATE_NOT_ASSIGNED);
 				myContent.remove(changeProjectStateToNotAssignButton);
 				changeProjectStateToAssignButton = LinkFactory.createButtonSmall("change.project.state.assign.button", myContent, this);					
 			} else if (source == changeProjectStateToAssignButton) {
-				ProjectBrokerManagerFactory.getProjectBrokerManager().setProjectState(project, Project.STATE_ASSIGNED);
+				projectBrokerManager.setProjectState(project, Project.STATE_ASSIGNED);
 				myContent.remove(changeProjectStateToAssignButton);
 				changeProjectStateToNotAssignButton = LinkFactory.createButtonSmall("change.project.state.not_assign.button", myContent, this);					
 			}
@@ -275,7 +285,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 		// very old fancy code
 		// Mapper is cleaned up automatically by basic controller
 
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(ProjectBrokerManagerFactory.getProjectBrokerManager().getAttamchmentRelativeRootPath(project,courseEnv,cNode),null);
+		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project,courseEnv,cNode),null);
 		String baseUrl = registerMapper(ureq, new VFSContainerMapper(rootFolder));
 
 		// Trigger auto-download

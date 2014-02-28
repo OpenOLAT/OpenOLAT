@@ -72,12 +72,14 @@ public class ProjectBrokerExportGenerator {
 	  Translator translator = new PackageTranslator(PACKAGE, locale);
 		StringBuilder table = new StringBuilder();
 		ProjectBrokerModuleConfiguration moduleConfig = new ProjectBrokerModuleConfiguration(courseNode.getModuleConfiguration());
+		
+		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 
 		// load project-list
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		Long projectBrokerId = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectBrokerId(cpm, courseNode);
+		Long projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, courseNode);
 		if (projectBrokerId != null) {
-			List<Project> projects = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(projectBrokerId);				
+			List<Project> projects = projectBrokerManager.getProjectListBy(projectBrokerId);				
 			// build table-header
 			table.append( createHeaderLine(translator, moduleConfig)) ;			
 			// loop over all projects

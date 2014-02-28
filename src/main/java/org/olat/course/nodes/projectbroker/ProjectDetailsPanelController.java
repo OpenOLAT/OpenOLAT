@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.projectbroker;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.StackedPanel;
@@ -41,8 +42,9 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 
 /**
@@ -64,7 +66,9 @@ public class ProjectDetailsPanelController extends BasicController {
 	private boolean newCreatedProject;
 	private VelocityContainer editVC;
 	private LockResult lock;
-
+	
+	private final ProjectBrokerManager projectBrokerManager;
+	private final ProjectGroupManager projectGroupManager;
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -77,6 +81,9 @@ public class ProjectDetailsPanelController extends BasicController {
 		this.courseNode = courseNode;
 		this.projectBrokerModuleConfiguration = projectBrokerModuleConfiguration;
 		this.newCreatedProject = newCreatedProject;
+		
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 
 		detailsPanel = new StackedPanel("projectdetails_panel");
 		runController = new ProjectDetailsDisplayController(ureq, wControl, project, courseEnv, courseNode, projectBrokerModuleConfiguration);
@@ -84,7 +91,7 @@ public class ProjectDetailsPanelController extends BasicController {
 		detailsPanel.setContent(runController.getInitialComponent());
 
 		editVC = createVelocityContainer("editProject");
-		if ( newCreatedProject && ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManagerOrAdministrator(ureq, courseEnv, project) ) {
+		if ( newCreatedProject && projectGroupManager.isProjectManagerOrAdministrator(ureq, courseEnv, project) ) {
 			openEditController(ureq);
 		} 
 
@@ -131,7 +138,7 @@ public class ProjectDetailsPanelController extends BasicController {
 	}
 
 	private void openEditController(UserRequest ureq) {
-		if ( ProjectBrokerManagerFactory.getProjectBrokerManager().existsProject(project.getKey()) ) {
+		if ( projectBrokerManager.existsProject(project.getKey()) ) {
 			OLATResourceable projectOres = OresHelper.createOLATResourceableInstance(Project.class, project.getKey());
 			this.lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(projectOres, ureq.getIdentity(), null);
 			if (lock.isSuccess()) {

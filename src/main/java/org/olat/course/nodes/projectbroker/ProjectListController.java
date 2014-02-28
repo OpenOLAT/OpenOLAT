@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -62,8 +63,10 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerMailer;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -108,6 +111,9 @@ public class ProjectListController extends BasicController implements GenericEve
 	private boolean isParticipantInAnyProject;
 	private CloseableCalloutWindowController calloutCtrl;
 
+	private final ProjectBrokerMailer projectBrokerMailer;
+	private final ProjectGroupManager projectGroupManager;
+	private final ProjectBrokerManager projectBrokerManager;
 
 	/**
 	 * @param ureq
@@ -120,6 +126,9 @@ public class ProjectListController extends BasicController implements GenericEve
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
 		this.nodeEvaluation = ne;
+		projectBrokerMailer = CoreSpringFactory.getImpl(ProjectBrokerMailer.class);
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		moduleConfig = new ProjectBrokerModuleConfiguration(ne.getCourseNode().getModuleConfiguration());
 		
@@ -144,7 +153,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		contentVC.contextPut("infoProjectBrokerRunMode", infoProjectBrokerRunMode);
 		mainPanel = new StackedPanel("projectlist_panel");
 		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		if (  (ProjectBrokerManagerFactory.getProjectGroupManager().isAccountManager(ureq.getIdentity(), cpm, ne.getCourseNode() ) && !previewMode)
+		if (  (projectGroupManager.isAccountManager(ureq.getIdentity(), cpm, ne.getCourseNode() ) && !previewMode)
 				|| userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity())
 				|| ureq.getUserSession().getRoles().isOLATAdmin()) {
 			contentVC.contextPut("isAccountManager", true);
@@ -156,18 +165,18 @@ public class ProjectListController extends BasicController implements GenericEve
 		contentVC.contextPut("menuTitle", ne.getCourseNode().getShortTitle());
 		contentVC.contextPut("displayTitle", ne.getCourseNode().getLongTitle());
 	
-		projectBrokerId = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectBrokerId(cpm, ne.getCourseNode());
+		projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, ne.getCourseNode());
 		if (projectBrokerId == null) {
 			// no project-broker exist => create a new one, happens only once
-			ProjectBroker projectBroker = ProjectBrokerManagerFactory.getProjectBrokerManager().createAndSaveProjectBroker();
+			ProjectBroker projectBroker = projectBrokerManager.createAndSaveProjectBroker();
 			projectBrokerId = projectBroker.getKey();
-			ProjectBrokerManagerFactory.getProjectBrokerManager().saveProjectBrokerId(projectBrokerId, cpm, ne.getCourseNode());
+			projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, ne.getCourseNode());
 			getLogger().info("no project-broker exist => create a new one projectBrokerId=" + projectBrokerId);
 		}
 		
 		tableController = this.createTableController(ureq, wControl);
 		
-		OLATResourceable projectBroker = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectBroker(projectBrokerId);
+		OLATResourceable projectBroker = projectBrokerManager.getProjectBroker(projectBrokerId);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), projectBroker);
 		updateProjectListModelOf(tableController, ureq.getIdentity());
 		contentVC.put("projectList", tableController.getInitialComponent());
@@ -184,7 +193,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			if (resId.longValue() != 0) {
 				if (isLogDebugEnabled()) logDebug("projectId=" , ores.getResourceableId().toString());
 				
-				Project currentProject = ProjectBrokerManagerFactory.getProjectBrokerManager().getProject(ores.getResourceableId());
+				Project currentProject = projectBrokerManager.getProject(ores.getResourceableId());
 				if (currentProject != null) {
 					activateProjectController(currentProject, ureq);				
 				} else {
@@ -208,14 +217,14 @@ public class ProjectListController extends BasicController implements GenericEve
 		if (source == createNewProjectButton) {
 			String projectTitle = translate("new.project.title");
 			int i = 1;
-			while (ProjectBrokerManagerFactory.getProjectBrokerManager().existProjectName(projectBrokerId, projectTitle)) {
+			while (projectBrokerManager.existProjectName(projectBrokerId, projectTitle)) {
 				projectTitle = translate("new.project.title") + i++;
 			}
 			String projectGroupName = translate("project.member.groupname", projectTitle);
 			String projectGroupDescription = translate("project.member.groupdescription", projectTitle);
-			BusinessGroup projectGroup = ProjectBrokerManagerFactory.getProjectGroupManager().createProjectGroupFor(projectBrokerId,ureq.getIdentity(), projectGroupName, projectGroupDescription, courseId);
-			Project project = ProjectBrokerManagerFactory.getProjectBrokerManager().createAndSaveProjectFor(projectTitle, projectTitle, projectBrokerId, projectGroup);
-			ProjectBrokerManagerFactory.getProjectGroupManager().sendGroupChangeEvent(project, courseId, ureq.getIdentity());
+			BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId,ureq.getIdentity(), projectGroupName, projectGroupDescription, courseId);
+			Project project = projectBrokerManager.createAndSaveProjectFor(projectTitle, projectTitle, projectBrokerId, projectGroup);
+			projectGroupManager.sendGroupChangeEvent(project, courseId, ureq.getIdentity());
 			getLogger().debug("Created a new project=" + project);
 			projectController = new ProjectController(ureq, this.getWindowControl(), userCourseEnv, nodeEvaluation, project, true, moduleConfig);
 			listenTo(projectController);
@@ -243,7 +252,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			final ProjectBrokerEditorEvent pbEditEvent = (ProjectBrokerEditorEvent) event;
 			if (pbEditEvent.isCancelEvent()){
 				getLogger().info("event form cancelled => delete project");
-				ProjectBrokerManagerFactory.getProjectBrokerManager().deleteProject(pbEditEvent.getProject(), true, userCourseEnv.getCourseEnvironment(),
+				projectBrokerManager.deleteProject(pbEditEvent.getProject(), true, userCourseEnv.getCourseEnvironment(),
 						nodeEvaluation.getCourseNode());
 				mainPanel.popContent();
 				updateProjectListModelOf(tableController, urequest.getIdentity());
@@ -257,7 +266,7 @@ public class ProjectListController extends BasicController implements GenericEve
 
 	private void handleTableEvent(UserRequest urequest, TableEvent te) {
 		Project currentProject = (Project)tableController.getTableDataModel().getObject(te.getRowId());
-		if ( ProjectBrokerManagerFactory.getProjectBrokerManager().existsProject( currentProject.getKey() ) ) {
+		if ( projectBrokerManager.existsProject( currentProject.getKey() ) ) {
 			handleTableEventForProject(urequest, te, currentProject);
 		} else {
 			this.showInfo("info.project.nolonger.exist", currentProject.getTitle());
@@ -284,13 +293,13 @@ public class ProjectListController extends BasicController implements GenericEve
 
 	private void handleCancelEnrollmentAction(UserRequest urequest, Project currentProject) {
 		getLogger().debug("start cancelProjectEnrollmentOf identity=" + urequest.getIdentity() + " to project=" + currentProject);
-		boolean cancelledEnrollmend = ProjectBrokerManagerFactory.getProjectBrokerManager().cancelProjectEnrollmentOf(urequest.getIdentity(), currentProject, moduleConfig);
+		boolean cancelledEnrollmend = projectBrokerManager.cancelProjectEnrollmentOf(urequest.getIdentity(), currentProject, moduleConfig);
 		if (cancelledEnrollmend) {
-			ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendCancelEnrollmentEmailToParticipant(urequest.getIdentity(), currentProject, this.getTranslator());
+			projectBrokerMailer.sendCancelEnrollmentEmailToParticipant(urequest.getIdentity(), currentProject, this.getTranslator());
 			if (currentProject.isMailNotificationEnabled()) {
-				ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendCancelEnrollmentEmailToManager(urequest.getIdentity(), currentProject, this.getTranslator());
+				projectBrokerMailer.sendCancelEnrollmentEmailToManager(urequest.getIdentity(), currentProject, this.getTranslator());
 			}
-			ProjectBrokerManagerFactory.getProjectGroupManager().sendGroupChangeEvent(currentProject, courseId, urequest.getIdentity());
+			projectGroupManager.sendGroupChangeEvent(currentProject, courseId, urequest.getIdentity());
 		} else {
 			showInfo("info.msg.could.not.cancel.enrollment");
 		}
@@ -300,13 +309,13 @@ public class ProjectListController extends BasicController implements GenericEve
 
 	private void handleEnrollAction(UserRequest urequest, Project currentProject) {
 		getLogger().debug("start enrollProjectParticipant identity=" + urequest.getIdentity() + " to project=" + currentProject);
-		boolean enrolled = ProjectBrokerManagerFactory.getProjectBrokerManager().enrollProjectParticipant(urequest.getIdentity(), currentProject, moduleConfig, nbrSelectedProjects, isParticipantInAnyProject);
+		boolean enrolled = projectBrokerManager.enrollProjectParticipant(urequest.getIdentity(), currentProject, moduleConfig, nbrSelectedProjects, isParticipantInAnyProject);
 		if (enrolled) {
-			ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendEnrolledEmailToParticipant(urequest.getIdentity(), currentProject, this.getTranslator());
+			projectBrokerMailer.sendEnrolledEmailToParticipant(urequest.getIdentity(), currentProject, this.getTranslator());
 			if (currentProject.isMailNotificationEnabled()) {
-				ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendEnrolledEmailToManager(urequest.getIdentity(), currentProject, this.getTranslator());
+				projectBrokerMailer.sendEnrolledEmailToManager(urequest.getIdentity(), currentProject, this.getTranslator());
 			}
-			ProjectBrokerManagerFactory.getProjectGroupManager().sendGroupChangeEvent(currentProject, courseId, urequest.getIdentity());
+			projectGroupManager.sendGroupChangeEvent(currentProject, courseId, urequest.getIdentity());
 		} else {
 			showInfo("info.msg.could.not.enroll");
 		}
@@ -315,9 +324,9 @@ public class ProjectListController extends BasicController implements GenericEve
 
 
 	private void updateProjectListModelOf(TableController tableController, Identity identity) {
-		List<Project> projects = new ArrayList<Project>(ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(projectBrokerId));	
-		nbrSelectedProjects = ProjectBrokerManagerFactory.getProjectBrokerManager().getNbrSelectedProjects(identity, projects);
-		isParticipantInAnyProject = ProjectBrokerManagerFactory.getProjectBrokerManager().isParticipantInAnyProject( identity,  projects);
+		List<Project> projects = new ArrayList<Project>(projectBrokerManager.getProjectListBy(projectBrokerId));	
+		nbrSelectedProjects = projectBrokerManager.getNbrSelectedProjects(identity, projects);
+		isParticipantInAnyProject = projectBrokerManager.isParticipantInAnyProject( identity,  projects);
 		projectListTableModel = new ProjectListTableModel(projects, identity, getTranslator(), moduleConfig, numberOfCustomFieldInTable, numberOfEventInTable, nbrSelectedProjects, isParticipantInAnyProject);
 		tableController.setTableDataModel(projectListTableModel);
 		

@@ -69,8 +69,9 @@ import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.nodes.ta.DropboxForm;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -131,6 +132,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	private Long projectBrokerId;
 	
 	private final BusinessGroupService businessGroupService;
+	private final ProjectBrokerManager projectBrokerManager;
+	private final ProjectGroupManager projectGroupManager;
 	
 	/**
 	 * @param ureq
@@ -144,6 +147,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		super(ureq, wControl);
 		
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 
 		this.node = node;
 		//o_clusterOk by guido: save to hold reference to course inside editor
@@ -156,12 +161,12 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 
 		// check if a project-broker exists
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		projectBrokerId = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectBrokerId(cpm, node);
+		projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, node);
 		if (projectBrokerId == null) {
 			// no project-broker exist => create a new one, happens only once
-			ProjectBroker projectBroker = ProjectBrokerManagerFactory.getProjectBrokerManager().createAndSaveProjectBroker();
+			ProjectBroker projectBroker = projectBrokerManager.createAndSaveProjectBroker();
 			projectBrokerId = projectBroker.getKey();
-			ProjectBrokerManagerFactory.getProjectBrokerManager().saveProjectBrokerId(projectBrokerId, cpm, node);
+			projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, node);
 		} 
 	
 		// Access
@@ -189,7 +194,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
     accountManagementFormVC = this.createVelocityContainer("account_management");
     String groupName = translate("account.manager.groupname", node.getShortTitle());
     String groupDescription = translate("account.manager.groupdescription", node.getShortTitle());
-    accountManagerGroup = ProjectBrokerManagerFactory.getProjectGroupManager().getAccountManagerGroupFor(cpm, node, course, groupName, groupDescription, ureq.getIdentity());
+    accountManagerGroup = projectGroupManager.getAccountManagerGroupFor(cpm, node, course, groupName, groupDescription, ureq.getIdentity());
     if (accountManagerGroup != null) {
     	Group group = businessGroupService.getGroup(accountManagerGroup);
     	accountManagerGroupController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, group, GroupRoles.participant.name());
@@ -322,7 +327,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 				projectBrokerModuleConfiguration.setNbrParticipantsPerTopic(optionsForm.getNnbrOfAttendees());
 				if (projectBrokerModuleConfiguration.isAcceptSelectionManually() && !optionsForm.getSelectionAccept()) {
 					// change 'Accept manually' to 'Accept automatically' => enroll all candidates
-					ProjectBrokerManagerFactory.getProjectGroupManager().acceptAllCandidates(projectBrokerId, urequest.getIdentity(), projectBrokerModuleConfiguration.isAutoSignOut(), optionsForm.getSelectionAccept());
+					projectGroupManager.acceptAllCandidates(projectBrokerId, urequest.getIdentity(), projectBrokerModuleConfiguration.isAutoSignOut(), optionsForm.getSelectionAccept());
 				}
 				projectBrokerModuleConfiguration.setAcceptSelectionManaually(optionsForm.getSelectionAccept());
 				projectBrokerModuleConfiguration.setSelectionAutoSignOut(optionsForm.getSelectionAutoSignOut());
@@ -338,7 +343,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 			getLogger().debug("NODECONFIG_CHANGED_node.shortTitle=" + node.getShortTitle());
 	    	String groupName = translate("account.manager.groupname", node.getShortTitle());
 	    	String groupDescription = translate("account.manager.groupdescription", node.getShortTitle());
-	    	accountManagerGroup = ProjectBrokerManagerFactory.getProjectGroupManager().updateAccountManagerGroupName(getIdentity(), groupName, groupDescription, accountManagerGroup);
+	    	accountManagerGroup = projectGroupManager.updateAccountManagerGroupName(getIdentity(), groupName, groupDescription, accountManagerGroup);
 		} else if (source == dropboxForm) {
 				if (event == Event.CANCELLED_EVENT) {
 					return;

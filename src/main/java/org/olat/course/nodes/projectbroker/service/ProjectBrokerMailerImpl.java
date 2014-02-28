@@ -52,13 +52,14 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.properties.Property;
+import org.springframework.stereotype.Service;
 
 
 /**
  * 
  * @author guretzki
  */
-
+@Service
 public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	private static final String KEY_ENROLLED_EMAIL_TO_PARTICIPANT_SUBJECT = "mail.enrolled.to.participant.subject";
 	private static final String KEY_ENROLLED_EMAIL_TO_PARTICIPANT_BODY    = "mail.enrolled.to.participant.body";

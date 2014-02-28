@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -60,9 +61,10 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerMailer;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.resource.OLATResource;
 
@@ -109,6 +111,10 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 	private final static String[] values = new String[] { "" };
 	private static final int MAX_MEMBERS_DEFAULT = 1;
 
+	private final ProjectBrokerMailer projectBrokerMailer;
+	private final ProjectGroupManager projectGroupManager;
+	private final ProjectBrokerManager projectBrokerManager;
+
 	/**
 	 * Modules selection form.
 	 * @param name
@@ -121,6 +127,9 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		this.courseNode = courseNode;
 		this.projectBrokerModuleConfiguration = projectBrokerModuleConfiguration;
 		this.enableCancel = enableCancel;
+		projectBrokerMailer = CoreSpringFactory.getImpl(ProjectBrokerMailer.class);
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		customfieldElementList = new ArrayList();
 		eventStartElementList = new HashMap<Project.EventType, DateChooser>();
 		eventEndElementList = new HashMap<Project.EventType, DateChooser>();
@@ -139,7 +148,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			}
 		}
 		if (  !project.getTitle().equals(projectTitle.getValue()) 
-				&& ProjectBrokerManagerFactory.getProjectBrokerManager().existProjectName(project.getProjectBroker().getKey(), projectTitle.getValue()) ) {		
+				&& projectBrokerManager.existProjectName(project.getProjectBroker().getKey(), projectTitle.getValue()) ) {		
 			projectTitle.setErrorKey("form.error.project.title.already.exist", null);
 			return false;
 		}
@@ -188,7 +197,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		stateLayout = FormLayoutContainer.createHorizontalFormLayout("stateLayout", getTranslator());
 		stateLayout.setLabel("detailsform.state.label", null);
 		formLayout.add(stateLayout);
-		String stateValue = getTranslator().translate(ProjectBrokerManagerFactory.getProjectBrokerManager().getStateFor(project,ureq.getIdentity(),projectBrokerModuleConfiguration));
+		String stateValue = getTranslator().translate(projectBrokerManager.getStateFor(project,ureq.getIdentity(),projectBrokerModuleConfiguration));
 		projectState = uifactory.addStaticTextElement("detailsform.state", stateValue + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", stateLayout);
 		projectState.setLabel(null, null);
 
@@ -312,8 +321,8 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			String newProjectGroupName = translate("project.member.groupname", projectTitle.getValue());
 			String newProjectGroupDescription = translate("project.member.groupdescription", projectTitle.getValue());
 			OLATResource courseResource = courseEnv.getCourseGroupManager().getCourseResource();
-			ProjectBrokerManagerFactory.getProjectGroupManager().changeProjectGroupName(getIdentity(), project.getProjectGroup(), newProjectGroupName, newProjectGroupDescription, courseResource);
-			ProjectBrokerManagerFactory.getProjectGroupManager().sendGroupChangeEvent(project, courseEnv.getCourseResourceableId(), ureq.getIdentity());
+			projectGroupManager.changeProjectGroupName(getIdentity(), project.getProjectGroup(), newProjectGroupName, newProjectGroupDescription, courseResource);
+			projectGroupManager.sendGroupChangeEvent(project, courseEnv.getCourseResourceableId(), ureq.getIdentity());
 			projectChanged = true;
 		}
 		if (!project.getTitle().equals(projectTitle.getValue())) {
@@ -326,7 +335,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		}
 		if (project.getMaxMembers() != maxMembers.getIntValue()) {
 			project.setMaxMembers(maxMembers.getIntValue());
-			ProjectBrokerManagerFactory.getProjectGroupManager().setProjectGroupMaxMembers(getIdentity(), project.getProjectGroup(), maxMembers.getIntValue());
+			projectGroupManager.setProjectGroupMaxMembers(getIdentity(), project.getProjectGroup(), maxMembers.getIntValue());
 			projectChanged = true;
 		}			
 		if (attachmentFileName.getUploadFileName() != null && !attachmentFileName.getUploadFileName().equals("")) {
@@ -378,9 +387,9 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			projectChanged = true;	
 		}
 		if (projectChanged) {
-			if ( ProjectBrokerManagerFactory.getProjectBrokerManager().existsProject( project.getKey() ) ) {		
-				ProjectBrokerManagerFactory.getProjectBrokerManager().updateProject(project);
-				ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendProjectChangedEmailToParticipants(ureq.getIdentity(), project, this.getTranslator());
+			if ( projectBrokerManager.existsProject( project.getKey() ) ) {		
+				projectBrokerManager.updateProject(project);
+				projectBrokerMailer.sendProjectChangedEmailToParticipants(ureq.getIdentity(), project, this.getTranslator());
 			} else {
 				this.showInfo("info.project.nolonger.exist", project.getTitle());
 			}
@@ -429,13 +438,8 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		//nothing
 	}
 
-	/**
-	 * 
-	 */
 	private void uploadFiles(FileElement attachmentFileElement) {
 		VFSLeaf uploadedItem = new LocalFileImpl(attachmentFileElement.getUploadFile());
-		ProjectBrokerManagerFactory.getProjectBrokerManager().saveAttachedFile(project, attachmentFileElement.getUploadFileName(), uploadedItem, courseEnv, courseNode );
+		projectBrokerManager.saveAttachedFile(project, attachmentFileElement.getUploadFileName(), uploadedItem, courseEnv, courseNode );
 	}
-
-	
 }

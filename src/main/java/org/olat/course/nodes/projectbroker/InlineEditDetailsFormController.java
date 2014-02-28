@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -54,9 +55,10 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerMailer;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.resource.OLATResource;
 
@@ -92,6 +94,10 @@ public class InlineEditDetailsFormController extends FormBasicController {
 	private List customfieldElementList;
 	private HashMap<Project.EventType, DateChooser> eventStartElementList;
 	private HashMap<Project.EventType, DateChooser> eventEndElementList;
+	
+	private final ProjectBrokerMailer projectBrokerMailer;
+	private final ProjectGroupManager projectGroupManager;
+	private final ProjectBrokerManager projectBrokerManager;
 
 	/**
 	 * Modules selection form.
@@ -104,6 +110,10 @@ public class InlineEditDetailsFormController extends FormBasicController {
 		this.courseEnv = courseEnv;
 		this.courseNode = courseNode;
 		this.projectBrokerModuleConfiguration = projectBrokerModuleConfiguration;
+		
+		projectBrokerMailer = CoreSpringFactory.getImpl(ProjectBrokerMailer.class);
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		stateKeys    = new String[] {Project.STATE_NOT_ASSIGNED, Project.STATE_ASSIGNED};
 		stateValues  = new String[] {translate(Project.STATE_NOT_ASSIGNED),	translate(Project.STATE_ASSIGNED)	};
 		customfieldElementList = new ArrayList();
@@ -251,8 +261,8 @@ public class InlineEditDetailsFormController extends FormBasicController {
 			String newProjectGroupName = translate("project.member.groupname", projectTitle.getValue());
 			String newProjectGroupDescription = translate("project.member.groupdescription", projectTitle.getValue());
 			OLATResource courseResource = courseEnv.getCourseGroupManager().getCourseResource();
-			ProjectBrokerManagerFactory.getProjectGroupManager().changeProjectGroupName(getIdentity(), project.getProjectGroup(), newProjectGroupName, newProjectGroupDescription, courseResource);
-			ProjectBrokerManagerFactory.getProjectGroupManager().sendGroupChangeEvent(project, courseEnv.getCourseResourceableId(), ureq.getIdentity());
+			projectGroupManager.changeProjectGroupName(getIdentity(), project.getProjectGroup(), newProjectGroupName, newProjectGroupDescription, courseResource);
+			projectGroupManager.sendGroupChangeEvent(project, courseEnv.getCourseResourceableId(), ureq.getIdentity());
 			projectChanged = true;
 		}
 		if (!project.getTitle().equals(projectTitle.getValue())) {
@@ -315,8 +325,8 @@ public class InlineEditDetailsFormController extends FormBasicController {
 			}			
 		}
 		if (projectChanged) {
-			ProjectBrokerManagerFactory.getProjectBrokerManager().updateProject(project);
-			ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendProjectChangedEmailToParticipants(ureq.getIdentity(), project, this.getTranslator());
+			projectBrokerManager.updateProject(project);
+			projectBrokerMailer.sendProjectChangedEmailToParticipants(ureq.getIdentity(), project, this.getTranslator());
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
@@ -331,7 +341,7 @@ public class InlineEditDetailsFormController extends FormBasicController {
 	 */
 	private void uploadFiles(FileElement attachmentFileElement) {
 		VFSLeaf uploadedItem = new LocalFileImpl(attachmentFileElement.getUploadFile());
-		ProjectBrokerManagerFactory.getProjectBrokerManager().saveAttachedFile(project, attachmentFileElement.getUploadFileName(), uploadedItem, courseEnv, courseNode );
+		projectBrokerManager.saveAttachedFile(project, attachmentFileElement.getUploadFileName(), uploadedItem, courseEnv, courseNode );
 	}
 	
 }

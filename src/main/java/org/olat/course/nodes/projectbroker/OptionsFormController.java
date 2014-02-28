@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.projectbroker;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,8 +37,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 
 /**
  * 
@@ -57,6 +58,7 @@ public class OptionsFormController extends FormBasicController {
 	private final static String[] values = new String[] { "" };
 	private static final int NBR_PARTICIPANTS_DEFAULT = 1;
 	
+	private final ProjectGroupManager projectGroupManager;
 	/**
 	 * Modules selection form.
 	 * @param name
@@ -66,6 +68,7 @@ public class OptionsFormController extends FormBasicController {
 		super(ureq, wControl);
 		this.config = config;
 		this.projectBrokerId = projectBrokerId;
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		initForm(this.flc, this, ureq);
 	}
 
@@ -122,7 +125,7 @@ public class OptionsFormController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == selectionAccept) {
 			selectionAutoSignOut.setVisible(selectionAccept.isSelected(0));
-			if (!selectionAccept.isSelected(0) && ProjectBrokerManagerFactory.getProjectGroupManager().hasProjectBrokerAnyCandidates(projectBrokerId)) {
+			if (!selectionAccept.isSelected(0) && projectGroupManager.hasProjectBrokerAnyCandidates(projectBrokerId)) {
 				this.showInfo("info.all.candidates.will.be.accepted.automatically");
 			}
 		} else if (source == selectionLimitedAttendees) {

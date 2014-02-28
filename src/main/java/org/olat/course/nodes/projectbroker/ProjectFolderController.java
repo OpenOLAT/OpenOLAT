@@ -27,6 +27,7 @@ package org.olat.course.nodes.projectbroker;
 
 import java.util.Date;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -39,8 +40,8 @@ import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.Project.EventType;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -65,6 +66,7 @@ public class ProjectFolderController extends BasicController {
 	private ReturnboxController returnboxController;
 	private MSCourseNodeRunController scoringController;
 
+	private final ProjectGroupManager projectGroupManager;
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -75,12 +77,14 @@ public class ProjectFolderController extends BasicController {
 	public ProjectFolderController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, boolean previewMode, Project project) { 
 		super(ureq, wControl);
 		this.config = ne.getCourseNode().getModuleConfiguration();
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		
 		ProjectBrokerModuleConfiguration moduleConfig = new ProjectBrokerModuleConfiguration(ne.getCourseNode().getModuleConfiguration());
 		
 		content = createVelocityContainer("folder");
 		
-		if (   ProjectBrokerManagerFactory.getProjectGroupManager().isProjectParticipant(ureq.getIdentity(), project)
-			  || ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManagerOrAdministrator(ureq, userCourseEnv.getCourseEnvironment(), project) ) {
+		if (   projectGroupManager.isProjectParticipant(ureq.getIdentity(), project)
+			  || projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv.getCourseEnvironment(), project) ) {
 			content.contextPut("isParticipant", true);
 			readConfig(config);
 			// modify hasTask/hasDropbox/hasScoring according to accessability
@@ -94,7 +98,7 @@ public class ProjectFolderController extends BasicController {
 				content.contextPut("noFolder", Boolean.TRUE);
 			} else {
 				getLogger().debug("isDropboxAccessible(project, moduleConfig)=" + isDropboxAccessible(project, moduleConfig));
-				if (ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(ureq.getIdentity(), project)) {
+				if (projectGroupManager.isProjectManager(ureq.getIdentity(), project)) {
 					dropboxEditController = new ProjectBrokerDropboxScoringViewController(project, ureq, wControl, ne.getCourseNode(), userCourseEnv); 
 					content.put("dropboxController", dropboxEditController.getInitialComponent());
 					content.contextPut("hasDropbox", Boolean.TRUE);
@@ -110,7 +114,7 @@ public class ProjectFolderController extends BasicController {
 						}
 					}
 					if (hasReturnbox) {
-						if (!ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(ureq.getIdentity(), project)) {
+						if (!projectGroupManager.isProjectManager(ureq.getIdentity(), project)) {
 							returnboxController = new ProjectBrokerReturnboxController(ureq, wControl, ne.getCourseNode(), userCourseEnv, previewMode,project);
 							content.put("returnboxController", returnboxController.getInitialComponent());
 							content.contextPut("hasReturnbox", Boolean.TRUE);

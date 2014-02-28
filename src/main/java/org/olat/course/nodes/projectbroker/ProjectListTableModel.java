@@ -38,7 +38,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
 import org.olat.group.BusinessGroupService;
 
@@ -60,8 +60,9 @@ public class ProjectListTableModel extends DefaultTableDataModel {
 	// Array with numbers of the customfields [0...MAX_NBR_CUSTOMFIELDS] which are enabled for table-view 
 	private int[] enabledCustomFieldNumbers;
 	
-	private OLog log = Tracing.createLoggerFor(this.getClass());
-
+	private static final OLog log = Tracing.createLoggerFor(ProjectListTableModel.class);
+	private final ProjectBrokerManager projectBrokerManager;
+	
 	/**
 	 * @param owned list of projects 
 	 */
@@ -77,6 +78,7 @@ public class ProjectListTableModel extends DefaultTableDataModel {
 		this.enabledEventList = getEnabledEvents(moduleConfig);
 		this.isParticipantInAnyProject = isParticipantInAnyProject;
 		this.enabledCustomFieldNumbers = new int[numberOfCustomFieldInTable];
+		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		// loop over all custom fields
 		int index = 0;
 		int customFiledIndex = 0;
@@ -120,7 +122,7 @@ public class ProjectListTableModel extends DefaultTableDataModel {
 				return allIdents;
 			}
 		} else if (col == (numberOfCustomFieldInTable + numberOfEventInTable + 2)) {
-			return ProjectBrokerManagerFactory.getProjectBrokerManager().getStateFor(project,identity,moduleConfig);
+			return projectBrokerManager.getStateFor(project,identity,moduleConfig);
 		} else if (col == (numberOfCustomFieldInTable + numberOfEventInTable + 3)) {
 			StringBuilder buf = new StringBuilder();
 			buf.append(project.getSelectedPlaces());
@@ -132,9 +134,9 @@ public class ProjectListTableModel extends DefaultTableDataModel {
 			}
 			return buf.toString();
 		}	else if (col == (numberOfCustomFieldInTable + numberOfEventInTable + 4)) { // enroll
-			return ProjectBrokerManagerFactory.getProjectBrokerManager().canBeProjectSelectedBy(identity, project, moduleConfig, nbrSelectedProjects, isParticipantInAnyProject);
+			return projectBrokerManager.canBeProjectSelectedBy(identity, project, moduleConfig, nbrSelectedProjects, isParticipantInAnyProject);
 		} else if (col == (numberOfCustomFieldInTable + numberOfEventInTable + 5)) { // cancel enrollment
-			return ProjectBrokerManagerFactory.getProjectBrokerManager().canBeCancelEnrollmentBy(identity,project,moduleConfig);
+			return projectBrokerManager.canBeCancelEnrollmentBy(identity,project,moduleConfig);
 		} else if ( (col == 2) && (numberOfCustomFieldInTable > 0) ) {
 			return project.getCustomFieldValue(enabledCustomFieldNumbers[0]);
 		} else if ( (col == 3) && (numberOfCustomFieldInTable > 1) ) {

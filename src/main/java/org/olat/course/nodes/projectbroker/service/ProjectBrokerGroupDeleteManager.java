@@ -34,6 +34,8 @@ import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -42,15 +44,17 @@ import org.olat.group.DeletableGroupData;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Service(value="projectBrokerGroupDeleteManager")
 public class ProjectBrokerGroupDeleteManager implements DeletableGroupData {
 
 	private static final OLog log = Tracing.createLoggerFor(ProjectBrokerGroupDeleteManager.class);
 
+	@Autowired
+	private ProjectBrokerManager projectBrokerManager;
+	
 	@Override
 	public boolean deleteGroupDataFor(BusinessGroup group) {
 		log.debug("deleteAllProjectGroupEntiresFor started.. group=" + group);
-		ProjectBrokerManager projectBrokerManager = ProjectBrokerManagerFactory.getProjectBrokerManager();
-		
 		
 		List<Project> projectList = projectBrokerManager.getProjectsWith(group);
 		for (Project project : projectList) {

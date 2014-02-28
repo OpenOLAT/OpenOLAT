@@ -161,7 +161,7 @@ public class GroupDAO {
 	}
 	
 	public List<GroupMembership> getMemberships(Group group, String role) {
-		String sb = "select member from bgroupmember as member where member.group.key=:groupKey and member.role=:role";
+		String sb = "select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role";
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb, GroupMembership.class)
 			.setParameter("groupKey", group.getKey())

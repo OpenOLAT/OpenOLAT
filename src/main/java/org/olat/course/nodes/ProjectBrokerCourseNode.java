@@ -81,7 +81,7 @@ import org.olat.course.nodes.projectbroker.ProjectBrokerCourseEditorController;
 import org.olat.course.nodes.projectbroker.ProjectListController;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerExportGenerator;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.nodes.ta.TaskController;
@@ -347,7 +347,8 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		Long projectBrokerId = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectBrokerId(cpm, this);
+		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		Long projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, this);
 		File fDropBox = new File(FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
 		if (fDropBox.exists()) {
 			FileUtils.deleteDirsAndFiles(fDropBox, true, true);
@@ -356,13 +357,13 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		if (fReturnBox.exists()) {
 			FileUtils.deleteDirsAndFiles(fReturnBox, true, true);
 		}
-		File attachmentDir = new File(FolderConfig.getCanonicalRoot() + ProjectBrokerManagerFactory.getProjectBrokerManager().getAttachmentBasePathRelToFolderRoot(course.getCourseEnvironment(), this));
+		File attachmentDir = new File(FolderConfig.getCanonicalRoot() + projectBrokerManager.getAttachmentBasePathRelToFolderRoot(course.getCourseEnvironment(), this));
 		if (attachmentDir.exists()) {
 			FileUtils.deleteDirsAndFiles(attachmentDir, true, true);
 		}
 		// Delete project-broker, projects and project-groups
 		if (projectBrokerId != null) {
-			ProjectBrokerManagerFactory.getProjectBrokerManager().deleteProjectBroker(projectBrokerId, course.getCourseEnvironment(), this);
+			projectBrokerManager.deleteProjectBroker(projectBrokerId, course.getCourseEnvironment(), this);
 		}
 		// Delete all properties...
 		cpm.deleteNodeProperties(this, null);
@@ -709,9 +710,10 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	 */
 	@Override
 	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
-		ProjectBroker projectBroker = ProjectBrokerManagerFactory.getProjectBrokerManager().createAndSaveProjectBroker();
+		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		ProjectBroker projectBroker = projectBrokerManager.createAndSaveProjectBroker();
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		ProjectBrokerManagerFactory.getProjectBrokerManager().saveProjectBrokerId(projectBroker.getKey(), cpm, this);
+		projectBrokerManager.saveProjectBrokerId(projectBroker.getKey(), cpm, this);
 		return null;
 	}
 	

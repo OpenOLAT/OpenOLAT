@@ -81,6 +81,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -158,11 +159,11 @@ public class GroupController extends BasicController {
 
 	protected BaseSecurity securityManager;
 	protected UserManager userManager;
-	private InstantMessagingModule imModule;
-	private InstantMessagingService imService;
-	private UserSessionManager sessionManager;
-	private MailManager mailManager;
-	private GroupDAO groupDao;
+	private final InstantMessagingModule imModule;
+	private final InstantMessagingService imService;
+	private final UserSessionManager sessionManager;
+	private final MailManager mailManager;
+	private final GroupDAO groupDao;
 	
 	public Object userObject;
 
@@ -179,6 +180,13 @@ public class GroupController extends BasicController {
 			boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, boolean enableUserSelection,
 			boolean allowDownload, boolean mandatoryEmail, Group group, String role) {
 		super(ureq, wControl);
+		securityManager = BaseSecurityManager.getInstance();
+		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+		mailManager = CoreSpringFactory.getImpl(MailManager.class);
+		groupDao = CoreSpringFactory.getImpl(GroupDAO.class);
 		init(ureq, mayModifyMembers, keepAtLeastOne, enableTablePreferences, enableUserSelection, allowDownload, mandatoryEmail, group, role);
 	}
 
@@ -189,12 +197,8 @@ public class GroupController extends BasicController {
 		this.mayModifyMembers = mayModifyMembers;
 		this.keepAtLeastOne = keepAtLeastOne;
 		this.mandatoryEmail = mandatoryEmail;
-		securityManager = BaseSecurityManager.getInstance();
-		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
-		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
+		
+		setTranslator(Util.createPackageTranslator(org.olat.admin.securitygroup.gui.GroupController.class, getLocale(), getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);

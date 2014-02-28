@@ -53,8 +53,10 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerMailer;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
@@ -76,6 +78,9 @@ public class ProjectGroupController extends BasicController {
 	
 	private final MailManager mailManager;
 	private final BusinessGroupService businessGroupService;
+	private final ProjectBrokerManager projectBrokerManager;
+	private final ProjectGroupManager projectGroupManager;
+	private final ProjectBrokerMailer projectBrokerMailer;
 
 	/**
 	 * @param ureq
@@ -87,6 +92,9 @@ public class ProjectGroupController extends BasicController {
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
 		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		projectBrokerMailer = CoreSpringFactory.getImpl(ProjectBrokerMailer.class);
 		this.project = project;
 		this.projectBrokerModuleConfiguration = projectBrokerModuleConfiguration;
 		
@@ -105,23 +113,23 @@ public class ProjectGroupController extends BasicController {
 		listenTo(projectMemberController);
 		myContent.put("projectMemberController", projectMemberController.getInitialComponent());
 		// add mail templates used when adding and removing users
-		MailTemplate partAddUserMailTempl = ProjectBrokerManagerFactory.getProjectBrokerEmailer().createAddParticipantMailTemplate(project, ureq.getIdentity(), this.getTranslator());
+		MailTemplate partAddUserMailTempl = projectBrokerMailer.createAddParticipantMailTemplate(project, ureq.getIdentity(), this.getTranslator());
 		projectMemberController.setAddUserMailTempl(partAddUserMailTempl,false);
-		MailTemplate partRemoveUserMailTempl = ProjectBrokerManagerFactory.getProjectBrokerEmailer().createRemoveParticipantMailTemplate(project, ureq.getIdentity(), this.getTranslator());
+		MailTemplate partRemoveUserMailTempl = projectBrokerMailer.createRemoveParticipantMailTemplate(project, ureq.getIdentity(), this.getTranslator());
 		projectMemberController.setRemoveUserMailTempl(partRemoveUserMailTempl,false);
 
 		// Project Candidates Management
 		if (projectBrokerModuleConfiguration.isAcceptSelectionManually()) {
 			projectCandidatesController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, true, false, project.getCandidateGroup());
 			listenTo(projectCandidatesController);
-			myContent.contextPut("isProjectCandidatesListEmpty", ProjectBrokerManagerFactory.getProjectGroupManager().isCandidateListEmpty(project.getCandidateGroup()) );
+			myContent.contextPut("isProjectCandidatesListEmpty", projectGroupManager.isCandidateListEmpty(project.getCandidateGroup()) );
 			myContent.put("projectCandidatesController", projectCandidatesController.getInitialComponent());
 			// add mail templates used when adding and removing users
-			MailTemplate waitAddUserMailTempl = ProjectBrokerManagerFactory.getProjectBrokerEmailer().createAddCandidateMailTemplate(project, ureq.getIdentity(), this.getTranslator());
+			MailTemplate waitAddUserMailTempl = projectBrokerMailer.createAddCandidateMailTemplate(project, ureq.getIdentity(), this.getTranslator());
 			projectCandidatesController.setAddUserMailTempl(waitAddUserMailTempl,false);
-			MailTemplate waitRemoveUserMailTempl = ProjectBrokerManagerFactory.getProjectBrokerEmailer().createRemoveAsCandiadateMailTemplate(project, ureq.getIdentity(), this.getTranslator());
+			MailTemplate waitRemoveUserMailTempl = projectBrokerMailer.createRemoveAsCandiadateMailTemplate(project, ureq.getIdentity(), this.getTranslator());
 			projectCandidatesController.setRemoveUserMailTempl(waitRemoveUserMailTempl,false);
-			MailTemplate waitTransferUserMailTempl = ProjectBrokerManagerFactory.getProjectBrokerEmailer().createAcceptCandiadateMailTemplate(project, ureq.getIdentity(), this.getTranslator());
+			MailTemplate waitTransferUserMailTempl = projectBrokerMailer.createAcceptCandiadateMailTemplate(project, ureq.getIdentity(), this.getTranslator());
 			projectCandidatesController.setTransferUserMailTempl(waitTransferUserMailTempl);
 		}
 		
@@ -135,7 +143,7 @@ public class ProjectGroupController extends BasicController {
 	}
 	
 	public void event(UserRequest urequest, Controller source, Event event) {
-		if ( ProjectBrokerManagerFactory.getProjectBrokerManager().existsProject( project.getKey() ) ) {
+		if ( projectBrokerManager.existsProject( project.getKey() ) ) {
 			if (source == projectLeaderController) {
 				handleProjectLeaderGroupEvent(urequest, event);
 			} else if (source == projectMemberController) {
@@ -151,17 +159,17 @@ public class ProjectGroupController extends BasicController {
 	private void handleCandidateGroupEvent(UserRequest urequest, Event event) {
 		if (event instanceof IdentitiesAddEvent) {
 			IdentitiesAddEvent identitiesAddEvent = (IdentitiesAddEvent)event;
-			List<Identity> addedIdentities = ProjectBrokerManagerFactory.getProjectGroupManager().addCandidates(identitiesAddEvent.getAddIdentities(), project);
+			List<Identity> addedIdentities = projectGroupManager.addCandidates(identitiesAddEvent.getAddIdentities(), project);
 			identitiesAddEvent.setIdentitiesAddedEvent(addedIdentities);
 			fireEvent(urequest, Event.CHANGED_EVENT );			
 		} else if (event instanceof IdentitiesRemoveEvent) {
-			ProjectBrokerManagerFactory.getProjectGroupManager().removeCandidates(((IdentitiesRemoveEvent)event).getRemovedIdentities(), project);
+			projectGroupManager.removeCandidates(((IdentitiesRemoveEvent)event).getRemovedIdentities(), project);
 			fireEvent(urequest, Event.CHANGED_EVENT );
 		} else if (event instanceof IdentitiesMoveEvent) {
 			final IdentitiesMoveEvent identitiesMoveEvent = (IdentitiesMoveEvent) event;
 			//OLAT-6342: check identity not in group first!
 			List<Identity> moveIdents = identitiesMoveEvent.getChosenIdentities();
-			BusinessGroupAddResponse response = ProjectBrokerManagerFactory.getProjectGroupManager().acceptCandidates(moveIdents, project, urequest.getIdentity(),
+			BusinessGroupAddResponse response = projectGroupManager.acceptCandidates(moveIdents, project, urequest.getIdentity(),
 					projectBrokerModuleConfiguration.isAutoSignOut(), projectBrokerModuleConfiguration.isAcceptSelectionManually());
 			identitiesMoveEvent.setMovedIdentities(response.getAddedIdentities());
 			identitiesMoveEvent.setNotMovedIdentities(response.getIdentitiesAlreadyInGroup());

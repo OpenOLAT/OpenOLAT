@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.projectbroker;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -36,8 +37,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -61,8 +62,7 @@ public class ProjectController extends BasicController {
 
 	private Link backLink;
 
-//	private InlineEditDetailsFormController inlineEditDetailsFormController;
-
+	private ProjectGroupManager projectGroupManager;
 
 	/**
 	 * @param ureq
@@ -74,6 +74,8 @@ public class ProjectController extends BasicController {
 	public ProjectController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, Project project, 
 			                     boolean newCreatedProject, ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration) { 
 		super(ureq, wControl);
+		
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 			
 		contentVC = createVelocityContainer("project");
 		contentVC.contextPut("menuTitle", ne.getCourseNode().getShortTitle());
@@ -87,7 +89,7 @@ public class ProjectController extends BasicController {
 		myTabbedPane.addTab(translate("tab.project.details"), detailsController.getInitialComponent());
 		projectFolderController = new ProjectFolderController( ureq, wControl, userCourseEnv, ne, false, project);
 		myTabbedPane.addTab(translate("tab.project.folder"), projectFolderController.getInitialComponent());
-		if ( ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManagerOrAdministrator(ureq, userCourseEnv.getCourseEnvironment(), project) ) {
+		if ( projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv.getCourseEnvironment(), project) ) {
 			projectGroupController = new ProjectGroupController(ureq, wControl, project, projectBrokerModuleConfiguration);
 			myTabbedPane.addTab(translate("tab.project.members"), projectGroupController.getInitialComponent());
 		}

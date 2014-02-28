@@ -30,12 +30,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.ProjectBrokerProjectDocument;
@@ -62,9 +63,10 @@ public class ProjectBrokerCourseNodeIndexer extends FolderIndexer implements Cou
        
     // go further, index my projects
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		Long projectBrokerId = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectBrokerId(cpm, courseNode);
+		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		Long projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, courseNode);
 		if (projectBrokerId != null) {
-			List<Project> projects = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(projectBrokerId);
+			List<Project> projects = projectBrokerManager.getProjectListBy(projectBrokerId);
 			for (Iterator<Project> iterator = projects.iterator(); iterator.hasNext();) {
 				Project project = iterator.next();
 				Document document = ProjectBrokerProjectDocument.createDocument(courseNodeResourceContext, project);

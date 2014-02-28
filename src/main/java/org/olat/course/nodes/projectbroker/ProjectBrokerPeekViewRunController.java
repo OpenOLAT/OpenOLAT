@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
@@ -34,7 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
-import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -50,6 +51,7 @@ public class ProjectBrokerPeekViewRunController extends BasicController implemen
 	private static final int MAX_NBR_PROJECTS = 3;
 	private NodeEvaluation ne;
 
+	private final ProjectBrokerManager projectBrokerManager;
 	/**
 	 * Constructor
 	 * @param ureq The user request
@@ -59,13 +61,15 @@ public class ProjectBrokerPeekViewRunController extends BasicController implemen
 		// Use fallback translator from forum
 		super(ureq, wControl);
 		this.ne = ne;
+		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		
 		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		Long projectBrokerId = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectBrokerId(cpm, ne.getCourseNode());
+		Long projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, ne.getCourseNode());
 		getLogger().debug("projectBrokerId=" +projectBrokerId);
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
 		List<Project> myProjects = null;
 		if (projectBrokerId != null) {
-			myProjects = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectsOf(ureq.getIdentity(), projectBrokerId);
+			myProjects = projectBrokerManager.getProjectsOf(ureq.getIdentity(), projectBrokerId);
 		} else {
 			// when projectBrokerId is null, created empty project list (course-preview)
 			myProjects = new ArrayList<Project>();
@@ -87,7 +91,7 @@ public class ProjectBrokerPeekViewRunController extends BasicController implemen
 
 		List<Project> myCoachedProjects = null;
 		if (projectBrokerId != null) {
-			myCoachedProjects = ProjectBrokerManagerFactory.getProjectBrokerManager().getCoachedProjectsOf(ureq.getIdentity(), projectBrokerId);
+			myCoachedProjects = projectBrokerManager.getCoachedProjectsOf(ureq.getIdentity(), projectBrokerId);
 		} else {
 			// when projectBrokerId is null, created empty project list (course-preview)
 			myCoachedProjects = new ArrayList<Project>();

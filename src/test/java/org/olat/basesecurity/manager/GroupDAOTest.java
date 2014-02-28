@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.List;
 import java.util.Set;
 
 import junit.framework.Assert;
@@ -76,14 +77,27 @@ public class GroupDAOTest extends OlatTestCase {
 		dbInstance.getCurrentEntityManager().detach(group);
 		dbInstance.commitAndCloseSession();
 		
-		
 		GroupImpl loadedGroup = (GroupImpl)groupDao.loadGroup(group.getKey());
 		Assert.assertNotNull(loadedGroup);
 		Set<GroupMembership> members = loadedGroup.getMembers();
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
+	}
+	
+	@Test
+	public void getMemberships() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-1-");
+		Group group = groupDao.createGroup();
+		GroupMembership membership = groupDao.addMembership(group, id, "author");
+		dbInstance.commit();
 		
+		Assert.assertNotNull(membership);
+		dbInstance.getCurrentEntityManager().detach(group);
+		dbInstance.commitAndCloseSession();
 		
+		List<GroupMembership> members = groupDao.getMemberships(group, "author");
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
 	}
 
 }

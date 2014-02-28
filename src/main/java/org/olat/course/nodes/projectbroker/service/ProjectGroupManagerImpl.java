@@ -56,13 +56,20 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.testutils.codepoints.server.Codepoint;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
  * 
  * @author guretzki
  */
+@Service
 public class ProjectGroupManagerImpl extends BasicManager implements ProjectGroupManager {
+	
+	@Autowired
+	private ProjectBrokerManager projectBrokerManager;
+	
 	
 	//////////////////////
 	// ACCOUNT MANAGEMENT
@@ -266,11 +273,11 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		});// end of doInSync
 		
 		if (autoSignOut && result.booleanValue()) {
-			ProjectBrokerManagerFactory.getProjectBrokerManager().signOutFormAllCandidateList(response.getAddedIdentities(), reloadedProject.getProjectBroker().getKey());
+			projectBrokerManager.signOutFormAllCandidateList(response.getAddedIdentities(), reloadedProject.getProjectBroker().getKey());
 		}
 		if (isAcceptSelectionManually && (reloadedProject.getMaxMembers() != Project.MAX_MEMBERS_UNLIMITED) 
 				&& reloadedProject.getSelectedPlaces() >= reloadedProject.getMaxMembers()) {
-			ProjectBrokerManagerFactory.getProjectBrokerManager().setProjectState(reloadedProject, Project.STATE_ASSIGNED);
+			projectBrokerManager.setProjectState(reloadedProject, Project.STATE_ASSIGNED);
 			logInfo("ProjectBroker: Accept candidate, change project-state=" + Project.STATE_ASSIGNED);
 		}
 
@@ -291,7 +298,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	}
 
 	public boolean isProjectManagerOrAdministrator(UserRequest ureq, CourseEnvironment courseEnv, Project project) {	
-		return    ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(ureq.getIdentity(), project)
+		return isProjectManager(ureq.getIdentity(), project)
 				   || courseEnv.getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity())
 	         || ureq.getUserSession().getRoles().isOLATAdmin();
 	}
@@ -330,7 +337,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	@Override
 	public void acceptAllCandidates(Long projectBrokerId, Identity actionIdentity, boolean autoSignOut, boolean isAcceptSelectionManually) {
 		// loop over all project
-		List<Project> projectList = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(projectBrokerId);
+		List<Project> projectList = projectBrokerManager.getProjectListBy(projectBrokerId);
 		for (Iterator<Project> iterator = projectList.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
 			List<Identity> candidates = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(project.getCandidateGroup());
@@ -344,7 +351,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 
 	@Override
 	public boolean hasProjectBrokerAnyCandidates(Long projectBrokerId) {
-		List<Project> projectList = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(projectBrokerId);
+		List<Project> projectList = projectBrokerManager.getProjectListBy(projectBrokerId);
 		for (Iterator<Project> iterator = projectList.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
 			List<Identity> candidates = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(project.getCandidateGroup());
