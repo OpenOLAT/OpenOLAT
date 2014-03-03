@@ -207,6 +207,10 @@ a.b_link_extern { background: transparent url('../../openolat/images/external_li
 a.b_link_mailto { background: transparent url('../../openolat/images/mail_small.png') no-repeat left center; padding-left:18px;}
 a.b_link_forward { background: transparent url('../../openolat/images/arrow_right.png') no-repeat right center; padding-right:18px;}
 
+/* image styles */
+img.b_float_left {float: left; margin: 0 2em 2em 0;}
+img.b_float_right {float: right; margin: 0 0 2em 2em;}
+img.b_centered {display: block; margin: 0 auto 2em auto;}
 	
 /* ---------- smilies / emoticons in tinyMCE (excluded in editor styles) ------------------------ */
 /* i know, these are icons... but they must be in content.css, 'cause tinyMCE needs 'em... */
