@@ -51,9 +51,8 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 	private static final OLog log = Tracing.createLoggerFor(CheckedPDFExport.class);
 	
 	private final String filename;
-	private String title;
-	private String subject;
-	private String objectives;
+	private String courseTitle;
+	private String courseNodeTitle;
 	private String author;
 	private final boolean withScore;
 	private final Translator translator;
@@ -65,7 +64,7 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 	public CheckedPDFExport(String filename, Translator translator,
 			boolean withScore, List<UserPropertyHandler> userPropertyHandlers)
 			throws IOException {
-		super();
+		super(translator.getLocale());
 		
 		marginTopBottom = 62.0f;
 		marginLeftRight = 62.0f;
@@ -102,21 +101,21 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 		}
 		return header;
 	}
-	
-    public String getTitle() {
-		return title;
+
+	public String getCourseTitle() {
+		return courseTitle;
 	}
 
-	public void setTitle(String title) {
-		this.title = title;
+	public void setCourseTitle(String courseTitle) {
+		this.courseTitle = courseTitle;
 	}
 
-	public String getSubject() {
-		return subject;
+	public String getCourseNodeTitle() {
+		return courseNodeTitle;
 	}
 
-	public void setSubject(String subject) {
-		this.subject = subject;
+	public void setCourseNodeTitle(String courseNodeTitle) {
+		this.courseNodeTitle = courseNodeTitle;
 	}
 
 	public String getAuthor() {
@@ -125,14 +124,6 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 
 	public void setAuthor(String author) {
 		this.author = author;
-	}
-
-	public String getObjectives() {
-		return objectives;
-	}
-
-	public void setObjectives(String objectives) {
-		this.objectives = objectives;
 	}
 
 	@Override
@@ -175,21 +166,28 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 		}
 	}
 
-	public void create(CheckboxList checkboxList, CheckListAssessmentDataModel dataModel)
+	public void create(CheckboxList checkboxList, List<CheckListAssessmentRow> rows)
     throws IOException, COSVisitorException, TransformerException {
-		addMetadata(title, subject, author);
+		addMetadata(courseNodeTitle, courseTitle, author);
 		
 		int i=0;
 		for(Checkbox checkbox:checkboxList.getList()) {
-			create(checkbox, i++, dataModel);
+			create(checkbox, i++, rows);
 		}
 
     	addPageNumbers(); 
 	}
 		
-	private void create(Checkbox checkbox, int checkboxIndex, CheckListAssessmentDataModel dataModel)
+	private void create(Checkbox checkbox, int checkboxIndex, List<CheckListAssessmentRow> rows)
 	throws IOException, COSVisitorException, TransformerException {
 		addPage();
+		
+    	if(StringHelper.containsNonWhitespace(courseTitle)) {
+    		addParagraph(courseTitle, 16, true, width);
+    	}
+    	if(StringHelper.containsNonWhitespace(courseNodeTitle)) {
+    		addParagraph(courseNodeTitle, 14, true, width);
+    	}
 
 		String text = checkbox.getTitle();
     	if(StringHelper.containsNonWhitespace(text)) {
@@ -214,7 +212,7 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 
     	String[] headers = getHeaders();
     	
-    	List<CheckListAssessmentRow> content = getRows(checkboxIndex, dataModel);
+    	List<CheckListAssessmentRow> content = getRows(checkboxIndex, rows);
     	int numOfRows = content.size();
     	if(numOfRows == 0) {
     		closePage();
@@ -229,8 +227,7 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
     	}
     }
 	
-	private List<CheckListAssessmentRow> getRows(int checkboxIndex, CheckListAssessmentDataModel dataModel) {
-		List<CheckListAssessmentRow> rows = dataModel.getBackedUpRows();
+	private List<CheckListAssessmentRow> getRows(int checkboxIndex, List<CheckListAssessmentRow> rows) {
 		int numOfRows = rows.size();
     	
 		List<CheckListAssessmentRow> filteredRows = new ArrayList<>(rows.size());

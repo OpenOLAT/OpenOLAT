@@ -228,7 +228,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		if(withScore) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.totalPoints.i18nKey(), Cols.totalPoints.ordinal(), true, "points"));
 		}
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit.checkbox", translate("edit.checkbox"), "edit"));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.edit.checkbox", translate("table.header.edit.checkbox"), "edit"));
 		
 		String[] keys = null;
 		String[] values = null;
@@ -277,6 +277,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 		UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)userCourseEnv;
 		List<Checkbox> checkboxColl = checkboxList.getList();
 		int numOfCheckbox = checkboxList.getNumOfCheckbox();
+		
+		boolean courseAdmin = env.isAdmin();
 
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		Map<Long,Long> groupToSecGroupKey = new HashMap<Long,Long>();
@@ -285,7 +287,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		boolean courseTutor = securityManager.isIdentityInSecurityGroup(getIdentity(), re.getTutorGroup());
 		
 		Set<Long> missingIdentityKeys = new HashSet<>();
-		if(courseTutor) {
+		if(courseTutor || courseAdmin) {
 			secGroups.add(re.getParticipantGroup());
 			List<RepositoryEntryMembership> repoMemberships = repositoryManager.getRepositoryEntryMembership(re);
 			for(RepositoryEntryMembership repoMembership:repoMemberships) {
@@ -294,7 +296,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 			}
 		}
 
-		List<BusinessGroup> coachedGroups = env.getCoachedGroups();
+		List<BusinessGroup> coachedGroups = courseAdmin ?
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups()
+				: env.getCoachedGroups();
 		for(BusinessGroup group:coachedGroups) {
 			secGroups.add(group.getPartipiciantGroup());
 			groupToSecGroupKey.put(group.getKey(), group.getPartipiciantGroup().getKey());
@@ -428,20 +432,27 @@ public class CheckListAssessmentController extends FormBasicController implement
 		if(editCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
+			
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				reloadTable();
+			}
 		} else if(boxAssessmentCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 			
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				DBFactory.getInstance().commit();//make sure all changes are on the database
-				model.setObjects(loadDatas());
-				table.reset();
-				table.reloadData();
+				reloadTable();
 			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void reloadTable() {
+		DBFactory.getInstance().commit();//make sure all changes are on the database
+		model.setObjects(loadDatas());
+		table.reloadData();
 	}
 	
 	private void cleanUp() {
@@ -461,14 +472,14 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private void doOpenBoxAssessment(UserRequest ureq) {
 		if(boxAssessmentCtrl != null) return;
 
-		List<CheckListAssessmentRow> rows = model.getBackedUpRows();
+		List<CheckListAssessmentRow> rows = model.getObjects();
 		boxAssessmentCtrl = new CheckboxAssessmentController(ureq, getWindowControl(), checkboxList, rows,
 				courseOres, userCourseEnv, courseNode);
 		listenTo(boxAssessmentCtrl);
 
 		String title = translate("box.assessment");
 		Component content = boxAssessmentCtrl.getInitialComponent();
-		cmc = new CloseableModalController(getWindowControl(), "close", content, true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), content, true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -565,10 +576,12 @@ public class CheckListAssessmentController extends FormBasicController implement
 			String name = courseNode.getShortTitle();
 			CheckboxPDFExport pdfExport = new CheckboxPDFExport(name, getTranslator(), userPropertyHandlers);
 			pdfExport.setAuthor(userManager.getUserDisplayName(getIdentity()));
-			pdfExport.setTitle(courseNode.getShortTitle());
-			pdfExport.setSubject(courseNode.getLongTitle());
-			pdfExport.setObjectives(courseNode.getLearningObjectives());
-			pdfExport.create(checkboxList, model);
+			pdfExport.setCourseNodeTitle(courseNode.getShortTitle());
+			pdfExport.setCourseTitle(courseNode.getLongTitle());
+			pdfExport.setCourseNodeTitle(courseNode.getShortTitle());
+			String groupName = table.getSelectedFilterValue();
+			pdfExport.setGroupName(groupName);
+			pdfExport.create(checkboxList, model.getObjects());
 			ureq.getDispatchResult().setResultingMediaResource(pdfExport);
 		} catch (IOException | COSVisitorException | TransformerException e) {
 			logError("", e);
@@ -580,10 +593,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 			String name = courseNode.getShortTitle();
 			CheckedPDFExport pdfExport = new CheckedPDFExport(name, getTranslator(), withScore, userPropertyHandlers);
 			pdfExport.setAuthor(userManager.getUserDisplayName(getIdentity()));
-			pdfExport.setTitle(courseNode.getShortTitle());
-			pdfExport.setSubject(courseNode.getLongTitle());
-			pdfExport.setObjectives(courseNode.getLearningObjectives());
-			pdfExport.create(checkboxList, model);
+			pdfExport.setCourseNodeTitle(courseNode.getShortTitle());
+			pdfExport.setCourseTitle(courseNode.getLongTitle());
+			pdfExport.create(checkboxList, model.getObjects());
 			ureq.getDispatchResult().setResultingMediaResource(pdfExport);
 		} catch (IOException | COSVisitorException | TransformerException e) {
 			logError("", e);
@@ -605,7 +617,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 
 		String title = courseNode.getShortTitle();
 		Component content = editCtrl.getInitialComponent();
-		cmc = new CloseableModalController(getWindowControl(), "close", content, true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), content, true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

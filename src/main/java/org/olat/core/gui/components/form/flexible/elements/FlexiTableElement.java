@@ -146,6 +146,16 @@ public interface FlexiTableElement extends FormItem {
 	public boolean isFilterEnabled();
 	
 	/**
+	 * @return The selected key by the filter, or null if no item is selected
+	 */
+	public String getSelectedFilterKey();
+	
+	/**
+	 * @return The selected value by the filter, or null if no item is selected
+	 */
+	public String getSelectedFilterValue();
+	
+	/**
 	 * Set the values for the filter and will enable it.
 	 * @param keys
 	 * @param values

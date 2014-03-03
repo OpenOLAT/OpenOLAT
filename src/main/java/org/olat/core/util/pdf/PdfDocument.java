@@ -22,7 +22,9 @@ package org.olat.core.util.pdf;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.transform.TransformerException;
 
@@ -39,6 +41,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -64,9 +67,11 @@ public class PdfDocument {
 	protected PDPageContentStream currentContentStream;
 	
 	protected float currentY;
+	private String printDate;
 	
-	public PdfDocument() throws IOException {
+	public PdfDocument(Locale locale) throws IOException {
 		document = new PDDocument();
+		printDate = Formatter.getInstance(locale).formatDate(new Date());
 	}
 
 	public void close() throws IOException {
@@ -232,6 +237,14 @@ public class PdfDocument {
             contentStream.setTextTranslation(x, y);
             contentStream.drawString(text);
             contentStream.endText();
+            
+            //set current date
+            contentStream.beginText();
+            contentStream.setFont(font, footerFontSize );
+            contentStream.setTextTranslation(marginLeftRight, y);
+            contentStream.drawString(printDate);
+            contentStream.endText();
+            
             contentStream.close();
         }
     }

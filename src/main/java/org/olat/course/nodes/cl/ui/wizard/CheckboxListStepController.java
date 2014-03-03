@@ -181,7 +181,7 @@ public class CheckboxListStepController extends StepFormBasicController {
 		listenTo(editCtrl);
 
 		Component content = editCtrl.getInitialComponent();
-		cmc = new CloseableModalController(getWindowControl(), "close", content, true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), content, true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
