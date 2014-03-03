@@ -3,7 +3,7 @@ EXPERIMENTAL: Setting up latest OpenOLAT version on Eclipse With an Application 
 --------------------------------------------------------------------------------------
 
 OpenOLAT supports only Tomcat officially, but it can also run on other application
-servers like JBoss AS or Glassfish. This README is intended for people who have
+servers like JBoss AS / Wildfly. This README is intended for people who have
 some minimal experience with these servers and can install a JDBC driver, set some
 JMS resources...
 
@@ -12,9 +12,6 @@ To create your eclipse project, use these commands instead of the default one:
 
 for JBoss AS:
   mvn eclipse:clean eclipse:eclipse -P-tomcat,jbossas7
-  
-and for Glassfish
-  mvn eclipse:clean eclipse:eclipse -P-tomcat,gae
  
  
 Configuration JBoss AS 7.1
@@ -63,33 +60,6 @@ Configuration WildFly (JBoss AS 8.0)
      exam.broker.jndi=java:jboss/exported/jms/queue/examQueue
 
 
-Configuration Glassfish 3.1
----------------------------
-
-1. I use the community edition of Glassfish version 3.1.2.2.
-2. In the administration console, create a JDBC Resource with a JNDI name like:
-     jdbc/OpenOLATDS
-   and drop the driver.jar at the right place.
-   In olat.local.properties, set the following properties:
-     db.source=jndi
-     db.jndi=jdbc/OpenOLATDS
-3. In the administration console, create in JMS Resources > Connection factories:
-   -A resource of type javax.jms.ConnectionFactory with a JNDI name like:
-     OpenOLATConnectionFactory
-   In JMS Resources > Destination factories:
-   -A queue of type javax.jms.Queue and a JNDI name like;
-     queue/searchQueue
-   -A topic of type javax.jms.Topic and a JNDI name like;
-     topic/sysbus
-   in olat.local.properties set the following properties:
-     jms.provider=jndi
-     jms.broker.jndi=OpenOLATConnectionFactory
-     sysbus.broker.jndi=topic/sysbus
-     search.broker.jndi=queue/searchQueue
-     index.broker.jndi=queue/indexQueue
-     exam.broker.jndi=queue/examQueue
-
-
 Features located on the application server
 ------------------------------------------
 State              Feature
@@ -97,10 +67,8 @@ State              Feature
 OK                 JDBC Connections
 OK                 JMS
 OK                 JAX-RS (restapi)
-x                  JAX-WS (onyx, vitero)
+OK                 JAX-WS (onyx, vitero)
 x                  Mail
 x                  LDAP Connection
-OK (only JBoss)    Hibernate/JPA (only JBoss AS, we depend on Hibernate)
-x                  Caching (for JPA second level cache for example)
-
-
+OK                 Hibernate/JPA (only JBoss AS, we depend on Hibernate)
+OK                 Caching (for JPA second level cache for example)
