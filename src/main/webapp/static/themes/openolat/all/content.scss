@@ -179,6 +179,15 @@ table {
 	&.b_full { 
 		width: 99.5%; 
 	}
+	td {
+		vertical-align: top;	
+	}
+	&.b_middle {
+		background: transparent;
+		td {
+			vertical-align: middle;			
+		}	
+	}
 }
 
 /* font styles  */
