@@ -170,6 +170,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.CalendarTest.class,
 	org.olat.restapi.CourseGroupMgmtTest.class,
 	org.olat.restapi.CourseCalendarTest.class,
+	org.olat.restapi.CourseDBTest.class,
 	org.olat.restapi.CoursesContactElementTest.class,
 	org.olat.restapi.CourseSecurityTest.class,
 	org.olat.restapi.CoursesElementsTest.class,
