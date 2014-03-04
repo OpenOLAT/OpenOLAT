@@ -89,7 +89,7 @@ public class CourseDbWebService {
 	@Path("values")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getValues(@PathParam("courseId") Long courseId, @PathParam("category") String category, @Context HttpServletRequest request) {
-		ICourse course = CourseFactory.loadCourse(courseId);
+		ICourse course = loadCourse(courseId);
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 		List<CourseDBEntry> entries = CourseDBManager.getInstance().getValues(course, ureq.getIdentity(), category, null);
 
@@ -159,7 +159,7 @@ public class CourseDbWebService {
 	@Path("values/{name}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name, @Context HttpServletRequest request) {
-		ICourse course = CourseFactory.loadCourse(courseId);
+		ICourse course = loadCourse(courseId);
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 		CourseDBEntry entry = CourseDBManager.getInstance().getValue(course, ureq.getIdentity(), category, name);
 		if(entry == null) {
@@ -188,7 +188,7 @@ public class CourseDbWebService {
 	@Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
 	public Response getValuePlain(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name,
 			@Context HttpServletRequest request) {
-		ICourse course = CourseFactory.loadCourse(courseId);
+		ICourse course = loadCourse(courseId);
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 		CourseDBEntry entry = CourseDBManager.getInstance().getValue(course, ureq.getIdentity(), category, name);
 		if(entry == null) {
@@ -251,7 +251,7 @@ public class CourseDbWebService {
 			@PathParam("name") String name, @Context HttpServletRequest request) {
 		Roles roles = RestSecurityHelper.getRoles(request);
 		if(roles.isAuthor() || roles.isOLATAdmin()) {
-			ICourse course = CourseFactory.loadCourse(courseId);
+			ICourse course = loadCourse(courseId);
 			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 			boolean ok = CourseDBManager.getInstance().deleteValue(course, ureq.getIdentity(), category, name);
 			if(ok) {
@@ -285,12 +285,18 @@ public class CourseDbWebService {
 	}
 	
 	private Response internPutValue(Long courseId, String category, String name, Object value, HttpServletRequest request) {
-		ICourse course = CourseFactory.loadCourse(courseId);
+		ICourse course = loadCourse(courseId);
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 		CourseDBEntry entry = CourseDBManager.getInstance().setValue(course, ureq.getIdentity(), category, name, value);
 		if(entry == null) {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		return Response.ok().build();
+	}
+	
+	private ICourse loadCourse(Long potentialCourseId) {
+		Long courseId = CourseDBManager.getInstance().getCourseId(potentialCourseId);
+		ICourse course = CourseFactory.loadCourse(courseId);
+		return course;
 	}
 }
