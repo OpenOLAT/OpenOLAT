@@ -22,6 +22,7 @@ package org.olat.core.dispatcher.impl;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.LogDelegator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
 /**
@@ -98,7 +99,11 @@ public class StaticMediaDispatcher extends LogDelegator {
 		// Add version to make URL change after new release and force browser to
 		// load new static files
 		if (addVersionID) {
-			target.append(Settings.getBuildIdentifier());
+			if(StringHelper.containsNonWhitespace(WebappHelper.getRevisionNumber())) {
+				target.append(WebappHelper.getRevisionNumber()).append(":").append(WebappHelper.getChangeSet());
+			} else {
+				target.append(Settings.getBuildIdentifier());
+			}
 		} else {
 			target.append(NOVERSION);			
 		}

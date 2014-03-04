@@ -316,7 +316,7 @@ public class SystemTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testUpdate() throws IOException, URISyntaxException {
+	public void testReleaseInfos() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
@@ -324,8 +324,10 @@ public class SystemTest extends OlatJerseyTestCase {
 		ReleaseInfosVO versionInfos = conn.get(systemUri, ReleaseInfosVO.class);
 
 		assertNotNull(versionInfos);
+		assertNotNull(versionInfos.getInstanceID());
 		assertNotNull(versionInfos.getBuildVersion());
 		assertNotNull(versionInfos.getOlatVersion());
+		assertNotNull(versionInfos.getRepoRevision());
 
 		conn.shutdown();	
 	}
