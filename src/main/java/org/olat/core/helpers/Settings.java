@@ -137,7 +137,6 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 		repoRevision = repoRev;
 	}
 	
-	//fxdiff: get the mercurial changeset Information from the time this release had been built
 	public static String getRepoRevision(){
 		return repoRevision;
 	}

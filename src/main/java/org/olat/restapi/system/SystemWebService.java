@@ -35,6 +35,7 @@ import javax.ws.rs.core.Response;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.restapi.system.vo.EnvironmentInformationsVO;
 import org.olat.restapi.system.vo.ReleaseInfosVO;
@@ -104,7 +105,14 @@ public class SystemWebService {
 		}
 		
 		ReleaseInfosVO version = new ReleaseInfosVO();
-		version.setBuildVersion(Settings.getBuildIdentifier());
+		if(StringHelper.containsNonWhitespace(WebappHelper.getRevisionNumber())) {
+			String v = WebappHelper.getRevisionNumber() + ":" + WebappHelper.getChangeSet();
+			version.setBuildVersion(v);
+			version.setRepoRevision(v);
+		} else {
+			version.setBuildVersion(Settings.getBuildIdentifier());
+			version.setRepoRevision(Settings.getRepoRevision());
+		}
 		version.setOlatVersion(Settings.getVersion());
 		version.setInstanceID(WebappHelper.getInstanceId());
 		return Response.ok(version).build();

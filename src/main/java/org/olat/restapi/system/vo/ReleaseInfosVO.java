@@ -45,33 +45,9 @@ public class ReleaseInfosVO {
 	private String repoRevision;
 	@XmlAttribute(name="instanceID",required=true)
 	private String instanceID;
-	@XmlAttribute(name="allowAutoPatch", required=false)
-	private boolean allowAutoPatch;
-	@XmlAttribute(name="patchAvailable", required=false)
-	private boolean patchAvailable;
-	@XmlAttribute(name="allowAutoUpdate", required=false)
-	private boolean allowAutoUpdate;
-	@XmlAttribute(name="updateAvailable", required=false)
-	private boolean updateAvailable;
-	@XmlAttribute(name="upgradeAvailable", required=false)
-	private boolean upgradeAvailable;
-	
 	
 	public ReleaseInfosVO() {
 		//make JAXB happy
-	}
-	
-	public ReleaseInfosVO(String buildVersion, String olatVersion, String repoRevision,String instanceID, boolean allowAutoPatch, boolean patchAvailable,
-			boolean allowAutoUpdate, boolean updateAvailable, boolean upgradeAvailable) {
-		this.buildVersion = buildVersion;
-		this.olatVersion = olatVersion;
-		this.repoRevision = repoRevision;
-		this.instanceID = instanceID;
-		this.allowAutoPatch = allowAutoPatch;
-		this.allowAutoUpdate = allowAutoUpdate;
-		this.patchAvailable = patchAvailable;
-		this.updateAvailable = updateAvailable;
-		this.upgradeAvailable = upgradeAvailable;
 	}
 
 	public String getBuildVersion() {
@@ -104,45 +80,5 @@ public class ReleaseInfosVO {
 	
 	public void setRepoRevision(String repoRevision) {
 		this.repoRevision = repoRevision;
-	}
-
-	public boolean isAllowAutoPatch() {
-		return allowAutoPatch;
-	}
-
-	public void setAllowAutoPatch(boolean allowAutoPatch) {
-		this.allowAutoPatch = allowAutoPatch;
-	}
-
-	public boolean isPatchAvailable() {
-		return patchAvailable;
-	}
-
-	public void setPatchAvailable(boolean patchAvailable) {
-		this.patchAvailable = patchAvailable;
-	}
-
-	public boolean isAllowAutoUpdate() {
-		return allowAutoUpdate;
-	}
-
-	public void setAllowAutoUpdate(boolean allowAutoUpdate) {
-		this.allowAutoUpdate = allowAutoUpdate;
-	}
-
-	public boolean isUpdateAvailable() {
-		return updateAvailable;
-	}
-
-	public void setUpdateAvailable(boolean updateAvailable) {
-		this.updateAvailable = updateAvailable;
-	}
-
-	public boolean isUpgradeAvailable() {
-		return upgradeAvailable;
-	}
-
-	public void setUpgradeAvailable(boolean upgradeAvailable) {
-		this.upgradeAvailable = upgradeAvailable;
 	}
 }
