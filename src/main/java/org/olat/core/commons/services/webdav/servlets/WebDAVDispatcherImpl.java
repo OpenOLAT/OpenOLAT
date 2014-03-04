@@ -26,6 +26,7 @@ import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.text.Normalizer;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -276,8 +277,7 @@ public class WebDAVDispatcherImpl
             documentBuilder.setEntityResolver(
                     new WebdavResolver(req.getServletContext()));
         } catch(ParserConfigurationException e) {
-            throw new ServletException
-                ("webdavservlet.jaxpfailed");
+            throw new ServletException("webdavservlet.jaxpfailed");
         }
         return documentBuilder;
     }
@@ -288,8 +288,8 @@ public class WebDAVDispatcherImpl
 		if (webDAVManager == null) {
 			resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 		} else if(webDAVModule == null || !webDAVModule.isEnabled()) {
-  		resp.sendError(WebdavStatus.SC_FORBIDDEN);
-  	} else if (webDAVManager.handleAuthentication(req, resp)) {
+			resp.sendError(WebdavStatus.SC_FORBIDDEN);
+		} else if (webDAVManager.handleAuthentication(req, resp)) {
 			webdavService(req, resp);
 		} else {
 			//the method handleAuthentication will send the challenges for authentication
@@ -402,6 +402,8 @@ public class WebDAVDispatcherImpl
         if ((result == null) || (result.equals(""))) {
             result = "/";
         }
+        
+        result = Normalizer.normalize(result, Normalizer.Form.NFC);
         return (result);
 
     }
@@ -2004,11 +2006,12 @@ public class WebDAVDispatcherImpl
         if (resource.isDirectory() && (!href.endsWith("/")))
             href += "/";
 
-        generatedXML.writeText(rewriteUrl(href));
+        String nfcNormalizedHref = Normalizer.normalize(href, Normalizer.Form.NFC);
+        generatedXML.writeText(rewriteUrl(nfcNormalizedHref));
 
         generatedXML.writeElement("D", "href", XMLWriter.CLOSING);
 
-        String resourceName = path;
+        String resourceName = Normalizer.normalize(path, Normalizer.Form.NFC);
         int lastSlash = path.lastIndexOf('/');
         if (lastSlash != -1)
             resourceName = resourceName.substring(lastSlash + 1);
@@ -2278,14 +2281,17 @@ public class WebDAVDispatcherImpl
         if (!toAppend.startsWith("/"))
             toAppend = "/" + toAppend;
 
-        generatedXML.writeText(rewriteUrl(RequestUtil.normalize(absoluteUri + toAppend)));
+        String normalizedUrl = RequestUtil.normalize(absoluteUri + toAppend);
+        String nfcNormalizedUrl = Normalizer.normalize(normalizedUrl, Normalizer.Form.NFC);
+        generatedXML.writeText(rewriteUrl(nfcNormalizedUrl));
 
         generatedXML.writeElement("D", "href", XMLWriter.CLOSING);
 
-        String resourceName = path;
+        String resourceName = Normalizer.normalize(path, Normalizer.Form.NFC);
         int lastSlash = path.lastIndexOf('/');
-        if (lastSlash != -1)
+        if (lastSlash != -1) {
             resourceName = resourceName.substring(lastSlash + 1);
+        }
 
         switch (type) {
 
