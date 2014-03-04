@@ -43,8 +43,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -66,7 +64,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BusinessGroupServiceTest extends OlatTestCase {
 	
-	private OLog log = Tracing.createLoggerFor(BusinessGroupServiceTest.class);
 	private static boolean initialize = false;
 	
 	@Autowired
