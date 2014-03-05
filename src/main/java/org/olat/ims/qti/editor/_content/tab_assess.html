@@ -39,6 +39,44 @@
 		</td>
 	</tr>
 
+#if(!$isRestrictedEdit)
+	<tr>
+		<td>$r.translate("form.section.selection_pre")</td>
+		<td>
+		<select id="selection_number" name="selection_number" onchange="if(this.form.selection_number.options.selectedIndex==0){unShadeFormElement('order_type');}else{shadeFormElement('order_type');this.form.order_type.options.selectedIndex=0}return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')">
+			<option value="0"
+			#if ($selection_number == "0") 
+				selected="selected" 
+				#set ($readonly = "")
+				#set ($css = "")
+			#else
+				#set ($readonly = 'readonly="readonly"')
+				#set ($css = "b_disabled")			
+			#end
+			>$r.translate("form.section.selection_all")</option>
+		#foreach($section in $assessment.sections)
+			<option value="$velocityCount"
+			#if ($selection_number == "$velocityCount") 
+			selected="selected" 
+			#end
+			>$velocityCount</option>
+		#end
+		</select>
+		</td>
+	</tr>
+
+	<tr>
+		<td>$r.translate("form.section.order_type")</td>
+		<td>
+		<select id="order_type" name="order_type" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" $readonly class="$css">
+			<option value="Random" #if ($order_type == "Random") selected="selected" #end
+			>$r.translate("form.section.order_type.random")</option>
+			<option value="Sequential" #if ($order_type == "Sequential") selected="selected" #end
+			>$r.translate("form.section.order_type.sequential")</option>
+		</select>
+	</tr>
+#end
+
 #if($isSurveyMode.equals("false") && !$isRestrictedEdit)
 
 	<tr>

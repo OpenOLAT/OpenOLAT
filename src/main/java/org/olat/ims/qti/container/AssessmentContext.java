@@ -27,15 +27,19 @@ package org.olat.ims.qti.container;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.dom4j.Node;
 import org.olat.ims.qti.container.qtielements.AssessFeedback;
 import org.olat.ims.qti.container.qtielements.Objectives;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIHelper;
+import org.olat.ims.qti.process.elements.ExpressionBuilder;
 import org.olat.ims.qti.process.elements.ScoreBooleanEvaluable;
 
 /**
@@ -165,23 +169,134 @@ public class AssessmentContext implements Serializable {
 
 	private void initSections(Element assessment, Switches sw) {
 		sectionContexts = new ArrayList<SectionContext>(2);
+		
+
+		List<Element> el_sections = new ArrayList<>();
 
 		//<!ELEMENT sectionref (#PCDATA)>
 		//<!ATTLIST sectionref %I_LinkRefId; >
 		List sections = assessment.selectNodes("section|sectionref");
-
 		for (Iterator iter = sections.iterator(); iter.hasNext();) {
 			Element el_section = (Element) iter.next();
-
+			
 			// resolve sectionref into the correct sections
 			if (el_section.getName().equals("sectionref")) {
 				String linkRefId = el_section.attributeValue("linkrefid");
 				el_section = (Element) el_section.selectSingleNode("//section[@ident='" + linkRefId + "']");
-				if (el_section == null) { throw new RuntimeException("sectionref with ref '" + linkRefId + "' could not be resolved"); }
+				if (el_section == null) { 
+					throw new RuntimeException("sectionref with ref '" + linkRefId + "' could not be resolved");
+				}
 			}
+			
+			el_sections.add(el_section);
+		}
+		
+		Element el_selordering = (Element) assessment.selectSingleNode("selection_ordering");
+		if (el_selordering != null) {
+			// do some selection and ordering
+			//<!ELEMENT selection_ordering (qticomment? , sequence_parameter* ,
+			// selection* , order?)>
+			//<!ATTLIST selection_ordering sequence_type CDATA #IMPLIED >
+			//<!ELEMENT selection (sourcebank_ref? , selection_number? ,
+			// selection_metadata? ,
+			//				(and_selection | or_selection | not_selection | selection_extension)?)>
+			//<!ELEMENT sourcebank_ref (#PCDATA)>
+			//not <!ELEMENT order (order_extension?)>
+			//<!ATTLIST order order_type CDATA #REQUIRED >
+			//<!ELEMENT selection_number (#PCDATA)>
+			//not <!ELEMENT sequence_parameter (#PCDATA)>
+			//not <!ATTLIST sequence_parameter %I_Pname; >
+			List el_selections = el_selordering.selectNodes("selection");
 
+			// iterate over all selection elements : after each we have some items to
+			// add to the run-time-section
+			for (Iterator it_selection = el_selections.iterator(); it_selection.hasNext();) {
+				List selectedSections;
+				Element el_selection = (Element) it_selection.next();
+				Element el_sourcebankref = (Element) el_selection.selectSingleNode("sourcebank_ref");
+				if (el_sourcebankref == null) {
+					// no reference to sourcebank, -> take internal one, but dtd disallows
+					// it!?? TODO
+					/*
+					 * 2:27 PM] <felix.jost> aus ims qti sao: [2:27 PM] <felix.jost> 3.2.1
+					 * <sourcebank_ref> Description: Identifies the objectbank to which
+					 * the selection and ordering rules are to be applied. This objectbank
+					 * may or may not be contained in the same <questestinterop> package.
+					 * [2:27 PM] <felix.jost> aber dtd: [2:28 PM] <felix.jost> <!ELEMENT
+					 * questestinterop (qticomment? , (objectbank | assessment | (section |
+					 * item)+))>
+					 */
+					selectedSections = new ArrayList();
+				} else {
+					String sourceBankRef = el_sourcebankref.getText();
+					Element objectBank = assessInstance.getResolver().getObjectBank(sourceBankRef);
+
+					// traverse 1.: process "and" or "or" or "not" selection to get the
+					// items, if existing, otherwise take all items
+					//          2.: do the selection_number
+					Element andornot_selection = (Element) el_selection
+							.selectSingleNode("and_selection|or_selection|not_selection|selection_metadata");
+					StringBuilder select_expr = new StringBuilder("//section");
+					if (andornot_selection != null) {
+						// some criteria, extend above xpath to select only the appropriate
+						// elements
+						select_expr.append("[");
+						String elName = andornot_selection.getName();
+						ExpressionBuilder eb = QTIHelper.getExpressionBuilder(elName);
+						eb.buildXPathExpression(andornot_selection, select_expr, false, true);
+						select_expr.append("]");
+					}
+					selectedSections = objectBank.selectNodes(select_expr.toString());
+					el_sections.addAll(selectedSections);
+				}
+				Element el_selection_number = (Element) el_selection.selectSingleNode("selection_number");
+				// --- 3. if selection_number exists, pick out some items
+				if (el_selection_number != null) {
+					String sNum = el_selection_number.getText();
+					int num = new Integer(sNum).intValue();
+					// now choose some x out of the items if selection_number exists
+					List<Element> newList = new ArrayList<Element>();
+					Random r = new Random();
+					int size = el_sections.size();
+					// if num > size ??e.g. 5 elements should be picked, but there are
+					// only four
+					if (num > size) num = size;
+					for (int i = 0; i < num; i++) {
+						int n = r.nextInt(size--);
+						Element o = el_sections.remove(n);
+						newList.add(o);
+					}
+					el_sections = newList;
+					/*
+					 * pick out items -> remove unused items from section
+					 */
+					sections.removeAll(el_sections);
+					for (Iterator iter = sections.iterator(); iter.hasNext();) {
+						el_sections.remove((Node)iter.next());						
+					}
+					
+					
+				}
+				// append found items to existing ones
+			}
+		} // end of el_ordering != null
+
+		//	if there is order = random -> shuffle
+		//<order order_type="Random"/>
+		if (el_selordering != null) {
+			Element el_order = (Element) el_selordering.selectSingleNode("order");
+			if (el_order != null) {
+				String order_type = el_order.attributeValue("order_type");
+				if (order_type.equals("Random")) {
+					Collections.shuffle(el_sections);
+				}
+			}
+		}
+
+		for (Iterator<Element> iter = el_sections.iterator(); iter.hasNext();) {
+			Element section = iter.next();
 			SectionContext sc = new SectionContext();
-			sc.setUp(assessInstance, el_section, sw);
+			sc.setUp(assessInstance, section, sw);
 			sectionContexts.add(sc);
 		}
 	}

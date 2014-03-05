@@ -36,6 +36,7 @@ import org.olat.ims.qti.editor.beecom.objects.Control;
 import org.olat.ims.qti.editor.beecom.objects.Metadata;
 import org.olat.ims.qti.editor.beecom.objects.OutcomesProcessing;
 import org.olat.ims.qti.editor.beecom.objects.QTIObject;
+import org.olat.ims.qti.editor.beecom.objects.SelectionOrdering;
 
 /**
  * @author rkulow
@@ -83,6 +84,14 @@ public class AssessmentParser implements IParser {
 		OutcomesProcessing outcomesProcessing = (OutcomesProcessing)parserManager.parse(element.element("outcomes_processing"));
 		if (outcomesProcessing != null)
 			assessment.setOutcomes_processing(outcomesProcessing);
+		
+		// SELECTION ORDERING
+		SelectionOrdering selectionOrdering = (SelectionOrdering)parserManager.parse(element.element("selection_ordering"));
+		if (selectionOrdering != null){
+			assessment.setSelection_ordering(selectionOrdering);
+		} else {
+			assessment.setSelection_ordering(new SelectionOrdering());
+		}
 		
 		//SECTIONS
 		List sectionsXML = element.elements("section");
