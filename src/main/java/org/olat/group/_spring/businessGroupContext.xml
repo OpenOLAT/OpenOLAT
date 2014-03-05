@@ -10,8 +10,7 @@
 
 	<context:component-scan base-package="org.olat.group.manager,org.olat.group.area,org.olat.group.right" />
 
-	<bean id="businessGroupModule" class="org.olat.group.BusinessGroupModule" 
-		init-method="init" depends-on="userModule">
+	<bean id="businessGroupModule" class="org.olat.group.BusinessGroupModule" init-method="init">
 		<property name="persistedProperties">
 	  		<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
 	  				depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
