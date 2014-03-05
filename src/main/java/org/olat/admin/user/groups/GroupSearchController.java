@@ -21,8 +21,10 @@ package org.olat.admin.user.groups;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -196,13 +198,14 @@ public class GroupSearchController extends StepFormBasicController {
 		if (StringHelper.containsNonWhitespace(searchValue)) {
 			SearchBusinessGroupParams param1s = new SearchBusinessGroupParams();
 			param1s.setNameOrDesc(searchValue);
+			Set<BusinessGroup> dedupGroups = new HashSet<>();
 			List<BusinessGroup> group1s = businessGroupService.findBusinessGroups(param1s, null, 0, -1);
-			filterGroups(group1s);
+			filterGroups(group1s, dedupGroups);
 			
 			SearchBusinessGroupParams param2s = new SearchBusinessGroupParams();
 			param2s.setCourseTitle(searchValue);
 			List<BusinessGroup> group2s = businessGroupService.findBusinessGroups(param2s, null, 0, -1);
-			filterGroups(group2s);
+			filterGroups(group2s, dedupGroups);
 			
 			List<BusinessGroup> groups = new ArrayList<BusinessGroup>(group1s.size() + group2s.size());
 			groups.addAll(group1s);
@@ -233,10 +236,15 @@ public class GroupSearchController extends StepFormBasicController {
 		}
 	}
 	
-	private void filterGroups(List<BusinessGroup> groups) {
+	private void filterGroups(List<BusinessGroup> groups, Set<BusinessGroup> dedupGroups) {
 		for(Iterator<BusinessGroup> groupIt=groups.iterator(); groupIt.hasNext(); ) {
-			if(BusinessGroupManagedFlag.isManaged(groupIt.next(), BusinessGroupManagedFlag.membersmanagement)) {
+			BusinessGroup group = groupIt.next();
+			if(BusinessGroupManagedFlag.isManaged(group, BusinessGroupManagedFlag.membersmanagement)) {
 				groupIt.remove();
+			} else if(dedupGroups.contains(group)) {
+				groupIt.remove();
+			} else {
+				dedupGroups.add(group);
 			}
 		}
 	}
