@@ -56,7 +56,7 @@ public abstract class LDAPLoginManager extends BasicManager {
 	
 	public abstract void deletIdentities(List<Identity> identityList);
 
-	public abstract boolean doBatchSync(LDAPError errors);
+	public abstract boolean doBatchSync(LDAPError errors, boolean full);
 	
 	public abstract Date getLastSyncDate();
 	
