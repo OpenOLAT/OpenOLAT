@@ -27,11 +27,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -95,7 +95,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 		//lookup in my shared folders
 		List<RepositoryEntry> ownerEntries = repoManager.queryByOwner(identity, SharedFolderFileResource.TYPE_NAME);
 		for (RepositoryEntry re : ownerEntries) {
-			String name = Formatter.makeStringFilesystemSave(re.getDisplayname());
+			String name = RequestUtil.normalizeFilename(re.getDisplayname());
 			if(childName.equals(name)) {
 				VFSContainer shared = getSharedContainer(re, false);
 				String nextPath = path.substring(childName.length() + 1);
@@ -112,7 +112,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 				List<String> types = Collections.singletonList(SharedFolderFileResource.TYPE_NAME);
 				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(identity, types, registeredUserRole);
 				for (RepositoryEntry re : allEntries) {
-					String name = Formatter.makeStringFilesystemSave(re.getDisplayname());
+					String name = RequestUtil.normalizeFilename(re.getDisplayname());
 					if(childName.equals(name)) {
 						VFSContainer shared = getSharedContainer(re, true);
 						String nextPath = path.substring(childName.length() + 1);
@@ -124,7 +124,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 				List<Long> publiclyReadableFoldersKeys = getSharedKeys();	
 				List<RepositoryEntry> entries = repoManager.lookupRepositoryEntries(publiclyReadableFoldersKeys);
 				for (RepositoryEntry re:entries) {
-					String name = Formatter.makeStringFilesystemSave(re.getDisplayname());
+					String name = RequestUtil.normalizeFilename(re.getDisplayname());
 					if (childName.equals(name) && 
 							(re.getAccess() >= RepositoryEntry.ACC_USERS || (re.getAccess() == RepositoryEntry.ACC_OWNERS && re.isMembersOnly()))) {
 						

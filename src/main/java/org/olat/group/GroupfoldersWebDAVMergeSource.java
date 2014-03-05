@@ -29,8 +29,8 @@ import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
@@ -129,7 +129,7 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 				continue;
 			}
 			
-			name = Formatter.makeStringFilesystemSave(name);
+			name = RequestUtil.normalizeFilename(name);
 			if(childName.equals(name)) {
 				String nextPath = path.substring(childName.length() + 1);
 				VFSContainer grpContainer = getGroupContainer(name, group, false);
@@ -209,10 +209,9 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 		// create container and set quota
 		OlatRootFolderImpl localImpl = new OlatRootFolderImpl(folderPath, this);
 		//already done in OlatRootFolderImpl localImpl.getBasefile().mkdirs(); // lazy initialize dirs
-		NamedContainerImpl grpContainer = new NamedContainerImpl(Formatter.makeStringFilesystemSave(name), localImpl);
-		
-		
-		//fxdiff VCRP-8: collaboration tools folder access control
+		String containerName = RequestUtil.normalizeFilename(name);
+		NamedContainerImpl grpContainer = new NamedContainerImpl(containerName, localImpl);
+
 		boolean writeAccess;
 		if (!isOwner) {
 			// check if participants have read/write access

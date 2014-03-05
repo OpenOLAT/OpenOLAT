@@ -26,6 +26,7 @@ package org.olat.core.commons.services.webdav.servlets;
 
 
 import java.io.UnsupportedEncodingException;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -474,7 +475,19 @@ public final class RequestUtil {
 
     }
 
-
-
+    /**
+     * This method remove some special characters as space, &gt;, &lt;,
+     * slash .. but preserve Umlauts. () are acceptable
+     * @return
+     */
+    public static String normalizeFilename(String filename) {
+    	String nameSanitized = filename/*.replace(" ", "_")*/
+    			.replace("/", "_").replace("\\", "_")
+    			.replace("?", "_").replace("<", "_").replace(">", "_")
+    			.replace("%", "_").replace("\"", "'").replace(":", "_")
+    			.replace("*", "_");
+    	String nameNormalized = Normalizer.normalize(nameSanitized, Normalizer.Form.NFC);
+    	return nameNormalized;
+    }
 }
 
