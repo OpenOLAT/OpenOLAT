@@ -46,7 +46,7 @@ public class Section implements QTIObject {
 	
 	// Elements
 	private QTIObject qticomment = null; // occurs 0 ore 1 time
-	private QTIObject duration = null; // occurs 0 ore 1 time
+	private Duration duration; // occurs 0 ore 1 time
 	private List qtimetadatas = null; // occurs 0 to many
 	private List sectionprecondition = null; // occurs 0 to many
 	private List sectionpostcondition = null; // occurs 0 to many
@@ -142,7 +142,7 @@ public class Section implements QTIObject {
 	 * Returns the duration.
 	 * @return QTIObject
 	 */
-	public QTIObject getDuration() {
+	public Duration getDuration() {
 		return duration;
 	}
 
@@ -286,7 +286,7 @@ public class Section implements QTIObject {
 	 * Sets the duration.
 	 * @param duration The duration to set
 	 */
-	public void setDuration(QTIObject duration) {
+	public void setDuration(Duration duration) {
 		this.duration = duration;
 	}
 

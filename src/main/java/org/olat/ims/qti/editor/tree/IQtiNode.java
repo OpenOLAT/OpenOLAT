@@ -27,7 +27,6 @@ package org.olat.ims.qti.editor.tree;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.nodes.INode;
@@ -44,19 +43,14 @@ public interface IQtiNode extends INode {
 	/**
 	 * @param ureq
 	 * @param wControl
-	 * @return Controller
-	 */
-	public Controller createRunController(UserRequest ureq, WindowControl wControl);
-
-	/**
-	 * @param ureq
-	 * @param wControl
 	 * @param trnsltr
-	 * @param editorMainController TODO
+	 * @param editorMainController
 	 * @return Controller
 	 */
 	public TabbedPane createEditTabbedPane(UserRequest ureq, WindowControl wControl, Translator trnsltr,
 			QTIEditorMainController editorMainController);
+	
+	public void childNodeChanges();
 
 	/**
 	 * @return The underlying QTI Object.
