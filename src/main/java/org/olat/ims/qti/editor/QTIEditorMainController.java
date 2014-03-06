@@ -47,7 +47,6 @@ import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.SelectionTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -419,7 +418,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				GenericQtiNode clickedNode;				
 				clickedNode = menuTreeModel.getQtiNode(menuTree.getSelectedNodeId());				
-				TabbedPane tabbedPane = clickedNode.createEditTabbedPane(ureq, getWindowControl(), getTranslator(), this);
+				Component tabbedPane = clickedNode.createEditTabbedPane(ureq, getWindowControl(), getTranslator(), this);
 				if(tabbedPane!=null) {
 					main.put("tabbedPane",tabbedPane);
 				} else {
@@ -453,29 +452,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			
 			TreeEvent te = (TreeEvent) event;
 			if (te.getCommand().equals(TreeEvent.COMMAND_TREENODE_CLICKED)) {
-				// user chose a position to insert a new node
-				String nodeId = te.getNodeId();
-				TreePosition tp = insertTreeModel.getTreePosition(nodeId);
-				GenericQtiNode parentTargetNode = (GenericQtiNode) tp.getParentTreeNode();
-				int targetPos = tp.getChildpos();
-				GenericQtiNode selectedNode = (GenericQtiNode) menuTree.getSelectedNode();
-				int selectedPos = selectedNode.getPosition();
-				GenericQtiNode parentSelectedNode = (GenericQtiNode) selectedNode.getParent();
-				if (parentTargetNode == parentSelectedNode) {
-					// if we're on the same subnode
-					if (targetPos > selectedNode.getPosition()) {
-						// if we're moving after our current position
-						targetPos--;
-						// decrease insert pos since we're going to be removed from the
-						// parent before re-insert
-					}
-				}
-				// insert into menutree (insert on GenericNode do a remove from parent)
-				parentTargetNode.insert(selectedNode, targetPos);
-				// insert into model (remove from parent needed prior to insert)
-				QTIObject subject = parentSelectedNode.removeQTIObjectAt(selectedPos);
-				parentTargetNode.insertQTIObjectAt(subject, targetPos);
-				qtiPackage.serializeQTIDocument();
+				doMove(te);
 				menuTree.setDirty(true); //force rerendering for ajax mode
 				updateWarning();
 			}
@@ -486,47 +463,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			
 			TreeEvent te = (TreeEvent) event;
 			if (te.getCommand().equals(TreeEvent.COMMAND_TREENODE_CLICKED)) {
-				// user chose a position to insert the node to be copied
-				String nodeId = te.getNodeId();
-				TreePosition tp = insertTreeModel.getTreePosition(nodeId);
-				int targetPos = tp.getChildpos();
-				ItemNode selectedNode = (ItemNode) menuTree.getSelectedNode();
-				// only items are moveable
-				// use XStream instead of ObjectCloner
-				// Item qtiItem =
-				// (Item)xstream.fromXML(xstream.toXML(selectedNode.getUnderlyingQTIObject()));
-				Item toClone = (Item) selectedNode.getUnderlyingQTIObject();
-				Item qtiItem = (Item) XStreamHelper.xstreamClone(toClone);
-				// copy flow label class too, olat-2791
-				Question orgQuestion = toClone.getQuestion();
-				if (orgQuestion instanceof ChoiceQuestion) {
-					String flowLabelClass = ((ChoiceQuestion)orgQuestion).getFlowLabelClass();
-					Question copyQuestion =  qtiItem.getQuestion();
-					if (copyQuestion instanceof ChoiceQuestion) {
-						((ChoiceQuestion)copyQuestion).setFlowLabelClass(flowLabelClass);
-					} else {
-						throw new AssertException("Could not copy flow-label-class, wrong type of copy question , must be 'ChoiceQuestion' but is " +copyQuestion);
-					}
-				}
-				String editorIdentPrefix = "";
-				if (qtiItem.getIdent().startsWith(ItemParser.ITEM_PREFIX_SCQ)) editorIdentPrefix = ItemParser.ITEM_PREFIX_SCQ;
-				else if (qtiItem.getIdent().startsWith(ItemParser.ITEM_PREFIX_MCQ)) editorIdentPrefix = ItemParser.ITEM_PREFIX_MCQ;
-				else if (qtiItem.getIdent().startsWith(ItemParser.ITEM_PREFIX_KPRIM)) editorIdentPrefix = ItemParser.ITEM_PREFIX_KPRIM;
-				else if (qtiItem.getIdent().startsWith(ItemParser.ITEM_PREFIX_FIB)) editorIdentPrefix = ItemParser.ITEM_PREFIX_FIB;
-				else if (qtiItem.getIdent().startsWith(ItemParser.ITEM_PREFIX_ESSAY)) editorIdentPrefix = ItemParser.ITEM_PREFIX_ESSAY;
-				// set new ident... this is all it needs for our engine to recognise it
-				// as a new item.
-				qtiItem.setIdent(editorIdentPrefix + CodeHelper.getForeverUniqueID());
-				// insert into menutree (insert on GenericNode do a remove from parent)
-				GenericQtiNode parentTargetNode = (GenericQtiNode) tp.getParentTreeNode();
-				GenericQtiNode newNode = new ItemNode(qtiItem, qtiPackage);
-				parentTargetNode.insert(newNode, targetPos);
-				// insert into model
-				parentTargetNode.insertQTIObjectAt(qtiItem, targetPos);
-				// activate copied node
-				menuTree.setSelectedNodeId(newNode.getIdent());
-				event(ureq, menuTree, new Event(MenuTree.COMMAND_TREENODE_CLICKED));
-				qtiPackage.serializeQTIDocument();
+				doCopy(ureq, te);
 				updateWarning();
 			}
 		} else if (source == insertTree) { // catch insert operations
@@ -538,6 +475,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			if (te.getCommand().equals(TreeEvent.COMMAND_TREENODE_CLICKED)) { // insert
 				doInsert(ureq, te.getNodeId(), insertTree.getUserObject());
 				updateWarning();
+				fireEvent(ureq, event);
 			}
 		} else if (source == exitVC) {
 			if (event.getCommand().equals(CMD_EXIT_SAVE)) {
@@ -752,19 +690,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		} else if (source == deleteDialog) { // event from delete dialog
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes, delete
 				GenericQtiNode clickedNode = (GenericQtiNode) deleteDialog.getUserObject();
-			  //check if any media to delete as well
-				if(clickedNode.getUnderlyingQTIObject() instanceof Item) {
-				  Item selectedItem = (Item)clickedNode.getUnderlyingQTIObject();
-				  deletableMediaFiles = QTIEditHelper.getDeletableMedia(qtiPackage.getQTIDocument(), selectedItem); 
-				}
-													
-				// remove from underlying model
-				((GenericQtiNode) clickedNode.getParent()).removeQTIObjectAt(clickedNode.getPosition());
-												
-				// remove from tree model
-				clickedNode.removeFromParent();
-				qtiPackage.serializeQTIDocument();
-				menuTree.setSelectedNodeId(clickedNode.getParent().getIdent());
+				doDelete(clickedNode);
 				event(ureq, menuTree, new Event(MenuTree.COMMAND_TREENODE_CLICKED));
 				//ask user to confirm referenced media removal
 				if(deletableMediaFiles!=null && deletableMediaFiles.size()>0) {					
@@ -923,6 +849,10 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				doInsert(parentTargetNode, insertNode, position++);
 			}
 		}
+		
+		if(parentTargetNode instanceof SectionNode) {
+			
+		}
 
 		event(ureq, menuTree, new Event(MenuTree.COMMAND_TREENODE_CLICKED));
 		qtiPackage.serializeQTIDocument();
@@ -936,6 +866,102 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		parentTargetNode.insertQTIObjectAt(insertNode.getUnderlyingQTIObject(), position);
 		// activate inserted node
 		menuTree.setSelectedNodeId(insertNode.getIdent());
+		
+		parentTargetNode.childNodeChanges();
+	}
+	
+	private void doDelete(GenericQtiNode clickedNode) {
+		//check if any media to delete as well
+		if(clickedNode.getUnderlyingQTIObject() instanceof Item) {
+		  Item selectedItem = (Item)clickedNode.getUnderlyingQTIObject();
+		  deletableMediaFiles = QTIEditHelper.getDeletableMedia(qtiPackage.getQTIDocument(), selectedItem); 
+		}
+											
+		// remove from underlying model
+		GenericQtiNode parentNode = (GenericQtiNode)clickedNode.getParent();
+		parentNode.removeQTIObjectAt(clickedNode.getPosition());
+										
+		// remove from tree model
+		clickedNode.removeFromParent();
+		qtiPackage.serializeQTIDocument();
+		menuTree.setSelectedNodeId(clickedNode.getParent().getIdent());
+		
+		parentNode.childNodeChanges();
+	}
+	
+	private void doMove(TreeEvent te) {
+		// user chose a position to insert a new node
+		String nodeId = te.getNodeId();
+		TreePosition tp = insertTreeModel.getTreePosition(nodeId);
+		GenericQtiNode parentTargetNode = (GenericQtiNode) tp.getParentTreeNode();
+		int targetPos = tp.getChildpos();
+		GenericQtiNode selectedNode = (GenericQtiNode) menuTree.getSelectedNode();
+		int selectedPos = selectedNode.getPosition();
+		GenericQtiNode parentSelectedNode = (GenericQtiNode) selectedNode.getParent();
+		if (parentTargetNode == parentSelectedNode) {
+			// if we're on the same subnode
+			if (targetPos > selectedNode.getPosition()) {
+				// if we're moving after our current position
+				targetPos--;
+				// decrease insert pos since we're going to be removed from the
+				// parent before re-insert
+			}
+		}
+		// insert into menutree (insert on GenericNode do a remove from parent)
+		parentTargetNode.insert(selectedNode, targetPos);
+		// insert into model (remove from parent needed prior to insert)
+		QTIObject subject = parentSelectedNode.removeQTIObjectAt(selectedPos);
+		parentTargetNode.insertQTIObjectAt(subject, targetPos);
+		qtiPackage.serializeQTIDocument();
+		
+		parentSelectedNode.childNodeChanges();
+		parentTargetNode.childNodeChanges();
+	}
+	
+	private void doCopy(UserRequest ureq, TreeEvent te) {
+		// user chose a position to insert the node to be copied
+		String nodeId = te.getNodeId();
+		TreePosition tp = insertTreeModel.getTreePosition(nodeId);
+		int targetPos = tp.getChildpos();
+		ItemNode selectedNode = (ItemNode) menuTree.getSelectedNode();
+		// only items are moveable
+		// use XStream instead of ObjectCloner
+		// Item qtiItem =
+		// (Item)xstream.fromXML(xstream.toXML(selectedNode.getUnderlyingQTIObject()));
+		Item toClone = (Item) selectedNode.getUnderlyingQTIObject();
+		Item qtiItem = (Item) XStreamHelper.xstreamClone(toClone);
+		// copy flow label class too, olat-2791
+		Question orgQuestion = toClone.getQuestion();
+		if (orgQuestion instanceof ChoiceQuestion) {
+			String flowLabelClass = ((ChoiceQuestion)orgQuestion).getFlowLabelClass();
+			Question copyQuestion =  qtiItem.getQuestion();
+			if (copyQuestion instanceof ChoiceQuestion) {
+				((ChoiceQuestion)copyQuestion).setFlowLabelClass(flowLabelClass);
+			} else {
+				throw new AssertException("Could not copy flow-label-class, wrong type of copy question , must be 'ChoiceQuestion' but is " +copyQuestion);
+			}
+		}
+		String editorIdentPrefix = "";
+		if (qtiItem.getIdent().startsWith(ItemParser.ITEM_PREFIX_SCQ)) editorIdentPrefix = ItemParser.ITEM_PREFIX_SCQ;
+		else if (qtiItem.getIdent().startsWith(ItemParser.ITEM_PREFIX_MCQ)) editorIdentPrefix = ItemParser.ITEM_PREFIX_MCQ;
+		else if (qtiItem.getIdent().startsWith(ItemParser.ITEM_PREFIX_KPRIM)) editorIdentPrefix = ItemParser.ITEM_PREFIX_KPRIM;
+		else if (qtiItem.getIdent().startsWith(ItemParser.ITEM_PREFIX_FIB)) editorIdentPrefix = ItemParser.ITEM_PREFIX_FIB;
+		else if (qtiItem.getIdent().startsWith(ItemParser.ITEM_PREFIX_ESSAY)) editorIdentPrefix = ItemParser.ITEM_PREFIX_ESSAY;
+		// set new ident... this is all it needs for our engine to recognise it
+		// as a new item.
+		qtiItem.setIdent(editorIdentPrefix + CodeHelper.getForeverUniqueID());
+		// insert into menutree (insert on GenericNode do a remove from parent)
+		GenericQtiNode parentTargetNode = (GenericQtiNode) tp.getParentTreeNode();
+		GenericQtiNode newNode = new ItemNode(qtiItem, qtiPackage);
+		parentTargetNode.insert(newNode, targetPos);
+		// insert into model
+		parentTargetNode.insertQTIObjectAt(qtiItem, targetPos);
+		// activate copied node
+		menuTree.setSelectedNodeId(newNode.getIdent());
+		event(ureq, menuTree, new Event(MenuTree.COMMAND_TREENODE_CLICKED));
+		qtiPackage.serializeQTIDocument();
+		
+		parentTargetNode.childNodeChanges();
 	}
 	
 	private GenericQtiNode doConvertItemToQtiNode(QuestionItemView qitemv) {

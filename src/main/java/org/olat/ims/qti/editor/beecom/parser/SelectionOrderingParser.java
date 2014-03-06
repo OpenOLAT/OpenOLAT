@@ -63,16 +63,19 @@ public class SelectionOrderingParser implements IParser {
 		if (el_selections.size() != 0){
 			Element el_selection = ((Element)el_selections.get(0));
 			Element selection_number = (Element)el_selection.selectSingleNode("selection_number");
-			
-			if (selection_number != null) selectionOrdering.setSelectionNumber(Integer.parseInt(selection_number.getText()));
+			if (selection_number != null) {
+				selectionOrdering.setSelectionNumber(Integer.parseInt(selection_number.getText()));
+			}
 		} 
 		// else use default value
 		
 		// Set correct order type. Use sequential ordering als default if none defined
-		Element order = (Element)element.selectSingleNode("//order");
+		Element order = (Element)element.selectSingleNode("order");
 		if (order != null) {
 			String order_type = order.attributeValue(SelectionOrdering.ORDER_TYPE);
-			if (order_type != null && order_type.equals(SelectionOrdering.RANDOM)) selectionOrdering.setOrderType(SelectionOrdering.RANDOM); 
+			if (order_type != null && order_type.equals(SelectionOrdering.RANDOM)) {
+				selectionOrdering.setOrderType(SelectionOrdering.RANDOM); 
+			}
 			// else use default value
 		} 
 

@@ -28,7 +28,6 @@ package org.olat.ims.qti.editor.tree;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.GenericMementoTreeNode;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -50,18 +49,16 @@ public abstract class GenericQtiNode extends GenericMementoTreeNode implements I
 	}
 
 	/**
-	 * @see org.olat.ims.qti.editor.tree.IQtiNode#createRunController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public abstract Controller createRunController(UserRequest ureq, WindowControl wControl);
-
-	/**
 	 * @see org.olat.ims.qti.editor.tree.IQtiNode#createEditTabbedPane(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.core.gui.translator.Translator, QTIEditorMainController)
 	 */
+	@Override
 	public abstract TabbedPane createEditTabbedPane(UserRequest ureq, WindowControl wControl, Translator trnsltr,
 			QTIEditorMainController editorMainController);
+	
+	@Override
+	public abstract void childNodeChanges();
 
 	/**
 	 * Set's the node's title and alt text (truncates title)

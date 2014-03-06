@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
@@ -78,14 +77,6 @@ public class AssessmentNode extends GenericQtiNode {
 	}
 
 	/**
-	 * @see org.olat.ims.qti.editor.tree.IQtiNode#createRunController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller createRunController(UserRequest ureq, WindowControl wControl) {
-		return null;
-	}
-
-	/**
 	 * @see org.olat.ims.qti.editor.tree.GenericQtiNode#createEditTabbedPane(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.core.gui.translator.Translator, QTIEditorMainController)
@@ -100,6 +91,11 @@ public class AssessmentNode extends GenericQtiNode {
 			tabbCntrllr.addControllerListener(editorMainController);
 		}
 		return myTabbedPane;
+	}
+
+	@Override
+	public void childNodeChanges() {
+		//
 	}
 
 	/**

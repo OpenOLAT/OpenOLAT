@@ -22,6 +22,7 @@ package de.bps.olat.modules.cl;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -66,24 +67,27 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 	
 	// helpers
 	private boolean deletedOK = true;
+	
+	private final ChecklistManager checklistManager;
 
 	public ChecklistEditCheckpointsController(UserRequest ureq, WindowControl wControl, Checklist checklist, String submitKey, CheckpointComparator checkpointComparator) {
 		super(ureq, wControl);
 		
 		this.checklist = checklist;
 		this.submitKey = submitKey;
+		checklistManager = ChecklistManager.getInstance();
 		
 		if (checkpointComparator != null) {
 			this.checkpointComparator = checkpointComparator;
 		}
 		
 		int size = checklist.getCheckpoints().size();
-		this.titleInputList = new ArrayList<TextElement>(size);
-		this.descriptionInputList = new ArrayList<TextElement>(size);
-		this.modeInputList = new ArrayList<SingleSelection>(size);
-		this.delButtonList = new ArrayList<FormLink>(size);
+		titleInputList = new ArrayList<TextElement>(size);
+		descriptionInputList = new ArrayList<TextElement>(size);
+		modeInputList = new ArrayList<SingleSelection>(size);
+		delButtonList = new ArrayList<FormLink>(size);
 		
-		initForm(this.flc, this, ureq);
+		initForm(ureq);
 	}
 
 	/**
@@ -96,15 +100,30 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		for (int i = 0; i < this.checklist.getCheckpoints().size(); i++) {
-			Checkpoint checkpoint = this.checklist.getCheckpoints().get(i);
-			checkpoint.setChecklist(this.checklist);
-			checkpoint.setLastModified(new Date());
-			checkpoint.setTitle(this.titleInputList.get(i).getValue());
-			checkpoint.setDescription(this.descriptionInputList.get(i).getValue());
-			checkpoint.setMode(this.modeInputList.get(i).getSelectedKey());
+		checklist = checklistManager.loadChecklist(checklist);
+		for (int i = 0; i < titleInputList.size(); i++) {
+			boolean deleted = ! titleInputList.get(i).isVisible();
+			Checkpoint checkpoint = (Checkpoint)titleInputList.get(i).getUserObject();
+			if(deleted) {
+				Checkpoint currentCheckpoint = checklist.getCheckpoint(checkpoint);
+				checklist.removeCheckpoint(currentCheckpoint);
+			} else {
+				Checkpoint currentCheckpoint = checklist.getCheckpoint(checkpoint);
+				if(currentCheckpoint == null) {
+					currentCheckpoint = checkpoint;//the point is a new one
+				}
+				currentCheckpoint.setChecklist(checklist);
+				currentCheckpoint.setLastModified(new Date());
+				currentCheckpoint.setTitle(titleInputList.get(i).getValue());
+				currentCheckpoint.setDescription(descriptionInputList.get(i).getValue());
+				currentCheckpoint.setMode(modeInputList.get(i).getSelectedKey());
+				if(currentCheckpoint.getKey() == null) {
+					checklist.addCheckpoint(i, currentCheckpoint);
+				}
+			}
 		}
-		ChecklistManager.getInstance().updateChecklist(this.checklist);
+		checklist = checklistManager.updateChecklist(checklist);
+		DBFactory.getInstance().commit();
 		// Inform all listeners about the changes
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -156,13 +175,13 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 			if (addButton.equals(source)) {
 				// add a new form link
 				Checkpoint newCheckpoint = new Checkpoint();
-				newCheckpoint.setChecklist(this.checklist);
+				newCheckpoint.setChecklist(checklist);
 				newCheckpoint.setLastModified(new Date());
 				newCheckpoint.setTitle("");
 				newCheckpoint.setDescription("");
 				newCheckpoint.setMode(CheckpointMode.MODE_EDITABLE);
-				int index = this.checklist.getCheckpoints().size();
-				this.checklist.addCheckpoint(index, newCheckpoint);
+				int index = checklist.getCheckpoints().size();
+				checklist.addCheckpoint(index, newCheckpoint);
 				addNewFormCheckpoint(index, newCheckpoint);
 			} else if (delButtonList.contains(source)) {
 				// special case: only one line existent
@@ -181,32 +200,11 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 	}
 
 	private void removeFormLink(Checkpoint checkpoint) {
-		checklist.removeCheckpoint(checkpoint);
-		int i;
-		for (i = 0; i < titleInputList.size(); i++) {
+		for (int i = 0; i < titleInputList.size(); i++) {
 			if (titleInputList.get(i).getUserObject().equals(checkpoint)) {
-				break;
+				titleInputList.get(i).setVisible(false);
 			}
 		}
-		titleContainer.remove(titleInputList.remove(i));
-		for (i = 0; i < descriptionInputList.size(); i++) {
-			if (descriptionInputList.get(i).getUserObject().equals(checkpoint)) {
-				break;
-			}
-		}
-		titleContainer.remove(descriptionInputList.remove(i));
-		for (i = 0; i < modeInputList.size(); i++) {
-			if (modeInputList.get(i).getUserObject().equals(checkpoint)) {
-				break;
-			}
-		}
-		titleContainer.remove(modeInputList.remove(i));
-		for (i = 0; i < delButtonList.size(); i++) {
-			if (delButtonList.get(i).getUserObject().equals(checkpoint)) {
-				break;
-			}
-		}
-		titleContainer.remove(delButtonList.remove(i));
 	}
 
 	@Override
@@ -224,7 +222,7 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 			newCheckpoint.setTitle("");
 			newCheckpoint.setDescription("");
 			newCheckpoint.setMode(CheckpointMode.MODE_EDITABLE);
-			this.checklist.addCheckpoint(0, newCheckpoint);
+			checklist.addCheckpoint(0, newCheckpoint);
 			addNewFormCheckpoint(0, newCheckpoint);
 		} else {
 			for (int i = 0; i < checklist.getCheckpoints().size(); i++) {
@@ -293,7 +291,7 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 		this.modeInputList = new ArrayList<SingleSelection>(size);
 		this.delButtonList = new ArrayList<FormLink>(size);
 		mainForm.setDirtyMarking(false);
-		initForm(this.flc, this, ureq);
+		initForm(flc, this, ureq);
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 

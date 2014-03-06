@@ -30,11 +30,11 @@ import java.io.File;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -77,7 +77,7 @@ public class SharedFolderManager extends BasicManager {
 	public VFSContainer getNamedSharedFolder(RepositoryEntry re, boolean urlCompliant) {
 		String name = re.getDisplayname();
 		if(urlCompliant) {
-			name = Formatter.makeStringFilesystemSave(name);
+			name = RequestUtil.normalizeFilename(name);
 		}
 		return new OlatNamedContainerImpl(name, getSharedFolder(re.getOlatResource()));
 	}

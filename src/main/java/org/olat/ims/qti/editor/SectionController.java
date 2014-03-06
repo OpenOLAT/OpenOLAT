@@ -26,27 +26,43 @@
 package org.olat.ims.qti.editor;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableDefaultController;
+import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.ims.qti.editor.beecom.objects.Duration;
 import org.olat.ims.qti.editor.beecom.objects.Section;
+import org.olat.ims.qti.editor.beecom.objects.SelectionOrdering;
 
 /**
- * Initial Date: Oct 21, 2004 <br>
  * 
- * @author mike
+ * Initial date: 05.03.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class SectionController extends TabbableDefaultController implements ControllerEventListener {
+public class SectionController extends FormBasicController implements TabbableController, ControllerEventListener {
 	
-	private VelocityContainer main;	
+	private static final String[] yesnoKeys = new String[] { "y", "n" };
+	
+	private TextElement titleEl;
+	private IntegerElement timeMinEl, timeSecEl;
+	private RichTextElement objectivesEl;
+	private SingleSelection limitTimeEl, shuffleEl, selectionNumEl;
+	
 	private Section section;
-	private QTIEditorPackage qtiPackage;
-	private boolean restrictedEdit;
+	private final QTIEditorPackage qtiPackage;
+	private final boolean restrictedEdit;
 
 	/**
 	 * @param section
@@ -60,101 +76,212 @@ public class SectionController extends TabbableDefaultController implements Cont
 		this.restrictedEdit = restrictedEdit;
 		this.section = section;
 		this.qtiPackage = qtiPackage;
-		
-		main = this.createVelocityContainer("tab_section");
-		main.contextPut("section", section);
-		main.contextPut("order_type", section.getSelection_ordering().getOrderType());
-		main.contextPut("selection_number", String.valueOf(section.getSelection_ordering().getSelectionNumber()));
+		/*
 		main.contextPut("mediaBaseURL", qtiPackage.getMediaBaseURL());
-		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
-
-		boolean isSurvey = qtiPackage.getQTIDocument().isSurvey();
-		main.contextPut("isSurveyMode", isSurvey ? "true" : "false");
-		if (!isSurvey) {
-			if (section.getDuration() != null) main.contextPut("duration", section.getDuration());
-		}		
-		this.putInitialPanel(main);
+		*/
+		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == main) {
-			if (event.getCommand().equals("ssec")) {
-				String newTitle = ureq.getParameter("title");
-				if (newTitle.trim().isEmpty()) { // Remove empty title to fix OLAT-2296
-					newTitle = "";
-				}
-				String oldTitle = section.getTitle();
-				boolean hasTitleChange = newTitle != null && !newTitle.equals(oldTitle);
-				String newObjectives = ureq.getParameter("objectives");
-				String oldObjectives = section.getObjectives();
-				boolean hasObjectivesChange = newObjectives != null && !newObjectives.equals(oldObjectives);
-				NodeBeforeChangeEvent nce = new NodeBeforeChangeEvent();
-				if (hasTitleChange) {
-					nce.setNewTitle(newTitle);
-				}
-				if (hasObjectivesChange) {
-					nce.setNewObjectives(newObjectives);
-				}
-				if (hasTitleChange || hasObjectivesChange) {
-					// create a memento first
-					nce.setSectionIdent(section.getIdent());
-					fireEvent(ureq, nce);
-					// then apply changes
-					section.setTitle(newTitle);
-					section.setObjectives(newObjectives);
-				}
-				//
-				if (!restrictedEdit) {
-					section.getSelection_ordering().setOrderType(ureq.getParameter("order_type"));
-					section.getSelection_ordering().setSelectionNumber(ureq.getParameter("selection_number"));
-					main.contextPut("order_type", section.getSelection_ordering().getOrderType());
-					main.contextPut("selection_number", String.valueOf(section.getSelection_ordering().getSelectionNumber()));
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("fieldset.legend.sectionsettings");
+		if(qtiPackage.getQTIDocument().isSurvey()) {
+			setFormContextHelp("org.olat.ims.qti.editor","qed-meta-surv-sect.html","help.hover.section-survey");
+		} else {
+			setFormContextHelp("org.olat.ims.qti.editor","qed-meta-test-sect.html","help.hover.section-assess");
+		}
+		
+		String title = section.getTitle();
+		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
+		
+		String objectives = section.getObjectives();
+		objectivesEl = uifactory.addRichTextElementForStringData("objectives", "form.metadata.objectives", objectives, 6, 12, false,
+				qtiPackage.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
+		
+		RichTextConfiguration richTextConfig = objectivesEl.getEditorConfiguration();
+		// disable <p> element for enabling vertical layouts
+		richTextConfig.disableRootParagraphElement();
+		// set upload dir to the media dir
+		richTextConfig.setFileBrowserUploadRelPath("media");
+		// manually enable the source edit button
+		richTextConfig.enableCode();
+		//allow script tags...
+		richTextConfig.setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
+		richTextConfig.setExtendedValidElements("script[src,type,defer]");
+		
+		//form.section.durationswitch
+		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
+		limitTimeEl = uifactory.addRadiosHorizontal("form.section.durationswitch", formLayout, yesnoKeys, yesnoValues);
+		limitTimeEl.addActionListener(this, FormEvent.ONCHANGE);
+		limitTimeEl.setEnabled(!restrictedEdit);
+		
+		timeMinEl = uifactory.addIntegerElement("form.imd.time.min", 0, formLayout);
+		timeMinEl.setDisplaySize(3);
+		timeMinEl.setEnabled(!restrictedEdit);
+		timeSecEl = uifactory.addIntegerElement("form.imd.time.sek", 0, formLayout);
+		timeSecEl.setDisplaySize(3);
+		timeSecEl.setEnabled(!restrictedEdit);
+		if (section.getDuration() != null && section.getDuration().isSet()) {
+			limitTimeEl.select(yesnoKeys[0], true);
+			timeMinEl.setIntValue(section.getDuration().getMin());
+			timeSecEl.setIntValue(section.getDuration().getSec());
+		} else {
+			limitTimeEl.select(yesnoKeys[1], true);
+			timeMinEl.setVisible(false);
+			timeSecEl.setVisible(false);
+		}
 
-					String duration = ureq.getParameter("duration");
-					if (duration != null && duration.equals("Yes")) {
-						String durationMin = ureq.getParameter("duration_min");
-						String durationSec = ureq.getParameter("duration_sec");
-						try {
-							Integer.parseInt(durationMin);
-							int sec = Integer.parseInt(durationSec);
-							if (sec > 60) throw new NumberFormatException();
-						} catch (NumberFormatException nfe) {
-							durationMin = "0";
-							durationSec = "0";							
-							this.showWarning("error.duration");
-						}
-						Duration d = new Duration(durationMin, durationSec);
-						section.setDuration(d);
-						main.contextPut("duration", d);
-					} else {
-						section.setDuration(null);
-						main.contextRemove("duration");
-					}
+		//ordering
+		boolean random = SelectionOrdering.RANDOM.equals(section.getSelection_ordering().getOrderType());
+		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", formLayout, yesnoKeys, yesnoValues);
+		shuffleEl.addActionListener(this, FormEvent.ONCHANGE);
+		shuffleEl.setEnabled(!restrictedEdit);
+		if (random) {
+			shuffleEl.select(yesnoKeys[0], true);
+		} else {
+			shuffleEl.select(yesnoKeys[1], true);
+		}
+		
+		int numOfItems = section.getItems().size();
+		String[] theKeys = new String[numOfItems + 1];
+		String[] theValues = new String[numOfItems + 1];
+		theKeys[0] = "0";
+		theValues[0] = translate("form.section.selection_all");
+		for(int i=0; i<numOfItems; i++) {
+			theKeys[i+1] = Integer.toString(i+1);
+			theValues[i+1] = Integer.toString(i+1);
+		}
+		selectionNumEl = uifactory.addDropdownSingleselect("selection.num", "form.section.selection_pre", formLayout, theKeys, theValues, null);
+		selectionNumEl.setEnabled(!restrictedEdit);
+		int selectionNum = section.getSelection_ordering().getSelectionNumber();
+		if(selectionNum <= 0) {
+			selectionNumEl.select(theKeys[0], true);
+		} else if(selectionNum > 0 && selectionNum < theKeys.length) {
+			selectionNumEl.select(theKeys[selectionNum], true);
+		} else {
+			selectionNumEl.select(theKeys[theKeys.length - 1], true);
+		}
+		
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		formLayout.add(buttonsCont);
+		uifactory.addFormSubmitButton("submit", buttonsCont);
+	}
+	
+	public void childNodeChanges() {
+		int numOfItems = section.getItems().size();
+		String[] theKeys = new String[numOfItems + 1];
+		String[] theValues = new String[numOfItems + 1];
+		theKeys[0] = "0";
+		theValues[0] = translate("form.section.selection_all");
+		for(int i=0; i<numOfItems; i++) {
+			theKeys[i+1] = Integer.toString(i+1);
+			theValues[i+1] = Integer.toString(i+1);
+		}
+		
+		String selectedKey = selectionNumEl.isOneSelected() ? selectionNumEl.getSelectedKey() : null;
+		selectionNumEl.setKeysAndValues(theKeys, theValues, null);
+		//reselect the key
+		if(selectedKey != null && shuffleEl.isOneSelected() && shuffleEl.isSelected(0)) {
+			boolean found = false;
+			for(String theKey:theKeys) {
+				if(selectedKey.equals(theKey)) {
+					found = true;
 				}
-				qtiPackage.serializeQTIDocument();
-
-				//refresh for removing dirty marking of button even if nothing changed
-				main.setDirty(true);
+			}
+			
+			if(found) {
+				selectionNumEl.select(selectedKey, true);
+			} else {
+				selectionNumEl.select(theKeys[theKeys.length - 1], true);
 			}
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	protected void doDispose() {
-		main = null;		
+		//		
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
+	@Override
+	protected void formOK(UserRequest ureq) {
+		
+		String newTitle = titleEl.getValue();
+		if (newTitle.trim().isEmpty()) { // Remove empty title to fix OLAT-2296
+			newTitle = "";
+		}
+		
+		String oldTitle = section.getTitle();
+		boolean hasTitleChange = newTitle != null && !newTitle.equals(oldTitle);
+		String newObjectives = objectivesEl.getValue();
+		String oldObjectives = section.getObjectives();
+		boolean hasObjectivesChange = newObjectives != null && !newObjectives.equals(oldObjectives);
+		NodeBeforeChangeEvent nce = new NodeBeforeChangeEvent();
+		if (hasTitleChange) {
+			nce.setNewTitle(newTitle);
+		}
+		if (hasObjectivesChange) {
+			nce.setNewObjectives(newObjectives);
+		}
+		if (hasTitleChange || hasObjectivesChange) {
+			// create a memento first
+			nce.setSectionIdent(section.getIdent());
+			fireEvent(ureq, nce);
+			// then apply changes
+			section.setTitle(newTitle);
+			section.setObjectives(newObjectives);
+		}
+
+		if (!restrictedEdit) {
+			String selectionNumStr = selectionNumEl.getSelectedKey();
+			int selectionNum = 1;
+			try {
+				selectionNum = Integer.parseInt(selectionNumStr);
+			} catch(NumberFormatException e) {
+				logWarn("", e);
+			}
+			section.getSelection_ordering().setSelectionNumber(selectionNum);
+			
+			boolean randomType = shuffleEl.isOneSelected() && shuffleEl.isSelected(0);
+			if(randomType) {
+				section.getSelection_ordering().setOrderType(SelectionOrdering.RANDOM);
+			} else {
+				section.getSelection_ordering().setOrderType(SelectionOrdering.SEQUENTIAL);
+			}
+			
+			boolean duration = limitTimeEl.isOneSelected() && limitTimeEl.isSelected(0);
+			if (duration) {
+				String durationMin = timeMinEl.getValue();
+				String durationSec = timeSecEl.getValue();
+				try {
+					Integer.parseInt(durationMin);
+					int sec = Integer.parseInt(durationSec);
+					if (sec > 60) throw new NumberFormatException();
+				} catch (NumberFormatException nfe) {
+					durationMin = "0";
+					durationSec = "0";							
+					showWarning("error.duration");
+				}
+				Duration d = new Duration(durationMin, durationSec);
+				section.setDuration(d);
+				timeMinEl.setIntValue(d.getMin());
+				timeSecEl.setIntValue(d.getSec());
+			} else {
+				section.setDuration(null);
+			}
+		}
+		qtiPackage.serializeQTIDocument();
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (limitTimeEl == source) {
+			boolean enabled = limitTimeEl.isOneSelected() && limitTimeEl.isSelected(0);
+			timeMinEl.setVisible(enabled);
+			timeSecEl.setVisible(enabled);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	public void addTabs(TabbedPane tabbedPane) {
-		tabbedPane.addTab(translate("tab.section"), main);
+		tabbedPane.addTab(translate("tab.section"), getInitialComponent());
 	}
-
 }

@@ -68,6 +68,8 @@ public class AssessmentController extends TabbableDefaultController implements C
 				
 		main = this.createVelocityContainer("tab_assess");
 		main.contextPut("assessment", assessment);
+		main.contextPut("order_type", assessment.getSelection_ordering().getOrderType());
+		main.contextPut("selection_number", String.valueOf(assessment.getSelection_ordering().getSelectionNumber()));
 		main.contextPut("mediaBaseURL", qtiPackage.getMediaBaseURL());
 		main.contextPut("control", QTIEditHelper.getControl(assessment));
 		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
@@ -85,7 +87,7 @@ public class AssessmentController extends TabbableDefaultController implements C
 		} else {
 			main.contextPut(OutcomesProcessing.CUTVALUE, outcomesProcessing.getField(OutcomesProcessing.CUTVALUE));
 		}		
-		this.putInitialPanel(main);
+		putInitialPanel(main);
 	}
 
 	/**
@@ -118,6 +120,12 @@ public class AssessmentController extends TabbableDefaultController implements C
 				}
 				//
 				if (!surveyMode && !restrictedEdit) {
+					//ordering
+					assessment.getSelection_ordering().setOrderType(ureq.getParameter("order_type"));
+					assessment.getSelection_ordering().setSelectionNumber(ureq.getParameter("selection_number"));
+					main.contextPut("order_type", assessment.getSelection_ordering().getOrderType());
+					main.contextPut("selection_number", String.valueOf(assessment.getSelection_ordering().getSelectionNumber()));
+					
 					Control tmpControl = (Control) QTIEditHelper.getControl(assessment);
 					boolean oldInheritControls = assessment.isInheritControls();
 					boolean newInheritControls = ureq.getParameter("inheritswitch").equals("Yes");

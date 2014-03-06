@@ -71,6 +71,17 @@ public class Checklist extends PersistentObject implements ModifiedInfo, Seriali
 		return description;
 	}
 	
+	public Checkpoint getCheckpoint(Checkpoint cl) {
+		if(checkpoints != null) {
+			for(Checkpoint checkpoint:checkpoints) {
+				if(checkpoint.equals(cl)) {
+					return checkpoint;
+				}
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * @return Returns the checkpoints.
 	 */
@@ -127,7 +138,7 @@ public class Checklist extends PersistentObject implements ModifiedInfo, Seriali
 	 * @param checkpoint
 	 */
 	public void addCheckpoint(int index, Checkpoint checkpoint) {
-		this.checkpoints.add(index, checkpoint);
+		checkpoints.add(index, checkpoint);
 	}
 	
 	/**
@@ -135,7 +146,7 @@ public class Checklist extends PersistentObject implements ModifiedInfo, Seriali
 	 * @param checkpoint
 	 */
 	public void removeCheckpoint(Checkpoint checkpoint) {
-		this.checkpoints.remove(checkpoint);
+		checkpoints.remove(checkpoint);
 	}
 	
 	/**

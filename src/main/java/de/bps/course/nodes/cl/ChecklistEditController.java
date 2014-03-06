@@ -76,14 +76,14 @@ public class ChecklistEditController extends ActivateableTabbableDefaultControll
 		super(ureq, wControl);
 		this.course = course;
 		this.courseNode = checklistCourseNode;
-		this.checklist = courseNode.loadOrCreateChecklist(this.course.getCourseEnvironment().getCoursePropertyManager());
+		checklist = courseNode.loadOrCreateChecklist(course.getCourseEnvironment().getCoursePropertyManager());
 
 		Condition accessCondition = courseNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, wControl, course.getCourseEnvironment().getCourseGroupManager(),
 				accessCondition, "accessabilityConditionForm", AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode), euce);
-		this.listenTo(accessibilityCondContr);
+		listenTo(accessibilityCondContr);
 		
-		editVc = this.createVelocityContainer("edit");
+		editVc = createVelocityContainer("edit");
 		manageCheckpointsButton = LinkFactory.createButton("manage", editVc, this);
 		checklistFormContr = ChecklistUIFactory.getInstance().createEditCheckpointsController(ureq, getWindowControl(), checklist, "cl.save", ChecklistUIFactory.comparatorTitleAsc);
 		checklistFormContr.addControllerListener(this);
@@ -156,16 +156,16 @@ public class ChecklistEditController extends ActivateableTabbableDefaultControll
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if(source == checklistFormContr && event == Event.CHANGED_EVENT) {
-			ChecklistManager.getInstance().saveChecklist(this.checklist);
+			//checklist = ChecklistManager.getInstance().saveChecklist(checklist);
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		} else if(source == manageController && event == Event.DONE_EVENT) {
 			cmcManage.deactivate();
 		} else if(event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 			// update title and description according to the course node
-			Checklist cl = ChecklistManager.getInstance().loadChecklist(this.checklist);
-			cl.setTitle(this.courseNode.getShortTitle());
-			cl.setDescription(this.courseNode.getLongTitle());
-			ChecklistManager.getInstance().saveChecklist(cl);
+			Checklist cl = ChecklistManager.getInstance().loadChecklist(checklist);
+			cl.setTitle(courseNode.getShortTitle());
+			cl.setDescription(courseNode.getLongTitle());
+			checklist = ChecklistManager.getInstance().saveChecklist(cl);
 		}
 	}
 
