@@ -182,5 +182,21 @@ public class Checkpoint extends PersistentObject implements ModifiedInfo, Serial
 		result.setCheckpoint(this);
 		getResults().add(result);
 	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? -34892 : getKey().hashCode();
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof Checkpoint) {
+			Checkpoint entry = (Checkpoint)obj;
+			return getKey() != null && getKey().equals(entry.getKey());
+		}
+		return false;
+	}
 }

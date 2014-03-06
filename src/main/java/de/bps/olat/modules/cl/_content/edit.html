@@ -12,16 +12,18 @@
 		#set( $descr =	$descriptionInputList.get($iter).getName() )
 		#set( $descrErr = $descr + "_ERROR" )
 		#set( $hasError = "false" )
-		<tr>
-			<td>$r.render($titleErr)</td>
-			<td>$r.render($titleInputList.get($iter).getName())</td>
-			<td>$r.render($descriptionInputList.get($iter).getName())</td>
-			<td>$r.render($modeInputList.get($iter).getName())</td>
-			<!-- IE7-compatibility -->
-			<td style="white-space: nowrap; ">
-				$r.render($delButtonList.get($iter).getName())
-			</td>
-		</tr>
+		#if($titleInputList.get($iter).visible)
+			<tr>
+				<td>$r.render($titleErr)</td>
+				<td>$r.render($titleInputList.get($iter).getName())</td>
+				<td>$r.render($descriptionInputList.get($iter).getName())</td>
+				<td>$r.render($modeInputList.get($iter).getName())</td>
+				<!-- IE7-compatibility -->
+				<td style="white-space: nowrap; ">
+					$r.render($delButtonList.get($iter).getName())
+				</td>
+			</tr>
+		#end
 	#end
 	<tr>
 	<td colspan="4"></td>
