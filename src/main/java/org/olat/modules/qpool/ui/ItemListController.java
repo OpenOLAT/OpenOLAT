@@ -49,7 +49,7 @@ public class ItemListController extends AbstractItemListController {
 	}
 	
 	@Override
-	protected void initButtons(FormItemContainer formLayout) {
+	protected void initButtons(UserRequest ureq, FormItemContainer formLayout) {
 		getItemsTable().setMultiSelect(true);
 		selectLink = uifactory.addFormLink("select-to-import", "select", null, formLayout, Link.BUTTON);
 	}

@@ -1,3 +1,9 @@
+#if($r.available("source.selector"))
+    <div class="o_qpool_filter_box b_clearfix">
+        $r.render("source.selector_LABEL") $r.render("source.selector")
+    </div>
+#end
+
 $r.render("items")
 <div class="b_clearfix o_qpool_button_bar_box">
 	<div class="o_qpool_button_bar">

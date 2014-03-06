@@ -55,7 +55,6 @@ import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolItemEditorController;
-import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -120,20 +119,18 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private QuestionItemCollection itemCollection;
 	
-	private final QPoolService qpoolService;
 	private final LifeFullIndexer lifeFullIndexer;
 	private final RepositoryManager repositoryManager;
 	
 	public QuestionListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
 		super(ureq, wControl, source, key);
 
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		lifeFullIndexer = CoreSpringFactory.getImpl(LifeFullIndexer.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 	}
 
 	@Override
-	protected void initButtons(FormItemContainer formLayout) {
+	protected void initButtons(UserRequest ureq, FormItemContainer formLayout) {
 		list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
 		shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);

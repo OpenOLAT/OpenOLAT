@@ -43,6 +43,8 @@ CVS/*
 .classpath
 .project
 .settings/*
+.idea/*
+openolat-lms.iml
 src/main/resources/maven.build.properties
 src/main/java/maven.build.properties
 
