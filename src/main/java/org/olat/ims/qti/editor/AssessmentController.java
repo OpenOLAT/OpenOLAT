@@ -37,6 +37,7 @@ import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.Control;
 import org.olat.ims.qti.editor.beecom.objects.Duration;
 import org.olat.ims.qti.editor.beecom.objects.OutcomesProcessing;
+import org.olat.ims.qti.editor.beecom.objects.SelectionOrdering;
 
 /**
  * Initial Date: Oct 21, 2004 <br>
@@ -68,6 +69,10 @@ public class AssessmentController extends TabbableDefaultController implements C
 				
 		main = this.createVelocityContainer("tab_assess");
 		main.contextPut("assessment", assessment);
+		// fix missing selection ordering, new feature introduced in 9.3.3
+		if (assessment.getSelection_ordering() == null) {
+			assessment.setSelection_ordering(new SelectionOrdering());
+		}
 		main.contextPut("order_type", assessment.getSelection_ordering().getOrderType());
 		main.contextPut("selection_number", String.valueOf(assessment.getSelection_ordering().getSelectionNumber()));
 		main.contextPut("mediaBaseURL", qtiPackage.getMediaBaseURL());

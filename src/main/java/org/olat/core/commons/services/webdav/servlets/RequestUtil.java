@@ -484,8 +484,9 @@ public final class RequestUtil {
     	String nameSanitized = filename/*.replace(" ", "_")*/
     			.replace("/", "_").replace("\\", "_")
     			.replace("?", "_").replace("<", "_").replace(">", "_")
-    			.replace("%", "_").replace("\"", "'").replace(":", "_")
-    			.replace("*", "_");
+    			.replace("%", "_").replace("\"", "_").replace("'", "_")
+    			.replace(":", "_").replace("*", "_")
+    			.replace(".", "_");
     	String nameNormalized = Normalizer.normalize(nameSanitized, Normalizer.Form.NFC);
     	return nameNormalized;
     }
