@@ -65,6 +65,7 @@ public class Assessment implements QTIObject {
 		setIdent(String.valueOf(CodeHelper.getRAMUniqueID()));
 		setTitle("New QTI Document");
 		getAssessmentcontrols().add(new Control());
+		setSelection_ordering(new SelectionOrdering());
 	}
 	
 	public void addToElement(Element root) {

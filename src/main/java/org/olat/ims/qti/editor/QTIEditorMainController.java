@@ -265,9 +265,6 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				break;
 			}
 		}
-		if(CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fileResource, null)) {
-			restrictedEdit = true;
-		}
 		this.referencees = referencees;
 		
 
