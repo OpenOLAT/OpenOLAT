@@ -49,16 +49,17 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 	private static final OLog log = Tracing.createLoggerFor(CheckboxPDFExport.class);
 	
 	private final String filename;
-	private String title;
-	private String subject;
-	private String objectives;
+	private String courseTitle;
+	private String courseNodeTitle;
+	private String groupName;
 	private String author;
 	private final Translator translator;
 	private int firstNameIndex, lastNameIndex, institutionalUserIdentifierIndex;
 	
+	
 	public CheckboxPDFExport(String filename, Translator translator, List<UserPropertyHandler> userPropertyHandlers)
 			throws IOException {
-		super();
+		super(translator.getLocale());
 		
 		marginTopBottom = 62.0f;
 		marginLeftRight = 62.0f;
@@ -82,21 +83,29 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 		}
 		return index;
 	}
-	
-    public String getTitle() {
-		return title;
+
+	public String getCourseTitle() {
+		return courseTitle;
 	}
 
-	public void setTitle(String title) {
-		this.title = title;
+	public void setCourseTitle(String courseTitle) {
+		this.courseTitle = courseTitle;
 	}
 
-	public String getSubject() {
-		return subject;
+	public String getCourseNodeTitle() {
+		return courseNodeTitle;
 	}
 
-	public void setSubject(String subject) {
-		this.subject = subject;
+	public void setCourseNodeTitle(String courseNodeTitle) {
+		this.courseNodeTitle = courseNodeTitle;
+	}
+
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
 	}
 
 	public String getAuthor() {
@@ -105,14 +114,6 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 
 	public void setAuthor(String author) {
 		this.author = author;
-	}
-
-	public String getObjectives() {
-		return objectives;
-	}
-
-	public void setObjectives(String objectives) {
-		this.objectives = objectives;
 	}
 
 	@Override
@@ -155,12 +156,20 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 		}
 	}
 
-	public void create(CheckboxList checkboxList, CheckListAssessmentDataModel dataModel)
+	public void create(CheckboxList checkboxList, List<CheckListAssessmentRow> rows)
     throws IOException, COSVisitorException, TransformerException {
     	addPage();
-    	addMetadata(title, subject, author);
-    	if(StringHelper.containsNonWhitespace(objectives)) {
-    		addParagraph(objectives, 10, width);
+    	addMetadata(courseNodeTitle, courseTitle, author);
+
+    	if(StringHelper.containsNonWhitespace(courseTitle)) {
+    		addParagraph(courseTitle, 16, true, width);
+    	}
+    	if(StringHelper.containsNonWhitespace(courseNodeTitle)) {
+    		addParagraph(courseNodeTitle, 14, true, width);
+    	}
+    	if(StringHelper.containsNonWhitespace(groupName)) {
+    		String prefix = translator.translate("participants");
+    		addParagraph(prefix + ": " + groupName, 14, true, width);
     	}
     	
     	float cellMargin = 5.0f;
@@ -172,7 +181,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
     	}
     	
     	String[] headers = getHeaders(checkboxList);
-    	String[][] content = getRows(checkboxList, dataModel);
+    	String[][] content = getRows(checkboxList, rows);
     	
     	float nameMaxSize = 0.0f;
     	for(String[] row:content) {
@@ -192,8 +201,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
     	addPageNumbers(); 
     }
 	
-	private String[][] getRows(CheckboxList checkboxList, CheckListAssessmentDataModel dataModel) {
-		List<CheckListAssessmentRow> rows = dataModel.getBackedUpRows();
+	private String[][] getRows(CheckboxList checkboxList, List<CheckListAssessmentRow> rows) {
 		int numOfRows = rows.size();
 		List<Checkbox> boxList = checkboxList.getList();
     	int numOfCheckbox = boxList.size();
@@ -228,8 +236,11 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 			sb.append(view.getIdentityProp(firstNameIndex));
 		}
 		if(institutionalUserIdentifierIndex >= 0) {
-			if(sb.length() > 0) sb.append(", ");
-			sb.append(view.getIdentityProp(institutionalUserIdentifierIndex));
+			String val = view.getIdentityProp(institutionalUserIdentifierIndex);
+			if(StringHelper.containsNonWhitespace(val)) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(val);
+			}
 		}
 		return sb.toString();
 	}

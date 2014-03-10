@@ -126,23 +126,24 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == metaInfoCtr && event == Event.DONE_EVENT) {
 			MetaInfo meta = metaInfoCtr.getMetaInfo();
-			meta.write();
 			String fileName = metaInfoCtr.getFilename();
-			
-			if (metaInfoCtr.isFileRenamed()) {
-				// IMPORTANT: First rename the meta data because underlying file
-				// has to exist in order to work properly on it's meta data.
-				VFSContainer container = currentItem.getParentContainer();
-				if(container.resolve(fileName) != null) {
-					getWindowControl().setError(translator.translate("TargetNameAlreadyUsed"));
-					status = FolderCommandStatus.STATUS_FAILED;
-				} else {
-					if (meta != null) {
-						meta.rename(fileName);
-					}
-					if(VFSConstants.NO.equals(currentItem.rename(fileName))) {
-						getWindowControl().setError(translator.translate("FileRenameFailed", new String[]{fileName}));
+			if(meta != null) {
+				meta.write();
+				if (metaInfoCtr.isFileRenamed()) {
+					// IMPORTANT: First rename the meta data because underlying file
+					// has to exist in order to work properly on it's meta data.
+					VFSContainer container = currentItem.getParentContainer();
+					if(container.resolve(fileName) != null) {
+						getWindowControl().setError(translator.translate("TargetNameAlreadyUsed"));
 						status = FolderCommandStatus.STATUS_FAILED;
+					} else {
+						if (meta != null) {
+							meta.rename(fileName);
+						}
+						if(VFSConstants.NO.equals(currentItem.rename(fileName))) {
+							getWindowControl().setError(translator.translate("FileRenameFailed", new String[]{fileName}));
+							status = FolderCommandStatus.STATUS_FAILED;
+						}
 					}
 				}
 			}

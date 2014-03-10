@@ -221,6 +221,20 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public boolean isFilterEnabled() {
 		return filterEl != null;
 	}
+	
+	public String getSelectedFilterKey() {
+		if(filterEl != null && filterEl.isOneSelected()) {
+			return filterEl.getSelectedKey();
+		}
+		return null;
+	}
+	
+	public String getSelectedFilterValue() {
+		if(filterEl != null && filterEl.isOneSelected()) {
+			return filterEl.getSelectedValue();
+		}
+		return null;
+	}
 
 	@Override
 	public void setFilterKeysAndValues(String labelI18nKey, String[] keys, String[] values) {
@@ -800,7 +814,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(dataSource != null) {
 			dataSource.clear();
 			dataSource.load(getSearchText(), getConditionalQueries(), 0, getPageSize());//reload needed rows
+		} else {
+			if(dataModel instanceof FilterableFlexiTableModel) {
+				if(filterEl != null && filterEl.isOneSelected()) {
+					String filter = filterEl.getSelectedKey();
+					((FilterableFlexiTableModel)dataModel).filter(filter);
+				}
+			}
+			
+			if(dataModel instanceof SortableFlexiTableDataModel) {
+				if(orderBy != null && orderBy.length > 0) {
+					((SortableFlexiTableDataModel<?>)dataModel).sort(orderBy[0]);
+				}
+			}
 		}
+
+		component.setDirty(true);
 	}
 	
 	/**

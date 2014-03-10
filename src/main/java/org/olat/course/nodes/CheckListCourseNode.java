@@ -133,7 +133,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		
 		Controller ctrl;
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("CourseModule", userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		if(userCourseEnv.isCoach()) {
+		if(userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
 			ctrl = new CheckListRunForCoachController(ureq, wControl, userCourseEnv, ores, this);
 		} else {
 			ctrl = new CheckListRunController(ureq, wControl, userCourseEnv, ores, this);

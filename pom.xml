@@ -64,13 +64,14 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.7</targetJdk>
-		<org.springframework.version>3.2.6.RELEASE</org.springframework.version>
-		<org.hibernate.version>4.3.2.Final</org.hibernate.version>
+		<org.springframework.version>3.2.8.RELEASE</org.springframework.version>
+		<org.hibernate.version>4.3.4.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.17.1</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
-		<org.mysql.version>5.1.28</org.mysql.version>
+		<org.mysql.version>5.1.29</org.mysql.version>
 		<org.postgresql.version>9.3-1100-jdbc41</org.postgresql.version>
 		<org.infinispan.version>6.0.1.Final</org.infinispan.version>
+		<lucene.version>4.5.1</lucene.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -416,10 +417,6 @@
 						<configuration>
 							<webResources>
 								<resource>
-									<directory>src/main/webapp</directory>
-									<filtering>false</filtering>
-								</resource>
-								<resource>
 									<directory>src/main/webapp-tomcat</directory>
 									<filtering>false</filtering>
 								</resource>
@@ -433,6 +430,12 @@
 		<profile>
 			<id>jbossas7</id>
 			<dependencies>
+				<dependency>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+					<version>1.2.17</version>
+					<scope>provided</scope>
+				</dependency>
 				<dependency>
 					<groupId>javax.ws.rs</groupId>
 					<artifactId>jsr311-api</artifactId>
@@ -541,120 +544,6 @@
 							<webResources>
 								<resource>
 									<directory>src/main/webapp-jbossas7</directory>
-									<filtering>false</filtering>
-								</resource>
-								<resource>
-									<directory>src/main/webapp</directory>
-									<filtering>false</filtering>
-								</resource>
-							</webResources>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		
-		<profile>
-			<id>gae</id>
-			<dependencies>
-				<dependency>
-					<groupId>dom4j</groupId>
-					<artifactId>dom4j</artifactId>
-					<version>1.6.1</version>
-				</dependency>
-				<dependency>
-					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-core</artifactId>
-					<version>${org.hibernate.version}</version>
-					<exclusions>
-						<exclusion>
-							<groupId>org.slf4j</groupId>
-							<artifactId>slf4j-log4j12</artifactId>
-						</exclusion>
-					</exclusions>
-				</dependency>
-				<dependency>
-					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-entitymanager</artifactId>
-					<version>${org.hibernate.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-infinispan</artifactId>
-					<version>${org.hibernate.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-c3p0</artifactId>
-					<version>${org.hibernate.version}</version>
-				</dependency>
-		
-				<dependency>
-					<groupId>mysql</groupId>
-					<artifactId>mysql-connector-java</artifactId>
-					<version>${org.mysql.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.postgresql</groupId>
-					<artifactId>postgresql</artifactId>
-					<version>${org.postgresql.version}</version>
-				</dependency>
-		
-				<dependency>
-					<groupId>org.apache.activemq</groupId>
-					<artifactId>activemq-core</artifactId>
-					<version>5.3.2</version>
-					<exclusions>
-						<exclusion>
-							<groupId>backport-util-concurrent</groupId>
-							<artifactId>backport-util-concurrent</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>javax.activation</groupId>
-							<artifactId>activation</artifactId>
-						</exclusion>
-						<!-- fxdiff: FXOLAT-243  clean up the dependencies of ActiveMQ -->
-						<exclusion>
-							<groupId>org.springframework.osgi</groupId>
-							<artifactId>spring-osgi-core</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.apache.activemq</groupId>
-							<artifactId>kahadb</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.osgi</groupId>
-							<artifactId>org.osgi.core</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.apache.geronimo.specs</groupId>
-							<artifactId>geronimo-j2ee-management_1.0_spec</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>commons-logging</groupId>
-							<artifactId>commons-logging-api</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>commons-logging</groupId>
-							<artifactId>commons-logging</artifactId>
-						</exclusion>
-					</exclusions>
-				</dependency>
-			</dependencies>
-		
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-war-plugin</artifactId>
-						<configuration>
-							<webResources>
-								<resource>
-									<directory>src/main/webapp</directory>
-									<filtering>false</filtering>
-								</resource>
-								<resource>
-									<directory>src/main/webapp-gae</directory>
 									<filtering>false</filtering>
 								</resource>
 							</webResources>
@@ -1286,6 +1175,10 @@
 				<directory>src/main/java</directory>
 				<excludes>
 					<exclude>**/*.java</exclude>
+					<exclude>**/*.vsd</exclude>
+					<exclude>**/*.odg</exclude>
+					<exclude>**/*.odt</exclude>
+					<exclude>**/*.pdf</exclude>
 				</excludes>
 			</resource>
 			<resource>
@@ -1298,21 +1191,20 @@
 				</excludes>
 			</resource>
 		</resources>
-    <testResources>
-      <!-- Same comment as for src/main/java also applies to src/test/java -->
-      <testResource>
-        <directory>src/test/java</directory>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </testResource>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <!-- when enabled resources will be searched and variables replaces with 
-					values -->
-        <filtering>true</filtering>
-      </testResource>
-    </testResources>
+		<testResources>
+			<!-- Same comment as for src/main/java also applies to src/test/java -->
+			<testResource>
+				<directory>src/test/java</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</testResource>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<!-- when enabled resources will be searched and variables replaces with values -->
+				<filtering>true</filtering>
+			</testResource>
+		</testResources>
 		<plugins>
 			<plugin>
 				<groupId>org.openolat.mojo</groupId>
@@ -1350,7 +1242,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>2.2</version>
+					<version>2.4</version>
 					<configuration>
 						<attachClasses>true</attachClasses>
 						<directory>src/main/java</directory>
@@ -1365,6 +1257,13 @@
 								<Implementation-Build>${buildNumber}</Implementation-Build>
 							</manifestEntries>
 						</archive>
+						<excludes>**/*.pxm, **/*.psd, **/*.scss, **/*.sh, **/*.README</excludes>
+						<webResources>
+							<resource>
+								<directory>src/main/webapp</directory>
+								<filtering>false</filtering>
+							</resource>
+						</webResources>
 					</configuration>
 				</plugin>
 
@@ -2075,7 +1974,7 @@
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
-			<version>1.4.5</version>
+			<version>1.4.7</version>
 		</dependency>
 		<dependency>
 			<groupId>cos</groupId>
@@ -2122,27 +2021,27 @@
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
-			<version>4.5.1</version>
+			<version>${lucene.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-highlighter</artifactId>
-			<version>4.5.1</version>
+			<version>${lucene.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-queryparser</artifactId>
-			<version>4.5.1</version>
+			<version>${lucene.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-analyzers-common</artifactId>
-			<version>4.5.1</version>
+			<version>${lucene.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-suggest</artifactId>
-			<version>4.5.1</version>
+			<version>${lucene.version}</version>
 		</dependency>
 		
 		<!-- End lucene dependencies -->
@@ -2265,13 +2164,13 @@
 		<dependency>
 		    <groupId>io.undertow</groupId>
 		    <artifactId>undertow-core</artifactId>
-		    <version>1.0.0.Beta30</version>
+		    <version>1.0.0.Final</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 		    <groupId>io.undertow</groupId>
 		    <artifactId>undertow-servlet</artifactId>
-		    <version>1.0.0.Beta30</version>
+		    <version>1.0.0.Final</version>
 			<scope>test</scope>
 		</dependency>
     

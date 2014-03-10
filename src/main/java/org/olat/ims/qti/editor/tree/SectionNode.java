@@ -31,9 +31,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.memento.Memento;
 import org.olat.ims.qti.editor.QTIEditorMainController;
@@ -52,6 +50,7 @@ public class SectionNode extends GenericQtiNode {
 	private Section section;
 	private QTIEditorPackage qtiPackage;
 	private TabbedPane myTabbedPane;
+	private SectionController sectionCtrl;
 	
 	
 	public SectionNode(Section theSection) {
@@ -82,15 +81,6 @@ public class SectionNode extends GenericQtiNode {
 		super.setMenuTitleAndAlt(title);
 		section.setTitle(title);
 	}
-	
-	/**
-	 * @see org.olat.ims.qti.editor.tree.IQtiNode#createRunController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller createRunController(UserRequest ureq, WindowControl wControl) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	/**
 	 * @see org.olat.ims.qti.editor.tree.GenericQtiNode#createEditTabbedPane(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, org.olat.core.gui.translator.Translator, QTIEditorMainController)
@@ -98,11 +88,18 @@ public class SectionNode extends GenericQtiNode {
 	public TabbedPane createEditTabbedPane(UserRequest ureq, WindowControl wControl, Translator trnsltr, QTIEditorMainController editorMainController) {
 		if (myTabbedPane == null) {
 			myTabbedPane = new TabbedPane("tabbedPane", ureq.getLocale());
-			TabbableController tabbCntrllr = new SectionController(section, qtiPackage, ureq, wControl, editorMainController.isRestrictedEdit());
-			tabbCntrllr.addTabs(myTabbedPane);
-			tabbCntrllr.addControllerListener(editorMainController);
+			sectionCtrl = new SectionController(section, qtiPackage, ureq, wControl, editorMainController.isRestrictedEdit());
+			sectionCtrl.addTabs(myTabbedPane);
+			sectionCtrl.addControllerListener(editorMainController);
 		}
 		return myTabbedPane;
+	}
+
+	@Override
+	public void childNodeChanges() {
+		if(sectionCtrl != null) {
+			sectionCtrl.childNodeChanges();
+		}
 	}
 
 	/**

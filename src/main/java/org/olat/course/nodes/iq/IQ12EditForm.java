@@ -211,12 +211,17 @@ public class IQ12EditForm extends FormBasicController {
 			renderSectionsOnly = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_RENDERMENUOPTION);
 		}
 		menuRenderOptions.select(renderSectionsOnly.toString(), true);
+		menuRenderOptions.addActionListener(FormEvent.ONCLICK);
 		
 		// sequence type
 		sequence = uifactory.addRadiosVertical("qti_form_sequence", "qti.form.sequence", formLayout, sequenceKeys, sequenceValues);
 		String confSequence = (String)modConfig.get(IQEditController.CONFIG_KEY_SEQUENCE);
 		if (confSequence == null) confSequence = AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM;
 		sequence.select(confSequence, true);
+		sequence.addActionListener(FormEvent.ONCLICK);
+		// when menu rendering is set to section only, show all question on the section otherwise not accessible
+		if (renderSectionsOnly) confSequence = AssessmentInstance.QMD_ENTRY_SEQUENCE_SECTION;
+		sequence.setEnabled(!renderSectionsOnly);
 
 		
 		Boolean bDisplayQuestionTitle = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_QUESTIONTITLE);
@@ -409,6 +414,16 @@ public class IQ12EditForm extends FormBasicController {
 		endDateElement.clearError();
 		if (!endDateElement.isVisible()) endDateElement.setValue("");
 		endDateElement.setVisible(startDateElement.isVisible());
+
+		if (isDisplayMenu() && isEnableMenu()) {
+			// when items not visible in menu, question sequence must be set to section to make items accessible
+			if (isMenuRenderSectionsOnly()) {
+				sequence.select(AssessmentInstance.QMD_ENTRY_SEQUENCE_SECTION, true);
+				sequence.setEnabled(false);
+			} else {
+				sequence.setEnabled(true);
+			}
+		}
 		
 		flc.setDirty(true);
 	}

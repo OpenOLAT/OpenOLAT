@@ -107,7 +107,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(pointColModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.release.i18nKey(), Cols.release.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.file.i18nKey(), Cols.file.ordinal()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit.checkbox", translate("edit.checkbox"), "edit"));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
 		
 		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
 		List<Checkbox> boxList = list == null ? null : list.getList();
@@ -133,15 +133,14 @@ public class CheckListBoxListEditController extends FormBasicController {
 		if(addLink == source) {
 			Checkbox checkbox = new Checkbox();
 			checkbox.setCheckboxId(UUID.randomUUID().toString());
-			String title = translate("add.checkbox");
-			doOpenEdit(ureq, checkbox, true, title);
+			doOpenEdit(ureq, checkbox, true, translate("add.checkbox"));
 		} else if(boxTable == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				if("edit".equals(cmd)) {
 					Checkbox row = model.getObject(se.getIndex());
-					doOpenEdit(ureq, row, false, "edit.checkbox");
+					doOpenEdit(ureq, row, false, translate("edit.checkbox"));
 				}
 			}
 		}
@@ -205,7 +204,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 		listenTo(editCtrl);
 
 		Component content = editCtrl.getInitialComponent();
-		cmc = new CloseableModalController(getWindowControl(), "close", content, true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), content, true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

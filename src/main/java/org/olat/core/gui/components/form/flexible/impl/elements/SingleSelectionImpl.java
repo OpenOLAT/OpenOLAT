@@ -99,6 +99,17 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		if (!isOneSelected()) throw new AssertException("no key selected");
 		return keys[selectedIndex];
 	}
+	
+	
+
+	@Override
+	public String getSelectedValue() {
+		if(selectedIndex >= 0 && selectedIndex < values.length) {
+			return values[selectedIndex];
+		}
+		return null;
+	}
+
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelectionContainer#isOneSelected()

@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.dom4j.Element;
 import org.olat.ims.qti.editor.beecom.objects.Control;
+import org.olat.ims.qti.editor.beecom.objects.Duration;
 import org.olat.ims.qti.editor.beecom.objects.QTIObject;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.editor.beecom.objects.SelectionOrdering;
@@ -53,8 +54,7 @@ public class SectionParser implements IParser {
 			// elements
 
 			// DURATION
-			QTIObject duration =
-			(QTIObject) parserManager.parse(element.element("duration"));
+			Duration duration = (Duration) parserManager.parse(element.element("duration"));
 			section.setDuration(duration);
 			
 			List sectioncontrolsXML = element.elements("sectioncontrol");

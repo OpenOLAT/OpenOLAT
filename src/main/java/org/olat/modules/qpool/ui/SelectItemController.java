@@ -44,11 +44,13 @@ import org.olat.modules.qpool.ui.events.QItemViewEvent;
  */
 public class SelectItemController extends BasicController {
 	
-	private final Link markedItemsLink, ownedItemsLink;
+	private final Link markedItemsLink, ownedItemsLink, myListsLink, mySharesLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	private ItemListController ownedItemsCtrl;
 	private ItemListController markedItemsCtrl;
+    private ItemListMyListsController myListsCtrl;
+	private ItemListMySharesController mySharesCtrl;
 	private String restrictToFormat;
 	
 	public SelectItemController(UserRequest ureq, WindowControl wControl, String restrictToFormat) {
@@ -66,6 +68,10 @@ public class SelectItemController extends BasicController {
 		segmentView.addSegment(markedItemsLink, marked > 0);
 		ownedItemsLink = LinkFactory.createLink("menu.database.my", mainVC, this);
 		segmentView.addSegment(ownedItemsLink, marked <= 0);
+        myListsLink = LinkFactory.createLink("my.list", mainVC, this);
+        segmentView.addSegment(myListsLink, false);
+		mySharesLink = LinkFactory.createLink("my.share", mainVC, this);
+		segmentView.addSegment(mySharesLink, false);
 		putInitialPanel(mainVC);
 	}
 	
@@ -85,6 +91,10 @@ public class SelectItemController extends BasicController {
 					updateMarkedItems(ureq);
 				} else if (clickedLink == ownedItemsLink){
 					updateOwnedGroups(ureq);
+				} else if (clickedLink == myListsLink) {
+                    updateMyLists(ureq);
+                } else if (clickedLink == mySharesLink) {
+					updateMyShares(ureq);
 				}
 			}
 		}
@@ -123,5 +133,21 @@ public class SelectItemController extends BasicController {
 		}
 		ownedItemsCtrl.updateList();
 		mainVC.put("itemList", ownedItemsCtrl.getInitialComponent());
+	}
+
+    private void updateMyLists(UserRequest ureq) {
+        if(myListsCtrl == null) {
+            myListsCtrl = new ItemListMyListsController(ureq, getWindowControl());
+            listenTo(myListsCtrl);
+        }
+        mainVC.put("itemList", myListsCtrl.getInitialComponent());
+    }
+
+	private void updateMyShares(UserRequest ureq) {
+		if(mySharesCtrl == null) {
+			mySharesCtrl = new ItemListMySharesController(ureq, getWindowControl());
+			listenTo(mySharesCtrl);
+		}
+		mainVC.put("itemList", mySharesCtrl.getInitialComponent());
 	}
 }

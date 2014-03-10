@@ -77,7 +77,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	private ExtendedSearchController extendedSearchCtrl;
 	
 	private final MarkManager markManager;
-	private final QPoolService qpoolService;
+	protected final QPoolService qpoolService;
 	
 	private EventBus eventBus;
 	private QuestionItemsSource source;
@@ -145,10 +145,14 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setRendererType(FlexiTableRendererType.dataTables);
 		itemsTable.setColumnLabelForDragAndDrop(Cols.title.ordinal());
 
-		initButtons(formLayout);
+		initButtons(ureq, formLayout);
 	}
 	
-	protected abstract void initButtons(FormItemContainer formLayout);
+	protected abstract void initButtons(UserRequest ureq, FormItemContainer formLayout);
+
+    protected void setSource(QuestionItemsSource source) {
+        this.source = source;
+    }
 	
 	protected FlexiTableElement getItemsTable() {
 		return itemsTable;

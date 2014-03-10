@@ -653,7 +653,9 @@ public class ForumController extends BasicController implements GenericEventList
 		attachments.addAll((Collection<VFSItem>) messageMap.get("attachments"));
 		VFSItem vI = attachments.get(pos - 1);
 		VFSLeaf vl = (VFSLeaf) vI;
-		ureq.getDispatchResult().setResultingMediaResource(new VFSMediaResource(vl));
+		VFSMediaResource res = new VFSMediaResource(vl);
+		res.setDownloadable(true); // prevent XSS attack
+		ureq.getDispatchResult().setResultingMediaResource(res);
 	}
 
 	private void doDeleteMessage(UserRequest ureq) {

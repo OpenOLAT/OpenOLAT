@@ -31,14 +31,13 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -49,7 +48,7 @@ import org.olat.core.util.StringHelper;
  * Use {@link LinkFactory} to create {@link Link} objects.
  *
  */
-public class LinkRenderer implements ComponentRenderer {
+public class LinkRenderer extends DefaultComponentRenderer {
 	private static Pattern singleQuote = Pattern.compile("\'");
 	private static Pattern doubleQutoe = Pattern.compile("\"");
 
@@ -284,16 +283,5 @@ public class LinkRenderer implements ComponentRenderer {
 			extJsSb.append("\n/* ]]> */\n</script>");
 			sb.append(extJsSb);
 		}
-	}
-
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		//
-	}
-
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		//
 	}
 }

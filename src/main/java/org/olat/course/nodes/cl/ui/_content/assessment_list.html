@@ -3,7 +3,7 @@
 	<div class="b_form_desc">$off_desc</div>
 	#if($dueDate)
 		<p>$r.translate("coach.due.date.desc")</p>
-		<p>$r.translate("run.due.date",$r.formatDateAndTime($dueDate))</p>
+		<p class="o_cl_duedate_line">$r.translate("run.due.date",$r.formatDateAndTime($dueDate))</p>
 	#end
 	$r.render("checkbox-list")
 	

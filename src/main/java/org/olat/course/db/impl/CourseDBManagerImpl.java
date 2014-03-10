@@ -22,9 +22,11 @@ package org.olat.course.db.impl;
 
 import java.util.List;
 
-import org.hibernate.FlushMode;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
+import javax.persistence.FlushModeType;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -32,6 +34,8 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.ICourse;
 import org.olat.course.db.CourseDBEntry;
 import org.olat.course.db.CourseDBManager;
+import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -47,8 +51,27 @@ public class CourseDBManagerImpl extends CourseDBManager implements GenericEvent
 	private static final String ENABLED = "enabled";
 	private boolean enabled;
 	
+	private DB dbInstance;
+	private RepositoryManager repositoryManager;
+	
 	public CourseDBManagerImpl() {
 		//
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param dbInstance
+	 */
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param repositoryManager
+	 */
+	public void setRepositoryManager(RepositoryManager repositoryManager) {
+		this.repositoryManager = repositoryManager;
 	}
 
 	@Override
@@ -79,6 +102,24 @@ public class CourseDBManagerImpl extends CourseDBManager implements GenericEvent
 	public boolean isEnabled() {
 		return enabled;
 	}
+	
+	public Long getCourseId(Long key) {
+		OLATResource resource = repositoryManager.lookupRepositoryEntryResource(key);
+		if(resource == null) {
+			return key;
+		}
+		return resource.getResourceableId();
+	}
+	
+	public List<String> getUsedCategories(ICourse course) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct entry.category from ").append(CourseDBEntryImpl.class.getName()).append(" as entry")
+		  .append(" where entry.courseKey=:courseKey ");
+		
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), String.class)
+				.setParameter("courseKey", course.getResourceableId())
+				.getResultList();
+	}
 
 	@Override
 	public void reset(ICourse course, String category) {
@@ -89,12 +130,13 @@ public class CourseDBManagerImpl extends CourseDBManager implements GenericEvent
 			sb.append(" and entry.category=:category");
 		}
 		
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setLong("courseKey", course.getResourceableId());
+		Query query = dbInstance.getCurrentEntityManager().createQuery(sb.toString());
+		query.setParameter("courseKey", course.getResourceableId());
 		if(StringHelper.containsNonWhitespace(category)) {
-			query.setString("category", category);
+			query.setParameter("category", category);
 		}
-		query.executeUpdate(FlushMode.AUTO);
+		query.setFlushMode(FlushModeType.AUTO)
+			.executeUpdate();
 	}
 	
 	@Override
@@ -124,18 +166,19 @@ public class CourseDBManagerImpl extends CourseDBManager implements GenericEvent
 			sb.append(" and entry.name=:name");
 		}
 
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setLong("courseKey", course.getResourceableId());
+		TypedQuery<CourseDBEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CourseDBEntry.class)
+				.setParameter("courseKey", course.getResourceableId());
 		if(identity != null) {
-			query.setEntity("identity", identity);
+			query.setParameter("identity", identity);
 		}
 		if(StringHelper.containsNonWhitespace(category)) {
-			query.setString("category", category);
+			query.setParameter("category", category);
 		}
 		if(StringHelper.containsNonWhitespace(name)) {
-			query.setString("name", name);
+			query.setParameter("name", name);
 		}
-		return query.list();
+		return query.getResultList();
 	}
 
 	@Override
@@ -149,7 +192,11 @@ public class CourseDBManagerImpl extends CourseDBManager implements GenericEvent
 			entry.setCategory(category);
 		}
 		entry.setValue(value);
-		DBFactory.getInstance().saveObject(entry);
+		if(entry.getKey() == null) {
+			dbInstance.getCurrentEntityManager().persist(entry);
+		} else {
+			entry = dbInstance.getCurrentEntityManager().merge(entry);
+		}
 		return entry;
 	}
 	
@@ -160,13 +207,13 @@ public class CourseDBManagerImpl extends CourseDBManager implements GenericEvent
 			.append(" entry.identity=:identity and entry.courseKey=:courseKey ")
 			.append(" and entry.name=:named and entry.category=:category");
 
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setString("named", name);
-		query.setString("category", category);
-		query.setEntity("identity", identity);
-		query.setLong("courseKey", courseResourceableId);
-		
-		List<CourseDBEntryImpl> entries = query.list();
+		List<CourseDBEntryImpl> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CourseDBEntryImpl.class)
+				.setParameter("named", name)
+				.setParameter("category", category)
+				.setParameter("identity", identity)
+				.setParameter("courseKey", courseResourceableId)
+				.getResultList();
 		if(entries.isEmpty()) {
 			return null;
 		}
@@ -180,13 +227,14 @@ public class CourseDBManagerImpl extends CourseDBManager implements GenericEvent
 			.append(" entry where entry.identity=:identity and entry.courseKey=:courseKey ")
 			.append(" and entry.name=:name and entry.category=:category");
 
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setString("name", name);
-		query.setString("category", category);
-		query.setEntity("identity", identity);
-		query.setLong("courseKey", course.getResourceableId());
-		
-		int rowAffected = query.executeUpdate(FlushMode.AUTO);
+		int rowAffected = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("name", name)
+				.setParameter("category", category)
+				.setParameter("identity", identity)
+				.setParameter("courseKey", course.getResourceableId())
+				.setFlushMode(FlushModeType.AUTO)
+				.executeUpdate();
 		return rowAffected > 0;
 	}
 }

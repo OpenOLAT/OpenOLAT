@@ -246,7 +246,7 @@ public class LDAPLoginModule implements Initializable {
 	 */
 	private void initStartSyncJob() {
 		LDAPError errors = new LDAPError();
-		if (ldapManager.doBatchSync(errors)) {
+		if (ldapManager.doBatchSync(errors, true)) {
 			log.info("LDAP start sync: users synced");
 		} else {
 			log.warn("LDAP start sync error: " + errors.get());
@@ -268,12 +268,10 @@ public class LDAPLoginModule implements Initializable {
 			log.info("LDAP cron syncer is enabled with expression::" + ldapSyncCronSyncExpression);
 		} catch (ParseException e) {
 			setLdapSyncCronSync(false);
-			log
-					.error(
-							"LDAP configuration in attribute 'ldapSyncCronSyncExpression' is not valid ("
-									+ ldapSyncCronSyncExpression
-									+ "). See http://quartz.sourceforge.net/javadoc/org/quartz/CronTrigger.html to learn more about the cron syntax. Disabling LDAP cron syncing",
-							e);
+			log.error("LDAP configuration in attribute 'ldapSyncCronSyncExpression' is not valid ("
+				+ ldapSyncCronSyncExpression
+				+ "). See http://quartz.sourceforge.net/javadoc/org/quartz/CronTrigger.html to learn more about the cron syntax. Disabling LDAP cron syncing",
+				e);
 		} catch (SchedulerException e) {
 			log.error("Error while scheduling LDAP cron sync job. Disabling LDAP cron syncing", e);
 		}

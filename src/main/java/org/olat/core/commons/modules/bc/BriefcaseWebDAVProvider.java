@@ -28,12 +28,11 @@ package org.olat.core.commons.modules.bc;
 
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.vfs.VFSContainer;
 /**
  * 
  */
-public class BriefcaseWebDAVProvider  extends BasicManager implements WebDAVProvider {
+public class BriefcaseWebDAVProvider implements WebDAVProvider {
 
 	private static final String MOUNTPOINT = "home";
 	

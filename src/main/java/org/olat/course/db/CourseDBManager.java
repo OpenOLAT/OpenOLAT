@@ -45,6 +45,10 @@ public abstract class CourseDBManager extends AbstractOLATModule implements Conf
 	
 	public abstract boolean isEnabled();
 	
+	public abstract Long getCourseId(Long key);
+	
+	public abstract List<String> getUsedCategories(ICourse course);
+	
 	public abstract void reset(ICourse course, String category);
 	
 	public abstract CourseDBEntry getValue(ICourse course, Identity identity, String category, String name);

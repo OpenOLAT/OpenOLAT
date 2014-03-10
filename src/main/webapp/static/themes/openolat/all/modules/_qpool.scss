@@ -55,3 +55,14 @@ div.o_qpool_metadata_sharing {
 		td.b_first_child { width: 15% }
 	}
 }
+
+div.o_qpool_filter_box {
+	margin:3px 0 3px 0;
+	label {
+		padding:3px 7px 3px 0;
+		float:left;
+	}
+	div.b_form_selection_element {
+		float:left;
+	}
+}

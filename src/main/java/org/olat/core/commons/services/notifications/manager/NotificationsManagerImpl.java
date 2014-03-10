@@ -61,6 +61,7 @@ import org.olat.core.commons.services.notifications.SubscriptionItem;
 import org.olat.core.commons.services.notifications.model.NoSubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.PublisherImpl;
 import org.olat.core.commons.services.notifications.model.SubscriberImpl;
+import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -368,7 +369,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			latestSub = sub;
 		}
 		
-		Translator translator = Util.createPackageTranslator(NotificationsManagerImpl.class, locale);
+		Translator translator = Util.createPackageTranslator(NotificationSubscriptionController.class, locale);
 		notifySubscribersByEmail(latestSub, items, subsToUpdate, translator, start, veto);
 	}
 	

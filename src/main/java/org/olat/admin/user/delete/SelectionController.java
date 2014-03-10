@@ -199,10 +199,11 @@ public class SelectionController extends BasicController {
 	}
 
 	private void handleEmailButtonEvent(UserRequest ureq, TableMultiSelectEvent tmse) {
-		if (tdm.getObjects(tmse.getSelection()).size() != 0) {
-			selectedIdentities = tdm.getObjects(tmse.getSelection());
-			
+		List<Identity> identities = tdm.getObjects(tmse.getSelection());
+		if (identities.size() > 0) {
+			selectedIdentities = identities;
 			MailTemplate deleteMailTemplate = createMailTemplate(translate(KEY_EMAIL_SUBJECT), translate(KEY_EMAIL_BODY));
+			deleteMailTemplate.setCpfrom(Boolean.FALSE);
 			deleteMailTemplate.addToContext("lastloginduration",   Integer.toString(UserDeletionManager.getInstance().getLastLoginDuration() ));
 			deleteMailTemplate.addToContext("durationdeleteemail", Integer.toString(UserDeletionManager.getInstance().getDeleteEmailDuration() ));
 

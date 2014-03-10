@@ -334,7 +334,7 @@ public class CheckListConfigurationController extends FormBasicController {
 				if("cutvalue".equals(selectKey)) {
 					float cut = toFloat(cutValueEl.getValue());
 					if (Float.isNaN(cut) || cut < 0.0f) {
-						minPointsEl.setErrorKey("form.error.wrongFloat", null);
+						cutValueEl.setErrorKey("form.error.wrongFloat", null);
 						allOk &= false;
 					}
 				}

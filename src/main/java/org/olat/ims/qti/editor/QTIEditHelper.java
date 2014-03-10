@@ -681,7 +681,7 @@ public class QTIEditHelper {
 	 * @param sIdent
 	 */
 	public static void setFeedback(QTIObject object, String feedbackString, String sIdent) {
-		List feedbacks = getFeedbacks(object);
+		List<Feedback> feedbacks = getFeedbacks(object);
 		Feedback feedback = getFeedback(sIdent, feedbacks);
 
 		if (feedbackString == null || feedbackString.trim().length() == 0) {
@@ -714,13 +714,13 @@ public class QTIEditHelper {
 			newFeedback.setView("All");
 			Mattext newMattext = new Mattext(feedbackString);
 
-			ArrayList newMattextL = new ArrayList();
+			List<QTIObject> newMattextL = new ArrayList<>();
 			newMattextL.add(newMattext);
 
 			Material material = new Material();
 			material.setElements(newMattextL);
 
-			ArrayList newMaterialL = new ArrayList();
+			List<Material> newMaterialL = new ArrayList<>();
 			newMaterialL.add(material);
 			newFeedback.setMaterials(newMaterialL);
 			feedbacks.add(newFeedback);

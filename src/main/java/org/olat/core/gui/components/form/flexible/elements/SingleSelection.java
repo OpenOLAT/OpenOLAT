@@ -37,6 +37,8 @@ public interface SingleSelection extends SelectionElement {
 	 * @return
 	 */
 	public String getSelectedKey();
+	
+	public String getSelectedValue();
 
 	/**
 	 * @return

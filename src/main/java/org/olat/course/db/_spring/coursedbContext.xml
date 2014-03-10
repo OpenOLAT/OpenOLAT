@@ -12,6 +12,8 @@
 	    	<constructor-arg index="1" ref="courseDBManager" />
 	  	</bean>
 		</property>
+		<property name="dbInstance" ref="database"/>
+		<property name="repositoryManager" ref="repositoryManager"/>
 	</bean>
 
 	<!-- default configuration -->

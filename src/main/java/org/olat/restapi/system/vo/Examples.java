@@ -132,10 +132,5 @@ public class Examples {
 		SAMPLE_RELEASEVO.setBuildVersion("");
 		SAMPLE_RELEASEVO.setOlatVersion("");
 		SAMPLE_RELEASEVO.setRepoRevision("");
-		SAMPLE_RELEASEVO.setAllowAutoPatch(true);
-		SAMPLE_RELEASEVO.setAllowAutoUpdate(false);
-		SAMPLE_RELEASEVO.setPatchAvailable(true);
-		SAMPLE_RELEASEVO.setUpdateAvailable(false);
-		SAMPLE_RELEASEVO.setUpgradeAvailable(false);
 	}
 }

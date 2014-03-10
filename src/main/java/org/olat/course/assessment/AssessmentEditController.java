@@ -93,9 +93,11 @@ public class AssessmentEditController extends BasicController {
 	 * @param course
 	 * @param courseNode The assessable course node
 	 * @param assessedIdentityWrapper The wrapped assessed identity
+	 * @param showCourseNodeDetails show the details controller if one available
 	 */
-	public AssessmentEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, AssessableCourseNode courseNode,
-			AssessedIdentityWrapper assessedIdentityWrapper) {
+	public AssessmentEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel,
+			ICourse course, AssessableCourseNode courseNode, AssessedIdentityWrapper assessedIdentityWrapper,
+			boolean showCourseNodeDetails) {
 		super(ureq, wControl);
 		this.assessedIdentityWrapper = assessedIdentityWrapper;
 		this.courseNode = courseNode;
@@ -135,7 +137,7 @@ public class AssessmentEditController extends BasicController {
 			String nodeLog = courseNode.getUserLog(uce);
 			detailView.contextPut("log", nodeLog);
 			// Add the users details controller
-			if (courseNode.hasDetails()) {
+			if (courseNode.hasDetails() && showCourseNodeDetails) {
 				detailView.contextPut("hasDetails", Boolean.TRUE);
 				detailsEditController = courseNode.getDetailsEditController(ureq, wControl, stackPanel, uce);
 				listenTo(detailsEditController);

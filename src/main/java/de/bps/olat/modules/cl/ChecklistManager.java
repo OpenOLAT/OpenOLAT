@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
 
@@ -92,21 +93,21 @@ public class ChecklistManager {
 	 * Save new checklist.
 	 * @param checklist
 	 */
-	public void saveChecklist(Checklist cl) {
+	public Checklist saveChecklist(Checklist cl) {
 		cl.setLastModified(new Date());
-		DBFactory.getInstance().saveObject(cl);
+		return DBFactory.getInstance().getCurrentEntityManager().merge(cl);
 	}
 	
 	/**
 	 * Update checklist.
 	 * @param checklist
 	 */
-	public void updateChecklist(final Checklist cl) {
+	public Checklist updateChecklist(final Checklist cl) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Checklist.class, cl.getKey());
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
-			public void execute() {
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Checklist>() {
+			public Checklist execute() {
 				cl.setLastModified(new Date());
-				DBFactory.getInstance().updateObject(cl);
+				return DBFactory.getInstance().getCurrentEntityManager().merge(cl);
 			}
 		});
 	}

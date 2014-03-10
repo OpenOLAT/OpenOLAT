@@ -176,7 +176,7 @@ public class IdentityAssessmentEditController extends BasicController {
 			UserCourseInformationsManager userCourseInformationsManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
 			Date initialLaunchDate = userCourseInformationsManager.getInitialLaunchDate(ores.getResourceableId(),  assessedUserCourseEnvironment.getIdentityEnvironment().getIdentity());
 			AssessedIdentityWrapper assessedIdentityWrapper = AssessmentHelper.wrapIdentity(assessedUserCourseEnvironment, initialLaunchDate, courseNode);
-			assessmentEditCtr = new AssessmentEditController(ureq, getWindowControl(), stackPanel, course, courseNode, assessedIdentityWrapper);			
+			assessmentEditCtr = new AssessmentEditController(ureq, getWindowControl(), stackPanel, course, courseNode, assessedIdentityWrapper, true);			
 			listenTo(assessmentEditCtr);
 			main.setContent(assessmentEditCtr.getInitialComponent());
 		} else {

@@ -149,22 +149,21 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 				batchSyncIsRunning = false;
 				lastSyncDate = ((LDAPEvent)event).getTimestamp();
 			} else if(LDAPEvent.DO_SYNCHING.equals(event.getCommand())) {
-				doHandleBatchSync();
+				doHandleBatchSync(false);
 			} else if(LDAPEvent.DO_FULL_SYNCHING.equals(event.getCommand())) {
-				lastSyncDate = null;
-				doHandleBatchSync();
+				doHandleBatchSync(true);
 			}
 		}
 	}
 	
-	private void doHandleBatchSync() {
+	private void doHandleBatchSync(final boolean full) {
 		//fxdiff: also run on nodes != 1 as nodeid = tomcat-id in fx-environment
 //		if(WebappHelper.getNodeId() != 1) return;
 		
 		Runnable batchSyncTask = new Runnable() {
 			public void run() {
 				LDAPError errors = new LDAPError();
-				doBatchSync(errors);
+				doBatchSync(errors, full);
 			}				
 		};
 		taskExecutorManager.execute(batchSyncTask);		
@@ -867,7 +866,8 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 	 * @param LDAPError
 	 * 
 	 */
-	public boolean doBatchSync(LDAPError errors) {
+	@Override
+	public boolean doBatchSync(LDAPError errors, boolean full) {
 		//fxdiff: also run on nodes != 1 as nodeid = tomcat-id in fx-environment
 //		if(WebappHelper.getNodeId() != 1) {
 //			logWarn("Sync happens only on node 1", null);
@@ -894,6 +894,10 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 		WorkThreadInformations.setLongRunningTask("ldapSync");
 		
 		coordinator.getEventBus().fireEventToListenersOf(new LDAPEvent(LDAPEvent.SYNCHING), ldapSyncLockOres);
+		
+		if(full) {
+			lastSyncDate = null;
+		}
 		
 		LdapContext ctx = null;
 		boolean success = false;

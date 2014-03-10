@@ -730,7 +730,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			setContent(identityAssessmentController.getInitialComponent());
 		} else {
 			removeAsListenerAndDispose(assessmentEditController);
-			assessmentEditController = new AssessmentEditController(ureq, getWindowControl(), stackPanel, course, currentCourseNode, assessedIdentityWrapper);
+			assessmentEditController = new AssessmentEditController(ureq, getWindowControl(), stackPanel, course, currentCourseNode, assessedIdentityWrapper, true);
 			listenTo(assessmentEditController);
 			main.setContent(assessmentEditController.getInitialComponent());
 		}

@@ -47,12 +47,14 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
@@ -61,6 +63,7 @@ import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -150,7 +153,38 @@ public class CheckListRunController extends FormBasicController implements Contr
 				wrappers.add(wrapper);
 			}
 			layoutCont.contextPut("checkboxList", wrappers);
+			
+			if(withScore) {
+				layoutCont.contextPut("enableScoreInfo", Boolean.TRUE);
+				exposeConfigToVC(layoutCont);
+				exposeUserDataToVC(layoutCont);
+		
+			} else {
+				layoutCont.contextPut("enableScoreInfo", Boolean.FALSE);
+			}
 		}
+	}
+	
+	private void exposeConfigToVC(FormLayoutContainer layoutCont) {
+		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD));
+		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD));
+		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
+	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
+	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, (infoTextUser == null ? "" : infoTextUser));
+	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
+	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
+	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
+	}
+	
+	private void exposeUserDataToVC(FormLayoutContainer layoutCont) {
+		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(userCourseEnv);
+		layoutCont.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
+		layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
+		layoutCont.contextPut("passed", scoreEval.getPassed());
+		StringBuilder comment = Formatter.stripTabsAndReturns(courseNode.getUserUserComment(userCourseEnv));
+		layoutCont.contextPut("comment", StringHelper.xssScan(comment));
+		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+		layoutCont.contextPut("log", am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity()));
 	}
 	
 	private CheckboxWrapper forgeCheckboxWrapper(Checkbox checkbox, DBCheck check, boolean readOnly, FormItemContainer formLayout) {
@@ -243,6 +277,8 @@ public class CheckListRunController extends FormBasicController implements Contr
 		
 		Checkbox checkbox = wrapper.getCheckbox();
 		logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());
+		
+		exposeUserDataToVC(flc);
 	}
 	
 	private void logUpdateCheck(String checkboxId, String boxTitle) {

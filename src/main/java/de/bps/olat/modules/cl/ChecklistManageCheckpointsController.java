@@ -294,12 +294,12 @@ public class ChecklistManageCheckpointsController extends BasicController {
 	}
 	
 	private void loadData() {
-		this.checklist = ChecklistManager.getInstance().loadChecklist(checklist);
+		checklist = ChecklistManager.getInstance().loadChecklist(checklist);
 	}
 	
 	private void updateCheckpointsFor(Identity identity, BitSet selection) {
 		ChecklistManager manager = ChecklistManager.getInstance();
-		int size = this.checklist.getCheckpoints().size();
+		int size = checklist.getCheckpoints().size();
 		for(int i = 0; i < size; i++) {
 			Checkpoint checkpoint = this.checklist.getCheckpoints().get(i);
 			Boolean selected = checkpoint.getSelectionFor(identity);

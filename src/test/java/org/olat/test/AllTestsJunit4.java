@@ -80,6 +80,7 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.CoordinatorTest.class,//ok
 	org.olat.core.commons.services.webdav.WebDAVCommandsTest.class,//ok
 	org.olat.core.commons.services.webdav.manager.WebDAVManagerTest.class,//ok
+	org.olat.core.commons.services.webdav.servlets.RequestUtilsTest.class,//ok
 	org.olat.core.commons.services.taskexecutor.PersistentTaskDAOTest.class,//ok
 	org.olat.core.commons.services.taskexecutor.TaskExecutorManagerTest.class,//ok
 	org.olat.admin.user.delete.service.UserDeletionManagerTest.class,//ok
@@ -178,6 +179,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.CalendarTest.class,
 	org.olat.restapi.CourseGroupMgmtTest.class,
 	org.olat.restapi.CourseCalendarTest.class,
+	org.olat.restapi.CourseDBTest.class,
 	org.olat.restapi.CoursesContactElementTest.class,
 	org.olat.restapi.CourseSecurityTest.class,
 	org.olat.restapi.CoursesElementsTest.class,

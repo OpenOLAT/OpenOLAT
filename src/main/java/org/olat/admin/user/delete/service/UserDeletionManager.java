@@ -154,7 +154,6 @@ public class UserDeletionManager extends BasicManager {
 				} 
 				template.putVariablesInMailContext(template.getContext(), identity);
 				logDebug(" Try to send Delete-email to identity=" + identity.getName() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));
-				Identity ccIdentity = null;
 				
 				MailerResult result = new MailerResult();
 				MailBundle bundle = mailManager.makeMailBundle(null, identity, template, sender, null, result);
@@ -162,7 +161,7 @@ public class UserDeletionManager extends BasicManager {
 					mailManager.sendMessage(bundle);
 				}
 				if(template.getCpfrom()) {
-					MailBundle ccBundle = mailManager.makeMailBundle(null, ccIdentity, template, sender, null, result);
+					MailBundle ccBundle = mailManager.makeMailBundle(null, sender, template, sender, null, result);
 					if(ccBundle != null) {
 						mailManager.sendMessage(ccBundle);
 					}

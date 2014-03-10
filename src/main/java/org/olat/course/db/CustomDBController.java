@@ -32,6 +32,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -83,9 +84,12 @@ public class CustomDBController extends FormBasicController {
 	
 	private final Long courseKey;
 	
+	private final CourseDBManager courseDbManager;
+	
 	public CustomDBController(UserRequest ureq, WindowControl wControl, Long courseKey) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.courseKey = courseKey;
+		courseDbManager = CoreSpringFactory.getImpl(CourseDBManager.class);
 		initForm(ureq);
 	}
 	
@@ -115,33 +119,45 @@ public class CustomDBController extends FormBasicController {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		CourseNode rootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode()).getCourseNode();
 		Property p = cpm.findCourseNodeProperty(rootNode, null, null, CustomDBMainController.CUSTOM_DB);
+		
+		List<String> databases = new ArrayList<>();
 		if(p != null && p.getTextValue() != null) {
 			String[] dbs = p.getTextValue().split(":");
-			
-			int count = 0;
 			for(String db:dbs) {
-				if(!StringHelper.containsNonWhitespace(db)) continue;
-				
-				uifactory.addStaticExampleText("category_" + count, "customDb.category", db, formLayout);
-				String url = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/repo/courses/" + courseKey + "/db/" + db;
-				uifactory.addStaticExampleText("url_" + count, "customDb.url", url, formLayout);
-				
-				final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout_" + count, getTranslator());
-				formLayout.add(buttonLayout);
-				
-				FormLink resetDb = uifactory.addFormLink("db-reset_" + count, "customDb.reset", "customDb.reset", buttonLayout, Link.BUTTON_SMALL);
-				resetDb.setUserObject(db);
-				FormLink deleteDb = uifactory.addFormLink("db-delete_" + count, "delete", "delete", buttonLayout, Link.BUTTON_SMALL);
-				deleteDb.setUserObject(db);
-				FormLink exportDb = uifactory.addFormLink("db-export_" + count, "customDb.export", "customDb.export", buttonLayout, Link.BUTTON_SMALL);
-				exportDb.setUserObject(db);
-				
-				resetDbs.add(resetDb);
-				deleteDbs.add(deleteDb);
-				exportDbs.add(exportDb);
-				
-				count++;
+				databases.add(db);
 			}
+		}
+			
+		List<String> currentlyUsed = courseDbManager.getUsedCategories(course);
+		for(String db:currentlyUsed) {
+			if(!databases.contains(db)) {
+				databases.add(db);
+			}
+		}
+			
+		int count = 0;
+		for(String db:databases) {
+			if(!StringHelper.containsNonWhitespace(db)) continue;
+			
+			uifactory.addStaticExampleText("category_" + count, "customDb.category", db, formLayout);
+			String url = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/repo/courses/" + courseKey + "/db/" + db;
+			uifactory.addStaticExampleText("url_" + count, "customDb.url", url, formLayout);
+			
+			final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout_" + count, getTranslator());
+			formLayout.add(buttonLayout);
+			
+			FormLink resetDb = uifactory.addFormLink("db-reset_" + count, "customDb.reset", "customDb.reset", buttonLayout, Link.BUTTON_SMALL);
+			resetDb.setUserObject(db);
+			FormLink deleteDb = uifactory.addFormLink("db-delete_" + count, "delete", "delete", buttonLayout, Link.BUTTON_SMALL);
+			deleteDb.setUserObject(db);
+			FormLink exportDb = uifactory.addFormLink("db-export_" + count, "customDb.export", "customDb.export", buttonLayout, Link.BUTTON_SMALL);
+			exportDb.setUserObject(db);
+			
+			resetDbs.add(resetDb);
+			deleteDbs.add(deleteDb);
+			exportDbs.add(exportDb);
+			
+			count++;
 		}
 	}
 

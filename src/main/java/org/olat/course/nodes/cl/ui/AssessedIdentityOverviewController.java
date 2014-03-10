@@ -134,7 +134,7 @@ public class AssessedIdentityOverviewController extends BasicController {
 			ICourse course = CourseFactory.loadCourse(courseOres);
 			UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 			AssessedIdentityWrapper idWrapper = AssessmentHelper.wrapIdentity(uce, null, courseNode);
-			assessmentCtrl = new AssessmentEditController(ureq, getWindowControl(), null, course, courseNode, idWrapper);
+			assessmentCtrl = new AssessmentEditController(ureq, getWindowControl(), null, course, courseNode, idWrapper, false);
 			assessmentCtrl.setIdentityInfos(false);
 			assessmentCtrl.setCourseNodeInfos(false);
 			assessmentCtrl.setTitleInfos(false);
