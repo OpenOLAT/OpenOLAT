@@ -141,7 +141,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		TextElement pointEl = null;
 		if(withScore) {
 			String pointId = "point_" + checkbox.getCheckboxId();
-			String points = AssessmentHelper.getRoundedScore(check.getScore());
+			String points = check == null ? null : AssessmentHelper.getRoundedScore(check.getScore());
 			pointEl = uifactory.addTextElement(pointId, null, 16, points, formLayout);
 			pointEl.setDisplaySize(5);
 			pointEl.setExampleKey("checklist.point.example", new String[]{ "0", "1"});
