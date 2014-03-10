@@ -46,7 +46,7 @@ public interface QTIItemObject {
 	 * @param resultSet
 	 * @return
 	 */
-	public QTIResult extractQTIResult(List resultSet);
+	public QTIResult extractQTIResult(List<QTIResult> resultSet);
 	
 	/**
 	 * @return
@@ -75,13 +75,13 @@ public interface QTIItemObject {
 	 * 
 	 * @return List responseColumnHeaders
 	 */ 
-	public List getResponseColumnHeaders();
+	public List<String> getResponseColumnHeaders();
 	
 	/**
 	 * 
 	 * @return List responseColumns
 	 */
-	public List getResponseColumns(QTIResult qtiresult);
+	public List<String> getResponseColumns(QTIResult qtiresult);
 	
 	/**
 	 * @return String
@@ -99,14 +99,14 @@ public interface QTIItemObject {
 	 *  - in case of ItemWithResponseStr --> response_str ident
 	 *  - in case of ItemWithResponseLid --> response_label ident
 	 */
-	public List getResponseIdentifier();
+	public List<String> getResponseIdentifier();
 	
 	
 	/**
 	 * 
 	 * @return Null, if the item has no material, otherwise a list of materials
 	 */
-	public List getResponseLabelMaterials();
+	public List<String> getResponseLabelMaterials();
 
 	/**
 	 * 

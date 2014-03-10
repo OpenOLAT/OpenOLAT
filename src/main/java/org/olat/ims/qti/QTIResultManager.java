@@ -37,8 +37,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.user.UserDataDeletable;
 
 /**
@@ -46,7 +46,9 @@ import org.olat.user.UserDataDeletable;
  * 
  * @author Alexander Schneider
  */
-public class QTIResultManager extends BasicManager implements UserDataDeletable {
+public class QTIResultManager implements UserDataDeletable {
+	
+	private static final OLog log = Tracing.createLoggerFor(QTIResultManager.class);
 
 	private static QTIResultManager instance;
 
@@ -201,13 +203,13 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @param answerCode
 	 * @return translation
 	 */
-	public static Map parseResponseStrAnswers(String answerCode) {
+	public static Map<String,String> parseResponseStrAnswers(String answerCode) {
 		// calculate the correct answer, if eventually needed
 		int modus = 0;
 		int startIdentPosition = 0;
 		int startCharacterPosition = 0;
 		String tempIdent = null;
-		Map result = new HashMap();
+		Map<String,String> result = new HashMap<String,String>();
 		char c;
 
 		for (int i = 0; i < answerCode.length(); i++) {
@@ -248,11 +250,11 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @param answerCode
 	 * @return translation
 	 */
-	public static List parseResponseLidAnswers(String answerCode) {
+	public static List<String> parseResponseLidAnswers(String answerCode) {
 		// calculate the correct answer, if eventually needed
 		int modus = 0;
 		int startCharacterPosition = 0;
-		List result = new ArrayList();
+		List<String> result = new ArrayList<String>();
 		char c;
 
 		for (int i = 0; i < answerCode.length(); i++) {
@@ -299,8 +301,10 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 		List qtiResults = findQtiResultSets(identity);
 		for (Iterator iter = qtiResults.iterator(); iter.hasNext();) {
 			deleteResultSet((QTIResultSet)iter.next());
-		}	
-		Tracing.logDebug("Delete all QTI result data in db for identity=" + identity, this.getClass());
+		}
+		if(log.isDebug()) {
+			log.debug("Delete all QTI result data in db for identity=" + identity);
+		}
 	}
 
 	/**

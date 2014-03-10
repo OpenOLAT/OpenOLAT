@@ -118,12 +118,12 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 				hR1.append(emb);
 
 				if (qeif.getExportItemConfig(item).hasResponseCols()) {
-					List responseColumnHeaders = item.getResponseColumnHeaders();
-					for (Iterator iterator = responseColumnHeaders.iterator(); iterator.hasNext();) {
+					List<String> responseColumnHeaders = item.getResponseColumnHeaders();
+					for (Iterator<String> iterator = responseColumnHeaders.iterator(); iterator.hasNext();) {
 						// HeaderRow1
 						hR1.append(sep);
 						// HeaderRow2
-						String columnHeader = (String) iterator.next();
+						String columnHeader = iterator.next();
 						hR2.append(i);
 						hR2.append("_");
 						hR2.append(columnHeader);
@@ -231,14 +231,14 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 	}
 
 	public void visit(QTIExportItem eItem) {
-		List responseColumns = eItem.getResponseColumns();
+		List<String> responseColumns = eItem.getResponseColumns();
 		QTIExportItemFormatConfig itemFormatConfig = eItem.getConfig();
 
 		if (displayItem(itemFormatConfig)) {
 
 			if (itemFormatConfig.hasResponseCols()) {
-				for (Iterator iter = responseColumns.iterator(); iter.hasNext();) {
-					String responseColumn = (String) iter.next();
+				for (Iterator<String> iter = responseColumns.iterator(); iter.hasNext();) {
+					String responseColumn = iter.next();
 					sb.append(emb);
 					sb.append(escape(responseColumn));
 					sb.append(emb);
@@ -337,7 +337,7 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 			sb.append(car);
 			// CELFI#107 END
 
-			List responseLabelMaterials = element.getResponseLabelMaterials();
+			List<String> responseLabelMaterials = element.getResponseLabelMaterials();
 
 			for (int i = 0; i < element.getResponseIdentifier().size(); i++) {
 				sb.append(sep + sep);

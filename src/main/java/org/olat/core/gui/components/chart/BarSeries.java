@@ -70,8 +70,26 @@ public class BarSeries {
 		return Double.NaN;
 	}
 	
+	public static final String datasToString(double[] values) {
+		StringBuilder sb = new StringBuilder();
+		for(double value:values) {
+			if(sb.length() > 0) sb.append(",");
+			sb.append(value);
+		}
+		return sb.toString();
+	}
+	
+	
+	public static final String datasToString(long[] values) {
+		StringBuilder sb = new StringBuilder();
+		for(long value:values) {
+			if(sb.length() > 0) sb.append(",");
+			sb.append((double)value);
+		}
+		return sb.toString();
+	}
 
-	protected static Stringuified getDatasAndColors(List<BarSeries> seriesList, String defaultBarClass) {
+	public static Stringuified getDatasAndColors(List<BarSeries> seriesList, String defaultBarClass) {
 		Map<Comparable<?>,String> thickSet = new HashMap<>();
 		Map<Comparable<?>,String> colorsMap = new HashMap<>();
 		for(BarSeries series:seriesList) {
@@ -92,6 +110,7 @@ public class BarSeries {
 		
 		List<Comparable<?>> thickList = new ArrayList<>(thickSet.keySet());
 		Collections.sort(thickList);
+		Collections.reverse(thickList);
 
 		StringBuilder data = new StringBuilder();
 		for(int i=0; i<thickList.size(); i++) {
@@ -120,7 +139,7 @@ public class BarSeries {
 		return new Stringuified(data, colors);
 	}
 	
-	protected static class Stringuified {
+	public static class Stringuified {
 		private final StringBuilder colors;
 		private final StringBuilder data;
 		

@@ -19,13 +19,33 @@
  */
 package org.olat.core.gui.components.chart;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.render.ValidationResult;
+
 /**
  * 
+ * Initial date: 07.03.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum Scale {
-	plain,
-	percent,
-	hour
+public class StatisticsComponent extends DefaultD3Component {
+	
+	private static final ComponentRenderer RENDERER = new DefaultComponentRenderer();
+	
+	public StatisticsComponent(String name) {
+		super(name);
+	}
+	
+	@Override
+	public ComponentRenderer getHTMLRendererSingleton() {
+		return RENDERER;
+	}
+	
+	@Override
+	public void validate(UserRequest ureq, ValidationResult vr) {
+		super.validate(ureq, vr);
+		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.statistics.chart.min.js");
+	}
 }

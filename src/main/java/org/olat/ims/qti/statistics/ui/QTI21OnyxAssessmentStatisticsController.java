@@ -25,8 +25,13 @@ import static org.olat.ims.qti.statistics.ui.StatisticFormatter.format;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.chart.HistogramComponent;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.chart.BarSeries;
+import org.olat.core.gui.components.chart.StatisticsComponent;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 
@@ -35,19 +40,34 @@ import org.olat.ims.qti.statistics.model.StatisticAssessment;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21OnyxAssessmentStatisticsController extends AbstractAssessmentStatisticsController {
+public class QTI21OnyxAssessmentStatisticsController extends BasicController {
 	
-
+	private final VelocityContainer mainVC;
+	
+	private final QTIStatisticResourceResult resourceResult;
 
 	public QTI21OnyxAssessmentStatisticsController(UserRequest ureq, WindowControl wControl,
 			QTIStatisticResourceResult resourceResult, boolean printMode) {
-		super(ureq, wControl, resourceResult, printMode, "statistics_onyx");
+		super(ureq, wControl);
+		
+		this.resourceResult = resourceResult;
+
+		mainVC = createVelocityContainer("statistics_onyx");
+		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
+		mainVC.contextPut("printMode", new Boolean(printMode));
+		putInitialPanel(mainVC);
 
 		StatisticAssessment stats = resourceResult.getQTIStatisticAssessment();
 		initScoreHistogram(stats);
+		initDurationHistogram(stats);
 		initCourseNodeInformation(stats);
 	}
 	
+	@Override
+	protected void doDispose() {
+		//
+	}
+
 	private void initCourseNodeInformation(StatisticAssessment stats) {
 		mainVC.contextPut("numOfParticipants", stats.getNumOfParticipants());
 	
@@ -75,9 +95,19 @@ public class QTI21OnyxAssessmentStatisticsController extends AbstractAssessmentS
 	}
 
 	private void initScoreHistogram(StatisticAssessment stats) {
-		HistogramComponent scoreHistogram = new HistogramComponent("scoreHistogram");
-		scoreHistogram.setDoubleValues(stats.getScores());
-		scoreHistogram.setYLegend(translate("chart.percent.participants"));
-		mainVC.put("scoreHistogram", scoreHistogram);
+		VelocityContainer scoreHistogramVC = createVelocityContainer("histogram_score");
+		scoreHistogramVC.contextPut("datas", BarSeries.datasToString(stats.getScores()));
+		mainVC.put("scoreHistogram", scoreHistogramVC);
+	}
+	
+	private void initDurationHistogram(StatisticAssessment stats) {
+		VelocityContainer durationHistogramVC = createVelocityContainer("histogram_duration");
+		durationHistogramVC.contextPut("datas", BarSeries.datasToString(stats.getDurations()));
+		mainVC.put("durationHistogram", durationHistogramVC);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 }

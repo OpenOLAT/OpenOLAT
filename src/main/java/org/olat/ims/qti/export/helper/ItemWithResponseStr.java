@@ -51,11 +51,11 @@ public class ItemWithResponseStr implements QTIItemObject {
 	private String	quetionText				= "";
 	// CELFI#107 END
 
-	private List	responseColumnHeaders	= new ArrayList(5);
-	private List	responseStrIdents		= new ArrayList(5);
+	private List<String> responseColumnHeaders = new ArrayList<>(5);
+	private List<String> responseStrIdents = new ArrayList<>(5);
 
 	// CELFI#107
-	private List	responseLabelMaterials	= new ArrayList(5);
+	private List<String> responseLabelMaterials	= new ArrayList<>(5);
 
 	// CELFI#107 END
 
@@ -125,9 +125,9 @@ public class ItemWithResponseStr implements QTIItemObject {
 	/**
 	 * @see org.olat.ims.qti.export.helper.QTIItemObject#extractQTIResult(java.util.List)
 	 */
-	public QTIResult extractQTIResult(List resultSet) {
-		for (Iterator iter = resultSet.iterator(); iter.hasNext();) {
-			QTIResult element = (QTIResult) iter.next();
+	public QTIResult extractQTIResult(List<QTIResult> resultSet) {
+		for (Iterator<QTIResult> iter = resultSet.iterator(); iter.hasNext();) {
+			QTIResult element = iter.next();
 			if (element.getItemIdent().equals(itemIdent)) {
 				resultSet.remove(element);
 				return element;
@@ -136,7 +136,7 @@ public class ItemWithResponseStr implements QTIItemObject {
 		return null;
 	}
 
-	private void addTextAndTabs(List responseColumns, String s, int num) {
+	private void addTextAndTabs(List<String> responseColumns, String s, int num) {
 		for (int i = 0; i < num; i++) {
 			responseColumns.add(s);
 		}
@@ -154,15 +154,15 @@ public class ItemWithResponseStr implements QTIItemObject {
 		return this.quetionText;
 	}
 
-	public List getResponseColumnHeaders() {
+	public List<String> getResponseColumnHeaders() {
 		return responseColumnHeaders;
 	}
 
 	/**
 	 * @see org.olat.ims.qti.export.helper.QTIItemObject#getResponseColumns(org.olat.ims.qti.QTIResult)
 	 */
-	public List getResponseColumns(QTIResult qtiresult) {
-		List responseColumns = new ArrayList();
+	public List<String> getResponseColumns(QTIResult qtiresult) {
+		List<String> responseColumns = new ArrayList<String>();
 		if (qtiresult == null) {
 			// item has not been choosen
 			addTextAndTabs(responseColumns, "", getNumColumnHeaders());
@@ -170,9 +170,9 @@ public class ItemWithResponseStr implements QTIItemObject {
 			String answer = qtiresult.getAnswer();
 			if (answer.length() == 0) addTextAndTabs(responseColumns, ".", getNumColumnHeaders());
 			else {
-				Map answerMap = QTIResultManager.parseResponseStrAnswers(answer);
+				Map<String,String> answerMap = QTIResultManager.parseResponseStrAnswers(answer);
 				
-				for (Iterator iter = responseStrIdents.iterator(); iter.hasNext();) {
+				for (Iterator<String> iter = responseStrIdents.iterator(); iter.hasNext();) {
 					String element = (String) iter.next();
 					if (answerMap.containsKey(element)) {
 						responseColumns.add(answerMap.get(element));	
@@ -193,11 +193,11 @@ public class ItemWithResponseStr implements QTIItemObject {
 	/**
 	 * @see org.olat.ims.qti.export.helper.QTIItemObject#getResponseIdentifier()
 	 */
-	public List getResponseIdentifier() {
+	public List<String> getResponseIdentifier() {
 		return responseStrIdents;
 	}
 
-	public List getResponseLabelMaterials() {
+	public List<String> getResponseLabelMaterials() {
 		// CELFI#107
 		return responseLabelMaterials;
 	}

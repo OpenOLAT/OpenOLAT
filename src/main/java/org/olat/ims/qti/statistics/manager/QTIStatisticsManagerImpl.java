@@ -21,6 +21,7 @@
 package org.olat.ims.qti.statistics.manager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,20 +31,23 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Response;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIStatisticsManager;
-import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti.statistics.model.QTIStatisticResult;
 import org.olat.ims.qti.statistics.model.QTIStatisticResultSet;
 import org.olat.ims.qti.statistics.model.StatisticAnswerOption;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticChoiceOption;
+import org.olat.ims.qti.statistics.model.StatisticFIBOption;
 import org.olat.ims.qti.statistics.model.StatisticItem;
 import org.olat.ims.qti.statistics.model.StatisticKPrimOption;
 import org.olat.ims.qti.statistics.model.StatisticSurveyItem;
 import org.olat.ims.qti.statistics.model.StatisticSurveyItemResponse;
+import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -374,7 +378,6 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 	@Override
 	public List<StatisticKPrimOption> getNumbersInKPrim(Item item, QTIStatisticSearchParams searchParams) {
 		List<StatisticAnswerOption> rawDatas = getStatisticAnswerOptionsOfItem(item.getIdent(), searchParams);
-		
 		List<Response> responses = item.getQuestion().getResponses();
 		List<StatisticKPrimOption> kprimPoints = new ArrayList<>();
 		for(Response response:responses) {
@@ -401,6 +404,74 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 			kprimPoints.add(new StatisticKPrimOption(response, numCorrect, numIncorrect, numUnanswered));
 		}
 		return kprimPoints;
+	}
+
+	@Override
+	public List<StatisticFIBOption> getStatisticAnswerOptionsFIB(Item item, QTIStatisticSearchParams searchParams) {
+
+		List<StatisticFIBOption> options = new ArrayList<>();
+		Map<String,StatisticFIBOption> optionMap = new HashMap<>();
+		
+		List<Response> responses = item.getQuestion().getResponses();
+		for(Response response:responses) {
+			if(response instanceof FIBResponse) {
+				FIBResponse fibResponse = (FIBResponse)response;
+				if(FIBResponse.TYPE_BLANK.equals(fibResponse.getType())) {
+					String ident = fibResponse.getIdent();
+					String[] correctFIBs = fibResponse.getCorrectBlank().split(";");
+					if(correctFIBs == null || correctFIBs.length == 0) {
+						continue;
+					}
+					
+					StatisticFIBOption option = new StatisticFIBOption();
+					option.setCorrectBlank(correctFIBs[0]);
+					option.setAlternatives(Arrays.asList(correctFIBs));
+					option.setCaseSensitive("Yes".equals(fibResponse.getCaseSensitive()));
+					option.setPoints(fibResponse.getPoints());
+					options.add(option);
+					optionMap.put(ident, option);
+				}
+			}
+		}
+		
+		
+		List<StatisticAnswerOption> answerOptions = getStatisticAnswerOptionsOfItem(item.getIdent(), searchParams);
+		
+		for(StatisticAnswerOption answerOption:answerOptions) {
+			long count = answerOption.getCount();
+			String concatenedAnswer = answerOption.getAnswer();
+			Map<String,String> parsedAnswerMap = QTIResultManager.parseResponseStrAnswers(concatenedAnswer);
+			for(Map.Entry<String, String> parsedAnswerEntry: parsedAnswerMap.entrySet()) {
+				String ident = parsedAnswerEntry.getKey();
+
+				StatisticFIBOption option = optionMap.get(ident);
+				if(option == null) {
+					continue;
+				}
+				
+				String text = parsedAnswerEntry.getValue();
+				boolean correct;
+				if(option.isCaseSensitive()) {
+					correct = option.getAlternatives().contains(text);
+				} else {
+					correct = false;
+					for(String alt:option.getAlternatives()) {
+						if(alt.equalsIgnoreCase(text)) {
+							correct = true;
+						}
+					}
+				}
+				
+				if(correct) {
+					option.setNumOfCorrect(option.getNumOfCorrect() + count);
+				} else {
+					option.setNumOfIncorrect(option.getNumOfIncorrect() + count);
+					option.getWrongAnswers().add(text);
+				}
+			}
+		}
+
+		return options;
 	}
 	
 	@Override

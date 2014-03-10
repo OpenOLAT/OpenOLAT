@@ -23,15 +23,16 @@ package org.olat.ims.qti.statistics;
 import java.util.List;
 
 import org.olat.ims.qti.editor.beecom.objects.Item;
-import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti.statistics.model.QTIStatisticResult;
 import org.olat.ims.qti.statistics.model.QTIStatisticResultSet;
 import org.olat.ims.qti.statistics.model.StatisticAnswerOption;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticChoiceOption;
+import org.olat.ims.qti.statistics.model.StatisticFIBOption;
 import org.olat.ims.qti.statistics.model.StatisticItem;
 import org.olat.ims.qti.statistics.model.StatisticKPrimOption;
 import org.olat.ims.qti.statistics.model.StatisticSurveyItem;
+import org.olat.ims.qti.statistics.model.StatisticsItem;
 
 /**
  * 
@@ -92,6 +93,8 @@ public interface QTIStatisticsManager {
 	 * @return
 	 */
 	public List<StatisticAnswerOption> getStatisticAnswerOptionsOfItem(String itemIdent, QTIStatisticSearchParams searchParams);
+	
+	public List<StatisticFIBOption> getStatisticAnswerOptionsFIB(Item itemIdent, QTIStatisticSearchParams searchParams);
 	
 	/**
 	 * 

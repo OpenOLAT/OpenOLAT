@@ -1,4 +1,5 @@
 <div class="o_qti_statistics">
+
 #if(!$printMode)
 	<div class="o_buttons_box_right">
 		<script type="text/javascript">
@@ -18,24 +19,32 @@
 #end
 <div class="b_clearfix">
 	<div class="b_c33l">
-<h4>$r.translate("fig.title")</h4>
-$r.translate("fig.participants"): $numOfParticipants<br/>
-$r.translate("fig.avg"): $average<br/>
-$r.translate("fig.span"): $range<br/>
-$r.translate("fig.stddev"): $standardDeviation<br/>
-$r.translate("fig.mode"): $mode<br/>
-$r.translate("fig.median"): $median<br/>
-$r.translate("fig.averagedur"): $averageDuration<br/>
+		<h4>$r.translate("fig.title")</h4>
+		<table><tbody>
+			<tr><td>$r.translate("fig.participants")</td>
+				<td>$numOfParticipants</td></tr>
+			<tr><td>$r.translate("fig.avg")</td>
+				<td>$average</td></tr>
+			<tr><td>$r.translate("fig.span")</td>
+				<td>$range</td></tr>
+			<tr><td>$r.translate("fig.stddev")</td>
+				<td>$standardDeviation</td></tr>
+			<tr><td>$r.translate("fig.mode")</td>
+				<td>$mode</td></tr>
+			<tr><td>$r.translate("fig.median")</td>
+				<td>$median</td></tr>
+			<tr><td>$r.translate("fig.averagedur")</td>
+				<td>$averageDuration</td></tr>
+		</tbody></table>
 	</div>
 	<div class="b_c66r">
-	
-	<h4>$r.translate("chart.score.histogramm")</h4>
-	#if($r.available("scoreHistogram"))
-		$r.render("scoreHistogram")
-	#end
+		#if($r.available("scoreHistogram"))
+			$r.render("scoreHistogram")
+		#end
 	</div>
 </div>
+<div class="b_clearfix">
+	$r.render("durationHistogram")
+</div>
 
-<h4>$r.translate("chart.duration.histogramm")</h4>
-$r.render("durationHistogram")
 </div>
