@@ -315,7 +315,7 @@ public class DENManageParticipantsController extends BasicController {
 		MailTemplate mailTempl = denManager.getAddedMailTemplate(ureq, subjectStr, getTranslator());
 		removeAsListenerAndDispose(addedNotificationCtr);
 
-		addedNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false, false);
+		addedNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false, false, true);
 		listenTo(addedNotificationCtr);
 		
 		VelocityContainer sendNotificationVC = createVelocityContainer("sendnotification");
@@ -331,7 +331,7 @@ public class DENManageParticipantsController extends BasicController {
 	private void createRemovedNotificationMail(UserRequest ureq, String subjectStr) {
 		MailTemplate mailTempl = denManager.getRemovedMailTemplate(ureq, subjectStr, getTranslator());
 		removeAsListenerAndDispose(addedNotificationCtr);
-		addedNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false, false);
+		addedNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false, false, true);
 		listenTo(addedNotificationCtr);
 		
 		VelocityContainer sendNotificationVC = createVelocityContainer("sendnotification");

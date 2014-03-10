@@ -55,6 +55,7 @@ public class MailTemplateForm extends FormBasicController {
 	private SelectionElement ccSender;
 	private final static String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
 	
+	private final boolean cc;
 	private final boolean useCancel;
 	private final boolean useSubmit;
 	private MailTemplate template;
@@ -66,8 +67,10 @@ public class MailTemplateForm extends FormBasicController {
 	 * @param useCancel 
 	 * @param listeningController Controller that listens to form events
 	 */
-	public MailTemplateForm(UserRequest ureq, WindowControl wControl, MailTemplate template, boolean useCancel, boolean mandatoryEmail) {
+	public MailTemplateForm(UserRequest ureq, WindowControl wControl, MailTemplate template,
+			boolean useCancel, boolean mandatoryEmail, boolean cc) {
 		super(ureq, wControl);
+		this.cc = cc;
 		this.template = template;
 		this.useCancel = useCancel;
 		this.useSubmit = true;
@@ -77,6 +80,7 @@ public class MailTemplateForm extends FormBasicController {
 	
 	public MailTemplateForm(UserRequest ureq, WindowControl wControl, MailTemplate template, boolean mandatoryEmail, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
+		this.cc = true;
 		this.template = template;
 		useCancel = useSubmit = false;
 		this.mandatoryEmail = mandatoryEmail;
@@ -90,7 +94,7 @@ public class MailTemplateForm extends FormBasicController {
 	public void updateTemplateFromForm(MailTemplate template) {
 		template.setSubjectTemplate(subjectElem.getValue());
 		template.setBodyTemplate(bodyElem.getValue());
-		template.setCpfrom(ccSender.isSelected(0));
+		template.setCpfrom(ccSender.isVisible() && ccSender.isSelected(0));
 	}
 
 	@Override
@@ -145,6 +149,7 @@ public class MailTemplateForm extends FormBasicController {
 		bodyElem.setMandatory(true);
 		
 		ccSender = uifactory.addCheckboxesVertical("tcpfrom", "", formLayout, new String[]{"xx"}, new String[]{translate(NLS_CONTACT_SEND_CP_FROM)}, null, 1);
+		ccSender.setVisible(cc);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
@@ -163,7 +168,7 @@ public class MailTemplateForm extends FormBasicController {
 		boolean sm = mandatoryEmail || sendMail.isSelected(0);
 		subjectElem.setVisible(sm);
 		bodyElem.setVisible(sm);
-		ccSender.setVisible(sm);	
+		ccSender.setVisible(sm && cc);	
 	}
 	
 	@Override
