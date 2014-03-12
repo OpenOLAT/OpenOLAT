@@ -36,6 +36,7 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class ProjectBrokerImpl extends PersistentObject implements ProjectBroker {
 
+	private static final long serialVersionUID = -6007111791449152666L;
 	private List<Project> projectList;
 
 	/* (non-Javadoc)

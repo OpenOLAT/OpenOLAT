@@ -32,7 +32,6 @@ import java.util.UUID;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -52,6 +51,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.properties.Property;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
@@ -91,6 +91,10 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	private static final String KEY_REMOVE_PARTICIPANT_EMAIL_BODY    = "mail.remove.participant.body";
 	
 	private OLog log = Tracing.createLoggerFor(this.getClass()); 
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	
 	// For Enrollment 
@@ -101,7 +105,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	}
 
 	public MailerResult sendEnrolledEmailToManager(Identity enrolledIdentity, Project project, Translator pT) {
-		List<Identity> coaches = CoreSpringFactory.getImpl(BusinessGroupService.class)
+		List<Identity> coaches = businessGroupService
 				.getMembers(project.getProjectGroup(), GroupRoles.coach.name());
 		return sendEmailToGroup(coaches, enrolledIdentity, project, 
 				                    pT.translate(KEY_ENROLLED_EMAIL_TO_MANAGER_SUBJECT), 
@@ -116,7 +120,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	}
 
 	public MailerResult sendCancelEnrollmentEmailToManager(Identity enrolledIdentity, Project project, Translator pT) {
-		List<Identity> coaches = CoreSpringFactory.getImpl(BusinessGroupService.class)
+		List<Identity> coaches = businessGroupService
 				.getMembers(project.getProjectGroup(), GroupRoles.coach.name());
 		return sendEmailToGroup(coaches, enrolledIdentity, project, 
         pT.translate(KEY_CANCEL_ENROLLMENT_EMAIL_TO_MANAGER_SUBJECT), 
@@ -125,7 +129,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 
 	// Project change
 	public MailerResult sendProjectChangedEmailToParticipants(Identity changer, Project project, Translator pT) {
-		List<Identity> participants = CoreSpringFactory.getImpl(BusinessGroupService.class)
+		List<Identity> participants = businessGroupService
 				.getMembers(project.getProjectGroup(), GroupRoles.participant.name());
 		return sendEmailProjectChanged(participants, changer, project, 
 				pT.translate(KEY_PROJECT_CHANGED_EMAIL_TO_PARTICIPANT_SUBJECT), 
@@ -133,7 +137,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	}
 
 	public MailerResult sendProjectDeletedEmailToParticipants(Identity changer, Project project, Translator pT) {
-		List<Identity> participants = CoreSpringFactory.getImpl(BusinessGroupService.class)
+		List<Identity> participants = businessGroupService
 			.getMembers(project.getProjectGroup(), GroupRoles.participant.name());
 		return sendEmailProjectChanged(participants, changer, project, 
 				pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_SUBJECT), 
@@ -141,7 +145,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	}
 	
 	public MailerResult sendProjectDeletedEmailToManager(Identity changer, Project project, Translator pT) {
-		List<Identity> coaches = CoreSpringFactory.getImpl(BusinessGroupService.class)
+		List<Identity> coaches = businessGroupService
 				.getMembers(project.getProjectGroup(), GroupRoles.coach.name());
 		return sendEmailProjectChanged(coaches, changer, project, 
         pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_SUBJECT), 
@@ -156,8 +160,8 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 			groupKey = accountManagerGroupProperty.getLongValue();
 		} 
 		if (groupKey != null) {
-			BusinessGroup accountManagerGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
-			List<Identity> participants = CoreSpringFactory.getImpl(BusinessGroupService.class)
+			BusinessGroup accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
+			List<Identity> participants = businessGroupService
 					.getMembers(accountManagerGroup, GroupRoles.participant.name());
 			return sendEmailProjectChanged(participants, changer, project, 
 	        pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_SUBJECT), 
@@ -194,9 +198,9 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		MailTemplate enrolledMailTemplate = createMailTemplate(project, enrolledIdentity, subject, body, locale );
 		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
 		MailerResult result = new MailerResult();
-		MailBundle bundle = CoreSpringFactory.getImpl(MailManager.class).makeMailBundle(context, enrolledIdentity, enrolledMailTemplate, null, null, result);
+		MailBundle bundle = mailManager.makeMailBundle(context, enrolledIdentity, enrolledMailTemplate, null, null, result);
 		if(bundle != null) {
-			CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
+			mailManager.sendMessage(bundle);
 		}
 		log.audit("ProjectBroker: sendEmail to identity.name=" + enrolledIdentity.getName() + " , mailerResult.returnCode=" + result.getReturnCode());
 		return result;
@@ -214,8 +218,8 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		String metaId = UUID.randomUUID().toString().replace("-", "");
 		
 		MailerResult result = new MailerResult();
-		MailBundle[] bundles = CoreSpringFactory.getImpl(MailManager.class).makeMailBundles(context, group, enrolledMailTemplate, null, metaId, result);
-		result.append(CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundles));
+		MailBundle[] bundles = mailManager.makeMailBundles(context, group, enrolledMailTemplate, null, metaId, result);
+		result.append(mailManager.sendMessage(bundles));
 		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + result.getReturnCode());
 		return result;
 	}
@@ -230,8 +234,8 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		}
 		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
 		MailerResult result = new MailerResult();
-		MailBundle[] bundles = CoreSpringFactory.getImpl(MailManager.class).makeMailBundles(context, group, enrolledMailTemplate, null, null, result);
-		result.append(CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundles));
+		MailBundle[] bundles = mailManager.makeMailBundles(context, group, enrolledMailTemplate, null, null, result);
+		result.append(mailManager.sendMessage(bundles));
 		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + result.getReturnCode());
 		return result;
 	}
