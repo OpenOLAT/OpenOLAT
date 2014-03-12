@@ -101,11 +101,12 @@ import org.junit.runners.Suite;
 	org.olat.basesecurity.BaseSecurityManagerTest.class,//ok
 	org.olat.user.UserManagerTest.class,//ok
 	org.olat.user.UserNameAndPasswordSyntaxCheckerWithRegexpTest.class,//ok
+	org.olat.repository.manager.RepositoryEntryDAOTest.class,//ok
 	org.olat.repository.manager.RepositoryEntryLifecycleDAOTest.class,//ok
 	org.olat.repository.manager.RepositoryEntryRelationDAOTest.class,//ok
 	org.olat.repository.manager.RepositoryServiceImplTest.class,//ok
+	org.olat.repository.manager.RepositoryEntryStatisticsDAOTest.class,//ok
 	org.olat.repository.RepositoryManagerTest.class,//ok
-	org.olat.repository.RepositoryManagerConcurrentTest.class,//ok
 	org.olat.repository.RepositoryManagerQueryTest.class,//ok
 	org.olat.instantMessaging.InstantMessageDAOTest.class,//ok
 	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,//ok

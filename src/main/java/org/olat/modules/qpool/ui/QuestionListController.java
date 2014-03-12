@@ -556,7 +556,7 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	protected void doList(UserRequest ureq) {
 		String title = translate("filter.view");
-		removeAsListenerAndDispose(shareTargetCtrl);
+		removeAsListenerAndDispose(listTargetCtrl);
 		listTargetCtrl = new CollectionTargetController(ureq, getWindowControl(), itemCollection != null);
 		listenTo(listTargetCtrl);
 		

@@ -791,6 +791,7 @@ public class CourseFactory extends BasicManager {
 		// Find repository entry for this course
 		String helpCourseSoftKey = CourseModule.getHelpCourseSoftKey();
 		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry entry = null;
 		if (StringHelper.containsNonWhitespace(helpCourseSoftKey)) {
 			entry = rm.lookupRepositoryEntryBySoftkey(helpCourseSoftKey, false);
@@ -803,7 +804,7 @@ public class CourseFactory extends BasicManager {
 			return emptyCtr;
 		} else {
 			// Increment launch counter
-			rm.incrementLaunchCounter(entry);
+			rs.incrementLaunchCounter(entry);
 			OLATResource ores = entry.getOlatResource();
 			ICourse course = loadCourse(ores);
 			

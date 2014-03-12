@@ -260,13 +260,6 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	public void setLabel(String labelkey, String[] params);
 	
 	public void setLabel(String labelkey, String[] params, boolean translate);
-
-	/**
-	 * see setErrorComponent for comments
-	 * @param labelComponent
-	 * @param layout
-	 */
-	public FormItem setLabelComponent(FormItem labelComponent, FormItemContainer formLayout);
 	
 	/**
 	 * true if the form item should contain a (valid) value.

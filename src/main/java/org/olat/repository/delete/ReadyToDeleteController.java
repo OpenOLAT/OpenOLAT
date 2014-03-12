@@ -27,6 +27,7 @@ package org.olat.repository.delete;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -46,11 +47,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryTypeColumnDescriptor;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.delete.service.RepositoryDeletionManager;
 
 /**
@@ -59,8 +60,6 @@ import org.olat.repository.delete.service.RepositoryDeletionManager;
  * @author Christian Guretzki
  */
 public class ReadyToDeleteController extends BasicController {
-	private static final String PACKAGE_REPOSITORY_MANAGER = Util.getPackageName(RepositoryManager.class);
-	private static final String MY_PACKAGE = Util.getPackageName(ReadyToDeleteController.class);
 
 	private static final String ACTION_SINGLESELECT_CHOOSE = "ssc";
 	private static final String ACTION_MULTISELECT_CHOOSE = "msc";
@@ -73,6 +72,7 @@ public class ReadyToDeleteController extends BasicController {
 	private List<RepositoryEntry> readyToDeleteRepositoryEntries;
 	private DialogBoxController deleteConfirmController;
 
+	private final RepositoryService repositoryService;
 
 	/**
 	 * @param ureq
@@ -80,9 +80,11 @@ public class ReadyToDeleteController extends BasicController {
 	 * @param cancelbutton
 	 */
 	public ReadyToDeleteController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, new PackageTranslator(RepositoryManager.class.getPackage().getName(), ureq.getLocale()));
-		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_REPOSITORY_MANAGER, ureq.getLocale());
-		this.setTranslator( new PackageTranslator( MY_PACKAGE, ureq.getLocale(), fallbackTrans) );
+		super(ureq, wControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
+
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		
+		setTranslator( Util.createPackageTranslator(ReadyToDeleteController.class, getLocale(), getTranslator()) );
 		myContent = createVelocityContainer("panel");
 
 		readyToDeletePanel = new Panel("readyToDeletePanel");
@@ -115,7 +117,7 @@ public class ReadyToDeleteController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					RepositoryManager.getInstance().setLastUsageNowFor(redtm.getObject(rowid) );
+					repositoryService.setLastUsageNowFor(redtm.getObject(rowid) );
 					updateRepositoryEntryList();
 				}
 			} else if (event.getCommand().equals(Table.COMMAND_MULTISELECT)) {

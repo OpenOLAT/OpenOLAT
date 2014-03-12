@@ -41,7 +41,6 @@ import javax.persistence.TypedQuery;
 import org.hibernate.type.StandardBasicTypes;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
@@ -49,7 +48,6 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
-import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
@@ -65,8 +63,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -83,7 +79,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.GroupLoggingAction;
-import org.olat.repository.delete.service.RepositoryDeletionManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -108,8 +103,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  */
 public class RepositoryManager extends BasicManager {
-	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryManager.class);
 	
 	private final int PICTUREWIDTH = 570;
 
@@ -249,7 +242,7 @@ public class RepositoryManager extends BasicManager {
 		}
 	}
 	
-	public VFSLeaf getImage(RepositoryEntry re) {
+	public VFSLeaf getImage(OLATResourceable re) {
 		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
 		String imageName = re.getResourceableId() + ".jpg";
 		VFSItem image = repositoryHome.resolve(imageName);
@@ -366,13 +359,14 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder query = new StringBuilder();
 		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 		     .append(" inner join fetch v.olatResource as ores")
+			 .append(" inner join fetch v.statistics as statistics")
 		     .append(" left join fetch v.lifecycle as lifecycle")
 		     .append(" where v.key = :repoKey");
 		
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), RepositoryEntry.class)
 				.setParameter("repoKey", key)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				//.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 		if(entries.isEmpty()) {
 			return null;
@@ -405,6 +399,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" where v.key in (:repoKey)");
 
@@ -432,6 +427,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" where ores.key = :oreskey");
 
@@ -500,13 +496,14 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v")
 		  .append(" inner join fetch v.olatResource as ores ")
+		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" where v.softkey=:softkey");
 		
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(sb.toString());
-		dbQuery.setString("softkey", softkey);
-		dbQuery.setCacheable(true);
-		List result = dbQuery.list();
+		List<RepositoryEntry> result = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("softkey", softkey)
+				.getResultList();
 		
 		int size = result.size();
 		if (strict) {
@@ -660,76 +657,6 @@ public class RepositoryManager extends BasicManager {
 				.getSingleResult();
 		return entry;
 	}
-	
-	private void updateLifeCycle(RepositoryEntry reloadedRe, Date previousLastUsage) {
-		if(reloadedRe == null) return;
-		if(previousLastUsage == null || previousLastUsage.getTime() < (System.currentTimeMillis() - (60 * 60 * 1000))) {
-			LifeCycleManager lcManager = LifeCycleManager.createInstanceFor(reloadedRe);
-			if (lcManager.hasLifeCycleEntry(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION)) {
-				log.audit("Repository-Deletion: Remove from delete-list repositoryEntry=" + reloadedRe);
-				lcManager.deleteTimestampFor(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION);
-			}
-		}
-	}
-
-	/**
-	 * Increment the launch counter.
-	 * @param re
-	 */
-	public RepositoryEntry incrementLaunchCounter(RepositoryEntry re) {
-		RepositoryEntry reloadedRe = loadForUpdate(re);
-		RepositoryEntry updatedRe = null;
-		Date previousLastUsage = null;
-		if(reloadedRe != null) {
-			reloadedRe.setLaunchCounter(reloadedRe.getLaunchCounter() + 1);
-			previousLastUsage = reloadedRe.getLastUsage();
-			reloadedRe.setLastUsage(new Date());
-			updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-		}
-		dbInstance.commit();
-		updateLifeCycle(reloadedRe, previousLastUsage);
-		return updatedRe;
-	}
-
-	/**
-	 * Increment the download counter.
-	 * @param re
-	 */
-	public RepositoryEntry incrementDownloadCounter( final RepositoryEntry re) {
-		RepositoryEntry reloadedRe = loadForUpdate(re);
-		RepositoryEntry updatedRe = null;
-		Date previousLastUsage = null;
-		if(reloadedRe != null) {
-			reloadedRe.setDownloadCounter(reloadedRe.getDownloadCounter() + 1);
-			previousLastUsage = reloadedRe.getLastUsage();
-			reloadedRe.setLastUsage(new Date());
-			updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-		}
-		dbInstance.commit();
-		updateLifeCycle(reloadedRe, previousLastUsage);
-		return updatedRe;
-	}
-
-	/**
-	 * Set last-usage date to to now for certain repository-entry.
-	 * @param 
-	 */
-	public RepositoryEntry setLastUsageNowFor(final RepositoryEntry re) {
-		if (re == null) return null;
-		Date newUsage = new Date();
-		Date lastUsage = re.getLastUsage();
-		//update every minute and not shorter
-		if(lastUsage != null && (newUsage.getTime() - lastUsage.getTime()) < 60000) {
-			return re;
-		}
-		
-		RepositoryEntry reloadedRe = loadForUpdate(re);
-		reloadedRe.setLastUsage(newUsage);
-		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-		dbInstance.commit();
-		updateLifeCycle(reloadedRe, lastUsage);
-		return updatedRe;
-	}
 
 	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly ) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
@@ -858,6 +785,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder query = new StringBuilder(1000);
 		query.append("select distinct(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
 		     .append(" inner join v.olatResource as reResource ")
+			 .append(" inner join fetch v.statistics as statistics")
 		     .append(" left join fetch v.lifecycle as lifecycle")
 		     .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
 		     .append(" inner join relGroup.group as baseGroup")
@@ -934,6 +862,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder(400);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as res")
+		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" where res.resName in (:restrictedType) and ");
 		
@@ -969,6 +898,7 @@ public class RepositoryManager extends BasicManager {
 			StringBuilder sb = new StringBuilder(400);
 			sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v")
 			  .append(" inner join fetch v.olatResource as res")
+			  .append(" inner join fetch v.statistics as statistics")
 			  .append(" left join fetch v.lifecycle as lifecycle")
 			  .append(" inner join v.groups as relGroup")
 			  .append(" inner join relGroup.group as baseGroup")
@@ -1015,6 +945,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuffer sb = new StringBuffer(400);
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
 		  .append(" inner join relGroup.group as baseGroup")
@@ -1114,6 +1045,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder query = new StringBuilder(400);
 		query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		     .append(" inner join fetch v.olatResource as res" )
+			  .append(" inner join fetch v.statistics as statistics")
 		     .append(" left join fetch v.lifecycle as lifecycle");
 		// 2) where clause
 		query.append(" where "); 
@@ -1201,6 +1133,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
 		  .append(" inner join relGroup.group as baseGroup")
@@ -1235,7 +1168,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param roles
 	 * @return
 	 */
-	private boolean appendAccessSubSelects(StringBuilder sb, Identity identity, Roles roles) {
+	public static boolean appendAccessSubSelects(StringBuilder sb, Identity identity, Roles roles) {
 		sb.append("(v.access >= ");
 		if (roles.isAuthor()) {
 			sb.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
@@ -1318,15 +1251,17 @@ public class RepositoryManager extends BasicManager {
 			query.append(" inner join v.olatResource as res");
 		} else {
 			if(params.getParentEntry() != null) {
-				query.append("select v from ").append(CatalogEntry.class.getName()).append(" cei ");
-				query.append(" inner join cei.parent parentCei");
-				query.append(" inner join cei.repositoryEntry v");
-				query.append(" inner join fetch v.olatResource as res");
-				query.append(" left join fetch v.lifecycle as lifecycle");
+				query.append("select v from ").append(CatalogEntry.class.getName()).append(" cei ")
+				     .append(" inner join cei.parent parentCei")
+				     .append(" inner join cei.repositoryEntry v")
+				     .append(" inner join fetch v.olatResource as res")
+				     .append(" inner join fetch v.statistics as statistics")
+				     .append(" left join fetch v.lifecycle as lifecycle");
 			} else {
-				query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ");
-				query.append(" inner join fetch v.olatResource as res");
-				query.append(" left join fetch v.lifecycle as lifecycle");
+				query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
+				     .append(" inner join fetch v.olatResource as res")
+				     .append(" inner join fetch v.statistics as statistics")
+				     .append(" left join fetch v.lifecycle as lifecycle");
 			}
 		}
 
@@ -1794,8 +1729,7 @@ public class RepositoryManager extends BasicManager {
 			return false;
 		}
 		
-		boolean isInstitutionalResourceManager = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_INSTORESMANAGER);
-		if(!isInstitutionalResourceManager) {
+		if(!roles.isInstitutionalResourceManager()) {
 			return false;
 		}
 		
@@ -1839,6 +1773,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder(1200);
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
@@ -1942,6 +1877,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder(1200);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle");
 		whereClauseLearningResourcesAsTeacher(sb);
 		appendOrderBy(sb, "v", orderby);
@@ -2004,6 +1940,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")

@@ -293,13 +293,14 @@ create table o_repositoryentry (
    version int4 not null,
    lastmodified timestamp,
    creationdate timestamp,
-   lastusage timestamp,
    softkey varchar(36) not null unique,
    external_id varchar(64),
    external_ref varchar(64),
    managed_flags varchar(255),
    displayname varchar(110) not null,
    resourcename varchar(100) not null,
+   authors varchar(2048),
+   fk_stats int8 unique not null,
    fk_lifecycle int8,
    fk_olatresource int8 unique,
    description text,
@@ -311,8 +312,6 @@ create table o_repositoryentry (
    candownload bool not null,
    cancopy bool not null,
    canreference bool not null,
-   launchcounter int8 not null,
-   downloadcounter int8 not null,
    primary key (repositoryentry_id)
 );
 create table o_re_to_group (
@@ -332,6 +331,16 @@ create table o_repositoryentry_cycle (
    r_privatecycle bool default false,
    r_validfrom timestamp,
    r_validto timestamp,
+   primary key (id)
+);
+create table o_repositoryentry_stats (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   r_rating decimal(65,30),
+   r_launchcounter int8 not null default 0,
+   r_downloadcounter int8 not null default 0,
+   r_lastusage timestamp not null,
    primary key (id)
 );
 create table o_bs_membership (
@@ -1439,6 +1448,48 @@ create or replace view o_re_membership_v as (
    inner join o_re_to_group relgroup on (relgroup.fk_entry_id=re.repositoryentry_id)
    inner join o_bs_group_member as bmember on (bmember.fk_group_id=relgroup.fk_group_id) 
 );
+
+create view o_repositoryentry_my_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re.creationdate as re_creationdate,
+      re.lastmodified as re_lastmodified,
+      re.displayname as re_displayname,
+      re.description as re_description,
+      re.authors as re_authors,
+      re.accesscode as re_accesscode,
+      re.membersonly as re_membersonly,
+      re.statuscode as re_statuscode,
+      re.fk_lifecycle as fk_lifecycle,
+      re.fk_olatresource as fk_olatresource,
+      courseinfos.initiallaunchdate as ci_initiallaunchdate,
+      courseinfos.recentlaunchdate as ci_recentlaunchdate,
+      courseinfos.visit as ci_visit,
+      courseinfos.timespend as ci_timespend,
+      effstatement.score as eff_score,
+      effstatement.passed as eff_passed,
+      mark.mark_id as mark_id,
+      rating.rating as rat_rating,
+      stats.r_rating as stats_rating,
+      ident.id as member_id,
+      (select count(offer.offer_id) from o_ac_offer as offer 
+         where offer.fk_resource_id = re.fk_olatresource
+         and offer.is_valid=true
+         and (offer.validfrom is null or offer.validfrom <= current_timestamp)
+         and (offer.validto is null or offer.validto >= current_timestamp)
+      ) as num_of_valid_offers,
+      (select count(offer.offer_id) from o_ac_offer as offer 
+         where offer.fk_resource_id = re.fk_olatresource
+         and offer.is_valid=true
+      ) as num_of_offers
+   from o_repositoryentry as re
+   cross join o_bs_identity as ident
+   inner join o_repositoryentry_stats as stats on (re.fk_stats=stats.id)
+   left join o_mark as mark on (mark.creator_id=ident.id and re.repositoryentry_id=mark.resid and mark.resname='RepositoryEntry')
+   left join o_as_eff_statement as effstatement on (effstatement.fk_identity=ident.id and effstatement.fk_resource_id = re.fk_olatresource)
+   left join o_userrating as rating on (rating.creator_id=ident.id and re.repositoryentry_id=rating.resid and rating.resname='RepositoryEntry')
+   left join o_as_user_course_infos as courseinfos on (courseinfos.fk_identity=ident.id and re.fk_olatresource=courseinfos.fk_resource_id)
+);
   
 -- contacts
 create view o_gp_contactkey_v as (
@@ -1914,6 +1965,9 @@ create index idx_re_lifecycle_extref_idx on o_repositoryentry (external_ref);
 
 alter table o_repositoryentry add constraint idx_re_lifecycle_fk foreign key (fk_lifecycle) references o_repositoryentry_cycle(id);
 create index idx_re_lifecycle_idx on o_repositoryentry (fk_lifecycle);
+
+alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
+create index repoentry_stats_idx on o_repositoryentry (fk_stats);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);

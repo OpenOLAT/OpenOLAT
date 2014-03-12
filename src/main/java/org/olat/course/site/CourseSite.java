@@ -21,6 +21,7 @@ package org.olat.course.site;
 
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -44,6 +45,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.site.ui.DisposedCourseSiteRestartController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 
 /**
  * 
@@ -93,6 +95,7 @@ public class CourseSite extends AbstractSiteInstance {
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
 		if(entry == null) {
 			return getAlternativeController(ureq, wControl, config);
@@ -122,7 +125,7 @@ public class CourseSite extends AbstractSiteInstance {
 		
 		// load course (admins always see content) or alternative controller if course is not launchable
 		if (hasAccess || ureq.getUserSession().getRoles().isOLATAdmin()) {
-			rm.incrementLaunchCounter(entry); 
+			rs.incrementLaunchCounter(entry); 
 			// build up the context path for linked course
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, entry, new StateSite(this), wControl, true) ;	
 			

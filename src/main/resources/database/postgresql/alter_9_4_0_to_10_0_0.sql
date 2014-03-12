@@ -2,8 +2,34 @@ alter table o_gp_business add column fk_group_id int8;
 alter table o_gp_business alter column businessgrouptype set not null;
 
 alter table o_repositoryentry alter column softkey type varchar(36);
+alter table o_repositoryentry alter column launchcounter set not null;
+alter table o_repositoryentry alter column downloadcounter set not null;
 
 alter table o_ep_struct_el add column fk_group_id int8;
+
+
+-- repository entry statistics table
+create table o_repositoryentry_stats (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   r_rating decimal(65,30),
+   r_launchcounter int8 not null default 0,
+   r_downloadcounter int8 not null default 0,
+   r_lastusage timestamp not null,
+   primary key (id)
+);
+
+alter table o_repositoryentry add column fk_stats int8;
+alter table o_repositoryentry add column authors varchar(2048);
+
+insert into o_repositoryentry_stats (id, creationdate, lastmodified, r_rating, r_launchcounter, r_downloadcounter, r_lastusage)
+  select re.repositoryentry_id, now(), now(), null, re.launchcounter, re.downloadcounter, re.lastusage from o_repositoryentry as re where re.fk_stats is null;
+update o_repositoryentry set fk_stats=repositoryentry_id where fk_stats is null;
+
+alter table o_repositoryentry alter column fk_stats set not null;
+alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
+create index repoentry_stats_idx on o_repositoryentry (fk_stats);
 
 -- base group
 create table o_bs_group (
@@ -180,33 +206,6 @@ create view o_gp_contactext_v as (
       (bgroup.participantsintern=true and bg_member.g_role='participant')
 );
 
-drop view o_repositoryentry_my_v;
-create view o_repositoryentry_my_v as (
-   select
-      re.repositoryentry_id as re_id,
-      re.creationdate as re_creationdate,
-      re.lastmodified as re_lastmodified,
-      re.displayname as re_displayname,
-      re.accesscode as re_accesscode,
-      re.membersonly as re_membersonly,
-      re.statuscode as re_statuscode,
-      re.fk_lifecycle as fk_lifecycle,
-      courseinfos.recentlaunchdate as ci_recentlaunchdate,
-      effstatement.score as eff_score,
-      effstatement.passed as eff_passed,
-      mark.mark_id as mark_id,
-      rating.rating as rat_rating,
-      bmember.fk_identity_id as member_id
-   from o_repositoryentry as re
-   inner join o_re_to_group as relgroup on (relgroup.fk_entry_id=re.repositoryentry_id)
-   inner join o_bs_group_member as bmember on (bmember.fk_group_id=relgroup.fk_group_id) 
-   left join o_as_eff_statement as effstatement on (effstatement.fk_resource_id = re.fk_olatresource and effstatement.fk_identity=bmember.fk_identity_id)
-   left join o_mark as mark on (re.repositoryentry_id=mark.resid and mark.resname='RepositoryEntry' and bmember.fk_identity_id=mark.creator_id)
-   left join o_userrating as rating on (re.repositoryentry_id=rating.resid and rating.resname='RepositoryEntry' and bmember.fk_identity_id=rating.creator_id)
-   left join o_as_user_course_infos as courseinfos on (re.fk_olatresource=courseinfos.fk_resource_id and  courseinfos.fk_identity=bmember.fk_identity_id)
-   where re.accesscode > 2 or (re.accesscode=1 and re.membersonly=true)
-);
-
 drop view o_re_membership_v;
 create or replace view o_re_membership_v as (
    select
@@ -287,19 +286,49 @@ create view o_as_eff_statement_groups_v as (
    left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
 );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- new views
+drop view o_repositoryentry_my_v;
+create view o_repositoryentry_my_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re.creationdate as re_creationdate,
+      re.lastmodified as re_lastmodified,
+      re.displayname as re_displayname,
+      re.description as re_description,
+      re.authors as re_authors,
+      re.accesscode as re_accesscode,
+      re.membersonly as re_membersonly,
+      re.statuscode as re_statuscode,
+      re.fk_lifecycle as fk_lifecycle,
+      re.fk_olatresource as fk_olatresource,
+      courseinfos.initiallaunchdate as ci_initiallaunchdate,
+      courseinfos.recentlaunchdate as ci_recentlaunchdate,
+      courseinfos.visit as ci_visit,
+      courseinfos.timespend as ci_timespend,
+      effstatement.score as eff_score,
+      effstatement.passed as eff_passed,
+      mark.mark_id as mark_id,
+      rating.rating as rat_rating,
+      stats.r_rating as stats_rating,
+      ident.id as member_id,
+      (select count(offer.offer_id) from o_ac_offer as offer 
+         where offer.fk_resource_id = re.fk_olatresource
+         and offer.is_valid=true
+         and (offer.validfrom is null or offer.validfrom <= current_timestamp)
+         and (offer.validto is null or offer.validto >= current_timestamp)
+      ) as num_of_valid_offers,
+      (select count(offer.offer_id) from o_ac_offer as offer 
+         where offer.fk_resource_id = re.fk_olatresource
+         and offer.is_valid=true
+      ) as num_of_offers
+   from o_repositoryentry as re
+   cross join o_bs_identity as ident
+   inner join o_repositoryentry_stats as stats on (re.fk_stats=stats.id)
+   left join o_mark as mark on (mark.creator_id=ident.id and re.repositoryentry_id=mark.resid and mark.resname='RepositoryEntry')
+   left join o_as_eff_statement as effstatement on (effstatement.fk_identity=ident.id and effstatement.fk_resource_id = re.fk_olatresource)
+   left join o_userrating as rating on (rating.creator_id=ident.id and re.repositoryentry_id=rating.resid and rating.resname='RepositoryEntry')
+   left join o_as_user_course_infos as courseinfos on (courseinfos.fk_identity=ident.id and re.fk_olatresource=courseinfos.fk_resource_id)
+);
 
 
 -- drop views
@@ -355,25 +384,3 @@ alter table o_gp_bgarea drop constraint FK9EFAF698DF6BCD14;
 
 alter table o_ep_struct_el drop constraint FKF26C8375236F29X;
 drop index idx_structel_to_ownegrp_idx;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -5,8 +5,7 @@
 #end
 
 $r.render("items")
-<div class="b_clearfix o_qpool_button_bar_box">
-	<div class="o_qpool_button_bar">
+<div class="o_buttons_box_center b_clearfix">
 	#if($r.available("list"))
 		$r.render("list")
 	#end
@@ -43,5 +42,4 @@ $r.render("items")
 	#if($r.available("bulk.change"))
 		$r.render("bulk.change")
 	#end
-	</div>
 </div>

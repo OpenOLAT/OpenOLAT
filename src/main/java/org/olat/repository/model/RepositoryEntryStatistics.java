@@ -21,7 +21,6 @@ package org.olat.repository.model;
 
 import java.util.Date;
 
-import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -31,59 +30,55 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 
 /**
  * 
- * Initial date: 10.06.2013<br>
+ * Initial date: 20.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Cacheable(false)
-@Entity(name="repositoryentrymy")
-@Table(name="o_repositoryentry_my_v")
-public class RepositoryEntryMyViewImpl implements Persistable, CreateInfo, ModifiedInfo {
+@Entity(name="repoentrystats")
+@Table(name="o_repositoryentry_stats")
+public class RepositoryEntryStatistics implements Persistable {
 
-	private static final long serialVersionUID = -8484159601386853047L;
+	private static final long serialVersionUID = -464784571144089794L;
+
 	@Id
 	@GeneratedValue(generator = "system-uuid")
 	@GenericGenerator(name = "system-uuid", strategy = "hilo")
-	@Column(name="re_id", nullable=false, unique=true, insertable=false, updatable=false)
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="creationdate", nullable=false, insertable=false, updatable=false)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="lastmodified", nullable=false, insertable=false, updatable=false)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 
-	@Column(name="r_displayname", nullable=false, insertable=false, updatable=false)
-	private String displayname;
+	@Column(name="r_rating", nullable=true, insertable=true, updatable=true)
+	private Double rating;
+	@Column(name="r_launchcounter", nullable=false, insertable=true, updatable=true)
+	private long launchCounter;
+	@Column(name="r_downloadcounter", nullable=false, insertable=true, updatable=true)
+	private long downloadCounter;
+	@Column(name="r_lastusage", nullable=false, insertable=true, updatable=true)
+	private Date lastUsage;
 	
-	@Column(name="eff_score", nullable=true, insertable=false, updatable=false)
-	private Float score;
-	@Column(name="eff_passed", nullable=true, insertable=false, updatable=false)
-	private Boolean passed;
-
-	@Column(name="mark_id", nullable=true, insertable=false, updatable=false)
-	private Long markKey;
 	
-	@Column(name="member_id", nullable=true, insertable=false, updatable=false)
-	private Long identityKey;
+	public RepositoryEntryStatistics() {
+		//
+	}
 
-	@Override
 	public Long getKey() {
 		return key;
 	}
-	
+
 	public void setKey(Long key) {
 		this.key = key;
 	}
-	
-	@Override
+
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -92,40 +87,65 @@ public class RepositoryEntryMyViewImpl implements Persistable, CreateInfo, Modif
 		this.creationDate = creationDate;
 	}
 
-	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
-	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
 
+	public Double getRating() {
+		return rating;
+	}
+
+	public void setRating(Double rating) {
+		this.rating = rating;
+	}
+	
+	public long getLaunchCounter() {
+		return launchCounter;
+	}
+
+	public void setLaunchCounter(long launchCounter) {
+		this.launchCounter = launchCounter;
+	}
+
+	public long getDownloadCounter() {
+		return downloadCounter;
+	}
+
+	public void setDownloadCounter(long downloadCounter) {
+		this.downloadCounter = downloadCounter;
+	}
+
+	public Date getLastUsage() {
+		return lastUsage;
+	}
+
+	public void setLastUsage(Date lastUsage) {
+		this.lastUsage = lastUsage;
+	}
+
+	@Override
+	public int hashCode() {
+		return key == null ? 7530 : key.hashCode();
+	}
+
 	@Override
 	public boolean equals(Object obj) {
-		if(this == obj) {
+		if (this == obj) {
 			return true;
 		}
-		if(obj instanceof RepositoryEntryMyViewImpl) {
-			RepositoryEntryMyViewImpl relc = (RepositoryEntryMyViewImpl)obj;
-			return key != null && key.equals(relc.key);
+		if (obj instanceof RepositoryEntryStatistics) {
+			RepositoryEntryStatistics other = (RepositoryEntryStatistics) obj;
+			return getKey().equals(other.getKey());
 		}
 		return false;
 	}
 
 	@Override
-	public int hashCode() {
-		return key == null ? 48790 : key.hashCode();
-	}
-
-	@Override
-	public String toString() {
-		return super.toString();
-	}
-	
-	@Override
-	public boolean equalsByPersistableKey(Persistable persistable) {
+	public boolean equalsByPersistableKey(Persistable persistable) {	
 		return equals(persistable);
 	}
 }

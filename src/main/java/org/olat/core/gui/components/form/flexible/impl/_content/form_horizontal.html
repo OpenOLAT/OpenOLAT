@@ -15,9 +15,6 @@
 		#if ($f.hasLabel($item))
 		<div class="b_form_element_label b_form_horizontal">
 			$r.render("${item}_LABEL", "$f.getItemId($item)", "$f.isMandatory($item)")
-			#if($f.isMandatory($item))
-				<span class="b_form_mandatory" title="$r.translateInAttribute("form.mandatory.hover")">&nbsp;</span>
-			#end
 		</div>
 		#end
 		#if ($f.isSpacerElement($item))

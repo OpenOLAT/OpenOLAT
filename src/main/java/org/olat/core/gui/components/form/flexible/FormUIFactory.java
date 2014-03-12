@@ -50,7 +50,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErrorText;
-import org.olat.core.gui.components.form.flexible.impl.components.SimpleLabelText;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
@@ -807,38 +806,6 @@ public class FormUIFactory {
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;
-	}	
-	
-	public FormItem createSimpleLabelText(final String name, final String translatedText){
-		FormItem wrapper = new FormItemImpl(name) {
-			SimpleLabelText mySimpleLabelTextC = new SimpleLabelText(name, translatedText);
-			
-			@Override
-			public void validate(List<ValidationStatus> validationResults) {
-			 // nothing to do 
-			}
-		
-			@Override
-			protected void rootFormAvailable() {
-			 // nothing to do
-			}
-		
-			@Override
-			public void reset() {
-			 // nothing to do
-			}
-		
-			@Override
-			protected Component getFormItemComponent() {
-				return mySimpleLabelTextC;
-			}
-		
-			@Override
-			public void evalFormRequest(UserRequest ureq) {
-			 // nothing to do
-			}
-		};
-		return wrapper;
 	}
 	
 	/**

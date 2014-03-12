@@ -79,6 +79,8 @@ public interface ACService {
 	
 	public List<OLATResourceAccess> filterRepositoryEntriesWithAC(List<RepositoryEntry> repoEntries);
 	
+	public List<OLATResourceAccess> filterResourceWithAC(List<OLATResource> resources);
+	
 	public Set<Long> filterResourcesWithAC(Collection<Long> resourceKeys);
 	
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate);

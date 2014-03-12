@@ -70,7 +70,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	/**
 	 * manage the form components of this form container
 	 */
-	protected VelocityContainer formLayoutContainer;
+	private VelocityContainer formLayoutContainer;
 	/**
 	 * formComponents and formComponentNames are managed together, change something here needs a change there.
 	 * formComponents contain the FormItem based on their name
@@ -78,9 +78,9 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * The addXXX method adds elements -> 
 	 * The register method register an element only -> used for setErrorComponent / setLabelComponent.
 	 */
-	protected Map<String,FormItem> formComponents;
-	protected List<String> formComponentsNames;
-	protected Map<String,FormItem> listeningOnlyFormComponents;
+	private Map<String,FormItem> formComponents;
+	private List<String> formComponentsNames;
+	private Map<String,FormItem> listeningOnlyFormComponents;
 	private boolean hasRootForm=false;
 	private Map<String, Map<String, FormItemDependencyRule>> dependencyRules;
 
@@ -320,9 +320,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 			FormMultipartItem mpItem = (FormMultipartItem) with;
 			getRootForm().setMultipartEnabled(true, mpItem.getMaxUploadSizeKB());
 		}
-		
-		
-		
 	}
 	
 	/**

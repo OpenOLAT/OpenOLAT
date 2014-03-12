@@ -230,6 +230,25 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		return resourceWithOffers;
 	}
 	
+	public List<OLATResourceAccess> filterResourceWithAC(List<OLATResource> resources) {
+		if(resources == null || resources.isEmpty()) {
+			return Collections.emptyList();
+		}
+		Set<String> resourceTypes = new HashSet<String>();
+		List<Long> resourceKeys = new ArrayList<Long>();
+		for(OLATResource resource:resources) {
+			resourceKeys.add(resource.getKey());
+			resourceTypes.add(resource.getResourceableTypeName());
+		}
+		
+		String resourceType = null;
+		if(resourceTypes.size() == 1) {
+			resourceType = resourceTypes.iterator().next();
+		}
+		List<OLATResourceAccess> resourceWithOffers = methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
+		return resourceWithOffers;
+	}
+	
 	public Set<Long> filterResourcesWithAC(Collection<Long> resourceKeys) {
 		Set<Long> resourceWithOffers = accessManager.filterResourceWithOffer(resourceKeys);
 		return resourceWithOffers;

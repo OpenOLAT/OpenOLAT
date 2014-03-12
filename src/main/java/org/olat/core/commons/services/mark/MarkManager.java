@@ -44,6 +44,8 @@ public interface MarkManager {
 	
 	public List<Mark> getMarks(Identity identity, Collection<String> resourceTypeNames);
 	
+	public List<Long> getMarksResourceId(Identity identity, String resourceTypeName);
+	
 	public void filterMarks(Identity identity, String resourceTypeName, Collection<Long> resIds);
 	
 	public boolean isMarked(OLATResourceable ores, Identity identity, String subPath);

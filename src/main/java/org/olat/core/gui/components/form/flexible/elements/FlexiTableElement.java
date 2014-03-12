@@ -30,6 +30,8 @@ import java.util.Set;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 
@@ -39,6 +41,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 public interface FlexiTableElement extends FormItem {
 
 	public static final String ROM_SELECT_EVENT = "rSelect";
+	
+	@Override
+	public FlexiTableComponent getComponent();
 	
 	/**
 	 * @return the type of renderer used by  this table
@@ -51,9 +56,12 @@ public interface FlexiTableElement extends FormItem {
 	 */
 	public void setRendererType(FlexiTableRendererType rendererType);
 	
-	public void setRowRenderer(VelocityContainer renderer);
-	
-	public void addFormItem(FormItem item);
+	/**
+	 * Set the row renderer used by the custom renderer type.
+	 * @param renderer
+	 * @param componentDelegate
+	 */
+	public void setRowRenderer(VelocityContainer renderer, FlexiTableComponentDelegate componentDelegate);
 
 	/**
 	 * @return True if muli selection is enabled
@@ -175,6 +183,10 @@ public interface FlexiTableElement extends FormItem {
 	
 	public void setExportEnabled(boolean enabled);
 	
+	/**
+	 *
+	 * @return True if the table is in editing mode
+	 */
 	public boolean isEditMode();
 
 	/**

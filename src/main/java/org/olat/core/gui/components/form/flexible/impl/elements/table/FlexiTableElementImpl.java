@@ -102,6 +102,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private final FlexiTableDataModel<?> dataModel;
 	private final FlexiTableDataSource<?> dataSource;
 	private final FlexiTableComponent component;
+	private FlexiTableComponentDelegate componentDelegate;
 	private CloseableCalloutWindowController callout;
 	private final WindowControl wControl;
 	private final String mapperUrl;
@@ -208,13 +209,26 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void setWrapperSelector(String wrapperSelector) {
 		this.wrapperSelector = wrapperSelector;
 	}
+	
+	
+
+	@Override
+	public FlexiTableComponent getComponent() {
+		return component;
+	}
 
 	public VelocityContainer getRowRenderer() {
 		return rowRenderer;
 	}
 
-	public void setRowRenderer(VelocityContainer rowRenderer) {
+	public FlexiTableComponentDelegate getComponentDelegate() {
+		return componentDelegate;
+	}
+
+	@Override
+	public void setRowRenderer(VelocityContainer rowRenderer, FlexiTableComponentDelegate componentDelegate) {
 		this.rowRenderer = rowRenderer;
+		this.componentDelegate = componentDelegate;
 	}
 
 	@Override
@@ -436,7 +450,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public FormItem getFormComponent(String name) {
 		return components.get(name);
 	}
-	
+
 	public void addFormItem(FormItem item) {
 		components.put(item.getName(), item);
 	}

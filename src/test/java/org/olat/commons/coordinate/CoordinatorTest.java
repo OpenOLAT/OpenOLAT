@@ -39,6 +39,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -55,11 +57,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  */
 public class CoordinatorTest extends OlatTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(CoordinatorTest.class);
 
-	private static boolean isInitialized = false;
 	
 	@Autowired
 	private RepositoryService repositoryService;
+	
+	@Before
+	public void setUp() throws Exception {
+		DBFactory.getInstance().closeSession();
+	}
 	
 
 	/**
@@ -90,7 +98,7 @@ public class CoordinatorTest extends OlatTestCase {
 					// do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor(){
 						public void execute() {
-							System.out.println("Thread-1: execute doInSync 1");
+							log.info("Thread-1: execute doInSync 1");
 						}
 					});//end syncerCallback
 					
@@ -100,10 +108,10 @@ public class CoordinatorTest extends OlatTestCase {
 					// do again do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor(){
 						public void execute() {
-							System.out.println("Thread-1: execute doInSync 2");
+							log.info("Thread-1: execute doInSync 2");
 						}
 					});//end syncerCallback
-					System.out.println("Thread-1: finished");
+					log.info("Thread-1: finished");
 					statusList.add(Boolean.TRUE);
 				} catch (Exception e) {
 					exceptionHolder.add(e);
@@ -126,7 +134,7 @@ public class CoordinatorTest extends OlatTestCase {
 					// do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor(){
 						public void execute() {
-							System.out.println("Thread-2: execute doInSync 1");
+							log.info("Thread-2: execute doInSync 1");
 						}
 					});//end syncerCallback
 					
@@ -136,10 +144,10 @@ public class CoordinatorTest extends OlatTestCase {
 					// do again do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor(){
 						public void execute() {
-							System.out.println("Thread-2: execute doInSync 2");
+							log.info("Thread-2: execute doInSync 2");
 						}
 					});//end syncerCallback
-					System.out.println("Thread-2: finished");
+					log.info("Thread-2: finished");
 					statusList.add(Boolean.TRUE);
 				} catch (Exception e) {
 					exceptionHolder.add(e);
@@ -161,7 +169,7 @@ public class CoordinatorTest extends OlatTestCase {
 		assertTrue("Threads did not finish in 90sec", loopCount<90);
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
-			System.out.println("exception: "+exception.getMessage());
+			log.info("exception: "+exception.getMessage());
 			exception.printStackTrace();
 		}
 		if (exceptionHolder.size() > 0) {
@@ -197,7 +205,7 @@ public class CoordinatorTest extends OlatTestCase {
 					// do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
 						public Boolean execute() {
-							System.out.println("Thread-1: execute doInSync 1");
+							log.info("Thread-1: execute doInSync 1");
 							return Boolean.TRUE;
 						}
 					});//end syncerCallback
@@ -208,11 +216,11 @@ public class CoordinatorTest extends OlatTestCase {
 					// do again do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
 						public Boolean execute() {
-							System.out.println("Thread-1: execute doInSync 2");
+							log.info("Thread-1: execute doInSync 2");
 							return Boolean.TRUE;
 						}
 					});//end syncerCallback
-					System.out.println("Thread-1: finished");
+					log.info("Thread-1: finished");
 					statusList.add(Boolean.TRUE);
 				} catch (Exception e) {
 					exceptionHolder.add(e);
@@ -235,7 +243,7 @@ public class CoordinatorTest extends OlatTestCase {
 					// do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
 						public Boolean execute() {
-							System.out.println("Thread-2: execute doInSync 1");
+							log.info("Thread-2: execute doInSync 1");
 							return Boolean.TRUE;
 						}
 					});//end syncerCallback
@@ -246,11 +254,11 @@ public class CoordinatorTest extends OlatTestCase {
 					// do again do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
 						public Boolean execute() {
-							System.out.println("Thread-2: execute doInSync 2");
+							log.info("Thread-2: execute doInSync 2");
 							return Boolean.TRUE;
 						}
 					});//end syncerCallback
-					System.out.println("Thread-2: finished");
+					log.info("Thread-2: finished");
 					statusList.add(Boolean.TRUE);
 				} catch (Exception e) {
 					exceptionHolder.add(e);
@@ -272,7 +280,7 @@ public class CoordinatorTest extends OlatTestCase {
 		assertTrue("Threads did not finish in 90sec", loopCount<90);
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
-			System.out.println("exception: "+exception.getMessage());
+			log.info("exception: "+exception.getMessage());
 			exception.printStackTrace();
 		}
 		if (exceptionHolder.size() > 0) {
@@ -288,12 +296,12 @@ public class CoordinatorTest extends OlatTestCase {
 		try {
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
-					System.out.println("testNestedAssertExceptionInDoInSync: execute doInSync 1");
+					log.info("testNestedAssertExceptionInDoInSync: execute doInSync 1");
 					
 					// Do agin in sync => nested => no allowed!
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
 						public Boolean execute() {
-							System.out.println("testNestedAssertExceptionInDoInSync: execute doInSync 2");
+							log.info("testNestedAssertExceptionInDoInSync: execute doInSync 2");
 							fail("No NestedAssertException thrown");
 							return Boolean.TRUE;
 						}
@@ -303,7 +311,7 @@ public class CoordinatorTest extends OlatTestCase {
 				}
 			});//end syncerCallback
 		}catch(AssertException aex) {
-			System.out.println("testNestedAssertExceptionInDoInSync: Ok, got a AssertException=" + aex);
+			log.info("testNestedAssertExceptionInDoInSync: Ok, got a AssertException=" + aex);
 		}
 	}
 	
@@ -316,17 +324,17 @@ public class CoordinatorTest extends OlatTestCase {
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(ores);
 			fail("Did not throw AssertException");
 		} catch (AssertException ex) {
-			System.out.println("testSyncerAssertAlreadyDoInSyncFor: This exception is ok, exception=" + ex.getMessage());
+			log.info("testSyncerAssertAlreadyDoInSyncFor: This exception is ok, exception=" + ex.getMessage());
 		}
 
 		// 2.check assertAlreadyDoInSyncFor WITH sync-block => No AssertException should occour
 		try {
-			System.out.println("testSyncerAssertAlreadyDoInSyncFor: before doInSync");
+			log.info("testSyncerAssertAlreadyDoInSyncFor: before doInSync");
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
-					System.out.println("testSyncerAssertAlreadyDoInSyncFor: execute before assertAlreadyDoInSyncFor");
+					log.info("testSyncerAssertAlreadyDoInSyncFor: execute before assertAlreadyDoInSyncFor");
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(ores);
-					System.out.println("testSyncerAssertAlreadyDoInSyncFor: execute done");
+					log.info("testSyncerAssertAlreadyDoInSyncFor: execute done");
 					return Boolean.TRUE;
 				}
 			});//end syncerCallback
@@ -348,7 +356,7 @@ public class CoordinatorTest extends OlatTestCase {
 		DBFactory.getInstance().commitAndCloseSession();
 		
 		// 1. Do job without doInSync
-		System.out.println("testDoInSyncPerformance: start test with doInSync");
+		log.info("testDoInSyncPerformance: start test with doInSync");
 		long startTimeWithoutSync = System.currentTimeMillis();
 		for (int i = 0; i<maxLoop ; i++) {
 			doTestPerformanceJob(re);
@@ -357,7 +365,7 @@ public class CoordinatorTest extends OlatTestCase {
 		long endTimeWithoutSync = System.currentTimeMillis();
 
 		// 2. Do job with doInSync
-		System.out.println("testDoInSyncPerformance: start test with doInSync");
+		log.info("testDoInSyncPerformance: start test with doInSync");
 		long startTimeDoInSync = System.currentTimeMillis();
 		for (int i = 0; i<maxLoop ; i++) {
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor(){
@@ -373,38 +381,24 @@ public class CoordinatorTest extends OlatTestCase {
 		// Compare time
 		long timeWithoutSync = endTimeWithoutSync - startTimeWithoutSync;
 		float perJobWithoutSync = (float)timeWithoutSync / maxLoop;
-		System.out.println("testDoInSyncPerformance timeWithoutSync=" + timeWithoutSync + " ms for loop with " + maxLoop + " iterations");
-		System.out.println("testDoInSyncPerformance perJobWithoutSync=" + perJobWithoutSync + " ms");
+		log.info("testDoInSyncPerformance timeWithoutSync=" + timeWithoutSync + " ms for loop with " + maxLoop + " iterations");
+		log.info("testDoInSyncPerformance perJobWithoutSync=" + perJobWithoutSync + " ms");
 
 		long timeWithDoInSync = endTimeDoInSync - startTimeDoInSync;
 		float perJobWithDoInSync = (float)timeWithDoInSync / maxLoop;
-		System.out.println("testDoInSyncPerformance timeWithDoInSync=" + timeWithDoInSync + " ms for loop with " + maxLoop + " iterations");
-		System.out.println("testDoInSyncPerformance perJobWithDoInSync=" + perJobWithDoInSync + " ms");
+		log.info("testDoInSyncPerformance timeWithDoInSync=" + timeWithDoInSync + " ms for loop with " + maxLoop + " iterations");
+		log.info("testDoInSyncPerformance perJobWithDoInSync=" + perJobWithDoInSync + " ms");
 		
 		long timeDiffLoop = timeWithDoInSync - timeWithoutSync;
 		float timeDiffPerCall = perJobWithDoInSync - perJobWithoutSync;
-		System.out.println("testDoInSyncPerformance diffLoop=" + timeDiffLoop + " ms for loop with " + maxLoop + " iterations");
-		System.out.println("testDoInSyncPerformance diffPerCall=" + timeDiffPerCall + " ms");
+		log.info("testDoInSyncPerformance diffLoop=" + timeDiffLoop + " ms for loop with " + maxLoop + " iterations");
+		log.info("testDoInSyncPerformance diffPerCall=" + timeDiffPerCall + " ms");
 		// Assert 10% Overhead
 		assertTrue("DoInSync overhead is more than 15%", timeDiffLoop < ((timeWithoutSync * 115) / 100) );
 	}
 
 	private Boolean doTestPerformanceJob(RepositoryEntry re) {
-		RepositoryManager.getInstance().incrementLaunchCounter(re);
-		return true;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Before
-	public void setUp() throws Exception {
-		if (CoordinatorTest.isInitialized == false) {
-			CoordinatorTest.isInitialized = true;
-		}
-		
-		DBFactory.getInstance().closeSession();
+		repositoryService.incrementLaunchCounter(re);
+		return Boolean.TRUE;
 	}
 }

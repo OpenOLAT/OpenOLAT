@@ -400,6 +400,36 @@ table.b_choice {
 		}
 	}
 }
+
+/* toolbars */
+div.o_buttons_bar {
+	div.o_buttons_box_right {
+		position:relative;
+		text-align:right;
+		padding: 5px 0 5px 0;
+	}
+}
+
+div.o_buttons_box_right {
+	position:absolute;
+	top:0;
+	right:0;
+}
+
+/* fix wrong positioning of box withing fieldsets */
+fieldset div.o_buttons_box_right {
+	top: 1em;
+}
+
+div.b_box_with_chelp div.o_buttons_box_right {
+	right: 20px;
+}
+
+/* buttons bar */
+div.o_buttons_box_center {
+	padding: 15px 0 0 0;
+	text-align:center;
+}
 	
 	
 /* FILE CHOOSER : real file chooser is transparent on layer 2 to hide ugly browser button, below the visible fake file chooser on layer 1 */

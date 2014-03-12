@@ -59,22 +59,6 @@ div.o_courseeditor_legend {
 	strong { font-weight: bold; }
 	div { top: 0; left: 0; padding-left: 12px; background-repeat: no-repeat; background-position: 0 50%; }
 }
-
-/* Members management */
-div.o_buttons_box_right {
-	position:absolute;
-	top:0;
-	right:0;
-}
-
-/* fix wrong positioning of box withing fieldsets */
-fieldset div.o_buttons_box_right {
-	top: 1em;
-}
-
-div.b_box_with_chelp div.o_buttons_box_right {
-	right: 20px;
-}
 	
 /* COURSE */
 div.o_course_run {

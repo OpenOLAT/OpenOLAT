@@ -35,9 +35,12 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -52,7 +55,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("repositoryService")
 public class RepositoryServiceImpl implements RepositoryService {
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -63,6 +66,10 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private RepositoryEntryDAO repositoryEntryDAO;
 	@Autowired
 	private RepositoryEntryRelationDAO reToGroupDao;
+	@Autowired
+	private RepositoryEntryStatisticsDAO repositoryEntryStatisticsDao;
+	@Autowired
+	private RepositoryEntryMyCourseViewQueries myCourseViewQueries;
 	@Autowired
 	private OLATResourceManager resourceManager;
 	
@@ -98,7 +105,6 @@ public class RepositoryServiceImpl implements RepositoryService {
 		re.setDisplayname(displayname);
 		re.setResourcename(resourceName == null ? "" : resourceName);
 		re.setDescription(description == null ? "" : description);
-		re.setLastUsage(now);
 		if(resource == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", CodeHelper.getForeverUniqueID());
 			resource = resourceManager.createAndPersistOLATResourceInstance(ores);
@@ -106,6 +112,16 @@ public class RepositoryServiceImpl implements RepositoryService {
 			dbInstance.getCurrentEntityManager().persist(resource);
 		}
 		re.setOlatResource(resource);
+		
+		RepositoryEntryStatistics statistics = new RepositoryEntryStatistics();
+		statistics.setLastUsage(now);
+		statistics.setCreationDate(now);
+		statistics.setLastModified(now);
+		statistics.setDownloadCounter(0l);
+		statistics.setLaunchCounter(0l);
+		dbInstance.getCurrentEntityManager().persist(statistics);
+		
+		re.setStatistics(statistics);
 		
 		Group group = groupDao.createGroup();
 		RepositoryEntryToGroupRelation rel = new RepositoryEntryToGroupRelation();
@@ -131,6 +147,23 @@ public class RepositoryServiceImpl implements RepositoryService {
 		return repositoryEntryDAO.loadByKey(key);
 	}
 	
+	
+	
+	@Override
+	public void incrementLaunchCounter(RepositoryEntry re) {
+		repositoryEntryStatisticsDao.incrementLaunchCounter(re);
+	}
+
+	@Override
+	public void incrementDownloadCounter(RepositoryEntry re) {
+		repositoryEntryStatisticsDao.incrementDownloadCounter(re);
+	}
+
+	@Override
+	public void setLastUsageNowFor(RepositoryEntry re) {
+		repositoryEntryStatisticsDao.setLastUsageNowFor(re);
+	}
+
 	@Override
 	public Group getDefaultGroup(RepositoryEntryRef ref) {
 		return reToGroupDao.getDefaultGroup(ref);
@@ -164,5 +197,15 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public void removeMembers(RepositoryEntry re) {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public int countMyView(SearchMyRepositoryEntryViewParams params) {
+		return myCourseViewQueries.countMyView(params);
+	}
+
+	@Override
+	public List<RepositoryEntryMyView> searchMyView(SearchMyRepositoryEntryViewParams params, int firstResult, int maxResults) {
+		return myCourseViewQueries.searchMyView(params, firstResult, maxResults);
 	}
 }

@@ -444,7 +444,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		// Number of launches
 		String numLaunches;
 		if (repositoryEntry.getCanLaunch()) {
-			numLaunches = String.valueOf(repositoryEntry.getLaunchCounter());
+			numLaunches = String.valueOf(repositoryEntry.getStatistics().getLaunchCounter());
 		} else {
 			numLaunches = translate("cif.canLaunch.na");
 		}
@@ -453,15 +453,15 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		// Number of downloads
 		String numDownloads;
 		if (repositoryEntry.getCanDownload()) {
-			numDownloads = String.valueOf(repositoryEntry.getDownloadCounter());
+			numDownloads = String.valueOf(repositoryEntry.getStatistics().getDownloadCounter());
 		} else {
 			numDownloads = translate("cif.canDownload.na");
 		}
 
 		infopanelVC.contextPut("numDownloads", numDownloads);
 
-		if (repositoryEntry.getLastUsage() != null) {
-			infopanelVC.contextPut("lastUsage", repositoryEntry.getLastUsage());
+		if (repositoryEntry.getStatistics().getLastUsage() != null) {
+			infopanelVC.contextPut("lastUsage", repositoryEntry.getStatistics().getLastUsage());
 		} else {
 			infopanelVC.contextPut("lastUsage", translate("cif.lastUsage.na"));
 		}
@@ -469,7 +469,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		main.put(infopanelVC.getComponentName(), infopanelVC);
 
 		removeAsListenerAndDispose(groupController);
-		Group group = null;
+		Group group = repositoryService.getDefaultGroup(repositoryEntry);
 		groupController = new GroupController(ureq, getWindowControl(), false, true, false, false, true, false, group, GroupRoles.owner.name());
 		listenTo(groupController);
 		
@@ -633,7 +633,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		if (repositoryEntry != null) {
 			// The controller has already a repository-entry => do de-register it
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, repositoryEntry);
-	  }
+		}
 		repositoryEntry = entry;
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), repositoryEntry);
 		checkSecurity(ureq);
@@ -825,7 +825,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		  if(lockResult==null || (lockResult!=null && lockResult.isSuccess() && !isAlreadyLocked)) {
 		    MediaResource mr = typeToDownload.getAsMediaResource(ores, backwardsCompatible);
 		    if(mr!=null) {
-		      RepositoryManager.getInstance().incrementDownloadCounter(re);
+		      repositoryService.incrementDownloadCounter(re);
 		      ureq.getDispatchResult().setResultingMediaResource(mr);
 		    } else {
 			    showError("error.export");
@@ -1029,6 +1029,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				
 				removeAsListenerAndDispose(detailsToolC);
 				detailsToolC = null; // force recreation of tool controller
+				repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(repositoryEntry.getKey());
+				
 				updateView(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -1065,7 +1067,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		} else if (source == repositoryEditPropertiesController) {
 			if (event == Event.CHANGED_EVENT || event.getCommand().equals("courseChanged")) {
 				// RepositoryEntry changed
-				this.repositoryEntry = repositoryEditPropertiesController.getRepositoryEntry();
+				repositoryEntry = repositoryEditPropertiesController.getRepositoryEntry();
+				repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(repositoryEntry.getKey());
 				updateView(ureq);
 				RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 				boolean canDownload = repositoryEntry.getCanDownload() && handler.supportsDownload(repositoryEntry);

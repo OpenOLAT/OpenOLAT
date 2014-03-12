@@ -113,6 +113,17 @@ public class MarkManagerImpl implements MarkManager {
 		List<Mark> results = query.getResultList();
 		return results;
 	}
+	
+	public List<Long> getMarksResourceId(Identity identity, String resourceTypeName) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select mark.resId from ").append(MarkImpl.class.getName()).append(" mark ")
+		  .append(" where mark.creator=:creator and mark.resName =:resName");
+
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("creator", identity)
+				.setParameter("resName", resourceTypeName)
+				.getResultList();
+	}
 
 	@Override
 	public void filterMarks(Identity identity, String resourceTypeName, Collection<Long> resIds) {

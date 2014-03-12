@@ -1,0 +1,12 @@
+#if($filters.contains($r.getComponent("current.courses").userObject)) $r.translate("filter.selected") #end $r.render("current.courses")<br/>
+#if($filters.contains($r.getComponent("upcoming.courses").userObject)) $r.translate("filter.selected") #end $r.render("upcoming.courses")<br/>
+#if($filters.contains($r.getComponent("old.courses").userObject)) $r.translate("filter.selected") #end $r.render("old.courses")
+<hr/>
+#if($filters.contains($r.getComponent("as.participant").userObject)) $r.translate("filter.selected") #end $r.render("as.participant")<br/>
+#if($filters.contains($r.getComponent("as.coach").userObject)) $r.translate("filter.selected") #end $r.render("as.coach")<br/>
+#if($filters.contains($r.getComponent("as.author").userObject)) $r.translate("filter.selected") #end $r.render("as.author")<br/>
+#if($filters.contains($r.getComponent("not.booked").userObject)) $r.translate("filter.selected") #end $r.render("not.booked")
+<hr/>
+#if($filters.contains($r.getComponent("passed").userObject)) $r.translate("filter.selected") #end $r.render("passed")<br/>
+#if($filters.contains($r.getComponent("not.passed").userObject)) $r.translate("filter.selected") #end $r.render("not.passed")<br/>
+#if($filters.contains($r.getComponent("without").userObject)) $r.translate("filter.selected") #end $r.render("without")

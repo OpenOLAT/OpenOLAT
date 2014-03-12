@@ -486,7 +486,7 @@ public class RepositoryEntryResource {
       if(lockResult == null || (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
         MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
         if(mr != null) {
-        	repositoryManager.incrementDownloadCounter(re);
+        	repositoryService.incrementDownloadCounter(re);
           return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success
         } else return Response.serverError().status(Status.NO_CONTENT).build();
       } else return Response.serverError().status(Status.CONFLICT).build();

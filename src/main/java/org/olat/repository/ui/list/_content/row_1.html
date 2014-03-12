@@ -1,5 +1,5 @@
 <div class="b_clearfix o_table_rowline">
-<div class="f_item  #if($row.selected) f_item_selected #end">
+<div class="o_table_row  #if($row.selected) f_item_selected #end">
 	<div class="f_metadata b_clearfix">
 		<div class="f_thumbnail">
 			#if($row.isThumbnailAvailable())
@@ -25,8 +25,6 @@
 					</div>
 				#end
 				<p>$row.description</p>
-				
-				
 			</div>
 		</div>
 		<div class="f_metadata_additional_infos">
@@ -71,7 +69,8 @@
 					$r.render($row.getStartLinkName())
 				</div>
 			</div>
-		</div>
+		</div>	
 	</div>
 </div>
+$r.render($row.detailsPanel.componentName)
 </div>

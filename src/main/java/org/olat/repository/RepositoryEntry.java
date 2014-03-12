@@ -37,6 +37,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
 
@@ -74,11 +75,13 @@ public class RepositoryEntry extends PersistentObject implements RepositoryEntry
 	private String displayname; // mandatory
 	private String description; // mandatory
 	private String initialAuthor; // mandatory // login of the author of the first version
+	private String authors;
 	
 	private String externalId;
 	private String externalRef;
 	private String managedFlagsString;
 	private RepositoryEntryLifecycle lifecycle;
+	private RepositoryEntryStatistics statistics;
 	
 	private int access;
 	private boolean canCopy;
@@ -87,9 +90,6 @@ public class RepositoryEntry extends PersistentObject implements RepositoryEntry
 	private boolean canDownload;
 	private boolean membersOnly;
 	private int statusCode;
-	private long launchCounter;
-	private long downloadCounter;
-	private Date lastUsage;
 	private int version;
 	private Date lastModified;
 	
@@ -159,6 +159,14 @@ public class RepositoryEntry extends PersistentObject implements RepositoryEntry
 		if (initialAuthor.length() > IdentityImpl.NAME_MAXLENGTH)
 			throw new AssertException("initialAuthor is limited to "+IdentityImpl.NAME_MAXLENGTH+" characters.");
 		this.initialAuthor = initialAuthor;
+	}
+
+	public String getAuthors() {
+		return authors;
+	}
+
+	public void setAuthors(String authors) {
+		this.authors = authors;
 	}
 
 	/**
@@ -296,34 +304,6 @@ public class RepositoryEntry extends PersistentObject implements RepositoryEntry
 	public void setMembersOnly(boolean membersOnly) {
 		this.membersOnly = membersOnly;
 	}
-
-	/**
-	 * @return Download count for this repo entry.
-	 */
-	public long getDownloadCounter() {
-		return downloadCounter;
-	}
-
-	/**
-	 * @return Launch count for this repo entry.
-	 */
-	public long getLaunchCounter() {
-		return launchCounter;
-	}
-
-	/**
-	 * @param l
-	 */
-	public void setDownloadCounter(long l) {
-		downloadCounter = l;
-	}
-
-	/**
-	 * @param l
-	 */
-	public void setLaunchCounter(long l) {
-		launchCounter = l;
-	}
 	
 	/**
 	 * @return Returns the displayname.
@@ -377,6 +357,14 @@ public class RepositoryEntry extends PersistentObject implements RepositoryEntry
 		this.lifecycle = lifecycle;
 	}
 
+	public RepositoryEntryStatistics getStatistics() {
+		return statistics;
+	}
+
+	public void setStatistics(RepositoryEntryStatistics statistics) {
+		this.statistics = statistics;
+	}
+
 	/**
 	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
 	 */
@@ -387,20 +375,8 @@ public class RepositoryEntry extends PersistentObject implements RepositoryEntry
 	/**
 	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
 	 */
-	public Long getResourceableId() { return getKey(); }
-
-	/**
-	 * @return Returns the lastUsage.
-	 */
-	public Date getLastUsage() {
-		return lastUsage;
-	}
-
-	/**
-	 * @param lastUsage The lastUsage to set.
-	 */
-	public void setLastUsage(Date lastUsage) {
-		this.lastUsage = lastUsage;
+	public Long getResourceableId() {
+		return getKey();
 	}
 
 	public int getVersion() {

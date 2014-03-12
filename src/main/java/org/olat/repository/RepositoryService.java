@@ -46,8 +46,14 @@ public interface RepositoryService {
 	
 	public RepositoryEntry loadByKey(Long key);
 	
-	public Group getDefaultGroup(RepositoryEntryRef ref);
+
+	public void incrementLaunchCounter(RepositoryEntry re);
 	
+	public void incrementDownloadCounter(RepositoryEntry re);
+	
+	public void setLastUsageNowFor(RepositoryEntry re);
+
+	public Group getDefaultGroup(RepositoryEntryRef ref);
 	
 	public int countMembers(RepositoryEntryRef re, String... roles);
 	
@@ -60,6 +66,17 @@ public interface RepositoryService {
 	public void removeRole(Identity identity, RepositoryEntry re, String role);
 	
 	public void removeMembers(RepositoryEntry re);
+	
+	public int countMyView(SearchMyRepositoryEntryViewParams params);
+	
+	/**
+	 * The identity is mandatory for the search.
+	 * @param params
+	 * @param firstResult
+	 * @param maxResults
+	 * @return
+	 */
+	public List<RepositoryEntryMyView> searchMyView(SearchMyRepositoryEntryViewParams params, int firstResult, int maxResults);
 	
 
 }

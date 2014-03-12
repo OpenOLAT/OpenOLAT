@@ -40,8 +40,6 @@ import org.olat.admin.securitygroup.gui.IdentitiesOfGroupTableDataModel;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.admin.securitygroup.gui.multi.UsersToGroupWizardStep00;
 import org.olat.admin.user.UserSearchController;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
@@ -122,19 +120,19 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 public class GroupController extends BasicController {
 
-	protected boolean keepAtLeastOne;
-	protected boolean mayModifyMembers;
+	private final boolean keepAtLeastOne;
+	private final boolean mayModifyMembers;
 
 	protected static final String COMMAND_REMOVEUSER = "removesubjectofgroup";
 	protected static final String COMMAND_IM = "im";
 	protected static final String COMMAND_VCARD = "show.vcard";
 	protected static final String COMMAND_SELECTUSER = "select.user";
 
-	protected String role;
-	protected Group group;
-	protected VelocityContainer groupmemberview;
+	private final String role;
+	private final Group group;
+	private VelocityContainer groupmemberview;
 
-	protected IdentitiesOfGroupTableDataModel identitiesTableModel;
+	private IdentitiesOfGroupTableDataModel identitiesTableModel;
 
 	private List<Identity> toAdd, toRemove;
 
@@ -143,7 +141,7 @@ public class GroupController extends BasicController {
 	private StepsMainRunController userToGroupWizard;
 	private DialogBoxController confirmDelete;
 
-	protected TableController tableCtr;
+	private TableController tableCtr;
 	private Link addUsersButton;
 	private Link addUserButton;
 	private Translator myTrans;
@@ -152,13 +150,12 @@ public class GroupController extends BasicController {
 	private boolean showSenderInAddMailFooter;
 	private boolean showSenderInRemovMailFooter;
 	private CloseableModalController cmc;
-	protected static final String usageIdentifyer = IdentitiesOfGroupTableDataModel.class.getCanonicalName();
-	protected boolean isAdministrativeUser;
-	protected boolean mandatoryEmail;
-	protected boolean chatEnabled;
+	private static final String usageIdentifyer = IdentitiesOfGroupTableDataModel.class.getCanonicalName();
+	private boolean isAdministrativeUser;
+	private final boolean mandatoryEmail;
+	private boolean chatEnabled;
 
-	protected BaseSecurity securityManager;
-	protected UserManager userManager;
+	private final UserManager userManager;
 	private final InstantMessagingModule imModule;
 	private final InstantMessagingService imService;
 	private final UserSessionManager sessionManager;
@@ -180,24 +177,24 @@ public class GroupController extends BasicController {
 			boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, boolean enableUserSelection,
 			boolean allowDownload, boolean mandatoryEmail, Group group, String role) {
 		super(ureq, wControl);
-		securityManager = BaseSecurityManager.getInstance();
+		this.group = group;
+		this.role = role;
+		this.mayModifyMembers = mayModifyMembers;
+		this.keepAtLeastOne = keepAtLeastOne;
+		this.mandatoryEmail = mandatoryEmail;
+		
 		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		groupDao = CoreSpringFactory.getImpl(GroupDAO.class);
-		init(ureq, mayModifyMembers, keepAtLeastOne, enableTablePreferences, enableUserSelection, allowDownload, mandatoryEmail, group, role);
+		init(ureq, mayModifyMembers, enableTablePreferences, enableUserSelection, allowDownload);
 	}
 
-	protected void init(UserRequest ureq,
-			boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, boolean enableUserSelection,
-			boolean allowDownload, boolean mandatoryEmail, Group group, String role) {
-		this.group = group;
-		this.mayModifyMembers = mayModifyMembers;
-		this.keepAtLeastOne = keepAtLeastOne;
-		this.mandatoryEmail = mandatoryEmail;
-		
+	protected void init(UserRequest ureq, boolean mayModifyMembers, boolean enableTablePreferences,
+			boolean enableUserSelection, boolean allowDownload) {
+
 		setTranslator(Util.createPackageTranslator(org.olat.admin.securitygroup.gui.GroupController.class, getLocale(), getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();

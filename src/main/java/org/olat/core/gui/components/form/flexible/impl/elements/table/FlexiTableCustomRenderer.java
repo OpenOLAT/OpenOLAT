@@ -107,6 +107,16 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 				container.put(formItem.getComponent().getComponentName(), formItem.getComponent());
 			}
 		}
+		
+		FlexiTableComponentDelegate cmpDelegate = ftE.getComponentDelegate();
+		if(cmpDelegate != null) {
+			Iterable<Component> cmps = cmpDelegate.getComponents(row, rowObject);
+			if(cmps != null) {
+				for(Component cmp:cmps) {
+					container.put(cmp.getComponentName(), cmp);
+				}
+			}
+		}
 
 		container.getHTMLRendererSingleton().render(renderer, sb, container, ubu, translator, renderResult, null);
 		container.contextRemove("row");

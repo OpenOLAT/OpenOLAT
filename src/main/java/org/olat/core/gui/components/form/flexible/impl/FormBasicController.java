@@ -314,30 +314,30 @@ public abstract class FormBasicController extends BasicController {
 				// Set container dirty to remove potentially rendered error messages. Do
 				// this before calling formOK() to let formOK override the dirtiness
 				// flag
-				this.flc.setDirty(true);
+				flc.setDirty(true);
 				formOK(ureq);
 			} else if (event == org.olat.core.gui.components.form.Form.EVNT_VALIDATION_NEXT) {
 				// Set container dirty to remove potentially rendered error messages. Do
 				// this before calling formOK() to let formOK override the dirtiness
 				// flag
-				this.flc.setDirty(true);
+				flc.setDirty(true);
 				formNext(ureq);
 			} else if (event == org.olat.core.gui.components.form.Form.EVNT_VALIDATION_FINISH) {
 				// Set container dirty to remove potentially rendered error messages. Do
 				// this before calling formOK() to let formOK override the dirtiness
 				// flag
-				this.flc.setDirty(true);
+				flc.setDirty(true);
 				formFinish(ureq);
 			} else if (event == org.olat.core.gui.components.form.Form.EVNT_VALIDATION_NOK) {
 				// Set container dirty to rendered error messages. Do this before calling
 				// formNOK() to let formNOK override the dirtiness flag
-				this.flc.setDirty(true);
+				flc.setDirty(true);
 				formNOK(ureq);
 			} else if (event == FormEvent.RESET) {
 				// Set container dirty to render everything from scratch, remove error
 				// messages. Do this before calling
 				// formResetted() to let formResetted override the dirtiness flag
-				this.flc.setDirty(true);
+				flc.setDirty(true);
 				formResetted(ureq);
 			} else if (event instanceof FormEvent) {
 				FormEvent fe = (FormEvent) event;
@@ -366,6 +366,9 @@ public abstract class FormBasicController extends BasicController {
 		// check for InlineElments remove as the tag library has been replaced
 		if(fiSrc instanceof InlineElement){
 			if(!((InlineElement) fiSrc).isInlineEditingElement()){ //OO-137
+				//the container need to be redrawn because every form item element
+				//is made of severals components. If a form item is set to invisible
+				//the layout which glue the different components stay visible
 				flc.setDirty(true);
 			}
 		}
@@ -379,9 +382,9 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	protected void setFormTitle(String i18nKey) {
 		if (i18nKey == null) {
-			this.flc.contextRemove("off_title");
+			flc.contextRemove("off_title");
 		} else {
-			this.flc.contextPut("off_title", getTranslator().translate(i18nKey));			
+			flc.contextPut("off_title", getTranslator().translate(i18nKey));			
 		}
 	}
 	/**
@@ -393,9 +396,9 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	protected void setFormTitle(String i18nKey, String[] args) {
 		if (i18nKey == null) {
-			this.flc.contextRemove("off_title");
+			flc.contextRemove("off_title");
 		} else {
-			this.flc.contextPut("off_title", getTranslator().translate(i18nKey, args));
+			flc.contextPut("off_title", getTranslator().translate(i18nKey, args));
 		}
 	}
 
@@ -407,9 +410,9 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	protected void setFormDescription(String i18nKey) {
 		if (i18nKey == null) {
-			this.flc.contextRemove("off_desc");
+			flc.contextRemove("off_desc");
 		} else {
-			this.flc.contextPut("off_desc", getTranslator().translate(i18nKey));
+			flc.contextPut("off_desc", getTranslator().translate(i18nKey));
 		}
 	}
 
@@ -422,9 +425,9 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	protected void setFormDescription(String i18nKey, String[] args) {
 		if (i18nKey == null) {
-			this.flc.contextRemove("off_desc");
+			flc.contextRemove("off_desc");
 		} else {
-			this.flc.contextPut("off_desc", getTranslator().translate(i18nKey, args));
+			flc.contextPut("off_desc", getTranslator().translate(i18nKey, args));
 		}
 	}
 
@@ -437,9 +440,9 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	protected void setFormWarning (String i18nKey, String[] args) {
 		if (i18nKey == null) {
-			this.flc.contextRemove("off_warn");
+			flc.contextRemove("off_warn");
 		} else {
-			this.flc.contextPut("off_warn", getTranslator().translate(i18nKey, args));
+			flc.contextPut("off_warn", getTranslator().translate(i18nKey, args));
 		}
 	}
 	
@@ -452,9 +455,9 @@ public abstract class FormBasicController extends BasicController {
 	protected void setFormWarning (String i18nKey) {
 		this.flc.contextRemove("off_info");
 		if (i18nKey == null) {
-			this.flc.contextRemove("off_warn");
+			flc.contextRemove("off_warn");
 		} else {
-			this.flc.contextPut("off_warn", getTranslator().translate(i18nKey));
+			flc.contextPut("off_warn", getTranslator().translate(i18nKey));
 		}
 	}
 	
@@ -465,11 +468,11 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	
 	public void setFormInfo (String i18nKey) {
-		this.flc.contextRemove("off_warn");
+		flc.contextRemove("off_warn");
 		if (i18nKey == null) {
-			this.flc.contextRemove("off_info");
+			flc.contextRemove("off_info");
 		} else {
-			this.flc.contextPut("off_info", getTranslator().translate(i18nKey));
+			flc.contextPut("off_info", getTranslator().translate(i18nKey));
 		}
 	}
 	
@@ -480,11 +483,11 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	
 	protected void setFormInfo (String i18nKey, String args) {
-		this.flc.contextRemove("off_warn");
+		flc.contextRemove("off_warn");
 		if (i18nKey == null) {
-			this.flc.contextRemove("off_info");
+			flc.contextRemove("off_info");
 		} else {
-			this.flc.contextPut("off_info", getTranslator().translate(i18nKey, new String[]{args}));
+			flc.contextPut("off_info", getTranslator().translate(i18nKey, new String[]{args}));
 		}
 	}
 	
@@ -499,11 +502,11 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	protected void setFormContextHelp(String packageName, String pageName, String hoverTextKey) {
 		if (packageName == null) {
-			this.flc.contextRemove("off_chelp_package");
+			flc.contextRemove("off_chelp_package");
 		} else {
-			this.flc.contextPut("off_chelp_package", packageName);
-			this.flc.contextPut("off_chelp_page", pageName);
-			this.flc.contextPut("off_chelp_hover", hoverTextKey);
+			flc.contextPut("off_chelp_package", packageName);
+			flc.contextPut("off_chelp_page", pageName);
+			flc.contextPut("off_chelp_hover", hoverTextKey);
 		}
 	}
 	
@@ -515,19 +518,15 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	protected void setFormStyle(String cssClassName){
 		if (cssClassName == null){
-			this.flc.contextRemove("off_css_class");
+			flc.contextRemove("off_css_class");
 		} else {
-			this.flc.contextPut("off_css_class", cssClassName);
+			flc.contextPut("off_css_class", cssClassName);
 		}
 	}
-	
 	
 	protected void setTranslator(Translator translator) {
 		super.setTranslator(translator);
 		flc.setTranslator(translator);
-		// TODO: translator-fix: mainform is missing the new translator!!
-//		((FormWrapperContainer)mainForm.getInitialComponent()).setTranslator(translator);
-//		mainForm.getFormLayout().setTranslator(translator);
 	}
 
 	/**
@@ -535,7 +534,6 @@ public abstract class FormBasicController extends BasicController {
 	 * @return
 	 */
 	protected boolean validateFormLogic(UserRequest ureq) {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
@@ -565,6 +563,4 @@ public abstract class FormBasicController extends BasicController {
 			}
 		}, getUserActivityLogger());
 	}
-	
-
 }

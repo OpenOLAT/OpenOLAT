@@ -2,6 +2,9 @@
 alter table o_repositoryentry drop column fk_ownergroup;
 alter table o_repositoryentry drop column fk_tutorgroup;
 alter table o_repositoryentry drop column fk_participantgroup;
+alter table o_repositoryentry drop column launchcounter;
+alter table o_repositoryentry drop column downloadcounter;
+alter table o_repositoryentry drop column lastusage;
 
 alter table o_gp_business drop column fk_ownergroup;
 alter table o_gp_business drop column fk_partipiciantgroup;

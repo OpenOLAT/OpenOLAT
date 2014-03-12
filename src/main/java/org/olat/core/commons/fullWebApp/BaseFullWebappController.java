@@ -917,6 +917,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 			} else {
 				currentMsgHolder = guimsgHolder;
 				currentMsgHolder.setContent(guimsgPanel);
+				currentMsgHolder.setDirty(guimsgPanel.isDirty());
 			}
 		} else if(event instanceof LanguageChangedEvent){
 			LanguageChangedEvent lce = (LanguageChangedEvent)event;
@@ -924,13 +925,13 @@ public class BaseFullWebappController extends BasicController implements Generic
 			initialize(lce.getCurrentUreq());
 			initialPanel.popContent();
 			initialPanel.pushContent(mainVc);
-			//
 		} else if (event instanceof ChiefControllerMessageEvent) {
 			// msg can be set to show only on one node or on all nodes
 			String msg = GlobalStickyMessage.getGlobalStickyMessage();//either null, or the global message or the per-node-message
 			Boolean hasStickyMessage = Boolean.valueOf(msg != null);
 			mainVc.contextPut("hasStickyMessage", hasStickyMessage);
-			mainVc.contextPut("stickyMessage", msg != null ? msg : "");		}
+			mainVc.contextPut("stickyMessage", msg != null ? msg : "");
+		}
 	}
 
 	/**

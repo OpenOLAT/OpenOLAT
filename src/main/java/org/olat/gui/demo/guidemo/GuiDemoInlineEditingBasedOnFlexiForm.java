@@ -58,8 +58,7 @@ public class GuiDemoInlineEditingBasedOnFlexiForm extends FormBasicController {
 	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
 	/**
@@ -106,9 +105,6 @@ public class GuiDemoInlineEditingBasedOnFlexiForm extends FormBasicController {
 		// Avoid translation error by setting i18nLabel key null first and then set the LabelComponent, and also you need to call showLabel(true)
 		inlineLabel = formUIf.addInlineTextElement("inline.label.int"+i+ii+1, "mytext"+i+ii+1, formLayout, null);
 		StaticTextElement theElement = formUIf.addStaticTextElement("inline.label.text"+i+ii,  null,"my bony", formLayout);
-		theElement.setLabelComponent(inlineLabel, formLayout).showLabel(true);
-		
-		
+		//theElement.setLabelComponent(inlineLabel, formLayout).showLabel(true);
 	}
-
 }

@@ -6,15 +6,13 @@
 		<p class="o_cl_duedate_line">$r.translate("run.due.date",$r.formatDateAndTime($dueDate))</p>
 	#end
 	$r.render("checkbox-list")
-	
-	<div class="b_clearfix o_qpool_button_bar_box">
-		<div class="o_qpool_button_bar">
-			$r.render("pdf.export")
-			$r.render("pdf.export.checked")
-			$r.render("box.assessment")
-			$r.render("edit")
-			$r.render("save")
-			$r.render("cancel")
-		</div>
+
+	<div class="o_buttons_box_center b_clearfix">
+		$r.render("pdf.export")
+		$r.render("pdf.export.checked")
+		$r.render("box.assessment")
+		$r.render("edit")
+		$r.render("save")
+		$r.render("cancel")
 	</div>
 </div>

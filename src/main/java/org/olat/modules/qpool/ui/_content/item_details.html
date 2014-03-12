@@ -15,14 +15,12 @@
 <div class="b_clearfix">
 	$r.render("metadatas")
 </div>
-<div class="b_clearfix o_qpool_button_bar_box">
-	<div class="o_qpool_button_bar">
-		$r.render("export.item")
-		$r.render("share.item")
-		$r.render("copy")
-		#if($r.available("delete.item"))
-			$r.render("delete.item")
-		#end
-	</div>
+<div class="o_buttons_box_center b_clearfix">
+	$r.render("export.item")
+	$r.render("share.item")
+	$r.render("copy")
+	#if($r.available("delete.item"))
+		$r.render("delete.item")
+	#end
 </div>
 $r.render("comments")

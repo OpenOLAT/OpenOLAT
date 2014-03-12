@@ -80,6 +80,7 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryIconRenderer;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -87,6 +88,7 @@ import org.olat.repository.controllers.RepositoryEditDescriptionController;
 import org.olat.repository.controllers.RepositorySearchController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
@@ -229,6 +231,7 @@ public class CatalogController extends BasicController implements Activateable2 
 	
 	private final MarkManager markManager;
 	private final UserManager userManager;
+	private final RepositoryService repositoryService;
 	
 	/**
 	 * Init with catalog root
@@ -245,6 +248,7 @@ public class CatalogController extends BasicController implements Activateable2 
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 
 		List<CatalogEntry> rootNodes = cm.getRootCatalogEntries();
@@ -331,7 +335,7 @@ public class CatalogController extends BasicController implements Activateable2 
 					// directly to browser but "downloadable" (pdf, word, excel)
 					RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repoEntry);
 					MediaResource mr = handler.getAsMediaResource(ores, false);
-					RepositoryManager.getInstance().incrementDownloadCounter(repoEntry);
+					repositoryService.incrementDownloadCounter(repoEntry);
 					ureq.getDispatchResult().setResultingMediaResource(mr);
 					return;
 				} else { // neither launchable nor downloadable -> show details					
@@ -1185,23 +1189,5 @@ public class CatalogController extends BasicController implements Activateable2 
 	private void reloadHistoryStack(UserRequest ureq, long jumpToNode){
 		historyStack.clear();
 		jumpToNode(ureq, jumpToNode);
-	}
-	
-	public static class PriceMethod {
-		private String price;
-		private String type;
-		
-		public PriceMethod(String price, String type) {
-			this.price = price;
-			this.type = type;
-		}
-		
-		public String getPrice() {
-			return price;
-		}
-		
-		public String getType() {
-			return type;
-		}
 	}
 }

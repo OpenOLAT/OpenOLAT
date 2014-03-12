@@ -17,33 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui.list;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Roles;
+import org.olat.core.gui.components.Component;
 
 /**
  * 
- * Initial date: 28.01.2014<br>
+ * Initial date: 19.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FavoritRepositoryEntryListController extends AbstractRepositoryEntryListController {
+public interface FlexiTableComponentDelegate {
 	
-	private final Roles roles;
-	
-	public FavoritRepositoryEntryListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		roles = ureq.getUserSession().getRoles();
-		
-		FavoritRepositoryEntryDataSource dataSource = new FavoritRepositoryEntryDataSource(getIdentity(), roles, this);
-		setDataSource(dataSource);
-		
-		initForm(ureq);
-	}
+	public Iterable<Component> getComponents(int row, Object rowObject);
 
-	protected boolean updateMarkedEntries() {
-		return getDataSource().getRowCount() > 0;
-	}
 }

@@ -114,19 +114,21 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		return new CatalogEntryImpl();
 	}
 	
-	public List<CatalogEntry> getChildNodesOf(CatalogEntry ce) {
+	public List<CatalogEntry> getNodesChildrenOf(CatalogEntry ce) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
 		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
 		  .append(" inner join fetch cei.parent as parentCei")
 		  .append(" inner join fetch parentCei.ownerGroup as parentOwnerGroup")
-		  .append(" where parentCei.key=:parentKey");
+		  .append(" where parentCei.key=:parentKey and cei.type=").append(CatalogEntry.TYPE_NODE);
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CatalogEntry.class)
 				.setParameter("parentKey", ce.getKey())
 				.getResultList();
 	}
+	
+
 
 	/**
 	 * Children of this CatalogEntry as a list of CatalogEntries
@@ -146,7 +148,8 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param asc
 	 * @return
 	 */
-	public List<CatalogEntry> getChildrenOf(CatalogEntry ce, int firstResult, int maxResults, CatalogEntry.OrderBy orderBy, boolean asc) {
+	public List<CatalogEntry> getChildrenOf(CatalogEntry ce, int firstResult, int maxResults,
+			CatalogEntry.OrderBy orderBy, boolean asc) {
 		if(ce == null) {// nothing have no children
 			return Collections.emptyList();
 		}
@@ -158,6 +161,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		  .append(" inner join fetch parentCei.ownerGroup as parentOwnerGroup")
 		  .append(" left join fetch cei.repositoryEntry as repositoryEntry")
 		  .append(" left join fetch repositoryEntry.lifecycle as lifecycle")
+		  .append(" left join fetch repositoryEntry.statistics as statistics")
 		  .append(" left join fetch repositoryEntry.olatResource as resource")
 		  .append(" where parentCei.key=:parentKey");
 		if(orderBy != null) {
@@ -389,6 +393,28 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei")
 		  .append(" left join fetch cei.repositoryEntry as entry")
+		  .append(" left join fetch cei.ownerGroup ownerGroup ")
+		  .append(" left join fetch cei.parent parentCei ")
+		  .append(" left join fetch parentCei.ownerGroup parentOwnerGroup ")
+		  .append(" where cei.key=:key");
+
+		List<CatalogEntry> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogEntry.class)
+				.setParameter("key", key)
+				.getResultList();
+		
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
+	}
+	
+	public CatalogEntry getCatalogNodeByKey(Long key) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei")
+		  .append(" left join fetch cei.ownerGroup ownerGroup ")
+		  .append(" left join fetch cei.parent parentCei ")
+		  .append(" left join fetch parentCei.ownerGroup parentOwnerGroup ")
 		  .append(" where cei.key=:key");
 
 		List<CatalogEntry> entries = dbInstance.getCurrentEntityManager()

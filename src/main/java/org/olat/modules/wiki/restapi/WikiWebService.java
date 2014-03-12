@@ -29,11 +29,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 
@@ -83,7 +85,7 @@ public class WikiWebService {
 	private Response getWikiEntryAndServe(String wikiKey, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		RepositoryEntry wikiEntry = getExportableWikiRepoEntryByAnyKey(wikiKey);
 		if (isRESTUserAllowedToExportWiki(wikiEntry, request)) {
-			RepositoryManager.getInstance().incrementDownloadCounter(wikiEntry);
+			CoreSpringFactory.getImpl(RepositoryService.class).incrementDownloadCounter(wikiEntry);
 			return WikiWebServiceHelper.serve(wikiEntry.getOlatResource(), request, response);
 		} else {
 			return Response.serverError().status(Status.FORBIDDEN).build();

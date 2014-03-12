@@ -245,6 +245,7 @@ public class CourseWebService {
 		}
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = rm.lookupRepositoryEntry(course, true);
 		if (re == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -278,7 +279,7 @@ public class CourseWebService {
 			if (lockResult == null || (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
 				MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
 				if (mr != null) {
-					RepositoryManager.getInstance().incrementDownloadCounter(re);
+					rs.incrementDownloadCounter(re);
 					return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success
 				} else {
 					return Response.serverError().status(Status.NO_CONTENT).build();

@@ -29,7 +29,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -44,15 +43,9 @@ import org.olat.instantMessaging.InstantMessagingModule;
  */
 public class DisplayCourseInfoForm extends FormBasicController {
 
-	private SingleSelection layout;
-	private SingleSelection sfolder;
 	private SelectionElement chatIsOn;
 	private SelectionElement efficencyStatement;
 	private SelectionElement calendar;
-	private SingleSelection glossary;
-
-	private static final String KEY_NO = "0";
-	private static final String KEY_YES = "1";
 
 	private CourseConfig cc;
 	

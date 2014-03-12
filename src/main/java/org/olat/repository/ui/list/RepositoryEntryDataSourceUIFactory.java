@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui.list;
 
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -39,8 +38,8 @@ public interface RepositoryEntryDataSourceUIFactory {
 	
 	public void forgeStartLink(RepositoryEntryRow row);
 	
-	public void forgeDetailsLink(RepositoryEntryRow row);
+	public void forgeDetails(RepositoryEntryRow row);
 	
-	public void forgeRatings(RepositoryEntryRow row, RepositoryEntry entry);
+	public void forgeRatings(RepositoryEntryRow row);
 
 }

@@ -64,7 +64,7 @@ public class RepositoryEntryDeleteTableModel extends DefaultTableDataModel<Repos
 				String author= repositoryEntry.getInitialAuthor();
 				return (author == null ? "n/a" : author);
 			case 3 :
-				Date lastUsage= repositoryEntry.getLastUsage();
+				Date lastUsage= repositoryEntry.getStatistics().getLastUsage();
 				return (lastUsage == null ? "n/a" : lastUsage);
 			case 4 :
 				Date deleteEmail= LifeCycleManager.createInstanceFor(repositoryEntry).lookupLifeCycleEntry(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION).getLcTimestamp();

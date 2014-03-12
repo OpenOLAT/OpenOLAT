@@ -17,30 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui.list;
+package org.olat.core.commons.services.commentAndRating;
 
-import java.util.List;
-
-import org.olat.catalog.CatalogEntry;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
- * Initial date: 21.11.2012<br>
+ * To mirror some data after rating is updated
+ * 
+ * Initial date: 12.03.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogEntryListController extends AbstractRepositoryEntryListController {
+public interface UserRatingsDelegate {
 	
-	public CatalogEntryListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		
-		setDataSource(new CategoriesDataSource(null, getIdentity(), this));
-		initForm(ureq);
-	}
+	public boolean accept(OLATResourceable ores, String resSubPath);
 	
-	public void setCatalogEntries(List<CatalogEntry> entries) {
-		setDataSource(new CategoriesDataSource(entries, getIdentity(), this));
-	}
+	public boolean update(OLATResourceable ores, String resSubPath, double newRating);
+
 }

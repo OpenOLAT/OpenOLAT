@@ -43,6 +43,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.SearchMyRepositoryEntryViewParams;
 
 /**
  * 
@@ -57,7 +58,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	private final SegmentViewComponent segmentView;
 	private final Link favoriteLink, myCourseLink, catalogLink;
 	
-	private FavoritRepositoryEntryListController markedCtrl;
+	private RepositoryEntryListController markedCtrl;
 	private RepositoryEntryListController myCoursesCtrl;
 	private CatalogNodeController catalogCtrl;
 	private StackedController stackPanel;
@@ -125,8 +126,11 @@ public class OverviewRepositoryListController extends BasicController implements
 	private boolean doOpenMark(UserRequest ureq) {
 		boolean hasMarkedEntries = true;
 		if(markedCtrl == null) {
-			markedCtrl = new FavoritRepositoryEntryListController(ureq, getWindowControl());
-			hasMarkedEntries = markedCtrl.updateMarkedEntries();
+			SearchMyRepositoryEntryViewParams searchParams
+				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
+			searchParams.setMarked(Boolean.TRUE);
+			markedCtrl = new RepositoryEntryListController(ureq, getWindowControl(), searchParams);
+			hasMarkedEntries = !markedCtrl.isEmpty();
 			listenTo(markedCtrl);
 		}
 		mainVC.put("segmentCmp", markedCtrl.getInitialComponent());
@@ -135,7 +139,10 @@ public class OverviewRepositoryListController extends BasicController implements
 	
 	private void doOpenMyCourses(UserRequest ureq) {
 		if(myCoursesCtrl == null) {
-			myCoursesCtrl = new RepositoryEntryListController(ureq, getWindowControl());
+			SearchMyRepositoryEntryViewParams searchParams
+				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
+			searchParams.setMembershipMandatory(true);
+			myCoursesCtrl = new RepositoryEntryListController(ureq, getWindowControl(), searchParams);
 			listenTo(myCoursesCtrl);
 		}
 		mainVC.put("segmentCmp", myCoursesCtrl.getInitialComponent());

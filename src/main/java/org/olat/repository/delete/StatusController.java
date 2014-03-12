@@ -27,6 +27,7 @@ package org.olat.repository.delete;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -42,11 +43,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryTypeColumnDescriptor;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.delete.service.RepositoryDeletionManager;
 
 /**
@@ -55,15 +57,15 @@ import org.olat.repository.delete.service.RepositoryDeletionManager;
  * @author Christian Guretzki
  */
 public class StatusController extends BasicController {
-	private static final String PACKAGE_REPOSITORY_MANAGER = Util.getPackageName(RepositoryManager.class);
-	private static final String MY_PACKAGE = Util.getPackageName(StatusController.class);
-	
+
 	private static final String ACTION_SINGLESELECT_CHOOSE = "ssc";
 
 	private VelocityContainer myContent;
 	private Panel repositoryDeleteStatusPanel;
 	private TableController tableCtr;
 	private RepositoryEntryDeleteTableModel redtm;
+	
+	private final RepositoryService repositoryService;
 
 	/**
 	 * @param ureq
@@ -72,9 +74,11 @@ public class StatusController extends BasicController {
 	 */
 	public StatusController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 
-		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_REPOSITORY_MANAGER, ureq.getLocale());
-		this.setTranslator( new PackageTranslator( MY_PACKAGE, ureq.getLocale(), fallbackTrans) );
+		Translator fallback = Util.createPackageTranslator(RepositoryManager.class, getLocale());
+		setTranslator(Util.createPackageTranslator(StatusController.class, getLocale(), fallback));
 		myContent = createVelocityContainer("deletestatus");
 
 		repositoryDeleteStatusPanel = new Panel("repositoryDeleteStatusPanel");
@@ -106,7 +110,7 @@ public class StatusController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					RepositoryManager.getInstance().setLastUsageNowFor( (RepositoryEntry) redtm.getObject(rowid) );
+					repositoryService.setLastUsageNowFor( (RepositoryEntry) redtm.getObject(rowid) );
 					updateRepositoryEntryList();				
 				}
 			} 
@@ -134,7 +138,8 @@ public class StatusController extends BasicController {
 	}
 
 	protected void updateRepositoryEntryList() {
-		List l = RepositoryDeletionManager.getInstance().getReprositoryEntriesInDeletionProcess(RepositoryDeletionManager.getInstance().getDeleteEmailDuration());
+		int duration = RepositoryDeletionManager.getInstance().getDeleteEmailDuration();
+		List<RepositoryEntry> l = RepositoryDeletionManager.getInstance().getReprositoryEntriesInDeletionProcess(duration);
 		redtm = new RepositoryEntryDeleteTableModel(l);
 		tableCtr.setTableDataModel(redtm);
 	}

@@ -273,7 +273,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				}
 			}
 			case creationDate: return re.getCreationDate();
-			case lastUsage: return re.getLastUsage();
+			case lastUsage: return re.getStatistics().getLastUsage();
 			case externalId: return re.getExternalId();
 			case externalRef: return re.getExternalRef();
 			case lifecycleLabel: {

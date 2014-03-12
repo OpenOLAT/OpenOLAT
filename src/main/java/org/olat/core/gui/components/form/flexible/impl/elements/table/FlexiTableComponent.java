@@ -27,6 +27,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +51,7 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 	
 	
 	private FlexiTableElementImpl element;
+	private final Map<String,Component> components = new HashMap<>();
 	
 
 	public FlexiTableComponent(FlexiTableElementImpl element) {
@@ -65,8 +67,6 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 	FlexiTableElementImpl getFlexiTableElement() {
 		return element;
 	}
-	
-	
 
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
@@ -83,7 +83,11 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 		if(item != null) {
 			return item.getComponent();
 		}
-		return null;
+		return components.get(name);
+	}
+	
+	public void put(String name, Component cmp) {
+		components.put(name, cmp);
 	}
 
 	@Override
@@ -92,6 +96,7 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 		for(FormItem item:element.getFormItems()) {
 			cmp.add(item.getComponent());
 		}
+		cmp.addAll(components.values());
 		return cmp;
 	}
 

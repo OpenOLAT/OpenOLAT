@@ -27,6 +27,7 @@
 package org.olat.repository;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Collections;
@@ -64,6 +65,7 @@ import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
+import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JMSCodePointServerJunitHelper;
@@ -141,6 +143,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	
 			// now make a repository entry for this course
 			RepositoryEntry d = new RepositoryEntry();
+			d.setStatistics(new RepositoryEntryStatistics());
 			d.setOlatResource(r);
 			d.setResourcename("Lernen mit OLAT");
 			d.setInitialAuthor("Florian Gnägi");
@@ -632,6 +635,63 @@ public class RepositoryManagerTest extends OlatTestCase {
 		List<RepositoryEntry> entries = repositoryManager
 				.queryResourcesLimitType(id, resourceTypes, "re-member", "me", "no", true, true);
 		Assert.assertNotNull(entries);
+	}
+	
+	@Test
+	public void queryReferencableResourcesLimitType() {
+		final String FG_TYPE = UUID.randomUUID().toString().replace("_", "");
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsAuthor("id1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsAuthor("id2");
+
+		// generate 5000 repo entries
+		int numbRes = 500;
+		long startCreate = System.currentTimeMillis();
+		for (int i = 1; i < numbRes; i++) {
+			// create course and persist as OLATResourceImpl
+			Identity owner = (i % 2 > 0) ? id1 : id2;
+
+			OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(FG_TYPE, new Long(i));
+			OLATResource r =  OLATResourceManager.getInstance().createOLATResourceInstance(resourceable);
+			dbInstance.getCurrentEntityManager().persist(r);
+			
+			// now make a repository entry for this course
+			RepositoryEntry re = repositoryService.create(owner, "Lernen mit OLAT " + i,
+					"JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r);
+			re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);			
+			if ((i % 2 > 0)) {
+				re.setCanReference(true);
+			}
+			// save the repository entry
+			repositoryManager.saveRepositoryEntry(re);
+			
+			// Create course admin policy for owner group of repository entry
+			// -> All owners of repository entries are course admins
+			//securityManager.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());	
+			
+			// flush database and hibernate session cache after 10 records to improve performance
+			// without this optimization, the first entries will be fast but then the adding new 
+			// entries will slow down due to the fact that hibernate needs to adjust the size of
+			// the session cache permanently. flushing or transactions won't help since the problem
+			// is in the session cache. 
+			if (i%10 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+		long endCreate = System.currentTimeMillis();
+		log.info("created " + numbRes + " repo entries in " + (endCreate - startCreate) + "ms");
+		
+		List<String> typelist = Collections.singletonList(FG_TYPE);
+		// finally the search query
+		long startSearchReferencable = System.currentTimeMillis();
+		List<RepositoryEntry> results = repositoryManager.queryReferencableResourcesLimitType(id1, new Roles(false, false, false, true, false, false, false), typelist, null, null, null);
+		long endSearchReferencable = System.currentTimeMillis();
+		log.info("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms");
+
+		// only half of the items should be found
+		assertEquals((int) (numbRes / 2), results.size());
+		
+		// inserting must take longer than searching, otherwhise most certainly we have a problem somewhere in the query
+		assertTrue((endCreate - startCreate) > (endSearchReferencable - startSearchReferencable));
 	}
 	
 	@Test

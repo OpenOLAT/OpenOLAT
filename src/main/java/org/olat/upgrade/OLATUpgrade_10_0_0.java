@@ -98,7 +98,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 		//allOk &= upgradeBusinessGroups(upgradeManager, uhd);
 		//allOk &= upgradeRepositoryEntries(upgradeManager, uhd);
 		//allOk &= upgradeRelationsRepoToBusinessGroups(upgradeManager, uhd);
-		allOk &= upgradeEPMap(upgradeManager, uhd);
+		//allOk &= upgradeEPMap(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -169,7 +169,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	
 	private void processRepositoryEntry(RepositoryEntryUpgrade repoEntry) {
 		if(isDefaultGroupOk(repoEntry)) return;
-
+		
 		Group group = groupDao.createGroup();
 		//update owners
 		processSecurityGroup(group, GroupRoles.owner.name(), repoEntry.getOwnerGroup());
@@ -184,7 +184,6 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 		Set<RepositoryEntryUpgradeToGroupRelation> relations = new HashSet<>(2);
 		relations.add(relation);
 		repoEntry.setGroups(relations);
-		
 		dbInstance.commit();
 	}
 	

@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +40,6 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private RepositoryServiceImpl repositoryService;
-	
-	@Autowired
-	private RepositoryManager repositoryManager;
 	
 	@Test
 	public void createRepositoryEntry() {

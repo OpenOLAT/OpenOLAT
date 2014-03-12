@@ -28,9 +28,9 @@ package org.olat.repository.delete;
 import java.util.List;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -52,8 +52,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.PackageTranslator;
-
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
@@ -62,6 +61,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryTypeColumnDescriptor;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.delete.service.RepositoryDeletionManager;
 
 /**
@@ -70,9 +70,7 @@ import org.olat.repository.delete.service.RepositoryDeletionManager;
  * @author Christian Guretzki
  */
 public class SelectionController extends BasicController {
-	private static final String PACKAGE_REPOSITORY_MANAGER = Util.getPackageName(RepositoryManager.class);
-	private static final String MY_PACKAGE = Util.getPackageName(SelectionController.class);
-	
+
 	private static final String ACTION_SINGLESELECT_CHOOSE = "ssc";
 	private static final String ACTION_MULTISELECT_CHOOSE = "msc";
 	private static final String KEY_EMAIL_SUBJECT = "delete.announcement.email.subject";
@@ -87,8 +85,10 @@ public class SelectionController extends BasicController {
 	private VelocityContainer selectionListContent;
 	private Link editParameterLink;
 	private MailNotificationEditController deleteRepositoryMailCtr;
-	private List selectedRepositoryEntries;
+	private List<RepositoryEntry> selectedRepositoryEntries;
 	private CloseableModalController cmc;
+
+	private final RepositoryService repositoryService;
 
 
 	/**
@@ -98,9 +98,11 @@ public class SelectionController extends BasicController {
 	 */
 	public SelectionController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		Translator fallback = Util.createPackageTranslator(RepositoryManager.class, getLocale());
+		setTranslator(Util.createPackageTranslator(SelectionController.class, getLocale(), fallback));
 		
-		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_REPOSITORY_MANAGER, ureq.getLocale());
-		this.setTranslator( new PackageTranslator( MY_PACKAGE, ureq.getLocale(), fallbackTrans) );
 		myContent = createVelocityContainer("panel");
 		deleteSelectionPanel = new Panel("deleteSelectionPanel");
 		deleteSelectionPanel.addListener(this);
@@ -153,7 +155,7 @@ public class SelectionController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					RepositoryManager.getInstance().setLastUsageNowFor( (RepositoryEntry) redtm.getObject(rowid) );
+					repositoryService.setLastUsageNowFor( (RepositoryEntry) redtm.getObject(rowid) );
 					updateRepositoryEntryList();
 				}
 			} else if (event.getCommand().equals(Table.COMMAND_MULTISELECT)) {
@@ -245,7 +247,8 @@ public class SelectionController extends BasicController {
 	}
 
 	public void updateRepositoryEntryList() {
-		List l = RepositoryDeletionManager.getInstance().getDeletableReprositoryEntries(RepositoryDeletionManager.getInstance().getLastUsageDuration());
+		int duration = RepositoryDeletionManager.getInstance().getLastUsageDuration();
+		List<RepositoryEntry> l = RepositoryDeletionManager.getInstance().getDeletableReprositoryEntries(duration);
 		redtm = new RepositoryEntryDeleteTableModel(l);
 		tableCtr.setTableDataModel(redtm);
 	}

@@ -23,9 +23,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.ui.PriceMethod;
 
 /**
@@ -52,6 +54,9 @@ public class RepositoryEntryRow {
 	public Date initialLaunch;
 	public Date recentLaunch;
 	
+	private Integer myRating;
+	private Float averageRating;
+	
 	private String lifecycle;
 	private String lifecycleSoftKey;
 	private Date lifecycleStart;
@@ -63,6 +68,7 @@ public class RepositoryEntryRow {
 	private FormLink selectLink;
 	private FormLink startLink;
 	private FormLink detailsLink;
+	private Panel detailsPanel;
 	
 	private OLATResourceable olatResource;
 	private RatingWithAverageFormItem ratingFormItem;
@@ -99,6 +105,22 @@ public class RepositoryEntryRow {
 		this.description = description;
 	}
 	
+	public Integer getMyRating() {
+		return myRating;
+	}
+
+	public void setMyRating(Integer myRating) {
+		this.myRating = myRating;
+	}
+
+	public Float getAverageRating() {
+		return averageRating;
+	}
+
+	public void setAverageRating(Float averageRating) {
+		this.averageRating = averageRating;
+	}
+
 	public String getLifecycle() {
 		return lifecycle;
 	}
@@ -175,6 +197,14 @@ public class RepositoryEntryRow {
 		this.detailsLink = detailsLink;
 	}
 
+	public Panel getDetailsPanel() {
+		return detailsPanel;
+	}
+
+	public void setDetailsPanel(Panel detailsPanel) {
+		this.detailsPanel = detailsPanel;
+	}
+
 	public FormLink getMarkLink() {
 		return markLink;
 	}
@@ -200,6 +230,10 @@ public class RepositoryEntryRow {
 
 	public void setRatingFormItem(RatingWithAverageFormItem ratingFormItem) {
 		this.ratingFormItem = ratingFormItem;
+	}
+	
+	public OLATResourceable getRepositoryEntryResourceable() {
+		return OresHelper.createOLATResourceableInstance("RepositoryEntry", getKey());
 	}
 	
 	/**

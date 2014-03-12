@@ -24,6 +24,7 @@
 */
 package org.olat.repository;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -76,7 +77,9 @@ public class RepositoyUIFactory {
 			layoutCtr.addDisposableChildController(c); // dispose content on layout dispose
 			return layoutCtr;
 		}
-		rm.incrementLaunchCounter(re);
+
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
+		rs.incrementLaunchCounter(re);
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
 	
 		WindowControl bwControl;

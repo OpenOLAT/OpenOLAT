@@ -32,7 +32,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormLayouter;
 import org.olat.core.gui.components.form.flexible.elements.InlineElement;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
@@ -205,7 +204,8 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 			}
 		}
 		if(labelKey != null) {
-			labelC = new SimpleLabelText(labelKey, labelTrsl);
+			labelC = new SimpleLabelText(labelKey, labelTrsl, componentIsMandatory);
+			labelC.setTranslator(translator);
 			labelPanel.setContent(labelC);
 		}
 		if(errorKey != null) {
@@ -244,36 +244,14 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		labelParams = params;
 		// set label may be called before the translator is available
 		if (getTranslator() != null && labelKey != null) {
-			labelC = new SimpleLabelText(label, getLabelText());
+			labelC = new SimpleLabelText(label, getLabelText(), componentIsMandatory);
+			labelC.setTranslator(getTranslator());
 			labelPanel.setContent(labelC);
 		} else if(label == null) {
 			labelC = null;
 			labelPanel.setContent(labelC);
 		}
 	}
-
-
-	/**
-	 * 
-	 * @param labelComponent
-	 * @param container
-	 * @return this
-	 */
-	public FormItem setLabelComponent(FormItem labelComponent, FormItemContainer container) {
-		if(labelComponent == null){
-			throw new AssertException("do not clear error by setting null, instead use showLabel(false).");
-		}
-		
-		hasLabel = true;
-		//initialize root form of form item
-		FormLayoutContainer flc = (FormLayoutContainer)container;//TODO:pb: fix this hierarchy mismatch
-		flc.register(labelComponent);//errorFormItem must be part of the composite chain, that it gets dispatched
-		
-		labelC = labelComponent.getComponent();
-		labelPanel.setContent(labelC);
-		return this;
-	}
-	
 	
 	public void setFocus(boolean hasFocus){
 		this.hasFocus  = hasFocus;
@@ -289,6 +267,9 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 
 	public void setMandatory(boolean isMandatory) {
 		componentIsMandatory = isMandatory;
+		if(labelC instanceof SimpleLabelText) {
+			((SimpleLabelText)labelC).setComponentIsMandatory(isMandatory);
+		}
 	}
 
 	/**
