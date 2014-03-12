@@ -22,7 +22,6 @@ package org.olat.group.manager;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.TypedQuery;
 
@@ -50,12 +49,8 @@ public class ContactDAO {
 	private DB dbInstance;
 	
 	public Collection<Long> getDistinctGroupOwnersParticipants(Identity me) {
-		List<Long> participants = getMembersForCount(me);
-		List<Long> owners = getMembersForCount(me);
-		
-		Set<Long> contacts = new HashSet<Long>(participants);
-		contacts.addAll(owners);
-		return contacts;
+		List<Long> contactList = getMembersForCount(me);
+		return new HashSet<Long>(contactList);
 	}
 	
 	private List<Long> getMembersForCount(Identity me) {

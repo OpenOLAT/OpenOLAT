@@ -239,8 +239,8 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 
 		//count all my buddies
 		Collection<Long> buddiesColl = contactDao.getDistinctGroupOwnersParticipants(me);
+		buddiesColl.remove(me.getKey());
 		List<Long> buddies = new ArrayList<Long>(buddiesColl);
-		buddies.remove(me.getKey());
 		stats.setOfflineBuddies(buddies.size());
 
 		//filter online users
@@ -273,14 +273,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		for(ContactViewExtended contact:contactList) {
 			addBuddyToGroupList(contact, me, groupMap, groups, identityKeyToStatus, offlineUsers);
 		}
-		/*
-		Map<Long,String> nameMap = userManager.getUserDisplayNamesByKey(identityKeyToStatus.keySet());
-		for(BuddyGroup group:groups) {
-			for(Buddy buddy:group.getBuddy()) {
-				buddy.setName(nameMap.get(buddy.getIdentityKey()));	
-			}
-		}
-		*/
 		return groups;
 	}
 	
