@@ -17,11 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.commentAndRating.impl;
+package org.olat.core.commons.services.commentAndRating;
 
 import java.util.List;
 
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.id.Identity;
 

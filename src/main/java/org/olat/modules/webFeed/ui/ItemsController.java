@@ -31,8 +31,10 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.navigation.Dated;
 import org.olat.core.commons.controllers.navigation.NavigationEvent;
 import org.olat.core.commons.controllers.navigation.YearNavigationController;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.impl.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -269,9 +271,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 				removeAsListenerAndDispose(commentsLinks.get(item));
 			}
 
-			CommentAndRatingService commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
-			commentAndRatingService.init(getIdentity(), feed, item.getGuid(), callback.mayEditMetadata(), ureq.getUserSession().getRoles().isGuestOnly());
-			UserCommentsAndRatingsController commentsAndRatingCtr = commentAndRatingService.createUserCommentsAndRatingControllerMinimized(ureq, getWindowControl());
+			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
+			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), callback.mayEditMetadata(), anonym);
+			UserCommentsAndRatingsController commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, true, true, false);
 			commentsAndRatingCtr.addUserObject(item);
 			listenTo(commentsAndRatingCtr);
 			commentsLinks.put(item, commentsAndRatingCtr);

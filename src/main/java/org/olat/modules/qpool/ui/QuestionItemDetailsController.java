@@ -24,8 +24,9 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.impl.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -95,9 +96,8 @@ public class QuestionItemDetailsController extends BasicController implements St
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean moderator = roles.isOLATAdmin();
 		boolean anonymous = roles.isGuestOnly() || roles.isInvitee();
-		CommentAndRatingService commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
-		commentAndRatingService.init(getIdentity(), item, null, moderator, anonymous);
-		commentsAndRatingCtr = commentAndRatingService.createUserCommentsAndRatingControllerExpandable(ureq, getWindowControl());
+		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), moderator, anonymous);
+		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), item, null, secCallback, true, true, true);
 		listenTo(commentsAndRatingCtr);
 
 		mainVC = createVelocityContainer("item_details");

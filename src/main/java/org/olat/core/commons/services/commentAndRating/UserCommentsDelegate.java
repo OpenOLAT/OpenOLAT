@@ -17,31 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui.list;
+package org.olat.core.commons.services.commentAndRating;
 
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
- * Delegate to the controller the job of forgeing the links and the mapperUrl.
- * 
- * Initial date: 29.01.2014<br>
+ * Initial date: 13.03.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface RepositoryEntryDataSourceUIFactory {
+public interface UserCommentsDelegate {
 	
-	public String getMapperThumbnailUrl();
-	
-	public void forgeMarkLink(RepositoryEntryRow row);
-	
-	public void forgeSelectLink(RepositoryEntryRow row);
-	
-	public void forgeStartLink(RepositoryEntryRow row);
-	
-	public void forgeDetails(RepositoryEntryRow row);
-	
-	public void forgeRatings(RepositoryEntryRow row);
-	
-	public void forgeComments(RepositoryEntryRow row);
+	public boolean accept(OLATResourceable ores, String resSubPath);
+
+	public boolean update(OLATResourceable ores, String resSubPath, int numOfComments);
 
 }

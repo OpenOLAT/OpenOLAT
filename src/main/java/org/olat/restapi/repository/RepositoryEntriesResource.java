@@ -351,8 +351,7 @@ public class RepositoryEntriesResource {
 			addedEntry.setAccess(access);
 		}
 		
-		RepositoryManager rm = RepositoryManager.getInstance();
-		rm.saveRepositoryEntry(addedEntry);
+		repositoryService.update(addedEntry);
 		return addedEntry;
 	}
 	

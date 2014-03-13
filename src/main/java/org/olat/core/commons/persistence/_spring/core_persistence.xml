@@ -67,10 +67,6 @@
 		<mapping-file>org/olat/portfolio/model/structel/StructureElement.hbm.xml</mapping-file>
 		<mapping-file>org/olat/portfolio/model/notification/Notifications.hbm.xml</mapping-file>
 		<mapping-file>org/olat/portfolio/model/restriction/CollectRestriction.hbm.xml</mapping-file>
-		<mapping-file>org/olat/core/commons/services/commentAndRating/impl/UserCommentImpl.hbm.xml</mapping-file>
-		<!-- 
-		<mapping-file>org/olat/core/commons/services/commentAndRating/impl/UserRatingImpl.hbm.xml</mapping-file>
-		-->
 		<mapping-file>org/olat/core/commons/services/mark/impl/MarkImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/commons/services/tagging/model/TagImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/util/mail/model/DBMail.hbm.xml</mapping-file>
@@ -99,7 +95,8 @@
 		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>
-		<class>org.olat.core.commons.services.commentAndRating.impl.UserRatingImpl</class>
+		<class>org.olat.core.commons.services.commentAndRating.model.UserRatingImpl</class>
+		<class>org.olat.core.commons.services.commentAndRating.model.UserCommentImpl</class>
 		<class>org.olat.course.assessment.model.UserCourseInfosImpl</class>
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>

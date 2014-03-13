@@ -34,7 +34,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.commentAndRating.impl.UserRatingsDAO;
+import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
+import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
@@ -61,6 +62,8 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private UserRatingsDAO userRatingsDao;
+	@Autowired
+	private UserCommentsDAO userCommentsDao;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -101,6 +104,24 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 		RepositoryEntryStatistics stats = reStatisticsDao.loadStatistics(re);
 		Assert.assertNotNull(stats);
 		Assert.assertEquals(5d, stats.getRating(), 0.001);
+	}
+	
+	@Test
+	public void updateCommentsStatistics() {
+		//create an entry
+		Identity id = JunitTestHelper.createAndPersistIdentityAsAuthor("update-comment-");
+		RepositoryEntry re = repositoryService.create(id, "-", "Statistics", "", null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+		Assert.assertNotNull(re.getStatistics());
+		
+		//set a rating
+		userCommentsDao.createComment(id, re, null, "Hello, a new comment");
+		dbInstance.commitAndCloseSession();
+
+		RepositoryEntryStatistics stats = reStatisticsDao.loadStatistics(re);
+		Assert.assertNotNull(stats);
+		Assert.assertEquals(1, stats.getNumOfComments());
 	}
 	
 	@Test

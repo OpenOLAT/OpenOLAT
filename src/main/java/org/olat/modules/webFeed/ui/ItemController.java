@@ -21,9 +21,9 @@ package org.olat.modules.webFeed.ui;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.impl.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -83,10 +83,10 @@ public class ItemController extends BasicController implements Activateable2 {
 			DateComponentFactory.createDateComponentWithYear("dateComp", item.getDate(), vcItem);
 		}
 		// Add rating and commenting controller - only when configured
-		final CommentAndRatingService commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
-		if (commentAndRatingService != null && displayConfig.isShowCRInDetails()) {
-			commentAndRatingService.init(getIdentity(), feed, item.getGuid(), callback.mayEditMetadata(), ureq.getUserSession().getRoles().isGuestOnly());
-			commentsCtr = commentAndRatingService.createUserCommentsAndRatingControllerExpandable(ureq, getWindowControl());
+		if (displayConfig.isShowCRInDetails()) {
+			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
+			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), callback.mayEditMetadata(), anonym);
+			commentsCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, true, true, true);
 			listenTo(commentsCtr);
 			vcItem.put("commentsAndRating", commentsCtr.getInitialComponent());				
 		}

@@ -46,7 +46,6 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -352,7 +351,7 @@ public class CoordinatorTest extends OlatTestCase {
 
 		final RepositoryEntry re = repositoryService.create("test", "perfTest", "testPerf", "perfTest description", r);
 		// create security group
-		RepositoryManager.getInstance().saveRepositoryEntry(re);
+		repositoryService.update(re);
 		DBFactory.getInstance().commitAndCloseSession();
 		
 		// 1. Do job without doInSync

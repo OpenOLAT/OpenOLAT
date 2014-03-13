@@ -33,6 +33,6 @@ public interface UserRatingsDelegate {
 	
 	public boolean accept(OLATResourceable ores, String resSubPath);
 	
-	public boolean update(OLATResourceable ores, String resSubPath, double newRating);
+	public boolean update(OLATResourceable ores, String resSubPath, double newAverageRating, long numOfRatings);
 
 }

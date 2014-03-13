@@ -338,6 +338,8 @@ create table o_repositoryentry_stats (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    r_rating decimal(65,30),
+   r_num_of_ratings int8 not null default 0,
+   r_num_of_comments int8 not null default 0,
    r_launchcounter int8 not null default 0,
    r_downloadcounter int8 not null default 0,
    r_lastusage timestamp not null,
@@ -1471,6 +1473,8 @@ create view o_repositoryentry_my_v as (
       mark.mark_id as mark_id,
       rating.rating as rat_rating,
       stats.r_rating as stats_rating,
+      stats.r_num_of_ratings as stats_num_of_ratings,
+      stats.r_num_of_comments as stats_num_of_comments,
       ident.id as member_id,
       (select count(offer.offer_id) from o_ac_offer as offer 
          where offer.fk_resource_id = re.fk_olatresource

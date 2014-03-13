@@ -181,7 +181,7 @@ public class RepositoryCopyController extends BasicController {
 		RepositoryEntry preparedEntry = repositoryService.create(ureq.getIdentity(), resName, newDispalyname, src.getDescription(), ores);
 		preparedEntry.setCanDownload(src.getCanDownload());
 		preparedEntry.setCanLaunch(src.getCanLaunch());
-		RepositoryManager.getInstance().saveRepositoryEntry(preparedEntry);
+		repositoryService.update(preparedEntry);
 		// copy image if available
 		RepositoryManager.getInstance().copyImage(src, preparedEntry);
 		return preparedEntry;

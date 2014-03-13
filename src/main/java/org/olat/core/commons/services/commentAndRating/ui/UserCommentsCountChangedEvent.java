@@ -17,14 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.commentAndRating.impl.ui;
+package org.olat.core.commons.services.commentAndRating.ui;
 
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 
 /**
  * Description:<br>
- * This event is fired whenever a user rating changes on a given
+ * This event is fired whenever a user comments count changes on a given
  * resource
  * 
  * <P>
@@ -32,7 +32,9 @@ import org.olat.core.util.event.MultiUserEvent;
  * 
  * @author gnaegi
  */
-public class UserRatingChangedEvent extends MultiUserEvent {
+public class UserCommentsCountChangedEvent extends MultiUserEvent {
+
+	private static final long serialVersionUID = 3517889647631428013L;
 	private int senderIdentifyer;
 	private String oresSubPath;
 
@@ -43,8 +45,8 @@ public class UserRatingChangedEvent extends MultiUserEvent {
 	 *          remember who sent the event using the object hash code.
 	 * @param oresSubPath the sub path
 	 */
-	public UserRatingChangedEvent(GenericEventListener sender, String oresSubPath) {
-		super("ratingChanged");
+	public UserCommentsCountChangedEvent(GenericEventListener sender, String oresSubPath) {
+		super("commentsCountChanged");
 		this.senderIdentifyer = sender.hashCode();
 		this.oresSubPath = oresSubPath;
 	}

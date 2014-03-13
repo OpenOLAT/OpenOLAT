@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.commentAndRating.impl;
+package org.olat.core.commons.services.commentAndRating.model;
 
 import java.util.Date;
 
@@ -34,7 +34,6 @@ import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -42,23 +41,23 @@ import org.olat.core.id.Persistable;
 
 /**
  * Description:<br>
- * Implemenation of the user rating class
+ * Implemenation of the user comment class
  * 
  * <P>
  * Initial Date: 23.11.2009 <br>
  * 
  * @author gnaegi
  */
-@Entity(name="userrating")
-@Table(name="o_userrating")
-public class UserRatingImpl implements Persistable, CreateInfo,  UserRating {
+@Entity(name="usercomment")
+@Table(name="o_usercomment")
+public class UserCommentImpl implements Persistable, CreateInfo, UserComment {
 
-	private static final long serialVersionUID = -5830951461259559219L;
+	private static final long serialVersionUID = -1396648859230164778L;
 
 	@Id
 	@GeneratedValue(generator = "system-uuid")
 	@GenericGenerator(name = "system-uuid", strategy = "hilo")
-	@Column(name="rating_id", nullable=false, unique=true, insertable=true, updatable=false)
+	@Column(name="comment_id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 
 	@Column(name="version", nullable=false, insertable=true, updatable=false)
@@ -67,10 +66,6 @@ public class UserRatingImpl implements Persistable, CreateInfo,  UserRating {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
-	private Date modifiedDate;
 
 	@Column(name="resname", nullable=false, insertable=true, updatable=false)
 	private String resName;
@@ -82,43 +77,46 @@ public class UserRatingImpl implements Persistable, CreateInfo,  UserRating {
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="creator_id", nullable=false, updatable=false)
 	private Identity creator;
-	@Column(name="rating", nullable=false, insertable=true, updatable=true)
-	private Integer rating;
 	
+	@ManyToOne(targetEntity=UserCommentImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="parent_key", nullable=true, updatable=true)
+	private UserComment parent;
+	
+	@Column(name="commenttext", nullable=false, insertable=true, updatable=true)
+	private String comment;
 
-	public UserRatingImpl() {
+	/**
+	 * Default constructor for hibernate, don't use this!
+	 */
+	public UserCommentImpl() {
 		// 
 	}
 
 	/**
-	 * Package constructor to create a new user rating with the given arguments
+	 * Package constructor to create a new user comment with the given arguments
 	 * @param ores
 	 * @param subpath
 	 * @param creator
-	 * @param ratingValue
+	 * @param comment
 	 */
-	public UserRatingImpl(OLATResourceable ores, String subpath, Identity creator, Integer ratingValue) {
+	public UserCommentImpl(OLATResourceable ores, String subpath, Identity creator, String comment) {
 		this.creator = creator;
+		this.comment = comment;
 		this.resName = ores.getResourceableTypeName();
 		this.resId = ores.getResourceableId();
 		this.resSubPath = subpath;
-		this.rating = ratingValue;
-		this.creationDate = new Date();
-		this.modifiedDate = new Date();
 	}
 	
-	@Override
 	public Long getKey() {
 		return key;
 	}
-	
-	@Override
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
 	public Date getCreationDate() {
 		return creationDate;
-	}
-	
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
 	}
 
 	/**
@@ -127,6 +125,14 @@ public class UserRatingImpl implements Persistable, CreateInfo,  UserRating {
 	@Override
 	public Identity getCreator() {
 		return creator;
+	}
+
+	/**
+	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#getComment()
+	 */
+	@Override
+	public String getComment() {
+		return comment;
 	}
 
 	/**
@@ -154,10 +160,11 @@ public class UserRatingImpl implements Persistable, CreateInfo,  UserRating {
 	}
 	
 	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserRating#getRating()
+	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#getParent()
 	 */
-	public Integer getRating() {
-		return this.rating;
+	@Override
+	public UserComment getParent() {
+		return parent;
 	}
 	
 	/**
@@ -192,25 +199,27 @@ public class UserRatingImpl implements Persistable, CreateInfo,  UserRating {
 	}
 
 	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserRating#setRating(int)
+	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#setComment(java.lang.String)
 	 */
-	public void setRating(Integer ratingValue) {
-		this.rating = ratingValue;
+	public void setComment(String commentText) {
+		this.comment = commentText;
+	}
+
+	/**
+	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#setParent(org.olat.core.commons.services.commentAndRating.model.UserComment)
+	 */
+	public void setParent(UserComment parentComment) {
+		this.parent = parentComment;
 	}
 
 	@Override
-	public Date getLastModified() {
-		return modifiedDate;
-	}
-
-	@Override
-	public void setLastModified(Date date) {
-		modifiedDate = date;
+	public void setCreationDate(Date date) {
+		this.creationDate = date;	
 	}
 	
 	@Override
 	public int hashCode() {
-		return key == null ? 13256 : key.hashCode();
+		return key == null ? -1356 : key.hashCode();
 	}
 
 	@Override
@@ -218,8 +227,8 @@ public class UserRatingImpl implements Persistable, CreateInfo,  UserRating {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof UserRatingImpl) {
-			UserRatingImpl q = (UserRatingImpl)obj;
+		if(obj instanceof UserCommentImpl) {
+			UserCommentImpl q = (UserCommentImpl)obj;
 			return key != null && key.equals(q.key);
 		}
 		return false;

@@ -45,7 +45,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -92,7 +91,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = rs.create("administrator", "-", "rest-re", null, course);
 		re.setCanLaunch(true);
-		RepositoryManager.getInstance().saveRepositoryEntry(re);
+		rs.update(re);
 		DBFactory.getInstance().commit();
 			
 		//create learn group

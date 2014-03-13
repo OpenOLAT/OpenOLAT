@@ -17,9 +17,8 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.commentAndRating.impl;
+package org.olat.core.commons.services.commentAndRating.model;
 
-import org.olat.core.commons.services.commentAndRating.model.UserCommentsCount;
 import org.olat.core.id.OLATResourceable;
 
 /**

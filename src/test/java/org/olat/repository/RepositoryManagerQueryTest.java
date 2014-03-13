@@ -140,7 +140,7 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 			RepositoryEntry re = createCourseRepositoryEntry(db, owner, i);
 			re.setAccess(access);
 
-			rm.saveRepositoryEntry(re);
+			repositoryService.update(re);
 			if (i % 20 == 0) {
 				db.commitAndCloseSession();
 			}

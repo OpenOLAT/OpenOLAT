@@ -239,7 +239,14 @@ div.b_ratings_and_comments {
 	div.b_rating_personal { background: #fff; z-index: 5; }
 }
 
-div.b_ratings_and_comments a.b_comments, div.b_eportfolio_map a.b_comments { background: url(../openolat/images/comment.png) 3px 50% no-repeat; padding: 3px 0 1px 23px; vertical-align: middle; min-height: 18px;}
+a.b_comments, div.b_ratings_and_comments a.b_comments, div.b_eportfolio_map a.b_comments {
+	background: url(../openolat/images/comment.png) 3px 50% no-repeat;
+	padding: 3px 0 1px 23px;
+	vertical-align: middle; min-height: 18px;
+}
+a.b_comments.b_no_comment {
+	background: url(../openolat/images/comment_none.png) 3px 50% no-repeat;
+}
 
 div.b_comments { 
 	font-size: 0.9em;

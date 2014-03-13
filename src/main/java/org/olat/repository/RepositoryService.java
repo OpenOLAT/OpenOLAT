@@ -46,6 +46,8 @@ public interface RepositoryService {
 	
 	public RepositoryEntry loadByKey(Long key);
 	
+	public RepositoryEntry update(RepositoryEntry re);
+	
 
 	public void incrementLaunchCounter(RepositoryEntry re);
 	

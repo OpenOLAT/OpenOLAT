@@ -45,7 +45,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.impl.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
@@ -1075,11 +1074,8 @@ public class EPStructureManager extends BasicManager {
 		}
 		
 		// remove comments and ratings
-		CommentAndRatingService commentAndRatingService = null;
-		commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
-		commentAndRatingService.init(struct.getOlatResource(), null, new CommentAndRatingDefaultSecurityCallback(null, true, false));
-		commentAndRatingService.deleteAllIgnoringSubPath();
-		
+		CommentAndRatingService commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
+		commentAndRatingService.deleteAllIgnoringSubPath(struct.getOlatResource());
 		
 		// FXOLAT-431 remove subscriptions if the current struct is a map
 		if(struct instanceof EPAbstractMap){
@@ -1863,7 +1859,7 @@ public class EPStructureManager extends BasicManager {
 
 		// Set the resource on the repository entry and save the entry.
 		// bind resource and repository entry
-		repositoryManager.saveRepositoryEntry(addedEntry);
+		repositoryService.update(addedEntry);
 		return addedEntry;
 	}
 	

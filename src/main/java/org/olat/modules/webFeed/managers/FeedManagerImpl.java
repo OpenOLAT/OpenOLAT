@@ -209,11 +209,7 @@ public class FeedManagerImpl extends FeedManager {
 		fileResourceManager.deleteFileResource(feed);
 		// Delete comments and ratings
 		CommentAndRatingService commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
-		if (commentAndRatingService != null) {				
-			commentAndRatingService.init(null, feed, null, true, false);
-			commentAndRatingService.deleteAllIgnoringSubPath();
-		}
-		// 
+		commentAndRatingService.deleteAllIgnoringSubPath(feed);
 		feed = null;
 	}
 
@@ -615,11 +611,7 @@ public class FeedManagerImpl extends FeedManager {
 				
 				// Delete comments and ratings
 				CommentAndRatingService commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
-				if (commentAndRatingService != null) {				
-					commentAndRatingService.init(null, feed, item.getGuid(), true, false);
-					commentAndRatingService.deleteAll();
-				}
-				// 
+				commentAndRatingService.deleteAll(feed, item.getGuid());
 				return reloadedFeed;
 			}
 		});

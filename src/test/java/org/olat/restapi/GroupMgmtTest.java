@@ -74,7 +74,6 @@ import org.olat.modules.fo.restapi.MessageVO;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -138,7 +137,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = rs.create("administrator", "-", "rest-re", null, course);
 		re.setCanLaunch(true);
-		RepositoryManager.getInstance().saveRepositoryEntry(re);
+		repositoryService.update(re);
 		DBFactory.getInstance().commit();
 		
 		//create learn group

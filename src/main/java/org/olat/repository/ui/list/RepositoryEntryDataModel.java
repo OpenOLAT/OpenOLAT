@@ -59,6 +59,7 @@ public class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<R
 			case start: return item.getStartLink();
 			case details: return item.getDetailsLink();
 			case ratings: return item.getRatingFormItem();
+			case comments: return item.getCommentsLink();
 		}
 		return null;
 	}
@@ -74,7 +75,8 @@ public class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<R
 		select("table.header.details"),
 		start("table.header.start"),
 		mark("table.header.mark"),
-		ratings("ratings");
+		ratings("ratings"),
+		comments("comments");
 		
 		private final String i18nKey;
 		

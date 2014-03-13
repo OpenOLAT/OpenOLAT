@@ -17,9 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.commentAndRating.impl.ui;
+package org.olat.core.commons.services.commentAndRating.ui;
 
-import org.olat.core.commons.services.commentAndRating.UserCommentsManager;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
@@ -54,11 +56,14 @@ import org.olat.core.util.StringHelper;
  * @author gnaegi
  */
 public class UserCommentFormController extends FormBasicController {
-	private UserCommentsManager commentManager;
 	private UserComment parentComment;
 	private UserComment toBeUpdatedComment;
 	// 
 	private RichTextElement commentElem;
+	
+	private final String resSubPath;
+	private final OLATResourceable ores;
+	private final CommentAndRatingService commentAndRatingService;
 
 	/**
 	 * Constructor for a user comment form controller. Use the
@@ -72,11 +77,14 @@ public class UserCommentFormController extends FormBasicController {
 	 */
 	UserCommentFormController(UserRequest ureq, WindowControl wControl,
 			UserComment parentComment, UserComment toBeUpdatedComment,
-			UserCommentsManager commentManager) {
+			OLATResourceable ores, String resSubPath) {
 		super(ureq, wControl, "userCommentForm");
+		this.ores = ores;
+		this.resSubPath = resSubPath;
+		commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
+		
 		this.parentComment = parentComment;
 		this.toBeUpdatedComment = toBeUpdatedComment;
-		this.commentManager = commentManager;
 		//
 		initForm(ureq);
 	}
@@ -130,12 +138,12 @@ public class UserCommentFormController extends FormBasicController {
 			if (toBeUpdatedComment == null) {
 				if (parentComment == null) {
 					// create new comment
-					this.toBeUpdatedComment = commentManager.createComment(getIdentity(), commentText);					
+					this.toBeUpdatedComment = commentAndRatingService.createComment(getIdentity(), ores, resSubPath, commentText);					
 					// notify listeners that we finished.
 					fireEvent(ureq, Event.CHANGED_EVENT);			
 				} else {
 					// reply to parent comment
-					this.toBeUpdatedComment = commentManager.replyTo(parentComment, getIdentity(), commentText);
+					this.toBeUpdatedComment = commentAndRatingService.replyTo(parentComment, getIdentity(), commentText);
 					if (this.toBeUpdatedComment == null) {
 						showError("comments.coment.reply.error");
 						fireEvent(ureq, Event.FAILED_EVENT);									
@@ -144,7 +152,7 @@ public class UserCommentFormController extends FormBasicController {
 					}
 				}
 			} else {
-				this.toBeUpdatedComment = commentManager.updateComment(toBeUpdatedComment, commentText);
+				this.toBeUpdatedComment = commentAndRatingService.updateComment(toBeUpdatedComment, commentText);
 				if (this.toBeUpdatedComment == null) {
 					showError("comments.coment.update.error");					
 					fireEvent(ureq, Event.FAILED_EVENT);									

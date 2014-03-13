@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.commentAndRating.impl.ui;
+package org.olat.core.commons.services.commentAndRating.ui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.creator.UserAvatarDisplayControllerCreator;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
-import org.olat.core.commons.services.commentAndRating.UserCommentsManager;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -43,6 +43,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.title.TitleInfo;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
@@ -63,7 +64,6 @@ import org.olat.core.util.StringHelper;
  */
 public class UserCommentDisplayController extends BasicController {
 	private final CommentAndRatingSecurityCallback securityCallback;
-	private final UserCommentsManager commentManager;
 	// GUI container
 	private final VelocityContainer userCommentDisplayVC;
 	// Data model
@@ -82,11 +82,18 @@ public class UserCommentDisplayController extends BasicController {
 	private UserCommentFormController replyCommentFormCtr;
 	private TitledWrapperController replyTitledWrapperCtr;
 	
+	private String resSubPath;
+	private OLATResourceable ores;
+	private final CommentAndRatingService commentAndRatingService;
+	
 	UserCommentDisplayController(UserRequest ureq, WindowControl wControl,
-			UserCommentsManager commentManager, UserComment userComment, List<UserComment> allComments,
+			UserComment userComment, List<UserComment> allComments,
+			OLATResourceable ores, String resSubPath,
 			CommentAndRatingSecurityCallback securityCallback) {
 		super(ureq, wControl);
-		this.commentManager = commentManager;
+		commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
+		this.ores = ores;
+		this.resSubPath = resSubPath;
 		this.userComment = userComment;
 		this.allComments = allComments;
 		this.securityCallback = securityCallback;
@@ -150,7 +157,7 @@ public class UserCommentDisplayController extends BasicController {
 			if (reply.getParent() == null) continue;
 			if (reply.getParent().getKey().equals(userComment.getKey())) {
 				// Create child controller
-				UserCommentDisplayController replyCtr = new UserCommentDisplayController(ureq, getWindowControl(), commentManager, reply, allComments, securityCallback);
+				UserCommentDisplayController replyCtr = new UserCommentDisplayController(ureq, getWindowControl(), reply, allComments, ores, resSubPath, securityCallback);
 				replyControllers.add(replyCtr);
 				listenTo(replyCtr);
 				userCommentDisplayVC.put(replyCtr.getViewCompName(), replyCtr.getInitialComponent());
@@ -176,7 +183,7 @@ public class UserCommentDisplayController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == replyLink) {
 			// Init reply workflow
-			replyCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), userComment, null, commentManager);
+			replyCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), userComment, null, ores, resSubPath);
 			listenTo(replyCommentFormCtr);
 			User parentUser = userComment.getCreator().getUser();
 			String title = translate("comments.coment.reply.title", new String[]{parentUser.getProperty(UserConstants.FIRSTNAME, null), parentUser.getProperty(UserConstants.LASTNAME, null)});
@@ -232,7 +239,7 @@ public class UserCommentDisplayController extends BasicController {
 				int buttonPos = DialogBoxUIFactory.getButtonPos(event);
 				if (buttonPos == 0) {
 					// Do delete
-					commentManager.deleteComment(userComment, false);					
+					commentAndRatingService.deleteComment(userComment, false);					
 					allComments.remove(userComment);
 					fireEvent(ureq, DELETED_EVENT);
 					// Inform top level view that it needs to rebuild due to comments that are now unlinked
@@ -241,7 +248,7 @@ public class UserCommentDisplayController extends BasicController {
 					}
 				} else if (buttonPos == 1 && hasReplies) {		
 					// Delete current comment and all replies. Notify parent, probably needs full redraw
-					commentManager.deleteComment(userComment, true);					
+					commentAndRatingService.deleteComment(userComment, true);					
 					allComments.remove(userComment);
 					fireEvent(ureq, DELETED_EVENT);
 				} else if (buttonPos == 1 && ! hasReplies) {		
@@ -268,7 +275,7 @@ public class UserCommentDisplayController extends BasicController {
 				UserComment newReply = replyCommentFormCtr.getComment();
 				allComments.add(newReply);
 				// Create child controller
-				UserCommentDisplayController replyCtr = new UserCommentDisplayController(ureq, getWindowControl(), commentManager, newReply, allComments, securityCallback);
+				UserCommentDisplayController replyCtr = new UserCommentDisplayController(ureq, getWindowControl(), newReply, allComments, ores, resSubPath, securityCallback);
 				replyControllers.add(replyCtr);
 				listenTo(replyCtr);
 				userCommentDisplayVC.put(replyCtr.getViewCompName(), replyCtr.getInitialComponent());

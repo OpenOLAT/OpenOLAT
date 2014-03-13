@@ -468,7 +468,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		addedEntry.setCanLaunch(true);
 		addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
 	
-		repositoryManager.saveRepositoryEntry(addedEntry);
+		repositoryService.update(addedEntry);
 		dbInstance.commitAndCloseSession();
 		
 		//create the template owned by ident1

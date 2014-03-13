@@ -36,8 +36,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
  */
 public class RatingWithAverageFormItem extends FormItemImpl implements FormItemCollection {
 
-	private float userRating;
-	private int numOfRatings;
+	private float initialUserRating;
+	private float lastUserRating;
+	private long numOfRatings;
 	private float averageRating;
 	private int maxRating;
 	
@@ -45,11 +46,12 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 	private RatingFormItem averageComponent;
 	private RatingWithAverageComponent component;
 	
-	public RatingWithAverageFormItem(String name, float userRating, float averageRating, int maxRating, int numOfRatings) {
+	public RatingWithAverageFormItem(String name, float userRating, float averageRating, int maxRating, long numOfRatings) {
 		super(name);
 
 		this.maxRating = maxRating;
-		this.userRating = userRating;
+		this.initialUserRating = userRating;
+		this.lastUserRating = userRating;
 		this.numOfRatings = numOfRatings;
 		this.averageRating = averageRating;
 		component = new RatingWithAverageComponent(name, this);
@@ -89,7 +91,7 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 	@Override
 	protected void rootFormAvailable() {
 		if(userComponent == null) {
-			userComponent = new RatingFormItem("rusr_" + getName(), userRating, maxRating, true);
+			userComponent = new RatingFormItem("rusr_" + getName(), initialUserRating, maxRating, true);
 			userComponent.setRootForm(getRootForm());
 			userComponent.rootFormAvailable();
 			userComponent.getComponent().addListener(component);
@@ -101,7 +103,7 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 			averageComponent.setRootForm(getRootForm());
 			averageComponent.rootFormAvailable();
 
-			String[] args = new String[]{ Integer.toString(numOfRatings)};
+			String[] args = new String[]{ Long.toString(numOfRatings)};
 			String explanation = translator.translate("rating.average.explanation", args);
 			averageComponent.getFormItemComponent().setExplanation(explanation);
 			averageComponent.getFormItemComponent().setTranslateExplanation(false);
@@ -116,8 +118,29 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 	
 	@Override
 	public void dispatchFormRequest(UserRequest ureq) {
-		userRating = userComponent.getCurrentRating();
-		getRootForm().fireFormEvent(ureq, new RatingFormEvent(this, userRating));
+		float newUserRating = userComponent.getCurrentRating();
+		getRootForm().fireFormEvent(ureq, new RatingFormEvent(this, newUserRating));
+
+		long correctedNumOfRatings = numOfRatings;
+		if(initialUserRating <= 0f) {
+			String[] args = new String[]{ Long.toString(++correctedNumOfRatings)};
+			String explanation = translator.translate("rating.average.explanation", args);
+			averageComponent.getFormItemComponent().setExplanation(explanation);
+		}
+		
+		float newAverageRating;
+		if(lastUserRating > 0f) {
+			float sumOfRatings = correctedNumOfRatings * averageComponent.getCurrentRating();
+			float newSumOfRatings = (sumOfRatings - lastUserRating) + newUserRating;
+			newAverageRating = newSumOfRatings / correctedNumOfRatings;
+		} else {
+			float sumOfRatings = numOfRatings * averageComponent.getCurrentRating();
+			float newSumOfRatings = sumOfRatings + newUserRating;
+			newAverageRating = newSumOfRatings / correctedNumOfRatings;
+		}
+		averageComponent.setCurrentRating(newAverageRating);
+		
+		lastUserRating = newUserRating;
 		component.setDirty(true);
 	}
 

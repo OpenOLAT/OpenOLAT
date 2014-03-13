@@ -60,7 +60,6 @@ import org.olat.modules.glossary.GlossaryManager;
 import org.olat.repository.DetailsReadOnlyForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -189,7 +188,6 @@ public class ImportGlossaryReferencesController extends BasicController {
 		}
 
 		// create repository entry
-		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		
@@ -201,7 +199,7 @@ public class ImportGlossaryReferencesController extends BasicController {
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(importedRepositoryEntry);
 		importedRepositoryEntry.setCanLaunch(rh.supportsLaunch(importedRepositoryEntry));
 		
-		rm.saveRepositoryEntry(importedRepositoryEntry);
+		repositoryService.update(importedRepositoryEntry);
 
 		if (!keepSoftkey) {
 			// set the new glossary reference

@@ -100,10 +100,7 @@ public class RatingComponent extends AbstractComponent {
 	 */
 	protected void doDispatchRequest(UserRequest ureq) {
 		setDirty(true);
-		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);		
-		if(log.isDebug()){
-			log.debug("***RATING_CLICKED*** dispatchID::" + ureq.getComponentID() + " rating::" + cmd);
-		}
+		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
 		try {
 			float rating = Float.parseFloat(cmd);
 			// update GUI
@@ -123,8 +120,6 @@ public class RatingComponent extends AbstractComponent {
 		return RENDERER;
 	}
 
-	
-	
 	//
 	// Various getter and setter methods
 	//
@@ -149,7 +144,7 @@ public class RatingComponent extends AbstractComponent {
 			throw new AssertException("Can not set rating at position::" + position + " in rating array of size::" + ratingLabels.size() + " in component::" + getComponentName());
 		}
 		this.ratingLabels.set(position, ratingLabel);
-		this.setDirty(true);
+		setDirty(true);
 	}
 
 	public boolean isTranslateRatingLabels() {
@@ -166,7 +161,7 @@ public class RatingComponent extends AbstractComponent {
 
 	public void setTitle(String title) {
 		this.title = title;
-		this.setDirty(true);
+		setDirty(true);
 	}
 
 	public boolean isTranslateTitle() {
@@ -183,7 +178,7 @@ public class RatingComponent extends AbstractComponent {
 
 	public void setExplanation(String explanation) {
 		this.explanation = explanation;
-		this.setDirty(true);
+		setDirty(true);
 	}
 
 	public boolean isTranslateExplanation() {
@@ -208,7 +203,7 @@ public class RatingComponent extends AbstractComponent {
 
 	public void setAllowUserInput(boolean allowUserInput) {
 		this.allowUserInput = allowUserInput;
-		this.setDirty(true);
+		setDirty(true);
 	}
 
 	public int getRatingSteps() {
@@ -230,7 +225,7 @@ public class RatingComponent extends AbstractComponent {
 
 	public void setCurrentRating(float currentRating) {
 		this.currentRating = currentRating;
-		this.setDirty(true);
+		setDirty(true);
 	}
 
 }

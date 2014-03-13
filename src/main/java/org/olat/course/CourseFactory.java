@@ -638,7 +638,7 @@ public class CourseFactory extends BasicManager {
 		re.setAccess(access);
 
 		// save the repository entry
-		repositoryManager.saveRepositoryEntry(re);
+		repositoryService.update(re);
 
 		//import groups
 		course = openCourseEditSession(course.getResourceableId());

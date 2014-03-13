@@ -359,7 +359,7 @@ public class CoursesWebService {
 		} else {
 			re.setAccess(access);
 		}
-		RepositoryManager.getInstance().saveRepositoryEntry(re);
+		CoreSpringFactory.getImpl(RepositoryService.class).update(re);
 		
 		//update tree
 		course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(course.getCourseTitle(), 25)); //do not use truncate!
@@ -499,7 +499,7 @@ public class CoursesWebService {
 			} else {
 				preparedEntry.setAccess(access);
 			}
-			RepositoryManager.getInstance().saveRepositoryEntry(preparedEntry);
+			repositoryService.update(preparedEntry);
 			
 			// copy image if available
 			RepositoryManager.getInstance().copyImage(src, preparedEntry);
@@ -556,7 +556,7 @@ public class CoursesWebService {
 			} else {
 				addedEntry.setAccess(access);
 			}
-			RepositoryManager.getInstance().saveRepositoryEntry(addedEntry);
+			CoreSpringFactory.getImpl(RepositoryService.class).update(addedEntry);
 			return prepareCourse(addedEntry, shortTitle, longTitle, courseConfigVO);
 		} catch (Exception e) {
 			throw new WebApplicationException(e);

@@ -59,6 +59,11 @@ public class RepositoryEntryStatistics implements Persistable {
 
 	@Column(name="r_rating", nullable=true, insertable=true, updatable=true)
 	private Double rating;
+	@Column(name="r_num_of_ratings", nullable=true, insertable=true, updatable=true)
+	private long numOfRatings;
+	@Column(name="r_num_of_comments", nullable=true, insertable=true, updatable=true)
+	private long numOfComments;
+	
 	@Column(name="r_launchcounter", nullable=false, insertable=true, updatable=true)
 	private long launchCounter;
 	@Column(name="r_downloadcounter", nullable=false, insertable=true, updatable=true)
@@ -103,6 +108,22 @@ public class RepositoryEntryStatistics implements Persistable {
 		this.rating = rating;
 	}
 	
+	public long getNumOfRatings() {
+		return numOfRatings;
+	}
+
+	public void setNumOfRatings(long numOfRatings) {
+		this.numOfRatings = numOfRatings;
+	}
+
+	public long getNumOfComments() {
+		return numOfComments;
+	}
+
+	public void setNumOfComments(long numOfComments) {
+		this.numOfComments = numOfComments;
+	}
+
 	public long getLaunchCounter() {
 		return launchCounter;
 	}

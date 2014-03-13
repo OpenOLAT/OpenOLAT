@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.commentAndRating.impl;
+package org.olat.core.commons.services.commentAndRating.manager;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,7 +27,9 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.UserRatingsDelegate;
+import org.olat.core.commons.services.commentAndRating.model.OLATResourceableRating;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
+import org.olat.core.commons.services.commentAndRating.model.UserRatingImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
@@ -70,6 +72,23 @@ public class UserRatingsDAO {
 		return rating;
 	}
 	
+	public List<UserRating> getAllRatings(OLATResourceable ores, String resSubPath){
+		TypedQuery<UserRating> query;
+		if (resSubPath == null) {
+			// special query when sub path is null
+			String sb = "select rating from userrating as rating where resName=:resname AND resId=:resId AND resSubPath is NULL";
+			query = dbInstance.getCurrentEntityManager().createQuery(sb, UserRating.class);
+		} else {
+			String sb = "select rating from userrating as rating where resName=:resname AND resId=:resId AND resSubPath=:resSubPath";
+			query = dbInstance.getCurrentEntityManager().createQuery(sb, UserRating.class)
+					.setParameter("resSubPath", resSubPath);
+		}
+		return query.setParameter("resname", ores.getResourceableTypeName())
+		     .setParameter("resId", ores.getResourceableId())
+		     .setHint("org.hibernate.cacheable", Boolean.TRUE)
+		     .getResultList();
+	}
+	
 	public float getRatingAverage(OLATResourceable ores, String resSubPath) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select avg(rating) from userrating where resName=:resname and resId=:resId and resSubPath");
@@ -90,6 +109,28 @@ public class UserRatingsDAO {
 		
 		Number average = query.getSingleResult();
 		return average == null ? 0f : average.floatValue();	
+	}
+	
+	public List<OLATResourceableRating> getMostRatedResourceables(OLATResourceable ores, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select new ").append(OLATResourceableRating.class.getName()).append("(")
+			.append(" rating.resName, rating.resId, rating.resSubPath, avg(rating.rating))")
+			.append(" from userrating as rating ")
+			.append(" where rating.resName=:resName and rating.resId=:resId")
+			.append(" group by rating.resName, rating.resId, rating.resSubPath")
+			.append(" order by avg(rating.rating) desc");
+
+		TypedQuery<OLATResourceableRating> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), OLATResourceableRating.class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId());
+		
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+
+		List<OLATResourceableRating> mostRated = query.getResultList();
+		return mostRated;
 	}
 	
 	public int countRatings(OLATResourceable ores, String resSubPath) {
@@ -204,14 +245,53 @@ public class UserRatingsDAO {
 				Object[] stats = query.getSingleResult();
 				if(stats == null || stats[0] == null || stats[1] == null) {
 					Integer rate = rating.getRating();
-					delegate.update(ores, rating.getResSubPath(), rate.doubleValue());
+					delegate.update(ores, rating.getResSubPath(), rate.doubleValue(), 1l);
 				} else {
 					long numOfRatings = ((Number)stats[0]).longValue();
 					long sumOfRatings = ((Number)stats[1]).longValue();
 					double rate = (sumOfRatings + rating.getRating().intValue()) / (numOfRatings + 1);
-					delegate.update(ores, rating.getResSubPath(), rate);
+					delegate.update(ores, rating.getResSubPath(), rate, numOfRatings + 1);
 				}
 			}
 		}
+	}
+	
+	public int deleteRating(UserRating rating) {
+		// First reload parent from cache to prevent stale object or cache issues
+		UserRating ratingRef = dbInstance.getCurrentEntityManager().getReference(UserRatingImpl.class, rating.getKey());
+		if (ratingRef == null) {
+			// Original rating has been deleted in the meantime. Don't delete it again.
+			return 0;
+		}
+		// Delete this rating and finish
+		dbInstance.getCurrentEntityManager().remove(ratingRef);
+		return 1;
+
+	}
+
+	public int deleteAllRatings(OLATResourceable ores, String resSubPath) {
+		// special query when sub path is null
+		if (resSubPath == null) {
+			String sb = "delete from userrating where resName=:resName and resId=:resId and resSubPath is null";
+			return dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+					.setParameter("resName", ores.getResourceableTypeName())
+					.setParameter("resId", ores.getResourceableId())
+					.executeUpdate();
+		} else {
+			String sb = "delete from userrating where resName=:resName and resId=:resId and resSubPath=:resSubPath";
+			return dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+					.setParameter("resName", ores.getResourceableTypeName())
+					.setParameter("resId", ores.getResourceableId())
+					.setParameter("resSubPath",  resSubPath)
+					.executeUpdate();
+		}
+	}
+
+	public int deleteAllRatingsIgnoringSubPath(OLATResourceable ores) {
+		String sb = "delete from userrating where resName=:resName and resId=:resId";
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId())
+				.executeUpdate();	
 	}
 }

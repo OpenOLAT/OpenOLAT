@@ -56,6 +56,8 @@ public class RepositoryEntryRow {
 	
 	private Integer myRating;
 	private Float averageRating;
+	private long numOfRatings;
+	private long numOfComments;
 	
 	private String lifecycle;
 	private String lifecycleSoftKey;
@@ -68,6 +70,7 @@ public class RepositoryEntryRow {
 	private FormLink selectLink;
 	private FormLink startLink;
 	private FormLink detailsLink;
+	private FormLink commentsLink;
 	private Panel detailsPanel;
 	
 	private OLATResourceable olatResource;
@@ -119,6 +122,22 @@ public class RepositoryEntryRow {
 
 	public void setAverageRating(Float averageRating) {
 		this.averageRating = averageRating;
+	}
+
+	public long getNumOfRatings() {
+		return numOfRatings;
+	}
+
+	public void setNumOfRatings(long numOfRatings) {
+		this.numOfRatings = numOfRatings;
+	}
+
+	public long getNumOfComments() {
+		return numOfComments;
+	}
+
+	public void setNumOfComments(long numOfComments) {
+		this.numOfComments = numOfComments;
 	}
 
 	public String getLifecycle() {
@@ -232,6 +251,18 @@ public class RepositoryEntryRow {
 		this.ratingFormItem = ratingFormItem;
 	}
 	
+	public FormLink getCommentsLink() {
+		return commentsLink;
+	}
+	
+	public String getCommentsLinkName() {
+		return commentsLink.getComponent().getComponentName();
+	}
+
+	public void setCommentsLink(FormLink commentsLink) {
+		this.commentsLink = commentsLink;
+	}
+
 	public OLATResourceable getRepositoryEntryResourceable() {
 		return OresHelper.createOLATResourceableInstance("RepositoryEntry", getKey());
 	}

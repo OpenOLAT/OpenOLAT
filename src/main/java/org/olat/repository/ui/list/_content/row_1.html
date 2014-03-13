@@ -26,11 +26,10 @@
 				#end
 				<p>$row.description</p>
 			</div>
+			<div class="f_metadata_mark">$r.render($row.markLinkName)</div>
 		</div>
 		<div class="f_metadata_additional_infos">
 			<div class="f_metadata_additional_infos_inner">
-				<div class="f_metadata_mark">$r.render($row.markLinkName)</div>
-				
 				#if($r.get("ac_$item.key"))
 					#foreach($ac_type in $r.get("ac_$item.key"))
 						#if($ac_type.price && $ac_type.price.length() > 0)
@@ -61,7 +60,8 @@
 				#end
 				
 				$r.render($row.ratingFormItemName)
-				
+				$r.render($row.commentsLinkName)
+
 				<div class="f_metadata_details">
 					$r.render($row.getDetailsLinkName())
 				</div>

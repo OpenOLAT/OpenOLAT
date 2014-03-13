@@ -30,22 +30,31 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
  */
 public class RatingFormItem extends FormItemImpl {
 
-	private float currentRating;
+	private float intialRating;
 	private int maxRating;
 	private boolean allowUserInput;
 	
 	private RatingComponent component;
 	
-	public RatingFormItem(String name, float currentRating, int maxRating, boolean allowUserInput) {
+	public RatingFormItem(String name, float intialRating, int maxRating, boolean allowUserInput) {
 		super(name);
 		
-		this.currentRating = currentRating;
+		this.intialRating = intialRating;
 		this.maxRating = maxRating;
 		this.allowUserInput = allowUserInput;
 	}
 
 	public float getCurrentRating() {
-		return currentRating;
+		if(component != null) {
+			return component.getCurrentRating();
+		}
+		return intialRating;
+	}
+	
+	public void setCurrentRating(float currentRating) {
+		if(component != null) {
+			component.setCurrentRating(currentRating);
+		}
 	}
 
 	@Override
@@ -56,7 +65,7 @@ public class RatingFormItem extends FormItemImpl {
 	@Override
 	protected void rootFormAvailable() {
 		if(component == null) {
-			component = new RatingComponent(null, getName(), currentRating, maxRating, allowUserInput, getRootForm());
+			component = new RatingComponent(null, getName(), intialRating, maxRating, allowUserInput, getRootForm());
 		}
 	}
 
@@ -68,10 +77,8 @@ public class RatingFormItem extends FormItemImpl {
 	@Override
 	public void dispatchFormRequest(UserRequest ureq) {
 		component.doDispatchRequest(ureq);
-		currentRating = component.getCurrentRating();
-
-		
-		getRootForm().fireFormEvent(ureq, new RatingFormEvent(this, currentRating));
+		float newRating = getCurrentRating();
+		getRootForm().fireFormEvent(ureq, new RatingFormEvent(this, newRating));
 	}
 
 	@Override

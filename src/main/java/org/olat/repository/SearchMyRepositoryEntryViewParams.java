@@ -43,6 +43,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private List<Filter> filters;
 	private CatalogEntry parentEntry;
 	private List<String> resourceTypes;
+	private List<Long> repoEntryKeys;
 	
 	public SearchMyRepositoryEntryViewParams(Identity identity, Roles roles, String... resourceTypes) {
 		this.identity = identity;
@@ -64,6 +65,14 @@ public class SearchMyRepositoryEntryViewParams {
 
 	public void setMembershipMandatory(boolean membershipMandatory) {
 		this.membershipMandatory = membershipMandatory;
+	}
+
+	public List<Long> getRepoEntryKeys() {
+		return repoEntryKeys;
+	}
+
+	public void setRepoEntryKeys(List<Long> repoEntryKeys) {
+		this.repoEntryKeys = repoEntryKeys;
 	}
 
 	public OrderBy getOrderBy() {

@@ -23,11 +23,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.AssessmentHelper;
@@ -44,6 +48,10 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.search.QueryException;
+import org.olat.search.ServiceNotAvailableException;
+import org.olat.search.service.searcher.SearchClient;
+import org.olat.search.service.searcher.SearchClientLocal;
 
 /**
  * 
@@ -52,11 +60,15 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  *
  */
 public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
+	
+	private static final OLog log = Tracing.createLoggerFor(DefaultRepositoryEntryDataSource.class);
 
 	private final RepositoryEntryDataSourceUIFactory uifactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
 	
+
 	private final ACService acService;
+	private final SearchClient searchClient;
 	private final RepositoryService repositoryService;
 	private final RepositoryManager repositoryManager;
 	
@@ -68,6 +80,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		this.searchParams = searchParams;
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
+		searchClient = CoreSpringFactory.getImpl(SearchClientLocal.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 	}
@@ -97,6 +110,15 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	@Override
 	public final ResultInfos<RepositoryEntryRow> getRows(String query, List<String> condQueries,
 			int firstResult, int maxResults, SortKey... orderBy) {
+
+		if(StringHelper.containsNonWhitespace(query)) {
+			try {
+				List<Long> fullTextResults = searchClient.doSearch(query, null, searchParams.getIdentity(), searchParams.getRoles(), 0, 100);
+				searchParams.setRepoEntryKeys(fullTextResults);
+			} catch (ServiceNotAvailableException | ParseException | QueryException e) {
+				log.error("", e);
+			}
+		}
 		
 		List<RepositoryEntryMyView> views = repositoryService.searchMyView(searchParams, firstResult, maxResults);
 		List<RepositoryEntryRow> rows = processViewModel(views);
@@ -118,50 +140,59 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 
 		List<RepositoryEntryRow> items = new ArrayList<RepositoryEntryRow>();
 		for(RepositoryEntryMyView entry:repoEntries) {
-			RepositoryEntryRow details = new RepositoryEntryRow();
-			details.setKey(entry.getKey());
-			details.setDisplayName(entry.getDisplayname());
-			details.setDescription(entry.getDescription());
-			details.setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
+			RepositoryEntryRow row = new RepositoryEntryRow();
+			row.setKey(entry.getKey());
+			row.setDisplayName(entry.getDisplayname());
+			row.setDescription(entry.getDescription());
+			row.setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
 			
 			//bookmark
-			details.setMarked(entry.isMarked());
+			row.setMarked(entry.isMarked());
+			
 			//efficiency statement
-			details.setPassed(entry.getPassed());
-			details.setScore(AssessmentHelper.getRoundedScore(entry.getScore()));
+			row.setPassed(entry.getPassed());
+			row.setScore(AssessmentHelper.getRoundedScore(entry.getScore()));
+			
 			//user course infos
-			details.setInitialLaunch(entry.getInitialLaunch());
-			details.setRecentLaunch(entry.getRecentLaunch());
+			row.setInitialLaunch(entry.getInitialLaunch());
+			row.setRecentLaunch(entry.getRecentLaunch());
 			if(entry.getVisit() != null) {
-				details.setVisit(entry.getVisit().intValue());
+				row.setVisit(entry.getVisit().intValue());
 			} else {
-				details.setVisit(0);
+				row.setVisit(0);
 			}
 			if(entry.getTimeSpend() != null) {
-				details.setTimeSpend(entry.getTimeSpend().longValue());
+				row.setTimeSpend(entry.getTimeSpend().longValue());
 			} else {
-				details.setTimeSpend(0l);
+				row.setTimeSpend(0l);
 			}
+			
+			//rating
+			row.setMyRating(entry.getMyRating());
+			row.setAverageRating(entry.getAverageRating());
+			row.setNumOfRatings(entry.getNumOfRatings());
+			row.setNumOfComments(entry.getNumOfComments());
 			
 			RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
 			if(lifecycle != null) {
-				details.setLifecycleStart(lifecycle.getValidFrom());
-				details.setLifecycleEnd(lifecycle.getValidTo());
+				row.setLifecycleStart(lifecycle.getValidFrom());
+				row.setLifecycleEnd(lifecycle.getValidTo());
 				if(!lifecycle.isPrivateCycle()) {
-					details.setLifecycle(lifecycle.getLabel());
-					details.setLifecycleSoftKey(lifecycle.getSoftKey());
+					row.setLifecycle(lifecycle.getLabel());
+					row.setLifecycleSoftKey(lifecycle.getSoftKey());
 				}
 			}
 			
-			uifactory.forgeMarkLink(details);
-			uifactory.forgeSelectLink(details);
-			uifactory.forgeStartLink(details);
-			uifactory.forgeDetails(details);
-			uifactory.forgeRatings(details);
+			uifactory.forgeMarkLink(row);
+			uifactory.forgeSelectLink(row);
+			uifactory.forgeStartLink(row);
+			uifactory.forgeDetails(row);
+			uifactory.forgeRatings(row);
+			uifactory.forgeComments(row);
 
 			VFSLeaf image = repositoryManager.getImage(entry);
 			if(image != null) {
-				details.setThumbnailRelPath(uifactory.getMapperThumbnailUrl() + "/" + image.getName());
+				row.setThumbnailRelPath(uifactory.getMapperThumbnailUrl() + "/" + image.getName());
 			}
 
 			List<PriceMethod> types = new ArrayList<PriceMethod>();
@@ -183,10 +214,10 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			}
 			
 			if(!types.isEmpty()) {
-				details.setAccessTypes(types);
+				row.setAccessTypes(types);
 			}
 			
-			items.add(details);
+			items.add(row);
 			
 		}
 		return items;

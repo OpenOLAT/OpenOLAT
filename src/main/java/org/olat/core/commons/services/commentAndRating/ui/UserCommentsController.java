@@ -17,13 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.commentAndRating.impl.ui;
+package org.olat.core.commons.services.commentAndRating.ui;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
-import org.olat.core.commons.services.commentAndRating.UserCommentsManager;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -32,6 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 
 /**
@@ -49,8 +51,7 @@ import org.olat.core.util.Formatter;
  * @author gnaegi
  */
 public class UserCommentsController extends BasicController {
-	// Managers
-	private final UserCommentsManager commentManager;
+
 	// Configuration
 	private final CommentAndRatingSecurityCallback securityCallback;
 	// Data model
@@ -60,6 +61,12 @@ public class UserCommentsController extends BasicController {
 	private final VelocityContainer userCommentsVC;
 	private UserCommentFormController createCommentFormCtr;
 	private List<Controller> commentControllers;
+	
+	private Object userObject;
+	
+	private final String resSubPath;
+	private final OLATResourceable ores;
+	private final CommentAndRatingService commentAndRatingService;
 
 	/**
 	 * Constructor for a user comments controller. Use the
@@ -70,31 +77,41 @@ public class UserCommentsController extends BasicController {
 	 * @param commentManager
 	 * @param securityCallback
 	 */
-	UserCommentsController(UserRequest ureq, WindowControl wControl,
-			UserCommentsManager commentManager,
+	public UserCommentsController(UserRequest ureq, WindowControl wControl,
+			OLATResourceable ores, String resSubPath,
 			CommentAndRatingSecurityCallback securityCallback) {
 		super(ureq, wControl);
-		this.commentManager = commentManager;
+		this.ores = ores;
+		this.resSubPath = resSubPath;
+		commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
 		this.securityCallback = securityCallback;
 		// Init view
-		this.userCommentsVC = createVelocityContainer("userComments");
-		this.userCommentsVC.contextPut("formatter", Formatter.getInstance(getLocale()));
-		this.userCommentsVC.contextPut("securityCallback", securityCallback);
+		userCommentsVC = createVelocityContainer("userComments");
+		userCommentsVC.contextPut("formatter", Formatter.getInstance(getLocale()));
+		userCommentsVC.contextPut("securityCallback", securityCallback);
 		// Add comments
 		commentControllers = new ArrayList<Controller>();
 		userCommentsVC.contextPut("commentControllers", commentControllers);
 		// Init datamodel and controllers
-		this.commentsCount = this.commentManager.countComments();
+		commentsCount = commentAndRatingService.countComments(ores, resSubPath);
 		buildTopLevelComments(ureq, true);
 		// Add create form
 		if (securityCallback.canCreateComments()) {
-			if (createCommentFormCtr != null) removeAsListenerAndDispose(createCommentFormCtr);
-			createCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), null, null, commentManager);
+			removeAsListenerAndDispose(createCommentFormCtr);
+			createCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), null, null, ores, resSubPath);
 			listenTo(createCommentFormCtr);
 			userCommentsVC.put("createCommentFormCtr", createCommentFormCtr.getInitialComponent());
 		}
 		//
-		putInitialPanel(this.userCommentsVC);
+		putInitialPanel(userCommentsVC);
+	}
+
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 
 	/**
@@ -129,19 +146,19 @@ public class UserCommentsController extends BasicController {
 				// Add new comment to view instead of rebuilding datamodel to reduce overhead
 				UserComment newComment = createCommentFormCtr.getComment();
 				allComments.add(newComment);
-				this.commentsCount = this.commentManager.countComments();
+				commentsCount = commentAndRatingService.countComments(ores, resSubPath);
 				if (allComments.size() != commentsCount.longValue()) {
 					// Ups, we have also other changes in the datamodel, reload everything
 					buildTopLevelComments(ureq, true);
 				} else {
 					// Create top level comment controller
-					UserCommentDisplayController commentController = new UserCommentDisplayController(ureq, getWindowControl(), commentManager, newComment, allComments, securityCallback);
+					UserCommentDisplayController commentController = new UserCommentDisplayController(ureq, getWindowControl(), newComment, allComments, ores, resSubPath, securityCallback);
 					commentControllers.add(commentController);
 					listenTo(commentController);
 					userCommentsVC.put(commentController.getViewCompName(), commentController.getInitialComponent());
 					// Rebuild new comment form
 					if (createCommentFormCtr != null) removeAsListenerAndDispose(createCommentFormCtr);
-					createCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), null, null, commentManager);
+					createCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), null, null, ores, resSubPath);
 					listenTo(createCommentFormCtr);
 					userCommentsVC.put("createCommentFormCtr", createCommentFormCtr.getInitialComponent());					
 				}
@@ -155,31 +172,28 @@ public class UserCommentsController extends BasicController {
 				commentControllers.remove(commentCtr);
 				userCommentsVC.remove(commentCtr.getInitialComponent());
 				removeAsListenerAndDispose(commentCtr);
-				// Sanity check: if number of comments is not the same as in our datamodel,
-				// reload everything to reflect changes made by other users
-				this.commentsCount = this.commentManager.countComments();
-				if (allComments.size() != commentsCount.longValue()) {
-					buildTopLevelComments(ureq, true);
-				}
-				// Notify parent
-				fireEvent(ureq, UserCommentDisplayController.COMMENT_COUNT_CHANGED);
+				doCountChanged(ureq);
 			} else if (event == UserCommentDisplayController.COMMENT_COUNT_CHANGED) {
-				// Sanity check: if number of comments is not the same as in our datamodel,
-				// reload everything to reflect changes made by other users
-				this.commentsCount = this.commentManager.countComments();
-				if (allComments.size() != commentsCount.longValue()) {
-					buildTopLevelComments(ureq, true);
-				}
-				// Notify parent
-				fireEvent(ureq, UserCommentDisplayController.COMMENT_COUNT_CHANGED);
+				doCountChanged(ureq);
 			} else if (event == UserCommentDisplayController.COMMENT_DATAMODEL_DIRTY) {
 				// Reload everything to reflect changes made by other users and us
-				this.commentsCount = this.commentManager.countComments();
+				commentsCount = commentAndRatingService.countComments(ores, resSubPath);
 				buildTopLevelComments(ureq, true);
 				// Notify parent
 				fireEvent(ureq, UserCommentDisplayController.COMMENT_COUNT_CHANGED);
 			}
 		}
+	}
+	
+	private void doCountChanged(UserRequest ureq) {
+		// Sanity check: if number of comments is not the same as in our datamodel,
+		// reload everything to reflect changes made by other users
+		commentsCount = commentAndRatingService.countComments(ores, resSubPath);
+		if (allComments.size() != commentsCount.longValue()) {
+			buildTopLevelComments(ureq, true);
+		}
+		// Notify parent
+		fireEvent(ureq, UserCommentDisplayController.COMMENT_COUNT_CHANGED);
 	}
 	
 
@@ -197,13 +211,13 @@ public class UserCommentsController extends BasicController {
 		}
 		commentControllers.clear();
 		if (initDatamodel) {
-			allComments = commentManager.getComments();
+			allComments = commentAndRatingService.getComments(ores, resSubPath);
 		}
 		// Build replies again
 		for (UserComment comment : allComments) {
 			if (comment.getParent() == null) {
 				// Create top level comment controller
-				UserCommentDisplayController commentController = new UserCommentDisplayController(ureq, getWindowControl(), commentManager, comment, allComments, securityCallback);
+				UserCommentDisplayController commentController = new UserCommentDisplayController(ureq, getWindowControl(), comment, allComments, ores, resSubPath, securityCallback);
 				commentControllers.add(commentController);
 				listenTo(commentController);
 				userCommentsVC.put(commentController.getViewCompName(), commentController.getInitialComponent());
@@ -217,10 +231,7 @@ public class UserCommentsController extends BasicController {
 	 * 
 	 * @return a number representing the number of comments viewable by this controller
 	 */
-	long getCommentsCount() {
-		return this.commentsCount.longValue();
+	public long getCommentsCount() {
+		return commentsCount.longValue();
 	}
-
-	
-
 }

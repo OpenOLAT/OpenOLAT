@@ -334,7 +334,7 @@ public class ImportReferencesController extends BasicController {
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(importedRepositoryEntry);
 		importedRepositoryEntry.setCanLaunch(rh.supportsLaunch(importedRepositoryEntry));
 		
-		rm.saveRepositoryEntry(importedRepositoryEntry);
+		repositoryService.update(importedRepositoryEntry);
 
 		if (!keepSoftkey) setReference(importedRepositoryEntry, node, importMode);
 

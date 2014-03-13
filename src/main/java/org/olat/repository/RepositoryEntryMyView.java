@@ -72,6 +72,20 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	public Long getTimeSpend();
 	
 	/**
+	 * @return The rating made by the user or null if the user has never rated the entry
+	 */
+	public Integer getMyRating();
+	
+	/**
+	 * @return The average rating of this entry, or null if the entry was never rated
+	 */
+	public Float getAverageRating();
+	
+	public long getNumOfRatings();
+	
+	public long getNumOfComments();
+	
+	/**
 	 * @return True if some offers are currently available
 	 */
 	public boolean isValidOfferAvailable();

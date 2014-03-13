@@ -662,7 +662,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 				re.setCanReference(true);
 			}
 			// save the repository entry
-			repositoryManager.saveRepositoryEntry(re);
+			repositoryService.update(re);
 			
 			// Create course admin policy for owner group of repository entry
 			// -> All owners of repository entries are course admins
@@ -959,7 +959,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		// add 1 entry
 		RepositoryEntry re = createRepositoryEntry(TYPE, owner, 999999l);
 		// create security group
-		repositoryManager.saveRepositoryEntry(re);
+		repositoryService.update(re);
 		count = repositoryManager.countByTypeLimitAccess(TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
 		// check count must be one more element
 		assertEquals("Add one course repository-entry, but countByTypeLimitAccess does NOT return one more element", countValueBefore + 1,count);

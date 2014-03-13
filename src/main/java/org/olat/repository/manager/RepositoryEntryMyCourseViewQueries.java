@@ -105,6 +105,9 @@ public class RepositoryEntryMyCourseViewQueries {
 
 		sb.append(" where v.identityKey=:identityKey and ");
 		appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory());
+		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
+			sb.append(" and v.key=:repoEntryKeys ");
+		}
 		
 		if(params.getFilters() != null) {
 			for(Filter filter:params.getFilters()) {
@@ -133,7 +136,9 @@ public class RepositoryEntryMyCourseViewQueries {
 		if(params.getParentEntry() != null) {
 			dbQuery.setParameter("parentCeiKey", params.getParentEntry().getKey());
 		}
-
+		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
+			dbQuery.setParameter("repoEntryKeys", params.getRepoEntryKeys());
+		}
 		if (params.isResourceTypesDefined()) {
 			dbQuery.setParameter("resourcetypes", resourceTypes);
 		}

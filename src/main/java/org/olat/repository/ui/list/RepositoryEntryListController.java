@@ -24,7 +24,10 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.commentAndRating.impl.UserRatingsDAO;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,6 +51,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -72,6 +76,8 @@ public class RepositoryEntryListController extends FormBasicController
 	private DefaultRepositoryEntryDataSource dataSource;
 	private OrderByController sortCtrl;
 	private FilterController filterCtrl;
+	private CloseableModalController cmc;
+	private UserCommentsController commentsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	
 	private final String mapperThumbnailUrl;
@@ -113,10 +119,13 @@ public class RepositoryEntryListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.details.i18nKey(), Cols.details.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
 
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setSearchEnabled(true);
+		tableEl.setCustomizeColumns(false);
 		VelocityContainer row = createVelocityContainer("row_1");
 		tableEl.setRowRenderer(row, this);
 	}
@@ -140,8 +149,10 @@ public class RepositoryEntryListController extends FormBasicController
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(listLink == source) {
 			tableEl.setRendererType(FlexiTableRendererType.custom);
+			tableEl.setCustomizeColumns(false);
 		} else if(tableLink == source) {
 			tableEl.setRendererType(FlexiTableRendererType.classic);
+			tableEl.setCustomizeColumns(true);
 		} else if(filterLink == source) {
 			doChooseFilter(ureq);
 		} else if(sortLink == source) {
@@ -169,9 +180,11 @@ public class RepositoryEntryListController extends FormBasicController
 			} else if ("details".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				doOpenDetails(row);
+			} else if ("comments".equals(cmd)){
+				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
+				doOpenComments(ureq, row);
 			}
 		}
-		
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -185,6 +198,17 @@ public class RepositoryEntryListController extends FormBasicController
 			doOrderBy(sortCtrl.getOrderBy());
 			calloutCtrl.deactivate();
 			cleanUp();
+		} else if(cmc == source) {
+			if(commentsCtrl != null) {
+				RepositoryEntryRow row = (RepositoryEntryRow)commentsCtrl.getUserObject();
+				long numOfComments = commentsCtrl.getCommentsCount();
+				String css = numOfComments > 0 ? "b_comments" : "b_comments b_no_comment";
+				row.getCommentsLink().setCustomEnabledLinkCSS(css);
+				String title = "(" + numOfComments + ")";
+				row.getCommentsLink().setI18nKey(title);
+				row.getCommentsLink().getComponent().setDirty(true);
+			}
+			cleanUp();
 		}
 		
 		super.event(ureq, source, event);
@@ -196,8 +220,12 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(commentsCtrl);
 		calloutCtrl = null;
+		commentsCtrl = null;
+		cmc = null;
 	}
 	
 	protected void doChooseSorter(UserRequest ureq) {
@@ -246,19 +274,30 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 	
 	protected void doOpenDetails(RepositoryEntryRow row) {
-		if(row.getDetailsPanel().getContent() == null) {
-			VelocityContainer content = createVelocityContainer("row_details");
-			row.getDetailsPanel().setContent(content);
-			content.contextPut("description", row.getDescription());
-		}
-		
 		Panel detailsPanel = row.getDetailsPanel();
 		boolean visible = detailsPanel.isVisible();
 		if(visible) {
 			detailsPanel.setContent(null);
+		} else {
+			VelocityContainer content = createVelocityContainer("row_details");
+			row.getDetailsPanel().setContent(content);
+			content.contextPut("description", row.getDescription());
 		}
 		detailsPanel.setVisible(!visible);
 		detailsPanel.setDirty(true);
+	}
+	
+	protected void doOpenComments(UserRequest ureq, RepositoryEntryRow row) {
+		if(commentsCtrl != null) return;
+		
+		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
+		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), row.getRepositoryEntryResourceable(), null, secCallback);
+		commentsCtrl.setUserObject(row);
+		listenTo(commentsCtrl);
+		cmc = new CloseableModalController(getWindowControl(), "close", commentsCtrl.getInitialComponent(), true, translate("comments"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	protected boolean doMark(RepositoryEntryRow row) {
@@ -323,12 +362,25 @@ public class RepositoryEntryListController extends FormBasicController
 	public void forgeRatings(RepositoryEntryRow row) {
 		Integer myRating = row.getMyRating();
 		Float averageRating = row.getAverageRating();
+		long numOfRatings = row.getNumOfRatings();
 
 		float ratingValue = myRating == null ? 0f : myRating.floatValue();
 		float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
 		RatingWithAverageFormItem ratingCmp
-			= new RatingWithAverageFormItem("rat_" + row.getKey(), ratingValue, averageRatingValue, 5, 32);
+			= new RatingWithAverageFormItem("rat_" + row.getKey(), ratingValue, averageRatingValue, 5, numOfRatings);
 		row.setRatingFormItem(ratingCmp);
 		ratingCmp.setUserObject(row);
 	}
+
+	@Override
+	public void forgeComments(RepositoryEntryRow row) {
+		long numOfComments = row.getNumOfComments();
+		String title = "(" + numOfComments + ")";
+		FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
+		commentsLink.setUserObject(row);
+		String css = numOfComments > 0 ? "b_comments" : "b_comments b_no_comment";
+		commentsLink.setCustomEnabledLinkCSS(css);
+		row.setCommentsLink(commentsLink);
+	}
+
 }

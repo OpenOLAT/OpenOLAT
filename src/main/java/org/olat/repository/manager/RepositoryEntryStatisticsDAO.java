@@ -26,8 +26,10 @@ import javax.persistence.LockModeType;
 
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.commentAndRating.UserCommentsDelegate;
 import org.olat.core.commons.services.commentAndRating.UserRatingsDelegate;
-import org.olat.core.commons.services.commentAndRating.impl.UserRatingsDAO;
+import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
+import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -44,7 +46,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate {
+public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCommentsDelegate {
 	
 	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryStatisticsDAO.class);
 
@@ -52,10 +54,13 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate {
 	private DB dbInstance;
 	@Autowired
 	private UserRatingsDAO userRatingsDao;
+	@Autowired
+	private UserCommentsDAO userCommentsDao;
 	
 	@PostConstruct
 	public void init() {
 		userRatingsDao.addDegelate(this);
+		userCommentsDao.addDelegate(this);
 	}
 	
 	/**
@@ -122,7 +127,7 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate {
 		}
 	}
 	
-	public RepositoryEntryStatistics loadStatistics(OLATResourceable repositoryEntryRes) {
+	protected RepositoryEntryStatistics loadStatistics(OLATResourceable repositoryEntryRes) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v.statistics from ").append(RepositoryEntry.class.getName()).append(" as v")
 		  .append(" where v.key=:key");
@@ -133,7 +138,7 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate {
 				.getSingleResult();
 	}
 	
-	public RepositoryEntryStatistics loadStatisticsForUpdate(OLATResourceable repositoryEntryRes) {
+	private RepositoryEntryStatistics loadStatisticsForUpdate(OLATResourceable repositoryEntryRes) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select stats from ").append(RepositoryEntryStatistics.class.getName()).append(" as stats")
 		  .append(" where stats.key in (select v.statistics.key from ").append(RepositoryEntry.class.getName()).append(" as v where v.key=:key)");
@@ -154,10 +159,23 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate {
 	}
 
 	@Override
-	public boolean update(OLATResourceable ores, String resSubPath, double newRating) {
+	public boolean update(OLATResourceable ores, String resSubPath, double newAverageRating, long numOfRatings) {
 		RepositoryEntryStatistics statistics = loadStatisticsForUpdate(ores);
 		if(statistics != null) {
-			statistics.setRating(newRating);
+			statistics.setRating(newAverageRating);
+			statistics.setNumOfRatings(numOfRatings);
+			statistics.setLastModified(new Date());
+			dbInstance.getCurrentEntityManager().merge(statistics);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean update(OLATResourceable ores, String resSubPath, int numOfComments) {
+		RepositoryEntryStatistics statistics = loadStatisticsForUpdate(ores);
+		if(statistics != null) {
+			statistics.setNumOfComments(numOfComments);
 			statistics.setLastModified(new Date());
 			dbInstance.getCurrentEntityManager().merge(statistics);
 			return true;

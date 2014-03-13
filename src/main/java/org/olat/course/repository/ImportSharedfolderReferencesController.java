@@ -58,7 +58,6 @@ import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.DetailsReadOnlyForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -169,7 +168,6 @@ public class ImportSharedfolderReferencesController extends BasicController {
 			log.warn("The actual contents of the shared folder were not found in the export.");
 		}
 		// create repository entry
-		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, importExport.getResourceName(),
@@ -182,7 +180,7 @@ public class ImportSharedfolderReferencesController extends BasicController {
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(importedRepositoryEntry);
 		importedRepositoryEntry.setCanLaunch(rh.supportsLaunch(importedRepositoryEntry));
 
-		rm.saveRepositoryEntry(importedRepositoryEntry);
+		repositoryService.update(importedRepositoryEntry);
 		
 		if (!keepSoftkey) {
 			// set the new shared folder reference

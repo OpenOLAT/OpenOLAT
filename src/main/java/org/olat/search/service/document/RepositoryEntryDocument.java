@@ -72,7 +72,7 @@ public class RepositoryEntryDocument extends OlatDocument {
 		return repositoryEntryDocument.getLuceneDocument();
 	}
 	
-	private static String getIconCss(String docType) {
+	public static String getIconCss(String docType) {
 		String icon;
 		if (docType.equals("type.repository.entry.CourseModule"))
 			icon = "o_course_icon";

@@ -17,11 +17,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.commentAndRating.impl.ui;
+package org.olat.core.commons.services.commentAndRating.ui;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
-import org.olat.core.commons.services.commentAndRating.UserCommentsManager;
-import org.olat.core.commons.services.commentAndRating.UserRatingsManager;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -60,16 +60,11 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	// Events
 	public static final Event EVENT_COMMENT_LINK_CLICKED = new Event("comment_link_clicked");
 	public static final Event EVENT_RATING_CHANGED = new Event("rating_changed");
-	// Configuration
-	private final String oresSubPath;
-	private final CommentAndRatingSecurityCallback securityCallback;
+
 	private final VelocityContainer userCommentsAndRatingsVC;
 	private final OLATResourceable USER_COMMENTS_AND_RATING_CHANNEL;
 	private final boolean canExpandToFullView;
 	private Object userObject;
-	// Managers
-	private UserCommentsManager commentManager;
-	private UserRatingsManager userRatingsManager;
 	// Comments 
 	private Link commentsCountLink;
 	private Long commentsCount;
@@ -80,6 +75,12 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	private UserRating userRating;
 	// Controller state
 	private boolean isExpanded = false; // default
+	
+	// Configuration
+	private final String oresSubPath;
+	private final OLATResourceable ores;
+	private final CommentAndRatingSecurityCallback securityCallback;
+	private final CommentAndRatingService commentAndRatingService;
 
 	/**
 	 * Constructor for a user combined user comments and ratings controller. Use
@@ -97,31 +98,31 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	public UserCommentsAndRatingsController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String oresSubPath,
 			CommentAndRatingSecurityCallback securityCallback, boolean enableComments, boolean enableRatings, boolean canExpandToFullView) {
 		super(ureq, wControl);
+		this.ores = ores;
 		this.oresSubPath = oresSubPath;
 		this.securityCallback = securityCallback;
+		commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
 		this.userCommentsAndRatingsVC = createVelocityContainer("userCommentsAndRatings");
 		this.canExpandToFullView = canExpandToFullView;
 		putInitialPanel(userCommentsAndRatingsVC);
 		// Add comments views
 		if (enableComments && securityCallback.canViewComments()) {
-			this.commentManager = UserCommentsManager.getInstance(ores, oresSubPath);
-			this.userCommentsAndRatingsVC.contextPut("enableComments", Boolean.valueOf(enableComments));
+			userCommentsAndRatingsVC.contextPut("enableComments", Boolean.valueOf(enableComments));
 			// Link with comments count to expand view
-			this.commentsCountLink = LinkFactory.createLink("comments.count", this.userCommentsAndRatingsVC, this);
-			this.commentsCountLink.setCustomEnabledLinkCSS("b_comments");
-			this.commentsCountLink.setTooltip("comments.count.tooltip");
+			commentsCountLink = LinkFactory.createLink("comments.count", this.userCommentsAndRatingsVC, this);
+			commentsCountLink.setCustomEnabledLinkCSS("b_comments");
+			commentsCountLink.setTooltip("comments.count.tooltip");
 			// Init view with values from DB
 			updateCommentCountView();
 		}
 		// Add ratings view
-		this.userCommentsAndRatingsVC.contextPut("viewIdent", CodeHelper.getRAMUniqueID());
-		this.userCommentsAndRatingsVC.contextPut("enableRatings", Boolean.valueOf(enableRatings));
+		userCommentsAndRatingsVC.contextPut("viewIdent", CodeHelper.getRAMUniqueID());
+		userCommentsAndRatingsVC.contextPut("enableRatings", Boolean.valueOf(enableRatings));
 		if (enableRatings) {
-			this.userRatingsManager = UserRatingsManager.getInstance(ores, oresSubPath);
 			if (securityCallback.canRate()) {
 				ratingUserC = new RatingComponent("userRating", 0, RATING_MAX, true);
 				ratingUserC.addListener(this);
-				this.userCommentsAndRatingsVC.put("ratingUserC", ratingUserC);
+				userCommentsAndRatingsVC.put("ratingUserC", ratingUserC);
 				ratingUserC.setShowRatingAsText(true);
 				ratingUserC.setTitle("rating.personal.title");
 				ratingUserC.setCssClass("b_rating_personal");
@@ -130,7 +131,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			if (securityCallback.canViewRatingAverage()) {				
 				ratingAverageC = new RatingComponent("ratingAverageC", 0, RATING_MAX, false);
 				ratingAverageC.addListener(this);
-				this.userCommentsAndRatingsVC.put("ratingAverageC", ratingAverageC);
+				userCommentsAndRatingsVC.put("ratingAverageC", ratingAverageC);
 				ratingAverageC.setShowRatingAsText(true);
 				ratingAverageC.setTitle("rating.average.title");
 				ratingAverageC.setTranslateExplanation(false);
@@ -153,7 +154,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 */
 	public void expandComments(UserRequest ureq) {
 		if (!canExpandToFullView) { throw new AssertException("Can not expand messages when controller initialized as not expandable"); }
-		commentsCtr = new UserCommentsController(ureq, getWindowControl(), commentManager, securityCallback);
+		commentsCtr = new UserCommentsController(ureq, getWindowControl(), ores, oresSubPath, securityCallback);
 		listenTo(commentsCtr);
 		userCommentsAndRatingsVC.put("commentsCtr", commentsCtr.getInitialComponent());
 		isExpanded = true;
@@ -180,9 +181,9 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 * Package helper method to update the comment count view
 	 */
 	void updateCommentCountView() {
-		if (this.commentsCountLink != null) {
-			this.commentsCount = this.commentManager.countComments();
-			this.commentsCountLink.setCustomDisplayText(translate("comments.count", commentsCount.toString()));			
+		if (commentsCountLink != null) {
+			commentsCount = commentAndRatingService.countComments(ores, oresSubPath);
+			commentsCountLink.setCustomDisplayText(translate("comments.count", commentsCount.toString()));			
 		}
 	}
 	
@@ -191,14 +192,14 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 */
 	void updateRatingView() {
 		if (ratingUserC != null) {
-			userRating = userRatingsManager.getRating(getIdentity());
+			userRating = commentAndRatingService.getRating(getIdentity(), ores, oresSubPath);
 			if (userRating != null) {
 				ratingUserC.setCurrentRating(userRating.getRating());				
 			}
 		}
 		if (ratingAverageC != null) {
-			ratingAverageC.setCurrentRating(userRatingsManager.calculateRatingAverage());
-			long ratingsCounter = this.userRatingsManager.countRatings();			
+			ratingAverageC.setCurrentRating(commentAndRatingService.calculateRatingAverage(ores, oresSubPath));
+			long ratingsCounter = commentAndRatingService.countRatings(ores, oresSubPath);			
 			ratingAverageC.setExplanation(translate("rating.average.explanation", ratingsCounter + ""));
 		}		
 	}
@@ -246,10 +247,10 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			Integer newRating = Float.valueOf(ratingUserC.getCurrentRating()).intValue();
 			if (userRating == null) {
 				// Create new rating
-				userRating = userRatingsManager.createRating(ureq.getIdentity(), newRating);
+				userRating = commentAndRatingService.createRating(getIdentity(), ores, oresSubPath, newRating);
 			} else {
 				// Update existing rating
-				userRating = userRatingsManager.updateRating(userRating, newRating);
+				userRating = commentAndRatingService.updateRating(userRating, newRating);
 			}
 			// Update GUI
 			updateRatingView();

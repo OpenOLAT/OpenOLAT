@@ -51,7 +51,6 @@ import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -90,6 +89,8 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.ResourceReservation;
+import org.olat.search.service.document.RepositoryEntryDocument;
+import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.user.UserImpl;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,55 +123,8 @@ public class RepositoryManager extends BasicManager {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private ACReservationDAO reservationDao;
-
-	
-	/**
-	 * [used by Spring]
-	 * @param repositoryModule
-	 */
-	public void setRepositoryModule(RepositoryModule repositoryModule) {
-		this.repositoryModule = repositoryModule;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param reservationDao
-	 */
-	public void setReservationDao(ACReservationDAO reservationDao) {
-		this.reservationDao = reservationDao;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param securityManager
-	 */
-	public void setSecurityManager(BaseSecurity securityManager) {
-		this.securityManager = securityManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param userCourseInformationsManager
-	 */
-	public void setUserCourseInformationsManager(UserCourseInformationsManager userCourseInformationsManager) {
-		this.userCourseInformationsManager = userCourseInformationsManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param userCourseInformationsManager
-	 */
-	public void setImageHelper(ImageHelper imageHelper) {
-		this.imageHelper = imageHelper;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
+	@Autowired
+	private LifeFullIndexer lifeIndexer;
 
 	/**
 	 * @return Singleton.
@@ -187,20 +141,11 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	/**
-	 * Save repo entry.
-	 * @param re
-	 */
-	public void saveRepositoryEntry(RepositoryEntry re) {
-		re.setLastModified(new Date());
-		DBFactory.getInstance().saveObject(re);
-	}
-	
-	/**
 	 * Delete repo entry.
 	 * @param re
 	 */
 	public void deleteRepositoryEntry(RepositoryEntry re) {
-		re = (RepositoryEntry) DBFactory.getInstance().loadObject(re,true);
+		re = (RepositoryEntry) dbInstance.loadObject(re,true);
 		dbInstance.getCurrentEntityManager().remove(re);
 		//TODO:pb:b this should be called in a  RepoEntryImageManager.delete
 		//instead of a controller.
@@ -282,7 +227,7 @@ public class RepositoryManager extends BasicManager {
 	public boolean deleteRepositoryEntryWithAllData(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		// invoke handler delete callback
 		logDebug("deleteRepositoryEntry start entry=" + entry);
-		entry = (RepositoryEntry) DBFactory.getInstance().loadObject(entry,true);
+		entry = (RepositoryEntry) dbInstance.loadObject(entry,true);
 		logDebug("deleteRepositoryEntry after load entry=" + entry);
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
 		OLATResource resource = entry.getOlatResource();
@@ -667,8 +612,10 @@ public class RepositoryManager extends BasicManager {
 			reloadedRe.setAccess(access);
 			reloadedRe.setMembersOnly(membersOnly);
 		}
+		reloadedRe.setLastModified(new Date());
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
 
@@ -687,8 +634,10 @@ public class RepositoryManager extends BasicManager {
 		if(StringHelper.containsNonWhitespace(description)) {
 			reloadedRe.setDescription(description);
 		}
+		reloadedRe.setLastModified(new Date());
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
 	
@@ -723,13 +672,14 @@ public class RepositoryManager extends BasicManager {
 			}
 		}
 		reloadedRe.setLifecycle(cycle);
-		
-		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		reloadedRe.setLastModified(new Date());
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		if(cycleToDelete != null) {
 			dbInstance.getCurrentEntityManager().remove(cycleToDelete);
 		}
 		
 		dbInstance.commit();
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
 	
@@ -753,13 +703,14 @@ public class RepositoryManager extends BasicManager {
 			}
 		}
 		reloadedRe.setLifecycle(cycle);
-		
+		reloadedRe.setLastModified(new Date());
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		if(cycleToDelete != null) {
 			dbInstance.getCurrentEntityManager().remove(cycleToDelete);
 		}
 		
 		dbInstance.commit();
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
 
@@ -839,7 +790,7 @@ public class RepositoryManager extends BasicManager {
 			" org.olat.repository.RepositoryEntry v, " +
 			" org.olat.resource.OLATResourceImpl res " +
 		  " where v.olatResource = res and res.resName= :restrictedType and v.access >= :restrictedAccess ");
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
+		DBQuery dbquery = dbInstance.createQuery(query.toString());
 		dbquery.setString("restrictedType", restrictedType);
 		dbquery.setInteger("restrictedAccess", restrictedAccess);
 		dbquery.setCacheable(true);
@@ -976,7 +927,7 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public List<RepositoryEntry> queryByInitialAuthor(String initialAuthor) {
 		String query = "select v from org.olat.repository.RepositoryEntry v where v.initialAuthor= :initialAuthor";
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query);
+		DBQuery dbquery = dbInstance.createQuery(query);
 		dbquery.setString("initialAuthor", initialAuthor);
 		return dbquery.list();
 	}

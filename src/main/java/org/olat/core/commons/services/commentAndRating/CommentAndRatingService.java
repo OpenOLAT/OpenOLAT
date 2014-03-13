@@ -24,9 +24,12 @@
 */
 package org.olat.core.commons.services.commentAndRating;
 
-import org.olat.core.commons.services.commentAndRating.impl.ui.UserCommentsAndRatingsController;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
+import java.util.List;
+
+import org.olat.core.commons.services.commentAndRating.model.OLATResourceableRating;
+import org.olat.core.commons.services.commentAndRating.model.UserComment;
+import org.olat.core.commons.services.commentAndRating.model.UserCommentsCount;
+import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 
@@ -35,20 +38,6 @@ import org.olat.core.id.OLATResourceable;
  * The comment and rating service offers GUI elements to comment and rate
  * OLATResourceable objects. The objects can be specified even more precise by
  * providing an optional sub path
- * <p>
- * Get an instance of this service by calling the ServiceCreatorFactory and then
- * call the init method to initialize the service for your resource:
- * 
- * <pre>
- * //to get the service either use coreSpringFactory.getBean(CommentAndRatingService.class) or when used in a singleton manager
- * implement the CommentAndRatingServiceFactory interface and see an example using the CommentAndRatingServiceFactory as the service is
- * stateful
- * if (commentAndRatingService != null) {
- * 	// initialize the service with the resource, an optional subpath (or NULL) and the administrative flag
- * 	commentAndRatingService.init(myOlatResource, myResourceSubPath, isAdmin);
- * 	// start using the service
- * 	UserCommentsController commentsCtr = commentAndRatingService.createUserCommentsController(ureq, getWindowControl());
- * }
  * </pre>
  * <P>
  * Initial Date: 24.11.2009 <br>
@@ -56,102 +45,177 @@ import org.olat.core.id.OLATResourceable;
  * @author gnaegi
  */
 public interface CommentAndRatingService {
-
-	/**
-	 * Initialize the service using CommentAndRatingDefaultSecurityCallback as
-	 * security callback.
-	 * 
-	 * @param identity
-	 * @param ores
-	 * @param oresSubPath
-	 * @param isAdmin
-	 * @param isAnonymous
-	 */
-	public void init(Identity identity, OLATResourceable ores, String oresSubPath, boolean isAdmin, boolean isAnonymous);
-
-	/**
-	 * Initialize the service using your own security callback
-	 * 
-	 * @param ores
-	 * @param oresSubPath
-	 * @param securityCallback
-	 */
-	public void init(OLATResourceable ores, String oresSubPath, CommentAndRatingSecurityCallback securityCallback);
-
-	/**
-	 * Get the user comments manager. This is normally not used by code from other
-	 * packages.
-	 * 
-	 * @return
-	 */
-	public UserCommentsManager getUserCommentsManager();
-
-	/**
-	 * Get the user ratings manager. This is normally not used by code from other packages.
-	 * @return
-	 */
-	public UserRatingsManager getUserRatingsManager();
 	
 	/**
-	 * Create a minimized user comments controller that only shows the number of
-	 * comments. The link information can be clicked to trigger something
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @return
+	 * @return The number of ratings for the configured resource. 0 if no
+	 *         ratings are available.
 	 */
-	public UserCommentsAndRatingsController createUserCommentsControllerMinimized(UserRequest ureq, WindowControl wControl);
+	public Long countRatings(OLATResourceable ores, String resSubPath);
 
 	/**
-	 * Create a user comments controller that show the number of comments. In the
-	 * initial view the comments are not visible. When clicking on the number of
-	 * comments the comments are displayed.
 	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @return
+	 * @return all ratings 
 	 */
-	public UserCommentsAndRatingsController createUserCommentsControllerExpandable(UserRequest ureq, WindowControl wControl);
+	public  List<UserRating> getAllRatings(OLATResourceable ores, String resSubPath);
+	
+	/**
+	 * @return The average of ratings for the configured resource. 0 if no
+	 *         ratings are available.
+	 */
+	public Float calculateRatingAverage(OLATResourceable ores, String resSubPath);
 
 	/**
-	 * Create a user rating controller without the commenting functionality
+	 * Create a new rating for the configured resource
 	 * 
-	 * @param ureq
-	 * @param wControl
+	 * @param creator
+	 *            The user who is rating
+	 * @param ratingValue
+	 *            The rating
 	 * @return
 	 */
-	public UserCommentsAndRatingsController createUserRatingsController(UserRequest ureq, WindowControl wControl);
+	public UserRating createRating(Identity creator, OLATResourceable ores, String resSubPath, int ratingValue);
 
 	/**
-	 * Create a minimized user comments controller that only shows the number of
-	 * comments and allows the user rate the resource on a scale of 1-5. The
-	 * link information can be clicked to trigger something
+	 * Get the rating for the configured user
 	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @return
+	 * @param identity
+	 * @return The users rating or NULL
 	 */
-	public UserCommentsAndRatingsController createUserCommentsAndRatingControllerMinimized(UserRequest ureq, WindowControl wControl);
+	public UserRating getRating(Identity identity, OLATResourceable ores, String resSubPath);
 
 	/**
-	 * Create a user comments controller that show the number of comments and
-	 * allows the user rate the resource on a scale of 1-5. In the initial view
-	 * the comments are not visible. When clicking on the number of comments the
-	 * comments are displayed.
+	 * Reload the given user rating with the most recent version from the
+	 * database
 	 * 
-	 * @param ureq
-	 * @param wControl
+	 * @return the reloaded user rating or NULL if the rating does not exist
+	 *         anymore
+	 */
+	public UserRating reloadRating(UserRating rating);
+
+	/**
+	 * Update a rating. This will first reload the comment object and then
+	 * update this new object to reduce stale object issues. Make sure you
+	 * replace your object in your datamodel with the returned user comment
+	 * object.
+	 * 
+	 * @param rating
+	 *            The rating which should be updated
+	 * @param rewRatingValue
+	 *            The updated rating value
+	 * @return the updated rating object. Might be a different object than the
+	 *         rating given as attribute or NULL if the rating has been deleted
+	 *         in the meantime and could not be updated at all.
+	 */
+	public UserRating updateRating(UserRating rating, int newRatingValue);
+
+	/**
+	 * Delete a rating
+	 * 
+	 * @param rating
+	 * @param int number of deleted ratings
+	 */
+	public abstract int deleteRating(UserRating rating);
+	
+	/**
+	 * Return the most rated resources
+	 * @param limit The maximum number of resources returned
 	 * @return
 	 */
-	public UserCommentsAndRatingsController createUserCommentsAndRatingControllerExpandable(UserRequest ureq, WindowControl wControl);
+	public List<OLATResourceableRating> getMostRatedResourceables(OLATResourceable ores, int maxResults);
 
+	
+	
+	public long countComments(OLATResourceable ores, String resSubPath);
+	
+	/**
+	 * @return The number of comments for the configured resource and its sub path. 0 if no
+	 *         comments are available.
+	 */
+	public List<UserCommentsCount> countCommentsWithSubPath(OLATResourceable ores, String resSubPath);
+
+	/**
+	 * Get a list of user comments for the configured resource
+	 * 
+	 */
+	public List<UserComment> getComments(OLATResourceable ores, String resSubPath);
+
+	/**
+	 * Create a new comment for the configured resource
+	 * 
+	 * @param creator
+	 *            The author of the comment
+	 * @param comment
+	 *            The commentText
+	 * @return
+	 */
+	public UserComment createComment(Identity creator, OLATResourceable ores, String resSubPath, String commentText);
+
+	/**
+	 * Reload the given user comment with the most recent version from the
+	 * database
+	 * 
+	 * @return the reloaded user comment or NULL if the comment does not exist
+	 *         anymore
+	 */
+	public UserComment reloadComment(UserComment comment);
+
+	/**
+	 * Reply to an existing comment
+	 * 
+	 * @param originalComment
+	 *            The comment to which the user replied
+	 * @param creator
+	 *            The author of the reply
+	 * @param replyCommentText
+	 *            The reply text
+	 * @return The reply or NULL if the given original comment has been deleted
+	 *         in the meantime
+	 */
+	public UserComment replyTo(UserComment originalComment, Identity creator, String replyCommentText);
+
+	/**
+	 * Update a comment. This will first reload the comment object and then
+	 * update this new object to reduce stale object issues. Make sure you
+	 * replace your object in your data model with the returned user comment
+	 * object.
+	 * 
+	 * @param comment
+	 *            The comment which should be updated
+	 * @param newCommentText
+	 *            The updated comment text
+	 * @return the updated comment object. Might be a different object than the
+	 *         comment riven as attribute or NULL if the comment has been
+	 *         deleted in the meantime and could not be updated at all.
+	 */
+	public UserComment updateComment(UserComment comment, String newCommentText);
+
+	/**
+	 * Delete a comment
+	 * 
+	 * @param comment
+	 * @param deleteReplies
+	 *            true: cascade delete comment, also any existing replies;
+	 *            false: don't delete replies, unlink them so they appear as new
+	 *            comments
+	 * @param int number of deleted comments (including replies)
+	 */
+	public int deleteComment(UserComment comment, boolean deleteReplies);
+
+	
+	
+	
+	
+	
+	
+
+	
 	/**
 	 * Delete all comments and ratings for this resource and subpath
 	 * configuration. See also the deleteAllIgnoringSubPath() method.
 	 * 
 	 * @param int number of deleted comments and ratings
 	 */
-	public int deleteAll();
+	public int deleteAll(OLATResourceable ores, String oresSubPath);
 
 	/**
 	 * Delete all comments and ratings for this resource while ignoring the
@@ -160,6 +224,6 @@ public interface CommentAndRatingService {
 	 * 
 	 * @param int number of deleted comments and ratings
 	 */
-	public int deleteAllIgnoringSubPath();
+	public int deleteAllIgnoringSubPath(OLATResourceable ores);
 
 }

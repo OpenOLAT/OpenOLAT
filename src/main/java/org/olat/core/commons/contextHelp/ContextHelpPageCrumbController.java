@@ -24,9 +24,9 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.impl.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -166,16 +166,14 @@ class ContextHelpPageCrumbController extends CrumbBasicController  {
 			|| ! ureq.getUserSession().isAuthenticated()
 			|| contextHelpPageVC == null ) return;
 		
-		CommentAndRatingService commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
-		if (commentAndRatingService != null) {				
-			Roles roles = ureq.getUserSession().getRoles();
-			OLATResourceable helpOres = OresHelper.createOLATResourceableType("contexthelp");
-			String key = ContextHelpManager.getInstance().calculateCombinedKey(pageTranslator.getLocale(), bundleName, page);
-			commentAndRatingService.init(getIdentity(), helpOres, key, roles.isOLATAdmin(), roles.isGuestOnly());
-			UserCommentsAndRatingsController commentsAndRatingCtr = commentAndRatingService.createUserCommentsAndRatingControllerExpandable(ureq, getWindowControl());
-			listenTo(commentsAndRatingCtr);
-			contextHelpWrapperVC.put("commentsAndRatingCtr", commentsAndRatingCtr.getInitialComponent());		
-		}
+			
+		Roles roles = ureq.getUserSession().getRoles();
+		OLATResourceable helpOres = OresHelper.createOLATResourceableType("contexthelp");
+		String key = ContextHelpManager.getInstance().calculateCombinedKey(pageTranslator.getLocale(), bundleName, page);
+		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), roles.isOLATAdmin(), roles.isGuestOnly());
+		UserCommentsAndRatingsController commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), helpOres, key, secCallback, true, true, true);
+		listenTo(commentsAndRatingCtr);
+		contextHelpWrapperVC.put("commentsAndRatingCtr", commentsAndRatingCtr.getInitialComponent());
 	}
 
 	/**

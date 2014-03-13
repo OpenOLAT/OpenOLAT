@@ -56,5 +56,19 @@ public class RepositoryEntryDAO {
 		return entries.get(0);
 		
 	}
+	
+	public List<RepositoryEntry> getAllRepositoryEntries(int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+	}
 
 }

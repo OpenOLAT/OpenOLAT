@@ -101,6 +101,10 @@ public class RepositoryEntryMyCourseView implements RepositoryEntryMyView, Persi
 	private Integer myRating;
 	@Column(name="stats_rating", nullable=true, insertable=false, updatable=false)
 	private Float averageRating;
+	@Column(name="stats_num_of_ratings", nullable=true, insertable=false, updatable=false)
+	private long numOfRatings;
+	@Column(name="stats_num_of_comments", nullable=true, insertable=false, updatable=false)
+	private long numOfComments;
 	
 	@Column(name="ci_initiallaunchdate", nullable=true, insertable=false, updatable=false)
 	private Date initialLaunch;
@@ -292,6 +296,22 @@ public class RepositoryEntryMyCourseView implements RepositoryEntryMyView, Persi
 
 	public void setAverageRating(Float averageRating) {
 		this.averageRating = averageRating;
+	}
+
+	public long getNumOfRatings() {
+		return numOfRatings;
+	}
+
+	public void setNumOfRatings(long numOfRatings) {
+		this.numOfRatings = numOfRatings;
+	}
+
+	public long getNumOfComments() {
+		return numOfComments;
+	}
+
+	public void setNumOfComments(long numOfComments) {
+		this.numOfComments = numOfComments;
 	}
 
 	@Override

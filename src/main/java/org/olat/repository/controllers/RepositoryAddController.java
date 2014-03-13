@@ -394,8 +394,7 @@ public class RepositoryAddController extends BasicController {
 		addedEntry.setCanLaunch(typeToAdd.supportsLaunch(addedEntry));
 		
 		// Set the resource on the repository entry and save the entry.
-		RepositoryManager rm = RepositoryManager.getInstance();
-		rm.saveRepositoryEntry(addedEntry);
+		repositoryService.update(addedEntry);
 
 		removeAsListenerAndDispose(detailsController);
 		detailsController = new RepositoryEditDescriptionController(ureq, getWindowControl(), addedEntry, true);

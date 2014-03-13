@@ -44,6 +44,8 @@ import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.search.service.document.RepositoryEntryDocument;
+import org.olat.search.service.indexer.LifeFullIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,6 +74,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private RepositoryEntryMyCourseViewQueries myCourseViewQueries;
 	@Autowired
 	private OLATResourceManager resourceManager;
+
+	@Autowired
+	private LifeFullIndexer lifeIndexer;
 	
 	@Override
 	public RepositoryEntry create(String initialAuthor, String resourceName,
@@ -119,6 +124,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 		statistics.setLastModified(now);
 		statistics.setDownloadCounter(0l);
 		statistics.setLaunchCounter(0l);
+		statistics.setNumOfRatings(0l);
+		statistics.setNumOfComments(0l);
 		dbInstance.getCurrentEntityManager().persist(statistics);
 		
 		re.setStatistics(statistics);
@@ -141,13 +148,20 @@ public class RepositoryServiceImpl implements RepositoryService {
 		dbInstance.getCurrentEntityManager().persist(re);
 		return re;	
 	}
+
+	@Override
+	public RepositoryEntry update(RepositoryEntry re) {
+		re.setLastModified(new Date());
+		RepositoryEntry mergedRe = dbInstance.getCurrentEntityManager().merge(re);
+		dbInstance.commit();
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, mergedRe.getKey());
+		return mergedRe;
+	}
 	
 	@Override
 	public RepositoryEntry loadByKey(Long key) {
 		return repositoryEntryDAO.loadByKey(key);
 	}
-	
-	
 	
 	@Override
 	public void incrementLaunchCounter(RepositoryEntry re) {

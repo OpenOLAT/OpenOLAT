@@ -22,8 +22,9 @@ package org.olat.portfolio.ui.structel;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.impl.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -54,25 +55,23 @@ import org.olat.portfolio.ui.structel.edit.EPCollectRestrictionResultController;
 public class EPPageViewController extends BasicController {
 
 	private EPPage page;
+	private PortfolioStructure map;
 	private final VelocityContainer vC;
 	private final EPSecurityCallback secCallback;
 	private EPCollectRestrictionResultController resultCtrl;
 	private final EPFrontendManager ePFMgr;
-	private final CommentAndRatingService commentAndRatingService;
 	private UserCommentsAndRatingsController commentsAndRatingCtr;
 
 	public EPPageViewController(UserRequest ureq, WindowControl wControl, PortfolioStructure map, EPPage page, boolean withComments,
 			EPSecurityCallback secCallback) {
 		super(ureq, wControl);
 		vC = createVelocityContainer("pageView");
+		this.map = map;
 		this.page = page;
 		this.secCallback = secCallback;
 
 		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-		
-		commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
-		commentAndRatingService.init(getIdentity(), map.getOlatResource(), page.getKey().toString(), false, ureq.getUserSession().getRoles().isGuestOnly());
-		
+
 		init(ureq);
 		
 		if(withComments && commentsAndRatingCtr != null) {
@@ -137,8 +136,10 @@ public class EPPageViewController extends BasicController {
 		vC.remove(vC.getComponent("commentCtrl"));
 		if(secCallback.canCommentAndRate()) {
 			removeAsListenerAndDispose(commentsAndRatingCtr);	
-			commentsAndRatingCtr = commentAndRatingService.createUserCommentsAndRatingControllerExpandable(ureq, getWindowControl());
-			//commentsAndRatingCtr.expandComments(ureq);
+
+			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
+			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
+			commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), map.getOlatResource(), page.getKey().toString(), secCallback, true, true, true);
 			listenTo(commentsAndRatingCtr);
 			vC.put("commentCtrl", commentsAndRatingCtr.getInitialComponent());
 		}
