@@ -142,6 +142,8 @@ public class BusinessGroupImportExport {
 			try {
 				Field field = toolsConfig.getClass().getField(availableTools[i]);
 				field.setBoolean(toolsConfig, ct.isToolEnabled(availableTools[i]));
+			} catch(NoSuchFieldException e) {
+				//no field to fill (hasOpenMeetings is not set for backwards compatibility)
 			} catch (Exception e) {
 				log.error("", e);
 			}
