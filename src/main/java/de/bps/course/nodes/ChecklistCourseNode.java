@@ -160,7 +160,8 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 			} else 
 			// this is part of a copied course, the original checklist will be copied
 			if(getModuleConfiguration().get(CONF_CHECKLIST) != null) {
-				Checklist orgChecklist = ChecklistManager.getInstance().loadChecklist((Checklist) getModuleConfiguration().get(ChecklistCourseNode.CONF_CHECKLIST));
+				Checklist confChecklist = (Checklist)getModuleConfiguration().get(ChecklistCourseNode.CONF_CHECKLIST);
+				Checklist orgChecklist = ChecklistManager.getInstance().loadChecklist(confChecklist);
 				checklist = ChecklistManager.getInstance().copyChecklist(orgChecklist);
 			} else {
 				// no checklist available, create new one

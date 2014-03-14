@@ -95,7 +95,12 @@ public class ChecklistManager {
 	 */
 	public Checklist saveChecklist(Checklist cl) {
 		cl.setLastModified(new Date());
-		return DBFactory.getInstance().getCurrentEntityManager().merge(cl);
+		if(cl.getKey() == null) {
+			DBFactory.getInstance().getCurrentEntityManager().persist(cl);
+		} else {
+			cl = DBFactory.getInstance().getCurrentEntityManager().merge(cl);
+		}
+		return cl;
 	}
 	
 	/**

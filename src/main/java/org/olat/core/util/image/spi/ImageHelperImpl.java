@@ -43,6 +43,7 @@ import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageInputStream;
@@ -359,45 +360,55 @@ public class ImageHelperImpl implements ImageHelperSPI {
 		return computeScaledSize(width, height, maxWidth, maxHeight);
 	}
 	
+	private static SizeAndBufferedImage calcScaledSize(ImageInputStream stream,
+			String suffix, int maxWidth, int maxHeight) {
+		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
+		if(iter.hasNext()) {
+			ImageReader reader = iter.next();
+			try {
+				reader.setInput(stream, true, true);
+				int width = reader.getWidth(reader.getMinIndex());
+				int height = reader.getHeight(reader.getMinIndex());
+				Size size = new Size(width, height, false);
+				Size scaledSize = computeScaledSize(width, height, maxWidth, maxHeight);
+				SizeAndBufferedImage all = new SizeAndBufferedImage(size, scaledSize);
+				
+				int readerMinIndex = reader.getMinIndex();
+				ImageReadParam param = reader.getDefaultReadParam();
+                Iterator<ImageTypeSpecifier> imageTypes = reader.getImageTypes(0);
+                while (imageTypes.hasNext()) {
+                    ImageTypeSpecifier imageTypeSpecifier = imageTypes.next();
+                    int bufferedImageType = imageTypeSpecifier.getBufferedImageType();
+                    if (bufferedImageType == BufferedImage.TYPE_BYTE_GRAY) {
+                        param.setDestinationType(imageTypeSpecifier);
+                        break;
+                    }
+                }
 
-	
-	private static SizeAndBufferedImage calcScaledSize(ImageInputStream stream, String suffix, int maxWidth, int maxHeight) {
-    Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
-    if (iter.hasNext()) {
-        ImageReader reader = iter.next();
-        try {
-            reader.setInput(stream);
-            int width = reader.getWidth(reader.getMinIndex());
-            int height = reader.getHeight(reader.getMinIndex());
-            Size size = new Size(width, height, false);
-            Size scaledSize = computeScaledSize(width, height, maxWidth, maxHeight);
-            SizeAndBufferedImage  all = new SizeAndBufferedImage(size, scaledSize);
-            
-            double memoryKB = (width * height * 4) / 1024d;
-            if(memoryKB > 2000) {//check limit at 20MB
-            	double free = Runtime.getRuntime().freeMemory() / 1024d;
-            	if(free > memoryKB) {
-                all.setImage(reader.read(reader.getMinIndex()));
-            	} else {
-            		//make sub sampling to save memory
-            		int ratio = (int)Math.round(Math.sqrt(memoryKB / free));
-            		ImageReadParam param = reader.getDefaultReadParam();
-            		param.setSourceSubsampling(ratio, ratio, 0, 0);
-                all.setImage(reader.read(reader.getMinIndex(), param));
-            	}
-            } else {
-            	all.setImage(reader.read(reader.getMinIndex()));
-            }
-            return all;
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        } finally {
-            reader.dispose();
-        }
-    } else {
-        log.error("No reader found for given format: " + suffix, null);
-    }
-    return null;
+				double memoryKB = (width * height * 4) / 1024d;
+				if (memoryKB > 2000) {// check limit at 20MB
+					double free = Runtime.getRuntime().freeMemory() / 1024d;
+					if (free > memoryKB) {
+						all.setImage(reader.read(readerMinIndex, param));
+					} else {
+						// make sub sampling to save memory
+						int ratio = (int) Math.round(Math.sqrt(memoryKB / free));
+						param.setSourceSubsampling(ratio, ratio, 0, 0);
+						all.setImage(reader.read(readerMinIndex, param));
+					}
+				} else {
+					all.setImage(reader.read(readerMinIndex, param));
+				}
+				return all;
+			} catch (IOException e) {
+				log.error(e.getMessage(), e);
+			} finally {
+				reader.dispose();
+			}
+		} else {
+			log.error("No reader found for given format: " + suffix, null);
+		}
+		return null;
 	}
 	
 	private static Size computeScaledSize(int width, int height, int maxWidth, int maxHeight) {

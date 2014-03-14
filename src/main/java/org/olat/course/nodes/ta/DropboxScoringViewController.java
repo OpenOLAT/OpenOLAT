@@ -170,6 +170,7 @@ public class DropboxScoringViewController extends BasicController {
 		namedReturnbox.setLocalSecurityCallback(getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath()));
 
 		returnboxFolderRunController = new FolderRunController(namedReturnbox, false, ureq, getWindowControl());
+		returnboxFolderRunController.disableSubscriptionController();
 		listenTo(returnboxFolderRunController);
 		
 		myContent.put("returnbox", returnboxFolderRunController.getInitialComponent());
@@ -201,7 +202,9 @@ public class DropboxScoringViewController extends BasicController {
 	}
 
 	protected VFSSecurityCallback getReturnboxVfsSecurityCallback(String returnboxRelPath) {
-		return new ReturnboxFullAccessCallback(returnboxRelPath);
+		SubscriptionContext subscriptionContext = ReturnboxFileUploadNotificationHandler
+				.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node, getIdentity());
+		return new ReturnboxFullAccessCallback(returnboxRelPath, subscriptionContext);
 	}
 
 	/**
@@ -402,8 +405,10 @@ class ReadOnlyAndDeleteCallback implements VFSSecurityCallback {
 class ReturnboxFullAccessCallback implements VFSSecurityCallback {
 
 	private Quota quota;
+	private final SubscriptionContext subscriptionContext;
 
-	public ReturnboxFullAccessCallback(String relPath) {
+	public ReturnboxFullAccessCallback(String relPath, SubscriptionContext subscriptionContext) {
+		this.subscriptionContext = subscriptionContext;
 		QuotaManager qm = QuotaManager.getInstance();
 		quota = qm.getCustomQuota(relPath);
 		if (quota == null) { // if no custom quota set, use the default quotas...
@@ -454,6 +459,6 @@ class ReturnboxFullAccessCallback implements VFSSecurityCallback {
 	 * @see org.olat.modules.bc.callbacks.SecurityCallback#getSubscriptionContext()
 	 */
 	public SubscriptionContext getSubscriptionContext() {
-		return null;
+		return subscriptionContext;
 	} 
 }
