@@ -176,8 +176,6 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 				currentItems.put(caption, itemValue);
 			}
 		}
-		
-		System.out.println(cmd + " :: " + cleanedItemValues);
 
 		if (logger.isDebug())
 			logger.debug("doDispatchRequest --> firing textBoxListEvent with current items: " + cleanedItemValues);
