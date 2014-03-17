@@ -39,7 +39,6 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -104,7 +103,6 @@ public class CourseHandler implements RepositoryHandler {
 	 */
 	public static final String PROCESS_CREATENEW = "new";
 	
-	private static final String PACKAGE = Util.getPackageName(RepositoryManager.class);
 	private static final boolean LAUNCHEABLE = true;
 	private static final boolean DOWNLOADEABLE = true;
 	private static final boolean EDITABLE = true;
@@ -236,7 +234,7 @@ public class CourseHandler implements RepositoryHandler {
 		ReferenceManager refM = ReferenceManager.getInstance();
 		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
 		if (referencesSummary != null) {
-			Translator translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 			wControl.setError(translator.translate("details.delete.error.references",
 					new String[] { referencesSummary }));
 			return false;

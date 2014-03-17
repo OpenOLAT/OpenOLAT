@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogModule;
 import org.olat.catalog.ui.CatalogController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -149,7 +148,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	private RepositoryAddChooseStepsController chooseStepsController;
 	private Controller creationWizardController;
 	private final PortfolioModule portfolioModule;
-	private final CatalogModule catalogModule;
 	private final RepositoryModule repositoryModule;
 	private final RepositoryManager repositoryManager;
 	private final BaseSecurityModule securityModule;
@@ -168,7 +166,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			log.debug("Constructing ReposityMainController for user::" + ureq.getIdentity());
 		}
 		portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);
-		catalogModule = CoreSpringFactory.getImpl(CatalogModule.class);
 		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
@@ -217,7 +214,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			activateContent(ureq, "search.my", null, null);
 			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.my", rootNode);
 			menuTree.setSelectedNode(activatedNode);
-		} else if(catalogModule.isCatalogRepoEnabled()) {
+		} else if(repositoryModule.isCatalogEnabled()) {
 			activateContent(ureq, "search.catalog", null, null);
 			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.catalog", rootNode);
 			menuTree.setSelectedNode(activatedNode);
@@ -283,7 +280,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		gtm.setRootNode(rootNode);
 
 		GenericTreeNode node;
-		if(catalogModule.isCatalogRepoEnabled()) {
+		if(repositoryModule.isCatalogEnabled()) {
 			node= new GenericTreeNode(translate("search.catalog"), "search.catalog");
 			node.setCssClass("o_sel_repo_catalog");
 			rootNode.addChild(node);
@@ -511,7 +508,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	}
 
 	private void activateCatalogController(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(!catalogModule.isCatalogRepoEnabled()) return;
+		if(!repositoryModule.isCatalogEnabled()) return;
 		
 		// create new catalog controller with given node if none exists
 		// create also new catalog controller when the user clicked twice on the
@@ -889,7 +886,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		String type = entry.getOLATResourceable().getResourceableTypeName();
 		//activate the catalog
 		if(CatalogEntry.class.getSimpleName().equals(type)) {
-			if(catalogModule.isCatalogRepoEnabled()) {
+			if(repositoryModule.isCatalogEnabled()) {
 				TreeNode rootNode = menuTree.getTreeModel().getRootNode();
 				TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.catalog", rootNode);
 				if (activatedNode != null) {
@@ -920,7 +917,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 						searchController.activate(ureq, subEntries, nextEntry.getTransientState());
 						detailsController.activate(ureq, subEntries.subList(1, subEntries.size()), nextEntry.getTransientState());
 					} else if(CatalogEntry.class.getSimpleName().equals(subType)
-							&& catalogModule.isCatalogRepoEnabled()) {
+							&& repositoryModule.isCatalogEnabled()) {
 						catalogCtrl.activate(ureq, subEntries, entry.getTransientState());
 					}
 				}

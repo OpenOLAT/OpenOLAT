@@ -7,48 +7,5 @@
 
 	<bean id="catalogManager" class="org.olat.catalog.CatalogManager" depends-on="courseModule" init-method="init"/>
 	
-	<!-- Business group admin. panel -->
-<!-- Not enabled in 8.4 release. Work in progress, will be finished in a later release
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="8209" />
-		<property name="actionController">	
-			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.catalog.ui.CatalogAdminController"/>
-			</bean>
-		</property>
-		<property name="navigationKey" value="catalog" />
-		<property name="i18nActionKey" value="admin.menu.title"/>
-		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
-		<property name="translationPackage" value="org.olat.catalog.ui"/>
-		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
-			</list>
-		</property>
-	</bean>
- -->	
-	
-	<bean id="catalogModule" class="org.olat.catalog.CatalogModule" init-method="init">
-		<property name="persistedProperties">
-	  		<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  				depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    		<constructor-arg index="0" ref="coordinatorManager"/>
-	    		<constructor-arg index="1" ref="catalogModule" />
-	  		</bean>
-		</property>
-	</bean>
-	
-	<!-- default configuration -->
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="catalogModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				site.catalog.enable=${site.catalog.enable}
-				repo.catalog.enable=${repo.catalog.enable}
-				my.courses.enable=${my.courses.enable}
-			</value>
-		</property>
-	</bean>
+
 </beans>

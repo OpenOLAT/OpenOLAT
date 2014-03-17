@@ -27,6 +27,7 @@ package org.olat.course.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -36,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -46,6 +48,7 @@ import org.olat.course.ICourse;
 import org.olat.login.LoginModule;
 import org.olat.repository.PropPupForm;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryModule;
 
 /**
  * Description:<br>
@@ -66,11 +69,21 @@ class PublishStep01 extends BasicStep {
 		
 		//VCRP-3: add catalog entry in publish wizard
 		this.hasPublishableChanges = hasPublishableChanges;
-		setNextStep(new PublishStepCatalog(ureq, course, hasPublishableChanges));
-		if(hasCatalog){
+		
+		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		if(repositoryModule.isCatalogEnabled()) {
+			setNextStep(new PublishStepCatalog(ureq, course, hasPublishableChanges));
+			if(hasCatalog) {
+				prevNextConfig = PrevNextFinishConfig.BACK_NEXT_FINISH;
+			} else {
+				prevNextConfig = PrevNextFinishConfig.BACK_NEXT;
+			}
+		} else if(hasPublishableChanges) {
+			setNextStep(new PublishStep00a(ureq));
 			prevNextConfig = PrevNextFinishConfig.BACK_NEXT_FINISH;
-		}else{
-			prevNextConfig = PrevNextFinishConfig.BACK_NEXT;
+		} else {
+			setNextStep(Step.NOSTEP);
+			prevNextConfig = PrevNextFinishConfig.BACK_FINISH;
 		}
 	}
 

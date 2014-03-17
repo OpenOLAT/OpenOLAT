@@ -10,15 +10,15 @@
 
 	<context:component-scan base-package="org.olat.repository.manager" />
 
-<bean id="repositoryModule" class="org.olat.repository.RepositoryModule" depends-on="userModule">
-	<property name="groupModule" ref="businessGroupModule"/>
-	<property name="persistedProperties">
-	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-	    <constructor-arg index="0" ref="coordinatorManager"/>
-	    <constructor-arg index="1" ref="repositoryModule" />
-	  </bean>
-	</property>
-</bean>
+	<bean id="repositoryModule" class="org.olat.repository.RepositoryModule" depends-on="userModule">
+		<property name="groupModule" ref="businessGroupModule"/>
+		<property name="persistedProperties">
+		  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+		    <constructor-arg index="0" ref="coordinatorManager"/>
+		    <constructor-arg index="1" ref="repositoryModule" />
+		  </bean>
+		</property>
+	</bean>
 
 	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject" ref="repositoryModule" />
@@ -28,12 +28,14 @@
 				listallcourse=${repo.listallcourses.enabled}
 				listallresourcetypes=${repo.listallresourcetypes.enabled}
 				managedRepositoryEntries=${repo.managed}
+				site.catalog.enable=${site.catalog.enable}
+				repo.catalog.enable=${repo.catalog.enable}
+				repo.catalog.browsing.enable=${repo.catalog.browsing.enable}
 			</value>
 		</property>
 	</bean>
 	
 	<bean id="repositoryManager" class="org.olat.repository.RepositoryManager"/>
-	
 		<bean id="deletionModule" class="org.olat.repository.delete.service.DeletionModule">
 		<property name="baseSecurityManager" ref="baseSecurityManager" />
 		<property name="persistedProperties">
@@ -45,8 +47,7 @@
 		</property>
 	</bean>
 
-	<bean
-		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject" ref="deletionModule" />
 		<property name="targetMethod" value="init" />
 		<property name="arguments">
@@ -64,7 +65,7 @@
 		<property name="mailManager" ref="mailManager" />
 	</bean>
 	
-	<!-- vitero admin. panel -->
+	<!-- life cycle admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7216" />
 		<property name="actionController">	
@@ -78,6 +79,26 @@
 		<property name="i18nActionKey" value="admin.menu.lifecycle.title"/>
 		<property name="i18nDescriptionKey" value="admin.lifecycles.title"/>
 		<property name="translationPackage" value="org.olat.repository"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Catalog admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8209" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.repository.ui.admin.CatalogAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="catalog" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.repository.ui.admin"/>
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="extensionPoints">
 			<list>	
 				<value>org.olat.admin.SystemAdminMainController</value>		

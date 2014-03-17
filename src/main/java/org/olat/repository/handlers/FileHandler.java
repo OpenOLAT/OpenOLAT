@@ -32,7 +32,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -55,14 +54,9 @@ import org.olat.resource.references.ReferenceManager;
  */
 public abstract class FileHandler {
 
-	private static final String PACKAGE = Util.getPackageName(RepositoryManager.class);
-	
-	/**
-	 * 
-	 */
 	public FileHandler() {
+		//
 	}
-
 
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable
@@ -99,7 +93,7 @@ public abstract class FileHandler {
 	public boolean readyToDelete(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		String referencesSummary = ReferenceManager.getInstance().getReferencesToSummary(res, ureq.getLocale());
 		if (referencesSummary != null) {
-			Translator translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 			wControl.setError(translator.translate("details.delete.error.references",
 					new String[] { referencesSummary }));
 			return false;

@@ -43,10 +43,15 @@ public class RepositoryModule extends AbstractOLATModule {
 	private static final String MANAGED_REPOENTRY_ENABLED = "managedRepositoryEntries";
 	private static final String LIST_ALL_COURSES = "listallcourse";
 	private static final String LIST_ALL_RESOURCETYPES = "listallresourcetypes";
-
+	private static final String CATALOG_SITE_ENABLED = "site.catalog.enable";
+	private static final String CATALOG_ENABLED = "catalog.enable";
+	private static final String CATALOG_BROWSING_ENABLED = "catalog.brwosing.enable";
+	
+	private boolean catalogSiteEnabled;
+	private boolean catalogEnabled;
+	private boolean catalogBrowsingEnabled;
 	private boolean listAllCourses;
 	private boolean listAllResourceTypes;
-	
 	private boolean managedRepositoryEntries;
 	
 	private BusinessGroupModule groupModule;
@@ -61,7 +66,7 @@ public class RepositoryModule extends AbstractOLATModule {
 				new RepositoryContextEntryControllerCreator());
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CatalogEntry.class.getSimpleName(),
-				new CatalogContextEntryControllerCreator());
+				new CatalogContextEntryControllerCreator(this));
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(RepositorySite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(RepositorySite.class));
@@ -88,6 +93,10 @@ public class RepositoryModule extends AbstractOLATModule {
 		listAllResourceTypes = "true".equals(listAllResourceTypesStr);
 		
 		managedRepositoryEntries = getBooleanConfigParameter(MANAGED_REPOENTRY_ENABLED, false);
+
+		catalogSiteEnabled = getBooleanConfigParameter(CATALOG_SITE_ENABLED, true);
+		catalogEnabled = getBooleanConfigParameter(CATALOG_ENABLED, true);
+		catalogBrowsingEnabled = getBooleanConfigParameter(CATALOG_BROWSING_ENABLED, true);
 	}
 
 	private void updateProperties() {
@@ -103,6 +112,21 @@ public class RepositoryModule extends AbstractOLATModule {
 		String managedRepo = getStringPropertyValue(MANAGED_REPOENTRY_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(managedRepo)) {
 			managedRepositoryEntries = "true".equals(managedRepo);
+		}
+		
+		String catalogSite = getStringPropertyValue(CATALOG_SITE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(catalogSite)) {
+			catalogSiteEnabled = "true".equals(catalogSite);
+		}
+		
+		String catalogRepo = getStringPropertyValue(CATALOG_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(catalogRepo)) {
+			catalogEnabled = "true".equals(catalogRepo);
+		}
+		
+		String myCourses = getStringPropertyValue(CATALOG_BROWSING_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(myCourses)) {
+			catalogBrowsingEnabled = "true".equals(myCourses);
 		}
 	}
 
@@ -149,5 +173,29 @@ public class RepositoryModule extends AbstractOLATModule {
 
 	public void setManagedRepositoryEntries(boolean enabled) {
 		setStringProperty(MANAGED_REPOENTRY_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public boolean isCatalogSiteEnabled() {
+		return catalogSiteEnabled;
+	}
+
+	public void setCatalogSiteEnabled(boolean enabled) {
+		setStringProperty(CATALOG_SITE_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isCatalogEnabled() {
+		return catalogEnabled;
+	}
+
+	public void setCatalogEnabled(boolean enabled) {
+		setStringProperty(CATALOG_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isCatalogBrowsingEnabled() {
+		return catalogBrowsingEnabled;
+	}
+
+	public void setCatalogBrowsingEnabled(boolean enabled) {
+		setStringProperty(CATALOG_BROWSING_ENABLED, Boolean.toString(enabled), true);
 	}
 }

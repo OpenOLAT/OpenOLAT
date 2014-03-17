@@ -41,7 +41,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -74,8 +73,6 @@ import org.olat.resource.references.ReferenceManager;
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
 public class GlossaryHandler implements RepositoryHandler {
-
-	private static final String PACKAGE = Util.getPackageName(RepositoryManager.class);
 
 	private static final boolean LAUNCHEABLE = true;
 	private static final boolean DOWNLOADEABLE = true;
@@ -243,7 +240,7 @@ public class GlossaryHandler implements RepositoryHandler {
 		ReferenceManager refM = ReferenceManager.getInstance();
 		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
 		if (referencesSummary != null) {
-			Translator translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 			wControl.setError(translator.translate("details.delete.error.references", new String[] { referencesSummary }));
 			return false;
 		}

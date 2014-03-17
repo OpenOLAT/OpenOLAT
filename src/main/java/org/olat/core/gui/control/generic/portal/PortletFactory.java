@@ -30,9 +30,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
@@ -55,6 +57,14 @@ public class PortletFactory {
 	 */
 	private PortletFactory() {
 		// singleton
+	}
+	
+	/**
+	 * [used by Spring]
+	 */
+	public void init() {
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("Portal",
+				new SiteContextEntryControllerCreator(PortalSite.class));
 	}
 	
 	public static Map<String, Portlet> getPortlets() {

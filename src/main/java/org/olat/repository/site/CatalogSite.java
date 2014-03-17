@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.catalog.site;
+package org.olat.repository.site;
 
 import java.util.Locale;
 

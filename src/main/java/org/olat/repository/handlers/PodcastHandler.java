@@ -61,7 +61,6 @@ import org.olat.resource.references.ReferenceManager;
  * @author Gregor Wassmann
  */
 // Loads of parameters are unused
-@SuppressWarnings("unused")
 public class PodcastHandler implements RepositoryHandler {
 	public static final String PROCESS_CREATENEW = "create_new";
 	public static final String PROCESS_UPLOAD = "upload";

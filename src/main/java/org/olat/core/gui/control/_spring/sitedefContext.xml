@@ -36,7 +36,7 @@
 	
 	<bean id="coursesite_infos_2" class="org.olat.course.site.CourseSiteDef2"/>
 	
-	<bean id="olatsites_catalog" class="org.olat.catalog.site.CatalogSiteDef">
+	<bean id="olatsites_catalog" class="org.olat.repository.site.CatalogSiteDef">
 	   <property name="order" value="5" />
 	   <property name="enabled" value="${site.catalog.enable}"/>
 	</bean>

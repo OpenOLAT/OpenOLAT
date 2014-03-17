@@ -17,9 +17,8 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.catalog.ui;
+package org.olat.repository.ui.admin;
 
-import org.olat.catalog.CatalogModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -30,19 +29,22 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
+import org.olat.repository.RepositoryModule;
+import org.olat.repository.RepositoryService;
 
 /**
  * 
+ * Initial date: 17.03.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public class CatalogAdminController extends FormBasicController {
 
-	private MultipleSelectionElement myCoursesEl;
-	private MultipleSelectionElement siteEl;
-	private MultipleSelectionElement repoEl;
+	private MultipleSelectionElement enableEl, enableBrowsingEl, siteEl;
 	
-	private final CatalogModule catalogModule;
+	
+	private final RepositoryModule repositoryModule;
 	
 	/**
 	 * @param ureq
@@ -51,7 +53,8 @@ public class CatalogAdminController extends FormBasicController {
 	public CatalogAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "admin");
 		
-		catalogModule = CoreSpringFactory.getImpl(CatalogModule.class);
+		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		initForm(ureq);
 	}
@@ -60,20 +63,24 @@ public class CatalogAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//server informations
 		FormLayoutContainer serverCont = FormLayoutContainer.createDefaultFormLayout("functions", getTranslator());
+		serverCont.setFormContextHelp("org.olat.repository", "cat-admin.html", "help.hover.catalog.admin");
 		formLayout.add(serverCont);
 		formLayout.add("functions", serverCont);
 
-		myCoursesEl = uifactory.addCheckboxesHorizontal("my.courses", "catalog.courses", serverCont, new String[]{"xx"}, new String[]{""}, null);
-		myCoursesEl.select("xx", catalogModule.isMyCoursesEnabled());
-		myCoursesEl.addActionListener(FormEvent.ONCLICK);
+		boolean enabled = repositoryModule.isCatalogEnabled();
+		enableEl = uifactory.addCheckboxesHorizontal("catalog.enable", "catalog.enable", serverCont, new String[]{"xx"}, new String[]{""}, null);
+		enableEl.select("xx", enabled);
+		enableEl.addActionListener(FormEvent.ONCLICK);
 		
-		siteEl = uifactory.addCheckboxesHorizontal("catalog.new", "catalog.new", serverCont, new String[]{"xx"}, new String[]{""}, null);
-		siteEl.select("xx", catalogModule.isCatalogSiteEnabled());
+		enableBrowsingEl = uifactory.addCheckboxesHorizontal("catalog.browsing", "catalog.browsing", serverCont, new String[]{"xx"}, new String[]{""}, null);
+		enableBrowsingEl.select("xx", repositoryModule.isCatalogBrowsingEnabled());
+		enableBrowsingEl.setEnabled(enabled);
+		enableBrowsingEl.addActionListener(FormEvent.ONCLICK);
+
+		siteEl = uifactory.addCheckboxesHorizontal("catalog.site", "catalog.site", serverCont, new String[]{"xx"}, new String[]{""}, null);
+		siteEl.select("xx", repositoryModule.isCatalogSiteEnabled());
+		siteEl.setEnabled(enabled);
 		siteEl.addActionListener(FormEvent.ONCLICK);
-		
-		repoEl = uifactory.addCheckboxesHorizontal("catalog.classic", "catalog.classic", serverCont, new String[]{"xx"}, new String[]{""}, null);
-		repoEl.select("xx", catalogModule.isCatalogRepoEnabled());
-		repoEl.addActionListener(FormEvent.ONCLICK);
 	}
 	
 	protected void doDispose() {
@@ -82,12 +89,15 @@ public class CatalogAdminController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == myCoursesEl) {
-			catalogModule.setMyCoursesEnabled(myCoursesEl.isSelected(0));
+		if(source == enableEl) {
+			boolean enabled = enableEl.isSelected(0);
+			repositoryModule.setCatalogEnabled(enabled);
+			siteEl.setEnabled(enabled);
+			enableBrowsingEl.setEnabled(enabled);
 		} else if(source == siteEl) {
-			catalogModule.setCatalogSiteEnabled(siteEl.isSelected(0));
-		} else if(source == repoEl) {
-			catalogModule.setCatalogRepoEnabled(repoEl.isSelected(0));
+			repositoryModule.setCatalogSiteEnabled(siteEl.isSelected(0));
+		} else if(source == enableBrowsingEl) {
+			repositoryModule.setCatalogBrowsingEnabled(enableBrowsingEl.isSelected(0));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

@@ -12,7 +12,7 @@
 	 -->
 	
 	<!-- Portlet factory -->
-	<bean id="portletfactory" class="org.olat.core.gui.control.generic.portal.PortletFactory" />
+	<bean id="portletfactory" class="org.olat.core.gui.control.generic.portal.PortletFactory" init-method="init"/>
 	
 	<!-- Portlets  -->
 	<bean id="SystemEvents" class="org.olat.core.commons.portlets.iframe.IframePortlet" scope="prototype">

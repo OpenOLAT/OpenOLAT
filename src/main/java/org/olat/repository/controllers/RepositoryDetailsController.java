@@ -98,6 +98,7 @@ import org.olat.repository.RepositoryEntryIconRenderer;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.CourseHandler;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -194,6 +195,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private final BaseSecurity securityManager;
 	private final UserManager userManager;
 	private final MarkManager markManager;
+	private final RepositoryModule repositoryModule;
 	private final RepositoryService repositoryService;
 
 	/**
@@ -211,6 +213,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		acService = CoreSpringFactory.getImpl(ACService.class);
+		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
 		if (log.isDebug()){
@@ -559,8 +562,9 @@ public class RepositoryDetailsController extends BasicController implements Gene
 						detailsToolC.addLink(ACTION_EDITDESC, translate("details.chdesc"), TOOL_CHDESC, null, "o_sel_repo_edit_descritpion", false);
 						detailsToolC.addLink(ACTION_EDITPROP, translate("details.chprop"), TOOL_CHPROP, null, "o_sel_repor_edit_properties", false);
 					}
-					detailsToolC.addLink(ACTION_ADD_CATALOG, translate("details.catadd"), TOOL_CATALOG, null, "o_sel_repo_add_to_catalog", false);
-					
+					if(repositoryModule.isCatalogEnabled()) {
+						detailsToolC.addLink(ACTION_ADD_CATALOG, translate("details.catadd"), TOOL_CATALOG, null, "o_sel_repo_add_to_catalog", false);
+					}
 					detailsToolC.addHeader(translate("table.action"));
 
 					boolean closeManaged = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.close);
@@ -574,10 +578,12 @@ public class RepositoryDetailsController extends BasicController implements Gene
 					}
 				}
 				// update catalog link
-				boolean addCatalogEnabled = !corrupted &&
-						(repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS ||
-						repositoryEntry.isMembersOnly());
-				detailsToolC.setEnabled(TOOL_CATALOG, addCatalogEnabled);
+				if(repositoryModule.isCatalogEnabled()) {
+					boolean addCatalogEnabled = !corrupted &&
+							(repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS ||
+							repositoryEntry.isMembersOnly());
+					detailsToolC.setEnabled(TOOL_CATALOG, addCatalogEnabled);
+				}
 			}
 			if (isNewController) {
 				if(isAuthor) {
@@ -971,7 +977,9 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				doEditSettings(ureq, repositoryEditDescriptionController, title);
 				return;
 			} else if (cmd.equals(ACTION_ADD_CATALOG)) { // start add to catalog workflow
-				doAddCatalog(ureq);
+				if(repositoryModule.isCatalogEnabled()) {
+					doAddCatalog(ureq);
+				}
 				return;
 			} else if (cmd.equals(ACTION_EDITPROP)) { // change properties
 				removeAsListenerAndDispose(repositoryEditPropertiesController);

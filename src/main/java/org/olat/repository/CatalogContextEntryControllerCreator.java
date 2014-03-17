@@ -26,6 +26,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
+import org.olat.repository.site.CatalogSite;
 import org.olat.repository.site.RepositorySite;
 
 /**
@@ -36,6 +37,12 @@ import org.olat.repository.site.RepositorySite;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class CatalogContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
+	
+	private final RepositoryModule repositoryModule;
+	
+	public CatalogContextEntryControllerCreator(RepositoryModule repositoryModule) {
+		this.repositoryModule = repositoryModule;
+	}
 
 	@Override
 	public ContextEntryControllerCreator clone() {
@@ -49,7 +56,11 @@ public class CatalogContextEntryControllerCreator extends DefaultContextEntryCon
 
 	@Override
 	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
-		return RepositorySite.class.getName();
+		if(repositoryModule.isCatalogSiteEnabled()) {
+			return CatalogSite.class.getName();
+		} else {
+			return RepositorySite.class.getName();
+		}
 	}
 
 	@Override
@@ -59,7 +70,7 @@ public class CatalogContextEntryControllerCreator extends DefaultContextEntryCon
 
 	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		return true;
+		return repositoryModule.isCatalogEnabled();
 	}
 
 }

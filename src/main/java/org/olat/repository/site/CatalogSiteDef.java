@@ -17,9 +17,8 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.catalog.site;
+package org.olat.repository.site;
 
-import org.olat.catalog.CatalogModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -27,6 +26,7 @@ import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.repository.RepositoryModule;
 
 /**
  * 
@@ -37,11 +37,17 @@ public class CatalogSiteDef extends AbstractSiteDefinition implements SiteDefini
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		CatalogModule catModule = CoreSpringFactory.getImpl(CatalogModule.class);
-		if(catModule.isCatalogSiteEnabled()) {
+		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogSiteEnabled()) {
 			SiteInstance si = new CatalogSite(this, ureq.getLocale());
 			return si;
 		}
 		return null;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		return repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogSiteEnabled() && super.isEnabled();
 	}
 }

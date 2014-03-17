@@ -52,7 +52,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
@@ -68,7 +71,7 @@ import org.olat.repository.ui.list.RepositoryEntryDataModel.Cols;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class RepositoryEntryListController extends FormBasicController
-	implements RepositoryEntryDataSourceUIFactory, FlexiTableComponentDelegate {
+	implements Activateable2, RepositoryEntryDataSourceUIFactory, FlexiTableComponentDelegate {
 	
 	private FormLink listLink, tableLink, filterLink, sortLink;
 	private FlexiTableElement tableEl;
@@ -137,6 +140,11 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	protected void doDispose() {
+		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
 
