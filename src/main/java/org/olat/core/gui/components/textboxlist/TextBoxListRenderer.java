@@ -102,10 +102,11 @@ public class TextBoxListRenderer implements ComponentRenderer {
 		TextBoxListElementImpl te = ((TextBoxListElementComponent)tblComponent).getTextElementImpl();
 		Form rootForm = te.getRootForm();
 		String dispatchId = tblComponent.getFormDispatchId();
+		String initialValue = tblComponent.getInitialItemsAsString();
 
 		output.append("<input type=\"text\" id=\"textboxlistinput").append(dispatchId).append("\" ")
 		      .append("name='textboxlistinput").append(dispatchId).append("' ")
-		      .append("value='").append(tblComponent.getInitialItemsAsString()).append("'")
+		      .append("value='").append(initialValue).append("'")
 		      .append("/>\n");
 
 		// OO-137 : here, we display the currentItems. (at first render, this is equal to initialItems)

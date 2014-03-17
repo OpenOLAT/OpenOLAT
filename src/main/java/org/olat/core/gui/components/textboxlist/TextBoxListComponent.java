@@ -217,11 +217,14 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	 */
 	private String getAutoCompletionItemCaptionByValue(String itemValue) {
 		String autoCompletionItemCaption = "";
-		if (this.getAutoCompleteContent() == null)
+		Map<String,String> content = getAutoCompleteContent();
+		if (content == null) {
 			return autoCompletionItemCaption;
-		for (Entry<String, String> autoCompletionItemEntry : this.getAutoCompleteContent().entrySet()) {
-			if (autoCompletionItemEntry.getValue().equals(itemValue))
+		}
+		for (Entry<String, String> autoCompletionItemEntry : content.entrySet()) {
+			if (autoCompletionItemEntry.getValue().equals(itemValue)) {
 				autoCompletionItemCaption = autoCompletionItemEntry.getKey();
+			}
 		}
 		return autoCompletionItemCaption;
 	}
@@ -444,7 +447,9 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 			List<String> filtered = new ArrayList<String>();
 			for(String item:content.keySet()) {
 				String antiItem = filter.filter(item);
-				filtered.add(StringHelper.escapeHtml(antiItem));
+				if(StringHelper.containsNonWhitespace(antiItem)) {
+					filtered.add(antiItem);
+				}
 			}
 			return StringUtils.join(filtered, ", ");
 		} else
