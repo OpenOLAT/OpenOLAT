@@ -133,28 +133,32 @@ public class EPAddElementsController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);
-		if (source == artefactPoolCtrl && event instanceof EPArtefactChoosenEvent) {
-			// finally an artefact was choosen
-			EPArtefactChoosenEvent artCEv = (EPArtefactChoosenEvent) event;
-			artefactBox.deactivate();
-			AbstractArtefact choosenArtefact = artCEv.getArtefact();
-			// check for a yet existing link to this artefact
-			if (ePFMgr.isArtefactInStructure(choosenArtefact, portfolioStructure)) {
-				showWarning("artefact.already.in.structure");
-			} else {
-				boolean successfullLink = ePFMgr.addArtefactToStructure(getIdentity(), choosenArtefact, portfolioStructure);
-				if (successfullLink) {
-					getWindowControl().setInfo(
-							getTranslator().translate("artefact.choosen", new String[] { choosenArtefact.getTitle(), portfolioStructure.getTitle() }));
-					ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(choosenArtefact));
-					ThreadLocalUserActivityLogger.log(EPLoggingAction.EPORTFOLIO_ARTEFACT_SELECTED, getClass());
+		if (source == artefactPoolCtrl) {
+			if(event instanceof EPArtefactChoosenEvent) {
+				// finally an artefact was choosen
+				EPArtefactChoosenEvent artCEv = (EPArtefactChoosenEvent) event;
+				artefactBox.deactivate();
+				AbstractArtefact choosenArtefact = artCEv.getArtefact();
+				// check for a yet existing link to this artefact
+				if (ePFMgr.isArtefactInStructure(choosenArtefact, portfolioStructure)) {
+					showWarning("artefact.already.in.structure");
 				} else {
-					showError("restrictions.not.conform");
+					boolean successfullLink = ePFMgr.addArtefactToStructure(getIdentity(), choosenArtefact, portfolioStructure);
+					if (successfullLink) {
+						getWindowControl().setInfo(
+								getTranslator().translate("artefact.choosen", new String[] { choosenArtefact.getTitle(), portfolioStructure.getTitle() }));
+						ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(choosenArtefact));
+						ThreadLocalUserActivityLogger.log(EPLoggingAction.EPORTFOLIO_ARTEFACT_SELECTED, getClass());
+					} else {
+						showError("restrictions.not.conform");
+					}
+					fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, portfolioStructure));
 				}
+			} else if(event == Event.DONE_EVENT) {
+				artefactBox.deactivate();
 				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, portfolioStructure));
 			}
-
-		}
+		} 
 	}
 
 	public void setShowLink(String... types) {

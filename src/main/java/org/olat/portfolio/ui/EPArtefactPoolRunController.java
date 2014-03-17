@@ -262,6 +262,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 			// some artefacts were added, refresh view
 			if (event.equals(Event.DONE_EVENT)) {
 				initTPAllView(ureq);
+				fireEvent(ureq, event);
 			}
 		} else if (event instanceof EPArtefactChoosenEvent) {
 			// an artefact was choosen, pass through the event until top
