@@ -170,12 +170,12 @@ public class ScormResultDetailsController extends BasicController {
 				String username = userCourseEnvironment.getIdentityEnvironment().getIdentity().getName();
 				CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
 				ScormAssessmentManager.getInstance().deleteResults(username, courseEnv, node);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}
 	}
 	
-	public class CmiTableDataModel extends BaseTableDataModelWithoutFilter<CmiData> {
+	public static class CmiTableDataModel extends BaseTableDataModelWithoutFilter<CmiData> {
 		private final List<CmiData> datas;
 		private final Translator translator;
 		private final Pattern pattern = Pattern.compile("[0-9]");
@@ -242,7 +242,7 @@ public class ScormResultDetailsController extends BasicController {
 	 * Initial Date:  07.01.2010 <br>
 	 * @author thomasw
 	 */
-	public class SummaryTableDataModelMultiResults implements TableDataModel<List<CmiData>> {
+	public static class SummaryTableDataModelMultiResults implements TableDataModel<List<CmiData>> {
 		
 		private final Map<Date, List<CmiData>> objects;
 		

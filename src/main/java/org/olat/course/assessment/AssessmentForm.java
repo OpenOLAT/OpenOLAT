@@ -80,10 +80,10 @@ public class AssessmentForm extends FormBasicController {
 	AssessmentForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode assessableCourseNode, AssessedIdentityWrapper assessedIdentityWrapper) {
 		super(ureq, wControl);
 		
-		this.hasAttempts = assessableCourseNode.hasAttemptsConfigured();
-		this.hasScore = assessableCourseNode.hasScoreConfigured();
-		this.hasPassed = assessableCourseNode.hasPassedConfigured();
-		this.hasComment = assessableCourseNode.hasCommentConfigured();
+		hasAttempts = assessableCourseNode.hasAttemptsConfigured();
+		hasScore = assessableCourseNode.hasScoreConfigured();
+		hasPassed = assessableCourseNode.hasPassedConfigured();
+		hasComment = assessableCourseNode.hasCommentConfigured();
 		
 		this.assessedIdentityWrapper = assessedIdentityWrapper;
 		this.assessableCourseNode = assessableCourseNode;
@@ -203,6 +203,30 @@ public class AssessmentForm extends FormBasicController {
 			return Float.parseFloat(scoreStr);
 		}
 		return Float.parseFloat(scoreStr);
+	}
+	
+	protected void reloadData() {
+		UserCourseEnvironment userCourseEnv = assessedIdentityWrapper.getUserCourseEnvironment();
+		ScoreEvaluation scoreEval = userCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
+		if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
+		
+		if (hasAttempts) {
+			attemptsValue = assessableCourseNode.getUserAttempts(userCourseEnv);
+			attempts.setIntValue(attemptsValue == null ? 0 : attemptsValue.intValue());
+		}
+		
+		if (hasScore) {
+			scoreValue = scoreEval.getScore();
+			if (scoreValue != null) {
+				score.setValue(AssessmentHelper.getRoundedScore(scoreValue));
+			} 
+		}
+		
+		if (hasPassed) {
+			Boolean passedValue = scoreEval.getPassed();
+			passed.select(passedValue == null ? "undefined" :passedValue.toString(), true);
+			passed.setEnabled(cut == null);
+		}
 	}
 
 	@Override

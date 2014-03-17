@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -135,6 +134,9 @@ public class CheckListRunController extends FormBasicController implements Contr
 			layoutCont.contextPut("readOnly", new Boolean(readOnly));
 			if(dueDate != null) {
 				layoutCont.contextPut("dueDate", dueDate);
+				if(dueDate.compareTo(new Date()) < 0) {
+					layoutCont.contextPut("afterDueDate", Boolean.TRUE);
+				}
 			}
 			layoutCont.contextPut("withScore", new Boolean(withScore));
 			
@@ -158,7 +160,6 @@ public class CheckListRunController extends FormBasicController implements Contr
 				layoutCont.contextPut("enableScoreInfo", Boolean.TRUE);
 				exposeConfigToVC(layoutCont);
 				exposeUserDataToVC(layoutCont);
-		
 			} else {
 				layoutCont.contextPut("enableScoreInfo", Boolean.FALSE);
 			}
@@ -269,9 +270,11 @@ public class CheckListRunController extends FormBasicController implements Contr
 			theOne = wrapper.getDbCheckbox();
 		}
 
-		Float score = wrapper.getCheckbox().getPoints();
+
+		Float score = checked ? wrapper.getCheckbox().getPoints() : 0f;
 		checkboxManager.check(theOne, getIdentity(), score, new Boolean(checked));
-		DBFactory.getInstance().commit();//make sure all results is on the database before calculating some scores
+		//make sure all results is on the database before calculating some scores
+		//manager commit already DBFactory.getInstance().commit();
 		
 		courseNode.updateScoreEvaluation(userCourseEnv, getIdentity());
 		

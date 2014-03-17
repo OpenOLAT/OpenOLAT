@@ -46,9 +46,12 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CheckListCourseNode;
@@ -65,12 +68,15 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class CheckboxEditController extends FormBasicController {
 	
-	private FormLink deleteLink;
+	private FormLink deleteLink, deleteFileLink, downloadFileLink;
 	private TextElement titleEl, pointsEl;
 	private SingleSelection releaseEl, labelEl;
 	private MultipleSelectionElement awardPointEl;
 	private RichTextElement descriptionEl;
 	private FileElement fileEl;
+	private FormLayoutContainer deleteFileCont;
+	
+	private Boolean deleteFile;
 	
 	private final Checkbox checkbox;
 	private final boolean withScore;
@@ -143,6 +149,14 @@ public class CheckboxEditController extends FormBasicController {
 				ureq.getUserSession(), getWindowControl());
 
 		fileEl = uifactory.addFileElement("file", formLayout);
+		fileEl.addActionListener(this, FormEvent.ONCHANGE);
+
+		String template = velocity_root + "/delete_file.html";
+		deleteFileCont = FormLayoutContainer.createCustomFormLayout("delete", getTranslator(), template);
+		formLayout.add(deleteFileCont);
+		downloadFileLink = uifactory.addFormLink("download", checkbox.getFilename(), null, deleteFileCont, Link.NONTRANSLATED);
+		deleteFileLink = uifactory.addFormLink("deleteFile", "delete", null, deleteFileCont, Link.BUTTON);
+		deleteFileCont.setVisible(StringHelper.containsNonWhitespace(checkbox.getFilename()));
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -197,6 +211,17 @@ public class CheckboxEditController extends FormBasicController {
 		}
 		checkbox.setDescription(descriptionEl.getValue());
 		
+		if(Boolean.TRUE.equals(deleteFile)) {
+			checkbox.setFilename(null);
+			
+			ICourse course = CourseFactory.loadCourse(courseOres);
+			CourseEnvironment courseEnv = course.getCourseEnvironment();
+			VFSContainer container = checkboxManager.getFileContainer(courseEnv, courseNode, checkbox);
+			for (VFSItem chd:container.getItems()) {
+				chd.delete();
+			}
+		}
+		
 		File uploadedFile = fileEl.getUploadFile();
 		if(uploadedFile != null) {
 			String filename = fileEl.getUploadFileName();
@@ -236,9 +261,39 @@ public class CheckboxEditController extends FormBasicController {
 				ThreadLocalUserActivityLogger.log(CourseLoggingAction.CHECKLIST_CHECKBOX_DELETED, getClass(), LoggingResourceable.wrap(courseNode),
 						LoggingResourceable.wrapNonOlatResource(StringResourceableType.checkbox, checkbox.getCheckboxId(), checkbox.getTitle()));
 			}
+		} else if(downloadFileLink == source) {
+			doDownloadFile(ureq);
+		} else if(deleteFileLink == source) {
+			deleteFile();
 		} else if(awardPointEl == source) {
 			pointsEl.setVisible(withScore && awardPointEl.isAtLeastSelected(1));
+		} else if(fileEl == source) {
+			String filename = fileEl.getUploadFileName();
+			downloadFileLink.setI18nKey(filename);
+			downloadFileLink.setEnabled(false);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void deleteFile() {
+		deleteFile = Boolean.TRUE;
+		deleteFileCont.setVisible(false);
+
+		String filename = fileEl.getUploadFileName();
+		if(filename != null && filename.equals(downloadFileLink.getI18nKey())) {
+			fileEl.reset();
+		}
+	}
+	
+	private void doDownloadFile(UserRequest ureq) {
+		ICourse course = CourseFactory.loadCourse(courseOres);
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		VFSContainer container = checkboxManager.getFileContainer(courseEnv, courseNode, checkbox);
+		VFSItem item = container.resolve(checkbox.getFilename());
+		if(item instanceof VFSLeaf) {
+			VFSMediaResource rsrc = new VFSMediaResource((VFSLeaf)item);
+			rsrc.setDownloadable(true);
+			ureq.getDispatchResult().setResultingMediaResource(rsrc);
+		}
 	}
 }

@@ -228,8 +228,9 @@ public class AssessmentEditController extends BasicController {
 		} else if (source == detailsEditController) {
 			//fxdiff FXOLAT-108: reset SCORM test
 			if(event == Event.CHANGED_EVENT) {
-				doUpdateAssessmentData(ureq.getIdentity());
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				assessmentForm.reloadData();
+			} else if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if (source == alreadyLockedDialogController) {
 			if (event == Event.CANCELLED_EVENT || DialogBoxUIFactory.isOkEvent(event)) {
@@ -252,10 +253,9 @@ public class AssessmentEditController extends BasicController {
 		ScoreEvaluation scoreEval = null;
 		Float newScore = null;
 		Boolean newPassed = null;
-		//String userName = userCourseEnvironment.getIdentityEnvironment().getIdentity().getName();
-
+		
 		if (assessmentForm.isHasAttempts() && assessmentForm.isAttemptsDirty()) {
-			this.courseNode.updateUserAttempts(new Integer(assessmentForm.getAttempts()), userCourseEnvironment, coachIdentity);
+			courseNode.updateUserAttempts(new Integer(assessmentForm.getAttempts()), userCourseEnvironment, coachIdentity);
 		}
 
 		if (assessmentForm.isHasScore() && assessmentForm.isScoreDirty()) {
@@ -295,11 +295,11 @@ public class AssessmentEditController extends BasicController {
 		if (assessmentForm.isCoachCommentDirty()) {
 			String newCoachComment = assessmentForm.getCoachComment().getValue();
 			// Update properties in db
-			this.courseNode.updateUserCoachComment(newCoachComment, userCourseEnvironment);
+			courseNode.updateUserCoachComment(newCoachComment, userCourseEnvironment);
 		}
 		
 		// Refresh score view
-		userCourseEnvironment.getScoreAccounting().scoreInfoChanged(this.courseNode, scoreEval);
+		userCourseEnvironment.getScoreAccounting().scoreInfoChanged(courseNode, scoreEval);
 	}
 
 	/**

@@ -68,6 +68,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
@@ -573,11 +575,13 @@ public class CheckListAssessmentController extends FormBasicController implement
 	
 	private void doExportPDF(UserRequest ureq) {
 		try {
+			ICourse course = CourseFactory.loadCourse(courseOres);
+			
 			String name = courseNode.getShortTitle();
 			CheckboxPDFExport pdfExport = new CheckboxPDFExport(name, getTranslator(), userPropertyHandlers);
 			pdfExport.setAuthor(userManager.getUserDisplayName(getIdentity()));
 			pdfExport.setCourseNodeTitle(courseNode.getShortTitle());
-			pdfExport.setCourseTitle(courseNode.getLongTitle());
+			pdfExport.setCourseTitle(course.getCourseTitle());
 			pdfExport.setCourseNodeTitle(courseNode.getShortTitle());
 			String groupName = table.getSelectedFilterValue();
 			pdfExport.setGroupName(groupName);
@@ -590,11 +594,13 @@ public class CheckListAssessmentController extends FormBasicController implement
 	
 	private void doCheckedExportPDF(UserRequest ureq) {
 		try {
+			ICourse course = CourseFactory.loadCourse(courseOres);
+			
 			String name = courseNode.getShortTitle();
 			CheckedPDFExport pdfExport = new CheckedPDFExport(name, getTranslator(), withScore, userPropertyHandlers);
 			pdfExport.setAuthor(userManager.getUserDisplayName(getIdentity()));
 			pdfExport.setCourseNodeTitle(courseNode.getShortTitle());
-			pdfExport.setCourseTitle(courseNode.getLongTitle());
+			pdfExport.setCourseTitle(course.getCourseTitle());
 			pdfExport.create(checkboxList, model.getObjects());
 			ureq.getDispatchResult().setResultingMediaResource(pdfExport);
 		} catch (IOException | COSVisitorException | TransformerException e) {
