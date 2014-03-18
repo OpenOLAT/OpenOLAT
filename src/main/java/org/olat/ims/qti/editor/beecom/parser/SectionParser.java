@@ -58,7 +58,7 @@ public class SectionParser implements IParser {
 			section.setDuration(duration);
 			
 			List sectioncontrolsXML = element.elements("sectioncontrol");
-			List sectioncontrols = new ArrayList();
+			List<Object> sectioncontrols = new ArrayList<>();
 			for(Iterator i= sectioncontrolsXML.iterator();i.hasNext();) {
 				sectioncontrols.add(parserManager.parse((Element)i.next()));
 			}
@@ -77,7 +77,7 @@ public class SectionParser implements IParser {
 
 			//SECTIONS
 			List sectionsXML = element.elements("section");
-			List sections = new ArrayList();
+			List<Object> sections = new ArrayList<>();
 			for(Iterator i = sectionsXML.iterator();i.hasNext();) {
 				sections.add(parserManager.parse((Element)i.next()));	
 			}
@@ -86,7 +86,7 @@ public class SectionParser implements IParser {
 		
 			//ITEMS
 			List itemsXML = element.elements("item");
-			List items = new ArrayList();
+			List<Object> items = new ArrayList<>();
 			for(Iterator i = itemsXML.iterator();i.hasNext();) {
 				items.add(parserManager.parse((Element)i.next()));	
 			}
@@ -99,7 +99,7 @@ public class SectionParser implements IParser {
 			
 			//FEEDBACKS
 			List feedbacksXML = element.elements("sectionfeedback");
-			List feedbacks = new ArrayList();
+			List<QTIObject> feedbacks = new ArrayList<>();
 			for(Iterator i = feedbacksXML.iterator();i.hasNext();) {
 				QTIObject tmp = (QTIObject)parserManager.parse((Element)i.next());
 				feedbacks.add(tmp);

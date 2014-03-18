@@ -120,10 +120,10 @@ public class OLATResourceableListeningWrapperController extends MainLayoutBasicC
 	 * @see org.olat.core.gui.control.DefaultController#fireEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Event)
 	 */
 	protected void fireEvent(UserRequest ureq, Event event) {
-		List listeners = getListeners();
+		List<ControllerEventListener> listeners = getListeners();
 		if (listeners == null) return;
-		for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-			ControllerEventListener listener = (ControllerEventListener) iter.next();
+		for (Iterator<ControllerEventListener> iter = listeners.iterator(); iter.hasNext();) {
+			ControllerEventListener listener = iter.next();
 			//was: listener.dispatchEvent(ureq, this, event);
 			// needs to be:
 			listener.dispatchEvent(ureq, realController, event);

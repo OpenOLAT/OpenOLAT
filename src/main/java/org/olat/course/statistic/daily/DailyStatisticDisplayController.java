@@ -30,8 +30,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.DateChooserForm;
@@ -40,9 +38,6 @@ import org.olat.course.statistic.StatisticDisplayController;
 import org.olat.course.statistic.StatisticResult;
 
 public class DailyStatisticDisplayController extends StatisticDisplayController {
-
-	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(DailyStatisticDisplayController.class);
 
 	private VelocityContainer dailyStatisticFormVc_;
 	private VelocityContainer dailyStatisticVc_;

@@ -47,6 +47,7 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 public class ChiefControllerMessageEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = -2235582801661115222L;
 	/**
 	 * indicates removing clearing of maintenance message
 	 */

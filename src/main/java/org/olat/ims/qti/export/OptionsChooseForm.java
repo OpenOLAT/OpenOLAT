@@ -135,7 +135,7 @@ public class OptionsChooseForm extends FormBasicController {
 		// Single Choice
 		if(hasSCQ){
 			QTIExportSCQItemFormatConfig c = (QTIExportSCQItemFormatConfig) mapWithConfigs.get(QTIExportSCQItemFormatConfig.class);
-			Set s = scq.getSelectedKeys();
+			Set<String> s = scq.getSelectedKeys();
 			c.setResponseCols(s.contains(SCQ_ITEMCOLS));
 			c.setPositionsOfResponsesCol(s.contains(SCQ_POSCOL));
 			c.setPointCol(s.contains(SCQ_POINTCOL));
@@ -145,7 +145,7 @@ public class OptionsChooseForm extends FormBasicController {
 		// Multiple Choice
 		if(hasMCQ){
 			QTIExportMCQItemFormatConfig c = (QTIExportMCQItemFormatConfig) mapWithConfigs.get(QTIExportMCQItemFormatConfig.class);
-			Set s = mcq.getSelectedKeys();
+			Set<String> s = mcq.getSelectedKeys();
 			c.setResponseCols(s.contains(MCQ_ITEMCOLS));
 			c.setPositionsOfResponsesCol(s.contains(MCQ_POSCOL));
 			c.setPointCol(s.contains(MCQ_POINTCOL));
@@ -155,7 +155,7 @@ public class OptionsChooseForm extends FormBasicController {
 		// KPRIM
 		if(hasKRIM){
 			QTIExportKPRIMItemFormatConfig c = (QTIExportKPRIMItemFormatConfig) mapWithConfigs.get(QTIExportKPRIMItemFormatConfig.class);
-			Set s = kprim.getSelectedKeys();
+			Set<String> s = kprim.getSelectedKeys();
 			c.setResponseCols(s.contains(KPRIM_ITEMCOLS));
 			c.setPointCol(s.contains(KPRIM_POINTCOL));
 			c.setTimeCols(s.contains(KPRIM_TIMECOLS));
@@ -164,7 +164,7 @@ public class OptionsChooseForm extends FormBasicController {
 		// Fill in the Blank
 		if(hasFIB){
 			QTIExportFIBItemFormatConfig c = (QTIExportFIBItemFormatConfig) mapWithConfigs.get(QTIExportFIBItemFormatConfig.class);
-			Set s = fib.getSelectedKeys();
+			Set<String> s = fib.getSelectedKeys();
 			c.setResponseCols(s.contains(FIB_ITEMCOLS));
 			c.setPointCol(s.contains(FIB_POINTCOL));
 			c.setTimeCols(s.contains(FIB_TIMECOLS));
@@ -173,7 +173,7 @@ public class OptionsChooseForm extends FormBasicController {
 		// Essay
 		if(hasEssay){
 			QTIExportEssayItemFormatConfig c = (QTIExportEssayItemFormatConfig) mapWithConfigs.get(QTIExportEssayItemFormatConfig.class);
-			Set s = essay.getSelectedKeys();
+			Set<String> s = essay.getSelectedKeys();
 			c.setResponseCols(s.contains(ESSAY_ITEMCOLS));
 			c.setTimeCols(s.contains(ESSAY_TIMECOLS));
 		}

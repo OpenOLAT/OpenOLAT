@@ -49,11 +49,12 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ImageHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -101,8 +102,8 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		this.courseEnvironment = courseEnvironment;
 		customCMgr = (CustomConfigManager) CoreSpringFactory.getBean("courseConfigManager");
 		// stack the translator to get attribs/elements
-		PackageTranslator pt = new PackageTranslator(AbstractLayoutAttribute.class.getPackage().getName(), ureq.getLocale(), getTranslator());
-		pt = new PackageTranslator(AbstractLayoutElement.class.getPackage().getName(), ureq.getLocale(), pt);
+		Translator pt = Util.createPackageTranslator(AbstractLayoutAttribute.class, ureq.getLocale(), getTranslator());
+		pt = Util.createPackageTranslator(AbstractLayoutElement.class, ureq.getLocale(), pt);
 		setTranslator(pt);
 		persistedCustomConfig = customCMgr.getCustomConfig(courseEnvironment);
 		initForm(ureq);

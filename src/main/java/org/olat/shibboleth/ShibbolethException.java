@@ -33,7 +33,8 @@ package org.olat.shibboleth;
  * @author Lavinia Dumitrescu
  */
 public class ShibbolethException extends Exception {
-	
+
+	private static final long serialVersionUID = 9055605164344300611L;
 	//error codes
 	public static final int GENERAL_SAML_ERROR = 0;	
 	public static final int UNIQUE_ID_NOT_FOUND = 1;

@@ -49,6 +49,8 @@ package org.olat.modules.scorm.contentpackaging;
  * @author Phillip Beauvoir
 */
 public class DocumentHandlerException extends Exception {
+
+	private static final long serialVersionUID = -1461184029704890282L;
 	/**
 	 * 
 	 */

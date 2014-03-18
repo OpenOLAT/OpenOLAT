@@ -33,8 +33,8 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 
 
 /**
@@ -47,7 +47,9 @@ import org.olat.core.manager.BasicManager;
  * Initial Date:  25.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class PessimisticLockManager extends BasicManager implements Initializable {
+public class PessimisticLockManager implements Initializable {
+	
+	private static final OLog log = Tracing.createLoggerFor(PessimisticLockManager.class);
 	
 	private static PessimisticLockManager INSTANCE;
 	private final String ASSET_INSERT_LOCK = "SYS_plock_global";
@@ -107,15 +109,17 @@ public class PessimisticLockManager extends BasicManager implements Initializabl
 	 */
 	public PLock findOrPersistPLock(String asset) {
 		if (!initDone) throw new AssertException("init not called yet - make sure the ClusterModule is enabled in your olat.local.properties file");
-		if (Tracing.isDebugEnabled(PessimisticLockManager.class)) {
-			Tracing.logDebug("findOrPersistPLock START asset="+asset, PessimisticLockManager.class);
+		
+		boolean debug = log.isDebug();
+		if (debug) {
+			log.debug("findOrPersistPLock START asset="+asset);
 		}
 		PLock plock = findPLock(asset);
-		if (Tracing.isDebugEnabled(PessimisticLockManager.class)) {
+		if (debug) {
 			if (plock==null) {
-				Tracing.logDebug("findOrPersistPLock PLock not found", PessimisticLockManager.class);
+				log.debug("findOrPersistPLock PLock not found");
 			} else {
-				Tracing.logDebug("findOrPersistPLock found and locked PLock: "+plock, PessimisticLockManager.class);
+				log.debug("findOrPersistPLock found and locked PLock: "+plock);
 			}
 		}
 		// if not found, persist it.
@@ -123,22 +127,22 @@ public class PessimisticLockManager extends BasicManager implements Initializabl
 			// synchronize the findOrCreate by using the special row with the global-lock-asset
 			// locks the global lock - which is only used to sync creation of new resource entries, so that those can later be locked.
 			findPLock(ASSET_INSERT_LOCK);
-			if (Tracing.isDebugEnabled(PessimisticLockManager.class)) {
-				Tracing.logDebug("findOrPersistPLock global insert lock locked", PessimisticLockManager.class);
+			if (debug) {
+				log.debug("findOrPersistPLock global insert lock locked");
 			}
 			// need to read again within the protected region
 			plock = findPLock(asset);
 			if (plock == null) {
-				if (Tracing.isDebugEnabled(PessimisticLockManager.class)) {
-					Tracing.logDebug("findOrPersistPLock creating new plock: "+asset, PessimisticLockManager.class);
+				if (debug) {
+					log.debug("findOrPersistPLock creating new plock: "+asset);
 				}
 				plock = createPLock(asset);
-				if (Tracing.isDebugEnabled(PessimisticLockManager.class)) {
-					Tracing.logDebug("findOrPersistPLock created new plock: "+asset, PessimisticLockManager.class);
+				if (debug) {
+					log.debug("findOrPersistPLock created new plock: "+asset);
 				}
 				savePLock(plock);
-				if (Tracing.isDebugEnabled(PessimisticLockManager.class)) {
-					Tracing.logDebug("findOrPersistPLock saved new plock: "+asset, PessimisticLockManager.class);
+				if (debug) {
+					log.debug("findOrPersistPLock saved new plock: "+asset);
 				}
 			} // else plock got created by another thread in the meantime
 

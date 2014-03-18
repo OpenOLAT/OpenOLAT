@@ -37,6 +37,8 @@ package org.olat.fileresource.types;
  * @author guido
  */
 public class AddingResourceException extends Exception {
+
+	private static final long serialVersionUID = 4598004122080558856L;
 	private String errorKey;
 	
 	/**

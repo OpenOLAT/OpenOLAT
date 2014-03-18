@@ -35,7 +35,9 @@ import org.olat.core.gui.control.Event;
  * @author guido
  */
 public class ErrorEvent extends Event {
-	
+
+	private static final long serialVersionUID = -9057606133682633706L;
+
 	public ErrorEvent(String errorKey) {
 		super(errorKey);
 	}

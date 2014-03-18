@@ -32,7 +32,7 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
  *
  * @author Marcel Karras (toka@freebits.de)
  */
-public class LLEditTableDataModel extends DefaultTableDataModel {
+public class LLEditTableDataModel extends DefaultTableDataModel<LLModel> {
 
 	private static int COLUMN_COUNT = 3;
 
@@ -53,7 +53,7 @@ public class LLEditTableDataModel extends DefaultTableDataModel {
 	 */
 	@Override
 	public Object getValueAt(int row, int col) {
-		final LLModel model = ((LLModel) objects.get(row));
+		final LLModel model = objects.get(row);
 		switch (col) {
 			case 0:
 				return model.getTarget();

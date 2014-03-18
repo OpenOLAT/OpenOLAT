@@ -34,6 +34,7 @@ import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.gui.control.Event;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseFactory;
@@ -53,6 +54,8 @@ import org.olat.course.editor.PublishEvent;
  * @author patrickb
  */
 public class AssessmentModule implements Initializable, Destroyable, GenericEventListener {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentModule.class);
 
 	private List<Long> upcomingWork;
 	private CourseModule courseModule;
@@ -102,10 +105,8 @@ public class AssessmentModule implements Initializable, Destroyable, GenericEven
 		//check that working queue is empty
 		if(upcomingWork.size()>0){
 			//hanging work!!
-			Tracing.logWarn("still some Efficiency Statement recalculations open!!", AssessmentModule.class);
+			log.warn("still some Efficiency Statement recalculations open!!");
 		}
-		
-		//
 	}
 
 	/**

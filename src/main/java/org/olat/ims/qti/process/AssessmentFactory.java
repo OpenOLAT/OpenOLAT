@@ -26,6 +26,7 @@
 package org.olat.ims.qti.process;
 
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -39,6 +40,8 @@ import org.olat.repository.RepositoryManager;
  * @author Felix Jost
  */
 public class AssessmentFactory {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentFactory.class);
 
 	/**
 	 * Create an assessment instance from a Repository resource referenced by repoPointer.
@@ -65,7 +68,7 @@ public class AssessmentFactory {
 				FilePersister oldPersister = new FilePersister(subj, re.getKey().toString());
 				ai = (AssessmentInstance) oldPersister.toRAM();
 				if (ai != null) {
-					Tracing.logAudit("Read assessment instance from old path version,",subj + "," + re.getKey().toString(), AssessmentFactory.class);
+					log.audit("Read assessment instance from old path version,",subj + "," + re.getKey().toString());
 				}
 			}
 		}

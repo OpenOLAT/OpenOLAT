@@ -68,7 +68,6 @@ import org.olat.core.util.i18n.I18nManager;
  */
 public class ExceptionWindowController extends DefaultChiefController {
 	private static final OLog log = Tracing.createLoggerFor(ExceptionWindowController.class);
-	private static final String PACKAGE = Util.getPackageName(ExceptionWindowController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(ExceptionWindowController.class);
 
 	private VelocityContainer msg;
@@ -92,7 +91,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 			i18nMgr.setMarkLocalizedStringsEnabled(ureq.getUserSession(), false);			
 		}
 
-		Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+		Translator trans = Util.createPackageTranslator(ExceptionWindowController.class, ureq.getLocale());
 		Formatter formatter = Formatter.getInstance(ureq.getLocale());
 		msg = new VelocityContainer("olatmain", VELOCITY_ROOT + "/exception_page.html", trans, this);
 

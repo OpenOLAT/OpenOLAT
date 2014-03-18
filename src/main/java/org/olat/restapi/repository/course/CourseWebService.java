@@ -771,7 +771,6 @@ public class CourseWebService {
 	}
 	
 	private RepositoryEntry getCourseEntry(OLATResource courseResource) {
-		String typeName = OresHelper.calculateTypeName(CourseModule.class);
 		return RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
 	}
 	

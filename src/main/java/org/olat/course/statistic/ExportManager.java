@@ -80,10 +80,6 @@ public class ExportManager extends BasicManager {
 	 * filename used to store all user's activities (anonymized) in the course
 	 */
 	private static final String FILENAME_STATISTIC_LOG = "course_statistic_log.csv";
-	/** 
-	 * filename course statistic
-	 */
-	private static final String FILENAME_COURSE_STATISTIC = "course_statistic.csv";
 	/**
 	 * zip filename substring (archive log files)
 	 */

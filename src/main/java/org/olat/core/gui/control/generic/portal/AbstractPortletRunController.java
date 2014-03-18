@@ -103,7 +103,7 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
 		Preferences guiPreferences = ureq.getUserSession().getGuiPreferences();
 		guiPreferences.putAndSave(Map.class, getPreferenceKey(SORTING_CRITERIA_PREF), sortingCriteria.getPersistable());
 		if(sortingCriteria.getSortingType()==SortingCriteria.AUTO_SORTING) {
-			Map<Long, Integer> storedPrefs = (Map<Long, Integer>) guiPreferences.get(Map.class, getPreferenceKey(this.SORTED_ITEMS_PREF));
+			Map<Long, Integer> storedPrefs = (Map<Long, Integer>) guiPreferences.get(Map.class, getPreferenceKey(SORTED_ITEMS_PREF));
 			if (storedPrefs != null) {
 		    //if auto sorting choosed, remove any manually sorting info
 		    List<PortletEntry<T>> sortedItems = new ArrayList<PortletEntry<T>>();

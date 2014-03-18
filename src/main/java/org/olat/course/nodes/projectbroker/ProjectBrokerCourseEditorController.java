@@ -50,7 +50,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailTemplate;
@@ -110,7 +109,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	private VelocityContainer accessabilityVC, optionsFormVC, accountManagementFormVC;
 	private VelocityContainer editModules, editDropbox, editScoring;
 	private TabbedPane myTabbedPane;
-	private int  dropboxTabPosition, scoringTabPosition;
+	private int dropboxTabPosition;
 	private ModulesFormController modulesForm;
 	private DropboxForm dropboxForm;
 	private MSEditFormController scoringController;
@@ -155,8 +154,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		this.courseId = course.getResourceableId();
 		this.config = node.getModuleConfiguration();
 		projectBrokerModuleConfiguration	= new ProjectBrokerModuleConfiguration(node.getModuleConfiguration());
-		Translator fallbackTranslator = new PackageTranslator(Util.getPackageName(DropboxForm.class), ureq.getLocale(), new PackageTranslator(Util.getPackageName(MSCourseNodeEditController.class), ureq.getLocale()));
-		Translator myTranslator = new PackageTranslator( Util.getPackageName(ProjectBrokerCourseEditorController.class), ureq.getLocale(),	fallbackTranslator);
+		Translator fallbackTranslator = Util.createPackageTranslator(DropboxForm.class, ureq.getLocale(), Util.createPackageTranslator(MSCourseNodeEditController.class, ureq.getLocale()));
+		Translator myTranslator = Util.createPackageTranslator(ProjectBrokerCourseEditorController.class, ureq.getLocale(),	fallbackTranslator);
 		setTranslator(myTranslator);
 
 		// check if a project-broker exists

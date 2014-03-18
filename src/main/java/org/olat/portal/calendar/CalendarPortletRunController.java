@@ -110,7 +110,7 @@ public class CalendarPortletRunController extends BasicController {
 				ColumnDescriptor.ALIGNMENT_LEFT));
 		
 		
-		List events = getMatchingEvents(ureq, wControl);
+		List<KalendarEvent> events = getMatchingEvents(ureq, wControl);
 		tableController.setTableDataModel(new EventsModel(events));
 		listenTo(tableController);
 		
@@ -119,30 +119,29 @@ public class CalendarPortletRunController extends BasicController {
 		putInitialPanel(this.calendarVC);
 	}
 
-	private List getMatchingEvents(UserRequest ureq, WindowControl wControl) {
+	private List<KalendarEvent> getMatchingEvents(UserRequest ureq, WindowControl wControl) {
 		Date startDate = new Date();
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.DAY_OF_YEAR, cal.get(Calendar.DAY_OF_YEAR) + 7);
 		Date endDate = cal.getTime();
-		List events = new ArrayList();
-		List calendars = HomeCalendarController.getListOfCalendarWrappers(ureq, wControl);
+		List<KalendarEvent> events = new ArrayList<>();
+		List<KalendarRenderWrapper> calendars = HomeCalendarController.getListOfCalendarWrappers(ureq, wControl);
 		calendars.addAll( HomeCalendarController.getListOfImportedCalendarWrappers(ureq) );
-		for (Iterator iter = calendars.iterator(); iter.hasNext();) {
-			KalendarRenderWrapper calendarWrapper = (KalendarRenderWrapper) iter.next();
+		for (Iterator<KalendarRenderWrapper> iter = calendars.iterator(); iter.hasNext();) {
+			KalendarRenderWrapper calendarWrapper = iter.next();
 			boolean readOnly = (calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY) && !calendarWrapper.isImported();
-			List eventsWithinPeriod = CalendarUtils.listEventsForPeriod(calendarWrapper.getKalendar(), startDate, endDate);
-			for (Iterator iterator = eventsWithinPeriod.iterator(); iterator.hasNext();) {
-				KalendarEvent event = (KalendarEvent) iterator.next();
+			List<KalendarEvent> eventsWithinPeriod = CalendarUtils.listEventsForPeriod(calendarWrapper.getKalendar(), startDate, endDate);
+			for (KalendarEvent event : eventsWithinPeriod) {
 				// skip non-public events
 				if (readOnly && event.getClassification() != KalendarEvent.CLASS_PUBLIC) continue;
 				events.add(event);
 			}
 		}
 		// sort events
-		Collections.sort(events, new Comparator() {
-			public int compare(Object arg0, Object arg1) {
-				Date begin0 = ((KalendarEvent) arg0).getBegin();
-				Date begin1 = ((KalendarEvent) arg1).getBegin();
+		Collections.sort(events, new Comparator<KalendarEvent>() {
+			public int compare(KalendarEvent arg0, KalendarEvent arg1) {
+				Date begin0 = arg0.getBegin();
+				Date begin1 = arg1.getBegin();
 				return begin0.compareTo(begin1);
 			}
 		});
@@ -163,7 +162,7 @@ public class CalendarPortletRunController extends BasicController {
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
 		} else if (event == ComponentUtil.VALIDATE_EVENT && dirty) {
-			List events = getMatchingEvents(ureq, getWindowControl());
+			List<KalendarEvent> events = getMatchingEvents(ureq, getWindowControl());
 			tableController.setTableDataModel(new EventsModel(events));
 		}
 	}
@@ -179,7 +178,7 @@ public class CalendarPortletRunController extends BasicController {
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_LAUNCH)) {
 					int rowid = te.getRowId();
-					KalendarEvent kalendarEvent = (KalendarEvent)((DefaultTableDataModel)tableController.getTableDataModel()).getObject(rowid);
+					KalendarEvent kalendarEvent = ((EventsModel)tableController.getTableDataModel()).getObject(rowid);
 					String resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][calendar:0]"
 							+ BusinessControlFactory.getInstance().getContextEntryStringForDate(kalendarEvent.getBegin());
 					BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
@@ -201,12 +200,12 @@ public class CalendarPortletRunController extends BasicController {
 
 }
 
-class EventsModel extends DefaultTableDataModel {
+class EventsModel extends DefaultTableDataModel<KalendarEvent> {
 
 	private static final int COLUMNS = 2;
 	private int MAX_SUBJECT_LENGTH = 30;
 	
-	public EventsModel(List events) {
+	public EventsModel(List<KalendarEvent> events) {
 		super(events);
 	}
 
@@ -215,7 +214,7 @@ class EventsModel extends DefaultTableDataModel {
 	}
 
 	public Object getValueAt(int row, int col) {
-		KalendarEvent event = (KalendarEvent)getObject(row);
+		KalendarEvent event = getObject(row);
 		switch (col) {
 			case 0:
 				return event;

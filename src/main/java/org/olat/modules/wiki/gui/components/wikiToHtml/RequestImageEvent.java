@@ -36,6 +36,8 @@ import org.olat.core.gui.control.Event;
  */
 public class RequestImageEvent extends Event {
 
+	private static final long serialVersionUID = -2167337744405866804L;
+
 	public RequestImageEvent(String command) {
 		super(command);
 	}

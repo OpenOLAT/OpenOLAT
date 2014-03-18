@@ -33,7 +33,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.Quota;
@@ -49,7 +48,6 @@ import org.olat.course.run.userview.NodeEvaluation;
  * @author Mike Stock
  */
 public class BCPreviewController extends DefaultController {
-	private static final String PACKAGE = Util.getPackageName(BCPreviewController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(BCPreviewController.class);
 
 	private Translator trans;
@@ -63,7 +61,7 @@ public class BCPreviewController extends DefaultController {
 	 */
 	public BCPreviewController(UserRequest ureq, WindowControl wControl, BCCourseNode node, CourseEnvironment courseEnv, NodeEvaluation ne) {
 		super(wControl);		
-		trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+		trans = Util.createPackageTranslator(BCPreviewController.class, ureq.getLocale());
 		previewVC = new VelocityContainer("bcPreviewVC", VELOCITY_ROOT + "/preview.html", trans, this);
 		OlatNamedContainerImpl namedContainer = BCCourseNode.getNodeFolderContainer(node, courseEnv);
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());

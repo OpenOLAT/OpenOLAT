@@ -26,6 +26,7 @@
 package org.olat.course.nodes.projectbroker;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -33,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -51,9 +51,8 @@ public class ProjectEventFormController extends FormBasicController {
 	
 	
 	private ProjectBrokerModuleConfiguration config;
-	private HashMap<Project.EventType, MultipleSelectionElement> projectEventElementList;
+	private Map<Project.EventType, MultipleSelectionElement> projectEventElementList;
 
-	private FormSubmit formSubmit;
 	/**
 	 * Modules selection form.
 	 * @param name
@@ -87,7 +86,7 @@ public class ProjectEventFormController extends FormBasicController {
 			projectEventElement.addActionListener(FormEvent.ONCLICK);
 			projectEventElementList.put(eventType, projectEventElement);
 		}
-		formSubmit = uifactory.addFormSubmitButton("save", formLayout);		
+		uifactory.addFormSubmitButton("save", formLayout);		
 	}
 
 	@Override

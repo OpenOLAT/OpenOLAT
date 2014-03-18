@@ -46,8 +46,7 @@ import org.olat.repository.RepositoryEntry;
  * @author Alexander Schneider
  */
 public class SharedFolderEditorController extends DefaultController {
-	private static final String PACKAGE = Util.getPackageName(SharedFolderEditorController.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(SharedFolderEditorController.class);
 	
 	private Translator translator;
 	private VelocityContainer vcEdit;

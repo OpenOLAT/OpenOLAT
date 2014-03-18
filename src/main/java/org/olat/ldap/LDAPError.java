@@ -22,7 +22,8 @@ package org.olat.ldap;
 import java.io.Serializable;
 
 public class LDAPError implements Serializable {
-	
+
+	private static final long serialVersionUID = 3195738602137330173L;
 	private ErrorNode head, end;
 	private int size;
 	
@@ -60,8 +61,9 @@ public class LDAPError implements Serializable {
 	}
 	
 	
-	public class ErrorNode implements Serializable{
-		
+	public static class ErrorNode implements Serializable{
+
+		private static final long serialVersionUID = 233510588950547484L;
 		private String error;
 		private ErrorNode next, prev;
 		

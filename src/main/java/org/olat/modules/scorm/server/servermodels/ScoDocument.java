@@ -201,7 +201,7 @@ public class ScoDocument extends XMLDocument {
 			}
 		}
 
-		Vector allElements = new Vector();
+		Vector<String[]> allElements = new Vector<String[]>();
 		// first add all part A cmi model components...
 		for (int i = 0; i < _cmivalues_a.length; i++) {
 			String[] _cmicomponents = new String[2];
@@ -257,8 +257,8 @@ public class ScoDocument extends XMLDocument {
 	 * 
 	 * @return a vector containing a 2-d array of name/values for interactions
 	 */
-	private Vector getInteractionsNodesFromModel() {
-		Vector interactionsElements = new Vector();
+	private Vector<String[]> getInteractionsNodesFromModel() {
+		Vector<String[]> interactionsElements = new Vector<>();
 		Element id = getElement(getDocument().getRootElement(), "cmi.interactions");
 		List interactionList = id.getChildren("interaction");
 		Iterator listElement = interactionList.iterator();
@@ -350,8 +350,8 @@ public class ScoDocument extends XMLDocument {
 	 * @return objectives nodes
 	 * @returns a vector of obectives found in model
 	 */
-	private Vector getObjectivesNodesFromModel(int numberOfObjectives) {
-		Vector objectiveElements = new Vector();
+	private Vector<String[]> getObjectivesNodesFromModel(int numberOfObjectives) {
+		Vector<String[]> objectiveElements = new Vector<>();
 		Element id = getElement(getDocument().getRootElement(), "cmi.objectives");
 		List objectiveList = id.getChildren("objective");
 		Iterator listElement = objectiveList.iterator();
@@ -485,8 +485,8 @@ public class ScoDocument extends XMLDocument {
 	public void doLmsCommit(String[][] scoElementsPreUpdate) {
 		// System.out.println("reloadScoDocuement - dolmscommit is called");
 		String[][] scoElements = doFinalPreUpdate(scoElementsPreUpdate, false);
-		Vector objectives = new Vector();
-		Vector interactions = new Vector();
+		Vector<String[]> objectives = new Vector<>();
+		Vector<String[]> interactions = new Vector<>();
 		int objectivesCount = 0;
 		int interactionsCount = 0;
 
@@ -561,7 +561,7 @@ public class ScoDocument extends XMLDocument {
 		int interactionsCount = Integer.parseInt(getElement(getDocument().getRootElement(), "cmi.interactions._count").getText());
 
 		// Keying the elements into a hashtable will make this easier
-		Hashtable keyedInteractions = new Hashtable();
+		Hashtable<String,String> keyedInteractions = new Hashtable<>();
 		for (int i = 0; i < interactions.length; i++) {
 			keyedInteractions.put(interactions[i][0], interactions[i][1]);
 		}
@@ -594,7 +594,7 @@ public class ScoDocument extends XMLDocument {
 			Element anInteraction = (Element) listElement.next();
 			String interactionIndex = anInteraction.getAttributeValue("index");
 			// set the ID for this interaction
-			anInteraction.getChild("id").setText((String) keyedInteractions.get("cmi.interactions." + interactionIndex + ".id"));
+			anInteraction.getChild("id").setText(keyedInteractions.get("cmi.interactions." + interactionIndex + ".id"));
 			// next we need to update 'n' number of of <cmi.interactions.n.objective>
 			// nodes
 			Element objectives = anInteraction.getChild("objectives");
@@ -609,12 +609,12 @@ public class ScoDocument extends XMLDocument {
 				// now use that index to get the correct key from the hashtable
 				// and update the correct JDOM node in our model
 				anObjective.getChild("id").setText(
-						(String) keyedInteractions.get("cmi.interactions." + interactionIndex + ".objectives." + objectiveIndex + ".id"));
+						keyedInteractions.get("cmi.interactions." + interactionIndex + ".objectives." + objectiveIndex + ".id"));
 			}
 			// update the time
-			anInteraction.getChild("time").setText((String) keyedInteractions.get("cmi.interactions." + interactionIndex + ".time"));
+			anInteraction.getChild("time").setText(keyedInteractions.get("cmi.interactions." + interactionIndex + ".time"));
 			// update the type
-			anInteraction.getChild("type").setText((String) keyedInteractions.get("cmi.interactions." + interactionIndex + ".type"));
+			anInteraction.getChild("type").setText(keyedInteractions.get("cmi.interactions." + interactionIndex + ".type"));
 
 			// correct_responses
 			Element correct_responses = anInteraction.getChild("correct_responses");
@@ -625,14 +625,14 @@ public class ScoDocument extends XMLDocument {
 				Element aCorrectResponse = (Element) crListElement.next();
 				String crIndex = aCorrectResponse.getAttributeValue("index");
 				aCorrectResponse.getChild("pattern").setText(
-						(String) keyedInteractions.get("cmi.interactions." + interactionIndex + ".correct_responses." + crIndex + ".pattern"));
+						keyedInteractions.get("cmi.interactions." + interactionIndex + ".correct_responses." + crIndex + ".pattern"));
 			}
 
-			anInteraction.getChild("weighting").setText((String) keyedInteractions.get("cmi.interactions." + interactionIndex + ".weighting"));
+			anInteraction.getChild("weighting").setText(keyedInteractions.get("cmi.interactions." + interactionIndex + ".weighting"));
 			anInteraction.getChild("student_response").setText(
-					(String) keyedInteractions.get("cmi.interactions." + interactionIndex + ".student_response"));
-			anInteraction.getChild("result").setText((String) keyedInteractions.get("cmi.interactions." + interactionIndex + ".result"));
-			anInteraction.getChild("latency").setText((String) keyedInteractions.get("cmi.interactions." + interactionIndex + ".latency"));
+					keyedInteractions.get("cmi.interactions." + interactionIndex + ".student_response"));
+			anInteraction.getChild("result").setText(keyedInteractions.get("cmi.interactions." + interactionIndex + ".result"));
+			anInteraction.getChild("latency").setText(keyedInteractions.get("cmi.interactions." + interactionIndex + ".latency"));
 		}
 		// once finished, update the <_count> to reflect the changes
 		getElement(getDocument().getRootElement(), "cmi.interactions._count").setText(count + "");
@@ -664,7 +664,7 @@ public class ScoDocument extends XMLDocument {
 		}
 		// next update the elements...
 		// Keying the elements into a hashtable will make this easier
-		Hashtable keyedObjectives = new Hashtable();
+		Hashtable<String,String> keyedObjectives = new Hashtable<>();
 		for (int i = 0; i < objectives.length; i++) {
 			keyedObjectives.put(objectives[i][0], objectives[i][1]);
 		}
@@ -675,15 +675,15 @@ public class ScoDocument extends XMLDocument {
 			Element anObjective = (Element) listElement.next();
 			String objectiveIndex = anObjective.getAttributeValue("index");
 			// set the ID for this objective
-			anObjective.getChild("id").setText((String) keyedObjectives.get("cmi.objectives." + objectiveIndex + ".id"));
+			anObjective.getChild("id").setText(keyedObjectives.get("cmi.objectives." + objectiveIndex + ".id"));
 			// now move onto the score
 			Element score = anObjective.getChild("score");
 			// next update the children of <score>
-			score.getChild("raw").setText((String) keyedObjectives.get("cmi.objectives." + objectiveIndex + ".score.raw"));
-			score.getChild("max").setText((String) keyedObjectives.get("cmi.objectives." + objectiveIndex + ".score.max"));
-			score.getChild("min").setText((String) keyedObjectives.get("cmi.objectives." + objectiveIndex + ".score.min"));
+			score.getChild("raw").setText(keyedObjectives.get("cmi.objectives." + objectiveIndex + ".score.raw"));
+			score.getChild("max").setText(keyedObjectives.get("cmi.objectives." + objectiveIndex + ".score.max"));
+			score.getChild("min").setText(keyedObjectives.get("cmi.objectives." + objectiveIndex + ".score.min"));
 			// finally update <status>
-			anObjective.getChild("status").setText((String) keyedObjectives.get("cmi.objectives." + objectiveIndex + ".status"));
+			anObjective.getChild("status").setText(keyedObjectives.get("cmi.objectives." + objectiveIndex + ".status"));
 		}
 		// once finished, update the <_count> to reflect the changes
 		getElement(getDocument().getRootElement(), "cmi.objectives._count").setText(count + "");

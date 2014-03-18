@@ -31,6 +31,9 @@ import org.olat.core.gui.control.Event;
  * @author srosse
  */
 public class OpenMessageInThreadEvent extends Event {
+
+	private static final long serialVersionUID = -1215014162134562259L;
+
 	public static final String OPEN_MSG_IN_THREAD = "open_msg_in_thread";
 	
 	private final Message message;

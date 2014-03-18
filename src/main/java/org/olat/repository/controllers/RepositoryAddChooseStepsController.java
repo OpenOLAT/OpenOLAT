@@ -43,8 +43,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -104,8 +104,6 @@ public class RepositoryAddChooseStepsController extends BasicController {
 	/** Step to start the raw course editor has been chosen. */
 	public static Event COURSE_EDIT = new Event(ChooseStepsForm.KEY_COURSE_EDIT);
 
-	// package name
-	private static final String PACKAGE = RepositoryEntry.class.getPackage().getName();
 	// translator object
 	private Translator translator;
 	// velocity template
@@ -124,7 +122,7 @@ public class RepositoryAddChooseStepsController extends BasicController {
 		super(ureq, control);
 		this.addedEntry = addedEntry;
 		// translator for this class
-		translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+		translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 		// velocity template
 		vc = new VelocityContainer("addSteps", RepositoryManager.class, "addSteps", translator, this);
 		// chooser form

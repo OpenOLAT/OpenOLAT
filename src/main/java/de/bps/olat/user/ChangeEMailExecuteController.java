@@ -23,7 +23,6 @@ import java.util.HashMap;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -55,7 +54,7 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 	public ChangeEMailExecuteController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		this.userRequest = ureq;
-		pT = new PackageTranslator(PACKAGE, userRequest.getLocale());
+		pT = Util.createPackageTranslator(ProfileAndHomePageEditController.class, userRequest.getLocale());
 		pT = UserManager.getInstance().getPropertyHandlerTranslator(pT);
 		emKey = userRequest.getHttpReq().getParameter("key");
 		if (emKey == null) {

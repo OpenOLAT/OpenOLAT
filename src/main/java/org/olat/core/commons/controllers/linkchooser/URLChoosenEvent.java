@@ -37,6 +37,8 @@ import org.olat.core.gui.control.Event;
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
 public class URLChoosenEvent extends Event {
+
+	private static final long serialVersionUID = 4271699081190253734L;
 	private final String url;
 	private final String displayName;
 	private final String htmlTarget;

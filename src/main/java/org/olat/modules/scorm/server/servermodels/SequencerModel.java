@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.jdom.Comment;
@@ -34,6 +35,7 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Parent;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.scorm.ISettingsHandler;
 
@@ -46,6 +48,8 @@ import uk.ac.reload.jdom.XMLDocument;
  * @author Paul Sharples
 */
 public class SequencerModel extends XMLDocument {
+	private static final OLog log = Tracing.createLoggerFor(SequencerModel.class);
+	
 	protected static final String ROOT_NODE_NAME = "navigation";
 	protected static final String ORG_NODE = "organization";
 	protected static final String ITEM_NODE = "item";
@@ -70,7 +74,7 @@ public class SequencerModel extends XMLDocument {
 	 * A vector used to house which items have been added to the navigation - used
 	 * to determine which nodes have been deleted since last import
 	 */
-	Vector _items = new Vector();
+	Vector<String> _items = new Vector<>();
 
 	/**
 	 * Our unique signature
@@ -173,8 +177,8 @@ public class SequencerModel extends XMLDocument {
 	 * @param org
 	 * @return - has table with idenitifer and current status
 	 */
-	public Hashtable getItemsAsHash(String org) {
-		Hashtable hash = new Hashtable();
+	public Map<String,String> getItemsAsHash(String org) {
+		Map<String,String> hash = new Hashtable<>();
 		List itemList = getDocument().getRootElement().getChildren(ITEM_NODE);
 		Iterator itemListElement = itemList.iterator();
 		while (itemListElement.hasNext()) {
@@ -264,7 +268,7 @@ public class SequencerModel extends XMLDocument {
 	 * @param items
 	 */
 	protected void removeOldNodes(String[] items) {
-		Vector v = new Vector();
+		List<Element> v = new Vector<>();
 		List itemList = getDocument().getRootElement().getChildren(ITEM_NODE);
 		if (itemList != null && !itemList.isEmpty()) {
 			Iterator itemListElement = itemList.iterator();
@@ -276,12 +280,12 @@ public class SequencerModel extends XMLDocument {
 					v.add(anItem);
 				}
 			}
-			Iterator itemsToRemove = v.iterator();
+			Iterator<Element> itemsToRemove = v.iterator();
 			while (itemsToRemove.hasNext()) {
-				Element anItemToDelete = (Element) itemsToRemove.next();
+				Element anItemToDelete = itemsToRemove.next();
 				Parent parent = anItemToDelete.getParent();
 				if (parent != null) {
-					Tracing.logWarn("item no longer exists so remove " + anItemToDelete.getAttributeValue(ITEM_IDENTIFIER),null,SequencerModel.class);
+					log.warn("item no longer exists so remove " + anItemToDelete.getAttributeValue(ITEM_IDENTIFIER), null);
 					parent.removeContent(anItemToDelete);
 				}
 			}

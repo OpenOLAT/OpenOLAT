@@ -28,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.regex.Pattern;
 
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -42,7 +43,7 @@ import org.olat.core.util.StringHelper;
  */
 public final class ShibbolethAttribute{
 	
-	
+	private static final OLog log = Tracing.createLoggerFor(ShibbolethAttribute.class);
 	
 	private static final Pattern SPLITTER = Pattern.compile(";");
 	private final String attributeName;
@@ -84,8 +85,8 @@ public final class ShibbolethAttribute{
 	
 	public static ShibbolethAttribute createFromUserRequestValue(String name, String rawRequestValue){
 		if(isInvalidValue(rawRequestValue)){
-			if(Tracing.isDebugEnabled(ShibbolethAttribute.class)){
-				Tracing.logDebug("invalid attribute: " + name + " attributeValue: " + rawRequestValue, ShibbolethAttribute.class);
+			if(log.isDebug()){
+				log.debug("invalid attribute: " + name + " attributeValue: " + rawRequestValue);
 			}
 			return INVALID_ATTRIBUTE;
 		}

@@ -39,10 +39,10 @@ import org.olat.core.gui.control.controller.BasicController;
 
 public class GuiDemoPushPopController extends BasicController {
 	
-	VelocityContainer vcMain, vcPush;
-	Stack windowStack = new Stack();
-	private Link pushButton;
-	private Link popButton;
+	private final VelocityContainer vcMain;
+	private final Stack<Component> windowStack = new Stack<>();
+	private final Link pushButton;
+	private final Link popButton;
 	
 	public GuiDemoPushPopController(UserRequest ureq, WindowControl wControl) {
 		super(ureq,wControl);

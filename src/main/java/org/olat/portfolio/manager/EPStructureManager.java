@@ -30,7 +30,6 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.hibernate.ObjectNotFoundException;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -97,7 +96,7 @@ public class EPStructureManager extends BasicManager {
 	private DB dbInstance;
 	private RepositoryManager repositoryManager;
 	private OLATResourceManager resourceManager;
-	private BaseSecurity securityManager;
+
 	private EPPolicyManager policyManager;
 	@Autowired
 	private GroupDAO groupDao;
@@ -140,14 +139,6 @@ public class EPStructureManager extends BasicManager {
 	@Autowired(required = true)
 	public void setpolicyManager(final EPPolicyManager policyManager) {
 		this.policyManager = policyManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param baseSecurity
-	 */
-	public void setBaseSecurity(BaseSecurity baseSecurity) {
-		this.securityManager = baseSecurity;
 	}
 
 	/**

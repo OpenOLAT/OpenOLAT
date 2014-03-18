@@ -36,6 +36,8 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 class I18nReInitializeCachesEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = -5665993313792697411L;
+
 	/**
 	 * Constructor
 	 */

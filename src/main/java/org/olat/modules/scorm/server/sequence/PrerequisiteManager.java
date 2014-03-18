@@ -21,16 +21,17 @@
 package org.olat.modules.scorm.server.sequence;
 
 
-import java.util.Enumeration;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.modules.scorm.ISettingsHandler;
 import org.olat.modules.scorm.server.servermodels.SequencerModel;
 
@@ -43,9 +44,11 @@ import bsh.Interpreter;
  * 
  * @author Paul Sharples
  */
-public class PrerequisiteManager extends BasicManager{
+public class PrerequisiteManager {
+	private static final OLog log = Tracing.createLoggerFor(PrerequisiteManager.class);
+	
 	// A hashtable of all key (scoIDs) and values (status)
-	private Hashtable _prereqTable = new Hashtable();
+	private Map<String,String> _prereqTable = new Hashtable<>();
 	/**
 	 * the disk version of the model
 	 */
@@ -61,7 +64,7 @@ public class PrerequisiteManager extends BasicManager{
 	public PrerequisiteManager(String org, ISettingsHandler settings) {
 		this.settings = settings;
 		if (!populateFromDisk(org)) {
-			logError("could not load in tracking model: " + org, null);
+			log.error("could not load in tracking model: " + org);
 		}
 	}
 
@@ -167,7 +170,7 @@ public class PrerequisiteManager extends BasicManager{
 			prereq = prereq.replaceAll("=", ".equals(");
 			// System.out.println("1. "+prereq);
 			if (prereq.indexOf("@") != -1) {
-				Vector v = new Vector();
+				List<String> v = new ArrayList<String>();
 				StringBuilder sb = new StringBuilder();
 				sb.append(prereq);
 				boolean notSymbFound = false;
@@ -184,9 +187,9 @@ public class PrerequisiteManager extends BasicManager{
 						}
 					}
 				}
-				Iterator it = v.iterator();
+				Iterator<String> it = v.iterator();
 				while (it.hasNext()) {
-					sb.insert(Integer.parseInt(it.next().toString()), '!');
+					sb.insert(Integer.parseInt(it.next()), '!');
 				}
 				if (notSymbFound) {
 					// the ! must be at the beginning
@@ -199,12 +202,12 @@ public class PrerequisiteManager extends BasicManager{
 			Object result = i.eval(prereq);
 			String a = result.toString();
 			boolean retVal = Boolean.valueOf(a).booleanValue();
-			if (Tracing.isDebugEnabled(PrerequisiteManager.class)){
-				Tracing.logDebug("eval: " + prereq + " result was: " + retVal,PrerequisiteManager.class);
+			if (log.isDebug()){
+				log.debug("eval: " + prereq + " result was: " + retVal);
 			}
 			return retVal;
 		} catch (EvalError ex) {
-			Tracing.logError("Could not parse prerequisites: ",ex, PrerequisiteManager.class);
+			log.error("Could not parse prerequisites: ", ex);
 			/* __FIXME:gs:a:[pb] guido is it correct to send true in the exception case?
 			 * Could please leave a comment why you return true, although an exception occured. thx
 			 * 
@@ -237,10 +240,10 @@ public class PrerequisiteManager extends BasicManager{
 		System.out.println("-------prereq table ---");
 		System.out.println("-----------------------");
 		if (_prereqTable != null) {
-			Enumeration keys = _prereqTable.keys();
-			while (keys.hasMoreElements()) {
-				String scoID = (String) keys.nextElement();
-				String theStatus = (String) _prereqTable.get(scoID);
+			Iterator<String> keys = _prereqTable.keySet().iterator();
+			while (keys.hasNext()) {
+				String scoID = keys.next();
+				String theStatus = _prereqTable.get(scoID);
 				System.out.println("SCO ID: " + scoID + "  status: " + theStatus);
 			}
 		}

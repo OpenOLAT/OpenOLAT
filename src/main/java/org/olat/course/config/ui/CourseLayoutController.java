@@ -53,8 +53,6 @@ import org.olat.course.config.CourseConfig;
  */
 public class CourseLayoutController extends BasicController {
 	
-	private static final String LOG_COURSELAYOUT_DEFAULT_ADDED = "COURSELAYOUT_DEFAULT_ADDED";
-	private static final String LOG_COURSELAYOUT_CUSTOM_ADDED = "COURSELAYOUT_CUSTOM_ADDED";
 	private static final VFSItemFileTypeFilter cssTypeFilter = new VFSItemFileTypeFilter(new String[] { "css" });
 	private VelocityContainer myContent;
 	private FileChooserController fileChooserCtr;

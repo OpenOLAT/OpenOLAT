@@ -22,6 +22,7 @@ package org.olat.admin.sysinfo;
 import java.util.List;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -68,7 +69,7 @@ public class ErrorLogLevelController extends BasicController {
 	}
 	
 	private void loadModel() {
-		List loggers = Tracing.getLoggersSortedByName(); // put it in a list in case of a reload (enum can only be used once)
+		List<Logger> loggers = Tracing.getLoggersSortedByName(); // put it in a list in case of a reload (enum can only be used once)
 		myLoglevels.contextPut("loggers", loggers);
 	}
 

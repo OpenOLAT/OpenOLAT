@@ -26,7 +26,6 @@
 package org.olat.modules.iq;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -530,9 +529,8 @@ public class IQComponentRenderer implements ComponentRenderer {
 
 	private void displayItems(StringOutput sb, Renderer renderer, URLBuilder ubu, SectionContext sc, AssessmentInstance ai) {
 		// display the whole current section on one page
-		List items = sc.getItemContextsToRender();
-		for (Iterator iter= items.iterator(); iter.hasNext();) {
-			ItemContext itc	= (ItemContext) iter.next();
+		List<ItemContext> items = sc.getItemContextsToRender();
+		for (ItemContext itc:items) {
 			if (itc.isOpen()) {
 			  displayItem(sb, renderer, ubu, itc, ai);
 			} else {

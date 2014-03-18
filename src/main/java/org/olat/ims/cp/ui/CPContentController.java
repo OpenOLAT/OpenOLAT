@@ -200,7 +200,7 @@ public class CPContentController extends BasicController {
 	 * @param ureq
 	 */
 	private void displayMetadataEditor(UserRequest ureq) {
-		editMetadataCtr = new CPMetadataEditController(ureq, getWindowControl(), currentPage, cp);
+		editMetadataCtr = new CPMetadataEditController(ureq, getWindowControl(), currentPage);
 		listenTo(editMetadataCtr);
 		dialogCtr = new CloseableModalController(getWindowControl(), getTranslator().translate("close"), editMetadataCtr.getInitialComponent());
 		listenTo(dialogCtr);

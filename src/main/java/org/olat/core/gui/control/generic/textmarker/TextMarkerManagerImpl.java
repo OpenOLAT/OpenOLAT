@@ -42,8 +42,8 @@ import org.dom4j.io.XMLWriter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
 
@@ -57,7 +57,9 @@ import org.olat.core.util.xml.XMLParser;
  * Initial Date: Jul 14, 2006
  * 
  */
-public class TextMarkerManagerImpl extends BasicManager implements TextMarkerManager {
+public class TextMarkerManagerImpl implements TextMarkerManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(TextMarkerManagerImpl.class);
 	public static final String XML_ROOT_ELEMENT = "textMarkerList";
 	public static final String XML_VERSION_ATTRIBUTE = "version";
 	public static final int VERSION = 1;
@@ -120,7 +122,7 @@ public class TextMarkerManagerImpl extends BasicManager implements TextMarkerMan
 	 * @see org.olat.core.gui.control.generic.textmarker.TextMarkerManager#saveToFile(org.olat.core.util.vfs.VFSLeaf,
 	 *      java.util.List)
 	 */
-	public void saveToFile(VFSLeaf textMarkerFile, List textMarkerList) {
+	public void saveToFile(VFSLeaf textMarkerFile, List<TextMarker> textMarkerList) {
 		DocumentFactory df = DocumentFactory.getInstance();
 		Document doc = df.createDocument();
 		// create root element with version information
@@ -128,9 +130,7 @@ public class TextMarkerManagerImpl extends BasicManager implements TextMarkerMan
 		root.addAttribute(XML_VERSION_ATTRIBUTE, String.valueOf(VERSION));
 		doc.setRootElement(root);
 		// add TextMarker elements
-		Iterator iter = textMarkerList.iterator();
-		while (iter.hasNext()) {
-			TextMarker textMarker = (TextMarker) iter.next();
+		for (TextMarker textMarker:textMarkerList) {
 			textMarker.addToElement(root);
 		}
 		OutputStream stream = textMarkerFile.getOutputStream(false);
@@ -140,9 +140,9 @@ public class TextMarkerManagerImpl extends BasicManager implements TextMarkerMan
 			writer.close();
 			stream.close();
 		} catch (UnsupportedEncodingException e) {
-			Tracing.logError("Error while saving text marker file", e, TextMarkerManagerImpl.class);
+			log.error("Error while saving text marker file", e);
 		} catch (IOException e) {
-			Tracing.logError("Error while saving text marker file", e, TextMarkerManagerImpl.class);
+			log.error("Error while saving text marker file", e);
 		}
 	}
 

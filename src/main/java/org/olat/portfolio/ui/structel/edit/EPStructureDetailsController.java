@@ -41,8 +41,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -85,8 +86,8 @@ public class EPStructureDetailsController extends FormBasicController {
 	public EPStructureDetailsController(final UserRequest ureq, final WindowControl wControl, final Form rootForm, final PortfolioStructure rootStructure) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT, null, rootForm);
 
-		final PackageTranslator pt = new PackageTranslator(EPMapViewController.class.getPackage().getName(), ureq.getLocale(), getTranslator());
-		this.flc.setTranslator(pt);
+		final Translator pt = Util.createPackageTranslator(EPMapViewController.class, ureq.getLocale(), getTranslator());
+		flc.setTranslator(pt);
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		this.rootStructure = rootStructure;

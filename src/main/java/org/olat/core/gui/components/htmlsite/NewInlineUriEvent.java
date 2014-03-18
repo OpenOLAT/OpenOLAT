@@ -32,6 +32,8 @@ import org.olat.core.gui.control.Event;
  * @author Felix Jost
  */
 public class NewInlineUriEvent extends Event {
+
+	private static final long serialVersionUID = -3452071993340874293L;
 	private String newUri;
 
 	public NewInlineUriEvent(String newUri) {

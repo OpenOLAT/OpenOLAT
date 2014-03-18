@@ -47,9 +47,7 @@ import org.olat.core.util.i18n.I18nModule;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class ScreenReaderHandlerInstance implements InterceptHandlerInstance {
-	//private ComponentRenderer cr;
-	
-	//private Component rootComponent;
+
 	/**
 	 * 
 	 */

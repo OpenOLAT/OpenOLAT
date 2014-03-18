@@ -34,7 +34,7 @@ import org.olat.core.logging.OLATRuntimeException;
  * Initial Date:  10 nov. 2009 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
-public class CourseCalendarPeekViewModel extends DefaultTableDataModel {
+public class CourseCalendarPeekViewModel extends DefaultTableDataModel<KalendarEvent> {
 	private static final int COLUMNS = 2;
 	private int MAX_SUBJECT_LENGTH = 30;
 	
@@ -55,7 +55,7 @@ public class CourseCalendarPeekViewModel extends DefaultTableDataModel {
 	}
 
 	public Object getValueAt(int row, int col) {
-		KalendarEvent event = (KalendarEvent) getObject(row);
+		KalendarEvent event = getObject(row);
 		switch (col) {
 			case 0:
 				if (event.isToday() && event.isAllDayEvent()) return translator.translate("calendar.today");

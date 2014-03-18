@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
  */
 public class NavigationEvent extends Event {
 
+	private static final long serialVersionUID = -1854984960347993034L;
 	private List<? extends Dated> selectedItems;
 
 	/**

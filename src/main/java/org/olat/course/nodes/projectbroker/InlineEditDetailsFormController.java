@@ -35,6 +35,7 @@ import java.util.StringTokenizer;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -69,8 +70,6 @@ import org.olat.resource.OLATResource;
 
 public class InlineEditDetailsFormController extends FormBasicController {
 	private static final String CUSTOM_DATE_FORMAT = "dd.MM.yyyy HH:mm";
-
-	private static final String CHOOSER_DATE_FORMAT = "%d.%m.%Y %H:%M";
 	
 	private final String DROPDOWN_NO_SELECETION = "dropdown.nothing.selected";
 	
@@ -91,7 +90,7 @@ public class InlineEditDetailsFormController extends FormBasicController {
 	private CourseNode courseNode;
 	private ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration;
 
-	private List customfieldElementList;
+	private List<FormItem> customfieldElementList;
 	private HashMap<Project.EventType, DateChooser> eventStartElementList;
 	private HashMap<Project.EventType, DateChooser> eventEndElementList;
 	
@@ -116,7 +115,7 @@ public class InlineEditDetailsFormController extends FormBasicController {
 		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		stateKeys    = new String[] {Project.STATE_NOT_ASSIGNED, Project.STATE_ASSIGNED};
 		stateValues  = new String[] {translate(Project.STATE_NOT_ASSIGNED),	translate(Project.STATE_ASSIGNED)	};
-		customfieldElementList = new ArrayList();
+		customfieldElementList = new ArrayList<FormItem>();
 		eventStartElementList = new HashMap<Project.EventType, DateChooser>();
 		eventEndElementList = new HashMap<Project.EventType, DateChooser>();
 		initForm(this.flc, this, ureq);
@@ -142,8 +141,8 @@ public class InlineEditDetailsFormController extends FormBasicController {
 
 		// account-Managers
 		StringBuilder projectLeaderString = new StringBuilder();
-		for (Iterator iterator = project.getProjectLeaders().iterator(); iterator.hasNext();) {
-			Identity identity = (Identity) iterator.next();
+		for (Iterator<Identity> iterator = project.getProjectLeaders().iterator(); iterator.hasNext();) {
+			Identity identity = iterator.next();
 			String last = identity.getUser().getProperty(UserConstants.LASTNAME, getLocale());
 			String first= identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale());
 			if (projectLeaderString.length() > 0) {
@@ -294,8 +293,8 @@ public class InlineEditDetailsFormController extends FormBasicController {
 		}
 		// store customfields
 		int index = 0;
-		for (Iterator iterator = customfieldElementList.iterator(); iterator.hasNext();) {
-			Object element = iterator.next();
+		for (Iterator<FormItem> iterator = customfieldElementList.iterator(); iterator.hasNext();) {
+			FormItem element = iterator.next();
 			String value = "";
 			if (element instanceof TextElement) {
 				TextElement textElement = (TextElement)element;

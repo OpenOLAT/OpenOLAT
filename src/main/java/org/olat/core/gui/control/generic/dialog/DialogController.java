@@ -37,7 +37,6 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
@@ -55,7 +54,6 @@ import org.olat.core.util.Util;
  */
 public class DialogController extends DefaultController {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(DialogController.class);
-	private static final String PACKAGE = Util.getPackageName(DialogController.class);
 
 	/** Event fired when first button is pressed * */
 	public static final Event EVENT_FIRSTBUTTON = new Event("fb");
@@ -78,7 +76,7 @@ public class DialogController extends DefaultController {
 	 * @return the controller
 	 */
 	public static DialogController createYesNoDialogController(WindowControl wControl, Locale locale, String text, ControllerEventListener cel, Object userObject) {
-		Translator intTrans = new PackageTranslator(PACKAGE, locale);
+		Translator intTrans = Util.createPackageTranslator(DialogController.class, locale);
 		DialogController dc = new DialogController(wControl, locale, intTrans.translate("answer.yes"), intTrans.translate("answer.no"), text, userObject, true, null);
 		// when used with basic controller listener has to be set with listenTo()
 		if (cel != null) dc.addControllerListener(cel);
@@ -92,7 +90,7 @@ public class DialogController extends DefaultController {
 	 * @return the controller
 	 */
 	public static DialogController createOkCancelDialogController(WindowControl wControl, Locale locale, String text, ControllerEventListener cel) {
-		Translator intTrans = new PackageTranslator(PACKAGE, locale);
+		Translator intTrans = Util.createPackageTranslator(DialogController.class, locale);
 		DialogController dc = new DialogController(wControl, locale, intTrans.translate("answer.ok"), intTrans.translate("answer.cancel"), text);
 		// when used with basic controller listener has to be set with listenTo()		
 		if (cel != null) dc.addControllerListener(cel);
@@ -131,7 +129,7 @@ public class DialogController extends DefaultController {
 	public DialogController(WindowControl wControl, Locale locale, String firstButtonText, String secondButtonText, String text, Object userObject, boolean displayCloseIcon, String title) {
 		super(wControl);
 		this.userObject = userObject;
-		myContent = new VelocityContainer("genericdialog", VELOCITY_ROOT + "/index.html", new PackageTranslator(PACKAGE, locale), this);
+		myContent = new VelocityContainer("genericdialog", VELOCITY_ROOT + "/index.html", Util.createPackageTranslator(DialogController.class, locale), this);
 		
 		firstButton = LinkFactory.createCustomLink("firstButton", "fb", firstButtonText, Link.BUTTON + Link.NONTRANSLATED, myContent, this);
 		secondButton = LinkFactory.createCustomLink("secondButton", "sb", secondButtonText, Link.BUTTON + Link.NONTRANSLATED, myContent, this);

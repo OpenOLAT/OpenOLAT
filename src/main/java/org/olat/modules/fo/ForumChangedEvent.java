@@ -38,6 +38,8 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 public class ForumChangedEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = -6798225990538608024L;
+
 	public ForumChangedEvent(String command) {
 		super(command);		
 	}	

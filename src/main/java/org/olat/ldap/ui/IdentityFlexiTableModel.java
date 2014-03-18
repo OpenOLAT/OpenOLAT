@@ -23,10 +23,10 @@ import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 
-public class IdentityFlexiTableModel  extends DefaultTableDataModel {
+public class IdentityFlexiTableModel extends DefaultTableDataModel<List<String>> {
 		private int columnCount = 0;
 		
-		public IdentityFlexiTableModel(List objects, int columnCount){
+		public IdentityFlexiTableModel(List<List<String>> objects, int columnCount){
 			super(objects);
 			this.columnCount = columnCount;
 		}
@@ -37,7 +37,7 @@ public class IdentityFlexiTableModel  extends DefaultTableDataModel {
 
 
 		public Object getValueAt(int row, int col) {
-			List entry = (List)objects.get(row);
+			List<String> entry = objects.get(row);
 			Object value = entry.get(col);
 			return (value == null ? "n/a" : value);
 		}

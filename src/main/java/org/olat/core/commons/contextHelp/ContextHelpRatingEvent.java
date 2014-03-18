@@ -33,6 +33,8 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 
 public class ContextHelpRatingEvent extends MultiUserEvent {
+
+	private static final long serialVersionUID = 853468927526465817L;
 	private static final String COMMAND = "ContextHelpRatingEvent";
 	private final String key;
 	private final  Object[] ratingValues;

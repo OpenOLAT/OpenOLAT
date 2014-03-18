@@ -69,7 +69,7 @@ public class DidYouKnowPortletRunController extends DefaultController {
 	 */
 	protected DidYouKnowPortletRunController(UserRequest ureq, WindowControl wControl) {
 		super(wControl);
-		this.trans = new PackageTranslator(Util.getPackageName(DidYouKnowPortlet.class), ureq.getLocale());
+		this.trans = (PackageTranslator)Util.createPackageTranslator(DidYouKnowPortlet.class, ureq.getLocale());
 		this.didYouKnowVC = new VelocityContainer("didYouKnowVC", VELOCITY_ROOT + "/didYouKnowPortlet.html", trans, this);
 		nextLink = LinkFactory.createLink("next", didYouKnowVC, this);
 		

@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Event;
 
 public class NewCPPageEvent extends Event {
 
+	private static final long serialVersionUID = 7224789467625871502L;
 	private CPPage page;
 
 	public NewCPPageEvent(String command,CPPage page) {

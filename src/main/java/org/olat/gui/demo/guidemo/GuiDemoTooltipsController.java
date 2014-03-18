@@ -71,7 +71,7 @@ public class GuiDemoTooltipsController extends BasicController {
 		 * and somehow not 
 		 */
 		
-		Link link3 = LinkFactory.createLink("link3", content, this);
+		LinkFactory.createLink("link3", content, this);
 		content.put("tooltipContent", tooltipContent);
 		link4 = LinkFactory.createLink("link4", tooltipContent, this);
 		

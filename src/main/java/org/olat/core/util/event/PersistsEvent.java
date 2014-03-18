@@ -46,6 +46,7 @@ public class PersistsEvent extends MultiUserEvent {
 	//public static final int MODE_REMOVED = 4;
 	//public static final int MODE_UPDATED = 8;
 
+	private static final long serialVersionUID = -1076949650098640208L;
 	private final Set<Long> keys;
 	
 	/**
@@ -63,9 +64,9 @@ public class PersistsEvent extends MultiUserEvent {
 	 * @param persistables a List of Persistable objects
 	 * @return true if at least one of the objects in the list has the same key as the keys given.
 	 */
-	public boolean isAtLeastOneKeyInList(List persistables) {
-		for (Iterator it_per = persistables.iterator(); it_per.hasNext();) {
-			Persistable per = (Persistable) it_per.next();
+	public boolean isAtLeastOneKeyInList(List<? extends Persistable> persistables) {
+		for (Iterator<? extends Persistable> it_per = persistables.iterator(); it_per.hasNext();) {
+			Persistable per = it_per.next();
 			Long key = per.getKey();
 			if (keys.contains(key)) return true;
 		}

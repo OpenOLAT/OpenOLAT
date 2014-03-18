@@ -112,7 +112,7 @@ public interface EventBus {
 	 * 
 	 * @return the whole infocenter map
 	 */
-	public abstract Map getUnmodifiableInfoCenter();
+	public abstract Map<String, EventAgency> getUnmodifiableInfoCenter();
 
 
 }

@@ -58,7 +58,7 @@ public class LMSDataFormBean {
 
     private String itemID;
     private String data;
-    private Map dataMap;
+    private Map<String,String> dataMap;
     private String lmsAction;
     private String nextAction;
     
@@ -140,13 +140,13 @@ public class LMSDataFormBean {
 	/**
 	 * @return data as map
 	 */
-	public Map getDataAsMap() {
+	public Map<String,String> getDataAsMap() {
 		return dataMap;
 	}
 	/**
 	 * set the cmi data as map
 	 */
-	public void setDataAsMap(Map dataMap) {
+	public void setDataAsMap(Map<String,String> dataMap) {
 		this.dataMap = dataMap;
 	}
 }

@@ -43,14 +43,14 @@ import java.util.Map;
  */
 public class UpgradeHistoryData {
 
-	private Map upgradeData;
+	private Map<String, Serializable> upgradeData;
 	boolean installationComplete = false;
 
 	/**
 	 * Constructor, initializes everything
 	 */
 	public UpgradeHistoryData() {
-		upgradeData = new HashMap();
+		upgradeData = new HashMap<String, Serializable>();
 		installationComplete = false;
 	}
 

@@ -31,7 +31,6 @@ import java.util.Locale;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -40,7 +39,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.projectbroker.ProjectListController;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
@@ -52,7 +50,6 @@ import org.olat.group.BusinessGroupService;
  */
 public class ProjectBrokerExportGenerator {
 	private static OLog log = Tracing.createLoggerFor(ProjectBrokerExportGenerator.class);
-  private static final String PACKAGE = Util.getPackageName(ProjectListController.class);
   
   private static final String END_OF_LINE = "\t\n";
   private static final String TABLE_DELIMITER = "\t";
@@ -69,7 +66,7 @@ public class ProjectBrokerExportGenerator {
 	 * @return String
 	 */
 	public static String createCourseResultsOverviewTable(CourseNode courseNode, ICourse course, Locale locale) {
-	  Translator translator = new PackageTranslator(PACKAGE, locale);
+	  Translator translator = Util.createPackageTranslator(ProjectBrokerExportGenerator.class, locale);
 		StringBuilder table = new StringBuilder();
 		ProjectBrokerModuleConfiguration moduleConfig = new ProjectBrokerModuleConfiguration(courseNode.getModuleConfiguration());
 		

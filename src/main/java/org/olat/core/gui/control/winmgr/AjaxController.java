@@ -58,7 +58,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
@@ -159,7 +158,7 @@ public class AjaxController extends DefaultController {
 		
 		sbm = new Mapper() {
 			
-			Translator t = new PackageTranslator(ChiefController.class.getPackage().getName(), flocale);
+			Translator t = Util.createPackageTranslator(ChiefController.class, flocale);
 		
 			public MediaResource handle(String relPath, HttpServletRequest request) {
 				StringMediaResource smr = new StringMediaResource();

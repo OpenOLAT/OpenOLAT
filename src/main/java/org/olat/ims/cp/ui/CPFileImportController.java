@@ -41,7 +41,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -86,7 +86,7 @@ public class CPFileImportController extends FormBasicController {
 		this.currentPage = currentPage;
 		
 		//need a translation from FileUploadController (avoiding key-duplicates)
-		setTranslator(new PackageTranslator(FileUploadController.class.getPackage().getName(), getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(FileUploadController.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
 	}

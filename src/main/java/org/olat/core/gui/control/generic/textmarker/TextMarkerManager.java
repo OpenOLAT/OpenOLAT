@@ -65,7 +65,7 @@ public interface TextMarkerManager {
 	 * @param textMarkerFile The file
 	 * @param textMarkerList The list of TextMarker objects
 	 */
-	public abstract void saveToFile(VFSLeaf textMarkerFile, List textMarkerList);
+	public abstract void saveToFile(VFSLeaf textMarkerFile, List<TextMarker> textMarkerList);
 
 	/**
 	 * check if a resource has textMakring enabled

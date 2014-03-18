@@ -99,9 +99,8 @@ public class DialogElementsPropertyManager extends BasicManager {
 	protected DialogElement findDialogElement(CoursePropertyManager coursePropMgr, CourseNode courseNode, Long forumKey) {
 		DialogPropertyElements elements = findDialogElements(coursePropMgr, courseNode);
 		if (elements != null) {
-			List list = elements.getDialogPropertyElements();
-			for (Iterator iter = list.iterator(); iter.hasNext();) {
-				DialogElement element = (DialogElement) iter.next();
+			List<DialogElement> list = elements.getDialogPropertyElements();
+			for (DialogElement element : list) {
 				if (element.getForumKey().equals(forumKey)) return element;
 			}
 		} else {
@@ -123,9 +122,9 @@ public class DialogElementsPropertyManager extends BasicManager {
 	protected void deleteDialogElement(final CoursePropertyManager coursePropMgr, final CourseNode courseNode, Long forumKey) {
 		final DialogPropertyElements elements = findDialogElements(coursePropMgr, courseNode);
 		if (elements != null) {
-			final List list = elements.getDialogPropertyElements();
-			for (Iterator iter = list.iterator(); iter.hasNext();) {
-				final DialogElement element = (DialogElement) iter.next();
+			final List<DialogElement> list = elements.getDialogPropertyElements();
+			for (Iterator<DialogElement> iter = list.iterator(); iter.hasNext();) {
+				final DialogElement element = iter.next();
 				if (element.getForumKey().equals(forumKey)) {					
           //o_clusterOK by:ld 
 					OLATResourceable courseNodeResourceable = OresHelper.createOLATResourceableInstance(DialogCourseNode.class, new Long(courseNode.getIdent()));
@@ -180,7 +179,7 @@ public class DialogElementsPropertyManager extends BasicManager {
 	private Property findProperty(Long courseId, String courseNodeId) {
 		PropertyManager propMrg = PropertyManager.getInstance();
 		String category = "NID:dial::" + courseNodeId;
-		List elements = propMrg.findProperties(null, null, "CourseModule", courseId, category, PROPERTY_NAME);
+		List<Property> elements = propMrg.findProperties(null, null, "CourseModule", courseId, category, PROPERTY_NAME);
 		if (elements.size() == 0) return null; //no match
 		if (elements.size() != 1) throw new AssertException(
 				"Found more then one property for a course node 'dialog element' which should never happen!");

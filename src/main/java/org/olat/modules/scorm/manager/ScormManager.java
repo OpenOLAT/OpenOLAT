@@ -95,7 +95,7 @@ public class ScormManager extends BasicManager {
 	 * Keep hold of the default org (JDOM) element
 	 */
 	private Element _defaultorg;
-	private List organizationElements;
+	private List<Element> organizationElements;
 
 	/**
 	 * A count of organizations (should really only be one for the tree widget)
@@ -170,7 +170,7 @@ public class ScormManager extends BasicManager {
 			// now get the organizations node
 			Element orgs = manifestRoot.getChild(CP_Core.ORGANIZATIONS, manifestRoot.getNamespace());
 			Element[] tmp = _navViewer.getOrganizationList();
-			organizationElements = new LinkedList();
+			organizationElements = new LinkedList<>();
 			for (int i = 0; i < tmp.length; ++i) {
 				organizationElements.add(tmp[i]);
 			}
@@ -262,7 +262,7 @@ public class ScormManager extends BasicManager {
 	 */
 	protected String[] parse(boolean useRelativePaths) {
 		// New Vector
-		Vector v = new Vector();
+		Vector<String> v = new Vector<>();
 		writePackageSettings(v, "packageName", getProjectName());
 		// now call createNavLinks() which should interrogate the org/item structure
 		createNavLinksForAllOranizations(v, "menu", useRelativePaths);
@@ -280,10 +280,10 @@ public class ScormManager extends BasicManager {
 		return _navViewer.getAllScoIdentifiers().length;
 	}
 
-	protected void createNavLinksForAllOranizations(Vector javascriptStrings, String menuParent, boolean useRelativePaths) {
+	protected void createNavLinksForAllOranizations(List<String> javascriptStrings, String menuParent, boolean useRelativePaths) {
 		_itemCount = -1;
 		for (int i = 0; i < organizationElements.size(); ++i) {
-			createNavLinks(javascriptStrings, (Element)organizationElements.get(i), menuParent, useRelativePaths);
+			createNavLinks(javascriptStrings, organizationElements.get(i), menuParent, useRelativePaths);
 		}
 	}
 	
@@ -296,7 +296,7 @@ public class ScormManager extends BasicManager {
 	 * @param menuParent
 	 * @param useRelativePaths
 	 */
-	protected void createNavLinks(Vector javascriptStrings, Element element, String menuParent, boolean useRelativePaths) {
+	protected void createNavLinks(List<String> javascriptStrings, Element element, String menuParent, boolean useRelativePaths) {
 		String name = element.getName();
 		// ORGANIZATION
 		if (name.equals(CP_Core.ORGANIZATION) && _navViewer.isDocumentNamespace(element)) {
@@ -410,7 +410,7 @@ public class ScormManager extends BasicManager {
 	 * @param name - the name of the item to set
 	 * @param value - the value of the item to set (String)
 	 */
-	protected void writePackageSettings(Vector javascriptStrings, String name, String value) {
+	protected void writePackageSettings(List<String> javascriptStrings, String name, String value) {
 		javascriptStrings.add("CPAPI." + name + " = \"" + value + "\";");
 	}
 
@@ -420,7 +420,7 @@ public class ScormManager extends BasicManager {
 	 * @param name - the name of the item to set
 	 * @param value - the value of the item to set (int)
 	 */
-	protected void writePackageSettings(Vector javascriptStrings, String name, int value) {
+	protected void writePackageSettings(List<String> javascriptStrings, String name, int value) {
 		javascriptStrings.add("CPAPI." + name + " = " + value + ";");
 	}
 
@@ -430,7 +430,7 @@ public class ScormManager extends BasicManager {
 	 * @param title - the title of this organization
 	 * @param orgId - the organization identifier
 	 */
-	protected void writeOrganization(Vector javascriptStrings, String title, String orgId) {
+	protected void writeOrganization(List<String> javascriptStrings, String title, String orgId) {
 		javascriptStrings.add("CPAPI.orgArray(" + _orgCount + ").organizationName = \"" + escapeQuotes(title) + "\";");
 		javascriptStrings.add("CPAPI.orgArray(" + _orgCount + ").organizationIdentifier = \"" + orgId + "\";");
 	}
@@ -444,7 +444,7 @@ public class ScormManager extends BasicManager {
 	 * @param itemId - the item identifier
 	 * @param parentMenu - the tree node to attach this to.
 	 */
-	protected void writeItem(Vector javascriptStrings, String title, String url, String itemId, String parentMenu) {
+	protected void writeItem(List<String> javascriptStrings, String title, String url, String itemId, String parentMenu) {
 		// the javscript tree widget doesn't like hyphens, so replace them with
 		// underscores...
 		parentMenu = parentMenu.replace('-', '_');

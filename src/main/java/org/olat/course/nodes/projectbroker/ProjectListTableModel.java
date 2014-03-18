@@ -47,7 +47,7 @@ import org.olat.group.BusinessGroupService;
  * @author guretzki
  */
 
-public class ProjectListTableModel extends DefaultTableDataModel {
+public class ProjectListTableModel extends DefaultTableDataModel<Project> {
 	private static final int COLUMN_COUNT = 6;
 	private Identity identity;
 	private Translator translator;
@@ -66,7 +66,7 @@ public class ProjectListTableModel extends DefaultTableDataModel {
 	/**
 	 * @param owned list of projects 
 	 */
-	public ProjectListTableModel(List owned, Identity identity, Translator translator, ProjectBrokerModuleConfiguration moduleConfig, 
+	public ProjectListTableModel(List<Project> owned, Identity identity, Translator translator, ProjectBrokerModuleConfiguration moduleConfig, 
 			                         int numberOfCustomFieldInTable, int numberOfEventInTable, int nbrSelectedProjects, boolean isParticipantInAnyProject) {
 		super(owned);
 		this.identity = identity;
@@ -102,7 +102,7 @@ public class ProjectListTableModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		Project project = (Project) objects.get(row);
+		Project project = objects.get(row);
 		if (col == 0) {
 			log.debug("project=" + project); // debug-output only once for each project
 			String name = project.getTitle();
@@ -171,7 +171,7 @@ public class ProjectListTableModel extends DefaultTableDataModel {
 	/**
 	 * @param owned
 	 */
-	public void setEntries(List owned) {
+	public void setEntries(List<Project> owned) {
 		this.objects = owned;
 	}
 
@@ -180,11 +180,11 @@ public class ProjectListTableModel extends DefaultTableDataModel {
 	 * @return the project at the given row
 	 */
 	public Project getProjectAt(int row) {
-		return (Project) objects.get(row);
+		return objects.get(row);
 	}
 
 	public Object createCopyWithEmptyList() {
-		ProjectListTableModel copy = new ProjectListTableModel(new ArrayList(), identity, translator, moduleConfig, numberOfCustomFieldInTable, numberOfEventInTable, nbrSelectedProjects, isParticipantInAnyProject);
+		ProjectListTableModel copy = new ProjectListTableModel(new ArrayList<Project>(), identity, translator, moduleConfig, numberOfCustomFieldInTable, numberOfEventInTable, nbrSelectedProjects, isParticipantInAnyProject);
 		return copy;
 	}
 

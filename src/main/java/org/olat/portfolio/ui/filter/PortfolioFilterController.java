@@ -46,7 +46,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
@@ -132,7 +132,6 @@ public class PortfolioFilterController extends FormBasicController {
 		initOrUpdateForm(formLayout, listener, ureq);
 	}
 
-	@SuppressWarnings("unused")
 	protected void initOrUpdateForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// filter by tag
 		if(formLayout.getFormComponent("tagLayout") == null) {
@@ -340,7 +339,7 @@ public class PortfolioFilterController extends FormBasicController {
 			String handlerClass = PortfolioFilterController.HANDLER_PREFIX + handler.getClass().getSimpleName() + HANDLER_TITLE_SUFFIX;
 			FormToggle link = (FormToggle) typeFlc.getFormComponent(handlerClass);
 			if (link==null) {
-				PackageTranslator handlerTrans = handler.getHandlerTranslator(getTranslator());
+				Translator handlerTrans = handler.getHandlerTranslator(getTranslator());
 				typeFlc.setTranslator(handlerTrans);
 				link = uifactory.addToggleButton(handlerClass, null, typeFlc, null, null);
 				link.setUserObject(handler.getType());

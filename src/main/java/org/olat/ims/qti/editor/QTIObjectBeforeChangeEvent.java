@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
  */
 public class QTIObjectBeforeChangeEvent extends Event {
 
+	private static final long serialVersionUID = -8628375483709082132L;
 	private String content;
 	private String id;
 

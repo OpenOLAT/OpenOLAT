@@ -29,6 +29,7 @@ package org.olat.core.commons.controllers.linkchooser;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * Description:<br>
@@ -38,11 +39,8 @@ import java.util.Hashtable;
  */
 public class SuffixFilter implements FileFilter {
 
-	private Hashtable suffixes = new Hashtable();
+	private Map<String,String> suffixes = new Hashtable<>();
 
-	/**
-	 * 
-	 */
 	public SuffixFilter() {
 	//
 	}
@@ -61,14 +59,14 @@ public class SuffixFilter implements FileFilter {
 	 */
 	public void addSuffix(String suffix) {
 		suffix = suffix.toLowerCase();
-		this.suffixes.put(suffix, suffix);
+		suffixes.put(suffix, suffix);
 	}
 
 	/**
 	 * @param suffix
 	 */
 	public void removeSuffix(String suffix) {
-		this.suffixes.remove(suffix.toLowerCase());
+		suffixes.remove(suffix.toLowerCase());
 	}
 
 	/**
@@ -78,7 +76,9 @@ public class SuffixFilter implements FileFilter {
 		String name = file.getName().toLowerCase();
 		if (file.isDirectory()) return false;
 		int idx = name.lastIndexOf('.');
-		if (idx >= 0) { return this.suffixes.containsKey(name.substring(idx + 1)); }
+		if (idx >= 0) {
+			return suffixes.containsKey(name.substring(idx + 1));
+		}
 		return suffixes.containsKey(name);
 	}
 }

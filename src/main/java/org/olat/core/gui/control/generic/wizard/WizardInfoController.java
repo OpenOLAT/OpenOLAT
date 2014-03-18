@@ -32,7 +32,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
@@ -53,7 +52,6 @@ import org.olat.core.util.Util;
  */
 public class WizardInfoController extends DefaultController {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(WizardInfoController.class);
-	private static final String PACKAGE = Util.getPackageName(WizardInfoController.class);
 
 	private VelocityContainer myContent;
 	private int maxSteps;
@@ -65,7 +63,7 @@ public class WizardInfoController extends DefaultController {
 	public WizardInfoController(UserRequest ureq, int maxSteps) {
 		super(null);
 		this.maxSteps = maxSteps;
-		Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+		Translator trans = Util.createPackageTranslator(WizardInfoController.class, ureq.getLocale());
 		myContent = new VelocityContainer("genericwizard", VELOCITY_ROOT + "/wizard_steps.html", trans, null);
 
 		myContent.contextPut("max", String.valueOf(maxSteps));

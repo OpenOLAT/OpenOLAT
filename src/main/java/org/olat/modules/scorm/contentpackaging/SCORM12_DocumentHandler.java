@@ -90,8 +90,8 @@ public class SCORM12_DocumentHandler {
     // ADL SCORM Version 1.3 - we don't support this
     protected static Namespace ADLCP_NAMESPACE_13 = Namespace.getNamespace("adlcp", "http://www.adlnet.org/xsd/adlcp_v1p3");
 
-    static Hashtable SUPPORTED_NAMESPACES = new Hashtable();
-    static Hashtable SUPPORTED_SCORM_NAMESPACES = new Hashtable();
+    static Hashtable<Namespace,String> SUPPORTED_NAMESPACES = new Hashtable<>();
+    static Hashtable<Namespace,String> SUPPORTED_SCORM_NAMESPACES = new Hashtable<>();
     
     static {
 		// Add to table of Supported Namespaces mapped to Friendly Names

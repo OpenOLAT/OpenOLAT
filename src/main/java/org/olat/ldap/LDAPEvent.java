@@ -34,6 +34,8 @@ import org.olat.core.util.event.MultiUserEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class LDAPEvent extends MultiUserEvent {
+
+	private static final long serialVersionUID = -3733295775896629486L;
 	
 	public static final String SYNCHING = "synching";
 	public static final String DO_SYNCHING = "do_synching";

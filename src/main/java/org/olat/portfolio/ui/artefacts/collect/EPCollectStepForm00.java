@@ -35,11 +35,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactViewController;
 
@@ -62,17 +63,17 @@ public class EPCollectStepForm00 extends StepFormBasicController {
 			String customLayoutPageName, AbstractArtefact artefact) {
 		super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
 		// set fallback translator to re-use given strings
-		PackageTranslator pt = new PackageTranslator(EPArtefactViewController.class.getPackage().getName(), ureq.getLocale(), getTranslator());
-		this.flc.setTranslator(pt);
+		Translator pt = Util.createPackageTranslator(EPArtefactViewController.class, ureq.getLocale(), getTranslator());
+		flc.setTranslator(pt);
 		this.artefact = artefact;
-		initForm(this.flc, this, ureq);
+		initForm(flc, this, ureq);
 	}
 
 	// this constructor is used when editing an artefact, therefore the form doesn't show all fields!
 	public EPCollectStepForm00(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		// set fallback translator to re-use given strings
-		PackageTranslator pt = new PackageTranslator(EPArtefactViewController.class.getPackage().getName(), ureq.getLocale(), getTranslator());
+		Translator pt = Util.createPackageTranslator(EPArtefactViewController.class, ureq.getLocale(), getTranslator());
 		this.flc.setTranslator(pt);
 		this.artefact = artefact;
 		this.simpleMode = true;

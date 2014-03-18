@@ -1169,9 +1169,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				 * sectionkey+"/"+itemkey+"/"+questionkey+"/"+responsekey
 				 */
 				String sectionKey = null;
-				String itemkey = null;
-				int pos = 0;
-				Map itemMap = new HashMap();
+				Map<String,String> itemMap = new HashMap<>();
 
 				public void visit(INode node) {
 					if (node instanceof AssessmentNode) {

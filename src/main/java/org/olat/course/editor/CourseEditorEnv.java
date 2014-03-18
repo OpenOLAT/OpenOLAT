@@ -145,7 +145,7 @@ public interface CourseEditorEnv {
 	 * @param ident
 	 * @return list of nodes referencing the specified node
 	 */
-	List getReferencingNodeIdsFor(String ident);
+	List<String> getReferencingNodeIdsFor(String ident);
 
 	/**
 	 * check if the given node is of type enrollment

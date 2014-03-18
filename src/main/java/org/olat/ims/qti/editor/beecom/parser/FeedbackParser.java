@@ -67,7 +67,7 @@ public class FeedbackParser implements IParser {
 		
 		// parse Material
 		//MATERIAL
-		List materials = new ArrayList();
+		List<Object> materials = new ArrayList<>();
 		for(Iterator i = materialsXML.iterator();i.hasNext();) {
 			materials.add(parserManager.parse((Element)i.next()));	
 		}

@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * Implements an HTML horizontal bar (&lt;HR&gt;) element.
@@ -66,7 +67,7 @@ public class SpacerElementImpl extends FormItemImpl implements SpacerElement {
 	}
 
 	@Override
-	public void validate(List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		// No need to do that for this element.
 	}
 

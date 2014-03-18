@@ -174,11 +174,8 @@ public class EnrollmentEditForm extends FormBasicController {
 		}
 
 		// rules to hide / unhide
-		Set<FormItem> targets = new HashSet<FormItem>() {
-			{
-				add(courseElements);
-			}
-		};
+		Set<FormItem> targets = new HashSet<FormItem>();
+		targets.add(courseElements);
 		RulesFactory.createHideRule(accessLimit, null, targets, formLayout);
 		RulesFactory.createShowRule(accessLimit, "ison", targets, formLayout);
 

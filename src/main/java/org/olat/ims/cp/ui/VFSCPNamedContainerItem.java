@@ -29,8 +29,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
-import org.olat.ims.cp.CPManager;
-import org.olat.ims.cp.CPManagerImpl;
 import org.olat.ims.cp.CPTreeDataModel;
 import org.olat.ims.cp.ContentPackage;
 
@@ -48,7 +46,6 @@ import org.olat.ims.cp.ContentPackage;
 public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 	
 	private final CPTreeDataModel treeModel;
-	private final CPManagerImpl cpMgm;
 	private final ContentPackage cp;
 	private final String ident;
 	
@@ -57,7 +54,6 @@ public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 		
 		this.cp = cp;
 		this.ident = ident;
-		cpMgm = (CPManagerImpl) CPManager.getInstance();
 		this.treeModel = treeModel;
 	}
 

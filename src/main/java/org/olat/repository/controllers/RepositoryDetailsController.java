@@ -64,7 +64,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -375,7 +375,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			String tName = ControllerFactory.translateResourceableTypeName(typeName, getLocale());
 			typeDisplayText.append(tName);
 			if (repositoryEntry != null && RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed()) {
-				PackageTranslator pT = new PackageTranslator(RepositoryEntryStatus.class.getPackage().getName(), ureq.getLocale());
+				Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, ureq.getLocale());
 				typeDisplayText.append(" " + "(" + pT.translate("title.prefix.closed") + ")");
 			}
 			typeDisplayText.append("</span>");
@@ -732,7 +732,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		repositoryEntry = (RepositoryEntry) DBFactory.getInstance().loadObject(repositoryEntry);
 		String displayName = repositoryEntry.getDisplayname();
 		if (repositoryEntry != null && RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed()) {
-			PackageTranslator pT = new PackageTranslator(RepositoryEntryStatus.class.getPackage().getName(), locale);
+			Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, locale);
 			displayName = "[" + pT.translate("title.prefix.closed") + "] ".concat(displayName);
 		}
 		

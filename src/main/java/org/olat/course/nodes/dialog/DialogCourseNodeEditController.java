@@ -46,7 +46,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
@@ -93,7 +93,7 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 	private ICourse course;
 	private DialogConfigForm configForumLaunch;
 	private TableController tableCtr;
-	private PackageTranslator resourceTrans;
+	private Translator resourceTrans;
 	private FileUploadController fileUplCtr;
 	private DialogElement recentElement;
 	private TableGuiConfiguration tableConf;
@@ -106,7 +106,7 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 		this.course = course;
 		this.courseNode = node;
 		
-		this.resourceTrans = new PackageTranslator(Util.getPackageName(DialogElementsTableModel.class), ureq.getLocale(), getTranslator());
+		resourceTrans = Util.createPackageTranslator(DialogElementsTableModel.class, ureq.getLocale(), getTranslator());
 		// set name of the folder we use
 		bcNode.setShortTitle(translate("dialog.folder.name"));
 
@@ -131,7 +131,7 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 		// TODO:gs:a getAssessableNodes ist der dialog node assessable oder nicht?
 		readerCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, readerCondition, "readerConditionForm",
 				AssessmentHelper.getAssessableNodes(editorModel, courseNode), userCourseEnv);		
-    this.listenTo(readerCondContr);
+		listenTo(readerCondContr);
 		accessContent.put("readerCondition", readerCondContr.getInitialComponent());
 
 		// Poster precondition
@@ -262,7 +262,7 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 		listenTo(tableCtr);
 		
 		DialogPropertyElements elements = DialogElementsPropertyManager.getInstance().findDialogElements(this.course.getCourseEnvironment().getCoursePropertyManager(), courseNode);
-		List list = new ArrayList();
+		List<DialogElement> list = new ArrayList<>();
 		DialogElementsTableModel tableModel = new DialogElementsTableModel(getTranslator(), null, null);
 		if (elements != null) list = elements.getDialogPropertyElements();
 		tableModel.setEntries(list);

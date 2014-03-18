@@ -54,8 +54,6 @@ import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.Visitor;
@@ -81,8 +79,6 @@ import org.olat.restapi.group.LearningGroupWebService;
  */
 @Path("users/{identityKey}/forums")
 public class MyForumsWebService {
-	
-	private OLog log = Tracing.createLoggerFor(MyForumsWebService.class);
 
 	/**
 	 * Retrieves the forum of a group

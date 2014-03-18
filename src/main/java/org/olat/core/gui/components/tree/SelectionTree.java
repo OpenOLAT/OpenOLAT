@@ -35,7 +35,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.Form;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.tree.TreeHelper;
@@ -49,7 +48,6 @@ import org.olat.core.util.tree.TreeHelper;
  */
 public class SelectionTree extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new SelectionTreeRenderer();	
-	private static final String PACKAGE = Util.getPackageName(SelectionTree.class);
 	
 	
 	private TreeModel treeModel;
@@ -70,7 +68,7 @@ public class SelectionTree extends AbstractComponent {
 	 * @param name
 	 */
 	public SelectionTree(String name, Translator translator ) {
-		super(name, new PackageTranslator(PACKAGE, translator.getLocale(), translator));		
+		super(name, Util.createPackageTranslator(SelectionTree.class, translator.getLocale(), translator));		
 	}
 	
 	public Object getUserObject() {

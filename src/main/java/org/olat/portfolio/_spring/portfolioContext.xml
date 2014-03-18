@@ -92,7 +92,6 @@
 		<property name="resourceManager" ref="resourceManager"/>
 		<property name="repositoryManager" ref="repositoryManager"/>
 		<property name="dbInstance" ref="database"/>
-		<property name="baseSecurity" ref="baseSecurityManager"/>
 	</bean>
 	
 	<bean name="epSettingsManager" class="org.olat.portfolio.manager.EPSettingsManager" />

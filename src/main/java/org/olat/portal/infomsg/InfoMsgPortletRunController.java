@@ -33,7 +33,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -59,8 +58,8 @@ public class InfoMsgPortletRunController extends DefaultController {
 	 */
 	protected InfoMsgPortletRunController(UserRequest ureq, WindowControl wControl) {
 		super(wControl);
-		this.trans = new PackageTranslator(Util.getPackageName(InfoMsgPortletRunController.class), ureq.getLocale());
-		this.infoVC = new VelocityContainer("infoVC", VELOCITY_ROOT + "/portlet.html", trans, this);
+		trans = Util.createPackageTranslator(InfoMsgPortletRunController.class, ureq.getLocale());
+		infoVC = new VelocityContainer("infoVC", VELOCITY_ROOT + "/portlet.html", trans, this);
 		InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
 		String infoMsg = mrg.getInfoMessage();
 		if (StringHelper.containsNonWhitespace(infoMsg)) {

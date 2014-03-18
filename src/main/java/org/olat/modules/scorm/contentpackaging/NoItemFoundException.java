@@ -51,8 +51,10 @@ package org.olat.modules.scorm.contentpackaging;
  * @author Paul Sharples
 */
 public class NoItemFoundException extends Exception{
-    
-    public static String CR = System.getProperty("line.separator");
+
+	private static final long serialVersionUID = -5966627685214023530L;
+
+	public static String CR = System.getProperty("line.separator");
     
     public static String NO_ITEM_FOUND_MSG =
         "The package you are importing conforms to SCORM 1.2." + CR +

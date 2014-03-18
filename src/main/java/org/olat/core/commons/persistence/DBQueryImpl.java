@@ -46,6 +46,7 @@ import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.type.Type;
 import org.olat.core.logging.DBRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.testutils.codepoints.server.Codepoint;
 /**
@@ -55,6 +56,8 @@ import org.olat.testutils.codepoints.server.Codepoint;
  *
  */
 public class DBQueryImpl implements DBQuery {
+	
+	private static final OLog log = Tracing.createLoggerFor(DBQueryImpl.class);
 
 	private Query query = null;
 
@@ -119,13 +122,13 @@ public class DBQueryImpl implements DBQuery {
 		Codepoint.codepoint(getClass(), "list-entry");
 		final long startTime = System.currentTimeMillis();
 		try{
-			boolean doLog = Tracing.isDebugEnabled(DBQueryImpl.class);
+			boolean doLog = log.isDebug();
 			long start = 0;
 			if (doLog) start = System.currentTimeMillis();
 			List li = query.list();
 			if (doLog) {
 				long time = (System.currentTimeMillis() - start);
-				Tracing.logDebug("list dbquery (time "+time+") query "+getQueryString(), DBQueryImpl.class);
+				log.debug("list dbquery (time "+time+") query "+getQueryString());
 			}
 			String queryString = query.getQueryString().trim();
 			String queryStringToLowerCase = queryString.toLowerCase();
@@ -226,15 +229,6 @@ public class DBQueryImpl implements DBQuery {
 			throw new DBRuntimeException("Iterate failed. ", e);
 		}
 	}
-
-	/*public ScrollableResults scroll() {
-		try {
-			return query.scroll();
-		}
-		catch (HibernateException e) {
-			throw new DBRuntimeException("Scroll failed. ", e);
-		}
-	}*/
 
 	/**
 	 * @see org.olat.core.commons.persistence.DBQuery#setBigDecimal(int, java.math.BigDecimal)

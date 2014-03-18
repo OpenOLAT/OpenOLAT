@@ -27,5 +27,7 @@ package org.olat.modules.webFeed.dispatching;
  * @author gwassmann
  */
 public class InvalidPathException extends Exception {
+
+	private static final long serialVersionUID = -6049546992993178914L;
 	// Nothing to implement
 }

@@ -36,8 +36,7 @@ import org.olat.core.util.i18n.I18nModule;
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
 public class TranslationDevMainController extends MainLayoutBasicController {
-	private VelocityContainer vc;
-	private TranslationDevManager tDMan;
+	private final VelocityContainer vc;
 	
 	/**
 	 * @param ureq
@@ -46,7 +45,6 @@ public class TranslationDevMainController extends MainLayoutBasicController {
 	public TranslationDevMainController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
 		vc = createVelocityContainer("translationdev");
-		tDMan = TranslationDevManager.getInstance();
 		String srcPath = I18nModule.getTransToolApplicationLanguagesSrcDir().getAbsolutePath();
 		vc.contextPut("srcPath", srcPath);
 		//TODO RH: check for enabled debug-mode in order to prevent caching! 
@@ -63,8 +61,7 @@ public class TranslationDevMainController extends MainLayoutBasicController {
 	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
 	/**
@@ -72,8 +69,6 @@ public class TranslationDevMainController extends MainLayoutBasicController {
 	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-	// TODO Auto-generated method stub
-
+		//
 	}
-
 }

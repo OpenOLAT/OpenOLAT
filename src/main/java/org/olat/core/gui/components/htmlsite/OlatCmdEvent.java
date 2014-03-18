@@ -33,6 +33,8 @@ import org.olat.core.gui.control.Event;
  * @author Felix Jost
  */
 public class OlatCmdEvent extends Event {
+
+	private static final long serialVersionUID = 6063669820683223048L;
 	private boolean accepted;
 	private final String subcommand;
 	

@@ -36,6 +36,8 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 
 public class PersistedPropertiesChangedEvent extends MultiUserEvent {
+
+	private static final long serialVersionUID = 4165275870616317484L;
 	private static final String COMMAND = "PersistedPropertiesChangedEvent";
 	private final Properties changedProperties;
 

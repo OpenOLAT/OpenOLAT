@@ -35,8 +35,8 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
@@ -60,8 +60,8 @@ import org.olat.repository.controllers.RepositoryAddCallback;
  * @author Mike Stock
  */
 public class AddNewQTIDocumentController extends DefaultController implements IAddController, ControllerEventListener {
-
-	private static final String PACKAGE_REPOSITORY = Util.getPackageName(RepositoryManager.class);
+	
+	private static final OLog log = Tracing.createLoggerFor(AddNewQTIDocumentController.class);
 	private static final String DUMMY_TITLE = "__DUMMYTITLE__";
 	private final String type;
 	private FileResource resource;
@@ -79,8 +79,8 @@ public class AddNewQTIDocumentController extends DefaultController implements IA
 	public AddNewQTIDocumentController(String type, RepositoryAddCallback addCallback, UserRequest ureq, WindowControl wControl) {
 		super(wControl);		
 		this.type = type;
-		this.translator = new PackageTranslator(PACKAGE_REPOSITORY, ureq.getLocale());
-		this.locale = ureq.getLocale();
+		translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
+		locale = ureq.getLocale();
 		if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
 			resource = new TestFileResource();
 		} else if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
@@ -123,7 +123,7 @@ public class AddNewQTIDocumentController extends DefaultController implements IA
 		try {
 			return (FileResourceManager.getInstance().addFileResource(fTempQTI, "qti.zip", resource) != null);
 		} catch (AddingResourceException e) {
-			Tracing.logWarn("Error while adding new qti.zip resource", e, AddNewQTIDocumentController.class);
+			log.warn("Error while adding new qti.zip resource", e);
 			return false;
 		}
 	}

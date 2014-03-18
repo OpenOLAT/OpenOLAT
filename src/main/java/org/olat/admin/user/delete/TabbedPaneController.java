@@ -53,8 +53,7 @@ import org.olat.core.util.WebappHelper;
  */
 public class TabbedPaneController extends DefaultController implements ControllerEventListener, Activateable2 {
 
-	private static final String PACKAGE = Util.getPackageName(TabbedPaneController.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(TabbedPaneController.class);
 	
 	private static final String NLS_ERROR_NOACCESS_TO_USER = "error.noaccess.to.user";
 	

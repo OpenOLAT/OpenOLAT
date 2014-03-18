@@ -58,6 +58,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.olat.admin.user.UserShortDescription;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
@@ -75,6 +76,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.restapi.group.MyGroupWebService;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.ErrorVO;
@@ -222,7 +224,7 @@ public class UserWebService {
 		Identity identity = BaseSecurityManager.getInstance().findIdentityByName(user.getLogin());
 		if (identity != null) {
 			Locale locale = getLocale(request);
-			Translator translator = new PackageTranslator("org.olat.admin.user", locale);
+			Translator translator = Util.createPackageTranslator(UserShortDescription.class, locale);
 			String translation = translator.translate("new.error.loginname.choosen");
 			ErrorVO[] errorVos = new ErrorVO[]{
 				new ErrorVO("org.olat.admin.user", "new.error.loginname.choosen", translation)

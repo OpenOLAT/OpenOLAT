@@ -33,7 +33,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.ims.cp.ContentPackage;
 
 /**
  * 
@@ -51,12 +50,10 @@ public class CPMetadataEditController extends BasicController {
 
 	private Link closeLink;
 	private CPMDFlexiForm mdCtr; // MetadataController
-	private ContentPackage cp;
 	private CPPage page;
 
-	protected CPMetadataEditController(UserRequest ureq, WindowControl control, CPPage page, ContentPackage cp) {
+	protected CPMetadataEditController(UserRequest ureq, WindowControl control, CPPage page) {
 		super(ureq, control);
-		this.cp = cp;
 		this.page = page;
 		mdCtr = new CPMDFlexiForm(ureq, getWindowControl(), page);
 		listenTo(mdCtr);

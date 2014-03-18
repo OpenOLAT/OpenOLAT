@@ -44,7 +44,7 @@ public class GuiDemoSoaController extends BasicController {
 
 	private Panel usersearchHolder;
 	private VelocityContainer mainVC;
-	private Link button, button2;
+	private Link button;
 	
 	private Controller userSearch;
 

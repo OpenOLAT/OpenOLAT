@@ -23,7 +23,6 @@ import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -62,7 +61,7 @@ public interface EPArtefactHandler<U extends AbstractArtefact> extends ConfigOnO
 	 * @param fallBackTrans - your yet existing translator
 	 * @return
 	 */
-	public PackageTranslator getHandlerTranslator(Translator fallBackTrans);
+	public Translator getHandlerTranslator(Translator fallBackTrans);
 	
 	/**
 	 * create a controller to present / manipulate artefact-specific stuff

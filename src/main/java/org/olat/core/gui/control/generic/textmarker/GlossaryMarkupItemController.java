@@ -54,7 +54,6 @@ public class GlossaryMarkupItemController extends BasicController {
 	private VelocityContainer tmContainer = createVelocityContainer("tmContainer");
 	private JSAndCSSComponent glossHelpJs;
 	private boolean textMarkingEnabled;
-	private JSAndCSSComponent glossHLJS;
 	private String glossaryId;
 	
 	private static Mapper glossaryDefinitionMapper;

@@ -49,9 +49,7 @@ import org.olat.core.util.ValidationStatusImpl;
  */
 public class SingleSelectionImpl extends FormItemImpl implements SingleSelection {
 
-	//
-	private static final String PACKAGE = Util.getPackageName(SingleSelectionImpl.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(SingleSelectionImpl.class);
 
 	private final static String HORIZONTAL_DEFAULT_RADIO = VELOCITY_ROOT + "/sel_elems_horizontal.html";
 	private final static String VERTICAL_RADIO = VELOCITY_ROOT + "/sel_elems_vertical.html";

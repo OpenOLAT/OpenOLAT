@@ -40,6 +40,7 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 public class LanguageChangedEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = -3792828330046067628L;
 	private Locale newLocale;
 	private transient UserRequest ureq;
 

@@ -37,7 +37,7 @@ import org.dom4j.Element;
  */
 public class Metadata implements QTIObject {
 
-	private HashMap metadata = new HashMap();
+	private HashMap<String,String> metadata = new HashMap<>();
 	
 	
 	/* (non-Javadoc)
@@ -46,16 +46,16 @@ public class Metadata implements QTIObject {
 	public void addToElement(Element root) {
 		if (metadata.size() == 0) return;
 		Element qtimetadata = root.addElement("qtimetadata");
-		for (Iterator iter = metadata.keySet().iterator(); iter.hasNext();) {
-			String key = (String) iter.next();
-			String value = (String)metadata.get(key);
+		for (Iterator<String> iter = metadata.keySet().iterator(); iter.hasNext();) {
+			String key = iter.next();
+			String value = metadata.get(key);
 			Element metadatafield = qtimetadata.addElement("qtimetadatafield");
 			metadatafield.addElement("fieldlabel").setText(key);
 			metadatafield.addElement("fieldentry").setText(value);
 		}
 	}
 
-	public String getField(String key) { return (String)metadata.get(key); }
+	public String getField(String key) { return metadata.get(key); }
 	
 	public void setField(String key, String value) { metadata.put(key, value); }
 

@@ -36,7 +36,8 @@ import org.olat.core.logging.AssertException;
  * @author Christian Guretzki
  */
 public class LifeCycleEntry extends PersistentObject {
-	
+
+	private static final long serialVersionUID = -2919077675588017564L;
 	private String persistentTypeName;
 	private Long   persistentRef;
 	private String action;
@@ -112,7 +113,7 @@ public class LifeCycleEntry extends PersistentObject {
 	 * @param resourceTypeName The resourceTypeName to set.
 	 */
 	protected void setPersistentTypeName(String persistentTypeName) {
-		if (persistentTypeName.length() > this.PERSISTENTTYPENAME_MAXLENGTH) {
+		if (persistentTypeName.length() > PERSISTENTTYPENAME_MAXLENGTH) {
 			throw new AssertException("persistentTypeName in o_lifecycle too long. persistentObjectTypeName=" + persistentTypeName );
 		}
 		this.persistentTypeName = persistentTypeName;

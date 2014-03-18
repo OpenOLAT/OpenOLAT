@@ -31,7 +31,6 @@ import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.Quota;
@@ -66,9 +65,9 @@ public class ProjectBrokerDropboxScoringViewController extends DropboxScoringVie
 		super(ureq, wControl, node, userCourseEnv, false);	
 		this.project = project;
 		this.setVelocityRoot(Util.getPackageVelocityRoot(DropboxScoringViewController.class));
-		Translator fallbackTranslator = new PackageTranslator( Util.getPackageName(this.getClass()), ureq.getLocale());
-		Translator myTranslator = new PackageTranslator( Util.getPackageName(DropboxScoringViewController.class), ureq.getLocale(), fallbackTranslator);
-		this.setTranslator(myTranslator);
+		Translator fallbackTranslator = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
+		Translator myTranslator = Util.createPackageTranslator(DropboxScoringViewController.class, ureq.getLocale(), fallbackTranslator);
+		setTranslator(myTranslator);
 		init(ureq);
 	}
 	

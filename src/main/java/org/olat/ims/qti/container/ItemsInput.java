@@ -34,21 +34,21 @@ import java.util.Iterator;
  */
 public class ItemsInput implements Serializable{
 
-	private HashMap map;
+	private HashMap<String,ItemInput> map;
 
 	/**
 	 * Constructor for ItemsInput.
 	 */
 	public ItemsInput() {
 		super();
-		map = new HashMap();
+		map = new HashMap<String,ItemInput>();
 	}
 	
 	public void addItemInput(ItemInput iip) {
 		map.put(iip.getIdent(), iip);
 	}
 	
-	public Iterator getItemInputIterator() {
+	public Iterator<ItemInput> getItemInputIterator() {
 		return map.values().iterator();
 	}
 	

@@ -24,12 +24,12 @@ import java.util.Date;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -86,9 +86,8 @@ public abstract class EPAbstractHandler<U extends AbstractArtefact> implements E
 	 * @see org.olat.portfolio.EPArtefactHandler#getHandlerTranslator(org.olat.core.gui.translator.Translator)
 	 */
 	@Override
-	public PackageTranslator getHandlerTranslator(Translator fallBackTrans){
-		PackageTranslator pT = new PackageTranslator(this.getClass().getPackage().getName(), fallBackTrans.getLocale(), fallBackTrans);
-		return pT; 
+	public Translator getHandlerTranslator(Translator fallBackTrans){
+		return Util.createPackageTranslator(this.getClass(), fallBackTrans.getLocale(), fallBackTrans);
 	}
 	
 	@Override

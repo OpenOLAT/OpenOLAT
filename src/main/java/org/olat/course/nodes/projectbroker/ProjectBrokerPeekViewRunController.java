@@ -80,8 +80,8 @@ public class ProjectBrokerPeekViewRunController extends BasicController implemen
 			myProjects = myProjects.subList(0, MAX_NBR_PROJECTS);
 		}
 		peekviewVC.contextPut("myProjects", myProjects);
-		for (Iterator iterator = myProjects.iterator(); iterator.hasNext();) {
-			Project project = (Project) iterator.next();
+		for (Iterator<Project> iterator = myProjects.iterator(); iterator.hasNext();) {
+			Project project = iterator.next();
 			// Add link to show all items (go to node)
 			Link nodeLink = LinkFactory.createLink("nodeLink_" + project.getKey(), peekviewVC, this);
 			nodeLink.setCustomDisplayText(project.getTitle());
@@ -102,8 +102,8 @@ public class ProjectBrokerPeekViewRunController extends BasicController implemen
 			myCoachedProjects = myCoachedProjects.subList(0, MAX_NBR_PROJECTS);
 		}
 		peekviewVC.contextPut("myCoachedProjects", myCoachedProjects);
-		for (Iterator iterator = myCoachedProjects.iterator(); iterator.hasNext();) {
-			Project project = (Project) iterator.next();
+		for (Iterator<Project> iterator = myCoachedProjects.iterator(); iterator.hasNext();) {
+			Project project = iterator.next();
 			// Add link to show all items (go to node)
 			Link nodeLink = LinkFactory.createLink("coachedNodeLink_" + project.getKey(), peekviewVC, this);
 			nodeLink.setCustomDisplayText(project.getTitle());

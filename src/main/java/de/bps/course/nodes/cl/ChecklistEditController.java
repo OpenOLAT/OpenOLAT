@@ -31,8 +31,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -137,7 +137,7 @@ public class ChecklistEditController extends ActivateableTabbableDefaultControll
 		if(source.equals(manageCheckpointsButton)) {
 			manageController = ChecklistUIFactory.getInstance().createManageCheckpointsController(ureq, getWindowControl(), checklist, course);
 			manageController.addControllerListener(this);
-			Translator clTranslator = new PackageTranslator(Checklist.class.getPackage().getName(), ureq.getLocale());
+			Translator clTranslator = Util.createPackageTranslator(Checklist.class, ureq.getLocale());
 			cmcManage = new CloseableModalController(getWindowControl(), clTranslator.translate("cl.close"), manageController.getInitialComponent(), true, clTranslator.translate("cl.manage.title"));
 			cmcManage.addControllerListener(this);
 			cmcManage.activate();

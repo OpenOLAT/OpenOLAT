@@ -33,6 +33,7 @@ import org.jamwiki.model.WikiFile;
 import org.jamwiki.utils.InterWikiHandler;
 import org.jamwiki.utils.PseudoTopicHandler;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.wiki.Wiki;
 import org.olat.modules.wiki.WikiManager;
@@ -46,6 +47,8 @@ import org.springframework.util.StringUtils;
  * @author guido
  */
 public class OlatWikiDataHandler implements DataHandler {
+	
+	private static final OLog log = Tracing.createLoggerFor(OlatWikiDataHandler.class);
 
 	private OLATResourceable ores;
 	private String imageUri;
@@ -74,15 +77,14 @@ public class OlatWikiDataHandler implements DataHandler {
 		} catch (UnsupportedEncodingException e) {
 			//
 		}
-		if (Tracing.isDebugEnabled(OlatWikiDataHandler.class)) {
-			Tracing.logDebug("page name not normalized: " + topicName, OlatWikiDataHandler.class);
-			Tracing.logDebug("page name normalized: " + FilterUtil.normalizeWikiLink(topicName), OlatWikiDataHandler.class);
+		if (log.isDebug()) {
+			log.debug("page name not normalized: " + topicName);
+			log.debug("page name normalized: " + FilterUtil.normalizeWikiLink(topicName));
 			try {
-				Tracing.logDebug("page name urldecoded name: " + URLDecoder.decode(topicName, "utf-8"), OlatWikiDataHandler.class);
-				Tracing.logDebug("page name urldecoded and normalized: " + FilterUtil.normalizeWikiLink(URLDecoder.decode(topicName, "utf-8")),
-						OlatWikiDataHandler.class);
-				Tracing.logDebug("page name urldecoded normalized and transformed to id: "
-						+ wiki.generatePageId(FilterUtil.normalizeWikiLink(decodedName)), OlatWikiDataHandler.class);
+				log.debug("page name urldecoded name: " + URLDecoder.decode(topicName, "utf-8"));
+				log.debug("page name urldecoded and normalized: " + FilterUtil.normalizeWikiLink(URLDecoder.decode(topicName, "utf-8")));
+				log.debug("page name urldecoded normalized and transformed to id: "
+						+ wiki.generatePageId(FilterUtil.normalizeWikiLink(decodedName)));
 			} catch (UnsupportedEncodingException e) {
 				//
 			}

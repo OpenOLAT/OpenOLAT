@@ -96,7 +96,7 @@ public class HomePageConfig implements OLATResourceable{
 	/**
 	 * holds the configuration
 	 */
-	private Map configuration = new Hashtable();
+	private Map<String,Object> configuration = new Hashtable<>();
 
 	public HomePageConfig() {
 	// empty, for XSTream

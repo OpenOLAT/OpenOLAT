@@ -76,7 +76,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 	private Link editProjectButton;
 	private Link deleteProjectButton;
 	private DialogBoxController deleteConfirmController;
-	private List projectLeaderLinkNameList;
+	private List<String> projectLeaderLinkNameList;
 	private Link attachedFileLink;
 
 	private Project project;
@@ -133,9 +133,8 @@ public class ProjectDetailsDisplayController extends BasicController {
 		myContent.contextPut("title", project.getTitle());
 		// account-Managers
 		int i = 0;
-		projectLeaderLinkNameList = new ArrayList();
-		for (Iterator iterator = project.getProjectLeaders().iterator(); iterator.hasNext();) {
-			Identity identity = (Identity) iterator.next();
+		projectLeaderLinkNameList = new ArrayList<>();
+		for (Identity identity : project.getProjectLeaders()) {
 			String last = identity.getUser().getProperty(UserConstants.LASTNAME, getLocale());
 			String first= identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale());
 			StringBuilder projectLeaderString = new StringBuilder();
@@ -153,7 +152,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 
 		myContent.contextPut("description", project.getDescription());
 		// Custom-fields
-		List customFieldList = new ArrayList();
+		List<CustomField> customFieldList = new ArrayList<>();
 		int customFieldIndex = 0;
 		for (Iterator<CustomField> iterator =  projectBrokerModuleConfiguration.getCustomFields().iterator(); iterator.hasNext();) {
 			CustomField customField = iterator.next();
@@ -166,7 +165,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 		myContent.contextPut("customFieldList", customFieldList);
 		
 		// events
-		List eventList = new ArrayList();
+		List<ProjectEvent> eventList = new ArrayList<>();
 		for (Project.EventType eventType : Project.EventType.values()) {
 			if (projectBrokerModuleConfiguration.isProjectEventEnabled(eventType) ) {
 				ProjectEvent projectEvent = project.getProjectEvent(eventType);

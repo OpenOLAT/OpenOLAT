@@ -19,6 +19,7 @@
  */
 package de.bps.onyx.plugin.wsserver;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -28,7 +29,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "mapwrapper")
-public class MapWrapper {
+public class MapWrapper implements Serializable {
 
 	private static final long serialVersionUID = 5831008170384520354L;
 

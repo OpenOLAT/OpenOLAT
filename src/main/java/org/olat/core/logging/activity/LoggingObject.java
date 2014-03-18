@@ -30,8 +30,6 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 
 /**
  * Hibernate class representing a <i>log line</i> - 
@@ -41,8 +39,8 @@ import org.olat.core.logging.Tracing;
  * @author Stefan
  */
 public class LoggingObject extends PersistentObject {
-	static final OLog log = Tracing.createLoggerFor(LoggingObject.class);
-	
+	private static final long serialVersionUID = -7960024949707705523L;
+
 	// technical fields
 	private String sourceClass;
 	

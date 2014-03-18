@@ -53,7 +53,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.gui.render.velocity.VelocityHelper;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -165,8 +164,8 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		//o_clusterOk by guido: save to hold reference to course inside editor
 		this.course = course;
 		this.config = node.getModuleConfiguration();
-		Translator newTranslator = new PackageTranslator(Util.getPackageName(TACourseNodeEditController.class), ureq.getLocale(), new PackageTranslator(Util
-				.getPackageName(MSCourseNodeEditController.class), ureq.getLocale()));
+		Translator newTranslator = Util.createPackageTranslator(TACourseNodeEditController.class, ureq.getLocale(),
+				Util.createPackageTranslator(MSCourseNodeEditController.class, ureq.getLocale()));
 		setTranslator(newTranslator);
 		
 		accessabilityVC = this.createVelocityContainer("edit");

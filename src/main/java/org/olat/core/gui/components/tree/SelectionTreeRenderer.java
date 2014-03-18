@@ -47,10 +47,6 @@ import org.olat.core.util.tree.TreeHelper;
  * @author Felix Jost
  */
 public class SelectionTreeRenderer implements ComponentRenderer {
-	/**
-	 * <code>PACKAGE</code>
-	 */
-	public static final String PACKAGE = org.olat.core.util.Util.getPackageName(SelectionTreeRenderer.class);
 
 	private static String imgDots = "<div class=\"b_selectiontree_line\"></div>";
 	private static String imgDots_spacer = "<div class=\"b_selectiontree_space\"></div>";

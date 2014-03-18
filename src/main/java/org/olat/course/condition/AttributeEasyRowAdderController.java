@@ -173,7 +173,6 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 	 * @see org.olat.core.gui.components.form.flexible.FormDefaultController#formInnerEvent(org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.FormEvent)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void formInnerEvent(final UserRequest ureq, final FormItem source, final FormEvent event) {
 		if (isinit) {
 			final String compName = source.getName();
@@ -238,25 +237,23 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 	 *      org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings({ "unused", "unchecked" })
 	protected void initForm(final FormItemContainer formLayout, final Controller listener, final UserRequest ureq) {
 		//
-		columnAttribute = new ArrayList();
-		columnOperator = new ArrayList();
-		columnValueText = new ArrayList();
-		columnValueSelection = new ArrayList();
-		columnAddRow = new ArrayList();
-		columnRemoveRow = new ArrayList();
+		columnAttribute = new ArrayList<String>();
+		columnOperator = new ArrayList<String>();
+		columnValueText = new ArrayList<String>();
+		columnValueSelection = new ArrayList<String>();
+		columnAddRow = new ArrayList<String>();
+		columnRemoveRow = new ArrayList<String>();
 		// add a 0 row by default
 		addRowAt(0);
-		//
+
 		((FormLayoutContainer) formLayout).contextPut("columnAttribute", columnAttribute);
 		((FormLayoutContainer) formLayout).contextPut("columnOperator", columnOperator);
 		((FormLayoutContainer) formLayout).contextPut("columnValueText", columnValueText);
 		((FormLayoutContainer) formLayout).contextPut("columnValueSelection", columnValueSelection);
 		((FormLayoutContainer) formLayout).contextPut("columnAddRow", columnAddRow);
 		((FormLayoutContainer) formLayout).contextPut("columnRemoveRow", columnRemoveRow);
-		//
 	}
 
 	/**
@@ -317,7 +314,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		// remove default row from init process to make process of generating the
 		// existing configuration easier
 		removeRowAt(0);
-		for (final Iterator iterator = cond.iterator(); iterator.hasNext();) {
+		for (final Iterator<ExtendedCondition> iterator = cond.iterator(); iterator.hasNext();) {
 			final ExtendedCondition extendedCondition = (ExtendedCondition) iterator.next();
 			final int row = getRowCount();
 			// now count is always one more than the row position, thus the next position to add a row
@@ -345,9 +342,9 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		// 1) Make room for the new row if the row is inserted between existing
 		// rows. Increment the row id in the user object of the form elements and
 		// move them in the form element arrays
-		final Map formComponents = flc.getFormComponents();
+		final Map<String,FormItem> formComponents = flc.getFormComponents();
 		for (int move = rowPos + 1; move <= columnAttribute.size(); move++) {
-			FormItem oldPos = (FormItem) formComponents.get(columnAttribute.get(move - 1));
+			FormItem oldPos = formComponents.get(columnAttribute.get(move - 1));
 			oldPos.setUserObject(Integer.valueOf(move));
 			oldPos = (FormItem) formComponents.get(columnOperator.get(move - 1));
 			oldPos.setUserObject(Integer.valueOf(move));

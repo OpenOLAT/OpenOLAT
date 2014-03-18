@@ -36,6 +36,8 @@ import org.olat.core.gui.control.Event;
  */
 public class RequestMediaEvent extends Event {
 
+	private static final long serialVersionUID = -5514816907190031512L;
+
 	public RequestMediaEvent(String mediaFileName) {
 		super(mediaFileName);
 	}

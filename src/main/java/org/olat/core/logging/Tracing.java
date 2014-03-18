@@ -104,7 +104,6 @@ public class Tracing {
 	private static long __warnRefNum__  = 0;
 	private static long __infoRefNum__  = 0;
 	private static long __debugRefNum__ = 0;
-	private static long __performanceRefNum__ = 0;
 	
 	// VM local cache to have one logger object per class
 	private static final Map<Class<?>, OLog> loggerLookupMap = new ConcurrentHashMap<Class<?>, OLog>();
@@ -177,7 +176,7 @@ public class Tracing {
 	 * @return
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logError(String logMsg, Class<?> callingClass) {
+	protected static long logError(String logMsg, Class<?> callingClass) {
 		return logError(logMsg, null, callingClass);
 	}
 
@@ -189,7 +188,7 @@ public class Tracing {
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 * @return
 	 */
-	public static long logWarn(String logMsg, Throwable cause, Class<?> callingClass) {
+	protected static long logWarn(String logMsg, Throwable cause, Class<?> callingClass) {
 		long refNum = getWarnRefNum();
 		getLogger(callingClass).warn(assembleThrowableMessage(WARN, 'W', refNum, callingClass, logMsg, cause));
 		return refNum;
@@ -201,7 +200,7 @@ public class Tracing {
 	 * @return
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logWarn(String logMsg, Class<?> callingClass) {
+	protected static long logWarn(String logMsg, Class<?> callingClass) {
 		return logWarn(logMsg, null, callingClass);
 	}
 
@@ -216,7 +215,7 @@ public class Tracing {
 	 * @return
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logDebug(String logMsg, String userObj, Class<?> callingClass) {
+	protected static long logDebug(String logMsg, String userObj, Class<?> callingClass) {
 		long refNum = getDebugRefNum();
 		if (isDebugEnabled(callingClass)) {
 			getLogger(callingClass).debug(assembleMsg(DEBUG, 'D', refNum, callingClass, userObj, logMsg));
@@ -232,7 +231,7 @@ public class Tracing {
 	 * @return
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logDebug(String logMsg, Class<?> callingClass) {
+	protected static long logDebug(String logMsg, Class<?> callingClass) {
 		return logDebug(logMsg, null, callingClass);
 	}
 
@@ -242,7 +241,7 @@ public class Tracing {
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 * @return
 	 */
-	public static long logInfo(String logMsg, String userObject, Class<?> callingClass) {
+	protected static long logInfo(String logMsg, String userObject, Class<?> callingClass) {
 		long refNum = getInfoRefNum();
 		getLogger(callingClass).info(assembleMsg(INFO, 'I', refNum, callingClass, userObject, logMsg));
 		return refNum;
@@ -254,7 +253,7 @@ public class Tracing {
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 * @return
 	 */
-	public static long logInfo(String logMsg, Class<?> callingClass) {
+	protected static long logInfo(String logMsg, Class<?> callingClass) {
 		return logInfo(logMsg, null, callingClass);
 
 	}
@@ -267,7 +266,7 @@ public class Tracing {
 	 * @return Log entry identifier.
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 */
-	public static long logAudit(String logMsg, Class<?> callingClass) {
+	protected static long logAudit(String logMsg, Class<?> callingClass) {
 		return logAudit(logMsg, null, callingClass);
 	}
 
@@ -280,26 +279,11 @@ public class Tracing {
 	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 * @return Log entry identifier.
 	 */
-	public static long logAudit(String logMsg, String userObj, Class<?> callingClass) {
+	protected static long logAudit(String logMsg, String userObj, Class<?> callingClass) {
 		long refNum = getAuditRefNum();
 		getLogger(callingClass).info(assembleMsg(AUDIT, 'A', refNum, callingClass, userObj, logMsg));
 		return refNum;
 	}
-	
-	/**
-	 * Add performance log entry
-	 * 
-	 * @param logMsg
-	 * @param callingClass
-	 * @return Log entry identifier.
-	 */
-	public static long logPerformance(String logMsg, Class<?> callingClass) {
-		long refNum = getPerformanceRefNum();
-		getLogger(callingClass).info(assembleMsg(PERFORMANCE, 'P', refNum, callingClass, null, logMsg));
-		return refNum;
-	}
-
-	
 
 	/**
 	 * Method getStackTrace returns the first few (stacklen) lines of the
@@ -337,10 +321,6 @@ public class Tracing {
 
 	private synchronized static long getInfoRefNum() { //o_clusterOK by:fj
 		return ++__infoRefNum__;
-	}
-	
-	private synchronized static long getPerformanceRefNum() {
-		return ++__performanceRefNum__;
 	}
 
 	private static String assembleMsg(String category, char prefix, long refNum, Class<?> callingClass, String userObj, String logMsg) {
@@ -522,19 +502,9 @@ public class Tracing {
 	 * @deprecated please use OLog log = createLoggerFor(MySample.class) as a private static field in your class and use this log.
 	 * @return
 	 */
-	public static boolean isDebugEnabled(Class<?> clazz) {
+	protected static boolean isDebugEnabled(Class<?> clazz) {
 		return Logger.getLogger(clazz).isDebugEnabled();
 	}
-
-	/**
-	 * if info log level is enabled for argument
-	 * 
-	 * @param clazz
-	 * @return
-	 */
-	/*public static boolean isInfoEnabled(Class clazz) {
-		return Logger.getLogger(clazz).isInfoEnabled();
-	}*/
 
 	/**
 	 * @return list all current loggers
@@ -599,11 +569,11 @@ public class Tracing {
 	 * 
 	 * @author patrick
 	 */
-	private static class ThreadLocalData extends ThreadLocal {
+	private static class ThreadLocalData extends ThreadLocal<HttpServletRequest> {
 		/**
 		 * @see java.lang.ThreadLocal#initialValue()
 		 */
-		public Object initialValue() {
+		public HttpServletRequest initialValue() {
 			return null;
 		}
 

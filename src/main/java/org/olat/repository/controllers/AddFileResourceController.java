@@ -93,7 +93,7 @@ public class AddFileResourceController extends BasicController implements IAddCo
 
 	private FileChooserController cfc;
 	private RepositoryAddCallback addCallback;
-	private List limitTypes;
+	private List<String> limitTypes;
 	private FileResource newFileResource;
 
 	/**
@@ -104,7 +104,7 @@ public class AddFileResourceController extends BasicController implements IAddCo
 	 * @param ureq
 	 * @param wControl
 	 */
-	public AddFileResourceController(RepositoryAddCallback addCallback, List limitTypes, UserRequest ureq, WindowControl wControl) {
+	public AddFileResourceController(RepositoryAddCallback addCallback, List<String> limitTypes, UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		init(addCallback, limitTypes, null, ureq);
 	}
@@ -118,12 +118,12 @@ public class AddFileResourceController extends BasicController implements IAddCo
 	 * @param ureq
 	 * @param wControl
 	 */
-	public AddFileResourceController(RepositoryAddCallback addCallback, List limitTypes, String[] suffixFilter, UserRequest ureq, WindowControl wControl) {
+	public AddFileResourceController(RepositoryAddCallback addCallback, List<String> limitTypes, String[] suffixFilter, UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		init(addCallback, limitTypes, suffixFilter, ureq);
 	}
 
-	private void init(RepositoryAddCallback rac, List lt, String[] suffixFilter, UserRequest ureq) {
+	private void init(RepositoryAddCallback rac, List<String> lt, String[] suffixFilter, UserRequest ureq) {
 
 		this.addCallback = rac;
 		this.limitTypes = lt;
@@ -224,8 +224,8 @@ public class AddFileResourceController extends BasicController implements IAddCo
 
 				if (limitTypes != null && limitTypes.size() > 0) { // check for type
 					boolean validType = false;
-					for (Iterator iter = limitTypes.iterator(); iter.hasNext();) {
-						String limitType = (String) iter.next();
+					for (Iterator<String> iter = limitTypes.iterator(); iter.hasNext();) {
+						String limitType = iter.next();
 						if (newFileResource.getResourceableTypeName().equals(limitType)) validType = true;
 					}
 					if (!validType) { // rollback

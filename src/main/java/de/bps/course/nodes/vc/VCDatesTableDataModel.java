@@ -34,12 +34,12 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
  * Initial Date:  19.01.2011 <br>
  * @author skoeber
  */
-public class VCDatesTableDataModel extends DefaultTableDataModel {
+public class VCDatesTableDataModel extends DefaultTableDataModel<MeetingDate> {
 	
 	//title, description, begin, end
 	private static final int COLUMN_COUNT = 4;
 
-	public VCDatesTableDataModel(List objects) {
+	public VCDatesTableDataModel(List<MeetingDate> objects) {
 		super(objects);
 	}
 
@@ -50,7 +50,7 @@ public class VCDatesTableDataModel extends DefaultTableDataModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		final MeetingDate model = ((MeetingDate) objects.get(row));
+		final MeetingDate model = objects.get(row);
 
 		switch (col) {
 			case 0:
@@ -67,10 +67,10 @@ public class VCDatesTableDataModel extends DefaultTableDataModel {
 	}
 
 	public MeetingDate getEntryAt(int row) {
-		return (MeetingDate) objects.get(row);
+		return objects.get(row);
 	}
 
-	public void setEntries(List newEntries) {
+	public void setEntries(List<MeetingDate> newEntries) {
 		this.objects = newEntries;
 	}
 }

@@ -53,12 +53,7 @@ import org.olat.ims.qti.editor.beecom.objects.Item;
  */
 public class ItemPreviewController extends DefaultController implements ControllerEventListener {
 	private static final OLog log = Tracing.createLoggerFor(ItemPreviewController.class);
-	
-	/*
-	 * Logging, Velocity
-	 */
-	private static final String PACKAGE = Util.getPackageName(ItemPreviewController.class);
-	private static final String VC_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+	private static final String VC_ROOT = Util.getPackageVelocityRoot(ItemPreviewController.class);
 
 	private Panel mainPanel;
 	private VelocityContainer main;

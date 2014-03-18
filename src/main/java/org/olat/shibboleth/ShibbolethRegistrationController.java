@@ -51,7 +51,6 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.LocaleChangedEvent;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -89,8 +88,7 @@ import org.olat.user.UserManager;
 
 public class ShibbolethRegistrationController extends DefaultController implements ControllerEventListener {
 
-	private static final String PACKAGE = Util.getPackageName(ShibbolethModule.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(ShibbolethModule.class);
 	private static final String KEY_SHIBATTRIBUTES = "shibattr";
 	private static final String KEY_SHIBUNIQUEID = "shibuid";
 	
@@ -121,7 +119,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	public ShibbolethRegistrationController(UserRequest ureq, WindowControl wControl) {
 		super(wControl);
 
-		translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+		translator = Util.createPackageTranslator(ShibbolethModule.class, ureq.getLocale());
 		shibbolethAttributesMap = (Map<String,String>)ureq.getUserSession().getEntry(KEY_SHIBATTRIBUTES);
 		shibbolethUniqueID = (String)ureq.getUserSession().getEntry(KEY_SHIBUNIQUEID);
 		
@@ -153,7 +151,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		I18nManager.updateLocaleInfoToThread(ureq.getUserSession());
 		ureq.getUserSession().putEntry(LocaleNegotiator.NEGOTIATED_LOCALE, locale);
 		
-		translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+		translator = Util.createPackageTranslator(ShibbolethModule.class, ureq.getLocale());
 		mainContainer = new VelocityContainer("main", VELOCITY_ROOT + "/langchooser.html", translator, this);
 	
 		languageChooserController = new LanguageChooserController(ureq, wControl, false);

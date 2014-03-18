@@ -36,6 +36,7 @@ import org.olat.commons.servlets.util.ResourceDescriptor;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -59,6 +60,8 @@ import org.olat.core.logging.Tracing;
  *             e.g. static resources which are shared by all users
  */
 public class StaticsLegacyDispatcher implements Dispatcher {
+	private static final OLog log = Tracing.createLoggerFor(StaticsLegacyDispatcher.class);
+	
     private static int outputBufferSize = 2048;
     private static int inputBufferSize = 2048;
 
@@ -96,9 +99,8 @@ public class StaticsLegacyDispatcher implements Dispatcher {
 					 * silently ignore forward errors (except in debug mode), since IE
 					 * causes tons of such messages by its double GET request
 					 */
-					if (Tracing.isDebugEnabled(DispatcherModule.class)) {
-						Tracing.logDebug("could not execute legacy statics method:" + e.toString() + ",msg:" + e.getMessage(),
-								StaticsLegacyDispatcher.class);
+					if (log.isDebug()) {
+						log.debug("could not execute legacy statics method:" + e.toString() + ",msg:" + e.getMessage());
 					}
     		}
     }
@@ -158,7 +160,7 @@ public class StaticsLegacyDispatcher implements Dispatcher {
         String handlerName = null;
         long start = 0;
         
-        boolean logDebug = Tracing.isDebugEnabled(StaticsLegacyDispatcher.class);
+        boolean logDebug = log.isDebug();
         if (logDebug) start = System.currentTimeMillis();
         try {
             relPath = path.substring(1);
@@ -215,7 +217,7 @@ public class StaticsLegacyDispatcher implements Dispatcher {
             copyContent(response, is);
             if (logDebug) {
                 long stop = System.currentTimeMillis();  
-                Tracing.logDebug("Serving resource '" + relPath + "' ("+rd.getSize()+" bytes) in "+ (stop-start) +"ms with handler '" + handlerName + "'.", StaticsLegacyDispatcher.class);
+                log.debug("Serving resource '" + relPath + "' ("+rd.getSize()+" bytes) in "+ (stop-start) +"ms with handler '" + handlerName + "'.");
 
             }
         }

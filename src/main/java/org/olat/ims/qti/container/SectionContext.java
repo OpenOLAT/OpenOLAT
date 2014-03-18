@@ -165,7 +165,7 @@ public class SectionContext implements Serializable {
 		}
 
 		// ----------------------- selection
-		List el_items = new ArrayList();
+		List<Element> el_items = new ArrayList<>();
 		// determine which items (sections not implemented) will be chosen/selected
 		// for this section
 		// --- 1. take all items and resolved itemrefs which are in the section
@@ -255,7 +255,7 @@ public class SectionContext implements Serializable {
 					String sNum = el_selection_number.getText();
 					int num = new Integer(sNum).intValue();
 					// now choose some x out of the items if selection_number exists
-					List newList = new ArrayList();
+					List<Element> newList = new ArrayList<>();
 					Random r = new Random();
 					int size = el_items.size();
 					// if num > size ??e.g. 5 elements should be picked, but there are
@@ -263,7 +263,7 @@ public class SectionContext implements Serializable {
 					if (num > size) num = size;
 					for (int i = 0; i < num; i++) {
 						int n = r.nextInt(size--);
-						Object o = el_items.remove(n);
+						Element o = el_items.remove(n);
 						newList.add(o);
 					}
 					el_items = newList;
@@ -295,8 +295,8 @@ public class SectionContext implements Serializable {
 
 		// now wrap all item contexts
 		itemContexts = new ArrayList<ItemContext>(10);
-		for (Iterator iter = el_items.iterator(); iter.hasNext();) {
-			Element item = (Element) iter.next();
+		for (Iterator<Element> iter = el_items.iterator(); iter.hasNext();) {
+			Element item = iter.next();
 			item.detach();
 			ItemContext itc = new ItemContext();
 			itc.setUp(assessInstance, item, sw);

@@ -85,7 +85,7 @@ public class DefaultNavigator implements Serializable {
 		int cnt = curitsinp.getItemCount();
 		if (cnt == 0) throw new RuntimeException("program bug: not even one iteminput in the answer");
 		if (cnt > 1) throw new RuntimeException("may only submit 1 item");
-		ItemInput itemInput = (ItemInput) curitsinp.getItemInputIterator().next();
+		ItemInput itemInput = curitsinp.getItemInputIterator().next();
 		String ident = itemInput.getIdent();
 		AssessmentContext ac = getAssessmentContext();
 		SectionContext sc = ac.getCurrentSectionContext();
@@ -128,8 +128,8 @@ public class DefaultNavigator implements Serializable {
 			return QTIConstants.ERROR_SUBMITTEDSECTION_OUTOFTIME;
 
 		int sectionResult = QTIConstants.SECTION_SUBMITTED;
-		for (Iterator it_inp = curitsinp.getItemInputIterator(); it_inp.hasNext();) {
-			ItemInput itemInput = (ItemInput) it_inp.next();
+		for (Iterator<ItemInput> it_inp = curitsinp.getItemInputIterator(); it_inp.hasNext();) {
+			ItemInput itemInput = it_inp.next();
 			String ident = itemInput.getIdent();
 			ItemContext ict = sc.getItemContext(ident);
 			if (ict == null) throw new RuntimeException("submitted item id ("+ident+") not found in section sectioncontext "+sc.getIdent());

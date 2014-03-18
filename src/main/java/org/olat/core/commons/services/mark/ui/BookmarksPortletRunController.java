@@ -58,10 +58,10 @@ import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
 import org.olat.core.gui.control.generic.portal.PortletEntry;
 import org.olat.core.gui.control.generic.portal.PortletToolSortingControllerImpl;
 import org.olat.core.gui.control.generic.portal.SortingCriteria;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
@@ -336,7 +336,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 		private String getBookmarkTitle(Bookmark bookmark) {
 			String title = bookmark.getTitle();
 			if (RepositoryManager.getInstance().createRepositoryEntryStatus(bookmark.getStatusCode()).isClosed()) {
-				PackageTranslator pT = new PackageTranslator(RepositoryEntryStatus.class.getPackage().getName(), locale);
+				Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, locale);
 				title = "[" + pT.translate("title.prefix.closed") + "] ".concat(title);
 			}
 			return title;

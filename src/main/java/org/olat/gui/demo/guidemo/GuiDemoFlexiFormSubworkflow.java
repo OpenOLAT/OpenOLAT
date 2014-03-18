@@ -167,7 +167,6 @@ public class GuiDemoFlexiFormSubworkflow extends FormBasicController {
 		// Example3: Set a context help link
 		setFormContextHelp("org.olat.core.commons.modules.bc", "bc-webdav.html", "guidemo_flexi_form_withchooser.helphover");		
 		
-		final int defaultDisplaySize = 32;
 		final boolean inputMode = !personData.isReadOnly();
 		
 		firstName = uifactory.addTextElement("firstname", "guidemo.flexi.form.firstname", 256, personData.getFirstName(), formLayout);

@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.export.helper.IdentityAnonymizerCallback;
@@ -42,7 +41,6 @@ import org.olat.ims.qti.export.helper.QTIItemObject;
  * @author Alexander Schneider
  */
 public abstract class QTIExportFormatter {
-	protected static final String PACKAGE = Util.getPackageName(QTIExportFormatter.class);
 	protected StringBuilder sb;
 	protected Translator translator;
 	protected IdentityAnonymizerCallback anonymizerCallback;
@@ -53,8 +51,8 @@ public abstract class QTIExportFormatter {
 	 *
 	 */
 	public QTIExportFormatter(Locale locale, IdentityAnonymizerCallback anonymizerCallback){
-		this.sb = new StringBuilder();
-		this.translator = new PackageTranslator(PACKAGE, locale);
+		sb = new StringBuilder();
+		translator = Util.createPackageTranslator(QTIExportFormatter.class, locale);
 		this.anonymizerCallback = anonymizerCallback;
 	}
 	

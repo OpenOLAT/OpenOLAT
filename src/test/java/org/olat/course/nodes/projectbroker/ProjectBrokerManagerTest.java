@@ -48,8 +48,9 @@ import org.junit.Test;
 import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
@@ -228,11 +229,12 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		System.out.println("testPerformance: done");
 	}
 
-	@Test public void testPerformanceTableModel() throws Exception {
+	@Test
+	public void testPerformanceTableModel() throws Exception {
 		int ITERATION = 300;
 		int START_PAGE_INDEX = 100;
 		int PAGE_SIZE = 20;
-		PackageTranslator translator = new PackageTranslator(this.getClass().getPackage().getName(), Locale.GERMAN);
+		Translator translator = Util.createPackageTranslator(this.getClass(), Locale.GERMAN);
 
 		ProjectBroker projectBrokerD = projectBrokerManager.createAndSaveProjectBroker();
 		Long idProjectBrokerD = projectBrokerD.getKey();

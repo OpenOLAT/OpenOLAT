@@ -33,7 +33,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -64,25 +65,25 @@ public class EPCreateTextArtefactStepForm00 extends StepFormBasicController {
 	// use this constructor to edit an already existing artefact
 	public EPCreateTextArtefactStepForm00(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact){
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
-		PackageTranslator pt = new PackageTranslator(EPArtefactViewController.class.getPackage().getName(), ureq.getLocale(), getTranslator());
-		this.flc.setTranslator(pt);
+		Translator pt = Util.createPackageTranslator(EPArtefactViewController.class, ureq.getLocale(), getTranslator());
+		flc.setTranslator(pt);
 		this.artefact = artefact;
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		this.artFulltextContent = ePFMgr.getArtefactFullTextContent(artefact);
 		this.vfsTemp = ePFMgr.getArtefactContainer(artefact);
-		initForm(this.flc, this, ureq);		
+		initForm(flc, this, ureq);		
 	}
 	
 	public EPCreateTextArtefactStepForm00(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout,
 			String customLayoutPageName, AbstractArtefact artefact, VFSContainer vfsTemp) {
 		super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
 		// set fallback translator to re-use given strings
-		PackageTranslator pt = new PackageTranslator(EPArtefactViewController.class.getPackage().getName(), ureq.getLocale(), getTranslator());
-		this.flc.setTranslator(pt);
+		Translator pt = Util.createPackageTranslator(EPArtefactViewController.class, ureq.getLocale(), getTranslator());
+		flc.setTranslator(pt);
 		this.artefact = artefact;
 		this.artFulltextContent = artefact.getFulltextContent(); // during collection the fulltextcontent is not persisted and therefore might be longer than db-length restriction
 		this.vfsTemp = vfsTemp;
-		initForm(this.flc, this, ureq);
+		initForm(flc, this, ureq);
 	}
 
 	@Override

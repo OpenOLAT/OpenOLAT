@@ -32,7 +32,6 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -67,8 +66,6 @@ import org.olat.resource.references.ReferenceManager;
  * 
  */
 public abstract class QTIHandler extends FileHandler implements RepositoryHandler {
-
-	private static final String PACKAGE = Util.getPackageName(RepositoryManager.class);
 
 	/**
 	 * Default constructor.
@@ -105,13 +102,13 @@ public abstract class QTIHandler extends FileHandler implements RepositoryHandle
 		ReferenceManager refM = ReferenceManager.getInstance();
 		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
 		if (referencesSummary != null) {
-			Translator translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 			wControl.setError(translator.translate("details.delete.error.references",
 					new String[] { referencesSummary }));
 			return false;
 		}
 		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(res, null)) {
-			Translator translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 			wControl.setError(translator.translate("details.delete.error.editor"));
 			return false;
 		}

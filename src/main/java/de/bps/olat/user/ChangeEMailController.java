@@ -29,10 +29,10 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.util.Util;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKeyImpl;
 import org.olat.user.ProfileAndHomePageEditController;
@@ -49,7 +49,6 @@ import com.thoughtworks.xstream.XStream;
  */
 public class ChangeEMailController extends DefaultController {
 
-	protected static final String PACKAGE = ProfileAndHomePageEditController.class.getPackage().getName();
 	protected static final String CHANGE_EMAIL_ENTRY = "change.email.login";
 	
 	public static int TIME_OUT = 30;
@@ -69,7 +68,7 @@ public class ChangeEMailController extends DefaultController {
 	public ChangeEMailController(UserRequest ureq, WindowControl wControl) {
 		super(wControl);
 		this.userRequest = ureq;
-		pT = new PackageTranslator(PACKAGE, userRequest.getLocale());
+		pT = Util.createPackageTranslator(ProfileAndHomePageEditController.class, userRequest.getLocale());
 		pT = UserManager.getInstance().getPropertyHandlerTranslator(pT);
 		emKey = userRequest.getHttpReq().getParameter("key");
 		if ((emKey == null) && (userRequest.getUserSession().getEntry(CHANGE_EMAIL_ENTRY) != null)) {

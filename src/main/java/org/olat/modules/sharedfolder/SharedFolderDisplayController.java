@@ -33,7 +33,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -56,8 +55,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Alexander Schneider
  */
 public class SharedFolderDisplayController extends DefaultController {
-	private static final String PACKAGE = Util.getPackageName(SharedFolderDisplayController.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(SharedFolderDisplayController.class);
 
 	/**
 	 * Name of a file (1. priority) that prevents directory listing in the
@@ -98,7 +96,7 @@ public class SharedFolderDisplayController extends DefaultController {
 		super(wControl);
 		addLoggingResourceable(LoggingResourceable.wrap(ores, OlatResourceableType.genRepoEntry));
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
-		translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+		translator = Util.createPackageTranslator(SharedFolderDisplayController.class, ureq.getLocale());
 
 		vcDisplay = new VelocityContainer("main", VELOCITY_ROOT + "/display.html", translator, this);
 

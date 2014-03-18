@@ -38,6 +38,8 @@ import org.olat.core.gui.control.Event;
  */
 public class RequestPageEvent extends Event {
 
+	private static final long serialVersionUID = -1718545602894806740L;
+
 	public RequestPageEvent(String pageId) {
 		super(pageId);
 	}

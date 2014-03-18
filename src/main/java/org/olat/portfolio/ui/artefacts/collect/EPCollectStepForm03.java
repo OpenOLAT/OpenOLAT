@@ -29,8 +29,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactViewController;
 
@@ -66,7 +67,7 @@ public class EPCollectStepForm03 extends StepFormBasicController {
 	public EPCollectStepForm03(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		// set fallback translator to re-use given strings
-		PackageTranslator pt = new PackageTranslator(EPArtefactViewController.class.getPackage().getName(), ureq.getLocale(), getTranslator());
+		Translator pt = Util.createPackageTranslator(EPArtefactViewController.class, ureq.getLocale(), getTranslator());
 		this.flc.setTranslator(pt);
 		this.artefact = artefact;
 		this.artefactReflexion = artefact.getReflexion();
@@ -83,7 +84,7 @@ public class EPCollectStepForm03 extends StepFormBasicController {
 	public EPCollectStepForm03(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, boolean showHint) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		// set fallback translator to re-use given strings
-		PackageTranslator pt = new PackageTranslator(EPArtefactViewController.class.getPackage().getName(), ureq.getLocale(), getTranslator());
+		Translator pt = Util.createPackageTranslator(EPArtefactViewController.class, ureq.getLocale(), getTranslator());
 		this.flc.setTranslator(pt);
 		this.showNoReflexionOnStructLinkYetWarning = showHint;
 		this.artefact = artefact;
@@ -101,7 +102,7 @@ public class EPCollectStepForm03 extends StepFormBasicController {
 	public EPCollectStepForm03(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, String reflexion) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		// set fallback translator to re-use given strings
-		PackageTranslator pt = new PackageTranslator(EPArtefactViewController.class.getPackage().getName(), ureq.getLocale(), getTranslator());
+		Translator pt = Util.createPackageTranslator(EPArtefactViewController.class, ureq.getLocale(), getTranslator());
 		this.flc.setTranslator(pt);
 		this.artefact = artefact;
 		this.reflexion = reflexion;
@@ -115,7 +116,7 @@ public class EPCollectStepForm03 extends StepFormBasicController {
 			String customLayoutPageName, AbstractArtefact artefact) {
 		super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
 		// set fallback translator to re-use given strings
-		PackageTranslator pt = new PackageTranslator(EPArtefactViewController.class.getPackage().getName(), ureq.getLocale(), getTranslator());
+		Translator pt = Util.createPackageTranslator(EPArtefactViewController.class, ureq.getLocale(), getTranslator());
 		this.flc.setTranslator(pt);
 		this.artefact = artefact;
 		this.artefactReflexion = artefact.getReflexion();

@@ -25,8 +25,6 @@
 
 package org.olat.repository.controllers;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -106,7 +104,6 @@ public class RepositoryAddController extends BasicController {
 	private IAddController addController;
 	private RepositoryHandler typeToAdd;
 	private RepositoryAddCallback addCallback;
-	private BaseSecurity securityManager;
 	private RepositoryEntry addedEntry;
 	
 	// flag is true when workflow has been finished successfully, 
@@ -130,7 +127,6 @@ public class RepositoryAddController extends BasicController {
 		setBasePackage(RepositoryManager.class);
 		
 		this.actionAddCommand = actionAddCommand;
-		securityManager = BaseSecurityManager.getInstance();
 
 		/*
 		 * FIXME:pb: review: during constructor call -> /addDelegate.html is active first, then typeToAdd.getAddController() with

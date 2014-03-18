@@ -28,7 +28,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
@@ -104,7 +103,6 @@ public class GuiDemoInlineEditingBasedOnFlexiForm extends FormBasicController {
 		// the inlineLable is used as Label for the addStaticTextElement
 		// Avoid translation error by setting i18nLabel key null first and then set the LabelComponent, and also you need to call showLabel(true)
 		inlineLabel = formUIf.addInlineTextElement("inline.label.int"+i+ii+1, "mytext"+i+ii+1, formLayout, null);
-		StaticTextElement theElement = formUIf.addStaticTextElement("inline.label.text"+i+ii,  null,"my bony", formLayout);
-		//theElement.setLabelComponent(inlineLabel, formLayout).showLabel(true);
+		formUIf.addStaticTextElement("inline.label.text"+i+ii,  null,"my bony", formLayout);
 	}
 }

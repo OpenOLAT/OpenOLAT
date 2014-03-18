@@ -53,8 +53,7 @@ import org.olat.core.util.ValidationStatus;
  */
 public class MultipleSelectionElementImpl extends FormItemImpl implements MultipleSelectionElement {
 	private static final OLog log = Tracing.createLoggerFor(MultipleSelectionElementImpl.class);
-	private static final String PACKAGE = Util.getPackageName(MultipleSelectionElementImpl.class);
-	protected static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+	protected static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(MultipleSelectionElementImpl.class);
  
 	private final static String HORIZONTAL_DEFAULT_CHCKBX = VELOCITY_ROOT + "/sel_elems_horizontal.html";
 	private final static String VERTICAL_CHCKBX = VELOCITY_ROOT + "/sel_elems_vertical.html";

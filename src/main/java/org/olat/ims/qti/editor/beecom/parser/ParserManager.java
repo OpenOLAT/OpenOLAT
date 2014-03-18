@@ -27,20 +27,23 @@ package org.olat.ims.qti.editor.beecom.parser;
 
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
  * @author rkulow
  */
 public class ParserManager implements IParser {
+	private static final OLog log = Tracing.createLoggerFor(ParserManager.class);
 
 	private static String PROPERTIES_FILENAME = "org/olat/ims/qti/editor/beecom/parser/qtiparser.properties";
-	private HashMap parserMap = null;
+	private Map<String,String> parserMap = null;
 	private static String PARSER_DEFAULT = "defaultparser";
 
 	/**
@@ -51,16 +54,16 @@ public class ParserManager implements IParser {
 	}
 
 	private void init() {
-		this.parserMap = new HashMap();
+		this.parserMap = new HashMap<>();
 
 		try {
 			Properties prop = new Properties();
 			prop.load(this.getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILENAME));
-			Enumeration enumeration = prop.keys();
+			Enumeration<Object> enumeration = prop.keys();
 			while (enumeration.hasMoreElements()) {
 				String key = (String) enumeration.nextElement();
 				String value = prop.getProperty(key);
-				this.parserMap.put(key, value);
+				parserMap.put(key, value);
 			}
 		} catch (Exception e) {
 			//
@@ -85,16 +88,16 @@ public class ParserManager implements IParser {
 			if (element == null) return null;
 			String name = element.getName();
 			String parserClassName = null;
-			Object tmpName = this.parserMap.get(name);
+			String tmpName = parserMap.get(name);
 			if (tmpName == null) {
-				parserClassName = (String) this.parserMap.get(PARSER_DEFAULT);
+				parserClassName = parserMap.get(PARSER_DEFAULT);
 			} else {
-				parserClassName = (String) tmpName;
+				parserClassName = tmpName;
 			}
-			if(Tracing.isDebugEnabled(ParserManager.class)){
-				Tracing.logDebug("ELEMENTNAME:" + name + "PARSERNAME" + parserClassName,ParserManager.class);
+			if(log.isDebug()){
+				log.debug("ELEMENTNAME:" + name + "PARSERNAME" + parserClassName);
 			}
-			Class parserClass = this.getClass().getClassLoader().loadClass(parserClassName);
+			Class<?> parserClass = this.getClass().getClassLoader().loadClass(parserClassName);
 			IParser parser = (IParser) parserClass.newInstance();
 			return parser.parse(element);
 		} catch (ClassNotFoundException e) {

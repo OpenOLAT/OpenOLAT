@@ -125,10 +125,11 @@ public class ResultsBuilder {
 		context.addElement("name").addText(name);
 
 		String institution;
-		if (instName == null) institution = "N/A";
-		else institution = instName;
-		if (institution == null) institution = "N/A";
-
+		if (instName == null) {
+			institution = "N/A";
+		} else {
+			institution = instName;
+		}
 		// Add institutional identifier (e.g. Matrikelnummer)
 		Element generic_identifier = context.addElement("generic_identifier");
 		generic_identifier.addElement("type_label").addText(institution);
@@ -214,7 +215,7 @@ public class ResultsBuilder {
 				it_score.addElement("score_cut").addText(strVal);
 
 				Element el_item = itemc.getEl_item();
-				Map res_responsehash = new HashMap(3);
+				Map<String, Element> res_responsehash = new HashMap<>(3);
 
 				// iterate over all responses of this item
 				List resps = el_item.selectNodes(".//response_lid|.//response_xy|.//response_str|.//response_num|.//response_grp");
@@ -351,7 +352,7 @@ public class ResultsBuilder {
 				for (Iterator<String> idents = resp_ids.iterator(); idents.hasNext();) {
 					String respIdent = idents.next();
 					Set<String> respIdent_corr_answers = corr_answers.get(respIdent);
-					Element res_response = (Element) res_responsehash.get(respIdent);
+					Element res_response = res_responsehash.get(respIdent);
 					Element res_respform = res_response.element("response_form");
 					for (Iterator<String> iter = respIdent_corr_answers.iterator(); iter.hasNext();) {
 						String answer = iter.next();

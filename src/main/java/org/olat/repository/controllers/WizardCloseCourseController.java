@@ -51,10 +51,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.WizardController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -294,11 +294,10 @@ class CloseRessourceOptionForm extends FormBasicController {
 	private MultipleSelectionElement checkboxClean;
 	private FormReset back;
 	private Translator translator;
-	private static final String PACKAGE = RepositoryManager.class.getPackage().getName();
 	
 	public CloseRessourceOptionForm(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
-		this.translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+		this.translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 		initForm(ureq);
 	}
 	

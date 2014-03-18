@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -104,7 +105,7 @@ public class MySQLTempStatTableCreator implements IStatisticUpdater {
 					monthStr = "0"+monthStr;
 				}
 				String sameMonthTable = "o_loggingtable_"+String.valueOf(lastUpdatedCalendar.get(Calendar.YEAR))+monthStr;
-				List tables = jdbcTemplate_.queryForList("show tables like '"+sameMonthTable+"'");
+				List<Map<String,Object>> tables = jdbcTemplate_.queryForList("show tables like '"+sameMonthTable+"'");
 				if (tables!=null && tables.size()==1) {
 					log_.info("updateStatistic: using "+sameMonthTable+" instead of "+oLoggingTable);
 					oLoggingTable = sameMonthTable;

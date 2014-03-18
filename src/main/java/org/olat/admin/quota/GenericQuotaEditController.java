@@ -60,7 +60,6 @@ public class GenericQuotaEditController extends BasicController {
 	private boolean modalMode;
 	
 	private Quota currentQuota;
-	private Link addQuotaButton;
 	private Link delQuotaButton;
 	private Link cancelButton;
 
@@ -127,7 +126,7 @@ public class GenericQuotaEditController extends BasicController {
 
 		myContent = createVelocityContainer("edit");
 		myContent.contextPut("modalMode", Boolean.valueOf(modalMode));
-		addQuotaButton = LinkFactory.createButtonSmall("qf.new", myContent, this);
+		LinkFactory.createButtonSmall("qf.new", myContent, this);
 		delQuotaButton = LinkFactory.createButtonSmall("qf.del", myContent, this);
 		cancelButton = LinkFactory.createButtonSmall("cancel", myContent, this);
 		

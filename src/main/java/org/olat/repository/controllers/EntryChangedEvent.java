@@ -35,6 +35,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class EntryChangedEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = 8339474599787388699L;
 	private int change;
 	private Long changedEntryKey;
 	

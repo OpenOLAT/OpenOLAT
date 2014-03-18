@@ -45,8 +45,8 @@ import org.olat.core.util.FileUtils;
  * @author Felix Jost
  */
 public class CheckTranslationKeys {
-	private static Map fileToProp = new HashMap();
-	private static Map fileToCont = new HashMap();
+	private static Map<File,Properties> fileToProp = new HashMap<>();
+	private static Map<File,String> fileToCont = new HashMap<>();
 	
 	/**
 	 * @param args
@@ -55,10 +55,10 @@ public class CheckTranslationKeys {
 	public static void main(String[] args) throws Exception {
 		String path ="c:/workspace/olat3/webapp/";
 		File basedir = new File(path);
-		List res = new ArrayList();
+		List<File> res = new ArrayList<>();
 		buildList(res, basedir);
-		for (Iterator iter = res.iterator(); iter.hasNext();) {
-			File file = (File) iter.next();
+		for (Iterator<File> iter = res.iterator(); iter.hasNext();) {
+			File file = iter.next();
 			String name = file.getName();
 			if (name.startsWith("LocalStrings") && name.endsWith(".properties")) {
 				//
@@ -79,11 +79,11 @@ public class CheckTranslationKeys {
 		// check
 		findInHTMLorJava("sdfsdfsdfaaaaa"+"aaaaaaaaaaaafsdf");
 		
-		List dispList = new ArrayList();
-		for (Iterator iter = fileToProp.keySet().iterator(); iter.hasNext();) {
-			File fil = (File) iter.next();
-			Properties p = (Properties)fileToProp.get(fil);
-			for (Iterator iterator = p.keySet().iterator(); iterator.hasNext(); ) {
+		List<String> dispList = new ArrayList<>();
+		for (Iterator<File> iter = fileToProp.keySet().iterator(); iter.hasNext();) {
+			File fil = iter.next();
+			Properties p = fileToProp.get(fil);
+			for (Iterator<Object> iterator = p.keySet().iterator(); iterator.hasNext(); ) {
 				String key = (String) iterator.next();
 				boolean ok = findInHTMLorJava(key);
 				String value = p.getProperty(key);
@@ -94,8 +94,8 @@ public class CheckTranslationKeys {
 			}
 		}
 		Collections.sort(dispList);
-		for (Iterator iter = dispList.iterator(); iter.hasNext();) {
-			String out = (String) iter.next();
+		for (Iterator<String> iter = dispList.iterator(); iter.hasNext();) {
+			String out = iter.next();
 			System.out.println(out);
 		}
 		
@@ -107,9 +107,9 @@ public class CheckTranslationKeys {
 	 */
 	private static boolean findInHTMLorJava(String key) {
 		String search = "\""+key+"\"";
-		for (Iterator iter = fileToCont.keySet().iterator(); iter.hasNext();) {
-			File fil = (File) iter.next();
-			String cont = (String) fileToCont.get(fil);
+		for (Iterator<File> iter = fileToCont.keySet().iterator(); iter.hasNext();) {
+			File fil = iter.next();
+			String cont = fileToCont.get(fil);
 			if (cont.indexOf(search) != -1) {
 				return true;
 			}
@@ -117,7 +117,7 @@ public class CheckTranslationKeys {
 		return false;
 	}
 
-	private static void buildList(List fileList, File cur) { 
+	private static void buildList(List<File> fileList, File cur) { 
 		if (cur.isDirectory()) {
 			File[] children = cur.listFiles();
 			for (int i = 0; i < children.length; i++) {

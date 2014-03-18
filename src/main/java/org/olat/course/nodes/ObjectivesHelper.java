@@ -30,7 +30,7 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
 /**
@@ -40,7 +40,6 @@ import org.olat.core.util.Util;
  */
 public class ObjectivesHelper {
 
-	private static final String PACKAGE = Util.getPackageName(ObjectivesHelper.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(ObjectivesHelper.class);
 
 	/**
@@ -55,7 +54,8 @@ public class ObjectivesHelper {
 	}
 	//fxdiff FXOLAT-116: SCORM improvements
 	public static Component createLearningObjectivesComponent(String learningObjectives, Locale locale) {
-		VelocityContainer vc = new VelocityContainer("learningObjs", VELOCITY_ROOT + "/objectives.html", new PackageTranslator(PACKAGE, locale), null);
+		Translator trans = Util.createPackageTranslator(ObjectivesHelper.class, locale);
+		VelocityContainer vc = new VelocityContainer("learningObjs", VELOCITY_ROOT + "/objectives.html", trans, null);
 		vc.contextPut("learningObjectives", learningObjectives);
 		return vc;
 	}

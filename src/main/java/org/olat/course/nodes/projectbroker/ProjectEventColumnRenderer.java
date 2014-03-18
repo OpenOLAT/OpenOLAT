@@ -30,7 +30,7 @@ import java.util.Locale;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
@@ -54,7 +54,7 @@ public class ProjectEventColumnRenderer implements CustomCellRenderer {
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		ProjectEvent projectEvent;
-		PackageTranslator translator = new PackageTranslator( Util.getPackageName(this.getClass()) , locale);
+		Translator translator = Util.createPackageTranslator(this.getClass() , locale);
 		if (val==null) {
 			// don't render nulls
 			return;

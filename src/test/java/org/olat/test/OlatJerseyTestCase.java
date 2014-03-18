@@ -113,7 +113,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 				manager.deploy();
 
 				webServer = Undertow.builder()
-				        .addListener(PORT, HOST)
+				        .addHttpListener(PORT, HOST)
 				        .setHandler(manager.start())
 				        .build();
 				webServer.start();

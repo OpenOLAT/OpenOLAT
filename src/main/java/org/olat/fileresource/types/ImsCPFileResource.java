@@ -67,7 +67,7 @@ public class ImsCPFileResource extends FileResource {
 		// get all organization elements. need to set namespace
 		Element rootElement = doc.getRootElement();
 		String nsuri = rootElement.getNamespace().getURI();
-		Map nsuris = new HashMap(1);
+		Map<String,String> nsuris = new HashMap<>(1);
 		nsuris.put("ns", nsuri);
 
 		// Check for organiztaion element. Must provide at least one... title gets ectracted from either

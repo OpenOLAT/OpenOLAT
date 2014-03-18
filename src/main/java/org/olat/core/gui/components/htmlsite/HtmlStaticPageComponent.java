@@ -38,6 +38,7 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.SimpleHtmlParser;
@@ -52,6 +53,8 @@ import org.olat.core.util.vfs.VFSMediaResource;
  * @author Felix Jost
  */
 public class HtmlStaticPageComponent extends AbstractComponent implements AsyncMediaResponsible {
+	
+	private static final OLog log = Tracing.createLoggerFor(HtmlStaticPageComponent.class);
 	// make public mainly for the IFrameDisplayController
 	public static final String OLAT_CMD_PREFIX = "olatcmd/";
 
@@ -137,12 +140,12 @@ public class HtmlStaticPageComponent extends AbstractComponent implements AsyncM
 			boolean checkRegular = true;
 			// check for special case: render the follwing link in a new (server) window and all following clicks as well
 			if ( (ureq.getParameter("olatsite") != null) || ( (moduleURI.endsWith(".html") || moduleURI.endsWith(".htm")) && (ureq.getParameter("olatraw") != null) ) ){
-				Tracing.logDebug("moduleURI=" + moduleURI, HtmlStaticPageComponent.class);
+				log.debug("moduleURI=" + moduleURI);
 				ExternalSiteEvent ese = new ExternalSiteEvent(moduleURI);
 				fireEvent(ureq, ese);
 				if (ese.isAccepted()) {
 					mr = ese.getResultingMediaResource();
-					Tracing.logDebug("ExternalSiteEvent is accepted", HtmlStaticPageComponent.class);
+					log.debug("ExternalSiteEvent is accepted");
 					checkRegular = false;
 				} else {
 					// it is a html page with olatraw parameter => redirect to mapper
@@ -164,7 +167,7 @@ public class HtmlStaticPageComponent extends AbstractComponent implements AsyncM
 
 
 					ese.setResultingMediaResource(new RedirectMediaResource(amapPath+"/"+moduleURI));
-					Tracing.logDebug("RedirectMediaResource=" + amapPath+"/"+moduleURI, HtmlStaticPageComponent.class);
+					log.debug("RedirectMediaResource=" + amapPath+"/"+moduleURI);
 					ese.accept();
 					mr = ese.getResultingMediaResource();
 					checkRegular = false;

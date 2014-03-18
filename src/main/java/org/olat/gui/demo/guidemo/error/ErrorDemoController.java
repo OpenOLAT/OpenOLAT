@@ -86,8 +86,7 @@ public class ErrorDemoController extends BasicController {
 			// cause a nullpointer exception
 			String s = new String();
 			s = null;
-			Class c = s.getClass();
-			getWindowControl().setInfo("get class of "+c.getName());
+			getWindowControl().setInfo("get class of " + s.getClass().getName());
 		} else if (source == assertLink){
 			// create a assertexception sample
 			try {

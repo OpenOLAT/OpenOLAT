@@ -33,6 +33,8 @@ import org.olat.core.gui.control.Event;
  * @author Mike Stock
  */
 public class NodeBeforeChangeEvent extends Event {
+
+	private static final long serialVersionUID = -564355640265507966L;
 	/**
 	 * the affected controllers can access without getter this boolean.
 	 */

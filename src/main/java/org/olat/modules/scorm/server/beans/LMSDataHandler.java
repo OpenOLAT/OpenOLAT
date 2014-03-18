@@ -25,6 +25,7 @@ package org.olat.modules.scorm.server.beans;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.scorm.ISettingsHandler;
 import org.olat.modules.scorm.manager.ScormManager;
@@ -39,6 +40,9 @@ import org.olat.modules.scorm.server.servermodels.SequencerModel;
  * @author Paul Sharples
  */
 public class LMSDataHandler {
+	
+	private static final OLog log = Tracing.createLoggerFor(LMSDataHandler.class);
+	
 	protected ScormManager theCourse;
 
 	protected LMSDataFormBean _inputBean;
@@ -155,14 +159,14 @@ public class LMSDataHandler {
 	 * @param dataAsMap
 	 * @return a 2d String array
 	 */
-	private String[][] convertTo2dArray(Map dataAsMap) {
+	private String[][] convertTo2dArray(Map<String,String> dataAsMap) {
 		String[][] cmiData = new String[dataAsMap.size()][2];
 		int j = 0;
-		for (Iterator it = dataAsMap.keySet().iterator(); it.hasNext(); j++) {
-			Object l = it.next();
-			Object r = dataAsMap.get(l);
-			cmiData[j][0] = (String) l;
-			cmiData[j][1] = (String) r;
+		for (Iterator<String> it = dataAsMap.keySet().iterator(); it.hasNext(); j++) {
+			String l = it.next();
+			String r = dataAsMap.get(l);
+			cmiData[j][0] = l;
+			cmiData[j][1] = r;
 			if (l.toString().equals("cmi.core.lesson_status")) {
 				status = r.toString();
 			}
@@ -248,8 +252,8 @@ public class LMSDataHandler {
 			} else {
 				cmiComponents[i][1] = "";
 			}
-			if (Tracing.isDebugEnabled(LMSDataHandler.class)){
-				Tracing.logDebug("name: " + cmiComponents[i][0] + "   value:" + cmiComponents[i][1],LMSDataHandler.class);
+			if (log.isDebug()){
+				log.debug("name: " + cmiComponents[i][0] + "   value:" + cmiComponents[i][1]);
 			}
 		}
 		return cmiComponents;

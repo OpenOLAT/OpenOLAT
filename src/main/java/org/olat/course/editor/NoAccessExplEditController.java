@@ -32,9 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -50,7 +48,6 @@ import org.olat.core.util.Util;
  *         example.
  */
 public class NoAccessExplEditController extends BasicController {
-	private static final String PACKAGE = Util.getPackageName(NoAccessExplEditController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(NoAccessExplEditController.class);
 
 	private VelocityContainer myContent;
@@ -73,7 +70,7 @@ public class NoAccessExplEditController extends BasicController {
 		super(ureq, wControl);
 		this.noAccessExplanation = noAccessExplanation;
 
-		trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+		trans = Util.createPackageTranslator(NoAccessExplEditController.class, ureq.getLocale());
 
 		// Main component is a velocity container. It has a name choosen by the
 		// controller who
@@ -108,9 +105,9 @@ public class NoAccessExplEditController extends BasicController {
 			} else if (event == Event.DONE_EVENT) {
 				// Update condition data and switch to read only mode
 				noAccessExplanation = noAccessExplanationController.getNoAccessExplanation();
-				
-				if (Tracing.isDebugEnabled(NoAccessExplEditController.class)){
-					Tracing.logDebug("New noAccessExplanation is: " + noAccessExplanation,NoAccessExplEditController.class);
+			
+				if (isLogDebugEnabled()){
+					logDebug("New noAccessExplanation is: " + noAccessExplanation, null);
 				}
 
 				// Inform all listeners about the changed condition

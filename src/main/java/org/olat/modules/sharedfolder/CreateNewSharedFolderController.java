@@ -30,11 +30,12 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 
@@ -54,7 +55,7 @@ public class CreateNewSharedFolderController extends DefaultController implement
 		super(wControl);
 		if (addCallback != null) {
 			newFileResource = SharedFolderManager.getInstance().createSharedFolder();
-			Translator trnsltr = new PackageTranslator("org.olat.repository", ureq.getLocale());
+			Translator trnsltr = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 			addCallback.setDisplayName(trnsltr.translate(newFileResource.getResourceableTypeName()));
 			addCallback.setResourceable(newFileResource);
 			addCallback.setResourceName(SharedFolderFileResource.RESOURCE_NAME);
