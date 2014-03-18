@@ -23,22 +23,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.logging.AssertException;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BarChartComponent extends AbstractD3Component {
+public class BarChartComponent extends DefaultD3Component {
 	
 	private static final ComponentRenderer renderer = new BarChartComponentRenderer();
 
-	private Scale yScale = Scale.plain;
 	private List<BarSeries> seriesList = new ArrayList<>();
 	
 	private String defaultBarClass = "bar_default";
 	private String yLegend;
+	private String xLegend;
 	
 	public BarChartComponent(String name) {
 		super(name);
@@ -60,16 +59,12 @@ public class BarChartComponent extends AbstractD3Component {
 		this.yLegend = yLegend;
 	}
 	
-	public Scale getYScale() {
-		return yScale;
+	public String getXLegend() {
+		return xLegend;
 	}
 
-	public void setYScale(Scale yScale) {
-		if(yScale == Scale.plain || yScale == Scale.percent) {
-			this.yScale = yScale;
-		} else {
-			throw new AssertException("Scale not supported by bar chart: " + yScale);
-		}
+	public void setXLegend(String xLegend) {
+		this.xLegend = xLegend;
 	}
 	
 	public List<BarSeries> getSeries() {

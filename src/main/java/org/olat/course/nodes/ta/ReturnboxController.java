@@ -103,7 +103,7 @@ public class ReturnboxController extends BasicController {
 		// notification
 		if ( !previewMode && !ureq.getUserSession().getRoles().isGuestOnly()) {
 			// offer subscription, but not to guests
-			subsContext = ReturnboxFileUploadNotificationHandler.getSubscriptionContext(userCourseEnv, node, ureq.getIdentity());
+			subsContext = ReturnboxFileUploadNotificationHandler.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node, ureq.getIdentity());
 			if (subsContext != null) {
 				contextualSubscriptionCtr = AbstractTaskNotificationHandler.createContextualSubscriptionController(ureq, wControl, getReturnboxPathFor(
 						userCourseEnv.getCourseEnvironment(), node,ureq.getIdentity()), subsContext, ReturnboxController.class);

@@ -52,10 +52,10 @@ public class ItemWithResponseLid implements QTIItemObject {
 	private String	questionText	= "";
 	// CELFI#107 END
 
-	private String	positionsOfResponses	= null;
-	private List<String>	responseColumnHeaders	= new ArrayList<String>(5);
-	private List<String>	responseLabelIdents	= new ArrayList<String>(5);
-	private List<String>	responseLabelMaterials	= new ArrayList<String>(5);
+	private String positionsOfResponses	= null;
+	private List<String> responseColumnHeaders = new ArrayList<String>(5);
+	private List<String> responseLabelIdents = new ArrayList<String>(5);
+	private List<String> responseLabelMaterials = new ArrayList<String>(5);
 
 	/**
 	 * Constructor for ItemWithResponseLid.
@@ -116,7 +116,7 @@ public class ItemWithResponseLid implements QTIItemObject {
 	/**
 	 * @see org.olat.ims.qti.export.helper.QTIItemObject#extractQTIResult(java.util.List)
 	 */
-	public QTIResult extractQTIResult(List resultSet) {
+	public QTIResult extractQTIResult(List<QTIResult> resultSet) {
 		for (Iterator<QTIResult> iter = resultSet.iterator(); iter.hasNext();) {
 			QTIResult element = iter.next();
 			if (element.getItemIdent().equals(itemIdent)) {

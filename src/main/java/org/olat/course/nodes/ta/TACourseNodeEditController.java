@@ -449,7 +449,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			  RepositoryEntry repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 			  String courseURL = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repositoryEntry.getKey();
 			  MailTemplate mailTemplate = this.createTaskDeletedMailTemplate(urequest, course.getCourseTitle(), courseURL, deletedTaskFile);
-			  mailCtr = new MailNotificationEditController(getWindowControl(), urequest, mailTemplate, true, false);
+			  mailCtr = new MailNotificationEditController(getWindowControl(), urequest, mailTemplate, true, false, true);
 			  listenTo(mailCtr);
 			  cmc = new CloseableModalController(getWindowControl(), translate("close"), mailCtr.getInitialComponent());
 			  listenTo(cmc);			

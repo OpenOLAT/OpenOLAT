@@ -11,68 +11,97 @@
 			}
 		}
 		</script>
-		<div id='$r.getId("print")'>
-			<a class="b_small_icon o_print_icon" href='javascript:$r.getId("print")()' title='$r.translateInAttribute("print")'><span>Print</span></a>	
-		</div>
+		<a class="b_with_small_icon_left o_print_icon" href='javascript:$r.getId("print")()' title='$r.translateInAttribute("print")'>
+			<span>$r.translate("print")</span>
+		</a>
+		$r.render("download")
 	</div>
 #end
+
 <div class="b_clearfix">
 	<div class="b_c33l">
-<h4>$r.translate("fig.title")</h4>
-$r.translate("fig.participants"): $numOfParticipants<br/>
-#if($numOfPassed)
-$r.translate("fig.passed"): $numOfPassed<br/>
-#end
-#if($numOfFailed)
-$r.translate("fig.failed"): $numOfFailed<br/>
-#end
-
-#if($maxScore)
-	$r.translate("chart.maxscore"): $maxScore<br/>
-#end
-#if($cutScore)
-	$r.translate("chart.cutscore"): $cutScore<br/>
-#end
-
-$r.translate("fig.avg"): $average<br/>
-$r.translate("fig.span"): $range<br/>
-$r.translate("fig.stddev"): $standardDeviation<br/>
-$r.translate("fig.mode"): $mode<br/>
-$r.translate("fig.median"): $median<br/>
-$r.translate("fig.averagedur"): $averageDuration<br/>
+		<h4>$r.translate("fig.title")</h4>
+		<table><tbody>
+			<tr><td>$r.translate("fig.participants")</td>
+				<td>$numOfParticipants</td></tr>
+			#if($numOfPassed)
+				<tr><td>$r.translate("fig.passed")</td>
+					<td>$numOfPassed</td></tr>
+			#end
+			#if($numOfFailed)
+				<tr><td>$r.translate("fig.failed")</td>
+					<td>$numOfFailed</td></tr>
+			#end
+			#if($maxScore)
+				<tr><td>$r.translate("chart.maxscore")</td>
+					<td>$maxScore</td></tr>
+			#end
+			#if($cutScore)
+			<tr><td>$r.translate("chart.cutscore")</td>
+				<td>$cutScore</td></tr>
+			#end
+			#if($average)
+			<tr><td>$r.translate("fig.avg")</td>
+				<td>$average</td></tr>
+			#end
+			#if($range)
+			<tr><td>$r.translate("fig.span")</td>
+				<td>$range</td></tr>
+			#end
+			#if($standardDeviation)
+			<tr><td>$r.translate("fig.stddev")</td>
+				<td>$standardDeviation</td></tr>
+			#end
+			#if($mode)
+			<tr><td>$r.translate("fig.mode")</td>
+				<td>$mode</td></tr>
+			#end
+			#if($median)
+			<tr><td>$r.translate("fig.median")</td>
+				<td>$median</td></tr>
+			#end
+			#if($averageDuration)
+			<tr><td>$r.translate("fig.averagedur")</td>
+				<td>$averageDuration</td></tr>
+			#end
+		</tbody></table>
 	</div>
 	<div class="b_c66r">
-	
-	<h4>$r.translate("chart.score.histogramm")</h4>
-	#if($r.available("scoreHistogram"))
-		$r.render("scoreHistogram")
-	#end
+		#if($r.available("scoreHistogram"))
+			$r.render("scoreHistogram")
+		#end
 	</div>
 </div>
 
-<h4>$r.translate("chart.duration.histogramm")</h4>
 $r.render("durationHistogram")
 
 #if($r.available("averageScorePerItemChart"))
 	<h4>$r.translate("chart.averagescore.peritem")</h4>
 	$r.render("averageScorePerItemChart")
+	
+	<ul>
+	#foreach($itemInfo in $itemInfoList)
+		<li><strong>$itemInfo.label.</strong> $itemInfo.text</li>
+	#end
+	</ul>
 #end
-
-<ul>
-#foreach($itemInfo in $itemInfoList)
-	<li><strong>$itemInfo.label.</strong> $itemInfo.text</li>
-#end
-</ul>
-
 
 #if($r.available("percentRightAnswersPerItemChart"))
 	<h4>$r.translate("chart.rightanswers.peritem")</h4>
 	$r.render("percentRightAnswersPerItemChart")
+	<ul>
+	#foreach($itemInfo in $itemInfoList)
+		<li><strong>$itemInfo.label.</strong> $itemInfo.text</li>
+	#end
+	</ul>
 #end
 
-<ul>
-#foreach($itemInfo in $itemInfoList)
-	<li><strong>$itemInfo.label.</strong> $itemInfo.text</li>
+#if($overviewList)
+	#foreach($overview in $overviewList)
+		$r.render($overview)
+	
+	#end
 #end
-</ul>
+
+
 </div>

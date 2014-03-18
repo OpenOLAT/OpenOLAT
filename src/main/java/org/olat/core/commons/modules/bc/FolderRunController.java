@@ -270,6 +270,15 @@ public class FolderRunController extends BasicController implements Activateable
 		putInitialPanel(folderContainer);
 	}
 	
+	/**
+	 * Remove the subscription panel but let the subscription context active
+	 */
+	public void disableSubscriptionController() {
+		if(csController != null) {
+			folderContainer.remove(csController.getInitialComponent());
+		}
+	}
+	
 	public void setResourceURL(String resourceUrl) {
 		if(searchC != null) {
 			searchC.setResourceUrl(resourceUrl);

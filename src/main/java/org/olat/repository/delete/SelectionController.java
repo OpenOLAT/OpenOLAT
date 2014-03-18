@@ -90,7 +90,6 @@ public class SelectionController extends BasicController {
 
 	private final RepositoryService repositoryService;
 
-
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -205,7 +204,7 @@ public class SelectionController extends BasicController {
 			deleteMailTemplate.addToContext("durationdeleteemail", Integer.toString(RepositoryDeletionManager.getInstance().getDeleteEmailDuration() ));
 	
 			removeAsListenerAndDispose(deleteRepositoryMailCtr);
-			deleteRepositoryMailCtr = new MailNotificationEditController(getWindowControl(), ureq, deleteMailTemplate, true, false);
+			deleteRepositoryMailCtr = new MailNotificationEditController(getWindowControl(), ureq, deleteMailTemplate, true, false, true);
 			listenTo(deleteRepositoryMailCtr);
 			
 			removeAsListenerAndDispose(cmc);

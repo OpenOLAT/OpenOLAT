@@ -40,6 +40,11 @@ public interface FormLink extends FormItem{
 	 * @param customDisabledLinkCSS
 	 */
 	public void setCustomDisabledLinkCSS(String customDisabledLinkCSS);
+	
+	/**
+	 * @return The i18n key for the link text
+	 */
+	public String getI18nKey();
 
 	/**
 	 * Set the i18n key for the link text

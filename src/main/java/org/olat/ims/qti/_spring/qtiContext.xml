@@ -35,6 +35,8 @@
          </property>
 	</bean>
 		
-	<bean id="qtiResultManager" class="org.olat.ims.qti.QTIResultManager"/>
+	<bean id="qtiResultManager" class="org.olat.ims.qti.QTIResultManager">
+		<property name="dbInstance" ref="database"/>	
+	</bean>
 
 </beans>

@@ -250,7 +250,9 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		}
 
 		int j = 500;
-		for( Checkpoint checkpoint : checklist.getCheckpoints() ) {
+
+		List<Checkpoint> checkpointList = checklist.getCheckpointsSorted(ChecklistUIFactory.comparatorTitleAsc);
+		for( Checkpoint checkpoint : checkpointList ) {
 			String pointTitle = checkpoint.getTitle() == null ? "" : checkpoint.getTitle();
 			manageChecklistTable.addColumnDescriptor(new ChecklistMultiSelectColumnDescriptor(pointTitle, j++));
 			cols++;
@@ -259,14 +261,15 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		cols++;
 		
 		manageChecklistTable.setMultiSelect(false);
-		manageTableData = new ChecklistManageTableDataModel(checklist, lstIdents, userPropertyHandlers, cols);
+		manageTableData = new ChecklistManageTableDataModel(checkpointList, lstIdents, userPropertyHandlers, cols);
 		manageChecklistTable.setTableDataModel(manageTableData);
 		
 		panel.setContent(manageChecklistTable.getInitialComponent());
 	}
 	
 	private void initEditTable(UserRequest ureq, Identity identity) {
-		editTableData = new ChecklistRunTableDataModel(this.checklist.getCheckpoints(), getTranslator());
+		List<Checkpoint> checkpoints = checklist.getCheckpoints();
+		editTableData = new ChecklistRunTableDataModel(checkpoints, getTranslator());
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("cl.table.empty"));
@@ -286,8 +289,8 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		editChecklistTable.addMultiSelectAction("cl.save.close", "save");
 		editChecklistTable.setTableDataModel(editTableData);
 		
-		for(int i = 0; i < this.checklist.getCheckpoints().size(); i++) {
-			Checkpoint checkpoint = (Checkpoint) editTableData.getObject(i);
+		for(int i = 0; i<checkpoints.size(); i++) {
+			Checkpoint checkpoint = editTableData.getObject(i);
 			boolean selected = checkpoint.getSelectionFor(identity).booleanValue();
 			editChecklistTable.setMultiSelectSelectedAt(i, selected);
 		}
@@ -301,7 +304,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		ChecklistManager manager = ChecklistManager.getInstance();
 		int size = checklist.getCheckpoints().size();
 		for(int i = 0; i < size; i++) {
-			Checkpoint checkpoint = this.checklist.getCheckpoints().get(i);
+			Checkpoint checkpoint = checklist.getCheckpoints().get(i);
 			Boolean selected = checkpoint.getSelectionFor(identity);
 			if(selected.booleanValue() != selection.get(i)) {
 				checkpoint.setSelectionFor(identity, selection.get(i));
@@ -314,8 +317,10 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		int cdcnt = manageTableData.getColumnCount();
 		int rcnt = manageTableData.getRowCount();
 		StringBuilder sb = new StringBuilder();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		// additional informations
-		sb.append(translate("cl.course.title")).append('\t').append(this.course.getCourseTitle());
+		sb.append(translate("cl.course.title")).append('\t').append(course.getCourseTitle());
 		sb.append('\n');
 		String listTitle = checklist.getTitle() == null ? "" : checklist.getTitle();
 		sb.append(translate("cl.title")).append('\t').append(listTitle);
@@ -329,7 +334,14 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		}
 		sb.append('\n');
 		// checkpoint description
-		sb.append('\t');
+		if(isAdministrativeUser) {
+			sb.append('\t');
+		}
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler == null) continue;
+			sb.append('\t');
+		}
+
 		for (Checkpoint checkpoint : checklist.getCheckpoints()) {
 			sb.append('\t').append(checkpoint.getDescription());
 		}

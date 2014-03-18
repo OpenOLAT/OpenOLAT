@@ -27,18 +27,19 @@ package org.olat.ims.qti;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+
+import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.user.UserDataDeletable;
 
 /**
@@ -46,9 +47,13 @@ import org.olat.user.UserDataDeletable;
  * 
  * @author Alexander Schneider
  */
-public class QTIResultManager extends BasicManager implements UserDataDeletable {
+public class QTIResultManager implements UserDataDeletable {
+	
+	private static final OLog log = Tracing.createLoggerFor(QTIResultManager.class);
 
 	private static QTIResultManager instance;
+	
+	private DB dbInstance;
 
 	/**
 	 * Constructor for QTIResultManager.
@@ -63,6 +68,14 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	public static QTIResultManager getInstance() {
 		return instance;
 	}
+	
+	/**
+	 * [user by Spring]
+	 * @param dbInstance
+	 */
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
+	}
 
 	/**
 	 * @param olatResource
@@ -71,7 +84,16 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @return True if true, false otherwise.
 	 */
 	public boolean hasResultSets(Long olatResource, String olatResourceDetail, Long repositoryRef) {
-		return (getResultSets(olatResource, olatResourceDetail, repositoryRef, null).size() > 0);
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(rset.key) from ").append(QTIResultSet.class.getName()).append(" as rset ")
+		  .append("where rset.olatResource=:resId and rset.olatResourceDetail=:resSubPath and rset.repositoryRef=:repoKey");
+
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("resId", olatResource)
+				.setParameter("resSubPath", olatResourceDetail)
+				.setParameter("repoKey", repositoryRef).getSingleResult();
+		return count == null ? false : count.intValue() > 0;
 	}
 
 	/**
@@ -83,27 +105,22 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @return List of resultsets
 	 */
 	public List<QTIResultSet> getResultSets(Long olatResource, String olatResourceDetail, Long repositoryRef, Identity identity) {
-		Long olatRes = olatResource;
-		String olatResDet = olatResourceDetail;
-		Long repRef = repositoryRef;
-
-		DB db = DBFactory.getInstance();
-
-		StringBuilder slct = new StringBuilder();
-		slct.append("select rset from ");
-		slct.append("org.olat.ims.qti.QTIResultSet rset ");
-		slct.append("where ");
-		slct.append("rset.olatResource=? ");
-		slct.append("and rset.olatResourceDetail=? ");
-		slct.append("and rset.repositoryRef=? ");
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rset from ").append(QTIResultSet.class.getName()).append(" as rset ")
+		  .append("where rset.olatResource=:resId and rset.olatResourceDetail=:resSubPath and rset.repositoryRef=:repoKey");
 		if (identity != null) {
-			slct.append("and rset.identity.key=? ");
-			return db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef, identity.getKey() }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING,
-				StandardBasicTypes.LONG, StandardBasicTypes.LONG });
-		} else {
-			return db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING,
-				StandardBasicTypes.LONG });
+			sb.append(" and rset.identity.key=:identityKey ");
 		}
+		
+		TypedQuery<QTIResultSet> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QTIResultSet.class)
+				.setParameter("resId", olatResource)
+				.setParameter("resSubPath", olatResourceDetail)
+				.setParameter("repoKey", repositoryRef);
+		if (identity != null) {
+			query.setParameter("identityKey", identity.getKey());
+		}
+		return query.getResultList();
 	}
 
 	/**
@@ -114,43 +131,66 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @param repositoryRef
 	 * @return List of QTIResult objects
 	 */
-	public List<QTIResult> selectResults(Long olatResource, String olatResourceDetail, Long repositoryRef, int type) {
-		Long olatRes = olatResource;
-		String olatResDet = olatResourceDetail;
-		Long repRef = repositoryRef;
-
-		DB db = DBFactory.getInstance();
-		// join with user to sort by name
-		StringBuilder slct = new StringBuilder();
-		slct.append("select res from ");
-		slct.append("org.olat.ims.qti.QTIResultSet rset, ");
-		slct.append("org.olat.ims.qti.QTIResult res, ");
-		slct.append("org.olat.core.id.Identity identity, ");
-		slct.append("org.olat.user.UserImpl usr ");
-		slct.append("where ");
-		slct.append("rset.key = res.resultSet ");
-		slct.append("and rset.identity = identity.key ");
-		slct.append("and identity.user = usr.key ");
-		slct.append("and rset.olatResource=? ");
-		slct.append("and rset.olatResourceDetail=? ");
-		slct.append("and rset.repositoryRef=? ");
-		 // 1 -> iqtest, 2 -> iqself
-		if(type == 1 || type == 2)
-		    slct.append("order by usr.userProperties['").append(UserConstants.LASTNAME).append("'] , rset.assessmentID, res.itemIdent");
-			//3 -> iqsurv: the alphabetical assortment above could destroy the anonymization
-	    // if names and quantity of the persons is well-known
-		else 
-		    slct.append("order by rset.creationDate, rset.assessmentID, res.itemIdent");
-
-		List results = null;
-		results = db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING,
-			StandardBasicTypes.LONG });
+	public List<QTIResult> selectResults(Long olatResource, String olatResourceDetail, Long repositoryRef,
+			List<Group> limitToSecGroups, int type) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select res from ").append(QTIResult.class.getName()).append(" as res ")
+		  .append(" inner join res.resultSet as rset")
+		  .append(" inner join rset.identity as ident")
+		  .append(" inner join ident.user as usr")
+		  .append(" where rset.olatResource=:resId and rset.olatResourceDetail=:resSubPath and rset.repositoryRef=:repoKey");
+		if(limitToSecGroups != null && limitToSecGroups.size() > 0) {
+			sb.append(" and rset.identity.key in ( select membership.identity.key from bgroupmember membership ")
+			  .append("   where membership.group in (:baseGroups)")
+			  .append(" )");
+		}
 		
-		return results;
+		if(type == 1 || type == 2) {
+			 // 1 -> iqtest, 2 -> iqself
+		    sb.append(" order by usr.userProperties['").append(UserConstants.LASTNAME).append("'] , rset.assessmentID, res.itemIdent");
+		} else {
+			//3 -> iqsurv: the alphabetical assortment above could destroy the anonymization
+		    // if names and quantity of the persons is well-known
+		    sb.append(" order by rset.creationDate, rset.assessmentID, res.itemIdent");
+		}
+
+		TypedQuery<QTIResult> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), QTIResult.class)
+				.setParameter("resId", olatResource)
+				.setParameter("resSubPath", olatResourceDetail)
+				.setParameter("repoKey", repositoryRef);
+		
+		if(limitToSecGroups != null && limitToSecGroups.size() > 0) {
+			query.setParameter("baseGroups", limitToSecGroups);
+		}
+		
+		return query.getResultList();
+	}
+	
+	/**
+	 * Same as above but only count the number of results
+	 * @param olatResource
+	 * @param olatResourceDetail
+	 * @param repositoryRef
+	 * @return
+	 */
+	public int countResults(Long olatResource, String olatResourceDetail, Long repositoryRef) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(res.key) from ").append(QTIResult.class.getName()).append(" as res ")
+		  .append(" inner join res.resultSet as rset")
+		  .append(" inner join rset.identity as ident")
+		  .append(" inner join ident.user as usr")
+		  .append(" where rset.olatResource=:resId and rset.olatResourceDetail=:resSubPath and rset.repositoryRef=:repoKey");
+
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("resId", olatResource)
+				.setParameter("resSubPath", olatResourceDetail)
+				.setParameter("repoKey", repositoryRef)
+				.getSingleResult();
+		return count == null ? 0 : count.intValue();
 	}
 
 	/**
-	 * deletes all Results and ResultSets of a test, selftest or survey
+	 * Deletes all Results and ResultSets of a test, selftest or survey
 	 * 
 	 * @param olatRes
 	 * @param olatResDet
@@ -158,37 +198,28 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @return deleted ResultSets
 	 */
 	public int deleteAllResults(Long olatRes, String olatResDet, Long repRef) {
-		DB db = DBFactory.getInstance();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rset from ").append(QTIResultSet.class.getName()).append(" as rset ");
+		sb.append(" where rset.olatResource=:resId and rset.olatResourceDetail=:resSubPath and rset.repositoryRef=:repoKey ");
+		
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		List<QTIResultSet> sets = em.createQuery(sb.toString(), QTIResultSet.class).setParameter("resId", olatRes)
+				.setParameter("resSubPath", olatResDet)
+				.setParameter("repoKey", repRef)
+				.getResultList();
 
-		StringBuilder slct = new StringBuilder();
-		slct.append("select rset from ");
-		slct.append("org.olat.ims.qti.QTIResultSet rset ");
-		slct.append("where ");
-		slct.append("rset.olatResource=? ");
-		slct.append("and rset.olatResourceDetail=? ");
-		slct.append("and rset.repositoryRef=? ");
-
-		List results = null;
-		results = db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING,
-			StandardBasicTypes.LONG });
-
-		String delRes = "from res in class org.olat.ims.qti.QTIResult where res.resultSet.key = ?";
-		String delRset = "from rset in class org.olat.ims.qti.QTIResultSet where rset.key = ?";
-
-		int deletedRset = 0;
-
-		for (Iterator iter = results.iterator(); iter.hasNext();) {
-			QTIResultSet rSet = (QTIResultSet) iter.next();
-			Long rSetKey = rSet.getKey();
-			db.delete(delRes, rSetKey, StandardBasicTypes.LONG);
-			db.delete(delRset, rSetKey, StandardBasicTypes.LONG);
-			deletedRset++;
+		StringBuilder delSb = new StringBuilder();
+		delSb.append("delete from ").append(QTIResult.class.getName()).append(" as res where res.resultSet.key=:setKey");
+		Query delResults = em.createQuery(delSb.toString());
+		for (QTIResultSet set:sets) {
+			delResults.setParameter("setKey", set.getKey()).executeUpdate();
+			em.remove(set);
 		}
-		return deletedRset;
+		return sets.size();
 	}
 	
 	/**
-	 * Deletes all Results and ResultSets for certain QTI-ResultSet.
+	 * Deletes all Results AND all ResultSets for certain QTI-ResultSet.
 	 * @param qtiResultSet
 	 */
 	public void deleteResults(QTIResultSet qtiResultSet) {
@@ -201,13 +232,13 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @param answerCode
 	 * @return translation
 	 */
-	public static Map parseResponseStrAnswers(String answerCode) {
+	public static Map<String,String> parseResponseStrAnswers(String answerCode) {
 		// calculate the correct answer, if eventually needed
 		int modus = 0;
 		int startIdentPosition = 0;
 		int startCharacterPosition = 0;
 		String tempIdent = null;
-		Map result = new HashMap();
+		Map<String,String> result = new HashMap<String,String>();
 		char c;
 
 		for (int i = 0; i < answerCode.length(); i++) {
@@ -248,11 +279,11 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @param answerCode
 	 * @return translation
 	 */
-	public static List parseResponseLidAnswers(String answerCode) {
+	public static List<String> parseResponseLidAnswers(String answerCode) {
 		// calculate the correct answer, if eventually needed
 		int modus = 0;
 		int startCharacterPosition = 0;
-		List result = new ArrayList();
+		List<String> result = new ArrayList<String>();
 		char c;
 
 		for (int i = 0; i < answerCode.length(); i++) {
@@ -287,8 +318,14 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @param assessmentID
 	 * @return
 	 */
-	public List findQtiResultSets(Identity identity) {
-		return DBFactory.getInstance().find("from q in class org.olat.ims.qti.QTIResultSet where q.identity =?", identity.getKey(), StandardBasicTypes.LONG);
+	public List<QTIResultSet> findQtiResultSets(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rset from ").append(QTIResultSet.class.getName()).append(" as rset")
+		  .append(" where rset.identity.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QTIResultSet.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 
 	/**
@@ -296,22 +333,29 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @param identity
 	 */
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		List qtiResults = findQtiResultSets(identity);
-		for (Iterator iter = qtiResults.iterator(); iter.hasNext();) {
-			deleteResultSet((QTIResultSet)iter.next());
-		}	
-		Tracing.logDebug("Delete all QTI result data in db for identity=" + identity, this.getClass());
+		List<QTIResultSet> qtiResults = findQtiResultSets(identity);
+		for (QTIResultSet set:qtiResults) {
+			deleteResultSet(set);
+		}
+		if(log.isDebug()) {
+			log.debug("Delete all QTI result data in db for identity=" + identity);
+		}
 	}
 
 	/**
 	 * Delete all qti-results and qti-result-set entry for certain result-set.
 	 * @param rSet 
 	 */
-	private void deleteResultSet(QTIResultSet rSet) {
-		Long rSetKey = rSet.getKey();
-		DB db = DBFactory.getInstance();
-		db.delete("from res in class org.olat.ims.qti.QTIResult where res.resultSet.key = ?", rSetKey, StandardBasicTypes.LONG);
-		db.delete("from rset in class org.olat.ims.qti.QTIResultSet where rset.key = ?", rSetKey, StandardBasicTypes.LONG);
+	public void deleteResultSet(QTIResultSet rSet) {
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		
+		StringBuilder delResultsSb = new StringBuilder();
+		delResultsSb.append("delete from ").append(QTIResult.class.getName()).append(" as res where res.resultSet.key=:setKey");
+		em.createQuery(delResultsSb.toString()).setParameter("setKey", rSet.getKey()).executeUpdate();
+		
+		StringBuilder delSetSb = new StringBuilder();
+		delSetSb.append("delete from ").append(QTIResultSet.class.getName()).append(" as rset where rset.key=:setKey");
+		em.createQuery(delSetSb.toString()).setParameter("setKey", rSet.getKey()).executeUpdate();
 	}
 	
 }

@@ -1,19 +1,14 @@
 /*  misc */
 
-/* charts */
+/* charts (crispEdges) */
 
 .d3chart {
 
 	.bar { shape-rendering: crispEdges; }
 
 	.bar_default_light { fill: $basecolor_ultra_light; }
-	.bar_default_light:hover { fill: $basecolor_light; }
-
 	.bar_default { fill: $basecolor_light; }
-	.bar_default:hover { fill: $basecolor; }
-	
 	.bar_default_dark { fill: $basecolor; }
-	.bar_default_dark:hover { fill: black; }
 
 	.axis { font: 12px sans-serif; }
 
@@ -22,8 +17,6 @@
 		stroke: #000;
 		shape-rendering: crispEdges;
 	}
-
-	.x.axis path { display: none; }
 }
 
 /* BUSINESS CARD &  Member site, members search  */
@@ -355,6 +348,7 @@ div.o_notifications_news_subscription {
 	margin: 1.5em 0 2em 0;
 	h4 { font-size: 110%; }
 	h4.o_returnbox_icon { background-image: url(../openolat/images/box_return.png) !important; }
+	h4.o_dropbox_icon { background-image: url(../openolat/images/box_drop.png) !important; }
 }
 div.o_notifications_news_context { color: #7D7D7D; font-size: 90%; }
 div.o_notifications_news_content {

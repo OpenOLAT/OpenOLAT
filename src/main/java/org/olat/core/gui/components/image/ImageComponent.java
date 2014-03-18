@@ -222,23 +222,24 @@ public class ImageComponent extends AbstractComponent {
 	
 	private Size getImageSize(String suffix) {
 		Size result = null;
-    Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
-    if (iter.hasNext()) {
-        ImageReader reader = iter.next();
-        try {
-            ImageInputStream stream = new MemoryCacheImageInputStream(mediaResource.getInputStream());
-            reader.setInput(stream);
-            int width = reader.getWidth(reader.getMinIndex());
-            int height = reader.getHeight(reader.getMinIndex());
-            result = new Size(width, height, false);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        } finally {
-            reader.dispose();
-        }
-    } else {
-        log.error("No reader found for given format: " + suffix);
-    }
-    return result;
+		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
+		if (iter.hasNext()) {
+			ImageReader reader = iter.next();
+			try {
+				ImageInputStream stream = new MemoryCacheImageInputStream(mediaResource.getInputStream());
+				reader.setInput(stream);
+				int readerMinIndex = reader.getMinIndex();
+				int width = reader.getWidth(readerMinIndex);
+				int height = reader.getHeight(readerMinIndex);
+				result = new Size(width, height, false);
+			} catch (IOException e) {
+				log.error(e.getMessage());
+			} finally {
+				reader.dispose();
+			}
+		} else {
+			log.error("No reader found for given format: " + suffix);
+		}
+		return result;
 	}
 }

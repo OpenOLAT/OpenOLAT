@@ -89,7 +89,7 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	@Override
 	public String getValue(){
 	//	String paramVal = getRootForm().getRequestParameter("textboxlistinput" + getFormDispatchId());
-		return StringUtils.join(this.component.getCurrentItemValues(),", ");
+		return StringUtils.join(component.getCurrentItemValues(),", ");
 	}
 
 	@Override

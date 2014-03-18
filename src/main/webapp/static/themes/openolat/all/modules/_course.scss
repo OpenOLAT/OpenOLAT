@@ -170,7 +170,9 @@ div.o_scorm div.o_scorm_content iframe { }
 .o_scorm_not_attempted { top: 6px; left: 6px; background-image: none; }
 
 /* Checklists */
-span.o_cl_duedate { color: red; }
+span.o_cl_duedate { color: green; }
+p.o_cl_duedate_passed span.o_cl_duedate { color: red; }
+
 
 
 	

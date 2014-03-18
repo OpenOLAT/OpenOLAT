@@ -137,7 +137,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(courseOres.getResourceableId(), getIdent());
 		searchParams.setLimitToGroups(options.getParticipantsGroups());
 
-		QTIStatisticResourceResult result = new QTIStatisticResourceResult(this, searchParams);
+		QTIStatisticResourceResult result = new QTIStatisticResourceResult(courseOres, this, searchParams);
 		return result;
 	}
 
@@ -243,7 +243,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 
 		QTIExportFormatter qef = new QTIExportFormatterCSVType3(locale, null,"\t", "\"", "\\", "\r\n", false);
 		try {
-			return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, charset, ".xls");
+			return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, ".xls");
 		} catch (IOException e) {
 			log.error("", e);
 			return false;

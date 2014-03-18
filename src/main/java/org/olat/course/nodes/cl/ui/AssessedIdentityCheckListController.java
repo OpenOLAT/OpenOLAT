@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -139,12 +140,22 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		boxEl.addActionListener(FormEvent.ONCHANGE);
 		
 		TextElement pointEl = null;
-		if(withScore) {
+		if(withScore && checkbox.getPoints() != null) {
 			String pointId = "point_" + checkbox.getCheckboxId();
-			String points = AssessmentHelper.getRoundedScore(check.getScore());
+			String points;
+			if(check != null && check.getChecked() != null && check.getChecked().booleanValue()) {
+				points = AssessmentHelper.getRoundedScore(check.getScore());
+			} else {
+				points = null;
+			}
 			pointEl = uifactory.addTextElement(pointId, null, 16, points, formLayout);
 			pointEl.setDisplaySize(5);
-			pointEl.setExampleKey("checklist.point.example", new String[]{ "0", "1"});
+			
+			Float maxScore = checkbox.getPoints();
+			if(maxScore != null) {
+				String maxValue = AssessmentHelper.getRoundedScore(maxScore);
+				pointEl.setExampleKey("checklist.point.example", new String[]{ "0", maxValue});
+			}
 		}
 		
 		CheckboxWrapper wrapper = new CheckboxWrapper(checkbox, check, boxEl, pointEl);
@@ -201,7 +212,34 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
 		
 		courseNode.updateScoreEvaluation(userCourseEnv, assessedIdentity);
-		fireEvent(ureq, Event.DONE_EVENT);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement boxEl = (MultipleSelectionElement)source;
+			CheckboxWrapper wrapper = (CheckboxWrapper)boxEl.getUserObject();
+			doUpdateCheck(wrapper, boxEl.isAtLeastSelected(1));
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doUpdateCheck(CheckboxWrapper wrapper, boolean check) {
+		if(wrapper.getPointEl() == null) return;//nothing to do
+
+		if(check) {
+			if(!StringHelper.containsNonWhitespace(wrapper.getPointEl().getValue())) {
+				Checkbox checkbox = wrapper.getCheckbox();
+				Float points = checkbox.getPoints();
+				if(points != null) {
+					String val = AssessmentHelper.getRoundedScore(points);
+					wrapper.getPointEl().setValue(val);
+				}
+			}
+		} else if(wrapper.getPointEl() != null) {
+			wrapper.getPointEl().setValue("");
+		}
 	}
 
 	@Override

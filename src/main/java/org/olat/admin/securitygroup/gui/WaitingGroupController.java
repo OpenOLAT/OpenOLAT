@@ -96,7 +96,7 @@ public class WaitingGroupController extends GroupController {
 						toTransfer = objects;
 						
 						removeAsListenerAndDispose(transferMailCtr);
-						transferMailCtr = new MailNotificationEditController(getWindowControl(), ureq, transferUserMailTempl, true, mandatoryEmail);
+						transferMailCtr = new MailNotificationEditController(getWindowControl(), ureq, transferUserMailTempl, true, mandatoryEmail, true);
 						listenTo(transferMailCtr);
 						
 						removeAsListenerAndDispose(cmc);

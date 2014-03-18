@@ -29,6 +29,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -41,14 +42,10 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 			Translator translator, RenderResult renderResult, String[] args) {
 		
 		BarChartComponent chartCmp = (BarChartComponent)source;
-		renderD3js(renderer, sb, chartCmp);
-	}
-	
-	private void renderD3js(Renderer renderer, StringOutput sb, BarChartComponent chartCmp) {
 		List<BarSeries> seriesList = chartCmp.getSeries();
 		
-		Scale yScale = chartCmp.getYScale();
 		String yLegend = chartCmp.getYLegend();
+		String xLegend = chartCmp.getXLegend();
 
 		Stringuified infos = BarSeries.getDatasAndColors(seriesList, chartCmp.getDefaultBarClass());
 
@@ -79,9 +76,7 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 		  .append("var yAxis = d3.svg.axis()\n")
 		  .append("    .scale(y)\n")
 		  .append("    .orient('left')\n");
-		if(yScale == Scale.percent) {
-			sb.append("    .ticks(10, '%');\n");
-		}
+
 		sb.append("\n")
 		  .append("var svg = d3.select('#d").append(cmpId).append("d3holder').append('svg')\n")
 		  .append("    .attr('width', width + margin.left + margin.right)\n")
@@ -92,32 +87,45 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 		  .append("var data = [").append(infos.getData()).append("]\n")
 		  .append("x.domain(data.map(function(d) { return d[0]; }));\n")
 		  .append("y.domain([0, d3.max(data, function(d) { return ").append(sum).append("; })]);\n")
-		  .append("\n")
-		  
-		  .append("svg.append('g')\n")
+		  .append("\n");
+
+		//append x axis and legend
+		sb.append("svg.append('g')\n")
 		  .append("   .attr('class', 'x axis')\n")
 		  .append("   .attr('transform', 'translate(0,' + height + ')')\n")
-		  .append("   .call(xAxis);\n")
-		  .append("\n")
-		  //append y legend
-		  .append("svg.append('g')\n")
+		  .append("   .call(xAxis);\n");
+		if(StringHelper.containsNonWhitespace(xLegend)) {
+			sb.append("  .append('text')\n")
+			  .append("    .attr('y', 0)\n")
+			  .append("    .attr('x', 0 - (width / 2))\n")
+			  .append("    .attr('dy', '1em')\n")
+			  .append("    .style('text-anchor', 'middle')\n")
+			  .append("    .text('").append(xLegend).append("');\n");
+		}
+		
+		//append y axis and legend
+		sb.append("svg.append('g')\n")
 		  .append("    .attr('class', 'y axis')\n")
-		  .append("    .call(yAxis)\n")
-		  .append("  .append('text')\n")
-		  .append("    .attr('transform', 'rotate(-90)')\n")
-		  .append("    .attr('y', 0 - margin.left)\n")
-		  .append("    .attr('x', 0 - (height / 2))\n")
-		  .append("    .attr('dy', '1em')\n")
-		  .append("    .style('text-anchor', 'middle')\n")
-		  .append("    .text('").append(yLegend).append("');\n")
-		  
-		  .append("\n");
+		  .append("    .call(yAxis)\n");
+		if(StringHelper.containsNonWhitespace(yLegend)) {
+			sb.append("  .append('text')\n")
+			  .append("    .attr('transform', 'rotate(-90)')\n")
+			  .append("    .attr('y', 0 - margin.left)\n")
+			  .append("    .attr('x', 0 - (height / 2))\n")
+			  .append("    .attr('dy', '1em')\n")
+			  .append("    .style('text-anchor', 'middle')\n")
+			  .append("    .text('").append(yLegend).append("');\n")
+			  .append("\n");
+		}
 
 		appendSeries(sb, infos.getColors(), chartCmp);
 		
 		sb.append("});\n")
 		  .append("/* ]]> */")
 		  .append("</script>\n");
+		
+		//System.out.println("--------------------------");
+		//System.out.println(sb.toString());
 	}
 	
 	private void appendSeries(StringOutput sb, StringBuilder colors, BarChartComponent chartCmp) {

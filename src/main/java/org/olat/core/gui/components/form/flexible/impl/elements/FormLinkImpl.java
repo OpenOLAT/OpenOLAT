@@ -197,6 +197,10 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 			this.component.setCustomDisabledLinkCSS(customDisabledLinkCSS);
 		}
 	}
+	
+	public String getI18nKey() {
+		return i18n;
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FormLink#setI18nKey(java.lang.String)

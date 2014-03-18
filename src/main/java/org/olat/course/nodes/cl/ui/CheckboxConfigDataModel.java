@@ -60,9 +60,7 @@ public class CheckboxConfigDataModel extends DefaultFlexiTableDataModel<Checkbox
 				}
 				return translator.translate("release." + release.name());
 			}
-			case file: {
-				return "";
-			}
+			case file: return box.getFilename();
 		}
 		return box;
 	}

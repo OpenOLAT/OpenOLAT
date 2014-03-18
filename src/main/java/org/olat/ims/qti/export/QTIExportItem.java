@@ -48,8 +48,8 @@ public class QTIExportItem {
 		this.item = item;
 	}
 	
-	public List getResponseColumns(){
-		return this.item.getResponseColumns(this.qtir);
+	public List<String> getResponseColumns(){
+		return item.getResponseColumns(qtir);
 	}
 	
 	public boolean hasResult(){

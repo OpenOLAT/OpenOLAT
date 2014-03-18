@@ -28,6 +28,8 @@ import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQSELFCourseNode;
@@ -47,8 +49,6 @@ import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.ui.QTI12AssessmentStatisticsController;
 import org.olat.ims.qti.statistics.ui.QTI12ItemStatisticsController;
-import org.olat.ims.qti.statistics.ui.QTI12SurveyItemStatisticsController;
-import org.olat.ims.qti.statistics.ui.QTI12SurveyStatisticsController;
 import org.olat.ims.qti.statistics.ui.QTI21OnyxAssessmentStatisticsController;
 import org.olat.repository.RepositoryEntry;
 
@@ -62,6 +62,7 @@ import de.bps.onyx.plugin.OnyxModule;
 public class QTIStatisticResourceResult implements StatisticResourceResult {
 	
 	private final QTICourseNode courseNode;
+	private final OLATResourceable courseOres;
 	private final QTIStatisticsManager qtiStatisticsManager;
 	
 	private StatisticAssessment statisticAssessment;
@@ -72,9 +73,10 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 	
 	private QTIType type;
 	
-	public QTIStatisticResourceResult(QTICourseNode courseNode, QTIStatisticSearchParams searchParams) {
+	public QTIStatisticResourceResult(OLATResourceable courseOres, QTICourseNode courseNode, QTIStatisticSearchParams searchParams) {
 		this.courseNode = courseNode;
 		this.searchParams = searchParams;
+		this.courseOres = OresHelper.clone(courseOres);
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTIStatisticsManager.class);
 
 		qtiRepositoryEntry = courseNode.getReferencedRepositoryEntry();
@@ -99,6 +101,10 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 		return type;
 	}
 
+	public OLATResourceable getCourseOres() {
+		return courseOres;
+	}
+
 	public QTICourseNode getTestCourseNode() {
 		return courseNode;
 	}
@@ -109,6 +115,10 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 	
 	public QTIDocument getQTIDocument() {
 		return qtiDocument;
+	}
+	
+	public String getMediaBaseURL() {
+		return getResolver().getStaticsBaseURI() + "/";
 	}
 	
 	public QTIStatisticSearchParams getSearchParams() {
@@ -156,9 +166,7 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 	
 	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl, boolean printMode) {
 		Controller ctrl;
-		if(type == QTIType.survey) {
-			ctrl = new QTI12SurveyStatisticsController(ureq, wControl, this, printMode);
-		} else if (type == QTIType.onyx){
+		if (type == QTIType.onyx){
 			ctrl = new QTI21OnyxAssessmentStatisticsController(ureq, wControl, this, printMode);
 		} else {
 			ctrl = new QTI12AssessmentStatisticsController(ureq, wControl, this, printMode);
@@ -171,7 +179,7 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 	
 	private Controller createItemController(UserRequest ureq, WindowControl wControl, Item item, boolean printMode) {
 		if(type == QTIType.survey) {
-			return new QTI12SurveyItemStatisticsController(ureq, wControl, item, this, printMode);
+			return new QTI12ItemStatisticsController(ureq, wControl, item, this, printMode);
 		} else {
 			return new QTI12ItemStatisticsController(ureq, wControl, item, this, printMode);
 		}
@@ -184,6 +192,9 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 			rootNode.addChild(sectionNode);
 			for (Item item : section.getItems()) {
 				GenericTreeNode itemNode = new ItemNode(item);
+				if(sectionNode.getDelegate() == null) {
+					sectionNode.setDelegate(itemNode);
+				}
 				itemNode.setUserObject(item);
 				sectionNode.addChild(itemNode);
 			}

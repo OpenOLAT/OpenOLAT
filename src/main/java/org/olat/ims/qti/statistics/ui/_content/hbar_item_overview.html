@@ -1,0 +1,37 @@
+<div class="o_qti_statistics">
+	<h4 class="b_with_small_icon_left $series.itemCss">$title</h4>
+	<p>$question</p>
+
+	<div id="$r.getId('d3div')"><div id='$r.getId("d3holder")' class='d3chart' style='width:600px;'></div>
+	<script type='text/javascript'>
+	/* <![CDATA[ */
+	jQuery(function () {
+		jQuery('#$r.getId("d3holder")').qtiStatistics('$series.chartType', {
+			values: [$series.datas.data],
+			colors: #if($series.colorsCustom) [$series.datas.colors] #else null #end,
+			participants: $series.numOfParticipants,
+			barHeight: 25,
+			xTopLegend: '$r.translate("chart.percent.participants.num")',
+			xBottomLegend: '$r.translate("chart.percent.participants")',
+			yLeftLegend: '$r.translate("chart.item")',
+		})
+	});
+	/* ]]> */</script>
+	</div>
+
+	<ul>
+	#foreach($responseInfo in $series.responseInfos)
+		#if($responseInfo.survey)
+			<li class="o_qti_statistics-survey-item qti-survey">
+		#elseif($responseInfo.correct)
+			<li class="o_qti_statistics-correct">
+		#else
+			<li class="o_qti_statistics-ncorrect">
+		#end
+		<strong>$responseInfo.label.</strong> $responseInfo.text
+		 #if($responseInfo.points) $r.translate("answer.points", $responseInfo.formattedPoints) #end
+		 #if($responseInfo.wrongAnswersAvailable) <br/>$r.translate("wrong.answer")  $responseInfo.formattedWrongAnswers #end
+		 </li>
+	#end
+	</ul>
+</div>

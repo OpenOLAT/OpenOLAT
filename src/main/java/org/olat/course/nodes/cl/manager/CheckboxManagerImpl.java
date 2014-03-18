@@ -265,11 +265,11 @@ public class CheckboxManagerImpl implements CheckboxManager {
 			DBCheckbox lockedCheckbox = loadForUpdate(checkbox);
 			if(lockedCheckbox != null) {
 				//locked -> reload to make sure nobody create it
-				DBCheck reloaedCheck = loadCheck(checkbox, owner);
-				if(reloaedCheck == null) {
+				DBCheck reloadedCheck = loadCheck(checkbox, owner);
+				if(reloadedCheck == null) {
 					createCheck(lockedCheckbox, owner, score, checked);
 				} else {
-					currentCheck = reloaedCheck;
+					currentCheck = reloadedCheck;
 				}
 			}
 		}

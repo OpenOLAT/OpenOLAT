@@ -219,7 +219,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		
 		try {
 			QTIExportFormatter qef = new QTIExportFormatterCSVType2(locale, null, "\t", "\"", "\\", "\r\n", false);
-			return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, charset, ".xls");
+			return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, ".xls");
 		} catch (IOException e) {
 			log.error("", e);
 			return false;

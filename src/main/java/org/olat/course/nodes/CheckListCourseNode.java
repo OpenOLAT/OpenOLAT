@@ -340,10 +340,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public boolean isEditableConfigured() {
-		// manual scoring fields can be edited manually
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean manualCorr = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
-		return true;//manualCorr != null && manualCorr.booleanValue();
+		return true;
 	}
 
 	/**

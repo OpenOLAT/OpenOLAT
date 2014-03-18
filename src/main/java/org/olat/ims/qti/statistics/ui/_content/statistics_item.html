@@ -1,0 +1,56 @@
+<div class="o_qti_statistics">
+	<h4 class="b_with_small_icon_left $series.itemCss">$title</h4>
+	<p>$question</p>
+	<table><tbody>
+		#if($numOfParticipants)
+		<tr><td>$r.translate("fig.participants")</td>
+			<td>$numOfParticipants</td></tr>
+		#end
+		#if($maxScore)
+		<tr><td>$r.translate("chart.maxscore")</td>
+			<td>$maxScore</td></tr>
+		#end
+		#if($rightAnswers)
+		<tr><td>$r.translate("fig.correctanswers")</td>
+			<td>$rightAnswers</td></tr>
+		#end
+		#if($wrongAnswers)
+		<tr><td>$r.translate("fig.wronganswers")</td>
+			<td>$wrongAnswers</td></tr>
+		#end
+		#if($notAnswered)
+		<tr><td>$r.translate("fig.notanswered")</td>
+			<td>$notAnswered</td></tr>
+		#end
+		#if($itemDifficulty)
+		<tr><td>$r.translate("fig.itemdiff")</td>
+			<td>$itemDifficulty</td></tr>
+		#end
+		#if($averageScore)
+		<tr><td>$r.translate("fig.averagescore")</td>
+			<td>$averageScore</td></tr>
+		#end
+		#if($averageDuration)
+		<tr><td>$r.translate("fig.averagedur")</td>
+			<td>$averageDuration</td></tr>
+		#end
+	</tbody></table>
+
+	<h4>$r.translate("chart.responses")</h4>
+	$r.render("questionChart")
+	<ul>
+	#foreach($responseInfo in $series.responseInfos)
+		#if($responseInfo.survey)
+			<li class="o_qti_statistics-survey-item qti-survey">
+		#elseif($responseInfo.correct)
+			<li class="o_qti_statistics-correct">
+		#else
+			<li class="o_qti_statistics-ncorrect">
+		#end
+		<strong>$responseInfo.label.</strong> $responseInfo.text
+		 #if($responseInfo.points) $r.translate("answer.points", $responseInfo.formattedPoints) #end
+		 #if($responseInfo.wrongAnswersAvailable) <br/>$r.translate("wrong.answer")  $responseInfo.formattedWrongAnswers #end
+		 </li>
+	#end
+	</ul>
+</div>

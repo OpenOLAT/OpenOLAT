@@ -22,6 +22,7 @@ package org.olat.core.gui.components.chart;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
 
 /**
@@ -31,9 +32,11 @@ import org.olat.core.gui.render.ValidationResult;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractD3Component extends AbstractComponent {
+public class DefaultD3Component extends AbstractComponent {
 	
-	public AbstractD3Component(String name) {
+	private static final ComponentRenderer EMPTY_RENDERER = new DefaultComponentRenderer();
+	
+	public DefaultD3Component(String name) {
 		super(name);
 	}
 	
@@ -43,7 +46,9 @@ public abstract class AbstractD3Component extends AbstractComponent {
 	}
 
 	@Override
-	public abstract ComponentRenderer getHTMLRendererSingleton();
+	public ComponentRenderer getHTMLRendererSingleton() {
+		return EMPTY_RENDERER;
+	}
 
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
@@ -78,5 +83,4 @@ public abstract class AbstractD3Component extends AbstractComponent {
         }
 		return false;
 	}
-
 }

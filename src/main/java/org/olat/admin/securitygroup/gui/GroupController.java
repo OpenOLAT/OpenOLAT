@@ -325,7 +325,7 @@ public class GroupController extends BasicController {
 							doBuildConfirmDeleteDialog(ureq);
 						} else {
 							removeAsListenerAndDispose(removeUserMailCtr);
-							removeUserMailCtr = new MailNotificationEditController(getWindowControl(), ureq, removeUserMailDefaultTempl, true, false);							
+							removeUserMailCtr = new MailNotificationEditController(getWindowControl(), ureq, removeUserMailDefaultTempl, true, false, true);							
 							listenTo(removeUserMailCtr);
 							
 							removeAsListenerAndDispose(cmc);
@@ -406,7 +406,7 @@ public class GroupController extends BasicController {
 					doAddIdentitiesToGroup(ureq, toAdd, null);
 				} else {
 					removeAsListenerAndDispose(addUserMailCtr);
-					addUserMailCtr = new MailNotificationEditController(getWindowControl(), ureq, addUserMailDefaultTempl, true, mandatoryEmail);					
+					addUserMailCtr = new MailNotificationEditController(getWindowControl(), ureq, addUserMailDefaultTempl, true, mandatoryEmail, true);					
 					listenTo(addUserMailCtr);
 					
 					removeAsListenerAndDispose(cmc);

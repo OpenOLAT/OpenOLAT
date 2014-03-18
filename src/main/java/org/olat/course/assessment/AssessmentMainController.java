@@ -562,7 +562,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			}
 		}
 		else if (source == assessmentEditController) {
-			if (event.equals(Event.CHANGED_EVENT)) {
+			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.DONE_EVENT)) {
 				// refresh identity in list model
 				if (userListCtr != null 
 						&& userListCtr.getTableDataModel() instanceof AssessedIdentitiesTableDataModel) {
@@ -571,8 +571,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 					if (aiwList.contains(this.assessedIdentityWrapper)) {
 						ICourse course = CourseFactory.loadCourse(ores);
 						aiwList.remove(this.assessedIdentityWrapper);
-						this.assessedIdentityWrapper = AssessmentHelper.wrapIdentity(this.assessedIdentityWrapper.getIdentity(),
-						this.localUserCourseEnvironmentCache, initialLaunchDates, course, currentCourseNode);
+						assessedIdentityWrapper = AssessmentHelper.wrapIdentity(assessedIdentityWrapper.getIdentity(),
+						localUserCourseEnvironmentCache, initialLaunchDates, course, currentCourseNode);
 						aiwList.add(this.assessedIdentityWrapper);
 						userListCtr.modelChanged();
 					}

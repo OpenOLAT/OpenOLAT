@@ -40,7 +40,7 @@ package org.olat.ims.qti;
  * 
  * @author patrick
  */
-public class QTIChangeLogMessage implements Comparable{
+public class QTIChangeLogMessage implements Comparable<QTIChangeLogMessage> {
 
 	private boolean isPublic;
 	private String logMessage;
@@ -87,8 +87,8 @@ public class QTIChangeLogMessage implements Comparable{
 	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object arg0) {
-		QTIChangeLogMessage b = (QTIChangeLogMessage)arg0;
+	@Override
+	public int compareTo(QTIChangeLogMessage b) {
 		long diff = this.getTimestmp() - b.getTimestmp();
 		//this ordering makes Arrays.sort(..) to sort the change log messages ascending
 		//whereas ascending means older timestamp before newer timestamp

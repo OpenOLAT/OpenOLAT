@@ -93,7 +93,6 @@ import org.olat.course.tree.TreePosition;
 import org.olat.fileresource.types.FileResource;
 import org.olat.ims.qti.QTIChangeLogMessage;
 import org.olat.ims.qti.QTIConstants;
-import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
@@ -257,9 +256,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				CourseNode courseNode = course.getEditorTreeModel().getCourseNode(ref.getUserdata());
 				String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 				Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
-				List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), repKey, 1);
 				restrictedEdit = ((CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, null))
-						|| (results != null && results.size() > 0)) ? true : false;
+						|| QTIResultManager.getInstance().countResults(course.getResourceableId(), courseNode.getIdent(), repKey) > 0) ? true : false;
 			}
 			if(restrictedEdit) {
 				break;

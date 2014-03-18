@@ -4,26 +4,11 @@
 		<h4>$r.translate("score.title")</h4>
 		<table>
 			<tbody>
-				<tr>
-					<td>
-						$r.translate("score.min"):
-					</td>
-					<td>
-						$scoreMin
-					</td>
-				</tr>
-				<tr>
-					<td>
-						$r.translate("score.max"): 
-					</td>
-					<td>
-						$scoreMax
-					</td>
-				</tr>
-				<tr>
-					<td>			
-						$r.translate("score.yourscore"): 
-					</td>
+				<tr><td>$r.translate("score.min"):</td>
+					<td>$scoreMin</td></tr>
+				<tr><td>$r.translate("score.max"):</td>
+					<td>$scoreMax</td></tr>
+				<tr><td>$r.translate("score.yourscore"):</td>
 					<td>
 						#if($score)		
 							$score
@@ -41,19 +26,10 @@
 		<table>
 			<tbody>	
 			#if ($passedCutValue)
-				<tr>
-					<td>
-						$r.translate("passed.cut"):
-					</td>
-					<td>
-						$passedCutValue
-					</td>
-				</tr>
+				<tr><td>$r.translate("passed.cut"):</td>
+					<td>$passedCutValue</td></tr>
 			#end
-				<tr>
-					<td>			
-						$r.translate("passed.yourpassed"):
-					</td>
+				<tr><td>$r.translate("passed.yourpassed"):</td>
 					<td>
 						#if($hasPassedValue && $passed == true)		
 							<span class="o_passed">$r.translate("passed.yes")</span>
@@ -88,7 +64,7 @@
 
 #if($dueDate)
 	<p>$r.translate("run.due.date.desc")</p>
-	<p class="o_cl_duedate">$r.translate("run.due.date",$r.formatDateAndTime($dueDate))</p>
+	<p class="o_cl_duedate #if($afterDueDate) o_cl_duedate_passed #end">$r.translate("run.due.date", $r.formatDateAndTime($dueDate))</p>
 #end
 
 <div class="b_clearfix">
