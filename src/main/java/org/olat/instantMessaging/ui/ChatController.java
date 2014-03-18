@@ -85,6 +85,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private JSAndCSSComponent jsc;
 	private FloatingResizableDialogController chatPanelCtr;
 	
+	private Date today;
 	private List<String> allChats;
 	private final Formatter formatter;
 
@@ -109,6 +110,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		this.ores = ores;
 		this.privateReceiverKey = privateReceiverKey;
 		this.vip = vip;
+		setToday();
 
 		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new AvatarMapper());
 		
@@ -193,6 +195,15 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 	}
 	
+	private void setToday() {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		today = cal.getTime();
+	}
+	
 	private Date getYesterday() {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -1);
@@ -254,6 +265,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 	
 	private void loadModel(Date from, int maxResults) {
+		setToday();
 		messageHistory.clear();
 		List<InstantMessage> lastMessages = imService.getMessages(getIdentity(), getOlatResourceable(), from, 0, maxResults, true);
 		for(int i=lastMessages.size(); i-->0; ) {
@@ -322,7 +334,15 @@ public class ChatController extends BasicController implements GenericEventListe
 		
 		String m = message.getBody().replaceAll("<br/>\n", "\r\n");
 		m = prepareMsgBody(m.replaceAll("<", "&lt;").replaceAll(">", "&gt;")).replaceAll("\r\n", "<br/>\n");
-		String creationDate = formatter.formatTime(message.getCreationDate());
+		
+		Date msgDate = message.getCreationDate();
+		String creationDate;
+		if(today.compareTo(msgDate) < 0) {
+			creationDate = formatter.formatTime(message.getCreationDate());
+		} else {
+			creationDate = formatter.formatDateAndTime(message.getCreationDate());
+		}
+
 		String from = message.getFromNickName();
 		
 		synchronized (messageHistory) {

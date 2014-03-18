@@ -35,7 +35,7 @@ public class ChecklistManageTableDataModel extends DefaultTableDataModel<Row> {
 	private int colCount;
 	private int rowCount;
 
-	public ChecklistManageTableDataModel(Checklist checklist, List<Identity> participants,
+	public ChecklistManageTableDataModel(List<Checkpoint> checkpointList, List<Identity> participants,
 			List<UserPropertyHandler> userPropertyHandlers, int cols) {
 		super(Collections.<Row>emptyList());
 		
@@ -44,7 +44,7 @@ public class ChecklistManageTableDataModel extends DefaultTableDataModel<Row> {
 		
 		List<Row> entries = new ArrayList<>(rowCount);
 		for( Identity identity : participants ) {
-			entries.add(new Row(identity, userPropertyHandlers, checklist, Locale.ENGLISH));
+			entries.add(new Row(identity, userPropertyHandlers, checkpointList, Locale.ENGLISH));
 		}
 		setObjects(entries);
 	}
@@ -86,7 +86,7 @@ public class ChecklistManageTableDataModel extends DefaultTableDataModel<Row> {
 		private final String[] identityProps;
 		private final Boolean[] checkpoints;
 		
-		public Row(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Checklist checklist, Locale locale) {
+		public Row(Identity identity, List<UserPropertyHandler> userPropertyHandlers, List<Checkpoint> checkpointList, Locale locale) {
 			this.identityKey = identity.getKey();
 			this.identityName = identity.getName();
 			
@@ -95,7 +95,6 @@ public class ChecklistManageTableDataModel extends DefaultTableDataModel<Row> {
 				identityProps[i] = userPropertyHandlers.get(i).getUserProperty(identity.getUser(), locale);
 			}
 			
-			List<Checkpoint> checkpointList = checklist.getCheckpointsSorted(ChecklistUIFactory.comparatorTitleAsc);
 			checkpoints = new Boolean[checkpointList.size()];
 			for( int i=checkpointList.size(); i-->0; ) {
 				checkpoints[i] =  checkpointList.get(i).getSelectionFor(identity);
