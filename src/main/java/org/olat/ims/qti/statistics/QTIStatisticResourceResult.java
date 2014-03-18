@@ -28,6 +28,8 @@ import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQSELFCourseNode;
@@ -60,6 +62,7 @@ import de.bps.onyx.plugin.OnyxModule;
 public class QTIStatisticResourceResult implements StatisticResourceResult {
 	
 	private final QTICourseNode courseNode;
+	private final OLATResourceable courseOres;
 	private final QTIStatisticsManager qtiStatisticsManager;
 	
 	private StatisticAssessment statisticAssessment;
@@ -70,9 +73,10 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 	
 	private QTIType type;
 	
-	public QTIStatisticResourceResult(QTICourseNode courseNode, QTIStatisticSearchParams searchParams) {
+	public QTIStatisticResourceResult(OLATResourceable courseOres, QTICourseNode courseNode, QTIStatisticSearchParams searchParams) {
 		this.courseNode = courseNode;
 		this.searchParams = searchParams;
+		this.courseOres = OresHelper.clone(courseOres);
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTIStatisticsManager.class);
 
 		qtiRepositoryEntry = courseNode.getReferencedRepositoryEntry();
@@ -95,6 +99,10 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 	
 	public QTIType getType() {
 		return type;
+	}
+
+	public OLATResourceable getCourseOres() {
+		return courseOres;
 	}
 
 	public QTICourseNode getTestCourseNode() {

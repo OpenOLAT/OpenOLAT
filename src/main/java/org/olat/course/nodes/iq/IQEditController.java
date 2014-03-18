@@ -510,10 +510,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 							onyxSuccess = surveyDir.listFiles().length;
 						}
 					} else {
-						List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), repKey, 1);
-						if (results != null && results.size() > 0) {
-							onyxSuccess = results.size();
-						}
+						onyxSuccess = QTIResultManager.getInstance().countResults(course.getResourceableId(), courseNode.getIdent(), repKey);
 					}
 				}
 				if (moduleConfiguration.get(CONFIG_KEY_TYPE_QTI) != null
@@ -523,7 +520,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 					replaceWizard.addControllerListener(this);
 					cmc = new CloseableModalController(getWindowControl(), translate("close"), replaceWizard.getInitialComponent());
 				} else {
-					List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), repKey, 1);
+					List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), repKey, null, 1);
 					// test was passed from an user
 					boolean passed = (results != null && results.size() > 0) ? true : false;
 					// test was started and not passed

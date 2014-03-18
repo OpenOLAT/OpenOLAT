@@ -95,7 +95,7 @@ public class QTIObjectTreeBuilder {
 		return getQTIItemObjectList(resolver);
 	}
 	
-	private final List<QTIItemObject> getQTIItemObjectList(Resolver resolver) {
+	public final List<QTIItemObject> getQTIItemObjectList(Resolver resolver) {
 		Document doc = resolver.getQTIDocument();
 		Element root = doc.getRootElement();
 		@SuppressWarnings("unchecked")

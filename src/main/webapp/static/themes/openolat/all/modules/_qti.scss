@@ -27,6 +27,14 @@ div.o_qti_statistics {
 	
 		&.qti-qtype5 {padding-left:20px; background: url(../img/kprimItem.png) no-repeat;}
 	}
+	
+	a.b_content_download {
+		display: inline;
+	}
+	
+	a.o_print_icon span {
+		display: inline;
+	}
 }
 
 /* QTI legacy styles */

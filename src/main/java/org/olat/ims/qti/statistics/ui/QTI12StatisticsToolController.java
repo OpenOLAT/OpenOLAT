@@ -157,7 +157,7 @@ public class QTI12StatisticsToolController extends BasicController implements St
 
 	private void doLaunchStatistics(UserRequest ureq, WindowControl wControl) {
 		if(result == null) {
-			result = new QTIStatisticResourceResult(courseNode, searchParams);
+			result = new QTIStatisticResourceResult(courseRes, courseNode, searchParams);
 		}
 		
 		GenericTreeModel treeModel = new GenericTreeModel();

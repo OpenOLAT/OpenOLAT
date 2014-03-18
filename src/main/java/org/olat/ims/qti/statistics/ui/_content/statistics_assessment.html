@@ -11,9 +11,10 @@
 			}
 		}
 		</script>
-		<div id='$r.getId("print")'>
-			<a class="b_small_icon o_print_icon" href='javascript:$r.getId("print")()' title='$r.translateInAttribute("print")'><span>Print</span></a>	
-		</div>
+		<a class="b_with_small_icon_left o_print_icon" href='javascript:$r.getId("print")()' title='$r.translateInAttribute("print")'>
+			<span>$r.translate("print")</span>
+		</a>
+		$r.render("download")
 	</div>
 #end
 

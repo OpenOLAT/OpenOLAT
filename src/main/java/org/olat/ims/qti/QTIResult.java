@@ -34,7 +34,9 @@ import org.olat.core.commons.persistence.PersistentObject;
  *
  * @author gnaegi
  */
-public class QTIResult  extends PersistentObject{ 
+public class QTIResult extends PersistentObject{ 
+
+	private static final long serialVersionUID = 5999697754463201896L;
 
 	private QTIResultSet resultSet;
 	
@@ -169,4 +171,20 @@ public class QTIResult  extends PersistentObject{
 		this.lastModified = lastModified;
 	}
 
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 97520 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof QTIResult) {
+			QTIResult result = (QTIResult)obj;
+			return getKey() != null && getKey().equals(result.getKey());
+		}
+		return false;
+	}
 }

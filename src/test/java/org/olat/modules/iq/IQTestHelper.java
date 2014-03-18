@@ -22,6 +22,7 @@ package org.olat.modules.iq;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -106,6 +107,9 @@ public class IQTestHelper extends OlatTestCase {
 		RepositoryEntry d = CoreSpringFactory.getImpl(RepositoryManager.class).createRepositoryEntryInstance("Stéphane Rossé", "QTIStatisticsTest", "Repo entry");
 		d.setOlatResource(r);
 		d.setDisplayname("QTIStatisticsTest");
+		d.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
+		d.setTutorGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
+		d.setParticipantGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
 		dbInstance.getCurrentEntityManager().persist(d);
 		dbInstance.commit();
 		return d;

@@ -34,12 +34,15 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.chart.BarSeries;
 import org.olat.core.gui.components.chart.BarSeries.Stringuified;
 import org.olat.core.gui.components.chart.StatisticsComponent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.editor.beecom.objects.Item;
@@ -47,6 +50,7 @@ import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticsManager;
+import org.olat.ims.qti.statistics.QTIStatisticsResource;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticItem;
@@ -64,6 +68,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 	private final Float cutValue;
 	private final String mediaBaseURL;
 	
+	private final Link downloadRawLink;
 	private final VelocityContainer mainVC;
 	
 	private final SeriesFactory seriesfactory;
@@ -83,6 +88,9 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		mainVC = createVelocityContainer("statistics_assessment");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
 		mainVC.contextPut("printMode", new Boolean(printMode));
+		downloadRawLink = LinkFactory.createLink("download.raw.data", mainVC, this);
+		downloadRawLink.setCustomEnabledLinkCSS("b_content_download");
+		mainVC.put("download", downloadRawLink);
 
 		//cut value
 		QTICourseNode testNode = resourceResult.getTestCourseNode();
@@ -263,7 +271,14 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if("print".equals(event.getCommand())){
 			printPages(ureq);
+		} else if(downloadRawLink == source) {
+			doDownloadRawData(ureq);
 		}
+	}
+	
+	private void doDownloadRawData(UserRequest ureq) {
+		MediaResource resource = new QTIStatisticsResource(resourceResult, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 
 	private void printPages(UserRequest ureq) {

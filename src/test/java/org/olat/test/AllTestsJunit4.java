@@ -129,6 +129,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.persistence.DBTest.class,
 	org.olat.modules.ims.cp.CPManagerTest.class,
 	org.olat.modules.ims.qti.fileresource.FileResourceValidatorTest.class,
+	org.olat.ims.qti.QTIResultManagerTest.class,
 	org.olat.ims.qti.qpool.QTIImportProcessorTest.class,
 	org.olat.ims.qti.qpool.QTIExportProcessorTest.class,
 	org.olat.ims.qti.statistics.manager.QTIStatisticsManagerLargeTest.class,

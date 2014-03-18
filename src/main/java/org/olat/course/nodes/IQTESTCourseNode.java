@@ -164,7 +164,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(courseOres.getResourceableId(), getIdent());
 		searchParams.setLimitToSecGroups(limitMemberships);
 
-		QTIStatisticResourceResult result = new QTIStatisticResourceResult(this, searchParams);
+		QTIStatisticResourceResult result = new QTIStatisticResourceResult(courseOres, this, searchParams);
 		return result;
 	}
 	
@@ -437,7 +437,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 				String shortTitle = getShortTitle();
 				QTIExportManager qem = QTIExportManager.getInstance();
 				QTIExportFormatter qef = new QTIExportFormatterCSVType1(locale, "\t", "\"", "\\", "\r\n", false);
-				return qem.selectAndExportResults(qef, courseResourceableId, shortTitle, getIdent(), re, exportStream, charset, ".xls");
+				return qem.selectAndExportResults(qef, courseResourceableId, shortTitle, getIdent(), re, exportStream, ".xls");
 			}
 		} catch (IOException e) {
 			log.error("", e);
