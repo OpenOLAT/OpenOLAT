@@ -438,17 +438,22 @@ public class FolderRunController extends BasicController implements Activateable
 	private void enableDisableQuota(UserRequest ureq) {
 		//prevent a timing condition if the user logout while a thumbnail is generated
 		if (ureq.getUserSession() == null || ureq.getUserSession().getRoles() == null) {
-			folderContainer.contextPut("editQuota", Boolean.FALSE);
 			return;
-		} else if (!ureq.getUserSession().getRoles().isOLATAdmin()) {
-			if (!ureq.getUserSession().getRoles().isInstitutionalResourceManager()) {
-				folderContainer.contextPut("editQuota", Boolean.FALSE);
-				return;
-			}
+		} 
+		
+		Boolean newEditQuota = Boolean.FALSE;
+		if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isInstitutionalResourceManager()) {
+			// Only sys admins or institutonal resource managers can have the quota button
+			Quota q = VFSManager.isTopLevelQuotaContainer(folderComponent.getCurrentContainer());
+			newEditQuota = (q == null)? Boolean.FALSE : Boolean.TRUE;
 		}
 
-		Quota q = VFSManager.isTopLevelQuotaContainer(folderComponent.getCurrentContainer());
-		folderContainer.contextPut("editQuota", (q == null)? Boolean.FALSE : Boolean.TRUE);
+		Boolean currentEditQuota = (Boolean) folderContainer.contextGet("editQuota");
+		// Update the container only if a new value is available or no value is set to 
+		// not make the component dirty after asynchronous thumbnail loading
+		if (currentEditQuota == null || !currentEditQuota.equals(newEditQuota)) {
+			folderContainer.contextPut("editQuota", newEditQuota);			
+		}
 	}
 	
 	/**
