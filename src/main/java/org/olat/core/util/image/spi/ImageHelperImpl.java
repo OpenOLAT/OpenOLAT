@@ -377,29 +377,32 @@ public class ImageHelperImpl implements ImageHelperSPI {
 				ImageReadParam param = reader.getDefaultReadParam();
                 Iterator<ImageTypeSpecifier> imageTypes = reader.getImageTypes(0);
                 while (imageTypes.hasNext()) {
-                    ImageTypeSpecifier imageTypeSpecifier = imageTypes.next();
-                    int bufferedImageType = imageTypeSpecifier.getBufferedImageType();
-                    if (bufferedImageType == BufferedImage.TYPE_BYTE_GRAY) {
-                        param.setDestinationType(imageTypeSpecifier);
-                        break;
-                    }
-                }
-
-				double memoryKB = (width * height * 4) / 1024d;
-				if (memoryKB > 2000) {// check limit at 20MB
-					double free = Runtime.getRuntime().freeMemory() / 1024d;
-					if (free > memoryKB) {
-						all.setImage(reader.read(readerMinIndex, param));
-					} else {
-						// make sub sampling to save memory
-						int ratio = (int) Math.round(Math.sqrt(memoryKB / free));
-						param.setSourceSubsampling(ratio, ratio, 0, 0);
-						all.setImage(reader.read(readerMinIndex, param));
+                    try {
+						ImageTypeSpecifier imageTypeSpecifier = imageTypes.next();
+						int bufferedImageType = imageTypeSpecifier.getBufferedImageType();
+						if (bufferedImageType == BufferedImage.TYPE_BYTE_GRAY) {
+						    param.setDestinationType(imageTypeSpecifier);
+						}
+						
+						double memoryKB = (width * height * 4) / 1024d;
+						if (memoryKB > 2000) {// check limit at 20MB
+							double free = Runtime.getRuntime().freeMemory() / 1024d;
+							if (free > memoryKB) {
+								all.setImage(reader.read(readerMinIndex, param));
+							} else {
+								// make sub sampling to save memory
+								int ratio = (int) Math.round(Math.sqrt(memoryKB / free));
+								param.setSourceSubsampling(ratio, ratio, 0, 0);
+								all.setImage(reader.read(readerMinIndex, param));
+							}
+						} else {
+							all.setImage(reader.read(readerMinIndex, param));
+						}
+						return all;
+					} catch (IllegalArgumentException e) {
+						log.warn(e.getMessage(), e);
 					}
-				} else {
-					all.setImage(reader.read(readerMinIndex, param));
-				}
-				return all;
+                }
 			} catch (IOException e) {
 				log.error(e.getMessage(), e);
 			} finally {
