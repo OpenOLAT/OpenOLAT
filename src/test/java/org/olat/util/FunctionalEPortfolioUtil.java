@@ -1448,7 +1448,7 @@ public class FunctionalEPortfolioUtil {
 		selectTree(browser, binder, page, structure);
 		
 		/* open wizard by clicking link link */
-		StringBuffer selectorBuffer = new StringBuffer();
+		StringBuilder selectorBuffer = new StringBuilder();
 		selectorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getAddLinkCss())
 		.append("')]");
@@ -1464,7 +1464,7 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.idle(browser);
 		
 		/* click appropriate artefact type */
-		selectorBuffer = new StringBuffer();
+		selectorBuffer = new StringBuilder();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
 		.append(alias.getAddLinkCss())
@@ -1496,20 +1496,9 @@ public class FunctionalEPortfolioUtil {
 		}
 		break;
 		}
-		
+
 		functionalUtil.idle(browser);
-		
-		/* close dialog */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//div[contains(@class, 'b_window_header')]//a[contains(@class, '")
-		.append(functionalUtil.getWindowCloseLinkCss())
-		.append("')]");
-		
-		browser.click(selectorBuffer.toString());
-		functionalUtil.waitForPageToLoad(browser);
-		
-		return(true);
+		return true;
 	}
 	
 	public FunctionalUtil getFunctionalUtil() {
