@@ -183,7 +183,7 @@ public class DialogElementsPropertyManager extends BasicManager {
 		if (elements.size() == 0) return null; //no match
 		if (elements.size() != 1) throw new AssertException(
 				"Found more then one property for a course node 'dialog element' which should never happen!");
-		return (Property) elements.get(0);
+		return elements.get(0);
 	}
 
 	/**

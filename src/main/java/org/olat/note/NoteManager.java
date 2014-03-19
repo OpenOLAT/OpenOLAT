@@ -160,7 +160,7 @@ public class NoteManager extends BasicManager implements UserDataDeletable {
 	 * Delete all notes for certain identity.
 	 * @param identity  Delete notes for this identity.
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	public void deleteUserData(Identity identity,	String newDeletedUserName) {
 		List<Note> userNotes = this.listUserNotes(identity);
 		for (Iterator<Note> iter = userNotes.iterator(); iter.hasNext();) {

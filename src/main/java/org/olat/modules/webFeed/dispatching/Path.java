@@ -281,7 +281,7 @@ public class Path {
 	 */
 	public boolean isCachedAndAccessible() {
 		// return true if path is in the cache and the validation was successful
-		Boolean accessible = (Boolean) validatedUriCache.get(getKey());
+		Boolean accessible = validatedUriCache.get(getKey());
 		return accessible != null ? accessible : false;
 	}
 

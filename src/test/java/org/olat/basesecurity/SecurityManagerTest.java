@@ -78,12 +78,12 @@ public class SecurityManagerTest extends OlatTestCase {
 		// test using visibility search
 		List<Identity> userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, null, null, null);
 		assertEquals(1,userList.size());
-		Identity identity = (Identity) userList.get(0);
+		Identity identity = userList.get(0);
 		assertEquals(testLogin,identity.getName());
 		// test using powser search
 		userList = sm.getIdentitiesByPowerSearch(testLogin, null, true, null, null, null, null, null, null, null, null);
 		assertEquals(1,userList.size());
-		identity = (Identity) userList.get(0);
+		identity = userList.get(0);
 		assertEquals(testLogin,identity.getName());
 	}
 	
@@ -94,12 +94,12 @@ public class SecurityManagerTest extends OlatTestCase {
 		// test using visibility search
 		List<Identity> userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, userProperties, true, null, null, null, null, null);
 		assertEquals(1,userList.size());
-		Identity identity = (Identity) userList.get(0);
+		Identity identity = userList.get(0);
 		assertEquals("first" + testLogin,identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		// test using powser search
 		userList = sm.getIdentitiesByPowerSearch(testLogin, userProperties, true, null, null, null, null, null, null, null, null);
 		assertEquals(1,userList.size());
-		identity = (Identity) userList.get(0);
+		identity = userList.get(0);
 		assertEquals("first" + testLogin,identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
 	}
 
@@ -136,7 +136,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		}
 	  List<Identity> userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, authProviders, null, null);
 		assertEquals(1,userList.size());
-		Identity identity = (Identity) userList.get(0);
+		Identity identity =  userList.get(0);
 		assertEquals(testLogin,identity.getName());
 	  String[] nonAuthProviders = {"NonAuth"};
 		for (int i = 0; i < nonAuthProviders.length; i++) {
@@ -186,7 +186,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		SecurityGroup olatUsersGroup = sm.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 		List<Object[]> identities = sm.getIdentitiesAndDateOfSecurityGroup(olatUsersGroup, false);// not sortedByAddDate
 		assertTrue("Found no users", identities.size() > 0);
-		Object[] firstIdentity = (Object[])identities.get(0);
+		Object[] firstIdentity = identities.get(0);
 		assertTrue("Wrong type, Identity[0] must be an Identity", firstIdentity[0] instanceof Identity);
 		assertTrue("Wrong type, Identity[1] must be a Date", firstIdentity[1] instanceof Date);
 
@@ -227,7 +227,7 @@ public class SecurityManagerTest extends OlatTestCase {
 	
 	@Test public void testGetAuthentications() {
 		List<Authentication> authentications = sm.getAuthentications(s1);
-		Authentication authentication = (Authentication)authentications.get(0);
+		Authentication authentication = authentications.get(0);
 		assertEquals(testLogin,authentication.getAuthusername());
 	}
 

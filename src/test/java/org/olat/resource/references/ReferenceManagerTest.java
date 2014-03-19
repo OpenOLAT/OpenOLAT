@@ -99,7 +99,7 @@ public class ReferenceManagerTest extends OlatTestCase {
 		// find the refs again with DB resource
 		List<ReferenceImpl> s1R =referenceManager.getReferences(s1);
 		Assert.assertEquals("s1 only has one reference", 1, s1R.size());
-		ReferenceImpl ref = (ReferenceImpl)s1R.get(0);
+		ReferenceImpl ref = s1R.get(0);
 		Assert.assertEquals("source and s1 the same", s1, ref.getSource());
 		Assert.assertEquals("target and t1 the same", t1, ref.getTarget());
 		
@@ -107,7 +107,7 @@ public class ReferenceManagerTest extends OlatTestCase {
 		OLATResourceable s1Ores = OresHelper.createOLATResourceableInstance(s1.getResourceableTypeName(), s1.getResourceableId());
 		List<ReferenceImpl> s1Rb =referenceManager.getReferences(s1Ores);
 		Assert.assertEquals("s1 only has one reference", 1, s1Rb.size());
-		ReferenceImpl refb = (ReferenceImpl)s1R.get(0);
+		ReferenceImpl refb = s1R.get(0);
 		Assert.assertEquals("source and s1 the same", s1, refb.getSource());
 		Assert.assertEquals("target and t1 the same", t1, refb.getTarget());
 		

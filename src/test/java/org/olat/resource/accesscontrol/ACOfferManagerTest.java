@@ -174,7 +174,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//delete the resource
-		testOres = (OLATResource)dbInstance.loadObject(OLATResourceImpl.class, testOres.getKey());
+		testOres = dbInstance.loadObject(OLATResourceImpl.class, testOres.getKey());
 		dbInstance.deleteObject(testOres);
 		
 		dbInstance.commitAndCloseSession();
@@ -255,7 +255,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//delete resource of offer 2
-		testOres2 = (OLATResource)dbInstance.loadObject(OLATResourceImpl.class, testOres2.getKey());
+		testOres2 = dbInstance.loadObject(OLATResourceImpl.class, testOres2.getKey());
 		dbInstance.deleteObject(testOres2);
 		
 		//filter by resources

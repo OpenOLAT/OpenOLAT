@@ -335,7 +335,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
   	}
   	
   	public UserEfficiencyStatementLight getEfficiencyStatementAt(int row) {
-  		return (UserEfficiencyStatementLight)getObject(row).getValue();
+  		return getObject(row).getValue();
   	}
   }
   
@@ -361,7 +361,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 		 */
 		public final Object getValueAt(int row, int col) {			
 			PortletEntry<UserEfficiencyStatementLight> entry = getObject(row);
-			UserEfficiencyStatementLight statement = (UserEfficiencyStatementLight)entry.getValue();
+			UserEfficiencyStatementLight statement = entry.getValue();
 			switch (col) {
 				case 0:					
 					return statement.getShortTitle();

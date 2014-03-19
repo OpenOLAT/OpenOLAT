@@ -129,12 +129,12 @@ public class MetadataBulkChangeController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("bulk.change.description");
 		
-		initGeneralForm(formLayout, listener);
-		initEducationalForm(formLayout, listener);
-		initQuestionForm(formLayout, listener);
-		initLifecycleForm(formLayout, listener);
-		initTechnicalForm(formLayout, listener);
-		initRightsForm(formLayout, listener);
+		initGeneralForm(formLayout);
+		initEducationalForm(formLayout);
+		initQuestionForm(formLayout);
+		initLifecycleForm(formLayout);
+		initTechnicalForm(formLayout);
+		initRightsForm(formLayout);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -143,22 +143,22 @@ public class MetadataBulkChangeController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void initGeneralForm(FormItemContainer formLayout, Controller listener) {
+	private void initGeneralForm(FormItemContainer formLayout) {
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
 		
 		titleEl = uifactory.addTextElement("general.title", "general.title", 1000, null, generalCont);
-		decorate(titleEl, generalCont, listener);
+		decorate(titleEl, generalCont);
 		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, null, generalCont);
-		decorate(keywordsEl, generalCont, listener);
+		decorate(keywordsEl, generalCont);
 		coverageEl = uifactory.addTextElement("general.coverage", "general.coverage", 1000, null, generalCont);
-		decorate(coverageEl, generalCont, listener);
+		decorate(coverageEl, generalCont);
 		addInfosEl = uifactory.addTextElement("general.additional.informations", "general.additional.informations.long",
 				256, "", generalCont);
-		decorate(addInfosEl, generalCont, listener);
+		decorate(addInfosEl, generalCont);
 		languageEl = uifactory.addTextElement("general.language", "general.language", 10, "", generalCont);
-		decorate(languageEl, generalCont, listener);
+		decorate(languageEl, generalCont);
 		
 		//classification
 		String selectContextPage = velocity_root + "/edit_edu_context.html";
@@ -168,10 +168,10 @@ public class MetadataBulkChangeController extends FormBasicController {
 		generalCont.add(selectContextCont);
 		selectContextCont.setRootForm(mainForm);
 		selectContext = uifactory.addFormLink("select", selectContextCont, Link.BUTTON_SMALL);
-		decorate(selectContextCont, generalCont, listener);
+		decorate(selectContextCont, generalCont);
 	}
 	
-	private void initEducationalForm(FormItemContainer formLayout, Controller listener) {
+	private void initEducationalForm(FormItemContainer formLayout) {
 		FormLayoutContainer eduCont = FormLayoutContainer.createDefaultFormLayout("educational", getTranslator());
 		eduCont.setRootForm(mainForm);
 		formLayout.add(eduCont);
@@ -180,7 +180,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		learningTimeContainer = FormLayoutContainer.createCustomFormLayout("educational.learningTime", getTranslator(), page);
 		learningTimeContainer.setRootForm(mainForm);
 		eduCont.add(learningTimeContainer);
-		decorate(learningTimeContainer, eduCont, listener);
+		decorate(learningTimeContainer, eduCont);
 
 		learningTimeDayElement = uifactory.addIntegerElement("learningTime.day", "", 0, learningTimeContainer);
 		learningTimeDayElement.setDisplaySize(3);
@@ -194,73 +194,73 @@ public class MetadataBulkChangeController extends FormBasicController {
 		KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", eduCont,
 				contexts.getKeys(), contexts.getValues(), null);
-		decorate(contextEl, eduCont, listener);
+		decorate(contextEl, eduCont);
 	}
 	
-	private void initQuestionForm(FormItemContainer formLayout, Controller listener) {
+	private void initQuestionForm(FormItemContainer formLayout) {
 		FormLayoutContainer questionCont = FormLayoutContainer.createDefaultFormLayout("question", getTranslator());
 		questionCont.setRootForm(mainForm);
 		formLayout.add(questionCont);
 		
 		KeyValues typeKeys = getQItemTypeKeyValues(getTranslator(), qpoolService);
 		typeEl = uifactory.addDropdownSingleselect("question.type", "question.type", questionCont, typeKeys.getKeys(), typeKeys.getValues(), null);
-		decorate(typeEl, questionCont, listener);
+		decorate(typeEl, questionCont);
 		
 		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 10, null, questionCont);
 		difficultyEl.setExampleKey("question.difficulty.example", null);
 		difficultyEl.setDisplaySize(4);
-		decorate(difficultyEl, questionCont, listener);
+		decorate(difficultyEl, questionCont);
 
 		stdevDifficultyEl = uifactory.addTextElement("question.stdevDifficulty", "question.stdevDifficulty", 10, null, questionCont);
 		stdevDifficultyEl.setExampleKey("question.stdevDifficulty.example", null);
 		stdevDifficultyEl.setDisplaySize(4);
-		decorate(stdevDifficultyEl, questionCont, listener);
+		decorate(stdevDifficultyEl, questionCont);
 		
 		differentiationEl = uifactory.addTextElement("question.differentiation", "question.differentiation", 10, null, questionCont);
 		differentiationEl.setExampleKey("question.differentiation.example", null);
 		differentiationEl.setDisplaySize(4);
-		decorate(differentiationEl, questionCont, listener);
+		decorate(differentiationEl, questionCont);
 		
 		numAnswerAltEl = uifactory.addTextElement("question.numOfAnswerAlternatives", "question.numOfAnswerAlternatives", 10, null, questionCont);
 		numAnswerAltEl.setDisplaySize(4);
-		decorate(numAnswerAltEl, questionCont, listener);
+		decorate(numAnswerAltEl, questionCont);
 		
 		KeyValues types = MetaUIFactory.getAssessmentTypes(getTranslator());
 		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType", questionCont,
 				types.getKeys(), types.getValues(), null);
-		decorate(assessmentTypeEl, questionCont, listener);
+		decorate(assessmentTypeEl, questionCont);
 	}
 	
-	private void initLifecycleForm(FormItemContainer formLayout, Controller listener) {
+	private void initLifecycleForm(FormItemContainer formLayout) {
 		FormLayoutContainer lifecycleCont = FormLayoutContainer.createDefaultFormLayout("lifecycle", getTranslator());
 		lifecycleCont.setRootForm(mainForm);
 		formLayout.add(lifecycleCont);
 		
 		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, null, lifecycleCont);
-		decorate(versionEl, lifecycleCont, listener);
+		decorate(versionEl, lifecycleCont);
 		
 		KeyValues status = MetaUIFactory.getStatus(getTranslator());
 		statusEl = uifactory.addDropdownSingleselect("lifecycle.status", "lifecycle.status", lifecycleCont,
 				status.getKeys(), status.getValues(), null);
-		decorate(statusEl, lifecycleCont, listener);	
+		decorate(statusEl, lifecycleCont);	
 	}
 
-	private void initTechnicalForm(FormItemContainer formLayout, Controller listener) {
+	private void initTechnicalForm(FormItemContainer formLayout) {
 		FormLayoutContainer technicalCont = FormLayoutContainer.createDefaultFormLayout("technical", getTranslator());
 		technicalCont.setRootForm(mainForm);
 		formLayout.add(technicalCont);
 		
 		editorEl = uifactory.addTextElement("technical.editor", "technical.editor", 50, null, technicalCont);
-		decorate(editorEl, technicalCont, listener);
+		decorate(editorEl, technicalCont);
 		editorVersionEl = uifactory.addTextElement("technical.editorVersion", "technical.editorVersion", 50, null, technicalCont);
-		decorate(editorVersionEl, technicalCont, listener);
+		decorate(editorVersionEl, technicalCont);
 		KeyValues formats = MetaUIFactory.getFormats();
 		formatEl = uifactory.addDropdownSingleselect("technical.format", "technical.format", technicalCont,
 				formats.getKeys(), formats.getValues(), null);
-		decorate(formatEl, technicalCont, listener);
+		decorate(formatEl, technicalCont);
 	}
 	
-	private void initRightsForm(FormItemContainer formLayout, Controller listener) {
+	private void initRightsForm(FormItemContainer formLayout) {
 		FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
 		rightsCont.setRootForm(mainForm);
 		formLayout.add(rightsCont);
@@ -268,7 +268,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		rightsWrapperCont = FormLayoutContainer.createDefaultFormLayout("rights.copyright", getTranslator());
 		rightsWrapperCont.setRootForm(mainForm);
 		rightsCont.add(rightsWrapperCont);
-		decorate(rightsWrapperCont, rightsCont, listener);
+		decorate(rightsWrapperCont, rightsCont);
 
 		licenseKeys = getQLicenseKeyValues(qpoolService);
 		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright.sel", "rights.copyright", rightsWrapperCont,
@@ -279,7 +279,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		descriptionEl = uifactory.addTextAreaElement("rights.description", "rights.description", 1000, 6, 40, true, null, rightsWrapperCont);
 	}
 	
-	private FormItem decorate(FormItem item, FormLayoutContainer formLayout, Controller listener) {
+	private FormItem decorate(FormItem item, FormLayoutContainer formLayout) {
 		String itemName = item.getName();
 		MultipleSelectionElement checkbox = uifactory.addCheckboxesVertical("cbx_" + itemName, itemName, formLayout, new String[] { itemName }, EMPTY_VALUES, null, 1);
 		checkbox.select(itemName, false);
@@ -292,7 +292,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		item.setUserObject(checkbox);
 		
 		checkboxContainer.put(checkbox, formLayout);
-		((FormLayoutContainer)formLayout).moveBefore(checkbox, item);
+		formLayout.moveBefore(checkbox, item);
 		return item;
 	}
 	

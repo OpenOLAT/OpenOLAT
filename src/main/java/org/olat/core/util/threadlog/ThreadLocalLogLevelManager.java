@@ -88,7 +88,7 @@ public class ThreadLocalLogLevelManager {
 		}
 		
 		@Override
-		public Logger getLogger(String name, @SuppressWarnings("unused") LoggerFactory factory) {
+		public Logger getLogger(String name, LoggerFactory factory) {
 			Logger existingLogger = parentLoggerRepository_.exists(name);
 			if (existingLogger!=null) {
 				// Returning the original logger here - note that this will prevent certain loggers from being 

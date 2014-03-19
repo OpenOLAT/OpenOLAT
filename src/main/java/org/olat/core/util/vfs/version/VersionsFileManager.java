@@ -659,7 +659,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 				LocalFileImpl current = (LocalFileImpl)currentFile;
 					//can be the same file
 				try {
-					Checksum cm1 = FileUtils.checksum(((LocalFileImpl)((RevisionFileImpl)lastRev).getFile()).getBasefile() , new Adler32());
+					Checksum cm1 = FileUtils.checksum(((LocalFileImpl)lastRev.getFile()).getBasefile() , new Adler32());
 					Checksum cm2 = FileUtils.checksum(current.getBasefile() , new Adler32());
 					same = cm1.getValue() == cm2.getValue();
 				} catch (IOException e) {

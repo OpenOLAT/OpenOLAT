@@ -74,7 +74,6 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.projectbroker.ProjectBrokerControllerFactory;
 import org.olat.course.nodes.projectbroker.ProjectBrokerCourseEditorController;
@@ -172,8 +171,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		updateModuleConfigDefaults(false);
 		ProjectBrokerCourseEditorController childTabCntrllr = ProjectBrokerControllerFactory.createCourseEditController(ureq, wControl, course, euce, this );
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
-		NodeEditController editController = new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, groupMgr, euce, childTabCntrllr);
+		NodeEditController editController = new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 		editController.addControllerListener(childTabCntrllr);
 		return editController;
 	}
@@ -684,7 +682,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		CoursePropertyManager propMgr = userCourseEnvironment.getCourseEnvironment().getCoursePropertyManager();
 		List<Property> samples = propMgr.findCourseNodeProperties(this, identity, null, TaskController.PROP_ASSIGNED);
 		if (samples.size() == 0) return null; // no sample assigned yet
-		return ((Property) samples.get(0)).getStringValue();
+		return samples.get(0).getStringValue();
 	}
 
 	/**

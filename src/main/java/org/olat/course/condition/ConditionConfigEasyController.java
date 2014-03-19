@@ -156,7 +156,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 * @param nodeIdentList
 	 * @param euce
 	 */
-	public ConditionConfigEasyController(UserRequest ureq, WindowControl wControl, Condition cond, String title,  String formName,
+	public ConditionConfigEasyController(UserRequest ureq, WindowControl wControl, Condition cond,
 			List<CourseNode> nodeIdentList, CourseEditorEnv env) {
 		super(ureq, wControl, "easycondedit");
 		
@@ -714,18 +714,18 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 	
-		addCoachExclusive(formLayout, listener);
-		addFromToDateChooser(formLayout, listener);
-		addEasyGroupAreaChoosers(formLayout, listener);
-		addAssessmentSwitch(formLayout, listener);
+		addCoachExclusive(formLayout);
+		addFromToDateChooser(formLayout);
+		addEasyGroupAreaChoosers(formLayout);
+		addAssessmentSwitch(formLayout);
 		//
 		if(ShibbolethModule.isEnableShibbolethLogins()){
-			addAttributeSwitch(formLayout, listener, ureq);
+			addAttributeSwitch(formLayout, ureq);
 		}
 		flc.contextPut("shibbolethEnabled", new Boolean(ShibbolethModule.isEnableShibbolethLogins()));
-		//
-		addApplyRulesForTutorsToo(formLayout, listener);
-		//
+		
+		addApplyRulesForTutorsToo(formLayout);
+		
 		// add rules
 		addRules(formLayout);
 		
@@ -734,7 +734,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		validateGroupFields();
 	}
 
-	private void addAttributeSwitch(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+	private void addAttributeSwitch(FormItemContainer formLayout, UserRequest ureq) {
 		/*
 		 * yes / no chooser defines if learner do not see the building block at all
 		 */
@@ -1074,7 +1074,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 * @param formLayout
 	 * @param listener
 	 */
-	private void addCoachExclusive(FormItemContainer formLayout, Controller listener) {
+	private void addCoachExclusive(FormItemContainer formLayout) {
 		/*
 		 * yes / no chooser defines if learner do not see the building block at all
 		 */
@@ -1091,7 +1091,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 * @param formLayout
 	 * @param listener
 	 */
-	private void addApplyRulesForTutorsToo(FormItemContainer formLayout, Controller listener) {
+	private void addApplyRulesForTutorsToo(FormItemContainer formLayout) {
 		
 		/*
 		 * yes / no chooser defines if learner do not see the building block at all
@@ -1118,11 +1118,11 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 * @param formLayout
 	 * @param listener
 	 */
-	private void addFromToDateChooser(FormItemContainer formLayout, Controller listener) {
+	private void addFromToDateChooser(FormItemContainer formLayout) {
 		/*
 		 * yes / no switch if a date.time constraint is defined
 		 */
-		dateSubContainer = (FormItemContainer) FormLayoutContainer.createDefaultFormLayout("dateSubContainer", getTranslator());
+		dateSubContainer = FormLayoutContainer.createDefaultFormLayout("dateSubContainer", getTranslator());
 		formLayout.add(dateSubContainer);
 
 		fromDate = new JSDateChooser("fromDate", getLocale());
@@ -1154,7 +1154,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 * @param formLayout
 	 * @param listener
 	 */
-	private void addEasyGroupAreaChoosers(FormItemContainer formLayout, Controller listener) {
+	private void addEasyGroupAreaChoosers(FormItemContainer formLayout) {
 
 		groupSubContainer = FormLayoutContainer.createDefaultFormLayout("groupSubContainer", getTranslator());
 		formLayout.add(groupSubContainer);
@@ -1198,9 +1198,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		updateGroupsAndAreasCheck();
 	}
 
-	private void addAssessmentSwitch(FormItemContainer formLayout, Controller listener) {
+	private void addAssessmentSwitch(FormItemContainer formLayout) {
 
-		assessSubContainer = (FormItemContainer) FormLayoutContainer.createDefaultFormLayout("assessSubContainer", getTranslator());
+		assessSubContainer = FormLayoutContainer.createDefaultFormLayout("assessSubContainer", getTranslator());
 		formLayout.add(assessSubContainer);
 
 		Translator translator = getTranslator();
@@ -1225,7 +1225,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			keysList.add(NO_NODE_SELECTED_IDENTIFYER);
 			valuesList.add("- " + translator.translate("form.easy.nodePassed.select") + " -");
 			for (int i = 0; i < nodeIdentList.size(); i++) {
-				CourseNode courseNode = (CourseNode) nodeIdentList.get(i);
+				CourseNode courseNode = nodeIdentList.get(i);
 				keysList.add(courseNode.getIdent());
 				valuesList.add(courseNode.getShortName() + " (Id:" + courseNode.getIdent() + ")");
 				if (courseNode.getIdent().equals(nodePassedInitVal)) selectedNodeIsInList = true;

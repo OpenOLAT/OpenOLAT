@@ -148,12 +148,12 @@ public class SortableFlexiTableModelDelegate<T> {
 				} else {
 					Timestamp ta = (Timestamp)a;
 					Date aAsDate = new Date(ta.getTime());
-					return aAsDate.compareTo((Date)b);
+					return aAsDate.compareTo(b);
 				}
 			} else if (b instanceof Timestamp) {
 				Timestamp tb = (Timestamp)b;
 				Date bAsDate = new Date(tb.getTime());
-				return ((Date)a).compareTo(bAsDate);
+				return a.compareTo(bAsDate);
 			}
 			return a.compareTo(b);
 		}

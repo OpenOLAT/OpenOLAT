@@ -118,7 +118,7 @@ public class CalendarUtils {
 		regExSubject = ".*" + regExSubject + ".*";
 		regExLocation = ".*" + regExLocation + ".*";
 		for (Iterator<KalendarEvent> iter = events.iterator(); iter.hasNext();) {
-			KalendarEvent event = (KalendarEvent) iter.next();
+			KalendarEvent event = iter.next();
 			if (publicOnly && event.getClassification() != KalendarEvent.CLASS_PUBLIC) continue;
 			if (beginPeriod != null && event.getBegin().before(beginPeriod)) continue;
 			if (endPeriod != null && event.getEnd().after(endPeriod)) continue;
@@ -142,7 +142,7 @@ public class CalendarUtils {
 			results.add(event);
 			CalendarManager cm = CalendarManagerFactory.getInstance().getCalendarManager();
 			Date periodStart = beginPeriod == null ? event.getBegin() : beginPeriod;
-			long year = (long)60*(long)60*(long)24*(long)365*(long)1000;
+			long year = 60 * 60 * 24 * 365 * 1000;
 			Date periodEnd = endPeriod == null ? new Date(periodStart.getTime() + year) : endPeriod;
 			List<KalendarRecurEvent> lstEvnt = cm.getRecurringDatesInPeriod(periodStart, periodEnd, event);
 			for ( KalendarRecurEvent recurEvent : lstEvnt ) {

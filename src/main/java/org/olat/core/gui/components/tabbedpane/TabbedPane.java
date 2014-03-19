@@ -177,7 +177,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * @return
 	 */
 	protected Component getTabAt(int position) {
-		return (Component) tabbedPanes.get(position);
+		return tabbedPanes.get(position);
 	}
 
 	/**
@@ -185,7 +185,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * @return
 	 */
 	protected String getDisplayNameAt(int position) {
-		return (String) displayNames.get(position);
+		return displayNames.get(position);
 	}
 
 	/**

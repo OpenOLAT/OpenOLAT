@@ -191,7 +191,7 @@ public class OnyxResultManager {
 			QTICourseNode node = (QTICourseNode) (courseNode instanceof QTICourseNode ? courseNode : null);
 			if (reporterFinished && !qtiResultSet.getSuspended() && node != null) {
 				boolean bestResultConfigured = false;
-				ScoreEvaluation sc = OnyxModule.getUserScoreEvaluationFromQtiResult(userCourseEnvironment.getCourseEnvironment().getCourseResourceableId(), (QTICourseNode) node,
+				ScoreEvaluation sc = OnyxModule.getUserScoreEvaluationFromQtiResult(userCourseEnvironment.getCourseEnvironment().getCourseResourceableId(), node,
 						bestResultConfigured, qtiResultSet.getIdentity());
 				if(node instanceof AssessableCourseNode){
 					((AssessableCourseNode) node).updateUserScoreEvaluation(sc, userCourseEnvironment, qtiResultSet.getIdentity(), false);
@@ -245,7 +245,7 @@ public class OnyxResultManager {
 		QTIResultSet qtiResultSet = null;
 		if (liste != null && liste.size() > 0) {
 			Long key = liste.get(0);
-			qtiResultSet = (QTIResultSet) DBFactory.getInstance().loadObject(QTIResultSet.class, key);
+			qtiResultSet = DBFactory.getInstance().loadObject(QTIResultSet.class, key);
 			DBFactory.getInstance().intermediateCommit();
 		}
 		return qtiResultSet;
@@ -274,7 +274,7 @@ public class OnyxResultManager {
 		QTIResultSet lastResultSet = null;
 
 		for (Long resultSet : suspendedResults) {
-			QTIResultSet res = ((QTIResultSet) DBFactory.getInstance().loadObject(QTIResultSet.class, resultSet));
+			QTIResultSet res = (DBFactory.getInstance().loadObject(QTIResultSet.class, resultSet));
 			if (lastResultSet != null) {
 				if (lastResultSet.getCreationDate().before(res.getCreationDate())) {
 					lastResultSet = res;

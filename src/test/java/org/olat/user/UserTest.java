@@ -212,9 +212,9 @@ public class UserTest extends OlatTestCase {
 		assertTrue("must have elements", result != null);
 		assertEquals("at least three elements", 3, result.size());
 
-		String instEmailU1 = ((Identity)result.get(0)).getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
-		String instEmailU2 = ((Identity)result.get(1)).getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
-		String instEmailU3 = ((Identity)result.get(2)).getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+		String instEmailU1 = result.get(0).getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+		String instEmailU2 = result.get(1).getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+		String instEmailU3 = result.get(2).getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
 		
 		//check that the three found results correspond with the configured
 		boolean found1 = instEmailU1.equals("instjudihui@id.uzh.ch") || instEmailU2.equals("instjudihui@id.uzh.ch") || instEmailU3.equals("instjudihui@id.uzh.ch");
@@ -425,8 +425,8 @@ public class UserTest extends OlatTestCase {
 		slct.append("identity.user = usr.key ");
 		slct.append("order by usr.userProperties['firstName'] desc");
 		List<Identity> results = db.find(slct.toString());
-		Identity ident1 = (Identity) results.get(0);
-		Identity ident2 = (Identity) results.get(1);
+		Identity ident1 = results.get(0);
+		Identity ident2 = results.get(1);
 		assertTrue((ident2.getName().compareTo(ident1.getName()) < 0));
 	}
 

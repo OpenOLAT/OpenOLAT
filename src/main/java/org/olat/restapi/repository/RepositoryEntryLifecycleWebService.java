@@ -30,7 +30,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -61,7 +60,7 @@ public class RepositoryEntryLifecycleWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getPublicLifeCycles(@Context HttpServletRequest httpRequest, @Context Request request) {
+	public Response getPublicLifeCycles(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isInstitutionalResourceManager() && !roles.isOLATAdmin()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

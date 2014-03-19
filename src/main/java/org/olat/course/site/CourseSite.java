@@ -19,8 +19,6 @@
  */
 package org.olat.course.site;
 
-import java.util.Locale;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -74,7 +72,7 @@ public class CourseSite extends AbstractSiteInstance {
 	 * @param alternativeControllerIfNotLaunchable
 	 * @param titleKeyPrefix
 	 */
-	public CourseSite(SiteDefinition siteDef, Locale loc, String repositorySoftKey, boolean showToolController,
+	public CourseSite(SiteDefinition siteDef, String repositorySoftKey, boolean showToolController,
 			SiteSecurityCallback siteSecCallback, String titleKeyPrefix, String navIconCssClass) {
 		super(siteDef);
 		this.repositorySoftKey = repositorySoftKey;

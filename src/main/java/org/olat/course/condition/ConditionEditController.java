@@ -43,7 +43,6 @@ import org.olat.course.condition.additionalconditions.AdditionalCondition;
 import org.olat.course.condition.additionalconditions.PasswordCondition;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.EditorMainController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -65,7 +64,6 @@ public class ConditionEditController extends BasicController {
 	private ConditionConfigExpertForm conditionExpertForm;
 	private Condition condition,validatedCondition;
 	private List<CourseNode> nodeIdentList;
-	private String formName;
 	
 	private UserCourseEnvironment euce;
 	private Link easyModeButton;
@@ -87,9 +85,9 @@ public class ConditionEditController extends BasicController {
 	 * @param nodeIdentList
 	 * @param euce 
 	 */
-	public ConditionEditController(UserRequest ureq, WindowControl wControl, CourseGroupManager groupMgr,
-			Condition cond, String formName, List<CourseNode> nodeIdentList, UserCourseEnvironment euce) {
-		this(ureq, wControl, groupMgr, cond, formName, nodeIdentList, euce, false);
+	public ConditionEditController(UserRequest ureq, WindowControl wControl,
+			Condition cond, List<CourseNode> nodeIdentList, UserCourseEnvironment euce) {
+		this(ureq, wControl, cond, nodeIdentList, euce, false);
 	}
 	
 	/**
@@ -103,8 +101,8 @@ public class ConditionEditController extends BasicController {
 	 * @param euce
 	 * @param showPasswordAccess If you want to show the password condition
 	 */
-	public ConditionEditController(UserRequest ureq, WindowControl wControl, CourseGroupManager groupMgr,
-				Condition cond, String formName, List<CourseNode> nodeIdentList, UserCourseEnvironment euce,
+	public ConditionEditController(UserRequest ureq, WindowControl wControl,
+				Condition cond, List<CourseNode> nodeIdentList, UserCourseEnvironment euce,
 				boolean showPasswordAccess) {
 		super(ureq, wControl);
 		this.condition = cond;
@@ -112,7 +110,6 @@ public class ConditionEditController extends BasicController {
 		if(this.condition==null) throw new OLATRuntimeException("CondititionEditController called with a NULL condition", new IllegalArgumentException());
 		this.euce = euce;
 		this.nodeIdentList = nodeIdentList;
-		this.formName = formName;
 		
 		// Main component is a velocity container. It has a name choosen by the controller who
 		// called this constructor
@@ -215,7 +212,7 @@ public class ConditionEditController extends BasicController {
 
 	private void initEasyForm(UserRequest ureq) {
 		removeAsListenerAndDispose(conditionEasyCtrllr);
-		conditionEasyCtrllr = new ConditionConfigEasyController(ureq, getWindowControl(), validatedCondition, formName, formName, nodeIdentList, euce.getCourseEditorEnv());
+		conditionEasyCtrllr = new ConditionConfigEasyController(ureq, getWindowControl(), validatedCondition, nodeIdentList, euce.getCourseEditorEnv());
 		listenTo(conditionEasyCtrllr);
 		myContent.put("conditionEasyForm", conditionEasyCtrllr.getInitialComponent());		
 	}

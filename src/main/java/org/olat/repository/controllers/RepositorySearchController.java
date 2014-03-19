@@ -645,7 +645,7 @@ public class RepositorySearchController extends BasicController implements Activ
 			if (ecv.getChange() == EntryChangedEvent.DELETED) {
 				List<RepositoryEntry> newEntries = new ArrayList<RepositoryEntry>();
 				for (int i = 0; i < repoTableModel.getRowCount(); i++) {
-					RepositoryEntry foo = (RepositoryEntry)repoTableModel.getObject(i);
+					RepositoryEntry foo = repoTableModel.getObject(i);
 					if (!foo.getKey().equals(ecv.getChangedEntryKey()))
 						newEntries.add(foo);
 				}

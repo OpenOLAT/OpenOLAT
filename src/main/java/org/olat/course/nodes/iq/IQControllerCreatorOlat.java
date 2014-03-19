@@ -76,7 +76,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 	 * @return
 	 */
 	public TabbableController createIQTestEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQTESTCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce){
-		return new IQEditController(ureq, wControl, stackPanel, course, courseNode, groupMgr, euce);
+		return new IQEditController(ureq, wControl, stackPanel, course, courseNode, euce);
 	}
 	
 
@@ -91,7 +91,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 	 * @return
 	 */
 	public TabbableController createIQSelftestEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSELFCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce){
-		return new IQEditController(ureq, wControl, stackPanel, course, courseNode, groupMgr, euce);
+		return new IQEditController(ureq, wControl, stackPanel, course, courseNode, euce);
 	}
 	
 
@@ -106,7 +106,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 	 * @return
 	 */
 	public TabbableController createIQSurveyEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSURVCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce){
-		return new IQEditController(ureq, wControl, stackPanel, course, courseNode, groupMgr, euce);
+		return new IQEditController(ureq, wControl, stackPanel, course, courseNode, euce);
 	}
 	
 	/**

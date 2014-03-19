@@ -743,7 +743,7 @@ public class Table extends AbstractComponent {
 	public boolean isSortableColumnIn(final List<Integer> selRows) {
 		for (Iterator<Integer> itSelRows = selRows.iterator(); itSelRows.hasNext();) {
 			Integer posI = itSelRows.next();
-			ColumnDescriptor cd = (ColumnDescriptor) allCDs.get(posI.intValue());
+			ColumnDescriptor cd = allCDs.get(posI.intValue());
 			if (cd.isSortingAllowed()){
 				return true;
 			}
@@ -763,7 +763,7 @@ public class Table extends AbstractComponent {
 			} else {
 				this.currentPageId = newPageId;
 				if(tableDataModel!=null) {
-					int maxPageNumber = (int)(tableDataModel.getRowCount()/getResultsPerPage());					
+					int maxPageNumber = (tableDataModel.getRowCount()/getResultsPerPage());					
 					if(tableDataModel.getRowCount()%getResultsPerPage() > 0) {
 						maxPageNumber++;	
 					}

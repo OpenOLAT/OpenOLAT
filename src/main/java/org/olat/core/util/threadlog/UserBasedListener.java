@@ -54,7 +54,7 @@ public class UserBasedListener implements GenericEventListener {
 	}
 	
 	@Override
-	public void event(@SuppressWarnings("unused") Event event) {
+	public void event(Event event) {
 		if (manager!=null) manager.init();
 	}
 

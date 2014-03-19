@@ -44,7 +44,6 @@ public class SystemRegistrationJob extends JobWithDB {
 	/**
 	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
 		SystemRegistrationManager registrationManager = (SystemRegistrationManager)CoreSpringFactory.getBean("systemRegistrationManager");

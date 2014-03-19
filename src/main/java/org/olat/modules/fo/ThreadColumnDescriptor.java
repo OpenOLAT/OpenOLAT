@@ -163,7 +163,7 @@ public class ThreadColumnDescriptor extends DefaultColumnDescriptor {
 																															// after sorting
 			Iterator<Message> mit = messages.iterator();
 			while (mit.hasNext()) {
-				Message m = (Message) mit.next();
+				Message m = mit.next();
 				tw.addRelationship(m, m.getParent());
 			}
 			tw.traverse(); // now the visitednr of each node indicates the sorting
@@ -281,7 +281,7 @@ public class ThreadColumnDescriptor extends DefaultColumnDescriptor {
 		 * @return GenericTraversalNode
 		 */
 		public GenericTraversalNode getGenericTraversalNode(Object item) {
-			GenericTraversalNode n = (GenericTraversalNode) nodemap.get(item);
+			GenericTraversalNode n = nodemap.get(item);
 			if (n == null) { // not existing, so create
 				n = new GenericTraversalNode(item);
 				nodemap.put(item, n);

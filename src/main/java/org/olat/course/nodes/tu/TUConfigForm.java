@@ -122,7 +122,7 @@ public class TUConfigForm extends FormBasicController {
 	 * @param config
 	 * @param withCancel
 	 */
-	public TUConfigForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, boolean withCancel) {
+	public TUConfigForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(ureq, wControl);
 		this.config = config;
 		int configVersion = config.getConfigurationVersion();
@@ -287,7 +287,6 @@ public class TUConfigForm extends FormBasicController {
 		update();
 	}
 	
-	@SuppressWarnings("unused")
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		update();

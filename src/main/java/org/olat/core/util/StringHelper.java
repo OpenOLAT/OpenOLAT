@@ -218,7 +218,7 @@ public class StringHelper {
 	 * @return The string array containing all keys for this map
 	 */
 	public static String[] getMapKeysAsStringArray(Map<String,?> m) {
-		return (String[]) m.keySet().toArray(new String[m.size()]);
+		return m.keySet().toArray(new String[m.size()]);
 	}
 
 	/**
@@ -228,7 +228,7 @@ public class StringHelper {
 	 * @return The string array containing all values for this map
 	 */
 	public static String[] getMapValuesAsStringArray(Map<?,String> m) {
-		return (String[]) m.values().toArray(new String[m.size()]);
+		return m.values().toArray(new String[m.size()]);
 	}
 
 	/**

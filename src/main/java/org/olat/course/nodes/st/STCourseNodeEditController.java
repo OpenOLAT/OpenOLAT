@@ -179,8 +179,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 		// Accessibility precondition
 		Condition accessCondition = stNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition,
-				ACCESSABILITY_CONDITION_FORM, assessableChildren, euce, true);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
+				assessableChildren, euce, true);		
 		listenTo(accessibilityCondContr);
 
 		ScoreCalculator scoreCalc = stNode.getScoreCalculator();

@@ -80,9 +80,9 @@ public class DENEditController extends ActivateableTabbableDefaultController {
 		ICourse course = CourseFactory.loadCourse(ores);
 		moduleConfiguration.set(DENCourseNode.CONF_COURSE_ID, course.getResourceableId());
 		
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, course.getCourseEnvironment().getCourseGroupManager(), accessCondition,
-				"accessabilityConditionForm", AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode), userCourseEnv);
-		this.listenTo(accessibilityCondContr);
+		accessibilityCondContr = new ConditionEditController(ureq, wControl, accessCondition,
+				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode), userCourseEnv);
+		listenTo(accessibilityCondContr);
 		
 		dateFormContr = new DENEditForm(ureq, getWindowControl(), this.moduleConfiguration);
 		dateFormContr.addControllerListener(this);

@@ -109,7 +109,7 @@ public class DeletStep01 extends BasicStep {
 		}
 
 		@Override
-		protected void initForm(FormItemContainer formLayout, Controller listener, @SuppressWarnings("unused") UserRequest ureq) {
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			hasIdentitesToDelete = (Boolean) getFromRunContext("hasIdentitiesToDelete");
 			textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/delet_step01.html");
 			formLayout.add(textContainer);

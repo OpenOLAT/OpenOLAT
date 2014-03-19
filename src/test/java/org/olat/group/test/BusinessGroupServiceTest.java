@@ -666,7 +666,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void testEnableDisableAndCheckForTool() throws Exception {
 		List<BusinessGroup>  sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2);
-		BusinessGroup found = (BusinessGroup) sqlRes.get(0);
+		BusinessGroup found = sqlRes.get(0);
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
 		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
 		for (int i = 0; i < availableTools.length; i++) {
@@ -775,7 +775,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	public void testDeleteGroup() throws Exception {
 		List<BusinessGroup> sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2);
 		assertTrue("1 BuddyGroup owned by id2", sqlRes.size() == 1);
-		BusinessGroup found = (BusinessGroup) sqlRes.get(0);
+		BusinessGroup found = sqlRes.get(0);
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
 		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
 

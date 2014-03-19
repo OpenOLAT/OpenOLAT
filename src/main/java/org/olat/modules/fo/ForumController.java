@@ -473,7 +473,7 @@ public class ForumController extends BasicController implements GenericEventList
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_SHOWDETAIL)) {
 					int rowid = te.getRowId();
-					Message m = (Message) sttdmodel.getObjects().get(rowid);
+					Message m = sttdmodel.getObjects().get(rowid);
 					showThreadView(ureq, m, null);
 					ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_READ, getClass(), LoggingResourceable.wrap(currentMsg));
 				}
@@ -483,7 +483,7 @@ public class ForumController extends BasicController implements GenericEventList
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				int rowid = te.getRowId();
-				Object[] msgWrapper = (Object[]) attdmodel.getObjects().get(rowid);
+				Object[] msgWrapper = attdmodel.getObjects().get(rowid);
 				int size = msgWrapper.length;
 				Message m = (Message) msgWrapper[size-1];		
 				if (actionid.equals(CMD_SHOWDETAIL)) {			

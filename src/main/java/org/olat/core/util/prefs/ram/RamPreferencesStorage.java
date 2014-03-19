@@ -56,7 +56,7 @@ public class RamPreferencesStorage implements PreferencesStorage {
 	public Preferences getPreferencesFor(Identity identity, boolean useTransientPreferences) {
 		Preferences p;
 		synchronized (this) {  //o_clusterOK by:fj is not persistent, for session only
-			p = (Preferences) identToPrefs.get(identity.getName());
+			p = identToPrefs.get(identity.getName());
 			if (p == null) {
 				p = new RamPreferences();
 				identToPrefs.put(identity.getName(), p);

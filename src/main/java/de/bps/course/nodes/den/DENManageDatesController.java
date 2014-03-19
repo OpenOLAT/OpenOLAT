@@ -108,7 +108,7 @@ public class DENManageDatesController extends BasicController {
 					editSingleDateForm = new DENDatesForm(ureq, getWindowControl(), getTranslator(), DENDatesForm.EDIT_SINGLE_DATE_LAYOUT);
 					listenTo(editSingleDateForm);
 					
-					KalendarEvent calEvent = (KalendarEvent)editTableData.getObjects(selectedDates).get(0);//in this case only one date is possible
+					KalendarEvent calEvent = editTableData.getObjects(selectedDates).get(0);//in this case only one date is possible
 					editSingleDateForm.setSubject(calEvent.getSubject());
 					editSingleDateForm.setComment(calEvent.getComment());
 					editSingleDateForm.setLocation(calEvent.getLocation());

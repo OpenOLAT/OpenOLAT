@@ -37,7 +37,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Persistable;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -72,10 +71,7 @@ public class MailHelper {
 	}
 	
 	public static String getMailFooter(MailBundle bundle) {
-		if(bundle.getFromId() instanceof Persistable) {
-			return getMailFooter(bundle.getFromId());
-		}
-		return getMailFooter(I18nModule.getDefaultLocale());
+		return getMailFooter(bundle.getFromId());
 	}
 	
 

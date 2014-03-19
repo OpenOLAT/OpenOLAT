@@ -99,7 +99,7 @@ public class SelectionTree extends AbstractComponent {
 			} else {
 				Enumeration<String> parameterNames = ureq.getHttpReq().getParameterNames();
 				while (parameterNames.hasMoreElements()) {
-					String parameterName = (String) parameterNames.nextElement();
+					String parameterName = parameterNames.nextElement();
 					if (SelectionTreeRenderer.isMultiSelectParameter(parameterName)) {
 						String selNodeId = null;
 						if (GUIInterna.isLoadPerformanceMode()) {

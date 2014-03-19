@@ -54,7 +54,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -131,20 +130,19 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 		changeButton.setElementCssClass("o_sel_wiki_choose_repofile");
 				
 		editAccessVc = this.createVelocityContainer("edit_access");
-		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Accessibility precondition
 		Condition accessCondition = wikiCourseNode.getPreConditionAccess();
-		accessCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition, "accessConditionForm",
+		accessCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, wikiCourseNode), euce);		
-		this.listenTo(accessCondContr);
+		listenTo(accessCondContr);
 		editAccessVc.put("readerCondition", accessCondContr.getInitialComponent());
 		
 		//wiki read / write preconditions
 		Condition editCondition = wikiCourseNode.getPreConditionEdit();
-		editCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, editCondition, "editConditionForm", AssessmentHelper
+		editCondContr = new ConditionEditController(ureq, getWindowControl(), editCondition, AssessmentHelper
 				.getAssessableNodes(editorModel, wikiCourseNode), euce);		
-		this.listenTo(editCondContr);
+		listenTo(editCondContr);
 		editAccessVc.put("editCondition", editCondContr.getInitialComponent());
 		
 

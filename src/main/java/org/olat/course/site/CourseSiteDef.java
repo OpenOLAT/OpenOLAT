@@ -98,16 +98,16 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 			return null;
 		}
 		String icon = courseConfig.getNavIconCssClass();
-		return createCourseSiteInstance(ureq, langConfig, showToolController, siteSecCallback, icon);
+		return createCourseSiteInstance(langConfig, showToolController, siteSecCallback, icon);
 	}
 	
 	/**
 	 * Warning: there is no check against null.
 	 * It's only to return the right type, CourseSie or CourseSite2.
 	 */
-	protected CourseSite createCourseSiteInstance(UserRequest ureq, LanguageConfiguration langConfig,
+	protected CourseSite createCourseSiteInstance(LanguageConfiguration langConfig,
 			boolean showToolController, SiteSecurityCallback siteSecCallback, String icon) {
-		return new CourseSite(this, ureq.getLocale(), langConfig.getRepoSoftKey(), showToolController,
+		return new CourseSite(this, langConfig.getRepoSoftKey(), showToolController,
 				siteSecCallback, langConfig.getTitle(), icon);
 	}
 	

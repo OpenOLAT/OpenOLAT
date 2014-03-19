@@ -109,9 +109,8 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 		// not needed: setInitialComponent(myContent);
 		// Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager(),
-				accessCondition, "accessabilityConditionForm", 
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), coCourseNode), euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(),
+				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), coCourseNode), euce);		
 		listenTo(accessibilityCondContr);
 
 		main.setContent(myContent);

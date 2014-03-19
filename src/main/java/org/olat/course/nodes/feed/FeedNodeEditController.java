@@ -41,7 +41,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AbstractFeedCourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -119,26 +118,25 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 		this.getClass().getSuperclass();
 		// Accessibility tab
 		accessVC = new VelocityContainer("accessVC", FeedNodeEditController.class, "access", getTranslator(), this);
-		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 
 		// Moderator precondition
 		Condition moderatorCondition = node.getPreConditionModerator();
-		moderatroCtr = new ConditionEditController(ureq, getWindowControl(), groupMgr, moderatorCondition, "moderatorConditionForm",
+		moderatroCtr = new ConditionEditController(ureq, getWindowControl(), moderatorCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, node), uce);
 		this.listenTo(moderatroCtr);
 		accessVC.put("moderatorCondition", moderatroCtr.getInitialComponent());
 
 		// Poster precondition
 		Condition posterCondition = node.getPreConditionPoster();
-		posterCtr = new ConditionEditController(ureq, getWindowControl(), groupMgr, posterCondition, "posterConditionForm", AssessmentHelper
+		posterCtr = new ConditionEditController(ureq, getWindowControl(), posterCondition, AssessmentHelper
 				.getAssessableNodes(editorModel, node), uce);
 		this.listenTo(posterCtr);
 		accessVC.put("posterCondition", posterCtr.getInitialComponent());
 
 		// Reader precondition
 		Condition readerCondition = node.getPreConditionReader();
-		readerCtr = new ConditionEditController(ureq, getWindowControl(), groupMgr, readerCondition, "readerConditionForm", AssessmentHelper
+		readerCtr = new ConditionEditController(ureq, getWindowControl(), readerCondition, AssessmentHelper
 				.getAssessableNodes(editorModel, node), uce);
 		this.listenTo(readerCtr);
 		accessVC.put("readerCondition", readerCtr.getInitialComponent());

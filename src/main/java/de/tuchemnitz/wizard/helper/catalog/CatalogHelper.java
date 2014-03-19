@@ -78,7 +78,6 @@ public class CatalogHelper {
 		cm.addCatalogEntry(catEntry, newLinkNotPersistedYet);
 	}
 
-	@SuppressWarnings("unchecked")
 	protected static final TreeNode buildCatalogNode(final CatalogEntry rootEntry) {
 		final CatalogManager cm = CatalogManager.getInstance();
 		List<CatalogEntry> children = cm.getChildrenOf(rootEntry);

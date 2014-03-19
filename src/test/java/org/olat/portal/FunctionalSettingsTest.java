@@ -208,7 +208,7 @@ public class FunctionalSettingsTest {
 		
 		/* visit specified pages */
 		String[] keys = pages.keySet().toArray(new String[0]);
-		String[] values = (String[]) pages.values().toArray(new String[0]);
+		String[] values = pages.values().toArray(new String[0]);
 		
 		int i;
 		
@@ -376,7 +376,7 @@ public class FunctionalSettingsTest {
 		
 		/* visit specified pages */
 		String[] keys = pages.keySet().toArray(new String[0]);
-		String[] values = (String[]) pages.values().toArray(new String[0]);
+		String[] values = pages.values().toArray(new String[0]);
 		
 		int i;
 		

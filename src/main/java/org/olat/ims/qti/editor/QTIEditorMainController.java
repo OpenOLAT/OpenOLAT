@@ -1135,11 +1135,11 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				changeEmail.addEmailTo(cl);
 
 				StringBuilder stakeHolders = new StringBuilder();
-				User user = ((Identity) stakeHoldersIds.get(0)).getUser();
+				User user = stakeHoldersIds.get(0).getUser();
 				Locale loc = ureq.getLocale();
 				stakeHolders.append(user.getProperty(UserConstants.FIRSTNAME, loc)).append(" ").append(user.getProperty(UserConstants.LASTNAME, loc));
 				for (int i = 1; i < stakeHoldersIds.size(); i++) {
-					user = ((Identity) stakeHoldersIds.get(i)).getUser();
+					user = stakeHoldersIds.get(i).getUser();
 					stakeHolders.append(", ").append(user.getProperty(UserConstants.FIRSTNAME, loc)).append(" ").append(user.getProperty(UserConstants.LASTNAME, loc));
 				}
 
@@ -1177,7 +1177,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 						String key = "null/null/null/null";
 						if (history.containsKey(key)) {
 							// some assessment top level data changed
-							Memento mem = (Memento) history.get(key);
+							Memento mem = history.get(key);
 							result.append("---+ Changes in test " + formatVariable(startedWithTitle) + ":");
 							result.append(an.createChangeMessage(mem));
 						}
@@ -1187,7 +1187,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 						String key = tmpKey + "/null/null/null";
 						if (history.containsKey(key)) {
 							// some section only data changed
-							Memento mem = (Memento) history.get(key);
+							Memento mem = history.get(key);
 							result.append("\n---++ Section " + formatVariable(sn.getAltText()) + " changes:");
 							result.append(sn.createChangeMessage(mem));
 						}
@@ -1224,7 +1224,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 									Response resp = iter.next();
 									if (history.containsKey(prefixKey + resp.getIdent())) {
 										// this response changed!
-										Memento tmpMem = (Memento) history.get(prefixKey + resp.getIdent());
+										Memento tmpMem = history.get(prefixKey + resp.getIdent());
 										if (respMem != null) {
 											respMem = respMem.getTimestamp() > tmpMem.getTimestamp() ? tmpMem : respMem;
 										} else {

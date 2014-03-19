@@ -78,7 +78,6 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSEditFormController;
@@ -155,7 +154,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 	 * @param groupMgr
 	 */
 	public TACourseNodeEditController(UserRequest ureq, WindowControl wControl, ICourse course, TACourseNode node,
-			CourseGroupManager groupMgr, UserCourseEnvironment euce) {
+			UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		
 		mailManager = CoreSpringFactory.getImpl(MailManager.class);
@@ -170,14 +169,14 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		
 		accessabilityVC = this.createVelocityContainer("edit");
 		// Task precondition
-		taskConditionC = new ConditionEditController(ureq, getWindowControl(), groupMgr, node.getConditionTask(), "taskConditionForm",
+		taskConditionC = new ConditionEditController(ureq, getWindowControl(), node.getConditionTask(),
 				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node), euce);		
 		this.listenTo(taskConditionC);
 		if (((Boolean) config.get(TACourseNode.CONF_TASK_ENABLED)).booleanValue()) accessabilityVC.put("taskCondition", taskConditionC
 				.getInitialComponent());
 
 		// DropBox precondition
-		dropConditionC = new ConditionEditController(ureq, getWindowControl(), groupMgr, node.getConditionDrop(), "dropConditionForm",
+		dropConditionC = new ConditionEditController(ureq, getWindowControl(), node.getConditionDrop(),
 				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node), euce);		
 		this.listenTo(dropConditionC);
 		Boolean hasDropboxValue = ((Boolean) config.get(TACourseNode.CONF_DROPBOX_ENABLED)!=null) ? (Boolean) config.get(TACourseNode.CONF_DROPBOX_ENABLED) : false;
@@ -192,25 +191,25 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			returnboxCondition.setConditionId(TACourseNode.ACCESS_RETURNBOX);
 			node.setConditionReturnbox(returnboxCondition);			
 		}
-		returnboxConditionC = new ConditionEditController(ureq, getWindowControl(), groupMgr, returnboxCondition, "returnboxConditionForm",
+		returnboxConditionC = new ConditionEditController(ureq, getWindowControl(), returnboxCondition,
 				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node), euce);
-		this.listenTo(returnboxConditionC);
+		listenTo(returnboxConditionC);
 		Object returnBoxConf = config.get(TACourseNode.CONF_RETURNBOX_ENABLED);
 		//use the dropbox config if none specified for the return box
 		boolean returnBoxEnabled = (returnBoxConf !=null) ? ((Boolean) returnBoxConf).booleanValue() : hasDropboxValue;
 		if (returnBoxEnabled) accessabilityVC.put("returnboxCondition", returnboxConditionC.getInitialComponent());
 
 		// Scoring precondition
-		scoringConditionC = new ConditionEditController(ureq, getWindowControl(), groupMgr, node.getConditionScoring(), "scoringConditionForm",
+		scoringConditionC = new ConditionEditController(ureq, getWindowControl(), node.getConditionScoring(),
 				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node), euce);		
-		this.listenTo(scoringConditionC);
+		listenTo(scoringConditionC);
 		if (((Boolean) config.get(TACourseNode.CONF_SCORING_ENABLED)).booleanValue()) accessabilityVC.put("scoringCondition", scoringConditionC
 				.getInitialComponent());
 
 		// SolutionFolder precondition
-		solutionConditionC = new ConditionEditController(ureq, getWindowControl(), groupMgr, node.getConditionSolution(),
-				"solutionConditionForm", AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node), euce);		
-		this.listenTo(solutionConditionC);
+		solutionConditionC = new ConditionEditController(ureq, getWindowControl(), node.getConditionSolution(),
+				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node), euce);		
+		listenTo(solutionConditionC);
     if (((Boolean) config.get(TACourseNode.CONF_SOLUTION_ENABLED)).booleanValue()) accessabilityVC.put("solutionCondition", solutionConditionC
     		.getInitialComponent());
 		

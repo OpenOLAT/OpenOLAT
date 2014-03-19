@@ -182,7 +182,6 @@ public class NoteController extends FormBasicController implements GenericEventL
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void formOK(UserRequest ureq) {
 		// if the user clicked on the submit button...
 		String text = noteField.getValue();
@@ -201,7 +200,6 @@ public class NoteController extends FormBasicController implements GenericEventL
 	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		// persisting: see formOK
 		

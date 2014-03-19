@@ -156,7 +156,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 		RepositoryManager repoManager = RepositoryManager.getInstance();
 		List<VFSContainer> containers = new ArrayList<>();
 		Set<Long> addedEntries = new HashSet<>();
-		List<RepositoryEntry> ownerEntries = (List<RepositoryEntry>) repoManager.queryByOwner(identity, SharedFolderFileResource.TYPE_NAME);
+		List<RepositoryEntry> ownerEntries = repoManager.queryByOwner(identity, SharedFolderFileResource.TYPE_NAME);
 		for (RepositoryEntry entry : ownerEntries) {
 			VFSContainer container = sfm.getNamedSharedFolder(entry, true);
 			addContainerToList(container, containers);

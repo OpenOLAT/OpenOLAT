@@ -67,8 +67,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, @SuppressWarnings("unused") Controller listener,
-			@SuppressWarnings("unused") UserRequest ureq) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// A title, displayed in fieldset
 		setFormTitle("configuration.management.package.import.title");
 		if (I18nModule.isTransToolEnabled()) {

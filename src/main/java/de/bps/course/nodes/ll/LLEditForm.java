@@ -260,7 +260,6 @@ public class LLEditForm extends FormBasicController {
 	 * {@inheritDoc}
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		titleContainer = FormLayoutContainer.createCustomFormLayout("titleLayout", getTranslator(), velocity_root + "/editForm.html");
@@ -310,7 +309,7 @@ public class LLEditForm extends FormBasicController {
 		lTarget.setMandatory(true);
 		lTarget.setNotEmptyCheck("ll.table.target.error");
 		lTarget.setItemValidatorProvider(new ItemValidatorProvider() {
-			public boolean isValidValue(String value, ValidationError validationError, @SuppressWarnings("unused") Locale locale) {
+			public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
 				try {
 					if (!value.contains("://")) {
 						value = "http://".concat(value);

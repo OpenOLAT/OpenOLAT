@@ -99,7 +99,7 @@ public abstract class GenericNode implements INode, Serializable {
 	 */
 	public INode getChildAt(int childIndex) {
 		if (children == null) children = new ArrayList<INode>(INITIAL_CHILD_SIZE);
-		return (GenericNode) children.get(childIndex);
+		return children.get(childIndex);
 	}
 
 	/**

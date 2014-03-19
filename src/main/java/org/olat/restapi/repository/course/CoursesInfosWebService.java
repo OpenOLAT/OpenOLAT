@@ -142,14 +142,13 @@ public class CoursesInfosWebService {
 	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEINFOVO}
 	 * @param courseId The course id
 	 * @param httpRequest The HTTP request
-	 * @param request The REST request
 	 * @return
 	 */
 	@GET
 	@Path("{courseId}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseInfo(@PathParam("courseId") Long courseId,
-			@Context HttpServletRequest httpRequest, @Context Request request) {
+			@Context HttpServletRequest httpRequest) {
 		
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);

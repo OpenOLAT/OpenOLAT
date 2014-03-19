@@ -457,7 +457,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			String itemId = it.next();
 			GenericTreeNode tn = idToNode.get(itemId);
 			// change icon decorator
-			tn.setIconDecorator1CssClass("o_scorm_" + (String) itemsStat.get(itemId));
+			tn.setIconDecorator1CssClass("o_scorm_" + itemsStat.get(itemId));
 		}
 	}
 

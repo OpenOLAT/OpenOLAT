@@ -43,7 +43,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.TUCourseNode;
 import org.olat.course.run.preview.PreviewConfigHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -100,17 +99,16 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 		myContent = this.createVelocityContainer("edit");
 		previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
 		
-		tuConfigForm = new TUConfigForm(ureq, wControl, config, false);
+		tuConfigForm = new TUConfigForm(ureq, wControl, config);
 		listenTo(tuConfigForm);
 		myContent.put("tuConfigForm", tuConfigForm.getInitialComponent());
 
-		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		//Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition, "accessabilityConditionForm",
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, tuCourseNode), euce);		
-    this.listenTo(accessibilityCondContr);
+		listenTo(accessibilityCondContr);
 
 		// Enable preview button only if node configuration is valid
 		if (!(tuCourseNode.isConfigValid().isError())) myContent.contextPut("showPreviewButton", Boolean.TRUE);

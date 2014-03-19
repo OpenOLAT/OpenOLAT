@@ -102,7 +102,7 @@ public class MediaFilesTableModel extends DefaultTableDataModel<MediaFileElement
 	}
 
 	private MediaFileElement getEntryAt(int row) {
-		return (MediaFileElement) this.objects.get(row);
+		return this.objects.get(row);
 	}
 
 	private class StrikeThroughCellRenderer extends CustomCssCellRenderer {

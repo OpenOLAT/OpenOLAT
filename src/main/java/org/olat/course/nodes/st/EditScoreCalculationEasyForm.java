@@ -226,7 +226,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		String[] nodeKeys = new String[allNodesList.size() + (addDeletedNodeIdent ? 1 : 0)];
 		String[] nodeValues = new String[allNodesList.size() + (addDeletedNodeIdent ? 1 : 0)];
 		for (int i = 0; i < allNodesList.size(); i++) {
-			CourseNode courseNode = (CourseNode) allNodesList.get(i);
+			CourseNode courseNode = allNodesList.get(i);
 			nodeKeys[i] = courseNode.getIdent();
 			nodeValues[i] = courseNode.getShortName() + " (Id:" + courseNode.getIdent() + ")";
 		}

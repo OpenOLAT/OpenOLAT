@@ -672,7 +672,7 @@ public class PublishProcess {
 		CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		for (int i = 0; i < nodeIdsToPublish.size(); i++) {
 			msg.append("<li>");
-			String nodeId = (String) nodeIdsToPublish.get(i);
+			String nodeId = nodeIdsToPublish.get(i);
 			CourseEditorTreeNode cetn = (CourseEditorTreeNode) cetm.getNodeById(nodeId);
 			CourseNode cn = cetm.getCourseNode(nodeId);
 			msg.append(cn.getShortTitle());

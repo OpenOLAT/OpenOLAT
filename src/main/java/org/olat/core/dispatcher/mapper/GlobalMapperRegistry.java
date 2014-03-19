@@ -109,7 +109,7 @@ public class GlobalMapperRegistry implements Dispatcher {
 		
 		// smappath e.g. org.olat.demo.DemoController
 		String smappath = subInfo.substring(0, slashPos);
-		Mapper m = (Mapper)pathToMapper.get(smappath);
+		Mapper m = pathToMapper.get(smappath);
 
 		MediaResource mr;
 		if (m == null) { // not mapped

@@ -321,8 +321,7 @@ public class MessageEditController extends FormBasicController {
 	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, @SuppressWarnings("unused")
-	FormEvent event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == fileUpload) {
 			if (fileUpload.isUploadSuccess()) {
 				String fileName = fileUpload.getUploadFileName();

@@ -89,7 +89,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 	public void deleteProperty(Property p) {
 		List<Property> propertyList = getListOfProperties(p);
 		for (int i=0; i < propertyList.size(); i++) {
-			Property propertyElement = (Property)propertyList.get(i);
+			Property propertyElement = propertyList.get(i);
 			if (propertyElement.getLongValue().equals(p.getLongValue())
 					&& propertyElement.getFloatValue().equals(p.getFloatValue())
 					&& propertyElement.getStringValue().equals(p.getStringValue())

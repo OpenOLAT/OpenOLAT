@@ -56,7 +56,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -124,26 +123,25 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 		// accessability config tab		
 		accessContent = this.createVelocityContainer("edit_access");
 
-		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Reader precondition
 		Condition readerCondition = courseNode.getPreConditionReader();
 		// TODO:gs:a getAssessableNodes ist der dialog node assessable oder nicht?
-		readerCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, readerCondition, "readerConditionForm",
+		readerCondContr = new ConditionEditController(ureq, getWindowControl(), readerCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, courseNode), userCourseEnv);		
 		listenTo(readerCondContr);
 		accessContent.put("readerCondition", readerCondContr.getInitialComponent());
 
 		// Poster precondition
 		Condition posterCondition = courseNode.getPreConditionPoster();
-		posterCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, posterCondition, "posterConditionForm",
+		posterCondContr = new ConditionEditController(ureq, getWindowControl(), posterCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, courseNode), userCourseEnv);		
 		this.listenTo(posterCondContr);
 		accessContent.put("posterCondition", posterCondContr.getInitialComponent());
 
 		// Moderator precondition
 		Condition moderatorCondition = courseNode.getPreConditionModerator();
-		moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, moderatorCondition, "moderatorConditionForm",
+		moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), moderatorCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, courseNode), userCourseEnv);
 		//FIXME:gs: why is firing needed here?
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);		

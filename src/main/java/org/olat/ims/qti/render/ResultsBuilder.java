@@ -368,7 +368,7 @@ public class ResultsBuilder {
 		@SuppressWarnings("unchecked")
 		List<Element> children = el.elements();
 		for(int i=children.size(); i-->0; ) {
-			Element child = (Element)children.get(i);
+			Element child = children.get(i);
 			recurseMattextForMediaURLFiltering(baseUrl, child);
 			
 			String name = child.getName();

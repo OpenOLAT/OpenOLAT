@@ -92,7 +92,7 @@ public class LinksPortlet extends AbstractPortlet {
 		p.setConfiguration(configuration);
 		p.setTranslator(Util.createPackageTranslator(LinksPortlet.class, ureq.getLocale()));
 		// override css class if configured
-		String cssClass = (String)configuration.get("cssWrapperClass");
+		String cssClass = configuration.get("cssWrapperClass");
 		if (cssClass != null) p.setCssWrapperClass(cssClass);
 		
 		return p;

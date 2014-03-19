@@ -78,7 +78,7 @@ public class HttpItemInput implements ItemInput, Serializable {
 			return "";
 		}
 		if (li.size() > 1) throw new RuntimeException("expected one, but more than one entry from user for variable:"+varName);
-		return (String)li.get(0);
+		return li.get(0);
 	}
 
 	/**

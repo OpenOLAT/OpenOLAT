@@ -236,16 +236,16 @@ public class LogRealTimeViewerController extends BasicController implements JobL
 	/**
 	 * @see org.quartz.JobListener#jobExecutionVetoed(org.quartz.JobExecutionContext)
 	 */
-	public void jobExecutionVetoed(@SuppressWarnings("unused")
-	JobExecutionContext arg0) {
+	@Override
+	public void jobExecutionVetoed(JobExecutionContext arg0) {
 	// nothing to do, see jobWasExecuted()
 	}
 
 	/**
 	 * @see org.quartz.JobListener#jobToBeExecuted(org.quartz.JobExecutionContext)
 	 */
-	public void jobToBeExecuted(@SuppressWarnings("unused")
-	JobExecutionContext arg0) {
+	@Override
+	public void jobToBeExecuted(JobExecutionContext arg0) {
 	// nothing to do, see jobWasExecuted()
 	}
 
@@ -253,8 +253,8 @@ public class LogRealTimeViewerController extends BasicController implements JobL
 	 * @see org.quartz.JobListener#jobWasExecuted(org.quartz.JobExecutionContext,
 	 *      org.quartz.JobExecutionException)
 	 */
-	public void jobWasExecuted(@SuppressWarnings("unused")
-	JobExecutionContext arg0, JobExecutionException arg1) {
+	@Override
+	public void jobWasExecuted(JobExecutionContext arg0, JobExecutionException arg1) {
 		updateLogViewFromWriter();
 	}
 }

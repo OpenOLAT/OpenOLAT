@@ -143,7 +143,7 @@ public class ItemMetadataFormController extends FormBasicController {
 		}
 		if (!isSurvey && !isRestrictedEditMode) {
 			q.setShuffle(shuffle.getSelected() == 0);
-			Control itemControl = (Control) item.getItemcontrols().get(0);
+			Control itemControl = item.getItemcontrols().get(0);
 			itemControl.setFeedback(itemControl.getFeedback() == Control.CTRL_UNDEF ? Control.CTRL_NO : itemControl.getFeedback());
 			itemControl.setHint(showHints.getSelected() == 0 ? Control.CTRL_YES : Control.CTRL_NO);
 			itemControl.setSolution(showSolution.getSelected() == 0 ? Control.CTRL_YES : Control.CTRL_NO);
@@ -253,7 +253,7 @@ public class ItemMetadataFormController extends FormBasicController {
 			}
 
 			// Hints
-			Control itemControl = (Control) item.getItemcontrols().get(0);
+			Control itemControl = item.getItemcontrols().get(0);
 			showHints = uifactory.addRadiosHorizontal("showHints", "form.imd.solutionhints.show", formLayout, yesnoKeys, yesnoValues);
 			showHints.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			

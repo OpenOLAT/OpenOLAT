@@ -735,15 +735,6 @@ public class TranslationDevManager extends BasicManager {
 		return doupList;
 	}
 	
-	
-	public I18nItem searchForReusableItemByKey(String key){
-		I18nItem resultItem = null;
-		
-		
-		return resultItem;
-	}
-	
-	
 	public void deletePackage(String bundleName) {
 		File path = getBundlePath(bundleName);
 		if (path.exists()) {

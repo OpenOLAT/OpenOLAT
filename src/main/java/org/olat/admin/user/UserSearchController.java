@@ -232,7 +232,7 @@ public class UserSearchController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					Identity foundIdentity = (Identity)tdm.getObject(rowid);
+					Identity foundIdentity = tdm.getObject(rowid);
 					foundIdentities.add(foundIdentity);
 					// Tell parentController that a subject has been found
 					fireEvent(ureq, new SingleIdentityChosenEvent(foundIdentity));

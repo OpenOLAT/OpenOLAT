@@ -71,7 +71,7 @@ class DENParticipantsTableDataModel extends DefaultTableDataModel<Identity> {
 	}
 	
 	public Identity getEntryAt(int row) {
-		return (Identity)objects.get(row);
+		return objects.get(row);
 	}
 	
 }

@@ -366,7 +366,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		long type = OpenMeetingsException.UNKOWN;
 		if(ret < 0) {
 			type = ret;
-		} else if(e instanceof Exception) {
+		} else {
 			Throwable cause = e.getCause();
 			if(cause instanceof ConnectException
 					&& cause.getMessage() != null

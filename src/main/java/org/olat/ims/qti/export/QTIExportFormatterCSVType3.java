@@ -297,7 +297,7 @@ public class QTIExportFormatterCSVType3 extends QTIExportFormatter{
 				sb.append(sep);
 				
 				if(responseLabelMaterials != null){
-					String s = (String)responseLabelMaterials.get(i);
+					String s = responseLabelMaterials.get(i);
 					s = StringEscapeUtils.unescapeHtml(s);
 					if(tagless){
 						s = s.replaceAll("\\<.*?\\>", "");
@@ -403,7 +403,7 @@ public class QTIExportFormatterCSVType3 extends QTIExportFormatter{
 		Map<Class<?>, QTIExportItemFormatConfig> itConfigs = new HashMap<>();
   	
 		for (Iterator<QTIItemObject> iter = qtiItemObjectList.iterator(); iter.hasNext();) {
-			QTIItemObject item = (QTIItemObject) iter.next();
+			QTIItemObject item = iter.next();
 			if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_SCQ)){
 				if (itConfigs.get(QTIExportSCQItemFormatConfig.class) == null){
 					QTIExportSCQItemFormatConfig confSCQ = new QTIExportSCQItemFormatConfig(true, false, false, false);

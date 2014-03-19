@@ -120,7 +120,7 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 			if (courseNodeIndexer != null) {
 				if (isLogDebugEnabled()) logDebug("courseNodeIndexer=" + courseNodeIndexer);
  				try {
-					courseNodeIndexer.doIndex(repositoryResourceContext, course, (CourseNode)childCourseNode, indexWriter);
+					courseNodeIndexer.doIndex(repositoryResourceContext, course, childCourseNode, indexWriter);
 				} catch (Exception e) {
 					logWarn("Can not index course node=" + childCourseNode.getIdent(), e);
 				}

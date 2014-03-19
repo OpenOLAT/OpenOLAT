@@ -34,7 +34,6 @@ import java.util.Random;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.Node;
 import org.olat.ims.qti.container.qtielements.AssessFeedback;
 import org.olat.ims.qti.container.qtielements.Objectives;
 import org.olat.ims.qti.process.AssessmentInstance;
@@ -272,7 +271,7 @@ public class AssessmentContext implements Serializable {
 					 */
 					sections.removeAll(el_sections);
 					for (Iterator iter = sections.iterator(); iter.hasNext();) {
-						el_sections.remove((Node)iter.next());						
+						el_sections.remove(iter.next());						
 					}
 					
 					
@@ -442,7 +441,7 @@ public class AssessmentContext implements Serializable {
 			// count all items in previous section
 			currentPos += getSectionContext(i).getItemContextCount();
 		}
-		SectionContext curSectionContext = getCurrentSectionContext();
+		getCurrentSectionContext();
 		if (getCurrentSectionContextPos()>-1) {
 			currentPos += getSectionContext(getCurrentSectionContextPos()).getItemContextCount();
 		}
@@ -489,7 +488,7 @@ public class AssessmentContext implements Serializable {
 	 * @return
 	 */
 	public SectionContext getSectionContext(int pos) {
-		return (SectionContext) sectionContexts.get(pos);
+		return sectionContexts.get(pos);
 	}
 
 	/**

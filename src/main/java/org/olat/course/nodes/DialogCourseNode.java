@@ -45,7 +45,6 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.course.CourseModule;
@@ -102,8 +101,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		DialogCourseNodeEditController childTabCntrllr = new DialogCourseNodeEditController(ureq, wControl, this,
 				course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, course.getCourseEnvironment()
-				.getCourseGroupManager(), euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
 
 	/**
@@ -229,7 +227,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	public void doArchiveElement(DialogElement element, File exportDirectory) {
 		VFSContainer forumContainer = getForumContainer(element.getForumKey());
 		//there is only one file (leave) in the top forum container 
-		VFSItem dialogFile = (VFSLeaf)forumContainer.getItems(new VFSLeafFilter()).get(0);
+		VFSItem dialogFile = forumContainer.getItems(new VFSLeafFilter()).get(0);
 		VFSContainer exportContainer = new LocalFolderImpl(exportDirectory);
 		
 		// append export timestamp to avoid overwriting previous export 

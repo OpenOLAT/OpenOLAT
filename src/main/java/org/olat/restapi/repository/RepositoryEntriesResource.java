@@ -343,6 +343,7 @@ public class RepositoryEntriesResource {
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResource);
 		RepositoryEntry addedEntry = repositoryService.create(identity, resourcename, displayname, null, ores);
 		addedEntry.setCanLaunch(true);
+		//TODO repository
 
 		// Do set access for owner at the end, because unfinished course should be invisible
 		if(access < RepositoryEntry.ACC_OWNERS || access > RepositoryEntry.ACC_USERS_GUESTS) {

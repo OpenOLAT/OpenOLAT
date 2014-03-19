@@ -137,7 +137,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	public void initialzeI18nitemAsCurrentItem(UserRequest ureq, I18nItem toBeActivatedItem) {
 		// find item in list
 		for (int i = 0; i < i18nItems.size(); i++) {
-			I18nItem item = (I18nItem) i18nItems.get(i);
+			I18nItem item = i18nItems.get(i);
 			if (item.equals(toBeActivatedItem)) {
 				currentItemPosition = i;
 				currentItem = i18nItems.get(currentItemPosition);

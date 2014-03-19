@@ -157,7 +157,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_SELECT_NODE)) {
 					int rowid = te.getRowId();
-					Map<String,Object> nodeData = (Map<String,Object>)nodesTableModel.getObject(rowid);
+					Map<String,Object> nodeData = nodesTableModel.getObject(rowid);
 					CourseNode node = runStructure.getNode((String) nodeData.get(AssessmentHelper.KEY_IDENTIFYER));
 					this.selectedCourseNode = (AssessableCourseNode) node;
 					// cast should be save, only assessable nodes are selectable

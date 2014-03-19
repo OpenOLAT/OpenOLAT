@@ -182,7 +182,7 @@ public class PersistingCoursePropertyManager extends BasicManager implements Cou
 	 */
 	public String getAnonymizedUserName(Identity identity) {
 		synchronized (anonymizerMap) {
-			String anonymizedName = (String) anonymizerMap.get(identity.getName());
+			String anonymizedName = anonymizerMap.get(identity.getName());
 			if (anonymizedName == null) {
 				// try to fetch from course properties
 				Property anonymizedProperty = pm.findProperty(identity, null, "Anonymizing", "AnonymizedUserName");

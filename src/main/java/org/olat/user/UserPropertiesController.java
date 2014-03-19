@@ -116,14 +116,14 @@ public class UserPropertiesController extends BasicController {
 				String actionid = te.getActionId();
 				if (actionid.equals("choose")) {
 					int rowid = te.getRowId();
-					foundProp = (Property) tdm.getObject(rowid);
+					foundProp = tdm.getObject(rowid);
 					// Tell parentController that a subject has been found
 					fireEvent(ureq, new PropFoundEvent(foundProp));
 				}
 				//fxdiff FXOLAT-149
 				else if (actionid.equals("delete")) {
 					int rowid = te.getRowId();
-					foundProp = (Property) tdm.getObject(rowid);
+					foundProp = tdm.getObject(rowid);
 					String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(displayedIdentity);
 					activateYesNoDialog(ureq, translate("propdelete.yesno.title"),translate("propdelete.yesno.text",new String[]{foundProp.getName(), fullName}), null);
 				}

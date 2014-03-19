@@ -101,7 +101,7 @@ public class NoteListController extends BasicController implements GenericEventL
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 	// no events to catch
 	}
@@ -110,6 +110,7 @@ public class NoteListController extends BasicController implements GenericEventL
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		// if row has been clicked
 		if (source == tableC) {
@@ -117,7 +118,7 @@ public class NoteListController extends BasicController implements GenericEventL
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				int rowid = te.getRowId();
-				this.chosenN = (Note) nLModel.getObject(rowid);
+				this.chosenN = nLModel.getObject(rowid);
 				if (actionid.equals("choose")) {
 					
 					removeAsListenerAndDispose(nc);

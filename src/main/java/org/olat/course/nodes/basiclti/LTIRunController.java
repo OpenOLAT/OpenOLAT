@@ -251,14 +251,14 @@ public class LTIRunController extends BasicController {
 			Enumeration<Object> keys = userData.keys();
 			while (keys.hasMoreElements()) {
 				String key = (String) keys.nextElement();
-				data += userData.getProperty((String)key);				
+				data += userData.getProperty(key);				
 			}
 		}
 		if (customUserData != null && customUserData.size() > 0) {
 			Enumeration<Object> keys = customUserData.keys();
 			while (keys.hasMoreElements()) {
 				String key = (String) keys.nextElement();
-				data += customUserData.getProperty((String)key);				
+				data += customUserData.getProperty(key);				
 			}
 		}
 		if (data.length() > 0) {

@@ -515,7 +515,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			List<Identity> olatAdminIdents = securityManager.getIdentitiesOfSecurityGroup(olatAdmins);
 			SecurityGroup catalogAdmins = securityManager.createAndPersistSecurityGroup();
 			for (int i = 0; i < olatAdminIdents.size(); i++) {
-				securityManager.addIdentityToSecurityGroup((Identity) olatAdminIdents.get(i), catalogAdmins);
+				securityManager.addIdentityToSecurityGroup(olatAdminIdents.get(i), catalogAdmins);
 			}
 			/*
 			 * start with something called CATALOGROOT, you can rename it to whatever

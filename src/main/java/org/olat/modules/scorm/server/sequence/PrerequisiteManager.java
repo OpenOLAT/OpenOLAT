@@ -105,7 +105,7 @@ public class PrerequisiteManager {
 	 */
 	public boolean canLaunchItem(String sco, String prerequisites) {
 		if (!doesItemExist(sco)) return false;
-		String stat = (String) _prereqTable.get(sco);
+		String stat = _prereqTable.get(sco);
 		if (stat.equals(SequencerModel.ITEM_COMPLETED) || stat.equals(SequencerModel.ITEM_PASSED)) { return false; }
 		if (!prerequisites.equals("")) return checkPrerequisites(prerequisites);
 		return true;
@@ -120,7 +120,7 @@ public class PrerequisiteManager {
 	 */
 	public boolean hasItemBeenCompleted(String sco) {
 		if (!doesItemExist(sco)) { return true; }
-		String stat = (String) _prereqTable.get(sco);
+		String stat = _prereqTable.get(sco);
 		return (stat.equals(SequencerModel.ITEM_COMPLETED) || stat.equals(SequencerModel.ITEM_PASSED));
 	}
 
@@ -223,11 +223,11 @@ public class PrerequisiteManager {
 	}
 
 	protected String getStatus(String sco) {
-		return (String) _prereqTable.get(sco);
+		return _prereqTable.get(sco);
 	}
 
 	protected boolean checkStatus(String sco) {
-		String stat = (String) _prereqTable.get(sco);
+		String stat = _prereqTable.get(sco);
 		return (stat.equals(SequencerModel.ITEM_COMPLETED) || stat.equals(SequencerModel.ITEM_PASSED));
 	}
 

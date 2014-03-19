@@ -369,8 +369,8 @@ public class FunctionalBlogTest {
 		 */
 		final Selenium[] student = new Selenium[userCount];
 			
-		student[0] = (Selenium) student0;
-		student[1] = (Selenium) student1;
+		student[0] = student0;
+		student[1] = student1;
 		
 		final boolean[] success = new boolean[userCount];
 		Arrays.fill(success, true);

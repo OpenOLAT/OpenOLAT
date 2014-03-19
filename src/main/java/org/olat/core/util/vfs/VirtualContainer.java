@@ -66,7 +66,7 @@ public class VirtualContainer extends AbstractVirtualContainer {
 		else {
 			List<VFSItem> filtered = new ArrayList<VFSItem>();
 			for (Iterator<VFSItem> iter = children.iterator(); iter.hasNext();) {
-				VFSItem vfsItem = (VFSItem) iter.next();
+				VFSItem vfsItem = iter.next();
 				if (filter.accept(vfsItem)) filtered.add(vfsItem);
 			}
 			return filtered;

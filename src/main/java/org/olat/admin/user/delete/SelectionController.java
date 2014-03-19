@@ -156,7 +156,7 @@ public class SelectionController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					UserDeletionManager.getInstance().setIdentityAsActiv( (Identity) tdm.getObject(rowid) );
+					UserDeletionManager.getInstance().setIdentityAsActiv( tdm.getObject(rowid) );
 				}
 			} else if (event.getCommand().equals(Table.COMMAND_MULTISELECT)) {
 				TableMultiSelectEvent tmse = (TableMultiSelectEvent) event;

@@ -170,7 +170,7 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 			// special case: don't show close for last level
 			closeLink.setVisible(false);								
 		} else {
-			Link link = (Link) stack.get(stack.size()-1);
+			Link link = stack.get(stack.size()-1);
 			closeLink.setCustomDisplayText(translator.translate("doclose", new String[] {link.getCustomDisplayText()}));	
 			closeLink.setVisible(true);								
 		}

@@ -371,7 +371,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
 			VFSContainer container = tmpHome.createChildContainer(UUID.randomUUID().toString());
 			VFSLeaf newFile = fileUpload.moveUploadFileTo(container);//give it it's real name and extension
-			boolean ok = repositoryManager.setImage((VFSLeaf)newFile, repositoryEntry);
+			boolean ok = repositoryManager.setImage(newFile, repositoryEntry);
 			if (!ok) {
 				showError("Failed");
 			}

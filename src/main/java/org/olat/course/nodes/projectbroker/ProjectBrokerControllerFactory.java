@@ -42,7 +42,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class ProjectBrokerControllerFactory {
 
 	public static ProjectBrokerCourseEditorController createCourseEditController(UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce, ProjectBrokerCourseNode projectBrokerCourseNode) {
-		return new ProjectBrokerCourseEditorController(ureq, wControl, course, projectBrokerCourseNode, course.getCourseEnvironment().getCourseGroupManager(), euce);
+		return new ProjectBrokerCourseEditorController(ureq, wControl, course, projectBrokerCourseNode, euce);
 	}
 
 	public static Controller createRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {

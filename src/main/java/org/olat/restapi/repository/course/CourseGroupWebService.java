@@ -174,7 +174,7 @@ public class CourseGroupWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getGroupList(@Context HttpServletRequest request) {
+	public Response getGroupList() {
     BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		List<BusinessGroup> groups = bgs.findBusinessGroups(params, courseEntryRef, 0, -1);

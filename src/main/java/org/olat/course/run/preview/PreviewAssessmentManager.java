@@ -54,7 +54,7 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	/**
 	 * @see org.olat.course.assessment.AssessmentManager#saveNodeScore(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, java.lang.Float)
 	 */
-	private void saveNodeScore(CourseNode courseNode, Identity identity, Identity assessedIdentity, Float score) {
+	private void saveNodeScore(CourseNode courseNode, Float score) {
 		nodeScores.put(courseNode.getIdent(), score);
 	}
 
@@ -82,7 +82,7 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	/**
 	 * @see org.olat.course.assessment.AssessmentManager#saveNodePassed(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, java.lang.Boolean)
 	 */
-	private void saveNodePassed(CourseNode courseNode, Identity identity, Identity assessedIdentity, Boolean passed) {
+	private void saveNodePassed(CourseNode courseNode, Boolean passed) {
 		nodePassed.put(courseNode.getIdent(), passed);
 	}
 
@@ -178,9 +178,9 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 * 
 	 * @see org.olat.course.assessment.AssessmentManager#saveAssessmentID(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, java.lang.String)
 	 */
-  private void saveAssessmentID(CourseNode courseNode, Identity assessedIdentity, Long assessmentID) {
-  	nodeAssessmentID.put(courseNode.getIdent(), assessmentID);
-  }
+	private void saveAssessmentID(CourseNode courseNode, Long assessmentID) {
+		nodeAssessmentID.put(courseNode.getIdent(), assessmentID);
+	}
 	
 	/**
 	 * 
@@ -189,7 +189,7 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 * @return
 	 */
 	public Long getAssessmentID(CourseNode courseNode, Identity identity) {
-		return (Long)nodeAssessmentID.get(courseNode.getIdent());
+		return nodeAssessmentID.get(courseNode.getIdent());
 	}
 
 	@Override
@@ -204,9 +204,9 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	public void saveScoreEvaluation(CourseNode courseNode, Identity identity, Identity assessedIdentity, ScoreEvaluation scoreEvaluation, 
 			UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts) {
 		
-		saveNodeScore(courseNode, identity, assessedIdentity, scoreEvaluation.getScore());
-		saveNodePassed(courseNode, identity, assessedIdentity, scoreEvaluation.getPassed());
-		saveAssessmentID(courseNode, assessedIdentity, scoreEvaluation.getAssessmentID());
+		saveNodeScore(courseNode, scoreEvaluation.getScore());
+		saveNodePassed(courseNode, scoreEvaluation.getPassed());
+		saveAssessmentID(courseNode, scoreEvaluation.getAssessmentID());
 		if(incrementUserAttempts) {
 			incrementNodeAttempts(courseNode, identity, userCourseEnvironment);
 		}

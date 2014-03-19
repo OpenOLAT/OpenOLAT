@@ -122,8 +122,8 @@ public class FIBItemController extends DefaultController implements ControllerEv
 				displayMaterialFormController(ureq, editQuestion, restrictedEdit);
 
 			} else if (cmd.equals("editr")) {
-				editResponse = ((Response) item.getQuestion().getResponses().get(posid));
-				Material responseMat = ((Response) item.getQuestion().getResponses().get(posid)).getContent();
+				editResponse = item.getQuestion().getResponses().get(posid);
+				Material responseMat = item.getQuestion().getResponses().get(posid).getContent();
 				displayMaterialFormController(ureq, responseMat, restrictedEdit);
 				
 			} else if (cmd.equals("addtext")) {

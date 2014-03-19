@@ -120,7 +120,7 @@ public class LockController extends BasicController {
 		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
-				LockEntry lockToRelease = (LockEntry) locksTableModel.getObject(te.getRowId());
+				LockEntry lockToRelease = locksTableModel.getObject(te.getRowId());
 				dialogController = activateYesNoDialog(ureq, null, translate("lock.release.sure"), dialogController);
 				dialogController.setUserObject(lockToRelease);
 			}

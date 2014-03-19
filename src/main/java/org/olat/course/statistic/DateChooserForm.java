@@ -77,7 +77,6 @@ public class DateChooserForm extends FormBasicController {
 	}
 	
 	@Override
-	@SuppressWarnings("unused")
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		/*
 		 * workaround: catch each inner event to set whole form dirty, in order to
@@ -88,7 +87,6 @@ public class DateChooserForm extends FormBasicController {
 	}
 	
 	@Override
-	@SuppressWarnings("unused")
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean retVal = true;
 		// datefields are valid

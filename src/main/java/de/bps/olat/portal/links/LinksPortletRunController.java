@@ -147,7 +147,7 @@ public class LinksPortletRunController extends BasicController {
 	 * @param StringBuffer to append
 	 */
 	private void appendContent(PortletLink link, StringBuffer sb) {
-		sb.append("<li>" + buildContentLine(link.getTitle(), link.getUrl(), link.getDescription(), link.getTarget(), link.getLanguage()) + "</li>");
+		sb.append("<li>" + buildContentLine(link.getTitle(), link.getUrl(), link.getDescription(), link.getTarget()) + "</li>");
 	}
 	
 	/**
@@ -159,7 +159,7 @@ public class LinksPortletRunController extends BasicController {
 	 * @param String lang
 	 * @return
 	 */
-	private String buildContentLine(String title, String URL, String descr, String target, String lang) {
+	private String buildContentLine(String title, String URL, String descr, String target) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("<a href=\"");
 		sb.append(URL);

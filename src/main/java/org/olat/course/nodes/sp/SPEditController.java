@@ -44,7 +44,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -121,12 +120,11 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		fcPanel.setContent(fcContent);
 		myContent.put(fcPanel.getComponentName(), fcPanel);
 		
-		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		//Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition,
-				"accessabilityConditionForm", AssessmentHelper.getAssessableNodes(editorModel, spCourseNode), euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, spCourseNode), euce);		
 		listenTo(accessibilityCondContr);
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CONFIG_KEY_DELIVERYOPTIONS);

@@ -98,8 +98,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		updateModuleConfigDefaults(false);
 		LTIEditController childTabCntrllr = new LTIEditController(getModuleConfiguration(), ureq, wControl, stackPanel, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, course.getCourseEnvironment()
-				.getCourseGroupManager(), euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
 
 	/**

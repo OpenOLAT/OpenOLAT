@@ -234,7 +234,7 @@ public class UserRequestImpl implements UserRequest {
 				sb.append("Parameter names in this hreq:</h4>");
 				e = hreq.getParameterNames();
 				while (e.hasMoreElements()) {
-					String key = (String) e.nextElement();
+					String key = e.nextElement();
 					String[] values = hreq.getParameterValues(key);
 					String value = "";
 					for (int i = 0; i < values.length; i++) {

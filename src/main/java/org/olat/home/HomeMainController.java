@@ -199,7 +199,7 @@ public class HomeMainController extends MainLayoutBasicController implements Sta
 		WindowControl bwControl = getWindowControl();
 
 		// get our ores for the extension
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(((GenericActionExtension) ae).getNavigationKey(), 0L);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ae.getNavigationKey(), 0L);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		bwControl = addToHistory(ureq, ores, null);
 

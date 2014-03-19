@@ -143,7 +143,7 @@ public class QTIResultTableModel implements TableDataModel<QTIResultSet> {
 	 * @return result set
 	 */
 	public QTIResultSet getResultSet(int rowId) {
-		return (QTIResultSet)resultSets.get(rowId);
+		return resultSets.get(rowId);
 	}
 	
 	public static class Wrapper {

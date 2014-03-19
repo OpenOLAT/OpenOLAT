@@ -578,7 +578,7 @@ public class UserSessionManager implements GenericEventListener {
 		int i = 0;	
 		for (Iterator<UserSession> iterator = sortedSet.iterator(); iterator.hasNext() && i++<nbrSessions;) {
 			try {
-				UserSession userSession = (UserSession) iterator.next();
+				UserSession userSession = iterator.next();
 				if (!userSession.getRoles().isOLATAdmin() && !userSession.getSessionInfo().isWebDAV()) {
 					internSignOffAndClear(userSession);
 					invalidateCounter++;

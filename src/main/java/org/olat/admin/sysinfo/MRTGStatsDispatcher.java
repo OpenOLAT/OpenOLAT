@@ -142,7 +142,7 @@ public class MRTGStatsDispatcher implements Dispatcher {
 
 	private String roundedStatValueOf(Probe probe, StatId statId) {
 		try{
-			final int value = (int)Math.round(probe.getStatValue(statId)*100)/100;
+			final int value = Math.round(probe.getStatValue(statId)*100)/100;
 			if (value>=0) {
 				return String.valueOf(value);
 			} else {
@@ -181,7 +181,7 @@ public class MRTGStatsDispatcher implements Dispatcher {
 			UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 			Set<UserSession> userSessions = sessionManager.getAuthenticatedUserSessions();
 			for (Iterator<UserSession> it_usess = userSessions.iterator(); it_usess.hasNext();) {
-				UserSession usess = (UserSession) it_usess.next();
+				UserSession usess = it_usess.next();
 				activeSessionCnt++;
 				SessionInfo sessInfo = usess.getSessionInfo();
 				if (sessInfo.isSecure()) httpsCount++;
@@ -197,7 +197,7 @@ public class MRTGStatsDispatcher implements Dispatcher {
 			int webdavcount = 0;
 			int securewebdavcount = 0;
 			for (Iterator<UserSession> it_usess = userSessions.iterator(); it_usess.hasNext();) {
-				UserSession usess = (UserSession) it_usess.next();
+				UserSession usess = it_usess.next();
 				SessionInfo sessInfo = usess.getSessionInfo();
 				if (sessInfo.isWebDAV()) {
 					webdavcount++;

@@ -319,12 +319,10 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		setRecurrenceExc(excRule);
 	}
 	
-	public int compareTo(KalendarEvent o1) {
-		if ( !(o1 instanceof KalendarEvent)) {
+	public int compareTo(KalendarEvent event1) {
+		if(event1 == null) {
 			return -1;
 		}
-		KalendarEvent event1 = (KalendarEvent)o1;
-		return this.getBegin().compareTo(event1.getBegin());
+		return getBegin().compareTo(event1.getBegin());
 	}
-
 }

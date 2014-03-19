@@ -172,7 +172,6 @@ public class StatisticsAdminController extends BasicController {
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (STATISTICS_FULL_RECALCULATION_TRIGGER_BUTTON.equals(event.getCommand())) {
 			StatisticUpdateManager statisticUpdateManager = getStatisticUpdateManager();

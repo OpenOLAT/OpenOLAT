@@ -422,7 +422,7 @@ public class UserDeletionManager extends BasicManager {
 		if (properties.size() == 0) {
 			property = PropertyManager.getInstance().createPropertyInstance(null, null, null, PROPERTY_CATEGORY, propertyName, null,  new Long(value), null, null);
 		} else {
-			property = (Property)properties.get(0);
+			property = properties.get(0);
 			property.setLongValue( new Long(value) );
 		}
 		PropertyManager.getInstance().saveProperty(property);

@@ -414,7 +414,7 @@ public class QTIHelper {
 			log.debug("[" + debugEnabledTime + "] file size is " + pathToXml.getSize());
 		}
 		//Object[] tuple = (Object[]) (EHCacheManager.getInstance().get(ehCachLoadedQTIDocs, key));
-		Object[] tuple = (Object[]) (ehCachLoadedQTIDocs.get(key));
+		Object[] tuple = (ehCachLoadedQTIDocs.get(key));
 		
 		if (tuple != null && ((Long) tuple[0]).compareTo(lmf) == 0) {
 			// in cache and not modified

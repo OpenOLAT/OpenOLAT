@@ -688,7 +688,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		log.info("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms");
 
 		// only half of the items should be found
-		assertEquals((int) (numbRes / 2), results.size());
+		assertEquals(numbRes / 2, results.size());
 		
 		// inserting must take longer than searching, otherwhise most certainly we have a problem somewhere in the query
 		assertTrue((endCreate - startCreate) > (endSearchReferencable - startSearchReferencable));

@@ -122,7 +122,7 @@ public class JavaThreadsController extends BasicController {
 				case cpuPercent: return view.getCpuUsagePercent();
 				case cpuTime: {
 					long timeInNanoSeconds = view.getCpuTime();
-					return (double)timeInNanoSeconds / (1000.0d * 1000.0d * 1000.0d);
+					return timeInNanoSeconds / (1000.0d * 1000.0d * 1000.0d);
 				}
 				default: return "ERROR";
 			}

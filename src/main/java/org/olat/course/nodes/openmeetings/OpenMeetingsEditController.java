@@ -72,8 +72,8 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 		this.courseNode = courseNode;
 
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, course.getCourseEnvironment().getCourseGroupManager(),
-				accessCondition, "accessabilityConditionForm", AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),
+		accessibilityCondContr = new ConditionEditController(ureq, wControl,
+				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),
 				userCourseEnv);
 		listenTo(accessibilityCondContr);
 		

@@ -19,13 +19,11 @@
  */
 package org.olat.restapi.system;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -68,7 +66,7 @@ public class IndexerWebService {
 	@GET
 	@Path("status")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getStatus(@Context HttpServletRequest request) {
+	public Response getStatus() {
 		SearchServiceStatus serviceStatus = SearchServiceFactory.getService().getStatus();
 		String status = serviceStatus.getStatus();
 		return Response.ok(new IndexerStatus(status)).build();
@@ -84,7 +82,7 @@ public class IndexerWebService {
 	@GET
 	@Path("status")
 	@Produces({MediaType.TEXT_PLAIN})
-	public Response getPlainTextStatus(@Context HttpServletRequest request) {
+	public Response getPlainTextStatus() {
 		SearchServiceStatus serviceStatus = SearchServiceFactory.getService().getStatus();
 		return Response.ok(serviceStatus.getStatus()).build();
 	}
@@ -98,7 +96,7 @@ public class IndexerWebService {
 	 */
 	@POST
 	@Path("status")
-	public Response setStatus(@FormParam("status") String status, @Context HttpServletRequest request) {
+	public Response setStatus(@FormParam("status") String status) {
 		if(FullIndexerStatus.STATUS_RUNNING.equals(status)) {
 			SearchServiceFactory.getService().startIndexing();
 		} else if(FullIndexerStatus.STATUS_STOPPED.equals(status)) {

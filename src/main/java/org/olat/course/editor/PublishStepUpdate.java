@@ -36,11 +36,9 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.run.environment.CourseEnvironment;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 
@@ -53,14 +51,10 @@ import edu.emory.mathcs.backport.java.util.Collections;
 class PublishStepUpdate extends BasicStep {
 	
 	private final PrevNextFinishConfig prevNextConfig;
-	private final CourseEnvironment courseEnv;
-	private final CourseNode rootNode;
 	
-	public PublishStepUpdate(UserRequest ureq, ICourse course, boolean hasPublishableChanges) {
+	public PublishStepUpdate(UserRequest ureq, boolean hasPublishableChanges) {
 		super(ureq);
 
-		this.courseEnv = null;//course.getCourseEnvironment();
-		this.rootNode = null;//course.getRunStructure().getRootNode();
 		setI18nTitleAndDescr("publish.step.update.title", null);
 		
 		if(hasPublishableChanges) {
@@ -79,15 +73,14 @@ class PublishStepUpdate extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new PublishStepUpdateForm(ureq, wControl, form, runContext, courseEnv, rootNode);
+		return new PublishStepUpdateForm(ureq, wControl, form, runContext);
 	}
 	
 	static class PublishStepUpdateForm extends StepFormBasicController {
 		
 		private final CourseNodeFactory courseNodeFactory;
 		
-		public PublishStepUpdateForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
-				CourseEnvironment courseEnv, CourseNode rootNode) {
+		public PublishStepUpdateForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "publish_update");
 			
 			courseNodeFactory = CoreSpringFactory.getImpl(CourseNodeFactory.class);

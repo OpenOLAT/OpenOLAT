@@ -571,8 +571,8 @@ public class ScoDocument extends XMLDocument {
 		if (count > interactionsCount) {
 			for (int i = interactionsCount; i < count; i++) {
 
-				int noOfObjectives = Integer.parseInt((String) keyedInteractions.get("cmi.interactions." + i + ".objectives._count"));
-				String interaction = (String) keyedInteractions.get("cmi.interactions." + i + ".correct_responses._count");
+				int noOfObjectives = Integer.parseInt(keyedInteractions.get("cmi.interactions." + i + ".objectives._count"));
+				String interaction = keyedInteractions.get("cmi.interactions." + i + ".correct_responses._count");
 				// added fix because reload code depends on the
 				// xx.correct_responses._count if objectives._count is set.
 				int noOfCorrectResponses = 0;

@@ -36,8 +36,7 @@ import org.olat.course.ICourse;
 
 public class StatisticAutoCreator extends AutoCreator {
 
-	@SuppressWarnings("unchecked")
-	private final Class[] ARGCLASSES = new Class[] { UserRequest.class, WindowControl.class, ICourse.class, IStatisticManager.class }; 
+	private final Class<?>[] ARGCLASSES = new Class[] { UserRequest.class, WindowControl.class, ICourse.class, IStatisticManager.class }; 
 	private String className;
 	private IStatisticManager statisticManager_;
 	
@@ -70,8 +69,8 @@ public class StatisticAutoCreator extends AutoCreator {
 	public Controller createController(UserRequest lureq, WindowControl lwControl, ICourse course){
 		Exception re = null;
 		try {
-			Class cclazz = Thread.currentThread().getContextClassLoader().loadClass(className);
-			Constructor con = cclazz.getConstructor(ARGCLASSES);
+			Class<?> cclazz = Thread.currentThread().getContextClassLoader().loadClass(className);
+			Constructor<?> con = cclazz.getConstructor(ARGCLASSES);
 			Object o = con.newInstance(new Object[]{ lureq, lwControl, course, statisticManager_});
 			Controller c = (Controller)o;
 			return c;

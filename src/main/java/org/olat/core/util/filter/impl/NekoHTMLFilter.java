@@ -59,7 +59,7 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 		if (original == null) return null;
 		try {
 			SAXParser parser = new SAXParser();
-			HTMLHandler contentHandler = new HTMLHandler((int)((float)original.length() * 0.66f), pretty);
+			HTMLHandler contentHandler = new HTMLHandler((int)(original.length() * 0.66f), pretty);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(original)));
 			return contentHandler.toString();

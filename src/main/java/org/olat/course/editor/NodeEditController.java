@@ -42,7 +42,6 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -97,7 +96,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	 * @param groupMgr
 	 */
 	public NodeEditController(UserRequest ureq, WindowControl wControl, CourseEditorTreeModel editorModel, ICourse course, CourseNode luNode,
-			CourseGroupManager groupMgr, UserCourseEnvironment euce, TabbableController childTabsController) {
+			UserCourseEnvironment euce, TabbableController childTabsController) {
 		super(ureq,wControl);
 		this.courseNode = luNode;
 		
@@ -108,7 +107,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		 * the direct child tabs.
 		 */
 		this.childTabsCntrllr = childTabsController;		
-		this.listenTo(childTabsCntrllr);
+		listenTo(childTabsCntrllr);
 		
 		// description and metadata component		
 		descriptionVc = this.createVelocityContainer("nodeedit");
@@ -136,16 +135,16 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 		// Visibility precondition
 		Condition visibCondition = luNode.getPreConditionVisibility();
-		visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, visibCondition, 
-				"visibilityConditionForm", AssessmentHelper.getAssessableNodes(editorModel, luNode), euce);
+		visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), visibCondition, 
+				AssessmentHelper.getAssessableNodes(editorModel, luNode), euce);
 		//set this useractivity logger for the visibility condition controller
-		this.listenTo(visibilityCondContr);
+		listenTo(visibilityCondContr);
 		visibilityVc.put("visibilityCondition", visibilityCondContr.getInitialComponent());
 
 		// No-Access-Explanation
 		String noAccessExplanation = luNode.getNoAccessExplanation();
 		noAccessContr = new NoAccessExplEditController(ureq, getWindowControl(), noAccessExplanation);		
-		this.listenTo(noAccessContr);
+		listenTo(noAccessContr);
 		visibilityVc.put("noAccessExplanationComp", noAccessContr.getInitialComponent());
 	}
 

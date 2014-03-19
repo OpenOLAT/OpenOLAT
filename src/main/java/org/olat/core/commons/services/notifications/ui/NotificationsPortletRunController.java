@@ -353,7 +353,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 			}
 		 
 		 public Subscriber getSubscriberAt(int row) {
-				Subscriber subscriber = (Subscriber) getObject(row).getValue();
+				Subscriber subscriber = getObject(row).getValue();
 				return subscriber;
 			}
 	 }

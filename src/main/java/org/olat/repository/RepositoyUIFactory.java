@@ -94,14 +94,7 @@ public class RepositoyUIFactory {
 		
 		MainLayoutController ctrl = handler.createLaunchController(re, ureq, bwControl);
 		if (ctrl == null) throw new AssertException("could not create controller for repositoryEntry "+re); 
-		if (ctrl instanceof MainLayoutController) {
-			return ctrl;			
-		} else {
-			// add layout wrapper
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, ctrl.getInitialComponent(), null);
-			layoutCtr.addDisposableChildController(ctrl); // dispose content on layout dispose
-			return layoutCtr;
-		}
+		return ctrl;	
 	}
 	
 	/**

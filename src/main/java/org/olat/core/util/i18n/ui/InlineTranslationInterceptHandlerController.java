@@ -244,7 +244,8 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
-	protected void event(UserRequest ureq, Controller source, @SuppressWarnings("unused") Event event) {
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
 			// user closed dialog, go back to inline translation mode
 			I18nManager.getInstance().setMarkLocalizedStringsEnabled(ureq.getUserSession(), true);

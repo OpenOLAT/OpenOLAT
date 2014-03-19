@@ -106,7 +106,7 @@ public class CalendarColorChooserController extends DefaultController {
 		if (source == cancelButton) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if (colorLinks.containsKey(source)){
-			choosenColor = (String)colorLinks.get(source);
+			choosenColor = colorLinks.get(source);
 			Link colorLink = (Link) source;
 			colorLink.setCustomEnabledLinkCSS(choosenColor);
 			colorLink.setCustomDisabledLinkCSS(choosenColor);

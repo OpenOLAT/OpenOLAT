@@ -311,7 +311,7 @@ public class DropboxScoringViewController extends BasicController {
 		} else if (source == dialogBoxController) {
 			if (DialogBoxUIFactory.isYesEvent(event) && assignedTask!=null) {
 				//cancel task assignment, and show "no task assigned to user"				
-				removeAssignedTask(userCourseEnv, userCourseEnv.getIdentityEnvironment().getIdentity(), assignedTask);			
+				removeAssignedTask(userCourseEnv, userCourseEnv.getIdentityEnvironment().getIdentity());			
 				//update UI
 				myContent.contextPut("assignedtask", null);
 			}
@@ -323,18 +323,18 @@ public class DropboxScoringViewController extends BasicController {
 	 * @param identity
 	 * @param task
 	 */
-	private void removeAssignedTask(UserCourseEnvironment courseEnv, Identity identity, String task) {
+	private void removeAssignedTask(UserCourseEnvironment courseEnv, Identity identity) {
 		CoursePropertyManager cpm = courseEnv.getCourseEnvironment().getCoursePropertyManager();
 		List<Property> properties = cpm.findCourseNodeProperties(node, identity, null, TaskController.PROP_ASSIGNED);
 		if(properties!=null && properties.size()>0) {
-		  Property propety = (Property)properties.get(0);
+		  Property propety = properties.get(0);
 		  cpm.deleteProperty(propety);
 		  assignedTask = null;
 		}
 	  //removed sampled  				
 		properties = cpm.findCourseNodeProperties(node, null, null, TaskController.PROP_SAMPLED);
 		if(properties!=null && properties.size()>0) {
-		  Property propety = (Property)properties.get(0);
+		  Property propety = properties.get(0);
 		  cpm.deleteProperty(propety);		  
 		}		
 	}

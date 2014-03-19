@@ -66,7 +66,7 @@ public class OutcomesProcessing implements QTIObject {
 		decvar.addAttribute("vartype", "Decimal");
 //		decvar.addAttribute(MINVALUE, (String)outcomesProcessing.get(MINVALUE));
 //		decvar.addAttribute(MAXVALUE, (String)outcomesProcessing.get(MAXVALUE));
-		decvar.addAttribute(CUTVALUE, (String)outcomesProcessing.get(CUTVALUE));
+		decvar.addAttribute(CUTVALUE, outcomesProcessing.get(CUTVALUE));
 	}
 
 	public String getField(String key) { return outcomesProcessing.get(key); }

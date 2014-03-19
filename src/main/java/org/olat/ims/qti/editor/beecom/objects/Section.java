@@ -119,7 +119,7 @@ public class Section implements QTIObject {
 		
 		// ITEMS
 		for(Iterator<Item> i= this.items.iterator(); i.hasNext();) {
-			QTIObject obj = (QTIObject)i.next();
+			QTIObject obj = i.next();
 			if(obj!=null) {
 				obj.addToElement(section);	
 			}
@@ -130,7 +130,7 @@ public class Section implements QTIObject {
 	public boolean checkAlienItems() {
 		alienItems = false;
 		for (Iterator<Item> iter = items.iterator(); iter.hasNext();) {
-			Item element = (Item) iter.next();
+			Item element = iter.next();
 			alienItems = alienItems || element.isAlient();
 		}
 		return alienItems;

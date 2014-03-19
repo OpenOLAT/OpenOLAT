@@ -154,7 +154,7 @@ public class SelectionController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					repositoryService.setLastUsageNowFor( (RepositoryEntry) redtm.getObject(rowid) );
+					repositoryService.setLastUsageNowFor( redtm.getObject(rowid) );
 					updateRepositoryEntryList();
 				}
 			} else if (event.getCommand().equals(Table.COMMAND_MULTISELECT)) {

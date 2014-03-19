@@ -72,8 +72,7 @@ public class SimpleMessageController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	@Override
-	protected void event(@SuppressWarnings("unused")
-	UserRequest ureq, Component source, Event event) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		// This is only simple text in this controller, there should no events come
 		// along here.
 		throw new AssertException("This is a simple Wrapper controller without meaning in event method: event from "+source.getComponentName()+" event:"+event.getCommand());

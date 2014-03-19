@@ -52,7 +52,7 @@ public class Variables implements Serializable{
 			// no SCORE var defined... try to fallback:
 			// if there is only a single variable present, we assume, this is
 			// to be the final score.
-			if (vars.size() == 1) scoreVar = (Variable)vars.get(vars.keySet().iterator().next());
+			if (vars.size() == 1) scoreVar = vars.get(vars.keySet().iterator().next());
 		}
 		return scoreVar;
 	}

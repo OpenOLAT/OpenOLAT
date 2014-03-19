@@ -140,11 +140,11 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		String[] bundlesKeys = buildBundleArrayKeys(bundleNames, true);
 		String[] bundlesValues = buildBundleArrayValues(bundleNames, true);
 		// call init methods for each form part
-		initLanguageSelectorElements(ureq.getUserSession(), formFactory, i18nMgr, listener, formLayout);
-		initMissingItemsElements(formFactory, i18nMgr, listener, formLayout, bundlesKeys, bundlesValues);
-		initExistingItemsElements(formFactory, i18nMgr, listener, formLayout, bundlesKeys, bundlesValues);
-		initAllItemsElements(formFactory, i18nMgr, listener, formLayout, bundlesKeys, bundlesValues);
-		initSearchItemsElements(formFactory, i18nMgr, listener, formLayout, bundlesKeys, bundlesValues);
+		initLanguageSelectorElements(ureq.getUserSession(), formFactory, i18nMgr, formLayout);
+		initMissingItemsElements(formFactory, formLayout, bundlesKeys, bundlesValues);
+		initExistingItemsElements(formFactory, formLayout, bundlesKeys, bundlesValues);
+		initAllItemsElements(formFactory, formLayout, bundlesKeys, bundlesValues);
+		initSearchItemsElements(formFactory, formLayout, bundlesKeys, bundlesValues);
 		// Initialize progress bar and statistics
 		updateStatistics();
 		// Override text labels for customizing mode
@@ -155,7 +155,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		this.flc.contextPut("customizingPrefix", (customizingMode ? "customize." : ""));
 	}
 
-	private void initLanguageSelectorElements(UserSession usess, FormUIFactory formFactory, I18nManager i18nMgr, Controller listener,
+	private void initLanguageSelectorElements(UserSession usess, FormUIFactory formFactory, I18nManager i18nMgr,
 			FormItemContainer formLayout) {
 		// Add language selection as a subform
 		List<String> referenceLangs;
@@ -253,7 +253,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		this.flc.put("progressBar", progressBar);
 	}
 
-	private void initMissingItemsElements(FormUIFactory formFactory, I18nManager i18nMgr, Controller listener, FormItemContainer formLayout,
+	private void initMissingItemsElements(FormUIFactory formFactory, FormItemContainer formLayout,
 			String[] bundlesKeys, String[] bundlesValues) {
 		// Add missing bundles selector
 		missingBundlesSelection = formFactory.addDropdownSingleselect("missingBundlesSelection", this.flc, bundlesKeys, bundlesValues, null);
@@ -279,7 +279,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		formLayout.add(missingTranslateButton);
 	}
 
-	private void initExistingItemsElements(FormUIFactory formFactory, I18nManager i18nMgr, Controller listener, FormItemContainer formLayout,
+	private void initExistingItemsElements(FormUIFactory formFactory, FormItemContainer formLayout,
 			String[] bundlesKeys, String[] bundlesValues) {
 		// Add existing bundles selector
 		existingBundlesSelection = formFactory.addDropdownSingleselect("existingBundlesSelection", this.flc, bundlesKeys, bundlesValues, null);
@@ -305,7 +305,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		formLayout.add(existingTranslateButton);
 	}
 
-	private void initAllItemsElements(FormUIFactory formFactory, I18nManager i18nMgr, Controller listener, FormItemContainer formLayout,
+	private void initAllItemsElements(FormUIFactory formFactory, FormItemContainer formLayout,
 			String[] bundlesKeys, String[] bundlesValues) {
 		// Add all bundles selector
 		allBundlesSelection = formFactory.addDropdownSingleselect("allBundlesSelection", this.flc, bundlesKeys, bundlesValues, null);
@@ -331,9 +331,9 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		formLayout.add(allTranslateButton);
 	}
 
-	private void initSearchItemsElements(FormUIFactory formFactory, I18nManager i18nMgr, Controller listener, FormItemContainer formLayout,
+	private void initSearchItemsElements(FormUIFactory formFactory, FormItemContainer formLayout,
 			String[] bundlesKeys, String[] bundlesValues) {
-		FormItemContainer searchLayoutContainer = (FormItemContainer) FormLayoutContainer.createDefaultFormLayout("searchLayoutContainer",
+		FormItemContainer searchLayoutContainer = FormLayoutContainer.createDefaultFormLayout("searchLayoutContainer",
 				getTranslator());
 		formLayout.add(searchLayoutContainer);
 		// Add search input field
@@ -374,7 +374,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		searchBundlesPrioritySortSwitch.addActionListener(FormEvent.ONCLICK);
 		formLayout.add(searchBundlesPrioritySortSwitch);
 		// Add button to trigger search
-		FormItemContainer searchButtonLayoutContainer = (FormItemContainer) FormLayoutContainer.createHorizontalFormLayout(
+		FormItemContainer searchButtonLayoutContainer = FormLayoutContainer.createHorizontalFormLayout(
 				"searchButtonLayoutContainer", getTranslator());
 		searchLayoutContainer.add(searchButtonLayoutContainer);
 		searchListButton = new FormLinkImpl("searchListButton", "searchListButton", "generic.listButton", Link.BUTTON);

@@ -300,7 +300,7 @@ public class CatalogController extends BasicController implements Activateable2 
 			//
 			if (command.startsWith(CATENTRY_CHILD)) { // child clicked
 				int pos = Integer.parseInt(command.substring(CATENTRY_CHILD.length()));
-				CatalogEntry cur = (CatalogEntry) childCe.get(pos);
+				CatalogEntry cur = childCe.get(pos);
 				// put new as trail on stack
 				historyStack.add(cur);
 				updateToolAccessRights(ureq, cur, historyStack.indexOf(cur));
@@ -374,7 +374,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				String s = command.substring(CATCMD_EDIT.length());
 				if (s.startsWith(CATENTRY_LEAF)) {
 					int pos = Integer.parseInt(s.substring(CATENTRY_LEAF.length()));
-					linkMarkedToBeEdited = (CatalogEntry) childCe.get(pos);
+					linkMarkedToBeEdited = childCe.get(pos);
 					repositoryEditDescriptionController = new RepositoryEditDescriptionController(ureq, getWindowControl(), linkMarkedToBeEdited.getRepositoryEntry(), false);
 					repositoryEditDescriptionController.addControllerListener(this);
 					// open form in dialog
@@ -553,7 +553,7 @@ public class CatalogController extends BasicController implements Activateable2 
 					else tmpIdent = emptyList;
 				}
 				for (int i = tmpIdent.size() - 1; i >= 0; i--) {
-					caretaker.add((Identity) tmpIdent.get(i));
+					caretaker.add(tmpIdent.get(i));
 				}
 				
 				//create e-mail Message
@@ -620,7 +620,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				if (event == Event.DONE_EVENT) {
 					importStructure();
 				}
-				CatalogEntry newRoot = (CatalogEntry) cm.getRootCatalogEntries().get(0);
+				CatalogEntry newRoot = cm.getRootCatalogEntries().get(0);
 				historyStack = new ArrayList<CatalogEntry>();
 				historyStack.add(newRoot);
 				updateContent(ureq, newRoot, 0);
@@ -1015,7 +1015,7 @@ public class CatalogController extends BasicController implements Activateable2 
 	 * Helper to imports simple tree structure, for simplicity
 	 */
 	private void importStructure() {
-		CatalogEntry oldRoot = (CatalogEntry) cm.getRootCatalogEntries().get(0);
+		CatalogEntry oldRoot = cm.getRootCatalogEntries().get(0);
 		SecurityGroup rootOwners = oldRoot.getOwnerGroup();
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		List<Identity> olatAdminIdents = secMgr.getIdentitiesOfSecurityGroup(rootOwners);

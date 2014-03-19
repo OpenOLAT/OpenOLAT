@@ -139,7 +139,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 					if (resprocessingXML.selectNodes(".//setvar[@action='Add']").size() == 0) {
 						instance.setSingleCorrect(true);
 						Collection<Float> values = points.values();
-						if (values.size() > 0) instance.setSingleCorrectScore(((Float) (values.iterator().next())).floatValue());
+						if (values.size() > 0) instance.setSingleCorrectScore((values.iterator().next()).floatValue());
 					} else {
 						instance.setSingleCorrect(false);
 					}
@@ -147,7 +147,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 					instance.setSingleCorrect(true);
 					Collection<Float> values = points.values();
 					if (values.size() > 0) {
-						instance.setSingleCorrectScore(((Float) (values.iterator().next())).floatValue());
+						instance.setSingleCorrectScore((values.iterator().next()).floatValue());
 					} else {
 						instance.setSingleCorrect(false);
 					}

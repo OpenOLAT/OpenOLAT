@@ -203,7 +203,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 		Map<String, String> attributesMap = new HashMap<String, String>();
 		Enumeration<String> headerEnum = req.getHeaderNames();
 		while(headerEnum.hasMoreElements()) {
-			String attribute = (String)headerEnum.nextElement();
+			String attribute = headerEnum.nextElement();
 			String attributeValue = req.getHeader(attribute);
 			
 			ShibbolethAttribute shibbolethAttribute = ShibbolethAttribute.createFromUserRequestValue(attribute, attributeValue);

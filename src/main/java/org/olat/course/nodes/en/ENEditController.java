@@ -39,7 +39,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -61,7 +60,6 @@ public class ENEditController extends ActivateableTabbableDefaultController impl
 	
 	private ENCourseNode courseNode;
 	private ConditionEditController accessibilityCondContr;
-	private CourseGroupManager groupMgr;
 	private UserCourseEnvironment euce;
 	private TabbedPane myTabbedPane;
 	private ENEditGroupAreaFormController easyGroupEditCtrllr;
@@ -89,7 +87,6 @@ public class ENEditController extends ActivateableTabbableDefaultController impl
 	private void init(ModuleConfiguration config, UserRequest ureq, ENCourseNode enCourseNode, ICourse courseP, UserCourseEnvironment euceP) {
 		this.moduleConfiguration = config;
 		this.courseNode = enCourseNode;
-		this.groupMgr = courseP.getCourseEnvironment().getCourseGroupManager();
 		this.euce = euceP;
 		
 		myContent = this.createVelocityContainer("edit");
@@ -97,9 +94,9 @@ public class ENEditController extends ActivateableTabbableDefaultController impl
 
 		// Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition, "accessabilityConditionForm",
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
 				AssessmentHelper.getAssessableNodes(courseP.getEditorTreeModel(), enCourseNode), euceP);		
-		this.listenTo(accessibilityCondContr);
+		listenTo(accessibilityCondContr);
 
 		// not needed: setInitialComponent(myContent) since tabbable controller
 	}
@@ -108,7 +105,7 @@ public class ENEditController extends ActivateableTabbableDefaultController impl
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// 
 	}

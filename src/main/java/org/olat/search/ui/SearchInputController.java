@@ -386,7 +386,7 @@ public class SearchInputController extends FormBasicController {
 
 	public void closeSearchDialogBox() {
 		if(searchDialogBox != null) {
-			((CloseableModalController)searchDialogBox).deactivate();
+			searchDialogBox.deactivate();
 			searchDialogBox = null;
 		}
 	}

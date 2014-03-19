@@ -272,7 +272,7 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 		int rows = end - offset;
 		
 		float tableHeight = (rowHeight * rows) + headerHeight;
-		float colWidth = tableWidth / (float)numOfCols;
+		float colWidth = tableWidth / numOfCols;
 
 		// draw the rows
 		float y = currentY;

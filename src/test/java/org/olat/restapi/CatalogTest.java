@@ -101,7 +101,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		//create a catalog
 		CatalogManager catalogManager = CatalogManager.getInstance();
-		root1 = (CatalogEntry)catalogManager.getRootCatalogEntries().get(0);
+		root1 = catalogManager.getRootCatalogEntries().get(0);
 		
 		entry1 = catalogManager.createCatalogEntry();
 		entry1.setType(CatalogEntry.TYPE_NODE);

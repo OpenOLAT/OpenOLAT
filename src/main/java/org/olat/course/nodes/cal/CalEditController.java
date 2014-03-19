@@ -46,7 +46,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -99,19 +98,18 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 		main = new Panel("calmain");
 
 		editAccessVc = createVelocityContainer("edit_access");
-		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Accessibility precondition
 		Condition accessCondition = calCourseNode.getPreConditionAccess();
-		accessCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition, "accessConditionForm",
+		accessCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, calCourseNode), euce);
 		this.listenTo(accessCondContr);
 		editAccessVc.put("readerCondition", accessCondContr.getInitialComponent());
 
 		// cal read / write preconditions
 		Condition editCondition = calCourseNode.getPreConditionEdit();
-		editCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, editCondition, "editConditionForm", AssessmentHelper
-				.getAssessableNodes(editorModel, calCourseNode), euce);
+		editCondContr = new ConditionEditController(ureq, getWindowControl(), editCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, calCourseNode), euce);
 		listenTo(editCondContr);
 		editAccessVc.put("editCondition", editCondContr.getInitialComponent());
 

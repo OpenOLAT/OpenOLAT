@@ -71,7 +71,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQSELFCourseNode;
@@ -231,7 +230,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @param groupMgr
 	 * @param euce
 	 */
-	IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQTESTCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
+	IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQTESTCourseNode courseNode, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
@@ -253,7 +252,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		if(moduleConfiguration.get(CONFIG_KEY_RENDERMENUOPTION) == null)
 			moduleConfiguration.set(CONFIG_KEY_RENDERMENUOPTION, Boolean.FALSE);
 		
-		init(ureq, groupMgr, wControl);
+		init(ureq, wControl);
 		myContent.contextPut("repEntryTitle", translate("choosenfile.test"));
 		myContent.contextPut("type", type);
 	}
@@ -268,7 +267,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @param groupMgr
 	 * @param euce
 	 */
-	 IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSELFCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
+	 IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSELFCourseNode courseNode , UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
@@ -285,7 +284,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		if (moduleConfiguration.get(CONFIG_KEY_ENABLESUSPEND) == null)
 			moduleConfiguration.set(CONFIG_KEY_ENABLESUSPEND, Boolean.TRUE);
 
-		init(ureq, groupMgr, wControl);
+		init(ureq, wControl);
 		myContent.contextPut("repEntryTitle", translate("choosenfile.self"));
 		myContent.contextPut("type", type);
 	}
@@ -300,7 +299,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @param groupMgr
 	 * @param euce
 	 */
-	 IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSURVCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
+	 IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSURVCourseNode courseNode, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
@@ -320,13 +319,13 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			moduleConfiguration.setBooleanEntry(CONFIG_KEY_ALLOW_RELATIVE_LINKS,false);
 		}
 		
-		init(ureq, groupMgr, wControl);
+		init(ureq, wControl);
 		myContent.contextPut("repEntryTitle", translate("choosenfile.surv"));
 		myContent.contextPut("type", type);
 		chooseTestButton.setCustomDisplayText(translate("command.createSurvey"));
 	}
 
-	private void init(UserRequest ureq, CourseGroupManager groupMgr, WindowControl wControl) {		
+	private void init(UserRequest ureq, WindowControl wControl) {		
 		main = new Panel("iqeditpanel");
 		
 		myContent = createVelocityContainer("edit");		
@@ -382,7 +381,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		myContent.put("filechoosecreateedit", fcContent);
 		
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition, "accessabilityConditionForm",
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
 				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),euce);		
 		listenTo(accessibilityCondContr);
 

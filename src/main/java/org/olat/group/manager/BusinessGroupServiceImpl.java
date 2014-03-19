@@ -1433,7 +1433,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		float ratio = -1.0f;
 		if(delegate != null) {
 			int numOfEntries = repositoryManager.countGenericANDQueryWithRolesRestriction(params);
-			ratio = 100.0f / (float)numOfEntries;
+			ratio = 100.0f / numOfEntries;
 		}
 
 		int counter = 0;

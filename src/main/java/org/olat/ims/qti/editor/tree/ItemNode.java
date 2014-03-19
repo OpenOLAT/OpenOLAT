@@ -217,7 +217,7 @@ public class ItemNode extends GenericQtiNode {
 		// feedback
 		qtiState.put("FEEDBACK.MASTERY", QTIEditHelper.getFeedbackMasteryText(item));
 		qtiState.put("FEEDBACK.FAIL", QTIEditHelper.getFeedbackFailText(item));
-		Control control = (Control) QTIEditHelper.getControl(item);
+		Control control = QTIEditHelper.getControl(item);
 		qtiState.put("FEEDBACK.ENABLED", control.getFeedback() == 1 ? Boolean.TRUE : Boolean.FALSE);
 		//
 		qnm.setQtiState(qtiState);
@@ -279,7 +279,7 @@ public class ItemNode extends GenericQtiNode {
 			String newFeedbackMastery = QTIEditHelper.getFeedbackMasteryText(item);
 			String oldFeedbackFail = (String) qtiState.get("FEEDBACK.FAIL");
 			String newFeedbackFail = QTIEditHelper.getFeedbackFailText(item);
-			Control control = (Control) QTIEditHelper.getControl(item);
+			Control control = QTIEditHelper.getControl(item);
 			Boolean oldHasFeedback = (Boolean) qtiState.get("FEEDBACK.ENABLED");
 			Boolean newHasFeedback = control != null ? new Boolean(control.getFeedback() == 1) : null;
 			//

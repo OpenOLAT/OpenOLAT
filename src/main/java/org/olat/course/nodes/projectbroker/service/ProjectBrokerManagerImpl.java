@@ -511,7 +511,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	///////////////////
 	private ProjectBroker getOrLoadProjectBoker(final Long projectBrokerId) {
 		// 1. check if alreday a projectBroker is in the cache
-		ProjectBroker projectBroker = (ProjectBroker)projectCache.get(projectBrokerId.toString());
+		ProjectBroker projectBroker = projectCache.get(projectBrokerId.toString());
 		if (projectBroker == null) {
 			logDebug("find no projectBroker in the cache => create a new one projectBrokerId=" + projectBrokerId);
 			StringBuilder sb = new StringBuilder();
@@ -529,7 +529,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	}
 
 	public ProjectBroker getProjectBroker(Long projectBrokerId) {
-		return (ProjectBroker) dbInstance.loadObject(ProjectBrokerImpl.class, projectBrokerId);
+		return dbInstance.loadObject(ProjectBrokerImpl.class, projectBrokerId);
 	}
 
 	private boolean isEnrollmentDateOk(Project project, ProjectBrokerModuleConfiguration moduleConfig) {
@@ -634,7 +634,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 
 	@Override
 	public Project getProject(Long resourceableId) {
-		return (Project)dbInstance.findObject(ProjectImpl.class, resourceableId);
+		return dbInstance.findObject(ProjectImpl.class, resourceableId);
 	}
 
 	@Override

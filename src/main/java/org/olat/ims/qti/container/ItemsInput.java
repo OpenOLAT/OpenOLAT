@@ -53,7 +53,7 @@ public class ItemsInput implements Serializable{
 	}
 	
 	public ItemInput getItemInput(String itemIdent) {
-		return (ItemInput)map.get(itemIdent);
+		return map.get(itemIdent);
 	}
 	
 	

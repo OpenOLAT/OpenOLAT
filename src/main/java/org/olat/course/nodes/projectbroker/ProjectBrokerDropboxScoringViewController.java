@@ -81,29 +81,20 @@ public class ProjectBrokerDropboxScoringViewController extends DropboxScoringVie
 		+ File.separator + project.getKey();
 	}
 
-	protected String getDropboxRootFolderName(String assesseeName	) {
-		return translate("scoring.dropbox.rootfolder.name");
-	}
-
-	protected String getReturnboxRootFolderName(String assesseeName) {
-		return translate("scoring.returnbox.rootfolder.name");
-	}
-
 	protected VFSSecurityCallback getDropboxVfsSecurityCallback() {
 		return new ReadOnlyCallback();
 	}
 
-	protected VFSSecurityCallback getReturnboxVfsSecurityCallback(String returnboxRelPath, UserCourseEnvironment userCourseEnv2, CourseNode node2) {
-		return new ReturnboxFullAccessCallback(returnboxRelPath, userCourseEnv2, node2);
+	protected VFSSecurityCallback getReturnboxVfsSecurityCallback(String returnboxRelPath) {
+		return new ReturnboxFullAccessCallback(returnboxRelPath);
 	}
-
 }
 
 class ReturnboxFullAccessCallback implements VFSSecurityCallback {
 
 	private Quota quota;
 
-	public ReturnboxFullAccessCallback(String relPath, UserCourseEnvironment userCourseEnv2, CourseNode courseNode2) {
+	public ReturnboxFullAccessCallback(String relPath) {
 		QuotaManager qm = QuotaManager.getInstance();
 		quota = qm.getCustomQuota(relPath);
 		if (quota == null) { // if no custom quota set, use the default quotas...

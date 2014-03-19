@@ -116,8 +116,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		// only the precondition "access" can be configured till now
 		CheckListEditController childTabCntrllr = new CheckListEditController(this, ureq, wControl, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, course.getCourseEnvironment()
-				.getCourseGroupManager(), euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
 
 	/**
@@ -478,7 +477,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 						} else {
 							usedNames.add(checkbox.getTitle());
 						}
-						ZipUtil.addToZip((VFSLeaf)item, path, exportStream);
+						ZipUtil.addToZip(item, path, exportStream);
 					}
 				}
 			}

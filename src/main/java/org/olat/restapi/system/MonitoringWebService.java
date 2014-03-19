@@ -22,11 +22,9 @@ package org.olat.restapi.system;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -53,27 +51,27 @@ public class MonitoringWebService {
 	}
 
 	@Path("runtime")
-	public RuntimeWebService getCompilationXml(@Context HttpServletRequest request) {
+	public RuntimeWebService getCompilationXml() {
 		return new RuntimeWebService();
 	}
 	
 	@Path("database")
-	public DatabaseWebService getDatabaseWS(@Context HttpServletRequest request) {
+	public DatabaseWebService getDatabaseWS() {
 		return new DatabaseWebService();
 	}
 	
 	@Path("openolat")
-	public OpenOLATStatisticsWebService getSessionsWS(@Context HttpServletRequest request) {
+	public OpenOLATStatisticsWebService getSessionsWS() {
 		return ooStatsWebService;
 	}
 	
 	@Path("memory")
-	public MemoryWebService getMemoryWS(@Context HttpServletRequest request) {
+	public MemoryWebService getMemoryWS() {
 		return memoryWebService;
 	}
 
 	@Path("threads")
-	public ThreadsWebService getThreadsWS(@Context HttpServletRequest request) {
+	public ThreadsWebService getThreadsWS() {
 		return threadsWebService;
 	}
 	
@@ -93,7 +91,7 @@ public class MonitoringWebService {
 	@GET
 	@Path("configuration")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getImplementedProbes(@Context HttpServletRequest request) {
+	public Response getImplementedProbes() {
 		MonitoringInfosVO vo = new MonitoringInfosVO();
 
 		MonitoringModule module = CoreSpringFactory.getImpl(MonitoringModule.class);

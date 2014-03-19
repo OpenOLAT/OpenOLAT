@@ -155,7 +155,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	public OlatRootFolderImpl getCourseExportDataDir() {
 		OlatRootFolderImpl vfsExportDir = (OlatRootFolderImpl)getCourseBaseContainer().resolve(ICourse.EXPORTED_DATA_FOLDERNAME);
 		if (vfsExportDir == null) {
-			vfsExportDir = (OlatRootFolderImpl)getCourseBaseContainer().createChildContainer(ICourse.EXPORTED_DATA_FOLDERNAME);
+			vfsExportDir = getCourseBaseContainer().createChildContainer(ICourse.EXPORTED_DATA_FOLDERNAME);
 		}
 		return vfsExportDir;
 	}

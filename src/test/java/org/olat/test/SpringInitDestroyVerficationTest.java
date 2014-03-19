@@ -57,7 +57,7 @@ public class SpringInitDestroyVerficationTest extends OlatTestCase {
 		
 		Map<String, Initializable> beans = applicationContext.getBeansOfType(Initializable.class);
 		for (Iterator<String> iterator = beans.keySet().iterator(); iterator.hasNext();) {
-			String beanName = (String) iterator.next();
+			String beanName = iterator.next();
 			try {
 				GenericBeanDefinition beanDef = (GenericBeanDefinition)beanFactory.getBeanDefinition(beanName);
 				assertNotNull("Spring Bean ("+beanName+") of type Initializable does not have the required init-method attribute or the method name is not init!", 
@@ -82,7 +82,7 @@ public class SpringInitDestroyVerficationTest extends OlatTestCase {
 			
 			Map<String, Destroyable> beans = applicationContext.getBeansOfType(Destroyable.class);
 			for (Iterator<String> iterator = beans.keySet().iterator(); iterator.hasNext();) {
-				String beanName = (String) iterator.next();
+				String beanName = iterator.next();
 				try {
 					GenericBeanDefinition beanDef = (GenericBeanDefinition)beanFactory.getBeanDefinition(beanName);
 					assertNotNull("Spring Bean ("+beanName+") of type Destroyable does not have the required destroy-method attribute or the method name is not destroy!", 

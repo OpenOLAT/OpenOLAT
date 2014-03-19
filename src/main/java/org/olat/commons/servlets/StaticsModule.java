@@ -84,7 +84,7 @@ public class StaticsModule implements Initializable {
 	 * @return A path handler handling requests for the given name identifier.
 	 */
 	public static PathHandler getInstance(String name) {
-		return (PathHandler)handlers.get(name);
+		return handlers.get(name);
 	}
 
 }

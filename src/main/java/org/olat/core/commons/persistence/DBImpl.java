@@ -188,7 +188,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	}
 
 	private ThreadLocalData getData() {
-		ThreadLocalData tld = (ThreadLocalData) data.get();
+		ThreadLocalData tld = data.get();
 		if (tld == null) {
 			tld = new ThreadLocalData();
 			setData(tld);
@@ -644,7 +644,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 				// case a or c - unfortunatelly we can't distinguish these two cases
 				// and session.refresh(Object) doesn't work.
 				// the only scenario that works is load/evict/load
-				Persistable attachedObj = (Persistable) loadObject(theClass, persistable.getKey());
+				Persistable attachedObj = loadObject(theClass, persistable.getKey());
 				evict(em, attachedObj, getData());
 				return loadObject(theClass, persistable.getKey());
 			}

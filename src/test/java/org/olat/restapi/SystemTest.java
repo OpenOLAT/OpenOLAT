@@ -100,7 +100,7 @@ public class SystemTest extends OlatJerseyTestCase {
 		Assert.assertNotNull(threadInfos);
 		Assert.assertNotNull(threadInfos.getThreads());
 		Assert.assertTrue(threadInfos.getTotalCount() > 0);
-		Assert.assertEquals(threadInfos.getTotalCount(), (int)threadInfos.getThreads().length);
+		Assert.assertEquals(threadInfos.getTotalCount(), threadInfos.getThreads().length);
 		
 		ThreadVO threadVo = threadInfos.getThreads()[0];
 		Assert.assertNotNull(threadVo.getName());

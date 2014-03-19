@@ -309,7 +309,7 @@ public class ForumManager extends BasicManager {
 	 * @return the forum with the given key
 	 */
 	public Forum loadForum(Long forumKey) {
-		ForumImpl fo = (ForumImpl) DBFactory.getInstance().loadObject(ForumImpl.class, forumKey);
+		ForumImpl fo = DBFactory.getInstance().loadObject(ForumImpl.class, forumKey);
 		return fo;
 	}
 
@@ -400,7 +400,7 @@ public class ForumManager extends BasicManager {
 	}
 
 	private Message doloadMessage(Long messageKey) {
-		Message msg = (Message) DBFactory.getInstance().loadObject(MessageImpl.class, messageKey);
+		Message msg = DBFactory.getInstance().loadObject(MessageImpl.class, messageKey);
 		return msg;
 	}
 
@@ -577,7 +577,7 @@ public class ForumManager extends BasicManager {
 	}
 	
 	public Message findMessage(Long messageId) {
-		return (Message) DBFactory.getInstance().findObject(MessageImpl.class, messageId);
+		return DBFactory.getInstance().findObject(MessageImpl.class, messageId);
 	}
 	
 	/**
@@ -627,7 +627,6 @@ public class ForumManager extends BasicManager {
 	 * @param topMsg
 	 * @return the moved message
 	 */
-	@SuppressWarnings("unchecked")
 	public Message moveMessage(Message msg, Message topMsg) {
 		DB db = DBFactory.getInstance();
 		List<Message> oldThreadList = getThread(msg.getThreadtop().getKey());

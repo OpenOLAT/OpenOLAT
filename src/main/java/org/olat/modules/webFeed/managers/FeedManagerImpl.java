@@ -231,7 +231,7 @@ public class FeedManagerImpl extends FeedManager {
 	 */
 	private Feed getFeed(OLATResourceable ores, boolean inSync) {
 		// Attempt to fetch the feed from the cache
-		Feed myFeed = (Feed) initFeedCache().get(ores.getResourceableId().toString());
+		Feed myFeed = initFeedCache().get(ores.getResourceableId().toString());
 		if (myFeed == null) {
 			// Load the feed from file and put it to the cache
 			VFSContainer feedContainer = getFeedContainer(ores);

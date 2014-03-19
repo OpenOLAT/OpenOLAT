@@ -115,8 +115,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		updateModuleConfigDefaults(false);
 		FOCourseNodeEditController childTabCntrllr = new FOCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, course.getCourseEnvironment()
-				.getCourseGroupManager(), euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
 
 	/**
@@ -233,7 +232,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new FOPreviewController(ureq, wControl, this, ne);
+		return new FOPreviewController(ureq, wControl, ne);
 	}
 	
 	/**

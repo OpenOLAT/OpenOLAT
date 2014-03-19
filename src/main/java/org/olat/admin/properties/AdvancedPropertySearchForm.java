@@ -89,7 +89,7 @@ public class AdvancedPropertySearchForm extends FormBasicController {
 		int i = 1;
 		for (Iterator<String> iter = resourceTypeNames.iterator(); iter.hasNext(); i++) {
 			theKeys[i] = Integer.toString(i);
-			theValues[i] = (String)iter.next();
+			theValues[i] = iter.next();
 		}
 		
 		initForm(ureq);

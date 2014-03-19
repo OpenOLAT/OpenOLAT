@@ -33,7 +33,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 
 /**
@@ -53,7 +52,8 @@ public class FOPreviewController extends DefaultController {
 	 * @param node
 	 * @param ne
 	 */
-	public FOPreviewController(UserRequest ureq, WindowControl wControl, FOCourseNode node, NodeEvaluation ne) { super(wControl);
+	public FOPreviewController(UserRequest ureq, WindowControl wControl, NodeEvaluation ne) {
+		super(wControl);
 		trans = Util.createPackageTranslator(FOPreviewController.class, ureq.getLocale());
 		previewVC = new VelocityContainer("foPreviewVC", VELOCITY_ROOT + "/preview.html", trans, this);
 		previewVC.contextPut("canRead", Boolean.valueOf(ne.isCapabilityAccessible("reader")));

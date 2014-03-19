@@ -114,7 +114,7 @@ public class MenuTreeScreenreaderRenderer implements ComponentRenderer {
 
 		INode curSel = null;
 		if (level < selPath.size()) {
-			curSel = (INode) selPath.get(level);
+			curSel = selPath.get(level);
 		}
 
 		target.append("<ul><li>");

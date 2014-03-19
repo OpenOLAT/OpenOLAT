@@ -42,7 +42,6 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -81,13 +80,12 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		configurationVC = this.createVelocityContainer("edit");
 		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", configurationVC, this);
 		
-		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		UserNodeAuditManager auditManager = course.getCourseEnvironment().getAuditManager();
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 
 		// Accessibility precondition
 		Condition accessCondition = msNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition, "accessabilityConditionForm",
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, msNode), euce);		
 		this.listenTo(accessibilityCondContr);
 

@@ -662,7 +662,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 					files.put(elem.getName(), new MediaFileElement(elem.getName(), 0, elem.getLastModified()));
 				} else {
 					//file with metadata, update name
-					MediaFileElement element = (MediaFileElement)files.get(elem.getName());
+					MediaFileElement element = files.get(elem.getName());
 					element.setFileName(elem.getName());
 				}
 			}
@@ -720,14 +720,14 @@ public class WikiMainController extends BasicController implements CloneableCont
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_COMPARE)) {
-					selectedPage = (WikiPage) versioningTableModel.getObject(te.getRowId());
+					selectedPage = versioningTableModel.getObject(te.getRowId());
 					diffs = wiki.getDiff(page, selectedPage.getVersion() - 1, selectedPage.getVersion());
 					versioningContent.contextPut("diffs", diffs);
 					versioningContent.remove(wikiVersionDisplayComp);
 					versioningContent.contextPut("page", selectedPage);
 				} else if (te.getActionId().equals(ACTION_SHOW)) {
 					versioningContent.contextRemove("diffs");
-					selectedPage = (WikiPage) versioningTableModel.getObject(te.getRowId());
+					selectedPage = versioningTableModel.getObject(te.getRowId());
 					selectedPage = wiki.loadVersion(selectedPage, selectedPage.getVersion());
 					wikiVersionDisplayComp.setWikiContent(selectedPage.getContent());
 					wikiVersionDisplayComp.setImageMapperUri(ureq, wikiContainer);
@@ -774,7 +774,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 					deleteMediaFile(list, ureq);
 				} else if (te.getActionId().equals(ACTION_SHOW_MEDIA)) {
 					// show a selected file from the media folder
-					MediaFileElement element = (MediaFileElement)mediaFilesTableModel.getObject(te.getRowId());
+					MediaFileElement element = mediaFilesTableModel.getObject(te.getRowId());
 					if (isImage(element.getFilename()) ) { // show images inline as modal overlay
 						imageDisplay.contextPut("mediaElement", element);
 						imageDisplay.contextPut("imageUri", wikiArticleComp.getImageBaseUri());

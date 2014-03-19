@@ -193,7 +193,7 @@ public class PropertyTest extends OlatTestCase {
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1,  entries.size());
 		
-		Property prop = (Property) entries.get(0);
+		Property prop = entries.get(0);
 		assertEquals(ores.getResourceableTypeName(), prop.getResourceTypeName());
 		assertEquals(ores.getResourceableId(), prop.getResourceTypeId());
 		
@@ -489,8 +489,8 @@ public class PropertyTest extends OlatTestCase {
 		pm.saveProperty(p);
 		List<Property> propertyList = pm.findProperties(id1, group, res.getResourceableTypeName(), res.getResourceableId(), category, propertyName);
 		assertEquals(1, propertyList.size());
-		assertEquals(propertyName, ((Property)propertyList.get(0)).getName() );
-		assertEquals(textValue,    ((Property)propertyList.get(0)).getTextValue() );
+		assertEquals(propertyName, propertyList.get(0).getName() );
+		assertEquals(textValue, propertyList.get(0).getTextValue() );
 		int deletedCount1 = pm.deleteProperties(id1, group, res, category, propertyName);
 		Assert.assertEquals(1, deletedCount1);
 		int deletedCount2 = pm.deleteProperties(id2, group, res, category, propertyName);

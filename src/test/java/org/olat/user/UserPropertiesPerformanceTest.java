@@ -137,7 +137,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				assertEquals(i/2, result.size());
 				DBFactory.getInstance().closeSession();
 				// check that all data is loaded and not stale
-				Identity ident = (Identity)result.get(0);
+				Identity ident = result.get(0);
 				assertNotNull(ident.getUser());
 				assertNotNull(ident.getUser().getProperty(UserConstants.FIRSTNAME, null));
 				long afterquerytime = System.currentTimeMillis() - querystart - querytime;
@@ -151,7 +151,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				assertEquals(i, result.size());
 				DBFactory.getInstance().closeSession();
 				// check that all data is loaded and not stale
-				ident = (Identity)result.get(0);
+				ident = result.get(0);
 				assertNotNull(ident.getUser());
 				assertNotNull(ident.getUser().getProperty(UserConstants.FIRSTNAME, null));
 				afterquerytime = System.currentTimeMillis() - querystart - querytime;
@@ -165,7 +165,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				assertEquals(i, result.size());
 				DBFactory.getInstance().closeSession();
 				// check that all data is loaded and not stale
-				ident = (Identity)result.get(0);
+				ident = result.get(0);
 				assertNotNull(ident.getUser());
 				assertNotNull(ident.getUser().getProperty(UserConstants.FIRSTNAME, null));
 				afterquerytime = System.currentTimeMillis() - querystart - querytime;
@@ -180,7 +180,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				assertEquals(1, result.size());
 				DBFactory.getInstance().closeSession();
 				// check that all data is loaded and not stale
-				ident = (Identity)result.get(0);
+				ident = result.get(0);
 				assertNotNull(ident.getUser());
 				assertNotNull(ident.getUser().getProperty(UserConstants.FIRSTNAME, null));
 				afterquerytime = System.currentTimeMillis() - querystart - querytime;

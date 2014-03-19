@@ -103,7 +103,7 @@ public class YearNavigationModel {
 		while (it.hasNext()) {
 			if (currentYear == it.next() && it.hasNext()) {
 				// go to the next year
-				currentYear = (Year) it.next();
+				currentYear = it.next();
 				break;
 			}
 		}

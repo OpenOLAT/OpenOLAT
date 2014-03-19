@@ -38,14 +38,12 @@ import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.ValidationError;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -94,7 +92,7 @@ public class LinksPortletEditController extends FormBasicController {
 		linkURL.setNotEmptyCheck("link.url.not.empty");
 		linkURL.setItemValidatorProvider(new ItemValidatorProvider() {
 			@Override
-			public boolean isValidValue(String value, final ValidationError validationError, @SuppressWarnings("unused") final Locale locale) {
+			public boolean isValidValue(String value, final ValidationError validationError, final Locale locale) {
 				try {
 					if (!value.contains("://")) {
 						value = "http://".concat(value);
@@ -133,32 +131,6 @@ public class LinksPortletEditController extends FormBasicController {
 		}
 
 		uifactory.addFormSubmitButton("save", formLayout);
-		
-	}
-	
-	
-	
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		// TODO Auto-generated method stub
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		return super.validateFormLogic(ureq);
-//			URL target = null;
-//			try {
-//				target = new URL(linkURL.getValue());
-//			} catch (final MalformedURLException e) {
-//				//
-//			} 
-//			if (target != null) { 
-//				return true; 
-//			} else {
-//				return false;
-//			}
 	}
 
 	/**
@@ -191,8 +163,7 @@ public class LinksPortletEditController extends FormBasicController {
 	 */
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-
+		//
 	}
 
 }

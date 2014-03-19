@@ -369,7 +369,7 @@ public class CourseFactory extends BasicManager {
 		// find all references to course
 		List<ReferenceImpl> refs = referenceManager.getReferences(res);
 		for (Iterator<ReferenceImpl> iter = refs.iterator(); iter.hasNext();) {
-			ReferenceImpl ref = (ReferenceImpl) iter.next();
+			ReferenceImpl ref = iter.next();
 			referenceManager.delete(ref);
 		}
 		

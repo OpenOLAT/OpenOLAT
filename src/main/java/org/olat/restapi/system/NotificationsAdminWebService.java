@@ -21,13 +21,11 @@ package org.olat.restapi.system;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -58,7 +56,7 @@ public class NotificationsAdminWebService {
 	@GET
 	@Path("status")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getStatus(@Context HttpServletRequest request) {
+	public Response getStatus() {
 		return Response.ok(new NotificationsStatus(getJobStatus())).build();
 	}
 	
@@ -72,7 +70,7 @@ public class NotificationsAdminWebService {
 	@GET
 	@Path("status")
 	@Produces({MediaType.TEXT_PLAIN})
-	public Response getPlainTextStatus(@Context HttpServletRequest request) {
+	public Response getPlainTextStatus() {
 		return Response.ok(getJobStatus()).build();
 	}
 	
@@ -102,7 +100,7 @@ public class NotificationsAdminWebService {
 	 */
 	@POST
 	@Path("status")
-	public Response setStatus(@FormParam("status") String status, @Context HttpServletRequest request) {
+	public Response setStatus(@FormParam("status") String status) {
 		if("running".equals(status)) {
 			try {
 				Scheduler scheduler = CoreSpringFactory.getImpl(Scheduler.class);

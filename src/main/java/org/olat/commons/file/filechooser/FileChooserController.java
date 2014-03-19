@@ -181,7 +181,7 @@ public class FileChooserController extends BasicController {
 					if (selectedFolder == 0) { // personal folder
 						selectedContainer = PersonalFolderManager.getInstance().getContainer(ureq.getIdentity());
 					} else { // process other folders
-						selectedContainer = (VFSContainer)containerRefs.get(selectedFolder - 1);
+						selectedContainer = containerRefs.get(selectedFolder - 1);
 					}
 					initializeSelectionTree(ureq, selectedContainer);
 					main.setPage(VELOCITY_ROOT + "/selectfile.html");

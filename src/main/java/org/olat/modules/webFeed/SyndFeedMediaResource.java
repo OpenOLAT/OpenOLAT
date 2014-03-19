@@ -101,7 +101,8 @@ public class SyndFeedMediaResource implements MediaResource {
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
 	 */
-	public void prepare(@SuppressWarnings("unused") HttpServletResponse hres) {
+	@Override
+	public void prepare(HttpServletResponse hres) {
 	// nothing to prepare
 	}
 

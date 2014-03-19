@@ -220,7 +220,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		areaChooseSubContainer.setLabel("form.areanames", null);
 		formLayout.add(areaChooseSubContainer);		
 		
-		groupsAndAreasSubContainer = (FormItemContainer) FormLayoutContainer.createHorizontalFormLayout("groupSubContainer", getTranslator());
+		groupsAndAreasSubContainer = FormLayoutContainer.createHorizontalFormLayout("groupSubContainer", getTranslator());
 		formLayout.add(groupsAndAreasSubContainer);
 
 		String areaInitVal;

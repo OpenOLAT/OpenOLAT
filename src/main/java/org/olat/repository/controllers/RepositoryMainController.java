@@ -567,7 +567,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 				detailsController.doLaunch(urequest, re);
 			} else if (event.equals(Event.CANCELLED_EVENT)) {
 				// delete entry when the wizard was cancelled
-				detailsController.deleteRepositoryEntry(urequest, getWindowControl(), (RepositoryEntry) chooseStepsController.getCourseRepositoryEntry());
+				detailsController.deleteRepositoryEntry(urequest, getWindowControl(), chooseStepsController.getCourseRepositoryEntry());
 				getWindowControl().pop();
 				removeAsListenerAndDispose(creationWizardController);
 				mainPanel.setContent(main);

@@ -83,7 +83,7 @@ public class URIHelper {
 		if (params == null || params.isEmpty()) {
 			return null;
 		} else {
-			return (String) params.get(name);
+			return params.get(name);
 		}
 	}
 

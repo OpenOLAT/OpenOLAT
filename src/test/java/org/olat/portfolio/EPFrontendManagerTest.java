@@ -330,7 +330,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		epFrontendManager.setArtefactTag(ident2, artefact, "Tchao");
 		dbInstance.commitAndCloseSession();
 		
-		List<String> tags = (List<String>) epFrontendManager.getArtefactTags(artefact);
+		List<String> tags = epFrontendManager.getArtefactTags(artefact);
 		assertNotNull(tags);
 		assertEquals(2, tags.size());
 		assertTrue(tags.get(0).equals("Hello") || tags.get(1).equals("Hello"));

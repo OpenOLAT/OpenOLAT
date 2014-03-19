@@ -81,8 +81,7 @@ class I18nConfigSubDeletePackageController extends FormBasicController {
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	protected void initForm(FormItemContainer formLayout, @SuppressWarnings("unused") Controller listener,
-			@SuppressWarnings("unused") UserRequest ureq) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// A title, displayed in fieldset
 		setFormTitle("configuration.management.package.delete.title");
 		setFormDescription("configuration.management.package.delete.description");

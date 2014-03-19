@@ -80,7 +80,7 @@ public class ChecklistManager {
 		Checklist checklist;
 		try {
 			// load from db
-			checklist = (Checklist) DBFactory.getInstance().loadObject(Checklist.class, key);
+			checklist = DBFactory.getInstance().loadObject(Checklist.class, key);
 		} catch (Exception e) {
 			DBFactory.getInstance().closeSession();
 			// in case of error create new object as fallback

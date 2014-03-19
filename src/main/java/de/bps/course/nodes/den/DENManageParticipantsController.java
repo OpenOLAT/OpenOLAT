@@ -132,7 +132,7 @@ public class DENManageParticipantsController extends BasicController {
 				TableEvent tableEvent = (TableEvent)event;
 				//open window for choosen date to manage the enrolled users or manually add
 				if(tableEvent.getActionId().equals(DENListTableDataModel.CHANGE_ACTION)) {
-					selectedEvent = (KalendarEvent)listTableData.getObject(tableEvent.getRowId());
+					selectedEvent = listTableData.getObject(tableEvent.getRowId());
 					List<Identity> participants = denManager.getEventParticipants(selectedEvent);
 					participantsTableData = new DENParticipantsTableDataModel(participants);
 					

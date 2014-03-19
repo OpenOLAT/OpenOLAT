@@ -25,13 +25,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -76,7 +74,7 @@ public class LogWebService {
 	@GET
 	@Path("{date}")
 	@Produces({ "text/plain", MediaType.APPLICATION_OCTET_STREAM })
-	public Response getLogFileByDate(@PathParam("date") String dateString, @Context HttpServletRequest request) {
+	public Response getLogFileByDate(@PathParam("date") String dateString) {
 		VFSLeaf logFile;
 		try {
 			logFile = logFileFromParam(dateString);
@@ -96,8 +94,8 @@ public class LogWebService {
 	
 	@GET
 	@Produces({ "text/plain", MediaType.APPLICATION_OCTET_STREAM })
-	public Response getCurrentLogFile( @Context HttpServletRequest request) {
-		return getLogFileByDate(null, request);
+	public Response getCurrentLogFile() {
+		return getLogFileByDate(null);
 	}
 
 	/**

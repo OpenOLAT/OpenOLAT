@@ -1205,7 +1205,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @return true if the user has this right, false otherwise.
 	 */
 	private boolean hasCourseRight(String right) {
-		Boolean bool = (Boolean) courseRightsCache.get(right);
+		Boolean bool = courseRightsCache.get(right);
 		return bool.booleanValue();
 	}
 

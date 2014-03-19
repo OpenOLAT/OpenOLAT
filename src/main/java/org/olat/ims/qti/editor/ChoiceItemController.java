@@ -123,7 +123,7 @@ public class ChoiceItemController extends DefaultController implements Controlle
 				displayMaterialFormController(ureq, editQuestion, restrictedEdit);
 				
 			} else if (cmd.equals("editr")) {
-				editResponse = ((Response) item.getQuestion().getResponses().get(posid));
+				editResponse = item.getQuestion().getResponses().get(posid);
 				Material responseMat = editResponse.getContent();
 				displayMaterialFormController(ureq, responseMat, restrictedEdit);
 

@@ -22,11 +22,9 @@ package org.olat.restapi.system;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -71,8 +69,8 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	public Response getStatistics() {
 		OpenOLATStatisticsVO stats = new OpenOLATStatisticsVO();
 		stats.setSessions(getSessionsVO());
-		stats.setUserStatistics(getUserStatistics());
-		stats.setRepositoryStatistics(getRepositoryStatistics());
+		stats.setUserStatistics(getUserStatisticsVO());
+		stats.setRepositoryStatistics(getRepositoryStatisticsVO());
 		stats.setIndexerStatistics(indexerWebService.getIndexerStatistics());
 		return Response.ok(stats).build();
 	}
@@ -90,8 +88,8 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	@GET
 	@Path("users")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getUserStatistics(@Context HttpServletRequest request) {
-		UserStatisticsVO stats = getUserStatistics();
+	public Response getUserStatistics() {
+		UserStatisticsVO stats = getUserStatisticsVO();
 		return Response.ok(stats).build();
 	}
 	
@@ -108,8 +106,8 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	@GET
 	@Path("repository")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getRepositoryStatistics(@Context HttpServletRequest request) {
-		RepositoryStatisticsVO stats = getRepositoryStatistics();
+	public Response getRepositoryStatistics() {
+		RepositoryStatisticsVO stats = getRepositoryStatisticsVO();
 		return Response.ok(stats).build();
 	}
 	
@@ -124,7 +122,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	 * @return The statistics about the indexer
 	 */
 	@Path("indexer")
-	public IndexerWebService getIndexerStatistics(@Context HttpServletRequest request) {
+	public IndexerWebService getIndexerStatistics() {
 		return indexerWebService;
 	}
 
@@ -141,7 +139,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	@GET
 	@Path("sessions")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getSessions(@Context HttpServletRequest request) {
+	public Response getSessions() {
 		SessionsVO vo = getSessionsVO();
 		return Response.ok(vo).build();
 	}
@@ -159,12 +157,12 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	@GET
 	@Path("tasks")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getTasks(@Context HttpServletRequest request) {
+	public Response getTasks() {
 		TasksVO vo = getTasksVO();
 		return Response.ok(vo).build();
 	}
 	
-	private UserStatisticsVO getUserStatistics() {
+	private UserStatisticsVO getUserStatisticsVO() {
 		UserStatisticsVO stats = new UserStatisticsVO();
 		
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
@@ -177,7 +175,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		return stats;
 	}
 	
-	private RepositoryStatisticsVO getRepositoryStatistics() {
+	private RepositoryStatisticsVO getRepositoryStatisticsVO() {
 		RepositoryStatisticsVO stats = new RepositoryStatisticsVO();
 		RepositoryManager repoMgr = CoreSpringFactory.getImpl(RepositoryManager.class);
 		int allCourses = repoMgr.countByTypeLimitAccess(CourseModule.ORES_TYPE_COURSE, RepositoryEntry.ACC_OWNERS);

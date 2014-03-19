@@ -83,7 +83,7 @@ public class QTIEditorTreeModel extends GenericTreeModel {
 			List<Item> items = elem.getItems();
 			for (int j=0; j < items.size(); j++) {
 				//get item data
-				Item elem2 = (Item)items.get(j);
+				Item elem2 = items.get(j);
 				GenericQtiNode itemNode = new ItemNode(elem2, qtiPackage);
 				//add item to its parent section
 				sectionNode.addChild(itemNode);

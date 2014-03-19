@@ -1599,7 +1599,7 @@ public class EPStructureManager extends BasicManager {
 	public PortfolioStructure reloadPortfolioStructure(PortfolioStructure structure) {
 		if (structure == null) throw new NullPointerException();
 		try {
-			return (PortfolioStructure)dbInstance.loadObject(EPStructureElement.class, structure.getKey());
+			return dbInstance.loadObject(EPStructureElement.class, structure.getKey());
 		} catch (ObjectNotFoundException e) {
 			return null;
 		}

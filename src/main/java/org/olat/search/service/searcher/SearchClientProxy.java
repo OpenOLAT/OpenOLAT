@@ -168,7 +168,7 @@ public class SearchClientProxy implements SearchClient {
 				log.debug("doSearch session=" + session);
 			}
 			Message requestMessage = session.createObjectMessage(searchRequest);
-			Message returnedMessage = (Message) doSearchRequest(session, requestMessage);
+			Message returnedMessage = doSearchRequest(session, requestMessage);
 			queryCount_++;
 			if(returnedMessage!=null){
 				String responseStatus = returnedMessage.getStringProperty(JMS_RESPONSE_STATUS_PROPERTY_NAME);
@@ -220,7 +220,7 @@ public class SearchClientProxy implements SearchClient {
 		try {
 			session = acquireSession();
 			TextMessage requestMessage = session.createTextMessage(query);
-			Message returnedMessage = (Message) doSearchRequest(session, requestMessage);			
+			Message returnedMessage = doSearchRequest(session, requestMessage);			
 			if(returnedMessage!=null){
 				@SuppressWarnings("unchecked")
 				List<String> spellStringList = (List<String>)((ObjectMessage)returnedMessage).getObject();	
@@ -257,7 +257,7 @@ public class SearchClientProxy implements SearchClient {
 	public void stop() {
 		try {
 			for (Iterator<Session> iterator = sessions_.iterator(); iterator.hasNext();) {
-				Session session = (Session) iterator.next();
+				Session session = iterator.next();
 				session.close();
 			}
 			connection_.close();

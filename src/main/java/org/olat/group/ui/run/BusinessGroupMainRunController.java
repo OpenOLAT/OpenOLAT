@@ -410,7 +410,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				if (RepositoryTableModel.TABLE_ACTION_SELECT_ENTRY.equals(actionid)
 						|| RepositoryTableModel.TABLE_ACTION_SELECT_LINK.equals(actionid)) {
 
-					RepositoryEntry currentRepoEntry = (RepositoryEntry)repoTableModel.getObject(rowid);
+					RepositoryEntry currentRepoEntry = repoTableModel.getObject(rowid);
 					OLATResource ores = currentRepoEntry.getOlatResource();
 					if (ores == null) throw new AssertException("repoEntry had no olatresource, repoKey = " + currentRepoEntry.getKey());
 					addLoggingResourceable(LoggingResourceable.wrap(ores, OlatResourceableType.genRepoEntry));

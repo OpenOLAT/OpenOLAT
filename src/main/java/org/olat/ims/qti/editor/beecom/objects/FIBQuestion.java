@@ -127,7 +127,7 @@ public class FIBQuestion extends Question implements QTIObject {
 				instance.setSingleCorrect(true);
 				Collection<Float> values = points.values();
 				if (values.size() > 0)
-					instance.setSingleCorrectScore(((Float)(values.iterator().next())).floatValue());
+					instance.setSingleCorrectScore((values.iterator().next()).floatValue());
 			} else {
 				instance.setSingleCorrect(false);
 			}

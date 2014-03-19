@@ -462,7 +462,7 @@ public class RepositoryManager extends BasicManager {
 				return null;
 			}
 		}
-		return (RepositoryEntry)result.get(0);
+		return result.get(0);
 	}
 	
 	/**

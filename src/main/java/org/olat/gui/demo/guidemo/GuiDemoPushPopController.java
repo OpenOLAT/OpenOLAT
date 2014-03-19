@@ -84,7 +84,7 @@ public class GuiDemoPushPopController extends BasicController {
 		StringBuilder result = new StringBuilder();
 		result.append("Current window stack:<br /><br />");
 		for (int i = windowStack.size(); i > 0; i--) {
-			Component component = (Component)windowStack.get(i-1);
+			Component component = windowStack.get(i-1);
 			result.append("Stack position " + i + ": " + component.getComponentName() + "<br />");
 		}
 		return result.toString();

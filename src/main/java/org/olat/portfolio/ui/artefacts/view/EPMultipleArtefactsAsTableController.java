@@ -274,7 +274,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 			Long resId = ores.getResourceableId();
 			ArtefactTableDataModel model = (ArtefactTableDataModel)  artefactListTblCtrl.getTableDataModel();
 			for(int i=0; i< model.getRowCount(); i++) {
-				AbstractArtefact artefact = (AbstractArtefact)model.getObject(i);
+				AbstractArtefact artefact = model.getObject(i);
 				if(artefact.getKey().equals(resId)) {
 					int artefactsPerPage = artefactListTblCtrl.getPageSize();
 					int rest = (i % artefactsPerPage);

@@ -62,7 +62,7 @@ public class ArtefactTableDataModel extends DefaultTableDataModel<AbstractArtefa
 	 */
 	@Override
 	public Object getValueAt(int row, int col) {
-		AbstractArtefact artefact = (AbstractArtefact) objects.get(row);
+		AbstractArtefact artefact = objects.get(row);
 		switch (col) {
 			case 0:
 				return artefact.getTitle();
@@ -80,7 +80,5 @@ public class ArtefactTableDataModel extends DefaultTableDataModel<AbstractArtefa
 			default:
 				return "ERROR";
 		}
-
 	}
-
 }

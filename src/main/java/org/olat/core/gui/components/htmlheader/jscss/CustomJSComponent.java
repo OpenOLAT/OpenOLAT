@@ -78,7 +78,6 @@ public class CustomJSComponent extends AbstractComponent {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void doDispatchRequest(UserRequest ureq) {
 		// do nothing here
 	}

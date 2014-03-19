@@ -92,16 +92,16 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 		// Uploader precondition
 		Condition uploadCondition = bcNode.getPreConditionUploaders();
-		uploaderCondContr = new ConditionEditController(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager(),
-				uploadCondition, "uploaderConditionForm", AssessmentHelper
+		uploaderCondContr = new ConditionEditController(ureq, getWindowControl(),
+				uploadCondition, AssessmentHelper
 						.getAssessableNodes(course.getEditorTreeModel(), bcNode), euce);		
 		this.listenTo(uploaderCondContr);
 		accessabiliryContent.put("uploadCondition", uploaderCondContr.getInitialComponent());
 
 		// Uploader precondition
 		Condition downloadCondition = bcNode.getPreConditionDownloaders();
-		downloaderCondContr = new ConditionEditController(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager(),
-				downloadCondition, "downloadConditionForm", AssessmentHelper
+		downloaderCondContr = new ConditionEditController(ureq, getWindowControl(),
+				downloadCondition, AssessmentHelper
 						.getAssessableNodes(course.getEditorTreeModel(), bcNode), euce);		
 		this.listenTo(downloaderCondContr);
 		accessabiliryContent.put("downloadCondition", downloaderCondContr.getInitialComponent());

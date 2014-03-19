@@ -35,6 +35,8 @@ package org.olat.core.logging;
 */
 public class StartupException extends OLATRuntimeException {
 
+	private static final long serialVersionUID = 2320056206742016400L;
+
 	/**
 	 * @param logMsg
 	 * @param cause

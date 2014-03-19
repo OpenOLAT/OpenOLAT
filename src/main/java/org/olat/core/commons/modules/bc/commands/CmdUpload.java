@@ -117,7 +117,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		// Calculate quota and limits
 		long actualUsage = 0;
 		quotaKB = Quota.UNLIMITED;
-		uploadLimitKB = (int)Quota.UNLIMITED;
+		uploadLimitKB = Quota.UNLIMITED;
 		
 		inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
 		if (inheritingContainer != null) {
@@ -163,7 +163,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 	public void refreshActualFolderUsage(){
 		long actualUsage = 0;
 		quotaKB = Quota.UNLIMITED;
-		uploadLimitKB = (int)Quota.UNLIMITED;
+		uploadLimitKB = Quota.UNLIMITED;
 		
 		inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
 		if (inheritingContainer != null) {

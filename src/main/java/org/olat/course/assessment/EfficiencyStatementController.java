@@ -210,7 +210,7 @@ public class EfficiencyStatementController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source.equals(collectArtefactLink)){
 			popupArtefactCollector(ureq);

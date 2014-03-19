@@ -77,7 +77,7 @@ public class NodeEvaluation extends GenericNode {
 
 	public boolean isCapabilityAccessible(String capabilityName) {
 		if(accesses.get(capabilityName)!=null) {
-		  return ((Boolean) accesses.get(capabilityName)).booleanValue();
+		  return accesses.get(capabilityName).booleanValue();
 		}
 		return false;
 	}

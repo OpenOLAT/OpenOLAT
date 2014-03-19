@@ -173,7 +173,7 @@ public class ItemWithResponseStr implements QTIItemObject {
 				Map<String,String> answerMap = QTIResultManager.parseResponseStrAnswers(answer);
 				
 				for (Iterator<String> iter = responseStrIdents.iterator(); iter.hasNext();) {
-					String element = (String) iter.next();
+					String element = iter.next();
 					if (answerMap.containsKey(element)) {
 						responseColumns.add(answerMap.get(element));	
 					} else {

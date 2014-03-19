@@ -222,7 +222,7 @@ public class StringOutput extends Writer {
 		    
 		    char[] dst = new char[1];
 		    sb.getChars(next++, next, dst, 0);
-		    return (int)dst[0];
+		    return dst[0];
     	}
     }
 

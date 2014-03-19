@@ -1113,7 +1113,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		boolean allConditionAreValid = true;
 		// loop over all conditions, all must be true
 		for (Iterator<ConditionExpression> iter = listOfConditionExpressions.iterator(); iter.hasNext();) {
-			ConditionExpression conditionExpression = (ConditionExpression) iter.next();
+			ConditionExpression conditionExpression = iter.next();
 			logDebug("conditionExpression=" + conditionExpression, null);
 			logDebug("conditionExpression.getId()=" + conditionExpression.getId(), null);
 			Condition condition = new Condition();

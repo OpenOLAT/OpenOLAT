@@ -120,16 +120,16 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 	 * @return TreeNode representing this href
 	 */
 	public TreeNode lookupTreeNodeByHref(String href) {
-		return (TreeNode) hrefToTreeNode.get(href);
+		return hrefToTreeNode.get(href);
 	}
 
 	private GenericTreeNode buildTreeNodes(List<Element> organizations) {
 		GenericTreeNode gtn = new GenericTreeNode();
 		// 0 is a valid index since List is testet be be not empty above
-		String rootNode = ((Element)organizations.get(0)).getParent().elementText("default");
+		String rootNode = organizations.get(0).getParent().elementText("default");
 		// if only one organization avoid too much hierarchy levels...
 		if (organizations.size() == 1) {
-			return buildNode((Element)organizations.get(0));
+			return buildNode(organizations.get(0));
 		}
 		// FIXME: localize "Content:"
 		gtn.setTitle((rootNode == null) ? "Content:" : rootNode);
@@ -172,7 +172,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 			String identifierref = item.attributeValue("identifierref");
 			XPath meta = rootElement.createXPath("//ns:resource[@identifier='" + identifierref + "']");
 			meta.setNamespaceURIs(nsuris);
-			String href = (String) resources.get(identifierref);
+			String href = resources.get(identifierref);
 			if (href != null) {
 				treeNode.setUserObject(href);
 				// allow lookup of a treenode given a href so we can quickly adjust the menu if the user clicks on hyperlinks within the text
@@ -221,7 +221,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 	 * @return int
 	 */
 	public int lookupScormNodeId(TreeNode treeNode){
-		Integer nodeInteger = (Integer)nodeToId.get(treeNode);
+		Integer nodeInteger = nodeToId.get(treeNode);
 		return nodeInteger.intValue();
 	}
 
@@ -230,7 +230,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 	 * @return an uri that points to the ressource identified by a flat id
 	 */
 	public TreeNode getNodeByScormItemId(String itemId) {
-		TreeNode node = (TreeNode)scormIdToNode.get(itemId);
+		TreeNode node = scormIdToNode.get(itemId);
 		return node;
 	}
 	

@@ -127,7 +127,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 				value = null;
 			}
 			return value;
-		} else if (user instanceof User) {
+		} else if (user != null) {
 			return user.getProperty(name, null);
 		}
 		return null;

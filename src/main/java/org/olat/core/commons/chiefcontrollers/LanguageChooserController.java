@@ -67,10 +67,8 @@ public class LanguageChooserController extends FormBasicController {
 	 * @see org.olat.core.gui.components.form.flexible.FormDefaultController#formOK(org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void formOK(UserRequest ureq) {
-	// TODO Auto-generated method stub
-
+	//
 	}
 
 	/**
@@ -79,7 +77,6 @@ public class LanguageChooserController extends FormBasicController {
 	 *      org.olat.core.gui.components.form.flexible.FormEvent)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		Locale loc = I18nManager.getInstance().getLocaleOrDefault(getSelectedLanguage());
 		MultiUserEvent mue = new LanguageChangedEvent(loc, ureq);

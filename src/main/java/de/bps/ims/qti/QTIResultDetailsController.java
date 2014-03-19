@@ -51,7 +51,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.QTIResultSet;
@@ -212,7 +211,7 @@ public class QTIResultDetailsController extends BasicController {
 				//<ONYX-705>
 				String iframeSrc = "";
 				try {
-					iframeSrc = onyxReporter.startReporterGUI(ureq.getIdentity(), identityList, (AssessableCourseNode) cn, assassmentId, ReporterRole.ASSESSMENT);
+					iframeSrc = onyxReporter.startReporterGUI(ureq.getIdentity(), identityList, cn, assassmentId, ReporterRole.ASSESSMENT);
 					//</ONYX-705>
 				} catch (OnyxReporterException e) {
 					// TODO Auto-generated catch block

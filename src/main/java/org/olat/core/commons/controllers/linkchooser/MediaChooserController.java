@@ -72,7 +72,6 @@ public class MediaChooserController extends LinkChooserController {
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Controller source, Event event) {		
 		fireEvent(ureq, event);
 	}

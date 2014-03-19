@@ -51,7 +51,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
@@ -570,11 +569,12 @@ public class CourseAssessmentWebService {
 			.append(" p.resourceTypeName = :restypename and p.resourceTypeId = :restypeid")
 			.append(" and p.name = '").append(AssessmentManager.SCORE).append("'")
 			.append(" and p.identity = :id");
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setString("restypename", course.getResourceableTypeName());
-		query.setLong("restypeid", course.getResourceableId().longValue());
-		query.setEntity("id", assessedIdentity);
-		List<Date> properties = query.list();
+		List<Date> properties = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Date.class)
+				.setParameter("restypename", course.getResourceableTypeName())
+				.setParameter("restypeid", course.getResourceableId().longValue())
+				.setParameter("id", assessedIdentity)
+				.getResultList();
 		if(!properties.isEmpty()) {
 			return properties.get(0);
 		}

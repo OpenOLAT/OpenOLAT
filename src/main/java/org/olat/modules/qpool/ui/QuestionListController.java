@@ -291,7 +291,7 @@ public class QuestionListController extends AbstractItemListController implement
 			}
 		} else if(source == createCollectionCtrl) {
 			if(Event.DONE_EVENT == event) {
-				List<QuestionItemShort> items = (List<QuestionItemShort>)createCollectionCtrl.getUserObject();
+				List<QuestionItemShort> items = createCollectionCtrl.getUserObject();
 				String collectionName = createCollectionCtrl.getName();
 				doCreateCollection(ureq, collectionName, items);
 			}

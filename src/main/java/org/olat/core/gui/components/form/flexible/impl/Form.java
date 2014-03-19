@@ -866,8 +866,6 @@ public class Form extends LogDelegator {
 	 * @param form
 	 * @param binderName
 	 */
-	
-	@SuppressWarnings("unchecked")
 	private void initReplayIdCounter(Controller listener) {
 		
 		Integer formNum = null;
@@ -881,7 +879,7 @@ public class Form extends LogDelegator {
 		Map<String,Integer> m = (Map<String,Integer>) o;
 		String k = listener.getClass().getName();
 		if (m.containsKey(k)) {
-			formNum = (Integer) m.get(k);
+			formNum = m.get(k);
 		}
 		
 		if (formNum == null) {		

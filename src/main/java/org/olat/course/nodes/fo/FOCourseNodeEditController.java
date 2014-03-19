@@ -39,7 +39,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -75,25 +74,24 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 		
 		myContent = this.createVelocityContainer("edit");		
 
-		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Reader precondition
 		Condition readerCondition = foNode.getPreConditionReader();
-		readerCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, readerCondition, "readerConditionForm",
+		readerCondContr = new ConditionEditController(ureq, getWindowControl(), readerCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, forumNode), euce);		
 		this.listenTo(readerCondContr);
 		myContent.put("readerCondition", readerCondContr.getInitialComponent());
 
 		// Poster precondition
 		Condition posterCondition = foNode.getPreConditionPoster();
-		posterCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, posterCondition, "posterConditionForm",
+		posterCondContr = new ConditionEditController(ureq, getWindowControl(), posterCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, forumNode), euce);		
 		this.listenTo(posterCondContr);
 		myContent.put("posterCondition", posterCondContr.getInitialComponent());
 
 		// Moderator precondition
 		Condition moderatorCondition = foNode.getPreConditionModerator();
-		moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, moderatorCondition, "moderatorConditionForm",
+		moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), moderatorCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, forumNode), euce);		
 		this.listenTo(moderatorCondContr);
 		myContent.put("moderatorCondition", moderatorCondContr.getInitialComponent());

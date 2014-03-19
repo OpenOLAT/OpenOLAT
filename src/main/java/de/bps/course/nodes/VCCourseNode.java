@@ -125,8 +125,8 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 			childTabCntrllr = new NoProviderController(ureq, wControl);
 		}
 		
-		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, course.getCourseEnvironment()
-				.getCourseGroupManager(), userCourseEnv, childTabCntrllr);
+		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode,
+				userCourseEnv, childTabCntrllr);
 		nodeEditCtr.addControllerListener(childTabCntrllr);
 		return nodeEditCtr;
 	}

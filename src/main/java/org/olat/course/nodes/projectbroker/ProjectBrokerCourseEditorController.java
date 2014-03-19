@@ -62,7 +62,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
@@ -142,7 +141,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	 * @param groupMgr
 	 */
 	protected ProjectBrokerCourseEditorController(UserRequest ureq, WindowControl wControl, ICourse course, ProjectBrokerCourseNode node,
-			CourseGroupManager groupMgr, UserCourseEnvironment euce) {
+			UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -171,7 +170,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		// Access
 		accessabilityVC = this.createVelocityContainer("edit_condition");
 		// ProjectBroker precondition
-		projectBrokerConditionController = new ConditionEditController(ureq, getWindowControl(), groupMgr, node.getConditionProjectBroker(), "projectBrokerConditionForm",
+		projectBrokerConditionController = new ConditionEditController(ureq, getWindowControl(), node.getConditionProjectBroker(),
 				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node), euce);		
 		this.listenTo(projectBrokerConditionController);
 		accessabilityVC.put("projectBrokerCondition", projectBrokerConditionController.getInitialComponent());

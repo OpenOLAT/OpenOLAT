@@ -73,7 +73,7 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 			//this one handle multipart/form too
 			String submitValue = getRootForm().getRequestParameter(inputId);
 			if(StringHelper.containsNonWhitespace(submitValue)) {
-				((TextBoxListElementComponent)component).setCmd(ureq, submitValue);
+				component.setCmd(ureq, submitValue);
 			}	
 		}			
 	}

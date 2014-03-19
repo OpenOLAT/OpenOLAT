@@ -225,7 +225,7 @@ public class QTIExportManager extends BasicManager{
 		result.add(qtir);
 		
 		while(queryResult.size()>0){
-			qtir = (QTIResult) queryResult.remove(0);
+			qtir = queryResult.remove(0);
 			if (qtir.getResultSet().getAssessmentID() == currentAssessmentID) result.add(qtir);
 			else {
 				queryResult.add(0,qtir);

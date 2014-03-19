@@ -116,7 +116,7 @@ public class StatusController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					Identity foundIdentity = (Identity) tdm.getObject(rowid);
+					Identity foundIdentity = tdm.getObject(rowid);
 					UserDeletionManager.getInstance().setIdentityAsActiv(foundIdentity);
 					updateUserList();
 				}

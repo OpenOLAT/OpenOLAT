@@ -41,24 +41,27 @@ public interface Step {
 	 * used instead of <code>null</code>
 	 */
 	public final static Step NOSTEP = new Step() {
-	
+		@Override
 		public Step nextStep() {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-	
+
+		@Override
 		public PrevNextFinishConfig getInitialPrevNextFinishConfig(){
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-		
+
+		@Override
 		public FormItem getStepTitle() {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-	
+
+		@Override
 		public FormItem getStepShortDescription() {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
-	
-		@SuppressWarnings("unused")
+
+		@Override
 		public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,StepsRunContext stepsRunContext, Form form) {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}

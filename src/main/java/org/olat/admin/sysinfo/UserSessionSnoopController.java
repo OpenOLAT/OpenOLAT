@@ -74,7 +74,7 @@ public class UserSessionSnoopController extends BasicController {
 		sb.append("<h4>Request attributes:</h4>");
 		Enumeration<String> e = hreq.getAttributeNames();
 		while (e.hasMoreElements()) {
-			String key = (String) e.nextElement();
+			String key = e.nextElement();
 			Object value = hreq.getAttribute(key);
 			appendFormattedKeyValue(sb, key, value);
 		}
@@ -93,7 +93,7 @@ public class UserSessionSnoopController extends BasicController {
 		sb.append("<h4>Parameter names in this hreq:</h4>");
 		e = hreq.getParameterNames();
 		while (e.hasMoreElements()) {
-			String key = (String) e.nextElement();
+			String key = e.nextElement();
 			String[] values = hreq.getParameterValues(key);
 			String value = "";
 			for (int i = 0; i < values.length; i++) {
@@ -105,7 +105,7 @@ public class UserSessionSnoopController extends BasicController {
 		sb.append("<h4>Headers in this hreq:</h4>");
 		e = hreq.getHeaderNames();
 		while (e.hasMoreElements()) {
-			String key = (String) e.nextElement();
+			String key = e.nextElement();
 			String value = hreq.getHeader(key);
 			appendFormattedKeyValue(sb, key, value);
 		}

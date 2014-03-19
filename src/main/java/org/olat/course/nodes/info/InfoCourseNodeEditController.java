@@ -35,7 +35,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.InfoCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -75,25 +74,24 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 		listenTo(infoConfigForm);
 		
 		editAccessVc = createVelocityContainer("edit_access");
-		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, accessCondition, "accessConditionForm",
+		accessCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, courseNode), euce);
 		listenTo(accessCondContr);
 		editAccessVc.put("readerCondition", accessCondContr.getInitialComponent());
 
 		// read / write preconditions
 		Condition editCondition = courseNode.getPreConditionEdit();
-		editCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, editCondition, "editConditionForm", AssessmentHelper
+		editCondContr = new ConditionEditController(ureq, getWindowControl(), editCondition, AssessmentHelper
 				.getAssessableNodes(editorModel, courseNode), euce);
 		listenTo(editCondContr);
 		editAccessVc.put("editCondition", editCondContr.getInitialComponent());
 		
 		// administration preconditions
 		Condition adminCondition = courseNode.getPreConditionAdmin();
-		adminCondContr = new ConditionEditController(ureq, getWindowControl(), groupMgr, adminCondition, "adminConditionForm", AssessmentHelper
+		adminCondContr = new ConditionEditController(ureq, getWindowControl(), adminCondition, AssessmentHelper
 				.getAssessableNodes(editorModel, courseNode), euce);
 		listenTo(adminCondContr);
 		editAccessVc.put("adminCondition", adminCondContr.getInitialComponent());

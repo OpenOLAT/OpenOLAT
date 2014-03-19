@@ -522,7 +522,7 @@ public class Tracing {
 		List<Logger> loggers = getLoggers();
 		Iterator<Logger> iter = loggers.iterator();
 		while (iter.hasNext()) {
-			Logger lo = (Logger) iter.next();
+			Logger lo = iter.next();
 			lo.setLevel(logLevel);
 		}
 	}
@@ -588,7 +588,7 @@ public class Tracing {
 		 * @return
 		 */
 		public HttpServletRequest getHttpServletRequest() {
-			return (HttpServletRequest) super.get();
+			return super.get();
 		}
 
 	}

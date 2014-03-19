@@ -315,7 +315,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		// existing configuration easier
 		removeRowAt(0);
 		for (final Iterator<ExtendedCondition> iterator = cond.iterator(); iterator.hasNext();) {
-			final ExtendedCondition extendedCondition = (ExtendedCondition) iterator.next();
+			final ExtendedCondition extendedCondition = iterator.next();
 			final int row = getRowCount();
 			// now count is always one more than the row position, thus the next position to add a row
 			// is the same as the current row count
@@ -346,15 +346,15 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		for (int move = rowPos + 1; move <= columnAttribute.size(); move++) {
 			FormItem oldPos = formComponents.get(columnAttribute.get(move - 1));
 			oldPos.setUserObject(Integer.valueOf(move));
-			oldPos = (FormItem) formComponents.get(columnOperator.get(move - 1));
+			oldPos = formComponents.get(columnOperator.get(move - 1));
 			oldPos.setUserObject(Integer.valueOf(move));
-			oldPos = (FormItem) formComponents.get(columnValueText.get(move - 1));
+			oldPos = formComponents.get(columnValueText.get(move - 1));
 			oldPos.setUserObject(Integer.valueOf(move));
-			oldPos = (FormItem) formComponents.get(columnValueSelection.get(move - 1));
+			oldPos = formComponents.get(columnValueSelection.get(move - 1));
 			oldPos.setUserObject(Integer.valueOf(move));
-			oldPos = (FormItem) formComponents.get(columnAddRow.get(move - 1));
+			oldPos = formComponents.get(columnAddRow.get(move - 1));
 			oldPos.setUserObject(Integer.valueOf(move));
-			oldPos = (FormItem) formComponents.get(columnRemoveRow.get(move - 1));
+			oldPos = formComponents.get(columnRemoveRow.get(move - 1));
 			oldPos.setUserObject(Integer.valueOf(move));
 		}
 		// 2) create the new row

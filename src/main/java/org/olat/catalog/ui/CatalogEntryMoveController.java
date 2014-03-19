@@ -126,7 +126,7 @@ public class CatalogEntryMoveController extends BasicController implements Catal
 		for (CatalogEntry child : parents) {
 			tmp.add(child);
 			if (child.getType() == CatalogEntry.TYPE_NODE) {
-				tmp.addAll(fetchChildren((List<CatalogEntry>) CatalogManager.getInstance().getChildrenOf(child)));
+				tmp.addAll(fetchChildren(CatalogManager.getInstance().getChildrenOf(child)));
 			}
 		}
 		return tmp;
@@ -141,9 +141,9 @@ public class CatalogEntryMoveController extends BasicController implements Catal
 	 */
 	private List<CatalogEntry> getOwnedEntries(UserRequest ureq) {
 		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			return (List<CatalogEntry>) CatalogManager.getInstance().getRootCatalogEntries();
+			return CatalogManager.getInstance().getRootCatalogEntries();
 		} else {
-			return (List<CatalogEntry>) CatalogManager.getInstance().getCatalogEntriesOwnedBy(ureq.getIdentity());
+			return CatalogManager.getInstance().getCatalogEntriesOwnedBy(ureq.getIdentity());
 		}
 	}
 }

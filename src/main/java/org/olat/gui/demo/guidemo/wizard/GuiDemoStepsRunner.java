@@ -79,12 +79,10 @@ public class GuiDemoStepsRunner extends BasicController {
 	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+	//
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == smrc) {
 			if (event == Event.CANCELLED_EVENT) {
@@ -105,7 +103,6 @@ public class GuiDemoStepsRunner extends BasicController {
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == startLink) {
 			/*
@@ -169,7 +166,6 @@ public class GuiDemoStepsRunner extends BasicController {
 		}
 
 		@Override
-		@SuppressWarnings("unused")
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("guidemo_flexi_form_simpleform");
 			final int defaultDisplaySize = 32;
@@ -202,8 +198,7 @@ public class GuiDemoStepsRunner extends BasicController {
 
 		@Override
 		protected void doDispose() {
-		// TODO Auto-generated method stub
-
+		//
 		}
 	}
 
@@ -245,8 +240,7 @@ public class GuiDemoStepsRunner extends BasicController {
 
 		@Override
 		protected void doDispose() {
-		// TODO Auto-generated method stub
-
+		//
 		}
 
 		@Override
@@ -259,7 +253,6 @@ public class GuiDemoStepsRunner extends BasicController {
 		}
 
 		@Override
-		@SuppressWarnings("unused")
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			//
 			firstName = uifactory.addTextElement("firstname", null, 256, (String) getFromRunContext("firstname"), formLayout);

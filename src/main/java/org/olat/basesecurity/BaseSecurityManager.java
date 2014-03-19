@@ -844,12 +844,12 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	  sb.append("select invitation from ").append(InvitationImpl.class.getName()).append(" as invitation ")
 	  	.append(" where invitation.securityGroup=:secGroup ");
 
-	  DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-	  query.setEntity("secGroup", secGroup);
-	  
-	  List<Invitation> invitations = (List<Invitation>)query.list();
+	  List<Invitation> invitations = dbInstance.getCurrentEntityManager()
+			  .createQuery(sb.toString(), Invitation.class)
+			  .setParameter("secGroup", secGroup)
+			  .getResultList();
 	  if(invitations.isEmpty()) return null;
-    return invitations.get(0);
+	  return invitations.get(0);
 	}
 	
 	/**
@@ -864,7 +864,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	  DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
 	  query.setString("token", token);
 	  
-	  List<Invitation> invitations = (List<Invitation>)query.list();
+	  List<Invitation> invitations = query.list();
 	  if(invitations.isEmpty()) return null;
     return invitations.get(0);
 	}
@@ -924,7 +924,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	  DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
 	  query.setDate("currentDate", currentTime);
 	  query.setDate("dateLimit", dateLimit);
-	  List<Invitation> oldInvitations = (List<Invitation>)query.list();
+	  List<Invitation> oldInvitations = query.list();
 	  if(oldInvitations.isEmpty()) {
 	  	return;
 	  }
@@ -1189,7 +1189,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		int size = group.size();
 		if (size == 0) return null;
 		if (size != 1) throw new AssertException("non unique name in namedgroup: " + securityGroupName);
-		SecurityGroup sg = (SecurityGroup) group.get(0);
+		SecurityGroup sg = group.get(0);
 		return sg;
 	}
 
@@ -1340,7 +1340,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	public Identity loadIdentityByKey(Long identityKey) {
 		if (identityKey == null) throw new AssertException("findIdentitybyKey: key is null");
 		if(identityKey.equals(Long.valueOf(0))) return null;
-		return (Identity) DBFactory.getInstance().loadObject(IdentityImpl.class, identityKey);
+		return DBFactory.getInstance().loadObject(IdentityImpl.class, identityKey);
 	}
 
 	@Override

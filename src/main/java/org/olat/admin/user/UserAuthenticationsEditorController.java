@@ -154,7 +154,7 @@ public class UserAuthenticationsEditorController extends BasicController{
 		 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 		 */
 		public final Object getValueAt(int row, int col) {
-			Authentication auth = (Authentication) getObject(row);
+			Authentication auth = getObject(row);
 			switch (col) {
 				case 0 : return auth.getProvider();
 				case 1 : return auth.getAuthusername();

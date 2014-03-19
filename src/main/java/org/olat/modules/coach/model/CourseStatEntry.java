@@ -113,13 +113,13 @@ public class CourseStatEntry {
 		countStudents += entry.getCountStudents();
 		countDistinctStudents += entry.getCountDistinctStudents();
 
-		float score1 = averageScore == null ? 0.0f : (averageScore * (float)(countPassed + countFailed));
-		float score2 = entry.averageScore == null ? 0.0f : (entry.averageScore * (float)(entry.countPassed + entry.countFailed));
+		float score1 = averageScore == null ? 0.0f : (averageScore * (countPassed + countFailed));
+		float score2 = entry.averageScore == null ? 0.0f : (entry.averageScore * (entry.countPassed + entry.countFailed));
 		float scores =  (score1 + score2);
 		if(scores <= 0.0f) {
 			averageScore = null;
 		} else {
-			averageScore = scores / (float)(countPassed + countFailed + entry.countPassed + entry.countFailed);
+			averageScore = scores / (countPassed + countFailed + entry.countPassed + entry.countFailed);
 		}
 		
 		countPassed += entry.getCountPassed();

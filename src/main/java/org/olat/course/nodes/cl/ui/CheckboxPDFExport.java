@@ -274,7 +274,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 		int rows = end - offset;
 		
 		float tableHeight = (rowHeight * rows) + headerHeight;
-		float colWidth = (tableWidth - (100 + nameMaxSize)) / (float) (cols - 2.0f);
+		float colWidth = (tableWidth - (100 + nameMaxSize)) / (cols - 2.0f);
 
 		// draw the rows
 		float y = currentY;

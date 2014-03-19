@@ -144,9 +144,9 @@ public class SessionStatsManager implements Sampler {
 		}
 		
 		double duration = (fromTimestamp - lastTime) / 1000;
-		double pollPerSlot = (polls / duration) * (double)numOfSeconds;
-		double clickPerSlot = (clicks / duration) * (double)numOfSeconds;
-		double requestPerSlot = (requests / duration) * (double)numOfSeconds;
+		double pollPerSlot = (polls / duration) * numOfSeconds;
+		double clickPerSlot = (clicks / duration) * numOfSeconds;
+		double requestPerSlot = (requests / duration) * numOfSeconds;
 		
 		SessionsStats stats = new SessionsStats();
 		stats.setAuthenticatedClickCalls(Math.round(clickPerSlot));

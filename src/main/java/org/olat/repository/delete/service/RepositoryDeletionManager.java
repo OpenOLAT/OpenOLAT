@@ -136,7 +136,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		// Remove as owner
 		List<RepositoryEntry> repoEntries = RepositoryManager.getInstance().queryByOwner(identity, new String[] {}/*no type limit*/);
 		for (Iterator<RepositoryEntry> iter = repoEntries.iterator(); iter.hasNext();) {
-			RepositoryEntry repositoryEntry = (RepositoryEntry) iter.next();
+			RepositoryEntry repositoryEntry = iter.next();
 			
 			repositoryService.removeRole(identity, repositoryEntry, GroupRoles.owner.name());
 			if (repositoryService.countMembers(repositoryEntry, GroupRoles.owner.name()) == 0 ) {
@@ -148,7 +148,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		// Remove as initial author
 		repoEntries = RepositoryManager.getInstance().queryByInitialAuthor(identity.getName());
 		for (Iterator<RepositoryEntry> iter = repoEntries.iterator(); iter.hasNext();) {
-			RepositoryEntry repositoryEntry = (RepositoryEntry) iter.next();
+			RepositoryEntry repositoryEntry = iter.next();
 			repositoryEntry.setInitialAuthor(deletionModule.getAdminUserIdentity().getName());
 			logInfo("Delete user-data, add Administrator-identity as initial-author of repositoryEntry=" + repositoryEntry.getDisplayname());
 		}
@@ -423,7 +423,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		if (properties.size() == 0) {
 			return defaultValue;
 		} else {
-			return ((Property)properties.get(0)).getLongValue().intValue();
+			return properties.get(0).getLongValue().intValue();
 		}
 	}
 
@@ -433,7 +433,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		if (properties.size() == 0) {
 			property = PropertyManager.getInstance().createPropertyInstance(null, null, null, PROPERTY_CATEGORY, propertyName, null,  new Long(value), null, null);
 		} else {
-			property = (Property)properties.get(0);
+			property = properties.get(0);
 			property.setLongValue( new Long(value) );
 		}
 		PropertyManager.getInstance().saveProperty(property);

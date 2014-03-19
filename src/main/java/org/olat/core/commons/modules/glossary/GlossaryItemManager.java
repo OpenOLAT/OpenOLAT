@@ -239,7 +239,7 @@ public class GlossaryItemManager extends BasicManager {
 			glossaryCache = coordinatorManager.getCoordinator().getCacher().getCache(GlossaryItemManager.class.getSimpleName(), "glossary");
 		}
 		//try to load from cache
-		ArrayList<GlossaryItem> glossaryItemList = (ArrayList<GlossaryItem>) glossaryCache.get(glossaryKey);
+		ArrayList<GlossaryItem> glossaryItemList = glossaryCache.get(glossaryKey);
 		if (glossaryItemList != null){
 			if (isLogDebugEnabled()){
 				logDebug("Loading glossary from cache.", null);

@@ -72,7 +72,7 @@ public class ShibLoginPortlet extends AbstractPortlet {
 	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
 	 */
 	public String getTitle() {
-		String title = (String)getConfiguration().get("title_" + getTranslator().getLocale().toString());
+		String title = getConfiguration().get("title_" + getTranslator().getLocale().toString());
 		if (title == null) {
 				title = getTranslator().translate("portlet.title");
 		}
@@ -83,7 +83,7 @@ public class ShibLoginPortlet extends AbstractPortlet {
 	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
 	 */
 	public String getDescription() {
-		String desc = (String)getConfiguration().get("description_" + getTranslator().getLocale().toString());
+		String desc = getConfiguration().get("description_" + getTranslator().getLocale().toString());
 		if (desc == null) {
 			desc = getTranslator().translate("portlet.description");
 		}
@@ -101,7 +101,7 @@ public class ShibLoginPortlet extends AbstractPortlet {
 		p.setConfiguration(configuration);
 		p.setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale()));
 		// override css class if configured
-		String cssClass = (String)configuration.get("cssWrapperClass");
+		String cssClass = configuration.get("cssWrapperClass");
 		if (cssClass != null) p.setCssWrapperClass(cssClass);
 		return p;
 	}

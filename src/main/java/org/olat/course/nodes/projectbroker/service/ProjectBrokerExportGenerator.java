@@ -114,9 +114,8 @@ public class ProjectBrokerExportGenerator {
 		line.append(t.translate(project.getState()));
 		line.append(TABLE_DELIMITER);
 		// loop over customfileds
-		int customFieldIndex = 0;
-		for (CustomField customField : moduleConfig.getCustomFields()) {
-			String value = project.getCustomFieldValue(customFieldIndex++);
+		for (int customFieldIndex=0; customFieldIndex<moduleConfig.getCustomFields().size(); customFieldIndex++) {
+			String value = project.getCustomFieldValue(customFieldIndex);
 			line.append(value);
 			line.append(TABLE_DELIMITER);
 		}

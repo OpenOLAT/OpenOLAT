@@ -29,11 +29,9 @@ import java.lang.management.ThreadMXBean;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -68,11 +66,11 @@ public class RuntimeWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getSystemSummaryVO(@Context HttpServletRequest request) {
+	public Response getSystemSummaryVO() {
 		RuntimeStatisticsVO stats = new RuntimeStatisticsVO();
-		stats.setMemory(getMemoryStatistics());
-		stats.setThreads(getThreadStatistics());
-		stats.setClasses(getClasseStatistics());
+		stats.setMemory(getMemoryStatisticsVO());
+		stats.setThreads(getThreadStatisticsVO());
+		stats.setClasses(getClasseStatisticsVO());
 		
 		OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
 		RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
@@ -97,8 +95,8 @@ public class RuntimeWebService {
 	@GET
 	@Path("memory")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getMemoryStatistics(@Context HttpServletRequest request) {
-		MemoryStatisticsVO stats = getMemoryStatistics();
+	public Response getMemoryStatistics() {
+		MemoryStatisticsVO stats = getMemoryStatisticsVO();
 		return Response.ok(stats).build();
 	}
 	
@@ -116,8 +114,8 @@ public class RuntimeWebService {
 	@GET
 	@Path("threads")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getThreadStatistics(@Context HttpServletRequest request) {
-		ThreadStatisticsVO stats = getThreadStatistics();
+	public Response getThreadStatistics() {
+		ThreadStatisticsVO stats = getThreadStatisticsVO();
 		return Response.ok(stats).build();
 	}
 	
@@ -134,12 +132,12 @@ public class RuntimeWebService {
 	@GET
 	@Path("classes")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCompilationXml(@Context HttpServletRequest request) {
-		ClasseStatisticsVO stats = getClasseStatistics();
+	public Response getCompilationXml() {
+		ClasseStatisticsVO stats = getClasseStatisticsVO();
 		return Response.ok(stats).build();
 	}
 	
-	private ThreadStatisticsVO getThreadStatistics() {
+	private ThreadStatisticsVO getThreadStatisticsVO() {
 		ThreadStatisticsVO stats = new ThreadStatisticsVO();
 		ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 		stats.setDaemonCount(threadBean.getDaemonThreadCount());
@@ -148,7 +146,7 @@ public class RuntimeWebService {
 		return stats;
 	}
 	
-	private MemoryStatisticsVO getMemoryStatistics() {
+	private MemoryStatisticsVO getMemoryStatisticsVO() {
 		MemoryStatisticsVO stats = new MemoryStatisticsVO();
 		
     Runtime runtime = Runtime.getRuntime();
@@ -179,7 +177,7 @@ public class RuntimeWebService {
 		return stats;
 	}
 	
-	private ClasseStatisticsVO getClasseStatistics() {
+	private ClasseStatisticsVO getClasseStatisticsVO() {
 		ClasseStatisticsVO stats = new ClasseStatisticsVO();
 		ClassLoadingMXBean bean = ManagementFactory.getClassLoadingMXBean();
 		stats.setLoadedClassCount(bean.getLoadedClassCount());

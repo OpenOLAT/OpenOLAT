@@ -1592,7 +1592,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		
 		TaskConfigVO config = new TaskConfigVO();
 		ICourse course = CourseWebService.loadCourse(courseId);
-		CourseNode courseNode = (TACourseNode) getParentNode(course, nodeId);
+		CourseNode courseNode = getParentNode(course, nodeId);
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		//build configuration with fallback to default values
 		Boolean isAssignmentEnabled = (Boolean)moduleConfig.get(TACourseNode.CONF_TASK_ENABLED);

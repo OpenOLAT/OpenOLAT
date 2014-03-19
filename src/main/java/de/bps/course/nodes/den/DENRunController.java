@@ -194,7 +194,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 			//the link to enroll or cancel enrollment is clicked
 			if(event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent tableEvent = (TableEvent)event;
-				KalendarEvent calEvent = (KalendarEvent)runTableData.getObject(tableEvent.getRowId());
+				KalendarEvent calEvent = runTableData.getObject(tableEvent.getRowId());
 				if(tableEvent.getActionId().equals(DENRunTableDataModel.CMD_ENROLL_IN_DATE)) {
 					//do enroll
 					status = denManager.doEnroll(ureq.getIdentity(), calEvent, ores, courseNode);
