@@ -220,7 +220,7 @@
 				    {text: translator().translate('olatmovieviewer.sound'), value: 'sound'},
 				    {text: translator().translate('olatmovieviewer.youtube'), value: 'youtube'},
 				    {text: translator().translate('olatmovieviewer.http'), value: 'http'},
-				    {text: translator().translate('olatmovieviewer.rtmp'), value: 'rtmp'},
+				    {text: translator().translate('olatmovieviewer.rtmp'), value: 'rtmp'}
 				];
 				return targetListItems;
 			}
@@ -357,7 +357,7 @@
 				var h = '<script src="' + playerScriptUrl + '" type="text/javascript"></script>';
 				h += '<script type="text/javascript" defer="defer">';
 				h += 'BPlayer.insertPlayer("' + p.address + '","' + domIdentity + '",' + playerWidth + ',' + playerHeight + ',' + starttime + ',0,' + provider + ',' + streamer +',' + autostart + ',' + repeat + ',' + controlbar + ');';
-				h += '//</script>';
+				h += '</script>';
 				var node = ed.dom.create("span", {id:domIdentity,name:domIdentity,"class":"olatFlashMovieViewer",style:'display:block;border:solid 1px #000; width:' + playerWidth + 'px; height:' + playerHeight + 'px;'},h);
 				return node;
 			};

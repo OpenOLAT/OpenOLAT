@@ -734,7 +734,7 @@ public class RichTextConfiguration implements Disposable {
  		tinyMenuSb.append("image_class_list: [\n")
  		  .append("  {title: 'Left', value: 'b_float_left'},\n")
  		  .append("  {title: 'Center', value: 'b_centered'},\n")
- 		  .append("  {title: 'Right', value: 'b_float_right'},\n")
+ 		  .append("  {title: 'Right', value: 'b_float_right'}\n")
  		  .append("],\n");
  		
 		if (tinyConfig.getTool1() != null) {
