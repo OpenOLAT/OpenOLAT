@@ -270,8 +270,12 @@ public class CheckListRunController extends FormBasicController implements Contr
 			theOne = wrapper.getDbCheckbox();
 		}
 
-
-		Float score = checked ? wrapper.getCheckbox().getPoints() : 0f;
+		Float score;
+		if(checked) {
+			score = wrapper.getCheckbox().getPoints();
+		} else {
+			score = 0f;
+		}
 		checkboxManager.check(theOne, getIdentity(), score, new Boolean(checked));
 		//make sure all results is on the database before calculating some scores
 		//manager commit already DBFactory.getInstance().commit();

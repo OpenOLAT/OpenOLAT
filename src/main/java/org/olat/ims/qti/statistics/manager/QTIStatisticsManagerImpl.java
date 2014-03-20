@@ -22,6 +22,7 @@ package org.olat.ims.qti.statistics.manager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -488,7 +489,7 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		List<Object[]> results = query.getResultList();
 		
 		if(results.isEmpty()) {
-			return null;
+			return Collections.emptyList();
 		}
 
 		List<StatisticAnswerOption> answerToNumberList = new ArrayList<>();
@@ -516,7 +517,7 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		List<Object[]> results = query.getResultList();
 		
 		if(results.isEmpty()) {
-			return null;
+			return  Collections.emptyList();
 		}
 		
 		Map<String, Item> identToItemMap = new HashMap<>();
