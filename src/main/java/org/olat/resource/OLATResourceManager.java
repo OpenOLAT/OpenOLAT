@@ -28,7 +28,6 @@ package org.olat.resource;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
@@ -61,6 +60,13 @@ public class OLATResourceManager extends BasicManager {
 	 */
 	private OLATResourceManager() {
 		INSTANCE = this;
+	}
+	
+	/**
+	 * @param db
+	 */
+	public void setDbInstance(DB db) {
+		this.dbInstance = db;
 	}
 	
 	/**
@@ -189,24 +195,19 @@ public class OLATResourceManager extends BasicManager {
 	private OLATResource doQueryResourceable(Long resourceableId, String type){
 		if (resourceableId == null) resourceableId = OLATResourceImpl.NULLVALUE;
 
-		String s = new String("from org.olat.resource.OLATResourceImpl ori where ori.resName = :resname and ori.resId = :resid");
-		DBQuery query = null;
-		query = dbInstance.createQuery(s);
-		query.setString("resname", type);
-		query.setLong("resid", resourceableId.longValue());
-		query.setCacheable(true);
-		
-		List resources = query.list();
+		String s = "select ori from org.olat.resource.OLATResourceImpl ori where ori.resName = :resname and ori.resId = :resid";
+
+		List<OLATResource> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(s, OLATResource.class)
+				.setParameter("resname", type)
+				.setParameter("resid", resourceableId.longValue())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+
 		// if not found, it is an empty list
-		if (resources.size() == 0) return null;
-		return (OLATResource)resources.get(0);
+		if (resources.size() == 0) {
+			return null;
+		}
+		return resources.get(0);
 	}
-  
-	/**
-	 * @param db
-	 */
-	public void setDbInstance(DB db) {
-		this.dbInstance = db;
-	}
-	
 }

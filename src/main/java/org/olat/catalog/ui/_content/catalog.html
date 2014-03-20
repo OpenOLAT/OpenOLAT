@@ -17,8 +17,13 @@
 	<div class="o_catalog_title b_with_small_icon_left o_catalog_cat_icon">
 		$r.translate("category") <strong>$r.escapeHtml($currentCatalogEntry.getName())</strong>			
 	</div>
-	#if ($currentCatalogEntry.getDescription())
-		<div class="o_catalog_desc">$r.escapeHtml($currentCatalogEntry.getDescription())</div>
+	#if ($currentCatalogEntry.getDescription() || $r.available("catThumbnail"))
+		<div class="b_clearfix"><div class="o_catalog_desc">
+			#if($r.available("catThumbnail"))
+				<div class="o_catalog_thumbnail">$r.render("catThumbnail")</div>
+			#end
+			$r.xssScan($currentCatalogEntry.getDescription())
+		</div></div>
 	#end
 		
 	## calculate some temporary variables

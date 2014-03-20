@@ -42,7 +42,6 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -153,7 +152,6 @@ public class CatalogController extends BasicController implements Activateable2 
 	private static final String ACTION_EDIT_CTLGCATOWNER = "editCtlgCategoryOwnerGroup";
 	private static final String ACTION_DELETE_CTLGCATEGORY = "actionDeleteCtlgCategory";
 	private static final String ACTION_NEW_CTGREQUEST = "actionCategoryRequest";
-	private static final String ACTION_ADD_STRUCTURE = "addStructure";
 	
 	private static final String ACTION_ADD_BOOKMARK = "addBookmark";
 	private static final String ACTION_MOVE_ENTRY = "moveEntry";
@@ -185,16 +183,12 @@ public class CatalogController extends BasicController implements Activateable2 
 	private static final String NLS_TOOLS_ADD_HEADER = "tools.add.header";
 	private static final String NLS_TOOLS_ADD_CATALOG_CATEGORY = "tools.add.catalog.category";
 	private static final String NLS_TOOLS_ADD_CATALOG_LINK = "tools.add.catalog.link";
-	private static final String NLS_TOOLS_PASTESTRUCTURE = "tools.pastestructure";
 	private static final String NLS_TOOLS_MOVE_CATALOG_ENTRY = "tools.move.catalog.entry";
 	
 	// private stuff
 
 	private VelocityContainer myContent;
 
-	private final CatalogManager cm;
-	private final ACService acService;
-	private final RepositoryManager repositoryManager;
 	private CatalogEntry currentCatalogEntry;
 	private CatalogEntry newLinkNotPersistedYet;
 	private int currentCatalogEntryLevel = -1;
@@ -218,7 +212,6 @@ public class CatalogController extends BasicController implements Activateable2 
 	private CatalogEntry linkMarkedToBeEdited;
 	private DialogBoxController dialogDeleteLink;
 	private ContactFormController cfc;
-	private EntryForm addStructureForm;
 	private boolean isGuest;
 	private Link loginLink;
 	private CloseableModalController cmc;
@@ -228,9 +221,12 @@ public class CatalogController extends BasicController implements Activateable2 
 	// locking stuff for cataloge edit operations
 	private LockResult catModificationLock;
 	public static final String LOCK_TOKEN = "catalogeditlock";
-	
+
+	private final CatalogManager cm;
+	private final ACService acService;
 	private final MarkManager markManager;
 	private final UserManager userManager;
+	private final RepositoryManager repositoryManager;
 	private final RepositoryService repositoryService;
 	
 	/**
@@ -253,7 +249,9 @@ public class CatalogController extends BasicController implements Activateable2 
 
 		List<CatalogEntry> rootNodes = cm.getRootCatalogEntries();
 		CatalogEntry rootce;
-		if (rootNodes.isEmpty()) throw new AssertException("No RootNodes found for Catalog! failed module init? corrupt DB?");
+		if (rootNodes.isEmpty()) {
+			throw new AssertException("No RootNodes found for Catalog! failed module init? corrupt DB?");
+		}
 		rootce = rootNodes.get(0);
 
 		// Check AccessRights
@@ -401,15 +399,9 @@ public class CatalogController extends BasicController implements Activateable2 
 					}
 				}
 			}
-		}
-		/*
-		 * login link clicked
-		 */		
-		else if (source == loginLink){
+		} else if (source == loginLink){
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 		}
-		
-		
 	}
 
 	/**
@@ -433,7 +425,9 @@ public class CatalogController extends BasicController implements Activateable2 
 					return;
 				}
 				removeAsListenerAndDispose(addEntryForm);
-				addEntryForm = new EntryForm(ureq, getWindowControl(), false);
+
+				CatalogEntry ce = cm.createCatalogEntry();
+				addEntryForm = new EntryForm(ureq, getWindowControl(), ce, currentCatalogEntry);
 				addEntryForm.setElementCssClass("o_sel_catalog_add_category_popup");
 				listenTo(addEntryForm);
 				
@@ -475,15 +469,15 @@ public class CatalogController extends BasicController implements Activateable2 
 					showError("catalog.locked.by", ownerName);
 					return;
 				}
+				
+				removeAsListenerAndDispose(cmc);
 				removeAsListenerAndDispose(editEntryForm);
-				editEntryForm = new EntryForm(ureq, getWindowControl(), false);
+				
+				editEntryForm = new EntryForm(ureq, getWindowControl(), currentCatalogEntry);
 				editEntryForm.setElementCssClass("o_sel_catalog_edit_category_popup");
 				listenTo(editEntryForm);
 				
-				editEntryForm.setFormFields(currentCatalogEntry);// fill the
-				
 				// open form in dialog
-				removeAsListenerAndDispose(cmc);
 				cmc = new CloseableModalController(getWindowControl(), "close", editEntryForm.getInitialComponent(), true, translate("tools.edit.catalog.category"));
 				listenTo(cmc);
 				
@@ -570,21 +564,6 @@ public class CatalogController extends BasicController implements Activateable2 
 				listenTo(cmc);
 				
 				cmc.activate();					
-			}
-			/*
-			 * add a structure
-			 */
-			else if (event.getCommand().equals(ACTION_ADD_STRUCTURE)) {
-				removeAsListenerAndDispose(addStructureForm);
-				addStructureForm = new EntryForm(ureq, getWindowControl(), false);
-				addStructureForm.setElementCssClass("o_sel_catalog_add_root_category_popup");
-				listenTo(addStructureForm);
-				
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), "close", addStructureForm.getInitialComponent(), true, translate("contact.caretaker"));
-				listenTo(cmc);
-				
-				cmc.activate();					
 			} else if (ACTION_ADD_BOOKMARK.equals(event.getCommand())) {
 				String businessPath = "[CatalogEntry:" + currentCatalogEntry.getKey() + "]";
 				OLATResourceable ores = cm.createOLATResouceableFor(currentCatalogEntry);
@@ -614,18 +593,6 @@ public class CatalogController extends BasicController implements Activateable2 
 						true, translate(NLS_TOOLS_MOVE_CATALOG_ENTRY));
 				listenTo(cmc);
 				cmc.activate();
-			} else if (source == addStructureForm) {
-				// remove modal dialog first
-				cmc.deactivate();
-				if (event == Event.DONE_EVENT) {
-					importStructure();
-				}
-				CatalogEntry newRoot = cm.getRootCatalogEntries().get(0);
-				historyStack = new ArrayList<CatalogEntry>();
-				historyStack.add(newRoot);
-				updateContent(ureq, newRoot, 0);
-				updateToolAccessRights(ureq, currentCatalogEntry, currentCatalogEntryLevel);
-				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 		/*
@@ -662,13 +629,9 @@ public class CatalogController extends BasicController implements Activateable2 
 				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 				updateToolAccessRights(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 				fireEvent(ureq, Event.CHANGED_EVENT);
-
 			}
-		}
-		/*
-		 * from remove subtree dialog -> yes or no
-		 */
-		else if (source == dialogDeleteSubtree) {
+		} else if (source == dialogDeleteSubtree) {
+			//from remove subtree dialog -> yes or no
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				// remember the parent of the subtree being deleted
 				CatalogEntry parent = currentCatalogEntry.getParent();
@@ -686,11 +649,8 @@ public class CatalogController extends BasicController implements Activateable2 
 				catModificationLock = null;
 			}
 
-		}
-		/*
-		 * from remove link dialog -> yes or no
-		 */
-		else if (source == dialogDeleteLink) {
+		} else if (source == dialogDeleteLink) {
+			//from remove link dialog -> yes or no
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				cm.deleteCatalogEntry(linkMarkedToBeDeleted);
 				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
@@ -700,36 +660,17 @@ public class CatalogController extends BasicController implements Activateable2 
 				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(catModificationLock);
 				catModificationLock = null;
 			}
-		}
-		/*
-		 * from contactform controller, aka sending e-mail to caretaker
-		 */
-		else if (source == cfc) {
-			// remove modal dialog
+		} else if (source == cfc) {
+			//from contactform controller, aka sending e-mail to caretaker
 			cmc.deactivate();
 			if (event.equals(Event.DONE_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
 				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 			}
+			cleanUp();
 		} else if (source == groupController) {
-			// remove modal dialog
 			cmc.deactivate();
-			if(event instanceof IdentitiesAddEvent ) { //FIXME:chg: Move into seperate RepositoryOwnerGroupController like BusinessGroupEditController ?
-				IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent) event;
-				List<Identity> list = identitiesAddedEvent.getAddIdentities();
-				BaseSecurity securityManager = BaseSecurityManager.getInstance();
-        for (Identity identity : list) {
-        	if (!securityManager.isIdentityInSecurityGroup(identity, currentCatalogEntry.getOwnerGroup())) {
-        		securityManager.addIdentityToSecurityGroup(identity, currentCatalogEntry.getOwnerGroup());
-        		identitiesAddedEvent.getAddedIdentities().add(identity);
-        	}
-        }
-			} else if (event instanceof IdentitiesRemoveEvent) {
-				IdentitiesRemoveEvent identitiesRemoveEvent = (IdentitiesRemoveEvent) event;
-				List<Identity> list = identitiesRemoveEvent.getRemovedIdentities();
-        for (Identity identity : list) {
-        	BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, currentCatalogEntry.getOwnerGroup());
-        }		
-			}
+			doAddOwners(event);
+			cleanUp();
 		} else if(source == catEntryMoveController){
 			cmc.deactivate();
 			if(event.equals(Event.DONE_EVENT)){
@@ -746,16 +687,9 @@ public class CatalogController extends BasicController implements Activateable2 
 				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(catModificationLock);
 				catModificationLock = null;
 			}
-		} 
-		
-		else if (source == cmc) {
-			// in any case, remove the lock
-			if (catModificationLock != null && catModificationLock.isSuccess()) {
-				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(catModificationLock);
-				catModificationLock = null;
-			}
-		}
-		else if (source == repositoryEditDescriptionController) {
+		} else if (source == cmc) {
+			cleanUp();
+		} else if (source == repositoryEditDescriptionController) {
 			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				linkMarkedToBeEdited.setRepositoryEntry(repositoryEditDescriptionController.getRepositoryEntry());
 				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
@@ -763,54 +697,62 @@ public class CatalogController extends BasicController implements Activateable2 
 			}
 			cmc.deactivate();
 		} else if (source == addEntryForm) {
-			// remove modal dialog
 			cmc.deactivate();
 			
-			if (event == Event.DONE_EVENT) {
-				CatalogEntry ce = cm.createCatalogEntry();
-				addEntryForm.fillEntry(ce);
-				ce.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
-				ce.setRepositoryEntry(null);
-				ce.setParent(currentCatalogEntry);
-				// optimistic save: might fail in case the parent has been deleted in the meantime
-				cm.saveCatalogEntry(ce);
-			} else if (event == Event.CANCELLED_EVENT) {
-				// nothing to do
-			}
-			CatalogEntry reloaded = cm.loadCatalogEntry(currentCatalogEntry);
-			currentCatalogEntry = reloaded;// FIXME:pb:
+			currentCatalogEntry = addEntryForm.getEditedCatalogEntry();
 			updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 			updateToolAccessRights(ureq, currentCatalogEntry, currentCatalogEntryLevel);
-			// in any case, remove the lock
-			if (catModificationLock != null && catModificationLock.isSuccess()) {
-				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(catModificationLock);
-				catModificationLock = null;
-			}
+			cleanUp();
 			fireEvent(ureq, Event.CHANGED_EVENT);
-			
 		} else if (source == editEntryForm) {
-				// remove modal dialog
-				cmc.deactivate();
-				// optimistic save: might fail in case the current entry has been deleted
-				// in the meantime by someone else
-				CatalogEntry reloaded = (CatalogEntry) DBFactory.getInstance().loadObject(currentCatalogEntry);
-				currentCatalogEntry = reloaded;// FIXME:pb
-				if (event == Event.DONE_EVENT) {
-					editEntryForm.fillEntry(currentCatalogEntry);
-					cm.updateCatalogEntry(currentCatalogEntry);
-					// update the changed name in the history path
-					historyStack.remove(historyStack.size() - 1);
-					historyStack.add(currentCatalogEntry);
-				} else if (event == Event.CANCELLED_EVENT) {
-					// nothing to do
-				}
-				// in any case, remove the lock
-				if (catModificationLock != null && catModificationLock.isSuccess()) {
-					CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(catModificationLock);
-					catModificationLock = null;
-				}
-				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
+			cmc.deactivate();
+			currentCatalogEntry = editEntryForm.getEditedCatalogEntry();
+			if (event == Event.DONE_EVENT) {
+				// update the changed name in the history path
+				historyStack.remove(historyStack.size() - 1);
+				historyStack.add(currentCatalogEntry);
 			}
+			cleanUp();
+			updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
+		}
+	}
+	
+	private void cleanUp() {
+		// in any case, remove the lock
+		if (catModificationLock != null && catModificationLock.isSuccess()) {
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(catModificationLock);
+			catModificationLock = null;
+		}
+		removeAsListenerAndDispose(cfc);
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(addEntryForm);
+		removeAsListenerAndDispose(editEntryForm);
+		removeAsListenerAndDispose(groupController);
+		cmc = null;
+		cfc = null;
+		addEntryForm = null;
+		editEntryForm = null;
+		groupController = null;
+	}
+	
+	private void doAddOwners(Event event) {
+		if(event instanceof IdentitiesAddEvent ) {
+			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent) event;
+			List<Identity> list = identitiesAddedEvent.getAddIdentities();
+			BaseSecurity securityManager = BaseSecurityManager.getInstance();
+	        for (Identity identity : list) {
+	        	if (!securityManager.isIdentityInSecurityGroup(identity, currentCatalogEntry.getOwnerGroup())) {
+	        		securityManager.addIdentityToSecurityGroup(identity, currentCatalogEntry.getOwnerGroup());
+	        		identitiesAddedEvent.getAddedIdentities().add(identity);
+	        	}
+	        }
+		} else if (event instanceof IdentitiesRemoveEvent) {
+			IdentitiesRemoveEvent identitiesRemoveEvent = (IdentitiesRemoveEvent) event;
+			List<Identity> list = identitiesRemoveEvent.getRemovedIdentities();
+		        for (Identity identity : list) {
+		        	BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, currentCatalogEntry.getOwnerGroup());
+		        }		
+		}
 	}
 
 	/**
@@ -857,15 +799,14 @@ public class CatalogController extends BasicController implements Activateable2 
 			 * add tools
 			 */
 			if(isOLATAdmin || isLocalTreeAdmin || isAuthor){
-					if (canAddSubCategories || canAddLinks) catalogToolC.addHeader(translate(NLS_TOOLS_ADD_HEADER));
+					if (canAddSubCategories || canAddLinks) {
+						catalogToolC.addHeader(translate(NLS_TOOLS_ADD_HEADER));
+					}
 					if (canAddSubCategories) {
 						catalogToolC.addLink(ACTION_ADD_CTLGCATEGORY, translate(NLS_TOOLS_ADD_CATALOG_CATEGORY), null, null, "o_sel_catalog_add_category", false);
 					}
 					if (canAddLinks) {
 						catalogToolC.addLink(ACTION_ADD_CTLGLINK, translate(NLS_TOOLS_ADD_CATALOG_LINK), null, null, "o_sel_catalog_add_link_to_resource", false);
-					}
-					if (currentCatalogEntryLevel == 0 && isOLATAdmin && (childCe == null || childCe.isEmpty())) {
-						catalogToolC.addLink(ACTION_ADD_STRUCTURE, translate(NLS_TOOLS_PASTESTRUCTURE), null, null, "o_sel_catalog_add_root_category", false);
 					}
 			}	
 		}
@@ -894,7 +835,6 @@ public class CatalogController extends BasicController implements Activateable2 
 	 * @param ce
 	 * @param ceLevel
 	 */
-	//fxdiff BAKS-7 Resume function
 	private void updateContent(UserRequest ureq, CatalogEntry ce, int ceLevel) {
 		Identity identity = ureq.getIdentity();
 		/*
@@ -906,6 +846,18 @@ public class CatalogController extends BasicController implements Activateable2 
 		myContent.contextPut("canAddLinks", new Boolean(canAddLinks));
 		myContent.contextPut("canRemoveAllLinks", new Boolean(canRemoveAllLinks));
 		myContent.contextPut("currentCatalogEntry", currentCatalogEntry);
+		
+
+		VFSLeaf catThumbnail = cm.getImage(currentCatalogEntry);
+		if(catThumbnail == null) {
+			myContent.remove(myContent.getComponent("catThumbnail"));
+		} else {
+			ImageComponent ic = new ImageComponent("catThumbnail");
+			ic.setMediaResource(new VFSMediaResource(catThumbnail));
+			ic.setMaxWithAndHeightToFitWithin(100, 100);
+			myContent.put("catThumbnail", ic);
+		}
+		
 		childCe = cm.getChildrenOf(ce);
 		// Sort to fix ordering by repo entry display name. For leafs the displayed
 		// name is not the catalog entry name but the repo entry display name. The
@@ -915,7 +867,6 @@ public class CatalogController extends BasicController implements Activateable2 
 		Collections.sort(childCe, new CatalogEntryComparator(getLocale()));
 	
 		myContent.contextPut("children", childCe);
-		//fxdiff VCRP-1,2: access control of resources
 		List<Long> resourceKeys = new ArrayList<Long>();
 		for ( CatalogEntry entry : childCe ) {
 			if(entry.getRepositoryEntry() != null && entry.getRepositoryEntry().getOlatResource() != null) {
@@ -939,7 +890,7 @@ public class CatalogController extends BasicController implements Activateable2 
 		List<OLATResourceAccess> resourcesWithOffer = acService.getAccessMethodForResources(resourceKeys, null, true, new Date());
 		for ( CatalogEntry entry : childCe ) {
 			if(entry.getType() == CatalogEntry.TYPE_NODE) continue;
-			//fxdiff VCRP-1,2: access control of resources
+
 			if(entry.getRepositoryEntry() != null && entry.getRepositoryEntry().getOlatResource() != null) {
 				List<PriceMethod> types = new ArrayList<PriceMethod>();
 				if (entry.getRepositoryEntry().isMembersOnly()) {
@@ -959,7 +910,6 @@ public class CatalogController extends BasicController implements Activateable2 
 					}
 				}
 				
-				//fxdiff VCRP-1,2: access control of resources
 				String acName = "ac_" + childCe.indexOf(entry);
 				if(!types.isEmpty()) {
 					myContent.contextPut(acName, types);
@@ -997,71 +947,15 @@ public class CatalogController extends BasicController implements Activateable2 
 			} else myContent.contextPut("hasOwnedLinks", Boolean.FALSE);
 
 		} else myContent.contextPut("hasOwnedLinks", Boolean.FALSE);
-		//fxdiff BAKS-7 Resume function
 		updateHistory(ureq);
 	}
 
-	//fxdiff BAKS-7 Resume function
 	public void updateHistory(UserRequest ureq) {
 		if(currentCatalogEntry != null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CatalogEntry.class, currentCatalogEntry.getKey());
 			addToHistory(ureq, ores, null);
 		} else {
 			addToHistory(ureq);
-		}
-	}
-
-	/**
-	 * Helper to imports simple tree structure, for simplicity
-	 */
-	private void importStructure() {
-		CatalogEntry oldRoot = cm.getRootCatalogEntries().get(0);
-		SecurityGroup rootOwners = oldRoot.getOwnerGroup();
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		List<Identity> olatAdminIdents = secMgr.getIdentitiesOfSecurityGroup(rootOwners);
-		SecurityGroup catalogAdmins = secMgr.createAndPersistSecurityGroup();
-		for (int i = 0; i < olatAdminIdents.size(); i++) {
-			secMgr.addIdentityToSecurityGroup(olatAdminIdents.get(i), catalogAdmins);
-		} 
-		cm.deleteCatalogEntry(oldRoot);
-
-		CatalogEntry dummy = cm.createCatalogEntry();
-		addStructureForm.fillEntry(dummy);
-		String structure = dummy.getDescription();
-		String[] lines = structure.split("\n");
-		Stack<CatalogEntry> treeStack = new Stack<CatalogEntry>();
-		//
-		CatalogEntry newRoot = cm.createCatalogEntry();
-		newRoot.setParent(null);
-		newRoot.setType(CatalogEntry.TYPE_NODE);
-		newRoot.setDescription("fill it");
-		newRoot.setName(lines[0]);
-		newRoot.setOwnerGroup(catalogAdmins);
-		cm.saveCatalogEntry(newRoot);
-		treeStack.push(newRoot);
-		for (int i = 1; i < lines.length; i++) {
-			int level = 0;
-			int pos = 0;
-			while ("".equals(lines[i].substring(pos, pos + 2).trim())) {
-				level++;
-				pos += 3;
-			}
-			CatalogEntry tmp = cm.createCatalogEntry();
-			tmp.setType(CatalogEntry.TYPE_NODE);
-			tmp.setDescription("fill it");
-			tmp.setName(lines[i].trim());
-			if (treeStack.size() == level) {
-				tmp.setParent(treeStack.lastElement());
-				treeStack.push(tmp);
-			} else if (treeStack.size() > level) {
-				// moving towards root
-				for (int ii = treeStack.size() - 1; ii >= level; ii--) {
-					treeStack.pop();
-				}
-				tmp.setParent(treeStack.lastElement());
-				treeStack.push(tmp);
-			}
-			cm.saveCatalogEntry(tmp);
 		}
 	}
 

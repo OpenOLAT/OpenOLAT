@@ -1,16 +1,31 @@
-<div class="o_catalog">
-	<fieldset>
-		<legend>$catalogEntryName</legend>
-		#if($catalogEntryDesc)
-			<i>$catalogEntryDesc</i>
-		#end
-		#if($subCategories.size != 0)
-			<div class="o_catalog_itemlist">
-				#foreach($subCategory in $subCategories)
-					$r.render($subCategory.componentName),
-				#end
-			</div>
-		#end
-		</fieldset>
+<div class="o_catalog b_clearfix">	
+	#if($catalogEntryDesc || $r.avaiable("catThumbnail"))
+		<div class="b_clearfix"><div class="o_catalog_desc">
+			#if($r.available("catThumbnail"))
+			<div class="o_catalog_thumbnail">$r.render("catThumbnail")</div>
+			#end
+			<h4>$catalogEntryName</h4>
+			$r.xssScan($catalogEntryDesc)
+		</div></div>
+	#end
+	
+	#if($subCategories.size != 0)
+		<div class="o_catalog_itemlist b_clearfix">
+			#foreach($id in $subCategories)
+				<div class="o_catalog_item">
+					<div class="o_catalog_item_img">
+						#if($r.available("image_${id}"))
+							$r.render("image_${id}")
+						#else
+						 No image
+						#end
+					</div>
+					<div class="o_catalog_item_details">
+						$r.render("cat_${id}")
+					</div>
+				</div>
+			#end
+		</div>
+	#end
 </div>
 $r.render("entries")

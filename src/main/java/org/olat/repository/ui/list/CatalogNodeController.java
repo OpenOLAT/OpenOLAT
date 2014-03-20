@@ -28,6 +28,7 @@ import org.olat.catalog.CatalogManager;
 import org.olat.catalog.ui.CatalogEntryComparator;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
@@ -42,6 +43,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchMyRepositoryEntryViewParams;
 
@@ -73,18 +76,35 @@ public class CatalogNodeController extends BasicController implements Activateab
 		if(StringHelper.containsNonWhitespace(catalogEntry.getDescription())) {
 			mainVC.contextPut("catalogEntryDesc", catalogEntry.getDescription());
 		}
+		VFSLeaf image = cm.getImage(catalogEntry);
+		if(image != null) {
+			ImageComponent ic = new ImageComponent("catThumbnail");
+			ic.setMediaResource(new VFSMediaResource(image));
+			ic.setMaxWithAndHeightToFitWithin(200, 200);
+			mainVC.put("catThumbnail", ic);
+		}
 		
 		List<CatalogEntry> childCe = cm.getNodesChildrenOf(catalogEntry);
 		Collections.sort(childCe, new CatalogEntryComparator(getLocale()));
-		List<Link> subCategories = new ArrayList<>();
+		List<String> subCategories = new ArrayList<>();
+		int count = 0;
 		for (CatalogEntry entry : childCe) {
 			if(entry.getType() == CatalogEntry.TYPE_NODE) {
-				String cmpId = "cat_" + entry.getKey();
+				String cmpId = "cat_" + (++count);
+				
+				VFSLeaf img = cm.getImage(entry);
+				if(img != null) {
+					String imgId = "image_" + count;
+					ImageComponent ic = new ImageComponent(imgId);
+					ic.setMediaResource(new VFSMediaResource(img));
+					ic.setMaxWithAndHeightToFitWithin(200, 200);
+					mainVC.put(imgId, ic);
+				}
+				
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, mainVC, this);
 				link.setCustomDisplayText(entry.getName());
-				link.setCustomEnabledLinkCSS("b_with_small_icon_left o_catalog_sub_icon");
 				link.setUserObject(entry.getKey());
-				subCategories.add(link);
+				subCategories.add(Integer.toString(count));
 			}
 		}
 		mainVC.contextPut("subCategories", subCategories);

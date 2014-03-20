@@ -51,6 +51,8 @@ public class FolderConfig {
 	private static final String USERHOMEPAGES_DEFAULT = "/homepages";
 	/** REPOSITORY_DEFAULT configuration default value */
 	private static final String REPOSITORY_DEFAULT = "/repository";
+	/** REPOSITORY_DEFAULT configuration default value */
+	private static final String RESOURCES_DEFAULT = "/resources";
 
 	private static long limitULKB = LIMITULKB_DEFAULT;
 	private static long quotaKB = QUOTAKB_DEFAULT;
@@ -73,6 +75,7 @@ public class FolderConfig {
 	private static String groupHomes = GROUPHOMES_DEFAULT;
 	private static String userHomePages = USERHOMEPAGES_DEFAULT;
 	private static String repositoryHome = REPOSITORY_DEFAULT;
+	private static String resourcesHome = RESOURCES_DEFAULT;
 	private static boolean ePortfolioAddEnabled;
 
 	/** CONFIG_KEY_FOLDERPATH configuration key */
@@ -141,11 +144,19 @@ public class FolderConfig {
 	
 	
 	/**
-	 * Returns the groupHomes.
+	 * Returns the repository home.
 	 * @return String
 	 */
 	public static String getRepositoryHome() {
 		return repositoryHome;
+	}
+	
+	/**
+	 * Return the resources home
+	 * @return
+	 */
+	public static String getResourcesHome() {
+		return resourcesHome;
 	}
 
 	/**
@@ -268,6 +279,10 @@ public class FolderConfig {
 	 */
 	public static String getCanonicalRepositoryHome() {
 		return getCanonicalRoot() + getRepositoryHome();
+	}
+	
+	public static String getCanonicalResourcesHome() {
+		return getCanonicalRoot() + getResourcesHome();
 	}
 
 	/**

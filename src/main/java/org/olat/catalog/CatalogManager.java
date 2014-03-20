@@ -25,6 +25,7 @@
 
 package org.olat.catalog;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -37,15 +38,22 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.ImageHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.image.Size;
 import org.olat.core.util.resource.Resourceable;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -84,6 +92,8 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ImageHelper imageHelper;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -276,8 +286,9 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * 
 	 * @param ce
 	 */
-	public void saveCatalogEntry(CatalogEntry ce) {
+	public CatalogEntry saveCatalogEntry(CatalogEntry ce) {
 		dbInstance.getCurrentEntityManager().persist(ce);
+		return ce;
 	}
 
 	/**
@@ -642,7 +653,44 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	public void updateReferencedRepositoryEntry(RepositoryEntry re) {
 		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(re, re.getDisplayname(), re.getDescription());
 		// inform anybody interested about this change
-    MultiUserEvent modifiedEvent = new EntryChangedEvent(reloaded, EntryChangedEvent.MODIFIED_DESCRIPTION);
-    CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, reloaded);
+		MultiUserEvent modifiedEvent = new EntryChangedEvent(reloaded, EntryChangedEvent.MODIFIED_DESCRIPTION);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, reloaded);
+	}
+	
+	public VFSLeaf getImage(CatalogEntry entry) {
+		VFSContainer catalogResourceHome = getCatalogResourcesHome();
+		String imageName = entry.getResourceableId() + ".png";
+		VFSItem image = catalogResourceHome.resolve(imageName);
+		if(image instanceof VFSLeaf) {
+			return (VFSLeaf)image;
+		}
+		
+		return null;
+	}
+	
+	public void deleteImage(CatalogEntry entry) {
+		VFSLeaf imgFile =  getImage(entry);
+		if (imgFile != null) {
+			imgFile.delete();
+		}
+	}
+
+	private final int PICTUREWIDTH = 570;
+	
+	public boolean setImage(VFSLeaf newImageFile, CatalogEntry re) {
+		VFSLeaf currentImage = getImage(re);
+		if(currentImage != null) {
+			currentImage.delete();
+		}
+		
+		VFSContainer catalogResourceHome = getCatalogResourcesHome();
+		VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getResourceableId() + ".png");
+		
+		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTUREWIDTH, PICTUREWIDTH);
+		return size != null;
+	}
+	
+	private VFSContainer getCatalogResourcesHome() {
+		return new LocalFolderImpl(new File(FolderConfig.getCanonicalResourcesHome(), "catalog"));
 	}
 }
