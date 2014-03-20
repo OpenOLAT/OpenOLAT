@@ -28,7 +28,7 @@ div.searchitem select, div.searchitem input { width: 250px; }
 .o_members_register_active { font-weight: bold; font-size: 120%; }
 div.o_members_paging { width: 100%; padding-bottom: 1em; padding-top: 0.5em; text-align: center; }
 div.o_members_paging div { padding-left: 1em; padding-right: 1em; display: inline; }
-	
+
 div.o_bcard { background-color: #eee; margin-top: 10px; @include o-border-radius(6px); }
 div.o_bcard_header, div.o_members_header {padding: 6px; border-bottom:1px solid #fff; }
 div.o_bcard_portrait {
@@ -349,6 +349,7 @@ div.o_notifications_news_subscription {
 	h4 { font-size: 110%; }
 	h4.o_returnbox_icon { background-image: url(../openolat/images/box_return.png) !important; }
 	h4.o_dropbox_icon { background-image: url(../openolat/images/box_drop.png) !important; }
+	h4.o_solution_icon { background-image: url(../openolat/images/box_solution.png) !important; }
 }
 div.o_notifications_news_context { color: #7D7D7D; font-size: 90%; }
 div.o_notifications_news_content {
