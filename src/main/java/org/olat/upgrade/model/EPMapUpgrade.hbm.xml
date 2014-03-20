@@ -3,11 +3,9 @@
 <hibernate-mapping default-lazy="false">
 
 	<class name="org.olat.upgrade.model.EPMapUpgrade" table="o_ep_struct_el">
-  	
 		<id name="key" column="structure_id" type="long" unsaved-value="null">
 			<generator class="hilo"/>
 		</id>
-		<property name="structureType" column="structure_type" type="string" />
     
 		<many-to-one name="ownerGroup"
                   column="fk_ownergroup"

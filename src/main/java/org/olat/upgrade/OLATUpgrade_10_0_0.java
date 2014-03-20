@@ -19,6 +19,7 @@
  */
 package org.olat.upgrade;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -27,11 +28,14 @@ import java.util.Set;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.Policy;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.group.right.BGRightManager;
+import org.olat.group.right.BGRightsRole;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
@@ -66,6 +70,8 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private BGRightManager bgRightManager;
+	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryToGroupDAO;
@@ -94,11 +100,11 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 			return false;
 		}
 		
-		boolean allOk = false;
-		//allOk &= upgradeBusinessGroups(upgradeManager, uhd);
-		//allOk &= upgradeRepositoryEntries(upgradeManager, uhd);
-		//allOk &= upgradeRelationsRepoToBusinessGroups(upgradeManager, uhd);
-		//allOk &= upgradeEPMap(upgradeManager, uhd);
+		boolean allOk = true;
+		allOk &= upgradeBusinessGroups(upgradeManager, uhd);
+		allOk &= upgradeRepositoryEntries(upgradeManager, uhd);
+		allOk &= upgradeRelationsRepoToBusinessGroups(upgradeManager, uhd);
+		allOk &= upgradeEPMap(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -107,7 +113,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 		} else {
 			log.audit("OLATUpgrade_10_0_0 not finished, try to restart OpenOLAT!");
 		}
-		return false;
+		return allOk;
 	}
 	
 	private boolean upgradeBusinessGroups(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
@@ -117,21 +123,24 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 			do {
 				businessGroups = findBusinessGroups(counter, BATCH_SIZE);
 				for(BusinessGroupUpgrade businessGroup:businessGroups) {
-					processBusinessGroup(businessGroup);
+					BusinessGroupUpgrade up = processBusinessGroup(businessGroup);
+					processRightGroup(up); 
 				}
 				counter += businessGroups.size();
-				log.audit("Business groups processed: " + businessGroups.size() + ", total processed (" + counter + " )");
+				log.audit("Business groups processed: " + businessGroups.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(businessGroups.size() == BATCH_SIZE);
-			uhd.setBooleanDataValue(TASK_BUSINESS_GROUPS, false);
+			uhd.setBooleanDataValue(TASK_BUSINESS_GROUPS, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
-		return false;
+		return true;
 	}
 	
-	private void processBusinessGroup(BusinessGroupUpgrade businessGroup) {
+	private BusinessGroupUpgrade processBusinessGroup(BusinessGroupUpgrade businessGroup) {
 		Group baseGroup = businessGroup.getBaseGroup();
-		if(baseGroup != null && baseGroup.getKey() != null) return;
+		if(baseGroup != null && baseGroup.getKey() != null) {
+			return businessGroup;
+		}
 
 		Group group = groupDao.createGroup();
 		//update tutors
@@ -144,8 +153,42 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 		dbInstance.commit();
 		
 		businessGroup.setBaseGroup(group);
+		businessGroup = dbInstance.getCurrentEntityManager().merge(businessGroup);
 		
 		dbInstance.commit();
+		return businessGroup;
+	}
+
+	private void processRightGroup(BusinessGroupUpgrade businessGroup) {
+		boolean commit = false;
+		
+		List<String> tutorRights = findBGRights(businessGroup.getOwnerGroup());
+		for(String right:tutorRights) {
+			bgRightManager.addBGRight(right, businessGroup, BGRightsRole.tutor);
+			commit = true;
+		}
+		
+		List<String> participantsRights = findBGRights(businessGroup.getPartipiciantGroup());
+		for(String right:participantsRights) {
+			bgRightManager.addBGRight(right, businessGroup, BGRightsRole.participant);
+			commit = true;
+		}
+		
+		if(commit) {
+			dbInstance.commit();
+		}
+	}
+	
+	private List<String> findBGRights(SecurityGroup secGroup) {
+		List<Policy> results = securityManager.getPoliciesOfSecurityGroup(secGroup);
+		// filter all business group rights permissions. group right permissions
+		// start with bgr.
+		List<String> rights = new ArrayList<String>();
+		for (Policy rightPolicy:results) {
+			String right = rightPolicy.getPermission();
+			if (right.indexOf("bgr.") == 0) rights.add(right);
+		}
+		return rights;
 	}
 	
 	private boolean upgradeRepositoryEntries(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
@@ -158,13 +201,13 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 					processRepositoryEntry(repoEntry);
 				}
 				counter += repoEntries.size();
-				log.audit("Repository entries processed: " + repoEntries.size() + ", total processed (" + counter + " )");
+				log.audit("Repository entries processed: " + repoEntries.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(repoEntries.size() == BATCH_SIZE);
-			uhd.setBooleanDataValue(TASK_REPOENTRIES, false);
+			uhd.setBooleanDataValue(TASK_REPOENTRIES, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
-		return false;
+		return true;
 	}
 	
 	private void processRepositoryEntry(RepositoryEntryUpgrade repoEntry) {
@@ -219,13 +262,13 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 					processRelationToRepo(businessGroup);
 				}
 				counter += businessGroups.size();
-				log.audit("Business groups processed: " + businessGroups.size() + ", total processed (" + counter + " )");
+				log.audit("Business groups relations processed: " + businessGroups.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(businessGroups.size() == BATCH_SIZE);
-			uhd.setBooleanDataValue(TASK_REPOENTRY_TO_BUSINESSGROUP, false);
+			uhd.setBooleanDataValue(TASK_REPOENTRY_TO_BUSINESSGROUP, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
-		return false;
+		return true;
 	}
 	
 	private void processRelationToRepo(BusinessGroupUpgrade businessGroup) {
@@ -278,32 +321,63 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 					processMap(businessGroup);
 				}
 				counter += businessGroups.size();
-				log.audit("Maps processed: " + businessGroups.size() + ", total processed (" + counter + " )");
+				log.audit("Maps processed: " + businessGroups.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(businessGroups.size() == BATCH_SIZE);
-			uhd.setBooleanDataValue(TASK_UPGRADE_MAP, false);
+			uhd.setBooleanDataValue(TASK_UPGRADE_MAP, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
-		return false;
+		return true;
+	}
+	
+	private void processMap(EPMapUpgrade map) {
+		if(map.getGroup() != null) return;
+		
+		SecurityGroup ownerGroup = map.getOwnerGroup();
+		if(ownerGroup != null) {
+			RepositoryEntryUpgrade re = findMapRepoEntry(ownerGroup);
+			if(re != null) {
+				Group reGroup = repositoryEntryToGroupDAO.getDefaultGroup(re);
+				if(reGroup != null) {
+					map.setGroup(reGroup);
+				}
+			}
+			if(map.getGroup() == null) {
+				Group group = groupDao.createGroup();
+				map.setGroup(group);
+				processSecurityGroup(group, GroupRoles.owner.name(), ownerGroup);
+			}
+			dbInstance.getCurrentEntityManager().merge(map);
+		}
+	}
+	
+	private RepositoryEntryUpgrade findMapRepoEntry(SecurityGroup ownerGroup) {
+		StringBuilder sb = new StringBuilder();	
+		sb.append("select v from ").append(RepositoryEntryUpgrade.class.getName()).append(" as v")
+		  .append(" where v.ownerGroup=:ownerGroup");
+		List<RepositoryEntryUpgrade> res = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryUpgrade.class)
+				.setParameter("ownerGroup", ownerGroup)
+				.getResultList();
+		if(res.size() > 0) {
+			return res.get(0);
+		}
+		return null;
 	}
 	
 	private List<EPMapUpgrade> findMaps(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();	
 		sb.append("select map from ").append(EPMapUpgrade.class.getName()).append(" map")
-		  .append(" left join fetch map.baseGroup as baseGroup")
+		  .append(" left join fetch map.group as baseGroup")
 		  .append(" left join fetch map.ownerGroup as ownerGroup")
-		  .append(" where map.baseGroup is null and map.ownerGroup is not null")
+		  .append(" where map.group is null and map.ownerGroup is not null")
 		  .append(" order by map.key");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), EPMapUpgrade.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
-	
-	private void processMap(EPMapUpgrade map) {
-		//
-	}
-	
+
 	private void processSecurityGroup(Group group, String role, SecurityGroup secGroup) {
 		if(secGroup == null) return;
 
@@ -330,18 +404,22 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	
 	private List<RepositoryEntryUpgrade> findRepositoryEntries(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();	
-		sb.append("select re from ").append(RepositoryEntryUpgrade.class.getName()).append(" re order by key");
+		sb.append("select v from ").append(RepositoryEntryUpgrade.class.getName()).append(" v")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" left join fetch v.ownerGroup as ownerGroup")
+		  .append(" left join fetch v.participantGroup as participantGroup")
+		  .append(" left join fetch v.tutorGroup as tutorGroup")
+		  .append(" order by v.key");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), RepositoryEntryUpgrade.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
 	
-	public RepositoryEntryUpgrade lookupRepositoryEntry(OLATResource ores) {
+	private RepositoryEntryUpgrade lookupRepositoryEntry(OLATResource ores) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntryUpgrade.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as ores")
-		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" left join fetch v.ownerGroup as ownerGroup")
 		  .append(" left join fetch v.participantGroup as participantGroup")
 		  .append(" left join fetch v.tutorGroup as tutorGroup")

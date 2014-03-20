@@ -36,7 +36,6 @@ import org.hibernate.annotations.GenericGenerator;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -67,7 +66,7 @@ public class RepositoryEntryUpgradeToGroupRelation implements Persistable {
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
 	private Group group;
 
-	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
+	@ManyToOne(targetEntity=RepositoryEntryUpgrade.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_entry_id", nullable=false, insertable=true, updatable=false)
 	private RepositoryEntryUpgrade entry;
 	

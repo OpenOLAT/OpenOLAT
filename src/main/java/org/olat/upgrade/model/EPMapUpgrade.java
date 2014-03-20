@@ -19,6 +19,10 @@
  */
 package org.olat.upgrade.model;
 
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.commons.persistence.PersistentObject;
+
 /**
  * Needed to upgrade the maps
  * 
@@ -26,6 +30,43 @@ package org.olat.upgrade.model;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EPMapUpgrade {
+public class EPMapUpgrade extends PersistentObject {
 
+	private static final long serialVersionUID = 9041327840189041360L;
+	
+	private Group group;
+	private SecurityGroup ownerGroup;
+	 
+	public Group getGroup() {
+		return group;
+	}
+
+	public void setGroup(Group group) {
+		this.group = group;
+	}
+
+	public SecurityGroup getOwnerGroup() {
+		return ownerGroup;
+	}
+
+	public void setOwnerGroup(SecurityGroup ownerGroup) {
+		this.ownerGroup = ownerGroup;
+	}
+
+	@Override
+	public int hashCode() {
+		return getKey() == null ? -9544 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof EPMapUpgrade) {
+			EPMapUpgrade map = (EPMapUpgrade)obj;
+			return getKey() != null && getKey().equals(map.getKey());
+		}
+		return false;
+	}
 }

@@ -28,8 +28,7 @@
   		lastUsage helps the SYSTEMADMIN to find the BusinessGroups
   		which were idle for some time.
   		-->
-  		<property name="lastUsage" column="lastusage" type="timestamp" />   
-		<property name="type" column="businessgrouptype" unique="false" length="15" not-null="true" index="gp_type_idx"/>	
+  		<property name="lastUsage" column="lastusage" type="timestamp" />	
 		<property name="externalId" column="external_id" unique="false" not-null="false" type="string"/>
 		<property name="managedFlagsString" column="managed_flags" unique="false" not-null="false" type="string"/>
 		

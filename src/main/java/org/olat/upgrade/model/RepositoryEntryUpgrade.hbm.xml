@@ -12,7 +12,6 @@
 		<version name="version" access="field" column="version" type="int"/>
 		<property  name="lastModified" column="lastmodified" type="timestamp" />
 	  	<property  name="creationDate"    column="creationdate"    type="timestamp" /> 
-	  	<property  name="lastUsage"       column="lastusage"       type="timestamp" />  
  
 		<property name="softkey">
 			<!-- softkey takes globalForeverUniqueID which has a max size of 30 characters -->
@@ -58,17 +57,10 @@
                      outer-join="true"   
                      unique="true" 
                      cascade="none"/>
-                     
-        <many-to-one name="lifecycle"
-                     column="fk_lifecycle"
-                     class="org.olat.repository.model.RepositoryEntryLifecycle" 
-                     outer-join="true"
-                     fetch="join"
-                     cascade="none"/>
         
         <set name="groups">
             <key column="fk_entry_id"/>
-            <one-to-many class="org.olat.repository.model.RepositoryEntryToGroupRelation"/>
+            <one-to-many class="org.olat.upgrade.model.RepositoryEntryUpgradeToGroupRelation"/>
         </set>  
 
 		<property name="description" type="string">
@@ -103,14 +95,6 @@
 		
 		<property name="canReference">
 			<column name="canreference" unique="false" not-null="true"/>
-		</property>
-
-		<property name="launchCounter">
-			<column name="launchcounter" unique="false" not-null="true"/>
-		</property>
-	
-		<property name="downloadCounter">
-			<column name="downloadcounter" unique="false" not-null="true"/>
 		</property>
 		
 		<property name="statusCode" column="statuscode" unique="false" type="int"/>

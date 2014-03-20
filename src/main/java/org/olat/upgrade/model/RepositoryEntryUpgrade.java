@@ -39,13 +39,13 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
 
 /**
  *Represents a repository entry.
  */
-public class RepositoryEntryUpgrade extends PersistentObject implements ModifiedInfo, OLATResourceable {
+public class RepositoryEntryUpgrade extends PersistentObject implements ModifiedInfo, OLATResourceable, RepositoryEntryRef {
 
 	private static final long serialVersionUID = 5319576295875289054L;
 	// IMPORTANT: Keep relation ACC_OWNERS < ACC_OWNERS_AUTHORS < ACC_USERS < ACC_USERS_GUESTS
@@ -85,7 +85,6 @@ public class RepositoryEntryUpgrade extends PersistentObject implements Modified
 	private String externalId;
 	private String externalRef;
 	private String managedFlagsString;
-	private RepositoryEntryLifecycle lifecycle;
 	
 	private int access;
 	private boolean canCopy;
@@ -94,10 +93,6 @@ public class RepositoryEntryUpgrade extends PersistentObject implements Modified
 	private boolean canDownload;
 	private boolean membersOnly;//fxdiff VCRP-1,2: access control of resources
 	private int statusCode;
-	//private List<MetaDataElement> metaDataElements;
-	private long launchCounter;
-	private long downloadCounter;
-	private Date lastUsage;
 	private int version;
 	private Date lastModified;
 	
@@ -357,34 +352,6 @@ public class RepositoryEntryUpgrade extends PersistentObject implements Modified
 	public void setMembersOnly(boolean membersOnly) {
 		this.membersOnly = membersOnly;
 	}
-
-	/**
-	 * @return Download count for this repo entry.
-	 */
-	public long getDownloadCounter() {
-		return downloadCounter;
-	}
-
-	/**
-	 * @return Launch count for this repo entry.
-	 */
-	public long getLaunchCounter() {
-		return launchCounter;
-	}
-
-	/**
-	 * @param l
-	 */
-	public void setDownloadCounter(long l) {
-		downloadCounter = l;
-	}
-
-	/**
-	 * @param l
-	 */
-	public void setLaunchCounter(long l) {
-		launchCounter = l;
-	}
 	
 	/**
 	 * @return Returns the displayname.
@@ -430,14 +397,6 @@ public class RepositoryEntryUpgrade extends PersistentObject implements Modified
 		this.managedFlagsString = managedFlagsString;
 	}
 
-	public RepositoryEntryLifecycle getLifecycle() {
-		return lifecycle;
-	}
-
-	public void setLifecycle(RepositoryEntryLifecycle lifecycle) {
-		this.lifecycle = lifecycle;
-	}
-
 	/**
 	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
 	 */
@@ -450,20 +409,6 @@ public class RepositoryEntryUpgrade extends PersistentObject implements Modified
 	 */
 	public Long getResourceableId() {
 		return getKey();
-	}
-
-	/**
-	 * @return Returns the lastUsage.
-	 */
-	public Date getLastUsage() {
-		return lastUsage;
-	}
-
-	/**
-	 * @param lastUsage The lastUsage to set.
-	 */
-	public void setLastUsage(Date lastUsage) {
-		this.lastUsage = lastUsage;
 	}
 
 	public int getVersion() {

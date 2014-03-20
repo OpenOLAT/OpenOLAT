@@ -30,7 +30,6 @@ import java.util.Date;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.PersistentObject;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -55,7 +54,6 @@ public class BusinessGroupUpgrade extends PersistentObject implements BusinessGr
 	
 	private String description;
 	private String name;
-	private String type;
 	private String externalId;
 	private String managedFlagsString;
 	private Integer minParticipants;
@@ -79,38 +77,11 @@ public class BusinessGroupUpgrade extends PersistentObject implements BusinessGr
 	private boolean waitingListVisiblePublic;
 	private boolean downloadMembersLists;
 
-	private static final int TYPE_MAXLENGTH = 15;
-
 	/**
 	 * constructs an unitialised BusinessGroup, use setXXX for setting attributes
 	 */
 	public BusinessGroupUpgrade() {
 	// used by spring
-	}
-
-	/**
-	 * convenience constructor
-	 * 
-	 * @param type
-	 * @param groupName
-	 * @param description
-	 * @param ownerGroup
-	 * @param partipiciantGroup
-	 */
-	public BusinessGroupUpgrade(String groupName, String description, SecurityGroup ownerGroup, SecurityGroup partipiciantGroup,
-			SecurityGroup waitingGroup) {
-		this.setName(groupName);
-		this.setDescription(description);
-		this.setOwnerGroup(ownerGroup);
-		this.setPartipiciantGroup(partipiciantGroup);
-		this.setWaitingGroup(waitingGroup);
-		this.setType("LearningGroup");
-		// per default no waiting-list
-		Boolean disabled = new Boolean(false);
-		this.setWaitingListEnabled(disabled);
-		this.setAutoCloseRanksEnabled(disabled);
-		this.setLastUsage(new Date());
-		this.setLastModified(new Date());
 	}
 
 	/**
@@ -292,21 +263,6 @@ public class BusinessGroupUpgrade extends PersistentObject implements BusinessGr
 	}
 
 	/**
-	 * @see org.olat.group.BusinessGroup#getType()
-	 */
-	public String getType() {
-		return type;// BusinessGroupImpl.class.getName();
-	}
-
-	/**
-	 * @param type2
-	 */
-	private void setType(String type2) {
-		if (type2 != null && type2.length() > TYPE_MAXLENGTH) throw new AssertException("businessgrouptype in o_bg_business too long.");
-		this.type = type2;
-	}
-
-	/**
 	 * @see org.olat.group.BusinessGroup#getDisplayableType(java.util.Locale)
 	 */
 
@@ -375,7 +331,7 @@ public class BusinessGroupUpgrade extends PersistentObject implements BusinessGr
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "name=" + name + "::" + "type=" + type + "::" + super.toString();
+		return "name=" + name + "::" + super.toString();
 	}
 
 	public void setWaitingGroup(SecurityGroup waitingGroup) {
