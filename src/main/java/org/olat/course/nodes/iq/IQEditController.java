@@ -641,6 +641,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	
 	private void checkEssay(RepositoryEntry re) {
 		if(OnyxModule.isOnyxTest(re.getOlatResource())) return;
+		if(courseNode instanceof IQSURVCourseNode || courseNode instanceof IQSELFCourseNode) return;
 		
 		TestFileResource fr = new TestFileResource();
 		fr.overrideResourceableId(re.getOlatResource().getResourceableId());

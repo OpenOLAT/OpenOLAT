@@ -324,7 +324,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		} else if (source == fileUpload) {
 			if (fileUpload.isUploadSuccess()) {
 				File uploadedFile = fileUpload.getUploadFile();
-				imageEl.setMediaResource(new NamedFileMediaResource(uploadedFile, fileUpload.getName(), "", false));
+				String filename = fileUpload.getUploadFileName();
+				imageEl.setMediaResource(new NamedFileMediaResource(uploadedFile, filename, "", false));
 				imageEl.setMaxWithAndHeightToFitWithin(400, 200);
 				imageEl.setVisible(true);
 				imageEl.getComponent().setDirty(true);

@@ -20,11 +20,9 @@
 package org.olat.core.gui.components.chart;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -90,8 +88,8 @@ public class BarSeries {
 	}
 
 	public static Stringuified getDatasAndColors(List<BarSeries> seriesList, String defaultBarClass) {
-		Map<Comparable<?>,String> thickSet = new HashMap<>();
-		Map<Comparable<?>,String> colorsMap = new HashMap<>();
+		Map<Comparable<?>,String> thickSet = new LinkedHashMap<>();
+		Map<Comparable<?>,String> colorsMap = new LinkedHashMap<>();
 		for(BarSeries series:seriesList) {
 			for(BarPoint point:series.getPoints()) {
 				Comparable<?> category = point.getCategory();
@@ -109,8 +107,6 @@ public class BarSeries {
 		}
 		
 		List<Comparable<?>> thickList = new ArrayList<>(thickSet.keySet());
-		Collections.sort(thickList);
-		Collections.reverse(thickList);
 
 		StringBuilder data = new StringBuilder();
 		for(int i=0; i<thickList.size(); i++) {

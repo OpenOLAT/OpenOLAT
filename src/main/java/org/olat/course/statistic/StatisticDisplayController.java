@@ -36,6 +36,8 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.chart.BarChartComponent;
+import org.olat.core.gui.components.chart.BarSeries;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
@@ -78,28 +80,12 @@ public class StatisticDisplayController extends BasicController {
 		public String chartIntroStr;
 		private int numElements = 0;
 		
-		String getLabelsArray() {
-			StringBuilder sb = new StringBuilder();
-			long count = 0;
-			for (String aLabel : labelList) {
-				if(sb.length() >0) {
-					sb.append(',');
-				}
-				sb.append("[").append(count++).append(",'").append(aLabel).append("']");
-			}
-			return sb.toString();
+		public List<Integer> getValues() {
+			return values;
 		}
 		
-		String getValuesArray() {
-			StringBuilder sb = new StringBuilder();
-			long count = 0;
-			for (Integer v : values) {
-				if(sb.length() >0) {
-					sb.append(',');
-				}
-				sb.append("[").append(count++).append(",'").append(v.toString()).append("']");
-			}
-			return sb.toString();
+		public List<String> getLabels() {
+			return labelList;
 		}
 	}
 	
@@ -401,13 +387,21 @@ public class StatisticDisplayController extends BasicController {
 		try{
 			statisticVc_.contextPut("chartAlt", getTranslator().translate("chart.alt"));
 			statisticVc_.contextPut("chartIntro", graph.chartIntroStr);
-
-			String thicks = graph.getLabelsArray();
-			String vals = graph.getValuesArray();
-			statisticVc_.contextPut("thicks", thicks);
-			statisticVc_.contextPut("d2", vals);
 			statisticVc_.contextPut("hasChart", Boolean.TRUE);
 			statisticVc_.contextPut("hasChartError", Boolean.FALSE);
+			
+			BarChartComponent chartCmp = new BarChartComponent("stats");
+			List<String> labels = graph.getLabels();
+			List<Integer> values = graph.getValues();
+			BarSeries serie = new BarSeries();
+			for(int i=0; i<labels.size(); i++) {
+				double value = values.get(i).doubleValue();
+				String category = labels.get(i);
+				serie.add(value, category);
+			}
+			chartCmp.addSeries(serie);
+			statisticVc_.put("chart", chartCmp);
+			
 		} catch(RuntimeException re) {
 			log_.warn("generateCharts: RuntimeException during chart generation: "+re, re);
 		}

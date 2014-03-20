@@ -72,8 +72,23 @@ var BPlayer = {
 		if(controlbar != undefined && !controlbar) {
 			args.controlbar = "none";
 		}
-
-		jwplayer(domId).setup(args);
+		
+		if(BPlayer.isIE8() && domId != 'prev_container') {
+			var spanEl = jQuery('#' + domId);
+			var width = spanEl.width();
+			var height = spanEl.height();
+			var videoParent = jQuery(spanEl).parent('p');
+			var newContainer = jQuery('<div id="' + domId + '_replacer" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:' + width + 'px; height:' + height + 'px;">Hello world</div>');
+			newContainer.insertAfter(videoParent);
+			spanEl.remove();
+			jwplayer(domId + '_replacer').setup(args);
+		} else {
+			jwplayer(domId).setup(args);
+		}
+	},
+	
+	isIE8: function() {
+		return (jQuery.support.opacity == false);	
 	},
 	
 	playerUrl: function() {
