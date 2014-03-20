@@ -397,8 +397,9 @@ create table o_readmessage (
 	identity_id int8 not null, 
 	forum_id int8 not null, 
 	message_id int8 not null, 
-	primary key (id));
-	
+	primary key (id)
+);
+
 create table o_loggingtable (
 	log_id int8 not null,
 	creationdate timestamp,
@@ -589,8 +590,6 @@ create table o_ep_collect_restriction (
   fk_struct_el_id int8,
   primary key (collect_id)
 );
-
--- eportfolio structure element
 create table o_ep_struct_el (
   structure_id int8 not null,
   structure_type varchar(32) not null,
@@ -617,8 +616,6 @@ create table o_ep_struct_el (
   fk_olatresource int8 not null,
   primary key (structure_id)  
 );
-
--- eportfolio structure to structure link
 create table o_ep_struct_struct_link (
   link_id int8 not null,
   version int4 not null,
@@ -628,8 +625,6 @@ create table o_ep_struct_struct_link (
   fk_struct_child_id int8 not null,
   primary key (link_id)
 );
-
--- eportfolio structure to artefact link
 create table o_ep_struct_artefact_link (
   link_id int8 not null,
   version int4 not null,
@@ -738,6 +733,7 @@ create table o_ac_offer (
   fk_resource_id int8,
 	primary key (offer_id)
 );
+
 create table o_ac_method (
 	method_id int8 NOT NULL,
 	access_method varchar(32),
@@ -750,6 +746,7 @@ create table o_ac_method (
 	validto timestamp,
 	primary key (method_id)
 );
+
 create table o_ac_offer_access (
 	offer_method_id int8 NOT NULL,
   version int4 not null,
@@ -761,6 +758,7 @@ create table o_ac_offer_access (
   fk_method_id int8,
 	primary key (offer_method_id)
 );
+
 -- access cart
 create table o_ac_order (
 	order_id int8 NOT NULL,
@@ -778,6 +776,7 @@ create table o_ac_order (
   fk_delivery_id int8,
 	primary key (order_id)
 );
+
 create table o_ac_order_part (
 	order_part_id int8 NOT NULL,
   version int4 not null,
@@ -790,6 +789,7 @@ create table o_ac_order_part (
   fk_order_id int8,
 	primary key (order_part_id)
 );
+
 create table o_ac_order_line (
 	order_item_id int8 NOT NULL,
   version int4 not null,
@@ -802,7 +802,8 @@ create table o_ac_order_line (
   fk_order_part_id int8,
   fk_offer_id int8,
 	primary key (order_item_id)
-); 
+);
+
 create table o_ac_transaction (
 	transaction_id int8 NOT NULL,
   version int4 not null,
@@ -1088,7 +1089,6 @@ create table o_im_preferences (
    fk_from_identity_id int8 not null,
    primary key (id)
 );
-
 
 -- add mapper table
 create table o_mapper (
@@ -2041,10 +2041,10 @@ create index lc_action_idx on o_lifecycle (action);
 alter table o_mark add constraint FKF26C8375236F21X foreign key (creator_id) references o_bs_identity (id);
 create index FKF26C8375236F21X on o_mark (creator_id);
 
-create index mark_id_idx on o_mark (resid);
-create index mark_name_idx on o_mark (resname);
-create index mark_subpath_idx on o_mark (ressubpath);
-create index mark_businesspath_idx on o_mark (businesspath);
+create index mark_id_idx on o_mark(resid);
+create index mark_name_idx on o_mark(resname);
+create index mark_subpath_idx on o_mark(ressubpath);
+create index mark_businesspath_idx on o_mark(businesspath);
 
 -- forum
 alter table o_message add constraint FKF26C8375236F20E foreign key (creator_id) references o_bs_identity;
