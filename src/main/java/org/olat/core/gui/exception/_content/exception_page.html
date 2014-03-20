@@ -20,7 +20,12 @@ var o_info = new Object();
 ## Basic JS libraries for DOM manipulation and visual effects
 <script type="text/javascript" src="$r.staticLink("js/modernizr/modernizr.js")"></script>
 ## jQuery libraries
+<!--[if lt IE 9]>
 <script type="text/javascript" src='$r.staticLink("js/jquery/jquery-1.9.1.min.js")'></script>
+<![endif]-->
+<!--[if gte IE 9]><!-->
+<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-2.1.0.min.js")'></script>
+<!--<![endif]-->
 <script>
 /* <![CDATA[ */ 
      jQuery.noConflict();

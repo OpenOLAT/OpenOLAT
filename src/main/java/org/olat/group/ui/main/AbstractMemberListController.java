@@ -306,7 +306,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 				} else if(TABLE_ACTION_REMOVE.equals(actionid)) {
 					confirmDelete(ureq, Collections.singletonList(member));
 				} else if(TABLE_ACTION_GRADUATE.equals(actionid)) {
-					doGraduate(ureq, Collections.singletonList(member));
+					doGraduate(Collections.singletonList(member));
 				} else if(TABLE_ACTION_IM.equals(actionid)) {
 					doIm(ureq, member);
 				}
@@ -321,7 +321,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 				} else if(TABLE_ACTION_MAIL.equals(te.getAction())) {
 					doSendMail(ureq, selectedItems);
 				} else if(TABLE_ACTION_GRADUATE.equals(te.getAction())) {
-					doGraduate(ureq, selectedItems);
+					doGraduate(selectedItems);
 				}
 			}
 		} else if (source == leaveDialogBox) {
@@ -518,7 +518,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		listenTo(cmc);
 	}
 	
-	protected void doGraduate(UserRequest ureq, List<MemberView> members) {
+	protected void doGraduate(List<MemberView> members) {
 		if(businessGroup != null) {
 			List<Long> identityKeys = getMemberKeys(members);
 			List<Identity> identitiesToGraduate = securityManager.loadIdentityByKeys(identityKeys);
@@ -549,7 +549,6 @@ public abstract class AbstractMemberListController extends BasicController imple
 		boolean managedMembersRepo = 
 				RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 		
-		long start = System.nanoTime();
 		List<RepositoryEntryMembership> repoMemberships =
 				repoEntry == null ? Collections.<RepositoryEntryMembership>emptyList()
 				: repositoryManager.getRepositoryEntryMembership(repoEntry);
@@ -568,8 +567,6 @@ public abstract class AbstractMemberListController extends BasicController imple
 
 		List<BusinessGroupMembership> memberships = groups.isEmpty() ? Collections.<BusinessGroupMembership>emptyList() :
 			businessGroupService.getBusinessGroupsMembership(groups);
-		
-		System.out.println("Take (ms): " + ((System.nanoTime() - start) / 1000000));
 
 		//get identities
 		Set<Long> identityKeys = new HashSet<Long>();

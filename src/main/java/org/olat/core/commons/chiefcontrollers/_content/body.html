@@ -55,15 +55,20 @@ function b_start(){
 <script type="text/javascript" src='$r.staticLink("js/jsMath/easy/load.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/modernizr/modernizr.js")'></script>
 ## jQuery libraries
+<!--[if lt IE 9]>
 <script type="text/javascript" src='$r.staticLink("js/jquery/jquery-1.9.1.min.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/jquery/ui/jquery-ui-1.10.2.custom.min.js")'></script>
+<![endif]-->
+<!--[if gte IE 9]><!-->
+<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-2.1.0.min.js")'></script>
+<!--<![endif]-->
+<script type="text/javascript" src='$r.staticLink("js/jquery/ui/jquery-ui-1.10.4.custom.min.js")'></script>
 
 ## Are compressed as js/js.plugins.min.js
-## <script type="text/javascript" src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
-## <script type="text/javascript" src='$r.staticLink("js/jshashtable-2.1_src.js")'></script>
-## <script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.oolog.js")'></script>
-## <script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.translator.js")'></script>
-## <script type="text/javascript" src='$r.staticLink("js/tinymce4/tinymce/jquery.tinymce.min.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jshashtable-2.1_src.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.oolog.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.translator.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/tinymce4/tinymce/jquery.tinymce.min.js")'></script>
 ## <script type="text/javascript" src='$r.staticLink("js/functions.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
 <script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
@@ -74,7 +79,7 @@ function b_start(){
 ## <link type="text/css" href='$r.staticLink("js/jquery/fullcalendar/fullcalendar.css")' rel="stylesheet"/>
 ## <link type="text/css" href='$r.staticLink("js/jquery/datatables/css/jquery.dataTables.css")' rel="stylesheet"/>
 <link type="text/css" href='$r.staticLink("js/js.plugins.min.css")' rel="stylesheet"/>
-<link type="text/css" href='$r.staticLink("js/jquery/ui/jquery-ui-1.10.2.custom.min.css")' rel="stylesheet"/>
+<link type="text/css" href='$r.staticLink("js/jquery/ui/jquery-ui-1.10.4.custom.min.css")' rel="stylesheet"/>
 
 <script type="text/javascript">
 /* <![CDATA[ */ 

@@ -158,16 +158,17 @@ public class CPPrintMapper implements Mapper {
 	
 	private void injectJavascriptAndCss(StringBuilder output) {	
 		StringOutput sb = new StringOutput();
-		sb.append("\n<script type=\"text/javascript\" src=\"");
+		sb.append("<!--[if lt IE 9]>");
+		sb.append("<script type=\"text/javascript\" src=\"");
 		StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-1.9.1.min.js");
-		sb.append("\"></script>");
+		sb.append("\")'></script>");
+		sb.append("<![endif]-->");
+		sb.append("<!--[if gte IE 9]><!-->");
+		sb.append("<script type=\"text/javascript\" src=\"");
+		StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-2.1.0.min.js");
+		sb.append("\")'></script>");
+		sb.append("<!--<![endif]-->");
 		output.append(sb.toString());
-		
-		/*
-		output.append("<script>")
-			.append("window.onLoad(function() { window.focus(); window.print() });")
-			.append("</script>");
-*/
 		
 		output.append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
 	}

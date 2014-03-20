@@ -562,11 +562,24 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		public void appendJQuery() {
 			if(jqueryLoaded) return;
 			
-			appendStaticJs("js/jquery/jquery-1.9.1.min.js");
+			appendJQuery2Cond();
 			appendStaticJs("js/jshashtable-2.1_src.js");
-			appendStaticJs("js/jquery/ui/jquery-ui-1.10.2.custom.min.js");
-		  appendStaticCss("js/jquery/ui/jquery-ui-1.10.2.custom.min.css", "jqueryuicss");
-		  jqueryLoaded = true;
+			appendStaticJs("js/jquery/ui/jquery-ui-1.10.4.custom.min.js");
+			appendStaticCss("js/jquery/ui/jquery-ui-1.10.4.custom.min.css", "jqueryuicss");
+			jqueryLoaded = true;
+		}
+		
+		public void appendJQuery2Cond() {
+			append("<!--[if lt IE 9]>");
+			append("<script type=\"text/javascript\" src=\"");
+			StaticMediaDispatcher.renderStaticURI(this, "js/jquery/jquery-1.9.1.min.js");
+			append("\")'></script>");
+			append("<![endif]-->");
+			append("<!--[if gte IE 9]><!-->");
+			append("<script type=\"text/javascript\" src=\"");
+			StaticMediaDispatcher.renderStaticURI(this, "js/jquery/jquery-2.1.0.min.js");
+			append("\")'></script>");
+			append("<!--<![endif]-->");
 		}
 
 		public void appendPrototype() {

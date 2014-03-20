@@ -43,18 +43,18 @@ jQuery(function(){
 	  open: function() {
 		  jQuery(this).autocomplete('widget').css('z-index', 10000);
 	  },
-		select: function( event, ui ) {
+	  select: function( event, ui ) {
 			$r.javaScriptBgCommand("select") + '?key=' + ui.item.value;
 			return false;
 		}
-	}).data("uiAutocomplete")._renderItem = function(ul, item) {
-    var itemVal = "<a><div class='b_form_auto_completer_item search-item " + item.cssClass + "'>";
-    #if($showDisplayKey)
-			itemVal += "<span class=\'b_key\'>" + item.username + ": </span>";
+	}).__renderItem = function(ul, item) {
+		var itemVal = "<a><div class='b_form_auto_completer_item search-item " + item.cssClass + "'>";
+		#if($showDisplayKey)
+		itemVal += "<span class=\'b_key\'>" + item.username + ": </span>";
 		#end
 		itemVal += "<span class='b_value'>" + item.label + "</span>";
-    itemVal += "</div></a>";
-    return jQuery("<li>").append(itemVal).appendTo(ul);
+		itemVal += "</div></a>";
+		return jQuery("<li>").append(itemVal).appendTo(ul);
 	};
 });
 /* ]]> */

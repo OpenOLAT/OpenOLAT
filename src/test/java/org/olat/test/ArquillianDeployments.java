@@ -21,7 +21,6 @@ package org.olat.test;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.Filter;
@@ -36,7 +35,7 @@ public class ArquillianDeployments {
 	public static final String WEBINF    = "src/main/webapp/WEB-INF";
 	public static final String WEBINF_TOMCAT = "src/main/webapp-tomcat/WEB-INF";
 	public static final String TEST_RSRC = "src/test/resources";
-	public static final String LIB_DIR   = "target/openolat-lms-9.4-SNAPSHOT/WEB-INF/lib";
+	public static final String LIB_DIR   = "target/openolat-lms-10.0-SNAPSHOT/WEB-INF/lib";
 
 	
 	public static WebArchive createDeployment() {
@@ -76,8 +75,6 @@ public class ArquillianDeployments {
 				.addAsWebInfResource(new File(WEBINF, "olat_portals_links.xml"), "olat_portals_links.xml")
 				.addAsWebInfResource(new File(WEBINF, "olat_portals_institution.xml"), "olat_portals_institution.xml")
 				.addAsWebInfResource(new File(WEBINF, "sun-jaxws.xml"), "sun-jaxws.xml");
-				//.addAsWebInfResource(new File(WEBINF, "services/ReturnWSService/META-INF/ReturnWSService.wsdl"), "services/ReturnWSService/META-INF/ReturnWSService.wsdl")
-				//.addAsWebInfResource(new File(WEBINF, "services/ReturnWSService/META-INF/services.xml"), "services/ReturnWSService/META-INF/services.xml");
 	}
 	
 	public static WebArchive addWebResourceRecursive(File root, String startPath, FileFilter filter, WebArchive archive) {
@@ -148,7 +145,8 @@ public class ArquillianDeployments {
 						|| filename.endsWith("_zh_TW.properties")) {
 					return false;
 				}
-			} else if (filename.endsWith(".java") || filename.endsWith("instantMessagingTestContext.xml") || filename.endsWith("Mock.xml")) {
+			} else if (filename.endsWith(".java") || filename.endsWith("instantMessagingTestContext.xml") || filename.endsWith("Mock.xml") ||
+					filename.endsWith(".vsd") || filename.endsWith(".odg") || filename.endsWith(".odt") || filename.endsWith(".pdf")) {
 				return false;
 			}
 			return true;
@@ -167,18 +165,8 @@ public class ArquillianDeployments {
 		public boolean accept(File pathname) {
 			String filename = pathname.getName();
 			
-			if(filename.endsWith(".scss") || filename.endsWith(".psd")) {
+			if(filename.endsWith(".scss") || filename.endsWith(".psd") || filename.endsWith(".pxml")) {
 				return false;
-			}
-			if(filename.endsWith(".js")) {
-				try {
-					String path = pathname.getCanonicalPath();
-					if(path.contains("js/ext/src")) {
-						return false;
-					}	
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
 			}
 			return true;
 		}
