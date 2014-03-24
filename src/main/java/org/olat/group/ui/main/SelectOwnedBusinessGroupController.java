@@ -56,7 +56,9 @@ public class SelectOwnedBusinessGroupController extends AbstractBusinessGroupLis
 		if(groupModule.isManagedBusinessGroups()) {
 			groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.externalId.i18n(), Cols.externalId.ordinal(), null, getLocale()));
 		}
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale()));
+		DefaultColumnDescriptor descCol = new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale());
+		descCol.setEscapeHtml(EscapeMode.antisamy);
+		groupListCtr.addColumnDescriptor(false, descCol);
 		groupListCtr.addColumnDescriptor( new ResourcesColumnDescriptor(this, mainVC, getTranslator()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.tutorsCount.i18n(), Cols.tutorsCount.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(), null, getLocale()));
