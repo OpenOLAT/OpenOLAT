@@ -29,12 +29,14 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -64,6 +66,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 
 	private final boolean withScore;
+	private final boolean saveAndClose;
 	private final ModuleConfiguration config;
 	private final CheckListCourseNode courseNode;
 	private final UserCourseEnvironment userCourseEnv;
@@ -71,16 +74,20 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 	private final Identity assessedIdentity;
 	private final CheckboxList checkboxList;
 	private List<CheckboxWrapper> wrappers;
+	private FormLink saveAndCloseLink;
+	
+	
 	
 	private final CheckboxManager checkboxManager;
 	
 	public AssessedIdentityCheckListController(UserRequest ureq, WindowControl wControl,
 			Identity assessedIdentity, OLATResourceable courseOres,
-			UserCourseEnvironment userCourseEnv, CheckListCourseNode courseNode) {
+			UserCourseEnvironment userCourseEnv, CheckListCourseNode courseNode, boolean saveAndClose) {
 		super(ureq, wControl);
 
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
+		this.saveAndClose = saveAndClose;
 		this.userCourseEnv = userCourseEnv;
 		config = courseNode.getModuleConfiguration();
 		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
@@ -125,6 +132,9 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		formLayout.add(buttonCont);
 		FormSubmit saveButton = uifactory.addFormSubmitButton("save", "save", buttonCont);
 		saveButton.setEnabled(checkboxList.getNumOfCheckbox() > 0);
+		saveAndCloseLink = uifactory.addFormLink("save.close", buttonCont, Link.BUTTON);
+		saveAndCloseLink.setEnabled(checkboxList.getNumOfCheckbox() > 0);
+		saveAndCloseLink.setVisible(saveAndClose);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 	
@@ -174,6 +184,25 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		doSave();
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement boxEl = (MultipleSelectionElement)source;
+			CheckboxWrapper wrapper = (CheckboxWrapper)boxEl.getUserObject();
+			doUpdateCheck(wrapper, boxEl.isAtLeastSelected(1));
+		} else if(saveAndCloseLink == source) {
+			doSave();
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
+		
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doSave() {
 		List<AssessmentBatch> batchElements = new ArrayList<>();
 		for(CheckboxWrapper wrapper:wrappers) {
 			Float editedPoint = null;
@@ -212,17 +241,6 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
 		
 		courseNode.updateScoreEvaluation(userCourseEnv, assessedIdentity);
-		fireEvent(ureq, Event.CHANGED_EVENT);
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement boxEl = (MultipleSelectionElement)source;
-			CheckboxWrapper wrapper = (CheckboxWrapper)boxEl.getUserObject();
-			doUpdateCheck(wrapper, boxEl.isAtLeastSelected(1));
-		}
-		super.formInnerEvent(ureq, source, event);
 	}
 	
 	private void doUpdateCheck(CheckboxWrapper wrapper, boolean check) {

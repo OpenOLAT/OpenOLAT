@@ -250,7 +250,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 		
 		List<CheckListAssessmentRow> datas = loadDatas();
-		model = new CheckListAssessmentDataModel(datas, columnsModel);
+		model = new CheckListAssessmentDataModel(checkboxList, datas, columnsModel);
 		table = uifactory.addTableElement(ureq, getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
 		table.setFilterKeysAndValues("participants", keys, values);
 		table.setExportEnabled(true);
@@ -432,11 +432,12 @@ public class CheckListAssessmentController extends FormBasicController implement
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(editCtrl == source) {
-			cmc.deactivate();
-			cleanUp();
-			
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+			if(event == Event.DONE_EVENT) {
 				reloadTable();
+			}
+			if(event == Event.DONE_EVENT || Event.CANCELLED_EVENT == event) {
+				cmc.deactivate();
+				cleanUp();
 			}
 		} else if(boxAssessmentCtrl == source) {
 			cmc.deactivate();
@@ -446,6 +447,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 				reloadTable();
 			}
 		} else if(cmc == source) {
+			if(editCtrl != null && editCtrl.isChanges()) {
+				reloadTable();
+			}
 			cleanUp();
 		}
 		super.event(ureq, source, event);

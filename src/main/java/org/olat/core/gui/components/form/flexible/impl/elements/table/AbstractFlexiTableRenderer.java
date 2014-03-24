@@ -265,8 +265,10 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				formItem.setRootForm(ftE.getRootForm());
 			}
 			ftE.addFormItem(formItem);
-			formItem.getComponent().getHTMLRendererSingleton().render(renderer, target, formItem.getComponent(),
+			if(formItem.isVisible()) {
+				formItem.getComponent().getHTMLRendererSingleton().render(renderer, target, formItem.getComponent(),
 					ubu, translator, renderResult, null);
+			}
 		} else {
 			fcm.getCellRenderer().render(target, cellValue, row, ftC, ubu, translator);
 		}

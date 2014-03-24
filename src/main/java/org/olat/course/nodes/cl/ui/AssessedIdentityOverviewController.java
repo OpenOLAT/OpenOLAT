@@ -62,6 +62,8 @@ public class AssessedIdentityOverviewController extends BasicController {
 	private final CheckListCourseNode courseNode;
 	private final UserCourseEnvironment userCourseEnv;
 	
+	private boolean changes = false;
+	
 	public AssessedIdentityOverviewController(UserRequest ureq, WindowControl wControl,
 			Identity assessedIdentity, OLATResourceable courseOres,
 			UserCourseEnvironment userCourseEnv, CheckListCourseNode courseNode) {
@@ -94,12 +96,30 @@ public class AssessedIdentityOverviewController extends BasicController {
 		//
 	}
 	
+	public boolean isChanges() {
+		return changes;
+	}
+	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(listCtrl == source) {
-			fireEvent(ureq, event);
+			if(Event.DONE_EVENT == event) {
+				changes = true;
+				fireEvent(ureq, event);
+			} else if (Event.CHANGED_EVENT == event) {
+				changes = true;
+				if(assessmentCtrl != null) {
+					assessmentCtrl.reloadData(ureq);
+				}
+				fireEvent(ureq, event);
+			}
 		} else if(assessmentCtrl == source) {
-			fireEvent(ureq, event);
+			if(Event.DONE_EVENT == event) {
+				changes = true;
+				fireEvent(ureq, event);
+			} else if(Event.CHANGED_EVENT == event) {
+				changes = true;
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -123,7 +143,7 @@ public class AssessedIdentityOverviewController extends BasicController {
 	private void doOpenCheckList(UserRequest ureq) {
 		if(listCtrl == null) {
 			listCtrl = new AssessedIdentityCheckListController(ureq, getWindowControl(), assessedIdentity,
-					courseOres, userCourseEnv, courseNode);
+					courseOres, userCourseEnv, courseNode, true);
 			listenTo(listCtrl);
 		}
 		mainVC.put("segmentCmp", listCtrl.getInitialComponent());
@@ -134,7 +154,7 @@ public class AssessedIdentityOverviewController extends BasicController {
 			ICourse course = CourseFactory.loadCourse(courseOres);
 			UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 			AssessedIdentityWrapper idWrapper = AssessmentHelper.wrapIdentity(uce, null, courseNode);
-			assessmentCtrl = new AssessmentEditController(ureq, getWindowControl(), null, course, courseNode, idWrapper, false);
+			assessmentCtrl = new AssessmentEditController(ureq, getWindowControl(), null, course, courseNode, idWrapper, false, true);
 			assessmentCtrl.setIdentityInfos(false);
 			assessmentCtrl.setCourseNodeInfos(false);
 			assessmentCtrl.setTitleInfos(false);
