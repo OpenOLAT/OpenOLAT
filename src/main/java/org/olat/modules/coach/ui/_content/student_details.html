@@ -1,0 +1,10 @@
+<div class="o_eff_statement_details">
+	<h3 class="b_with_small_icon_left b_user_icon">$studentName</h3>
+	
+	#if($r.available("home"))
+		$r.render("home")
+	#end
+	#if($r.available("contact"))
+		$r.render("contact")
+	#end
+</div>

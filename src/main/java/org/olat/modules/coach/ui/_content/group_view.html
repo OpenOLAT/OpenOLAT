@@ -1,0 +1,7 @@
+$r.render("toolbar")
+#if($r.available("efficiencyDetails"))
+	$r.render("efficiencyDetails")
+#else
+	$r.render("groupDetails")
+	$r.render("groupsTable")
+#end

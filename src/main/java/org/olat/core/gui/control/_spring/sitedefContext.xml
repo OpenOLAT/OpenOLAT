@@ -45,8 +45,12 @@
 	   <property name="order" value="6" />
 	   <property name="enabled" value="${site.repository.enable}"/>
 	</bean>
+	<bean id="olatsites_coaching" class="org.olat.modules.coach.site.CoachSiteDef">
+		<property name="order" value="7" />
+		<property name="enabled" value="${site.coaching.enable}"/>
+	</bean>
 	<bean id="olatsites_qpool" class="org.olat.modules.qpool.site.QuestionPoolSiteDef">
-	   <property name="order" value="7" />
+	   <property name="order" value="8" />
 	   <property name="enabled" value="${site.questionpool.enable}"/>
 	</bean>
 	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef">

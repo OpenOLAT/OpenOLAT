@@ -1,0 +1,11 @@
+$r.render("toolbar")
+#if($r.available("efficiencyDetails"))
+	$r.render("efficiencyDetails")
+#else
+	$r.render("courseDetails")
+	$r.render("courseTable")
+#end
+
+
+
+
