@@ -92,6 +92,11 @@ function b_sizeIframe() {
 					lastHeight = docHeight;
 				}
 				frame.height = docHeight;
+				// Update height of menu / toolbox height in main window
+				if(docHeight != mainWindow.b_iframe_origHeight && mainWindow.OPOL && mainWindow.OPOL.adjustHeight) {
+					//console.log("b_sizeIframe(): executing resize command on main window","iframe.js");
+					mainWindow.OPOL.adjustHeight();
+				}
 				//console.log("b_sizeIframe window.name=" + window.name + " docHeight=" + docHeight + " lastHeight=" + lastHeight + " frame.height=" + frame.height + " document.location=" + document.location);				
 			}
 		}
