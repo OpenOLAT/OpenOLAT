@@ -59,8 +59,12 @@ function b_sizeIframe() {
 				// Reset frame height to original frame height when this is an inline URI, otherwhise frame will never shrink again (OLAT-3325)
 				if (!loaded) { // only on first resize operation after load
 					if (b_isInlineUri) {
-						if (parent.b_iframe_origHeight != 'undefined') frame.height = parent.b_iframe_origHeight; 
-					} else parent.b_iframe_origHeight = parseInt(frame.height);
+						if (parent.b_iframe_origHeight != null && parent.b_iframe_origHeight != undefined) {
+							frame.height = parent.b_iframe_origHeight;
+						}
+					} else {
+						parent.b_iframe_origHeight = parseInt(frame.height);
+					}
 				}
 				// Calculate the document height as the browser sees it
 				// Use various methods for different browser and browser render modes
@@ -73,7 +77,7 @@ function b_sizeIframe() {
 					// don't make smaller than defined min-height as a workaround for the problem with content that contains 
 					// only fluid sizes that can't be calculated on a full page refresh (height=100%) (OLAT-3351)
 					var minHeight = frame.style.minHeight; 
-					if (minHeight != 'undefined' && minHeight.length >2) {
+					if (minHeight != null && minHeight != undefined && minHeight.length >2) {
 						minHeight = parseInt(minHeight.substring(0,minHeight.length-2));
 						docHeight = Math.max(docHeight, minHeight);
 					}
@@ -88,12 +92,6 @@ function b_sizeIframe() {
 					lastHeight = docHeight;
 				}
 				frame.height = docHeight;
-				// Update height of menu / toolbox height in main window
-				if(docHeight != mainWindow.b_iframe_origHeight && mainWindow.B_ResizableColumns != 'undefined') {
-					//console.log("b_sizeIframe(): executing resize command on main window","iframe.js");
-					mainWindow.needsHeightAdjustment = true;
-					mainWindow.B_ResizableColumns.adjustHeight();
-				}
 				//console.log("b_sizeIframe window.name=" + window.name + " docHeight=" + docHeight + " lastHeight=" + lastHeight + " frame.height=" + frame.height + " document.location=" + document.location);				
 			}
 		}
@@ -304,7 +302,7 @@ function b_changeLinkTargets() {
 				// absolute links to repository entries have to by opened in the parent frame
 				// /auth/repo/ is legacy format, /url/RepositoryEntry/ is new format
 				anchor.target = "_parent";
-			} else if (target != 'undefined' && (target == '_top' || target == '_parent')) {
+			} else if (target != null && target != undefined && (target == '_top' || target == '_parent')) {
 				// fix broken legacy links that try to open content in top window
 				// iframe content must always stay within iframe 
 				var mainwindow = b_getMainWindow(window.parent);
