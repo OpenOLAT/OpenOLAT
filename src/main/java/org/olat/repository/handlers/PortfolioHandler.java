@@ -174,7 +174,7 @@ public class PortfolioHandler implements RepositoryHandler {
 		EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
 		PortfolioStructure structure = ePFMgr.loadPortfolioStructure(res);
 		PortfolioStructure newStructure = EPXStreamHandler.copy(structure);
-		PortfolioStructureMap map = ePFMgr.importPortfolioMapTemplate(newStructure, ureq.getIdentity());
+		PortfolioStructureMap map = ePFMgr.importPortfolioMapTemplate(newStructure);
 		return map.getOlatResource();
 	}
 

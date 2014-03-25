@@ -27,8 +27,8 @@
 package org.olat.core.gui.control.navigation;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.layout.MainLayoutController;
 
 /**
  * Description:<br>
@@ -43,7 +43,7 @@ public interface SiteInstance {
 	
 	public NavElement getNavElement();
 	
-	public MainLayoutController createController(UserRequest ureq, WindowControl wControl);
+	public Controller createController(UserRequest ureq, WindowControl wControl);
 	
 	public boolean isKeepState();
 	

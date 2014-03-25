@@ -70,21 +70,16 @@ public class EPStructureManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
-	
 	@Autowired
 	private EPStructureManager epStructureManager;
-	
 	@Autowired
 	private EPFrontendManager epFrontendManager;
-	
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
-	
 	@Autowired
 	private OLATResourceManager resourceManager;
-	
 	@Autowired
 	private BaseSecurity securityManager;
 	

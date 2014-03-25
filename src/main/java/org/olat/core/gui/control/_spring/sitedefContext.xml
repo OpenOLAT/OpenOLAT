@@ -63,6 +63,10 @@
 	   <property name="order" value="11" />
 	   <property name="enabled" value="${guidemo.enabled}"/>
 	</bean>
+	<bean id="olatsites_portfolio" class="org.olat.portfolio.site.EPSiteDef">
+	   <property name="order" value="11" />
+	   <property name="enabled" value="${site.portfolio.enable}"/>
+	</bean>
 	
 	<bean id="olatsites_home" class="org.olat.home.HomeSiteDef">
 	   <property name="order" value="25" />

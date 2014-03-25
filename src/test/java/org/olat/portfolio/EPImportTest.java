@@ -57,7 +57,7 @@ public class EPImportTest extends OlatTestCase {
 		File mapFile = new File(mapUrl.toURI());
 		//import the map
 		PortfolioStructure rootStructure = EPXStreamHandler.getAsObject(mapFile, false);
-		PortfolioStructureMap importedMap = epFrontendManager.importPortfolioMapTemplate(rootStructure, null);
+		PortfolioStructureMap importedMap = epFrontendManager.importPortfolioMapTemplate(rootStructure);
 		Assert.assertNotNull(importedMap);
 		dbInstance.commitAndCloseSession();
 	}

@@ -502,7 +502,7 @@ public class CollaborationTools implements Serializable {
 				Property mapKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO);
 				if (mapKeyProperty == null) {
 					// First call of portfolio-tool, create new map and save
-					aMap = ePFMgr.createAndPersistPortfolioDefaultMap(group, group.getName(), group.getDescription());					
+					aMap = ePFMgr.createAndPersistPortfolioDefaultMap(group.getName(), group.getDescription());					
 					Translator pT = Util.createPackageTranslator(EPCreateMapController.class, ureq.getLocale());					
 					// add a page, as each map should have at least one per default!
 					final String title = pT.translate("new.page.title");

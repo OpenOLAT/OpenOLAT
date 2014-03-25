@@ -49,7 +49,7 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 	public abstract NavElement getNavElement();
 
 	@Override
-	public final MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
+	public final Controller createController(UserRequest ureq, WindowControl wControl) {
 		SiteDefinitions siteDefinitions = CoreSpringFactory.getImpl(SiteDefinitions.class);
 		SiteConfiguration config = siteDefinitions.getConfigurationSite(siteDef);
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
@@ -63,7 +63,7 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 		return createController(ureq, wControl, config);
 	}
 	
-	protected abstract MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config);
+	protected abstract Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config);
 	
 	protected MainLayoutController getAlternativeController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		String altControllerId = config.getAlternativeControllerBeanId();

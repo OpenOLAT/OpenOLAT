@@ -36,29 +36,16 @@ import org.olat.portfolio.model.notification.EPNotification;
 import org.olat.portfolio.model.notification.EPRatingNotification;
 import org.olat.portfolio.model.notification.EPStructureElementNotification;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-
-
+@Service("epNotificationManager")
 public class EPNotificationManager {
 
+	@Autowired
 	private DB dbInstance;
+	@Autowired
 	private UserManager userManager;
-	
-	/**
-	 * [used by Spring]
-	 * @param db
-	 */
-	public void setDbInstance(DB db) {
-		this.dbInstance = db;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param userManager
-	 */
-	public void setUserManager(UserManager userManager) {
-		this.userManager = userManager;
-	}
 
 	public List<SubscriptionListItem> getPageSubscriptionListItem(Long mapKey, String rootBusinessPath, Date compareDate, Translator translator) {
 		List<EPStructureElementNotification> notifications = getPageNotifications(mapKey, compareDate);

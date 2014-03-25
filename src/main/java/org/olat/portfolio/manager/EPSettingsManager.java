@@ -33,6 +33,8 @@ import org.olat.portfolio.model.EPFilterSettings;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -44,6 +46,7 @@ import com.thoughtworks.xstream.XStream;
  * Initial Date:  30.11.2010 <br>
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
+@Service("epSettingsManager")
 public class EPSettingsManager extends BasicManager {
 
 	private static final String EPORTFOLIO_ARTEFACTS_ATTRIBUTES = "eportfolio-artAttrib";
@@ -52,14 +55,16 @@ public class EPSettingsManager extends BasicManager {
 	private static final String EPORTFOLIO_ARTEFACTS_VIEWMODE = "eportfolio-artViewMode";
 	private static final String EPORTFOLIO_CATEGORY = "eportfolio";
 	
+	@Autowired
+	private PropertyManager propertyManager;
+	
 	public EPSettingsManager(){
 		//
 	}
 	
 	@SuppressWarnings("unchecked")
 	public Map<String, Boolean> getArtefactAttributeConfig(Identity ident) {
-		PropertyManager pm = PropertyManager.getInstance();
-		Property p = pm.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_ATTRIBUTES);
+		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_ATTRIBUTES);
 		TreeMap<String, Boolean> disConfig;
 		if (p == null) {
 			disConfig = new TreeMap<String, Boolean>();
@@ -83,21 +88,19 @@ public class EPSettingsManager extends BasicManager {
 	}
 	
 	public void setArtefactAttributeConfig(Identity ident, Map<String, Boolean> artAttribConfig) {
-		PropertyManager pm = PropertyManager.getInstance();
-		Property p = pm.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_ATTRIBUTES);
+		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_ATTRIBUTES);
 		if (p == null) {
-			p = pm.createUserPropertyInstance(ident, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_ATTRIBUTES, null, null, null, null);
+			p = propertyManager.createUserPropertyInstance(ident, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_ATTRIBUTES, null, null, null, null);
 		}
 		XStream xStream = XStreamHelper.createXStreamInstance();
 		String artAttribXML = xStream.toXML(artAttribConfig);
 		p.setTextValue(artAttribXML);
-		pm.saveProperty(p);
+		propertyManager.saveProperty(p);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<EPFilterSettings> getSavedFilterSettings(Identity ident){
-		PropertyManager pm = PropertyManager.getInstance();
-		Property p = pm.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_FILTER_SETTINGS);
+		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_FILTER_SETTINGS);
 		List<EPFilterSettings> result = new ArrayList<EPFilterSettings>();
 		if (p == null) {
 			result.add(new EPFilterSettings());
@@ -115,10 +118,9 @@ public class EPSettingsManager extends BasicManager {
 	}
 	
 	public void setSavedFilterSettings(Identity ident, List<EPFilterSettings> filterList){
-		PropertyManager pm = PropertyManager.getInstance();
-		Property p = pm.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_FILTER_SETTINGS);
+		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_FILTER_SETTINGS);
 		if (p == null) {
-			p = pm.createUserPropertyInstance(ident, EPORTFOLIO_CATEGORY, EPORTFOLIO_FILTER_SETTINGS, null, null, null, null);
+			p = propertyManager.createUserPropertyInstance(ident, EPORTFOLIO_CATEGORY, EPORTFOLIO_FILTER_SETTINGS, null, null, null, null);
 		}
 		// don't persist filters without a name
 		for (Iterator<EPFilterSettings> iterator = filterList.iterator(); iterator.hasNext();) {
@@ -131,7 +133,7 @@ public class EPSettingsManager extends BasicManager {
 		xStream.aliasType("EPFilterSettings", EPFilterSettings.class);
 		String filterListXML = xStream.toXML(filterList);
 		p.setTextValue(filterListXML);
-		pm.saveProperty(p);		
+		propertyManager.saveProperty(p);		
 	}
 	
 	public void deleteFilterFromUsersList(Identity ident, String filterID){
@@ -144,8 +146,7 @@ public class EPSettingsManager extends BasicManager {
 	}
 	
 	public String getUsersPreferedArtefactViewMode(Identity ident, String context){
-		PropertyManager pm = PropertyManager.getInstance();
-		Property p = pm.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_VIEWMODE + "." + context);
+		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_VIEWMODE + "." + context);
 		if (p != null) {
 			String preferedMode = p.getStringValue();
 			return preferedMode;
@@ -154,28 +155,25 @@ public class EPSettingsManager extends BasicManager {
 	}
 	
 	public void setUsersPreferedArtefactViewMode(Identity ident, String preferedMode, String context){
-		PropertyManager pm = PropertyManager.getInstance();
-		Property p = pm.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_VIEWMODE + "." + context);
+		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_VIEWMODE + "." + context);
 		if (p == null) {
-			p = pm.createUserPropertyInstance(ident, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_VIEWMODE + "." + context, null, null, null, null);
+			p = propertyManager.createUserPropertyInstance(ident, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_VIEWMODE + "." + context, null, null, null, null);
 		}
 		p.setStringValue(preferedMode);
-		pm.saveProperty(p);
+		propertyManager.saveProperty(p);
 	}
 	
 	public void setUsersLastUsedPortfolioStructure(Identity ident, PortfolioStructure struct){
-		PropertyManager pm = PropertyManager.getInstance();
-		Property p = pm.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_LASTUSED_STRUCTURE);
+		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_LASTUSED_STRUCTURE);
 		if (p == null) {
-			p = pm.createUserPropertyInstance(ident, EPORTFOLIO_CATEGORY, EPORTFOLIO_LASTUSED_STRUCTURE, null, null, null, null);
+			p = propertyManager.createUserPropertyInstance(ident, EPORTFOLIO_CATEGORY, EPORTFOLIO_LASTUSED_STRUCTURE, null, null, null, null);
 		}
 		p.setLongValue(struct.getKey());
-		pm.saveProperty(p);
+		propertyManager.saveProperty(p);
 	}
 	
 	public Long getUsersLastUsedPortfolioStructureKey (Identity ident) {
-		PropertyManager pm = PropertyManager.getInstance();
-		Property p = pm.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_LASTUSED_STRUCTURE);
+		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_LASTUSED_STRUCTURE);
 		if (p != null) {
 			return p.getLongValue();
 		}

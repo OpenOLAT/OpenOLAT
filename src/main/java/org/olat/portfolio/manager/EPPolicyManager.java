@@ -34,6 +34,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -43,14 +45,16 @@ import org.olat.resource.OLATResource;
  * Initial Date:  30.11.2010 <br>
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
+@Service("epPolicyManager")
 public class EPPolicyManager extends BasicManager {
 
-	private final BaseSecurity securityManager;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
-	public EPPolicyManager(BaseSecurity securityManager, BusinessGroupService businessGroupService){
-		this.securityManager = securityManager;
-		this.businessGroupService = businessGroupService;
+	public EPPolicyManager() {
+		//
 	}
 	
 	/**

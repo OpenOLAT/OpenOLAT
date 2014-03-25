@@ -52,7 +52,6 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.group.BusinessGroup;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.restriction.CollectRestriction;
 import org.olat.portfolio.model.restriction.RestrictionsConstants;
@@ -77,6 +76,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -87,16 +87,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  11.06.2010 <br>
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
+@Service("epStructureManager")
 public class EPStructureManager extends BasicManager {
 	
 	public static final String STRUCTURE_ELEMENT_TYPE_NAME = "EPStructureElement";
 	
 	public static final OLATResourceable ORES_MAPOWNER = OresHelper.lookupType(EPStructureManager.class, "EPOwner");
-	
-	private DB dbInstance;
-	private RepositoryManager repositoryManager;
-	private OLATResourceManager resourceManager;
 
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private OLATResourceManager resourceManager;
+	@Autowired
 	private EPPolicyManager policyManager;
 	@Autowired
 	private GroupDAO groupDao;
@@ -105,41 +109,10 @@ public class EPStructureManager extends BasicManager {
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntyRelationDao;
 
-	/**
-	 * 
-	 */
 	public EPStructureManager() {
 		//
 	}
 
-	/**
-	 * [used by Spring]
-	 * @param resourceManager
-	 */
-	public void setResourceManager(OLATResourceManager resourceManager) {
-		this.resourceManager = resourceManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param db
-	 */
-	public void setDbInstance(DB db) {
-		this.dbInstance = db;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param repositoryManager
-	 */
-	public void setRepositoryManager(RepositoryManager repositoryManager) {
-		this.repositoryManager = repositoryManager;
-	}
-	
-	@Autowired(required = true)
-	public void setpolicyManager(final EPPolicyManager policyManager) {
-		this.policyManager = policyManager;
-	}
 
 	/**
 	 * Return the list of artefacts glued to this structure element
@@ -214,8 +187,9 @@ public class EPStructureManager extends BasicManager {
 	protected List<PortfolioStructure> getStructureElementsForUser(IdentityRef ident, ElementType... types){
 		StringBuilder sb = new StringBuilder();
 		sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" as stEl")
+		  .append(" inner join fetch stEl.group as baseGroup")
 		  .append(" where exists (select membership from bgroupmember as membership " )
-		  .append("    where stEl.group=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
+		  .append("    where baseGroup=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
 		  .append(" )");
 		if(types != null && types.length > 0) {
 			sb.append(" and stEl.class in (");
@@ -296,35 +270,37 @@ public class EPStructureManager extends BasicManager {
 	/**
 	 * 
 	 * @param select
-	 * @param ident
 	 * @param choosenOwner
 	 * @param limitFrom
 	 * @param limitTo
 	 * @param types
 	 * @return
 	 */
-	private StringBuilder buildStructureElementsFromOthersLimitedQuery(String select,final Identity ident, final Identity choosenOwner ,final ElementType... types){
+	private <U> TypedQuery<U> buildStructureElementsFromOthersLimitedQuery(Identity choosenOwner, Class<U> cl, ElementType... types){
 		StringBuilder sb = new StringBuilder();
-		
-		sb.append("select ").append(select).append(" from ");
-		
-		sb.append(EPStructureElement.class.getName()).append(" stEl ");
-		sb.append(" inner join stEl.olatResource as oRes ");
+		if(cl.equals(Number.class)) {
+			sb.append("select count(stEl.key) from ").append(EPStructureElement.class.getName()).append(" stEl ")
+			  .append(" inner join stEl.olatResource as oRes ");
+		} else {
+			sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" stEl ")
+			  .append(" inner join fetch stEl.olatResource as oRes ")
+			  .append(" inner join fetch stEl.group as baseGroup ");
+		}
+
 		sb.append(" where oRes in ( ").append("  select policy.olatResource from").append("  ").append(PolicyImpl.class.getName()).append(" as policy, ").append("  ")
 				.append(SecurityGroupImpl.class.getName()).append(" as sgi,").append("  ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
 				.append("  where sgi = policy.securityGroup")// implicit inner join
 				.append("  and (sgmsi.securityGroup = sgi and sgmsi.identity =:ident) ")// member of the security group
 				.append("  and (policy.from is null or policy.from<=:date)").append("  and (policy.to is null or policy.to>=:date)").append(" )");
-
 		// remove owner
-		sb.append(" and stEl.ownerGroup not in ( ").append("select sgi2.key from").append(" org.olat.basesecurity.SecurityGroupImpl as sgi2,")
-				.append(" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi2 ").append(" where sgmsi2.securityGroup = sgi2 and sgmsi2.identity =:ident")
-				.append(" )");
+		sb.append(" and stEl.group not in ( ").append("select sgi2 from bgroup as sgi2, bgroupmember as sgmsi2 ")
+		  .append("   where sgmsi2.group=sgi2 and sgmsi2.identity=:ident")
+		  .append(" )");
 
 		if (choosenOwner != null) {
-			sb.append(" and stEl.ownerGroup in ( ").append("select sgi.key from").append(" org.olat.basesecurity.SecurityGroupImpl as sgi,")
-					.append(" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ").append(" where sgmsi.securityGroup = sgi and sgmsi.identity =:owner")
-					.append(" )");
+			sb.append(" and stEl.group in (select sgi.key from bgroup as sgi, bgroupmember as sgmsi ")
+			  .append("   where sgmsi.group=sgi and sgmsi.identity=:owner")
+			  .append(" )");
 		}
 		if (types != null && types.length > 0) {
 			sb.append(" and stEl.class in (");
@@ -340,43 +316,35 @@ public class EPStructureManager extends BasicManager {
 			sb.append(")");
 		}
 		
-		return sb;
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), cl);
 	}
 	
 	protected int countStructureElementsFromOthers(final Identity ident, final Identity choosenOwner ,final ElementType... types){
-			StringBuilder sb = buildStructureElementsFromOthersLimitedQuery("count(*)", ident, choosenOwner, types);
-			final DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setEntity("ident", ident);
-			query.setDate("date", new Date());
-			if (choosenOwner != null) {
-				query.setEntity("owner", choosenOwner);
-			}
-
-			@SuppressWarnings("unchecked")
-			final List<Long> resultList = query.list();
-			if(resultList.size()>0) return resultList.get(0).intValue();
-			return 0;
+		TypedQuery<Number> query = buildStructureElementsFromOthersLimitedQuery(choosenOwner, Number.class, types);
+		query.setParameter("ident", ident)
+		     .setParameter("date", new Date());
+		if (choosenOwner != null) {
+			query.setParameter("owner", choosenOwner);
+		}
+		Number count = query.getSingleResult();
+		return count == null ? 0 : count.intValue();
 	}
 	
-	protected List<PortfolioStructure> getStructureElementsFromOthersLimited(final Identity ident, final Identity choosenOwner ,final int limitFrom, final int limitTo,final ElementType... types){
-		final StringBuilder sb = buildStructureElementsFromOthersLimitedQuery("stEl", ident, choosenOwner, types);
-		final DBQuery query = dbInstance.createQuery(sb.toString());
-		
+	protected List<PortfolioStructure> getStructureElementsFromOthersLimited(Identity ident, Identity choosenOwner,
+			int limitFrom, int limitTo, ElementType... types){
+		TypedQuery<PortfolioStructure> query = buildStructureElementsFromOthersLimitedQuery(choosenOwner, PortfolioStructure.class, types);
 		//limits
 		if(limitTo > 0 && (limitFrom < limitTo)){
 			query.setFirstResult(limitFrom);
 			query.setMaxResults(limitTo-limitFrom);
 		}
 		
-		query.setEntity("ident", ident);
-		query.setDate("date", new Date());
+		query.setParameter("ident", ident)
+		     .setParameter("date", new Date());
 		if (choosenOwner != null) {
-			query.setEntity("owner", choosenOwner);
+			query.setParameter("owner", choosenOwner);
 		}
-
-		@SuppressWarnings("unchecked")
-		final List<PortfolioStructure> pStructs = query.list();
-		return pStructs;
+		return query.getResultList();
 	}
 	
 	protected List<PortfolioStructure> getStructureElementsFromOthersWithoutPublic(Identity ident, Identity choosenOwner, ElementType... types){
@@ -401,20 +369,14 @@ public class EPStructureManager extends BasicManager {
 			.append(" )");
 		
 		//remove owner
-		sb.append(" and stEl.ownerGroup not in ( " )
-			.append("	 select sgi2.key from")
-			.append("  org.olat.basesecurity.SecurityGroupImpl as sgi2,") 
-			.append("  org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi2 ")
-			.append("  where sgmsi2.securityGroup = sgi2 and sgmsi2.identity =:ident")
-			.append(" )");
+		sb.append(" and stEl.group not in (select sgi2 from bgroup as sgi2, bgroupmember as sgmsi2 ")
+		  .append("   where sgmsi2.group=sgi2 and sgmsi2.identity=:ident")
+		  .append(" )");
 		
 		if(choosenOwner != null) {
-			sb.append(" and stEl.ownerGroup in ( " )
-				.append("select sgi.key from")
-				.append(" org.olat.basesecurity.SecurityGroupImpl as sgi,") 
-				.append(" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ")
-				.append(" where sgmsi.securityGroup = sgi and sgmsi.identity =:owner")
-				.append(" )");
+			sb.append(" and stEl.group in (select sgi from bgroup  as sgi, bgroupmember as sgmsi ")
+			  .append("   where sgmsi.group=sgi and sgmsi.identity=:owner")
+			  .append(" )");
 		}
 		if(types != null && types.length > 0) {
 			sb.append(" and stEl.class in (");
@@ -1572,14 +1534,14 @@ public class EPStructureManager extends BasicManager {
 	 * Load a portfolio structure by its primary key
 	 * @param key cannot be null
 	 * @return The structure element or null if not found
-	 */	
-	//FIXME: epf: SR: error loading structures without olatresource! 
+	 */
 	public PortfolioStructure loadPortfolioStructureByKey(Long key) {
 		if (key == null) throw new NullPointerException();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select element from ").append(EPStructureElement.class.getName()).append(" element")
-			.append(" where element.key=:key");
+		  .append(" left join fetch element.olatResource as oRes")
+		  .append(" left join fetch element.group as baseGroup");
 		
 		DBQuery query = dbInstance.createQuery(sb.toString());
 		query.setLong("key", key);
@@ -1681,7 +1643,7 @@ public class EPStructureManager extends BasicManager {
 		fillStructureElement(el, title, description);
 		
 		//create security group
-		Group ownerGroup = createBaseGroup(el, identity);
+		Group ownerGroup = createBaseGroup(identity);
 		el.setGroup(ownerGroup);
 		return el;
 	}
@@ -1692,19 +1654,14 @@ public class EPStructureManager extends BasicManager {
 		fillStructureElement(el, title, description);
 
 		//create security group
-		Group ownerGroup = createBaseGroup(el, identity);
+		Group ownerGroup = createBaseGroup(identity);
 		el.setGroup(ownerGroup);
 		
 		return el;
 	}
 	
-	protected PortfolioStructureMap createPortfolioDefaultMap(BusinessGroup group, String title, String description) {
+	protected PortfolioStructureMap createPortfolioDefaultMap(String title, String description) {
 		EPDefaultMap el = new EPDefaultMap();
-
-		//don't create security group for map linked to a group
-		//SecurityGroup ownerGroup = group.getOwnerGroup();
-		//el.setOwnerGroup(ownerGroup);
-		
 		fillStructureElement(el, title, description);
 		return el;
 	}
@@ -1746,7 +1703,7 @@ public class EPStructureManager extends BasicManager {
 	 * @param identity
 	 * @return
 	 */
-	public PortfolioStructureMap importPortfolioMapTemplate(PortfolioStructure root, Identity identity) {
+	public PortfolioStructureMap importPortfolioMapTemplate(PortfolioStructure root) {
 		EPStructuredMapTemplate el = new EPStructuredMapTemplate();
 		
 		fillStructureElement(el, root.getTitle(), root.getDescription());
@@ -1805,6 +1762,7 @@ public class EPStructureManager extends BasicManager {
 		Group group = repositoryEntyRelationDao.getDefaultGroup(entry);
 		if(group == null) {
 			group = groupDao.createGroup();
+			groupDao.addMembership(group, identity, GroupRoles.owner.name());
 		}
 		el.setGroup(group);
 		dbInstance.saveObject(el);
@@ -1854,7 +1812,7 @@ public class EPStructureManager extends BasicManager {
 		return addedEntry;
 	}
 	
-	private Group createBaseGroup(EPAbstractMap map, Identity author) {
+	private Group createBaseGroup(Identity author) {
 		//create security group
 		Group ownerGroup = groupDao.createGroup();
 		groupDao.addMembership(ownerGroup, author, GroupRoles.owner.name());

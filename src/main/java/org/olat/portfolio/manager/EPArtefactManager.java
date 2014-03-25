@@ -50,6 +50,8 @@ import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.EPFilterSettings;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.EPStructureToArtefactLink;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -61,18 +63,18 @@ import org.olat.portfolio.model.structel.EPStructureToArtefactLink;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
+@Service("epArtefactManager")
 public class EPArtefactManager extends BasicManager {
 
 	private static final String ARTEFACT_FULLTEXT_ON_FS = "ARTEFACT_FULLTEXT_ON_FS";
-	// those are here as instance variable, as mocking the tests won't be possible
-	// without!
-	// it also helps to find failures in loading a manager, as already spring
-	// would warn and not
-	// only later on, when a click happens.
+
+	@Autowired
 	private DB dbInstance;
+	@Autowired
 	private PortfolioModule portfolioModule;
+	@Autowired
 	private TaggingManager taggingManager;
-	// end.
+
 
 	private static final int ARTEFACT_FULLTEXT_DB_FIELD_LENGTH = 16384;
 	public static final String ARTEFACT_CONTENT_FILENAME = "artefactContent.html";
@@ -80,51 +82,7 @@ public class EPArtefactManager extends BasicManager {
 	
 	private VFSContainer artefactsRoot;
 
-	/**
-	 * 
-	 */
 	public EPArtefactManager() {
-		//
-	}
-
-	/**
-	 * [used by Spring]
-	 * 
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
-
-	/**
-	 * [used by Spring]
-	 * 
-	 * @param portfolioModule
-	 */
-	public void setPortfolioModule(PortfolioModule portfolioModule) {
-		this.portfolioModule = portfolioModule;
-	}
-
-	/**
-	 * [used by Spring]
-	 * 
-	 * @param taggingManager
-	 */
-	public void setTaggingManager(TaggingManager taggingManager) {
-		this.taggingManager = taggingManager;
-	}
-
-	/**
-	 * load the persisted artefact from FS
-	 */
-	void loadFile() {
-		//
-	}
-
-	/**
-	 * convert html/text to PDF and save in Filesystem
-	 */
-	void persistAsPDF() {
 		//
 	}
 	

@@ -132,7 +132,7 @@ public class GroupDAO {
 	}
 	
 	public int countMembers(Group group) {
-		String sb = "select count(member.key) from bgroupmember as member where member.group.key=:groupKey";
+		String sb = "select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey";
 		Number count = dbInstance.getCurrentEntityManager()
 			.createQuery(sb, Number.class)
 			.setParameter("groupKey", group.getKey())
@@ -141,7 +141,7 @@ public class GroupDAO {
 	}
 	
 	public boolean hasRole(Group group, Identity identity, String role) {
-		String sb = "select count(member.key) from bgroupmember as member where member.group.key=:groupKey and member.identity.key=:identityKey and member.role=:role";
+		String sb = "select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role";
 		Number count = dbInstance.getCurrentEntityManager()
 			.createQuery(sb, Number.class)
 			.setParameter("groupKey", group.getKey())
@@ -152,7 +152,7 @@ public class GroupDAO {
 	}
 	
 	public List<Identity> getMembers(Group group, String role) {
-		String sb = "select distinct member.identity from bgroupmember as member where member.group.key=:groupKey and member.role=:role";
+		String sb = "select distinct membership.identity from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role";
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb, Identity.class)
 			.setParameter("groupKey", group.getKey())

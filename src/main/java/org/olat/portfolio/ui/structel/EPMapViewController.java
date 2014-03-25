@@ -97,7 +97,7 @@ public class EPMapViewController extends BasicController implements Activateable
 		
 		mainVc = createVelocityContainer("mapview");
 
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		
 		// if this is a structured map (assigned from a template) do a sync first
 		if (map instanceof EPStructuredMap && (map.getStatus() == null || !map.getStatus().equals(StructureStatusEnum.CLOSED) )){

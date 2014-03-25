@@ -182,7 +182,7 @@ public class ImportPortfolioReferencesController extends BasicController {
 		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
-		PortfolioStructure map = ePFMgr.importPortfolioMapTemplate(structure, owner);
+		PortfolioStructure map = ePFMgr.importPortfolioMapTemplate(structure);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(map.getOlatResource());
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, importExport.getResourceName(),
 				importExport.getDisplayName(), importExport.getDescription(), ores);

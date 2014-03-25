@@ -238,7 +238,7 @@ public class EPTOCController extends BasicController {
 				}
 			} else if(event instanceof TreeDropEvent) {
 				TreeDropEvent te = (TreeDropEvent)event;
-				doDrop(ureq, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild(), te.isAtTheEnd());
+				doDrop(ureq, te.getDroppedNodeId(), te.getTargetNodeId());
 			}
 		}
 	}
@@ -271,7 +271,7 @@ public class EPTOCController extends BasicController {
 		}
 	}
 	
-	private void doDrop(UserRequest ureq, String droppedNodeId, String targetNodeId, boolean child, boolean atTheEnd) {
+	private void doDrop(UserRequest ureq, String droppedNodeId, String targetNodeId) {
 		TreeNode droppedNode = treeCtr.getTreeModel().getNodeById(droppedNodeId);
 		TreeNode targetNode = treeCtr.getTreeModel().getNodeById(targetNodeId);
 		if(droppedNode == null || targetNode == null) return;
@@ -296,7 +296,7 @@ public class EPTOCController extends BasicController {
 			}
 		} else if (droppedObj instanceof PortfolioStructure) {
 			PortfolioStructure droppedStruct = (PortfolioStructure)droppedObj;
-			if (checkStructureTarget(droppedStruct, droppedParentObj, targetObj, targetParentObj, !child)) {
+			if (checkStructureTarget(droppedStruct, droppedParentObj, targetObj, targetParentObj)) {
 				int newPos = TreeHelper.indexOfByUserObject(targetObj, (TreeNode)targetNode.getParent());
 				moveStructureToNewParent(ureq, droppedStruct, droppedParentObj, targetParentObj, newPos);
 			}
@@ -376,7 +376,7 @@ public class EPTOCController extends BasicController {
 	}
 	
 	private boolean checkStructureTarget(PortfolioStructure droppedObj, Object droppedParentObj,
-			Object targetObj, Object targetParentObj, boolean sibling){
+			Object targetObj, Object targetParentObj){
 		
 		if(targetObj == null || droppedParentObj == null) {
 			return false;
