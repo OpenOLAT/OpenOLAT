@@ -404,7 +404,7 @@ public class StringHelper {
 		char[] charArr = string.toCharArray();
 		for(int i=charArr.length; i-->stop; ) {
 			char ch = charArr[i];
-			if(ch < 47 || ch > 58) {
+			if(ch < 48 || ch > 57) {
 				return false;
 			}
 		}
