@@ -26,6 +26,8 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
@@ -35,8 +37,11 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class CheckList_1_CheckboxStep extends BasicStep {
 	
-	public CheckList_1_CheckboxStep(UserRequest ureq) {
+	private final OLATResourceable courseOres;
+	
+	public CheckList_1_CheckboxStep(UserRequest ureq, OLATResourceable courseOres) {
 		super(ureq);
+		this.courseOres = OresHelper.clone(courseOres);
 		setNextStep(new CheckList_2_ConfigurationStep(ureq));
 		setI18nTitleAndDescr("checkbox.template", "checkbox.template");
 	}
@@ -51,6 +56,6 @@ public class CheckList_1_CheckboxStep extends BasicStep {
 		if(!runContext.containsKey("data")) {
 			runContext.put("data", new GeneratorData());
 		}
-		return new CheckboxListStepController(ureq, wControl, form, runContext);
+		return new CheckboxListStepController(ureq, wControl, form, runContext, courseOres);
 	}
 }

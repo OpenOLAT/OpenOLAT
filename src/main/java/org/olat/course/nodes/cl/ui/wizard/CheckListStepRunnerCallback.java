@@ -19,9 +19,12 @@
  */
 package org.olat.course.nodes.cl.ui.wizard;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.Step;
@@ -29,7 +32,13 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CheckListCourseNode;
@@ -37,8 +46,10 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
@@ -64,6 +75,8 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		ModuleConfiguration templateConfig = data.getModuleConfiguration();
 		
 		ICourse course = CourseFactory.getCourseEditSession(courseOres.getResourceableId());
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		
 		CourseNode structureNode = createCourseNode(data.getStructureShortTitle(), data.getStructureTitle(), data.getStructureObjectives(), "st");
 		CourseEditorTreeNode parentNode = (CourseEditorTreeNode)course.getEditorTreeModel().getRootNode();
@@ -73,7 +86,7 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		List<String> nodesIdent = new ArrayList<>();
 		for(CheckListNode node:nodes) {
 			String title = node.getTitle();
-			CourseNode checkNode = createCourseNode(title, title, null, "checklist");
+			CheckListCourseNode checkNode = (CheckListCourseNode)createCourseNode(title, title, null, "checklist");
 			nodesIdent.add(checkNode.getIdent());
 
 			ModuleConfiguration config = checkNode.getModuleConfiguration();
@@ -82,7 +95,19 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 			CheckboxList checkboxList = new CheckboxList();
 			List<Checkbox> boxes = new ArrayList<>();
 			for(Checkbox templateBox:templateCheckbox) {
-				boxes.add(templateBox.clone());
+				Checkbox checkbox = templateBox.clone();
+				boxes.add(checkbox);
+				
+				if(StringHelper.containsNonWhitespace(templateBox.getFilename())) {
+					File path = new File(FolderConfig.getCanonicalTmpDir(), templateBox.getCheckboxId());
+					VFSContainer tmpContainer = new LocalFolderImpl(path);
+					VFSItem item = tmpContainer.resolve(templateBox.getFilename());
+					if(item instanceof VFSLeaf) {
+						VFSContainer container = checkboxManager.getFileContainer(courseEnv, checkNode, checkbox);
+						VFSManager.copyContent(tmpContainer, container);
+						tmpContainer.deleteSilently();
+					}
+				}
 			}
 			checkboxList.setList(boxes);
 			config.set(CheckListCourseNode.CONFIG_KEY_CHECKBOX, checkboxList);

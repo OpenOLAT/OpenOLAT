@@ -20,12 +20,14 @@
 package org.olat.course.nodes.cl.ui.wizard;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -85,16 +87,19 @@ public class StructureNodeStepController extends StepFormBasicController {
 		
 		String[] passedValues = new String[]{ "" };
 		passedEl = uifactory.addCheckboxesHorizontal("passed", "config.passed", formLayout, onKeys, passedValues, null);
-		
+		passedEl.addActionListener(this, FormEvent.ONCHANGE);
 
 		String[] outputValues = new String[]{
-			translate("config.output.cutvalue"), translate("config.output.sum")
+			translate("config.output.cutvalue"), translate("scform.passedtype.inherit")
 		};
 		outputEl = uifactory.addRadiosVertical("output", "config.output", formLayout, outputKeys, outputValues);
 		outputEl.select(outputKeys[0], true);
+		outputEl.addActionListener(this, FormEvent.ONCHANGE);
+		outputEl.setVisible(false);
 
 		cutValueEl = uifactory.addTextElement("cutvalue", "config.cutvalue", 4, null, formLayout);
 		cutValueEl.setDisplaySize(5);
+		cutValueEl.setVisible(false);
 	}
 
 	@Override
@@ -113,7 +118,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 		}
 		
 		cutValueEl.clearError();
-		if(!StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
+		if(cutValueEl.isVisible() && !StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
 			try {
 				Float.parseFloat(cutValueEl.getValue());
 			} catch (NumberFormatException e) {
@@ -122,7 +127,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 			}
 		}
 		
-		if(outputEl.isSelected(0)) {
+		if(outputEl.isVisible() && outputEl.isSelected(0)) {
 			if(!StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
 				cutValueEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
@@ -133,6 +138,23 @@ public class StructureNodeStepController extends StepFormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(passedEl == source) {
+			boolean selected = passedEl.isAtLeastSelected(1);
+			cutValueEl.setVisible(selected);
+			outputEl.setVisible(selected);
+			if(selected) {
+				boolean cutValueSelected = outputEl.isSelected(0);
+				cutValueEl.setVisible(cutValueSelected);
+			}
+		} else if(outputEl == source) {
+			boolean cutValueSelected = outputEl.isSelected(0);
+			cutValueEl.setVisible(cutValueSelected);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		data.setStructureTitle(titleEl.getValue());
 		data.setStructureShortTitle(shortTitleEl.getValue());
@@ -140,7 +162,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 		
 		data.setPoints(pointsEl.isAtLeastSelected(1));
 		data.setPassed(passedEl.isAtLeastSelected(1));
-		if(outputEl.isSelected(0)) {
+		if(outputEl.isVisible() && outputEl.isSelected(0)) {
 			Float cutValue = new Float(Float.parseFloat(cutValueEl.getValue()));
 			data.setCutValue(cutValue);
 		}

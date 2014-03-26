@@ -135,7 +135,10 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	}
 
 	public String getKey(int which) {
-		return keys[which];
+		if(which >= 0 && which < keys.length) {
+			return keys[which];
+		}
+		return null;
 	}
 
 	public int getSize() {

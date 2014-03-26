@@ -47,6 +47,10 @@ public class Checkbox implements Serializable {
 		//
 	}
 
+	/**
+	 * This is an UUID
+	 * @return
+	 */
 	public String getCheckboxId() {
 		return checkboxId;
 	}

@@ -205,8 +205,9 @@ public class CheckboxAssessmentController extends FormBasicController {
 			TextElement pointEl = uifactory.addTextElement(name + "point", null, 5, pointVal, formLayout);
 			pointEl.setDisplaySize(5);
 			
-			
 			MultipleSelectionElement checkEl = uifactory.addCheckboxesHorizontal(name + "check", formLayout, onKeys, onValues, null);
+			checkEl.addActionListener(this, FormEvent.ONCHANGE);
+			checkEl.setUserObject(row);
 			if(checked != null && checked.length > currentCheckboxIndex
 					&& checked[currentCheckboxIndex] != null && checked[currentCheckboxIndex].booleanValue()) {
 				checkEl.select(onKeys[0], true);
@@ -261,6 +262,22 @@ public class CheckboxAssessmentController extends FormBasicController {
 				row.getPointEl().setVisible(hasPoints);
 			}
 			currentCheckboxIndex = nextCheckboxIndex;
+		} else if(source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement checkEl = (MultipleSelectionElement)source;
+			if(checkEl.getUserObject() instanceof CheckboxAssessmentRow) {
+				CheckboxAssessmentRow row = (CheckboxAssessmentRow)checkEl.getUserObject();
+				if(row.getPointEl().isVisible()) {
+					boolean checked = checkEl.isAtLeastSelected(1);
+					if(checked) {
+						int nextCheckboxIndex = checkboxEl.getSelected();
+						Checkbox box = checkboxList.getList().get(nextCheckboxIndex);
+						String pointVal = AssessmentHelper.getRoundedScore(box.getPoints());
+						row.getPointEl().setValue(pointVal);
+					} else {
+						row.getPointEl().setValue("");
+					}
+				}
+			}
 		} else if(selectAllBoxButton == source) {
 			doSelectAll();
 		}
