@@ -112,12 +112,20 @@ public class StringHelperTest {
 	@Test
 	public void isLong() {
 		Assert.assertTrue(StringHelper.isLong("234"));
+		Assert.assertTrue(StringHelper.isLong("0123456789"));
 		Assert.assertTrue(StringHelper.isLong("9223372036854775807"));
 		Assert.assertTrue(StringHelper.isLong("-9223372036854775807"));
 
+		//check some unacceptable strings
 		Assert.assertFalse(StringHelper.isLong("10223372036854775807"));
 		Assert.assertFalse(StringHelper.isLong("-dru"));
 		Assert.assertFalse(StringHelper.isLong("OpenOLAT"));
 		Assert.assertFalse(StringHelper.isLong("A very long number with a lot of characters"));
+		
+		//check ascii range
+		Assert.assertFalse(StringHelper.isLong("/"));
+		Assert.assertFalse(StringHelper.isLong(":"));
+		Assert.assertFalse(StringHelper.isLong("."));
+		Assert.assertFalse(StringHelper.isLong(";"));
 	}
 }
