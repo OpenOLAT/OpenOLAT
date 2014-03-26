@@ -172,8 +172,12 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public boolean existGroup(String nameOrKey) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		if(StringHelper.isLong(nameOrKey)) {
-			params.setGroupKeys(Collections.singletonList(new Long(nameOrKey)));
-		}else {
+			try {
+				params.setGroupKeys(Collections.singletonList(new Long(nameOrKey)));
+			} catch (NumberFormatException e) {
+				params.setExactName(nameOrKey);
+			}
+		} else {
 			params.setExactName(nameOrKey);
 		}
 		return businessGroupService.countBusinessGroups(params, courseResource) > 0;

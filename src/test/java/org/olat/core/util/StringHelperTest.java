@@ -108,4 +108,16 @@ public class StringHelperTest {
 		String value12 = StringHelper.cleanUTF8ForXml("Hello\u10B7x pahlavi");
 		Assert.assertEquals("Pahlavi test", "Hello\u10B7x pahlavi", value12);
 	}
+	
+	@Test
+	public void isLong() {
+		Assert.assertTrue(StringHelper.isLong("234"));
+		Assert.assertTrue(StringHelper.isLong("9223372036854775807"));
+		Assert.assertTrue(StringHelper.isLong("-9223372036854775807"));
+
+		Assert.assertFalse(StringHelper.isLong("10223372036854775807"));
+		Assert.assertFalse(StringHelper.isLong("-dru"));
+		Assert.assertFalse(StringHelper.isLong("OpenOLAT"));
+		Assert.assertFalse(StringHelper.isLong("A very long number with a lot of characters"));
+	}
 }

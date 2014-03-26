@@ -68,6 +68,8 @@ public class StringHelper {
 	private static final String WHITESPACE_REGEXP = "^\\s*$";
 	private static final Pattern WHITESPACE_PATTERN = Pattern.compile(WHITESPACE_REGEXP);
 	
+	private static final int LONG_MAX_LENGTH = Long.toString(Long.MAX_VALUE).length();
+	
 	/**
 	 * regex for not allowing
 	 * <code>;,:</code> <code>ALL_WITHOUT_COMMA_2POINT_STRPNT</code>
@@ -384,11 +386,21 @@ public class StringHelper {
 		return FileUtils.normalizeFilename(s);
 	}
 	
+	/**
+	 * The method do only a precheck if the string can be a number. It's goal
+	 * is to prevent to generate hunderds of exceptions in a loop by using
+	 * the Long.parseLong() method (exceptions is time and CPU intensive).
+	 * 
+	 * return True if the string can be a digit (there is not boundaries check)
+	 */
 	public static boolean isLong(String string) {
 		if(string == null || string.length() == 0) {
 			return false;
 		}
 		int stop = string.startsWith("-") ? 1 : 0;
+		if(string.length() > LONG_MAX_LENGTH + stop) {
+			return false;
+		}
 		char[] charArr = string.toCharArray();
 		for(int i=charArr.length; i-->stop; ) {
 			char ch = charArr[i];
