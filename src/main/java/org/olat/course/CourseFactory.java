@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.poi.util.IOUtils;
+import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.calendar.CalendarManager;
@@ -93,8 +94,11 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -522,6 +526,17 @@ public class CourseFactory extends BasicManager {
 				referenceManager.addReference(targetCourse, ref.getTarget(), ref.getUserdata());
 				if(count % 20 == 0) {
 					DBFactory.getInstance(false).intermediateCommit();
+				}
+			}
+			
+			// set quotas
+			Quota sourceQuota = VFSManager.isTopLevelQuotaContainer(sourceCourse.getCourseFolderContainer());
+			Quota targetQuota = VFSManager.isTopLevelQuotaContainer(targetCourse.getCourseFolderContainer());
+			if (sourceQuota != null && targetQuota != null) {
+				QuotaManager qm = QuotaManager.getInstance();
+				if (sourceQuota.getQuotaKB() != qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE).getQuotaKB()) {
+					targetQuota = qm.createQuota(targetQuota.getPath(), sourceQuota.getQuotaKB(), sourceQuota.getUlLimitKB());
+					qm.setCustomQuotaKB(targetQuota);
 				}
 			}
 		}

@@ -83,7 +83,10 @@ public class AssessmentEditController extends BasicController {
 	private Link hideLogButton;
 	private Link showLogButton;
 	private LockResult lockEntry;
+	private final StackedController stackPanel;
 	private DialogBoxController alreadyLockedDialogController;
+	
+	private final boolean showCourseNodeDetails;
 
 	/**
 	 * Constructor for the identity assessment edit controller
@@ -97,10 +100,13 @@ public class AssessmentEditController extends BasicController {
 	 */
 	public AssessmentEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel,
 			ICourse course, AssessableCourseNode courseNode, AssessedIdentityWrapper assessedIdentityWrapper,
-			boolean showCourseNodeDetails) {
+			boolean showCourseNodeDetails, boolean saveAndCloseButton) {
 		super(ureq, wControl);
 		this.assessedIdentityWrapper = assessedIdentityWrapper;
 		this.courseNode = courseNode;
+		this.showCourseNodeDetails = showCourseNodeDetails;
+		this.stackPanel = stackPanel;
+		
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
@@ -128,7 +134,7 @@ public class AssessmentEditController extends BasicController {
 			infoCoach = Formatter.formatLatexFormulas(infoCoach);
 			detailView.contextPut("infoCoach", infoCoach);
 			// Add the assessment details form
-			assessmentForm = new AssessmentForm(ureq, wControl, courseNode, assessedIdentityWrapper);
+			assessmentForm = new AssessmentForm(ureq, wControl, courseNode, assessedIdentityWrapper, saveAndCloseButton);
 			listenTo(assessmentForm);
 			
 			detailView.put("assessmentform", assessmentForm.getInitialComponent());
@@ -220,10 +226,13 @@ public class AssessmentEditController extends BasicController {
 			if (event == Event.CANCELLED_EVENT) {
 				releaseEditorLock();
 				fireEvent(ureq, Event.CANCELLED_EVENT);
+			} else if (event == Event.CHANGED_EVENT) {
+				//do nothing
+				doUpdateAssessmentData(ureq.getIdentity());
 			} else if (event == Event.DONE_EVENT) {
 				releaseEditorLock();
 				doUpdateAssessmentData(ureq.getIdentity());
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if (source == detailsEditController) {
 			//fxdiff FXOLAT-108: reset SCORM test
@@ -284,7 +293,7 @@ public class AssessmentEditController extends BasicController {
 		}
 		// Update score,passed properties in db
 		scoreEval = new ScoreEvaluation(newScore, newPassed);
-		this.courseNode.updateUserScoreEvaluation(scoreEval, userCourseEnvironment, coachIdentity, false);
+		courseNode.updateUserScoreEvaluation(scoreEval, userCourseEnvironment, coachIdentity, false);
 
 		if (assessmentForm.isHasComment() && assessmentForm.isUserCommentDirty()) {
 			String newComment = assessmentForm.getUserComment().getValue();
@@ -300,6 +309,20 @@ public class AssessmentEditController extends BasicController {
 		
 		// Refresh score view
 		userCourseEnvironment.getScoreAccounting().scoreInfoChanged(courseNode, scoreEval);
+	}
+	
+	public void reloadData(UserRequest ureq) {
+		UserCourseEnvironment uce = assessedIdentityWrapper.getUserCourseEnvironment();
+		//refresh the cache in ScoreAccounting
+		uce.getScoreAccounting().evaluateAll();
+		
+		if (courseNode.hasDetails() && detailsEditController != null && showCourseNodeDetails) {
+			removeAsListenerAndDispose(detailsEditController);
+			detailsEditController = courseNode.getDetailsEditController(ureq, getWindowControl(), stackPanel, uce);
+			listenTo(detailsEditController);
+			detailView.put("detailsController", detailsEditController.getInitialComponent());
+		}
+		assessmentForm.reloadData();
 	}
 
 	/**

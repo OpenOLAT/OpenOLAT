@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
@@ -66,11 +67,14 @@ public class CheckboxListStepController extends StepFormBasicController {
 	private CheckboxEditController editCtrl;
 	
 	private final GeneratorData data;
+	private final OLATResourceable courseOres;
 
-	public CheckboxListStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public CheckboxListStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
+			OLATResourceable courseOres) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(Util.createPackageTranslator(CheckListEditController.class, getLocale(), getTranslator()));
 		
+		this.courseOres = courseOres;
 		data = (GeneratorData)getFromRunContext("data");
 
 		initForm(ureq);
@@ -136,7 +140,7 @@ public class CheckboxListStepController extends StepFormBasicController {
 				String cmd = se.getCommand();
 				if("edit".equals(cmd)) {
 					Checkbox row = model.getObject(se.getIndex());
-					doOpenEdit(ureq, row, false, "edit.checkbox");
+					doOpenEdit(ureq, row, false, translate("edit.checkbox"));
 				}
 			}
 		}
@@ -149,7 +153,7 @@ public class CheckboxListStepController extends StepFormBasicController {
 			cleanUp();
 		} else if(editCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
-				doEdit(editCtrl.getCheckbox());
+				doEdit(editCtrl.getCheckbox(), editCtrl.isNewCheckbox());
 			} else if("delete".equals(event.getCommand())) {
 				doDelete(editCtrl.getCheckbox());
 			}
@@ -166,10 +170,12 @@ public class CheckboxListStepController extends StepFormBasicController {
 		boxTable.reset();
 	}
 	
-	private void doEdit(Checkbox checkbox) {
-		List<Checkbox> boxList = data.getCheckboxList();
-		boxList.add(checkbox);
-		model.setObjects(boxList);
+	private void doEdit(Checkbox checkbox, boolean newCheckbox) {
+		if(newCheckbox) {
+			List<Checkbox> boxList = data.getCheckboxList();
+			boxList.add(checkbox);
+			model.setObjects(boxList);
+		}
 		setFormWarning(null);
 		boxTable.reset();
 	}
@@ -177,7 +183,7 @@ public class CheckboxListStepController extends StepFormBasicController {
 	private void doOpenEdit(UserRequest ureq, Checkbox checkbox, boolean newCheckbox, String title) {
 		if(editCtrl != null) return;
 		
-		editCtrl = new CheckboxEditController(ureq, getWindowControl(), checkbox, newCheckbox, true);
+		editCtrl = new CheckboxEditController(ureq, getWindowControl(), courseOres, checkbox, newCheckbox, true);
 		listenTo(editCtrl);
 
 		Component content = editCtrl.getInitialComponent();

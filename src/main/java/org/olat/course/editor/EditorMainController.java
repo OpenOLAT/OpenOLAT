@@ -772,7 +772,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			} else if (event.getCommand().equals(CMD_MULTI_CHECKLIST)) {
 				removeAsListenerAndDispose(checklistWizard);
 
-				Step start = new CheckList_1_CheckboxStep(ureq);
+				Step start = new CheckList_1_CheckboxStep(ureq, ores);
 				StepRunnerCallback finish = new CheckListStepRunnerCallback(ores);
 				checklistWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
 						translate("checklist.wizard"), "o_sel_checklist_wizard");
@@ -786,7 +786,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				// the event is too generic to find out what happened -> update tree in all cases (applies to ajax mode only)
 				menuTree.setDirty(true);
 				
-				cetm.nodeConfigChanged(menuTree.getSelectedNode());				
+				cetm.nodeConfigChanged(menuTree.getSelectedNode());
 				CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 				euce.getCourseEditorEnv().validateCourse();
 				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
@@ -822,6 +822,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				checklistWizard = null;
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					menuTree.setDirty(true);
+					CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 					euce.getCourseEditorEnv().validateCourse();
 					StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
 					updateCourseStatusMessages(ureq.getLocale(), courseStatus);

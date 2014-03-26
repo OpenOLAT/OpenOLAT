@@ -811,8 +811,9 @@ function b_viewportHeight() {
 
 /**
  *  calculate the height of the inner content area that can be used for 
- *  displaying content without using scrollbars.
- *  @dependencies: prototype library, ExtJS
+ *  displaying content without using scrollbars. The height includes the 
+ *  margin, border and padding of the main columns
+ *  @dependencies: prototype library, jQuery
  *  @author: Florian Gnaegi
  */
 OPOL.getMainColumnsMaxHeight =  function(){
@@ -827,13 +828,13 @@ OPOL.getMainColumnsMaxHeight =  function(){
 	col3DomElement = jQuery('#b_col3_content');
 	
 	if (col1DomElement != 'undefined' && col1DomElement != null) {
-		col1Height = col1DomElement.height();
+		col1Height = col1DomElement.outerHeight(true);
 	}
 	if (col2DomElement != 'undefined' && col2DomElement != null){
-		col2Height = col2DomElement.height();
+		col2Height = col2DomElement.outerHeight(true);
 	}
 	if (col3DomElement != 'undefined' && col3DomElement != null){
-		col3Height = col3DomElement.height();
+		col3Height = col3DomElement.outerHeight(true);
 	}
 
 	mainInnerHeight = (col1Height > col2Height ? col1Height : col2Height);
@@ -855,14 +856,35 @@ OPOL.getMainColumnsMaxHeight =  function(){
 };
 
 OPOL.adjustHeight = function() {
+	// Adjust the height of col1 2 and 3 based on the max column height. Takes 
+	// into account the padding/border/margin. 
+	// This is necessary to implement layouts where the three columns have different
+	// backgounds and to enlarge the menu and content area to always show the whole 
+	// content
 	try {
-		// Reset col height first
-		jQuery('#b_col1_content').height('auto');
-		jQuery('#b_col2_content').height('auto');
-		// Calculate new col height
+		var col1HeightDiff = 0,
+		col2HeightDiff = 0,
+		col1DomElement = jQuery('#b_col1_content'),
+		col2DomElement = jQuery('#b_col2_content');
+
+		// First calculate the outher fluff (padding, border, margin) and reset height
+		if (col1DomElement != 'undefined' && col1DomElement != null){
+			col1HeightDiff = col1DomElement.outerHeight(true) - col1DomElement.height();
+			col1DomElement.height('auto');			
+		}
+		if (col2DomElement != 'undefined' && col2DomElement != null){
+			col2HeightDiff = col2DomElement.outerHeight(true) - col2DomElement.height();
+			col2DomElement.height('auto');
+		}
+		
+		// Assign new col height
 		var contentHeight = OPOL.getMainColumnsMaxHeight();
-		jQuery('#b_col1_content').height(contentHeight);
-		jQuery('#b_col2_content').height(contentHeight);
+		if (col1DomElement != 'undefined' && col1DomElement != null){
+			col1DomElement.height(contentHeight-col1HeightDiff);
+		}
+		if (col2DomElement != 'undefined' && col2DomElement != null){
+			col2DomElement.height(contentHeight-col2HeightDiff);
+		}
 	} catch (e) {
 		if(console)	console.log(e);			
 	}
@@ -874,15 +896,11 @@ function b_resizeIframeToMainMaxHeight(iframeId) {
 	// (fg)
 	var theIframe = jQuery('#' + iframeId);
 	if (theIframe != 'undefined' && theIframe != null) {
-		var colsHeight = OPOL.getMainColumnsMaxHeight();
-		
+		var colsHeight = OPOL.getMainColumnsMaxHeight() - 110;
 		var potentialHeight = b_viewportHeight() - 100;// remove some padding etc.
-		var elem = jQuery('#b_header');
-		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.height();
-		elem = jQuery('#b_nav');
-		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.height();
-		elem = jQuery('#b_footer');
-		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.height();
+		potentialHeight = potentialHeight - theIframe.offset().top;
+		var elem = jQuery('#b_footer');
+		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.outerHeight(true);
 		// resize now
 		var height = (potentialHeight > colsHeight ? potentialHeight : colsHeight);
 		theIframe.height(height);

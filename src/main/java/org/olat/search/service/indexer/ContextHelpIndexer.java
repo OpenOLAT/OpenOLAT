@@ -37,9 +37,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
+import org.olat.core.gui.render.EmptyURLBuilder;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
@@ -166,62 +165,4 @@ class EmptyAJAXFlags extends AJAXFlags {
 	public boolean isIframePostEnabled() {
 		return false;
 	}
-}
-
-/**
- * 
- * Description:<br>
- * Helper URL builder for context help indexer
- * 
- * <P>
- * Initial Date:  05.11.2008 <br>
- * @author gnaegi
- */
-class EmptyURLBuilder extends URLBuilder {
-
-	public EmptyURLBuilder() {
-		super(null, null, null, null);
-	}
-
-	@Override
-	public void appendTarget(StringOutput sb) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildJavaScriptBgCommand(StringOutput buf, String[] keys, String[] values, int mode) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values, int mode) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values) {
-		// nothing to do
-	}
-
-	@Override
-	public URLBuilder createCopyFor(Component source) {
-		return super.createCopyFor(source);
-	}
-
-	@Override
-	public void setComponentPath(String componentPath) {
-		// nothing to do
-	}
-
-	
 }

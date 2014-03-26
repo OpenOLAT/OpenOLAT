@@ -134,6 +134,8 @@ public class SimpleHtmlParser {
 		
 		// check for doctype
 		int docTypePos = cont.indexOf("<!DOCTYPE");
+		if (docTypePos == -1) docTypePos = cont.indexOf("<doctype");
+		if (docTypePos == -1) docTypePos = cont.toLowerCase().indexOf("<doctype");
 		if (docTypePos != -1 ) {
 			int endOfhtmlDocTypePos = cont.indexOf(">", docTypePos);
 			htmlDocType = cont.substring(docTypePos, endOfhtmlDocTypePos+1);
@@ -174,13 +176,11 @@ public class SimpleHtmlParser {
 			}
 		} else {
 			// no head tag found - use everything between HTML and BODY tag to support those crippled pages as well
-			htmlHead = cont.substring((cont.indexOf(">", spos))+1, bodypos);
+			htmlHead = cont.substring((cont.indexOf(">", spos))+1, bodypos).toLowerCase();
 		}
 		if (htmlHead != null) {
 			// Filter out base tag
 			int bsPos = htmlHead.indexOf("<base ");
-			if (bsPos == -1) bsPos = htmlHead.indexOf("<BASE ");
-			if (bsPos == -1) bsPos = htmlHead.toLowerCase().indexOf("<BASE ");
 			if (bsPos != -1) {
 				int bePos = htmlHead.indexOf('>', bsPos + 6);
 				if (bePos > -1) {
@@ -193,7 +193,8 @@ public class SimpleHtmlParser {
 			// olat and firefox problem 
 			htmlHead = filterHeader(htmlHead);
 			// Filter out CSS definitions from HEAD
-			if (htmlHead.indexOf("text/css") > 0) ownCss = true;
+			if (htmlHead.indexOf("text/css") > 0) ownCss = true;	// required for HTML 4.01
+			else if (htmlHead.indexOf("stylesheet") > 0) ownCss = true;	// "purely advisory" for HTML 5
 			// Filter out character set
 			charsetName = checkForCharset(htmlHead);
 		}
@@ -388,31 +389,9 @@ public class SimpleHtmlParser {
 	  return LINK_REL.matcher(tag).find(6);
 	}
 	
-	private String extractMatches(String in, Pattern pattern){
-		if (in == null) return null;
-		else {
-			StringBuilder out = new StringBuilder(128);
-			in = removeLineTerminators(in);
-			Matcher m = pattern.matcher(in);
-			while (m.find()) {
-				out.append(m.group());
-			}
-			return out.toString();
-		}
-	}
-	
 	public String removeLineTerminators(String in) {
-//    String patternStr = "$^|[\\r\\n]+\\z";
-//    String replaceStr = " ";
-//    Pattern pattern = Pattern.compile(patternStr, Pattern.MULTILINE);
-//    Matcher matcher = pattern.matcher(inputStr);
-//    System.out.println(matcher.replaceAll(replaceStr));
-//    return matcher.replaceAll(replaceStr);
-		//the above does not work, grrr??? but it should remove all line terminators like the win and mac ones
 		return in.replaceAll("\\n", "");
-}
-	
-	
+	}
 	
 	/**
 	 * @return Returns the htmlContent.

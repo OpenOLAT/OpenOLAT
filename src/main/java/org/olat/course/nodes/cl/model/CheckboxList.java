@@ -26,6 +26,8 @@ import java.util.List;
 
 /**
  * 
+ * This object ist serialized in the course xml.
+ * 
  * Initial date: 06.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *

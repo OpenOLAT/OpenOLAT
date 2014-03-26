@@ -557,11 +557,9 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			boolean canCopy = repositoryEntry.getCanCopy();
 			if (isOwner) {
 				if (isNewController) {
-					if(isAuthor) {
-						detailsToolC.addLink(ACTION_EDIT, translate("details.openeditor"), TOOL_EDIT, null, "o_sel_repo_open_editor", false);
-						detailsToolC.addLink(ACTION_EDITDESC, translate("details.chdesc"), TOOL_CHDESC, null, "o_sel_repo_edit_descritpion", false);
-						detailsToolC.addLink(ACTION_EDITPROP, translate("details.chprop"), TOOL_CHPROP, null, "o_sel_repor_edit_properties", false);
-					}
+					detailsToolC.addLink(ACTION_EDIT, translate("details.openeditor"), TOOL_EDIT, null, "o_sel_repo_open_editor", false);
+					detailsToolC.addLink(ACTION_EDITDESC, translate("details.chdesc"), TOOL_CHDESC, null, "o_sel_repo_edit_descritpion", false);
+					detailsToolC.addLink(ACTION_EDITPROP, translate("details.chprop"), TOOL_CHPROP, null, "o_sel_repor_edit_properties", false);
 					if(repositoryModule.isCatalogEnabled()) {
 						detailsToolC.addLink(ACTION_ADD_CATALOG, translate("details.catadd"), TOOL_CATALOG, null, "o_sel_repo_add_to_catalog", false);
 					}
@@ -609,12 +607,10 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				}
 				
 				// enable
-				if(isAuthor) {
-					boolean editManaged = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.editcontent);
-					detailsToolC.setEnabled(TOOL_EDIT, handler.supportsEdit(repositoryEntry) && !corrupted && !editManaged);
-					detailsToolC.setEnabled(TOOL_CHDESC, !corrupted);
-					detailsToolC.setEnabled(TOOL_CHPROP, !corrupted);
-				}
+				boolean editManaged = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.editcontent);
+				detailsToolC.setEnabled(TOOL_EDIT, handler.supportsEdit(repositoryEntry) && !corrupted && !editManaged);
+				detailsToolC.setEnabled(TOOL_CHDESC, !corrupted);
+				detailsToolC.setEnabled(TOOL_CHPROP, !corrupted);
 				
 				canCopy = true;
 			}
@@ -791,7 +787,9 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 * @param contentController
 	 */
 	private void doEditSettings(UserRequest ureq, Controller contentController, String title) {
-	  if (!isAuthor) throw new OLATSecurityException("Trying to edit properties , but user is not author: user = " + ureq.getIdentity());
+	  if (!isAuthor && !isOwner) {
+		  throw new OLATSecurityException("Trying to edit properties , but user is not author: user = " + ureq.getIdentity());
+	  }
 	 
 	  Component component = contentController.getInitialComponent();
 	  
@@ -1206,7 +1204,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 * @return
 	 */
 	public ToolController getDetailsToolController() {
-		return this.detailsToolC;
+		return detailsToolC;
 	}
 
 }

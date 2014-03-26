@@ -1186,6 +1186,7 @@
 					<exclude>**/*.odg</exclude>
 					<exclude>**/*.odt</exclude>
 					<exclude>**/*.pdf</exclude>
+					<exclude>**/*.graffle</exclude>
 				</excludes>
 			</resource>
 			<resource>

@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,6 +48,7 @@ import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -87,8 +89,9 @@ public class CheckboxEditController extends FormBasicController {
 	private final CheckboxManager checkboxManager;
 	
 	public CheckboxEditController(UserRequest ureq, WindowControl wControl,
+			OLATResourceable courseOres,
 			Checkbox checkbox, boolean newCheckbox, boolean withScore) {
-		this(ureq, wControl, null, null, checkbox, newCheckbox, withScore);
+		this(ureq, wControl, courseOres, null, checkbox, newCheckbox, withScore);
 	}
 	
 	public CheckboxEditController(UserRequest ureq, WindowControl wControl,
@@ -170,6 +173,10 @@ public class CheckboxEditController extends FormBasicController {
 		//
 	}
 	
+	public boolean isNewCheckbox() {
+		return newCheckbox;
+	}
+	
 	public Checkbox getCheckbox() {
 		return checkbox;
 	}
@@ -213,10 +220,7 @@ public class CheckboxEditController extends FormBasicController {
 		
 		if(Boolean.TRUE.equals(deleteFile)) {
 			checkbox.setFilename(null);
-			
-			ICourse course = CourseFactory.loadCourse(courseOres);
-			CourseEnvironment courseEnv = course.getCourseEnvironment();
-			VFSContainer container = checkboxManager.getFileContainer(courseEnv, courseNode, checkbox);
+			VFSContainer container = getFileContainer();
 			for (VFSItem chd:container.getItems()) {
 				chd.delete();
 			}
@@ -228,9 +232,7 @@ public class CheckboxEditController extends FormBasicController {
 			checkbox.setFilename(filename);
 			
 			try {
-				ICourse course = CourseFactory.loadCourse(courseOres);
-				CourseEnvironment courseEnv = course.getCourseEnvironment();
-				VFSContainer container = checkboxManager.getFileContainer(courseEnv, courseNode, checkbox);
+				VFSContainer container = getFileContainer();
 				VFSLeaf leaf = container.createChildLeaf(filename);
 				InputStream inStream = new FileInputStream(uploadedFile);
 				VFSManager.copyContent(inStream, leaf);
@@ -286,14 +288,25 @@ public class CheckboxEditController extends FormBasicController {
 	}
 	
 	private void doDownloadFile(UserRequest ureq) {
-		ICourse course = CourseFactory.loadCourse(courseOres);
-		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		VFSContainer container = checkboxManager.getFileContainer(courseEnv, courseNode, checkbox);
+		VFSContainer container = getFileContainer();
 		VFSItem item = container.resolve(checkbox.getFilename());
 		if(item instanceof VFSLeaf) {
 			VFSMediaResource rsrc = new VFSMediaResource((VFSLeaf)item);
 			rsrc.setDownloadable(true);
 			ureq.getDispatchResult().setResultingMediaResource(rsrc);
 		}
+	}
+	
+	private VFSContainer getFileContainer() {
+		VFSContainer container;
+		if(courseNode == null) {
+			File tmp = new File(FolderConfig.getCanonicalTmpDir(), checkbox.getCheckboxId());
+			container = new LocalFolderImpl(tmp);
+		} else {
+			ICourse course = CourseFactory.loadCourse(courseOres);
+			CourseEnvironment courseEnv = course.getCourseEnvironment();
+			container = checkboxManager.getFileContainer(courseEnv, courseNode, checkbox);
+		}
+		return container;
 	}
 }

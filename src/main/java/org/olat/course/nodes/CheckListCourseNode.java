@@ -427,7 +427,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resId);
-		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, userCourseEnv, this);
+		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, userCourseEnv, this, false);
 	}
 
 	/**
@@ -543,19 +543,24 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		ModuleConfiguration config = getModuleConfiguration();
 		Boolean sum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
 		Float cutValue = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		Float maxScore = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		if(cutValue != null) {
-			doUpdateAssessment(cutValue, userCourseEnv, assessedIdentity);
+			doUpdateAssessment(cutValue, maxScore, userCourseEnv, assessedIdentity);
 		} else if(sum != null) {
 			doUpdateAssessmentBySum(userCourseEnv, assessedIdentity);
 		}
 	}
 	
-	private void doUpdateAssessment(Float cutValue, UserCourseEnvironment userCourseEnv, Identity assessedIdentity) {
+	private void doUpdateAssessment(Float cutValue, Float maxScore, UserCourseEnvironment userCourseEnv, Identity assessedIdentity) {
 		OLATResourceable courseOres = OresHelper
 				.createOLATResourceableInstance("CourseModule", userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		float score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
+		if(maxScore != null && maxScore.floatValue() < score) {
+			score = maxScore.floatValue();
+		}
+		
 		Boolean passed = null;
 		if(cutValue != null) {
 			boolean aboveCutValue = score >= cutValue.floatValue();

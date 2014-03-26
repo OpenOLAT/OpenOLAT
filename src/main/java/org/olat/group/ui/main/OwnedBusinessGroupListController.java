@@ -20,6 +20,7 @@
 package org.olat.group.ui.main;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -64,7 +65,9 @@ public class OwnedBusinessGroupListController extends AbstractBusinessGroupListC
 		if(groupModule.isManagedBusinessGroups()) {
 			groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.externalId.i18n(), Cols.externalId.ordinal(), null, getLocale()));
 		}
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale()));
+		DefaultColumnDescriptor descCol = new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale());
+		descCol.setEscapeHtml(EscapeMode.antisamy);
+		groupListCtr.addColumnDescriptor(false, descCol);
 		groupListCtr.addColumnDescriptor( new ResourcesColumnDescriptor(this, mainVC, getTranslator()));
 		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));

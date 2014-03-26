@@ -25,16 +25,18 @@
 
 package org.olat.course.assessment;
 
-import java.util.Locale;
-
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -56,10 +58,12 @@ public class AssessmentForm extends FormBasicController {
 	private StaticTextElement cutVal;
 	private SingleSelection passed;
 	private TextElement userComment, coachComment;
+	private FormLink saveAndCloseLink;
+	
+	private final boolean saveAndClose;
 
 	private boolean hasScore, hasPassed, hasComment, hasAttempts;
-	Float min, max, cut;
-	Locale locale;
+	private Float min, max, cut;
 
 	private AssessedIdentityWrapper assessedIdentityWrapper;
 	private AssessableCourseNode assessableCourseNode;
@@ -77,8 +81,11 @@ public class AssessmentForm extends FormBasicController {
 	 * @param assessedIdentityWrapper The wrapped identity
 	 * @param trans The package translator
 	 */
-	AssessmentForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode assessableCourseNode, AssessedIdentityWrapper assessedIdentityWrapper) {
+	public AssessmentForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode assessableCourseNode,
+			AssessedIdentityWrapper assessedIdentityWrapper, boolean saveAndClose) {
 		super(ureq, wControl);
+		
+		this.saveAndClose = saveAndClose;
 		
 		hasAttempts = assessableCourseNode.hasAttemptsConfigured();
 		hasScore = assessableCourseNode.hasScoreConfigured();
@@ -91,71 +98,83 @@ public class AssessmentForm extends FormBasicController {
 		initForm(ureq);
 	}
 
-	boolean isAttemptsDirty() {
+	public boolean isAttemptsDirty() {
 		return hasAttempts && attemptsValue.intValue() != attempts.getIntValue();
 	}
 	
-	int getAttempts() {
+	public int getAttempts() {
 		return attempts.getIntValue();
 	}
 
 
-	Float getCut() {
+	public Float getCut() {
 		return cut;
 	}
 
-	StaticTextElement getCutVal() {
+	public StaticTextElement getCutVal() {
 		return cutVal;
 	}
 
-	boolean isHasAttempts() {
+	public boolean isHasAttempts() {
 		return hasAttempts;
 	}
 
-	boolean isHasComment() {
+	public boolean isHasComment() {
 		return hasComment;
 	}
 
-	boolean isHasPassed() {
+	public boolean isHasPassed() {
 		return hasPassed;
 	}
 
-	boolean isHasScore() {
+	public boolean isHasScore() {
 		return hasScore;
 	}
 
-	SingleSelection getPassed() {
+	public SingleSelection getPassed() {
 		return passed;
 	}
 
-	boolean isScoreDirty() {
+	public boolean isScoreDirty() {
 		if (!hasScore) return false;
 		if (scoreValue == null) return !score.getValue().equals("");
 		return parseFloat(score) != scoreValue.floatValue();
 	}
 	
-	Float getScore() {
+	public Float getScore() {
 		return parseFloat(score);
 	}
 
-	boolean isUserCommentDirty () {
+	public boolean isUserCommentDirty () {
 		return hasComment && !userComment.getValue().equals(userCommentValue);
 	}
-	TextElement getUserComment() {
+	public TextElement getUserComment() {
 		return userComment;
 	}
 	
-	boolean isCoachCommentDirty () {
+	public boolean isCoachCommentDirty () {
 		return !coachComment.getValue().equals(coachCommentValue);
 	}
 	
-	TextElement getCoachComment() {
+	public TextElement getCoachComment() {
 		return coachComment;
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(saveAndCloseLink == source) {
 			fireEvent(ureq, Event.DONE_EVENT);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		if(saveAndClose) {
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else {
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
 	}
 	
 	protected void formCancelled (UserRequest ureq) {
@@ -165,7 +184,6 @@ public class AssessmentForm extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic (UserRequest ureq) {
 		if (hasScore) {
-		//fxdiff VCRP-4: assessment overview with max score
 			try {
 				if(parseFloat(score) == null) {
 					score.setErrorKey("form.error.wrongFloat", null);
@@ -191,7 +209,6 @@ public class AssessmentForm extends FormBasicController {
 		return true;
 	}
 	
-	//fxdiff VCRP-4: assessment overview with max score
 	private Float parseFloat(TextElement textEl) throws NumberFormatException {
 		String scoreStr = textEl.getValue();
 		if(!StringHelper.containsNonWhitespace(scoreStr)) {
@@ -205,7 +222,7 @@ public class AssessmentForm extends FormBasicController {
 		return Float.parseFloat(scoreStr);
 	}
 	
-	protected void reloadData() {
+	public void reloadData() {
 		UserCourseEnvironment userCourseEnv = assessedIdentityWrapper.getUserCourseEnvironment();
 		ScoreEvaluation scoreEval = userCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
 		if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
@@ -251,7 +268,6 @@ public class AssessmentForm extends FormBasicController {
 				cut = assessableCourseNode.getCutValueConfiguration();
 			}
 			
-			//fxdiff VCRP-4: assessment overview with max score
 			String minStr = AssessmentHelper.getRoundedScore(min);
 			String maxStr = AssessmentHelper.getRoundedScore(max);
 			uifactory.addStaticTextElement("minval", "form.min", ((min == null) ? translate("form.valueUndefined") : minStr), formLayout);
@@ -265,7 +281,7 @@ public class AssessmentForm extends FormBasicController {
 			if (scoreValue != null) {
 				score.setValue(AssessmentHelper.getRoundedScore(scoreValue));
 			} 
-			//fxdiff VCRP-4: assessment overview with max score
+			// assessment overview with max score
 			score.setRegexMatchCheck("(\\d+)||(\\d+\\.\\d{1,3})||(\\d+\\,\\d{1,3})", "form.error.wrongFloat");
 		}
 
@@ -321,7 +337,11 @@ public class AssessmentForm extends FormBasicController {
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
+		
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
+		if(saveAndClose) {
+			saveAndCloseLink = uifactory.addFormLink("save.close", buttonGroupLayout, Link.BUTTON);
+		}
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
 

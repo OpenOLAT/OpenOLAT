@@ -206,8 +206,31 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.author", RepoCols.author.ordinal(), null, loc));
 
 		CustomCellRenderer accessRenderer = new RepositoryEntryAccessColumnDescriptor(translator);
-		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.access", RepoCols.repoEntry.ordinal(), null,
-				loc, ColumnDescriptor.ALIGNMENT_LEFT, accessRenderer));
+		ColumnDescriptor accessColDesc = new CustomRenderColumnDescriptor("table.header.access", RepoCols.repoEntry.ordinal(), null, loc, 
+				ColumnDescriptor.ALIGNMENT_LEFT, accessRenderer) {
+			@Override
+			public int compareTo(int rowa, int rowb) {
+				Object o1 = table.getTableDataModel().getValueAt(rowa, 1);
+				Object o2 = table.getTableDataModel().getValueAt(rowb, 1);
+				
+				if(o1 == null || !(o1 instanceof RepositoryEntry)) return -1;
+				if(o2 == null || !(o2 instanceof RepositoryEntry)) return 1;
+				RepositoryEntry re1 = (RepositoryEntry)o1;
+				RepositoryEntry re2 = (RepositoryEntry)o2;
+				int ar1 = re1.getAccess();
+				if(re1.isMembersOnly()) {
+					ar1 = 99;
+				}
+				int ar2 = re2.getAccess();
+				if(re2.isMembersOnly()) {
+					ar2 = 99;
+				}
+				if(ar1 < ar2) return -1;
+				if(ar1 > ar2) return 1;
+				return super.compareString(re1.getDisplayname(), re2.getDisplayname());
+			}
+		};
+		tableCtr.addColumnDescriptor(accessColDesc);
 
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.date", RepoCols.creationDate.ordinal(), null, loc));
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lastusage", RepoCols.lastUsage.ordinal(), null, loc));

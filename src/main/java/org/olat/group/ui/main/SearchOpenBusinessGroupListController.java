@@ -66,7 +66,9 @@ public class SearchOpenBusinessGroupListController extends AbstractBusinessGroup
 		if(groupModule.isManagedBusinessGroups()) {
 			groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.externalId.i18n(), Cols.externalId.ordinal(), null, getLocale()));
 		}
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale()));
+		DefaultColumnDescriptor descCol = new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale());
+		descCol.setEscapeHtml(EscapeMode.antisamy);
+		groupListCtr.addColumnDescriptor(descCol);
 		groupListCtr.addColumnDescriptor(new ResourcesColumnDescriptor(this, mainVC, getTranslator()));
 		
 		DefaultColumnDescriptor freePlacesCol = new DefaultColumnDescriptor(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH, getLocale());

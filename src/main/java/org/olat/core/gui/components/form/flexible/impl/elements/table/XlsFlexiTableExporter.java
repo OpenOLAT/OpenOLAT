@@ -29,9 +29,9 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.WorkbookMediaResource;
+import org.olat.core.gui.render.EmptyURLBuilder;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.render.URLBuilder;
@@ -83,77 +83,31 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 			Row dataRow = sheet.createRow(r+1);
 			for (int c = 0; c<numOfColumns; c++) {
 				FlexiColumnModel cd = columns.get(c);
-
-				StringOutput so = StringOutputPool.allocStringBuilder(1000);
-				Object value = dataModel.getValueAt(r, cd.getColumnIndex());
-				cd.getCellRenderer().render(so, value, r, ftC, ubu, translator);
-
-				String cellValue = StringOutputPool.freePop(so);
-				cellValue = StringHelper.stripLineBreaks(cellValue);
-				cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
-				if(StringHelper.containsNonWhitespace(cellValue)) {
-					cellValue = StringEscapeUtils.unescapeHtml(cellValue);
-				}
 				Cell cell = dataRow.createCell(c);
-				cell.setCellValue(cellValue);
+				Object value = dataModel.getValueAt(r, cd.getColumnIndex());
+				renderCell(cell, value, r, ftC, cd, translator);
 			}
 		}
 	}
 	
-	private CellStyle getHeaderCellStyle(final Workbook wb) {
+	protected void renderCell(Cell cell,Object value, int row, FlexiTableComponent ftC, FlexiColumnModel cd, Translator translator) {
+		StringOutput so = StringOutputPool.allocStringBuilder(1000);
+		cd.getCellRenderer().render(so, value, row, ftC, ubu, translator);
+
+		String cellValue = StringOutputPool.freePop(so);
+		cellValue = StringHelper.stripLineBreaks(cellValue);
+		cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
+		if(StringHelper.containsNonWhitespace(cellValue)) {
+			cellValue = StringEscapeUtils.unescapeHtml(cellValue);
+		}
+		cell.setCellValue(cellValue);
+	}
+	
+	public static CellStyle getHeaderCellStyle(final Workbook wb) {
 		CellStyle cellStyle = wb.createCellStyle();
 		Font boldFont = wb.createFont();
 		boldFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		cellStyle.setFont(boldFont);
 		return cellStyle;
-	}
-	
-	private static class EmptyURLBuilder extends URLBuilder {
-
-		public EmptyURLBuilder() {
-			super(null, null, null, null);
-		}
-
-		@Override
-		public void appendTarget(StringOutput sb) {
-			// nothing to do
-		}
-
-		@Override
-		public void buildJavaScriptBgCommand(StringOutput buf, String[] keys, String[] values, int mode) {
-			// nothing to do
-		}
-
-		@Override
-		public void buildURI(StringOutput buf, String[] keys, String[] values, int mode) {
-			// nothing to do
-		}
-
-		@Override
-		public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode) {
-			// nothing to do
-		}
-
-		@Override
-		public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI) {
-			// nothing to do
-		}
-
-		@Override
-		public void buildURI(StringOutput buf, String[] keys, String[] values) {
-			// nothing to do
-		}
-
-		@Override
-		public URLBuilder createCopyFor(Component source) {
-			return super.createCopyFor(source);
-		}
-
-		@Override
-		public void setComponentPath(String componentPath) {
-			// nothing to do
-		}
-
-		
 	}
 }
