@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.folder.FolderHelper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -208,6 +209,9 @@ public class CheckListRunController extends FormBasicController implements Contr
 			String filename = checkbox.getFilename();
 			String name = "file_" + checkbox.getCheckboxId();
 			downloadLink = uifactory.addFormLink(name, "download", filename, null, formLayout, Link.LINK | Link.NONTRANSLATED);
+			String type = FolderHelper.extractFileType(filename, getLocale());
+			if (!FolderHelper.isKnownFileType(type)) { type = "file"; }
+			downloadLink.setElementCssClass("b_with_small_icon_left b_filetype_" + type);
 			((Link)downloadLink.getComponent()).setTarget("_blank");
 		}
 		

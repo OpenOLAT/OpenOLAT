@@ -24,6 +24,10 @@ $selectcolor : #FF9F5B !default;
 $selectcolor_light : #FF9F5B !default;			
 $selectcolor_ultra_light : #FFDBC1 !default;	 
 
+/* color that indicates the edit fields or table */
+$dirtycolor : #FF9900 !default;
+$dirtycolor_bg : #FEFBF6 !default;
+
 /* then we need a base-gray and some variations */
 $basegray: #555 !default;
 $basegray_light: #777 !default;

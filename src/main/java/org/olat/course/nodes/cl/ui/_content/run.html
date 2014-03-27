@@ -63,27 +63,33 @@
 #end
 
 #if($dueDate)
-	<p>$r.translate("run.due.date.desc")</p>
-	<p class="o_cl_duedate #if($afterDueDate) o_cl_duedate_passed #end">$r.translate("run.due.date", $r.formatDateAndTime($dueDate))</p>
+	<div class="o_course_run_deadline">
+		<p>$r.translate("run.due.date.desc")</p>
+		<p class="o_cl_duedate #if($afterDueDate) o_cl_duedate_passed #end">$r.translate("run.due.date", $r.formatDateAndTime($dueDate))</p>
+	</div>
 #end
 
+<div class="o_cl">
 <div class="b_clearfix">
-	<div class="b_c25l"><h4>$r.translate("run.mark")</h4></div>
-	<div class="b_c75r"><h4>$r.translate("run.info")</h4></div>
+	<div class="b_c25l"><h5>$r.translate("run.mark")</h5></div>
+	<div class="b_c75r"><h5>$r.translate("run.info")</h5></div>
 </div>
 #foreach($checkbox in $checkboxList)
-	<div class="b_clearfix">
-		<div class="b_c25l">
+	<div class="b_clearfix o_cl_line #if($velocityCount %2 == 0) o_even #else o_odd #end">
+		<div class="b_c25l o_cl_cb">
 			$r.render($checkbox.checkboxElName)
 		</div>
 		<div class="b_c75r">
-			<b>$checkbox.title #if($withScore && $checkbox.pointsAvailable) $r.translate("box.points.info", $checkbox.points) #end</b><br/>
+			<div class="b_cl_title">
+				<b>$checkbox.title</b> #if($withScore && $checkbox.pointsAvailable) $r.translate("box.points.info", $checkbox.points) #end
+			</div>
 			#if($checkbox.description)
-				<p>$checkbox.description</p>
+				<div class="o_cl_desc">$checkbox.description</div>
 			#end
 			#if($checkbox.checkbox.filename)
-				<p>Download: $r.render($checkbox.downloadName)</p>
+				<div class="o_cl_file">Download: $r.render($checkbox.downloadName)</div>
 			#end
 		</div>
 	</div>
 #end
+</div>

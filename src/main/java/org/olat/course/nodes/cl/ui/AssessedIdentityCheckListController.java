@@ -166,6 +166,8 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 				String maxValue = AssessmentHelper.getRoundedScore(maxScore);
 				pointEl.setExampleKey("checklist.point.example", new String[]{ "0", maxValue});
 			}
+			// hide when not yet checked
+			pointEl.setVisible(check.getChecked());
 		}
 		
 		CheckboxWrapper wrapper = new CheckboxWrapper(checkbox, check, boxEl, pointEl);
@@ -258,6 +260,8 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		} else if(wrapper.getPointEl() != null) {
 			wrapper.getPointEl().setValue("");
 		}
+		// hide when not yet checked
+		wrapper.getPointEl().setVisible(check);
 	}
 
 	@Override
