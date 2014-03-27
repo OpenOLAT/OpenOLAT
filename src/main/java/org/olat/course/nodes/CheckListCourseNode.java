@@ -631,7 +631,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		
 		Float currentScore = am.getNodeScore(this, assessedIdentity);
 		Boolean currentPassed = am.getNodePassed(this, assessedIdentity);
-
 		
 		Float updatedScore = null;
 		Boolean updatedPassed = null;
@@ -646,7 +645,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		
 		Boolean passedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
 		if(passedBool != null && passedBool.booleanValue()) {
-
 			Float cutValue = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 			Boolean sumCheckbox = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
 			if(sumCheckbox != null && sumCheckbox.booleanValue()) {
@@ -678,14 +676,14 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		Boolean manualCorrection = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
 		if(manualCorrection == null || !manualCorrection.booleanValue()) {
 			//update passed
-			if((currentPassed == null && updatedPassed != null)
+			if((currentPassed == null && updatedPassed != null && updatedScore.floatValue() > 0f)
 					|| (currentPassed != null && updatedPassed == null)
 					|| (currentPassed != null && !currentPassed.equals(updatedPassed))) {
 				needUpdate = true;	
 			}
 		}
 		
-		if((currentScore == null && updatedScore != null)
+		if((currentScore == null && updatedScore != null && updatedScore.floatValue() > 0f)
 				|| (currentScore != null && updatedScore == null)
 				|| (currentScore != null && !currentScore.equals(updatedScore))) {
 			needUpdate = true;	

@@ -76,7 +76,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class CheckListRunController extends FormBasicController implements ControllerEventListener, Activateable2 {
 	
 	private final Date dueDate;
-	private final boolean withScore;
+	private final boolean withScore, withPassed;
 	private final Boolean closeAfterDueDate;
 	private final CheckboxList checkboxList;
 	
@@ -121,7 +121,9 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 		
 		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		withScore = (hasScore == null || hasScore.booleanValue());	
+		withScore = (hasScore == null || hasScore.booleanValue());
+		Boolean hasPassed = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
+		withPassed = (hasPassed == null || hasPassed.booleanValue());
 
 		initForm(ureq);
 	}
@@ -156,7 +158,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			}
 			layoutCont.contextPut("checkboxList", wrappers);
 			
-			if(withScore) {
+			if(withScore || withPassed) {
 				layoutCont.contextPut("enableScoreInfo", Boolean.TRUE);
 				exposeConfigToVC(layoutCont);
 				exposeUserDataToVC(layoutCont);
@@ -171,7 +173,9 @@ public class CheckListRunController extends FormBasicController implements Contr
 		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD));
 		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
 	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, (infoTextUser == null ? "" : infoTextUser));
+	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
+	    	layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
+	    }
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));

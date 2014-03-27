@@ -77,7 +77,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 		
 
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
-		int numOfChecks = checkboxManager.countChecked(course, courseNode.getIdent());
+		int numOfChecks = checkboxManager.countChecks(course, courseNode.getIdent());
 		
 		checkboxListEditCtrl = new CheckListBoxListEditController(ureq, wControl, course, courseNode, numOfChecks > 0);
 		listenTo(checkboxListEditCtrl);

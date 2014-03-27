@@ -46,7 +46,7 @@
 
 	#if ($hasCommentField)
 		<h4>$r.translate("comment.title")</h4>
-		#if ($comment)
+		#if($comment)
 			$comment
 		#else
 			<div class="o_course_run_scoreinfo_noinfo">$r.translate("comment.nocomment")</div>

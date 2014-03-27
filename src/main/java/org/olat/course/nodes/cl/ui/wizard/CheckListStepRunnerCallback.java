@@ -135,6 +135,7 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		} else {
 			sc.setSumOfScoreNodes(null);
 		}
+		sc.setExpertMode(false);
 
 		if(data.isPassed()) {
 			Float cutValue = data.getCutValue();
