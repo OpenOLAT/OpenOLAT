@@ -82,6 +82,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 	
 	private Identity admin;
 	private ICourse course1, course2, course3;
+	private RepositoryEntry re1, re2, re3;
 	private String externalId, externalRef;
 	private String externalId3;
 	private RestConnection conn;
@@ -110,10 +111,13 @@ public class CoursesTest extends OlatJerseyTestCase {
 			course2 = CoursesWebService.createEmptyCourse(admin, "courses2", "courses2 long name", null, null, RepositoryEntry.ACC_OWNERS, false, externalId, externalRef, "all", null);
 			
 			dbInstance.commitAndCloseSession();
+			
+			re1 = repositoryManager.lookupRepositoryEntry(course1, false);
+			re2 = repositoryManager.lookupRepositoryEntry(course2, false);
 
 			externalId3 = UUID.randomUUID().toString();
 			course3 = CoursesWebService.createEmptyCourse(admin, "courses3", "courses3 long name", null, null, RepositoryEntry.ACC_OWNERS, false, externalId3, null, "all", null);
-			RepositoryEntry re3 = repositoryManager.lookupRepositoryEntry(course3, false);
+			re3 = repositoryManager.lookupRepositoryEntry(course3, false);
 			RepositoryEntryLifecycle lifecycle3 = reLifecycleDao.create("course3 lifecycle", UUID.randomUUID().toString(), true, new Date(), new Date());
 			dbInstance.commit();
 			re3.setLifecycle(lifecycle3);
@@ -124,7 +128,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		}
 	}
 	
-  @After
+	@After
 	public void tearDown() throws Exception {
 		try {
 			if(conn != null) {
@@ -132,7 +136,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 			}
 		} catch (Exception e) {
 			log.error("", e);
-      throw e;
+			throw e;
 		}
 	}
 	
@@ -149,19 +153,22 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertNotNull(courses);
 		assertTrue(courses.size() >= 2);
 		
-		CourseVO vo1 = null;
-		CourseVO vo2 = null;
+		boolean vo1 = false;
+		boolean vo2 = false;
 		for(CourseVO course:courses) {
-			if(course.getTitle().equals("courses1")) {
-				vo1 = course;
-			} else if(course.getTitle().equals("courses2")) {
-				vo2 = course;
+			Long repoEntryKey = course.getRepoEntryKey();
+			if(repoEntryKey != null && re1.getKey().equals(repoEntryKey)) {
+				vo1 = true;
+				Assert.assertEquals("courses1", course.getTitle());
 			}
+				
+			if(repoEntryKey != null && re2.getKey().equals(repoEntryKey)) {
+				vo2 = true;
+				Assert.assertEquals("courses2", course.getTitle());
+			}	
 		}
-		assertNotNull(vo1);
-		assertEquals(vo1.getKey(), course1.getResourceableId());
-		assertNotNull(vo2);
-		assertEquals(vo2.getKey(), course2.getResourceableId());
+		Assert.assertTrue(vo1);
+		Assert.assertTrue(vo2);
 	}
 	
 	@Test
