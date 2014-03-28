@@ -131,6 +131,9 @@ public class ChoiceQuestion extends Question implements QTIObject {
 						choice.setCorrect(true);
 					}
 				}
+				
+				// set min/max score first has it can be overridden
+				QTIEditHelper.configureMinMaxScore(instance, (Element) resprocessingXML.selectSingleNode(".//decvar"));
 
 				// get type of multiple choice
 				if (instance.getType() == TYPE_MC) {
@@ -144,12 +147,13 @@ public class ChoiceQuestion extends Question implements QTIObject {
 						instance.setSingleCorrect(false);
 					}
 				} else if (instance.getType() == TYPE_SC) {
-					instance.setSingleCorrect(true);
 					Collection<Float> values = points.values();
 					if (values.size() > 0) {
+						instance.setSingleCorrect(true);
 						instance.setSingleCorrectScore(((Float) (values.iterator().next())).floatValue());
 					} else {
 						instance.setSingleCorrect(false);
+						instance.setSingleCorrectScore(0f);
 					}
 				} else if (instance.getType() == TYPE_KPRIM) {
 					instance.setSingleCorrect(false);
@@ -176,8 +180,7 @@ public class ChoiceQuestion extends Question implements QTIObject {
 					}
 				}
 
-				// set min/max score
-				QTIEditHelper.configureMinMaxScore(instance, (Element) resprocessingXML.selectSingleNode(".//decvar"));
+					
 			}
 		} catch (NullPointerException e) {
 			/*
