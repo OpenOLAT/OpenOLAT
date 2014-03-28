@@ -96,7 +96,7 @@ div.b_box_with_chelp div.o_buttons_box_right {
 div.o_course_run {
 	div.o_course_run_displaytitle { font-style: italic;}
 
-	div.o_course_run_objectives { 	@include o_course_run_box(); }
+	div.o_course_run_objectives { 	@include o_course_run_box(); padding-bottom: 2em; }
 	div.o_course_run_scoreinfo 	{	@include o_course_run_box(); background-image: url(../openolat/images/seal.png); 
 		table {
 			width: 99%;

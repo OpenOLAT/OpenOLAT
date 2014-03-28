@@ -529,8 +529,7 @@ div.b_titled_wrapper div.b_togglebox {
 }
 
 div.b_titled_wrapper_desc {
-	
-	a.b_togglebox_opened { z-index:10; display:block; width:20px; height:20px;  position:absolute; top:2px; left:5px; background: url(../openolat/images/information-white.png) no-repeat 0 50%; }
+	a.b_togglebox_opened { z-index:10; display:block; width:20px; height:20px;  position:absolute; top:7px; left:8px; background: url(../openolat/images/information-white.png) no-repeat 0 50%; }
 	a.b_togglebox_closed { display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left;  @include o-opacity(60); }
 	
 	div.b_togglebox div.b_togglebox_content { position:relative; margin-bottom:1em; }
