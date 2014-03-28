@@ -159,7 +159,8 @@ div.b_table_wrapper {
 }
 
 div.b_table_wrapper.b_table_edit table tbody {
-	border:solid $dirtycolor 2px;
+	border:solid $dirtycolor 1px;
+	border-top:solid $dirtycolor 4px;
 	background: $dirtycolor_bg;
 }
 
