@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DownloadComponent;
@@ -71,7 +70,7 @@ public class BCPeekviewController extends BasicController implements Controller 
 	 * @param nodeId The course node ID
 	 * @param itemsToDisplay number of items to be displayed, must be > 0
 	 */
-	public BCPeekviewController(UserRequest ureq, WindowControl wControl, OlatRootFolderImpl rootFolder, String nodeId, int itemsToDisplay) {		
+	public BCPeekviewController(UserRequest ureq, WindowControl wControl, VFSContainer rootFolder, String nodeId, int itemsToDisplay) {		
 		super(ureq, wControl);
 		this.nodeId = nodeId;
 	
@@ -108,8 +107,7 @@ public class BCPeekviewController extends BasicController implements Controller 
 		// Add link to show all items (go to node)
 		Link allItemsLink = LinkFactory.createLink("peekview.allItemsLink", peekviewVC, this);
 		allItemsLink.setCustomEnabledLinkCSS("b_float_right");
-		//
-		this.putInitialPanel(peekviewVC);
+		putInitialPanel(peekviewVC);
 	}
 
 	/**
