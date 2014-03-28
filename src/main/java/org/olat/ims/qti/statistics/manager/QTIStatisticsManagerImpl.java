@@ -146,6 +146,9 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 			}
 			dataPos++;
 		}
+		if (rawDatas.size() == 0) {
+			minScore = 0;
+		}
 		
 		Statistics statisticsHelper = new Statistics(scores);		
 

@@ -30,6 +30,13 @@
 
 		/** with the noprint class, you can hide any element in printout **/
 		.o_noprint { @include o-ghost();} 
+		
+		.b_print_break_avoid {
+			page-break-inside : avoid;
+		}
+		.b_print_break_before {
+			page-break-before: always;
+		}
 		 
 		#b_toplink { @include o-ghost();} 
 		  
@@ -107,6 +114,9 @@
 		#o_cal_config_below_cal_container * { background: none; color: black; }
 		#o_cal_config_below_cal_container fieldset { border: none; }
 		#o_cal_config_below_cal_container fieldset legend { font-weight: bold; }
+		
+		/* fix padding of missing backgrond images */
+		.b_with_small_icon_left { padding-left: 0;}
 }
 
 

@@ -55,6 +55,7 @@ import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticItem;
 import org.olat.ims.qti.statistics.model.StatisticSurveyItem;
+import org.olat.repository.RepositoryManager;
 
 /**
  * 
@@ -67,6 +68,8 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 	private final Float maxScore;
 	private final Float cutValue;
 	private final String mediaBaseURL;
+	private final Long courseResourceID;
+	private final Long repoEntryId;
 	
 	private final Link downloadRawLink;
 	private final VelocityContainer mainVC;
@@ -84,6 +87,8 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		mediaBaseURL = resourceResult.getMediaBaseURL();
 		seriesfactory = new SeriesFactory(resourceResult);
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTIStatisticsManager.class);
+		courseResourceID = RepositoryManager.getInstance().lookupRepositoryEntryKey(resourceResult.getCourseOres(), false);
+		repoEntryId = resourceResult.getQTIRepositoryEntry().getResourceableId();
 		
 		mainVC = createVelocityContainer("statistics_assessment");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
@@ -165,6 +170,8 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 	private void initCourseNodeInformation(StatisticAssessment stats) {
 		mainVC.contextPut("numOfParticipants", stats.getNumOfParticipants());
 		mainVC.contextPut("type", resourceResult.getType());
+		mainVC.contextPut("courseId", courseResourceID);		
+		mainVC.contextPut("testId", repoEntryId);		
 		
 		if(QTIType.test.equals(type)) {
 			mainVC.contextPut("numOfPassed", stats.getNumOfPassed());
