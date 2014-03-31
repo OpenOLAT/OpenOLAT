@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui.list;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -43,9 +42,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -82,17 +81,22 @@ public class RepositoryEntryListController extends FormBasicController
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
+	private final BreadcrumbedStackedPanel stackPanel;
+	private RepositoryEntryDetailsController detailsCtrl;
 	
 	private final String mapperThumbnailUrl;
 	private final MarkManager markManager;
 	private final UserRatingsDAO userRatingsDao;
 	
-	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl, SearchMyRepositoryEntryViewParams searchParams) {
+	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
+			SearchMyRepositoryEntryViewParams searchParams, BreadcrumbedStackedPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		userRatingsDao = CoreSpringFactory.getImpl(UserRatingsDAO.class);
 		mapperThumbnailUrl = registerCacheableMapper(ureq, "repositoryentryImage", new RepositoryEntryImageMapper());
+		
+		this.stackPanel = stackPanel;
 		
 		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
 		initForm(ureq);
@@ -176,18 +180,16 @@ public class RepositoryEntryListController extends FormBasicController
 			
 			if("mark".equals(cmd)) {
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				if(doMark(row)) {
-					link.setCustomEnabledLinkCSS("b_mark_set");
-				} else {
-					link.setCustomEnabledLinkCSS("b_mark_not_set");
-				}
+				boolean marked = doMark(row);
+				link.setCustomEnabledLinkCSS(marked ? "b_mark_set" : "b_mark_not_set");
 				link.getComponent().setDirty(true);
+				row.setMarked(marked);
 			} else if ("select".equals(cmd) || "start".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				doOpen(ureq, row);
 			} else if ("details".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				doOpenDetails(row);
+				doOpenDetails(ureq, row);
 			} else if ("comments".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				doOpenComments(ureq, row);
@@ -281,18 +283,14 @@ public class RepositoryEntryListController extends FormBasicController
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	protected void doOpenDetails(RepositoryEntryRow row) {
-		Panel detailsPanel = row.getDetailsPanel();
-		boolean visible = detailsPanel.isVisible();
-		if(visible) {
-			detailsPanel.setContent(null);
-		} else {
-			VelocityContainer content = createVelocityContainer("row_details");
-			row.getDetailsPanel().setContent(content);
-			content.contextPut("description", row.getDescription());
-		}
-		detailsPanel.setVisible(!visible);
-		detailsPanel.setDirty(true);
+	protected void doOpenDetails(UserRequest ureq, RepositoryEntryRow row) {
+		removeAsListenerAndDispose(detailsCtrl);
+		
+		detailsCtrl = new RepositoryEntryDetailsController(ureq, getWindowControl(), row);
+		listenTo(detailsCtrl);
+		
+		String displayName = row.getDisplayName();
+		stackPanel.pushController(displayName, detailsCtrl);
 	}
 	
 	protected void doOpenComments(UserRequest ureq, RepositoryEntryRow row) {
@@ -314,7 +312,7 @@ public class RepositoryEntryListController extends FormBasicController
 			markManager.removeMark(item, getIdentity(), null);
 			return false;
 		} else {
-			String businessPath = "[QuestionItem:" + item.getResourceableId() + "]";
+			String businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
 			markManager.setMark(item, getIdentity(), null, businessPath);
 			return true;
 		}
@@ -348,21 +346,10 @@ public class RepositoryEntryListController extends FormBasicController
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, null, Link.LINK);
 		detailsLink.setUserObject(row);
 		row.setDetailsLink(detailsLink);
-		
-		String id = "detailsp_" + row.getKey();
-		Panel detailsPanel = new Panel(id);
-		detailsPanel.setVisible(false);
-		row.setDetailsPanel(detailsPanel);
 	}
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		if(rowObject instanceof RepositoryEntryRow) {
-			RepositoryEntryRow r = (RepositoryEntryRow)rowObject;
-			Panel detailsPanel = r.getDetailsPanel();
-			tableEl.getComponent().put(detailsPanel.getComponentName(), detailsPanel);
-			return Collections.<Component>singletonList(detailsPanel);
-		}	
 		return null;
 	}
 
@@ -390,5 +377,4 @@ public class RepositoryEntryListController extends FormBasicController
 		commentsLink.setCustomEnabledLinkCSS(css);
 		row.setCommentsLink(commentsLink);
 	}
-
 }

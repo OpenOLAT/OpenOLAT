@@ -35,7 +35,7 @@ import org.olat.core.gui.components.ComponentRenderer;
  * 
  * @author gnaegi
  */
-public class LayeredPanel extends StackedPanel {
+public class LayeredPanel extends SimpleStackedPanel {
 	private static final ComponentRenderer LAYERED_RENDERER = new LayeredPanelRenderer();
 	private int startLayerIndex;
 	private int indexIncrement;

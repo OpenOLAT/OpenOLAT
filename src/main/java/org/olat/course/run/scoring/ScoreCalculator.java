@@ -52,10 +52,10 @@ public class ScoreCalculator implements Serializable {
 	private boolean expertMode = false;
 	// easy mode variables
 	// score configuration
-	private List sumOfScoreNodes;
+	private List<String> sumOfScoreNodes;
 	// passed configuration
 	private String passedType;
-	private List passedNodes;
+	private List<String> passedNodes;
 	private int passedCutValue;
 
 	/**
@@ -101,9 +101,8 @@ public class ScoreCalculator implements Serializable {
 
 		if (getSumOfScoreNodes() != null && getSumOfScoreNodes().size() > 0) {
 			sb.append("(");
-			Iterator iter = getSumOfScoreNodes().iterator();
-			while (iter.hasNext()) {
-				String nodeIdent = (String) iter.next();
+			for(Iterator<String> iter = getSumOfScoreNodes().iterator(); iter.hasNext(); ) {
+				String nodeIdent = iter.next();
 				sb.append("getScore(\"");
 				sb.append(nodeIdent);
 				sb.append("\")");			
@@ -130,9 +129,8 @@ public class ScoreCalculator implements Serializable {
 		StringBuilder sb = new StringBuilder();
 		if (getPassedType().equals(PASSED_TYPE_INHERIT) && getPassedNodes() != null && getPassedNodes().size() > 0) {
 			sb.append("(");
-			Iterator iter = getPassedNodes().iterator();
-			while (iter.hasNext()) {
-				String nodeIdent = (String) iter.next();
+			for(Iterator<String> iter = getPassedNodes().iterator(); iter.hasNext(); ) {
+				String nodeIdent = iter.next();
 				sb.append("getPassed(\"");
 				sb.append(nodeIdent);
 				sb.append("\")");			
@@ -169,13 +167,13 @@ public class ScoreCalculator implements Serializable {
 	/**
 	 * @return List of nodeIdents as Strings
 	 */
-	public List getSumOfScoreNodes() {
+	public List<String> getSumOfScoreNodes() {
 		return sumOfScoreNodes;
 	}
 	/**
 	 * @param sumOfScoreNodes
 	 */
-	public void setSumOfScoreNodes(List sumOfScoreNodes) {
+	public void setSumOfScoreNodes(List<String> sumOfScoreNodes) {
 		this.sumOfScoreNodes = sumOfScoreNodes;
 	}
 	/**
@@ -205,13 +203,13 @@ public class ScoreCalculator implements Serializable {
 	/**
 	 * @return List of nodeIdents as Strings
 	 */
-	public List getPassedNodes() {
+	public List<String> getPassedNodes() {
 		return passedNodes;
 	}
 	/**
 	 * @param passedNodes
 	 */
-	public void setPassedNodes(List passedNodes) {
+	public void setPassedNodes(List<String> passedNodes) {
 		this.passedNodes = passedNodes;
 	}
 	/**

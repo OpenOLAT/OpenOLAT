@@ -25,8 +25,8 @@ import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.ui.CatalogSiteMainController;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
@@ -67,13 +67,12 @@ public class CatalogSite extends AbstractSiteInstance {
 	}
 
 	@Override
-	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		// for existing controller which are part of the main olat -> use the controllerfactory
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CatalogEntry.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		MainLayoutController c = new CatalogSiteMainController(ureq, bwControl);
-		return c;
+		return new CatalogSiteMainController(ureq, bwControl);
 	}
 
 	/**

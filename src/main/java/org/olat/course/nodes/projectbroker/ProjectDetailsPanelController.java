@@ -29,6 +29,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -85,7 +86,7 @@ public class ProjectDetailsPanelController extends BasicController {
 		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 
-		detailsPanel = new StackedPanel("projectdetails_panel");
+		detailsPanel = new SimpleStackedPanel("projectdetails_panel");
 		runController = new ProjectDetailsDisplayController(ureq, wControl, project, courseEnv, courseNode, projectBrokerModuleConfiguration);
 		listenTo(runController);
 		detailsPanel.setContent(runController.getInitialComponent());

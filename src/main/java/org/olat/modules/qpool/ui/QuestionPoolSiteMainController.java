@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerImpl;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -40,7 +39,7 @@ import org.olat.core.id.context.StateEntry;
  */
 public class QuestionPoolSiteMainController extends MainLayoutBasicController implements Activateable2 {
 
-	private final StackedController stackPanel;
+	private final StackedControllerImpl stackPanel;
 	private final QuestionPoolMainEditorController catalogCtrl;
 	
 	public QuestionPoolSiteMainController(UserRequest ureq, WindowControl wControl) {

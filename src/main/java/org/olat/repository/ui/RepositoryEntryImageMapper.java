@@ -24,6 +24,8 @@ import java.io.File;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -51,11 +53,23 @@ public class RepositoryEntryImageMapper implements Mapper {
 		if(relPath.startsWith("/")) {
 			relPath = relPath.substring(1, relPath.length());
 		}
-
+		MediaResource resource = null;
 		VFSItem image = rootContainer.resolve(relPath);
 		if(image instanceof VFSLeaf) {
-			return new VFSMediaResource((VFSLeaf)image);
+			if(image instanceof MetaTagged) {
+				MetaInfo info = ((MetaTagged) image).getMetaInfo();
+				if(info != null) {
+					VFSLeaf thumbnail = info.getThumbnail(200, 150, true);
+					if(thumbnail != null) {
+						resource = new VFSMediaResource(thumbnail);
+					}
+				}	
+			}
+			
+			if(resource == null) {
+				resource = new VFSMediaResource((VFSLeaf)image);
+			}
 		}
-		return null;
+		return resource;
 	}
 }

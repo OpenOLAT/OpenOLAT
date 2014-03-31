@@ -1,67 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-	<class name="org.olat.repository.RepositoryEntry" table="o_repositoryentry">
-		<cache usage="transactional" />
-
-		<id name="key" column="repositoryentry_id" type="long" unsaved-value="null">
-			<generator class="hilo"/>
-		</id>
-		
-		<version name="version" access="field" column="version" type="int"/>
-		<property name="lastModified" column="lastmodified" type="timestamp" />
-	  	<property name="creationDate" column="creationdate" type="timestamp" /> 
-		<property name="softkey" column="softkey" unique="true" not-null="true" length="30" index="softkey_idx"/>
-		<property name="displayname" column="displayname" unique="false" not-null="true" length="100" index="displayname_idx"/>
-		<property name="resourcename" column="resourcename" unique="false" not-null="true" length="100" index="resource_idx"/>
-		
-		<property name="externalId" column="external_id" unique="false" not-null="false" type="string"/>
-		<property name="externalRef" column="external_ref" unique="false" not-null="false" type="string"/>
-		<property name="managedFlagsString" column="managed_flags" unique="false" not-null="false" type="string"/>
-
-		<many-to-one name="olatResource"
-                     column="fk_olatresource"
-                     class="org.olat.resource.OLATResourceImpl" 
-                     outer-join="true"   
-                     unique="true" 
-                     cascade="none"/>
-       
-        <many-to-one name="lifecycle"
-                     column="fk_lifecycle"
-                     class="org.olat.repository.model.RepositoryEntryLifecycle" 
-                     outer-join="true"
-                     fetch="join"
-                     cascade="none"/>
-        
-        <many-to-one name="statistics"
-                     column="fk_stats"
-                     class="org.olat.repository.model.RepositoryEntryStatistics" 
-                     outer-join="true"
-                     fetch="join"
-                     insert="true"
-                     update="false"
-                     cascade="persist,delete"/>
-                                          
-        <set name="groups" cascade="persist,delete">
-            <key column="fk_entry_id"/>
-            <one-to-many class="org.olat.repository.model.RepositoryEntryToGroupRelation" />
-        </set>
-
-		<property name="description" type="string" column="description" length="16777210" unique="false" not-null="false" />
-		<property name="initialAuthor" column="initialauthor" unique="false" not-null="true" length="128" index="initialAuthor_idx"/>
-		<property name="authors" column="authors" unique="false" not-null="false"/>
-		
-		<property name="access" column="accesscode" unique="false" not-null="true" index="access_idx"/>
-		<property name="membersOnly" type="boolean" column="membersonly" unique="false" not-null="true" />
-		
-		<property name="canLaunch" column="canlaunch" unique="false" not-null="true"/>
-		<property name="canDownload" column="candownload" unique="false" not-null="true"/>
-		<property name="canCopy" column="cancopy" unique="false" not-null="true"/>
-		<property name="canReference" column="canreference" unique="false" not-null="true"/>
-		
-		<property name="statusCode" column="statuscode" unique="false" type="int"/>	
-	</class>
-	
 	<class name="org.olat.repository.model.RepositoryEntryShortImpl" table="o_repositoryentry" mutable="false">
 		<cache usage="transactional" />
 		<id name="key" column="repositoryentry_id" type="long" unsaved-value="null">

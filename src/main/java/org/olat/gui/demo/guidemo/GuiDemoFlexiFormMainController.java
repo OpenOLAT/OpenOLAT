@@ -35,6 +35,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -119,7 +120,7 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 		mainVC.contextPut("demolinknames", demolinknames);
 
 		// all democontroller content goes in this panel
-		contentP = new StackedPanel("content");
+		contentP = new SimpleStackedPanel("content");
 		content_sourceVC = createVelocityContainer("content_source");
 		mainVC.put("democontent", contentP);
 		//

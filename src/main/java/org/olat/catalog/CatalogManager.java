@@ -54,7 +54,9 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.repository.CatalogEntryRef;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -81,6 +83,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogManager extends BasicManager implements UserDataDeletable, Initializable {
 	private static CatalogManager catalogManager;
+	private final int PICTUREWIDTH = 570;
+	
 	/**
 	 * Default value for the catalog root <code>CATALOGROOT</code>
 	 */
@@ -370,7 +374,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param repoEntry
 	 * @return List of catalog entries
 	 */
-	public List<CatalogEntry> getCatalogEntriesReferencing(RepositoryEntry repoEntry) {
+	public List<CatalogEntry> getCatalogEntriesReferencing(RepositoryEntryRef repoEntry) {
 		String sqlQuery = "select cei from " + " org.olat.catalog.CatalogEntryImpl as cei " + " ,org.olat.repository.RepositoryEntry as re "
 				+ " where cei.repositoryEntry = re AND re.key= :reKey ";
 
@@ -657,9 +661,9 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, reloaded);
 	}
 	
-	public VFSLeaf getImage(CatalogEntry entry) {
+	public VFSLeaf getImage(CatalogEntryRef entry) {
 		VFSContainer catalogResourceHome = getCatalogResourcesHome();
-		String imageName = entry.getResourceableId() + ".png";
+		String imageName = entry.getKey() + ".png";
 		VFSItem image = catalogResourceHome.resolve(imageName);
 		if(image instanceof VFSLeaf) {
 			return (VFSLeaf)image;
@@ -668,25 +672,23 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		return null;
 	}
 	
-	public void deleteImage(CatalogEntry entry) {
+	public void deleteImage(CatalogEntryRef entry) {
 		VFSLeaf imgFile =  getImage(entry);
 		if (imgFile != null) {
 			imgFile.delete();
 		}
 	}
-
-	private final int PICTUREWIDTH = 570;
 	
-	public boolean setImage(VFSLeaf newImageFile, CatalogEntry re) {
+	public boolean setImage(VFSLeaf newImageFile, CatalogEntryRef re) {
 		VFSLeaf currentImage = getImage(re);
 		if(currentImage != null) {
 			currentImage.delete();
 		}
 		
 		VFSContainer catalogResourceHome = getCatalogResourcesHome();
-		VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getResourceableId() + ".png");
+		VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".png");
 		
-		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTUREWIDTH, PICTUREWIDTH);
+		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTUREWIDTH, PICTUREWIDTH, false);
 		return size != null;
 	}
 	

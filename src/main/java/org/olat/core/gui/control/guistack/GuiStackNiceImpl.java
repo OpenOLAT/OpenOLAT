@@ -31,6 +31,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.LayeredPanel;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.util.ZIndexWrapper;
@@ -55,7 +56,7 @@ public class GuiStackNiceImpl implements GuiStack {
 	 * 
 	 */
 	private GuiStackNiceImpl() {
-		panel = new StackedPanel("guistackpanel");
+		panel = new SimpleStackedPanel("guistackpanel");
 		// Use a layered panel instead of a standard panel to support multiple modal layers
 		modalPanel = new LayeredPanel("guistackmodalpanel", 900, 100);
 		modalLayers = 0;

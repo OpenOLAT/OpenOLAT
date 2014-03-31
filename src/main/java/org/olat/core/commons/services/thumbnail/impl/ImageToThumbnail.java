@@ -68,8 +68,8 @@ public class ImageToThumbnail implements ThumbnailSPI {
 	}
 
 	@Override
-	public FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {
-		Size finalSize = imageHelper.scaleImage(file, thumbnailFile, maxWidth, maxHeight);
+	public FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill) {
+		Size finalSize = imageHelper.scaleImage(file, thumbnailFile, maxWidth, maxHeight, fill);
 		if(finalSize != null) {
 			return new FinalSize(finalSize.getWidth(), finalSize.getHeight());
 		}

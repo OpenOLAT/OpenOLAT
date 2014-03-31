@@ -79,9 +79,8 @@ public class DetailsReadOnlyForm extends FormBasicController {
 	
 		StringBuilder typeDisplayText = new StringBuilder(100);
 		if (typeName != null) { // add image and typename code
-			RepositoryEntryIconRenderer reir = new RepositoryEntryIconRenderer(getLocale());
 			typeDisplayText.append("<span class=\"b_with_small_icon_left ");
-			typeDisplayText.append(reir.getIconCssClass(entry));
+			typeDisplayText.append(RepositoyUIFactory.getIconCssClass(entry));
 			typeDisplayText.append("\">");
 			String tName = ControllerFactory.translateResourceableTypeName(typeName, getLocale());
 			typeDisplayText.append(tName);

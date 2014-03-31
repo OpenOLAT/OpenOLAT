@@ -47,7 +47,6 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -65,7 +64,6 @@ import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
-import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JMSCodePointServerJunitHelper;
@@ -131,25 +129,18 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test
 	public void testRawRepositoryEntryCreate() {
 		try {
-			DB db = DBFactory.getInstance();
+			OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("RepoMgrTestCourse", CodeHelper.getForeverUniqueID());
 			OLATResourceManager rm = OLATResourceManager.getInstance();
 			// create course and persist as OLATResourceImpl
-			OLATResourceable resourceable = new OLATResourceable() {
-					public String getResourceableTypeName() {	return "RepoMgrTestCourse";}
-					public Long getResourceableId() {return CodeHelper.getForeverUniqueID();}
-			};
 			OLATResource r =  rm.createOLATResourceInstance(resourceable);
-			db.saveObject(r);
-	
-			// now make a repository entry for this course
-			RepositoryEntry d = new RepositoryEntry();
-			d.setStatistics(new RepositoryEntryStatistics());
-			d.setOlatResource(r);
-			d.setResourcename("Lernen mit OLAT");
-			d.setInitialAuthor("Florian Gnägi");
-			d.setDisplayname("JunitTest_RepositoryEntry");
-			db.saveObject(d);
+			dbInstance.getCurrentEntityManager().persist(r);
+			
+			RepositoryEntry d = repositoryService.create("Florian Gnägi", "Lernen mit OpenOLAT", "JunitTest_RepositoryEntry", "Beschreibung", r);
+			
+			dbInstance.commit();
+			Assert.assertNotNull(d);
 		} catch(Exception ex) {
+			ex.printStackTrace();
 			fail("No Exception allowed. ex=" + ex.getMessage());
 		}
 	}
@@ -1166,7 +1157,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		String newName = "Brand new name";
 		String newDesc = "Brand new description";
-		re = repositoryManager.setDescriptionAndName(re, newName, newDesc, publicCycle);
+		re = repositoryManager.setDescriptionAndName(re, newName, null, newDesc, null, null, null, null, null, publicCycle);
 		Assert.assertNotNull(re);
 		
 		dbInstance.commitAndCloseSession();

@@ -211,7 +211,7 @@ public class RepositoryManager extends BasicManager {
 		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
 		VFSLeaf repoImage = repositoryHome.createChildLeaf(re.getResourceableId() + ".png");
 		
-		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTUREWIDTH, PICTUREWIDTH);
+		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTUREWIDTH, PICTUREWIDTH, false);
 		return size != null;
 	}
 	
@@ -683,14 +683,36 @@ public class RepositoryManager extends BasicManager {
 		return updatedRe;
 	}
 	
-	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description, RepositoryEntryLifecycle cycle) {
+	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re,
+			String displayName, String authors, String description,
+			String objectives, String requirements, String credits,
+			String mainLanguage, String expenditureOfWork, RepositoryEntryLifecycle cycle) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		if(StringHelper.containsNonWhitespace(displayName)) {
 			reloadedRe.setDisplayname(displayName);
 		}
+		if(StringHelper.containsNonWhitespace(authors)) {
+			reloadedRe.setAuthors(authors);
+		}
 		if(StringHelper.containsNonWhitespace(description)) {
 			reloadedRe.setDescription(description);
 		}
+		if(StringHelper.containsNonWhitespace(objectives)) {
+			reloadedRe.setObjectives(objectives);
+		}
+		if(StringHelper.containsNonWhitespace(requirements)) {
+			reloadedRe.setRequirements(requirements);
+		}
+		if(StringHelper.containsNonWhitespace(credits)) {
+			reloadedRe.setCredits(credits);
+		}
+		if(StringHelper.containsNonWhitespace(mainLanguage)) {
+			reloadedRe.setMainLanguage(mainLanguage);
+		}
+		if(StringHelper.containsNonWhitespace(expenditureOfWork)) {
+			reloadedRe.setExpenditureOfWork(expenditureOfWork);
+		}
+		
 		RepositoryEntryLifecycle cycleToDelete = null;
 		RepositoryEntryLifecycle currentCycle = reloadedRe.getLifecycle();
 		if(currentCycle != null) {
@@ -1146,6 +1168,13 @@ public class RepositoryManager extends BasicManager {
 		return setIdentity;
 	}
 	
+	/**
+	 * Membership calculated with business groups too
+	 * 
+	 * @param identity
+	 * @param entry
+	 * @return
+	 */
 	public boolean isMember(IdentityRef identity, RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v.key, membership.identity.key ")

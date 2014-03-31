@@ -207,7 +207,7 @@ public class ImageComponent extends AbstractComponent {
 			}
 			double realWidth = imageSrc.getWidth();
 			double realHeight = imageSrc.getHeight();
-			return new Size((int)realWidth, (int)realHeight, false);
+			return new Size((int)realWidth, (int)realHeight, 0, 0, false);
 		} catch (IOException e) {
 			// log error, don't do anything else
 			log.error("Problem while setting image size to fit for resource::" + mediaResource, e);
@@ -231,7 +231,7 @@ public class ImageComponent extends AbstractComponent {
 				int readerMinIndex = reader.getMinIndex();
 				int width = reader.getWidth(readerMinIndex);
 				int height = reader.getHeight(readerMinIndex);
-				result = new Size(width, height, false);
+				result = new Size(width, height, 0, 0, false);
 			} catch (IOException e) {
 				log.error(e.getMessage());
 			} finally {

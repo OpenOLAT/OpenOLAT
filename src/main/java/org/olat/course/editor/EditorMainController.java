@@ -42,7 +42,6 @@ import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerImpl;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -209,7 +208,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private CloseableModalController cmc;
 	
 	private MultiSPController multiSPChooserCtr;
-	private final StackedController stackPanel;
+	private final StackedControllerImpl stackPanel;
 
 	private final OLATResourceable ores;
 	
@@ -224,7 +223,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param course The course
 	 */
 	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
-			StackedController externStack, CourseNode selectedNode) {
+			StackedControllerImpl externStack, CourseNode selectedNode) {
 		super(ureq,wControl);
 		this.ores = ores;
 		stackPanel = externStack == null
@@ -710,7 +709,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 							
 							// fires an EntryChangedEvent for repository entry notifying
 							// about modification.
-							publishManager.changeGeneralAccess(ureq1, newAccess, membersOnly);
+							publishManager.changeGeneralAccess(newAccess, membersOnly);
 							hasChanges = true;
 						}
 						

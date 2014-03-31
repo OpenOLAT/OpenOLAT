@@ -44,7 +44,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.PopEvent;
-import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerImpl;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -162,7 +161,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private RepositoryEntry courseRepositoryEntry;
 	private MenuTree luTree;
 	private Panel contentP;
-	private StackedController all;
+	private StackedControllerImpl all;
 
 	private NavigationHandler navHandler;
 	private UserCourseEnvironmentImpl uce;
@@ -267,7 +266,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		updateTreeAndContent(ureq, currentCourseNode, null);
 		
 		//set the launch date after the evaluation
-		setLaunchDates(identity);
+		setLaunchDates();
 
 		if (courseRepositoryEntry != null && RepositoryManager.getInstance().createRepositoryEntryStatus(courseRepositoryEntry.getStatusCode()).isClosed()) {
 			wControl.setWarning(translate("course.closed"));
@@ -283,7 +282,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				uce.getCourseEnvironment(), glossaryMarkerCtr);
 		listenTo(glossaryToolCtr);
 		// init the menu and tool controller
-		toolC = initToolController(identity, ureq);
+		toolC = initToolController(identity);
 		listenTo (toolC);
 		
 		Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
@@ -355,7 +354,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				coachedGroups, participatedGroups, waitingLists, null, null, null);
 	}
 	
-	private void setLaunchDates(final Identity identity) {
+	private void setLaunchDates() {
 		UserCourseInformationsManager userCourseInfoMgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
 		userCourseInfoMgr.updateUserCourseInformations(uce.getCourseEnvironment().getCourseResourceableId(), getIdentity(), false);
 	}
@@ -379,7 +378,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 1) course admins: users who are in repository entry owner group
 		// if user has the role InstitutionalResourceManager and has the same institution like author
 		// then set isCourseAdmin true
-		isCourseAdmin = cgm.isIdentityCourseAdministrator(identity)
+		isCourseAdmin = roles.isOLATAdmin()
+				|| cgm.isIdentityCourseAdministrator(identity)
 				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, courseRepositoryEntry);
 		// 2) course coaches: users who are in the owner group of any group of this
 		// course
@@ -569,7 +569,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// and also tools (maybe new assessable nodes -> show efficiency
 				// statment)
 				removeAsListenerAndDispose(toolC);
-				toolC = initToolController(ureq.getIdentity(), ureq);
+				toolC = initToolController(ureq.getIdentity());
 				listenTo(toolC);
 				
 				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
@@ -678,7 +678,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// refresh toolbox that contained wrong group
 				reloadGroupMemberships(ureq.getIdentity());
 				removeAsListenerAndDispose(toolC);
-				toolC = initToolController(ureq.getIdentity(), ureq);
+				toolC = initToolController(ureq.getIdentity());
 				listenTo(toolC);
 				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 				columnLayoutCtr.setCol2(toolComp);
@@ -699,7 +699,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, courseTitle, vip);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 		} else if (cmd.equals("qtistatistic")) {
-			launchAssessmentStatistics(ureq, null);
+			launchAssessmentStatistics(ureq);
 		} else if (cmd.equals("customDb")) {
 			if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
 				currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
@@ -760,7 +760,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else throw new OLATSecurityException("clicked archiver, but no according right");
 
 		} else if (cmd.equals("assessment")) {
-			launchAssessmentTool(ureq, null);
+			launchAssessmentTool(ureq);
 		} else if (cmd.equals("efficiencystatement")) {
 			// will not be disposed on course run dispose, popus up as new
 			// browserwindow
@@ -859,7 +859,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
 	}
 
-	private Activateable2 launchAssessmentStatistics(UserRequest ureq, List<ContextEntry> entries) {
+	private Activateable2 launchAssessmentStatistics(UserRequest ureq) {
 		OLATResourceable ores = OresHelper.createOLATResourceableType("assessmentStatistics");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
@@ -880,7 +880,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		return null;
 	}
 
-	private Activateable2 launchAssessmentTool(UserRequest ureq, List<ContextEntry> entries) {
+	private Activateable2 launchAssessmentTool(UserRequest ureq) {
 		OLATResourceable ores = OresHelper.createOLATResourceableType("assessmentTool");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
@@ -998,7 +998,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			reloadUserRolesAndRights(identity);
 			// 3) rebuild toolboxes with link to groups and tools
 			removeAsListenerAndDispose(toolC);
-			toolC = initToolController(identity, null);
+			toolC = initToolController(identity);
 			listenTo(toolC);
 			Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 			columnLayoutCtr.setCol2(toolComp);
@@ -1015,7 +1015,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				reloadUserRolesAndRights(identity);
 				// 3) rebuild toolboxes with link to groups and tools
 				removeAsListenerAndDispose(toolC);
-				toolC = initToolController(identity, null);
+				toolC = initToolController(identity);
 				listenTo(toolC);
 				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 				columnLayoutCtr.setCol2(toolComp);
@@ -1041,7 +1041,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @param ureq
 	 * @return ToolController
 	 */
-	private ToolController initToolController(Identity identity, UserRequest ureq) {
+	private ToolController initToolController(Identity identity) {
 		
 		ToolController myTool = ToolFactory.createToolController(getWindowControl());
 		CourseConfig cc = uce.getCourseEnvironment().getCourseConfig();
@@ -1281,7 +1281,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			//check the security before, the link is perhaps in the wrong hands
 			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
 				try {
-					Activateable2 assessmentCtrl = launchAssessmentTool(ureq, null);
+					Activateable2 assessmentCtrl = launchAssessmentTool(ureq);
 					
 					List<ContextEntry> subEntries;
 					if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {
@@ -1298,7 +1298,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			//check the security before, the link is perhaps in the wrong hands
 			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
 				try {
-					Activateable2 assessmentCtrl = launchAssessmentStatistics(ureq, null);
+					Activateable2 assessmentCtrl = launchAssessmentStatistics(ureq);
 					
 					List<ContextEntry> subEntries;
 					if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {

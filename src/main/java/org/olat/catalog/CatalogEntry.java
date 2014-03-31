@@ -29,6 +29,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
+import org.olat.repository.CatalogEntryRef;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -42,7 +43,7 @@ import org.olat.repository.RepositoryEntry;
  * 
  * @author Felix Jost
  */
-public interface CatalogEntry extends CreateInfo, Persistable, OLATResourceable {
+public interface CatalogEntry extends CatalogEntryRef, CreateInfo, Persistable, OLATResourceable {
 	/**
 	 * define a catalog entry as a node <code>TYPE_NODE</code>
 	 */

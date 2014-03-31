@@ -68,7 +68,7 @@ public class OpenXMLUtils {
 		double widthEmus = (widthPx / horzRezDpi) * emusPerInch;
 		double heightEmus = (heightPx / vertRezDpi) * emusPerInch;
 		
-		return new Size((int)widthEmus, (int)heightEmus, true);
+		return new Size((int)widthEmus, (int)heightEmus, 0, 0, true);
 	}
 	
 	public static int getSpanAttribute(String name, Attributes attrs) {

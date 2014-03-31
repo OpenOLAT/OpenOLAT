@@ -28,9 +28,9 @@ package org.olat.core.gui.components.link;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -107,7 +107,7 @@ public class Link extends AbstractComponent {
 	 * @param presentation
 	 * @param title
 	 */
-	protected Link(String name, String command, String i18n, int presentation, VelocityContainer vc, Controller listeningController) {
+	protected Link(String name, String command, String i18n, int presentation, VelocityContainer vc, ComponentEventListener listeningController) {
 		this(null, name, command, i18n, presentation, vc, listeningController);
 	}
 	
@@ -121,7 +121,7 @@ public class Link extends AbstractComponent {
 	 * @param vc
 	 * @param listeningController
 	 */
-	protected Link(String id, String name, String command, String i18n, int presentation, VelocityContainer vc, Controller listeningController) {
+	protected Link(String id, String name, String command, String i18n, int presentation, VelocityContainer vc, ComponentEventListener listeningController) {
 		this(id, name, command, i18n, presentation, null);
 		if (listeningController == null) throw new AssertException("please provide a listening controller, listeningController is null at the moment");
 		addListener(listeningController);

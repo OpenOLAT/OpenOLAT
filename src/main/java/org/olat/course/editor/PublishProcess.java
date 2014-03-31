@@ -40,7 +40,6 @@ import org.apache.poi.util.IOUtils;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -701,8 +700,7 @@ public class PublishProcess {
 		return publishTreeModel;
 	}
 
-	//fxdiff VCRP-1,2: access control of resources
-	public void changeGeneralAccess(UserRequest ureq, int access, boolean membersOnly){
+	public void changeGeneralAccess(int access, boolean membersOnly){
 		RepositoryManager.getInstance().setAccess(repositoryEntry, access, membersOnly);
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, EntryChangedEvent.MODIFIED_AT_PUBLISH);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, repositoryEntry);

@@ -55,7 +55,7 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {
 		File baseFile = extractIOFile(pdfFile);
 		File thumbnailBaseFile = extractIOFile(thumbnailFile);
-		FinalSize finalSize = generateThumbnail(baseFile, thumbnailBaseFile, true, maxWidth, maxHeight);
+		FinalSize finalSize = generateThumbnail(baseFile, thumbnailBaseFile, true, maxWidth, maxHeight, false);
 		if(finalSize != null) {
 			return new Size(finalSize.getWidth(), finalSize.getHeight(), true);
 		}
@@ -65,7 +65,7 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 	@Override
 	public Size scaleImage(File image, String imgExt, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
 		File scaledBaseFile = extractIOFile(scaledImage);
-		FinalSize finalSize = generateThumbnail(image, scaledBaseFile, false, maxWidth, maxHeight);
+		FinalSize finalSize = generateThumbnail(image, scaledBaseFile, false, maxWidth, maxHeight, false);
 		if(finalSize != null) {
 			return new Size(finalSize.getWidth(), finalSize.getHeight(), true);
 		}
@@ -73,8 +73,8 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 	}
 	
 	@Override
-	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
-		FinalSize finalSize = generateThumbnail(image, scaledImage, maxWidth, maxHeight);
+	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight, boolean fill) {
+		FinalSize finalSize = generateThumbnail(image, scaledImage, maxWidth, maxHeight, fill);
 		if(finalSize != null) {
 			return new Size(finalSize.getWidth(), finalSize.getHeight(), true);
 		}
@@ -88,17 +88,17 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 
 	@Override
 	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight) {
-		FinalSize finalSize = generateThumbnail(image, scaledImage, false, maxWidth, maxHeight);
+		FinalSize finalSize = generateThumbnail(image, scaledImage, false, maxWidth, maxHeight, false);
 		if(finalSize != null) {
 			return new Size(finalSize.getWidth(), finalSize.getHeight(), true);
 		}
 		return null;
 	}
 
-	private final FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {
+	private final FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill) {
 		File baseFile = extractIOFile(file);
 		File thumbnailBaseFile = extractIOFile(thumbnailFile);
-		return generateThumbnail(baseFile, thumbnailBaseFile, false, maxWidth, maxHeight);
+		return generateThumbnail(baseFile, thumbnailBaseFile, false, maxWidth, maxHeight, fill);
 	}
 	
 	private final File extractIOFile(VFSLeaf leaf) {
@@ -113,7 +113,8 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 		return file;
 	}
 		
-	private final FinalSize generateThumbnail(File file, File thumbnailFile, boolean firstOnly, int maxWidth, int maxHeight) {
+	private final FinalSize generateThumbnail(File file, File thumbnailFile, boolean firstOnly,
+			int maxWidth, int maxHeight, boolean fill) {
 		if(file == null || thumbnailFile == null) {
 			logError("Input file or output file for thumbnailing?" + file + " -> " + thumbnailFile, null);
 			return null;
@@ -127,7 +128,16 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 		cmds.add("convert");
 		cmds.add("-verbose");
 		cmds.add("-thumbnail");
-		cmds.add(maxWidth + "x" + maxHeight + ">");
+		if(fill) {
+			cmds.add(maxWidth + "x" + maxHeight + "^");
+			cmds.add("-gravity");
+			cmds.add("center");
+			cmds.add("-extent");
+			cmds.add(maxWidth + "x" + maxHeight);
+		} else {
+			cmds.add(maxWidth + "x" + maxHeight + ">");
+		}
+		
 		if(firstOnly) {
 			cmds.add(file.getAbsolutePath() + "[0]");
 		} else {

@@ -61,9 +61,9 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryIconRenderer;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoyUIFactory;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
@@ -85,8 +85,9 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private static final int picUploadlimitKB = 1024;
 
 	private FileElement fileUpload;
-	private TextElement displayName;
-	private RichTextElement description;
+	private SingleSelection language;
+	private TextElement displayName, authors, expenditureOfWork;
+	private RichTextElement description, objectives, requirements, credits;
 	private SingleSelection dateTypesEl, publicDatesEl;
 	private DateChooser startDateEl, endDateEl;
 	private ImageFormItem imageEl;
@@ -146,9 +147,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		if (res != null) typeName = res.getResourceableTypeName();
 		StringBuilder typeDisplayText = new StringBuilder(100);
 		if (typeName != null) { // add image and typename code
-			RepositoryEntryIconRenderer reir = new RepositoryEntryIconRenderer(getLocale());
 			typeDisplayText.append("<span class=\"b_with_small_icon_left ");
-			typeDisplayText.append(reir.getIconCssClass(repositoryEntry));
+			typeDisplayText.append(RepositoyUIFactory.getIconCssClass(repositoryEntry));
 			typeDisplayText.append("\">");
 			String tName = ControllerFactory.translateResourceableTypeName(typeName, getLocale());
 			typeDisplayText.append(tName);
@@ -165,6 +165,20 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		displayName.setMandatory(true);
 		displayName.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.title));
 
+		authors = uifactory.addTextElement("cif.authors", "cif.authors", 255, repositoryEntry.getAuthors(), descCont);
+		authors.setDisplaySize(60);
+		
+		String[] languageKeys = new String[] { "de", "en"};
+		String[] languageValues = new String[] { "de", "en"};
+		language = uifactory.addDropdownSingleselect("cif.mainLanguage", "cif.mainLanguage", formLayout, languageKeys, languageValues, null);
+		String selected = languageKeys[0];
+		for(String languageKey:languageKeys) {
+			if(languageKey.equals(repositoryEntry.getMainLanguage())) {
+				selected = languageKey;
+			}
+		}
+		language.select(selected, true);
+		
 		String desc = (repositoryEntry.getDescription() != null ? repositoryEntry.getDescription() : " ");
 		description = uifactory.addRichTextElementForStringDataMinimalistic("cif.description", "cif.description",
 				desc, 10, -1, descCont, ureq.getUserSession(), getWindowControl());
@@ -172,7 +186,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		description.setMandatory(true);
 
 		uifactory.addSpacerElement("spacer2", descCont, false);
-		
+
 		if(CourseModule.getCourseTypeName().equals(repoEntryType)) {
 			String[] dateValues = new String[] {
 					translate("cif.dates.none"),
@@ -226,6 +240,26 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	
 			updateDatesVisibility();
 			uifactory.addSpacerElement("spacer3", descCont, false);
+
+			expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), descCont);
+			
+
+			String obj = (repositoryEntry.getObjectives() != null ? repositoryEntry.getObjectives() : " ");
+			objectives = uifactory.addRichTextElementForStringDataMinimalistic("cif.objectives", "cif.objectives",
+					obj, 10, -1, descCont, ureq.getUserSession(), getWindowControl());
+			//objectives.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
+			
+			String req = (repositoryEntry.getRequirements() != null ? repositoryEntry.getRequirements() : " ");
+			requirements = uifactory.addRichTextElementForStringDataMinimalistic("cif.requirements", "cif.requirements",
+					req, 10, -1, descCont, ureq.getUserSession(), getWindowControl());
+			//requirements.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
+			
+			String cred = (repositoryEntry.getCredits() != null ? repositoryEntry.getCredits() : " ");
+			credits = uifactory.addRichTextElementForStringDataMinimalistic("cif.credits", "cif.credits",
+					cred, 10, -1, descCont, ureq.getUserSession(), getWindowControl());
+			//credits.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
+			
+			uifactory.addSpacerElement("spacer4", descCont, false);
 		}
 		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
@@ -378,9 +412,16 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 			container.delete();
 		}
-		
+
 		String displayname = displayName.getValue().trim();
-		String desc = description.getValue().trim();
+		repositoryEntry.setDisplayname(displayname);
+		
+		String mainLanguage = language.getSelectedKey();
+		if(StringHelper.containsNonWhitespace(mainLanguage)) {
+			repositoryEntry.setMainLanguage(mainLanguage);
+		} else {
+			repositoryEntry.setMainLanguage(null);
+		}
 		
 		if(dateTypesEl != null) {
 			String type = "none";
@@ -413,8 +454,19 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 		}
 		
-		repositoryEntry.setDisplayname(displayname);
+		String desc = description.getValue().trim();
 		repositoryEntry.setDescription(desc);
+		String auth = authors.getValue().trim();
+		repositoryEntry.setAuthors(auth);
+		String obj = objectives.getValue().trim();
+		repositoryEntry.setObjectives(obj);
+		String req = requirements.getValue().trim();
+		repositoryEntry.setRequirements(req);
+		String cred = credits.getValue().trim();
+		repositoryEntry.setCredits(cred);
+		String exp = expenditureOfWork.getValue().trim();
+		repositoryEntry.setExpenditureOfWork(exp);
+		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

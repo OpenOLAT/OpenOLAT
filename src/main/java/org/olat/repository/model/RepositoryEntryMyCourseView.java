@@ -197,7 +197,8 @@ public class RepositoryEntryMyCourseView implements RepositoryEntryMyView, Persi
 		this.description = description;
 	}
 
-	public String getAuthosr() {
+	@Override
+	public String getAuthors() {
 		return authors;
 	}
 

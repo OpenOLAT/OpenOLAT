@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
@@ -169,7 +170,7 @@ public class UserSearchController extends BasicController {
 		myContent = new VelocityContainer("olatusersearch", VELOCITY_ROOT + "/usersearch.html", pT, this);
 		backLink = LinkFactory.createButton("btn.back", myContent, this);
 		
-		searchPanel = new StackedPanel("usersearchPanel");
+		searchPanel = new SimpleStackedPanel("usersearchPanel");
 		searchPanel.addListener(this);
 		myContent.put("usersearchPanel", searchPanel);
 

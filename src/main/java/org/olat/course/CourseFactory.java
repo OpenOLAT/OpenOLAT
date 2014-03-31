@@ -59,7 +59,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.StackedControllerImpl;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -220,7 +220,7 @@ public class CourseFactory extends BasicManager {
 	 * @return editor controller for the given course resourceable; if the editor
 	 *         is already locked, it returns a controller with a lock message
 	 */
-	public static Controller createEditorController(UserRequest ureq, WindowControl wControl, StackedController stack,
+	public static Controller createEditorController(UserRequest ureq, WindowControl wControl, StackedControllerImpl stack,
 			OLATResourceable olatResource, CourseNode selectedNode) {
 		ICourse course = loadCourse(olatResource);
 		EditorMainController emc = new EditorMainController(ureq, wControl, course, stack, selectedNode);
@@ -754,7 +754,7 @@ public class CourseFactory extends BasicManager {
 		 //RepositoryEntry.ACC_OWNERS_AUTHORS //only owners and authors can the see course
 		 //RepositoryEntry.ACC_USERS_GUESTS // users and guests can see the course
 		 //fxdiff VCRP-1,2: access control of resources
-		 publishProcess.changeGeneralAccess(null, newAccess, membersOnly);
+		 publishProcess.changeGeneralAccess(newAccess, membersOnly);
 		 
 		 if (publishTreeModel.hasPublishableChanges()) {
 			 List<String>nodeToPublish = new ArrayList<String>();

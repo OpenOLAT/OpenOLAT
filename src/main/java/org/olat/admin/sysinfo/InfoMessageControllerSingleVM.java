@@ -32,6 +32,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -62,7 +63,7 @@ public class InfoMessageControllerSingleVM extends BasicController {
 	 */
 	public InfoMessageControllerSingleVM(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
-		container = new StackedPanel("container");
+		container = new SimpleStackedPanel("container");
 		infoMsgView = createVelocityContainer("infomsg");
 		infoMsgEdit = createVelocityContainer("infomsgEdit");
 		infoMsgView.contextPut("cluster", Boolean.FALSE);

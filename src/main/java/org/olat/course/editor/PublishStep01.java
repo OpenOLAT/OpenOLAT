@@ -52,7 +52,7 @@ import org.olat.repository.RepositoryModule;
 
 /**
  * Description:<br>
- * TODO: patrickb Class Description for PublishStep01
+ * Select the BARG level
  * 
  * <P>
  * Initial Date:  21.01.2008 <br>
@@ -61,14 +61,10 @@ import org.olat.repository.RepositoryModule;
 class PublishStep01 extends BasicStep {
 
 	private PrevNextFinishConfig prevNextConfig;
-	private boolean hasPublishableChanges;
 
 	public PublishStep01(UserRequest ureq, ICourse course, boolean hasPublishableChanges, boolean hasCatalog) {
 		super(ureq);
 		setI18nTitleAndDescr("publish.access.header", null);
-		
-		//VCRP-3: add catalog entry in publish wizard
-		this.hasPublishableChanges = hasPublishableChanges;
 		
 		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 		if(repositoryModule.isCatalogEnabled()) {
@@ -101,7 +97,7 @@ class PublishStep01 extends BasicStep {
 	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext stepsRunContext, Form form) {
-		return new PublishStep01AccessForm(ureq, wControl, form, stepsRunContext, hasPublishableChanges);
+		return new PublishStep01AccessForm(ureq, wControl, form, stepsRunContext);
 	}
 
 	class PublishStep01AccessForm extends StepFormBasicController {
@@ -109,7 +105,7 @@ class PublishStep01 extends BasicStep {
 		private SingleSelection accessSelbox;
 		private String selectedAccess;
 
-		PublishStep01AccessForm(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext, boolean hasPublishableChanges2) {
+		PublishStep01AccessForm(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			selectedAccess = (String) getFromRunContext("selectedCourseAccess");
 			initForm(ureq);

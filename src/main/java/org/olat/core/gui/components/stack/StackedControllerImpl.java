@@ -19,20 +19,13 @@
  */
 package org.olat.core.gui.components.stack;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -41,139 +34,39 @@ import org.olat.core.util.Util;
  */
 public class StackedControllerImpl extends DefaultController implements StackedController {
 	
-	private final List<Link> stack = new ArrayList<Link>(3);
-	private final VelocityContainer mainVC;
-	private final Link backLink;
-	private final Link closeLink;
+	private final BreadcrumbedStackedPanel mainVC;
 	private final Translator translator;
 	
 	public StackedControllerImpl(WindowControl wControl, Translator trans, String mainCssClass) {
 		super(wControl);
 		translator = Util.createPackageTranslator(StackedControllerImpl.class, trans.getLocale(), trans);
-
-		String path = Util.getPackageVelocityRoot(StackedController.class) + "/stack.html";
-		mainVC = new VelocityContainer("vc_stacked", path, translator,  this);
-		mainVC.contextPut("breadCrumbs", stack);
-		if(StringHelper.containsNonWhitespace(mainCssClass)) {
-			mainVC.contextPut("mainCssClass", mainCssClass);
-		}
-		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
-		backLink = LinkFactory.createCustomLink("back", "back", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, mainVC, this);
-		backLink.setCustomEnabledLinkCSS("b_breadcumb_back");
-		backLink.setCustomDisplayText("&#x25C4;"); // unicode back arrow (black left pointer symbol)
-		backLink.setTitle(translator.translate("back"));
-		backLink.setAccessKey("b"); // allow navigation using keyboard
-
-		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
-		closeLink = LinkFactory.createCustomLink("close", "close", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, mainVC, this);
-		closeLink.setCustomEnabledLinkCSS("b_close");
-		closeLink.setCustomDisplayText(translator.translate("doclose"));
-		closeLink.setAccessKey("x"); // allow navigation using keyboard
-
+		mainVC = new BreadcrumbedStackedPanel("st", translator, this);
+		mainVC.setCssClass(mainCssClass);
 		setInitialComponent(mainVC);
 	}
 	
 	public void popController() {
-		if(stack.size() > 1) {
-			Link link = stack.remove(stack.size() - 1);
-			Controller ctrl = (Controller)link.getUserObject();
-			ctrl.dispose();
-		}
+		mainVC.popController();
 	}
 	
 	@Override
 	public void popController(Controller controller) {
-		for(Link link:stack) {
-			Controller popCtrl = (Controller)link.getUserObject();
-			if(popCtrl == controller) {
-				popController(link);
-			}
-		}
+		mainVC.popController(controller);
 	}
 	
-	private Controller popController(Component source) {
-		int index = stack.indexOf(source);
-		if(index < (stack.size() - 1)) {
-			
-			Controller popedCtrl = null;
-			for(int i=stack.size(); i-->(index+1); ) {
-				Link link = stack.remove(i);
-				popedCtrl = (Controller)link.getUserObject();
-				popedCtrl.dispose();
-			}
-
-			Link currentLink = stack.get(index);
-			Controller currentCtrl  = (Controller)currentLink.getUserObject();
-			setContent(currentCtrl);
-			updateCloseLinkTitle();
-			return popedCtrl;
-		}
-		return null;
-	}
-
 	@Override
 	public void popUpToRootController(UserRequest ureq) {
-		if(stack.size() > 1) {
-			Controller popedCtrl = null;
-			for(int i=stack.size(); i-->1; ) {
-				Link link = stack.remove(i);
-				popedCtrl = (Controller)link.getUserObject();
-				popedCtrl.dispose();
-			}
-			
-			//set the root controller
-			Link rootLink = stack.get(0);
-			Controller rootController  = (Controller)rootLink.getUserObject();
-			setContent(rootController); 
-			updateCloseLinkTitle();
-			fireEvent(ureq, new PopEvent(popedCtrl));
-		}
+		mainVC.popUpToRootController(ureq);
 	}
 
 	@Override
 	public void pushController(String displayName, Controller controller) {
-		Link link = LinkFactory.createLink("crumb_" + stack.size(), mainVC, this);
-		link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
-		link.setUserObject(controller);
-		stack.add(link);
-		setContent(controller);
-		updateCloseLinkTitle();
+		mainVC.pushController(displayName, controller);
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source.equals(backLink) || source.equals(closeLink)) {
-			if (stack.size() > 1) {
-				// back means to one level down, change source to the stack item one below current
-				source = stack.get(stack.size()-2);
-				// now continue as if user manually pressed a stack item in the list
-			}
-		}
 		
-		if(stack.contains(source)) {
-			Controller popedCtrl = popController(source);
-			if(popedCtrl != null) {
-				fireEvent(ureq, new PopEvent(popedCtrl));
-			}
-		}
-	}
-	
-	private void setContent(Controller ctrl) {
-		mainVC.put("content", ctrl.getInitialComponent());
-	}
-
-	/**
-	 * Update the close link title to match the name of the last visible item
-	 */
-	private void updateCloseLinkTitle() {
-		if(stack.size() < 2) { 
-			// special case: don't show close for last level
-			closeLink.setVisible(false);								
-		} else {
-			Link link = stack.get(stack.size()-1);
-			closeLink.setCustomDisplayText(translator.translate("doclose", new String[] {link.getCustomDisplayText()}));	
-			closeLink.setVisible(true);								
-		}
 	}
 	
 	@Override

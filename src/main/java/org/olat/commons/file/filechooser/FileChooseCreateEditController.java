@@ -53,6 +53,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -224,7 +225,7 @@ public class FileChooseCreateEditController extends BasicController{
 		cmdUpload.execute(folderComponent, ureq, getTranslator(), true);		
 		cmdUpload.hideFieldset();
 		listenTo(cmdUpload);
-		StackedPanel mainPanel = new StackedPanel("upl");
+		StackedPanel mainPanel = new SimpleStackedPanel("upl");
 		Component uploadComp = cmdUpload.getInitialComponent();
 		if (uploadComp != null)	{
 			mainPanel.pushContent(uploadComp);

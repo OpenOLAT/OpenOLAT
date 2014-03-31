@@ -26,8 +26,8 @@
 
 package org.olat.core.gui.components.link;
 
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 
 /**
  * Description:<br>
@@ -66,11 +66,11 @@ public class LinkFactory {
 	 * </ol>
 	 * 
 	 * @param vc the VelocityContainer within you put this link
-	 * @param listeningController
+	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createLinkBack(VelocityContainer vc, Controller listeningController){
-		Link backLink = new Link("backLink", "back", "back", Link.LINK_BACK, vc, listeningController);
+	public static Link createLinkBack(VelocityContainer vc, ComponentEventListener listener){
+		Link backLink = new Link("backLink", "back", "back", Link.LINK_BACK, vc, listener);
 		backLink.setAccessKey("b");
 		return backLink;
 	}
@@ -88,11 +88,11 @@ public class LinkFactory {
 	 * - displayed on hovering over the icon
 	 * - can be null, then no title is displayed
 	 * @param vc
-	 * @param listeningController
+	 * @param listener
 	 * @return Link which display just the close icon
 	 */
-	public static Link createIconClose(String title, VelocityContainer vc, Controller listeningController){
-		Link closeIcon = new Link("closeIcon", "close", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vc, listeningController);
+	public static Link createIconClose(String title, VelocityContainer vc, ComponentEventListener listener){
+		Link closeIcon = new Link("closeIcon", "close", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vc, listener);
 		closeIcon.setCustomEnabledLinkCSS("b_link_close");
 		closeIcon.setCustomDisabledLinkCSS("b_link_close");
 		closeIcon.setTooltip(title);
@@ -113,11 +113,11 @@ public class LinkFactory {
 	 * 
 	 * @param one string for name of component, command and i18n key
 	 * @param vc the VelocityContainer within you put this link
-	 * @param listeningController
+	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createLink(String name, VelocityContainer vc, Controller listeningController){
-		return new Link(name, name, name, Link.LINK, vc, listeningController);
+	public static Link createLink(String name, VelocityContainer vc, ComponentEventListener listener){
+		return new Link(name, name, name, Link.LINK, vc, listener);
 	}
 	
 	/**
@@ -132,11 +132,11 @@ public class LinkFactory {
 	 * @param id A fix identification for state-less behavior, must be unique
 	 * @param one string for name of component, command and i18n key
 	 * @param vc the VelocityContainer within you put this link
-	 * @param listeningController
+	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createLink(String id, String name, VelocityContainer vc, Controller listeningController){
-		return new Link(id, name, name, name, Link.LINK, vc, listeningController);
+	public static Link createLink(String id, String name, VelocityContainer vc, ComponentEventListener listener){
+		return new Link(id, name, name, name, Link.LINK, vc, listener);
 	}
 
 	/**
@@ -154,12 +154,12 @@ public class LinkFactory {
 	 * @param key if it's already translated, use at the next parameter Link.NONTRANSLATED, null is allowed
 	 * @param presentation
 	 * @param vc the VelocityContainer within you put this link
-	 * @param listeningController 
+	 * @param listener 
 	 * @return the link component
 	 */
 	
-	public static Link createCustomLink(String name, String cmd, String i18nKey, int presentation, VelocityContainer vc, Controller listeningController){
-		return new Link(name, cmd, i18nKey, presentation, vc, listeningController);
+	public static Link createCustomLink(String name, String cmd, String i18nKey, int presentation, VelocityContainer vc, ComponentEventListener listener){
+		return new Link(name, cmd, i18nKey, presentation, vc, listener);
 	}
 	
 	/**
@@ -173,11 +173,11 @@ public class LinkFactory {
 	 * 
 	 * @param one string for name of component, command and i18n key
 	 * @param vc the VelocityContainer within you put this link
-	 * @param listeningController
+	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createButton(String name, VelocityContainer vc, Controller listeningController){
-		return new Link(name, name, name, Link.BUTTON, vc, listeningController);
+	public static Link createButton(String name, VelocityContainer vc, ComponentEventListener listener){
+		return new Link(name, name, name, Link.BUTTON, vc, listener);
 	}
 	
 	/**
@@ -191,11 +191,11 @@ public class LinkFactory {
 	 * 
 	 * @param one string for name of component, command and i18n key
 	 * @param vc the VelocityContainer within you put this link
-	 * @param listeningController
+	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createButtonSmall(String name, VelocityContainer vc, Controller listeningController){
-		return new Link(name, name, name, Link.BUTTON_SMALL, vc, listeningController);
+	public static Link createButtonSmall(String name, VelocityContainer vc, ComponentEventListener listener){
+		return new Link(name, name, name, Link.BUTTON_SMALL, vc, listener);
 	}
 	
 	/**
@@ -209,11 +209,11 @@ public class LinkFactory {
 	 * 
 	 * @param one string for name of component, command and i18n key
 	 * @param vc the VelocityContainer within you put this link
-	 * @param listeningController
+	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createButtonXSmall(String name, VelocityContainer vc, Controller listeningController){
-		return new Link(name, name, name, Link.BUTTON_XSMALL, vc, listeningController);
+	public static Link createButtonXSmall(String name, VelocityContainer vc, ComponentEventListener listener){
+		return new Link(name, name, name, Link.BUTTON_XSMALL, vc, listener);
 	}
 
 	/**

@@ -84,9 +84,9 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 		sb.append("<div class='b_clearfix b_table_row'>");
 
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		VelocityContainer container = ftE.getRowRenderer();
-		
+
+		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		Object rowObject = ftE.getTableDataModel().getObject(row);
 		container.contextPut("row", rowObject);
 		

@@ -78,34 +78,16 @@ public class RepositoryEntryIconRenderer extends CustomCssCellRenderer {
 		boolean managed = false;
 		if(val instanceof RepositoryEntryShort) {
 			RepositoryEntryShort re = (RepositoryEntryShort)val;
-			cssClass = getIconCssClass(re);
+			cssClass = RepositoyUIFactory.getIconCssClass(re);
 		} else if (val instanceof RepositoryEntry) {
 			RepositoryEntry re = (RepositoryEntry)val;
-			cssClass = getIconCssClass(re);
+			cssClass = RepositoyUIFactory.getIconCssClass(re);
 			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
 		}
 		return (managed ? "b_small_icon b_managed_icon " : "b_small_icon ") + cssClass;
 	}
 	
-	public String getIconCssClass(RepositoryEntryShort re) {
-		String iconCSSClass = "o_" + re.getResourceType().replace(".", "-");
-		if (re != null && RepositoryManager.getInstance().createRepositoryEntryStatus(re.getStatusCode()).isClosed()) {
-			iconCSSClass = iconCSSClass.concat("_icon_closed");
-		} else {
-			iconCSSClass = iconCSSClass.concat("_icon");
-		}
-		return iconCSSClass;
-	}
-	
-	public String getIconCssClass(RepositoryEntry re) {
-		String iconCSSClass = "o_" + re.getOlatResource().getResourceableTypeName().replace(".", "-");
-		if (re != null && RepositoryManager.getInstance().createRepositoryEntryStatus(re.getStatusCode()).isClosed()) {
-			iconCSSClass = iconCSSClass.concat("_icon_closed");
-		} else {
-			iconCSSClass = iconCSSClass.concat("_icon");
-		}
-		return iconCSSClass;
-	}
+
 
 	/**
 	 * @see org.olat.core.gui.components.table.CustomCssCellRenderer#getHoverText(java.lang.Object)

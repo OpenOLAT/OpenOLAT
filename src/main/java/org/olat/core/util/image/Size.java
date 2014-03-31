@@ -27,11 +27,19 @@ package org.olat.core.util.image;
 public class Size {
 	private final int width;
 	private final int height;
+	private final int xOffset;
+	private final int yOffset;
 	private final boolean changed;
 	
 	public Size(int width, int height, boolean changed) {
+		this(width, height, 0, 0, changed);
+	}
+	
+	public Size(int width, int height, int xOffset, int yOffset, boolean changed) {
 		this.width = width;
 		this.height = height;
+		this.xOffset = xOffset;
+		this.yOffset = yOffset;
 		this.changed = changed;
 	}
 
@@ -49,6 +57,20 @@ public class Size {
 		return height;
 	}
 	
+	public int getXOffset() {
+		if(xOffset < 0) {
+			return 0;
+		}
+		return xOffset;
+	}
+
+	public int getYOffset() {
+		if(yOffset < 0) {
+			return 0;
+		}
+		return yOffset;
+	}
+
 	public boolean isChanged() {
 		return changed;
 	}
