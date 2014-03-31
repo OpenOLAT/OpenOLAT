@@ -1,0 +1,107 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.repository.ui;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.olat.catalog.CatalogManager;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.repository.CatalogEntryRef;
+
+
+/**
+ * 
+ * Initial date: 20.11.2012<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class CatalogEntryImageMapper implements Mapper {
+	
+	private CatalogManager catalogManager;
+	
+	public CatalogEntryImageMapper() {
+		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
+	}
+
+	@Override
+	public MediaResource handle(String relPath, HttpServletRequest request) {
+		if(relPath.startsWith("/")) {
+			relPath = relPath.substring(1, relPath.length());
+		}
+		int index = relPath.lastIndexOf(".png");
+		if(index > 0) {
+			relPath = relPath.substring(0, index);
+		}
+		
+		VFSLeaf image = null;
+		if(StringHelper.isLong(relPath)) {
+			try {
+				Long key = Long.parseLong(relPath);
+				
+				MappedRef entry = new MappedRef(key);
+				image = catalogManager.getImage(entry);
+			} catch (NumberFormatException e) {
+				//not a key
+			}
+		}
+
+		MediaResource resource = null;
+		if(image == null) {
+			resource = new NotFoundMediaResource(relPath);
+		} else {
+			if(image instanceof MetaTagged) {
+				MetaInfo info = ((MetaTagged) image).getMetaInfo();
+				if(info != null) {
+					VFSLeaf thumbnail = info.getThumbnail(200, 200, true);
+					if(thumbnail != null) {
+						resource = new VFSMediaResource(thumbnail);
+					}
+				}	
+			}
+			
+			if(resource == null) {
+				resource = new VFSMediaResource(image);
+			}
+		}
+		return resource;
+	}
+	
+	private static class MappedRef implements CatalogEntryRef {
+		
+		private final Long key;
+		
+		public MappedRef(Long key) {
+			this.key = key;
+		}
+
+		@Override
+		public Long getKey() {
+			return key;
+		}
+	}
+}
