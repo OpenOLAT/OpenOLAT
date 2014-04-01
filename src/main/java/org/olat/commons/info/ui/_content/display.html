@@ -1,11 +1,11 @@
 #if($r.available("new_message"))
-	<div class="b_float_right o_infomsg_create_button">
+	<div class="b_clearfix"><div class="b_float_right o_infomsg_create_button">
 		$r.render("new_message")
-	</div>
+	</div></div>
 #end
 <div class="o_infomsgs b_clearfix">
 	#if($infos.isEmpty())
-		<p>$r.translate("display.no_messages")</p>
+		<p class="b_important">$r.translate("display.no_messages")</p>
 	#end
 	
 	#foreach($info in $infos)
