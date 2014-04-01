@@ -64,11 +64,16 @@ public interface CheckboxManager {
 	
 	public List<DBCheck> loadCheck(Identity identity, OLATResourceable ores, String resSubPath);
 	
-
-	public int countChecked(OLATResourceable ores, String resSubPath);
+	/**
+	 * Return the number of checks (checked or not) on the database.
+	 * @param ores
+	 * @param resSubPath
+	 * @return
+	 */
+	public int countChecks(OLATResourceable ores, String resSubPath);
 	
 	/**
-	 * 
+	 * Return the number of checks checked for an user.
 	 * @param identity (mandatory)
 	 * @param ores (mandatory)
 	 * @param resSubPath (optional)

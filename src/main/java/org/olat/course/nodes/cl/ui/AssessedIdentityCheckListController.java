@@ -166,6 +166,12 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 				String maxValue = AssessmentHelper.getRoundedScore(maxScore);
 				pointEl.setExampleKey("checklist.point.example", new String[]{ "0", maxValue});
 			}
+			// hide when not yet checked
+			if(check != null) {
+				pointEl.setVisible(check.getChecked());
+			} else {
+				pointEl.setVisible(false);
+			}
 		}
 		
 		CheckboxWrapper wrapper = new CheckboxWrapper(checkbox, check, boxEl, pointEl);
@@ -195,13 +201,45 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 			CheckboxWrapper wrapper = (CheckboxWrapper)boxEl.getUserObject();
 			doUpdateCheck(wrapper, boxEl.isAtLeastSelected(1));
 		} else if(saveAndCloseLink == source) {
-			doSave();
-			fireEvent(ureq, Event.DONE_EVENT);
+			if(validateFormLogic(ureq)) {
+				doSave();
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		}
 		
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		
+		boolean allOk = true;
+		for(CheckboxWrapper wrapper:wrappers) {
+		
+			TextElement pointEl = wrapper.getPointEl();
+			if(pointEl != null) {
+				pointEl.clearError();
+				String val = pointEl.getValue();
+				if(StringHelper.containsNonWhitespace(val)) {
+					try {
+						Float max = wrapper.getCheckbox().getPoints();
+						float maxScore = max == null ? 0f : max.floatValue();
+						float score = Float.parseFloat(val);
+						if(score < 0f || score > maxScore) {
+							pointEl.setErrorKey("form.error.scoreOutOfRange", null);
+							allOk &= false;
+						}
+
+					} catch (NumberFormatException e) {
+						pointEl.setErrorKey("form.error.wrongFloat", null);
+						allOk &= false;
+					}
+				}
+			}
+		}
+		return allOk & super.validateFormLogic(ureq);
+	}
+
 	private void doSave() {
 		List<AssessmentBatch> batchElements = new ArrayList<>();
 		for(CheckboxWrapper wrapper:wrappers) {
@@ -258,6 +296,8 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		} else if(wrapper.getPointEl() != null) {
 			wrapper.getPointEl().setValue("");
 		}
+		// hide when not yet checked
+		wrapper.getPointEl().setVisible(check);
 	}
 
 	@Override

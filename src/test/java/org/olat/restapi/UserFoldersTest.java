@@ -87,7 +87,7 @@ public class UserFoldersTest extends OlatJerseyTestCase {
 		URL courseWithForumsUrl = UserFoldersTest.class.getResource("myCourseWS.zip");
 		Assert.assertNotNull(courseWithForumsUrl);
 		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		myCourseRe = CourseFactory.deployCourseFromZIP(courseWithForums, "Asuka Langley", UUID.randomUUID().toString(), 4);
+		myCourseRe = CourseFactory.deployCourseFromZIP(courseWithForums, UUID.randomUUID().toString(), 4);
 		Assert.assertNotNull(myCourseRe);
 		myCourse = CourseFactory.loadCourse(myCourseRe.getOlatResource().getResourceableId());
 

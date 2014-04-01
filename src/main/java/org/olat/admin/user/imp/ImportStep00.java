@@ -305,15 +305,26 @@ class ImportStep00 extends BasicStep {
 				}
 				boolean isMandatoryField = um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler);
 				if (isMandatoryField && !StringHelper.containsNonWhitespace(thisValue)) {
-					textAreaElement.setErrorKey("error.mandatory", new String[] { String.valueOf(i + 1), translate(userPropertyHandler.i18nFormElementLabelKey()) });
+					String label = "";
+					if(userPropertyHandler.i18nFormElementLabelKey() != null) {
+						label = translate(userPropertyHandler.i18nFormElementLabelKey());
+					}
+					textAreaElement.setErrorKey("error.mandatory", new String[] { String.valueOf(i + 1), label });
 					importDataError = true;
 					break;
 				}
 				// used for call-back value depending on PropertyHandler
 				ValidationError validationError = new ValidationError();
 				if (!userPropertyHandler.isValidValue(null, thisValue, validationError, getLocale())) {
-					textAreaElement.setErrorKey("error.lengthorformat", new String[] { String.valueOf(i + 1), translate(userPropertyHandler.i18nFormElementLabelKey()),
-							translate(validationError.getErrorKey(), validationError.getArgs()) });
+					String error = "unkown";
+					String label = "";
+					if(userPropertyHandler.i18nFormElementLabelKey() != null) {
+						label = translate(userPropertyHandler.i18nFormElementLabelKey());
+					}
+					if(validationError.getErrorKey() != null) {
+						error = translate(validationError.getErrorKey(), validationError.getArgs());
+					}
+					textAreaElement.setErrorKey("error.lengthorformat", new String[] { String.valueOf(i + 1), label, error});
 					importDataError = true;
 					break;
 				}

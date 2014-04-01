@@ -1,5 +1,9 @@
 #foreach($pageName in $pageNames)
-	<div style="page-break-after:always;">
+	<div #if ($velocityCount > 1) class="b_print_break_before" #end>
 	$r.render($pageName)
+	
 	</div>
 #end
+<script>
+	window.print();
+</script>

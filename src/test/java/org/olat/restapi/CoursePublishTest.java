@@ -73,7 +73,7 @@ public class CoursePublishTest extends OlatJerseyTestCase {
 		Assert.assertNotNull(courseWithForumsUrl);
 		File courseWithForums = new File(courseWithForumsUrl.toURI());
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, "administrator", softKey, 4);	
+		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 4);	
 		Assert.assertNotNull(re);
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource().getResourceableId());
 		CourseNode rootNode = course.getRunStructure().getRootNode();

@@ -61,7 +61,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
-import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.restapi.SystemItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.course.ICourse;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -429,13 +429,5 @@ public class CourseResourceFolderWebService {
 	public enum FolderType {
 		COURSE_FOLDER,
 		SHARED_FOLDER
-	}
-	
-	public static class SystemItemFilter implements VFSItemFilter {
-		@Override
-		public boolean accept(VFSItem vfsItem) {
-			String name = vfsItem.getName();
-			return !name.startsWith(".");
-		}
 	}
 }

@@ -9,31 +9,50 @@ a.o_print_icon span { display:none; }
 }
 
 div.o_qti_statistics {
-	ul { list-style-type: none; padding:0; margin:0; }
-	li { padding-left: 22px; }
-	
-	li.o_qti_statistics-survey-item { padding-left: 0px; }
-	li.o_qti_statistics-ncorrect { background: url(../img/decorator_error.png) no-repeat 5px 4px; }
-	li.o_qti_statistics-correct { background: url(../img/decorator_ok.png) no-repeat 5px 2px; }
+	h4 { margin-top: 2em; }
 
-	h4 {
-		&.qti-qtype1 {padding-left:20px; background: url(../img/scItem.png) no-repeat;}
-
-		&.qti-qtype2 {padding-left:20px; background: url(../img/mcItem.png) no-repeat;}
-	
-		&.qti-qtype3 {padding-left:20px; background: url(../img/fibItem.png) no-repeat;}
-	
-		&.qti-qtype4 {padding-left:20px; background: url(../img/essayItem.png) no-repeat;}
-	
-		&.qti-qtype5 {padding-left:20px; background: url(../img/kprimItem.png) no-repeat;}
+	ul { 
+		list-style-type: none; 
+		padding:0; 
+		margin:0; 
+		font-size: 90%;
+		
+		strong {font-weight: normal;}
+		li { 
+			padding-left: 48px; 
+			margin-left: 0;
+			margin-bottom: 10px;	
+		
+			&.o_qti_statistics-survey-item 	{ padding-left: 27px; }
+			&.o_qti_statistics-ncorrect 	{ padding-left: 27px; background: url(../openolat/images/decorator/deco_error.png) no-repeat 10px 2px }
+			&.o_qti_statistics-correct 		{ padding-left: 27px; background: url(../openolat/images/decorator/deco_ok.png) no-repeat 10px 2px }
+			
+			img { vertical-align: top;}
+		}
 	}
 	
-	a.b_content_download {
-		display: inline;
+	a.b_content_download { display: inline; }
+	a.o_print_icon span { margin-right: 1em; display: inline; }
+
+	/* table style that floats to a two column table when enough space available */	
+	table.o_qti_statistics_figures {
+		tr { float: left; }		
+		tr:nth-child(2n+1) { clear: left; padding-right: 20px; }
+		td { width: 200px; padding-left: 0;}
+		td+td { width: 100px; }
 	}
 	
-	a.o_print_icon span {
-		display: inline;
+	.o_qti_statistics_question {
+		background: #F5F5F5;
+		padding: 10px; 
+		margin: 1.5em 0; 
+		border:1px solid #ccc; 
+		@include o-border-radius(4px);
+	}
+	.o_qti_statistics_answer {
+		background: #F5F5F5;
+		padding: 1px 2px;
+		width: 90%;
 	}
 }
 

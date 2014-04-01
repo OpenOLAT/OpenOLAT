@@ -35,14 +35,16 @@
     };
     
     averageScorePerItem = function($obj, settings) {
-    	var placeholderheight = $obj.height();
     	var placeholderwidth = $obj.width();
     	var data = settings.values;
-    	
+
+    	var placeholderheight = $obj.height();
     	var margin = {top: 10, right: 60, bottom: 40, left: 60},
-    	   width = placeholderwidth - margin.left - margin.right,
-    	   height = placeholderheight - margin.top - margin.bottom;
-    	
+    	   width = placeholderwidth - margin.left - margin.right;
+
+    	var height = data.length * settings.barHeight;
+    	$obj.height(height + margin.top + margin.bottom + 'px');
+
     	var x = d3.scale.linear()
     	  .domain([0, d3.max(data, function(d) { return d[1]; })])
     	   .range([0, width]);
@@ -103,8 +105,10 @@
     	var data = settings.values;
     	
     	var margin = {top: 40, right: 60, bottom: 40, left: 60},
-    	   width = placeholderwidth - margin.left - margin.right,
-    	   height = placeholderheight - margin.top - margin.bottom;
+    	   width = placeholderwidth - margin.left - margin.right;
+    	
+    	var height = data.length * settings.barHeight;
+    	$obj.height(height + margin.top + margin.bottom + 'px');
     	
     	var sum = d3.sum(data, function(d) { return d[1]; });
     	

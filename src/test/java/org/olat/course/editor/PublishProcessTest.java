@@ -60,7 +60,7 @@ public class PublishProcessTest extends OlatTestCase {
 	@Test
 	public void testPublishProcess() throws URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
-		RepositoryEntry re = deployTestCourse(author, "simple_course.zip");
+		RepositoryEntry re = deployTestCourse("simple_course.zip");
 
 		//change node 1
 		ICourse course = CourseFactory.openCourseEditSession(re.getOlatResource().getResourceableId());
@@ -94,7 +94,7 @@ public class PublishProcessTest extends OlatTestCase {
 	public void testPublishANotPublishedNode()
 	throws URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
-		RepositoryEntry re = deployTestCourse(author, "simple_course.zip");
+		RepositoryEntry re = deployTestCourse("simple_course.zip");
 		
 		//change node 1
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource().getResourceableId());
@@ -117,7 +117,7 @@ public class PublishProcessTest extends OlatTestCase {
 	public void testPublishANotReallyNewNode()
 	throws URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
-		RepositoryEntry re = deployTestCourse(author, "simple_course_err1_new.zip");
+		RepositoryEntry re = deployTestCourse("simple_course_err1_new.zip");
 		
 		//change node 1
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource().getResourceableId());
@@ -148,7 +148,7 @@ public class PublishProcessTest extends OlatTestCase {
 	public void testPublishANotReallyNewNodeButDeleted()
 	throws URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
-		RepositoryEntry re = deployTestCourse(author, "simple_course_err2_new_deleted.zip");
+		RepositoryEntry re = deployTestCourse("simple_course_err2_new_deleted.zip");
 		
 		//change node 1
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource().getResourceableId());
@@ -179,7 +179,7 @@ public class PublishProcessTest extends OlatTestCase {
 	public void testPublishNewNodeButNotMarkedAsSuch()
 	throws URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
-		RepositoryEntry re = deployTestCourse(author, "simple_course_err3_not_new.zip");
+		RepositoryEntry re = deployTestCourse("simple_course_err3_not_new.zip");
 		
 		//change node 1
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource().getResourceableId());
@@ -210,7 +210,7 @@ public class PublishProcessTest extends OlatTestCase {
 	public void testPublishNewNodeButNotMarkedAsSuchAndDeleted()
 	throws URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
-		RepositoryEntry re = deployTestCourse(author, "simple_course_err4_not_new_deleted.zip");
+		RepositoryEntry re = deployTestCourse("simple_course_err4_not_new_deleted.zip");
 		
 		//change node 1
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource().getResourceableId());
@@ -242,7 +242,7 @@ public class PublishProcessTest extends OlatTestCase {
 	public void testPublishNewNodeNotMarkedAsSuchAndNotPublished()
 	throws URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
-		RepositoryEntry re = deployTestCourse(author, "simple_course_err5_not_new_or_published.zip");
+		RepositoryEntry re = deployTestCourse("simple_course_err5_not_new_or_published.zip");
 		
 		//change node 1
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource().getResourceableId());
@@ -276,7 +276,7 @@ public class PublishProcessTest extends OlatTestCase {
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 	}
 	
-	private RepositoryEntry deployTestCourse(Identity author, String filename)
+	private RepositoryEntry deployTestCourse(String filename)
 	throws URISyntaxException {
 		URL courseUrl = PublishProcessTest.class.getResource(filename);
 		Assert.assertNotNull(courseUrl);
@@ -284,7 +284,7 @@ public class PublishProcessTest extends OlatTestCase {
 		
 		//deploy a course
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseFile, author.getName(), softKey, 1);
+		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseFile, softKey, 1);
 		Assert.assertNotNull(re);
 		return re;
 	}

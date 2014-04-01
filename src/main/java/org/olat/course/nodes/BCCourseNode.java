@@ -46,6 +46,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.restapi.SystemItemFilter;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -133,6 +134,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 			// Create a folder peekview controller that shows the latest two entries		
 			String path = getFoldernodePathRelToFolderBase(userCourseEnv.getCourseEnvironment(), ne.getCourseNode());
 			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
+			rootFolder.setDefaultItemFilter(new SystemItemFilter());
 			Controller peekViewController = new BCPeekviewController(ureq, wControl, rootFolder, ne.getCourseNode().getIdent(), 4);
 			return peekViewController;			
 		} else {

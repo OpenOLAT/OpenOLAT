@@ -38,7 +38,7 @@ public class ScoreCellRenderer implements FlexiCellRenderer {
 	private final Float cutValue;
 	
 	public ScoreCellRenderer(BulkAssessmentSettings settings) {
-		this.cutValue = settings.getCut();
+		cutValue = settings.getCut();
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class ScoreCellRenderer implements FlexiCellRenderer {
 			if(cutValue == null) {
 				target.append(AssessmentHelper.getRoundedScore(score));
 			} else {
-				if(cutValue.compareTo(score) < 0) {
+				if(cutValue.compareTo(score) <= 0) {
 					target.append("<span class='o_passed'>")
 					      .append(AssessmentHelper.getRoundedScore(score))
 					      .append("</span>");

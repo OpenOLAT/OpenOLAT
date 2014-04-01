@@ -61,6 +61,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.filter.FilterFactory;
 
 /**
  * 
@@ -255,11 +256,16 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 				title = StringHelper.escapeHtml(title);
 				int key = info.hashCode();
 				StringBuilder tipSb = null;
-				boolean tooltip = StringHelper.containsNonWhitespace(item.getDescriptionTooltip());
+				String tip = item.getDescriptionTooltip();
+				boolean tooltip = StringHelper.containsNonWhitespace(tip);
 				if(tooltip) {
 					tipSb = new StringBuilder();
-					tipSb.append("<b>").append(title).append(":</b>").append("<br/>")
-						.append(Formatter.escWithBR(Formatter.truncate(item.getDescriptionTooltip(), 256)));
+					if(StringHelper.isHtml(tip)) {
+						tip = FilterFactory.getHtmlTagAndDescapingFilter().filter(tip);
+					}
+					tip = Formatter.escWithBR(Formatter.truncate(tip, 256)).toString();
+					
+					tipSb.append("<b>").append(title).append(":</b>").append("<br/>").append(tip);
 					sb.append("<span id='o_sel_info_msg_title_").append(key).append("'>");
 				} else {
 					sb.append("<span>");

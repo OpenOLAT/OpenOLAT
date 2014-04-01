@@ -42,7 +42,7 @@ button { border:none; }
 /* dirty button (form with unsaved values ) */
 .b_button_dirty {
 	@include o-gradient2( #ffffff,#FFF7E0);
-	border-color: #ff9900;
+	border-color: $dirtycolor;
 	
 	&:focus,&:hover {
 		text-decoration: none;
@@ -223,7 +223,7 @@ div.o_login {
 }
 
 div.b_form div.b_form_desc {
-	padding-bottom: 1em;
+	margin-bottom: 1.5em;
 	font-style: italic;
 }
 
@@ -255,7 +255,7 @@ fieldset {
 		
 
 div.b_form { 
-	div.b_form_desc { padding-bottom: 1em; font-style: italic;}
+	div.b_form_desc { margin-bottom: 1.5em; font-style: italic;}
 	div.b_form_general_error { padding: 10px 10px 10px 50px; margin-bottom: 20px; text-align: left; background: url(../openolat/images/icon_error_32.png) no-repeat 10px 10px; min-height: 32px; border: 1px solid $nokcolor; color: $nokcolor; font-style: italic;}
 	div.b_form_spacer { margin: 10px 0; }
 	

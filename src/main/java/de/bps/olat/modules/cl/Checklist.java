@@ -138,7 +138,11 @@ public class Checklist extends PersistentObject implements ModifiedInfo, Seriali
 	 * @param checkpoint
 	 */
 	public void addCheckpoint(int index, Checkpoint checkpoint) {
-		checkpoints.add(index, checkpoint);
+		if(index >= 0 && index < checkpoints.size()) {
+			checkpoints.add(index, checkpoint);
+		} else {
+			checkpoints.add(checkpoint);
+		}
 	}
 	
 	/**

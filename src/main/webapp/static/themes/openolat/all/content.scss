@@ -89,7 +89,9 @@ hr {
   border-bottom:1px #eee solid;
 }
 
-p { margin: 0 0 1em 0; }
+p { margin: 1em 0; }
+p:first-child { margin-top: 0}
+p:last-child { margin-bottom: 0}
 	
 dt {font-weight:bold;}
 dd { margin: 0 0 1em 2em }

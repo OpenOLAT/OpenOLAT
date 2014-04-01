@@ -367,7 +367,7 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	}
 	
 	@Override
-	public int countChecked(OLATResourceable ores, String resSubPath) {
+	public int countChecks(OLATResourceable ores, String resSubPath) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(check) from clcheck check")
 		  .append(" inner join check.checkbox box")
@@ -395,7 +395,8 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		sb.append("select count(check) from clcheck check")
 		  .append(" inner join check.checkbox box")
 		  .append(" inner join check.identity ident")
-		  .append(" where check.identity.key=:identityKey and box.resName=:resName and box.resId=:resId");
+		  .append(" where check.identity.key=:identityKey and box.resName=:resName and box.resId=:resId")
+		  .append("  and check.checked=true");
 		if(StringHelper.containsNonWhitespace(resSubPath)) {
 			sb.append(" and box.resSubPath=:resSubPath");
 		}

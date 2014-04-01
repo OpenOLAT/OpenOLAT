@@ -112,13 +112,20 @@ public class AssessedIdentityOverviewController extends BasicController {
 					assessmentCtrl.reloadData(ureq);
 				}
 				fireEvent(ureq, event);
+			} else if(Event.CANCELLED_EVENT == event) {
+				changes = false;
+				fireEvent(ureq, event);
 			}
+
 		} else if(assessmentCtrl == source) {
 			if(Event.DONE_EVENT == event) {
 				changes = true;
 				fireEvent(ureq, event);
 			} else if(Event.CHANGED_EVENT == event) {
 				changes = true;
+			} else if(Event.CANCELLED_EVENT == event) {
+				changes = false;
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);

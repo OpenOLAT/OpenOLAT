@@ -109,7 +109,7 @@ public class SeriesFactory {
 			d1.add(ans_count, label, cssColor);
 
 			String text = response.getContent().renderAsHtml(mediaBaseURL);
-			responseInfos.add(new ResponseInfos(label, text, points, true, survey));
+			responseInfos.add(new ResponseInfos(label, text, points, response.isCorrect(), survey));
 		}
 
 		List<BarSeries> serieList = Collections.singletonList(d1);
@@ -158,7 +158,7 @@ public class SeriesFactory {
 			
 			String text = response.getContent().renderAsHtml(mediaBaseURL);
 			Float pointsObj = survey ? null : points;
-			responseInfos.add(new ResponseInfos(label, text, pointsObj, true, survey));
+			responseInfos.add(new ResponseInfos(label, text, pointsObj, (points > 0f), survey));
 		}
 
 		List<BarSeries> serieList = new ArrayList<>(3);
@@ -201,7 +201,7 @@ public class SeriesFactory {
 			d3.add(notanswered, label);
 
 			String text = response.getContent().renderAsHtml(mediaBaseURL);
-			responseInfos.add(new ResponseInfos(label, text, null, true, survey));
+			responseInfos.add(new ResponseInfos(label, text, null, (right > 0f), survey));
 		}
 		
 		List<BarSeries> serieList = new ArrayList<>(3);

@@ -207,9 +207,9 @@ public class CourseHandler implements RepositoryHandler {
 		return ccSMRC;
 	}
 
-
+	@Override
 	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
-		return CourseFactory.getDetailsForm(ureq, wControl, res);
+		return null;
 	}
 
 	/**
@@ -255,14 +255,16 @@ public class CourseHandler implements RepositoryHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#createCopy(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	public OLATResourceable createCopy(OLATResourceable res, UserRequest ureq) {
-		return CourseFactory.copyCourse(res, ureq);
+		return CourseFactory.copyCourse(res);
 	}
 	
 	/**
 	 * Archive the hole course with runtime-data and course-structure-data.
 	 * @see org.olat.repository.handlers.RepositoryHandler#archive(java.lang.String, org.olat.repository.RepositoryEntry)
 	 */
+	@Override
 	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry entry) {
 		ICourse course = CourseFactory.loadCourse(entry.getOlatResource() );
 		// Archive course runtime data (like delete course, archive e.g. logfiles, node-data)

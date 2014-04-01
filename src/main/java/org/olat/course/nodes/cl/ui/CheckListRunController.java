@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.folder.FolderHelper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -76,7 +77,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class CheckListRunController extends FormBasicController implements ControllerEventListener, Activateable2 {
 	
 	private final Date dueDate;
-	private final boolean withScore;
+	private final boolean withScore, withPassed;
 	private final Boolean closeAfterDueDate;
 	private final CheckboxList checkboxList;
 	
@@ -121,7 +122,9 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 		
 		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		withScore = (hasScore == null || hasScore.booleanValue());	
+		withScore = (hasScore == null || hasScore.booleanValue());
+		Boolean hasPassed = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
+		withPassed = (hasPassed == null || hasPassed.booleanValue());
 
 		initForm(ureq);
 	}
@@ -156,7 +159,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			}
 			layoutCont.contextPut("checkboxList", wrappers);
 			
-			if(withScore) {
+			if(withScore || withPassed) {
 				layoutCont.contextPut("enableScoreInfo", Boolean.TRUE);
 				exposeConfigToVC(layoutCont);
 				exposeUserDataToVC(layoutCont);
@@ -171,7 +174,9 @@ public class CheckListRunController extends FormBasicController implements Contr
 		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD));
 		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
 	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, (infoTextUser == null ? "" : infoTextUser));
+	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
+	    	layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
+	    }
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
@@ -204,6 +209,9 @@ public class CheckListRunController extends FormBasicController implements Contr
 			String filename = checkbox.getFilename();
 			String name = "file_" + checkbox.getCheckboxId();
 			downloadLink = uifactory.addFormLink(name, "download", filename, null, formLayout, Link.LINK | Link.NONTRANSLATED);
+			String type = FolderHelper.extractFileType(filename, getLocale());
+			if (!FolderHelper.isKnownFileType(type)) { type = "file"; }
+			downloadLink.setElementCssClass("b_with_small_icon_left b_filetype_" + type);
 			((Link)downloadLink.getComponent()).setTarget("_blank");
 		}
 		

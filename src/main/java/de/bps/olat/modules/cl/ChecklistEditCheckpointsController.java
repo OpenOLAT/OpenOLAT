@@ -127,9 +127,8 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 		}
 		checklist = checklistManager.updateChecklist(checklist);
 		DBFactory.getInstance().commit();
-		checkpointsInVc.clear();
-		checkpointsInVc.addAll(checklist.getCheckpointsSorted(checkpointComparator));
-		titleContainer.contextPut("checkpoints", checkpointsInVc);
+		loadCheckpointInVC();
+		titleContainer.setDirty(true);
 		// Inform all listeners about the changes
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -223,27 +222,12 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 		titleContainer = FormLayoutContainer.createCustomFormLayout("titleLayout", getTranslator(), velocity_root + "/edit.html");
 		fic.add(titleContainer);
 		// create gui elements for all checkpoints
-		int numOfCheckpoints = checklist.getCheckpoints().size();
-		if(numOfCheckpoints == 0) {
-			Checkpoint newCheckpoint = new Checkpoint();
-			newCheckpoint.setChecklist(checklist);
-			newCheckpoint.setLastModified(new Date());
-			newCheckpoint.setTitle("");
-			newCheckpoint.setDescription("");
-			newCheckpoint.setMode(CheckpointMode.MODE_EDITABLE);
-			checklist.addCheckpoint(0, newCheckpoint);
-			addNewFormCheckpoint(0, newCheckpoint);
-		} else {
-			for (int i = 0; i<numOfCheckpoints; i++) {
-				Checkpoint checkpoint = checklist.getCheckpointsSorted(checkpointComparator).get(i);
-				addNewFormCheckpoint(i, checkpoint);
-			}
-		}
+		loadCheckpointInVC();
+		
 		addButton = new FormLinkImpl("add" + counter, "add" + counter, "cl.table.add", Link.BUTTON_SMALL);
 		addButton.setUserObject(checklist.getCheckpointsSorted(checkpointComparator).get(checklist.getCheckpoints().size() - 1));
 		titleContainer.add(addButton);
 		
-		checkpointsInVc.addAll(checklist.getCheckpointsSorted(checkpointComparator));
 		titleContainer.contextPut("checkpoints", checkpointsInVc);
 		titleContainer.contextPut("titleInputList", titleInputList);
 		titleContainer.contextPut("descriptionInputList", descriptionInputList);
@@ -256,6 +240,36 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 		
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("subm", submitKey, buttonContainer);
+	}
+	
+	private void loadCheckpointInVC() {
+		checkpointsInVc.clear();
+		titleInputList.clear();
+		descriptionInputList.clear();
+		modeInputList.clear();
+		delButtonList.clear();
+		
+		int numOfCheckpoints = checklist.getCheckpoints().size();
+		if(numOfCheckpoints == 0) {
+			Checkpoint newCheckpoint = new Checkpoint();
+			newCheckpoint.setChecklist(checklist);
+			newCheckpoint.setLastModified(new Date());
+			newCheckpoint.setTitle("");
+			newCheckpoint.setDescription("");
+			newCheckpoint.setMode(CheckpointMode.MODE_EDITABLE);
+			checklist.addCheckpoint(0, newCheckpoint);
+			addNewFormCheckpoint(0, newCheckpoint);
+			
+			List<Checkpoint> checkpoints = checklist.getCheckpointsSorted(checkpointComparator);
+			checkpointsInVc.addAll(checkpoints);
+		} else {
+			List<Checkpoint> checkpoints = checklist.getCheckpointsSorted(checkpointComparator);
+			for (int i = 0; i<numOfCheckpoints; i++) {
+				Checkpoint checkpoint = checkpoints.get(i);
+				addNewFormCheckpoint(i, checkpoint);
+			}
+			checkpointsInVc.addAll(checkpoints);
+		}
 	}
 	
 	@Override
@@ -290,7 +304,6 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 		return isOk;
 	}
 	
-	
 	@Override	
 	protected void formCancelled(UserRequest ureq) {
 		// reset complete form
@@ -304,5 +317,4 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 		initForm(flc, this, ureq);
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-
 }

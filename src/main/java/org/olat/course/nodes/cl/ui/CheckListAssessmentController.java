@@ -105,6 +105,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] onValues = new String[] { "" };
 	
+	private final Float maxScore;
 	private final Date dueDate;
 	private final boolean withScore;
 	private final CheckboxList checkboxList;
@@ -177,6 +178,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 		
 		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		withScore = (hasScore == null || hasScore.booleanValue());	
+		
+		maxScore = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 
 		initForm(ureq);
 	}
@@ -340,7 +343,6 @@ public class CheckListAssessmentController extends FormBasicController implement
 	}
 	
 	private List<CheckListAssessmentRow> getAssessmentDataViews(List<AssessmentData> datas, List<Checkbox> checkbox) {
-		
 		List<CheckListAssessmentRow> dataViews = new ArrayList<>();
 		
 		int numOfcheckbox = checkbox.size();
@@ -362,6 +364,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 				
 				if(check.getChecked() == null) continue;
 				
+				check.getCheckbox();
+				
 				Integer index = indexed.get(check.getCheckbox().getCheckboxId());
 				if(index != null) {
 					int i = index.intValue();
@@ -370,6 +374,10 @@ public class CheckListAssessmentController extends FormBasicController implement
 						checkBool[i] = check.getChecked();
 					}
 				}
+			}
+			
+			if(maxScore != null && maxScore.floatValue() > 0f && totalPoints > maxScore.floatValue()) {
+				totalPoints = maxScore.floatValue();
 			}
 			CheckListAssessmentRow row = new CheckListAssessmentRow(data.getIdentity(), checkBool, scores, totalPoints, userPropertyHandlers, getLocale());
 			dataViews.add(row);

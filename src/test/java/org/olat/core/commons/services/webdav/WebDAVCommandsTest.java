@@ -576,7 +576,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertNotNull(courseWithForumsUrl);
 		File courseWithForums = new File(courseWithForumsUrl.toURI());
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, author.getName(), softKey, 4);	
+		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 4);	
 		repositoryService.addRole(author, re, GroupRoles.owner.name());
 		if(coAuthor != null) {
 			repositoryService.addRole(coAuthor, re, GroupRoles.owner.name());

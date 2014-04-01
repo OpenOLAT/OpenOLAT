@@ -269,7 +269,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		DBCheck check1_2 = checkboxManager.createCheck(checkbox2, id1, null, Boolean.TRUE);
 		DBCheck check2_1 = checkboxManager.createCheck(checkbox1, id2, null, Boolean.TRUE);
 		DBCheck check3_1 = checkboxManager.createCheck(checkbox1, id3, null, Boolean.TRUE);
-		DBCheck check3_2 = checkboxManager.createCheck(checkbox2, id3, null, Boolean.TRUE);
+		DBCheck check3_2 = checkboxManager.createCheck(checkbox2, id3, null, Boolean.FALSE);
 		dbInstance.commitAndCloseSession();
 		
 		//load the check
@@ -294,7 +294,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 	
 	
 	@Test
-	public void countChecked_resource() {
+	public void countChecks_resource() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-16");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-17");
 		
@@ -316,7 +316,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//count the checks
-		int checked = checkboxManager.countChecked(ores, resSubPath);
+		int checked = checkboxManager.countChecks(ores, resSubPath);
 		Assert.assertEquals(4, checked);
 	}
 	
@@ -340,7 +340,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		checkboxManager.createCheck(checkbox1, id1, null, Boolean.TRUE);
 		checkboxManager.createCheck(checkbox2, id1, null, Boolean.TRUE);
 		checkboxManager.createCheck(checkbox1, id2, null, Boolean.TRUE);
-		checkboxManager.createCheck(checkbox3, id2, null, Boolean.TRUE);
+		checkboxManager.createCheck(checkbox3, id2, null, Boolean.FALSE);
 		checkboxManager.createCheck(checkbox4, id2, null, Boolean.TRUE);
 		dbInstance.commitAndCloseSession();
 		
@@ -349,7 +349,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, id1Checked);
 
 		int id2Checked = checkboxManager.countChecked(id2, ores, resSubPath);
-		Assert.assertEquals(3, id2Checked);
+		Assert.assertEquals(2, id2Checked);
 		
 		int id3Checked = checkboxManager.countChecked(id3, ores, resSubPath);
 		Assert.assertEquals(0, id3Checked);

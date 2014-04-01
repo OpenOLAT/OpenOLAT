@@ -163,7 +163,9 @@ public class AssessmentForm extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(saveAndCloseLink == source) {
-			fireEvent(ureq, Event.DONE_EVENT);
+			if(validateFormLogic(ureq)) {
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -182,7 +184,7 @@ public class AssessmentForm extends FormBasicController {
 	}
 
 	@Override
-	protected boolean validateFormLogic (UserRequest ureq) {
+	protected boolean validateFormLogic(UserRequest ureq) {
 		if (hasScore) {
 			try {
 				if(parseFloat(score) == null) {

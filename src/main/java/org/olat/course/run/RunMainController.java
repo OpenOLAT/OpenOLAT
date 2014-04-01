@@ -616,6 +616,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					} else {
 						identNode = course.getRunStructure().getNode(subcmd);
 					}
+					addLoggingResourceable(LoggingResourceable.wrap(identNode));
 					currentCourseNode = identNode;
 					updateTreeAndContent(ureq, identNode, nodecmd);
 					oe.accept();

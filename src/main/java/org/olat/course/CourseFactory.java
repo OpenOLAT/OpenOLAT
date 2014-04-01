@@ -482,7 +482,7 @@ public class CourseFactory extends BasicManager {
 	 * @param ureq
 	 * @return copy of the course.
 	 */
-	public static OLATResourceable copyCourse(OLATResourceable sourceRes, UserRequest ureq) {
+	public static OLATResourceable copyCourse(OLATResourceable sourceRes) {
 		
 		PersistingCourseImpl sourceCourse = (PersistingCourseImpl) loadCourse(sourceRes);
 
@@ -613,10 +613,10 @@ public class CourseFactory extends BasicManager {
 	 * @param exportedCourseZIPFile
 	 */
 	public static RepositoryEntry deployCourseFromZIP(File exportedCourseZIPFile, int access) {
-		return deployCourseFromZIP(exportedCourseZIPFile, "administrator", null, access);
+		return deployCourseFromZIP(exportedCourseZIPFile, null, access);
 	}
 	
-	public static RepositoryEntry deployCourseFromZIP(File exportedCourseZIPFile, String initialAuthor, String softKey, int access) {
+	public static RepositoryEntry deployCourseFromZIP(File exportedCourseZIPFile, String softKey, int access) {
 		// create the course instance
 		OLATResource newCourseResource = olatResourceManager.createOLATResourceInstance(CourseModule.class);
 		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, exportedCourseZIPFile);
@@ -780,19 +780,6 @@ public class CourseFactory extends BasicManager {
 				 closeCourseEditSession(course.getResourceableId(), true);
 			 }
 		 }
-	}
-	
-	/**
-	 * Get a details form for a given course resourceable
-	 * 
-	 * @param res
-	 * @param ureq
-	 * @return details component displaying details of the course.
-	 */
-	public static Controller getDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
-		// course does not provide a details component, this is somehow hardcoded in the
-		// RepositoryDetailsController
-		return null;
 	}
 
 	/**

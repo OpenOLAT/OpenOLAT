@@ -42,7 +42,7 @@ public class ResponseInfos {
 	private final List<String> wrongAnswers;
 	
 	public ResponseInfos(String label, String text, Float points, boolean correct, boolean survey) {
-		this(label, text, Collections.<String>emptyList(),  points, survey, correct);
+		this(label, text, Collections.<String>emptyList(),  points, correct, survey);
 	}
 	
 	public ResponseInfos(String label, String text, List<String> wrongAnswers, Float points, boolean correct, boolean survey) {
