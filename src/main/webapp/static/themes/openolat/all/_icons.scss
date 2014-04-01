@@ -11,6 +11,7 @@
 *
 *  =================================================
 */
+@media all {
 
 .b_with_small_icon_left {
 	padding: 2px 0 2px 20px;
@@ -420,4 +421,6 @@ body#b_body .o_CourseModule_icon_closed {background-image:url('../openolat/image
 .o_portrait_dummy_male_small     {background-image: url(../openolat/images/dummy_male_small.png); width: 30px; height: 30px;}
 .o_portrait_anonymous 			 {background-image: url(../openolat/images/dummy.png);  width: 100px; height: 100px;}
 .o_portrait_anonymous_small 	 {background-image: url(../openolat/images/dummy_small.png);  width: 30px; height: 30px;}
+
+}
 	
