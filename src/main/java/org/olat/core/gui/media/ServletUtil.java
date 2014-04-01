@@ -180,22 +180,23 @@ public class ServletUtil {
 				}
 
 				if (ranges != null && ranges.size() == 1) {
-          Range range = ranges.get(0);
-          httpResp.addHeader("Content-Range", "bytes " + range.start + "-" + range.end + "/" + range.length);
-          long length = range.end - range.start + 1;
-          if (length < Integer.MAX_VALUE) {
-          	httpResp.setContentLength((int) length);
-          } else {
-              // Set the content-length as String to be able to use a long
-          	httpResp.setHeader("content-length", "" + length);
-          }
-          httpResp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-          try {
-          	httpResp.setBufferSize(2048);
-          } catch (IllegalStateException e) {
-          	// Silent catch
-          }
-          copy(out, in, range);
+					
+					Range range = ranges.get(0);
+					httpResp.addHeader("Content-Range", "bytes " + range.start + "-" + range.end + "/" + range.length);
+					long length = range.end - range.start + 1;
+					if (length < Integer.MAX_VALUE) {
+						httpResp.setContentLength((int) length);
+					} else {
+						// Set the content-length as String to be able to use a long
+						httpResp.setHeader("content-length", "" + length);
+					}
+					httpResp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+					try {
+						httpResp.setBufferSize(2048);
+					} catch (IllegalStateException e) {
+						// Silent catch
+					}
+					copy(out, in, range);
 				} else {
 					if (size != null) {
 						httpResp.setContentLength(size.intValue());
@@ -211,8 +212,6 @@ public class ServletUtil {
 				}
 			}
 		} catch (IOException e) {
-			FileUtils.closeSafely(in);
-			FileUtils.closeSafely(bis);
 			FileUtils.closeSafely(out);
 			String className = e.getClass().getSimpleName();
 			if("ClientAbortException".equals(className)) {
@@ -220,6 +219,9 @@ public class ServletUtil {
 			} else {
 				log.error("client browser probably abort when serving media resource", e);
 			}
+		} finally {
+			IOUtils.closeQuietly(bis);
+			IOUtils.closeQuietly(in);
 		}
 	}
 	
