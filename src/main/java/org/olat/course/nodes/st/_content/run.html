@@ -88,7 +88,7 @@ jQuery(function() {
 				var children = jQuery('div.o_course_run_toc_entry', n);
 			    var maxHeight = 0;
 			    children.each(function(posMap, child) {
-			    	var height = jQuery(child).height();
+			    	var height = jQuery(child).innerHeight();
 			    	if(height > maxHeight) maxHeight = height; 
 			    });
 			    children.each(function(c, child) {
