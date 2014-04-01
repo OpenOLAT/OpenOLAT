@@ -235,9 +235,12 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		}
 	}
 	
+	@Override
 	protected String getSearchValue(UserRequest ureq) {
-		String searchValue = ureq.getParameter(autoCompleterContainer.getId(JSNAME_INPUTFIELD));
-		return searchValue;
+		if(autoCompleterContainer != null) {
+			return ureq.getParameter(autoCompleterContainer.getId(JSNAME_INPUTFIELD));
+		}
+		return null;
 	}
 
 	@Override
