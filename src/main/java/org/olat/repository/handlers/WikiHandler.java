@@ -147,6 +147,12 @@ public class WikiHandler implements RepositoryHandler {
 	 */
 	public boolean supportsWizard(RepositoryEntry repoEntry) { return WIZARD_SUPPORT; }
 	
+	@Override
+	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
+		return FileResourceManager.getInstance()
+				.getFileResourceMedia(repoEntry.getOlatResource());
+	}
+
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */

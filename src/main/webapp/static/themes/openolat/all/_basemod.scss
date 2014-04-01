@@ -626,36 +626,31 @@ div.o_catalog {
 				width: 200px;
 				height: 200px;
 				@include o-box-shadow(0,1px,2px,#999);
+				
+				a {
+					display:block;
+					width: 200px;
+					height: 200px;
+					
+					span {
+						display:none;
+					}
+				}
 			}
 			
 			div.o_catalog_item_details {
-			
 				margin: 0.5em 0 0 0;
 				padding: 0.5em;
 				border: 1px solid #999;
 			}
-		
 		}
 	}
-	     
 	
 	div.o_catalog_desc { margin: 0.5em 0 0.5em 0; padding-left: 20px; font-style: italic;}
 	
 	div.o_catalog_thumbnail { float:left; margin-right: 2em; }
 	
 }/* end div.o_catalog */
-
-div.b_ext_elem {
-	.x-tree-node-collapsed .x-tree-node-icon.o_catalog_cat_icon, 
-	.x-tree-node-leaf .x-tree-node-icon.o_catalog_cat_icon  { background-image: url(../openolat/images/folder_small.png); }
-	
-	.x-tree-node-collapsed .x-tree-node-icon.o_catalog_cat_noaccess_icon,
-	.x-tree-node-leaf .x-tree-node-icon.o_catalog_cat_noaccess_icon { background-image: url(../openolat/images/locked.png); }
-	.x-tree-node-expanded .x-tree-node-icon.o_catalog_cat_icon { background-image: url(../openolat/folder_open.png); }
-	.x-tree-node-expanded .x-tree-node-icon.o_catalog_cat_noaccess_icon { background-image: url(../openolat/images/locked.png); }
-	.x-tree-node-leaf .x-tree-node-icon.o_catalog_entry_icon { background-image: url(../openolat/images/le_resources/book-open-text-image.png); }
-}
-
 
 /* FLOTING STYLES */
 .b_float_left { float: left; display:inline; margin-right: 1em; margin-bottom: 0.15em;  }

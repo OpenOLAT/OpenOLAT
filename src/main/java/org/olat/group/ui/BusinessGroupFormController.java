@@ -169,7 +169,7 @@ public class BusinessGroupFormController extends FormBasicController {
 
 		// Create the business group description input rich text element
 		businessGroupDescription = uifactory.addRichTextElementForStringDataMinimalistic("create.form.title.description",
-				"create.form.title.description", "", 10, -1, formLayout, ureq.getUserSession(), getWindowControl());
+				"create.form.title.description", "", 10, -1, formLayout, getWindowControl());
 		businessGroupDescription.setEnabled(!BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.description));
 
 		if(businessGroup != null && !bulkMode) {

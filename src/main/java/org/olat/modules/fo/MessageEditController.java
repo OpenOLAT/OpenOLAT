@@ -354,7 +354,7 @@ public class MessageEditController extends FormBasicController {
 						showInfo("attachments.upload.successful", fileName);
 					}
 				} else {
-					fileUpload.setErrorKey("attachments.too.big", new String[] { ((Integer) (fileUpload.getMaxUploadSizeKB() / 1024)).toString() });
+					fileUpload.setErrorKey("attachments.too.big", new String[] { Long.toString((fileUpload.getMaxUploadSizeKB() / 1024)) });
 					fileUpload.getUploadFile().delete();
 					fileUpload.showError(true);
 				}

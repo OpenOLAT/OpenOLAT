@@ -149,7 +149,7 @@ public class CheckboxEditController extends FormBasicController {
 		
 		String desc = checkbox.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "description", desc, 5, -1, formLayout,
-				ureq.getUserSession(), getWindowControl());
+				getWindowControl());
 
 		fileEl = uifactory.addFileElement("file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);

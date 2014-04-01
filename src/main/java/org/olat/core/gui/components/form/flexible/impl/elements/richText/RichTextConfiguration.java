@@ -162,7 +162,7 @@ public class RichTextConfiguration implements Disposable {
 		setNonQuotedConfigValue(URLCONVERTER_CALLBACK, URLCONVERTER_CALLBACK_VALUE_BRASATO_URL_CONVERTER);
 		setNonQuotedConfigValue("allow_script_urls", "true");
 		// use modal windows, all OLAT workflows are implemented to work this way
-		setModalWindowsEnabled(true, true);
+		setModalWindowsEnabled(true);
 		// Start observing of diry richt text element and trigger calling of setFlexiFormDirty() method
 		// This check is initialized after the editor has fully loaded
 		addOnInitCallbackFunction(ONINIT_CALLBACK_VALUE_START_DIRTY_OBSERVER + "('" + rootFormDispatchId + "','" + domID + "')");
@@ -177,8 +177,8 @@ public class RichTextConfiguration implements Disposable {
 	 * @param externalToolbar
 	 * @param guiTheme
 	 */
-	public void setConfigProfileFormEditorMinimalistic(UserSession usess, Theme guiTheme) {
-		setConfigBasics(usess, guiTheme);
+	public void setConfigProfileFormEditorMinimalistic(Theme guiTheme) {
+		setConfigBasics(guiTheme);
 		// Add additional plugins
 		TinyMCECustomPluginFactory customPluginFactory = CoreSpringFactory.getImpl(TinyMCECustomPluginFactory.class);
 		List<TinyMCECustomPlugin> enabledCustomPlugins = customPluginFactory.getCustomPlugionsForProfile();
@@ -204,8 +204,9 @@ public class RichTextConfiguration implements Disposable {
 	 * @param baseContainer
 	 * @param customLinkTreeModel
 	 */
-	public void setConfigProfileFormEditor(boolean fullProfile, UserSession usess, Theme guiTheme, VFSContainer baseContainer, CustomLinkTreeModel customLinkTreeModel) {
-		setConfigBasics(usess, guiTheme);
+	public void setConfigProfileFormEditor(boolean fullProfile, UserSession usess, Theme guiTheme,
+			VFSContainer baseContainer, CustomLinkTreeModel customLinkTreeModel) {
+		setConfigBasics(guiTheme);
 
 		TinyMCECustomPluginFactory customPluginFactory = CoreSpringFactory.getImpl(TinyMCECustomPluginFactory.class);
 		List<TinyMCECustomPlugin> enabledCustomPlugins = customPluginFactory.getCustomPlugionsForProfile();
@@ -243,10 +244,10 @@ public class RichTextConfiguration implements Disposable {
 	 * @param customLinkTreeModel
 	 */
 	public void setConfigProfileFileEditor(UserSession usess, Theme guiTheme, VFSContainer baseContainer, String relFilePath, CustomLinkTreeModel customLinkTreeModel) {
-		setConfigBasics(usess, guiTheme);
+		setConfigBasics(guiTheme);
 		// Line 1
-		setFullscreenEnabled(true, false, 3);
-		setInsertDateTimeEnabled(true, usess.getLocale(), 3);
+		setFullscreenEnabled(true, false);
+		setInsertDateTimeEnabled(true, usess.getLocale());
 		// Plugins without buttons
 		setNoneditableContentEnabled(true, null);		
 		TinyMCECustomPluginFactory customPluginFactory = CoreSpringFactory.getImpl(TinyMCECustomPluginFactory.class);
@@ -277,7 +278,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param externalToolbar
 	 * @param guiTheme
 	 */
-	private void setConfigBasics(UserSession usess, Theme guiTheme) {
+	private void setConfigBasics(Theme guiTheme) {
 		// Use users current language
 		Locale loc = I18nManager.getInstance().getCurrentThreadLocale();
 		setLanguage(loc);
@@ -329,7 +330,7 @@ public class RichTextConfiguration implements Disposable {
 	 *            true: use inline popups; false: use browser window popup
 	 *            windows
 	 */
-	private void setModalWindowsEnabled(boolean modalWindowsEnabled, boolean inlinePopupsEnabled) {
+	private void setModalWindowsEnabled(boolean modalWindowsEnabled) {
 		// in both cases opt in, default values are set to non-inline windows that
 		// are not modal
 		if (modalWindowsEnabled) {
@@ -392,7 +393,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */	
-	private void setFullscreenEnabled(boolean fullScreenEnabled, boolean inNewWindowEnabled, int row) {
+	private void setFullscreenEnabled(boolean fullScreenEnabled, boolean inNewWindowEnabled) {
 		if (fullScreenEnabled) {
 			// enabled if needed, disabled by default
 			if (inNewWindowEnabled) setNonQuotedConfigValue(FULLSCREEN_NEW_WINDOW, VALUE_FALSE);
@@ -409,7 +410,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row
 	 *            The row where to place the plugin buttons
 	 */
-	private void setInsertDateTimeEnabled(boolean insertDateTimeEnabled, Locale locale, int row) {
+	private void setInsertDateTimeEnabled(boolean insertDateTimeEnabled, Locale locale) {
 		if (insertDateTimeEnabled) {
 			// use date format defined in org.olat.core package
 			Formatter formatter = Formatter.getInstance(locale);

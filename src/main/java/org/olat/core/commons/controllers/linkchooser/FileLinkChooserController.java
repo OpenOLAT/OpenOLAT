@@ -94,7 +94,7 @@ public class FileLinkChooserController extends BasicController {
 		this.mainVC = createVelocityContainer("filechooser");
 
 		// file uploads are relative to the currently edited file 
-		String[] dirs = this.fileName.split("/");
+		String[] dirs = (this.fileName == null) ? new String[0] : this.fileName.split("/");
 		VFSContainer fileUploadBase = rootDir;
 		for (String subPath : dirs) {
 			// try to resolve the given file path in the root container
@@ -143,13 +143,19 @@ public class FileLinkChooserController extends BasicController {
 			}
 		}
 		
-		int remainingSpace = Quota.UNLIMITED;
+		long remainingSpace = Quota.UNLIMITED;
 		long uploadLimit = FolderConfig.getLimitULKB();
 		if( fileUploadBase.getLocalSecurityCallback() != null && fileUploadBase.getLocalSecurityCallback().getQuota() != null) {
-			remainingSpace = fileUploadBase.getLocalSecurityCallback().getQuota().getRemainingSpace().intValue();
-			uploadLimit = fileUploadBase.getLocalSecurityCallback().getQuota().getUlLimitKB();
+			Long space = fileUploadBase.getLocalSecurityCallback().getQuota().getRemainingSpace();
+			if(space != null) {
+				remainingSpace = space.longValue();
+			}
+			Long limit = fileUploadBase.getLocalSecurityCallback().getQuota().getUlLimitKB();
+			if(limit != null) {
+				uploadLimit = limit.longValue();
+			}
 		}
-		uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq, (int)uploadLimit, remainingSpace, mimeTypes, true);
+		uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq, uploadLimit, remainingSpace, mimeTypes, true);
 		
 		listenTo(uploadCtr);
 		// set specific upload path

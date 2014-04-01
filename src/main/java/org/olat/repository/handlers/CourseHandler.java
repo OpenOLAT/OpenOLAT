@@ -58,6 +58,8 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -156,6 +158,23 @@ public class CourseHandler implements RepositoryHandler {
 		File fExportZIP = new File(WebappHelper.getTmpDir(), exportFileName);
 		CourseFactory.exportCourseToZIP(res, fExportZIP, false, backwardsCompatible);
 		return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
+	}
+	
+	@Override
+	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
+		ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
+		VFSContainer rootFolder = course.getCourseBaseContainer();
+		VFSItem item = rootFolder.resolve("media");
+		VFSContainer mediaContainer;
+		if(item == null) {
+			mediaContainer = rootFolder.createChildContainer("media");
+		} else if(item instanceof VFSContainer) {
+			mediaContainer = (VFSContainer)item;
+		} else {
+			log.error("media folder is not a container", null);
+			mediaContainer = null;
+		}
+		return mediaContainer;
 	}
 
 	/**

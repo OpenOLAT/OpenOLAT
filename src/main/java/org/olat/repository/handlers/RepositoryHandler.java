@@ -35,6 +35,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
@@ -77,6 +78,14 @@ public interface RepositoryHandler {
      This only has an effect when supportsEditor returns true.
 	 */
 	public boolean supportsWizard(RepositoryEntry repoEntry);
+	
+	/**
+	 * Return the container where image and files can be saved for the description field.
+	 * the folder MUST be under the root folder has its name "media".
+	 * @param repoEntry
+	 * @return
+	 */
+	public VFSContainer getMediaContainer(RepositoryEntry repoEntry);
 
 	/**
 	 * Called if a user launches a Resourceable that this handler can handle.

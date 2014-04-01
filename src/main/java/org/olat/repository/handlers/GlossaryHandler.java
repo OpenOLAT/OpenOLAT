@@ -50,6 +50,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.modules.glossary.CreateNewGlossaryController;
 import org.olat.modules.glossary.GlossaryManager;
@@ -128,6 +129,12 @@ public class GlossaryHandler implements RepositoryHandler {
 	 */
 	public boolean supportsWizard(RepositoryEntry repoEntry) { return WIZARD_SUPPORT; }
 	
+	@Override
+	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
+		return FileResourceManager.getInstance()
+				.getFileResourceMedia(repoEntry.getOlatResource());
+	}
+
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */

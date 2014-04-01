@@ -115,8 +115,8 @@ public class FileUploadController extends FormBasicController {
 	private DialogBoxController lockedFileDialog;
 	private VFSLeaf newFile = null;
 	private VFSItem existingVFSItem = null;
-	private int uploadLimitKB;
-	private int remainingQuotKB;
+	private long uploadLimitKB;
+	private long remainingQuotKB;
 	private Set<String> mimeTypes;
 	private FilesInfoMBean fileInfoMBean;
 	//
@@ -156,7 +156,7 @@ public class FileUploadController extends FormBasicController {
 	 * @param showTargetPath true: show the relative path where the file will be
 	 *          uploaded to; false: show no path
 	 */
-	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, int upLimitKB, int remainingQuotKB, Set<String> mimeTypesRestriction, boolean showTargetPath) {
+	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, long upLimitKB, long remainingQuotKB, Set<String> mimeTypesRestriction, boolean showTargetPath) {
 		this(wControl, curContainer, ureq, upLimitKB, remainingQuotKB, mimeTypesRestriction, showTargetPath, false, true, true);
 	}
 	
@@ -170,12 +170,12 @@ public class FileUploadController extends FormBasicController {
 	 * @param showTargetPath
 	 * @param showMetadata Display the meta data sub form
 	 */
-	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, int upLimitKB, int remainingQuotKB,
+	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, long upLimitKB, long remainingQuotKB,
 			Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata) {
 		this(wControl, curContainer, ureq, upLimitKB, remainingQuotKB, mimeTypesRestriction, showTargetPath, showMetadata, true, true);
 	}
 	
-	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, int upLimitKB, int remainingQuotKB,
+	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, long upLimitKB, long remainingQuotKB,
 			Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel) {
 		super(ureq, wControl, "file_upload");
 		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
@@ -183,7 +183,7 @@ public class FileUploadController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	private void setVariables(VFSContainer curContainer, int upLimitKB, int remainingQuotKB,Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel) {
+	private void setVariables(VFSContainer curContainer, long upLimitKB, long remainingQuotKB,Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel) {
 		this.currentContainer = curContainer;
 		this.fileInfoMBean = (FilesInfoMBean) CoreSpringFactory.getBean(FilesInfoMBean.class.getCanonicalName());
 		this.mimeTypes = mimeTypesRestriction;
@@ -236,7 +236,7 @@ public class FileUploadController extends FormBasicController {
 		}
 		
 		fileEl = uifactory.addFileElement("fileEl", "ul.file", fileUpload);
-		setMaxUploadSizeKB(this.uploadLimitKB);
+		setMaxUploadSizeKB(uploadLimitKB);
 		fileEl.setMandatory(true, "NoFileChoosen");
 		if (mimeTypes != null && mimeTypes.size() > 0) {
 			fileEl.limitToMimeType(mimeTypes, "WrongMimeType", new String[]{mimeTypes.toString()});					
@@ -711,7 +711,7 @@ public class FileUploadController extends FormBasicController {
 	 * Set the max upload limit.
 	 * @param uploadLimitKB
 	 */
-	public void setMaxUploadSizeKB(int uploadLimitKB) {
+	public void setMaxUploadSizeKB(long uploadLimitKB) {
 		this.uploadLimitKB = uploadLimitKB;
 		String supportAddr = WebappHelper.getMailConfig("mailQuota");
 		fileEl.setMaxUploadSizeKB(uploadLimitKB, "ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB+0f) / 1000, 1), supportAddr });
@@ -747,22 +747,22 @@ public class FileUploadController extends FormBasicController {
 		// resolve upload dir from rel upload path
 		if (uploadRelPath == null) {
 			// reset to current base container
-			this.uploadVFSContainer = this.currentContainer;
+			uploadVFSContainer = currentContainer;
 		} else {
 			// try to resolve given rel path from current container
 			VFSItem uploadDir = currentContainer.resolve(uploadRelPath);
 			if (uploadDir != null) {
 				// make sure this is really a container and not a file!
 				if (uploadDir instanceof VFSContainer) {
-					this.uploadVFSContainer = (VFSContainer) uploadDir;
+					uploadVFSContainer = (VFSContainer) uploadDir;
 				} else {
 					// fallback to current base 
-					this.uploadVFSContainer = this.currentContainer;
+					uploadVFSContainer = currentContainer;
 				}
 			} else {
 				// does not yet exist - create subdir
-				if (VFSConstants.YES.equals(this.currentContainer.canWrite())) {
-					this.uploadVFSContainer = this.currentContainer.createChildContainer(uploadRelPath);
+				if (VFSConstants.YES.equals(currentContainer.canWrite())) {
+					uploadVFSContainer = currentContainer.createChildContainer(uploadRelPath);
 				}
 			}			
 		}

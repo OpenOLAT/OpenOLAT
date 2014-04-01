@@ -135,6 +135,12 @@ public class SharedFolderHandler implements RepositoryHandler {
 	public Controller createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
+	
+	@Override
+	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
+		return FileResourceManager.getInstance()
+				.getFileResourceMedia(repoEntry.getOlatResource());
+	}
 
 	/**
 	 * @param res

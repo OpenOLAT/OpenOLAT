@@ -52,7 +52,6 @@ import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.FileHandler;
-import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
@@ -65,7 +64,7 @@ import org.olat.resource.references.ReferenceManager;
  * Comment:  
  * 
  */
-public abstract class QTIHandler extends FileHandler implements RepositoryHandler {
+public abstract class QTIHandler extends FileHandler {
 
 	/**
 	 * Default constructor.

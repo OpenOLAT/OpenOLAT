@@ -38,7 +38,10 @@ public enum RepositoryEntryManagedFlag {
 	  editcontent(all),
     details(all),//details tab
       title(details,all),
-      description(details,all),  
+      description(details,all),
+      objectives(details,all),
+      requirements(details,all),
+      credits(details,all),
     settings(all),//max num of participants...
       access(settings,all),
       chat(settings,all),

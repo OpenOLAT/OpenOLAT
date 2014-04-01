@@ -201,11 +201,11 @@ public class CheckListConfigurationController extends FormBasicController {
 		
 		String iu = (String)config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		tipUserEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.user", "config.tip.user", iu, 5, -1, formLayout,
-				ureq.getUserSession(), getWindowControl());
+				getWindowControl());
 		
 		String ic = (String)config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
 		tipCoachEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.coach", "config.tip.coach", ic, 5, -1, formLayout,
-				ureq.getUserSession(), getWindowControl());
+				getWindowControl());
 		
 		if(!wizard) {
 			FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

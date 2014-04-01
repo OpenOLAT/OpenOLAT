@@ -54,7 +54,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * Comment:  
  * 
  */
-public class SCORMCPHandler extends FileHandler implements RepositoryHandler {
+public class SCORMCPHandler extends FileHandler {
 	
 	private static final boolean LAUNCHEABLE = true;
 	private static final boolean DOWNLOADEABLE = true;

@@ -211,7 +211,5 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		};
 		PopupBrowserWindow pbw = Windows.getWindows(ureq).getWindowManager().createNewPopupBrowserWindowFor(ureq, linkChooserControllerCreator);
 		pbw.open(ureq);
-		//
 	}
-
 }

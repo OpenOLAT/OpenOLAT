@@ -70,7 +70,7 @@ public interface FileElement extends FormMultipartItem {
 	 * @param i18nArgs
 	 *            optional arguments for thei18nErrKey
 	 */
-	public void setMaxUploadSizeKB(int maxFileSizeKB, String i18nErrKey, String[] i18nArgs);
+	public void setMaxUploadSizeKB(long maxFileSizeKB, String i18nErrKey, String[] i18nArgs);
 
 	/**
 	 * Set a mime type limitation on which files are allowed in the upload

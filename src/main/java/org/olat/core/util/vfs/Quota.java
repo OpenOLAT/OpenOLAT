@@ -41,22 +41,22 @@ public interface Quota {
 	/**
 	 * @return The path
 	 */
-	public abstract String getPath();
+	public String getPath();
 
 	/**
 	 * @return Quota in KB
 	 */
-	public abstract Long getQuotaKB();
+	public Long getQuotaKB();
 
 	/**
 	 * @return Upload Limit in KB.
 	 */
-	public abstract Long getUlLimitKB();
+	public Long getUlLimitKB();
 	
 	/**
 	 * Every time calculated. I can be very costly. Use it wisely
 	 * @return
 	 */
-	public abstract Long getRemainingSpace();
+	public Long getRemainingSpace();
 
 }

@@ -16,24 +16,34 @@
  * Initial code contributed and copyrighted by<br>
  * frentix GmbH, http://www.frentix.com
  * <p>
- */ 
+ */
+package org.olat.repository.controllers;
 
-package org.olat.core.gui.components.form.flexible;
-
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
- * <h3>Description:</h3> 
- * <p>
- * This is a marker interface to tell the flexi form that
- * this item needs a multipart request
- * <p>
- * Initial Date: 08.12.2008 <br>
+ * The filter only show the folder media under the root folder and its
+ * children.
  * 
- * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
+ * Initial date: 01.04.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
+public class MediaContainerFilter implements VFSItemFilter {
+	
+	private final VFSContainer root;
+	
+	public MediaContainerFilter(VFSContainer root) {
+		this.root = root;
+	}
 
-public interface FormMultipartItem extends FormItem {
-	
-	public long getMaxUploadSizeKB();
-	
+	@Override
+	public boolean accept(VFSItem vfsItem) {
+		if(root.equals(vfsItem.getParentContainer())) {
+			return "media".equals(vfsItem.getName());
+		}
+		return true;
+	}
 }

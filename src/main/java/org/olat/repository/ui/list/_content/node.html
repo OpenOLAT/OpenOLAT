@@ -1,5 +1,5 @@
 <div class="o_catalog b_clearfix">	
-	#if($catalogEntryDesc || $r.avaiable("catThumbnail"))
+	#if($catalogEntryDesc || $r.available("catThumbnail"))
 		<div class="b_clearfix"><div class="o_catalog_desc">
 			#if($catThumbnail)
 				<div class="o_catalog_thumbnail" style="width:200px; height:200px; float:left; background:transparent url('$mapperThumbnailUrl/${catThumbnail}.png') no-repeat 50% 50%;">&nbsp;</div>
@@ -15,17 +15,14 @@
 				#set($imgId = "image_${id}")
 				<div class="o_catalog_item">
 					#if($r.get($imgId))
-						<div class="o_catalog_item_img" style="width:200px; height:200px; background:transparent url('$mapperThumbnailUrl/${r.get($imgId)}.png') no-repeat 50% 50%;">
-							&nbsp;
+						<div class="o_catalog_item_img" style="background:transparent url('$mapperThumbnailUrl/${r.get($imgId)}.png') no-repeat 50% 50%;">
+							$r.render("cat_${id}")
 						</div>
 					#else 
-						<div class="o_catalog_item_img f_thumbnail_unavailable" style="width:200px; height:200px;">&nbsp;</div>
+						<div class="o_catalog_item_img f_thumbnail_unavailable">$r.render("cat_${id}")</div>
 					#end
-					<div class="o_catalog_item_details">
-						$r.render("cat_${id}")
-					</div>
+					<div class="o_catalog_item_details">$r.render("cat_${id}")</div>
 				</div>
-				
 			#end
 		</div>
 	#end

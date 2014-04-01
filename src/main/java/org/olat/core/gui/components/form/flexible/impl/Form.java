@@ -165,7 +165,7 @@ public class Form extends LogDelegator {
 	private FormItem submitFormItem;
 	private boolean isDirtyMarking=true;
 	private boolean multipartEnabled = false;
-	private int multipartUploadMaxSizeKB = 0;
+	private long multipartUploadMaxSizeKB = 0;
 	// temporary form data, only valid within execution of evalFormRequest()
 	private Map<String,String[]> requestParams = new HashMap<String,String[]>();
 	private Map<String, File> requestMultipartFiles = new HashMap<String,File>();
@@ -846,7 +846,7 @@ public class Form extends LogDelegator {
 		removeListener(formBasicController);
 	}
 
-	public void setMultipartEnabled(boolean multipartEnabled, int multipartUploadMaxSizeKB) {
+	public void setMultipartEnabled(boolean multipartEnabled, long multipartUploadMaxSizeKB) {
 		this.multipartEnabled = multipartEnabled;
 		// Add upload size to already existing upload limit (two uploads are summed up)
 		this.multipartUploadMaxSizeKB += multipartUploadMaxSizeKB;

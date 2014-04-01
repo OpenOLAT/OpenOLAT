@@ -103,7 +103,7 @@ public class TaskFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// add the "optional message for users" rich text input element
 		optionalText = uifactory.addRichTextElementForStringDataMinimalistic("form.task.text", "form.task.text", (String)config
-				.get(TACourseNode.CONF_TASK_TEXT), 10, -1, formLayout, ureq.getUserSession(), getWindowControl());
+				.get(TACourseNode.CONF_TASK_TEXT), 10, -1, formLayout, getWindowControl());
 
 		// add the task type radio buttons
 		String taskType = (String) this.config.get(TACourseNode.CONF_TASK_TYPE);

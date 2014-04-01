@@ -41,6 +41,8 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.fileresource.types.AddingResourceException;
 import org.olat.fileresource.types.AnimationFileResource;
 import org.olat.fileresource.types.BlogFileResource;
@@ -232,6 +234,20 @@ public class FileResourceManager extends BasicManager {
 	 */
 	public OlatRootFolderImpl getFileResourceRootImpl(OLATResourceable res) {
 		return new OlatRootFolderImpl(FolderConfig.getRepositoryHome() + "/" + res.getResourceableId(), null);
+	}
+	
+	public VFSContainer getFileResourceMedia(OLATResourceable res) {
+		VFSContainer folder = getFileResourceRootImpl(res);
+		VFSItem item = folder.resolve("media");
+		VFSContainer mediaContainer;
+		if(item == null) {
+			mediaContainer = folder.createChildContainer("media");
+		} else if(item instanceof VFSContainer) {
+			mediaContainer = (VFSContainer)item;
+		} else {
+			mediaContainer = null;
+		}
+		return mediaContainer;
 	}
 
 	/**

@@ -36,6 +36,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
@@ -138,6 +139,12 @@ public class BlogHandler implements RepositoryHandler {
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		FeedManager manager = FeedManager.getInstance();
 		return manager.getFeedArchiveMediaResource(res);
+	}
+	
+	@Override
+	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
+		return FileResourceManager.getInstance()
+				.getFileResourceMedia(repoEntry.getOlatResource());
 	}
 
 	/**

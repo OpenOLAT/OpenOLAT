@@ -154,7 +154,7 @@ public class PortfolioTextForm extends FormBasicController {
 	
 		Object nodeText = config.get(PortfolioCourseNodeConfiguration.NODE_TEXT);
 		String text = nodeText instanceof String ? (String)nodeText : "";
-		textEl = uifactory.addRichTextElementForStringDataMinimalistic("text", "explanation.text", text, 10, -1, formLayout, ureq.getUserSession(), getWindowControl());
+		textEl = uifactory.addRichTextElementForStringDataMinimalistic("text", "explanation.text", text, 10, -1, formLayout, getWindowControl());
 
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutContainer = (FormLayoutContainer)formLayout;

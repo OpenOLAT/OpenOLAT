@@ -41,6 +41,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackFactory;
 import org.olat.portfolio.EPTemplateMapResource;
@@ -127,6 +129,12 @@ public class PortfolioHandler implements RepositoryHandler {
 		// Apperantly, this method is used for backing up any user related content
 		// (comments etc.) on deletion. Up to now, this doesn't exist in blogs.
 		return null;
+	}
+	
+	@Override
+	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
+		return FileResourceManager.getInstance()
+				.getFileResourceMedia(repoEntry.getOlatResource());
 	}
 	
 	/**

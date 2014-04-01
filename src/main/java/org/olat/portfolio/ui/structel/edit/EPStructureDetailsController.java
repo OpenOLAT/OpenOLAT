@@ -140,7 +140,7 @@ public class EPStructureDetailsController extends FormBasicController {
 			formLayout.remove("struct.description");
 		}
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("struct.description", "struct.description", editStructure.getDescription(), -1, -1,
-				formLayout, ureq.getUserSession(), getWindowControl());
+				formLayout, getWindowControl());
 		descriptionEl.setMaxLength(2047);
 		descriptionEl.setNotLongerThanCheck(2047, "map.description.too.long");
 

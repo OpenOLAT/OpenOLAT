@@ -70,7 +70,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -690,12 +692,12 @@ public class FormUIFactory {
 	 * @return The rich text element instance
 	 */
 	public RichTextElement addRichTextElementForStringDataMinimalistic(String name, final String i18nLabel, String initialHTMLValue, final int rows,
-			final int cols, FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
+			final int cols, FormItemContainer formLayout, WindowControl wControl) {
 		// Create richt text element with bare bone configuration
 		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), wControl.getWindowBackOffice());
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
-		rte.getEditorConfiguration().setConfigProfileFormEditorMinimalistic(usess, wControl.getWindowBackOffice().getWindow().getGuiTheme());			
+		rte.getEditorConfiguration().setConfigProfileFormEditorMinimalistic(wControl.getWindowBackOffice().getWindow().getGuiTheme());			
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;
@@ -740,14 +742,16 @@ public class FormUIFactory {
 	 *            the current window controller
 	 * @return The rich text element instance
 	 */
-	public RichTextElement addRichTextElementForStringData(String name, final String i18nLabel, String initialHTMLValue, final int rows,
-			final int cols, boolean fullProfile, VFSContainer baseContainer, CustomLinkTreeModel customLinkTreeModel,
+	public RichTextElement addRichTextElementForStringData(String name, String i18nLabel, String initialHTMLValue, int rows,
+			int cols, boolean fullProfile, VFSContainer baseContainer, CustomLinkTreeModel customLinkTreeModel,
 			FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
 		// Create richt text element with bare bone configuration
-		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), wControl.getWindowBackOffice());
+		WindowBackOffice backoffice = wControl.getWindowBackOffice();
+		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), backoffice);
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
-		rte.getEditorConfiguration().setConfigProfileFormEditor(fullProfile, usess, wControl.getWindowBackOffice().getWindow().getGuiTheme(), baseContainer, customLinkTreeModel);			
+		Theme theme = backoffice.getWindow().getGuiTheme();
+		rte.getEditorConfiguration().setConfigProfileFormEditor(fullProfile, usess, theme, baseContainer, customLinkTreeModel);			
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;

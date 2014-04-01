@@ -39,6 +39,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -52,7 +53,7 @@ import org.olat.resource.references.ReferenceManager;
  *
  * @author Christian Guretzki
  */
-public abstract class FileHandler {
+public abstract class FileHandler implements RepositoryHandler {
 
 	public FileHandler() {
 		//
@@ -75,6 +76,12 @@ public abstract class FileHandler {
 	
 	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
 		return FileResourceManager.getInstance().getDetailsForm(ureq, wControl, res);
+	}
+	
+	@Override
+	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
+		return FileResourceManager.getInstance()
+				.getFileResourceMedia(repoEntry.getOlatResource());
 	}
 
 	/**
@@ -116,8 +123,8 @@ public abstract class FileHandler {
 		return exportFileName;
 	}
 	
-	abstract protected String getDeletedFilePrefix();
+	protected abstract String getDeletedFilePrefix();
 
-	abstract protected List<String> getSupportedTypes();
+	public abstract List<String> getSupportedTypes();
 
 }

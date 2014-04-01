@@ -72,7 +72,7 @@ import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
  * Comment:  
  * 
  */
-public class ImsCPHandler extends FileHandler implements RepositoryHandler {
+public class ImsCPHandler extends FileHandler {
 	
 	private static final OLog log = Tracing.createLoggerFor(ImsCPHandler.class);
 	

@@ -71,7 +71,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 	//
 	private File initialFile, tempUploadFile;
 	private Set<String> mimeTypes;
-	private int maxUploadSizeKB = UPLOAD_UNLIMITED;
+	private long maxUploadSizeKB = UPLOAD_UNLIMITED;
 	private String uploadFilename;
 	private String uploadMimeType;
 	//
@@ -269,7 +269,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#setMaxUploadSizeKB(int,
 	 *      java.lang.String, java.lang.String[])
 	 */
-	public void setMaxUploadSizeKB(int maxUploadSizeKB, String i18nErrKey, String[] i18nArgs) {
+	public void setMaxUploadSizeKB(long maxUploadSizeKB, String i18nErrKey, String[] i18nArgs) {
 		this.maxUploadSizeKB = maxUploadSizeKB;
 		this.checkForMaxFileSize = (maxUploadSizeKB == UPLOAD_UNLIMITED ? false : true);
 		this.i18nErrMaxSize = i18nErrKey;
@@ -279,8 +279,8 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormMultipartItem#getMaxUploadSizeKB()
 	 */
-	public int getMaxUploadSizeKB() {
-		return this.maxUploadSizeKB;
+	public long getMaxUploadSizeKB() {
+		return maxUploadSizeKB;
 	}
 
 	/**

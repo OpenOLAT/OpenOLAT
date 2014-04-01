@@ -48,8 +48,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.assessment.AssessmentHelper;
@@ -64,6 +69,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.RepositoyUIFactory;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
@@ -99,6 +106,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private final EfficiencyStatementManager effManager;
 	private final UserCourseInformationsManager userCourseInfosManager;
 	
+	private String baseUrl;
+	
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRow row) {
 		super(ureq, wControl, "details");
 		
@@ -119,6 +128,16 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		
 		initForm(ureq);
 	}
+	
+	private void setText(String text, String key, FormLayoutContainer layoutCont) {
+		if(!StringHelper.containsNonWhitespace(text)) return;
+		text = StringHelper.xssScan(text);
+		if(baseUrl != null) {
+			text = FilterFactory.getBaseURLToMediaRelativeURLFilter(baseUrl).filter(text);
+		}
+		text = Formatter.formatLatexFormulas(text);
+		layoutCont.contextPut(key, text);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -129,6 +148,17 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			String cssClass = RepositoyUIFactory.getIconCssClass(entry);
 			layoutCont.contextPut("cssClass", cssClass);
 			
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+			VFSContainer mediaContainer = handler.getMediaContainer(entry);
+			if(mediaContainer != null) {
+				baseUrl = registerMapper(ureq, new VFSContainerMapper(mediaContainer.getParentContainer()));
+			}
+			
+			setText(entry.getDescription(), "description", layoutCont);
+			setText(entry.getRequirements(), "requirements", layoutCont);
+			setText(entry.getObjectives(), "objectives", layoutCont);
+			setText(entry.getCredits(), "credits", layoutCont);
+
 			//thumbnail
 			VFSLeaf image = repositoryManager.getImage(entry);
 			if(image != null) {

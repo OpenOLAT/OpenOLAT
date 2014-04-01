@@ -385,7 +385,7 @@ public class ContactForm extends FormBasicController {
 		
 		tsubject = uifactory.addTextElement("tsubject", NLS_CONTACT_SUBJECT, 255, "", formLayout);
 		tsubject.setDisplaySize(emailCols);
-		tbody = uifactory.addRichTextElementForStringDataMinimalistic("tbody", NLS_CONTACT_BODY, "", 15, emailCols, formLayout, ureq.getUserSession(), getWindowControl());
+		tbody = uifactory.addRichTextElementForStringDataMinimalistic("tbody", NLS_CONTACT_BODY, "", 15, emailCols, formLayout, getWindowControl());
 		tbody.setEnabled(!readOnly);
 		
 		String VELOCITY_ROOT = Util.getPackageVelocityRoot(this.getClass());

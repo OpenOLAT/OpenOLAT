@@ -83,8 +83,11 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CorruptedCourseException;
@@ -308,8 +311,18 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		}
 		
 		if (repositoryEntry.getDescription() != null) {
-			main.contextPut("description", Formatter.formatLatexFormulas(repositoryEntry.getDescription()));
+			String description = repositoryEntry.getDescription();
+			
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
+			VFSContainer mediaContainer = handler.getMediaContainer(repositoryEntry);
+			if(mediaContainer != null) {
+				String basePath = registerMapper(ureq, new VFSContainerMapper(mediaContainer.getParentContainer()));
+				description = FilterFactory.getBaseURLToMediaRelativeURLFilter(basePath)
+						.filter(description);
+			}
+			main.contextPut("description", Formatter.formatLatexFormulas(description));
 		}
+		
 		VFSLeaf image = RepositoryManager.getInstance().getImage(repositoryEntry);
 		if (image != null) {
 			// display only within 600x300 - everything else looks ugly

@@ -60,14 +60,13 @@ import org.olat.repository.controllers.WizardCloseResourceController;
  * Comment:  
  * 
  */
-public class WebDocumentHandler extends FileHandler implements RepositoryHandler {
+public class WebDocumentHandler extends FileHandler {
 	
 	private static final boolean LAUNCHEABLE = false;
 	private static final boolean DOWNLOADEABLE = true;
 	private static final boolean EDITABLE = false;
 	private static final boolean WIZARD_SUPPORT = false;
 	private static final List<String> supportedTypes;
-	
 	
 	/**
 	 * Default constructor.
@@ -123,10 +122,6 @@ public class WebDocumentHandler extends FileHandler implements RepositoryHandler
 	 */
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re,  UserRequest ureq, WindowControl wControl) {
-		/* For the time beeing, disable launching web ressources...
-		FileResourceManager frm = FileResourceManager.getInstance();
-		ureq.getDispatchResult().setResultingMediaResource(frm.getAsInlineMediaResource(res));
-		*/
 		return null;
 	}
 

@@ -64,6 +64,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoyUIFactory;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
@@ -179,10 +181,19 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		}
 		language.select(selected, true);
 		
+
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
+		VFSContainer mediaContainer = handler.getMediaContainer(repositoryEntry);
+		if(mediaContainer != null && mediaContainer.getName().equals("media")) {
+			mediaContainer = mediaContainer.getParentContainer();
+			mediaContainer.setDefaultItemFilter(new MediaContainerFilter(mediaContainer));
+		}
+		
 		String desc = (repositoryEntry.getDescription() != null ? repositoryEntry.getDescription() : " ");
-		description = uifactory.addRichTextElementForStringDataMinimalistic("cif.description", "cif.description",
-				desc, 10, -1, descCont, ureq.getUserSession(), getWindowControl());
+		description = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
+				desc, 10, -1, false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
 		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
+		description.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		description.setMandatory(true);
 
 		uifactory.addSpacerElement("spacer2", descCont, false);
@@ -242,22 +253,24 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			uifactory.addSpacerElement("spacer3", descCont, false);
 
 			expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), descCont);
-			
 
 			String obj = (repositoryEntry.getObjectives() != null ? repositoryEntry.getObjectives() : " ");
-			objectives = uifactory.addRichTextElementForStringDataMinimalistic("cif.objectives", "cif.objectives",
-					obj, 10, -1, descCont, ureq.getUserSession(), getWindowControl());
-			//objectives.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
+			objectives = uifactory.addRichTextElementForStringData("cif.objectives", "cif.objectives",
+					obj, 10, -1, false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
+			objectives.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.objectives));
+			objectives.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			
 			String req = (repositoryEntry.getRequirements() != null ? repositoryEntry.getRequirements() : " ");
-			requirements = uifactory.addRichTextElementForStringDataMinimalistic("cif.requirements", "cif.requirements",
-					req, 10, -1, descCont, ureq.getUserSession(), getWindowControl());
-			//requirements.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
+			requirements = uifactory.addRichTextElementForStringData("cif.requirements", "cif.requirements",
+					req, 10, -1,  false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
+			requirements.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.requirements));
+			requirements.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			
 			String cred = (repositoryEntry.getCredits() != null ? repositoryEntry.getCredits() : " ");
-			credits = uifactory.addRichTextElementForStringDataMinimalistic("cif.credits", "cif.credits",
-					cred, 10, -1, descCont, ureq.getUserSession(), getWindowControl());
-			//credits.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
+			credits = uifactory.addRichTextElementForStringData("cif.credits", "cif.credits",
+					cred, 10, -1,  false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
+			credits.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.credits));
+			credits.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			
 			uifactory.addSpacerElement("spacer4", descCont, false);
 		}
@@ -456,16 +469,26 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		
 		String desc = description.getValue().trim();
 		repositoryEntry.setDescription(desc);
-		String auth = authors.getValue().trim();
-		repositoryEntry.setAuthors(auth);
-		String obj = objectives.getValue().trim();
-		repositoryEntry.setObjectives(obj);
-		String req = requirements.getValue().trim();
-		repositoryEntry.setRequirements(req);
-		String cred = credits.getValue().trim();
-		repositoryEntry.setCredits(cred);
-		String exp = expenditureOfWork.getValue().trim();
-		repositoryEntry.setExpenditureOfWork(exp);
+		if(authors != null) {
+			String auth = authors.getValue().trim();
+			repositoryEntry.setAuthors(auth);
+		}
+		if(objectives != null) {
+			String obj = objectives.getValue().trim();
+			repositoryEntry.setObjectives(obj);
+		}
+		if(requirements != null) {
+			String req = requirements.getValue().trim();
+			repositoryEntry.setRequirements(req);
+		}
+		if(credits != null) {
+			String cred = credits.getValue().trim();
+			repositoryEntry.setCredits(cred);
+		}
+		if(expenditureOfWork != null) {
+			String exp = expenditureOfWork.getValue().trim();
+			repositoryEntry.setExpenditureOfWork(exp);
+		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}

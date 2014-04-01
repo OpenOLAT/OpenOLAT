@@ -36,6 +36,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
@@ -130,6 +131,12 @@ public class PodcastHandler implements RepositoryHandler {
 			addCtr = PodcastUIFactory.getInstance(ureq.getLocale()).createAddController(callback, ureq, wControl);
 		}
 		return addCtr;
+	}
+	
+	@Override
+	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
+		return FileResourceManager.getInstance()
+				.getFileResourceMedia(repoEntry.getOlatResource());
 	}
 
 	/**

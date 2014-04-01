@@ -102,7 +102,7 @@ class EntryForm extends FormBasicController {
 		nameEl.setNotEmptyCheck("form.legende.mandatory");
 		
 		String desc = catalogEntry == null ? "" : catalogEntry.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "entry.description", desc, 10, -1, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "entry.description", desc, 10, -1, formLayout, getWindowControl());
 		
 		VFSLeaf img = catalogEntry == null || catalogEntry.getKey() == null ? null : catalogManager.getImage(catalogEntry);
 		imageEl = new ImageFormItem("imageEl");

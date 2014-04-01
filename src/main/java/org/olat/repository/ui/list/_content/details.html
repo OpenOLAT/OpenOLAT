@@ -77,18 +77,18 @@
 			<h5>$r.translate("cif.authors")</h5>
 			<p>$r.escapeHtml($v.authors)</p>
 		#end
-		$r.xssScan($v.description)
-		#if($v.objectives)
+		<div class="b_clearfix">$description</div>
+		#if($objectives)
 			<h5>$r.translate("cif.objectives")</h5>
-			<p>$r.xssScan($v.objectives)</p>
+			<div class="b_clearfix">$objectives</div>
 		#end
-		#if($v.requirements)
+		#if($requirements)
 			<h5>$r.translate("cif.requirements")</h5>
-			<p>$r.xssScan($v.requirements)</p>
+			<div class="b_clearfix">$requirements</div>
 		#end
-		#if($v.credits)
+		#if($credits)
 			<h5>$r.translate("cif.credits")</h5>
-			<p>$r.xssScan($v.credits)</p>
+			<div class="b_clearfix">$credits</div>
 		#end
 	</div>
 </div>
