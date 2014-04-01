@@ -176,7 +176,9 @@ public class RepositoryEntryMyCourseViewQueries {
 		}
 
 		//+ membership
-		if(!roles.isGuestOnly()) {
+		if(roles.isGuestOnly()) {
+			sb.append(")");
+		} else {
 			if(inRoles.length() == 0 && !membershipMandatory) {
 				//sub select are very quick
 				sb.append(" or (")

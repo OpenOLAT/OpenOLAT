@@ -54,6 +54,26 @@ import org.olat.repository.ui.LifecycleAdminController;
  * @author patrickb
  */
 public class RepositoyUIFactory {
+	
+	public static String getIconCssClass(RepositoryEntryShort re) {
+		String iconCSSClass = "o_" + re.getResourceType().replace(".", "-");
+		if (re != null && RepositoryManager.getInstance().createRepositoryEntryStatus(re.getStatusCode()).isClosed()) {
+			iconCSSClass = iconCSSClass.concat("_icon_closed");
+		} else {
+			iconCSSClass = iconCSSClass.concat("_icon");
+		}
+		return iconCSSClass;
+	}
+	
+	public static String getIconCssClass(RepositoryEntry re) {
+		String iconCSSClass = "o_" + re.getOlatResource().getResourceableTypeName().replace(".", "-");
+		if (re != null && RepositoryManager.getInstance().createRepositoryEntryStatus(re.getStatusCode()).isClosed()) {
+			iconCSSClass = iconCSSClass.concat("_icon_closed");
+		} else {
+			iconCSSClass = iconCSSClass.concat("_icon");
+		}
+		return iconCSSClass;
+	}
 
 	/**
 	 * Create a launch controller used to launch the given repo entry.

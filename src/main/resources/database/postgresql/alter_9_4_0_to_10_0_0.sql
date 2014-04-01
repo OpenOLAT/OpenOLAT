@@ -24,6 +24,11 @@ create table o_repositoryentry_stats (
 
 alter table o_repositoryentry add column fk_stats int8;
 alter table o_repositoryentry add column authors varchar(2048);
+alter table o_repositoryentry add column mainlanguage varchar(255);
+alter table o_repositoryentry add column objectives varchar(2048);
+alter table o_repositoryentry add column requirements varchar(2048);
+alter table o_repositoryentry add column credits varchar(2048);
+alter table o_repositoryentry add column expenditureofwork varchar(255);
 
 insert into o_repositoryentry_stats (id, creationdate, lastmodified, r_rating, r_launchcounter, r_downloadcounter, r_lastusage)
   select re.repositoryentry_id, now(), now(), null, re.launchcounter, re.downloadcounter, re.lastusage from o_repositoryentry as re where re.fk_stats is null;

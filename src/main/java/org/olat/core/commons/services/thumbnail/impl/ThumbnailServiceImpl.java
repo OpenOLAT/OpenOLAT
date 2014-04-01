@@ -74,11 +74,12 @@ public class ThumbnailServiceImpl implements ThumbnailService {
 	}
 
 	@Override
-	public FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight)  throws CannotGenerateThumbnailException {
+	public FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill)
+	throws CannotGenerateThumbnailException {
 		String extension = FileUtils.getFileSuffix(file.getName()).toLowerCase();
 		for(ThumbnailSPI thumbnailSPI : thumbnailSPIes) {
 			if(thumbnailSPI.getExtensions().contains(extension)) {
-				FinalSize finalSize = thumbnailSPI.generateThumbnail(file, thumbnailFile, maxWidth, maxHeight);
+				FinalSize finalSize = thumbnailSPI.generateThumbnail(file, thumbnailFile, maxWidth, maxHeight, fill);
 				if(finalSize != null) {
 					return finalSize;
 				}//else, try to find an other SPI which can thumbnailed this file

@@ -19,20 +19,20 @@
  */
 package org.olat.repository.ui;
 
-import java.io.File;
-
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.catalog.CatalogManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.repository.CatalogEntryRef;
+
 
 /**
  * 
@@ -40,26 +40,44 @@ import org.olat.core.util.vfs.VFSMediaResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryEntryImageMapper implements Mapper {
+public class CatalogEntryImageMapper implements Mapper {
 	
-	private VFSContainer rootContainer;
+	private CatalogManager catalogManager;
+	
+	public CatalogEntryImageMapper() {
+		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
+	}
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		if(rootContainer == null) {
-			rootContainer = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
-		}
-		
 		if(relPath.startsWith("/")) {
 			relPath = relPath.substring(1, relPath.length());
 		}
+		int index = relPath.lastIndexOf(".png");
+		if(index > 0) {
+			relPath = relPath.substring(0, index);
+		}
+		
+		VFSLeaf image = null;
+		if(StringHelper.isLong(relPath)) {
+			try {
+				Long key = Long.parseLong(relPath);
+				
+				MappedRef entry = new MappedRef(key);
+				image = catalogManager.getImage(entry);
+			} catch (NumberFormatException e) {
+				//not a key
+			}
+		}
+
 		MediaResource resource = null;
-		VFSItem image = rootContainer.resolve(relPath);
-		if(image instanceof VFSLeaf) {
+		if(image == null) {
+			resource = new NotFoundMediaResource(relPath);
+		} else {
 			if(image instanceof MetaTagged) {
 				MetaInfo info = ((MetaTagged) image).getMetaInfo();
 				if(info != null) {
-					VFSLeaf thumbnail = info.getThumbnail(200, 150, true);
+					VFSLeaf thumbnail = info.getThumbnail(200, 200, true);
 					if(thumbnail != null) {
 						resource = new VFSMediaResource(thumbnail);
 					}
@@ -67,9 +85,23 @@ public class RepositoryEntryImageMapper implements Mapper {
 			}
 			
 			if(resource == null) {
-				resource = new VFSMediaResource((VFSLeaf)image);
+				resource = new VFSMediaResource(image);
 			}
 		}
 		return resource;
+	}
+	
+	private static class MappedRef implements CatalogEntryRef {
+		
+		private final Long key;
+		
+		public MappedRef(Long key) {
+			this.key = key;
+		}
+
+		@Override
+		public Long getKey() {
+			return key;
+		}
 	}
 }

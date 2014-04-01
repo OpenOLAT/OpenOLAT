@@ -36,14 +36,14 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public interface ImageHelper {
 	
-	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight);
+	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill);
 
 	
 	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight);
 	
 	public Size scaleImage(File image, String extension, File scaledImage, int maxWidth, int maxHeight);
 	
-	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight);
+	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight, boolean fill);
 
 	public Size scaleImage(File image, String imgExt, VFSLeaf scaledImage, int maxWidth, int maxHeight);
 }

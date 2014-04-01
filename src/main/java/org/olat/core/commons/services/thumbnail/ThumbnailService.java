@@ -48,5 +48,6 @@ public interface ThumbnailService {
 	 * @param maxHeight
 	 * @return the real size of the thumbnail
 	 */
-	public FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) throws CannotGenerateThumbnailException;
+	public FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill)
+			throws CannotGenerateThumbnailException;
 }

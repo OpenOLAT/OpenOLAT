@@ -59,8 +59,9 @@ public class PDFToThumbnail implements ThumbnailSPI {
 	}
 
 	@Override
-	public FinalSize generateThumbnail(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) throws CannotGenerateThumbnailException {
-		Size size = imageHelper.thumbnailPDF(pdfFile, thumbnailFile, maxWidth, maxHeight);
+	public FinalSize generateThumbnail(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill)
+			throws CannotGenerateThumbnailException {
+		Size size = imageHelper.thumbnailPDF(pdfFile, thumbnailFile, maxWidth, maxHeight, fill);
 		if(size != null) {
 			return new FinalSize(size.getWidth(), size.getHeight());
 		}

@@ -32,8 +32,7 @@ import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -57,7 +56,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OverviewRepositoryListController extends BasicController implements StackedControllerAware, Activateable2 {
+public class OverviewRepositoryListController extends BasicController implements Activateable2 {
 
 	private MainPanel mainPanel;
 	private final VelocityContainer mainVC;
@@ -66,9 +65,11 @@ public class OverviewRepositoryListController extends BasicController implements
 	private Link catalogLink;
 	
 	private RepositoryEntryListController markedCtrl;
+	private BreadcrumbedStackedPanel markedStackPanel;
 	private RepositoryEntryListController myCoursesCtrl;
+	private BreadcrumbedStackedPanel myCoursesStackPanel;
 	private CatalogNodeController catalogCtrl;
-	private StackedController stackPanel;
+	private BreadcrumbedStackedPanel catalogStackPanel;
 	
 	private final CatalogManager catalogManager;
 	private final RepositoryModule repositoryModule;
@@ -84,15 +85,15 @@ public class OverviewRepositoryListController extends BasicController implements
 		mainVC = createVelocityContainer("overview");
 		mainPanel.setContent(mainVC);
 		
-		boolean hasMarkedEntries = doOpenMark(ureq).isEmpty();
-		if(!hasMarkedEntries) {
+		boolean markEmpty = doOpenMark(ureq).isEmpty();
+		if(markEmpty) {
 			doOpenMyCourses(ureq);
 		}
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
-		segmentView.addSegment(favoriteLink, hasMarkedEntries);
+		segmentView.addSegment(favoriteLink, !markEmpty);
 		myCourseLink = LinkFactory.createLink("search.mycourses.student", mainVC, this);
-		segmentView.addSegment(myCourseLink, !hasMarkedEntries);
+		segmentView.addSegment(myCourseLink, markEmpty);
 		
 		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled()) {
 			catalogLink = LinkFactory.createLink("search.catalog", mainVC, this);
@@ -100,11 +101,6 @@ public class OverviewRepositoryListController extends BasicController implements
 		}
 		
 		putInitialPanel(mainPanel);
-	}
-	
-	@Override
-	public void setStackedController(StackedController stackPanel) {
-		this.stackPanel = stackPanel;
 	}
 	
 	@Override
@@ -161,12 +157,14 @@ public class OverviewRepositoryListController extends BasicController implements
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			markedCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams);
+			markedStackPanel = new BreadcrumbedStackedPanel("mrkstack", getTranslator(), this);
+			markedCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, markedStackPanel);
+			markedStackPanel.pushController(translate("search.mark"), markedCtrl);
 			listenTo(markedCtrl);
 		}
 
 		addToHistory(ureq, markedCtrl);
-		mainVC.put("segmentCmp", markedCtrl.getInitialComponent());
+		mainVC.put("segmentCmp", markedStackPanel);
 		return markedCtrl;
 	}
 	
@@ -179,12 +177,14 @@ public class OverviewRepositoryListController extends BasicController implements
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			myCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams);
+			myCoursesStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
+			myCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, myCoursesStackPanel);
+			myCoursesStackPanel.pushController(translate("search.mycourses.student"), myCoursesCtrl);
 			listenTo(myCoursesCtrl);
 		}
 		
 		addToHistory(ureq, myCoursesCtrl);
-		mainVC.put("segmentCmp", myCoursesCtrl.getInitialComponent());
+		mainVC.put("segmentCmp", myCoursesStackPanel);
 		return myCoursesCtrl;
 	}
 	
@@ -201,13 +201,14 @@ public class OverviewRepositoryListController extends BasicController implements
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Catalog", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			catalogCtrl = new CatalogNodeController(ureq, bwControl, rootEntry);
-			catalogCtrl.setStackedController(stackPanel);
+			catalogStackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
+			catalogCtrl = new CatalogNodeController(ureq, bwControl, rootEntry, catalogStackPanel, false);
+			catalogStackPanel.pushController(translate("search.catalog"), catalogCtrl);
 			listenTo(catalogCtrl);
 		}
 
 		addToHistory(ureq, catalogCtrl);
-		mainVC.put("segmentCmp", catalogCtrl.getInitialComponent());
+		mainVC.put("segmentCmp", catalogStackPanel);
 		return catalogCtrl;
 	}
 }

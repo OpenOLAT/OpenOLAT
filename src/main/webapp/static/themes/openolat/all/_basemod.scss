@@ -68,6 +68,14 @@ body {
 	}
 }
 
+#b_main #b_main_toolbar {
+	moz-box-shadow: none;
+	-ms-box-shadow: none;
+	-o-box-shadow: none;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
 $mainMinHeight: 550px;
 #b_main {
 	background:#fff;

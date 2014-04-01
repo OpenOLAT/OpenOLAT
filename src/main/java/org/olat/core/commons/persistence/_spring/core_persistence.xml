@@ -107,6 +107,7 @@
 		<class>org.olat.group.model.BusinessGroupLazyImpl</class>
 		<class>org.olat.group.model.BusinessGroupMembershipViewImpl</class>
 		<class>org.olat.group.model.BGRepositoryEntryRelation</class>
+		<class>org.olat.repository.RepositoryEntry</class>
 		<class>org.olat.repository.model.RepositoryEntryToGroupRelation</class>
 		<class>org.olat.repository.model.RepositoryEntryLifecycle</class>
 		<class>org.olat.repository.model.RepositoryEntryStatistics</class>

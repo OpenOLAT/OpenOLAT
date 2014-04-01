@@ -1,6 +1,6 @@
 div.o_table_row {
 
-	div.f_thumbnail { width:280px; height:158px; float:left; border-right: 1px solid #999; }
+	div.f_thumbnail { width:200px; height:150px; float:left; border-right: 1px solid #999; }
 	div.f_item_links {
 			a { background-repeat: no-repeat; }
 	}
@@ -11,14 +11,12 @@ div.o_table_row {
 		@include o-box-shadow(0,1px,2px,#999);
 		
 		div.f_thumbnail_inner {
-			width:280px;
-			height:158px;
+			width:200px;
+			height:150px;
 		}
 		div.f_thumbnail_unavailable {
-			width:280px; height:158px;
-			background-image:url(../openolat/images/no_preview.png);
-			background-repeat:no-repeat;
-			background-position:50% 50%;
+			width:200px; height:150px;
+			background: white url(../openolat/images/no_preview.png) 50% 50% no-repeat;
 		}
 		
 		div.f_metadata_text {
@@ -30,7 +28,7 @@ div.o_table_row {
 		div.f_metadata_lifecycle {
 			position: absolute;
 			top: 10px;
-			right: 220px;
+			right: 240px;
 		}
 		div.f_metadata_mark {
 			position: absolute;
@@ -41,9 +39,13 @@ div.o_table_row {
 			position: absolute;
 			top: 0;
 			right: 0;
-			height: 158px;
+			height: 150px;
 			width: 210px;
 			border-left: 1px solid #999;
+			
+			div.b_ratings_and_comments {
+				margin: 2.5em 0 5px 0;
+			}
 		}
 		div.f_metadata_start {
 			position: absolute;
@@ -61,7 +63,7 @@ div.o_table_row {
 			}
 		}
 		
-		div.f_metadata_details {
+		div.f_metadata_go {
 			position: absolute;
 			bottom: 0;
 			right: 105px;
@@ -88,5 +90,62 @@ div.o_table_row {
 			margin: 10px 10px 10px 10px;
 		
 		}
+	}
+}
+
+div.f_metadata_details {
+	margin: 20px 0 10px 0;
+
+	div.f_metadata_go {
+		width: 90%;
+		background-color: $basecolor_light;
+		padding: 10px;
+		
+		a {
+			color: #ffffff;
+			font-size: 140%;
+			text-decoration: none;
+		}
+	}
+	
+	h5 {
+		margin-top: 10px;
+	}
+	
+	ul {
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+		
+		li {
+			margin: 0;
+			padding: 0;
+		}
+	}
+
+	div.f_metadata_media {
+		margin: 5px 0 10px 0;
+	}
+	
+	div.f_metadata_lifecycle {
+		background: white url('../openolat/images/calendar.png') 0 50% no-repeat;
+		padding: 2px 0 2px 20px;
+	}
+	
+	div.f_metadata_expenditure {
+		background: white url('../openolat/images/clock.png') 0 50% no-repeat;
+		padding: 2px 0 2px 20px;
+	}
+	
+	div.f_metadata_score {
+		width:90%;
+		margin: 20px 0 20px 0;
+		padding: 2px 0 2px 20px;
+		background-color: $basecolor_ultra_light;
+		@include o-border-radius(4px);
+	}
+	
+	div.b_ratings_and_comments {
+		width: 150px;
 	}
 }

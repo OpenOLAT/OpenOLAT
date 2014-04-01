@@ -28,12 +28,10 @@ import org.olat.catalog.CatalogManager;
 import org.olat.catalog.ui.CatalogEntryComparator;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -44,9 +42,9 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.ui.CatalogEntryImageMapper;
 
 /**
  * 
@@ -54,34 +52,37 @@ import org.olat.repository.SearchMyRepositoryEntryViewParams;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogNodeController extends BasicController implements Activateable2, StackedControllerAware {
+public class CatalogNodeController extends BasicController implements Activateable2 {
 
-	private StackedController stackPanel;
-	private RepositoryEntryListController entryListController;
-	
-	private final VelocityContainer mainVC;
-	
 	private CatalogNodeController childNodeController;
+	private BreadcrumbedStackedPanel stackPanel;
+	private RepositoryEntryListController entryListController;
 
 	private final CatalogManager cm;
+	private final boolean wrapInMainPanel;
+	private final String mapperThumbnailUrl;
 	
-	public CatalogNodeController(UserRequest ureq, WindowControl wControl, CatalogEntry catalogEntry) {
+	public CatalogNodeController(UserRequest ureq, WindowControl wControl, CatalogEntry catalogEntry,
+			BreadcrumbedStackedPanel stackPanel, boolean wrapInMainPanel) {
 		// fallback translator to repository package to reduce redundant translations
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
 
 		cm = CatalogManager.getInstance();
+		this.stackPanel = stackPanel;
+		this.wrapInMainPanel = wrapInMainPanel;
+
+		VelocityContainer mainVC = createVelocityContainer("node");
 		
-		mainVC = createVelocityContainer("node");
+		mapperThumbnailUrl = registerCacheableMapper(ureq, "catalogentryImage", new CatalogEntryImageMapper());
+		mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+		
 		mainVC.contextPut("catalogEntryName", catalogEntry.getName());
 		if(StringHelper.containsNonWhitespace(catalogEntry.getDescription())) {
 			mainVC.contextPut("catalogEntryDesc", catalogEntry.getDescription());
 		}
 		VFSLeaf image = cm.getImage(catalogEntry);
 		if(image != null) {
-			ImageComponent ic = new ImageComponent("catThumbnail");
-			ic.setMediaResource(new VFSMediaResource(image));
-			ic.setMaxWithAndHeightToFitWithin(200, 200);
-			mainVC.put("catThumbnail", ic);
+			mainVC.contextPut("catThumbnail", catalogEntry.getKey());
 		}
 		
 		List<CatalogEntry> childCe = cm.getNodesChildrenOf(catalogEntry);
@@ -95,10 +96,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 				VFSLeaf img = cm.getImage(entry);
 				if(img != null) {
 					String imgId = "image_" + count;
-					ImageComponent ic = new ImageComponent(imgId);
-					ic.setMediaResource(new VFSMediaResource(img));
-					ic.setMaxWithAndHeightToFitWithin(200, 200);
-					mainVC.put(imgId, ic);
+					mainVC.contextPut(imgId, entry.getKey());
 				}
 				
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, mainVC, this);
@@ -113,19 +111,19 @@ public class CatalogNodeController extends BasicController implements Activateab
 		SearchMyRepositoryEntryViewParams searchParams
 			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
 		searchParams.setParentEntry(catalogEntry);
-		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams);
+		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, stackPanel);
 		mainVC.put("entries", entryListController.getInitialComponent());
 		listenTo(entryListController);
 
-		MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
-		mainPanel.setContent(mainVC);
-		putInitialPanel(mainPanel);
+		if(wrapInMainPanel) {
+			MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
+			mainPanel.setContent(mainVC);
+			putInitialPanel(mainPanel);
+		} else {
+			putInitialPanel(mainVC);
+		}
 	}
 
-	@Override
-	public void setStackedController(StackedController stackPanel) {
-		this.stackPanel = stackPanel;
-	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
@@ -136,9 +134,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 				CatalogEntry entry = cm.getCatalogNodeByKey(categoryNodeKey);
 				if(entry != null && entry.getType() == CatalogEntry.TYPE_NODE) {
 					removeAsListenerAndDispose(childNodeController);
-					childNodeController = new CatalogNodeController(ureq, getWindowControl(), entry);
+					childNodeController = new CatalogNodeController(ureq, getWindowControl(), entry, stackPanel, wrapInMainPanel);
 					listenTo(childNodeController);
-					childNodeController.setStackedController(stackPanel);
 					stackPanel.pushController(entry.getName(), childNodeController);	
 				}
 			}

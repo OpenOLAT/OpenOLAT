@@ -88,8 +88,6 @@ public class ImageHelperImpl implements ImageHelperSPI {
 		InputStream in = null;
 		PDDocument document = null;
 		try {
-			//fxdiff FXOLAT-97: high CPU load tracker
-
 			WorkThreadInformations.setInfoFiles(null, pdfFile);
 			WorkThreadInformations.set("Generate thumbnail VFSLeaf=" + pdfFile);
 			in = pdfFile.getInputStream();
@@ -116,7 +114,6 @@ public class ImageHelperImpl implements ImageHelperSPI {
 			log.warn("Unable to create image from pdf file.", e);
 			return null;
 		} finally {
-			//fxdiff FXOLAT-97: high CPU load tracker
 			WorkThreadInformations.unset();
 			FileUtils.closeSafely(in);
 			if (document != null) {
@@ -142,7 +139,7 @@ public class ImageHelperImpl implements ImageHelperSPI {
 		OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
 		try {
 			imageIns = new FileImageInputStream(image);
-			SizeAndBufferedImage scaledSize = calcScaledSize(imageIns, imageExt, maxWidth, maxHeight);
+			SizeAndBufferedImage scaledSize = calcScaledSize(imageIns, imageExt, maxWidth, maxHeight, false);
 			if(scaledSize == null) {
 				return null;
 			}
@@ -178,13 +175,14 @@ public class ImageHelperImpl implements ImageHelperSPI {
 	 * @param maxSize the maximum size (height or width) of the new scaled image
 	 * @return
 	 */
-	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
+	@Override
+	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight, boolean fill) {
 		OutputStream bos = null;
 		ImageInputStream ins = null;
 		try {
 			ins = getInputStream(image);
 			String extension = FileUtils.getFileSuffix(image.getName());
-			SizeAndBufferedImage scaledSize = calcScaledSize(ins, extension, maxWidth, maxHeight);
+			SizeAndBufferedImage scaledSize = calcScaledSize(ins, extension, maxWidth, maxHeight, fill);
 			if(scaledSize == null || scaledSize.getImage() == null) {
 				return null;
 			}
@@ -272,11 +270,12 @@ public class ImageHelperImpl implements ImageHelperSPI {
 	 * @param maxheight the maximum height of the new scaled image
 	 * @return
 	 */
+	@Override
 	public Size scaleImage(File image, String imageExt, File scaledImage, int maxWidth, int maxHeight) {
 		ImageInputStream imageSrc = null;
 		try {
 			imageSrc = new FileImageInputStream(image);
-			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight);
+			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight, false);
 			if(scaledSize == null || scaledSize.image == null) {
 				return null;
 			}
@@ -357,11 +356,11 @@ public class ImageHelperImpl implements ImageHelperSPI {
 	private static Size calcScaledSize(BufferedImage image, int maxWidth, int maxHeight) {
 		int width = image.getWidth();
 		int height = image.getHeight();
-		return computeScaledSize(width, height, maxWidth, maxHeight);
+		return computeScaledSize(width, height, maxWidth, maxHeight, false);
 	}
 	
 	private static SizeAndBufferedImage calcScaledSize(ImageInputStream stream,
-			String suffix, int maxWidth, int maxHeight) {
+			String suffix, int maxWidth, int maxHeight, boolean fill) {
 		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
 		if(iter.hasNext()) {
 			ImageReader reader = iter.next();
@@ -369,8 +368,8 @@ public class ImageHelperImpl implements ImageHelperSPI {
 				reader.setInput(stream, true, true);
 				int width = reader.getWidth(reader.getMinIndex());
 				int height = reader.getHeight(reader.getMinIndex());
-				Size size = new Size(width, height, false);
-				Size scaledSize = computeScaledSize(width, height, maxWidth, maxHeight);
+				Size size = new Size(width, height, 0, 0, false);
+				Size scaledSize = computeScaledSize(width, height, maxWidth, maxHeight, fill);
 				SizeAndBufferedImage all = new SizeAndBufferedImage(size, scaledSize);
 				
 				int readerMinIndex = reader.getMinIndex();
@@ -414,21 +413,40 @@ public class ImageHelperImpl implements ImageHelperSPI {
 		return null;
 	}
 	
-	private static Size computeScaledSize(int width, int height, int maxWidth, int maxHeight) {
+	private static Size computeScaledSize(int width, int height, int maxWidth, int maxHeight, boolean fill) {
 		if(maxHeight > height && maxWidth > width) {
-			return new Size(width, height, false);
-    }
-
-		double thumbRatio = (double)maxWidth / (double)maxHeight;
-    double imageRatio = (double)width / (double)height;
-    if (thumbRatio < imageRatio) {
-      maxHeight = (int)(maxWidth / imageRatio);
-    }
-    else {
-      maxWidth = (int)(maxHeight * imageRatio);
-    }
-
-		return new Size(maxWidth, maxHeight, true);
+			return new Size(width, height, 0, 0, false);
+		}
+		
+		int xOffset = 0;
+		int yOffset = 0;
+		
+		if(fill) {
+			double thumbRatio = (double)maxWidth / (double)maxHeight;
+			double imageRatio = (double)width / (double)height;
+			if (thumbRatio < imageRatio) {
+				int newWidth = (int)(maxHeight * imageRatio);
+				if(newWidth > maxWidth) {
+					xOffset = (newWidth - maxWidth) / 2;
+				}
+				maxWidth = Math.min(maxWidth, newWidth);
+			} else {
+				int newHeight = (int)(maxWidth / imageRatio);
+				if(newHeight > maxHeight) {
+					yOffset = (newHeight - maxHeight) / 2;
+				}
+				maxHeight = Math.min(maxHeight, newHeight);
+			}
+		} else {
+			double thumbRatio = (double)maxWidth / (double)maxHeight;
+			double imageRatio = (double)width / (double)height;
+			if (thumbRatio < imageRatio) {
+				maxHeight = (int)(maxWidth / imageRatio);
+			} else {
+				maxWidth = (int)(maxHeight * imageRatio);
+			}
+		}
+		return new Size(maxWidth, maxHeight, xOffset, yOffset, true);
 	}
 	
 	/**
@@ -545,51 +563,62 @@ public class ImageHelperImpl implements ImageHelperSPI {
 		
 		int dstWidth = scaledSize.getWidth();
 		int dstHeight = scaledSize.getHeight();
-		
-    BufferedImage ret = img;
-    int w, h;
+			
+	    BufferedImage ret = img;
+	    int w, h;
+	
+	    // Use multi-step technique: start with original size, then
+	    // scale down in multiple passes with drawImage()
+	    // until the target size is reached
+	    w = img.getWidth();
+	    h = img.getHeight();
+	    
+	    int x = scaledSize.getXOffset();
+	    int y = scaledSize.getYOffset();
+	    
+	    //crop the image to see only the center of the image
+	    if(x > 0 || y > 0) {
+	    	ret = img.getSubimage(x, y, w - (2 * x), h - (2 * y));
+	    }
+	
+	    do {
+	    	if (w > dstWidth) {
+	    		if(x > 0) {
+	    			x /= 2;
+	    		}
+	    		w /= 2;
+		        if (w < dstWidth) {
+		            w = dstWidth;
+		        }
+		    } else {
+		        w = dstWidth;
+		    }
+	
+	    	if (h > dstHeight) {
+	    		h /= 2;
+	    		if (h < dstHeight) {
+	    			h = dstHeight;
+	    		}
+	    	} else {
+	    		h = dstHeight;
+	    	}
+	
+	    	BufferedImage tmp;
+	    	if (dest.getWidth() == w && dest.getHeight() == h && w == dstWidth && h == dstHeight){
+	    		tmp = dest;
+	    	} else {
+	    		tmp = new BufferedImage(w, h, dest.getType());
+	    	}
+	    
+	    	Graphics2D g2 = tmp.createGraphics();
+	    	g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+	    	g2.drawImage(ret, 0, 0, w, h, null);
+	    	g2.dispose();
+	    	
+	    	ret = tmp;
+	    } while (w != dstWidth || h != dstHeight);
 
-    // Use multi-step technique: start with original size, then
-    // scale down in multiple passes with drawImage()
-    // until the target size is reached
-    w = img.getWidth();
-    h = img.getHeight();
-
-    do {
-    	if (w > dstWidth) {
-    		w /= 2;
-        if (w < dstWidth) {
-            w = dstWidth;
-        }
-    	} else {
-        w = dstWidth;
-    	}
-
-    	if (h > dstHeight) {
-        h /= 2;
-        if (h < dstHeight) {
-            h = dstHeight;
-        }
-    	} else {
-        h = dstHeight;
-    	}
-
-    	BufferedImage tmp;
-    	if (dest.getWidth() == w && dest.getHeight() == h && w == dstWidth && h == dstHeight){
-    		tmp = dest;
-    	} else {
-    		tmp = new BufferedImage(w, h, dest.getType());
-    	}
-    
-    	Graphics2D g2 = tmp.createGraphics();
-    	g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-    	g2.drawImage(ret, 0, 0, w, h, null);
-    	g2.dispose();
-
-    	ret = tmp;
-    } while (w != dstWidth || h != dstHeight);
-
-    return ret;
+	    return ret;
 	}
 	
 	private final static void closeQuietly(ImageInputStream ins) {

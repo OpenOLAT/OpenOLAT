@@ -182,8 +182,8 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	public void setCustomEnabledLinkCSS(String customEnabledLinkCSS) {
 		hasCustomEnabledCss=true;
 		this.customEnabledLinkCSS = customEnabledLinkCSS;
-		if(customEnabledLinkCSS != null && this.component != null){
-			this.component.setCustomEnabledLinkCSS(customEnabledLinkCSS);
+		if(customEnabledLinkCSS != null && component != null){
+			component.setCustomEnabledLinkCSS(customEnabledLinkCSS);
 		}
 	}
 
@@ -193,8 +193,8 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	public void setCustomDisabledLinkCSS(String customDisabledLinkCSS) {
 		hasCustomDisabledCss = true;
 		this.customDisabledLinkCSS  = customDisabledLinkCSS;
-		if(customDisabledLinkCSS != null && this.component != null){
-			this.component.setCustomDisabledLinkCSS(customDisabledLinkCSS);
+		if(customDisabledLinkCSS != null && component != null){
+			component.setCustomDisabledLinkCSS(customDisabledLinkCSS);
 		}
 	}
 	

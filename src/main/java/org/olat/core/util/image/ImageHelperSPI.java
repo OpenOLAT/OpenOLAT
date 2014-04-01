@@ -46,7 +46,7 @@ public interface ImageHelperSPI {
 	
 	public Size scaleImage(File image, String extension, File scaledImage, int maxWidth, int maxHeight);
 	
-	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight);
+	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight, boolean fill);
 
 	public Size scaleImage(File image, String imgExt, VFSLeaf scaledImage, int maxWidth, int maxHeight);
 	

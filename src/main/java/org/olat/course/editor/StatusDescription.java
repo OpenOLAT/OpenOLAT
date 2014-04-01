@@ -28,9 +28,6 @@ package org.olat.course.editor;
 import java.util.Locale;
 import java.util.logging.Level;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -44,8 +41,6 @@ import org.olat.course.condition.ConditionEditController;
  */
 public class StatusDescription implements ValidationStatus {
 	public final static StatusDescription NOERROR = new StatusDescription();
-	
-	private static String fallbackTranslatorStr = Util.getPackageName(ConditionEditController.class);
 
 	private Level theLevel;
 	private String shortDesc;
@@ -109,7 +104,7 @@ public class StatusDescription implements ValidationStatus {
 	 * @return
 	 */
 	public String getShortDescription(Locale locale) {
-		Translator f = new PackageTranslator(fallbackTranslatorStr, locale);
+		Translator f = Util.createPackageTranslator(ConditionEditController.class, locale);
 		Translator t = new PackageTranslator(transPckg, locale, f);
 		return t.translate(shortDesc, params);
 	}
@@ -126,7 +121,7 @@ public class StatusDescription implements ValidationStatus {
 	 * @return
 	 */
 	public String getLongDescription(Locale locale) {
-		Translator f = new PackageTranslator(fallbackTranslatorStr, locale);
+		Translator f = Util.createPackageTranslator(ConditionEditController.class, locale);
 		Translator t = new PackageTranslator(transPckg, locale, f);
 		return t.translate(longDesc, params);
 	}
@@ -150,18 +145,6 @@ public class StatusDescription implements ValidationStatus {
 	 */
 	public String getDescriptionForUnit() {
 		return isForUnit;
-	}
-
-	/**
-	 * TODO: future use to enable a button/link starting a issue helper to resolve
-	 * problems, or the like.
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @return
-	 */
-	public Controller getHelperWizard(UserRequest ureq, WindowControl wControl) {
-		return null;
 	}
 
 	/**

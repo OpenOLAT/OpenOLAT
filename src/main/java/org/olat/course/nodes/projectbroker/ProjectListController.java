@@ -36,6 +36,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
@@ -151,7 +152,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			}			
 		}
 		contentVC.contextPut("infoProjectBrokerRunMode", infoProjectBrokerRunMode);
-		mainPanel = new StackedPanel("projectlist_panel");
+		mainPanel = new SimpleStackedPanel("projectlist_panel");
 		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 		if (  (projectGroupManager.isAccountManager(ureq.getIdentity(), cpm, ne.getCourseNode() ) && !previewMode)
 				|| userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity())

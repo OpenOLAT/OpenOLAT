@@ -21,17 +21,19 @@ package org.olat.catalog.ui;
 
 import java.util.List;
 
+import org.olat.catalog.CatalogEntry;
+import org.olat.catalog.CatalogManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.MainPanel;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerImpl;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.repository.ui.list.CatalogNodeController;
 
 /**
  * 
@@ -39,24 +41,22 @@ import org.olat.core.id.context.StateEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogSiteMainController extends MainLayoutBasicController implements Activateable2 {
+public class CatalogSiteMainController extends BasicController implements Activateable2 {
 
-	private final StackedController stackPanel;
-	private final CatalogMainController catalogCtrl;
+	private CatalogNodeController nodeController;
 	
 	public CatalogSiteMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		MainPanel mainPanel = new MainPanel("catalogMainPanel");
 
-		catalogCtrl = new CatalogMainController(ureq, wControl);
-		listenTo(catalogCtrl);
-		stackPanel = new StackedControllerImpl(getWindowControl(), getTranslator(), "o_catalog_breadcrumbs");
-		listenTo(stackPanel);
-		mainPanel.setContent(stackPanel.getInitialComponent());
-		putInitialPanel(mainPanel);
-		stackPanel.pushController("Katalog", catalogCtrl);
-		catalogCtrl.setStackedController(stackPanel);
+		BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
+		putInitialPanel(stackPanel);
+
+		CatalogManager catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
+		List<CatalogEntry> rootNodes = catalogManager.getRootCatalogEntries();
+		if(rootNodes.size() == 1) {
+			nodeController = new CatalogNodeController(ureq, getWindowControl(), rootNodes.get(0), stackPanel, true);
+		}
+		stackPanel.pushController("Katalog", nodeController);
 	}
 	
 	@Override

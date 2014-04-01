@@ -94,12 +94,12 @@ import org.olat.course.run.RunMainController;
 import org.olat.repository.DisplayCourseInfoForm;
 import org.olat.repository.DisplayInfoForm;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryIconRenderer;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.RepositoyUIFactory;
 import org.olat.repository.handlers.CourseHandler;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -368,9 +368,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		String typeName = repositoryEntry.getOlatResource().getResourceableTypeName();
 		StringBuilder typeDisplayText = new StringBuilder(100);
 		if (typeName != null) { // add image and typename code
-			RepositoryEntryIconRenderer reir = new RepositoryEntryIconRenderer(ureq.getLocale());
 			typeDisplayText.append("<span class=\"b_with_small_icon_left ");
-			typeDisplayText.append(reir.getIconCssClass(repositoryEntry));
+			typeDisplayText.append(RepositoyUIFactory.getIconCssClass(repositoryEntry));
 			typeDisplayText.append("\">");
 			String tName = ControllerFactory.translateResourceableTypeName(typeName, getLocale());
 			typeDisplayText.append(tName);
@@ -1059,10 +1058,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		} else if (source == repositoryEditDescriptionController) {
 			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				// RepositoryEntry changed
-				String displayname = repositoryEditDescriptionController.getRepositoryEntry().getDisplayname();
-				String description = repositoryEditDescriptionController.getRepositoryEntry().getDescription();
-				RepositoryEntryLifecycle cycle = repositoryEditDescriptionController.getRepositoryEntry().getLifecycle();
-				repositoryEntry = RepositoryManager.getInstance().setDescriptionAndName(repositoryEntry, displayname, description, cycle);
+				RepositoryEntry re = repositoryEditDescriptionController.getRepositoryEntry();
+				repositoryEntry = RepositoryManager.getInstance().setDescriptionAndName(repositoryEntry,
+						re.getDisplayname(), re.getAuthors(), re.getDescription(),
+						re.getObjectives(), re.getRequirements(), re.getCredits(),
+						re.getMainLanguage(), re.getExpenditureOfWork(), re.getLifecycle());
 				// do not close upon save/upload image closeableModalController.deactivate();
 				updateView(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {

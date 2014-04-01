@@ -26,7 +26,7 @@ import org.olat.core.gui.control.Controller;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface StackedController extends Controller {
+public interface StackedController {
 	
 	/**
 	 * Dissmiss all controllers but the root

@@ -70,7 +70,7 @@ public class ImageUtils {
 				reader.setInput(stream);
 				int width = reader.getWidth(reader.getMinIndex());
 				int height = reader.getHeight(reader.getMinIndex());
-				result = new Size(width, height, false);
+				result = new Size(width, height, 0, 0, false);
 			} catch (IOException e) {
 				log.error(e.getMessage());
 			} finally {

@@ -1270,7 +1270,7 @@ public class FeedManagerImpl extends FeedManager {
 			VFSLeaf imageLeaf = image.moveUploadFileTo(getFeedMediaContainer(feed));
 			// Resize to same dimension box as with repo meta image
 			VFSLeaf tmp = getFeedMediaContainer(feed).createChildLeaf("" + CodeHelper.getRAMUniqueID());
-			imageHelper.scaleImage(imageLeaf, tmp, PICTUREWIDTH,PICTUREWIDTH);
+			imageHelper.scaleImage(imageLeaf, tmp, PICTUREWIDTH,PICTUREWIDTH, false);
 			imageLeaf.delete();
 			imageLeaf = tmp;
 			// Make file system save

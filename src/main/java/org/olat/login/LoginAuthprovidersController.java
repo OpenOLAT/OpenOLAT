@@ -42,6 +42,7 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -110,7 +111,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			ureq.getUserSession().removeEntryFromNonClearedStore("error.change.email.time");
 		}
 		
-		dmzPanel = new StackedPanel("content");
+		dmzPanel = new SimpleStackedPanel("content");
 		content = initLoginContent(ureq, null);
 		dmzPanel.pushContent(content);
 

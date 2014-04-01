@@ -23,11 +23,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.PriceMethod;
 
 /**
@@ -36,13 +37,13 @@ import org.olat.repository.ui.PriceMethod;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryEntryRow {
+public class RepositoryEntryRow implements RepositoryEntryRef {
 	private boolean marked;
 	private boolean selected;
 	
 	private Long key;
 	private String name;
-	private String author;
+	private String authors;
 	private String description;
 	private String thumbnailRelPath;
 	
@@ -71,7 +72,6 @@ public class RepositoryEntryRow {
 	private FormLink startLink;
 	private FormLink detailsLink;
 	private FormLink commentsLink;
-	private Panel detailsPanel;
 	
 	private OLATResourceable olatResource;
 	private RatingWithAverageFormItem ratingFormItem;
@@ -106,6 +106,17 @@ public class RepositoryEntryRow {
 	
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public String getShortenedDescription() {
+		if(description != null) {
+			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(description);
+			if(shortDesc.length() > 255) {
+				shortDesc = shortDesc.substring(0, 255);
+			}
+			return shortDesc;
+		}
+		return "";
 	}
 	
 	public Integer getMyRating() {
@@ -216,14 +227,6 @@ public class RepositoryEntryRow {
 		this.detailsLink = detailsLink;
 	}
 
-	public Panel getDetailsPanel() {
-		return detailsPanel;
-	}
-
-	public void setDetailsPanel(Panel detailsPanel) {
-		this.detailsPanel = detailsPanel;
-	}
-
 	public FormLink getMarkLink() {
 		return markLink;
 	}
@@ -279,12 +282,12 @@ public class RepositoryEntryRow {
 		this.olatResource = olatResource;
 	}
 
-	public String getAuthor() {
-		return author;
+	public String getAuthors() {
+		return authors;
 	}
 	
-	public void setAuthor(String author) {
-		this.author = author;
+	public void setAuthors(String authors) {
+		this.authors = authors;
 	}
 	
 	public String getThumbnailRelPath() {

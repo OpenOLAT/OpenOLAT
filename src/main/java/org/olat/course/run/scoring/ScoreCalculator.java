@@ -101,7 +101,6 @@ public class ScoreCalculator implements Serializable {
 
 		if (getSumOfScoreNodes() != null && getSumOfScoreNodes().size() > 0) {
 			sb.append("(");
-			
 			for(Iterator<String> iter = getSumOfScoreNodes().iterator(); iter.hasNext(); ) {
 				String nodeIdent = iter.next();
 				sb.append("getScore(\"");
@@ -130,7 +129,6 @@ public class ScoreCalculator implements Serializable {
 		StringBuilder sb = new StringBuilder();
 		if (getPassedType().equals(PASSED_TYPE_INHERIT) && getPassedNodes() != null && getPassedNodes().size() > 0) {
 			sb.append("(");
-			
 			for(Iterator<String> iter = getPassedNodes().iterator(); iter.hasNext(); ) {
 				String nodeIdent = iter.next();
 				sb.append("getPassed(\"");

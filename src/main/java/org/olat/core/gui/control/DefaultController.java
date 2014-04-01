@@ -36,6 +36,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
@@ -60,7 +61,7 @@ import org.olat.core.util.session.UserSessionManager;
  */
 public abstract class DefaultController implements Controller, ControllerEventListener {
 	private static final String DEFAULTDISPOSED_PAGE = "defaultdisposed";
-	private OLog log = Tracing.createLoggerFor(DefaultController.class);
+	private static final OLog log = Tracing.createLoggerFor(DefaultController.class);
 	// for memory watch only.
 	private static AtomicInteger controllerCnt = new AtomicInteger(0);
 	private final Object DISPOSE_LOCK = new Object();
@@ -73,7 +74,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	
 	private WindowControl newWControl;
 	
-	private Controller disposedMessageController = null;
+	private Controller disposedMessageController;
 	private Locale locale;
 	
 	/**
@@ -304,7 +305,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 		if (initialComponent instanceof StackedPanel) {
 			wrapperPanel = (StackedPanel) initialComponent;
 		} else {
-			wrapperPanel = new StackedPanel("autowrapper of controller " + this.getClass().getName());
+			wrapperPanel = new SimpleStackedPanel("autowrapper of controller " + this.getClass().getName());
 			wrapperPanel.setContent(initialComponent);
 		}
 		this.initialComponent = wrapperPanel;

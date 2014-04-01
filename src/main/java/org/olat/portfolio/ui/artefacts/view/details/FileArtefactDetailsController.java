@@ -103,7 +103,7 @@ public class FileArtefactDetailsController extends BasicController {
 			vC.contextPut("meta", meta);
 			// show a preview thumbnail if possible
 			if (meta.isThumbnailAvailable()) {
-				VFSLeaf thumb = meta.getThumbnail(200, 200);
+				VFSLeaf thumb = meta.getThumbnail(200, 200, false);
 				if(thumb != null) {
 					mr = new VFSMediaResource(thumb);
 				}

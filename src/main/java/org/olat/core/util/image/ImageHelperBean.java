@@ -41,7 +41,7 @@ public class ImageHelperBean implements ImageHelper {
 	}
 	
 	@Override
-	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {
+	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill) {
 		return imageHelperServiceProvider.thumbnailPDF(pdfFile, thumbnailFile, maxWidth, maxHeight);
 	}
 
@@ -56,8 +56,8 @@ public class ImageHelperBean implements ImageHelper {
 	}
 
 	@Override
-	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
-		return imageHelperServiceProvider.scaleImage(image, scaledImage, maxWidth, maxHeight);
+	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight, boolean fill) {
+		return imageHelperServiceProvider.scaleImage(image, scaledImage, maxWidth, maxHeight, fill);
 	}
 
 	@Override
