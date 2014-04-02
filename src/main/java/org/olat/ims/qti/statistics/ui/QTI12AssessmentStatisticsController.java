@@ -261,14 +261,16 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		for(StatisticSurveyItem surveyItem:surveyItems) {
 			Item item = surveyItem.getItem();
 			Series series = seriesfactory.getSeries(item, null);
-			String name = "overview_" + count++;
-			VelocityContainer vc = createVelocityContainer(name, "hbar_item_overview");
-			vc.contextPut("series", series);
-			vc.contextPut("question", item.getQuestion().getQuestion().renderAsHtml(mediaBaseURL));
-			vc.contextPut("questionType", item.getQuestion().getType());
-			vc.contextPut("title", item.getTitle());
-			mainVC.put(vc.getDispatchID(), vc);
-			overviewList.add(vc.getDispatchID());
+			if(series != null) {//essay hasn't a series
+				String name = "overview_" + count++;
+				VelocityContainer vc = createVelocityContainer(name, "hbar_item_overview");
+				vc.contextPut("series", series);
+				vc.contextPut("question", item.getQuestion().getQuestion().renderAsHtml(mediaBaseURL));
+				vc.contextPut("questionType", item.getQuestion().getType());
+				vc.contextPut("title", item.getTitle());
+				mainVC.put(vc.getDispatchID(), vc);
+				overviewList.add(vc.getDispatchID());
+			}
 		}
 		
 		mainVC.contextPut("overviewList", overviewList);

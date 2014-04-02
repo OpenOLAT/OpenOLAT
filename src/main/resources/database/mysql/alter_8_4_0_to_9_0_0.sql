@@ -330,6 +330,7 @@ alter table o_qp_item add constraint idx_qp_item_type_id foreign key (fk_type) r
 alter table o_qp_item add constraint idx_qp_item_license_id foreign key (fk_license) references o_qp_license(id);
 
 alter table o_qp_taxonomy_level add constraint idx_qp_field_2_parent_id foreign key (fk_parent_field) references o_qp_taxonomy_level(id);
+create index idx_taxon_mat_pathon on o_qp_taxonomy_level (q_mat_path_ids(255));
 
 alter table o_qp_item_type add unique (q_type(200));
 
