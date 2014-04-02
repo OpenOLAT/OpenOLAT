@@ -42,6 +42,7 @@ var BPlayer = {
 			file:videoUrl,
 			width:width,
 			height:height,
+			controlbar: { position: "bottom" },
 			flashplayer:playerUrl
 		};
 		

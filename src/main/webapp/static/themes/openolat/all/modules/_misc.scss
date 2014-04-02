@@ -119,8 +119,8 @@ div.o_infomsgs {
 		div.b_datecomp { top: 2px; float: left; display: inline; }
 		div.o_infomsg {  margin-bottom:1em; padding:10px 0 0 0; }
 		.b_year { display: none; }
-		.o_item_info { color: #7D7D7D; font-size: 90%; }
-		.o_item_info .o_item_info_mod { color:#98221F; }
+		p.o_item_info { color: #7D7D7D; font-size: 90%; margin: 0; }
+		p.o_item_info .o_item_info_mod { color:#98221F; }
 }
 
 div.b_table_wrapper td a.o_peekview_infomsg_link { display:inline; }
