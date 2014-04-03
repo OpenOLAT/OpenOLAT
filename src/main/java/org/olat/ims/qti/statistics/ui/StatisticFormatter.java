@@ -21,6 +21,7 @@ package org.olat.ims.qti.statistics.ui;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -72,5 +73,14 @@ class StatisticFormatter {
 			    TimeUnit.MILLISECONDS.toSeconds(duration) - 
 			    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
 			);
+	}
+	
+	protected static String getModeString(List<Double> modes) {
+		StringBuilder sb = new StringBuilder();
+		for(Double mode:modes) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(format(mode));
+		}
+		return sb.toString();
 	}
 }

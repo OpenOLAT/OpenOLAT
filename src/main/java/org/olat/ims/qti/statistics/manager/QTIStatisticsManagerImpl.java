@@ -111,10 +111,10 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		double maxScore = 0.0;
 		double minScore = Double.MAX_VALUE;
 		double[] scores = new double[rawDatas.size()];
-		long[] durationMinutes = new long[rawDatas.size()];
+		double[] durationSecondes = new double[rawDatas.size()];
 		
-		long minDuration = Integer.MAX_VALUE;
-		long maxDuration = 0;
+		double minDuration = Double.MAX_VALUE;
+		double maxDuration = 0d;
 
 		int dataPos = 0;
 		for(Object[] rawData:rawDatas) {
@@ -138,11 +138,11 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 			Long duration = (Long)rawData[1];
 			if(duration != null) {
 				double durationd = duration.doubleValue();
-				long durationMinute = Math.round(durationd / 60000.0d);
-				durationMinutes[dataPos] = durationMinute;
+				double durationSeconde = Math.round(durationd / 1000d);
+				durationSecondes[dataPos] = durationSeconde;
 				totalDuration += durationd;
-				minDuration = Math.min(minDuration, durationMinute);
-				maxDuration = Math.max(maxDuration, durationMinute);
+				minDuration = Math.min(minDuration, durationSeconde);
+				maxDuration = Math.max(maxDuration, durationSeconde);
 			}
 			dataPos++;
 		}
@@ -167,7 +167,7 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		stats.setStandardDeviation(statisticsHelper.getStdDev());
 		stats.setMedian(statisticsHelper.median());
 		stats.setMode(statisticsHelper.mode());
-		stats.setDurations(durationMinutes);
+		stats.setDurations(durationSecondes);
 		stats.setScores(scores);
 		return stats;
 	}
@@ -529,7 +529,7 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		}
 
 		StatisticSurveyItem currentItem = null;
-		List<StatisticSurveyItem> answerToNumberList = new ArrayList<>();
+		Map<Item, StatisticSurveyItem> itemToStatisticsMap = new HashMap<>();
 		for(Object[] result:results) {
 			String itemIdent = (String)result[0];
 			String answer = (String)result[1];
@@ -538,13 +538,21 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 			Item item = identToItemMap.get(itemIdent);
 			if(currentItem == null || !currentItem.getItem().getIdent().equals(itemIdent)) {
 				currentItem = new StatisticSurveyItem(item);
-				answerToNumberList.add(currentItem);
+				itemToStatisticsMap.put(item, currentItem);
 			}
 			
 			Response response = findResponses(item, answer);
 			currentItem.getResponses().add(new StatisticSurveyItemResponse(response, answer, numOfAnswers));
 		}
-		return answerToNumberList;
+		
+		List<StatisticSurveyItem> reorderList = new ArrayList<>();
+		for(Item item:items) {
+			StatisticSurveyItem statsItem = itemToStatisticsMap.get(item);
+			if(statsItem != null) {
+				reorderList.add(statsItem);
+			}
+		}
+		return reorderList;
 	}
 	
 	private Response findResponses(Item item, String answer) {

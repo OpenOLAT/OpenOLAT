@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.chart.BarSeries;
+import org.olat.core.gui.translator.Translator;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Question;
 import org.olat.ims.qti.editor.beecom.objects.Response;
@@ -48,13 +49,18 @@ public class SeriesFactory {
 	private static final String BAR_ANSWERED = "horizontalBarMultipleChoiceSurvey";
 	private static final String BAR_CORRECT = "horizontalBarSingleChoice";
 	
-	
+	private final Translator translator;
 	private final QTIStatisticsManager qtiStatisticsManager;
 	private final QTIStatisticResourceResult resourceResult;
 	
-	public SeriesFactory(QTIStatisticResourceResult resourceResult) {
+	public SeriesFactory(QTIStatisticResourceResult resourceResult, Translator translator) {
+		this.translator = translator;
 		this.resourceResult = resourceResult;
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTIStatisticsManager.class);
+	}
+	
+	private String translate(String key) {
+		return translator.translate(key);
 	}
 	
 	public static String getCssClass(Item item) {
@@ -109,11 +115,11 @@ public class SeriesFactory {
 			d1.add(ans_count, label, cssColor);
 
 			String text = response.getContent().renderAsHtml(mediaBaseURL);
-			responseInfos.add(new ResponseInfos(label, text, points, response.isCorrect(), survey));
+			responseInfos.add(new ResponseInfos(label, text, points, response.isCorrect(), survey, false));
 		}
 
 		List<BarSeries> serieList = Collections.singletonList(d1);
-		Series series = new Series(serieList, responseInfos, numOfParticipants);
+		Series series = new Series(serieList, responseInfos, numOfParticipants, false);
 		series.setChartType(BAR_CORRECT);
 		series.setItemCss(getCssClass(item));
 		return series;
@@ -123,9 +129,10 @@ public class SeriesFactory {
 		List<StatisticChoiceOption> statisticResponses = qtiStatisticsManager
 				.getNumOfRightAnsweredMultipleChoice(item, resourceResult.getSearchParams());
 
-		BarSeries d1 = new BarSeries("bar_green");
-		BarSeries d2 = new BarSeries("bar_red");
-		BarSeries d3 = new BarSeries("bar_grey");
+		BarSeries d1 = new BarSeries("bar_green", translate("answer.correct"));
+		BarSeries d2 = new BarSeries("bar_red", translate("answer.false"));
+		BarSeries d3 = new BarSeries("bar_grey", translate("answer.noanswer"));
+		
 
 		String mediaBaseURL = resourceResult.getMediaBaseURL();
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
@@ -158,7 +165,7 @@ public class SeriesFactory {
 			
 			String text = response.getContent().renderAsHtml(mediaBaseURL);
 			Float pointsObj = survey ? null : points;
-			responseInfos.add(new ResponseInfos(label, text, pointsObj, (points > 0f), survey));
+			responseInfos.add(new ResponseInfos(label, text, pointsObj, (points > 0f), survey, false));
 		}
 
 		List<BarSeries> serieList = new ArrayList<>(3);
@@ -168,7 +175,7 @@ public class SeriesFactory {
 			serieList.add(d3);
 		}
 		
-		Series series = new Series(serieList, responseInfos, numOfParticipants);
+		Series series = new Series(serieList, responseInfos, numOfParticipants, !survey);
 		series.setChartType(survey ? BAR_ANSWERED : BAR_CORRECT_WRONG_NOT);
 		series.setItemCss(getCssClass(item));
 		return series;
@@ -183,14 +190,15 @@ public class SeriesFactory {
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 		
 		int i = 0;
-		BarSeries d1 = new BarSeries("bar_green");
-		BarSeries d2 = new BarSeries("bar_red");
-		BarSeries d3 = new BarSeries("bar_grey");
-		
+		BarSeries d1 = new BarSeries("bar_green", translate("answer.correct"));
+		BarSeries d2 = new BarSeries("bar_red", translate("answer.false"));
+		BarSeries d3 = new BarSeries("bar_grey", translate("answer.noanswer"));
+
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for (StatisticKPrimOption statisticResponse:statisticResponses) {
 			Response response = statisticResponse.getResponse();
-
+			
+			boolean correct = response.isCorrect();
 			double right = statisticResponse.getNumOfCorrect();
 			double wrong = statisticResponse.getNumOfIncorrect();
 			double notanswered = numOfParticipants - right - wrong;
@@ -201,14 +209,14 @@ public class SeriesFactory {
 			d3.add(notanswered, label);
 
 			String text = response.getContent().renderAsHtml(mediaBaseURL);
-			responseInfos.add(new ResponseInfos(label, text, null, (right > 0f), survey));
+			responseInfos.add(new ResponseInfos(label, text, null, correct, survey, true));
 		}
 		
 		List<BarSeries> serieList = new ArrayList<>(3);
 		serieList.add(d1);
 		serieList.add(d2);
 		serieList.add(d3);
-		Series series = new Series(serieList, responseInfos, numOfParticipants);
+		Series series = new Series(serieList, responseInfos, numOfParticipants, !survey);
 		series.setChartType(survey ? BAR_ANSWERED : BAR_CORRECT_WRONG_NOT);
 		series.setItemCss(getCssClass(item));
 		return series;
@@ -225,7 +233,7 @@ public class SeriesFactory {
 
 		int i = 0;
 		String cssColor = survey ? "bar_default" : "bar_green";
-		BarSeries d1 = new BarSeries();
+		BarSeries d1 = new BarSeries(cssColor, null);
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for (StatisticFIBOption entry : processedAnswers) {
 
@@ -238,18 +246,18 @@ public class SeriesFactory {
 			if(entry.getAlternatives().size() > 1) {
 				text.append(" [");
 				for(int j=1; j<entry.getAlternatives().size(); j++) {
-					if(j > 2) text.append(", ");
+					if(j > 1) text.append(", ");
 					text.append(entry.getAlternatives().get(j));
 				}
 				text.append("]");
 			}
 			
 			Float score = singleCorrectScore ? null : entry.getPoints();
-			responseInfos.add(new ResponseInfos(label, text.toString(), entry.getWrongAnswers(), score, true, survey));
+			responseInfos.add(new ResponseInfos(label, text.toString(), entry.getWrongAnswers(), score, true, survey, false));
 		}
 		
 		List<BarSeries> serieList = Collections.singletonList(d1);
-		Series series = new Series(serieList, responseInfos, numOfParticipants);
+		Series series = new Series(serieList, responseInfos, numOfParticipants, false);
 		series.setChartType(BAR_ANSWERED);
 		series.setItemCss(getCssClass(item));
 		return series;

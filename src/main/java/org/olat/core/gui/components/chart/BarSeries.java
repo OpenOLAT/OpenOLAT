@@ -31,14 +31,16 @@ import java.util.Map;
  */
 public class BarSeries {
 
+	private final String legend;
 	private final String cssClass;
 	private List<BarPoint> points = new ArrayList<BarPoint>();
 	
 	public BarSeries() {
-		this.cssClass = null;
+		this(null, null);
 	}
 	
-	public BarSeries(String cssClass) {
+	public BarSeries(String cssClass, String legend) {
+		this.legend = legend;
 		this.cssClass = cssClass;
 	}
 
@@ -46,6 +48,9 @@ public class BarSeries {
 		return cssClass;
 	}
 
+	public String getLegend() {
+		return legend;
+	}
 
 	protected List<BarPoint> getPoints() {
 		return points;
@@ -77,14 +82,13 @@ public class BarSeries {
 		return sb.toString();
 	}
 	
-	
-	public static final String datasToString(long[] values) {
-		StringBuilder sb = new StringBuilder();
-		for(long value:values) {
-			if(sb.length() > 0) sb.append(",");
-			sb.append((double)value);
+	public static final boolean hasNotNullDatas(double[] values) {
+		for(double value:values) {
+			if(value > 0.00001d) {
+				return true;
+			}
 		}
-		return sb.toString();
+		return false;
 	}
 
 	public static Stringuified getDatasAndColors(List<BarSeries> seriesList, String defaultBarClass) {

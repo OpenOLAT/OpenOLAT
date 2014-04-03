@@ -137,7 +137,7 @@ public interface QTIStatisticsManager {
 	public List<StatisticKPrimOption> getNumbersInKPrim(Item item, QTIStatisticSearchParams searchParams);
 	
 	/**
-	 * 
+	 * The returned list is ordered like the items given as parameter.
 	 * @param searchParams
 	 * @param items
 	 * @return

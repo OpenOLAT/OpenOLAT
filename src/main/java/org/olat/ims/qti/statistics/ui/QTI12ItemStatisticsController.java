@@ -64,7 +64,7 @@ public class QTI12ItemStatisticsController extends BasicController {
 			Item item, QTIStatisticResourceResult resourceResult, boolean printMode) {
 		super(ureq, wControl);
 		this.item = item;
-		seriesfactory = new SeriesFactory(resourceResult);
+		seriesfactory = new SeriesFactory(resourceResult, getTranslator());
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTIStatisticsManager.class);
 		
 		this.resourceResult = resourceResult;
@@ -101,7 +101,14 @@ public class QTI12ItemStatisticsController extends BasicController {
 
 	protected StatisticsItem initItemStatistics() {
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
-		double maxScore = survey ? 1.0d : item.getQuestion().getMaxValue();
+		double maxScore;
+		if(survey) {
+			maxScore = 1d;
+		} else if(item.getQuestion().isSingleCorrect()) {
+			maxScore = item.getQuestion().getSingleCorrectScore();
+		} else {
+			maxScore = item.getQuestion().getMaxValue();
+		}
 		StatisticsItem itemStats = qtiStatisticsManager
 				.getItemStatistics(item.getIdent(), maxScore, searchParams);
 
@@ -116,7 +123,9 @@ public class QTI12ItemStatisticsController extends BasicController {
 			mainVC.contextPut("maxScore", maxScore);
 			mainVC.contextPut("rightAnswers", rightAnswers);
 			mainVC.contextPut("wrongAnswers", wrongAnswers);
-			mainVC.contextPut("notAnswered", notAnswered);
+			if(item.getQuestion().getType() != Question.TYPE_FIB) {
+				mainVC.contextPut("notAnswered", notAnswered);
+			}
 			mainVC.contextPut("itemDifficulty", formatTwo(itemStats.getDifficulty()));
 			mainVC.contextPut("averageScore", formatTwo(itemStats.getAverageScore()));
 		}
