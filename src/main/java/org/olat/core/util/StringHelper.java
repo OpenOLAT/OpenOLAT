@@ -54,6 +54,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
+import com.thoughtworks.xstream.core.util.Base64Encoder;
+
 /**
  * enclosing_type Description: <br>
  * helper class for formating Strings (not locale specific)
@@ -211,6 +213,37 @@ public class StringHelper {
 			throw new AssertException("utf-8 encoding is needed for proper encoding, but not offered on this java platform????");
 		}
 		return encodedURL;
+	}
+	
+	/**
+	 * Encode the string into a Base64 string.
+	 * 
+	 * @param unencoded The string to encode
+	 * @return The encoded string
+	 */
+	public static String encodeBase64(String unencoded) {
+		return new Base64Encoder().encode(unencoded.getBytes());
+	}
+	
+	/**
+	 * Encode the string into a Base64 string.
+	 * 
+	 * @param unencoded The bytes to encode
+	 * @return The encoded string
+	 */
+	public static String encodeBase64(byte[] unencoded) {
+		return new Base64Encoder().encode(unencoded);
+	}
+	
+	/**
+	 * Decode a Base 64 string.
+	 * 
+	 * @param encoded The string to decode
+	 * @return The decoded string
+	 */
+	public static String decodeBase64(String encoded) {
+		byte[] decoded = new Base64Encoder().decode(encoded);
+		return new String(decoded);
 	}
 
 	/**

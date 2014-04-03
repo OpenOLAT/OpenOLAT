@@ -51,8 +51,6 @@ import org.olat.restapi.security.RestSecurityBeanImpl;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.test.OlatJerseyTestCase;
 
-import com.oreilly.servlet.Base64Encoder;
-
 /**
  * Description:<br>
  * Test the filter
@@ -193,7 +191,7 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 		//path is protected
 		URI uri = UriBuilder.fromUri(getContextURI()).path("/users/version").build();
 		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
-		method.setHeader("Authorization", "Basic " + Base64Encoder.encode("administrator:openolat"));
+		method.setHeader("Authorization", "Basic " + StringHelper.encodeBase64("administrator:openolat"));
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String securityToken = conn.getSecurityToken(response);

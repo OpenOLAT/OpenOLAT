@@ -39,8 +39,6 @@ import javax.crypto.spec.PBEKeySpec;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
-import com.oreilly.servlet.Base64Encoder;
-
 
 /**
  * Description: it's our hash factory
@@ -191,6 +189,6 @@ public class Encoder {
 	}
 
   public static String byteToBase64(byte[] data){
-  	return Base64Encoder.encode(data);
+  	return StringHelper.encodeBase64(data);
   }
 }

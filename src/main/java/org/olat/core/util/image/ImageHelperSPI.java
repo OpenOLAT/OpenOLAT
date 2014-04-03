@@ -40,7 +40,8 @@ public interface ImageHelperSPI {
 	 * @return
 	 */
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight);
-
+	
+	public boolean cropImage(File image, File cropedImage, Crop cropSelection);
 
 	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight);
 	

@@ -27,6 +27,10 @@
 package org.olat.commons.calendar.ui;
 
 
+import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarManagerFactory;
+import org.olat.commons.calendar.ImportCalendarManager;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -34,20 +38,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.id.Identity;
-
-
-import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarManagerFactory;
-import org.olat.commons.calendar.ImportCalendarManager;
 
 public class CalendarImportNameForm extends FormBasicController {
 
-	private static final String SUBMIT_SINGLE = "submit";
-
 	private TextElement calendarName;
-	private Identity identity;
 	
 	/**
 	 * Display an event for modification or to add a new event.
@@ -55,10 +49,7 @@ public class CalendarImportNameForm extends FormBasicController {
 	 */
 	public CalendarImportNameForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
 		setBasePackage(CalendarManager.class);
-		
-		this.identity = ureq.getIdentity();
 
 		initForm (ureq);
 	}
@@ -70,7 +61,7 @@ public class CalendarImportNameForm extends FormBasicController {
 			return false;
 		} else {
 			CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
-			String calID = ImportCalendarManager.getImportedCalendarID(identity, calendarName.getValue());
+			String calID = ImportCalendarManager.getImportedCalendarID(getIdentity(), calendarName.getValue());
 			if (calManager.calendarExists(CalendarManager.TYPE_USER, calID)) {
 				calendarName.setErrorKey("cal.import.calname.exists.error", null);
 				return false;
@@ -113,7 +104,7 @@ public class CalendarImportNameForm extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton(SUBMIT_SINGLE, "cal.import.calname.submit", buttonLayout);
+		uifactory.addFormSubmitButton("submit", "cal.import.calname.submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 

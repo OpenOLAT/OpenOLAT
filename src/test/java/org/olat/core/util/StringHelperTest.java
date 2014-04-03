@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Assert;
 import org.junit.Test;
 
+
 /**
  * Description:<br>
  * This test case tests the StringHelper methods
@@ -34,6 +35,34 @@ import org.junit.Test;
  * @author gnaegi
  */
 public class StringHelperTest {
+	
+	@Test
+	public void base64() throws Exception {
+		String str = "this a super secret string avec un \u00E9 et encore quelques charact\u00E8res kanji \u30b0.";
+
+		String xstream64 = new com.thoughtworks.xstream.core.util.Base64Encoder().encode(str.getBytes());
+		String infinispan64 = org.infinispan.commons.util.Base64.encodeBytes(str.getBytes());
+		String olat64 = StringHelper.encodeBase64(str);
+		String olatBytes64 = StringHelper.encodeBase64(str.getBytes());
+		//encode and compare
+		Assert.assertEquals(xstream64, infinispan64);
+		Assert.assertEquals(infinispan64, olat64);
+		Assert.assertEquals(infinispan64, olatBytes64);
+		
+		//decode with the same coder
+		Assert.assertEquals(str, new String(org.infinispan.commons.util.Base64.decode(infinispan64)));
+		Assert.assertEquals(str, new String(new com.thoughtworks.xstream.core.util.Base64Encoder().decode(xstream64)));
+		Assert.assertEquals(str, StringHelper.decodeBase64(olat64));
+		Assert.assertEquals(str, StringHelper.decodeBase64(olatBytes64));
+		
+		//decode with an other decoder
+		Assert.assertEquals(str, new String(org.infinispan.commons.util.Base64.decode(olat64)));
+		Assert.assertEquals(str, new String(org.infinispan.commons.util.Base64.decode(olatBytes64)));
+		Assert.assertEquals(str, new String(new com.thoughtworks.xstream.core.util.Base64Encoder().decode(olat64)));
+		Assert.assertEquals(str, new String(new com.thoughtworks.xstream.core.util.Base64Encoder().decode(olatBytes64)));
+		Assert.assertEquals(str, StringHelper.decodeBase64(infinispan64));
+		Assert.assertEquals(str, StringHelper.decodeBase64(xstream64));
+	}
 
 	@Test
 	public void testContainsNonWhitespace() {

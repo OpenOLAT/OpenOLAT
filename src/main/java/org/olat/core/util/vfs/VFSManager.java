@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
@@ -47,7 +45,6 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.util.ContainerAndFile;
 
 public class VFSManager extends BasicManager {
-	private static final Pattern fileNamePattern = Pattern.compile("(.+)[.](\\w{3,4})");
 	private static final OLog log = Tracing.createLoggerFor(VFSManager.class);
 	private static final int BUFFER_SIZE = 2048;
 	
@@ -432,34 +429,13 @@ public class VFSManager extends BasicManager {
 		existingItem = root.resolve(newName);
 		int i = 1;
 		while (existingItem != null) {
-			newName = appendNumberAtTheEndOfFilename(name, i++);
+			newName = FileUtils.appendNumberAtTheEndOfFilename(name, i++);
 			existingItem = root.resolve(newName);
 		}
 		return newName;
 	}
 
-	/**
-	 * Sticks together a new filename. If there's a match with a common filename
-	 * with extension, add the counter to the end of the filename before the
-	 * extension. Else just add the counter to the end of the name. E.g.:
-	 * hello.xml => hello1.xml where 1 is the counter
-	 * 
-	 * @param name
-	 * @param number
-	 * @return The new name with the counter added
-	 */
-	public static String appendNumberAtTheEndOfFilename(String name, int number) {
-		// Try to match the file to the pattern "[name].[extension]"
-		Matcher m = fileNamePattern.matcher(name);
-		StringBuffer newName = new StringBuffer();
-		if (m.matches()) {
-			newName.append(m.group(1)).append(number);
-			newName.append(".").append(m.group(2));
-		} else {
-			newName.append(name).append(number);
-		}
-		return newName.toString();
-	}
+
 
 	/**
 	 * Copies the content of the source to the target leaf.
@@ -607,7 +583,7 @@ public class VFSManager extends BasicManager {
 		VFSItem newFile = container.resolve(newName);
 		for(int count=0; newFile != null && count < 999 ; ) {
 			count++;
-			newName = appendNumberAtTheEndOfFilename(filename, count);
+			newName = FileUtils.appendNumberAtTheEndOfFilename(filename, count);
 		    newFile = container.resolve(newName);
 		}
 		if(newFile == null) {

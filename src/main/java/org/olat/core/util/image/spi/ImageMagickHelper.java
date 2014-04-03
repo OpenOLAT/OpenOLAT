@@ -30,7 +30,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.olat.core.commons.services.thumbnail.FinalSize;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.image.Crop;
 import org.olat.core.util.image.ImageHelperSPI;
 import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.LocalImpl;
@@ -45,11 +47,9 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
+public class ImageMagickHelper implements ImageHelperSPI {
 	
-	public ImageMagickHelper() {
-		//
-	}
+	private static final OLog log = Tracing.createLoggerFor(ImageMagickHelper.class);
 
 	@Override
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {
@@ -62,6 +62,12 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 		return null;
 	}
 	
+	@Override
+	public boolean cropImage(File image, File cropedImage, Crop cropSelection) {
+		FinalSize size = cropImageWithImageMagick(image, cropedImage, cropSelection);
+		return size != null;
+	}
+
 	@Override
 	public Size scaleImage(File image, String imgExt, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
 		File scaledBaseFile = extractIOFile(scaledImage);
@@ -116,7 +122,7 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 	private final FinalSize generateThumbnail(File file, File thumbnailFile, boolean firstOnly,
 			int maxWidth, int maxHeight, boolean fill) {
 		if(file == null || thumbnailFile == null) {
-			logError("Input file or output file for thumbnailing?" + file + " -> " + thumbnailFile, null);
+			log.error("Input file or output file for thumbnailing?" + file + " -> " + thumbnailFile, null);
 			return null;
 		}
 		
@@ -153,11 +159,51 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 		try {
 			doneSignal.await(3000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
-			logError("", e);
+			log.error("", e);
 		}
 		
 		worker.destroyProcess();
 		
+		return worker.size;
+	}
+	
+	private final FinalSize cropImageWithImageMagick(File file, File cropedFile, Crop cropSelection) {
+		if(file == null || cropedFile == null) {
+			log.error("Input file or output file for thumbnailing?" + file + " -> " + cropedFile, null);
+			return null;
+		}
+		
+		if(!cropedFile.getParentFile().exists()) {
+			cropedFile.getParentFile().mkdirs();
+		}
+
+		List<String> cmds = new ArrayList<String>();
+		cmds.add("convert");
+		cmds.add("-verbose");
+		cmds.add("-crop");
+		
+		//40x30+10+10
+		//widthxheight+xOffset+yOffset
+		int width = cropSelection.getWidth();
+		int height = cropSelection.getHeight();
+		int x = cropSelection.getX();
+		int y = cropSelection.getY();
+		cmds.add(width + "x" + height + "+" + x + "+" + y);
+		cmds.add(file.getAbsolutePath());
+		cmds.add(cropedFile.getAbsolutePath());
+
+		CountDownLatch doneSignal = new CountDownLatch(1);
+
+		ProcessWorker worker = new ProcessWorker(cropedFile, cmds, doneSignal);
+		worker.start();
+
+		try {
+			doneSignal.await(3000, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			log.error("", e);
+		}
+		
+		worker.destroyProcess();
 		return worker.size;
 	}
 	
@@ -192,9 +238,9 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 			//
 		}
 
-		if (isLogDebugEnabled()) {
-			logDebug("Error: " + errors.toString());
-			logDebug("Output: " + output.toString());
+		if (log.isDebug()) {
+			log.debug("Error: " + errors.toString());
+			log.debug("Output: " + output.toString());
 		}
 
 		try {
@@ -210,7 +256,7 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 			//
 		}
 		if(rv == null) {
-			logWarn("Could not generate thumbnail: "+thumbnailFile, null);
+			log.warn("Could not generate thumbnail: "+thumbnailFile, null);
 		}
 		return rv;
 	}
@@ -252,7 +298,7 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 				}
 			}
 		} catch (NumberFormatException e) {
-			logError("Error parsing output: " + output, null);
+			log.error("Error parsing output: " + output, null);
 		}
 		return null;
 	}
@@ -268,8 +314,8 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 					return new FinalSize(width, height);
 				} catch (NumberFormatException e) {
 					//not a number, it's possible
-					if(isLogDebugEnabled()) {
-						logDebug("Not a size: " + chuck, null);
+					if(log.isDebug()) {
+						log.debug("Not a size: " + chuck, null);
 					}
 				}
 			}
@@ -281,7 +327,6 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 		
 		private volatile Process process;
 		private volatile FinalSize size;
-
 
 		private final List<String> cmd;
 		private final File thumbnailFile;
@@ -302,10 +347,9 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 
 		@Override
 		public void run() {
-			
 			try {
-				if(isLogDebugEnabled()) {
-					logDebug(cmd.toString());
+				if(log.isDebug()) {
+					log.debug(cmd.toString());
 				}
 				
 				ProcessBuilder builder = new ProcessBuilder(cmd);
@@ -313,7 +357,7 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 				size = executeProcess(thumbnailFile, process);
 				doneSignal.countDown();
 			} catch (IOException e) {
-				logError ("Could not spawn convert sub process", e);
+				log.error ("Could not spawn convert sub process", e);
 				destroyProcess();
 			}
 		}

@@ -62,6 +62,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WorkThreadInformations;
+import org.olat.core.util.image.Crop;
 import org.olat.core.util.image.ImageHelperSPI;
 import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -123,6 +124,26 @@ public class ImageHelperImpl implements ImageHelperSPI {
 					//only a try, fail silently
 				}
 			}
+		}
+	}
+	
+	@Override
+	public boolean cropImage(File image, File cropedImage, Crop cropSelection) {
+		ImageInputStream imageSrc = null;
+		try {
+			imageSrc = new FileImageInputStream(image);
+			String extension = FileUtils.getFileSuffix(cropedImage.getName());
+			SizeAndBufferedImage img = getImage(imageSrc, extension);
+			BufferedImage croppedImg = cropTo(img.getImage(), img.getSize(), cropSelection);
+			Size size = new Size(cropSelection.getWidth(), cropSelection.getHeight(), false);
+			return writeTo(croppedImg, cropedImage, size, extension);
+		} catch (IOException e) {
+			return false;
+		//fxdiff FXOLAT-109: prevent red screen if the image has wrong EXIF data
+		} catch (CMMException e) {
+			return false;
+		} finally {
+			closeQuietly(imageSrc);
 		}
 	}
 
@@ -368,7 +389,7 @@ public class ImageHelperImpl implements ImageHelperSPI {
 				reader.setInput(stream, true, true);
 				int width = reader.getWidth(reader.getMinIndex());
 				int height = reader.getHeight(reader.getMinIndex());
-				Size size = new Size(width, height, 0, 0, false);
+				Size size = new Size(width, height, false);
 				Size scaledSize = computeScaledSize(width, height, maxWidth, maxHeight, fill);
 				SizeAndBufferedImage all = new SizeAndBufferedImage(size, scaledSize);
 				
@@ -397,6 +418,44 @@ public class ImageHelperImpl implements ImageHelperSPI {
 						} else {
 							all.setImage(reader.read(readerMinIndex, param));
 						}
+						return all;
+					} catch (IllegalArgumentException e) {
+						log.warn(e.getMessage(), e);
+					}
+                }
+			} catch (IOException e) {
+				log.error(e.getMessage(), e);
+			} finally {
+				reader.dispose();
+			}
+		} else {
+			log.error("No reader found for given format: " + suffix, null);
+		}
+		return null;
+	}
+	
+	private static SizeAndBufferedImage getImage(ImageInputStream stream, String suffix) {
+		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
+		if(iter.hasNext()) {
+			ImageReader reader = iter.next();
+			try {
+				reader.setInput(stream, true, true);
+				int width = reader.getWidth(reader.getMinIndex());
+				int height = reader.getHeight(reader.getMinIndex());
+				Size size = new Size(width, height, false);
+				SizeAndBufferedImage all = new SizeAndBufferedImage(size, null);
+			
+				int readerMinIndex = reader.getMinIndex();
+				ImageReadParam param = reader.getDefaultReadParam();
+                Iterator<ImageTypeSpecifier> imageTypes = reader.getImageTypes(0);
+                while (imageTypes.hasNext()) {
+                    try {
+						ImageTypeSpecifier imageTypeSpecifier = imageTypes.next();
+						int bufferedImageType = imageTypeSpecifier.getBufferedImageType();
+						if (bufferedImageType == BufferedImage.TYPE_BYTE_GRAY) {
+						    param.setDestinationType(imageTypeSpecifier);
+						}
+						all.setImage(reader.read(readerMinIndex, param));
 						return all;
 					} catch (IllegalArgumentException e) {
 						log.warn(e.getMessage(), e);
@@ -541,6 +600,18 @@ public class ImageHelperImpl implements ImageHelperSPI {
 	private static BufferedImage scaleTo(BufferedImage image, Size scaledSize) {
 		if(!scaledSize.isChanged()) return image;
 		return scaleFastTo(image, scaledSize);
+	}
+
+	private static BufferedImage cropTo(BufferedImage img, Size size, Crop cropSelection) {
+		int w = cropSelection.getWidth();
+		int h = cropSelection.getHeight();
+	    int x = cropSelection.getX();
+	    int y = cropSelection.getY();
+	    //make sure that the sub image is in the raster (if not boum!!)
+	    w = Math.min(w, size.getWidth() - x);
+	    h = Math.min(h, size.getHeight() - y);
+	    //crop the image to see only the center of the image
+	    return img.getSubimage(x, y, w, h);
 	}
 	
 	/**

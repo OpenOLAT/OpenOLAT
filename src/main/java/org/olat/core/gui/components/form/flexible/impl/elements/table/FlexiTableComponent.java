@@ -49,11 +49,9 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 	private static final ComponentRenderer CLASSIC_RENDERER = new FlexiTableClassicRenderer();
 	private static final ComponentRenderer CUSTOM_RENDERER = new FlexiTableCustomRenderer();
 	
-	
 	private FlexiTableElementImpl element;
 	private final Map<String,Component> components = new HashMap<>();
 	
-
 	public FlexiTableComponent(FlexiTableElementImpl element) {
 		super(element.getName());
 		this.element = element;

@@ -58,8 +58,6 @@ import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.RestModule;
 
-import com.oreilly.servlet.Base64Decoder;
-
 /**
  * 
  * Description:<br>
@@ -164,7 +162,7 @@ public class RestApiLoginFilter implements Filter {
 				// We only handle HTTP Basic authentication
 				if (basic.equalsIgnoreCase("Basic")) {
 					String credentials = st.nextToken();
-					String userPass = Base64Decoder.decode(credentials);
+					String userPass = StringHelper.decodeBase64(credentials);
 					// The decoded string is in the form "userID:password".
 					int p = userPass.indexOf(":");
 					if (p != -1) {

@@ -1985,11 +1985,6 @@
 			<version>1.4.7</version>
 		</dependency>
 		<dependency>
-			<groupId>cos</groupId>
-			<artifactId>cos</artifactId>
-			<version>05Nov2002</version>
-		</dependency>
-		<dependency>
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>
 			<version>2.9.1</version>

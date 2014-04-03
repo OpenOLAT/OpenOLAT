@@ -21,6 +21,7 @@ package org.olat.core.util;
 
 import java.io.File;
 
+import org.olat.core.util.image.Crop;
 import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -38,6 +39,7 @@ public interface ImageHelper {
 	
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill);
 
+	public boolean cropImage(File image, File cropedImage, Crop cropSelection);
 	
 	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight);
 	

@@ -47,6 +47,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -387,7 +388,7 @@ public class FileCopyController extends LinkChooserController {
 	private String proposedRenamedFilename(VFSLeaf file) {
 		String currentName = file.getName();
 		for(int i=1; i<999; i++) {
-			String proposition = VFSManager.appendNumberAtTheEndOfFilename(currentName, i);
+			String proposition = FileUtils.appendNumberAtTheEndOfFilename(currentName, i);
 			VFSItem item = folderComponent.getCurrentContainer().resolve(proposition);
 			if(item == null) {
 				return proposition;

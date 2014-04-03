@@ -34,7 +34,6 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.logging.AssertException;
 
@@ -45,7 +44,7 @@ import org.olat.core.logging.AssertException;
  * 
  * @author Felix Jost
  */
-public class SimpleStackedPanel extends AbstractComponent implements StackedPanel, ComponentCollection {
+public class SimpleStackedPanel extends AbstractComponent implements StackedPanel {
 	private static final ComponentRenderer RENDERER = new PanelRenderer();
 
 	private Component curContent;

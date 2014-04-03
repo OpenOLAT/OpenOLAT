@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -64,6 +65,7 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.PersistingCourseImpl;
 import org.olat.course.repository.CreateNewCourseController;
 import org.olat.course.repository.ImportCourseController;
 import org.olat.repository.RepositoryEntry;
@@ -162,8 +164,9 @@ public class CourseHandler implements RepositoryHandler {
 	
 	@Override
 	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
-		ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
-		VFSContainer rootFolder = course.getCourseBaseContainer();
+		OLATResource resource = repoEntry.getOlatResource();
+		String relPath = File.separator + PersistingCourseImpl.COURSE_ROOT_DIR_NAME + File.separator + resource.getResourceableId();
+		VFSContainer rootFolder = new OlatRootFolderImpl(relPath, null);
 		VFSItem item = rootFolder.resolve("media");
 		VFSContainer mediaContainer;
 		if(item == null) {

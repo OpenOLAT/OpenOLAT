@@ -44,6 +44,13 @@ public class ImageHelperBean implements ImageHelper {
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill) {
 		return imageHelperServiceProvider.thumbnailPDF(pdfFile, thumbnailFile, maxWidth, maxHeight);
 	}
+	
+	
+
+	@Override
+	public boolean cropImage(File image, File cropedImage, Crop cropSelection) {
+		return imageHelperServiceProvider.cropImage(image, cropedImage, cropSelection);
+	}
 
 	@Override
 	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight) {

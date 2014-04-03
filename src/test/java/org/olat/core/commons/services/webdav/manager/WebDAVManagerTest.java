@@ -37,13 +37,12 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
-
-import com.oreilly.servlet.Base64Encoder;
 
 /**
  * 
@@ -79,7 +78,7 @@ public class WebDAVManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("dav-user-" + UUID.randomUUID().toString());
 
 		String credentialsClearText = id.getName() + ":" + JunitTestHelper.PWD;
-		String credentials = Base64Encoder.encode(credentialsClearText);
+		String credentials = StringHelper.encodeBase64(credentialsClearText);
 		HttpServletRequest request = new MockHttpServletRequest();
 		UserSession usess = webDAVManager.handleBasicAuthentication(credentials, request);
 		Assert.assertNotNull(usess);
@@ -90,7 +89,7 @@ public class WebDAVManagerTest extends OlatTestCase {
 	public void testSetIdentityAsActiv() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("dav-user-" + UUID.randomUUID().toString());
 		String credentialsClearText = id.getName() + ":" + JunitTestHelper.PWD;
-		String credentials = Base64Encoder.encode(credentialsClearText);
+		String credentials = StringHelper.encodeBase64(credentialsClearText);
 		
 		final int maxLoop = 50; // => 4000 x 11ms => 44sec => finished in 50sec
 		final int numThreads = 10;

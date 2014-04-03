@@ -27,28 +27,20 @@
 package org.olat.commons.calendar.ui;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.ImportCalendarManager;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
-
-import com.oreilly.servlet.multipart.FilePart;
-import com.oreilly.servlet.multipart.MultipartParser;
-import com.oreilly.servlet.multipart.ParamPart;
-import com.oreilly.servlet.multipart.Part;
 
 /**
  * Description:<BR>
@@ -57,100 +49,53 @@ import com.oreilly.servlet.multipart.Part;
  *
  * @author Udit Sajjanhar
  */
-public class CalendarFileUploadController extends BasicController {
+public class CalendarFileUploadController extends FormBasicController {
 
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
-
-	private VelocityContainer calFileUploadVC;
-	private Translator translator;
-	private static final String COMMAND_PROCESS_UPLOAD = "pul";
-	private static final long fileUploadLimit = 1024;
-	private Link cancelButton;
-	
+	private FileElement uploadEl;
 	
 	CalendarFileUploadController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		translator = Util.createPackageTranslator(CalendarManager.class,  ureq.getLocale());
-		calFileUploadVC = new VelocityContainer("calmanage", VELOCITY_ROOT + "/calFileUpload.html", translator, this);
-		cancelButton = LinkFactory.createButton("cancel", calFileUploadVC, this);
-		putInitialPanel(calFileUploadVC);
+		setTranslator(Util.createPackageTranslator(CalendarManager.class,  ureq.getLocale(), getTranslator()));
+		initForm(ureq);
 	}
 
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == cancelButton) {
-			fireEvent(ureq, Event.CANCELLED_EVENT);
-		}	else if (source == calFileUploadVC) { // those must be module links
-			if (event.getCommand().equals(COMMAND_PROCESS_UPLOAD)) { 
-				// process calendar file upload
-				processCalendarFileUpload(ureq);
-			}
-		}
-	}	
-	
-	private void processCalendarFileUpload(UserRequest ureq) {
-		// upload the file
-		try {
-			// don't worry about NullPointerExceptions.
-			// we'll catch exceptions if any operation fails.
-			MultipartParser mpp = new MultipartParser(ureq.getHttpReq(), (int) fileUploadLimit * 1024);
-			mpp.setEncoding("UTF-8");
-			Part part;
-			boolean fileWritten = false;
-			while ((part = mpp.readNextPart()) != null) {
-				if (part.isFile() && !fileWritten) {
-					FilePart fPart = (FilePart) part;
-					String type = fPart.getContentType();
-					// get file contents
-					logWarn(type + fPart.getFileName(), null);
-					if (fPart != null && fPart.getFileName() != null && type.startsWith("text") && (type.toLowerCase().endsWith("calendar"))) {
-						
-						// store the uploaded file by a temporary name
-						CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
-						String calID = ImportCalendarManager.getTempCalendarIDForUpload(ureq);
-						File tmpFile = calManager.getCalendarFile(CalendarManager.TYPE_USER, calID);
-						fPart.writeTo(tmpFile);
-						
-						// try to parse the tmp file
-						Object calendar = calManager.readCalendar(CalendarManager.TYPE_USER, calID);
-						if (calendar != null) { 
-							fileWritten = true;
-						}
-						
-						//the uploaded calendar file is ok.
-						fireEvent(ureq, Event.DONE_EVENT);
-					}
-				} else if (part.isParam()) {
-					ParamPart pPart = (ParamPart) part;
-					if (pPart.getName().equals("cancel")) {
-						// action cancelled
-						fireEvent(ureq, Event.CANCELLED_EVENT);
-					}
-				}
-			}
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		uploadEl = uifactory.addFileElement("upload", "cal.import.form.prompt", formLayout);
+		
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setRootForm(mainForm);
+		formLayout.add(buttonsCont);
+		uifactory.addFormSubmitButton("cal.import.form.submit", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
 
-			if (!fileWritten) {
-				getWindowControl().setError(translator.translate("cal.import.form.format.error"));
-			}
+	@Override
+	protected void formOK(UserRequest ureq) {
+		File uploadedFile = uploadEl.getUploadFile();
 
-		} catch (IOException ioe) {
-			// exceeded UL limit
-			logWarn("IOException in CalendarFileUploadController: ", ioe);
-			String slimitKB = String.valueOf(fileUploadLimit);
-			String supportAddr = WebappHelper.getMailConfig("mailQuota");//->{0} für e-mail support e-mail adresse
-			getWindowControl().setError(translator.translate("cal.import.form.limit.error", new String[] { slimitKB, supportAddr }));
-			return;
-		} catch (OLATRuntimeException e) {
-			logWarn("Imported Calendar file not correct. Parsing failed.", e);
-			getWindowControl().setError(translator.translate("cal.import.parsing.failed"));
-			return;
-		}catch (Exception e) {
-			logWarn("Exception in CalendarFileUploadController: ", e);
-			getWindowControl().setError(translator.translate("cal.import.form.failed"));
-			return;
+		// store the uploaded file by a temporary name
+		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
+		String calID = ImportCalendarManager.getTempCalendarIDForUpload(ureq);
+		File tmpFile = calManager.getCalendarFile(CalendarManager.TYPE_USER, calID);
+		if(FileUtils.copyFileToFile(uploadedFile, tmpFile, false)) {
+			// try to parse the tmp file
+			Object calendar = calManager.readCalendar(CalendarManager.TYPE_USER, calID);
+			if (calendar != null) { 
+				//the uploaded calendar file is ok.
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else {
+				getWindowControl().setError(translate("cal.import.form.format.error"));
+			}
+		} else {
+			getWindowControl().setError(translate("cal.import.form.format.error"));
 		}
 	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}	
 
 	@Override
 	protected void doDispose() {

@@ -25,31 +25,38 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.text.Normalizer;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.control.Disposable;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.ImageHelper;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.image.Crop;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-
-import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
-import com.oreilly.servlet.multipart.FileRenamePolicy;
+import org.olat.core.util.vfs.VFSMediaResource;
 
 /**
  * <h3>Description:</h3>
@@ -64,17 +71,18 @@ import com.oreilly.servlet.multipart.FileRenamePolicy;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 
-public class FileElementImpl extends FormItemImpl implements FileElement, Disposable {
+public class FileElementImpl extends FormItemImpl implements FileElement, FormItemCollection, Disposable {
 	private static final OLog log = Tracing.createLoggerFor(FileElementImpl.class);
 	
-	protected FileElementComponent component;
-	//
+	private final FileElementComponent component;
+	private ImageFormItem previewEl;
+
 	private File initialFile, tempUploadFile;
 	private Set<String> mimeTypes;
 	private long maxUploadSizeKB = UPLOAD_UNLIMITED;
 	private String uploadFilename;
 	private String uploadMimeType;
-	//
+
 	private boolean checkForMaxFileSize = false;
 	private boolean checkForMimeTypes = false;
 	// error keys
@@ -92,12 +100,13 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 	 */
 	public FileElementImpl(String name) {
 		super(name);
-		this.component = new FileElementComponent(this);
+		component = new FileElementComponent(this);
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		Set<String> keys = getRootForm().getRequestMultipartFilesSet();
 		if (keys.size() > 0 && keys.contains(component.getFormDispatchId())) {
@@ -132,21 +141,50 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 				// use application fallback for worst case 
 				uploadMimeType = "application/octet-stream";
 			}
+			
+			if(previewEl != null && uploadMimeType != null && uploadMimeType.startsWith("image/")) {
+				VFSLeaf media = new LocalFileImpl(tempUploadFile);
+				MediaResource resource = new VFSMediaResource(media);
+				previewEl.setMediaResource(resource);
+				previewEl.setMaxWithAndHeightToFitWithin(300, 200);
+			}
 			// Mark associated component dirty, that it gets rerendered
 			component.setDirty(true);
 		}
 	}
 
+	@Override
+	public Iterable<FormItem> getFormItems() {
+		if(previewEl != null) {
+			return Collections.<FormItem>singletonList(previewEl);
+		}
+		return Collections.emptyList();
+	}
+
+	@Override
+	public FormItem getFormComponent(String name) {
+		if(previewEl != null && previewEl.getName().equals(name)) {
+			return previewEl;
+		}
+		return null;
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#getFormItemComponent()
 	 */
+	@Override
 	protected Component getFormItemComponent() {
-		return this.component;
+		return component;
+	}
+	
+	protected ImageFormItem getPreviewFormItem() {
+		return previewEl;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#reset()
 	 */
+	@Override
 	public void reset() {
 		if (tempUploadFile != null && tempUploadFile.exists()) {
 			tempUploadFile.delete();
@@ -159,14 +197,18 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#rootFormAvailable()
 	 */
+	@Override
 	protected void rootFormAvailable() {
-	//
+		if(previewEl != null && previewEl.getRootForm() != getRootForm()) {
+			previewEl.setRootForm(getRootForm());
+		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#setMandatory(boolean,
 	 *      java.lang.String)
 	 */
+	@Override
 	public void setMandatory(boolean mandatory, String i18nErrKey) {
 		super.setMandatory(mandatory);
 		this.i18nErrMandatory = i18nErrKey;
@@ -175,6 +217,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#validate(java.util.List)
 	 */
+	@Override
 	public void validate(List<ValidationStatus> validationResults) {
 		int lastFormError = getRootForm().getLastRequestError();
 		if (lastFormError == Form.REQUEST_ERROR_UPLOAD_LIMIT_EXCEEDED) {
@@ -190,10 +233,9 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 			return;
 
 			// check if uploaded at all
-		} else if (isMandatory() && (
-										(initialFile == null && (tempUploadFile == null || !tempUploadFile.exists()))
-								|| 	(initialFile != null && tempUploadFile != null && !tempUploadFile.exists()))  
-									) {
+		} else if (isMandatory() &&
+				((initialFile == null && (tempUploadFile == null || !tempUploadFile.exists()))
+				|| (initialFile != null && tempUploadFile != null && !tempUploadFile.exists()))) {
 			setErrorKey(i18nErrMandatory, null);
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
 			return;
@@ -232,18 +274,47 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 		clearError();
 	}
 
+	@Override
+	public void setPreview(boolean enable) {
+		if(enable) {
+			previewEl = new ImageFormItem(this.getName() + "_PREVIEW");
+			previewEl.setRootForm(getRootForm());
+		} else {
+			previewEl = null;
+		}
+	}
+
+	@Override
+	public void setCropSelectionEnabled(boolean enable) {
+		if(enable) {
+			if(previewEl == null) {
+				setPreview(true);
+			}
+			previewEl.setCropSelectionEnabled(true);
+		} else if(previewEl != null) {
+			previewEl.setCropSelectionEnabled(false);
+		}
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#setInitialFile(java.io.File)
 	 */
+	@Override
 	public void setInitialFile(File initialFile) {
 		this.initialFile = initialFile;
+		if(initialFile != null && previewEl != null) {
+			VFSLeaf media = new LocalFileImpl(initialFile);
+			MediaResource resource = new VFSMediaResource(media);
+			previewEl.setMediaResource(resource);
+			previewEl.setMaxWithAndHeightToFitWithin(300, 200);
+		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#getInitialFile()
 	 */
 	public File getInitialFile() {
-		return this.initialFile;
+		return initialFile;
 	}
 
 	/**
@@ -287,7 +358,9 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#isUploadSuccess()
 	 */
 	public boolean isUploadSuccess() {
-		if (tempUploadFile != null && tempUploadFile.exists()) { return true; }
+		if (tempUploadFile != null && tempUploadFile.exists()) {
+			return true;
+		}
 		return false;
 	}
 
@@ -295,30 +368,30 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#getUploadFileName()
 	 */
 	public String getUploadFileName() {
-		return this.uploadFilename;
+		return uploadFilename;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#getUploadMimeType()
 	 */
 	public String getUploadMimeType() {
-		return this.uploadMimeType;
+		return uploadMimeType;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#getUploadFile()
 	 */
 	public File getUploadFile() {
-		return this.tempUploadFile;
+		return tempUploadFile;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#getUploadInputStream()
 	 */
 	public InputStream getUploadInputStream() {
-		if (this.tempUploadFile == null) return null;
+		if (tempUploadFile == null) return null;
 		try {
-			return new FileInputStream(this.tempUploadFile);
+			return new FileInputStream(tempUploadFile);
 		} catch (FileNotFoundException e) {
 			log.error("Could not open stream for file element::" + getName(), e);
 		}
@@ -348,9 +421,8 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 			File existsFile = new File(destinationDir, uploadFilename);
 			if (existsFile.exists()) {
 				// Use standard rename policy
-				FileRenamePolicy frp = new DefaultFileRenamePolicy();
 				File tmpF = new File(uploadFilename);
-				uploadFilename = frp.rename(tmpF).getName();
+				uploadFilename = FileUtils.rename(tmpF);
 			}
 			// Move file now
 			File targetFile = new File(destinationDir, uploadFilename);
@@ -362,19 +434,20 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#moveUploadFileTo(org.olat.core.util.vfs.VFSContainer)
 	 */
+	@Override
 	public VFSLeaf moveUploadFileTo(VFSContainer destinationContainer) {
+		return moveUploadFileTo(destinationContainer, false);
+	}
+
+	@Override
+	public VFSLeaf moveUploadFileTo(VFSContainer destinationContainer, boolean crop) {
 		VFSLeaf targetLeaf = null;
 		if (tempUploadFile != null && tempUploadFile.exists()) {
 			// Check if such a file does already exist, if yes rename new file
 			VFSItem existsChild = destinationContainer.resolve(uploadFilename);
 			if (existsChild != null) {
 				// Use standard rename policy
-				FileRenamePolicy frp = new DefaultFileRenamePolicy();
-				File tmpF = new File(uploadFilename);
-				uploadFilename = frp.rename(tmpF).getName();
-				if(log.isDebug()) {
-					log.debug("FileElement rename policy::" + tmpF.getName() + " -> " + uploadFilename);
-				}
+				uploadFilename = VFSManager.rename(destinationContainer, uploadFilename);
 			}
 			// Create target leaf file now and delete original temp file
 			if (destinationContainer instanceof LocalFolderImpl) {
@@ -382,14 +455,20 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 				LocalFolderImpl folderContainer = (LocalFolderImpl) destinationContainer;
 				File destinationDir = folderContainer.getBasefile();
 				File targetFile = new File(destinationDir, uploadFilename);
-				if (FileUtils.copyFileToFile(tempUploadFile, targetFile, true)) { 
+				
+				Crop cropSelection = previewEl == null ? null : previewEl.getCropSelection();
+				if(crop && cropSelection != null) {
+					CoreSpringFactory.getImpl(ImageHelper.class).cropImage(tempUploadFile, targetFile, cropSelection);
 					targetLeaf = (VFSLeaf) destinationContainer.resolve(targetFile.getName());
-					if(targetLeaf == null) {
-						log.error("Error after copying content from temp file, cannot resolve copied file::" 
-								+ (tempUploadFile == null ? "NULL" : tempUploadFile) + " - " + (targetFile == null ? "NULL" : targetFile), null);
-					}
+				} else if (FileUtils.copyFileToFile(tempUploadFile, targetFile, true)) { 
+					targetLeaf = (VFSLeaf) destinationContainer.resolve(targetFile.getName());
 				}	else {
 					log.error("Error after copying content from temp file, cannot copy file::" 
+							+ (tempUploadFile == null ? "NULL" : tempUploadFile) + " - " + (targetFile == null ? "NULL" : targetFile), null);
+				}
+				
+				if(targetLeaf == null) {
+					log.error("Error after copying content from temp file, cannot resolve copied file::" 
 							+ (tempUploadFile == null ? "NULL" : tempUploadFile) + " - " + (targetFile == null ? "NULL" : targetFile), null);
 				}
 			} else {

@@ -47,6 +47,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.SessionInfo;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -55,8 +56,6 @@ import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
-
-import com.oreilly.servlet.Base64Decoder;
 
 /**
  * Initial Date:  16.04.2003
@@ -272,7 +271,7 @@ public class WebDAVManagerImpl implements WebDAVManager {
 		// This example uses sun.misc.* classes.
 		// You will need to provide your own
 		// if you are not comfortable with that.
-		String userPass = Base64Decoder.decode(credentials);
+		String userPass = StringHelper.decodeBase64(credentials);
 
 		// The decoded string is in the form
 		// "userID:password".

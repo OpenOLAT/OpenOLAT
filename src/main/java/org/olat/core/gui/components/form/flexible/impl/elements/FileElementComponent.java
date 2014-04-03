@@ -20,8 +20,14 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.components.image.ImageFormItem;
 
 /**
  * <h3>Description:</h3>
@@ -37,18 +43,48 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 
-public class FileElementComponent extends FormBaseComponentImpl {
+public class FileElementComponent extends FormBaseComponentImpl implements ComponentCollection {
 
-	private ComponentRenderer RENDERER = new FileElementRenderer();
-	private FileElementImpl element;
+	private static final ComponentRenderer RENDERER = new FileElementRenderer();
+	private final FileElementImpl element;
 
 	public FileElementComponent(FileElementImpl element) {
 		super(element.getName());
 		this.element = element;
 	}
 	
-	FileElementImpl getFileElementImpl(){
+	protected FileElementImpl getFileElementImpl(){
 		return element;
+	}
+	
+	protected ImageFormItem getPreviewElementImpl() {
+		return element.getPreviewFormItem();
+	}
+
+	@Override
+	public Component getComponent(String name) {
+		if(element.getPreviewFormItem() != null &&
+				element.getPreviewFormItem().getComponent().getComponentName().equals(name)) {
+			return element.getPreviewFormItem().getComponent();
+		}
+		return null;
+	}
+
+	@Override
+	public Iterable<Component> getComponents() {
+		if(element.getPreviewFormItem() == null) {
+			return Collections.emptyList();
+		}
+		return Collections.singletonList(element.getPreviewFormItem().getComponent());
+	}
+
+	@Override
+	public Map<String, Component> getComponentMap() {
+		if(element.getPreviewFormItem() == null) {
+			return Collections.emptyMap();
+		}
+		Component previewCmp = element.getPreviewFormItem().getComponent();
+		return Collections.singletonMap(previewCmp.getComponentName(), previewCmp);
 	}
 
 	/* (non-Javadoc)

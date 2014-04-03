@@ -83,6 +83,15 @@ public interface FileElement extends FormMultipartItem {
 	 *            optional arguments for thei18nErrKey
 	 */
 	public void limitToMimeType(Set<String> mimeTypes, String i18nErrKey, String[] i18nArgs);
+	
+	/**
+	 * Preview is possible only for images.
+	 * 
+	 * @param enable
+	 */
+	public void setPreview(boolean enable);
+	
+	public void setCropSelectionEnabled(boolean enable);
 
 	/**
 	 * Get the set of the mime types limitation
@@ -175,5 +184,13 @@ public interface FileElement extends FormMultipartItem {
 	 * @return A reference of the new leaf file or NULL if the file could not be created
 	 */
 	public VFSLeaf moveUploadFileTo(VFSContainer destinationContainer);
+	
+	/**
+	 * Crop the image if there is one and a crop selection.
+	 * @param destinationContainer
+	 * @param crop
+	 * @return
+	 */
+	public VFSLeaf moveUploadFileTo(VFSContainer destinationContainer, boolean crop);
 	
 }

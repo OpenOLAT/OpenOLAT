@@ -44,17 +44,15 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.media.NamedFileMediaResource;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 
 
 /**
@@ -70,10 +68,17 @@ import org.olat.core.util.vfs.VFSMediaResource;
 
 class EntryForm extends FormBasicController {
 	
-	private static final int picUploadlimitKB = 1024;
+	private static final int picUploadlimitKB = 5024;
+	
+	private static final Set<String> mimeTypes = new HashSet<String>();
+	static {
+		mimeTypes.add("image/gif");
+		mimeTypes.add("image/jpg");
+		mimeTypes.add("image/jpeg");
+		mimeTypes.add("image/png");
+	}
 
 	private TextElement nameEl;
-	private ImageFormItem imageEl;
 	private RichTextElement descriptionEl;
 	private FormLink deleteImage;
 	private FileElement fileUpload;
@@ -105,16 +110,6 @@ class EntryForm extends FormBasicController {
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "entry.description", desc, 10, -1, formLayout, getWindowControl());
 		
 		VFSLeaf img = catalogEntry == null || catalogEntry.getKey() == null ? null : catalogManager.getImage(catalogEntry);
-		imageEl = new ImageFormItem("imageEl");
-		imageEl.setLabel("entry.pic", null);
-		
-		if(img == null) {
-			imageEl.setVisible(false);
-		} else {
-			imageEl.setMediaResource(new VFSMediaResource(img));
-			imageEl.setMaxWithAndHeightToFitWithin(400, 200);
-		}
-		formLayout.add(imageEl);
 		
 		deleteImage = uifactory.addFormLink("delete", "tools.delete.catalog.entry", null, formLayout, Link.BUTTON);
 		deleteImage.setVisible(img != null);
@@ -125,12 +120,11 @@ class EntryForm extends FormBasicController {
 		}
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
-		
-		Set<String> mimeTypes = new HashSet<String>();
-		mimeTypes.add("image/gif");
-		mimeTypes.add("image/jpg");
-		mimeTypes.add("image/jpeg");
-		mimeTypes.add("image/png");
+		fileUpload.setPreview(true);
+		fileUpload.setCropSelectionEnabled(true);
+		if(img instanceof LocalFileImpl) {
+			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
+		}
 		fileUpload.limitToMimeType(mimeTypes, null, null);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
@@ -157,11 +151,6 @@ class EntryForm extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		 if (source == fileUpload) {
 			if (fileUpload.isUploadSuccess()) {
-				File uploadedFile = fileUpload.getUploadFile();
-				imageEl.setMediaResource(new NamedFileMediaResource(uploadedFile, fileUpload.getUploadFileName(), "", false));
-				imageEl.setMaxWithAndHeightToFitWithin(400, 200);
-				imageEl.setVisible(true);
-				imageEl.getComponent().setDirty(true);
 				deleteImage.setVisible(true);
 				fileUpload.setLabel(null, null);
 				flc.setDirty(true);
@@ -172,20 +161,14 @@ class EntryForm extends FormBasicController {
 				fileUpload.reset();
 				
 				if(img == null) {
-					imageEl.setVisible(false);
 					deleteImage.setVisible(false);
 					fileUpload.setLabel("entry.pic", null);
 				} else {
-					imageEl.setMediaResource(new VFSMediaResource(img));
-					imageEl.setMaxWithAndHeightToFitWithin(400, 200);
-					imageEl.setVisible(true);
-					imageEl.setLabel("entry.pic", null);
 					deleteImage.setVisible(true);
 					fileUpload.setLabel(null, null);
 				}
 			} else if(img != null) {
 				catalogManager.deleteImage(catalogEntry);
-				imageEl.setVisible(false);
 				deleteImage.setVisible(false);
 				fileUpload.setLabel("rentry.pic", null);
 			}
@@ -214,7 +197,7 @@ class EntryForm extends FormBasicController {
 		if(uploadedFile != null) {
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
 			VFSContainer container = tmpHome.createChildContainer(UUID.randomUUID().toString());
-			VFSLeaf newFile = fileUpload.moveUploadFileTo(container);//give it it's real name and extension
+			VFSLeaf newFile = fileUpload.moveUploadFileTo(container, true);//give it it's real name and extension
 			boolean ok = catalogManager.setImage(newFile, catalogEntry);
 			if (!ok) {
 				showError("Failed");

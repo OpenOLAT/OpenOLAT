@@ -41,6 +41,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -57,7 +58,11 @@ public class ImageComponent extends AbstractComponent {
 	private static final OLog log = Tracing.createLoggerFor(ImageComponent.class);
 	
 	private MediaResource mediaResource;
-	private Long width, height;
+
+	private Size realSize;
+	private Size scaledSize;
+	private float scalingFactor;
+	private boolean cropSelectionEnabled = false;
 
 	/**
 	 * @param name
@@ -69,50 +74,43 @@ public class ImageComponent extends AbstractComponent {
 	/**
 	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		// our tasks now: deliver the descriptor to the picture we want to display
-		// and which made our nice buddy, the renderer, embedded into html
-		MediaResource mr = mediaResource; // FIXME:fj: clone this, since mr not made
-																			// to deliver repeatedly
-		ureq.getDispatchResult().setResultingMediaResource(mr);
+		String ri = ureq.getParameter("ri");
+		if("1".equals(ri)) {
+			// our tasks now: deliver the descriptor to the picture we want to display
+			// and which made our nice buddy, the renderer, embedded into html
+			ureq.getDispatchResult().setResultingMediaResource(mediaResource);
+		}
+	}
+
+	public boolean isCropSelectionEnabled() {
+		return cropSelectionEnabled;
+	}
+	
+	public void setCropSelectionEnabled(boolean enable) {
+		cropSelectionEnabled = enable;
 	}
 
 	/**
 	 * @return Long
 	 */
-	public Long getHeight() {
-		return height;
+	public Size getScaledSize() {
+		return scaledSize;
+	}
+	
+	public Size getRealSize() {
+		return realSize;
+	}
+	
+	public float getScalingFactor() {
+		return scalingFactor;
 	}
 
 	/**
-	 * @return Long
-	 */
-	public Long getWidth() {
-		return width;
-	}
-
-	/**
-	 * Sets the height.
-	 * 
-	 * @param height The height to set
-	 */
-	public void setHeight(Long height) {
-		setDirty(true);
-		this.height = height;
-	}
-
-	/**
-	 * Sets the width.
-	 * 
-	 * @param width The width to set
-	 */
-	public void setWidth(Long width) {
-		setDirty(true);
-		this.width = width;
-	}
-
-	/**
-	 * sets the image to be delivered
+	 * Sets the image to be delivered. The image can be
+	 * delivered several times. Don't set a resource which
+	 * can be only send once. 
 	 * 
 	 * @param mediaResource
 	 */
@@ -121,11 +119,19 @@ public class ImageComponent extends AbstractComponent {
 		this.mediaResource = mediaResource;
 	}
 
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
 	
-	
+	@Override
+	public void validate(UserRequest ureq, ValidationResult vr) {
+		super.validate(ureq, vr);
+		if(isCropSelectionEnabled()) {
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/imagecrop/jquery.imagecrop.js");
+		}
+	}
+
 	/**
 	 * Call this method to display the image within a given box of width and
 	 * height. The method does NOT manipulate the image itself, it does only
@@ -160,21 +166,23 @@ public class ImageComponent extends AbstractComponent {
 				return;
 			}
 
-			double realWidth = size.getWidth();
-			double realHeight = size.getHeight();
+			int realWidth = size.getWidth();
+			int realHeight = size.getHeight();
 			
 			// calculate scaling factor
-			double scalingFactor = 1;
+			scalingFactor = 1f;
 			if (realWidth > maxWidth) {
-				double scalingWidth = 1 / realWidth * maxWidth;
-				scalingFactor = ( scalingWidth <  scalingFactor ? scalingWidth : scalingFactor);
+				float scalingWidth = 1f / realWidth * maxWidth;
+				scalingFactor = (scalingWidth <  scalingFactor ? scalingWidth : scalingFactor);
 			}
 			if (realHeight > maxHeight) {
-				double scalingHeight = 1 / realHeight * maxHeight;
-				scalingFactor = ( scalingHeight < scalingFactor ? scalingHeight : scalingFactor);
+				float scalingHeight = 1f / realHeight * maxHeight;
+				scalingFactor = (scalingHeight < scalingFactor ? scalingHeight : scalingFactor);
 			}
-			setHeight(new Long( Math.round(realHeight * scalingFactor)));
-			setWidth(new Long( Math.round(realWidth * scalingFactor)));
+			realSize = new Size(realWidth, realHeight, false);
+			scaledSize = new Size(Math.round(realWidth * scalingFactor), Math.round(realHeight * scalingFactor), false);
+			
+			setDirty(true);
 		} catch (Exception e) {
 			// log error, don't do anything else
 			log.error("Problem while setting image size to fit " + maxWidth + "x" + maxHeight + " for resource::" + mediaResource, e);
