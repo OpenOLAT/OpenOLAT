@@ -41,7 +41,7 @@ public class StatisticAssessment {
 	private double median;
 	private List<Double> mode;
 	
-	private long[] durations;
+	private double[] durations;
 	private double[] scores;
 	
 	public int getNumOfParticipants() {
@@ -132,11 +132,14 @@ public class StatisticAssessment {
 		this.mode = mode;
 	}
 
-	public long[] getDurations() {
+	/**
+	 * @return Duration in secondes
+	 */
+	public double[] getDurations() {
 		return durations;
 	}
 
-	public void setDurations(long[] durations) {
+	public void setDurations(double[] durations) {
 		this.durations = durations;
 	}
 

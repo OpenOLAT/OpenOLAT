@@ -119,8 +119,8 @@ div.o_infomsgs {
 		div.b_datecomp { top: 2px; float: left; display: inline; }
 		div.o_infomsg {  margin-bottom:1em; padding:10px 0 0 0; }
 		.b_year { display: none; }
-		.o_item_info { color: #7D7D7D; font-size: 90%; }
-		.o_item_info .o_item_info_mod { color:#98221F; }
+		p.o_item_info { color: #7D7D7D; font-size: 90%; margin: 0; }
+		p.o_item_info .o_item_info_mod { color:#98221F; }
 }
 
 div.b_table_wrapper td a.o_peekview_infomsg_link { display:inline; }
@@ -129,7 +129,6 @@ div.o_infomsgs_config {
 	div { display:inline; }
 }
 .o_infomsg_icon { background-image: url(../openolat/images/information-button.png); }
-.o_infomsg_create_button { position:absolute; top:0; right:250px; }
 	
 /* EMAIL */
 .b_mail_icon { background-image: url(../openolat/images/mail.png) }
@@ -286,11 +285,34 @@ div.b_rating {
 
 /* DATE COMPONENT (e.g. in notifications, shows calendar-image with date) */
 div.b_datecomp {
-		width: 2.5em; height: 3em; position: relative; margin-right: 5px;  font-weight: normal; color: white; text-align: center; vertical-align: middle; border: 1px solid #000; font-size: 85%;
-		div { width: 100%;  position: absolute; left: 0;}
-		div.b_year {height: 1em; top: -1.5em; font-size: 80%; font-weight: normal; color: #000; }
-		div.b_month {background: #BE5B5D; height: 40%; top: 0; font-size: 80%; font-weight: normal; color: white; }
-		div.b_day {background: #fff; height: 60%; bottom: 0; font-size: 120%; font-weight: bold; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #aaaaaa; }
+		width: 2.5em; height: 3em; position: relative; 
+		border: 1px solid #000; 
+		margin-right: 5px; 
+		
+		div { 
+			position: absolute; left: 0;
+			width: 100%;  
+			font-weight: normal; color: #000; 
+			font-size: 0.8em;
+			text-align: center; vertical-align: middle; 
+		}
+		div.b_year {
+			height: 1em; top: -1.5em; 
+		}
+		div.b_month {
+			height: 40%; top: 0; 
+			background: #BE5B5D; 
+			font-size: 80%; color: white; 
+		}
+		div.b_day {
+			height: 60%; bottom: 0; 
+			border-top: 1px solid #000; border-bottom: 1px solid #aaaaaa; 
+			background: #fff; 
+			font-size: 1.2em;  
+		}
+		span {
+			line-height: 100%; vertical-align: middle;
+		}
 }
 
 /* Download link */

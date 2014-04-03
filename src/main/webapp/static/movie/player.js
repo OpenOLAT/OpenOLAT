@@ -42,6 +42,7 @@ var BPlayer = {
 			file:videoUrl,
 			width:width,
 			height:height,
+			controlbar: { position: "bottom" },
 			flashplayer:playerUrl
 		};
 		
@@ -73,7 +74,7 @@ var BPlayer = {
 			args.controlbar = "none";
 		}
 		
-		if(BPlayer.isIE8() && domId != 'prev_container') {
+		if(BPlayer.isIE8() && domId != 'prev_container' && jQuery('#' + domId).is("span")) {
 			var spanEl = jQuery('#' + domId);
 			var width = spanEl.width();
 			var height = spanEl.height();

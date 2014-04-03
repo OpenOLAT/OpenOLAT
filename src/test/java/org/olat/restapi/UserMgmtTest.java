@@ -74,6 +74,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
@@ -551,6 +552,42 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals("Female", savedIdent.getUser().getProperty("gender", Locale.ENGLISH));
 		assertEquals("39847592", savedIdent.getUser().getProperty("telPrivate", Locale.ENGLISH));
 		assertEquals("12/12/09", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
+		conn.shutdown();
+	}
+	
+	/**
+	 * Test the trim of email
+	 */
+	@Test
+	public void testCreateUser_emailWithTrailingSpace() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		UserVO vo = new UserVO();
+		String username = UUID.randomUUID().toString();
+		vo.setLogin(username);
+		vo.setFirstName("John");
+		vo.setLastName("Smith");
+		vo.setEmail(username + "@frentix.com ");
+		vo.putProperty("gender", "male");//male or female
+
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		method.addHeader("Accept-Language", "en");
+		
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		UserVO savedVo = conn.parse(response, UserVO.class);
+		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
+
+		assertNotNull(savedVo);
+		assertNotNull(savedIdent);
+		assertEquals(savedVo.getKey(), savedIdent.getKey());
+		assertEquals(savedVo.getLogin(), savedIdent.getName());
+		assertEquals(username + "@frentix.com", savedIdent.getUser().getProperty(UserConstants.EMAIL, null));
+
 		conn.shutdown();
 	}
 	

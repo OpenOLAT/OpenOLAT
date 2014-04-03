@@ -87,6 +87,12 @@ public class StatisticCourseNodesController extends BasicController implements A
 		layoutCtr = new LayoutMain3ColsController(ureq, wControl, courseTree, null, empty, null);
 		listenTo(layoutCtr);
 		putInitialPanel(layoutCtr.getInitialComponent());
+
+		// activate first child
+		TreeModel tree = courseTree.getTreeModel();
+		if (tree != null && tree.getRootNode().getChildCount() > 0) {
+			doSelectNode(ureq, (TreeNode)tree.getRootNode().getChildAt(0));
+		}
 	}
 	
 	private TreeModel buildTreeModel(final UserRequest ureq, final UserCourseEnvironment userCourseEnv) {
@@ -178,6 +184,9 @@ public class StatisticCourseNodesController extends BasicController implements A
 		} else {
 			layoutCtr.setCol3(new Panel("empty"));
 		}
+		
+		// also select in GUI
+		courseTree.setSelectedNode(selectedNode);
 	}
 	
 	private StatisticResourceNode getStatisticNodeInParentLine(TreeNode selectedNode) {

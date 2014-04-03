@@ -21,6 +21,7 @@ package org.olat.ims.qti.statistics.ui;
 
 import static org.olat.ims.qti.statistics.ui.StatisticFormatter.duration;
 import static org.olat.ims.qti.statistics.ui.StatisticFormatter.format;
+import static org.olat.ims.qti.statistics.ui.StatisticFormatter.getModeString;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +48,7 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
+import org.olat.ims.qti.editor.beecom.objects.Question;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticsManager;
@@ -85,7 +87,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		type = resourceResult.getType();
 		this.resourceResult = resourceResult;
 		mediaBaseURL = resourceResult.getMediaBaseURL();
-		seriesfactory = new SeriesFactory(resourceResult);
+		seriesfactory = new SeriesFactory(resourceResult, getTranslator());
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTIStatisticsManager.class);
 		courseResourceID = RepositoryManager.getInstance().lookupRepositoryEntryKey(resourceResult.getCourseOres(), false);
 		repoEntryId = resourceResult.getQTIRepositoryEntry().getResourceableId();
@@ -101,13 +103,22 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		QTICourseNode testNode = resourceResult.getTestCourseNode();
 		
 		StatisticAssessment stats = resourceResult.getQTIStatisticAssessment();
+		
+		boolean hasEssay = false;
 
 		List<Item> items = new ArrayList<>();
 		QTIDocument qtiDocument = resourceResult.getQTIDocument();
 		for(Section section:qtiDocument.getAssessment().getSections()) {
 			for(Item item:section.getItems()) {
 				items.add(item);
+				if(item.getQuestion().getType() == Question.TYPE_FIB) {
+					hasEssay = true;
+				}
 			}
+		}
+		
+		if(hasEssay) {
+			mainVC.contextPut("hasEssay", Boolean.TRUE);
 		}
 		
 		cutValue = getCutValueSetting(testNode);
@@ -196,18 +207,11 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 	}
 	
 	private void initDurationHistogram(StatisticAssessment stats) {
+		if(!BarSeries.hasNotNullDatas(stats.getDurations())) return;
+		
 		VelocityContainer durationHistogramVC = createVelocityContainer("histogram_duration");
 		durationHistogramVC.contextPut("datas", BarSeries.datasToString(stats.getDurations()));
 		mainVC.put("durationHistogram", durationHistogramVC);
-	}
-	
-	private String getModeString(List<Double> modes) {
-		StringBuilder sb = new StringBuilder();
-		for(Double mode:modes) {
-			if(sb.length() > 0) sb.append(" ,");
-			sb.append(format(mode));
-		}
-		return sb.toString();
 	}
 	
 	private void initScoreStatisticPerItem(List<Item> items, double numOfParticipants) {
@@ -222,8 +226,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 			Item item = statisticItem.getItem();
 			
 			String label = Integer.toString(++i);
-			String text = item.getQuestion().getQuestion().renderAsHtml(mediaBaseURL);
-
+			String text = item.getTitle(); 
 			d1.add(statisticItem.getAverageScore(), label);
 			double numOfRightAnswers = statisticItem.getNumOfCorrectAnswers();
 			double res = numOfRightAnswers;
@@ -261,14 +264,16 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		for(StatisticSurveyItem surveyItem:surveyItems) {
 			Item item = surveyItem.getItem();
 			Series series = seriesfactory.getSeries(item, null);
-			String name = "overview_" + count++;
-			VelocityContainer vc = createVelocityContainer(name, "hbar_item_overview");
-			vc.contextPut("series", series);
-			vc.contextPut("question", item.getQuestion().getQuestion().renderAsHtml(mediaBaseURL));
-			vc.contextPut("questionType", item.getQuestion().getType());
-			vc.contextPut("title", item.getTitle());
-			mainVC.put(vc.getDispatchID(), vc);
-			overviewList.add(vc.getDispatchID());
+			if(series != null) {//essay hasn't a series
+				String name = "overview_" + count++;
+				VelocityContainer vc = createVelocityContainer(name, "hbar_item_overview");
+				vc.contextPut("series", series);
+				vc.contextPut("question", item.getQuestion().getQuestion().renderAsHtml(mediaBaseURL));
+				vc.contextPut("questionType", item.getQuestion().getType());
+				vc.contextPut("title", item.getTitle());
+				mainVC.put(vc.getDispatchID(), vc);
+				overviewList.add(vc.getDispatchID());
+			}
 		}
 		
 		mainVC.contextPut("overviewList", overviewList);

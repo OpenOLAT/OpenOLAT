@@ -38,18 +38,21 @@ public class ResponseInfos {
 	private final Float points;
 	private final boolean correct;
 	private final boolean survey;
+	private final boolean kprim;
 	
 	private final List<String> wrongAnswers;
 	
-	public ResponseInfos(String label, String text, Float points, boolean correct, boolean survey) {
-		this(label, text, Collections.<String>emptyList(),  points, correct, survey);
+	public ResponseInfos(String label, String text, Float points, boolean correct, boolean survey, boolean kprim) {
+		this(label, text, Collections.<String>emptyList(),  points, correct, survey, kprim);
 	}
 	
-	public ResponseInfos(String label, String text, List<String> wrongAnswers, Float points, boolean correct, boolean survey) {
+	public ResponseInfos(String label, String text, List<String> wrongAnswers, Float points,
+			boolean correct, boolean survey, boolean kprim) {
 		this.label = label;
 		this.text = text;
 		this.points = points;
 		this.survey = survey;
+		this.kprim = kprim;
 		this.correct = correct;
 		this.wrongAnswers = wrongAnswers;
 	}
@@ -100,6 +103,10 @@ public class ResponseInfos {
 
 	public boolean isSurvey() {
 		return survey;
+	}
+
+	public boolean isKprim() {
+		return kprim;
 	}
 
 	public boolean isCorrect() {

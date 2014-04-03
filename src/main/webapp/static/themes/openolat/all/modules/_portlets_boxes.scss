@@ -107,41 +107,22 @@ div.o_portlet_repository_teacher td.b_first_child { width: 24px;}
 .b_portlet .b_portlet_header { background-repeat:no-repeat; background-position: 0% 50%; padding-left:27px; padding-top:5px; padding-bottom:5px;}
 
 /* calendar */	
-div.o_portlet_calendar div.b_portlet_header { background-image: url(../openolat/images/calendar_empty.png); padding-left:2px; padding-top:8px;
-}
-$pdgr_calendar : 16px;
+div.o_portlet_calendar div.b_portlet_header { background-image: url(../openolat/images/calendar_empty.png); }
+@for $i from 1 through 31 {
+	div.o_portlet_calendar.o_day_#{$i} div.b_portlet_header strong:before { 
+		content: '#{$i}'; 
+		font-size:10px;
+		font-weight: normal;
+		position: absolute;
+		width: 10px;
+		height: 10px;
+		text-align: center;
+		line-height: 10px; 
+		left: 3px;
+		top: 10px;
+	}
+}	
 
-div.o_portlet_calendar.o_day_1  div.b_portlet_header strong:before { content:"1"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_2  div.b_portlet_header strong:before { content:"2"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_3  div.b_portlet_header strong:before { content:"3"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_4  div.b_portlet_header strong:before { content:"4"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_5  div.b_portlet_header strong:before { content:"5"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_6  div.b_portlet_header strong:before { content:"6"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_7  div.b_portlet_header strong:before { content:"7"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_8  div.b_portlet_header strong:before { content:"8"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_9  div.b_portlet_header strong:before { content:"9"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_10  div.b_portlet_header strong:before { content:"10"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_11  div.b_portlet_header strong:before { content:"11"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_12  div.b_portlet_header strong:before { content:"12"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_13  div.b_portlet_header strong:before { content:"13"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_14  div.b_portlet_header strong:before { content:"14"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_15  div.b_portlet_header strong:before { content:"15"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_16  div.b_portlet_header strong:before { content:"16"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_17  div.b_portlet_header strong:before { content:"17"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_18  div.b_portlet_header strong:before { content:"18"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_19  div.b_portlet_header strong:before { content:"19"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_20  div.b_portlet_header strong:before { content:"20"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_21  div.b_portlet_header strong:before { content:"21"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_22  div.b_portlet_header strong:before { content:"22"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_23  div.b_portlet_header strong:before { content:"23"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_24  div.b_portlet_header strong:before { content:"24"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_25  div.b_portlet_header strong:before { content:"25"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_26  div.b_portlet_header strong:before { content:"26"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_27  div.b_portlet_header strong:before { content:"27"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_28  div.b_portlet_header strong:before { content:"28"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_29  div.b_portlet_header strong:before { content:"29"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_30  div.b_portlet_header strong:before { content:"30"; font-size:smaller;padding-right: $pdgr_calendar; }
-div.o_portlet_calendar.o_day_31  div.b_portlet_header strong:before { content:"31"; font-size:smaller;padding-right: $pdgr_calendar; }
 
 div.o_portlet_infomsg  div.b_portlet_header { background-image: url(../openolat/images/comment.png); }
 div.o_portlet_quickstart  div.b_portlet_header { background-image: url(../openolat/images/mouse.png); }

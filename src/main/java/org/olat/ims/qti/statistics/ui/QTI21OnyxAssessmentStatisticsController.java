@@ -21,8 +21,7 @@ package org.olat.ims.qti.statistics.ui;
 
 import static org.olat.ims.qti.statistics.ui.StatisticFormatter.duration;
 import static org.olat.ims.qti.statistics.ui.StatisticFormatter.format;
-
-import java.util.List;
+import static org.olat.ims.qti.statistics.ui.StatisticFormatter.getModeString;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -84,15 +83,6 @@ public class QTI21OnyxAssessmentStatisticsController extends BasicController {
 		String duration = duration(stats.getAverageDuration());
 		mainVC.contextPut("averageDuration", duration);
 	}
-	
-	private String getModeString(List<Double> modes) {
-		StringBuilder sb = new StringBuilder();
-		for(Double mode:modes) {
-			if(sb.length() > 0) sb.append(" ,");
-			sb.append(format(mode));
-		}
-		return sb.toString();
-	}
 
 	private void initScoreHistogram(StatisticAssessment stats) {
 		VelocityContainer scoreHistogramVC = createVelocityContainer("histogram_score");
@@ -101,6 +91,8 @@ public class QTI21OnyxAssessmentStatisticsController extends BasicController {
 	}
 	
 	private void initDurationHistogram(StatisticAssessment stats) {
+		if(!BarSeries.hasNotNullDatas(stats.getDurations())) return;
+		
 		VelocityContainer durationHistogramVC = createVelocityContainer("histogram_duration");
 		durationHistogramVC.contextPut("datas", BarSeries.datasToString(stats.getDurations()));
 		mainVC.put("durationHistogram", durationHistogramVC);

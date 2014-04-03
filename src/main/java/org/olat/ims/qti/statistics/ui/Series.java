@@ -32,6 +32,7 @@ import org.olat.core.gui.components.chart.BarSeries.Stringuified;
  */
 public class Series {
 	
+	private final boolean legend;
 	private String itemCss;
 	private String chartType;
 	private final List<BarSeries> series;
@@ -40,10 +41,16 @@ public class Series {
 	private final int numOfParticipants;
 	private Stringuified datas;
 	
-	public Series(List<BarSeries> series, List<ResponseInfos> responseInfos, int numOfParticipants) {
+	public Series(List<BarSeries> series, List<ResponseInfos> responseInfos,
+			int numOfParticipants, boolean legend) {
+		this.legend = legend;
 		this.series = series;
 		this.responseInfos = responseInfos;
 		this.numOfParticipants = numOfParticipants;
+	}
+
+	public boolean isLegend() {
+		return legend;
 	}
 
 	public String getItemCss() {

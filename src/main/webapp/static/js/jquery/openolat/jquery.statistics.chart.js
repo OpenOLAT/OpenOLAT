@@ -36,7 +36,7 @@
     
     averageScorePerItem = function($obj, settings) {
     	var placeholderwidth = $obj.width();
-    	var data = settings.values;
+    	var data = settings.values.reverse();
 
     	var placeholderheight = $obj.height();
     	var margin = {top: 10, right: 60, bottom: 40, left: 60},
@@ -102,7 +102,7 @@
     	var placeholderheight = $obj.height();
     	var placeholderwidth = $obj.width();
     	
-    	var data = settings.values;
+    	var data = settings.values.reverse();
     	
     	var margin = {top: 40, right: 60, bottom: 40, left: 60},
     	   width = placeholderwidth - margin.left - margin.right;
@@ -185,9 +185,7 @@
     
     horizontalBarMultipleChoiceSurvey = function($obj, settings) {
     	var placeholderwidth = $obj.width();
-    	
-    	var data = settings.values;
-    	var colors = settings.colors;
+    	var data = settings.values.reverse();
     	
     	var margin = {top: 40, right: 10, bottom: 40, left: 40};
     	var height = data.length * settings.barHeight;
@@ -271,15 +269,14 @@
     horizontalBarMultipleChoice = function($obj, settings) {
     	var placeholderwidth = $obj.width();
     	
-    	var data = settings.values;
-    	var colors = settings.colors;
+    	var data = settings.values.reverse();
     	
     	var margin = {top: 40, right: 10, bottom: 40, left: 40};
     	var height = data.length * settings.barHeight;
     	$obj.height(height + margin.top + margin.bottom + 'px');
     	var width = placeholderwidth - margin.left - margin.right;
     	
-    	var sum =  settings.participants;
+    	var sum = settings.participants;
     	var max = d3.max(data, function(d) { return d[1] + d[2] + d[3]; });
 
     	var x = d3.scale.linear()
@@ -376,15 +373,15 @@
     horizontalBarSingleChoice = function($obj, settings) {
     	var placeholderwidth = $obj.width();
     	
-    	var data = settings.values;
-    	var colors = settings.colors;
+    	var data = settings.values.reverse();
+    	var colors = settings.colors.reverse();
     	
     	var margin = {top: 40, right: 10, bottom: 40, left: 40};
     	var height = data.length * settings.barHeight;
     	$obj.height(height + margin.top + margin.bottom + 'px');
     	var width = placeholderwidth - margin.left - margin.right;
     	
-    	var sum = d3.sum(data, function(d) { return d[1]; });
+    	var sum = settings.participants;// d3.sum(data, function(d) { return d[1]; });
     	var max = d3.max(data, function(d) { return d[1]; });
 
     	var x = d3.scale.linear()
@@ -466,18 +463,25 @@
     histogramDuration = function($obj, settings) {
     	var placeholderheight = $obj.height();
     	var placeholderwidth = $obj.width();
-    	
     	var values = settings.values;
-    	var formatCount = d3.format(',.f'),
-    	  formatTime = d3.time.format('%H:%M'),
-    	  formatMinutes = function(d) { return formatTime(new Date(2012, 0, 1, 0, d)); };
+    	var maxTime = d3.max(values, function(d) { return d; });
+    	
+    	var timeFormat = '%M:%S';
+    	if(maxTime < 10) {
+    		timeFormat += ':%L';
+    	}
+    	
+    	var ref = new Date(2012, 0, 1, 0, 0),
+    	  formatCount = d3.format(',.f'),
+    	  formatTime = d3.time.format(timeFormat),
+    	  formatMinutes = function(d) { return formatTime(new Date(ref.getTime() + (d * 1000))); };
     	
     	var margin = {top: 10, right: 60, bottom: 40, left: 60},
     	  width = placeholderwidth - margin.left - margin.right,
     	  height = placeholderheight - margin.top - margin.bottom;
     	  
     	var x = d3.scale.linear()
-    	  .domain([0, 4.0])
+    	  .domain([0, maxTime])
     	  .range([0, width]);
     	
     	var data = d3.layout.histogram()
@@ -556,7 +560,7 @@
     	  .attr('x', (height / 2))
     	  .attr('dy', '1em')
     	  .style('text-anchor', 'middle')
-    	  .text(settings.yLeftLegend);
+    	  .text(settings.yRightLegend);
     };
 
     histogramScore = function($obj, settings) {

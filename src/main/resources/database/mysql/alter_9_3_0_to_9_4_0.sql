@@ -88,6 +88,8 @@ alter table o_cl_check add constraint check_box_ctx foreign key (fk_checkbox_id)
 alter table o_cl_check add unique check_identity_unique_ctx (fk_identity_id, fk_checkbox_id);
 create index idx_checkbox_uuid_idx on o_cl_checkbox (c_checkboxid);
 
+-- missing index
+create index idx_taxon_mat_pathon on o_qp_taxonomy_level (q_mat_path_ids(255));
 
 
 

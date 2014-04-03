@@ -13,3 +13,12 @@ jQuery(function () {
 });
 /* ]]> */</script>
 </div>
+#if($series.legend)
+<div class="o_qti_statistics_legend">
+	<ul class="legend">
+		#foreach($barserie in $series.series)
+	    	<li><span class="$barserie.cssClass"></span> $barserie.legend</li>
+	    #end
+	</ul>
+</div>
+#end

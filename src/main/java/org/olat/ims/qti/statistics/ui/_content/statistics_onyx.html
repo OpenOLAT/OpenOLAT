@@ -1,5 +1,4 @@
 <div class="o_qti_statistics">
-
 #if(!$printMode)
 	<div class="o_buttons_box_right">
 		<script type="text/javascript">
@@ -12,39 +11,34 @@
 			}
 		}
 		</script>
-		<div id='$r.getId("print")'>
-			<a class="b_small_icon o_print_icon" href='javascript:$r.getId("print")()' title='$r.translateInAttribute("print")'><span>Print</span></a>	
-		</div>
+		<a class="b_with_small_icon_left o_print_icon" href='javascript:$r.getId("print")()' title='$r.translateInAttribute("print")'>
+			<span>$r.translate("print")</span>
+		</a>
 	</div>
 #end
-<div class="b_clearfix">
-	<div class="b_c33l">
-		<h4>$r.translate("fig.title")</h4>
-		<table><tbody>
-			<tr><td>$r.translate("fig.participants")</td>
-				<td>$numOfParticipants</td></tr>
-			<tr><td>$r.translate("fig.avg")</td>
-				<td>$average</td></tr>
-			<tr><td>$r.translate("fig.span")</td>
-				<td>$range</td></tr>
-			<tr><td>$r.translate("fig.stddev")</td>
-				<td>$standardDeviation</td></tr>
-			<tr><td>$r.translate("fig.mode")</td>
-				<td>$mode</td></tr>
-			<tr><td>$r.translate("fig.median")</td>
-				<td>$median</td></tr>
-			<tr><td>$r.translate("fig.averagedur")</td>
-				<td>$averageDuration</td></tr>
-		</tbody></table>
-	</div>
-	<div class="b_c66r">
-		#if($r.available("scoreHistogram"))
-			$r.render("scoreHistogram")
-		#end
-	</div>
-</div>
-<div class="b_clearfix">
-	$r.render("durationHistogram")
-</div>
 
+<h4>$r.translate("fig.title")</h4>
+<table class="o_qti_statistics_figures">
+	<tr><td>$r.translate("fig.participants")</td>
+		<td>$numOfParticipants</td></tr>
+	<tr><td>$r.translate("fig.avg")</td>
+		<td>$average</td></tr>
+	<tr><td>$r.translate("fig.span")</td>
+		<td>$range</td></tr>
+	<tr><td>$r.translate("fig.stddev")</td>
+		<td>$standardDeviation</td></tr>
+	<tr><td>$r.translate("fig.mode")</td>
+		<td>$mode</td></tr>
+	<tr><td>$r.translate("fig.median")</td>
+		<td>$median</td></tr>
+	<tr><td>$r.translate("fig.averagedur")</td>
+		<td>$averageDuration</td></tr>
+</table>
+
+#if($r.available("scoreHistogram"))
+	$r.render("scoreHistogram")
+#end
+#if($r.available("durationHistogram"))
+	$r.render("durationHistogram")
+#end
 </div>

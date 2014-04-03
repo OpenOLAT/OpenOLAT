@@ -38,6 +38,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.WorkbookMediaResource;
@@ -115,7 +116,8 @@ public class ChatLogHelper {
 
 		Workbook wb = new HSSFWorkbook();
 		String tableExportTitle = translator.translate("logChat.export.title");
-		Sheet exportSheet = wb.createSheet(tableExportTitle);
+		String saveTitle = WorkbookUtil.createSafeSheetName(tableExportTitle);
+		Sheet exportSheet = wb.createSheet(saveTitle);
 		Formatter formatter = Formatter.getInstance(locale);
 		
 		//headers

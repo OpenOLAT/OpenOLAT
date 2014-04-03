@@ -104,8 +104,8 @@ div.o_course_run {
 		margin: 1em 0 0 0;
 		div.o_course_run_toc_entry { margin: 0 0 1em 0; padding: 1em 20px 0 0; } 
 		div.o_course_run_shorttitle { border-bottom: 1px solid #ACAAAA; } 
-		div.o_course_run_displaytitle { margin-top: 0.5em; color: #aaaaaa } 
-		div.o_course_run_objectives { margin: 1em 0 1em 0; border: 0; background: none;} 
+		div.o_course_run_displaytitle { margin-top: 0.5em; color: #aaaaaa; padding-left: 20px; } 
+		div.o_course_run_objectives { margin: 1em 0 1em 0; border: 0; background: none; padding-left: 20px;} 
 		div.o_course_run_toc_entry { background: #FBFBFB; padding: 5px; border:1px solid #eee; @include o-border-radius(4px); }  
 	} 
 
