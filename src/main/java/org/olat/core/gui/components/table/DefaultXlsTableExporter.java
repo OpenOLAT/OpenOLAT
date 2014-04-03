@@ -36,6 +36,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.StringOutput;
@@ -71,7 +72,8 @@ public class DefaultXlsTableExporter implements TableExporter {
 		headerCellStyle = getHeaderCellStyle(wb);
 		
 		String tableExportTitle = translator.translate("table.export.title");
-		Sheet exportSheet = wb.createSheet(tableExportTitle);
+		String saveTitle = WorkbookUtil.createSafeSheetName(tableExportTitle);
+		Sheet exportSheet = wb.createSheet(saveTitle);
 		createHeader(table, translator, cdcnt, exportSheet);
 		createData(table, cdcnt, rcnt, exportSheet);
 		
