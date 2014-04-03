@@ -32,6 +32,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -264,7 +265,8 @@ public class CustomDBController extends FormBasicController {
 
 		Workbook wb = new HSSFWorkbook();
 		CellStyle headerCellStyle = getHeaderCellStyle(wb);
-		Sheet exportSheet = wb.createSheet(courseTitle);
+		String saveTitle = WorkbookUtil.createSafeSheetName(courseTitle);
+		Sheet exportSheet = wb.createSheet(saveTitle);
 		
 		//create the headers
 		Row headerRow = exportSheet.createRow(0);
