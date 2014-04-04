@@ -40,6 +40,7 @@
 			</map>
 		</property>
 		<property name="defaultCharset" value="${defaultcharset}" />
+		<property name="enforceUtf8Filesystem" value="${enforce.utf8.filesystem}" />
 		<property name="version" value="${build.version}" />
 		<property name="applicationName" value="${application.name}" />
 		<property name="mobileContext" value="${mobile.context}" />
