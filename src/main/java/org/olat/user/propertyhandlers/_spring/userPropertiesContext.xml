@@ -14,6 +14,7 @@
 	<bean id="org.olat.user.UserPropertiesConfig" class="org.olat.user.propertyhandlers.UserPropertiesConfigImpl" init-method="init">
 		<property name="userPropertyHandlers">
 			<list>
+				<ref bean="userPropertyUserName" />
 				<ref bean="userPropertyFirstName" />
 				<ref bean="userPropertyLastName" />
 				<ref bean="userPropertyEmail" />
@@ -96,6 +97,7 @@
 						</property>
 						<property name="userViewReadOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyInstitutionalName" />
@@ -282,6 +284,7 @@
 							<list>
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyUserName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 							</list>
 						</property>
