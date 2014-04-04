@@ -222,7 +222,11 @@ public class CourseFactory extends BasicManager {
 			OLATResourceable olatResource, CourseNode selectedNode) {
 		ICourse course = loadCourse(olatResource);
 		EditorMainController emc = new EditorMainController(ureq, wControl, course, stack, selectedNode);
-		if (!emc.getLockEntry().isSuccess()) {
+		if (emc.getLockEntry() == null) {
+			Translator translator = Util.createPackageTranslator(RunMainController.class, ureq.getLocale());
+			wControl.setWarning(translator.translate("error.editoralreadylocked", new String[] { "?" }));
+			return null;
+		} else if(!emc.getLockEntry().isSuccess()) {
 			// get i18n from the course runmaincontroller to say that this editor is
 			// already locked by another person
 
@@ -1165,6 +1169,10 @@ public class CourseFactory extends BasicManager {
 			log.debug("getCourseEditSession - put course in courseEditSessionMap: " + resourceableId);
 		}	
 		return course;
+	}
+	
+	public static boolean isCourseEditSessionOpen(Long resourceableId) {
+		return courseEditSessionMap.containsKey(resourceableId);
 	}
 	
 	/**
