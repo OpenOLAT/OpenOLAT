@@ -274,6 +274,19 @@
 						</property>
 					</bean>
 				</entry>
+
+				<entry key="org.olat.ims.qti.export.QTIExportFormatterCSVType1">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Columns in download file of QTI assessment results in courses" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+							</list>
+						</property>
+					</bean>
+				</entry>
 				
 				<entry key="org.olat.admin.user.UsermanagerUserSearchForm">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">

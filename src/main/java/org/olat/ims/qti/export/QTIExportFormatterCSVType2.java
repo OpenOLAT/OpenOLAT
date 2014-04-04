@@ -186,10 +186,6 @@ public class QTIExportFormatterCSVType2 extends QTIExportFormatter {
 	}
 
 	public void openResultSet(QTIExportSet set) {
-		String instUsrIdent = set.getInstitutionalUserIdentifier();
-		if (instUsrIdent == null) {
-			instUsrIdent = translator.translate("column.field.notavailable");
-		}
 		float assessPoints = set.getScore();
 			
 		Long key = set.getIdentity().getKey();
