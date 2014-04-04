@@ -45,6 +45,7 @@ import org.olat.group.model.EnrollState;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.resource.OLATResource;
@@ -87,6 +88,8 @@ public class ACFrontendManager extends BasicManager implements ACService {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private AccessControlModule accessModule;
 	@Autowired
 	private ACOfferManager accessManager;
@@ -123,7 +126,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 			return new AccessResult(true);
 		}
 		
-		boolean member = repositoryManager.isMember(forId, entry);
+		boolean member = repositoryService.isMember(forId, entry);
 		if(member) {
 			return new AccessResult(true);
 		}

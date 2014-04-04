@@ -89,7 +89,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -323,16 +322,28 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			main.contextPut("description", Formatter.formatLatexFormulas(description));
 		}
 		
-		VFSLeaf image = RepositoryManager.getInstance().getImage(repositoryEntry);
+		VFSLeaf image = repositoryService.getIntroductionImage(repositoryEntry);
 		if (image != null) {
 			// display only within 600x300 - everything else looks ugly
-			ImageComponent ic = new ImageComponent("image");
-			ic.setMediaResource(new VFSMediaResource(image));
+			ImageComponent ic = new ImageComponent(ureq.getUserSession(), "image");
+			ic.setMedia(image);
 			ic.setMaxWithAndHeightToFitWithin(600, 300);
-			main.contextPut("hasImage", Boolean.TRUE);
 			main.put("image", ic);
+			main.contextPut("hasImage", Boolean.TRUE);
 		} else {
 			main.contextPut("hasImage", Boolean.FALSE);
+		}
+		
+		VFSLeaf video = repositoryService.getIntroductionMovie(repositoryEntry);
+		if (video != null) {
+			// display only within 600x300 - everything else looks ugly
+			ImageComponent ic = new ImageComponent(ureq.getUserSession(), "video");
+			ic.setMedia(video);
+			ic.setMaxWithAndHeightToFitWithin(600, 300);
+			main.put("video", ic);
+			main.contextPut("hasVideo", Boolean.TRUE);
+		} else {
+			main.contextPut("hasVideo", Boolean.FALSE);
 		}
 
 		main.contextPut("id", repositoryEntry.getResourceableId());

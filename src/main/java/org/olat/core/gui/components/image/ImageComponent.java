@@ -26,38 +26,47 @@
 
 package org.olat.core.gui.components.image;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.util.Iterator;
+import java.io.File;
+import java.util.Collections;
+import java.util.UUID;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
+import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.IOUtils;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.ValidationResult;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.image.Size;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 
 /**
  * Description: <br>
  * 
  * @author Felix Jost
  */
-public class ImageComponent extends AbstractComponent {
+public class ImageComponent extends AbstractComponent implements Disposable {
 	private static final ComponentRenderer RENDERER = new ImageRenderer();
 	private static final OLog log = Tracing.createLoggerFor(ImageComponent.class);
 	
-	private MediaResource mediaResource;
+	private VFSLeaf media;
+	private String mimeType;
+
+	private final String mapperUrl;
+	private final MediaMapper mapper;
 
 	private Size realSize;
 	private Size scaledSize;
@@ -67,8 +76,11 @@ public class ImageComponent extends AbstractComponent {
 	/**
 	 * @param name
 	 */
-	public ImageComponent(String name) {
+	public ImageComponent(UserSession usess, String name) {
 		super(name);
+		mapper = new MediaMapper();
+		String mapperId = UUID.randomUUID().toString();
+		mapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperId, mapper);
 	}
 
 	/**
@@ -76,12 +88,7 @@ public class ImageComponent extends AbstractComponent {
 	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		String ri = ureq.getParameter("ri");
-		if("1".equals(ri)) {
-			// our tasks now: deliver the descriptor to the picture we want to display
-			// and which made our nice buddy, the renderer, embedded into html
-			ureq.getDispatchResult().setResultingMediaResource(mediaResource);
-		}
+		//
 	}
 
 	public boolean isCropSelectionEnabled() {
@@ -100,11 +107,32 @@ public class ImageComponent extends AbstractComponent {
 	}
 	
 	public Size getRealSize() {
+		if(realSize == null) {
+			String suffix = getSuffix(getMimeType());
+			if(StringHelper.containsNonWhitespace(suffix)) {
+				if(suffix.equalsIgnoreCase("jpg") || suffix.equalsIgnoreCase("png") || suffix.equalsIgnoreCase("jpeg")) {
+					realSize = CoreSpringFactory.getImpl(ImageService.class).getSize(media, suffix);
+				} else if(suffix.equalsIgnoreCase("mp4") || suffix.equalsIgnoreCase("m4v") || suffix.equalsIgnoreCase("flv"))  {
+					realSize = CoreSpringFactory.getImpl(MovieService.class).getSize(media, suffix);
+				}
+			}
+		}
 		return realSize;
 	}
 	
 	public float getScalingFactor() {
 		return scalingFactor;
+	}
+	
+	public VFSLeaf getMedia() {
+		return media;
+	}
+
+	@Override
+	public void dispose() {
+		if(mapper != null) {
+			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.<Mapper>singletonList(mapper));
+		}
 	}
 
 	/**
@@ -114,9 +142,37 @@ public class ImageComponent extends AbstractComponent {
 	 * 
 	 * @param mediaResource
 	 */
-	public void setMediaResource(MediaResource mediaResource) {
+	public void setMedia(VFSLeaf media) {
 		setDirty(true);
-		this.mediaResource = mediaResource;
+		this.media = media;
+		this.mimeType = null;
+		mapper.setMediaFile(media);
+	}
+	
+	public void setMedia(VFSLeaf media, String mimeType) {
+		setDirty(true);
+		this.media = media;
+		this.mimeType = mimeType;
+		mapper.setMediaFile(media);
+	}
+	
+	public void setMedia(File mediaFile) {
+		setDirty(true);
+		setMedia(new LocalFileImpl(mediaFile));
+	}
+	
+	public String getMapperUrl() {
+		return mapperUrl;
+	}
+	
+	public String getMimeType() {
+		if(mimeType != null) {
+			return mimeType;
+		}
+		if(media == null) {
+			return null;
+		}
+		return WebappHelper.getMimeType(media.getName());
 	}
 
 	@Override
@@ -147,28 +203,21 @@ public class ImageComponent extends AbstractComponent {
 	 * @param maxHeight
 	 */
 	public void setMaxWithAndHeightToFitWithin(int maxWidth, int maxHeight) {
-		if (mediaResource == null || mediaResource.getInputStream() == null) {
-			throw new AssertException("Set media resource to a valid value befor calling scaleToFit::" + mediaResource);
+		if (media == null || !media.exists()) {
+			scalingFactor = Float.NaN;
+			realSize = null;
+			scaledSize = null;
+			return;
 		}
 
 		try {
-			String type = mediaResource.getContentType();
-			String suffix = getSuffix(type);
-
-			Size size = null;
-			if(StringHelper.containsNonWhitespace(suffix)) {
-				size = getImageSize(suffix);
-			}
-			if(size == null) {
-				size = getImageSizeFallback();
-			}
+			Size size = getRealSize();
 			if(size == null) {
 				return;
 			}
 
 			int realWidth = size.getWidth();
 			int realHeight = size.getHeight();
-			
 			// calculate scaling factor
 			scalingFactor = 1f;
 			if (realWidth > maxWidth) {
@@ -185,11 +234,11 @@ public class ImageComponent extends AbstractComponent {
 			setDirty(true);
 		} catch (Exception e) {
 			// log error, don't do anything else
-			log.error("Problem while setting image size to fit " + maxWidth + "x" + maxHeight + " for resource::" + mediaResource, e);
+			log.error("Problem while setting image size to fit " + maxWidth + "x" + maxHeight + " for resource::" + media, e);
 		} 
 	}
 	
-	private String getSuffix(String contentType) {
+	protected String getSuffix(String contentType) {
 		contentType = contentType.toLowerCase();
 		if(contentType.indexOf("jpg") >= 0 || contentType.indexOf("jpeg") >= 0) {
 			return "jpg";
@@ -200,54 +249,31 @@ public class ImageComponent extends AbstractComponent {
 		if(contentType.indexOf("png") >= 0) {
 			return "png";
 		}
+		if(contentType.indexOf("png") >= 0) {
+			return "png";
+		}
+		if(contentType.indexOf("m4v") >= 0) {
+			return "m4v";
+		}
+		if(contentType.indexOf("mp4") >= 0) {
+			return "mp4";
+		}
+		if(contentType.indexOf("flv") >= 0) {
+			return "flv";
+		}
 		return null;
 	}
 	
-	private Size getImageSizeFallback() {
-		BufferedInputStream fileStrean = null;
-		BufferedImage imageSrc = null;
-		try {
-			fileStrean = new BufferedInputStream(mediaResource.getInputStream());
-			imageSrc = ImageIO.read(fileStrean);
-			if (imageSrc == null) {
-				// happens with faulty Java implementation, e.g. on MacOSX
-				return null;
-			}
-			double realWidth = imageSrc.getWidth();
-			double realHeight = imageSrc.getHeight();
-			return new Size((int)realWidth, (int)realHeight, 0, 0, false);
-		} catch (IOException e) {
-			// log error, don't do anything else
-			log.error("Problem while setting image size to fit for resource::" + mediaResource, e);
-			return null;
-		} finally {
-			IOUtils.closeQuietly(fileStrean);
-			if (imageSrc != null) {
-				imageSrc.flush();
-			}
+	private static class MediaMapper implements Mapper {
+		private VFSLeaf mediaFile;
+
+		public void setMediaFile(VFSLeaf mediaFile) {
+			this.mediaFile = mediaFile;
 		}
-	}
-	
-	private Size getImageSize(String suffix) {
-		Size result = null;
-		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
-		if (iter.hasNext()) {
-			ImageReader reader = iter.next();
-			try {
-				ImageInputStream stream = new MemoryCacheImageInputStream(mediaResource.getInputStream());
-				reader.setInput(stream);
-				int readerMinIndex = reader.getMinIndex();
-				int width = reader.getWidth(readerMinIndex);
-				int height = reader.getHeight(readerMinIndex);
-				result = new Size(width, height, 0, 0, false);
-			} catch (IOException e) {
-				log.error(e.getMessage());
-			} finally {
-				reader.dispose();
-			}
-		} else {
-			log.error("No reader found for given format: " + suffix);
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			return new VFSMediaResource(mediaFile);
 		}
-		return result;
 	}
 }

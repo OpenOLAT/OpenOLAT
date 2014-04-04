@@ -29,14 +29,14 @@ import java.io.File;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.image.Size;
 
 /**
  * Description: <br>
@@ -140,7 +140,7 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		}
 		File pBigFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME + "." + extension);
 		File pSmallFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME + "." + extension);
-		ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
+		ImageService imageHelper = CoreSpringFactory.getImpl(ImageService.class);
 		Size size = imageHelper.scaleImage(file, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
 		if(size != null){
 			size = imageHelper.scaleImage(file, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);

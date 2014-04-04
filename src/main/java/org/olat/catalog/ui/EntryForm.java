@@ -120,7 +120,7 @@ class EntryForm extends FormBasicController {
 		}
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
-		fileUpload.setPreview(true);
+		fileUpload.setPreview(ureq.getUserSession(), true);
 		fileUpload.setCropSelectionEnabled(true);
 		if(img instanceof LocalFileImpl) {
 			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());

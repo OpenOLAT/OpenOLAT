@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.image.spi;
+package org.olat.core.commons.services.image.spi;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,12 +29,11 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.olat.core.commons.services.image.Crop;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.image.Crop;
-import org.olat.core.util.image.ImageHelperSPI;
-import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.NamedLeaf;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -47,7 +46,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ImageMagickHelper implements ImageHelperSPI {
+public class ImageMagickHelper extends AbstractImageHelper {
 	
 	private static final OLog log = Tracing.createLoggerFor(ImageMagickHelper.class);
 

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.image;
+package org.olat.core.commons.services.image;
 
 import java.io.File;
 import java.io.FileInputStream;

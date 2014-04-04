@@ -19,7 +19,9 @@
  */
 package org.olat.repository.manager;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import junit.framework.Assert;
 
@@ -28,6 +30,9 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -43,13 +48,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
-	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
 	@Test
 	public void getDefaultGroup() {
@@ -133,5 +141,101 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, participants.size());
 		Assert.assertEquals(1, numOfParticipants);
 		Assert.assertTrue(members.contains(id2));
+	}
+	
+	@Test
+	public void isMember() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", null, null, false, false, re);
+	    businessGroupRelationDao.addRole(id1, group, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+
+		//id1 is member
+		boolean member1 = repositoryEntryRelationDao.isMember(id1, re);
+		Assert.assertTrue(member1);
+		//id2 is not member
+		boolean member2 = repositoryEntryRelationDao.isMember(id2, re);
+		Assert.assertFalse(member2);
+	}
+	
+	@Test
+	public void isMember_v2() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-1-lc-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-2-lc-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-3-lc-" + UUID.randomUUID().toString());
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-4-lc-" + UUID.randomUUID().toString());
+		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-5-lc-" + UUID.randomUUID().toString());
+		Identity id6 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-6-lc-" + UUID.randomUUID().toString());
+		Identity idNull = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-null-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "member-1-g", "tg", null, null, false, false, re);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "member-2-g", "tg", null, null, false, false, re);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "member-3-g", "tg", null, null, true, false, re);
+		BusinessGroup groupNull = businessGroupService.createBusinessGroup(null, "member-null-g", "tg", null, null, true, false, null);
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(id4, group1, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(id5, group2, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(id6, group3, GroupRoles.waiting.name());
+	    businessGroupRelationDao.addRole(idNull, groupNull, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//id1 is owner
+		boolean member1 = repositoryEntryRelationDao.isMember(id1, re);
+		Assert.assertTrue(member1);
+		//id2 is tutor
+		boolean member2 = repositoryEntryRelationDao.isMember(id2, re);
+		Assert.assertTrue(member2);
+		//id3 is repo participant
+		boolean member3 = repositoryEntryRelationDao.isMember(id3, re);
+		Assert.assertTrue(member3);
+		//id4 is group coach
+		boolean member4= repositoryEntryRelationDao.isMember(id4, re);
+		Assert.assertTrue(member4);
+		//id5 is group participant
+		boolean member5 = repositoryEntryRelationDao.isMember(id5, re);
+		Assert.assertTrue(member5);
+		//id6 is waiting
+		boolean member6 = repositoryEntryRelationDao.isMember(id6, re);
+		Assert.assertFalse(member6);
+		//idNull is not member
+		boolean memberNull = repositoryEntryRelationDao.isMember(idNull, re);
+		Assert.assertFalse(memberNull);
+	}
+	
+	@Test
+	public void filterMembership() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", null, null, false, false, re1);
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
+	    RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(id, re2, GroupRoles.owner.name());
+	    RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(id, re3, GroupRoles.waiting.name());
+		dbInstance.commitAndCloseSession();
+
+		//id is member
+		List<Long> entries = new ArrayList<>();
+		entries.add(re1.getKey());
+		entries.add(re2.getKey());
+		entries.add(re3.getKey());
+		entries.add(502l);
+		repositoryEntryRelationDao.filterMembership(id, entries);
+
+		Assert.assertTrue(entries.contains(re1.getKey()));
+		Assert.assertTrue(entries.contains(re2.getKey()));
+		//waiting list
+		Assert.assertFalse(entries.contains(re3.getKey()));
+		//unkown
+		Assert.assertFalse(entries.contains(502l));
+		
+		//check against empty value
+		List<Long> empyEntries = new ArrayList<>();
+		repositoryEntryRelationDao.filterMembership(id, empyEntries);
+		Assert.assertTrue(empyEntries.isEmpty());
 	}
 }

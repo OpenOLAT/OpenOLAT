@@ -17,12 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util;
+package org.olat.core.commons.services.image;
 
 import java.io.File;
 
-import org.olat.core.util.image.Crop;
-import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -35,10 +33,12 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public interface ImageHelper {
+public interface ImageService {
 	
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill);
 
+	public Size getSize(VFSLeaf image, String suffix);
+	
 	public boolean cropImage(File image, File cropedImage, Crop cropSelection);
 	
 	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight);

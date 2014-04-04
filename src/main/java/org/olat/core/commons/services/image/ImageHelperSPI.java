@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.image;
+package org.olat.core.commons.services.image;
 
 import java.io.File;
 
@@ -40,6 +40,8 @@ public interface ImageHelperSPI {
 	 * @return
 	 */
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight);
+	
+	public Size getSize(VFSLeaf image, String suffix);
 	
 	public boolean cropImage(File image, File cropedImage, Crop cropSelection);
 

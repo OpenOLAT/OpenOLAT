@@ -56,7 +56,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.UserCourseInformations;
@@ -66,7 +65,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.RepositoyUIFactory;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -101,7 +99,6 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private final MarkManager markManager;
 	private final CatalogManager catalogManager;
 	private final RepositoryService repositoryService;
-	private final RepositoryManager repositoryManager;
 	private final BusinessGroupService businessGroupService;
 	private final EfficiencyStatementManager effManager;
 	private final UserCourseInformationsManager userCourseInfosManager;
@@ -117,7 +114,6 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
 		userRatingsDao = CoreSpringFactory.getImpl(UserRatingsDAO.class);
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		effManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -159,12 +155,18 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			setText(entry.getObjectives(), "objectives", layoutCont);
 			setText(entry.getCredits(), "credits", layoutCont);
 
-			//thumbnail
-			VFSLeaf image = repositoryManager.getImage(entry);
-			if(image != null) {
-				ImageComponent ic = new ImageComponent("thumbnail");
-				ic.setMediaResource(new VFSMediaResource(image));
-				ic.setMaxWithAndHeightToFitWithin(500, 300);
+			//thumbnail and movie
+			VFSLeaf movie = repositoryService.getIntroductionMovie(entry);
+			VFSLeaf image = repositoryService.getIntroductionImage(entry);
+			if(image != null || movie != null) {
+				ImageComponent ic = new ImageComponent(ureq.getUserSession(), "thumbnail");
+				if(movie != null) {
+					ic.setMedia(movie);
+					ic.setMaxWithAndHeightToFitWithin(500, 300);
+				} else {
+					ic.setMedia(image);
+					ic.setMaxWithAndHeightToFitWithin(500, 300);
+				}
 				layoutCont.put("thumbnail", ic);
 			}
 			
@@ -205,7 +207,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			commentsLink.setCustomEnabledLinkCSS(css);
 			
 			//load memberships
-			boolean isMember = repositoryManager.isMember(getIdentity(), entry);
+			boolean isMember = repositoryService.isMember(getIdentity(), entry);
 			
 			//access control
 			List<PriceMethod> types = new ArrayList<PriceMethod>();

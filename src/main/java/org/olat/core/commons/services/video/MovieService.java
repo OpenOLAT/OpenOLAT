@@ -17,39 +17,19 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.openxml;
-
-import java.io.File;
+package org.olat.core.commons.services.video;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * 
- * Initial date: 04.09.2013<br>
+ * Initial date: 04.04.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DocReference {
+public interface MovieService {
 	
-	private final String id;
-	private final File file;
-	private final Size emuSize;
-	
-	public DocReference(String id, Size emuSize, File file) {
-		this.id = id;
-		this.file = file;
-		this.emuSize = emuSize;
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public File getFile() {
-		return file;
-	}
+	public Size getSize(VFSLeaf image, String suffix);
 
-	public Size getEmuSize() {
-		return emuSize;
-	}
 }

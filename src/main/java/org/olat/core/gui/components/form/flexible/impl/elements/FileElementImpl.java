@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.image.Crop;
+import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -40,23 +42,20 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.control.Disposable;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.ImageHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.image.Crop;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.VFSMediaResource;
 
 /**
  * <h3>Description:</h3>
@@ -142,10 +141,10 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 				uploadMimeType = "application/octet-stream";
 			}
 			
-			if(previewEl != null && uploadMimeType != null && uploadMimeType.startsWith("image/")) {
+			if(previewEl != null && uploadMimeType != null
+					&& (uploadMimeType.startsWith("image/") || uploadMimeType.startsWith("video/"))) {
 				VFSLeaf media = new LocalFileImpl(tempUploadFile);
-				MediaResource resource = new VFSMediaResource(media);
-				previewEl.setMediaResource(resource);
+				previewEl.setMedia(media, uploadMimeType);
 				previewEl.setMaxWithAndHeightToFitWithin(300, 200);
 			}
 			// Mark associated component dirty, that it gets rerendered
@@ -275,9 +274,9 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	}
 
 	@Override
-	public void setPreview(boolean enable) {
+	public void setPreview(UserSession usess, boolean enable) {
 		if(enable) {
-			previewEl = new ImageFormItem(this.getName() + "_PREVIEW");
+			previewEl = new ImageFormItem(usess, this.getName() + "_PREVIEW");
 			previewEl.setRootForm(getRootForm());
 		} else {
 			previewEl = null;
@@ -287,9 +286,6 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	@Override
 	public void setCropSelectionEnabled(boolean enable) {
 		if(enable) {
-			if(previewEl == null) {
-				setPreview(true);
-			}
 			previewEl.setCropSelectionEnabled(true);
 		} else if(previewEl != null) {
 			previewEl.setCropSelectionEnabled(false);
@@ -304,8 +300,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 		this.initialFile = initialFile;
 		if(initialFile != null && previewEl != null) {
 			VFSLeaf media = new LocalFileImpl(initialFile);
-			MediaResource resource = new VFSMediaResource(media);
-			previewEl.setMediaResource(resource);
+			previewEl.setMedia(media);
 			previewEl.setMaxWithAndHeightToFitWithin(300, 200);
 		}
 	}
@@ -458,7 +453,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 				
 				Crop cropSelection = previewEl == null ? null : previewEl.getCropSelection();
 				if(crop && cropSelection != null) {
-					CoreSpringFactory.getImpl(ImageHelper.class).cropImage(tempUploadFile, targetFile, cropSelection);
+					CoreSpringFactory.getImpl(ImageService.class).cropImage(tempUploadFile, targetFile, cropSelection);
 					targetLeaf = (VFSLeaf) destinationContainer.resolve(targetFile.getName());
 				} else if (FileUtils.copyFileToFile(tempUploadFile, targetFile, true)) { 
 					targetLeaf = (VFSLeaf) destinationContainer.resolve(targetFile.getName());

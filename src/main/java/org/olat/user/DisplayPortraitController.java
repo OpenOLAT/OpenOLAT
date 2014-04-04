@@ -25,6 +25,8 @@
 
 package org.olat.user;
 
+import java.io.File;
+
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -36,7 +38,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
@@ -104,7 +105,7 @@ public class DisplayPortraitController extends BasicController {
 		this.portraitIdent = portraitIdent;
 		
 		
-		MediaResource portrait = null;
+		File portrait = null;
 		if(displayPortraitImage){
 			ImageComponent ic = null;
 			
@@ -115,7 +116,7 @@ public class DisplayPortraitController extends BasicController {
 			}
 			
 			if (useLarge){
-				portrait = DisplayPortraitManager.getInstance().getBigPortraitResource(portraitIdent.getName());
+				portrait = DisplayPortraitManager.getInstance().getBigPortrait(portraitIdent.getName());
 				if (gender.equals("-")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_BIG_CSS_CLASS);
 				} else if (gender.equals("male")) {
@@ -124,7 +125,7 @@ public class DisplayPortraitController extends BasicController {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS);
 				}
 			} else {
-				portrait = DisplayPortraitManager.getInstance().getSmallPortraitResource(portraitIdent.getName());
+				portrait = DisplayPortraitManager.getInstance().getSmallPortrait(portraitIdent.getName());
 				if (gender.equals("-")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS);
 				} else if (gender.equals("male")) {
@@ -135,8 +136,8 @@ public class DisplayPortraitController extends BasicController {
 			}
 			
 			if (portrait != null){
-				ic = new ImageComponent("image");
-				ic.setMediaResource(portrait);
+				ic = new ImageComponent(ureq.getUserSession(), "image");
+				ic.setMedia(portrait);
 				myContent.put("image", ic);
 			}
 		}

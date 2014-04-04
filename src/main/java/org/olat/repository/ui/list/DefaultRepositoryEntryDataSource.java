@@ -130,13 +130,16 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	}
 
 	private List<RepositoryEntryRow> processViewModel(List<RepositoryEntryMyView> repoEntries) {
-		List<OLATResource> resourcesWithAC = new ArrayList<OLATResource>(repoEntries.size());
+		List<Long> repoKeyWithAC = new ArrayList<>(repoEntries.size());
+		List<OLATResource> resourcesWithAC = new ArrayList<>(repoEntries.size());
 		for(RepositoryEntryMyView entry:repoEntries) {
 			if(entry.isValidOfferAvailable()) {
+				repoKeyWithAC.add(entry.getKey());
 				resourcesWithAC.add(entry.getOlatResource());
 			}
 		}
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
+		repositoryService.filterMembership(searchParams.getIdentity(), repoKeyWithAC);
 
 		List<RepositoryEntryRow> items = new ArrayList<RepositoryEntryRow>();
 		for(RepositoryEntryMyView entry:repoEntries) {
@@ -183,13 +186,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 					row.setLifecycleSoftKey(lifecycle.getSoftKey());
 				}
 			}
-			
-			uifactory.forgeMarkLink(row);
-			uifactory.forgeSelectLink(row);
-			uifactory.forgeStartLink(row);
-			uifactory.forgeDetails(row);
-			uifactory.forgeRatings(row);
-			uifactory.forgeComments(row);
 
 			VFSLeaf image = repositoryManager.getImage(entry);
 			if(image != null) {
@@ -212,14 +208,22 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 						}
 					}
 				}
+				
+				row.setMember(repoKeyWithAC.contains(entry.getKey()));
 			}
 			
 			if(!types.isEmpty()) {
 				row.setAccessTypes(types);
 			}
 			
-			items.add(row);
+			uifactory.forgeMarkLink(row);
+			uifactory.forgeSelectLink(row);
+			uifactory.forgeStartLink(row);
+			uifactory.forgeDetails(row);
+			uifactory.forgeRatings(row);
+			uifactory.forgeComments(row);
 			
+			items.add(row);
 		}
 		return items;
 	}

@@ -34,6 +34,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
+import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
@@ -43,7 +44,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.cache.CacheWrapper;
@@ -103,7 +103,7 @@ public class FeedManagerImpl extends FeedManager {
 	private Coordinator coordinator;
 	private OLATResourceManager resourceManager;
 	private FileResourceManager fileResourceManager;
-	private ImageHelper imageHelper;
+	private ImageService imageHelper;
 	
 	private final XStream xstream;
 	
@@ -132,7 +132,7 @@ public class FeedManagerImpl extends FeedManager {
 	 * [used by Spring]
 	 * @param imageHelper
 	 */
-	public void setImageHelper(ImageHelper imageHelper) {
+	public void setImageHelper(ImageService imageHelper) {
 		this.imageHelper = imageHelper;
 	}
 
@@ -1025,14 +1025,14 @@ public class FeedManagerImpl extends FeedManager {
 	 *      java.lang.String, java.lang.String)
 	 */
 	@Override
-	public MediaResource createFeedMediaFile(OLATResourceable feed, String fileName) {
-		VFSMediaResource mediaResource = null;
+	public VFSLeaf createFeedMediaFile(OLATResourceable feed, String fileName) {
+		VFSLeaf mediaResource = null;
 		// Brute force method for fast delivery
 		try {
 			VFSItem item = getFeedMediaContainer(feed);
 			item = item.resolve(fileName);
 			if(item instanceof VFSLeaf) {
-				mediaResource = new VFSMediaResource((VFSLeaf)item);
+				mediaResource = (VFSLeaf)item;
 			}
 		} catch (NullPointerException e) {
 			log.debug("Media resource could not be created from file: ", fileName);

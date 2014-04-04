@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormMultipartItem;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -89,7 +90,7 @@ public interface FileElement extends FormMultipartItem {
 	 * 
 	 * @param enable
 	 */
-	public void setPreview(boolean enable);
+	public void setPreview(UserSession usess, boolean enable);
 	
 	public void setCropSelectionEnabled(boolean enable);
 

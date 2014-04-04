@@ -19,6 +19,7 @@
  */
 package org.olat.gui.control;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +48,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.EventBus;
@@ -147,13 +147,12 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			myMenuLink.setCustomEnabledLinkCSS("o_topnav_impressum");
 			myMenuLink.setElementCssClass("o_sel_my_menu_open");
 			
-			MediaResource image = portraitManager.getSmallPortraitResource(getIdentity().getName());
-
+			File image = portraitManager.getSmallPortrait(getIdentity().getName());
 			if (image != null) {
 				// display only within 600x300 - everything else looks ugly
-				ImageComponent ic = new ImageComponent("image");
+				ImageComponent ic = new ImageComponent(ureq.getUserSession(), "image");
 				ic.setSpanAsDomReplaceable(true);
-				ic.setMediaResource(image);
+				ic.setMedia(image);
 				topNavVC.contextPut("hasPortrait", Boolean.TRUE);
 				topNavVC.put("portrait", ic);
 			} else {

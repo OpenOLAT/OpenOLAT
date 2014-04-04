@@ -191,7 +191,7 @@ public abstract class FeedManager extends BasicManager {
 	 * @param fileName
 	 * @return The media file of the feed
 	 */
-	public abstract MediaResource createFeedMediaFile(OLATResourceable feed, String fileName);
+	public abstract VFSLeaf createFeedMediaFile(OLATResourceable feed, String fileName);
 
 	/**
 	 * Returns the base URI of the feed including user identity key and token if

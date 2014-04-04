@@ -47,22 +47,22 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.media.NamedFileMediaResource;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.RepositoyUIFactory;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -81,18 +81,19 @@ import org.olat.user.UserManager;
 public class RepositoryEditDescriptionController extends FormBasicController {
 
 	private final boolean isSubWorkflow;
+	private VFSContainer mediaContainer;
 	private RepositoryEntry repositoryEntry;
 	private final String repoEntryType;
 
-	private static final int picUploadlimitKB = 1024;
+	private static final int picUploadlimitKB = 5120;
+	private static final int movieUploadlimitKB = 102400;
 
-	private FileElement fileUpload;
+	private FileElement fileUpload, movieUpload;
 	private SingleSelection language;
 	private TextElement displayName, authors, expenditureOfWork;
 	private RichTextElement description, objectives, requirements, credits;
 	private SingleSelection dateTypesEl, publicDatesEl;
 	private DateChooser startDateEl, endDateEl;
-	private ImageFormItem imageEl;
 	private FormLink deleteImage;
 	private FormSubmit submit;
 	private FormLayoutContainer descCont, privateDatesCont;
@@ -100,6 +101,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
 
 	private final UserManager userManager;
+	private final RepositoryService repositoryService;
 	private final RepositoryManager repositoryManager;
 	private final RepositoryEntryLifecycleDAO lifecycleDao;
 
@@ -114,6 +116,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		super(ureq, wControl, "bgrep");
 		setBasePackage(RepositoryManager.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		lifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
 		this.isSubWorkflow = isSubWorkflow;
@@ -181,9 +184,9 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		}
 		language.select(selected, true);
 		
-
+		VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
-		VFSContainer mediaContainer = handler.getMediaContainer(repositoryEntry);
+		mediaContainer = handler.getMediaContainer(repositoryEntry);
 		if(mediaContainer != null && mediaContainer.getName().equals("media")) {
 			mediaContainer = mediaContainer.getParentContainer();
 			mediaContainer.setDefaultItemFilter(new MediaContainerFilter(mediaContainer));
@@ -278,27 +281,28 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		
 		VFSLeaf img = repositoryManager.getImage(repositoryEntry);
-		imageEl = new ImageFormItem("imageEl");
-		imageEl.setLabel("rentry.pic", null);
-		
-		if(img == null) {
-			imageEl.setVisible(false);
-		} else {
-			imageEl.setMediaResource(new VFSMediaResource(img));
-			imageEl.setMaxWithAndHeightToFitWithin(400, 200);
-		}
-		descCont.add(imageEl);
-		
 		deleteImage = uifactory.addFormLink("delete", "cmd.delete", null, descCont, Link.BUTTON);
 		deleteImage.setVisible(img != null && !managed);
 
 		fileUpload = uifactory.addFileElement("rentry.pic", "rentry.pic", descCont);
-		if(img != null) {
-			fileUpload.setLabel(null, null);
-		}
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
+		fileUpload.setPreview(ureq.getUserSession(), true);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
+		if(img instanceof LocalFileImpl) {
+			fileUpload.setPreview(ureq.getUserSession(), true);
+			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
+		}
 		fileUpload.setVisible(!managed);
+		
+		movieUpload = uifactory.addFileElement("rentry.movie", "rentry.movie", descCont);
+		movieUpload.setMaxUploadSizeKB(movieUploadlimitKB, null, null);
+		movieUpload.setPreview(ureq.getUserSession(), true);
+		movieUpload.addActionListener(FormEvent.ONCHANGE);
+		if(movie instanceof LocalFileImpl) {
+			movieUpload.setPreview(ureq.getUserSession(), true);
+			movieUpload.setInitialFile(((LocalFileImpl)movie).getBasefile());
+		}
+		movieUpload.setVisible(!managed);
 		
 		Set<String> mimeTypes = new HashSet<String>();
 		mimeTypes.add("image/gif");
@@ -370,14 +374,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			updateDatesVisibility();
 		} else if (source == fileUpload) {
 			if (fileUpload.isUploadSuccess()) {
-				File uploadedFile = fileUpload.getUploadFile();
-				String filename = fileUpload.getUploadFileName();
-				imageEl.setMediaResource(new NamedFileMediaResource(uploadedFile, filename, "", false));
-				imageEl.setMaxWithAndHeightToFitWithin(400, 200);
-				imageEl.setVisible(true);
-				imageEl.getComponent().setDirty(true);
 				deleteImage.setVisible(true);
-				fileUpload.setLabel(null, null);
 				flc.setDirty(true);
 			}
 		} else if (source == deleteImage) {
@@ -388,21 +385,14 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 				fileUpload.reset();
 				
 				if(img == null) {
-					imageEl.setVisible(false);
 					deleteImage.setVisible(false);
 					fileUpload.setLabel("rentry.pic", null);
 				} else {
-					imageEl.setMediaResource(new VFSMediaResource(img));
-					imageEl.setMaxWithAndHeightToFitWithin(400, 200);
-					imageEl.setVisible(true);
-					imageEl.setLabel("rentry.pic", null);
 					deleteImage.setVisible(true);
 					fileUpload.setLabel(null, null);
 				}
 			} else if(img != null) {
 				repositoryManager.deleteImage(repositoryEntry);
-				
-				imageEl.setVisible(false);
 				deleteImage.setVisible(false);
 				fileUpload.setLabel("rentry.pic", null);
 			}
@@ -414,8 +404,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		File uploadedFile = fileUpload.getUploadFile();
-		if(uploadedFile != null) {
+		File uploadedImage = fileUpload.getUploadFile();
+		if(uploadedImage != null) {
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
 			VFSContainer container = tmpHome.createChildContainer(UUID.randomUUID().toString());
 			VFSLeaf newFile = fileUpload.moveUploadFileTo(container);//give it it's real name and extension
@@ -424,6 +414,19 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 				showError("Failed");
 			}
 			container.delete();
+		}
+
+		File uploadedMovie = movieUpload.getUploadFile();
+		if(uploadedMovie != null) {
+			VFSContainer m = (VFSContainer)mediaContainer.resolve("media");
+			VFSLeaf newFile = movieUpload.moveUploadFileTo(m);
+			if (newFile == null) {
+				showError("Failed");
+			} else {
+				String filename = movieUpload.getUploadFileName();
+				String extension = FileUtils.getFileSuffix(filename);
+				newFile.rename(repositoryEntry.getKey() + "." + extension);
+			}
 		}
 
 		String displayname = displayName.getValue().trim();

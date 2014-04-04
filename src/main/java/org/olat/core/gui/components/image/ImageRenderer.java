@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.components.image;
 
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
@@ -33,7 +34,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.image.Size;
+import org.olat.core.helpers.Settings;
 
 /**
  * Description: <br>
@@ -52,6 +53,43 @@ public class ImageRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		ImageComponent ic = (ImageComponent) source;
+		if(ic.getMedia() != null) {
+			String mimeType = ic.getMimeType();
+			if(mimeType != null && mimeType.startsWith("image/")) {
+				renderImage(sb, ic);
+			} else if(mimeType != null && mimeType.startsWith("video/")) {
+				renderMovie(sb, ic);
+			}
+		}
+	}
+	
+	private void renderMovie(StringOutput sb, ImageComponent ic) {
+		String imgId = "mov_" + ic.getDispatchID();
+		int width = 320;
+		int height = 240;
+		Size size = ic.getRealSize();
+		if(size != null) {
+			width = size.getWidth();
+			height = size.getHeight() + 20;//+20 because of toolbar
+		}
+		String mapperUrl = ic.getMapperUrl();
+		String name = ic.getMedia().getName();
+		if(name.lastIndexOf('.') > 0) {
+			mapperUrl += "/" + name;
+		} else {
+			mapperUrl += "/video." + ic.getSuffix(ic.getMimeType());
+		}
+		
+		sb.append("<div id='").append(imgId).append("' name='").append(imgId).append("'></div>")
+		  .append("<script type='text/javascript'>")
+		  .append("/* <![CDATA[ */")
+		  .append("BPlayer.insertPlayer('").append(Settings.createServerURI()).append(mapperUrl);
+		sb.append("','").append(imgId).append("',").append(width).append(",").append(height).append(",'video');")
+		  .append("/* ]]> */")
+		  .append("</script>");
+	}
+	
+	private void renderImage(StringOutput sb, ImageComponent ic) {
 		String imgId = "img_" + ic.getDispatchID();
 		sb.append("<img").append(" id='").append(imgId).append("'");
 		Size size = ic.getScaledSize();
@@ -59,10 +97,15 @@ public class ImageRenderer extends DefaultComponentRenderer {
 			sb.append(" width=\"").append(size.getWidth()).append("\"");
 			sb.append(" height=\"").append(size.getHeight()).append("\"");
 		}
-		sb.append(" src='");
-		ubu.buildURI(sb, new String[] { "ri" }, new String[] { "1" });
-		sb.append("/").append("?t=").append(System.nanoTime())
-		  .append("' />");
+
+		String mapperUrl = ic.getMapperUrl();
+		String name = ic.getMedia().getName();
+		if(name.lastIndexOf('.') > 0) {
+			mapperUrl += "/" + name;
+		} else {
+			mapperUrl += "/?" + System.nanoTime();
+		}
+		sb.append(" src='").append(mapperUrl).append("' />");
 		
 		if(ic.isCropSelectionEnabled()) {
 			sb.append("<input id='").append(imgId).append("_x' name='").append(imgId).append("_x' type='hidden' value='' />")

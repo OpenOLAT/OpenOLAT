@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -42,7 +45,7 @@ public class OrderByController extends BasicController {
 	private final Link automaticLink, favoritLink, lastVisitedLink, passedLink, scoreLink;
 	private final Link titleLink, lifecycleLink, authorLink, creationDateLink, lastModifiedLink, ratingLink;
 	
-	private OrderBy orderBy;
+	private final List<OrderBy> orderBy = new ArrayList<>();
 	
 	public OrderByController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -74,6 +77,7 @@ public class OrderByController extends BasicController {
 		ratingLink = LinkFactory.createLink("orderby.rating", mainVC, this);
 		ratingLink.setUserObject(OrderBy.rating);
 		
+		mainVC.contextPut("orderBy", orderBy);
 		putInitialPanel(mainVC);
 	}
 	
@@ -83,14 +87,16 @@ public class OrderByController extends BasicController {
 	}
 
 	public OrderBy getOrderBy() {
-		return orderBy;
+		return orderBy.isEmpty() ? null : orderBy.get(0);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source instanceof Link) {
 			Link link = (Link)source;
-			orderBy = (OrderBy)link.getUserObject();
+			OrderBy sort = (OrderBy)link.getUserObject();
+			orderBy.clear();
+			orderBy.add(sort);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}

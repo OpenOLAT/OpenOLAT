@@ -53,6 +53,8 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.gui.UserRequest;
@@ -67,9 +69,7 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.image.Size;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -110,7 +110,7 @@ public class RepositoryManager extends BasicManager {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private ImageHelper imageHelper;
+	private ImageService imageHelper;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
@@ -581,7 +581,7 @@ public class RepositoryManager extends BasicManager {
 		if(re.getAccess() >= RepositoryEntry.ACC_USERS) {
 			return true;
 		} else if (re.getAccess() == RepositoryEntry.ACC_OWNERS && re.isMembersOnly()) {
-			return isMember(identity, re);
+			return repositoryEntryRelationDao.isMember(identity, re);
 		}
 		
 		return false;
@@ -1166,31 +1166,6 @@ public class RepositoryManager extends BasicManager {
 		}
 		sb.append(")");
 		return setIdentity;
-	}
-	
-	/**
-	 * Membership calculated with business groups too
-	 * 
-	 * @param identity
-	 * @param entry
-	 * @return
-	 */
-	public boolean isMember(IdentityRef identity, RepositoryEntryRef entry) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v.key, membership.identity.key ")
-		  .append(" from ").append(RepositoryEntry.class.getName()).append(" as v ")
-		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership on membership.role in ")
-		  .append("   ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
-		  .append(" where membership.identity.key=:identityKey and v.key=:repositoryEntryKey ");
-
-		List<Object[]> counter = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("repositoryEntryKey", entry.getKey())
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
-				.getResultList();
-		return !counter.isEmpty();
 	}
 	
 	public int countGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params) {

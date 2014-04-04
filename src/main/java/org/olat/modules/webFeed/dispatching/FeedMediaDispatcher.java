@@ -43,6 +43,8 @@ import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -193,7 +195,10 @@ public class FeedMediaDispatcher extends LogDelegator implements Dispatcher {
 		} else if (path.isItemType()) {
 			resource = manager.createItemMediaFile(feed, path.getItemId(), path.getItemFileName());
 		} else if (path.isIconType()) {
-			resource = manager.createFeedMediaFile(feed, path.getIconFileName());
+			VFSLeaf resourceFile = manager.createFeedMediaFile(feed, path.getIconFileName());
+			if(resourceFile != null) {
+				resource = new VFSMediaResource(resourceFile);
+			}
 		}
 		// Eventually deliver the requested resource
 		ServletUtil.serveResource(request, response, resource);

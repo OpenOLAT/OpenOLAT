@@ -22,7 +22,9 @@ package org.olat.repository;
 import java.util.List;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.resource.OLATResource;
 
 
@@ -46,6 +48,11 @@ public interface RepositoryService {
 	
 	public RepositoryEntry loadByKey(Long key);
 	
+	public VFSLeaf getIntroductionImage(RepositoryEntry re);
+
+	public VFSLeaf getIntroductionMovie(RepositoryEntry re);
+	
+	
 	public RepositoryEntry update(RepositoryEntry re);
 	
 
@@ -56,6 +63,10 @@ public interface RepositoryService {
 	public void setLastUsageNowFor(RepositoryEntry re);
 
 	public Group getDefaultGroup(RepositoryEntryRef ref);
+	
+	public boolean isMember(IdentityRef identity, RepositoryEntryRef entry);
+	
+	public void filterMembership(IdentityRef identity, List<Long> entries);
 	
 	public int countMembers(RepositoryEntryRef re, String... roles);
 	

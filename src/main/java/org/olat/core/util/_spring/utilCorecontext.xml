@@ -115,13 +115,6 @@
 
 	<bean id="httpClientFactory" class="org.olat.core.util.httpclient.HttpClientFactory" destroy-method="destroy"/>
 	
-	<bean id="imageHelper" class="org.olat.core.util.image.ImageHelperBean">
-		<property name="imageHelperServiceProvider" ref="imageHelperServiceProvider_${thumbnail.provider}"/>
-	</bean>
-
-	<bean id="imageHelperServiceProvider_java" class="org.olat.core.util.image.spi.ImageHelperImpl" />
-	
-	<bean id="imageHelperServiceProvider_magick" class="org.olat.core.util.image.spi.ImageMagickHelper" />
 	
 	<bean id="org.olat.core.util.vfs.QuotaManager" class="org.olat.admin.quota.QuotaManagerImpl"  init-method="init" >
 		<constructor-arg index="0" ref="resourceManager" />

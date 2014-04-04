@@ -20,7 +20,10 @@
 package org.olat.repository.manager;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -97,6 +100,67 @@ public class RepositoryEntryRelationDAO {
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Group.class)
 				.setParameter("repoKey", re.getKey())
 				.getSingleResult();
+	}
+	
+	/**
+	 * Membership calculated with business groups too. Role are owner, coach and participant.
+	 * 
+	 * @param identity
+	 * @param entry
+	 * @return
+	 */
+	public boolean isMember(IdentityRef identity, RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v.key, membership.identity.key ")
+		  .append(" from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership on membership.role in ")
+		  .append("   ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
+		  .append(" where membership.identity.key=:identityKey and v.key=:repositoryEntryKey ");
+
+		List<Object[]> counter = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		return !counter.isEmpty();
+	}
+	
+	/**
+	 * Membership calculated with business groups too
+	 * 
+	 * @param identity
+	 * @param entry
+	 * @return
+	 */
+	public void filterMembership(IdentityRef identity, List<Long> entries) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v.key, membership.identity.key ")
+		  .append(" from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership on membership.role in ")
+		  .append("   ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
+		  .append(" where membership.identity.key=:identityKey and v.key in (:repositoryEntryKey)");
+
+		List<Object[]> membershipList = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repositoryEntryKey", entries)
+				.getResultList();
+		
+		Set<Object> memberships = new HashSet<>();
+		for(Object[] membership: membershipList) {
+			memberships.add(membership[0]);
+		}
+		
+		for(Iterator<Long> entryIt=entries.iterator(); entryIt.hasNext(); ) {
+			if(!memberships.contains(entryIt.next())) {
+				entryIt.remove();
+			}
+		}
 	}
 	
 	/**

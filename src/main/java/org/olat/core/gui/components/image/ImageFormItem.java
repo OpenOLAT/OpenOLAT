@@ -19,13 +19,16 @@
  */
 package org.olat.core.gui.components.image;
 
+import java.io.File;
+
+import org.olat.core.commons.services.image.Crop;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.image.Crop;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * 
@@ -41,9 +44,9 @@ public class ImageFormItem extends FormItemImpl {
 	
 	private Crop cropSelection;
 	
-	public ImageFormItem(String name) {
+	public ImageFormItem(UserSession usess, String name) {
 		super(name);
-		imageComponent = new ImageComponent(name + "-cmp");
+		imageComponent = new ImageComponent(usess, name + "-cmp");
 	}
 
 	@Override
@@ -51,8 +54,16 @@ public class ImageFormItem extends FormItemImpl {
 		return imageComponent;
 	}
 	
-	public void setMediaResource(MediaResource mediaResource) {
-		imageComponent.setMediaResource(mediaResource);
+	public void setMedia(VFSLeaf mediaResource) {
+		imageComponent.setMedia(mediaResource);
+	}
+	
+	public void setMedia(VFSLeaf mediaResource, String mimeType) {
+		imageComponent.setMedia(mediaResource, mimeType);
+	}
+	
+	public void setMedia(File mediaResource) {
+		imageComponent.setMedia(mediaResource);
 	}
 	
 	public void setMaxWithAndHeightToFitWithin(int maxWidth, int maxHeight) {

@@ -17,18 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.image;
+package org.olat.core.commons.services.image;
 
 import java.io.File;
 
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * This the bean exposed to the others beans for use.
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ImageHelperBean implements ImageHelper {
+public class ImageHelperBean implements ImageService {
 	
 	private ImageHelperSPI imageHelperServiceProvider;
 
@@ -44,8 +43,11 @@ public class ImageHelperBean implements ImageHelper {
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill) {
 		return imageHelperServiceProvider.thumbnailPDF(pdfFile, thumbnailFile, maxWidth, maxHeight);
 	}
-	
-	
+
+	@Override
+	public Size getSize(VFSLeaf image, String suffix) {
+		return imageHelperServiceProvider.getSize(image, suffix);
+	}
 
 	@Override
 	public boolean cropImage(File image, File cropedImage, Crop cropSelection) {

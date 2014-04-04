@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.helpers.Settings;
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
@@ -51,7 +51,7 @@ public class CourseLayoutHelper {
 	public static final String COURSEFOLDER_CSS_BASE = "/courseCSS";
 	private static int logoMaxHeight;
 	private static int logoMaxWidth;
-	private static ImageHelper imageHelperToUse;
+	private static ImageService imageHelperToUse;
 	
 	public static final String CONFIG_KEY_LEGACY = "legacy";
 	public static final String CONFIG_KEY_DEFAULT = CourseConfig.VALUE_EMPTY_CSS_FILEREF;
@@ -270,7 +270,7 @@ public class CourseLayoutHelper {
 	/**
 	 * @return Returns the imageHelperToUse.
 	 */
-	public static ImageHelper getImageHelperToUse() {
+	public static ImageService getImageHelperToUse() {
 		return imageHelperToUse;
 	}
 
@@ -280,7 +280,7 @@ public class CourseLayoutHelper {
 	 * [spring]
 	 * @param imageHelperToUse The imageHelperToUse to set.
 	 */
-	public void setImageHelperToUse(ImageHelper imageHelperToUse) {
+	public void setImageHelperToUse(ImageService imageHelperToUse) {
 		CourseLayoutHelper.imageHelperToUse = imageHelperToUse;
 	}
 	

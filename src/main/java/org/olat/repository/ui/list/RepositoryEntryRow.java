@@ -50,6 +50,8 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private String score;
 	private Boolean passed;
 	
+	private boolean member;
+	
 	public int visit;
 	public long timeSpend;
 	public Date initialLaunch;
@@ -119,6 +121,18 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		return "";
 	}
 	
+	/**
+	 * Is member if the row as some type of access control
+	 * @return
+	 */
+	public boolean isMember() {
+		return member;
+	}
+
+	public void setMember(boolean member) {
+		this.member = member;
+	}
+
 	public Integer getMyRating() {
 		return myRating;
 	}

@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -53,12 +54,10 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.ui.courselayout.attribs.AbstractLayoutAttribute;
@@ -190,12 +189,12 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		previewImgFlc = FormLayoutContainer.createCustomFormLayout("preview.image", getTranslator(), velocity_root + "/image.html");
 		formLayout.add(previewImgFlc);
 		previewImgFlc.setLabel("preview.image.label", null);		
-		refreshPreviewImage(actualCSSSettings);		
+		refreshPreviewImage(ureq, actualCSSSettings);		
 		
 		logoImgFlc = FormLayoutContainer.createCustomFormLayout("logo.image", getTranslator(), velocity_root + "/image.html");
 		formLayout.add(logoImgFlc);
 		logoImgFlc.setLabel("logo.image.label", null);		
-		refreshLogoImage();	
+		refreshLogoImage(ureq);	
 		
 		// offer upload for 2nd logo
 		if(editable) {
@@ -230,7 +229,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			} else {
 				enableDisableCustom(false);
 			}
-			refreshPreviewImage(selection); // in any case!
+			refreshPreviewImage(ureq, selection); // in any case!
 		} else if (source == logoUpl && event.wasTriggerdBy(FormEvent.ONCHANGE)) {
 			if (logoUpl.isUploadSuccess()) {
 				File newFile = logoUpl.getUploadFile();
@@ -245,7 +244,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 				if (processUploadedImage(newFile)){
 					logoUpl.reset();
 					showInfo("logo.upload.success");
-					refreshLogoImage();
+					refreshLogoImage(ureq);
 				} else {
 					showError("logo.upload.error");
 				}
@@ -256,7 +255,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		} else if (source == logoDel){
 			VFSItem logo = (VFSItem) logoDel.getUserObject();
 			logo.delete();
-			refreshLogoImage();
+			refreshLogoImage(ureq);
 		}
 	}
 	
@@ -294,7 +293,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		if (height > maxHeight || width > maxWidth){
 			// scale image
 			try {
-				ImageHelper helper = CourseLayoutHelper.getImageHelperToUse();
+				ImageService helper = CourseLayoutHelper.getImageHelperToUse();
 				String extension = FileUtils.getFileSuffix(logoUpl.getUploadFileName());
 				helper.scaleImage(image, extension, targetFile, maxWidth, maxHeight);
 			} catch (Exception e) {
@@ -321,16 +320,15 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	}
 	
 
-	private void refreshPreviewImage(String template) {
+	private void refreshPreviewImage(UserRequest ureq, String template) {
 		VFSContainer baseFolder = CourseLayoutHelper.getThemeBaseFolder(courseEnvironment, template);
 		if (baseFolder != null) {
 			VFSItem preview = baseFolder.resolve("/" + PREVIEW_IMAGE_NAME);
-			if (preview != null) {
-				ImageComponent image = new ImageComponent("preview");
+			if (preview instanceof VFSLeaf) {
+				ImageComponent image = new ImageComponent(ureq.getUserSession(), "preview");
 				previewImgFlc.setVisible(true);
 				previewImgFlc.put("preview", image);
-				VFSMediaResource prevImage = new VFSMediaResource((VFSLeaf) preview);
-				image.setMediaResource(prevImage);
+				image.setMedia((VFSLeaf) preview);
 				image.setMaxWithAndHeightToFitWithin(300, 300);
 				return;
 			}
@@ -339,15 +337,14 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		previewImgFlc.remove(previewImgFlc.getComponent("preview"));
 	}
 	
-	private void refreshLogoImage(){
+	private void refreshLogoImage(UserRequest ureq){
 		VFSContainer baseFolder = CourseLayoutHelper.getThemeBaseFolder(courseEnvironment, CourseLayoutHelper.CONFIG_KEY_CUSTOM);
 		VFSItem logo = customCMgr.getLogoItem(baseFolder);
-		if (logo != null) {
-			ImageComponent image = new ImageComponent("preview");
+		if (logo instanceof VFSLeaf) {
+			ImageComponent image = new ImageComponent(ureq.getUserSession(), "preview");
 			logoImgFlc.setVisible(true);
 			logoImgFlc.put("preview", image);
-			VFSMediaResource prevImage = new VFSMediaResource((VFSLeaf) logo);
-			image.setMediaResource(prevImage);
+			image.setMedia((VFSLeaf)logo);
 			image.setMaxWithAndHeightToFitWithin(300, 300);
 			logoDel = uifactory.addFormLink("logo.delete", logoImgFlc, Link.BUTTON_XSMALL);
 			logoDel.setUserObject(logo);

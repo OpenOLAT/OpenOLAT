@@ -239,9 +239,10 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 	
 	protected void doChooseSorter(UserRequest ureq) {
-		removeAsListenerAndDispose(sortCtrl);
-		sortCtrl = new OrderByController(ureq, getWindowControl());
-		listenTo(sortCtrl);
+		if(sortCtrl == null) {
+			sortCtrl = new OrderByController(ureq, getWindowControl());
+			listenTo(sortCtrl);
+		}
 		
 		removeAsListenerAndDispose(calloutCtrl);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), sortCtrl.getInitialComponent(),
@@ -336,7 +337,13 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	public void forgeStartLink(RepositoryEntryRow row) {
-		FormLink startLink = uifactory.addFormLink("start_" + row.getKey(), "start", "start", null, null, Link.LINK);
+		String label;
+		if(row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
+			label = "book";
+		} else {
+			label = "start";
+		}
+		FormLink startLink = uifactory.addFormLink("start_" + row.getKey(), "start", label, null, null, Link.LINK);
 		startLink.setUserObject(row);
 		row.setStartLink(startLink);
 	}

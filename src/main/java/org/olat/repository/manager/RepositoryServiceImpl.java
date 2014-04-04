@@ -19,6 +19,7 @@
  */
 package org.olat.repository.manager;
 
+import java.io.File;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -27,19 +28,27 @@ import java.util.Set;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
@@ -164,6 +173,39 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 	
 	@Override
+	public VFSLeaf getIntroductionImage(RepositoryEntry re) {
+		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
+		String imageName = re.getResourceableId() + ".jpg";
+		VFSItem image = repositoryHome.resolve(imageName);
+		if(image instanceof VFSLeaf) {
+			return (VFSLeaf)image;
+		}
+		imageName = re.getResourceableId() + ".png";
+		image = repositoryHome.resolve(imageName);
+		if(image instanceof VFSLeaf) {
+			return (VFSLeaf)image;
+		}
+		return null;
+	}
+
+	@Override
+	public VFSLeaf getIntroductionMovie(RepositoryEntry re) {
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
+		VFSContainer mediaContainer = handler.getMediaContainer(re);
+		if(mediaContainer != null) {
+			List<VFSItem> items = mediaContainer.getItems();
+			for(VFSItem item:items) {
+				if(item instanceof VFSLeaf
+						&& item.getName().startsWith(re.getKey().toString())
+						&& (item.getName().endsWith(".mp4") || item.getName().endsWith(".m4v") || item.getName().endsWith(".flv")) ) {
+					return (VFSLeaf)item;	
+				}	
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public void incrementLaunchCounter(RepositoryEntry re) {
 		repositoryEntryStatisticsDao.incrementLaunchCounter(re);
 	}
@@ -186,6 +228,16 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public boolean hasRole(Identity identity, RepositoryEntryRef re, String... roles) {
 		return reToGroupDao.hasRole(identity, re, roles);
+	}
+
+	@Override
+	public boolean isMember(IdentityRef identity, RepositoryEntryRef entry) {
+		return reToGroupDao.isMember(identity, entry);
+	}
+
+	@Override
+	public void filterMembership(IdentityRef identity, List<Long> entries) {
+		reToGroupDao.filterMembership(identity, entries);
 	}
 
 	@Override

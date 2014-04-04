@@ -66,6 +66,12 @@ $r.render("backLink")
 		$r.render("image")
 	</div>
 	#end
+	
+	#if ($hasVideo)
+	<div class="o_repository_resource_image">
+		$r.render("video")
+	</div>
+	#end
 	<span>$description</span>
 </fieldset>
 

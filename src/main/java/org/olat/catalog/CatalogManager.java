@@ -41,14 +41,14 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
-import org.olat.core.util.image.Size;
 import org.olat.core.util.resource.Resourceable;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -97,7 +97,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private ImageHelper imageHelper;
+	private ImageService imageHelper;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired

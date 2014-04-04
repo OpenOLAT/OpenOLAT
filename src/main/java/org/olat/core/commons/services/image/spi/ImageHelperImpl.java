@@ -24,7 +24,7 @@
 * <p>
 */ 
 
-package org.olat.core.util.image.spi;
+package org.olat.core.commons.services.image.spi;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -56,15 +56,14 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.olat.core.commons.services.image.Crop;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WorkThreadInformations;
-import org.olat.core.util.image.Crop;
-import org.olat.core.util.image.ImageHelperSPI;
-import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -77,7 +76,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * @author Alexander Schneider, srosse
  */
-public class ImageHelperImpl implements ImageHelperSPI {
+public class ImageHelperImpl extends AbstractImageHelper {
 	
 	private static final OLog log = Tracing.createLoggerFor(ImageHelperImpl.class);
 	

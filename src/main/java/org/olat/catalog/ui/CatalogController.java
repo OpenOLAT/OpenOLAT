@@ -74,7 +74,6 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryIconRenderer;
@@ -852,8 +851,8 @@ public class CatalogController extends BasicController implements Activateable2 
 		if(catThumbnail == null) {
 			myContent.remove(myContent.getComponent("catThumbnail"));
 		} else {
-			ImageComponent ic = new ImageComponent("catThumbnail");
-			ic.setMediaResource(new VFSMediaResource(catThumbnail));
+			ImageComponent ic = new ImageComponent(ureq.getUserSession(), "catThumbnail");
+			ic.setMedia(catThumbnail);
 			ic.setMaxWithAndHeightToFitWithin(100, 100);
 			myContent.put("catThumbnail", ic);
 		}
@@ -923,8 +922,8 @@ public class CatalogController extends BasicController implements Activateable2 
 			if(image == null) {
 				myContent.remove(myContent.getComponent(name));
 			} else {
-				ImageComponent ic = new ImageComponent(name);
-				ic.setMediaResource(new VFSMediaResource(image));
+				ImageComponent ic = new ImageComponent(ureq.getUserSession(), name);
+				ic.setMedia(image);
 				ic.setMaxWithAndHeightToFitWithin(200, 100);
 				myContent.put(name, ic);
 			}

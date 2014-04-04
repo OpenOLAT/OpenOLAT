@@ -45,6 +45,7 @@ import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.modules.bc.version.RevisionListController;
 import org.olat.core.commons.modules.bc.version.VersionCommentController;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
+import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -66,7 +67,6 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalImpl;
@@ -301,7 +301,7 @@ public class FileUploadController extends FormBasicController {
 					&& resizeEl.isSelected(0)) {
 				String extension = FileUtils.getFileSuffix(fileName);
 				File imageScaled = new File(uploadedFile.getParentFile(), "scaled_" + uploadedFile.getName() + "." + extension);
-				ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
+				ImageService imageHelper = CoreSpringFactory.getImpl(ImageService.class);
 				if(imageHelper.scaleImage(uploadedFile, extension, imageScaled, 1280, 1280) != null) {
 					//problem happen, special GIF's (see bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6358674)
 					//don't try to scale if not all ok 

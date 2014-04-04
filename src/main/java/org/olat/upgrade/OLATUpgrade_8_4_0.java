@@ -28,6 +28,7 @@ import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -35,7 +36,6 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.DirectoryFilter;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
@@ -77,7 +77,7 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 	@Autowired
 	private FolderModule folderModule; // needed to initialize FolderConfig
 	@Autowired	
-	private ImageHelper imageHelper;
+	private ImageService imageHelper;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
 

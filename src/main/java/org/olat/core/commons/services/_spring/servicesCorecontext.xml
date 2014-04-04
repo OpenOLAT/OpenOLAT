@@ -12,5 +12,13 @@
 	<import resource="classpath:/org/olat/core/commons/services/scheduler/_spring/schedulerContext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/taskexecutor/_spring/taskExecutorCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/notifications/_spring/notificationsContext.xml"/>
+	
+	<bean id="imageHelper" class="org.olat.core.commons.services.image.ImageHelperBean">
+		<property name="imageHelperServiceProvider" ref="imageHelperServiceProvider_${thumbnail.provider}"/>
+	</bean>
+
+	<bean id="imageHelperServiceProvider_java" class="org.olat.core.commons.services.image.spi.ImageHelperImpl" />
+	
+	<bean id="imageHelperServiceProvider_magick" class="org.olat.core.commons.services.image.spi.ImageMagickHelper" />
 
 </beans>
