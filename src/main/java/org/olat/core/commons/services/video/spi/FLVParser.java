@@ -29,7 +29,8 @@ import java.util.Map.Entry;
 import org.xml.sax.SAXException;
 
 /**
- * <p>Code from Tika project</p>
+ * <p>Code from Tika project. It has a slight change which break the flow if the height and width
+ * are found. It speed up a lot the code and we don't want all metadatas but these two.</p>
  * 
  * <p>
  * Parser for metadata contained in Flash Videos (.flv). Resources:
@@ -164,8 +165,13 @@ public class FLVParser {
     private boolean checkSignature(DataInputStream fis) throws IOException {
         return fis.read() == 'F' && fis.read() == 'L' && fis.read() == 'V';
     }
+    
+    public void parse(InputStream stream)
+    	    throws IOException, SAXException {
+    	parseIntern(stream);
+    }
 
-	public void parse(InputStream stream)
+	private void parseIntern(InputStream stream)
     throws IOException, SAXException {
         
     	DataInputStream datainput = new DataInputStream(stream);
@@ -250,6 +256,11 @@ public class FLVParser {
                         	String w = entry.getValue().toString();
                         	width = Math.round(Float.parseFloat(w));
                         }
+                    }
+                    //we only want the height and the width
+                    //we have them, get out of this lengthy file
+                    if(width > 0 && height > 0) {
+                    	break;
                     }
                 }
 

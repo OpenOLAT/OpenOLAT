@@ -79,6 +79,14 @@ import org.olat.user.UserManager;
  * 
  */
 public class RepositoryEditDescriptionController extends FormBasicController {
+	
+	private static final Set<String> imageMimeTypes = new HashSet<String>();
+	static {
+		imageMimeTypes.add("image/gif");
+		imageMimeTypes.add("image/jpg");
+		imageMimeTypes.add("image/jpeg");
+		imageMimeTypes.add("image/png");
+	}
 
 	private final boolean isSubWorkflow;
 	private VFSContainer mediaContainer;
@@ -293,6 +301,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
 		}
 		fileUpload.setVisible(!managed);
+		fileUpload.limitToMimeType(imageMimeTypes, null, null);
 		
 		movieUpload = uifactory.addFileElement("rentry.movie", "rentry.movie", descCont);
 		movieUpload.setMaxUploadSizeKB(movieUploadlimitKB, null, null);
@@ -303,13 +312,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			movieUpload.setInitialFile(((LocalFileImpl)movie).getBasefile());
 		}
 		movieUpload.setVisible(!managed);
-		
-		Set<String> mimeTypes = new HashSet<String>();
-		mimeTypes.add("image/gif");
-		mimeTypes.add("image/jpg");
-		mimeTypes.add("image/jpeg");
-		mimeTypes.add("image/png");
-		fileUpload.limitToMimeType(mimeTypes, null, null);
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
