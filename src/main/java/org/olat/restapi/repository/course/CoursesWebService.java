@@ -36,6 +36,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
@@ -49,9 +50,11 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -82,6 +85,8 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.MediaTypeVariants;
@@ -145,7 +150,6 @@ public class CoursesWebService {
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 
-		//fxdiff VCRP-1,2: access control of resources
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, CourseModule.getCourseTypeName());
@@ -178,7 +182,7 @@ public class CoursesWebService {
 		int count=0;
 		for (RepositoryEntry repoEntry : repoEntries) {
 			try {
-				ICourse course = CourseWebService.loadCourse(repoEntry.getOlatResource().getResourceableId());
+				ICourse course = loadCourse(repoEntry.getOlatResource().getResourceableId());
 				voList.add(ObjectFactory.get(repoEntry, course));
 				if(count % 33 == 0) {
 					DBFactory.getInstance().commitAndCloseSession();
@@ -191,6 +195,17 @@ public class CoursesWebService {
 		CourseVO[] vos = new CourseVO[voList.size()];
 		voList.toArray(vos);
 		return vos;
+	}
+	
+	@Path("{courseId}")
+	public CourseWebService getCourse(@PathParam("courseId") Long courseId) {
+		OLATResource ores = getCourseOLATResource(courseId);
+		if(ores == null) return null;
+		ICourse course = CourseFactory.loadCourse(courseId);
+		if(course == null) return null;
+		CourseWebService courseWs = new CourseWebService(ores, course);
+		
+		return courseWs;
 	}
 
 	/**
@@ -313,6 +328,41 @@ public class CoursesWebService {
 
 		CourseVO vo = null;
 		return Response.ok(vo).build();
+	}
+	
+	private OLATResource getCourseOLATResource(Long courseId) {
+		String typeName = OresHelper.calculateTypeName(CourseModule.class);
+		OLATResource ores = OLATResourceManager.getInstance().findResourceable(courseId, typeName);
+		if(ores == null && Settings.isJUnitTest()) {
+			//hack for the BGContextManagerImpl which load the course
+			ores = OLATResourceManager.getInstance().findResourceable(courseId, "junitcourse");
+		}
+		return ores;
+	}
+	
+	public static boolean isCourseAccessible(ICourse course, boolean authorRightsMandatory, HttpServletRequest request) {
+		if(authorRightsMandatory && !isAuthor(request)) {
+			return false;
+		}
+
+		Identity identity = getIdentity(request);
+		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
+		AccessResult result = acManager.isAccessible(entry, identity, false);
+		if(result.isAccessible()) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static ICourse loadCourse(Long courseId) {
+		try {
+			ICourse course = CourseFactory.loadCourse(courseId);
+			return course;
+		} catch(Exception ex) {
+			log.error("cannot load course with id: " + courseId, ex);
+			return null;
+		}
 	}
 	
 	public static ICourse importCourse(UserRequest ureq, Identity identity, File fCourseImportZIP,

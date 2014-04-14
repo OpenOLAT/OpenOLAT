@@ -70,6 +70,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CourseWebService;
+import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
 
@@ -102,7 +103,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFolders(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
-		final ICourse course = CourseWebService.loadCourse(courseId);
+		final ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!CourseWebService.isCourseAccessible(course, false, httpRequest)) {
@@ -267,7 +268,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	@Path("{nodeId}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFolder(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
-		ICourse course = CourseWebService.loadCourse(courseId);
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!CourseWebService.isCourseAccessible(course, false, httpRequest)) {
@@ -311,7 +312,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	public VFSWebservice getVFSWebService(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest request) {
 		boolean author = isAuthor(request);
 
-		ICourse course = CourseWebService.loadCourse(courseId);
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
 		} else if (!author && !CourseWebService.isCourseAccessible(course, false, request)) {

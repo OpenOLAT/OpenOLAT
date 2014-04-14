@@ -144,7 +144,7 @@ public class CourseAssessmentWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		ICourse course = CourseWebService.loadCourse(courseId);
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -200,7 +200,7 @@ public class CourseAssessmentWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
-			ICourse course = CourseWebService.loadCourse(courseId);
+			ICourse course = CoursesWebService.loadCourse(courseId);
 			if(course == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -246,7 +246,7 @@ public class CourseAssessmentWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		ICourse course = CourseWebService.loadCourse(courseId);
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, httpRequest)) {
@@ -500,7 +500,7 @@ public class CourseAssessmentWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
-			ICourse course = CourseWebService.loadCourse(courseId);
+			ICourse course = CoursesWebService.loadCourse(courseId);
 			if(course == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}

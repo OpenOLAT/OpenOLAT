@@ -87,7 +87,7 @@ public abstract class AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 		
-		ICourse course = CourseWebService.loadCourse(courseId);
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, request)) {
@@ -128,7 +128,7 @@ public abstract class AbstractCourseNodeWebService {
 		if(config == null || !config.isValid())
 			return Response.serverError().status(Status.CONFLICT).build();
 		
-		ICourse course = CourseWebService.loadCourse(courseId);
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, request)) {
