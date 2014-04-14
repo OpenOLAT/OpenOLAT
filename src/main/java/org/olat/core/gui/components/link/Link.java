@@ -157,7 +157,7 @@ public class Link extends AbstractComponent {
 		// to be set manually
 		setSpanAsDomReplaceable(true);
 		// Directly use the dispatch ID for DOM replacement to minimize DOM tree
-		setElementId(getDispatchID());
+		setElementId("o_c" + getDispatchID());
 		setDomReplacementWrapperRequired(false);
 	}
 	
