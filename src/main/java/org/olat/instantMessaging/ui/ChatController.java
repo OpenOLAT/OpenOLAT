@@ -28,9 +28,11 @@ package org.olat.instantMessaging.ui;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -79,7 +81,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private final VelocityContainer chatMsgFieldContent;
 
 	private Map<Long,String> avatarKeyCache = new HashMap<Long,String>();
-	private List<ChatMessage> messageHistory = new ArrayList<ChatMessage>();
+	private Deque<ChatMessage> messageHistory = new LinkedBlockingDeque<>();
 
 	private Link refresh, todayLink, lastWeek, lastMonth;
 	private JSAndCSSComponent jsc;
@@ -343,25 +345,21 @@ public class ChatController extends BasicController implements GenericEventListe
 			creationDate = formatter.formatDateAndTime(message.getCreationDate());
 		}
 
+		boolean first = true;
 		String from = message.getFromNickName();
-		
-		synchronized (messageHistory) {
-			boolean first = true;
-			if(!messageHistory.isEmpty()) {
-				ChatMessage last = messageHistory.get(messageHistory.size() - 1);
-				if(from.equals(last.getFrom())) {
-					first = false;
-				}
-			}
-
-			boolean anonym = message.isAnonym();
-			Long fromKey = message.getFromKey();
-			ChatMessage msg = new ChatMessage(creationDate, from, fromKey, m, first, anonym);
-			if(!anonym ) {
-				msg.setAvatarKey(getAvatarKey(message.getFromKey()));
-			}
-			messageHistory.add(msg);
+		ChatMessage last = messageHistory.peekLast();
+		if(last != null && from.equals(last.getFrom())) {
+			first = false;
 		}
+
+		boolean anonym = message.isAnonym();
+		Long fromKey = message.getFromKey();
+		ChatMessage msg = new ChatMessage(creationDate, from, fromKey, m, first, anonym);
+		if(!anonym ) {
+			msg.setAvatarKey(getAvatarKey(message.getFromKey()));
+		}
+		messageHistory.addLast(msg);
+
 		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
 		chatMsgFieldContent.contextPut("focus", new Boolean(focus));
 	}

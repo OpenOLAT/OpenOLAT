@@ -123,8 +123,8 @@ public class CourseTest extends OlatJerseyTestCase {
 				conn.shutdown();
 			}
 		} catch (Exception e) {
-      e.printStackTrace();
-      throw e;
+			log.error("", e);
+			throw e;
 		}
 	}
 	

@@ -47,6 +47,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nModule;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.ServletContextAware;
@@ -71,6 +72,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	private static String instanceId;
 	private static String userDataRoot;
 	private static String defaultCharset;
+	private static boolean enforceUtf8Filesystem;
 	private static Map<String, String> mailConfig = new HashMap<String, String>(6);
 	private static long timeOfServerStartup = System.currentTimeMillis();
 	
@@ -376,6 +378,14 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	}
 
 	/**
+	 * [spring]
+	 * @param enforceUtf8Filesystem
+	 */
+	public void setEnforceUtf8Filesystem(boolean enforceUtf8Filesystem) {
+		WebappHelper.enforceUtf8Filesystem = enforceUtf8Filesystem;
+	}
+
+	/**
 	 *	key="mailhost"
 	 *	key="mailTimeout"
 	 *	key="smtpUser"
@@ -432,13 +442,20 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		} else {
 			// test failed
 			log.warn("No UTF-8 capable filesystem found! Could not read / write UTF-8 characters from / to filesystem! "
-					+ "You probably misconfigured your system, try setting your LC_HOME variable to a correct value.");
+					+ "You probably misconfigured your system, try setting your LANG variable to a correct value.");
 			log.warn("Your current file encoding configuration: java.nio.charset.Charset.defaultCharset().name()::"
 					+ java.nio.charset.Charset.defaultCharset().name() + " (the one used) and your system property file.encoding::"
 					+ System.getProperty("file.encoding") + " (the one configured)");
 		}
 		// try to delete file anyway
 		writeFile.delete();
+		
+		if (!foundUtf8File && WebappHelper.enforceUtf8Filesystem) {
+			throw new BeanInitializationException(
+					"System startup aborted to to file system missconfiguration. See previous warnings in logfile and fix your " + 
+					"Java environment. This check can be disabled by setting enforce.utf8.filesystem=false, but be aware that the " +
+					"decision to use a certain encoding on the filesystem is a one-time decision. You can not cange to UTF-8 later!");			
+		}
 	}
 	
 	/**

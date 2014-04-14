@@ -98,11 +98,13 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(hreq);
 		Mapper m = CoreSpringFactory.getImpl(MapperService.class).getMapperById(usess, smappath);
 		if (m == null) {
-			logWarn(
-					"Call to mapped resource, but mapper does not exist for path::"
-							+ pathInfo, null);
-			DispatcherModule.sendNotFound(pathInfo, hres);
-			return;
+			//an anonymous mapper?
+			m = CoreSpringFactory.getImpl(MapperService.class).getMapperById(null, smappath);
+			if(m == null) {
+				logWarn("Call to mapped resource, but mapper does not exist for path::" + smappath, null);
+				DispatcherModule.sendNotFound(pathInfo, hres);
+				return;
+			}
 		}
 		String mod = slashPos > 0 ? subInfo.substring(slashPos) : "";
 		if (mod.indexOf("..") != -1) {

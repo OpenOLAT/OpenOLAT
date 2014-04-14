@@ -179,12 +179,6 @@ public class QTIExportFormatterCSVType3 extends QTIExportFormatter{
 	}
 
 	public void openResultSet(QTIExportSet set) {
-
-		String instUsrIdent = set.getInstitutionalUserIdentifier();
-		if (instUsrIdent == null){
-			instUsrIdent = translator.translate("column.field.notavailable");
-		}
-
 		if (anonymizerCallback == null)
 			sb.append(row_counter);
 		else 

@@ -234,6 +234,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
 		addLoggingResourceable(LoggingResourceable.wrap(CourseFactory.loadCourse(ores)));
 		
+		if(CourseFactory.isCourseEditSessionOpen(ores.getResourceableId())) {
+			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
+			Controller emptyCtrl = new LayoutMain3ColsController(ureq, wControl, empty, empty, empty, "opened-course");
+			putInitialPanel(emptyCtrl.getInitialComponent());
+			return;
+		}
+		
 		// try to acquire edit lock for this course.			
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
 		OLATResourceable lockEntryOres = OresHelper.createOLATResourceableInstance(LockEntry.class, 0l);
@@ -242,7 +249,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		try {			
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_OPEN, getClass());
 
-		if (lockEntry.isSuccess()) {			
+		if (!lockEntry.isSuccess()) {
+			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
+			Controller emptyCtrl = new LayoutMain3ColsController(ureq, wControl, empty, empty, empty, "opened-course");
+			putInitialPanel(emptyCtrl.getInitialComponent());
+			return;
+		} else {
 			ICourse course = CourseFactory.openCourseEditSession(ores.getResourceableId());
 			main = createVelocityContainer("index");
 			
@@ -369,7 +381,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 		} catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in <init>]", e);		
-			this.dispose();
+			dispose();
 			throw e;
 		}
 	}

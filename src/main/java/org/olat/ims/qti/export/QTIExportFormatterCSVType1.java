@@ -34,13 +34,17 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.qti.export.helper.QTIItemObject;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Initial Date: May 23, 2006 <br>
@@ -62,7 +66,9 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 
 	// CELFI#107 (Header question max lenght)
 	private int		cut				= 30;
-
+	// user properties
+	private List<UserPropertyHandler> userPropertyHandlers;
+	
 	/**
 	 * @param locale
 	 * @param type
@@ -79,6 +85,11 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		this.esc = esc;
 		this.car = car;
 		this.tagless = tagless;
+		// initialize user property handlers
+		UserManager um = UserManager.getInstance();
+		this.userPropertyHandlers = um.getUserPropertyHandlersFor(this.getClass().getName(), true);
+		this.translator = um.getPropertyHandlerTranslator(this.translator);	
+
 	}
 	
 	public void openReport() {
@@ -185,30 +196,33 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 	}
 
 	public void openResultSet(QTIExportSet set) {
-		
-		String firstName = set.getFirstName();
-		String lastName = set.getLastName();
-		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(set.getIdentity());
-		String login = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
-		String instUsrIdent = set.getInstitutionalUserIdentifier();
-		if (instUsrIdent == null) {
-			instUsrIdent = translator.translate("column.field.notavailable");
-		}
-		float assessPoints = set.getScore();
-		boolean isPassed = set.getIsPassed();
-					
+		// header for personalized download (iqtest)
 		sb.append(row_counter);
 		sb.append(sep);
-		sb.append(lastName);
+
+		// add configured user properties
+		User user = set.getIdentity().getUser();
+		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
+			if (userPropertyHandler == null) {
+				continue;
+			}
+			String property = userPropertyHandler.getUserProperty(user, translator.getLocale());
+			if (!StringHelper.containsNonWhitespace(property)) {
+				property = translator.translate("column.field.notavailable");
+			}
+			sb.append(property);
+			sb.append(sep);			
+		}
+		
+		// add other user and session information
+		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(set.getIdentity());
+		String homepage = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
+		sb.append(homepage);
 		sb.append(sep);
-		sb.append(firstName);
-		sb.append(sep);
-		sb.append(login);
-		sb.append(sep);
-		sb.append(instUsrIdent);
-		sb.append(sep);
+		float assessPoints = set.getScore();
 		sb.append(assessPoints);
 		sb.append(sep);
+		boolean isPassed = set.getIsPassed();					
 		sb.append(isPassed);
 		sb.append(sep);
 		sb.append(set.getIp());
@@ -449,35 +463,36 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 
 		// header for personalized download (iqtest)
 		String sequentialNumber = translator.translate("column.header.seqnum");
-
-		String lastName = translator.translate("column.header.name");
-		String firstName = translator.translate("column.header.vorname");
-		String login = translator.translate("column.header.login");
-		String instUsrIdent = translator.translate("column.header.instUsrIdent");
-		String assessPoint = translator.translate("column.header.assesspoints");
-		String passed = translator.translate("column.header.passed");
-		String ipAddress = translator.translate("column.header.ipaddress");
-		String date = translator.translate("column.header.date");
-		String duration = translator.translate("column.header.duration");
-		
 		hr2Intro.append(sequentialNumber);
 		hr2Intro.append(sep);
-		hr2Intro.append(lastName);
+
+		// add configured user properties
+		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
+			if (userPropertyHandler == null) {
+				continue;
+			}
+			String header = translator.translate(userPropertyHandler.i18nFormElementLabelKey());
+			hr2Intro.append(header);
+			hr2Intro.append(sep);			
+		}
+
+		// add other user and session information
+		String homepage = translator.translate("column.header.homepage");
+		hr2Intro.append(homepage);
 		hr2Intro.append(sep);
-		hr2Intro.append(firstName);
-		hr2Intro.append(sep);
-		hr2Intro.append(login);
-		hr2Intro.append(sep);
-		hr2Intro.append(instUsrIdent);
-		hr2Intro.append(sep);
+		String assessPoint = translator.translate("column.header.assesspoints");
 		hr2Intro.append(assessPoint);
 		hr2Intro.append(sep);
+		String passed = translator.translate("column.header.passed");
 		hr2Intro.append(passed);
 		hr2Intro.append(sep);
+		String ipAddress = translator.translate("column.header.ipaddress");
 		hr2Intro.append(ipAddress);
 		hr2Intro.append(sep);
+		String date = translator.translate("column.header.date");
 		hr2Intro.append(date);
 		hr2Intro.append(sep);
+		String duration = translator.translate("column.header.duration");
 		hr2Intro.append(duration);
 		hr2Intro.append(sep);
 

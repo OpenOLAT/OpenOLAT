@@ -37,6 +37,8 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
@@ -178,14 +180,19 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	 *          previous behaviour
 	 */
 	public void updateModuleConfigDefaults(boolean isNewNode) {
+		int CURRENTVERSION = 7;
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks
 			config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, Boolean.FALSE.booleanValue());
 			config.setBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU, Boolean.TRUE.booleanValue());
-			//fxdiff VCRP-13: cp navigation
+			// cp navigation
 			config.setBooleanEntry(CPEditController.CONFIG_SHOWNAVBUTTONS, Boolean.TRUE.booleanValue());
-			config.setConfigurationVersion(2);
+			// how to render files (include jquery etc)
+			DeliveryOptions nodeDeliveryOptions = DeliveryOptions.defaultWithGlossary();
+			nodeDeliveryOptions.setInherit(Boolean.TRUE);
+			config.set(CPEditController.CONFIG_DELIVERYOPTIONS, nodeDeliveryOptions);
+			config.setConfigurationVersion(CURRENTVERSION);
 		} else {
 			config.remove(NodeEditController.CONFIG_INTEGRATION);
 			if (config.getConfigurationVersion() < 2) {
@@ -209,46 +216,64 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 				config.setBooleanEntry(CPEditController.CONFIG_SHOWNAVBUTTONS, Boolean.TRUE.booleanValue());
 				config.setConfigurationVersion(4);
 			}
-			
-			if(config.getConfigurationVersion() < 5) {
+			// Version 5 was ineffective since the delivery options were not set. We have to redo this and
+			// save it as version 6
+			if(config.getConfigurationVersion() < 7) {
 				String contentEncoding = (String)config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
+				if (contentEncoding != null && contentEncoding.equals("auto")) {
+					contentEncoding = null; // new style for auto
+				}
 				String jsEncoding = (String)config.get(NodeEditController.CONFIG_JS_ENCODING);
+				if (jsEncoding != null && jsEncoding.equals("auto")) {
+					jsEncoding = null; // new style for auto
+				}
 
+				
 				CPPackageConfig reConfig = null;
-				DeliveryOptions nodeDeliveryOptions = new DeliveryOptions();
-				RepositoryEntry re = getReferencedRepositoryEntry();
-				if(re != null) {
-					reConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());
-
-					//move the settings from the node to the repo
-					if(reConfig == null || reConfig.getDeliveryOptions() == null) {
+				DeliveryOptions nodeDeliveryOptions = (DeliveryOptions)config.get(CPEditController.CONFIG_DELIVERYOPTIONS);
+				if (nodeDeliveryOptions == null) {
+					// Update missing delivery options now, inherit from repo by default
+					nodeDeliveryOptions = DeliveryOptions.defaultWithGlossary();
+					nodeDeliveryOptions.setInherit(Boolean.TRUE);
+					
+					RepositoryEntry re = getReferencedRepositoryEntry();
+					// Check if delivery options are set for repo entry, if not create default
+					if(re != null) {
+						reConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());						
 						if(reConfig == null) {
 							reConfig = new CPPackageConfig();
 						}
-						reConfig.setDeliveryOptions(new DeliveryOptions());
-						nodeDeliveryOptions.setInherit(Boolean.TRUE);
-						nodeDeliveryOptions.setStandardMode(Boolean.TRUE);
-						reConfig.getDeliveryOptions().setStandardMode(Boolean.TRUE);
-						reConfig.getDeliveryOptions().setContentEncoding(contentEncoding);
-						reConfig.getDeliveryOptions().setJavascriptEncoding(jsEncoding);
-						CPManager.getInstance().setCPPackageConfig(re.getOlatResource(), reConfig);
-					} else {
 						DeliveryOptions repoDeliveryOptions = reConfig.getDeliveryOptions();
-						if(((contentEncoding == null && repoDeliveryOptions.getContentEncoding() == null) || (contentEncoding != null && contentEncoding.equals(repoDeliveryOptions.getContentEncoding())))
-							&& ((jsEncoding == null && repoDeliveryOptions.getJavascriptEncoding() == null) || (jsEncoding != null && jsEncoding.equals(repoDeliveryOptions.getJavascriptEncoding())))) {
-							nodeDeliveryOptions.setInherit(Boolean.TRUE);	
+						if (repoDeliveryOptions == null) {
+							// migrate existing config back to repo entry using the default as a base
+							repoDeliveryOptions = DeliveryOptions.defaultWithGlossary();
+							reConfig.setDeliveryOptions(repoDeliveryOptions);
+							repoDeliveryOptions.setContentEncoding(contentEncoding);
+							repoDeliveryOptions.setJavascriptEncoding(jsEncoding);						
+							CPManager.getInstance().setCPPackageConfig(re.getOlatResource(), reConfig);
 						} else {
-							nodeDeliveryOptions.setInherit(Boolean.FALSE);	
-							nodeDeliveryOptions.setContentEncoding(contentEncoding);
-							nodeDeliveryOptions.setJavascriptEncoding(jsEncoding);
+							// see if we have any different settings than the repo. if so, don't use inherit mode
+							if(contentEncoding != repoDeliveryOptions.getContentEncoding() || jsEncoding != repoDeliveryOptions.getJavascriptEncoding()) {
+								nodeDeliveryOptions.setInherit(Boolean.FALSE);	
+								nodeDeliveryOptions.setContentEncoding(contentEncoding);
+								nodeDeliveryOptions.setJavascriptEncoding(jsEncoding);
+							}
 						}
 					}
+					// remove old config parameters
+					config.remove(NodeEditController.CONFIG_CONTENT_ENCODING);
+					config.remove(NodeEditController.CONFIG_JS_ENCODING);
+					// replace with new delivery options
+					config.set(CPEditController.CONFIG_DELIVERYOPTIONS, nodeDeliveryOptions);
 				}
-				
-				config.setConfigurationVersion(5);
+				config.setConfigurationVersion(7);
 			}
 			
 			// else node is up-to-date - nothing to do
+		}
+		if (config.getConfigurationVersion() != CURRENTVERSION) {
+			OLog logger = Tracing.createLoggerFor(CPCourseNode.class);
+			logger.error("CP course node version not updated to lastest version::" + CURRENTVERSION + ", was::" + config.getConfigurationVersion() + ". Check the code, programming error.");
 		}
 	}
 

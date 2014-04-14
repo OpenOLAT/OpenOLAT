@@ -115,15 +115,13 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 
 		if (!admin) {
 			RepositoryManager rm = RepositoryManager.getInstance();
-			if(roles.isInstitutionalResourceManager() || roles.isAuthor()) {
-				if (re != null) {
-					admin = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re)
-							|| rm.isInstitutionalRessourceManagerFor(ureq.getIdentity(), roles, re);
-				}
+			if (re != null) {
+				admin = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re)
+						|| rm.isInstitutionalRessourceManagerFor(ureq.getIdentity(), roles, re);
+				moderator = admin 
+						|| rm.isIdentityInTutorSecurityGroup(ureq.getIdentity(), re)
+						|| isCoach(re, ureq.getIdentity());
 			}
-			moderator = admin
-					|| rm.isIdentityInTutorSecurityGroup(ureq.getIdentity(), re)
-					|| isCoach(re, ureq.getIdentity());
 		}
 
 		// create run controller

@@ -5,17 +5,18 @@
 </fieldset>
 <fieldset>
 	<legend>$r.translate("group.edit.tab.members")</legend>
-
-	<div class="o_buttons_box_right"><br/><br/>
-		#if($r.available("addMembers"))
-			$r.render("addMembers")
-		#end
-		#if($r.available("importMembers"))
-			$r.render("importMembers")
-		#end
+	<div style="position: relative;">
+		<div class="o_buttons_box_right" style="top: 0em;">
+			#if($r.available("addMembers"))
+				$r.render("addMembers")
+			#end
+			#if($r.available("importMembers"))
+				$r.render("importMembers")
+			#end
+		</div>
+		
+		$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-memberOwner.html","help.hover.bgGrpMngmntOwner")
+		$r.render("members")
 	</div>
-	
-	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-memberOwner.html","help.hover.bgGrpMngmntOwner")
-	$r.render("members")
 </fieldset>
 

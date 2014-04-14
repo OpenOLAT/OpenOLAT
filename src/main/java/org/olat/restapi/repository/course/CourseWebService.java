@@ -21,6 +21,7 @@ package org.olat.restapi.repository.course;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
+import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
@@ -116,6 +117,14 @@ public class CourseWebService {
 	static {
 		cc.setMaxAge(-1);
 	}
+	
+	private final ICourse course;
+	private final OLATResource courseOres;
+	
+	public CourseWebService(OLATResource courseOres, ICourse course) {
+		this.course = course;
+		this.courseOres = courseOres;
+	}
 
 	/**
 	 * The version of the Course Web Service
@@ -142,16 +151,10 @@ public class CourseWebService {
 	}
 	
 	@Path("calendar")
-	public CalWebService getCourseCalendarWebService(@PathParam("courseId") Long courseId,
-			@Context HttpServletRequest request) {
-		ICourse course = loadCourse(courseId);
-		if(course == null) {
-			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
-		}
+	public CalWebService getCourseCalendarWebService(@Context HttpServletRequest request) {
 		if(course.getCourseConfig().isCalendarEnabled()) {
-			OLATResource ores = getCourseOLATResource(courseId);
 			UserRequest ureq = getUserRequest(request);
-			KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, ores, null);
+			KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, courseOres, null);
 			return new CalWebService(wrapper);
 		}
 		return null;

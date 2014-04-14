@@ -132,7 +132,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		ICourse course = CourseWebService.loadCourse(courseId);
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -1360,8 +1360,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTaskFile(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@Context HttpServletRequest request) {
-		ICourse course = CourseWebService.loadCourse(courseId);
-		CourseNode node = getParentNode(course, nodeId);
+			ICourse course = CoursesWebService.loadCourse(courseId);
+	CourseNode node = getParentNode(course, nodeId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -1591,7 +1591,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 		
 		TaskConfigVO config = new TaskConfigVO();
-		ICourse course = CourseWebService.loadCourse(courseId);
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		CourseNode courseNode = getParentNode(course, nodeId);
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		//build configuration with fallback to default values
@@ -1762,7 +1762,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		SurveyConfigVO config = new SurveyConfigVO();
-		ICourse course = CourseWebService.loadCourse(courseId);
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		CourseNode courseNode = getParentNode(course, nodeId);
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		//build configuration with fallback to default values
@@ -1925,7 +1925,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	public Response getTestConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
 		
 		TestConfigVO config = new TestConfigVO();
-		ICourse course = CourseWebService.loadCourse(courseId);
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		CourseNode courseNode = getParentNode(course, nodeId);
 		//build configuration with fallback to default values
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
