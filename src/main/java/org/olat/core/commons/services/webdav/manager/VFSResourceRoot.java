@@ -217,11 +217,13 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			return false;
 		}
 
-		VFSContainer folder = childLeaf.getParentContainer();
-		VFSSecurityCallback callback = folder.getLocalSecurityCallback();
-		if(callback != null && callback.getSubscriptionContext() != null) {
-			SubscriptionContext subContext = callback.getSubscriptionContext();
-			NotificationsManager.getInstance().markPublisherNews(subContext, null, true);
+		VFSContainer inheritingCont = VFSManager.findInheritingSecurityCallbackContainer(childLeaf.getParentContainer());
+		if(inheritingCont != null) {
+			VFSSecurityCallback callback = inheritingCont.getLocalSecurityCallback();
+			if(callback != null && callback.getSubscriptionContext() != null) {
+				SubscriptionContext subContext = callback.getSubscriptionContext();
+				NotificationsManager.getInstance().markPublisherNews(subContext, null, true);
+			}
 		}
 		
 		if(childLeaf instanceof MetaTagged && identity != null) {
